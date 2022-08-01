@@ -23,7 +23,7 @@ dependencies {
 
     testImplementation(compose.uiTestJUnit4)
 
-    implementation(projects.animationGardenApp)
+    implementation(projects.animationGardenApi)
 }
 
 compose.desktop {
