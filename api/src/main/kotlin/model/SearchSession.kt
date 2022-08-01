@@ -6,13 +6,15 @@ public interface SearchSession {
     public val filter: SearchFilter
 
     public val results: Flow<Topic>
+
+    public suspend fun nextPage(): List<Topic>?
 }
 
-public class SearchFilter(
-    public val keywords: String,
-    public val category: TopicCategory,
-    public val alliance: Alliance,
-    public val ordering: SearchOrdering
+public data class SearchFilter(
+    public val keywords: String? = null,
+    public val category: TopicCategory? = null,
+    public val alliance: Alliance? = null,
+    public val ordering: SearchOrdering? = null
 )
 
 public interface SearchOrdering {

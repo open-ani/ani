@@ -5,6 +5,7 @@ import io.ktor.client.engine.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.plugins.cookies.*
 import io.ktor.client.plugins.logging.*
 import io.ktor.http.*
 import io.ktor.http.content.*
@@ -36,6 +37,11 @@ internal fun createHttpClient() = HttpClient(CIO) {
     engine {
         proxy = ProxyBuilder.http("http://localhost:7890")
     }
+    install(HttpRequestRetry) {
+        maxRetries = 3
+        delayMillis { 1000 }
+    }
+    install(HttpCookies)
     install(HttpTimeout)
     install(Logging) {
         logger = object : Logger {

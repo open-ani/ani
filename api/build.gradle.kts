@@ -30,7 +30,6 @@ kotlin {
 
     sourceSets.all {
         languageSettings.progressiveMode = true
-        languageSettings.enableLanguageFeature("ContextReceivers")
     }
 }
 

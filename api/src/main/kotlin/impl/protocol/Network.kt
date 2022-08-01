@@ -36,7 +36,7 @@ internal class Network(
         keyword: String?,
         sortId: String?,
         teamId: String?,
-        order: String?
+        orderId: String?
     ): ListResponse {
         require(page == null || page >= 1) { "page must be >= 1" }
         val resp = client.get {
@@ -51,7 +51,7 @@ internal class Network(
             parameter("keyword", keyword)
             parameter("sort_id", sortId)
             parameter("team_id", teamId)
-            parameter("order", order)
+            parameter("order", orderId)
         }
         val document = resp.bodyAsDocument()
         val context = CacheImpl()

@@ -21,15 +21,27 @@ internal class SearchSessionImpl(
 
     override val results: Flow<Topic> by lazy {
         flow {
-            val (context, result) = network.list(
-                page = page.value,
-                keyword = filter.keywords,
-                sortId = filter.category.id,
-                teamId = filter.alliance.id,
-                order = filter.ordering.id
-            )
-            cache.mergeFrom(context)
-            emitAll(result.asFlow())
+            while (true) {
+                val result = nextPage()
+                if (result.isNullOrEmpty()) {
+                    return@flow
+                }
+                emitAll(result.asFlow())
+            }
         }
+    }
+
+    override suspend fun nextPage(): List<Topic>? {
+        val currentPage = page.value
+        val (context, result) = network.list(
+            page = currentPage,
+            keyword = filter.keywords,
+            sortId = filter.category?.id,
+            teamId = filter.alliance?.id,
+            orderId = filter.ordering?.id
+        )
+        cache.mergeFrom(context)
+        page.compareAndSet(currentPage, currentPage + 1)
+        return result
     }
 }
