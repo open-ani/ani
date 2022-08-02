@@ -1,31 +1,54 @@
 package me.him188.animationgarden.api.model
 
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
-public interface Topic {
-    public val id: String
-    public val date: LocalDateTime
-    public val category: TopicCategory
-    public val alliance: Alliance?
-    public val title: String
-    public val commentsCount: Int
-    public val magnetLink: MagnetLink
-    public val size: FileSize
-    public val author: User
+
+class Topic(
+    val id: String,
+    val date: LocalDateTime,
+    val category: TopicCategory,
+    val alliance: Alliance?,
+    val title: String,
+    val commentsCount: Int,
+    val magnetLink: MagnetLink,
+    val size: FileSize,
+    val author: User
+) {
+    override fun toString(): String {
+        return "$id " +
+                "| ${date.format(DATE_FORMAT)} " +
+                "| ${category.name} " +
+                "| ${alliance?.name} " +
+                "| $title " +
+                "| $commentsCount " +
+                "| ${magnetLink.value.truncated(10)} " +
+                "| $size " +
+                "| $author"
+    }
 }
-
 
 @JvmInline
-public value class MagnetLink(
-    public val value: String
+value class MagnetLink(
+    val value: String
 )
 
-public interface TopicCategory {
-    public val id: String
-    public val name: String
+class TopicCategory(
+    val id: String,
+    val name: String
+)
+
+class Alliance(
+    val id: String,
+    val name: String
+)
+
+private fun String.truncated(length: Int, truncated: String = "..."): String {
+    return if (this.length > length) {
+        this.take(length) + truncated
+    } else {
+        this
+    }
 }
 
-public interface Alliance {
-    public val id: String
-    public val name: String
-}
+val DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm")

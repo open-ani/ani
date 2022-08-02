@@ -7,6 +7,7 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 plugins {
     kotlin("jvm")
     id("org.jetbrains.compose")
+    id("kotlinx-atomicfu")
 }
 
 @OptIn(ExperimentalComposeLibrary::class)

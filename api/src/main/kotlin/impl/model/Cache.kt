@@ -54,20 +54,20 @@ internal class CacheImpl : Cache {
     }
 }
 
-public interface MutableListFlow<T : Any> : Iterable<T> {
-    public var value: List<T>
-    public fun asFlow(): StateFlow<List<T>>
-    public fun asMutableFlow(): MutableStateFlow<List<T>>
-    public fun asList(): List<T>
-    public fun asSequence(): Sequence<T> = value.asSequence()
+interface MutableListFlow<T : Any> : Iterable<T> {
+    var value: List<T>
+    fun asFlow(): StateFlow<List<T>>
+    fun asMutableFlow(): MutableStateFlow<List<T>>
+    fun asList(): List<T>
+    fun asSequence(): Sequence<T> = value.asSequence()
 }
 
-public interface KeyedMutableListFlow<K, T : Any> : MutableListFlow<T> {
-    public operator fun get(key: K): T?
-    public operator fun set(key: K, value: T?)
+interface KeyedMutableListFlow<K, T : Any> : MutableListFlow<T> {
+    operator fun get(key: K): T?
+    operator fun set(key: K, value: T?)
 }
 
-public inline fun <K, T : Any> KeyedMutableListFlow<K, T>.getOrSet(key: K, default: () -> T): T {
+inline fun <K, T : Any> KeyedMutableListFlow<K, T>.getOrSet(key: K, default: () -> T): T {
     var value = get(key)
     if (value == null) {
         value = default()
@@ -76,11 +76,11 @@ public inline fun <K, T : Any> KeyedMutableListFlow<K, T>.getOrSet(key: K, defau
     return value
 }
 
-public inline fun <K, T : R, R> KeyedMutableListFlow<K, T & Any>.getOrDefault(key: K, default: () -> R): R {
+inline fun <K, T : R, R> KeyedMutableListFlow<K, T & Any>.getOrDefault(key: K, default: () -> R): R {
     return get(key) ?: return default()
 }
 
-public open class MutableListFlowImpl<T : Any>(
+open class MutableListFlowImpl<T : Any>(
     private val delegate: MutableStateFlow<List<T>> = MutableStateFlow(listOf())
 ) :
     Iterable<T>, MutableListFlow<T> {
@@ -100,7 +100,7 @@ public open class MutableListFlowImpl<T : Any>(
     override operator fun iterator(): Iterator<T> = value.iterator()
 }
 
-public class KeyedMutableListFlowImpl<K, T : Any>(
+class KeyedMutableListFlowImpl<K, T : Any>(
     private val getKey: (T) -> K
 ) : KeyedMutableListFlow<K, T>, MutableListFlowImpl<T>() {
     private inline val T.key get() = getKey(this)
@@ -125,7 +125,7 @@ public class KeyedMutableListFlowImpl<K, T : Any>(
 
 }
 
-public inline fun <T : Any> MutableListFlow<T>.mutate(transform: (List<T>) -> List<T>) {
+inline fun <T : Any> MutableListFlow<T>.mutate(transform: (List<T>) -> List<T>) {
     value = value.let(transform)
 }
 
@@ -145,6 +145,6 @@ private class DynamicDelegateList<T>(
     override fun contains(element: T): Boolean = supplier().contains(element)
 }
 
-public inline fun <T> MutableStateFlow<T>.mutate(block: (T) -> T) {
+inline fun <T> MutableStateFlow<T>.mutate(block: (T) -> T) {
     value = value.let(block)
 }

@@ -1,13 +1,11 @@
 package me.him188.animationgarden.api.impl.protocol
 
 import me.him188.animationgarden.api.impl.model.*
-import me.him188.animationgarden.api.model.FileSize
+import me.him188.animationgarden.api.model.*
 import me.him188.animationgarden.api.model.FileSize.Companion.bytes
 import me.him188.animationgarden.api.model.FileSize.Companion.gigaBytes
 import me.him188.animationgarden.api.model.FileSize.Companion.kiloBytes
 import me.him188.animationgarden.api.model.FileSize.Companion.megaBytes
-import me.him188.animationgarden.api.model.MagnetLink
-import me.him188.animationgarden.api.model.Topic
 import org.jsoup.nodes.Document
 import org.jsoup.select.Elements
 import java.time.LocalDateTime
@@ -64,12 +62,12 @@ internal object ListParser {
             val authorId = authorLink.substringAfterLast('/')
             val allianceId = allianceLink?.substringAfterLast('/')
             val allianceName = allianceName
-            return TopicImpl(
+            return Topic(
                 id = id,
                 date = LocalDateTime.parse(date, formatter),
-                category = context.categories.getOrSet(categoryId) { TopicCategoryImpl(categoryId, categoryName) },
+                category = context.categories.getOrSet(categoryId) { TopicCategory(categoryId, categoryName) },
                 alliance = if (allianceId != null && allianceName != null)
-                    context.alliances.getOrSet(allianceId) { AllianceImpl(allianceId, allianceName) }
+                    context.alliances.getOrSet(allianceId) { Alliance(allianceId, allianceName) }
                 else null,
                 title = title.removePrefix(allianceName ?: "").trimStart(),
                 commentsCount = commentsCount?.filter { it.isDigit() }?.toIntOrNull() ?: 0,

@@ -26,8 +26,6 @@ dependencies {
 }
 
 kotlin {
-    explicitApi()
-
     sourceSets.all {
         languageSettings.progressiveMode = true
     }

@@ -1,7 +1,13 @@
 package me.him188.animationgarden.api.model
 
-public interface User {
-    public val id: String
+interface User {
+    val id: String
 
-    public val name: String
+    val name: String
 }
+
+data class UserImpl(
+    override val id: String,
+    override val name: String
+) : User
+

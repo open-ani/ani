@@ -45,7 +45,7 @@ internal class Network(
                 host = Paths.host
                 appendPathSegments("topics", "list")
                 if (page != null && page != 1) {
-                    appendPathSegments(page.toString())
+                    appendPathSegments("page", page.toString())
                 }
             }
             parameter("keyword", keyword)
