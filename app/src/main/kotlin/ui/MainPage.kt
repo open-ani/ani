@@ -1,7 +1,7 @@
 package me.him188.animationgarden.desktop.ui
 
+import androidx.compose.animation.*
 import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -10,17 +10,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -81,7 +79,6 @@ class ApplicationState(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MainPage(
     app: ApplicationState
@@ -97,20 +94,14 @@ fun MainPage(
         app.fetchNextPage()
     }
 
-    val keywordsFocus = remember { FocusRequester() }
-    val allianceFocus = remember { FocusRequester() }
-
     val (keywords, onTitleChange) = remember { mutableStateOf("") }
     val (alliance, onAllianceChange) = remember { mutableStateOf("") }
 
     Column(Modifier.background(color = MaterialTheme.colorScheme.background).padding(PaddingValues(all = 16.dp))) {
-        Row(Modifier
-            .padding(16.dp)
-            .fillMaxWidth()
-            .focusProperties {
-                canFocus = true
-                next = allianceFocus
-            }
+        Row(
+            Modifier
+                .padding(16.dp)
+                .fillMaxWidth()
         ) {
             Row {
                 OutlinedTextField(
@@ -130,7 +121,7 @@ fun MainPage(
                         )
                     },
                     singleLine = true,
-                    shape = RoundedCornerShape(8.dp),
+                    shape = MaterialTheme.shapes.medium,
                     maxLines = 1,
                 )
 
@@ -150,14 +141,18 @@ fun MainPage(
                         )
                     },
                     singleLine = true,
-                    shape = RoundedCornerShape(8.dp),
+                    shape = MaterialTheme.shapes.medium,
                     maxLines = 1,
                 )
             }
 
-            Button(onClick = {
-                app.updateSearchFilter(SearchFilter(keywords, null, null))
-            }, Modifier.padding(start = 16.dp)) {
+            Button(
+                onClick = {
+                    app.updateSearchFilter(SearchFilter(keywords, null, null))
+                },
+                Modifier.padding(start = 16.dp),
+                shape = MaterialTheme.shapes.medium,
+            ) {
                 Text("Search")
             }
         }
@@ -182,9 +177,23 @@ private fun LiveList(
     onClickCard: (topic: Topic) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    LazyColumn(state = state, modifier = modifier) {
-        items(topics, { it.id }) { topic ->
-            TopicItemCard(topic) { onClickCard(topic) }
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        AnimatedVisibility(
+            topics.isEmpty(),
+            enter = fadeIn() + expandVertically(),
+            exit = slideOutVertically(targetOffsetY = { it / 2 }) + fadeOut(),
+        ) {
+            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+        }
+        AnimatedVisibility(
+            topics.isNotEmpty(),
+            enter = fadeIn() + expandVertically(),
+        ) {
+            LazyColumn(state = state, modifier = modifier) {
+                items(topics, { it.id }) { topic ->
+                    TopicItemCard(topic) { onClickCard(topic) }
+                }
+            }
         }
     }
 }
@@ -196,13 +205,13 @@ private fun TopicItemCard(item: Topic, onClick: () -> Unit) {
         OutlinedCard(
             Modifier
                 .padding(horizontal = 16.dp, vertical = 8.dp)
+                .clip(MaterialTheme.shapes.large)
                 .clickable(
                     remember { MutableInteractionSource() },
-                    rememberRipple(),
+                    rememberRipple(color = MaterialTheme.colorScheme.surfaceTint),
                 ) { onClick() }
 //                .border(1.dp, MaterialTheme.colorScheme.outline, shape = MaterialTheme.shapes.large)
-                .shadow(elevation = 4.dp, shape = MaterialTheme.shapes.large)
-                .clip(MaterialTheme.shapes.large)
+                .shadow(elevation = 2.dp, shape = MaterialTheme.shapes.large)
                 .wrapContentSize(),
             shape = MaterialTheme.shapes.large,
         ) {
