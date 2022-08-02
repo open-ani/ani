@@ -1,11 +1,9 @@
 package me.him188.animationgarden.desktop.ui
 
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -14,18 +12,17 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -106,54 +103,57 @@ fun MainPage(
     val (keywords, onTitleChange) = remember { mutableStateOf("") }
     val (alliance, onAllianceChange) = remember { mutableStateOf("") }
 
-    Column(Modifier.padding(PaddingValues(all = 16.dp))) {
+    Column(Modifier.background(color = MaterialTheme.colorScheme.background).padding(PaddingValues(all = 16.dp))) {
         Row(Modifier
             .padding(16.dp)
+            .fillMaxWidth()
             .focusProperties {
                 canFocus = true
                 next = allianceFocus
             }
-            .focusGroup()
         ) {
-            TextField(
-                keywords,
-                onTitleChange,
-                Modifier.height(48.dp),
-                keyboardActions = KeyboardActions(onDone = {
-                    searchFilter = SearchFilter(keywords)
-                }),
-                placeholder = {
-                    Text(
-                        "keywords",
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            color = MaterialTheme.typography.bodySmall.color.copy(0.3f)
+            Row {
+                OutlinedTextField(
+                    keywords,
+                    onTitleChange,
+                    Modifier.height(48.dp),
+                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Go),
+                    keyboardActions = KeyboardActions(onGo = {
+                        searchFilter = SearchFilter(keywords)
+                    }),
+                    placeholder = {
+                        Text(
+                            "keywords",
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                color = MaterialTheme.typography.bodySmall.color.copy(0.3f)
+                            )
                         )
-                    )
-                },
-                singleLine = true,
-                shape = RoundedCornerShape(8.dp),
-                maxLines = 1,
-            )
+                    },
+                    singleLine = true,
+                    shape = RoundedCornerShape(8.dp),
+                    maxLines = 1,
+                )
 
-            TextField(
-                alliance,
-                onAllianceChange,
-                Modifier.padding(start = 16.dp).height(48.dp),
-                keyboardActions = KeyboardActions(onDone = {
-                    searchFilter = SearchFilter(alliance)
-                }),
-                placeholder = {
-                    Text(
-                        "alliance",
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            color = MaterialTheme.typography.bodySmall.color.copy(0.3f)
+                OutlinedTextField(
+                    alliance,
+                    onAllianceChange,
+                    Modifier.padding(start = 16.dp).height(48.dp),
+                    keyboardActions = KeyboardActions(onDone = {
+                        searchFilter = SearchFilter(alliance)
+                    }),
+                    placeholder = {
+                        Text(
+                            "alliance",
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                color = MaterialTheme.typography.bodySmall.color.copy(0.3f)
+                            )
                         )
-                    )
-                },
-                singleLine = true,
-                shape = RoundedCornerShape(8.dp),
-                maxLines = 1,
-            )
+                    },
+                    singleLine = true,
+                    shape = RoundedCornerShape(8.dp),
+                    maxLines = 1,
+                )
+            }
 
             Button(onClick = {
                 app.updateSearchFilter(SearchFilter(keywords, null, null))
@@ -182,44 +182,9 @@ private fun LiveList(
     onClickCard: (topic: Topic) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    LazyColumn(state = state, modifier = modifier.simpleVerticalScrollbar(state)) {
+    LazyColumn(state = state, modifier = modifier) {
         items(topics, { it.id }) { topic ->
             TopicItemCard(topic) { onClickCard(topic) }
-        }
-    }
-}
-
-@Composable
-fun Modifier.simpleVerticalScrollbar(
-    state: LazyListState,
-    width: Dp = 8.dp
-): Modifier {
-    val targetAlpha = if (state.isScrollInProgress) 1f else 0f
-    val duration = if (state.isScrollInProgress) 150 else 500
-
-    val alpha by animateFloatAsState(
-        targetValue = targetAlpha,
-        animationSpec = tween(durationMillis = duration)
-    )
-
-    return drawWithContent {
-        drawContent()
-
-        val firstVisibleElementIndex = state.layoutInfo.visibleItemsInfo.firstOrNull()?.index
-        val needDrawScrollbar = state.isScrollInProgress || alpha > 0.0f
-
-        // Draw scrollbar if scrolling or if the animation is still running and lazy column has content
-        if (needDrawScrollbar && firstVisibleElementIndex != null) {
-            val elementHeight = this.size.height / state.layoutInfo.totalItemsCount
-            val scrollbarOffsetY = firstVisibleElementIndex * elementHeight
-            val scrollbarHeight = state.layoutInfo.visibleItemsInfo.size * elementHeight
-
-            drawRect(
-                color = Color.Red,
-                topLeft = Offset(this.size.width - width.toPx(), scrollbarOffsetY),
-                size = Size(width.toPx(), scrollbarHeight),
-                alpha = alpha
-            )
         }
     }
 }
@@ -228,14 +193,18 @@ fun Modifier.simpleVerticalScrollbar(
 @OptIn(ExperimentalMaterial3Api::class)
 private fun TopicItemCard(item: Topic, onClick: () -> Unit) {
     Box(Modifier.fillMaxHeight()) {
-        Card(
+        OutlinedCard(
             Modifier
                 .padding(horizontal = 16.dp, vertical = 8.dp)
                 .clickable(
                     remember { MutableInteractionSource() },
                     rememberRipple(),
-                ) { onClick() },
-            shape = RoundedCornerShape(16.dp)
+                ) { onClick() }
+//                .border(1.dp, MaterialTheme.colorScheme.outline, shape = MaterialTheme.shapes.large)
+                .shadow(elevation = 4.dp, shape = MaterialTheme.shapes.large)
+                .clip(MaterialTheme.shapes.large)
+                .wrapContentSize(),
+            shape = MaterialTheme.shapes.large,
         ) {
             Box(Modifier.padding(16.dp)) {
                 Row {
