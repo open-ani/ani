@@ -10,8 +10,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -20,7 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,22 +33,42 @@ import java.time.LocalDateTime
 
 @Stable
 class ApplicationState(
-    val client: AnimationGardenClient,
+    private val client: AnimationGardenClient,
 ) {
+    @Stable
     val applicationScope: CoroutineScope =
         CoroutineScope(SupervisorJob() + CoroutineExceptionHandler { coroutineContext, throwable ->
             throwable.printStackTrace()
         })
 
 
+    @Stable
     val isFetching = MutableStateFlow(false)
+
+    @Stable
     val searchFilter: MutableState<SearchFilter> = mutableStateOf(SearchFilter())
+
+    @Stable
     val topicsFlow: KeyedMutableListFlow<String, Topic> = KeyedMutableListFlowImpl { it.id }
 
+    @Stable
     val session: MutableState<SearchSession> by lazy {
         mutableStateOf(client.startSearchSession(SearchFilter()))
     }
 
+
+    init {
+        applicationScope.launch {
+            topicsFlow.asFlow().collect {
+                println("Topics changed: $it")
+            }
+        }
+        applicationScope.launch {
+            isFetching.collect {
+                println("isFetching changed: $it")
+            }
+        }
+    }
 
     fun updateSearchFilter(searchFilter: SearchFilter) {
         this.searchFilter.value = searchFilter
@@ -83,18 +100,9 @@ class ApplicationState(
 fun MainPage(
     app: ApplicationState
 ) {
-    val topicsFlow: KeyedMutableListFlow<String, Topic> = app.topicsFlow
-    val topics by topicsFlow.asFlow().collectAsState()
-    val fetching by app.isFetching.collectAsState()
-    var searchFilter by app.searchFilter
+    val topics by remember { app.topicsFlow.asFlow() }.collectAsState()
 
-    val state = rememberLazyListState()
-
-    if (!fetching && !state.isScrollInProgress && state.reachedEnd()) {
-        app.fetchNextPage()
-    }
-
-    val (keywords, onTitleChange) = remember { mutableStateOf("") }
+    val (keywords, onKeywrodsChange) = remember { mutableStateOf("") }
     val (alliance, onAllianceChange) = remember { mutableStateOf("") }
 
     Column(Modifier.background(color = MaterialTheme.colorScheme.background).padding(PaddingValues(all = 16.dp))) {
@@ -106,17 +114,13 @@ fun MainPage(
             Row {
                 OutlinedTextField(
                     keywords,
-                    onTitleChange,
+                    onKeywrodsChange,
                     Modifier.height(48.dp),
-                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Go),
-                    keyboardActions = KeyboardActions(onGo = {
-                        searchFilter = SearchFilter(keywords)
-                    }),
                     placeholder = {
                         Text(
                             "keywords",
                             style = MaterialTheme.typography.bodyMedium.copy(
-                                color = MaterialTheme.typography.bodySmall.color.copy(0.3f)
+                                color = MaterialTheme.typography.bodyMedium.color.copy(0.3f)
                             )
                         )
                     },
@@ -129,14 +133,11 @@ fun MainPage(
                     alliance,
                     onAllianceChange,
                     Modifier.padding(start = 16.dp).height(48.dp),
-                    keyboardActions = KeyboardActions(onDone = {
-                        searchFilter = SearchFilter(alliance)
-                    }),
                     placeholder = {
                         Text(
                             "alliance",
                             style = MaterialTheme.typography.bodyMedium.copy(
-                                color = MaterialTheme.typography.bodySmall.color.copy(0.3f)
+                                color = MaterialTheme.typography.bodyMedium.color.copy(0.3f)
                             )
                         )
                     },
@@ -153,12 +154,12 @@ fun MainPage(
                 Modifier.padding(start = 16.dp),
                 shape = MaterialTheme.shapes.medium,
             ) {
-                Text("Search")
+                Text("Search", style = MaterialTheme.typography.bodyMedium)
             }
         }
 
         LiveList(
-            state,
+            app,
             topics,
             onClickCard = {
                 app.applicationScope.launch(Dispatchers.IO) {
@@ -172,26 +173,39 @@ fun MainPage(
 
 @Composable
 private fun LiveList(
-    state: LazyListState,
+    app: ApplicationState,
     topics: List<Topic>,
     onClickCard: (topic: Topic) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        val isEmpty = topics.isEmpty()
         AnimatedVisibility(
-            topics.isEmpty(),
+            isEmpty,
             enter = fadeIn() + expandVertically(),
-            exit = slideOutVertically(targetOffsetY = { it / 2 }) + fadeOut(),
+            exit = shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut(),
         ) {
             CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
         }
         AnimatedVisibility(
-            topics.isNotEmpty(),
+            !isEmpty,
             enter = fadeIn() + expandVertically(),
+            exit = shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut(),
+            // Actually when exiting, `topics` would be empty, so lazy column contains no item and size is zero. You won't see the animation.
         ) {
+            val state = rememberLazyListState()
             LazyColumn(state = state, modifier = modifier) {
                 items(topics, { it.id }) { topic ->
                     TopicItemCard(topic) { onClickCard(topic) }
+                }
+                // dummy footer. When footer gets into visible area, `LaunchedEffect` comes with its composition.
+                item("refresh footer", contentType = "refresh footer") {
+                    val fetching by app.isFetching.collectAsState()
+                    if (!fetching && state.reachedEnd()) {
+                        LaunchedEffect(true) {
+                            app.fetchNextPage()
+                        }
+                    }
                 }
             }
         }
@@ -205,13 +219,13 @@ private fun TopicItemCard(item: Topic, onClick: () -> Unit) {
         OutlinedCard(
             Modifier
                 .padding(horizontal = 16.dp, vertical = 8.dp)
+                .shadow(elevation = 2.dp, shape = MaterialTheme.shapes.large)
                 .clip(MaterialTheme.shapes.large)
                 .clickable(
                     remember { MutableInteractionSource() },
                     rememberRipple(color = MaterialTheme.colorScheme.surfaceTint),
                 ) { onClick() }
 //                .border(1.dp, MaterialTheme.colorScheme.outline, shape = MaterialTheme.shapes.large)
-                .shadow(elevation = 2.dp, shape = MaterialTheme.shapes.large)
                 .wrapContentSize(),
             shape = MaterialTheme.shapes.large,
         ) {
@@ -256,6 +270,7 @@ private fun TopicItemCard(item: Topic, onClick: () -> Unit) {
     }
 }
 
+@Composable
 private fun LazyListState.reachedEnd() =
     layoutInfo.totalItemsCount == 0 || layoutInfo.visibleItemsInfo.lastOrNull()?.index == layoutInfo.totalItemsCount - 1
 
@@ -274,7 +289,7 @@ private fun PreviewMainPage() {
 @Composable
 private fun PreviewTopicList() {
     LiveList(
-        rememberLazyListState(),
+        remember { ApplicationState(client = AnimationGardenClient.Factory.create()) },
         mutableListOf<Topic>().apply {
             repeat(10) {
                 add(
