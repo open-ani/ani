@@ -1,6 +1,7 @@
 # Animation Garden Desktop
 
-Desktop Application for [Animation Garden](http://www.dmhy.org/)
+Desktop application for [Animation Garden](http://www.dmhy.org/), made
+with [Compose Desktop](https://www.jetbrains.com/lp/compose-desktop/).
 
 Currently working in progress.
 
