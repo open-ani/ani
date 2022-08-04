@@ -12,7 +12,9 @@ object AnimationGardenDesktop {
     fun main(args: Array<String>) {
         application {
             val app = remember {
-                ApplicationState(AnimationGardenClient.Factory.create())
+                ApplicationState(AnimationGardenClient.Factory.create()).apply {
+                    launchFetchNextPage()
+                }
             }
             Window(onCloseRequest = ::exitApplication) {
                 MainPage(app)

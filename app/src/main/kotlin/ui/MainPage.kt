@@ -46,6 +46,9 @@ class ApplicationState(
     val isFetching = MutableStateFlow(false)
 
     @Stable
+    val hasMorePages = MutableStateFlow(true)
+
+    @Stable
     val searchFilter: MutableState<SearchFilter> = mutableStateOf(SearchFilter())
 
     @Stable
@@ -74,17 +77,19 @@ class ApplicationState(
         this.searchFilter.value = searchFilter
         topicsFlow.value = listOf()
         session.value = client.startSearchSession(searchFilter)
-        fetchNextPage()
+        launchFetchNextPage()
     }
 
     private suspend fun fetchAndUpdatePage(session: SearchSession, topicsFlow: KeyedMutableListFlow<String, Topic>) {
         val nextPage = session.nextPage()
         if (!nextPage.isNullOrEmpty()) {
             topicsFlow.mutate { it + nextPage }
+        } else {
+            hasMorePages.value = false
         }
     }
 
-    fun fetchNextPage() {
+    fun launchFetchNextPage() {
         if (!isFetching.compareAndSet(expect = false, update = true)) return
         applicationScope.launch {
             try {
@@ -200,10 +205,16 @@ private fun LiveList(
                 }
                 // dummy footer. When footer gets into visible area, `LaunchedEffect` comes with its composition.
                 item("refresh footer", contentType = "refresh footer") {
+                    val hasMorePages by app.hasMorePages.collectAsState()
                     val fetching by app.isFetching.collectAsState()
-                    if (!fetching && state.reachedEnd()) {
+                    if (hasMorePages && !fetching) { // when this footer is 'seen', the list must have reached the end.
                         LaunchedEffect(true) {
-                            app.fetchNextPage()
+                            app.launchFetchNextPage()
+                        }
+                    }
+                    if (fetching) {
+                        Box(Modifier.fillMaxWidth().wrapContentHeight(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                         }
                     }
                 }
