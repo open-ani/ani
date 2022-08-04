@@ -3,21 +3,15 @@ package me.him188.animationgarden.desktop.ui
 import androidx.compose.animation.*
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,6 +21,7 @@ import me.him188.animationgarden.api.impl.model.KeyedMutableListFlowImpl
 import me.him188.animationgarden.api.impl.model.mutate
 import me.him188.animationgarden.api.model.*
 import me.him188.animationgarden.api.model.FileSize.Companion.megaBytes
+import me.him188.animationgarden.desktop.AppTheme
 import java.awt.Desktop
 import java.net.URI
 import java.time.LocalDateTime
@@ -110,7 +105,7 @@ fun MainPage(
     val (keywords, onKeywrodsChange) = remember { mutableStateOf("") }
     val (alliance, onAllianceChange) = remember { mutableStateOf("") }
 
-    Column(Modifier.background(color = MaterialTheme.colorScheme.background).padding(PaddingValues(all = 16.dp))) {
+    Column(Modifier.background(color = AppTheme.colorScheme.background).padding(PaddingValues(all = 16.dp))) {
         Row(
             Modifier
                 .padding(16.dp)
@@ -124,13 +119,13 @@ fun MainPage(
                     placeholder = {
                         Text(
                             "keywords",
-                            style = MaterialTheme.typography.bodyMedium.copy(
-                                color = MaterialTheme.typography.bodyMedium.color.copy(0.3f)
+                            style = AppTheme.typography.bodyMedium.copy(
+                                color = AppTheme.typography.bodyMedium.color.copy(0.3f)
                             )
                         )
                     },
                     singleLine = true,
-                    shape = MaterialTheme.shapes.medium,
+                    shape = AppTheme.shapes.medium,
                     maxLines = 1,
                 )
 
@@ -141,13 +136,13 @@ fun MainPage(
                     placeholder = {
                         Text(
                             "alliance",
-                            style = MaterialTheme.typography.bodyMedium.copy(
-                                color = MaterialTheme.typography.bodyMedium.color.copy(0.3f)
+                            style = AppTheme.typography.bodyMedium.copy(
+                                color = AppTheme.typography.bodyMedium.color.copy(0.3f)
                             )
                         )
                     },
                     singleLine = true,
-                    shape = MaterialTheme.shapes.medium,
+                    shape = AppTheme.shapes.medium,
                     maxLines = 1,
                 )
             }
@@ -157,9 +152,9 @@ fun MainPage(
                     app.updateSearchFilter(SearchFilter(keywords, null, null))
                 },
                 Modifier.padding(start = 16.dp),
-                shape = MaterialTheme.shapes.medium,
+                shape = AppTheme.shapes.medium,
             ) {
-                Text("Search", style = MaterialTheme.typography.bodyMedium)
+                Text("Search", style = AppTheme.typography.bodyMedium)
             }
         }
 
@@ -190,7 +185,7 @@ private fun LiveList(
             enter = fadeIn() + expandVertically(),
             exit = shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut(),
         ) {
-            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+            CircularProgressIndicator(color = AppTheme.colorScheme.primary)
         }
         AnimatedVisibility(
             !isEmpty,
@@ -214,70 +209,12 @@ private fun LiveList(
                     }
                     if (fetching) {
                         Box(Modifier.fillMaxWidth().wrapContentHeight(), contentAlignment = Alignment.Center) {
-                            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                            CircularProgressIndicator(color = AppTheme.colorScheme.primary)
                         }
                     }
                 }
             }
         }
-    }
-}
-
-@Composable
-@OptIn(ExperimentalMaterial3Api::class)
-private fun TopicItemCard(item: Topic, onClick: () -> Unit) {
-    Box(Modifier.fillMaxHeight()) {
-        OutlinedCard(
-            Modifier
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-                .shadow(elevation = 2.dp, shape = MaterialTheme.shapes.large)
-                .clip(MaterialTheme.shapes.large)
-                .clickable(
-                    remember { MutableInteractionSource() },
-                    rememberRipple(color = MaterialTheme.colorScheme.surfaceTint),
-                ) { onClick() }
-//                .border(1.dp, MaterialTheme.colorScheme.outline, shape = MaterialTheme.shapes.large)
-                .wrapContentSize(),
-            shape = MaterialTheme.shapes.large,
-        ) {
-            Box(Modifier.padding(16.dp)) {
-                Row {
-                    Column {
-                        Text(item.rawTitle, style = MaterialTheme.typography.titleMedium)
-
-                        Row(
-                            Modifier.fillMaxWidth().padding(top = 8.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Row {
-                                item.alliance?.let { alliance ->
-                                    Text(
-                                        alliance.name,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        fontWeight = FontWeight.W600
-                                    )
-                                }
-                                Text(
-                                    item.author.name,
-                                    Modifier.padding(start = 8.dp),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.W400
-                                )
-                            }
-
-                            Text(
-                                item.date.format(DATE_FORMAT),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.typography.bodyMedium.color.copy(alpha = 0.5f),
-                                modifier = Modifier.padding(start = 4.dp),
-                                fontWeight = FontWeight.W400
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
     }
 }
 

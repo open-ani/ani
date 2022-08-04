@@ -316,7 +316,7 @@ abstract class RawTitleParser {
         fun getParserFor(allianceName: String?): RawTitleParser? {
             when (allianceName) {
                 "LoliHouse",
-                "NC-RAWS",
+                "NC-Raws",
                 "Lilith-Raws",
                 "桜都字幕组",
                 "Skymoon-Raws",

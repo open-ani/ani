@@ -1,5 +1,6 @@
 package me.him188.animationgarden.desktop
 
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.remember
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
@@ -22,3 +23,5 @@ object AnimationGardenDesktop {
         }
     }
 }
+
+typealias AppTheme = MaterialTheme
