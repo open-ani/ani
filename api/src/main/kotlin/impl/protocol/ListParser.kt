@@ -69,7 +69,7 @@ internal object ListParser {
                 alliance = if (allianceId != null && allianceName != null)
                     context.alliances.getOrSet(allianceId) { Alliance(allianceId, allianceName) }
                 else null,
-                title = title.removePrefix(allianceName ?: "").trimStart(),
+                rawTitle = title.removePrefix(allianceName ?: "").trimStart(),
                 commentsCount = commentsCount?.filter { it.isDigit() }?.toIntOrNull() ?: 0,
                 magnetLink = MagnetLink(magnetLink),
                 size = createFileSize(size),

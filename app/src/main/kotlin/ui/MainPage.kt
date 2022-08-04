@@ -232,7 +232,7 @@ private fun TopicItemCard(item: Topic, onClick: () -> Unit) {
             Box(Modifier.padding(16.dp)) {
                 Row {
                     Column {
-                        Text(item.title, style = MaterialTheme.typography.titleMedium)
+                        Text(item.rawTitle, style = MaterialTheme.typography.titleMedium)
 
                         Row(
                             Modifier.fillMaxWidth().padding(top = 8.dp),

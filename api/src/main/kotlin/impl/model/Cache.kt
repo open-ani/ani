@@ -5,6 +5,8 @@ import kotlinx.coroutines.flow.StateFlow
 import me.him188.animationgarden.api.model.Alliance
 import me.him188.animationgarden.api.model.TopicCategory
 import me.him188.animationgarden.api.model.User
+import me.him188.animationgarden.api.tags.SubtitleLanguage
+import me.him188.animationgarden.api.tags.Tag
 
 internal fun interface Observer<T> {
     fun onChange(newValue: T)
@@ -26,10 +28,12 @@ internal interface MutableObservableProperty<T> : ObservableProperty<T> {
 }
 
 
-internal interface Cache {
+interface Cache {
     val users: KeyedMutableListFlow<String, User>
     val categories: KeyedMutableListFlow<String, TopicCategory>
     val alliances: KeyedMutableListFlow<String, Alliance>
+    val subtitleLanguages: KeyedMutableListFlow<String, SubtitleLanguage>
+    val tags: KeyedMutableListFlow<String, Tag>
 
     fun mergeFrom(cache: Cache)
 }
@@ -38,6 +42,8 @@ internal class CacheImpl : Cache {
     override val users: KeyedMutableListFlow<String, User> = KeyedMutableListFlowImpl { it.id }
     override val categories: KeyedMutableListFlow<String, TopicCategory> = KeyedMutableListFlowImpl { it.id }
     override val alliances: KeyedMutableListFlow<String, Alliance> = KeyedMutableListFlowImpl { it.id }
+    override val subtitleLanguages: KeyedMutableListFlow<String, SubtitleLanguage> = KeyedMutableListFlowImpl { it.id }
+    override val tags: KeyedMutableListFlow<String, Tag> = KeyedMutableListFlowImpl { it.id }
 
     override fun mergeFrom(cache: Cache) {
         users.mutate { list -> (list + cache.users).distinctBy { it.id } }
