@@ -6,3 +6,5 @@ with [Compose Desktop](https://www.jetbrains.com/lp/compose-desktop/).
 Currently working in progress.
 
 ![](.README_images/d7bd24ca.png)
+
+![animation-preview-1.png](.README_images/animation-preview-1.gif)
