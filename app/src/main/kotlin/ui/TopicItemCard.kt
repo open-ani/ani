@@ -1,6 +1,9 @@
 package me.him188.animationgarden.desktop.ui
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.desktop.ui.tooling.preview.Preview
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -8,20 +11,34 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import me.him188.animationgarden.api.model.DATE_FORMAT
 import me.him188.animationgarden.api.model.Topic
+import me.him188.animationgarden.api.model.TopicDetails
 import me.him188.animationgarden.desktop.AppTheme
+
+@Immutable
+data class Tag(
+    @Stable
+    val text: AnnotatedString,
+    @Stable
+    val backgroundColor: Color = Color.Unspecified,
+) {
+    constructor(text: String, backgroundColor: Color = Color.Unspecified) : this(AnnotatedString(text), backgroundColor)
+}
 
 @Composable
 fun TopicItemCard(topic: Topic, onClick: () -> Unit) {
@@ -43,31 +60,31 @@ fun TopicItemCard(topic: Topic, onClick: () -> Unit) {
                 Row {
                     val details = remember(topic.id) { topic.details }
                     Column {
-
                         // titles
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            val chineseTitle = details?.chineseTitle
-                            Text(
-                                chineseTitle ?: topic.rawTitle,
-                                style = AppTheme.typography.titleMedium,
-                                fontWeight = FontWeight.W600
-                            )
-
-                            val otherTitle = details?.otherTitle
-                            if (chineseTitle != null && otherTitle != null) {
-                                Text(
-                                    otherTitle,
-                                    Modifier.padding(start = 12.dp),
-                                    style = AppTheme.typography.titleMedium.run { copy(color = color.copy(alpha = 0.5f)) },
-                                    fontWeight = FontWeight.W400,
-                                )
-                            }
-                        }
+                        AnimatedTitles(details, topic)
 
                         val tags = details?.tags
-                        if (!tags.isNullOrEmpty()) {
-                            Row(Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 8.dp)) {
-                                TagsView(tags)
+                        Row(Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 8.dp)) {
+                            val list = remember(topic.id) {
+                                buildList {
+                                    Tag(
+                                        topic.size.toString(),
+                                        backgroundColor = Color.Blue
+                                    ).let { add(it) }
+
+                                    details?.resolution?.id?.let {
+                                        Tag(
+                                            it,
+                                            backgroundColor = Color.Magenta
+                                        )
+                                    }?.let { add(it) }
+
+                                    tags?.forEach { add(Tag(it)) }
+                                }
+                            }
+
+                            if (list.isNotEmpty()) {
+                                TagsView(list)
                             }
                         }
 
@@ -80,14 +97,16 @@ fun TopicItemCard(topic: Topic, onClick: () -> Unit) {
                                     Text(
                                         alliance.name,
                                         style = AppTheme.typography.bodyMedium,
-                                        fontWeight = FontWeight.W600
+                                        fontWeight = FontWeight.W600,
+                                        maxLines = 1,
                                     )
                                 }
                                 Text(
                                     topic.author.name,
                                     Modifier.padding(start = 8.dp),
                                     style = AppTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.W400
+                                    fontWeight = FontWeight.W400,
+                                    maxLines = 1,
                                 )
                             }
 
@@ -96,7 +115,8 @@ fun TopicItemCard(topic: Topic, onClick: () -> Unit) {
                                 style = AppTheme.typography.bodyMedium,
                                 color = AppTheme.typography.bodyMedium.color.copy(alpha = 0.5f),
                                 modifier = Modifier.padding(start = 4.dp),
-                                fontWeight = FontWeight.W400
+                                fontWeight = FontWeight.W400,
+                                maxLines = 1,
                             )
                         }
                     }
@@ -108,34 +128,124 @@ fun TopicItemCard(topic: Topic, onClick: () -> Unit) {
 }
 
 @Composable
-private fun TagsView(tags: List<String>) {
-    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        items(tags, { it }) {
-            TagButton({ Text(it) }, null)
+private fun ColumnScope.AnimatedTitles(
+    details: TopicDetails?,
+    topic: Topic
+) {
+    var titleTooLong by remember { mutableStateOf(false) }
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        // Chinese title overflows after only if other title overflowed.
+        Row(Modifier.width(IntrinsicSize.Max)) {
+            val chineseTitle = details?.chineseTitle
+            Text(
+                chineseTitle ?: topic.rawTitle,
+                style = AppTheme.typography.titleMedium,
+                fontWeight = FontWeight.W600,
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Ellipsis,
+            )
+
+            details?.episode?.let { episode ->
+                Text(
+                    episode.raw,
+                    Modifier.padding(start = 8.dp).requiredWidth(IntrinsicSize.Max), // always show episode
+                    style = AppTheme.typography.titleMedium,
+                    fontWeight = FontWeight.W600,
+                    maxLines = 1,
+                    overflow = TextOverflow.Clip
+                )
+            }
+        }
+
+        // other language title
+        val otherTitle = details?.otherTitle
+        if (details?.chineseTitle != null && otherTitle != null) {
+            // gradually hide this title if titles are too long
+            val alpha by animateFloatAsState(if (titleTooLong) 0f else 1f)
+            Subtitle(
+                otherTitle,
+                onOverflowChange = {
+                    titleTooLong = it
+                },
+                Modifier
+                    .padding(start = 12.dp)
+                    .alpha(alpha)
+            )
+        }
+    }
+
+    // show other language's title in separate line if titles are too long
+    val otherTitle = details?.otherTitle
+    if (details?.chineseTitle != null && otherTitle != null) {
+        AnimatedVisibility(titleTooLong) {
+            Row {
+                Subtitle(otherTitle, onOverflowChange = {})
+            }
         }
     }
 }
 
 @Composable
-private fun TagButton(text: @Composable () -> Unit, onClick: (() -> Unit)?, modifier: Modifier = Modifier) {
+private fun Subtitle(text: String, onOverflowChange: ((Boolean) -> Unit)?, modifier: Modifier = Modifier) {
+    val onOverflowChangeState by rememberUpdatedState(onOverflowChange)
+    Text(
+        text,
+        modifier,
+        style = AppTheme.typography.titleMedium.run { copy(color = color.copy(alpha = 0.5f)) },
+        fontWeight = FontWeight.W400,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+        onTextLayout = {
+            onOverflowChangeState?.invoke(it.hasVisualOverflow)
+        }
+    )
+}
+
+@Composable
+private fun TagsView(tags: List<Tag>) {
+    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        items(tags, { it }) {
+            TagButton({ Text(it.text) }, null, it.backgroundColor)
+        }
+    }
+}
+
+@Composable
+private fun TagButton(
+    text: @Composable () -> Unit,
+    onClick: (() -> Unit)?,
+    containerColorEffect: Color,
+    modifier: Modifier = Modifier
+) {
     val onClickState by rememberUpdatedState(onClick)
     val elevation = ButtonDefaults.buttonElevation()
     val interactionSource = remember { MutableInteractionSource() }
     val shadowElevation by elevation.shadowElevation(true, interactionSource)
-    val containerColor = AppTheme.colorScheme.surfaceColorAtElevation(shadowElevation)
+    val defaultContainerColor = AppTheme.colorScheme.surfaceColorAtElevation(shadowElevation)
+    val containerColor = if (containerColorEffect == Color.Unspecified) {
+        defaultContainerColor
+    } else {
+        containerColorEffect.compositeOver(defaultContainerColor.copy(alpha = 0.5f))
+    }
+    val shape = AppTheme.shapes.small
     ElevatedButton(
         onClick = { onClickState?.invoke() },
         enabled = onClick != null,
-        shape = AppTheme.shapes.small,
+        shape = shape,
         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
-        modifier = modifier.height(24.dp).wrapContentWidth(),
-        colors = ButtonDefaults.elevatedButtonColors(),
+        modifier = modifier.shadow(1.dp, shape = shape).height(24.dp).wrapContentWidth(),
+        colors = ButtonDefaults.elevatedButtonColors(
+            containerColor,
+            disabledContainerColor = containerColor
+        ),
         elevation = elevation,
         interactionSource = interactionSource,
+        border = BorderStroke(1.dp, if (containerColorEffect == Color.Unspecified) Color.Gray else containerColor),
     ) {
         ProvideTextStyle(
             AppTheme.typography.bodySmall.copy(
-                color = AppTheme.colorScheme.contentColorFor(containerColor),
+                color = containerColor.contrastTextColor(),
                 lineHeight = 16.sp,
             )
         ) {
@@ -144,16 +254,20 @@ private fun TagButton(text: @Composable () -> Unit, onClick: (() -> Unit)?, modi
     }
 }
 
+@Stable
+fun Color.contrastTextColor(): Color =
+    if (luminance() > 0.5) Color.Black else Color.White
+
 
 @Composable
 @Preview
 private fun PreviewTags() {
     Column(verticalArrangement = Arrangement.spacedBy(32.dp)) {
-        TagButton({ Text("HEVC-10bit") }, null)
+        TagButton({ Text("HEVC-10bit") }, null, containerColorEffect = Color.Unspecified)
         //     TagsView(listOf("HEVC-10bit", "AAC"))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             for (s in listOf("HEVC-10bit", "AAC")) {
-                TagButton({ Text(s) }, null)
+                TagButton({ Text(s) }, null, containerColorEffect = Color.Unspecified)
             }
         }
     }

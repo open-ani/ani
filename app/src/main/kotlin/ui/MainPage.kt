@@ -1,18 +1,33 @@
 package me.him188.animationgarden.desktop.ui
 
 import androidx.compose.animation.*
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.desktop.ui.tooling.preview.Preview
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import me.him188.animationgarden.api.AnimationGardenClient
@@ -78,6 +93,7 @@ class ApplicationState(
     private suspend fun fetchAndUpdatePage(session: SearchSession, topicsFlow: KeyedMutableListFlow<String, Topic>) {
         val nextPage = session.nextPage()
         if (!nextPage.isNullOrEmpty()) {
+            nextPage.forEach { it.details } // init
             topicsFlow.mutate { it + nextPage }
         } else {
             hasMorePages.value = false
@@ -96,16 +112,24 @@ class ApplicationState(
     }
 }
 
+
+inline fun doSearch(app: ApplicationState, keywords: String) {
+    app.updateSearchFilter(SearchFilter(keywords, null, null))
+}
+
 @Composable
 fun MainPage(
     app: ApplicationState
 ) {
+    val appState by rememberUpdatedState(app)
     val topics by remember { app.topicsFlow.asFlow() }.collectAsState()
 
     val (keywords, onKeywrodsChange) = remember { mutableStateOf("") }
     val (alliance, onAllianceChange) = remember { mutableStateOf("") }
 
-    Column(Modifier.background(color = AppTheme.colorScheme.background).padding(PaddingValues(all = 16.dp))) {
+
+    val backgroundColor = AppTheme.colorScheme.background
+    Column(Modifier.background(color = backgroundColor).padding(PaddingValues(all = 16.dp))) {
         Row(
             Modifier
                 .padding(16.dp)
@@ -115,12 +139,19 @@ fun MainPage(
                 OutlinedTextField(
                     keywords,
                     onKeywrodsChange,
-                    Modifier.height(48.dp),
+                    Modifier.height(48.dp).defaultMinSize(minWidth = 96.dp).weight(0.8f)
+                        .onKeyEvent {
+                            if (it.key == Key.Enter || it.key == Key.NumPadEnter) {
+                                doSearch(appState, keywords)
+                                true
+                            } else false
+                        },
                     placeholder = {
                         Text(
                             "keywords",
                             style = AppTheme.typography.bodyMedium.copy(
-                                color = AppTheme.typography.bodyMedium.color.copy(0.3f)
+                                color = AppTheme.typography.bodyMedium.color.copy(0.3f),
+                                lineHeight = 16.sp
                             )
                         )
                     },
@@ -128,33 +159,23 @@ fun MainPage(
                     shape = AppTheme.shapes.medium,
                     maxLines = 1,
                 )
-
-                OutlinedTextField(
-                    alliance,
-                    onAllianceChange,
-                    Modifier.padding(start = 16.dp).height(48.dp),
-                    placeholder = {
-                        Text(
-                            "alliance",
-                            style = AppTheme.typography.bodyMedium.copy(
-                                color = AppTheme.typography.bodyMedium.color.copy(0.3f)
-                            )
-                        )
-                    },
-                    singleLine = true,
-                    shape = AppTheme.shapes.medium,
-                    maxLines = 1,
-                )
-            }
-
-            Button(
-                onClick = {
-                    app.updateSearchFilter(SearchFilter(keywords, null, null))
-                },
-                Modifier.padding(start = 16.dp),
-                shape = AppTheme.shapes.medium,
-            ) {
-                Text("Search", style = AppTheme.typography.bodyMedium)
+//                OutlinedTextField(
+//                    alliance,
+//                    onAllianceChange,
+//                    Modifier.padding(start = 16.dp).height(48.dp),
+//                    placeholder = {
+//                        Text(
+//                            "alliance",
+//                            style = AppTheme.typography.bodyMedium.copy(
+//                                color = AppTheme.typography.bodyMedium.color.copy(0.3f)
+//                            )
+//                        )
+//                    },
+//                    singleLine = true,
+//                    shape = AppTheme.shapes.medium,
+//                    maxLines = 1,
+//                )
+                AnimatedSearchButton(appState, keywords)
             }
         }
 
@@ -168,6 +189,76 @@ fun MainPage(
             },
             Modifier.padding(top = 16.dp)
         )
+    }
+}
+
+@Composable
+private fun AnimatedSearchButton(appState: ApplicationState, keywords: String) {
+    BoxWithConstraints(
+        Modifier.wrapContentWidth(),
+        contentAlignment = Alignment.Center
+    ) {
+        val showBigButton = maxWidth > 512.dp
+        val enter = scaleIn() + fadeIn()
+        val exit = scaleOut() + fadeOut()
+        val smallButtonWidth = 48.dp + 8.dp
+        val bigButtonWidth = 144.dp
+        val boxWidth by animateDpAsState(if (showBigButton) bigButtonWidth else smallButtonWidth)
+        Box(Modifier.width(boxWidth)) {
+            AnimatedVisibility(
+                showBigButton,
+                enter = enter,
+                exit = exit,
+                label = "Big Search Button"
+            ) {
+                Button(
+                    onClick = {
+                        doSearch(appState, keywords)
+                    },
+                    Modifier
+                        .width(bigButtonWidth)
+                        .padding(start = 16.dp)
+                        .height(48.dp),
+                    shape = AppTheme.shapes.medium,
+                ) {
+                    Image(
+                        painterResource("drawable/magnify.svg"),
+                        "Search",
+                        Modifier.size(24.dp),
+                        colorFilter = ColorFilter.tint(color = Color.White) // TODO: 2022/8/6 adjust color
+                    )
+                    Text("Search", Modifier.padding(start = 4.dp), style = AppTheme.typography.bodyMedium)
+                }
+            }
+            AnimatedVisibility(
+                !showBigButton,
+                enter = enter,
+                exit = exit,
+                label = "Small Search Button"
+            ) {
+                Box(
+                    Modifier.width(smallButtonWidth).padding(start = 8.dp).size(48.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Box(
+                        Modifier
+                            .size(36.dp)
+                            .border(1.dp, color = Color.Gray, shape = CircleShape)
+                            .clip(CircleShape)
+                            .clickable(
+                                remember { MutableInteractionSource() },
+                                rememberRipple(),
+                                onClick = {
+                                    doSearch(appState, keywords)
+                                }),
+
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(painterResource("drawable/magnify.svg"), "Search", Modifier.size(24.dp))
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -195,7 +286,7 @@ private fun LiveList(
         ) {
             val state = rememberLazyListState()
             LazyColumn(state = state, modifier = modifier) {
-                items(topics, { it.id }) { topic ->
+                items(topics, { it.id }, { it.details?.tags?.isNotEmpty() }) { topic ->
                     TopicItemCard(topic) { onClickCard(topic) }
                 }
                 // dummy footer. When footer gets into visible area, `LaunchedEffect` comes with its composition.
