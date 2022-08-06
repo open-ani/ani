@@ -147,7 +147,7 @@ data class FrameRate(
     }
 }
 
-class RawTitleParserA : RawTitleParser() {
+class RawTitleParserImpl : RawTitleParser() {
     override fun parse(
         text: String,
         allianceName: String?,
@@ -162,6 +162,7 @@ class RawTitleParserA : RawTitleParser() {
     ) {
         val exceptTagsBuilder = StringBuilder()
         var index = 0
+        var unknownTags = mutableListOf<String>()
         for (result in brackets.findAll(text)) {
             if (index < result.range.first) {
                 exceptTagsBuilder.append(text.subSequence(index until result.range.first))
@@ -169,24 +170,71 @@ class RawTitleParserA : RawTitleParser() {
             index = result.range.last + 1
 
             val tagOrTags = result.groups[1]!!.value // can be "WebRip 1080p HEVC-10bit AAC" or "简繁内封字幕"
-            for (tag in tagOrTags.splitToSequence(' ')) {
-                processTag(
-                    allianceName = allianceName,
+            for (tag in splitTags(tagOrTags)) {
+                val anyMatched = processTag(
                     tag = tag,
                     collectSubtitleLanguage = collectSubtitleLanguage,
                     collectResolution = collectResolution,
                     collectFrameRate = collectFrameRate,
                     collectMediaOrigin = collectMediaOrigin,
                     collectEpisode = collectEpisode,
-                    collectTag = collectTag
                 )
+
+                if (!anyMatched) {
+                    unknownTags.add(tag)
+                }
             }
         }
         if (index < text.length) {
             exceptTagsBuilder.append(text.subSequence(index until text.length))
         }
+        unknownTags = unknownTags.filterNotTo(mutableListOf()) { tag -> excludeTags.any { it.find(tag) != null } }
+        unknownTags.removeFirstOrNull() // 字幕组名称
+
+        // special cases
+        // ★7月新番 【新网球王子 U-17世界杯】【The Prince of Tennis II - U-17 World Cup】【02v2】GB MP4_1080P
+        // [Amor字幕组][组长女儿与照料专员(组长女儿与保姆)/Kumichou Musume to Sewagakari][02][1080P][CHS_JP][WEB-DL][MP4]
 
         val exceptTags = exceptTagsBuilder.toString()
+            .replace(newAnime) { "" }
+            .replace(specialEpisode) { "" }
+        if (exceptTags.isBlank() || allianceName == "极影字幕社") {
+            // B 类
+            val primaryTitles = unknownTags.removeFirstOrNull()
+                ?: return // may contain multiple languages separated by '/' or other delimiters
+            var collectedOtherTitle = false
+            while (unknownTags.isNotEmpty()) {
+                val name = unknownTags.removeFirst()
+                if (name.count { it == ' ' } > 2) {
+                    collectOtherTitle(name)
+                    collectedOtherTitle = true
+                } else {
+                    break
+                }
+            }
+
+            if (collectedOtherTitle) {
+                // 诸神kamigami字幕组 [诸神字幕组][夏日重现][Summer Time Rendering][16][简繁日语字幕][1080P][MKV HEVC] 約2條評論
+                collectChineseTitle(primaryTitles)
+            } else {
+                parseNames(primaryTitles, collectChineseTitle, collectOtherTitle)
+            }
+
+            for (unknownTag in unknownTags) {
+                collectTag(unknownTag)
+            }
+        } else {
+            // A 类
+            for (unknownTag in unknownTags) {
+                collectTag(unknownTag)
+            }
+
+            exceptTags.substringAfterLast('-', "").takeIf { it.isNotBlank() }?.trim()?.let {
+                collectEpisode(Episode(it))
+            }
+
+            parseNames(exceptTags, collectChineseTitle, collectOtherTitle)
+        }
 
         // A 类动画 标题在标签之外
         // ANi [ANi] 杜鵑婚約 [特別篇] - 14 [1080P][Baha][WEB-DL][AAC AVC][CHT][MP4]
@@ -324,28 +372,35 @@ class RawTitleParserA : RawTitleParser() {
         // 注意 SW字幕组 有两种
         // SW字幕组 [SWSUB][7月新番][继母的拖油瓶是我的前女友\継母の連れ子が元カノだった][004][GB_JP][AVC][1080P][网盘][无修正] 約1條評論
         // 银色子弹字幕组 [银色子弹字幕组][名侦探柯南][第1052集 少年侦探团的试胆冒险][简繁日多语MKV][1080P] 約4條評論
+    }
 
-        exceptTags.substringAfterLast('-', "").takeIf { it.isNotBlank() }?.trim()?.let {
-            collectEpisode(Episode(it))
+    private fun splitTags(tagOrTags: String): Sequence<String> {
+        return sequenceOf(tagOrTags)
+        if (tagOrTags.count { it == ' ' } > 2) {
+            // more possibly be a name
+            return sequenceOf(tagOrTags)
         }
+        return tagOrTags.splitToSequence(' ')
+    }
 
-        val names = exceptTags.substringBeforeLast('-')
-        names.substringBefore('/').trim().let(collectChineseTitle)
-        names.substringAfter('/').trim().let(collectOtherTitle)
+    private fun parseNames(
+        string: String,
+        collectChineseTitle: (String) -> Unit,
+        collectOtherTitle: (String) -> Unit
+    ) {
+        val names = string.substringBeforeLast('-').split('/', '\\', '-', '_')
+        names.firstOrNull()?.let(collectChineseTitle)
+        names.asSequence().drop(1).forEach(collectOtherTitle)
     }
 
     private fun processTag(
-        allianceName: String?,
         tag: String,
         collectSubtitleLanguage: (SubtitleLanguage) -> Unit,
         collectResolution: (Resolution) -> Unit,
         collectFrameRate: (FrameRate) -> Unit,
         collectMediaOrigin: (MediaOrigin) -> Unit,
         collectEpisode: (Episode) -> Unit,
-        collectTag: (name: String) -> Unit,
-    ) {
-        if (allianceName != null && tag.contains(allianceName)) return
-
+    ): Boolean {
         var anyMatched = false
         anyMatched = anyMatched or tag.parseSubtitleLanguages(collectSubtitleLanguage)
         anyMatched = anyMatched or tag.parseResolution(collectResolution)
@@ -353,9 +408,7 @@ class RawTitleParserA : RawTitleParser() {
         anyMatched = anyMatched or tag.parseMediaOrigin(collectMediaOrigin)
         anyMatched = anyMatched or tag.parseEpisode(collectEpisode)
 
-        if (!anyMatched) {
-            collectTag(tag)
-        }
+        return anyMatched
     }
 }
 
@@ -364,7 +417,7 @@ fun RawTitleParser.parse(text: String, allianceName: String?, builder: TopicDeta
         text, allianceName,
         collectTag = { builder.tags.add(it) },
         collectChineseTitle = { builder.chineseTitle = it },
-        collectOtherTitle = { builder.otherTitle = it },
+        collectOtherTitle = { builder.otherTitles.add(it) },
         collectEpisode = { builder.episode = it },
         collectResolution = { builder.resolution = it },
         collectFrameRate = { builder.frameRate = it },
@@ -380,6 +433,10 @@ abstract class RawTitleParser {
     // [喵萌奶茶屋&LoliHouse] 继母的拖油瓶是我的前女友 / Mamahaha no Tsurego ga Motokano datta - 04 [WebRip 1080p HEVC-10bit AAC][简繁内封字幕]
 
     protected val brackets = Regex("""[\[【(](.*?)[]】)]""")
+    protected val newAnime = Regex("(?:★?|★(.*)?)([0-9]|[一二三四五六七八九十]{0,4}) ?[月年] ?(?:新番|日剧)★?")
+    protected val specialEpisode = Regex("★特别篇") // 风之圣殿
+    protected val excludeTags = arrayOf(newAnime, specialEpisode, Regex("(短篇动画)|(招募)"))
+
 
     abstract fun parse(
         text: String,
@@ -431,22 +488,23 @@ abstract class RawTitleParser {
 
 
     companion object {
-        fun getParserFor(allianceName: String?): RawTitleParser? {
-            when (allianceName) {
-                "LoliHouse",
-                "NC-Raws",
-                "Lilith-Raws",
-                "桜都字幕组",
-                "Skymoon-Raws",
-                "天月動漫&發佈組",
-                "天月搬運組",
-                -> {
-                    return RawTitleParserA()
-                }
-
-                else -> {}
-            }
-            return null
+        fun getParserFor(): RawTitleParser {
+            return RawTitleParserImpl()
+//            when (allianceName) {
+//                "LoliHouse",
+//                "NC-Raws",
+//                "Lilith-Raws",
+//                "桜都字幕组",
+//                "Skymoon-Raws",
+//                "天月動漫&發佈組",
+//                "天月搬運組",
+//                -> {
+//                    return RawTitleParserA()
+//                }
+//
+//                else -> {}
+//            }
+//            return null
         }
     }
 }

@@ -8,7 +8,7 @@ import java.time.format.DateTimeFormatter
 data class TopicDetails(
     val tags: List<String> = listOf(),
     val chineseTitle: String? = null,
-    val otherTitle: String? = null,
+    val otherTitles: MutableList<String> = mutableListOf(),
     val episode: Episode? = null,
     val resolution: Resolution? = null,
     val frameRate: FrameRate? = null,
@@ -18,7 +18,7 @@ data class TopicDetails(
     class Builder {
         var tags = mutableListOf<String>()
         var chineseTitle: String? = null
-        var otherTitle: String? = null
+        var otherTitles = mutableListOf<String>()
         var episode: Episode? = null
         var resolution: Resolution? = null
         var frameRate: FrameRate? = null
@@ -29,7 +29,7 @@ data class TopicDetails(
             return TopicDetails(
                 tags = tags,
                 chineseTitle = chineseTitle,
-                otherTitle = otherTitle,
+                otherTitles = otherTitles,
                 episode = episode,
                 resolution = resolution,
                 frameRate = frameRate,
@@ -53,7 +53,7 @@ class Topic(
 ) {
     val details: TopicDetails? by lazy {
         val builder = TopicDetails.Builder()
-        RawTitleParser.getParserFor(alliance?.name)?.parse(rawTitle, alliance?.name, builder)
+        RawTitleParser.getParserFor()?.parse(rawTitle, alliance?.name, builder)
         builder.build()
     }
 

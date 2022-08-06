@@ -2,7 +2,7 @@ package me.him188.animationgarden.api.impl.tags
 
 import me.him188.animationgarden.api.impl.AbstractTest
 import me.him188.animationgarden.api.model.TopicDetails
-import me.him188.animationgarden.api.tags.RawTitleParserA
+import me.him188.animationgarden.api.tags.RawTitleParserImpl
 import me.him188.animationgarden.api.tags.parse
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
@@ -29,7 +29,7 @@ internal class RawTitleParserTest : AbstractTest() {
 
     @TestFactory
     fun testParserA(): List<DynamicTest> {
-        val parser = RawTitleParserA()
+        val parser = RawTitleParserImpl()
         return dataA.map { data ->
             val allianceName = data.substringBefore(' ').trim()
             DynamicTest.dynamicTest(allianceName) {

@@ -133,6 +133,7 @@ private fun ColumnScope.AnimatedTitles(
     topic: Topic
 ) {
     var titleTooLong by remember { mutableStateOf(false) }
+    val otherTitles = remember(details?.otherTitles) { details?.otherTitles?.joinToString(" / ") }
     Row(verticalAlignment = Alignment.CenterVertically) {
         // Chinese title overflows after only if other title overflowed.
         Row(Modifier.width(IntrinsicSize.Max)) {
@@ -159,12 +160,12 @@ private fun ColumnScope.AnimatedTitles(
         }
 
         // other language title
-        val otherTitle = details?.otherTitle
-        if (details?.chineseTitle != null && otherTitle != null) {
+        if (details?.chineseTitle != null && otherTitles != null) {
             // gradually hide this title if titles are too long
             val alpha by animateFloatAsState(if (titleTooLong) 0f else 1f)
+
             Subtitle(
-                otherTitle,
+                otherTitles,
                 onOverflowChange = {
                     titleTooLong = it
                 },
@@ -176,11 +177,10 @@ private fun ColumnScope.AnimatedTitles(
     }
 
     // show other language's title in separate line if titles are too long
-    val otherTitle = details?.otherTitle
-    if (details?.chineseTitle != null && otherTitle != null) {
+    if (details?.chineseTitle != null && otherTitles != null) {
         AnimatedVisibility(titleTooLong) {
             Row {
-                Subtitle(otherTitle, onOverflowChange = {})
+                Subtitle(otherTitles, onOverflowChange = {})
             }
         }
     }
