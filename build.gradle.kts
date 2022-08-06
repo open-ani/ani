@@ -1,5 +1,7 @@
 @file:Suppress("OPT_IN_IS_NOT_ENABLED")
 
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
+
 buildscript {
     dependencies {
         classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:0.17.3")
@@ -19,5 +21,9 @@ allprojects {
         google()
         mavenCentral()
         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+    }
+
+    tasks.withType(KotlinJvmCompile::class) {
+        kotlinOptions.jvmTarget = "11"
     }
 }

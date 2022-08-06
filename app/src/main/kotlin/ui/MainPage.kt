@@ -13,7 +13,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -37,6 +36,7 @@ import me.him188.animationgarden.api.impl.model.mutate
 import me.him188.animationgarden.api.model.*
 import me.him188.animationgarden.api.model.FileSize.Companion.megaBytes
 import me.him188.animationgarden.desktop.AppTheme
+import me.him188.animationgarden.desktop.i18n.LocalI18n
 import java.awt.Desktop
 import java.net.URI
 import java.time.LocalDateTime
@@ -223,11 +223,15 @@ private fun AnimatedSearchButton(appState: ApplicationState, keywords: String) {
                 ) {
                     Image(
                         painterResource("drawable/magnify.svg"),
-                        "Search",
+                        LocalI18n.current.getString("main.search"),
                         Modifier.size(24.dp),
                         colorFilter = ColorFilter.tint(color = Color.White) // TODO: 2022/8/6 adjust color
                     )
-                    Text("Search", Modifier.padding(start = 4.dp), style = AppTheme.typography.bodyMedium)
+                    Text(
+                        LocalI18n.current.getString("main.search"),
+                        Modifier.padding(start = 4.dp),
+                        style = AppTheme.typography.bodyMedium
+                    )
                 }
             }
             AnimatedVisibility(
@@ -237,24 +241,36 @@ private fun AnimatedSearchButton(appState: ApplicationState, keywords: String) {
                 label = "Small Search Button"
             ) {
                 Box(
-                    Modifier.width(smallButtonWidth).padding(start = 8.dp).size(48.dp),
+                    Modifier.width(smallButtonWidth)
+                        .padding(start = 8.dp)
+                        .size(48.dp),
                     contentAlignment = Alignment.Center
                 ) {
+                    val shape = AppTheme.shapes.small
                     Box(
                         Modifier
-                            .size(36.dp)
-                            .border(1.dp, color = Color.Gray, shape = CircleShape)
-                            .clip(CircleShape)
+                            .size(48.dp)
+                            .border(1.dp, color = Color.Gray, shape = shape)
+                            .clip(shape)
+                            .background(color = AppTheme.colorScheme.primary)
                             .clickable(
                                 remember { MutableInteractionSource() },
                                 rememberRipple(),
                                 onClick = {
                                     doSearch(appState, keywords)
-                                }),
+                                }
+                            ),
 
                         contentAlignment = Alignment.Center
                     ) {
-                        Image(painterResource("drawable/magnify.svg"), "Search", Modifier.size(24.dp))
+                        Image(
+                            painterResource("drawable/magnify.svg"),
+                            LocalI18n.current.getString("main.search"),
+                            Modifier.size(24.dp),
+                            colorFilter = ColorFilter.tint(
+                                Color.White
+                            )
+                        )
                     }
                 }
             }
