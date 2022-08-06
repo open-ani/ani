@@ -209,6 +209,7 @@ class RawTitleParserImpl : RawTitleParser() {
                     collectOtherTitle(name)
                     collectedOtherTitle = true
                 } else {
+                    unknownTags.add(0, name)
                     break
                 }
             }
