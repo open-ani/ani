@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import me.him188.animationgarden.api.model.DATE_FORMAT
 import me.him188.animationgarden.api.model.Topic
-import me.him188.animationgarden.api.model.TopicDetails
+import me.him188.animationgarden.api.tags.Episode
 import me.him188.animationgarden.desktop.AppTheme
 
 @Immutable
@@ -42,26 +42,33 @@ data class Tag(
 
 @Composable
 fun TopicItemCard(topic: Topic, onClick: () -> Unit) {
+    val topicState by rememberUpdatedState(topic)
     Box(Modifier.fillMaxHeight()) {
+        val shape = AppTheme.shapes.large
         OutlinedCard(
             Modifier
                 .padding(horizontal = 16.dp, vertical = 8.dp)
-                .shadow(elevation = 2.dp, shape = AppTheme.shapes.large)
-                .clip(AppTheme.shapes.large)
+                .shadow(elevation = 2.dp, shape = shape)
+                .clip(shape)
                 .clickable(
                     remember { MutableInteractionSource() },
                     rememberRipple(color = AppTheme.colorScheme.surfaceTint),
                 ) { onClick() }
 //                .border(1.dp, AppTheme.colorScheme.outline, shape = AppTheme.shapes.large)
                 .wrapContentSize(),
-            shape = AppTheme.shapes.large,
+            shape = shape,
         ) {
             Box(Modifier.padding(16.dp)) {
                 Row {
                     val details = remember(topic.id) { topic.details }
                     Column {
                         // titles
-                        AnimatedTitles(details, topic)
+                        AnimatedTitles(
+                            chineseTitle = details?.chineseTitle,
+                            otherTitles = details?.otherTitles,
+                            episode = details?.episode,
+                            rawTitle = { topicState.rawTitle }
+                        )
 
                         val tags = details?.tags
                         Row(Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 8.dp)) {
@@ -128,18 +135,20 @@ fun TopicItemCard(topic: Topic, onClick: () -> Unit) {
 }
 
 @Composable
-private fun ColumnScope.AnimatedTitles(
-    details: TopicDetails?,
-    topic: Topic
+fun ColumnScope.AnimatedTitles(
+    chineseTitle: String?,
+    otherTitles: List<String>?,
+    episode: Episode?,
+    rawTitle: @Composable () -> String
 ) {
     var titleTooLong by remember { mutableStateOf(false) }
-    val otherTitles = remember(details?.otherTitles) { details?.otherTitles?.joinToString(" / ") }
+    val otherTitlesState by rememberUpdatedState(otherTitles)
+    val otherTitlesRendered by remember { derivedStateOf { otherTitlesState?.joinToString(" / ") } }
     Row(verticalAlignment = Alignment.CenterVertically) {
         // Chinese title overflows after only if other title overflowed.
         Row(Modifier.width(IntrinsicSize.Max)) {
-            val chineseTitle = details?.chineseTitle
             Text(
-                chineseTitle ?: topic.rawTitle,
+                chineseTitle ?: rawTitle(),
                 style = AppTheme.typography.titleMedium,
                 fontWeight = FontWeight.W600,
                 maxLines = 1,
@@ -147,7 +156,7 @@ private fun ColumnScope.AnimatedTitles(
                 overflow = TextOverflow.Ellipsis,
             )
 
-            details?.episode?.let { episode ->
+            episode?.let { episode ->
                 Text(
                     episode.raw,
                     Modifier.padding(start = 8.dp).requiredWidth(IntrinsicSize.Max), // always show episode
@@ -160,27 +169,31 @@ private fun ColumnScope.AnimatedTitles(
         }
 
         // other language title
-        if (details?.chineseTitle != null && otherTitles != null) {
-            // gradually hide this title if titles are too long
-            val alpha by animateFloatAsState(if (titleTooLong) 0f else 1f)
+        if (chineseTitle != null) {
+            otherTitlesRendered?.let { text ->
+                // gradually hide this title if titles are too long
+                val alpha by animateFloatAsState(if (titleTooLong) 0f else 1f)
 
-            Subtitle(
-                otherTitles,
-                onOverflowChange = {
-                    titleTooLong = it
-                },
-                Modifier
-                    .padding(start = 12.dp)
-                    .alpha(alpha)
-            )
+                Subtitle(
+                    text,
+                    onOverflowChange = {
+                        titleTooLong = it
+                    },
+                    Modifier
+                        .padding(start = 12.dp)
+                        .alpha(alpha)
+                )
+            }
         }
     }
 
     // show other language's title in separate line if titles are too long
-    if (details?.chineseTitle != null && otherTitles != null) {
-        AnimatedVisibility(titleTooLong) {
-            Row {
-                Subtitle(otherTitles, onOverflowChange = {})
+    if (chineseTitle != null) {
+        otherTitlesRendered?.let { text ->
+            AnimatedVisibility(titleTooLong) {
+                Row {
+                    Subtitle(text, onOverflowChange = {})
+                }
             }
         }
     }
@@ -197,7 +210,7 @@ private fun Subtitle(text: String, onOverflowChange: ((Boolean) -> Unit)?, modif
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
         onTextLayout = {
-            onOverflowChangeState?.invoke(it.hasVisualOverflow)
+            onOverflowChangeState?.invoke(it.didOverflowWidth)
         }
     )
 }

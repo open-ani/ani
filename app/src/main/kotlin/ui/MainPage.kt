@@ -10,7 +10,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.ripple.rememberRipple
@@ -112,9 +111,8 @@ class ApplicationState(
     }
 }
 
-
-inline fun doSearch(app: ApplicationState, keywords: String) {
-    app.updateSearchFilter(SearchFilter(keywords, null, null))
+fun ApplicationState.doSearch(keywords: String) {
+    updateSearchFilter(SearchFilter(keywords, null, null))
 }
 
 @Composable
@@ -124,9 +122,15 @@ fun MainPage(
     val appState by rememberUpdatedState(app)
     val topics by remember { app.topicsFlow.asFlow() }.collectAsState()
 
-    val (keywords, onKeywrodsChange) = remember { mutableStateOf("") }
-    val (alliance, onAllianceChange) = remember { mutableStateOf("") }
-
+    val appliedKeywordState = remember { mutableStateOf("") }
+    var appliedKeyword by appliedKeywordState
+    val workState by remember {
+        derivedStateOf {
+            WorkState().apply {
+                setTopics(topics)
+            }
+        }
+    }
 
     val backgroundColor = AppTheme.colorScheme.background
     Column(Modifier.background(color = backgroundColor).padding(PaddingValues(all = 16.dp))) {
@@ -136,13 +140,15 @@ fun MainPage(
                 .fillMaxWidth()
         ) {
             Row {
+                val (keywordsInput, onKeywordsInputChange) = remember { mutableStateOf(appliedKeyword) }
                 OutlinedTextField(
-                    keywords,
-                    onKeywrodsChange,
+                    keywordsInput,
+                    onKeywordsInputChange,
                     Modifier.height(48.dp).defaultMinSize(minWidth = 96.dp).weight(0.8f)
                         .onKeyEvent {
                             if (it.key == Key.Enter || it.key == Key.NumPadEnter) {
-                                doSearch(appState, keywords)
+                                appliedKeyword = keywordsInput
+                                appState.doSearch(appliedKeyword)
                                 true
                             } else false
                         },
@@ -175,12 +181,17 @@ fun MainPage(
 //                    shape = AppTheme.shapes.medium,
 //                    maxLines = 1,
 //                )
-                AnimatedSearchButton(appState, keywords)
+                AnimatedSearchButton {
+                    appliedKeyword = keywordsInput
+                    appState.doSearch(appliedKeyword)
+                }
             }
         }
 
         LiveList(
             app,
+            workState,
+            { workState.matchesQuery(it) },
             topics,
             onClickCard = {
                 app.applicationScope.launch(Dispatchers.IO) {
@@ -193,7 +204,8 @@ fun MainPage(
 }
 
 @Composable
-private fun AnimatedSearchButton(appState: ApplicationState, keywords: String) {
+private fun AnimatedSearchButton(onClick: () -> Unit) {
+
     BoxWithConstraints(
         Modifier.wrapContentWidth(),
         contentAlignment = Alignment.Center
@@ -212,9 +224,7 @@ private fun AnimatedSearchButton(appState: ApplicationState, keywords: String) {
                 label = "Big Search Button"
             ) {
                 Button(
-                    onClick = {
-                        doSearch(appState, keywords)
-                    },
+                    onClick = onClick,
                     Modifier
                         .width(bigButtonWidth)
                         .padding(start = 16.dp)
@@ -256,9 +266,7 @@ private fun AnimatedSearchButton(appState: ApplicationState, keywords: String) {
                             .clickable(
                                 remember { MutableInteractionSource() },
                                 rememberRipple(),
-                                onClick = {
-                                    doSearch(appState, keywords)
-                                }
+                                onClick = onClick
                             ),
 
                         contentAlignment = Alignment.Center
@@ -281,10 +289,13 @@ private fun AnimatedSearchButton(appState: ApplicationState, keywords: String) {
 @Composable
 private fun LiveList(
     app: ApplicationState,
+    workState: WorkState,
+    isVisible: @Composable (Topic) -> Boolean,
     topics: List<Topic>,
     onClickCard: (topic: Topic) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val currentOnClickCard by rememberUpdatedState(onClickCard)
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         val isEmpty = topics.isEmpty()
         AnimatedVisibility(
@@ -302,8 +313,31 @@ private fun LiveList(
         ) {
             val state = rememberLazyListState()
             LazyColumn(state = state, modifier = modifier) {
+                item("organized", "organized") {
+                    AnimatedVisibility(
+                        topics.isNotEmpty(),
+                        enter = expandVertically(expandFrom = Alignment.Top) + fadeIn(),
+                        exit = shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut(),
+                    ) {
+                        OrganizedWorkView(
+                            workState = workState, // TODO: 2022/8/7 state
+                            onClickAlliance = { workState.selectedAlliance.updateSelected(it) },
+                            onClickEpisode = { workState.selectedEpisode.updateSelected(it) },
+                            onClickResolution = { workState.selectedResolution.updateSelected(it) },
+                            onClickSubtitleLanguage = { workState.selectedSubtitleLanguage.updateSelected(it) }
+                        )
+                    }
+                }
+
                 items(topics, { it.id }, { it.details?.tags?.isNotEmpty() }) { topic ->
-                    TopicItemCard(topic) { onClickCard(topic) }
+                    AnimatedVisibility(
+                        isVisible(topic),
+                        enter = expandVertically(expandFrom = Alignment.Top) + fadeIn(),
+                        exit = shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut(),
+                    ) {
+                        TopicItemCard(topic) { currentOnClickCard(topic) }
+                    }
+
                 }
                 // dummy footer. When footer gets into visible area, `LaunchedEffect` comes with its composition.
                 item("refresh footer", contentType = "refresh footer") {
@@ -325,10 +359,6 @@ private fun LiveList(
     }
 }
 
-@Composable
-private fun LazyListState.reachedEnd() =
-    layoutInfo.totalItemsCount == 0 || layoutInfo.visibleItemsInfo.lastOrNull()?.index == layoutInfo.totalItemsCount - 1
-
 @Preview
 @Composable
 private fun PreviewMainPage() {
@@ -345,6 +375,8 @@ private fun PreviewMainPage() {
 private fun PreviewTopicList() {
     LiveList(
         remember { ApplicationState(client = AnimationGardenClient.Factory.create()) },
+        remember { WorkState() },
+        { true },
         mutableListOf<Topic>().apply {
             repeat(10) {
                 add(

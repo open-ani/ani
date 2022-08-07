@@ -181,7 +181,7 @@ class RawTitleParserImpl : RawTitleParser() {
                 )
 
                 if (!anyMatched) {
-                    unknownTags.add(tag)
+                    unknownTags.add(tag.trim())
                 }
             }
         }
@@ -391,7 +391,7 @@ class RawTitleParserImpl : RawTitleParser() {
     ) {
         val names = string.substringBeforeLast('-').split('/', '\\', '-', '_')
         names.firstOrNull()?.let(collectChineseTitle)
-        names.asSequence().drop(1).forEach(collectOtherTitle)
+        names.asSequence().drop(1).mapNotNull { it.trim().takeIf(String::isNotEmpty) }.forEach(collectOtherTitle)
     }
 
     private fun processTag(

@@ -8,7 +8,7 @@ import java.time.format.DateTimeFormatter
 data class TopicDetails(
     val tags: List<String> = listOf(),
     val chineseTitle: String? = null,
-    val otherTitles: MutableList<String> = mutableListOf(),
+    val otherTitles: List<String> = listOf(),
     val episode: Episode? = null,
     val resolution: Resolution? = null,
     val frameRate: FrameRate? = null,
@@ -16,25 +16,25 @@ data class TopicDetails(
     val subtitleLanguages: List<SubtitleLanguage> = listOf(),
 ) {
     class Builder {
-        var tags = mutableListOf<String>()
+        var tags = mutableSetOf<String>()
         var chineseTitle: String? = null
-        var otherTitles = mutableListOf<String>()
+        var otherTitles = mutableSetOf<String>()
         var episode: Episode? = null
         var resolution: Resolution? = null
         var frameRate: FrameRate? = null
         var mediaOrigin: MediaOrigin? = null
-        var subtitleLanguages = mutableListOf<SubtitleLanguage>()
+        var subtitleLanguages = mutableSetOf<SubtitleLanguage>()
 
         fun build(): TopicDetails {
             return TopicDetails(
-                tags = tags,
+                tags = tags.toList(),
                 chineseTitle = chineseTitle,
-                otherTitles = otherTitles,
+                otherTitles = otherTitles.toList(),
                 episode = episode,
                 resolution = resolution,
                 frameRate = frameRate,
                 mediaOrigin = mediaOrigin,
-                subtitleLanguages = subtitleLanguages
+                subtitleLanguages = subtitleLanguages.toList()
             )
         }
     }
@@ -53,7 +53,7 @@ class Topic(
 ) {
     val details: TopicDetails? by lazy {
         val builder = TopicDetails.Builder()
-        RawTitleParser.getParserFor()?.parse(rawTitle, alliance?.name, builder)
+        RawTitleParser.getParserFor().parse(rawTitle, alliance?.name, builder)
         builder.build()
     }
 
@@ -75,12 +75,12 @@ value class MagnetLink(
     val value: String
 )
 
-class TopicCategory(
+data class TopicCategory(
     val id: String,
     val name: String
 )
 
-class Alliance(
+data class Alliance(
     val id: String,
     val name: String
 )
