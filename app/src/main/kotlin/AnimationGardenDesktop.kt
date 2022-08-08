@@ -27,7 +27,7 @@ object AnimationGardenDesktop {
             val minimumSize by remember {
                 derivedStateOf {
                     with(currentDensity) {
-                        Size(320.dp.toPx(), (320 / 9 * 16).dp.toPx())
+                        Size(200.dp.toPx(), 200.dp.toPx())
                     }
                 }
             }
