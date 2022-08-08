@@ -50,7 +50,7 @@ sealed class SubtitleLanguage(
 
     object ChineseSimplified : Chinese("CHS") {
         private val tokens =
-            arrayOf("简中", "GB", "GBK", "简体中文", "中文", "中字", "简", "CHS", "Zh-Hans", "Zh_Hans", "zh_cn")
+            arrayOf("简中", "GB", "GBK", "简体中文", "中文", "中字", "简", "CHS", "Zh-Hans", "Zh_Hans", "zh_cn", "SC")
 
         override fun matches(text: String): Boolean {
             return tokens.any { text.contains(it, ignoreCase = true) }
@@ -58,7 +58,7 @@ sealed class SubtitleLanguage(
     }
 
     object ChineseTraditional : Chinese("CHT") {
-        private val tokens = arrayOf("繁中", "BIG5", "BIG 5", "繁", "Chinese", "CHT")
+        private val tokens = arrayOf("繁中", "BIG5", "BIG 5", "繁", "Chinese", "CHT", "TC")
         override fun matches(text: String): Boolean {
             return tokens.any { text.contains(it, ignoreCase = true) }
         }
@@ -66,7 +66,7 @@ sealed class SubtitleLanguage(
     }
 
     object Japanese : SubtitleLanguage("JPN") {
-        private val tokens = arrayOf("日", "Japanese")
+        private val tokens = arrayOf("日", "Japanese", "JP")
         override fun matches(text: String): Boolean {
             return tokens.any { text.contains(it, ignoreCase = true) }
         }
