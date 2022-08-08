@@ -15,7 +15,7 @@ internal class ParseListTest : AbstractTest() {
         val result = ListParser.parseList(
             context,
             Jsoup.parse(getResourceAsString("list.html"))
-        )
+        ).orEmpty()
         println(context)
         for (topic in result) {
             println(topic)

@@ -79,27 +79,34 @@ sealed class SubtitleLanguage(
         }
     }
 
+    object Other : SubtitleLanguage("___") {
+        override fun matches(text: String): Boolean {
+            return true
+        }
+    }
+
     companion object {
-        val entries = arrayOf(ChineseSimplified, ChineseTraditional, Japanese, English)
+        val matchableEntries = arrayOf(ChineseSimplified, ChineseTraditional, Japanese, English)
     }
 }
 
 sealed class Resolution(
     val id: String,
+    val size: Int, // for sorting
     private vararg val otherNames: String,
 ) {
     override fun toString(): String {
         return id
     }
 
-    object R240P : Resolution("240P", "x240")
-    object R360P : Resolution("360P", "x360")
-    object R480P : Resolution("480P", "x480")
-    object R560P : Resolution("560P", "x560")
-    object R720P : Resolution("720P", "x720")
-    object R1080P : Resolution("1080P", "x1080")
-    object R1440P : Resolution("1440P", "x1440")
-    object R2160P : Resolution("2160P", "x2160")
+    object R240P : Resolution("240P", 240, "x240")
+    object R360P : Resolution("360P", 360, "x360")
+    object R480P : Resolution("480P", 480, "x480")
+    object R560P : Resolution("560P", 560, "x560")
+    object R720P : Resolution("720P", 720, "x720")
+    object R1080P : Resolution("1080P", 1080, "x1080")
+    object R1440P : Resolution("1440P", 1440, "x1440")
+    object R2160P : Resolution("2160P", 2160, "x2160")
 
     companion object {
         val entries = arrayOf(
@@ -454,7 +461,7 @@ abstract class RawTitleParser {
 
     protected fun String.parseSubtitleLanguages(collect: (SubtitleLanguage) -> Unit): Boolean {
         var any = false
-        for (entry in SubtitleLanguage.entries) {
+        for (entry in SubtitleLanguage.matchableEntries) {
             if (entry.matches(this)) {
                 collect(entry)
                 any = true

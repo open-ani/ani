@@ -10,6 +10,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.ripple.rememberRipple
@@ -31,7 +32,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import me.him188.animationgarden.api.AnimationGardenClient
 import me.him188.animationgarden.api.impl.model.KeyedMutableListFlow
 import me.him188.animationgarden.api.impl.model.KeyedMutableListFlowImpl
-import me.him188.animationgarden.api.impl.model.mutate
 import me.him188.animationgarden.api.model.*
 import me.him188.animationgarden.api.model.FileSize.Companion.megaBytes
 import me.him188.animationgarden.desktop.AppTheme
@@ -93,7 +93,13 @@ class ApplicationState(
         val nextPage = session.nextPage()
         if (!nextPage.isNullOrEmpty()) {
             nextPage.forEach { it.details } // init
-            topicsFlow.mutate { it + nextPage }
+            val old = topicsFlow.value
+            val new = sequenceOf(topicsFlow.value, nextPage).flatten().distinctBy { it.id }.toList()
+            if (old.size == new.size) {
+                hasMorePages.value = false
+            } else {
+                topicsFlow.value = new
+            }
         } else {
             hasMorePages.value = false
         }
@@ -121,13 +127,19 @@ fun MainPage(
 ) {
     val appState by rememberUpdatedState(app)
     val topics by remember { app.topicsFlow.asFlow() }.collectAsState()
+    val lazyListState = rememberLazyListState()
 
     val appliedKeywordState = remember { mutableStateOf("") }
+    val coroutineScope = rememberCoroutineScope()
     var appliedKeyword by appliedKeywordState
     val workState by remember {
+        val myWork = WorkState()
         derivedStateOf {
-            WorkState().apply {
-                setTopics(topics)
+            myWork.apply {
+                coroutineScope.launch {
+                    lazyListState.scrollToItem(0, 0)
+                }
+                setTopics(topics, appState.searchFilter.value.keywords)
             }
         }
     }
@@ -135,29 +147,24 @@ fun MainPage(
     val backgroundColor = AppTheme.colorScheme.background
     Column(Modifier.background(color = backgroundColor).padding(PaddingValues(all = 16.dp))) {
         Row(
-            Modifier
-                .padding(16.dp)
-                .fillMaxWidth()
+            Modifier.padding(16.dp).fillMaxWidth()
         ) {
             Row {
                 val (keywordsInput, onKeywordsInputChange) = remember { mutableStateOf(appliedKeyword) }
                 OutlinedTextField(
                     keywordsInput,
                     onKeywordsInputChange,
-                    Modifier.height(48.dp).defaultMinSize(minWidth = 96.dp).weight(0.8f)
-                        .onKeyEvent {
-                            if (it.key == Key.Enter || it.key == Key.NumPadEnter) {
-                                appliedKeyword = keywordsInput
-                                appState.doSearch(appliedKeyword)
-                                true
-                            } else false
-                        },
+                    Modifier.height(48.dp).defaultMinSize(minWidth = 96.dp).weight(0.8f).onKeyEvent {
+                        if (it.key == Key.Enter || it.key == Key.NumPadEnter) {
+                            appliedKeyword = keywordsInput
+                            appState.doSearch(appliedKeyword)
+                            true
+                        } else false
+                    },
                     placeholder = {
                         Text(
-                            "keywords",
-                            style = AppTheme.typography.bodyMedium.copy(
-                                color = AppTheme.typography.bodyMedium.color.copy(0.3f),
-                                lineHeight = 16.sp
+                            "keywords", style = AppTheme.typography.bodyMedium.copy(
+                                color = AppTheme.typography.bodyMedium.color.copy(0.3f), lineHeight = 16.sp
                             )
                         )
                     },
@@ -189,16 +196,16 @@ fun MainPage(
         }
 
         LiveList(
-            app,
-            workState,
-            { workState.matchesQuery(it) },
-            topics,
+            app = app,
+            workState = workState,
+            lazyListState = lazyListState,
+            topics = topics,
             onClickCard = {
                 app.applicationScope.launch(Dispatchers.IO) {
                     Desktop.getDesktop().browse(URI.create(it.magnetLink.value))
                 }
             },
-            Modifier.padding(top = 16.dp)
+            modifier = Modifier.padding(top = 16.dp)
         )
     }
 }
@@ -207,8 +214,7 @@ fun MainPage(
 private fun AnimatedSearchButton(onClick: () -> Unit) {
 
     BoxWithConstraints(
-        Modifier.wrapContentWidth(),
-        contentAlignment = Alignment.Center
+        Modifier.wrapContentWidth(), contentAlignment = Alignment.Center
     ) {
         val showBigButton = maxWidth > 512.dp
         val enter = scaleIn() + fadeIn()
@@ -218,17 +224,11 @@ private fun AnimatedSearchButton(onClick: () -> Unit) {
         val boxWidth by animateDpAsState(if (showBigButton) bigButtonWidth else smallButtonWidth)
         Box(Modifier.width(boxWidth)) {
             AnimatedVisibility(
-                showBigButton,
-                enter = enter,
-                exit = exit,
-                label = "Big Search Button"
+                showBigButton, enter = enter, exit = exit, label = "Big Search Button"
             ) {
                 Button(
                     onClick = onClick,
-                    Modifier
-                        .width(bigButtonWidth)
-                        .padding(start = 16.dp)
-                        .height(48.dp),
+                    Modifier.width(bigButtonWidth).padding(start = 16.dp).height(48.dp),
                     shape = AppTheme.shapes.medium,
                 ) {
                     Image(
@@ -245,28 +245,17 @@ private fun AnimatedSearchButton(onClick: () -> Unit) {
                 }
             }
             AnimatedVisibility(
-                !showBigButton,
-                enter = enter,
-                exit = exit,
-                label = "Small Search Button"
+                !showBigButton, enter = enter, exit = exit, label = "Small Search Button"
             ) {
                 Box(
-                    Modifier.width(smallButtonWidth)
-                        .padding(start = 8.dp)
-                        .size(48.dp),
+                    Modifier.width(smallButtonWidth).padding(start = 8.dp).size(48.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     val shape = AppTheme.shapes.small
                     Box(
-                        Modifier
-                            .size(48.dp)
-                            .border(1.dp, color = Color.Gray, shape = shape)
-                            .clip(shape)
-                            .background(color = AppTheme.colorScheme.primary)
-                            .clickable(
-                                remember { MutableInteractionSource() },
-                                rememberRipple(),
-                                onClick = onClick
+                        Modifier.size(48.dp).border(1.dp, color = Color.Gray, shape = shape).clip(shape)
+                            .background(color = AppTheme.colorScheme.primary).clickable(
+                                remember { MutableInteractionSource() }, rememberRipple(), onClick = onClick
                             ),
 
                         contentAlignment = Alignment.Center
@@ -290,50 +279,61 @@ private fun AnimatedSearchButton(onClick: () -> Unit) {
 private fun LiveList(
     app: ApplicationState,
     workState: WorkState,
-    isVisible: @Composable (Topic) -> Boolean,
+    lazyListState: LazyListState = rememberLazyListState(),
     topics: List<Topic>,
     onClickCard: (topic: Topic) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val currentOnClickCard by rememberUpdatedState(onClickCard)
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+    val currentWorkState by rememberUpdatedState(workState)
+    val enter = remember { expandVertically(expandFrom = Alignment.Top) + fadeIn() }
+    val exit = remember { shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut() }
+    val visibleTopics: List<Topic> by remember(topics) {
+        derivedStateOf {
+            topics.filter { currentWorkState.matchesQuery(it) }
+        }
+    }
+
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopStart) {
         val isEmpty = topics.isEmpty()
         AnimatedVisibility(
             isEmpty,
-            enter = fadeIn() + expandVertically(),
-            exit = shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut(),
+            enter = enter,
+            exit = exit,
         ) {
-            CircularProgressIndicator(color = AppTheme.colorScheme.primary)
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = AppTheme.colorScheme.primary)
+            }
         }
         AnimatedVisibility(
             !isEmpty,
-            enter = fadeIn() + expandVertically(),
-            exit = shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut(),
+            enter = enter,
+            exit = exit,
             // Actually when exiting, `topics` would be empty, so lazy column contains no item and size is zero. You won't see the animation.
         ) {
-            val state = rememberLazyListState()
-            LazyColumn(state = state, modifier = modifier) {
+
+            LazyColumn(state = lazyListState, modifier = modifier) {
                 item("organized", "organized") {
                     AnimatedVisibility(
-                        topics.isNotEmpty(),
-                        enter = expandVertically(expandFrom = Alignment.Top) + fadeIn(),
-                        exit = shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut(),
+                        topics.isNotEmpty() && app.searchFilter.value.keywords != null,
+                        enter = enter,
+                        exit = exit,
                     ) {
                         OrganizedWorkView(
-                            workState = workState, // TODO: 2022/8/7 state
-                            onClickAlliance = { workState.selectedAlliance.updateSelected(it) },
-                            onClickEpisode = { workState.selectedEpisode.updateSelected(it) },
-                            onClickResolution = { workState.selectedResolution.updateSelected(it) },
-                            onClickSubtitleLanguage = { workState.selectedSubtitleLanguage.updateSelected(it) }
-                        )
+                            workState = workState,
+                            visibleTopics = visibleTopics,
+                            onClickAlliance = { currentWorkState.selectedAlliance.updateSelected(it) },
+                            onClickEpisode = { currentWorkState.selectedEpisode.updateSelected(it) },
+                            onClickResolution = { currentWorkState.selectedResolution.updateSelected(it) },
+                            onClickSubtitleLanguage = { currentWorkState.selectedSubtitleLanguage.updateSelected(it) })
                     }
                 }
 
                 items(topics, { it.id }, { it.details?.tags?.isNotEmpty() }) { topic ->
                     AnimatedVisibility(
-                        isVisible(topic),
-                        enter = expandVertically(expandFrom = Alignment.Top) + fadeIn(),
-                        exit = shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut(),
+                        visibleTopics.contains(topic),
+                        enter = enter,
+                        exit = exit,
                     ) {
                         TopicItemCard(topic) { currentOnClickCard(topic) }
                     }
@@ -373,11 +373,9 @@ private fun PreviewMainPage() {
 @Preview
 @Composable
 private fun PreviewTopicList() {
-    LiveList(
-        remember { ApplicationState(client = AnimationGardenClient.Factory.create()) },
+    LiveList(remember { ApplicationState(client = AnimationGardenClient.Factory.create()) },
         remember { WorkState() },
-        { true },
-        mutableListOf<Topic>().apply {
+        topics = mutableListOf<Topic>().apply {
             repeat(10) {
                 add(
                     // NC-Raws [NC-Raws] OVERLORD IV / Overlord S4 - 04 (B-Global 3840x2160 HEVC AAC MKV)
@@ -397,6 +395,5 @@ private fun PreviewTopicList() {
         },
         onClickCard = {
 
-        }
-    )
+        })
 }

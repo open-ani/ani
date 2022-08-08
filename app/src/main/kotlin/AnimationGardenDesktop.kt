@@ -1,6 +1,5 @@
 package me.him188.animationgarden.desktop
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.geometry.Size
@@ -40,9 +39,7 @@ object AnimationGardenDesktop {
                     onCloseRequest = ::exitApplication,
                     minimumSize = minimumSize
                 ) {
-                    Box {
-                        MainPage(app)
-                    }
+                    MainPage(app)
                 }
             }
         }

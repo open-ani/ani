@@ -90,9 +90,9 @@ internal object ListParser {
     }
 
     @Throws(ParseException::class)
-    fun parseList(context: Cache, document: Document): List<Topic> {
+    fun parseList(context: Cache, document: Document): List<Topic>? {
         val tbody = document.select("table.tablesorter").singleOrNull()
-            ?: throw ParseException("Cannot find table")
+            ?: return null
         return tbody.select("tbody").single().children().map { Row(it.children()).toTopic(context) }
     }
 }

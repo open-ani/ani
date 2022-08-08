@@ -142,13 +142,35 @@ fun ColumnScope.AnimatedTitles(
     rawTitle: @Composable () -> String
 ) {
     var titleTooLong by remember { mutableStateOf(false) }
-    val otherTitlesState by rememberUpdatedState(otherTitles)
-    val otherTitlesRendered by remember { derivedStateOf { otherTitlesState?.joinToString(" / ") } }
+    val currentOtherTitles by rememberUpdatedState(otherTitles)
+    val currentChineseTitle by rememberUpdatedState(chineseTitle)
+    val preferredMainTitle by remember {
+        derivedStateOf {
+            if (currentChineseTitle != null) {
+                currentChineseTitle
+            } else if (currentOtherTitles != null) {
+                currentOtherTitles?.firstOrNull()
+            } else {
+                null
+            }
+        }
+    }
+    val preferredSecondaryTitle by remember {
+        derivedStateOf {
+            if (currentChineseTitle != null) {
+                currentOtherTitles?.joinToString(" / ")
+            } else if (currentOtherTitles != null) {
+                currentOtherTitles?.asSequence()?.drop(1)?.joinToString(" / ")
+            } else {
+                null
+            }
+        }
+    }
     Row(verticalAlignment = Alignment.CenterVertically) {
         // Chinese title overflows after only if other title overflowed.
         Row(Modifier.width(IntrinsicSize.Max)) {
             Text(
-                chineseTitle ?: rawTitle(),
+                preferredMainTitle ?: rawTitle(),
                 style = AppTheme.typography.titleMedium,
                 fontWeight = FontWeight.W600,
                 maxLines = 1,
@@ -169,8 +191,8 @@ fun ColumnScope.AnimatedTitles(
         }
 
         // other language title
-        if (chineseTitle != null) {
-            otherTitlesRendered?.let { text ->
+        if (preferredMainTitle != null) {
+            preferredSecondaryTitle?.let { text ->
                 // gradually hide this title if titles are too long
                 val alpha by animateFloatAsState(if (titleTooLong) 0f else 1f)
 
@@ -188,8 +210,8 @@ fun ColumnScope.AnimatedTitles(
     }
 
     // show other language's title in separate line if titles are too long
-    if (chineseTitle != null) {
-        otherTitlesRendered?.let { text ->
+    if (preferredMainTitle != null) {
+        preferredSecondaryTitle?.let { text ->
             AnimatedVisibility(titleTooLong) {
                 Row {
                     Subtitle(text, onOverflowChange = {})
@@ -210,7 +232,7 @@ private fun Subtitle(text: String, onOverflowChange: ((Boolean) -> Unit)?, modif
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
         onTextLayout = {
-            onOverflowChangeState?.invoke(it.didOverflowWidth)
+            onOverflowChangeState?.invoke(it.hasVisualOverflow)
         }
     )
 }

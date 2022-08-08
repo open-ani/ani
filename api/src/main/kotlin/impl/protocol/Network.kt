@@ -57,7 +57,7 @@ internal class Network(
         val context = CacheImpl()
         return ListResponse(
             context = context,
-            list = ListParser.parseList(context, document),
+            list = ListParser.parseList(context, document).orEmpty(),
             currentPage = 0,
             hasPreviousPage = false,
             hasNextPage = false
