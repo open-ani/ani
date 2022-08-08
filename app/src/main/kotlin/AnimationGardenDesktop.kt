@@ -20,7 +20,7 @@ object AnimationGardenDesktop {
         application(exitProcessOnExit = true) {
             val app = remember {
                 ApplicationState(AnimationGardenClient.Factory.create()).apply {
-                    launchFetchNextPage()
+                    launchFetchNextPage(false)
                 }
             }
             val currentDensity by rememberUpdatedState(LocalDensity.current)

@@ -74,8 +74,8 @@ class ApplicationState(
 
     init {
         applicationScope.launch {
-            topicsFlow.asFlow().collect {
-                println("Topics changed: $it")
+            hasMorePages.collect {
+                println("hasMorePages changed: $it")
             }
         }
         applicationScope.launch {
@@ -87,28 +87,35 @@ class ApplicationState(
 
     fun updateSearchFilter(searchFilter: SearchFilter) {
         this.searchFilter.value = searchFilter
+        hasMorePages.value = true
+        fetchingState.value = FetchingState.Idle
         topicsFlow.value = listOf()
         session.value = client.startSearchSession(searchFilter)
-        launchFetchNextPage()
+        launchFetchNextPage(!searchFilter.keywords.isNullOrEmpty())
     }
 
-    private suspend fun fetchAndUpdatePage(session: SearchSession, topicsFlow: KeyedMutableListFlow<String, Topic>) {
+    private suspend fun fetchAndUpdatePage(
+        session: SearchSession,
+        topicsFlow: KeyedMutableListFlow<String, Topic>
+    ): Boolean {
         val nextPage = session.nextPage()
-        if (!nextPage.isNullOrEmpty()) {
+        return if (!nextPage.isNullOrEmpty()) {
             nextPage.forEach { it.details } // init
             val old = topicsFlow.value
             val new = sequenceOf(topicsFlow.value, nextPage).flatten().distinctBy { it.id }.toList()
             if (old.size == new.size) {
-                hasMorePages.value = false
+                //                hasMorePages.value = false
             } else {
                 topicsFlow.value = new
             }
+            true
         } else {
             hasMorePages.value = false
+            false
         }
     }
 
-    fun launchFetchNextPage() {
+    fun launchFetchNextPage(continuous: Boolean) {
         while (true) {
             val value = fetchingState.value
             if (value != FetchingState.Fetching) {
@@ -119,7 +126,9 @@ class ApplicationState(
         }
         applicationScope.launch {
             try {
-                fetchAndUpdatePage(session.value, topicsFlow)
+                do {
+                    val fetchedNewPage = fetchAndUpdatePage(session.value, topicsFlow)
+                } while (fetchedNewPage && continuous)
                 fetchingState.value = FetchingState.Succeed
             } catch (e: Throwable) {
                 fetchingState.value = FetchingState.Failed(e)
@@ -129,7 +138,7 @@ class ApplicationState(
 }
 
 fun ApplicationState.doSearch(keywords: String) {
-    updateSearchFilter(SearchFilter(keywords, null, null))
+    updateSearchFilter(SearchFilter(keywords.trim(), null, null))
 }
 
 @Composable
@@ -167,7 +176,7 @@ fun MainPage(
                     onKeywordsInputChange,
                     Modifier.height(48.dp).defaultMinSize(minWidth = 96.dp).weight(0.8f).onKeyEvent {
                         if (it.key == Key.Enter || it.key == Key.NumPadEnter) {
-                            appliedKeyword = keywordsInput
+                            appliedKeyword = keywordsInput.trim()
                             appState.doSearch(appliedKeyword)
                             true
                         } else false
@@ -202,7 +211,7 @@ fun MainPage(
 //                    maxLines = 1,
 //                )
                 AnimatedSearchButton {
-                    appliedKeyword = keywordsInput
+                    appliedKeyword = keywordsInput.trim()
                     appState.doSearch(appliedKeyword)
                 }
             }
@@ -385,7 +394,7 @@ private fun LiveList(
                         if (hasMorePages) {
                             if (fetching != FetchingState.Fetching) {
                                 LaunchedEffect(true) { // when this footer is 'seen', the list must have reached the end.
-                                    app.launchFetchNextPage()
+                                    app.launchFetchNextPage(false)
                                 }
                             }
                         }
