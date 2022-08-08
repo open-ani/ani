@@ -1,25 +1,18 @@
 package me.him188.animationgarden.desktop.ui
 
 import androidx.compose.animation.*
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
@@ -163,8 +156,10 @@ fun MainPage(
                     },
                     placeholder = {
                         Text(
-                            "keywords", style = AppTheme.typography.bodyMedium.copy(
-                                color = AppTheme.typography.bodyMedium.color.copy(0.3f), lineHeight = 16.sp
+                            LocalI18n.current.getString("search.keywords"),
+                            style = AppTheme.typography.bodyMedium.copy(
+                                color = AppTheme.typography.bodyMedium.color.copy(0.3f),
+                                lineHeight = 16.sp
                             )
                         )
                     },
@@ -217,60 +212,82 @@ private fun AnimatedSearchButton(onClick: () -> Unit) {
         Modifier.wrapContentWidth(), contentAlignment = Alignment.Center
     ) {
         val showBigButton = maxWidth > 512.dp
-        val enter = scaleIn() + fadeIn()
-        val exit = scaleOut() + fadeOut()
-        val smallButtonWidth = 48.dp + 8.dp
-        val bigButtonWidth = 144.dp
-        val boxWidth by animateDpAsState(if (showBigButton) bigButtonWidth else smallButtonWidth)
-        Box(Modifier.width(boxWidth)) {
-            AnimatedVisibility(
-                showBigButton, enter = enter, exit = exit, label = "Big Search Button"
+//        val smallButtonWidth = 48.dp + 8.dp
+//        val bigButtonWidth = 144.dp
+//        val boxWidth by animateDpAsState(if (showBigButton) bigButtonWidth else smallButtonWidth)
+        Box {
+            Button(
+                onClick = onClick,
+                Modifier.padding(start = 16.dp).height(48.dp),
+                shape = AppTheme.shapes.medium,
+                contentPadding = if (showBigButton) ButtonDefaults.ContentPadding else PaddingValues(0.dp),
             ) {
-                Button(
-                    onClick = onClick,
-                    Modifier.width(bigButtonWidth).padding(start = 16.dp).height(48.dp),
-                    shape = AppTheme.shapes.medium,
-                ) {
-                    Image(
-                        painterResource("drawable/magnify.svg"),
-                        LocalI18n.current.getString("main.search"),
-                        Modifier.size(24.dp),
-                        colorFilter = ColorFilter.tint(color = Color.White) // TODO: 2022/8/6 adjust color
-                    )
+                Image(
+                    painterResource("drawable/magnify.svg"),
+                    LocalI18n.current.getString("search.button"),
+                    Modifier.size(24.dp),
+                    colorFilter = ColorFilter.tint(color = AppTheme.colorScheme.primary.contrastTextColor())
+                )
+                AnimatedVisibility(showBigButton) {
                     Text(
-                        LocalI18n.current.getString("main.search"),
+                        LocalI18n.current.getString("search.button"),
                         Modifier.padding(start = 4.dp),
                         style = AppTheme.typography.bodyMedium
                     )
                 }
             }
-            AnimatedVisibility(
-                !showBigButton, enter = enter, exit = exit, label = "Small Search Button"
-            ) {
-                Box(
-                    Modifier.width(smallButtonWidth).padding(start = 8.dp).size(48.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    val shape = AppTheme.shapes.small
-                    Box(
-                        Modifier.size(48.dp).border(1.dp, color = Color.Gray, shape = shape).clip(shape)
-                            .background(color = AppTheme.colorScheme.primary).clickable(
-                                remember { MutableInteractionSource() }, rememberRipple(), onClick = onClick
-                            ),
 
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Image(
-                            painterResource("drawable/magnify.svg"),
-                            LocalI18n.current.getString("main.search"),
-                            Modifier.size(24.dp),
-                            colorFilter = ColorFilter.tint(
-                                Color.White
-                            )
-                        )
-                    }
-                }
-            }
+            // big-small switching button implementation
+//            val enter = scaleIn() + fadeIn()
+//            val exit = scaleOut() + fadeOut()
+//            AnimatedVisibility(
+//                showBigButton, enter = enter, exit = exit, label = "Big Search Button"
+//            ) {
+//                Button(
+//                    onClick = onClick,
+//                    Modifier.width(bigButtonWidth).padding(start = 16.dp).height(48.dp),
+//                    shape = AppTheme.shapes.medium,
+//                ) {
+//                    Image(
+//                        painterResource("drawable/magnify.svg"),
+//                        LocalI18n.current.getString("search.button"),
+//                        Modifier.size(24.dp),
+//                        colorFilter = ColorFilter.tint(color = Color.White) // TODO: 2022/8/6 adjust color
+//                    )
+//                    Text(
+//                        LocalI18n.current.getString("search.button"),
+//                        Modifier.padding(start = 4.dp),
+//                        style = AppTheme.typography.bodyMedium
+//                    )
+//                }
+//            }
+//            AnimatedVisibility(
+//                !showBigButton, enter = enter, exit = exit, label = "Small Search Button"
+//            ) {
+//                Box(
+//                    Modifier.width(smallButtonWidth).padding(start = 8.dp).size(48.dp),
+//                    contentAlignment = Alignment.Center
+//                ) {
+//                    val shape = AppTheme.shapes.small
+//                    Box(
+//                        Modifier.size(48.dp).border(1.dp, color = Color.Gray, shape = shape).clip(shape)
+//                            .background(color = AppTheme.colorScheme.primary).clickable(
+//                                remember { MutableInteractionSource() }, rememberRipple(), onClick = onClick
+//                            ),
+//
+//                        contentAlignment = Alignment.Center
+//                    ) {
+//                        Image(
+//                            painterResource("drawable/magnify.svg"),
+//                            LocalI18n.current.getString("search.button"),
+//                            Modifier.size(24.dp),
+//                            colorFilter = ColorFilter.tint(
+//                                Color.White
+//                            )
+//                        )
+//                    }
+//                }
+//            }
         }
     }
 }
