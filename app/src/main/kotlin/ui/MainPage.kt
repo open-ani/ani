@@ -33,6 +33,16 @@ import java.awt.Desktop
 import java.net.URI
 import java.time.LocalDateTime
 
+sealed class FetchingState {
+    object Idle : FetchingState()
+    object Fetching : FetchingState()
+    sealed class Completed : FetchingState()
+    object Succeed : Completed()
+    class Failed(
+        val exception: Throwable
+    ) : Completed()
+}
+
 @Stable
 class ApplicationState(
     private val client: AnimationGardenClient,
@@ -45,7 +55,7 @@ class ApplicationState(
 
 
     @Stable
-    val isFetching = MutableStateFlow(false)
+    val fetchingState: MutableStateFlow<FetchingState> = MutableStateFlow(FetchingState.Idle)
 
     @Stable
     val hasMorePages = MutableStateFlow(true)
@@ -69,7 +79,7 @@ class ApplicationState(
             }
         }
         applicationScope.launch {
-            isFetching.collect {
+            fetchingState.collect {
                 println("isFetching changed: $it")
             }
         }
@@ -99,12 +109,20 @@ class ApplicationState(
     }
 
     fun launchFetchNextPage() {
-        if (!isFetching.compareAndSet(expect = false, update = true)) return
+        while (true) {
+            val value = fetchingState.value
+            if (value != FetchingState.Fetching) {
+                if (fetchingState.compareAndSet(value, FetchingState.Fetching)) {
+                    break
+                }
+            }
+        }
         applicationScope.launch {
             try {
                 fetchAndUpdatePage(session.value, topicsFlow)
-            } finally {
-                isFetching.value = false
+                fetchingState.value = FetchingState.Succeed
+            } catch (e: Throwable) {
+                fetchingState.value = FetchingState.Failed(e)
             }
         }
     }
@@ -359,15 +377,40 @@ private fun LiveList(
                 // dummy footer. When footer gets into visible area, `LaunchedEffect` comes with its composition.
                 item("refresh footer", contentType = "refresh footer") {
                     val hasMorePages by app.hasMorePages.collectAsState()
-                    val fetching by app.isFetching.collectAsState()
-                    if (hasMorePages && !fetching) { // when this footer is 'seen', the list must have reached the end.
-                        LaunchedEffect(true) {
-                            app.launchFetchNextPage()
+                    val fetching by app.fetchingState.collectAsState()
+                    Box(
+                        Modifier.padding(vertical = 16.dp).fillMaxWidth().wrapContentHeight(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (hasMorePages) {
+                            if (fetching != FetchingState.Fetching) {
+                                LaunchedEffect(true) { // when this footer is 'seen', the list must have reached the end.
+                                    app.launchFetchNextPage()
+                                }
+                            }
                         }
-                    }
-                    if (fetching) {
-                        Box(Modifier.fillMaxWidth().wrapContentHeight(), contentAlignment = Alignment.Center) {
-                            CircularProgressIndicator(color = AppTheme.colorScheme.primary)
+
+                        when (val localFetching = fetching) {
+                            FetchingState.Idle, FetchingState.Fetching -> {
+                                CircularProgressIndicator(color = AppTheme.colorScheme.primary)
+                            }
+
+                            FetchingState.Succeed -> {
+                                Text(
+                                    LocalI18n.current.getString("search.end"),
+                                    style = AppTheme.typography.bodyMedium
+                                )
+                            }
+
+                            is FetchingState.Failed -> {
+                                Text(
+                                    String.format(
+                                        LocalI18n.current.getString("search.failed"),
+                                        localFetching.exception.localizedMessage
+                                    ),
+                                    style = AppTheme.typography.bodyMedium.run { copy(color = color.copy(alpha = 0.5f)) }
+                                )
+                            }
                         }
                     }
                 }
