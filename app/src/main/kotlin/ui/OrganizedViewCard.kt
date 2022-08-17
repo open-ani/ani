@@ -22,6 +22,7 @@ import me.him188.animationgarden.api.tags.SubtitleLanguage
 import me.him188.animationgarden.desktop.AppTheme
 import me.him188.animationgarden.desktop.i18n.LocalI18n
 import me.him188.animationgarden.desktop.i18n.ProvideResourceBundleI18n
+import me.him188.animationgarden.desktop.ui.widgets.ToggleStarButton
 import java.time.LocalDateTime
 
 @Composable

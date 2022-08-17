@@ -1,4 +1,4 @@
-package me.him188.animationgarden.desktop.ui
+package me.him188.animationgarden.desktop.app
 
 sealed class FetchingState {
     object Idle : FetchingState()

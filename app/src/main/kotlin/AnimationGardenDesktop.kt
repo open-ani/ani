@@ -10,9 +10,9 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.application
 import me.him188.animationgarden.api.AnimationGardenClient
+import me.him188.animationgarden.desktop.app.ApplicationState
 import me.him188.animationgarden.desktop.i18n.LocalI18n
 import me.him188.animationgarden.desktop.i18n.ProvideResourceBundleI18n
-import me.him188.animationgarden.desktop.ui.ApplicationState
 import me.him188.animationgarden.desktop.ui.MainPage
 import me.him188.animationgarden.desktop.ui.WindowEx
 

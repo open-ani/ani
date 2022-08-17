@@ -1,4 +1,4 @@
-package me.him188.animationgarden.desktop.ui
+package me.him188.animationgarden.desktop.ui.widgets
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearOutSlowInEasing

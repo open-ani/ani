@@ -26,6 +26,9 @@ import me.him188.animationgarden.api.AnimationGardenClient
 import me.him188.animationgarden.api.model.*
 import me.him188.animationgarden.api.model.FileSize.Companion.megaBytes
 import me.him188.animationgarden.desktop.AppTheme
+import me.him188.animationgarden.desktop.app.ApplicationState
+import me.him188.animationgarden.desktop.app.FetchingState
+import me.him188.animationgarden.desktop.app.doSearch
 import me.him188.animationgarden.desktop.i18n.LocalI18n
 import java.awt.Desktop
 import java.net.URI

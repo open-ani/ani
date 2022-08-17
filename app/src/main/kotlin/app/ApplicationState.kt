@@ -1,4 +1,4 @@
-package me.him188.animationgarden.desktop.ui
+package me.him188.animationgarden.desktop.app
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
