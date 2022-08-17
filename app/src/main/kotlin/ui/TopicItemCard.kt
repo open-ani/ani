@@ -137,7 +137,9 @@ fun ColumnScope.AnimatedTitles(
     chineseTitle: String?,
     otherTitles: List<String>?,
     episode: Episode?,
-    rawTitle: @Composable () -> String
+    rawTitle: @Composable () -> String,
+    rowModifier: Modifier = Modifier,
+    topEnd: (@Composable () -> Unit)? = null,
 ) {
     var titleTooLong by remember { mutableStateOf(false) }
     val currentOtherTitles by rememberUpdatedState(otherTitles)
@@ -164,46 +166,52 @@ fun ColumnScope.AnimatedTitles(
             }
         }
     }
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        // Chinese title overflows after only if other title overflowed.
-        Row(Modifier.width(IntrinsicSize.Max)) {
-            Text(
-                preferredMainTitle ?: rawTitle(),
-                style = AppTheme.typography.titleMedium,
-                fontWeight = FontWeight.W600,
-                maxLines = 1,
-                softWrap = false,
-                overflow = TextOverflow.Ellipsis,
-            )
-
-            episode?.let { episode ->
+    Row(Modifier.fillMaxWidth()) {
+        Row(rowModifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            // Chinese title overflows after only if other title overflowed.
+            Row(Modifier.width(IntrinsicSize.Max)) {
                 Text(
-                    episode.raw,
-                    Modifier.padding(start = 8.dp).requiredWidth(IntrinsicSize.Max), // always show episode
+                    preferredMainTitle ?: rawTitle(),
                     style = AppTheme.typography.titleMedium,
                     fontWeight = FontWeight.W600,
                     maxLines = 1,
-                    overflow = TextOverflow.Clip
+                    softWrap = false,
+                    overflow = TextOverflow.Ellipsis,
                 )
+
+                episode?.let { episode ->
+                    Text(
+                        episode.raw,
+                        Modifier.padding(start = 8.dp).requiredWidth(IntrinsicSize.Max), // always show episode
+                        style = AppTheme.typography.titleMedium,
+                        fontWeight = FontWeight.W600,
+                        maxLines = 1,
+                        overflow = TextOverflow.Clip
+                    )
+                }
+            }
+
+            // other language title
+            if (preferredMainTitle != null) {
+                preferredSecondaryTitle?.let { text ->
+                    // gradually hide this title if titles are too long
+                    val alpha by animateFloatAsState(if (titleTooLong) 0f else 1f)
+
+                    Subtitle(
+                        text,
+                        onOverflowChange = {
+                            titleTooLong = it
+                        },
+                        Modifier
+                            .padding(start = 12.dp)
+                            .alpha(alpha)
+                    )
+                }
             }
         }
 
-        // other language title
-        if (preferredMainTitle != null) {
-            preferredSecondaryTitle?.let { text ->
-                // gradually hide this title if titles are too long
-                val alpha by animateFloatAsState(if (titleTooLong) 0f else 1f)
-
-                Subtitle(
-                    text,
-                    onOverflowChange = {
-                        titleTooLong = it
-                    },
-                    Modifier
-                        .padding(start = 12.dp)
-                        .alpha(alpha)
-                )
-            }
+        Row(Modifier.requiredWidth(IntrinsicSize.Max)) {
+            topEnd?.invoke()
         }
     }
 
@@ -211,7 +219,7 @@ fun ColumnScope.AnimatedTitles(
     if (preferredMainTitle != null) {
         preferredSecondaryTitle?.let { text ->
             AnimatedVisibility(titleTooLong) {
-                Row {
+                Row(rowModifier, verticalAlignment = Alignment.CenterVertically) {
                     Subtitle(text, onOverflowChange = {})
                 }
             }

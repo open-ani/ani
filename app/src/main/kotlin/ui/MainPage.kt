@@ -20,11 +20,9 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import me.him188.animationgarden.api.AnimationGardenClient
-import me.him188.animationgarden.api.impl.model.KeyedMutableListFlow
-import me.him188.animationgarden.api.impl.model.KeyedMutableListFlowImpl
 import me.him188.animationgarden.api.model.*
 import me.him188.animationgarden.api.model.FileSize.Companion.megaBytes
 import me.him188.animationgarden.desktop.AppTheme
@@ -32,114 +30,6 @@ import me.him188.animationgarden.desktop.i18n.LocalI18n
 import java.awt.Desktop
 import java.net.URI
 import java.time.LocalDateTime
-
-sealed class FetchingState {
-    object Idle : FetchingState()
-    object Fetching : FetchingState()
-    sealed class Completed : FetchingState()
-    object Succeed : Completed()
-    class Failed(
-        val exception: Throwable
-    ) : Completed()
-}
-
-@Stable
-class ApplicationState(
-    private val client: AnimationGardenClient,
-) {
-    @Stable
-    val applicationScope: CoroutineScope =
-        CoroutineScope(SupervisorJob() + CoroutineExceptionHandler { coroutineContext, throwable ->
-            throwable.printStackTrace()
-        })
-
-
-    @Stable
-    val fetchingState: MutableStateFlow<FetchingState> = MutableStateFlow(FetchingState.Idle)
-
-    @Stable
-    val hasMorePages = MutableStateFlow(true)
-
-    @Stable
-    val searchFilter: MutableState<SearchFilter> = mutableStateOf(SearchFilter())
-
-    @Stable
-    val topicsFlow: KeyedMutableListFlow<String, Topic> = KeyedMutableListFlowImpl { it.id }
-
-    @Stable
-    val session: MutableState<SearchSession> by lazy {
-        mutableStateOf(client.startSearchSession(SearchFilter()))
-    }
-
-
-    init {
-        applicationScope.launch {
-            hasMorePages.collect {
-                println("hasMorePages changed: $it")
-            }
-        }
-        applicationScope.launch {
-            fetchingState.collect {
-                println("isFetching changed: $it")
-            }
-        }
-    }
-
-    fun updateSearchFilter(searchFilter: SearchFilter) {
-        this.searchFilter.value = searchFilter
-        hasMorePages.value = true
-        fetchingState.value = FetchingState.Idle
-        topicsFlow.value = listOf()
-        session.value = client.startSearchSession(searchFilter)
-        launchFetchNextPage(!searchFilter.keywords.isNullOrEmpty())
-    }
-
-    private suspend fun fetchAndUpdatePage(
-        session: SearchSession,
-        topicsFlow: KeyedMutableListFlow<String, Topic>
-    ): Boolean {
-        val nextPage = session.nextPage()
-        return if (!nextPage.isNullOrEmpty()) {
-            nextPage.forEach { it.details } // init
-            val old = topicsFlow.value
-            val new = sequenceOf(topicsFlow.value, nextPage).flatten().distinctBy { it.id }.toList()
-            if (old.size == new.size) {
-                //                hasMorePages.value = false
-            } else {
-                topicsFlow.value = new
-            }
-            true
-        } else {
-            hasMorePages.value = false
-            false
-        }
-    }
-
-    fun launchFetchNextPage(continuous: Boolean) {
-        while (true) {
-            val value = fetchingState.value
-            if (value != FetchingState.Fetching) {
-                if (fetchingState.compareAndSet(value, FetchingState.Fetching)) {
-                    break
-                }
-            }
-        }
-        applicationScope.launch {
-            try {
-                do {
-                    val fetchedNewPage = fetchAndUpdatePage(session.value, topicsFlow)
-                } while (fetchedNewPage && continuous)
-                fetchingState.value = FetchingState.Succeed
-            } catch (e: Throwable) {
-                fetchingState.value = FetchingState.Failed(e)
-            }
-        }
-    }
-}
-
-fun ApplicationState.doSearch(keywords: String) {
-    updateSearchFilter(SearchFilter(keywords.trim(), null, null))
-}
 
 @Composable
 fun MainPage(
@@ -217,6 +107,9 @@ fun MainPage(
             }
         }
 
+        val (starred, onStarredChange) = remember { mutableStateOf(false) }
+        // TODO: 2022/8/17 starred
+
         LiveList(
             app = app,
             workState = workState,
@@ -227,7 +120,9 @@ fun MainPage(
                     Desktop.getDesktop().browse(URI.create(it.magnetLink.value))
                 }
             },
-            modifier = Modifier.padding()
+            modifier = Modifier.padding(),
+            starred = starred,
+            onStarredChange = onStarredChange,
         )
     }
 }
@@ -326,6 +221,8 @@ private fun LiveList(
     lazyListState: LazyListState = rememberLazyListState(),
     topics: List<Topic>,
     onClickCard: (topic: Topic) -> Unit,
+    starred: Boolean,
+    onStarredChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val currentOnClickCard by rememberUpdatedState(onClickCard)
@@ -361,13 +258,16 @@ private fun LiveList(
             LazyColumn(state = lazyListState, modifier = modifier) {
                 if (topics.isNotEmpty() && app.searchFilter.value.keywords != null) {
                     item("organized", "organized") {
-                        OrganizedWorkView(
+                        OrganizedViewCard(
                             workState = workState,
                             visibleTopics = visibleTopics,
                             onClickAlliance = { currentWorkState.selectedAlliance.updateSelected(it) },
                             onClickEpisode = { currentWorkState.selectedEpisode.updateSelected(it) },
                             onClickResolution = { currentWorkState.selectedResolution.updateSelected(it) },
-                            onClickSubtitleLanguage = { currentWorkState.selectedSubtitleLanguage.updateSelected(it) })
+                            onClickSubtitleLanguage = { currentWorkState.selectedSubtitleLanguage.updateSelected(it) },
+                            starred = starred,
+                            onStarredChange = onStarredChange
+                        )
                     }
                 }
 
@@ -448,7 +348,10 @@ private fun PreviewMainPage() {
 @Preview
 @Composable
 private fun PreviewTopicList() {
-    LiveList(remember { ApplicationState(client = AnimationGardenClient.Factory.create()) },
+    val (starred, onStarredChange) = remember { mutableStateOf(false) }
+
+    LiveList(
+        remember { ApplicationState(client = AnimationGardenClient.Factory.create()) },
         remember { WorkState() },
         topics = mutableListOf<Topic>().apply {
             repeat(10) {
@@ -470,5 +373,8 @@ private fun PreviewTopicList() {
         },
         onClickCard = {
 
-        })
+        },
+        starred = starred,
+        onStarredChange = onStarredChange
+    )
 }
