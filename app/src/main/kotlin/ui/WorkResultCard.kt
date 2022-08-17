@@ -36,7 +36,7 @@ fun OrganizedWorkView(
 
     OutlinedCard(
         Modifier
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(horizontal = 16.dp, vertical = 16.dp)
             .shadow(elevation = 2.dp, shape = shape)
             .clip(shape)
 //                .border(1.dp, AppTheme.colorScheme.outline, shape = AppTheme.shapes.large)

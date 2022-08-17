@@ -227,7 +227,7 @@ fun MainPage(
                     Desktop.getDesktop().browse(URI.create(it.magnetLink.value))
                 }
             },
-            modifier = Modifier.padding(top = 16.dp)
+            modifier = Modifier.padding()
         )
     }
 }
