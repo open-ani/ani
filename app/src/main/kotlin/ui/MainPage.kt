@@ -386,7 +386,7 @@ private fun LiveList(
                     val hasMorePages by app.hasMorePages.collectAsState()
                     val fetching by app.fetchingState.collectAsState()
                     Box(
-                        Modifier.padding(vertical = 16.dp).fillMaxWidth().wrapContentHeight(),
+                        Modifier.padding(all = 16.dp).fillMaxWidth().wrapContentHeight(),
                         contentAlignment = Alignment.Center
                     ) {
                         if (hasMorePages) {
@@ -417,6 +417,14 @@ private fun LiveList(
                                     ),
                                     style = AppTheme.typography.bodyMedium.run { copy(color = color.copy(alpha = 0.5f)) }
                                 )
+                                // TODO: 2022/8/17 add retry
+//                                ClickableText(
+//                                    AnnotatedString(LocalI18n.current.getString("search.retry")),
+//                                    style = AppTheme.typography.bodyMedium.run { copy(color = color.copy(alpha = 0.5f)) },
+//                                    onClick = {
+//                                        app.launchFetchNextPage(false)
+//                                    }
+//                                )
                             }
                         }
                     }
