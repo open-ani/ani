@@ -68,30 +68,41 @@ class WorkState {
 
     fun setTopics(topics: List<Topic>, filter: String?) {
         checkFilterUpdated(filter)
+
+        // Sort first by length, then alphabetically.
+        // Example result: 01, 02, 03, SP 01, SP 02, SP 03, 01+小剧场, 02+小剧场
         this.episodes.value = topics.asSequence()
             .mapNotNull { it.details?.episode }
             .distinctBy { it.raw }
-            .sortedBy { it.raw }
+            .groupBy { it.raw.length }
+            .flatMap { (_, value) ->
+                value.sortedBy { it.raw }
+            }
             .toList()
 
+        // Sort descending by resolution size.
+        // Example result: 4K, 2K, 1080P, 720P
         this.resolutions.value = topics.asSequence()
             .mapNotNull { it.details?.resolution }
             .distinctBy { it.id }
-            .sortedBy { it.size }
+            .sortedByDescending { it.size }
             .toList()
 
+        // Simply sort by name.
         this.alliances.value = topics.asSequence()
             .mapNotNull { it.alliance }
             .distinctBy { it.id }
             .sortedBy { it.name }
             .toList()
 
+        // Simply sort by name.
         this.otherNames.value = topics.asSequence()
             .flatMap { it.details?.otherTitles.orEmpty() }
             .distinctBy { it.lowercase() }
             .sorted()
             .toList()
 
+        // Sort by id, then add Other to the end
         this.subtitleLanguages.value =
             topics.asSequence()
                 .flatMap { it.details?.subtitleLanguages.orEmpty() }
@@ -144,10 +155,13 @@ class WorkState {
         this.selectedEpisode.value?.let { if (topic.details?.episode != it) return false }
         this.selectedResolution.value?.let { if (topic.details?.resolution != it) return false }
         this.selectedSubtitleLanguage.value?.let {
+            val languages = topic.details?.subtitleLanguages
             if (it == SubtitleLanguage.Other) {
-                if (topic.details?.subtitleLanguages != null) return false
+                if (!languages.isNullOrEmpty()) return false // languages are parsed
+            } else if (languages?.contains(it) == false) {
+                // language not included
+                return false
             }
-            if (topic.details?.subtitleLanguages?.contains(it) == false) return false
         } // allow null
         this.selectedAlliance.value?.let { if (topic.alliance != it) return false }
         return true
@@ -157,11 +171,6 @@ class WorkState {
         // select the most frequent one
         val newChineseTitle = topics.mostFrequentByOrNull { it.details?.chineseTitle }
         this.chineseName.value = newChineseTitle
-//        this.otherNames.addAll(buildSet {
-//            for (topic in this.< Error property >) {
-//                topic.details?.otherTitles?.let { addAll(it) }
-//            }
-//        })
     }
 
     private fun <T, K> Iterable<T>.mostFrequentByOrNull(key: (T) -> K): K? =

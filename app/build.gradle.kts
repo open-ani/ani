@@ -22,6 +22,10 @@ dependencies {
     implementation(compose.runtime)
     implementation(compose.preview)
 
+    implementation("org.jetbrains.exposed:exposed-core:0.39.1")
+    implementation("org.jetbrains.exposed:exposed-dao:0.39.1")
+    implementation("org.jetbrains.exposed:exposed-jdbc:0.39.1")
+
     testImplementation(compose.uiTestJUnit4)
 
     implementation(projects.animationGardenApi)

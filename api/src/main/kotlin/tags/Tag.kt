@@ -94,9 +94,10 @@ sealed class Resolution(
     val id: String,
     val size: Int, // for sorting
     private vararg val otherNames: String,
+    private val displayName: String = id,
 ) {
     override fun toString(): String {
-        return id
+        return displayName
     }
 
     object R240P : Resolution("240P", 240, "x240")
@@ -105,8 +106,8 @@ sealed class Resolution(
     object R560P : Resolution("560P", 560, "x560")
     object R720P : Resolution("720P", 720, "x720")
     object R1080P : Resolution("1080P", 1080, "x1080")
-    object R1440P : Resolution("1440P", 1440, "x1440")
-    object R2160P : Resolution("2160P", 2160, "x2160")
+    object R1440P : Resolution("1440P", 1440, "x1440", displayName = "2K")
+    object R2160P : Resolution("2160P", 2160, "x2160", displayName = "4K")
 
     companion object {
         val entries = arrayOf(

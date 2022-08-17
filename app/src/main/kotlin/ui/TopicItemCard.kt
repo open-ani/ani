@@ -74,17 +74,15 @@ fun TopicItemCard(topic: Topic, onClick: () -> Unit) {
                         Row(Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 8.dp)) {
                             val list = remember(topic.id) {
                                 buildList {
-                                    Tag(
-                                        topic.size.toString(),
-                                        backgroundColor = Color.Blue
-                                    ).let { add(it) }
+                                    add(Tag(topic.size.toString()))
 
-                                    details?.resolution?.id?.let {
-                                        Tag(
-                                            it,
-                                            backgroundColor = Color.Magenta
-                                        )
-                                    }?.let { add(it) }
+                                    details?.resolution?.id?.let { Tag(it) }?.let { add(it) }
+
+                                    details?.mediaOrigin?.id?.let { Tag(it) }?.let { add(it) }
+
+                                    details?.subtitleLanguages?.forEach {
+                                        add(Tag(it.id))
+                                    }
 
                                     tags?.forEach { add(Tag(it)) }
                                 }

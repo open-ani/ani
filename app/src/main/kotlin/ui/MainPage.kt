@@ -340,6 +340,8 @@ private fun LiveList(
 
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopStart) {
         val isEmpty = topics.isEmpty()
+
+        // animate on changing search query
         AnimatedVisibility(
             isEmpty,
             enter = enter,
@@ -357,12 +359,8 @@ private fun LiveList(
         ) {
 
             LazyColumn(state = lazyListState, modifier = modifier) {
-                item("organized", "organized") {
-                    AnimatedVisibility(
-                        topics.isNotEmpty() && app.searchFilter.value.keywords != null,
-                        enter = enter,
-                        exit = exit,
-                    ) {
+                if (topics.isNotEmpty() && app.searchFilter.value.keywords != null) {
+                    item("organized", "organized") {
                         OrganizedWorkView(
                             workState = workState,
                             visibleTopics = visibleTopics,
@@ -373,7 +371,8 @@ private fun LiveList(
                     }
                 }
 
-                items(topics, { it.id }, { it.details?.tags?.isNotEmpty() }) { topic ->
+                items(topics, { it.id }, { null }) { topic ->
+                    // animate on selecting filter
                     AnimatedVisibility(
                         visibleTopics.contains(topic),
                         enter = enter,
@@ -381,7 +380,6 @@ private fun LiveList(
                     ) {
                         TopicItemCard(topic) { currentOnClickCard(topic) }
                     }
-
                 }
                 // dummy footer. When footer gets into visible area, `LaunchedEffect` comes with its composition.
                 item("refresh footer", contentType = "refresh footer") {
