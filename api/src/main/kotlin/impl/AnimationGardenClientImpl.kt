@@ -17,7 +17,7 @@ import io.ktor.utils.io.jvm.javaio.*
 import io.ktor.utils.io.streams.*
 import me.him188.animationgarden.api.AnimationGardenClient
 import me.him188.animationgarden.api.impl.protocol.Network
-import me.him188.animationgarden.api.model.SearchFilter
+import me.him188.animationgarden.api.model.SearchQuery
 import me.him188.animationgarden.api.model.SearchSession
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
@@ -28,7 +28,7 @@ internal class AnimationGardenClientImpl : AnimationGardenClient {
     private val network: Network = Network(createHttpClient())
 
 
-    override fun startSearchSession(filter: SearchFilter): SearchSession {
+    override fun startSearchSession(filter: SearchQuery): SearchSession {
         return SearchSessionImpl(filter, network)
     }
 }

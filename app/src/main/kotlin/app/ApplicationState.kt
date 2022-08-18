@@ -1,23 +1,25 @@
 package me.him188.animationgarden.desktop.app
 
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.Stable
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.*
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.job
 import me.him188.animationgarden.api.AnimationGardenClient
 import me.him188.animationgarden.api.impl.model.KeyedMutableListFlow
 import me.him188.animationgarden.api.impl.model.KeyedMutableListFlowImpl
-import me.him188.animationgarden.api.model.SearchFilter
+import me.him188.animationgarden.api.impl.model.mutate
+import me.him188.animationgarden.api.model.SearchQuery
 import me.him188.animationgarden.api.model.SearchSession
 import me.him188.animationgarden.api.model.Topic
+import me.him188.animationgarden.api.tags.Episode
+import java.io.File
 
 @Stable
 class ApplicationState(
     private val client: AnimationGardenClient,
+    workingDir: File,
 ) {
     @Stable
     val applicationScope: CoroutineScope =
@@ -27,88 +29,70 @@ class ApplicationState(
 
 
     @Stable
-    val fetchingState: MutableStateFlow<FetchingState> = MutableStateFlow(FetchingState.Idle)
-
-    @Stable
-    val hasMorePages = MutableStateFlow(true)
-
-    @Stable
-    val searchFilter: MutableState<SearchFilter> = mutableStateOf(SearchFilter())
+    val searchQuery: MutableState<SearchQuery> = mutableStateOf(SearchQuery())
 
     @Stable
     val topicsFlow: KeyedMutableListFlow<String, Topic> = KeyedMutableListFlowImpl { it.id }
 
     @Stable
     val session: MutableState<SearchSession> by lazy {
-        mutableStateOf(client.startSearchSession(SearchFilter()))
+        mutableStateOf(client.startSearchSession(SearchQuery()))
     }
 
+    private val dataFile = workingDir.resolve("data").apply { mkdirs() }.resolve("app.yml")
 
-    init {
-        applicationScope.launch {
-            hasMorePages.collect {
-                println("hasMorePages changed: $it")
-            }
-        }
-        applicationScope.launch {
-            fetchingState.collect {
-                println("isFetching changed: $it")
-            }
-        }
+    @Stable
+    val saver: AppDataSaver = AppDataSaver(dataFile).apply {
+        reload()
     }
 
-    fun updateSearchFilter(searchFilter: SearchFilter) {
-        this.searchFilter.value = searchFilter
-        hasMorePages.value = true
-        fetchingState.value = FetchingState.Idle
+    @Stable
+    val data: AppData
+        get() = saver.data
+
+    @Stable
+    val fetcher: Fetcher =
+        Fetcher(CoroutineScope(applicationScope.coroutineContext + SupervisorJob(applicationScope.coroutineContext.job)))
+
+    fun updateSearchFilter(searchQuery: SearchQuery) {
+        this.searchQuery.value = searchQuery
+        fetcher.hasMorePages.value = true
+        fetcher.fetchingState.value = FetchingState.Idle
         topicsFlow.value = listOf()
-        session.value = client.startSearchSession(searchFilter)
-        launchFetchNextPage(!searchFilter.keywords.isNullOrEmpty())
+        session.value = client.startSearchSession(searchQuery)
+        launchFetchNextPage(!searchQuery.keywords.isNullOrBlank())
     }
 
-    private suspend fun fetchAndUpdatePage(
-        session: SearchSession,
-        topicsFlow: KeyedMutableListFlow<String, Topic>
-    ): Boolean {
-        val nextPage = session.nextPage()
-        return if (!nextPage.isNullOrEmpty()) {
-            nextPage.forEach { it.details } // init
-            val old = topicsFlow.value
-            val new = sequenceOf(topicsFlow.value, nextPage).flatten().distinctBy { it.id }.toList()
-            if (old.size == new.size) {
-                //                hasMorePages.value = false
-            } else {
-                topicsFlow.value = new
-            }
-            true
-        } else {
-            hasMorePages.value = false
-            false
-        }
+    fun launchFetchNextPage(
+        continuous: Boolean,
+    ) {
+        fetcher.launchFetchNextPage(continuous, session.value, topicsFlow)
     }
 
-    fun launchFetchNextPage(continuous: Boolean) {
-        while (true) {
-            val value = fetchingState.value
-            if (value != FetchingState.Fetching) {
-                if (fetchingState.compareAndSet(value, FetchingState.Fetching)) {
-                    break
+
+    @Composable
+    fun isEpisodeWatched(episode: Episode): Boolean {
+        val starredAnime by remember {
+            data.starredAnime.asFlow()
+                .map { list -> list.find { it.searchQuery == searchQuery.value.keywords } }
+        }.collectAsState(null)
+
+        return starredAnime?.watchedEpisodes?.contains(episode.raw) == true
+    }
+
+    fun onEpisodeDownloaded(episode: Episode) {
+        data.starredAnime.mutate { list ->
+            list.map { anime ->
+                if (anime.searchQuery == searchQuery.value.keywords) {
+                    anime.run { copy(watchedEpisodes = watchedEpisodes + episode.raw) }
+                } else {
+                    anime
                 }
-            }
-        }
-        applicationScope.launch {
-            try {
-                do {
-                    val fetchedNewPage = fetchAndUpdatePage(session.value, topicsFlow)
-                } while (fetchedNewPage && continuous)
-                fetchingState.value = FetchingState.Succeed
-            } catch (e: Throwable) {
-                fetchingState.value = FetchingState.Failed(e)
             }
         }
     }
 }
 
-fun ApplicationState.doSearch(keywords: String) {
-    updateSearchFilter(SearchFilter(keywords.trim(), null, null))
+fun ApplicationState.doSearch(keywords: String?) {
+    updateSearchFilter(SearchQuery(keywords?.trim(), null, null))
 }

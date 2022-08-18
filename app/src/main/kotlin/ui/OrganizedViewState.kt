@@ -11,7 +11,7 @@ import me.him188.animationgarden.api.tags.SubtitleLanguage
  * Represents a work, which may be Anime, Manga, Japanese Drama, etc.
  */
 @Stable
-class WorkState {
+class OrganizedViewState {
     @Stable
     val chineseName: MutableState<String?> = mutableStateOf(null)
 
@@ -108,7 +108,6 @@ class WorkState {
                 .flatMap { it.details?.subtitleLanguages.orEmpty() }
                 .distinctBy { it.id }
                 .sortedBy { it.id }
-                .let { it + SubtitleLanguage.Other }
                 .toList()
 
         updateNames(topics)

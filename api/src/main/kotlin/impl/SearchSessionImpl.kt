@@ -7,12 +7,12 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import me.him188.animationgarden.api.impl.model.CacheImpl
 import me.him188.animationgarden.api.impl.protocol.Network
-import me.him188.animationgarden.api.model.SearchFilter
+import me.him188.animationgarden.api.model.SearchQuery
 import me.him188.animationgarden.api.model.SearchSession
 import me.him188.animationgarden.api.model.Topic
 
 internal class SearchSessionImpl(
-    override val filter: SearchFilter,
+    override val query: SearchQuery,
     private val network: Network,
 ) : SearchSession {
     private val page = atomic(1)
@@ -35,10 +35,10 @@ internal class SearchSessionImpl(
         val currentPage = page.value
         val (context, result) = network.list(
             page = currentPage,
-            keyword = filter.keywords,
-            sortId = filter.category?.id,
-            teamId = filter.alliance?.id,
-            orderId = filter.ordering?.id
+            keyword = query.keywords,
+            sortId = query.category?.id,
+            teamId = query.alliance?.id,
+            orderId = query.ordering?.id
         )
         cache.mergeFrom(context)
         page.compareAndSet(currentPage, currentPage + 1)

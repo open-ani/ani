@@ -4,10 +4,7 @@ import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedFilterChip
-import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,8 +24,9 @@ import java.time.LocalDateTime
 
 @Composable
 fun OrganizedViewCard(
-    workState: WorkState,
+    organizedViewState: OrganizedViewState,
     visibleTopics: List<Topic>,
+    isEpisodeWatched: @Composable (Episode) -> Boolean,
     onClickEpisode: (Episode) -> Unit,
     onClickSubtitleLanguage: (SubtitleLanguage) -> Unit,
     onClickResolution: (Resolution) -> Unit,
@@ -54,14 +52,15 @@ fun OrganizedViewCard(
     ) {
         Box(Modifier.fillMaxSize()) {
             OrganizedViewContent(
-                workState,
-                visibleTopics,
-                onClickEpisode,
-                onClickSubtitleLanguage,
-                onClickResolution,
-                onClickAlliance,
-                starred,
-                onStarredChange
+                organizedViewState = organizedViewState,
+                visibleTopics = visibleTopics,
+                isEpisodeWatched = isEpisodeWatched,
+                onClickEpisode = onClickEpisode,
+                onClickSubtitleLanguage = onClickSubtitleLanguage,
+                onClickResolution = onClickResolution,
+                onClickAlliance = onClickAlliance,
+                starred = starred,
+                onStarredChange = onStarredChange
             )
         }
     }
@@ -71,8 +70,9 @@ fun OrganizedViewCard(
 
 @Composable
 private fun OrganizedViewContent(
-    workState: WorkState,
+    organizedViewState: OrganizedViewState,
     visibleTopics: List<Topic>,
+    isEpisodeWatched: @Composable (Episode) -> Boolean,
     onClickEpisode: (Episode) -> Unit,
     onClickSubtitleLanguage: (SubtitleLanguage) -> Unit,
     onClickResolution: (Resolution) -> Unit,
@@ -80,17 +80,17 @@ private fun OrganizedViewContent(
     starred: Boolean,
     onStarredChange: (Boolean) -> Unit,
 ) {
-    val currentWorkState by rememberUpdatedState(workState)
+    val currentWorkState by rememberUpdatedState(organizedViewState)
     val currentVisibleTopics by rememberUpdatedState(visibleTopics)
 
     Column(Modifier.padding(16.dp)) {
         AnimatedTitles(
-            chineseTitle = workState.chineseName.value,
-            otherTitles = workState.otherNames.value,
+            chineseTitle = organizedViewState.chineseName.value,
+            otherTitles = organizedViewState.otherNames.value,
             episode = null,
             rawTitle = {
                 // This actually shouldn't happen, since we always provide chineseName not null.
-                workState.otherNames.value.firstOrNull() ?: ""
+                organizedViewState.otherNames.value.firstOrNull() ?: ""
             },
             rowModifier = Modifier.height(26.dp),
             topEnd = {
@@ -121,22 +121,45 @@ private fun OrganizedViewContent(
                 isSelected = { currentWorkState.selectedEpisode.value == it },
                 onClick = onClickEpisode,
                 enabled = { visibleEpisodes.contains(it) },
-                content = { Text(it.raw) },
+                content = {
+                    Text(
+                        it.raw,
+                        color = if (isEpisodeWatched(it)) {
+                            LocalTextStyle.current.color.copy(alpha = 0.3f)
+                        } else {
+                            LocalTextStyle.current.color
+                        }
+                    )
+                },
             )
 
+
+            val subtitleLanguages by remember {
+                derivedStateOf {
+                    val hasAnyTopicWithUnrecognizedLanguage = currentVisibleTopics.any { topic ->
+                        topic.details?.subtitleLanguages.isNullOrEmpty()
+                    }
+                    if (hasAnyTopicWithUnrecognizedLanguage) {
+                        currentWorkState.subtitleLanguages.value + SubtitleLanguage.Other
+                    } else {
+                        currentWorkState.subtitleLanguages.value
+                    }
+                }
+            }
             val visibleLanguages: List<SubtitleLanguage> by remember {
                 derivedStateOf {
-                    currentWorkState.subtitleLanguages.value
+                    subtitleLanguages
                         .filter { item ->
-                            currentWorkState.selectedSubtitleLanguage.value == item || currentVisibleTopics.any { topic ->
-                                topic.details?.subtitleLanguages?.contains(item) == false
-                            }
+                            item == SubtitleLanguage.Other ||
+                                    currentWorkState.selectedSubtitleLanguage.value == item ||
+                                    currentVisibleTopics.any { topic ->
+                                        topic.details?.subtitleLanguages?.contains(item) == true
+                                    }
                         }
-                        .ifEmpty { listOf(SubtitleLanguage.Other) }
                 }
             }
             FilterChipRow(
-                list = currentWorkState.subtitleLanguages.value,
+                list = subtitleLanguages,
                 key = { it.id },
                 isSelected = { currentWorkState.selectedSubtitleLanguage.value == it },
                 onClick = onClickSubtitleLanguage,
@@ -190,6 +213,7 @@ private fun <T> FilterChipRow(
     isSelected: @Composable (T) -> Boolean,
     onClick: (T) -> Unit,
     enabled: @Composable (T) -> Boolean,
+    elevation: SelectableChipElevation? = FilterChipDefaults.elevatedFilterChipElevation(),
     content: @Composable (T) -> Unit = { Text(it.toString()) },
 ) {
     val currentOnClick by rememberUpdatedState(onClick)
@@ -200,6 +224,7 @@ private fun <T> FilterChipRow(
                 onClick = { currentOnClick.invoke(it) },
                 label = { content(it) },
                 enabled = enabled.invoke(it),
+                elevation = elevation,
 //                modifier = Modifier.animateItemPlacement(tween(200, 100)),
             )
         }
@@ -231,8 +256,9 @@ private fun PreviewOrganizedWorkView() {
             val (starred, onStarredChange) = remember { mutableStateOf(false) }
 
             OrganizedViewCard(
-                workState = remember { WorkState().apply { setTopics(topics, "lycoris") } },
+                organizedViewState = remember { OrganizedViewState().apply { setTopics(topics, "lycoris") } },
                 visibleTopics = topics,
+                isEpisodeWatched = { false },
                 onClickEpisode = {},
                 onClickSubtitleLanguage = {},
                 onClickResolution = {},

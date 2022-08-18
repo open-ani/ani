@@ -11,18 +11,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.application
 import me.him188.animationgarden.api.AnimationGardenClient
 import me.him188.animationgarden.desktop.app.ApplicationState
+import me.him188.animationgarden.desktop.app.doSearch
 import me.him188.animationgarden.desktop.i18n.LocalI18n
 import me.him188.animationgarden.desktop.i18n.ProvideResourceBundleI18n
 import me.him188.animationgarden.desktop.ui.MainPage
 import me.him188.animationgarden.desktop.ui.WindowEx
+import java.io.File
 
 object AnimationGardenDesktop {
     @JvmStatic
     fun main(args: Array<String>) {
         application(exitProcessOnExit = true) {
             val app = remember {
-                ApplicationState(AnimationGardenClient.Factory.create()).apply {
-                    launchFetchNextPage(false)
+                ApplicationState(AnimationGardenClient.Factory.create(), File(System.getProperty("user.dir"))).apply {
+                    doSearch(null)
                 }
             }
             val currentDensity by rememberUpdatedState(LocalDensity.current)
@@ -34,6 +36,7 @@ object AnimationGardenDesktop {
                 }
             }
 
+            app.saver.attachAutoSave()
             ProvideResourceBundleI18n {
                 WindowEx(
                     title = LocalI18n.current.getString("title"),

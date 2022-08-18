@@ -6,6 +6,7 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
 plugins {
     kotlin("jvm")
+    kotlin("plugin.serialization")
     id("org.jetbrains.compose")
     id("kotlinx-atomicfu")
 }
@@ -22,9 +23,15 @@ dependencies {
     implementation(compose.runtime)
     implementation(compose.preview)
 
-    implementation("org.jetbrains.exposed:exposed-core:0.39.1")
-    implementation("org.jetbrains.exposed:exposed-dao:0.39.1")
-    implementation("org.jetbrains.exposed:exposed-jdbc:0.39.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.3.3")
+    implementation("net.mamoe.yamlkt:yamlkt:0.12.0")
+
+//    implementation("org.jetbrains.exposed:exposed-core:0.39.1")
+//    implementation("org.jetbrains.exposed:exposed-dao:0.39.1")
+//    implementation("org.jetbrains.exposed:exposed-jdbc:0.39.1")
+//    implementation("org.jetbrains.exposed:exposed-kotlin-datetime:0.39.1")
+//    // https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc
+//    implementation("org.xerial:sqlite-jdbc:3.39.2.0")
 
     testImplementation(compose.uiTestJUnit4)
 

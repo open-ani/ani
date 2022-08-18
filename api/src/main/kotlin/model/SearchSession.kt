@@ -3,14 +3,14 @@ package me.him188.animationgarden.api.model
 import kotlinx.coroutines.flow.Flow
 
 interface SearchSession {
-    val filter: SearchFilter
+    val query: SearchQuery
 
     val results: Flow<Topic>
 
     suspend fun nextPage(): List<Topic>?
 }
 
-data class SearchFilter(
+data class SearchQuery(
     val keywords: String? = null,
     val category: TopicCategory? = null,
     val alliance: Alliance? = null,

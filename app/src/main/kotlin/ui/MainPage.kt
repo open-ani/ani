@@ -23,14 +23,17 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.him188.animationgarden.api.AnimationGardenClient
+import me.him188.animationgarden.api.impl.model.mutate
 import me.him188.animationgarden.api.model.*
 import me.him188.animationgarden.api.model.FileSize.Companion.megaBytes
 import me.him188.animationgarden.desktop.AppTheme
 import me.him188.animationgarden.desktop.app.ApplicationState
 import me.him188.animationgarden.desktop.app.FetchingState
+import me.him188.animationgarden.desktop.app.StarredAnime
 import me.him188.animationgarden.desktop.app.doSearch
 import me.him188.animationgarden.desktop.i18n.LocalI18n
 import java.awt.Desktop
+import java.io.File
 import java.net.URI
 import java.time.LocalDateTime
 
@@ -38,21 +41,24 @@ import java.time.LocalDateTime
 fun MainPage(
     app: ApplicationState
 ) {
-    val appState by rememberUpdatedState(app)
-    val topics by remember { app.topicsFlow.asFlow() }.collectAsState()
-    val lazyListState = rememberLazyListState()
+    // properties starting with "current" means it is delegated by a State, so they are observable in 'derived state',
+    // and is safe to be used in callbacks.
+
+    val currentApp by rememberUpdatedState(app)
+    val currentTopics by remember { app.topicsFlow.asFlow() }.collectAsState()
+    val currentLazyList = rememberLazyListState()
 
     val appliedKeywordState = remember { mutableStateOf("") }
-    val coroutineScope = rememberCoroutineScope()
-    var appliedKeyword by appliedKeywordState
-    val workState by remember {
-        val myWork = WorkState()
-        derivedStateOf {
-            myWork.apply {
-                coroutineScope.launch {
-                    lazyListState.scrollToItem(0, 0)
+    val currentCoroutineScope = rememberCoroutineScope()
+    var currentAppliedKeyword by appliedKeywordState
+    val currentOrganizedViewState by remember {
+        val instance = OrganizedViewState()
+        derivedStateOf { // observe topics
+            instance.apply {
+                currentCoroutineScope.launch {
+                    currentLazyList.scrollToItem(0, 0)
                 }
-                setTopics(topics, appState.searchFilter.value.keywords)
+                setTopics(currentTopics, currentApp.searchQuery.value.keywords)
             }
         }
     }
@@ -63,14 +69,14 @@ fun MainPage(
             Modifier.padding(16.dp).fillMaxWidth()
         ) {
             Row {
-                val (keywordsInput, onKeywordsInputChange) = remember { mutableStateOf(appliedKeyword) }
+                val (keywordsInput, onKeywordsInputChange) = remember { mutableStateOf(currentAppliedKeyword) }
                 OutlinedTextField(
                     keywordsInput,
                     onKeywordsInputChange,
                     Modifier.height(48.dp).defaultMinSize(minWidth = 96.dp).weight(0.8f).onKeyEvent {
                         if (it.key == Key.Enter || it.key == Key.NumPadEnter) {
-                            appliedKeyword = keywordsInput.trim()
-                            appState.doSearch(appliedKeyword)
+                            currentAppliedKeyword = keywordsInput.trim()
+                            currentApp.doSearch(currentAppliedKeyword)
                             true
                         } else false
                     },
@@ -104,28 +110,43 @@ fun MainPage(
 //                    maxLines = 1,
 //                )
                 AnimatedSearchButton {
-                    appliedKeyword = keywordsInput.trim()
-                    appState.doSearch(appliedKeyword)
+                    currentAppliedKeyword = keywordsInput.trim()
+                    currentApp.doSearch(currentAppliedKeyword)
                 }
             }
         }
 
-        val (starred, onStarredChange) = remember { mutableStateOf(false) }
-        // TODO: 2022/8/17 starred
+        val currentStarredAnime by app.data.starredAnime.asFlow().collectAsState()
 
         LiveList(
             app = app,
-            workState = workState,
-            lazyListState = lazyListState,
-            topics = topics,
+            organizedViewState = currentOrganizedViewState,
+            lazyListState = currentLazyList,
+            topics = currentTopics,
             onClickCard = {
                 app.applicationScope.launch(Dispatchers.IO) {
+                    it.details?.episode?.let { app.onEpisodeDownloaded(it) }
                     Desktop.getDesktop().browse(URI.create(it.magnetLink.value))
                 }
             },
             modifier = Modifier.padding(),
-            starred = starred,
-            onStarredChange = onStarredChange,
+            starred = currentStarredAnime.any { it.searchQuery == currentApp.searchQuery.value.keywords },
+            onStarredChange = { starred ->
+                if (starred) {
+                    app.data.starredAnime.mutate {
+                        it + StarredAnime(
+                            name = currentOrganizedViewState.chineseName.value
+                                ?: currentOrganizedViewState.otherNames.value.firstOrNull() ?: "",
+                            searchQuery = currentApp.searchQuery.value.keywords.orEmpty(),
+                            preferredAllianceId = currentOrganizedViewState.selectedAlliance.value?.id,
+                            preferredResolutionId = currentOrganizedViewState.selectedResolution.value?.id,
+                            preferredSubtitleId = currentOrganizedViewState.selectedSubtitleLanguage.value?.id,
+                        )
+                    }
+                } else {
+                    app.data.starredAnime.mutate { list -> list.filterNot { it.searchQuery == currentApp.searchQuery.value.keywords } }
+                }
+            },
         )
     }
 }
@@ -220,7 +241,7 @@ private fun AnimatedSearchButton(onClick: () -> Unit) {
 @Composable
 private fun LiveList(
     app: ApplicationState,
-    workState: WorkState,
+    organizedViewState: OrganizedViewState,
     lazyListState: LazyListState = rememberLazyListState(),
     topics: List<Topic>,
     onClickCard: (topic: Topic) -> Unit,
@@ -229,7 +250,7 @@ private fun LiveList(
     modifier: Modifier = Modifier,
 ) {
     val currentOnClickCard by rememberUpdatedState(onClickCard)
-    val currentWorkState by rememberUpdatedState(workState)
+    val currentWorkState by rememberUpdatedState(organizedViewState)
     val enter = remember { expandVertically(expandFrom = Alignment.Top) + fadeIn() }
     val exit = remember { shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut() }
     val visibleTopics: List<Topic> by remember(topics) {
@@ -259,15 +280,17 @@ private fun LiveList(
         ) {
 
             LazyColumn(state = lazyListState, modifier = modifier) {
-                if (topics.isNotEmpty() && app.searchFilter.value.keywords != null) {
-                    item("organized", "organized") {
+                item("organized", "organized") {
+                    val currentSearchQuery by app.searchQuery
+                    if (topics.isNotEmpty() && !currentSearchQuery.keywords.isNullOrBlank()) {
                         OrganizedViewCard(
-                            workState = workState,
+                            organizedViewState = organizedViewState,
                             visibleTopics = visibleTopics,
-                            onClickAlliance = { currentWorkState.selectedAlliance.updateSelected(it) },
+                            isEpisodeWatched = { app.isEpisodeWatched(it) },
                             onClickEpisode = { currentWorkState.selectedEpisode.updateSelected(it) },
-                            onClickResolution = { currentWorkState.selectedResolution.updateSelected(it) },
                             onClickSubtitleLanguage = { currentWorkState.selectedSubtitleLanguage.updateSelected(it) },
+                            onClickResolution = { currentWorkState.selectedResolution.updateSelected(it) },
+                            onClickAlliance = { currentWorkState.selectedAlliance.updateSelected(it) },
                             starred = starred,
                             onStarredChange = onStarredChange
                         )
@@ -286,14 +309,14 @@ private fun LiveList(
                 }
                 // dummy footer. When footer gets into visible area, `LaunchedEffect` comes with its composition.
                 item("refresh footer", contentType = "refresh footer") {
-                    val hasMorePages by app.hasMorePages.collectAsState()
-                    val fetching by app.fetchingState.collectAsState()
+                    val hasMorePages by app.fetcher.hasMorePages.collectAsState()
+                    val fetching by app.fetcher.fetchingState.collectAsState()
                     Box(
                         Modifier.padding(all = 16.dp).fillMaxWidth().wrapContentHeight(),
                         contentAlignment = Alignment.Center
                     ) {
                         if (hasMorePages) {
-                            if (fetching != FetchingState.Fetching) {
+                            if (fetching !is FetchingState.Fetching) {
                                 LaunchedEffect(true) { // when this footer is 'seen', the list must have reached the end.
                                     app.launchFetchNextPage(false)
                                 }
@@ -301,7 +324,7 @@ private fun LiveList(
                         }
 
                         when (val localFetching = fetching) {
-                            FetchingState.Idle, FetchingState.Fetching -> {
+                            FetchingState.Idle, is FetchingState.Fetching -> {
                                 CircularProgressIndicator(color = AppTheme.colorScheme.primary)
                             }
 
@@ -341,7 +364,7 @@ private fun LiveList(
 @Composable
 private fun PreviewMainPage() {
     val app = remember {
-        ApplicationState(AnimationGardenClient.Factory.create())
+        ApplicationState(AnimationGardenClient.Factory.create(), File("."))
     }
     MaterialTheme {
         MainPage(app)
@@ -354,8 +377,8 @@ private fun PreviewTopicList() {
     val (starred, onStarredChange) = remember { mutableStateOf(false) }
 
     LiveList(
-        remember { ApplicationState(client = AnimationGardenClient.Factory.create()) },
-        remember { WorkState() },
+        remember { ApplicationState(client = AnimationGardenClient.Factory.create(), File(".")) },
+        remember { OrganizedViewState() },
         topics = mutableListOf<Topic>().apply {
             repeat(10) {
                 add(
