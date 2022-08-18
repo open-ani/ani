@@ -1,5 +1,6 @@
 package me.him188.animationgarden.api.model
 
+import kotlinx.serialization.Serializable
 import me.him188.animationgarden.api.tags.*
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -80,6 +81,7 @@ data class TopicCategory(
     val name: String
 )
 
+@Serializable
 data class Alliance(
     val id: String,
     val name: String

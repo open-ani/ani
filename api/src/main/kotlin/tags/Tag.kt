@@ -1,7 +1,14 @@
 package me.him188.animationgarden.api.tags
 
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import me.him188.animationgarden.api.model.TopicDetails
 
+@Serializable
 @JvmInline
 value class Episode(
     val raw: String,
@@ -38,6 +45,7 @@ enum class MediaOrigin(
     }
 }
 
+@Serializable(SubtitleLanguage.Serializer::class)
 sealed class SubtitleLanguage(
     val id: String,
 ) {
@@ -79,17 +87,46 @@ sealed class SubtitleLanguage(
         }
     }
 
-    object Other : SubtitleLanguage("___") {
+    object Other : SubtitleLanguage("Other") {
         override fun matches(text: String): Boolean {
             return true
         }
     }
 
+    object ParseError : SubtitleLanguage("ERROR") {
+        override fun matches(text: String): Boolean {
+            return false
+        }
+    }
+
+    internal object Serializer : KSerializer<SubtitleLanguage> {
+        override val descriptor: SerialDescriptor = String.serializer().descriptor
+
+        override fun deserialize(decoder: Decoder): SubtitleLanguage {
+            return tryParse(String.serializer().deserialize(decoder)) ?: ParseError
+        }
+
+        override fun serialize(encoder: Encoder, value: SubtitleLanguage) {
+            return String.serializer().serialize(encoder, value.id)
+        }
+    }
+
+
     companion object {
         val matchableEntries = arrayOf(ChineseSimplified, ChineseTraditional, Japanese, English)
+
+        fun tryParse(value: String): SubtitleLanguage? {
+            for (entry in matchableEntries) {
+                if (entry.matches(value)) {
+                    return entry
+                }
+            }
+            return null
+        }
     }
 }
 
+@Serializable(Resolution.Serializer::class)
 sealed class Resolution(
     val id: String,
     val size: Int, // for sorting
@@ -101,16 +138,38 @@ sealed class Resolution(
     }
 
     object R240P : Resolution("240P", 240, "x240")
+
     object R360P : Resolution("360P", 360, "x360")
+
     object R480P : Resolution("480P", 480, "x480")
+
     object R560P : Resolution("560P", 560, "x560")
+
     object R720P : Resolution("720P", 720, "x720")
+
     object R1080P : Resolution("1080P", 1080, "x1080")
+
     object R1440P : Resolution("1440P", 1440, "x1440", displayName = "2K")
+
     object R2160P : Resolution("2160P", 2160, "x2160", displayName = "4K")
 
+    object ParseError : Resolution("ERROR", 0, "")
+
+    internal object Serializer : KSerializer<Resolution> {
+        override val descriptor: SerialDescriptor = String.serializer().descriptor
+
+        override fun deserialize(decoder: Decoder): Resolution {
+            return tryParse(String.serializer().deserialize(decoder)) ?: ParseError
+        }
+
+        override fun serialize(encoder: Encoder, value: Resolution) {
+            return String.serializer().serialize(encoder, value.id)
+        }
+
+    }
+
     companion object {
-        val entries = arrayOf(
+        private val entries = arrayOf(
             R240P, R360P, R480P, R560P, R720P, R1080P, R1440P, R2160P,
         )
 

@@ -198,7 +198,7 @@ class OrganizedViewState {
     }
 }
 
-fun <T : Any> MutableState<T?>.updateSelected(value: T) {
+fun <T : Any> MutableState<T?>.invertSelected(value: T) {
     if (this.value == value) this.value = null
     else this.value = value
 }

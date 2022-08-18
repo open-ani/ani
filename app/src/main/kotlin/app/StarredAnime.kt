@@ -3,9 +3,13 @@ package me.him188.animationgarden.desktop.app
 import androidx.compose.runtime.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.Serializable
 import me.him188.animationgarden.api.impl.model.KeyedMutableListFlowImpl
 import me.him188.animationgarden.api.impl.model.MutableListFlow
+import me.him188.animationgarden.api.model.Alliance
+import me.him188.animationgarden.api.tags.Resolution
+import me.him188.animationgarden.api.tags.SubtitleLanguage
 import net.mamoe.yamlkt.Yaml
 import java.io.File
 
@@ -14,9 +18,9 @@ data class StarredAnime(
     val name: String,
     val searchQuery: String, // keywords
     val watchedEpisodes: Set<String> = setOf(),
-    val preferredAllianceId: String? = null,
-    val preferredResolutionId: String? = null,
-    val preferredSubtitleId: String? = null,
+    val preferredAlliance: Alliance? = null,
+    val preferredResolution: @Polymorphic Resolution? = null,
+    val preferredSubtitleLanguage: @Polymorphic SubtitleLanguage? = null,
 )
 
 

@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.him188.animationgarden.api.AnimationGardenClient
+import me.him188.animationgarden.api.impl.model.MutableListFlow
 import me.him188.animationgarden.api.impl.model.mutate
 import me.him188.animationgarden.api.model.*
 import me.him188.animationgarden.api.model.FileSize.Companion.megaBytes
@@ -51,10 +52,22 @@ fun MainPage(
     val appliedKeywordState = remember { mutableStateOf("") }
     val currentCoroutineScope = rememberCoroutineScope()
     var currentAppliedKeyword by appliedKeywordState
+
+    val currentStarredAnimeList by app.data.starredAnime.asFlow().collectAsState()
+    val currentStarredAnime by remember {
+        derivedStateOf {
+            currentStarredAnimeList.find { it.searchQuery == app.searchQuery.value.keywords }
+        }
+    }
+
     val currentOrganizedViewState by remember {
         val instance = OrganizedViewState()
         derivedStateOf { // observe topics
             instance.apply {
+                selectedAlliance.value = currentStarredAnime?.preferredAlliance
+                selectedResolution.value = currentStarredAnime?.preferredResolution
+                selectedSubtitleLanguage.value = currentStarredAnime?.preferredSubtitleLanguage
+
                 currentCoroutineScope.launch {
                     currentLazyList.scrollToItem(0, 0)
                 }
@@ -116,38 +129,59 @@ fun MainPage(
             }
         }
 
-        val currentStarredAnime by app.data.starredAnime.asFlow().collectAsState()
-
         LiveList(
             app = app,
             organizedViewState = currentOrganizedViewState,
             lazyListState = currentLazyList,
             topics = currentTopics,
             onClickCard = {
-                app.applicationScope.launch(Dispatchers.IO) {
-                    it.details?.episode?.let { app.onEpisodeDownloaded(it) }
+                currentApp.applicationScope.launch(Dispatchers.IO) {
+                    it.details?.episode?.let { currentApp.onEpisodeDownloaded(it) }
                     Desktop.getDesktop().browse(URI.create(it.magnetLink.value))
                 }
             },
             modifier = Modifier.padding(),
-            starred = currentStarredAnime.any { it.searchQuery == currentApp.searchQuery.value.keywords },
+            starred = currentStarredAnime != null,
+            onUpdateFilter = {
+                currentApp.data.starredAnime.updateStarredAnime(
+                    currentApp.searchQuery.value.keywords.orEmpty(),
+                    currentOrganizedViewState
+                )
+            },
             onStarredChange = { starred ->
                 if (starred) {
-                    app.data.starredAnime.mutate {
+                    currentApp.data.starredAnime.mutate {
                         it + StarredAnime(
                             name = currentOrganizedViewState.chineseName.value
                                 ?: currentOrganizedViewState.otherNames.value.firstOrNull() ?: "",
                             searchQuery = currentApp.searchQuery.value.keywords.orEmpty(),
-                            preferredAllianceId = currentOrganizedViewState.selectedAlliance.value?.id,
-                            preferredResolutionId = currentOrganizedViewState.selectedResolution.value?.id,
-                            preferredSubtitleId = currentOrganizedViewState.selectedSubtitleLanguage.value?.id,
+                            preferredAlliance = currentOrganizedViewState.selectedAlliance.value,
+                            preferredResolution = currentOrganizedViewState.selectedResolution.value,
+                            preferredSubtitleLanguage = currentOrganizedViewState.selectedSubtitleLanguage.value,
                         )
                     }
                 } else {
-                    app.data.starredAnime.mutate { list -> list.filterNot { it.searchQuery == currentApp.searchQuery.value.keywords } }
+                    currentApp.data.starredAnime.mutate { list -> list.filterNot { it.searchQuery == currentApp.searchQuery.value.keywords } }
                 }
             },
         )
+    }
+}
+
+fun MutableListFlow<StarredAnime>.updateStarredAnime(
+    searchQuery: String,
+    currentOrganizedViewState: OrganizedViewState,
+) {
+    return mutate { list ->
+        list.map { anime ->
+            if (anime.searchQuery == searchQuery) anime.copy(
+                name = currentOrganizedViewState.chineseName.value
+                    ?: currentOrganizedViewState.otherNames.value.firstOrNull() ?: "",
+                preferredAlliance = currentOrganizedViewState.selectedAlliance.value,
+                preferredResolution = currentOrganizedViewState.selectedResolution.value,
+                preferredSubtitleLanguage = currentOrganizedViewState.selectedSubtitleLanguage.value,
+            ) else anime
+        }
     }
 }
 
@@ -246,16 +280,18 @@ private fun LiveList(
     topics: List<Topic>,
     onClickCard: (topic: Topic) -> Unit,
     starred: Boolean,
+    onUpdateFilter: () -> Unit,
     onStarredChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val currentOnClickCard by rememberUpdatedState(onClickCard)
-    val currentWorkState by rememberUpdatedState(organizedViewState)
+    val currentOnUpdateFilter by rememberUpdatedState(onUpdateFilter)
+    val currentOrganizedViewState by rememberUpdatedState(organizedViewState)
     val enter = remember { expandVertically(expandFrom = Alignment.Top) + fadeIn() }
     val exit = remember { shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut() }
     val visibleTopics: List<Topic> by remember(topics) {
         derivedStateOf {
-            topics.filter { currentWorkState.matchesQuery(it) }
+            topics.filter { currentOrganizedViewState.matchesQuery(it) }
         }
     }
 
@@ -287,10 +323,22 @@ private fun LiveList(
                             organizedViewState = organizedViewState,
                             visibleTopics = visibleTopics,
                             isEpisodeWatched = { app.isEpisodeWatched(it) },
-                            onClickEpisode = { currentWorkState.selectedEpisode.updateSelected(it) },
-                            onClickSubtitleLanguage = { currentWorkState.selectedSubtitleLanguage.updateSelected(it) },
-                            onClickResolution = { currentWorkState.selectedResolution.updateSelected(it) },
-                            onClickAlliance = { currentWorkState.selectedAlliance.updateSelected(it) },
+                            onClickEpisode = {
+                                currentOrganizedViewState.selectedEpisode.invertSelected(it)
+                                onUpdateFilter()
+                            },
+                            onClickSubtitleLanguage = {
+                                currentOrganizedViewState.selectedSubtitleLanguage.invertSelected(it)
+                                onUpdateFilter()
+                            },
+                            onClickResolution = {
+                                currentOrganizedViewState.selectedResolution.invertSelected(it)
+                                onUpdateFilter()
+                            },
+                            onClickAlliance = {
+                                currentOrganizedViewState.selectedAlliance.invertSelected(it)
+                                onUpdateFilter()
+                            },
                             starred = starred,
                             onStarredChange = onStarredChange
                         )
@@ -401,6 +449,7 @@ private fun PreviewTopicList() {
 
         },
         starred = starred,
+        onUpdateFilter = {},
         onStarredChange = onStarredChange
     )
 }
