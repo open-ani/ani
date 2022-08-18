@@ -22,10 +22,7 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.him188.animationgarden.api.AnimationGardenClient
@@ -100,101 +97,94 @@ fun MainPage(
         Column(Modifier.background(color = backgroundColor).padding(PaddingValues(all = paddingByWindowSize))) {
             var starListMode by remember { mutableStateOf(false) }
 
-            // Search bar
+            // Search bar, fixed height =
             Row(
                 Modifier.padding(top = 16.dp, bottom = 16.dp, start = paddingByWindowSize, end = paddingByWindowSize)
                     .fillMaxWidth()
             ) {
-                Row {
-                    BoxWithConstraints {
-                        val width by animateDpAsState(
-                            if (starListMode) maxWidth else 48.dp,
-                            spring(stiffness = Spring.StiffnessMediumLow)
-                        )
-                        OutlinedIconToggleButton(
-                            checked = starListMode,
-                            onCheckedChange = { starListMode = it },
-                            modifier = Modifier.height(48.dp).width(width),
-                            shape = AppTheme.shapes.medium,
-                            colors = IconButtonDefaults.outlinedIconToggleButtonColors(
-                                checkedContainerColor = AppTheme.colorScheme.surfaceColorAtElevation(1.dp),
-                            ),
-//                        border = IconButtonDefaults.outlinedIconToggleButtonBorder(enabled = true, checked = false)
+                BoxWithConstraints {
+                    // animated width of the Starred List button
+                    val width by animateDpAsState(
+                        if (starListMode) maxWidth else 48.dp,
+                        spring(stiffness = Spring.StiffnessMediumLow)
+                    )
+                    // Starred List button
+                    OutlinedIconToggleButton(
+                        checked = starListMode,
+                        onCheckedChange = { starListMode = it },
+                        modifier = Modifier.height(48.dp).width(width),
+                        shape = AppTheme.shapes.medium,
+                        colors = IconButtonDefaults.outlinedIconToggleButtonColors(
+                            checkedContainerColor = AppTheme.colorScheme.surfaceColorAtElevation(1.dp),
+                        ),
+                    ) {
+                        Row(
+                            Modifier.fillMaxSize(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
                         ) {
-                            Row(
-                                Modifier.fillMaxSize(),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                Icon(
-                                    painterResource("drawable/star-outline.svg"),
-                                    LocalI18n.current.getString("starred.list"),
-                                    modifier = Modifier.size(24.dp)
+                            Icon(
+                                painterResource("drawable/star-outline.svg"),
+                                LocalI18n.current.getString("starred.list"),
+                                modifier = Modifier.size(24.dp)
+                            )
+                            // This Text expands when switched to Starred List viewing.
+                            AnimatedVisibility(starListMode) {
+                                Text(
+                                    LocalI18n.current.getString("starred"),
+                                    modifier = Modifier.padding(start = 8.dp),
+                                    style = AppTheme.typography.titleMedium
                                 )
-                                AnimatedVisibility(starListMode) {
-                                    Text(
-                                        LocalI18n.current.getString("starred"),
-                                        modifier = Modifier.padding(start = 8.dp),
-                                        style = AppTheme.typography.titleMedium
-                                    )
-                                }
                             }
                         }
                     }
+                }
 
-                    OutlinedTextField(
-                        keywordsInput,
-                        onKeywordsInputChange,
-                        Modifier
-                            .padding(start = 8.dp)
-                            .height(48.dp)
-                            .defaultMinSize(minWidth = if (starListMode) 0.dp else 96.dp)
-                            .weight(0.8f)
-                            .onKeyEvent {
-                                if (it.key == Key.Enter || it.key == Key.NumPadEnter) {
-                                    currentAppliedKeyword = keywordsInput.trim()
-                                    currentApp.doSearch(currentAppliedKeyword)
-                                    true
-                                } else false
-                            },
-                        placeholder = {
-                            Text(
-                                LocalI18n.current.getString("search.keywords"),
-                                style = AppTheme.typography.bodyMedium.copy(
-                                    color = AppTheme.typography.bodyMedium.color.copy(0.3f),
-                                    lineHeight = 16.sp
-                                )
-                            )
+                // keywords(search query) input
+                OutlinedTextField(
+                    keywordsInput,
+                    onKeywordsInputChange,
+                    Modifier
+                        .padding(start = 8.dp)
+                        .height(48.dp)
+                        .defaultMinSize(minWidth = if (starListMode) 0.dp else 96.dp)
+                        .weight(0.8f)
+                        .onKeyEvent {
+                            if (it.key == Key.Enter || it.key == Key.NumPadEnter) {
+                                currentAppliedKeyword = keywordsInput.trim()
+                                currentApp.doSearch(currentAppliedKeyword)
+                                true
+                            } else false
                         },
-                        singleLine = true,
-                        shape = AppTheme.shapes.medium,
-                        maxLines = 1,
-                    )
-//                OutlinedTextField(
-//                    alliance,
-//                    onAllianceChange,
-//                    Modifier.padding(start = 16.dp).height(48.dp),
-//                    placeholder = {
-//                        Text(
-//                            "alliance",
-//                            style = AppTheme.typography.bodyMedium.copy(
-//                                color = AppTheme.typography.bodyMedium.color.copy(0.3f)
-//                            )
-//                        )
-//                    },
-//                    singleLine = true,
-//                    shape = AppTheme.shapes.medium,
-//                    maxLines = 1,
-//                )
-                    AnimatedSearchButton {
-                        currentAppliedKeyword = keywordsInput.trim()
-                        currentApp.doSearch(currentAppliedKeyword)
-                    }
+                    placeholder = {
+                        Text(
+                            LocalI18n.current.getString("search.keywords"),
+                            style = AppTheme.typography.bodyMedium.copy(
+                                color = AppTheme.typography.bodyMedium.color.copy(0.3f),
+                                lineHeight = 16.sp
+                            )
+                        )
+                    },
+                    singleLine = true,
+                    shape = AppTheme.shapes.medium,
+                    maxLines = 1,
+                )
+
+                // Resizable button for initializing search
+                AnimatedSearchButton {
+                    currentAppliedKeyword = keywordsInput.trim()
+                    currentApp.doSearch(currentAppliedKeyword)
                 }
             }
 
-            // Page content
-            Row(Modifier.fillMaxSize()) {
+            // Topics search result or Starred List
+            Row(
+                Modifier
+                    .padding(horizontal = paddingByWindowSize)
+                    .fillMaxSize()
+            ) {
+
+                // Starred List, expand from/shrink towards start.
                 AnimatedVisibility(
                     starListMode,
                     enter = expandHorizontally(
@@ -214,7 +204,10 @@ fun MainPage(
                         shrinkTowards = Alignment.Start
                     )
                 ) {
-                    LazyColumn(Modifier.padding(all = paddingByWindowSize).fillMaxSize()) {
+                    LazyColumn(
+                        Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
                         items(currentStarredAnimeList, key = { it.id }) { anime ->
                             val currentAnime by rememberUpdatedState(anime)
                             StarredAnimeCard(
@@ -226,6 +219,7 @@ fun MainPage(
                                     app.updateSearchQuery(SearchQuery(keywords = currentAnime.searchQuery))
                                     starListMode = false
                                     currentAppliedKeyword = currentAnime.searchQuery
+                                    currentOrganizedViewState.selectedEpisode.value = it
                                     onKeywordsInputChange(currentAnime.searchQuery)
                                 }
                             )
@@ -233,6 +227,7 @@ fun MainPage(
                     }
                 }
 
+                // Topic Search Result, slide in from/out towards end.
                 AnimatedVisibility(
                     !starListMode,
                     enter = fadeIn() + slideInHorizontally(
@@ -247,12 +242,16 @@ fun MainPage(
                         spring(
                             dampingRatio = Spring.DampingRatioNoBouncy,
                             stiffness = Spring.StiffnessMediumLow,
+                            visibilityThreshold = IntOffset.VisibilityThreshold
                         ),
                         targetOffsetX = { it }
                     )
                 ) {
                     // topic searching mode
+
+                    // no vertical padding
                     LiveTopicList(
+                        modifier = Modifier,
                         app = app,
                         organizedViewState = currentOrganizedViewState,
                         lazyListState = currentLazyList,
@@ -263,7 +262,6 @@ fun MainPage(
                                 Desktop.getDesktop().browse(URI.create(it.magnetLink.value))
                             }
                         },
-                        modifier = Modifier.padding(horizontal = paddingByWindowSize),
                         starred = currentStarredAnime != null,
                         onUpdateFilter = {
                             currentApp.data.starredAnime.updateStarredAnime(
@@ -370,7 +368,7 @@ private fun AnimatedSearchButton(onClick: () -> Unit) {
 //                        painterResource("drawable/magnify.svg"),
 //                        LocalI18n.current.getString("search.button"),
 //                        Modifier.size(24.dp),
-//                        colorFilter = ColorFilter.tint(color = Color.White) // TODO: 2022/8/6 adjust color
+//                        colorFilter = ColorFilter.tint(color = Color.White)
 //                    )
 //                    Text(
 //                        LocalI18n.current.getString("search.button"),
@@ -420,6 +418,7 @@ private fun LiveTopicList(
     starred: Boolean,
     onUpdateFilter: () -> Unit,
     onStarredChange: (Boolean) -> Unit,
+    spacedBy: Dp = 12.dp,
     modifier: Modifier = Modifier,
 ) {
     val currentOnClickCard by rememberUpdatedState(onClickCard)
@@ -457,29 +456,31 @@ private fun LiveTopicList(
                 item("organized", "organized") {
                     val currentSearchQuery by app.searchQuery
                     if (topics.isNotEmpty() && !currentSearchQuery.keywords.isNullOrBlank()) {
-                        OrganizedViewCard(
-                            organizedViewState = organizedViewState,
-                            visibleTopics = visibleTopics,
-                            isEpisodeWatched = { app.isEpisodeWatched(it) },
-                            onClickEpisode = {
-                                currentOrganizedViewState.selectedEpisode.invertSelected(it)
-                                currentOnUpdateFilter()
-                            },
-                            onClickSubtitleLanguage = {
-                                currentOrganizedViewState.selectedSubtitleLanguage.invertSelected(it)
-                                currentOnUpdateFilter()
-                            },
-                            onClickResolution = {
-                                currentOrganizedViewState.selectedResolution.invertSelected(it)
-                                currentOnUpdateFilter()
-                            },
-                            onClickAlliance = {
-                                currentOrganizedViewState.selectedAlliance.invertSelected(it)
-                                currentOnUpdateFilter()
-                            },
-                            starred = starred,
-                            onStarredChange = onStarredChange
-                        )
+                        Box(Modifier.padding(bottom = spacedBy + 8.dp)) { // extra 8.dp padding
+                            OrganizedViewCard(
+                                organizedViewState = organizedViewState,
+                                visibleTopics = visibleTopics,
+                                isEpisodeWatched = { app.isEpisodeWatched(it) },
+                                onClickEpisode = {
+                                    currentOrganizedViewState.selectedEpisode.invertSelected(it)
+                                    currentOnUpdateFilter()
+                                },
+                                onClickSubtitleLanguage = {
+                                    currentOrganizedViewState.selectedSubtitleLanguage.invertSelected(it)
+                                    currentOnUpdateFilter()
+                                },
+                                onClickResolution = {
+                                    currentOrganizedViewState.selectedResolution.invertSelected(it)
+                                    currentOnUpdateFilter()
+                                },
+                                onClickAlliance = {
+                                    currentOrganizedViewState.selectedAlliance.invertSelected(it)
+                                    currentOnUpdateFilter()
+                                },
+                                starred = starred,
+                                onStarredChange = onStarredChange
+                            )
+                        }
                     }
                 }
 
@@ -490,16 +491,21 @@ private fun LiveTopicList(
                         enter = enter,
                         exit = exit,
                     ) {
-                        TopicItemCard(topic) { currentOnClickCard(topic) }
+                        Box(Modifier.padding(bottom = spacedBy)) {
+                            TopicItemCard(topic) { currentOnClickCard(topic) }
+                        }
                     }
                 }
+
                 // dummy footer. When footer gets into visible area, `LaunchedEffect` comes with its composition.
                 item("refresh footer", contentType = "refresh footer") {
                     val hasMorePages by app.fetcher.hasMorePages.collectAsState()
                     val fetching by app.fetcher.fetchingState.collectAsState()
 
                     Box(
-                        Modifier.padding(vertical = 16.dp).fillMaxWidth().wrapContentHeight(),
+                        Modifier.padding(top = spacedBy + 8.dp, bottom = spacedBy) // extra 8.dp padding
+                            .fillMaxWidth()
+                            .wrapContentHeight(),
                         contentAlignment = Alignment.Center
                     ) {
                         if (hasMorePages) {

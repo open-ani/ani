@@ -47,7 +47,6 @@ fun TopicItemCard(topic: Topic, onClick: () -> Unit) {
         val shape = AppTheme.shapes.large
         OutlinedCard(
             Modifier
-                .padding(vertical = 8.dp)
                 .shadow(elevation = 2.dp, shape = shape)
                 .clip(shape)
                 .clickable(
