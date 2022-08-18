@@ -185,7 +185,12 @@ class RawTitleParserImpl : RawTitleParser() {
                     collectResolution = collectResolution,
                     collectFrameRate = collectFrameRate,
                     collectMediaOrigin = collectMediaOrigin,
-                    collectEpisode = collectEpisode,
+                    collectEpisode = {
+                        if (allianceName == "天使动漫论坛") return@processTag
+//                        if (text.indexOf(tag) < text.indexOf()) { // ignore tag that appeared before titles
+                        collectEpisode(it)
+//                        }
+                    },
                 )
 
                 if (!anyMatched) {
@@ -202,6 +207,7 @@ class RawTitleParserImpl : RawTitleParser() {
         // special cases
         // ★7月新番 【新网球王子 U-17世界杯】【The Prince of Tennis II - U-17 World Cup】【02v2】GB MP4_1080P
         // [Amor字幕组][组长女儿与照料专员(组长女儿与保姆)/Kumichou Musume to Sewagakari][02][1080P][CHS_JP][WEB-DL][MP4]
+        // [Billion Meta Lab] Lycoris Recoil - 07_1080p_x264_CHS&CHT_简繁内封
 
         val exceptTags = exceptTagsBuilder.toString()
             .replace(newAnime) { "" }
@@ -238,8 +244,21 @@ class RawTitleParserImpl : RawTitleParser() {
                 collectTag(unknownTag)
             }
 
-            exceptTags.substringAfterLast('-', "").takeIf { it.isNotBlank() }?.trim()?.let {
-                collectEpisode(Episode(it))
+            exceptTags.substringAfterLast('-', "").takeIf { it.isNotBlank() }?.trim()?.let { maybeEpisode ->
+                if (maybeEpisode.contains("_")) {
+                    maybeEpisode.splitToSequence("_").forEach {
+                        processTag(
+                            tag = it,
+                            collectSubtitleLanguage = collectSubtitleLanguage,
+                            collectResolution = collectResolution,
+                            collectFrameRate = collectFrameRate,
+                            collectMediaOrigin = collectMediaOrigin,
+                            collectEpisode = collectEpisode
+                        )
+                    }
+                } else {
+                    collectEpisode(Episode(maybeEpisode))
+                }
             }
 
             parseNames(exceptTags, collectChineseTitle, collectOtherTitle)
@@ -304,6 +323,7 @@ class RawTitleParserImpl : RawTitleParser() {
         // TD-RAWS [TD-RAWS] Liyuu First Concert 2022「Fo(u)r YuU」 [BDRip 1080p HEVC-10bit FLAC] 約2條評論
         // DHR動研字幕組 [DHR-Raws]Inori Minase水瀬いのり LIVE TOUR HELLO HORIZON (BDrip FHD HEVC ALAC) 約1條評論
         // 天使动漫论坛 [Hi-Res][220803]TVアニメ『異世界薬局』OP主题歌「夢想的クロニクル」／石原夏織[96kHz/24bit][FLAC]
+        // 天使动漫论坛 [Hi-Res][220803]TVアニメ『Lycoris Recoil リコリス・リコイル』OP主题歌「ALIVE」／ClariS[96kHz/24bit][FLAC] 約1條評論
 
         // 其他
         // 萝莉社活动室 【No.145】もふもふなセーラー服~500枚+500枚~ฅ^•ω•^ฅ
