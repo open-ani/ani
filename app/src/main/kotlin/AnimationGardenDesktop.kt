@@ -1,10 +1,11 @@
 package me.him188.animationgarden.desktop
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
@@ -38,13 +39,32 @@ object AnimationGardenDesktop {
 
             app.saver.attachAutoSave()
             ProvideResourceBundleI18n {
+//                Window(create = { ComposeWindow() }, content = {}, dispose = { it.dispose() })
                 WindowEx(
                     title = LocalI18n.current.getString("title"),
                     onCloseRequest = ::exitApplication,
-                    minimumSize = minimumSize
+                    minimumSize = minimumSize,
                 ) {
-                    MainPage(app)
+                    // This actually runs only once since app is never changed.
+                    SideEffect {
+                        this.window.rootPane.putClientProperty("apple.awt.fullWindowContent", true)
+                        this.window.rootPane.putClientProperty("apple.awt.transparentTitleBar", true)
+                    }
+
+                    Box(
+                        Modifier.background(color = AppTheme.colorScheme.background).padding(top = 16.dp)
+                    ) { // safe area
+                        MainPage(app)
+                    }
                 }
+//
+//                WindowEx(
+//                    title = LocalI18n.current.getString("title"),
+//                    onCloseRequest = ::exitApplication,
+//                    minimumSize = minimumSize
+//                ) {
+//                    MainPage(app)
+//                }
             }
         }
     }
