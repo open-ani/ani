@@ -1,6 +1,10 @@
 package me.him188.animationgarden.desktop.ui
 
 import androidx.compose.animation.*
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.VisibilityThreshold
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -18,6 +22,8 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.Dispatchers
@@ -52,11 +58,13 @@ fun MainPage(
     val appliedKeywordState = remember { mutableStateOf("") }
     val currentCoroutineScope = rememberCoroutineScope()
     var currentAppliedKeyword by appliedKeywordState
+    val (keywordsInput, onKeywordsInputChange) = remember { mutableStateOf(currentAppliedKeyword) }
 
     val currentStarredAnimeList by app.data.starredAnime.asFlow().collectAsState()
+    val currentSearchQuery by rememberUpdatedState(app.searchQuery)
     val currentStarredAnime by remember {
         derivedStateOf {
-            currentStarredAnimeList.find { it.searchQuery == app.searchQuery.value.keywords }
+            currentStarredAnimeList.find { it.searchQuery == currentSearchQuery.value.keywords }
         }
     }
 
@@ -75,37 +83,93 @@ fun MainPage(
             }
         }
     }
+    SideEffect {
+        currentApp.currentOrganizedViewState = currentOrganizedViewState
+    }
 
     val backgroundColor = AppTheme.colorScheme.background
-    Column(Modifier.background(color = backgroundColor).padding(PaddingValues(all = 16.dp))) {
-        Row(
-            Modifier.padding(16.dp).fillMaxWidth()
-        ) {
-            Row {
-                val (keywordsInput, onKeywordsInputChange) = remember { mutableStateOf(currentAppliedKeyword) }
-                OutlinedTextField(
-                    keywordsInput,
-                    onKeywordsInputChange,
-                    Modifier.height(48.dp).defaultMinSize(minWidth = 96.dp).weight(0.8f).onKeyEvent {
-                        if (it.key == Key.Enter || it.key == Key.NumPadEnter) {
-                            currentAppliedKeyword = keywordsInput.trim()
-                            currentApp.doSearch(currentAppliedKeyword)
-                            true
-                        } else false
-                    },
-                    placeholder = {
-                        Text(
-                            LocalI18n.current.getString("search.keywords"),
-                            style = AppTheme.typography.bodyMedium.copy(
-                                color = AppTheme.typography.bodyMedium.color.copy(0.3f),
-                                lineHeight = 16.sp
-                            )
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        val paddingByWindowSize by animateDpAsState(
+            if (maxWidth > 400.dp) {
+                16.dp
+            } else {
+                8.dp
+            },
+        )
+
+        Column(Modifier.background(color = backgroundColor).padding(PaddingValues(all = paddingByWindowSize))) {
+            var starListMode by remember { mutableStateOf(false) }
+
+            // Search bar
+            Row(
+                Modifier.padding(top = 16.dp, bottom = 16.dp, start = paddingByWindowSize, end = paddingByWindowSize)
+                    .fillMaxWidth()
+            ) {
+                Row {
+                    BoxWithConstraints {
+                        val width by animateDpAsState(
+                            if (starListMode) maxWidth else 48.dp,
+                            spring(stiffness = Spring.StiffnessMediumLow)
                         )
-                    },
-                    singleLine = true,
-                    shape = AppTheme.shapes.medium,
-                    maxLines = 1,
-                )
+                        OutlinedIconToggleButton(
+                            checked = starListMode,
+                            onCheckedChange = { starListMode = it },
+                            modifier = Modifier.height(48.dp).width(width),
+                            shape = AppTheme.shapes.medium,
+                            colors = IconButtonDefaults.outlinedIconToggleButtonColors(
+                                checkedContainerColor = AppTheme.colorScheme.surfaceColorAtElevation(1.dp),
+                            ),
+//                        border = IconButtonDefaults.outlinedIconToggleButtonBorder(enabled = true, checked = false)
+                        ) {
+                            Row(
+                                Modifier.fillMaxSize(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    painterResource("drawable/star-outline.svg"),
+                                    LocalI18n.current.getString("starred.list"),
+                                    modifier = Modifier.size(24.dp)
+                                )
+                                AnimatedVisibility(starListMode) {
+                                    Text(
+                                        LocalI18n.current.getString("starred"),
+                                        modifier = Modifier.padding(start = 8.dp),
+                                        style = AppTheme.typography.titleMedium
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    OutlinedTextField(
+                        keywordsInput,
+                        onKeywordsInputChange,
+                        Modifier
+                            .padding(start = 8.dp)
+                            .height(48.dp)
+                            .defaultMinSize(minWidth = if (starListMode) 0.dp else 96.dp)
+                            .weight(0.8f)
+                            .onKeyEvent {
+                                if (it.key == Key.Enter || it.key == Key.NumPadEnter) {
+                                    currentAppliedKeyword = keywordsInput.trim()
+                                    currentApp.doSearch(currentAppliedKeyword)
+                                    true
+                                } else false
+                            },
+                        placeholder = {
+                            Text(
+                                LocalI18n.current.getString("search.keywords"),
+                                style = AppTheme.typography.bodyMedium.copy(
+                                    color = AppTheme.typography.bodyMedium.color.copy(0.3f),
+                                    lineHeight = 16.sp
+                                )
+                            )
+                        },
+                        singleLine = true,
+                        shape = AppTheme.shapes.medium,
+                        maxLines = 1,
+                    )
 //                OutlinedTextField(
 //                    alliance,
 //                    onAllianceChange,
@@ -122,50 +186,122 @@ fun MainPage(
 //                    shape = AppTheme.shapes.medium,
 //                    maxLines = 1,
 //                )
-                AnimatedSearchButton {
-                    currentAppliedKeyword = keywordsInput.trim()
-                    currentApp.doSearch(currentAppliedKeyword)
+                    AnimatedSearchButton {
+                        currentAppliedKeyword = keywordsInput.trim()
+                        currentApp.doSearch(currentAppliedKeyword)
+                    }
+                }
+            }
+
+            // Page content
+            Row(Modifier.fillMaxSize()) {
+                AnimatedVisibility(
+                    starListMode,
+                    enter = expandHorizontally(
+                        spring(
+                            dampingRatio = Spring.DampingRatioNoBouncy,
+                            stiffness = Spring.StiffnessMediumLow,
+                            visibilityThreshold = IntSize.VisibilityThreshold
+                        ),
+                        expandFrom = Alignment.Start,
+                    ),
+                    exit = shrinkHorizontally(
+                        spring(
+                            dampingRatio = Spring.DampingRatioNoBouncy,
+                            stiffness = Spring.StiffnessMediumLow,
+                            visibilityThreshold = IntSize.VisibilityThreshold
+                        ),
+                        shrinkTowards = Alignment.Start
+                    )
+                ) {
+                    LazyColumn(Modifier.padding(all = paddingByWindowSize).fillMaxSize()) {
+                        items(currentStarredAnimeList, key = { it.id }) { anime ->
+                            val currentAnime by rememberUpdatedState(anime)
+                            StarredAnimeCard(
+                                anime = anime,
+                                onStarRemove = {
+                                    currentApp.removeStarredAnime(currentAnime)
+                                },
+                                onClick = {
+                                    app.updateSearchQuery(SearchQuery(keywords = currentAnime.searchQuery))
+                                    starListMode = false
+                                    currentAppliedKeyword = currentAnime.searchQuery
+                                    onKeywordsInputChange(currentAnime.searchQuery)
+                                }
+                            )
+                        }
+                    }
+                }
+
+                AnimatedVisibility(
+                    !starListMode,
+                    enter = fadeIn() + slideInHorizontally(
+                        spring(
+                            dampingRatio = Spring.DampingRatioNoBouncy,
+                            stiffness = Spring.StiffnessMediumLow,
+                            visibilityThreshold = IntOffset.VisibilityThreshold
+                        ),
+                        initialOffsetX = { it },
+                    ),
+                    exit = fadeOut() + slideOutHorizontally(
+                        spring(
+                            dampingRatio = Spring.DampingRatioNoBouncy,
+                            stiffness = Spring.StiffnessMediumLow,
+                        ),
+                        targetOffsetX = { it }
+                    )
+                ) {
+                    // topic searching mode
+                    LiveTopicList(
+                        app = app,
+                        organizedViewState = currentOrganizedViewState,
+                        lazyListState = currentLazyList,
+                        topics = currentTopics,
+                        onClickCard = {
+                            currentApp.applicationScope.launch(Dispatchers.IO) {
+                                it.details?.episode?.let { currentApp.onEpisodeDownloaded(it) }
+                                Desktop.getDesktop().browse(URI.create(it.magnetLink.value))
+                            }
+                        },
+                        modifier = Modifier.padding(horizontal = paddingByWindowSize),
+                        starred = currentStarredAnime != null,
+                        onUpdateFilter = {
+                            currentApp.data.starredAnime.updateStarredAnime(
+                                currentApp.searchQuery.value.keywords.orEmpty(),
+                                currentOrganizedViewState
+                            )
+                        },
+                        onStarredChange = { starred ->
+                            if (starred) {
+                                currentApp.data.starredAnime.mutate {
+                                    it + StarredAnime(
+                                        primaryName = currentOrganizedViewState.chineseName.value
+                                            ?: currentOrganizedViewState.otherNames.value.firstOrNull() ?: "",
+                                        secondaryNames = currentOrganizedViewState.otherNames.value,
+                                        searchQuery = currentApp.searchQuery.value.keywords.orEmpty(),
+                                        preferredAlliance = currentOrganizedViewState.selectedAlliance.value,
+                                        preferredResolution = currentOrganizedViewState.selectedResolution.value,
+                                        preferredSubtitleLanguage = currentOrganizedViewState.selectedSubtitleLanguage.value,
+                                        episodes = currentOrganizedViewState.episodes.value,
+                                        starTimeMillis = System.currentTimeMillis()
+                                    )
+                                }
+                            } else {
+                                currentApp.data.starredAnime.mutate { list -> list.filterNot { it.searchQuery == currentApp.searchQuery.value.keywords } }
+                            }
+                        },
+                    )
                 }
             }
         }
 
-        LiveList(
-            app = app,
-            organizedViewState = currentOrganizedViewState,
-            lazyListState = currentLazyList,
-            topics = currentTopics,
-            onClickCard = {
-                currentApp.applicationScope.launch(Dispatchers.IO) {
-                    it.details?.episode?.let { currentApp.onEpisodeDownloaded(it) }
-                    Desktop.getDesktop().browse(URI.create(it.magnetLink.value))
-                }
-            },
-            modifier = Modifier.padding(),
-            starred = currentStarredAnime != null,
-            onUpdateFilter = {
-                currentApp.data.starredAnime.updateStarredAnime(
-                    currentApp.searchQuery.value.keywords.orEmpty(),
-                    currentOrganizedViewState
-                )
-            },
-            onStarredChange = { starred ->
-                if (starred) {
-                    currentApp.data.starredAnime.mutate {
-                        it + StarredAnime(
-                            name = currentOrganizedViewState.chineseName.value
-                                ?: currentOrganizedViewState.otherNames.value.firstOrNull() ?: "",
-                            searchQuery = currentApp.searchQuery.value.keywords.orEmpty(),
-                            preferredAlliance = currentOrganizedViewState.selectedAlliance.value,
-                            preferredResolution = currentOrganizedViewState.selectedResolution.value,
-                            preferredSubtitleLanguage = currentOrganizedViewState.selectedSubtitleLanguage.value,
-                        )
-                    }
-                } else {
-                    currentApp.data.starredAnime.mutate { list -> list.filterNot { it.searchQuery == currentApp.searchQuery.value.keywords } }
-                }
-            },
-        )
     }
+}
+
+private fun ApplicationState.removeStarredAnime(
+    anime: StarredAnime
+) {
+    data.starredAnime.mutate { list -> list.filterNot { it.id == anime.id } }
 }
 
 fun MutableListFlow<StarredAnime>.updateStarredAnime(
@@ -175,8 +311,10 @@ fun MutableListFlow<StarredAnime>.updateStarredAnime(
     return mutate { list ->
         list.map { anime ->
             if (anime.searchQuery == searchQuery) anime.copy(
-                name = currentOrganizedViewState.chineseName.value
+                primaryName = currentOrganizedViewState.chineseName.value
                     ?: currentOrganizedViewState.otherNames.value.firstOrNull() ?: "",
+                secondaryNames = currentOrganizedViewState.otherNames.value,
+                episodes = currentOrganizedViewState.episodes.value,
                 preferredAlliance = currentOrganizedViewState.selectedAlliance.value,
                 preferredResolution = currentOrganizedViewState.selectedResolution.value,
                 preferredSubtitleLanguage = currentOrganizedViewState.selectedSubtitleLanguage.value,
@@ -198,7 +336,7 @@ private fun AnimatedSearchButton(onClick: () -> Unit) {
         Box {
             Button(
                 onClick = onClick,
-                Modifier.padding(start = 16.dp).height(48.dp),
+                Modifier.padding(start = 8.dp).height(48.dp),
                 shape = AppTheme.shapes.medium,
                 contentPadding = if (showBigButton) ButtonDefaults.ContentPadding else PaddingValues(0.dp),
             ) {
@@ -273,7 +411,7 @@ private fun AnimatedSearchButton(onClick: () -> Unit) {
 }
 
 @Composable
-private fun LiveList(
+private fun LiveTopicList(
     app: ApplicationState,
     organizedViewState: OrganizedViewState,
     lazyListState: LazyListState = rememberLazyListState(),
@@ -325,19 +463,19 @@ private fun LiveList(
                             isEpisodeWatched = { app.isEpisodeWatched(it) },
                             onClickEpisode = {
                                 currentOrganizedViewState.selectedEpisode.invertSelected(it)
-                                onUpdateFilter()
+                                currentOnUpdateFilter()
                             },
                             onClickSubtitleLanguage = {
                                 currentOrganizedViewState.selectedSubtitleLanguage.invertSelected(it)
-                                onUpdateFilter()
+                                currentOnUpdateFilter()
                             },
                             onClickResolution = {
                                 currentOrganizedViewState.selectedResolution.invertSelected(it)
-                                onUpdateFilter()
+                                currentOnUpdateFilter()
                             },
                             onClickAlliance = {
                                 currentOrganizedViewState.selectedAlliance.invertSelected(it)
-                                onUpdateFilter()
+                                currentOnUpdateFilter()
                             },
                             starred = starred,
                             onStarredChange = onStarredChange
@@ -359,8 +497,9 @@ private fun LiveList(
                 item("refresh footer", contentType = "refresh footer") {
                     val hasMorePages by app.fetcher.hasMorePages.collectAsState()
                     val fetching by app.fetcher.fetchingState.collectAsState()
+
                     Box(
-                        Modifier.padding(all = 16.dp).fillMaxWidth().wrapContentHeight(),
+                        Modifier.padding(vertical = 16.dp).fillMaxWidth().wrapContentHeight(),
                         contentAlignment = Alignment.Center
                     ) {
                         if (hasMorePages) {
@@ -424,7 +563,7 @@ private fun PreviewMainPage() {
 private fun PreviewTopicList() {
     val (starred, onStarredChange) = remember { mutableStateOf(false) }
 
-    LiveList(
+    LiveTopicList(
         remember { ApplicationState(client = AnimationGardenClient.Factory.create(), File(".")) },
         remember { OrganizedViewState() },
         topics = mutableListOf<Topic>().apply {

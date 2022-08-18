@@ -11,10 +11,20 @@ import me.him188.animationgarden.api.model.Topic
 
 class Fetcher(
     private val scope: CoroutineScope,
-
-    ) {
+    private val onFetchSucceed: suspend () -> Unit,
+) {
     @Stable
     val fetchingState: MutableStateFlow<FetchingState> = MutableStateFlow(FetchingState.Idle)
+
+    init {
+        scope.launch {
+            fetchingState.collect { fetching ->
+                if (fetching == FetchingState.Succeed) {
+                    onFetchSucceed()
+                }
+            }
+        }
+    }
 
     @Stable
     val hasMorePages = MutableStateFlow(true)

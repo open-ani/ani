@@ -8,6 +8,7 @@ import kotlinx.serialization.Serializable
 import me.him188.animationgarden.api.impl.model.KeyedMutableListFlowImpl
 import me.him188.animationgarden.api.impl.model.MutableListFlow
 import me.him188.animationgarden.api.model.Alliance
+import me.him188.animationgarden.api.tags.Episode
 import me.him188.animationgarden.api.tags.Resolution
 import me.him188.animationgarden.api.tags.SubtitleLanguage
 import net.mamoe.yamlkt.Yaml
@@ -15,19 +16,24 @@ import java.io.File
 
 @Serializable
 data class StarredAnime(
-    val name: String,
+    val primaryName: String,
+    val secondaryNames: List<String> = listOf(),
     val searchQuery: String, // keywords
-    val watchedEpisodes: Set<String> = setOf(),
+    val episodes: List<Episode>,
+    val watchedEpisodes: Set<Episode> = setOf(),
     val preferredAlliance: Alliance? = null,
     val preferredResolution: @Polymorphic Resolution? = null,
     val preferredSubtitleLanguage: @Polymorphic SubtitleLanguage? = null,
-)
+    val starTimeMillis: Long,
+) {
+    val id get() = searchQuery
+}
 
 
 @Stable
 class AppData private constructor() {
     @Stable
-    val starredAnime: MutableListFlow<StarredAnime> = KeyedMutableListFlowImpl { it.name }
+    val starredAnime: MutableListFlow<StarredAnime> = KeyedMutableListFlowImpl { it.primaryName }
 
     @Serializable
     private class SerialData(

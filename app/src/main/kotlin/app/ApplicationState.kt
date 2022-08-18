@@ -14,6 +14,8 @@ import me.him188.animationgarden.api.model.SearchQuery
 import me.him188.animationgarden.api.model.SearchSession
 import me.him188.animationgarden.api.model.Topic
 import me.him188.animationgarden.api.tags.Episode
+import me.him188.animationgarden.desktop.ui.OrganizedViewState
+import me.him188.animationgarden.desktop.ui.updateStarredAnime
 import java.io.File
 
 @Stable
@@ -39,6 +41,8 @@ class ApplicationState(
         mutableStateOf(client.startSearchSession(SearchQuery()))
     }
 
+    var currentOrganizedViewState: OrganizedViewState? = null
+
     private val dataFile = workingDir.resolve("data").apply { mkdirs() }.resolve("app.yml")
 
     @Stable
@@ -52,9 +56,19 @@ class ApplicationState(
 
     @Stable
     val fetcher: Fetcher =
-        Fetcher(CoroutineScope(applicationScope.coroutineContext + SupervisorJob(applicationScope.coroutineContext.job)))
+        Fetcher(
+            CoroutineScope(applicationScope.coroutineContext + SupervisorJob(applicationScope.coroutineContext.job)),
+            onFetchSucceed = {
+                // update starred anime on success
+                searchQuery.value.keywords?.let { query ->
+                    currentOrganizedViewState?.let {
+                        data.starredAnime.updateStarredAnime(query, currentOrganizedViewState = it)
+                    }
+                }
+            }
+        )
 
-    fun updateSearchFilter(searchQuery: SearchQuery) {
+    fun updateSearchQuery(searchQuery: SearchQuery) {
         this.searchQuery.value = searchQuery
         fetcher.hasMorePages.value = true
         fetcher.fetchingState.value = FetchingState.Idle
@@ -77,14 +91,14 @@ class ApplicationState(
                 .map { list -> list.find { it.searchQuery == searchQuery.value.keywords } }
         }.collectAsState(null)
 
-        return starredAnime?.watchedEpisodes?.contains(episode.raw) == true
+        return starredAnime?.watchedEpisodes?.contains(episode) == true
     }
 
     fun onEpisodeDownloaded(episode: Episode) {
         data.starredAnime.mutate { list ->
             list.map { anime ->
                 if (anime.searchQuery == searchQuery.value.keywords) {
-                    anime.run { copy(watchedEpisodes = watchedEpisodes + episode.raw) }
+                    anime.run { copy(watchedEpisodes = watchedEpisodes + episode) }
                 } else {
                     anime
                 }
@@ -94,5 +108,5 @@ class ApplicationState(
 }
 
 fun ApplicationState.doSearch(keywords: String?) {
-    updateSearchFilter(SearchQuery(keywords?.trim(), null, null))
+    updateSearchQuery(SearchQuery(keywords?.trim(), null, null))
 }

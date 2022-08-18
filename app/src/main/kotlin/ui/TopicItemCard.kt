@@ -47,7 +47,7 @@ fun TopicItemCard(topic: Topic, onClick: () -> Unit) {
         val shape = AppTheme.shapes.large
         OutlinedCard(
             Modifier
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .padding(vertical = 8.dp)
                 .shadow(elevation = 2.dp, shape = shape)
                 .clip(shape)
                 .clickable(
@@ -58,7 +58,7 @@ fun TopicItemCard(topic: Topic, onClick: () -> Unit) {
                 .wrapContentSize(),
             shape = shape,
         ) {
-            Box(Modifier.padding(16.dp)) {
+            Box(Modifier.padding(all = 16.dp)) {
                 Row {
                     val details = remember(topic.id) { topic.details }
                     Column {
@@ -115,8 +115,10 @@ fun TopicItemCard(topic: Topic, onClick: () -> Unit) {
                                 )
                             }
 
+
+                            val dateFormatted by remember { derivedStateOf { topicState.date.format(DATE_FORMAT) } }
                             Text(
-                                topic.date.format(DATE_FORMAT),
+                                dateFormatted,
                                 style = AppTheme.typography.bodyMedium,
                                 color = AppTheme.typography.bodyMedium.color.copy(alpha = 0.5f),
                                 modifier = Modifier.padding(start = 4.dp),

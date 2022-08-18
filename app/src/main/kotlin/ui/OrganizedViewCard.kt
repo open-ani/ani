@@ -38,7 +38,7 @@ fun OrganizedViewCard(
 
     OutlinedCard(
         Modifier
-            .padding(horizontal = 16.dp, vertical = 16.dp)
+            .padding(vertical = 16.dp)
             .shadow(elevation = 2.dp, shape = shape)
             .clip(shape)
 //                .border(1.dp, AppTheme.colorScheme.outline, shape = AppTheme.shapes.large)
@@ -207,11 +207,11 @@ private fun OrganizedViewContent(
 }
 
 @Composable
-private fun <T> FilterChipRow(
+fun <T> FilterChipRow(
     list: List<T>,
     key: (item: T) -> Any,
     isSelected: @Composable (T) -> Boolean,
-    onClick: (T) -> Unit,
+    onClick: ((T) -> Unit)?,
     enabled: @Composable (T) -> Boolean,
     elevation: SelectableChipElevation? = FilterChipDefaults.elevatedFilterChipElevation(),
     content: @Composable (T) -> Unit = { Text(it.toString()) },
@@ -221,7 +221,7 @@ private fun <T> FilterChipRow(
         items(list, key = key) {
             ElevatedFilterChip(
                 selected = isSelected(it),
-                onClick = { currentOnClick.invoke(it) },
+                onClick = { currentOnClick?.invoke(it) },
                 label = { content(it) },
                 enabled = enabled.invoke(it),
                 elevation = elevation,
