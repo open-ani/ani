@@ -13,12 +13,25 @@ class ResourceBundle(
     }
 
     companion object {
-        fun load(): ResourceBundle = ResourceBundle(
-            PropertyResourceBundle.getBundle(
-                "i18n.app",
-                Locale.getDefault(),
-                ResourceBundle::class.java.classLoader
-            )
+        fun load(locale: Locale = Locale.getDefault()): ResourceBundle = ResourceBundle(
+            try {
+                PropertyResourceBundle.getBundle(
+                    "i18n.app",
+                    locale,
+                    ResourceBundle::class.java.classLoader
+                )
+            } catch (firstE: MissingResourceException) {
+                try {
+                    PropertyResourceBundle.getBundle(
+                        "i18n.app",
+                        Locale.SIMPLIFIED_CHINESE,
+                        ResourceBundle::class.java.classLoader
+                    )
+                } catch (e: Throwable) {
+                    e.addSuppressed(firstE)
+                    throw e
+                }
+            }
         )
     }
 }

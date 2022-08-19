@@ -41,6 +41,7 @@ dependencies {
 compose.desktop {
     application {
         mainClass = "me.him188.AnimationGardenDesktop"
+        jvmArgs("--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED")
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = project.name

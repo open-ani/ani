@@ -18,9 +18,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.*
 import kotlinx.coroutines.Dispatchers
@@ -31,11 +28,13 @@ import me.him188.animationgarden.api.impl.model.mutate
 import me.him188.animationgarden.api.model.*
 import me.him188.animationgarden.api.model.FileSize.Companion.megaBytes
 import me.him188.animationgarden.desktop.AppTheme
+import me.him188.animationgarden.desktop.ProvideCompositionLocalsForPreview
 import me.him188.animationgarden.desktop.app.ApplicationState
 import me.him188.animationgarden.desktop.app.FetchingState
 import me.him188.animationgarden.desktop.app.StarredAnime
 import me.him188.animationgarden.desktop.app.doSearch
 import me.him188.animationgarden.desktop.i18n.LocalI18n
+import me.him188.animationgarden.desktop.ui.interaction.onEnterKeyEvent
 import java.awt.Desktop
 import java.io.File
 import java.net.URI
@@ -149,12 +148,10 @@ fun MainPage(
                         .height(48.dp)
                         .defaultMinSize(minWidth = if (starListMode) 0.dp else 96.dp)
                         .weight(0.8f)
-                        .onKeyEvent {
-                            if (it.key == Key.Enter || it.key == Key.NumPadEnter) {
-                                currentAppliedKeyword = keywordsInput.trim()
-                                currentApp.doSearch(currentAppliedKeyword)
-                                true
-                            } else false
+                        .onEnterKeyEvent {
+                            currentAppliedKeyword = keywordsInput.trim()
+                            currentApp.doSearch(currentAppliedKeyword)
+                            true
                         },
                     placeholder = {
                         Text(
@@ -556,11 +553,13 @@ private fun LiveTopicList(
 @Preview
 @Composable
 private fun PreviewMainPage() {
-    val app = remember {
-        ApplicationState(AnimationGardenClient.Factory.create(), File("."))
-    }
-    MaterialTheme {
-        MainPage(app)
+    ProvideCompositionLocalsForPreview {
+        val app = remember {
+            ApplicationState(AnimationGardenClient.Factory.create {}, File("."))
+        }
+        MaterialTheme {
+            MainPage(app)
+        }
     }
 }
 
@@ -570,7 +569,7 @@ private fun PreviewTopicList() {
     val (starred, onStarredChange) = remember { mutableStateOf(false) }
 
     LiveTopicList(
-        remember { ApplicationState(client = AnimationGardenClient.Factory.create(), File(".")) },
+        remember { ApplicationState(initialClient = AnimationGardenClient.Factory.create {}, File(".")) },
         remember { OrganizedViewState() },
         topics = mutableListOf<Topic>().apply {
             repeat(10) {

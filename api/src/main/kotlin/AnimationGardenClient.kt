@@ -1,5 +1,6 @@
 package me.him188.animationgarden.api
 
+import io.ktor.client.engine.*
 import me.him188.animationgarden.api.impl.AnimationGardenClientImpl
 import me.him188.animationgarden.api.model.SearchQuery
 import me.him188.animationgarden.api.model.SearchSession
@@ -14,6 +15,7 @@ interface AnimationGardenClient {
     fun startSearchSession(filter: SearchQuery): SearchSession
 
     object Factory {
-        fun create(): AnimationGardenClient = AnimationGardenClientImpl()
+        fun create(engineConfig: HttpClientEngineConfig.() -> Unit): AnimationGardenClient =
+            AnimationGardenClientImpl(engineConfig)
     }
 }

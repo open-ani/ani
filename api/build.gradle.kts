@@ -6,7 +6,7 @@ plugins {
 
 dependencies {
     val ktorVersion = "2.0.3"
-    implementation("io.ktor:ktor-client-core:$ktorVersion")
+    api("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-cio:$ktorVersion")
     implementation("io.ktor:ktor-client-logging:$ktorVersion")
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")

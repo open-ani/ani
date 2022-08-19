@@ -20,7 +20,7 @@ import java.io.File
 
 @Stable
 class ApplicationState(
-    private val client: AnimationGardenClient,
+    initialClient: AnimationGardenClient,
     workingDir: File,
 ) {
     @Stable
@@ -37,8 +37,11 @@ class ApplicationState(
     val topicsFlow: KeyedMutableListFlow<String, Topic> = KeyedMutableListFlowImpl { it.id }
 
     @Stable
+    val client: MutableState<AnimationGardenClient> = mutableStateOf(initialClient)
+
+    @Stable
     val session: MutableState<SearchSession> by lazy {
-        mutableStateOf(client.startSearchSession(SearchQuery()))
+        mutableStateOf(client.value.startSearchSession(SearchQuery()))
     }
 
     var currentOrganizedViewState: OrganizedViewState? = null
@@ -46,13 +49,13 @@ class ApplicationState(
     private val dataFile = workingDir.resolve("data").apply { mkdirs() }.resolve("app.yml")
 
     @Stable
-    val saver: AppDataSaver = AppDataSaver(dataFile).apply {
+    val appDataSaver: AppDataSaver = AppDataSaver(dataFile).apply {
         reload()
     }
 
     @Stable
     val data: AppData
-        get() = saver.data
+        get() = appDataSaver.data
 
     @Stable
     val fetcher: Fetcher =
@@ -73,7 +76,7 @@ class ApplicationState(
         fetcher.hasMorePages.value = true
         fetcher.fetchingState.value = FetchingState.Idle
         topicsFlow.value = listOf()
-        session.value = client.startSearchSession(searchQuery)
+        session.value = client.value.startSearchSession(searchQuery)
         launchFetchNextPage(!searchQuery.keywords.isNullOrBlank())
     }
 

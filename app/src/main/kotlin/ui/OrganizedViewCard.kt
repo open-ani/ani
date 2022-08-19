@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
 import me.him188.animationgarden.api.model.*
 import me.him188.animationgarden.api.model.FileSize.Companion.megaBytes
@@ -18,7 +19,7 @@ import me.him188.animationgarden.api.tags.Resolution
 import me.him188.animationgarden.api.tags.SubtitleLanguage
 import me.him188.animationgarden.desktop.AppTheme
 import me.him188.animationgarden.desktop.i18n.LocalI18n
-import me.him188.animationgarden.desktop.i18n.ProvideResourceBundleI18n
+import me.him188.animationgarden.desktop.i18n.ResourceBundle
 import me.him188.animationgarden.desktop.ui.widgets.ToggleStarButton
 import java.time.LocalDateTime
 
@@ -250,7 +251,8 @@ private fun PreviewOrganizedWorkView() {
         )
     }
 
-    ProvideResourceBundleI18n {
+    val currentBundle = remember(Locale.current.language) { ResourceBundle.load() }
+    CompositionLocalProvider(LocalI18n provides currentBundle) {
         Box(Modifier.size(height = 600.dp, width = 400.dp)) {
             val (starred, onStarredChange) = remember { mutableStateOf(false) }
 

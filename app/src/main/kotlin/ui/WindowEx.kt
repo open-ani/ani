@@ -6,6 +6,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.isUnspecified
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.unit.DpSize
@@ -116,7 +117,9 @@ fun WindowEx(
                 set(currentFocusable, window::setFocusableWindowState)
                 set(currentAlwaysOnTop, window::setAlwaysOnTop)
                 set(currentMinimumSize) { // added
-                    window.minimumSize = Dimension(it.width.toInt(), it.height.toInt())
+                    if (!it.isUnspecified) {
+                        window.minimumSize = Dimension(it.width.toInt(), it.height.toInt())
+                    }
                 }
             }
             if (state.size != appliedState.size) {

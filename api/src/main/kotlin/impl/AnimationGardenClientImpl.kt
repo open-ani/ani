@@ -24,8 +24,10 @@ import org.jsoup.nodes.Document
 import org.slf4j.LoggerFactory
 import org.slf4j.MarkerFactory
 
-internal class AnimationGardenClientImpl : AnimationGardenClient {
-    private val network: Network = Network(createHttpClient())
+internal class AnimationGardenClientImpl(
+    engineConfig: HttpClientEngineConfig.() -> Unit,
+) : AnimationGardenClient {
+    private val network: Network = Network(createHttpClient(engineConfig))
 
 
     override fun startSearchSession(filter: SearchQuery): SearchSession {
@@ -33,9 +35,9 @@ internal class AnimationGardenClientImpl : AnimationGardenClient {
     }
 }
 
-internal fun createHttpClient() = HttpClient(CIO) {
+internal fun createHttpClient(engineConfig: HttpClientEngineConfig.() -> Unit) = HttpClient(CIO) {
     engine {
-        proxy = ProxyBuilder.http("http://localhost:7890")
+        engineConfig()
     }
     install(HttpRequestRetry) {
         maxRetries = 3
