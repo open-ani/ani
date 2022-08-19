@@ -28,6 +28,7 @@ import androidx.compose.ui.window.FrameWindowScope
 import me.him188.animationgarden.desktop.i18n.LocalI18n
 import org.jetbrains.skiko.OS
 import org.jetbrains.skiko.hostOs
+import java.awt.Desktop
 import androidx.compose.ui.window.MenuBar as ComposeMenuBar
 
 sealed interface PlatformImplementations {
@@ -41,14 +42,19 @@ sealed interface PlatformImplementations {
             override fun FrameWindowScope.MenuBar(onClickPreferences: () -> Unit) {
                 val currentOnClickPreferences by rememberUpdatedState(onClickPreferences)
                 DisposableEffect(true) {
-                    val application = com.apple.eawt.Application.getApplication()
+                    val desktop = Desktop.getDesktop()
 
-                    application.setPreferencesHandler {
+                    desktop.setPreferencesHandler {
+                        currentOnClickPreferences()
+                    }
+
+                    desktop.setAboutHandler {
                         currentOnClickPreferences()
                     }
 
                     this.onDispose {
-                        application.setAboutHandler(null)
+                        desktop.setPreferencesHandler(null)
+                        desktop.setAboutHandler(null)
                     }
                 }
             }
