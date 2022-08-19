@@ -2,7 +2,9 @@ package me.him188.animationgarden.desktop.ui
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusGroup
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Checkbox
@@ -41,10 +43,25 @@ fun PreferencesPage() {
                         Text(LocalI18n.current.getString("preferences.appearance"))
                     },
                 ) {
-                    Row(Modifier.height(24.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(settings.windowImmersed, {
-                            manager.mutate { copy(windowImmersed = it) }
-                        })
+                    val interactionSource = remember { MutableInteractionSource() }
+                    Row(
+                        Modifier.height(24.dp)
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = null,
+                                onClick = {
+                                    manager.mutate { copy(windowImmersed = !settings.windowImmersed) }
+                                }
+                            ),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = settings.windowImmersed,
+                            onCheckedChange = {
+                                manager.mutate { copy(windowImmersed = it) }
+                            },
+                            interactionSource = interactionSource,
+                        )
                         Text(LocalI18n.current.getString("preferences.appearance.window.immersed"))
                     }
                 }

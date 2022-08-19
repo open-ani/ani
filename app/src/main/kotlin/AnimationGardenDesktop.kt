@@ -39,15 +39,14 @@ object AnimationGardenDesktop {
 
             val currentAppSettings by rememberUpdatedState(appSettingsProvider.value.value)
 
-            val app by remember {
-                derivedStateOf {
-                    ApplicationState(
-                        initialClient = AnimationGardenClient.Factory.create {
-                            proxy = currentAppSettings.proxy.toKtorProxy()
-                        },
-                        workingDir = workingDir
-                    )
-                }
+            val app = remember {
+                // do not observe dependency change
+                ApplicationState(
+                    initialClient = AnimationGardenClient.Factory.create {
+                        proxy = currentAppSettings.proxy.toKtorProxy()
+                    },
+                    workingDir = workingDir
+                )
             }
             LaunchedEffect(currentAppSettings.proxy) {
                 // proxy changed, update client
