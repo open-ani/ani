@@ -38,12 +38,13 @@ class Fetcher(
         return if (!nextPage.isNullOrEmpty()) {
             nextPage.forEach { it.details } // init
             val old = topicsFlow.value
-            val new = sequenceOf(topicsFlow.value, nextPage).flatten().distinctBy { it.id }.toList()
-            if (old.size == new.size) {
-                //                hasMorePages.value = false
-            } else {
-                topicsFlow.value = new
-            }
+            topicsFlow.value = sequenceOf(topicsFlow.value, nextPage).flatten().distinctBy { it.id }.toList()
+//            val new = sequenceOf(topicsFlow.value, nextPage).flatten().distinctBy { it.id }.toList()
+//            if (old.size == new.size) {
+//                //                hasMorePages.value = false
+//            } else {
+//                topicsFlow.value = new
+//            }
             true
         } else {
             hasMorePages.value = false

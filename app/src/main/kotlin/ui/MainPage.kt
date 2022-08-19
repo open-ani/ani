@@ -20,8 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import me.him188.animationgarden.api.AnimationGardenClient
 import me.him188.animationgarden.api.impl.model.MutableListFlow
 import me.him188.animationgarden.api.impl.model.mutate
@@ -39,6 +38,7 @@ import java.awt.Desktop
 import java.io.File
 import java.net.URI
 import java.time.LocalDateTime
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun MainPage(
@@ -48,7 +48,7 @@ fun MainPage(
     // and is safe to be used in callbacks.
 
     val currentApp by rememberUpdatedState(app)
-    val currentTopics by remember { app.topicsFlow.asFlow() }.collectAsState()
+    val currentTopics by remember { derivedStateOf { currentApp.topicsFlow.asFlow() } }.value.collectAsState()
     val currentLazyList = rememberLazyListState()
 
     val appliedKeywordState = remember { mutableStateOf("") }
@@ -96,7 +96,7 @@ fun MainPage(
         Column(Modifier.background(color = backgroundColor).padding(PaddingValues(all = paddingByWindowSize))) {
             var starListMode by remember { mutableStateOf(false) }
 
-            // Search bar, fixed height =
+            // Search bar, fixed height
             Row(
                 Modifier.padding(top = 16.dp, bottom = 16.dp, start = paddingByWindowSize, end = paddingByWindowSize)
                     .fillMaxWidth()
@@ -207,6 +207,10 @@ fun MainPage(
                     ) {
                         items(currentStarredAnimeList, key = { it.id }) { anime ->
                             val currentAnime by rememberUpdatedState(anime)
+                            LaunchedEffect(anime.id) {
+                                delay(1.seconds) // ignore if user is quickly scrolling
+                                updateStarredAnimeEpisodes(currentApp, anime, currentAnime, app)
+                            }
                             StarredAnimeCard(
                                 anime = anime,
                                 onStarRemove = {
@@ -293,6 +297,42 @@ fun MainPage(
     }
 }
 
+/**
+ * Fetch all topics and update known available episodes, until we are sure that it's already up-to-date.
+ */
+private suspend fun CoroutineScope.updateStarredAnimeEpisodes(
+    currentApp: ApplicationState,
+    anime: StarredAnime,
+    currentAnime: StarredAnime,
+    app: ApplicationState
+) {
+    val session =
+        currentApp.client.value.startSearchSession(SearchQuery(keywords = anime.searchQuery))
+    val allTopics = mutableListOf<Topic>()
+    while (isActive) {
+        // always fetch the newest page, which contain the newer episodes.
+        val nextPage = session.nextPage() ?: break
+        allTopics.addAll(nextPage)
+        // if all exising episodes are contained, means we have reached the last updated point.
+        if (allEpisodesContained(currentAnime, allTopics)) {
+            break
+        }
+    }
+    if (allEpisodesContained(currentAnime, allTopics)) {
+        app.data.starredAnime.updateStarredAnime(anime.searchQuery) {
+            copy(
+                episodes = (episodes.asSequence() + allTopics.asSequence()
+                    .mapNotNull { it.details?.episode }).distinct().toList()
+            )
+        }
+    }
+}
+
+private fun allEpisodesContained(
+    currentAnime: StarredAnime,
+    allTopics: MutableList<Topic>
+) = currentAnime.episodes.all { episode -> allTopics.any { it.details?.episode == episode } }
+
 private fun ApplicationState.removeStarredAnime(
     anime: StarredAnime
 ) {
@@ -303,17 +343,26 @@ fun MutableListFlow<StarredAnime>.updateStarredAnime(
     searchQuery: String,
     currentOrganizedViewState: OrganizedViewState,
 ) {
+    return updateStarredAnime(searchQuery) {
+        copy(
+            primaryName = currentOrganizedViewState.chineseName.value
+                ?: currentOrganizedViewState.otherNames.value.firstOrNull() ?: "",
+            secondaryNames = currentOrganizedViewState.otherNames.value,
+            episodes = currentOrganizedViewState.episodes.value,
+            preferredAlliance = currentOrganizedViewState.selectedAlliance.value,
+            preferredResolution = currentOrganizedViewState.selectedResolution.value,
+            preferredSubtitleLanguage = currentOrganizedViewState.selectedSubtitleLanguage.value,
+        )
+    }
+}
+
+fun MutableListFlow<StarredAnime>.updateStarredAnime(
+    searchQuery: String,
+    update: StarredAnime.() -> StarredAnime,
+) {
     return mutate { list ->
         list.map { anime ->
-            if (anime.searchQuery == searchQuery) anime.copy(
-                primaryName = currentOrganizedViewState.chineseName.value
-                    ?: currentOrganizedViewState.otherNames.value.firstOrNull() ?: "",
-                secondaryNames = currentOrganizedViewState.otherNames.value,
-                episodes = currentOrganizedViewState.episodes.value,
-                preferredAlliance = currentOrganizedViewState.selectedAlliance.value,
-                preferredResolution = currentOrganizedViewState.selectedResolution.value,
-                preferredSubtitleLanguage = currentOrganizedViewState.selectedSubtitleLanguage.value,
-            ) else anime
+            if (anime.searchQuery == searchQuery) update(anime) else anime
         }
     }
 }
@@ -423,9 +472,10 @@ private fun LiveTopicList(
     val currentOrganizedViewState by rememberUpdatedState(organizedViewState)
     val enter = remember { expandVertically(expandFrom = Alignment.Top) + fadeIn() }
     val exit = remember { shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut() }
-    val visibleTopics: List<Topic> by remember(topics) {
+    val currentTopics by rememberUpdatedState(topics)
+    val visibleTopics: List<Topic> by remember(currentTopics) {
         derivedStateOf {
-            topics.filter { currentOrganizedViewState.matchesQuery(it) }
+            currentTopics.filter { currentOrganizedViewState.matchesQuery(it) }
         }
     }
 

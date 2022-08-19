@@ -46,9 +46,7 @@ object AnimationGardenDesktop {
                             proxy = currentAppSettings.proxy.toKtorProxy()
                         },
                         workingDir = workingDir
-                    ).apply {
-                        doSearch(null)
-                    }
+                    )
                 }
             }
             LaunchedEffect(currentAppSettings.proxy) {

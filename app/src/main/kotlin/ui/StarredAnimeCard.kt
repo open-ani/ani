@@ -7,21 +7,19 @@ import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import me.him188.animationgarden.api.model.DATE_FORMAT
 import me.him188.animationgarden.api.tags.Episode
 import me.him188.animationgarden.desktop.AppTheme
 import me.him188.animationgarden.desktop.app.StarredAnime
 import me.him188.animationgarden.desktop.ui.widgets.ToggleStarButton
-import java.time.Instant
-import java.time.LocalDateTime
-import java.time.ZoneId
 
 @Composable
 fun StarredAnimeCard(
@@ -68,7 +66,7 @@ fun StarredAnimeCard(
 
                 Row(
                     Modifier.fillMaxWidth().padding(top = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                    horizontalArrangement = Arrangement.Start,
                     verticalAlignment = Alignment.Bottom,
                 ) {
                     FilterChipRow(
@@ -90,22 +88,22 @@ fun StarredAnimeCard(
                     )
 
 
-                    val dateFormatted by remember {
-                        derivedStateOf {
-                            LocalDateTime.ofInstant(
-                                Instant.ofEpochMilli(anime.starTimeMillis),
-                                ZoneId.systemDefault()
-                            ).format(DATE_FORMAT)
-                        }
-                    }
-                    Text(
-                        dateFormatted,
-                        style = AppTheme.typography.bodyMedium,
-                        color = AppTheme.typography.bodyMedium.color.copy(alpha = 0.5f),
-                        modifier = Modifier.padding(start = 4.dp),
-                        fontWeight = FontWeight.W400,
-                        maxLines = 1,
-                    )
+//                    val dateFormatted by remember {
+//                        derivedStateOf {
+//                            LocalDateTime.ofInstant(
+//                                Instant.ofEpochMilli(anime.starTimeMillis),
+//                                ZoneId.systemDefault()
+//                            ).format(DATE_FORMAT)
+//                        }
+//                    }
+//                    Text(
+//                        dateFormatted,
+//                        style = AppTheme.typography.bodyMedium,
+//                        color = AppTheme.typography.bodyMedium.color.copy(alpha = 0.5f),
+//                        modifier = Modifier.padding(start = 4.dp),
+//                        fontWeight = FontWeight.W400,
+//                        maxLines = 1,
+//                    )
                 }
             }
         }
