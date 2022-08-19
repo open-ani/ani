@@ -31,7 +31,7 @@ pluginManagement {
     }
 }
 
-rootProject.name = "animation-garden-desktop"
+rootProject.name = "animation-garden-app"
 
 fun includeProject(projectPath: String, dir: String? = null) {
     include(projectPath)
@@ -39,6 +39,6 @@ fun includeProject(projectPath: String, dir: String? = null) {
 }
 
 includeProject(":animation-garden-api", "api")
-includeProject(":animation-garden-app", "app")
+includeProject(":animation-garden-desktop", "desktop")
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
