@@ -17,6 +17,8 @@ import me.him188.animationgarden.desktop.i18n.LocalI18n
 import me.him188.animationgarden.desktop.i18n.ProvideResourceBundleI18n
 import me.him188.animationgarden.desktop.ui.MainPage
 import me.him188.animationgarden.desktop.ui.WindowEx
+import org.jetbrains.skiko.OS
+import org.jetbrains.skiko.hostOs
 import java.io.File
 
 object AnimationGardenDesktop {
@@ -52,8 +54,9 @@ object AnimationGardenDesktop {
                     }
 
                     Box(
-                        Modifier.background(color = AppTheme.colorScheme.background).padding(top = 16.dp)
-                    ) { // safe area
+                        Modifier.background(color = AppTheme.colorScheme.background)
+                            .padding(top = remember { if (hostOs == OS.MacOS) 16.dp else 0.dp }) // safe area for macOS (since fullWindowContent)
+                    ) {
                         MainPage(app)
                     }
                 }
