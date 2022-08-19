@@ -480,11 +480,12 @@ private fun LiveTopicList(
     }
 
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopStart) {
-        val isEmpty = topics.isEmpty()
+        val fetchingState by app.fetcher.fetchingState.collectAsState()
+        val showProgress = fetchingState != FetchingState.Idle && topics.isEmpty()
 
         // animate on changing search query
         AnimatedVisibility(
-            isEmpty,
+            showProgress,
             enter = enter,
             exit = exit,
         ) {
@@ -493,7 +494,7 @@ private fun LiveTopicList(
             }
         }
         AnimatedVisibility(
-            !isEmpty,
+            !showProgress,
             enter = enter,
             exit = exit,
             // Actually when exiting, `topics` would be empty, so lazy column contains no item and size is zero. You won't see the animation.
@@ -547,7 +548,6 @@ private fun LiveTopicList(
                 // dummy footer. When footer gets into visible area, `LaunchedEffect` comes with its composition.
                 item("refresh footer", contentType = "refresh footer") {
                     val hasMorePages by app.fetcher.hasMorePages.collectAsState()
-                    val fetching by app.fetcher.fetchingState.collectAsState()
 
                     Box(
                         Modifier.padding(top = spacedBy + 8.dp, bottom = spacedBy) // extra 8.dp padding
@@ -556,14 +556,14 @@ private fun LiveTopicList(
                         contentAlignment = Alignment.Center
                     ) {
                         if (hasMorePages) {
-                            if (fetching !is FetchingState.Fetching) {
+                            if (fetchingState !is FetchingState.Fetching) {
                                 LaunchedEffect(true) { // when this footer is 'seen', the list must have reached the end.
                                     app.launchFetchNextPage(false)
                                 }
                             }
                         }
 
-                        when (val localFetching = fetching) {
+                        when (val localFetching = fetchingState) {
                             FetchingState.Idle, is FetchingState.Fetching -> {
                                 CircularProgressIndicator(color = AppTheme.colorScheme.primary)
                             }
