@@ -1,0 +1,132 @@
+name: Build
+
+
+on:
+  push:
+    paths-ignore:
+      - '**/*.md'
+  pull_request:
+    paths-ignore:
+      - '**/*.md'
+
+jobs:
+  build:
+    name: "Build (${{ matrix.os }})"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - windows-2022
+          - ubuntu-20.04
+          - macos-12
+    env:
+      enableLocalPublishingTest: 'false'
+      gradleArgs: --scan "-Dorg.gradle.jvmargs=-Xmx4096m" "-Dfile.encoding=UTF-8"
+      isMac: ${{ startsWith(matrix.os, 'macos') }}
+      isWindows: ${{ startsWith(matrix.os, 'windows') }}
+      isUbuntu: ${{ startsWith(matrix.os, 'ubuntu') }}
+      isUnix: ${{ startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu') }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+
+      - uses: actions/setup-java@v2
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+
+      - name: Cache Konan
+        uses: pat-s/always-upload-cache@v3
+        with:
+          path: ~/.konan
+          key: ${{ runner.os }}-konan-${{ hashFiles('*.gradle.kts') }}
+          restore-keys: |
+            ${{ runner.os }}-konan-
+
+      - name: Cache Gradle
+        uses: pat-s/always-upload-cache@v3
+        with:
+          path: ~/.gradle
+          key: ${{ runner.os }}-gradle-${{ hashFiles('*.gradle.kts') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Cache Maven
+        uses: pat-s/always-upload-cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-maven-${{ hashFiles('*.gradle.kts') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - if: ${{ env.isUnix == 'true' }}
+        run: chmod -R 777 *
+
+      - name: Clean and download dependencies
+        run: ./gradlew clean ${{ env.gradleArgs }}
+
+      - name: Assemble
+        run: ./gradlew assemble ${{ env.gradleArgs }}
+
+      - name: Check
+        run: ./gradlew check ${{ env.gradleArgs }}
+
+      - name: Package
+        run: ./gradlew createDistributable package ${{ env.gradleArgs }}
+      #        continue-on-error: true
+
+      #      - if: ${{ env.isMac == 'true' }}
+      #        name: Upload error logs
+      #        uses: actions/upload-artifact@v3
+      #        with:
+      #          name: errors-${{ matrix.os }}
+      #          path: desktop/build/compose/logs/
+      #        continue-on-error: true
+
+
+      - if: ${{ env.isMac == 'true' }}
+        name: Upload macOS packages
+        uses: actions/upload-artifact@v3
+        with:
+          name: animation-garden-desktop-macos
+          path: desktop/build/compose/binaries/main/app
+
+      - if: ${{ env.isMac == 'true' }}
+        name: Upload macOS packages
+        uses: actions/upload-artifact@v3
+        with:
+          name: animation-garden-desktop-macos-installer
+          path: desktop/build/compose/binaries/main/dmg
+
+      - if: ${{ env.isUbuntu == 'true' }}
+        name: Upload Linux packages
+        uses: actions/upload-artifact@v3
+        with:
+          name: animation-garden-desktop-linux
+          path: desktop/build/compose/binaries/main/app
+
+      - if: ${{ env.isUbuntu == 'true' }}
+        name: Upload Linux packages
+        uses: actions/upload-artifact@v3
+        with:
+          name: animation-garden-desktop-linux-installer
+          path: desktop/build/compose/binaries/main/deb
+
+      - if: ${{ env.isWindows == 'true' }}
+        name: Upload Windows packages
+        uses: actions/upload-artifact@v3
+        with:
+          name: animation-garden-desktop-windows
+          path: desktop/build/compose/binaries/main/app
+
+      - if: ${{ env.isWindows == 'true' }}
+        name: Upload Windows packages
+        uses: actions/upload-artifact@v3
+        with:
+          name: animation-garden-desktop-windows-installer
+          path: desktop/build/compose/binaries/main/msi
