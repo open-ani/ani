@@ -5,7 +5,7 @@
 [Compose for Desktop
 ]: https://www.jetbrains.com/lp/compose-desktop/
 
-美观且实用的 [动漫花园] 的桌面程序，使用 [Compose for Desktop] 构建。
+美观且实用的[动漫花园]的桌面程序，使用 [Compose for Desktop] 构建。
 
 ## 下载
 
