@@ -1,0 +1,282 @@
+name: Release
+
+on:
+  push:
+    tags: [ 'v*' ]
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Get Tag # usage:  ${{ steps.tag.outputs.tag }}
+        id: tag
+        uses: dawidd6/action-get-tag@v1
+
+      - uses: bhowell2/github-substring-action@v1.0.0
+        id: tag-version # usage:  ${{ steps.tag-version.outputs.substring }}
+        with:
+          value: ${{ steps.tag.outputs.tag }}
+          index_of_str: "v"
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          release_name: ${{ steps.tag-version.outputs.substring }}
+          body: Automatically created from tag ${{ steps.tag.outputs.tag }}. Do not change anything until assets are uploaded.
+          draft: true
+          prerelease: false
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+
+  release:
+    needs: [ create-release ]
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - windows-2022
+          - ubuntu-20.04
+          - macos-12
+    env:
+      enableLocalPublishingTest: 'false'
+      gradleArgs: --scan "-Dorg.gradle.jvmargs=-Xmx4096m" "-Dfile.encoding=UTF-8"
+      isMac: ${{ startsWith(matrix.os, 'macos') }}
+      isWindows: ${{ startsWith(matrix.os, 'windows') }}
+      isUbuntu: ${{ startsWith(matrix.os, 'ubuntu') }}
+      isUnix: ${{ startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu') }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+
+      - name: Get Tag # usage:  ${{ steps.tag.outputs.tag }}
+        id: tag
+        uses: dawidd6/action-get-tag@v1
+
+      - uses: bhowell2/github-substring-action@v1.0.0
+        id: tag-version # usage:  ${{ steps.tag-version.outputs.substring }}
+        with:
+          value: ${{ steps.tag.outputs.tag }}
+          index_of_str: "v"
+
+      - uses: actions/setup-java@v2
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+
+      - name: Cache Konan
+        uses: pat-s/always-upload-cache@v3
+        with:
+          path: ~/.konan
+          key: ${{ runner.os }}-konan-${{ hashFiles('*.gradle.kts') }}
+          restore-keys: |
+            ${{ runner.os }}-konan-
+
+      - name: Cache Gradle
+        uses: pat-s/always-upload-cache@v3
+        with:
+          path: ~/.gradle
+          key: ${{ runner.os }}-gradle-${{ hashFiles('*.gradle.kts') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Cache Maven
+        uses: pat-s/always-upload-cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-maven-${{ hashFiles('*.gradle.kts') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - if: ${{ env.isUnix == 'true' }}
+        run: chmod -R 777 *
+
+      - name: Clean and download dependencies
+        run: ./gradlew clean ${{ env.gradleArgs }}
+
+      - name: Assemble
+        run: ./gradlew assemble ${{ env.gradleArgs }}
+
+      - name: Check
+        run: ./gradlew check ${{ env.gradleArgs }}
+
+      - name: Package
+        run: ./gradlew createDistributable package ${{ env.gradleArgs }}
+      #        continue-on-error: true
+
+      #      - if: ${{ env.isMac == 'true' }}
+      #        name: Upload error logs
+      #        uses: actions/upload-artifact@v3
+      #        with:
+      #          name: errors-${{ matrix.os }}
+      #          path: desktop/build/compose/logs/
+      #        continue-on-error: true
+
+
+      # Upload packages for build summary
+
+      - if: ${{ env.isMac == 'true' }}
+        name: Upload macOS packages
+        uses: actions/upload-artifact@v3
+        with:
+          name: animation-garden-desktop-macos
+          path: desktop/build/compose/binaries/main/app
+
+      - if: ${{ env.isUbuntu == 'true' }}
+        name: Upload Linux packages
+        uses: actions/upload-artifact@v3
+        with:
+          name: animation-garden-desktop-linux
+          path: desktop/build/compose/binaries/main/app
+
+      - if: ${{ env.isWindows == 'true' }}
+        name: Upload Windows packages
+        uses: actions/upload-artifact@v3
+        with:
+          name: animation-garden-desktop-windows
+          path: desktop/build/compose/binaries/main/app
+
+      #      - name: Generate Line Temp File
+      #        run: "cat CHANGELOG.md | grep -n '## \\\\' | cut -d: -f1 | head -n 2 >> line.tmp"
+      #
+      #      - name: Generate Release Log
+      #        run: "cat CHANGELOG.md | head -n $((`tail -n 1 line.tmp`-1)) | tail -n +`head -n 1 line.tmp` >> release.log"
+
+      # Upload assets for release
+
+      - if: ${{ env.isUnix == 'true' }}
+        name: Zip distribution
+        run: zip -q -r desktop.zip desktop/build/compose/binaries/main/app
+
+      # macOS
+
+      - if: ${{ env.isMac == 'true' }}
+        name: Upload installer for macOS
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: desktop/build/compose/binaries/main/dmg/Animation Garden Desktop-${{ steps.tag-version.outputs.substring }}.dmg
+          asset_name: AnimationGardenDesktop_${{ steps.tag.outputs.tag }}_macOS_amd64.dmg
+          asset_content_type: application/octet-stream
+
+      - if: ${{ env.isMac == 'true' }}
+        name: Upload distribution archive for macOS
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: desktop.zip
+          asset_name: AnimationGardenDesktop_${{ steps.tag.outputs.tag }}_macOS_amd64.zip
+          asset_content_type: application/zip
+
+      # Windows
+
+      - if: ${{ env.isWindows == 'true' }}
+        shell: powershell
+        run: Compress-Archive desktop/build/compose/binaries/main/app/ desktop.zip
+
+      - if: ${{ env.isWindows == 'true' }}
+        name: Upload installer for Windows
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: desktop/build/compose/binaries/main/msi/Animation Garden Desktop-${{ steps.tag-version.outputs.substring }}.msi
+          asset_name: AnimationGardenDesktop_${{ steps.tag.outputs.tag }}_Windows_amd64.msi
+          asset_content_type: application/octet-stream
+
+      - if: ${{ env.isWindows == 'true' }}
+        name: Upload distribution archive for Windows
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: desktop.zip
+          asset_name: AnimationGardenDesktop_${{ steps.tag.outputs.tag }}_Windows_amd64.zip
+          asset_content_type: application/zip
+
+      # Linux
+
+
+
+      - name: Inspect packaged files on Ubuntu
+        if: ${{ env.isUbuntu == 'true' }}
+        run: cd desktop/build/compose/binaries/main/deb/ && ls
+
+      - if: ${{ env.isUbuntu == 'true' }}
+        name: Upload installer for Debian
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: desktop/build/compose/binaries/main/deb/animation-garden-desktop_${{ steps.tag-version.outputs.substring }}-1_amd64.deb
+          asset_name: AnimationGardenDesktop_${{ steps.tag.outputs.tag }}_Debian_amd64.deb
+          asset_content_type: application/octet-stream
+
+      - if: ${{ env.isUbuntu == 'true' }}
+        name: Upload distribution archive for Debian
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: desktop.zip
+          asset_name: AnimationGardenDesktop_${{ steps.tag.outputs.tag }}_Debian_amd64.zip
+          asset_content_type: application/zip
+
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v2
+#
+#      - name: Set up JDK 11
+#        uses: actions/setup-java@v1
+#        with:
+#          java-version: 11
+#
+#      - name: Grant Execute Permission for gradlew
+#        run: chmod +x gradlew
+#
+#      - run: ./gradlew mirai-api-http:checkMavenCentralPublication --info  --scan
+#        env:
+#          PUBLICATION_CREDENTIALS: ${{ secrets.PUBLICATION_CREDENTIALS }}
+#
+#      - name: Build with Gradle
+#        run: ./gradlew buildCiJar
+#
+#      - name: Get Tag
+#        id: tag
+#        uses: dawidd6/action-get-tag@v1
+#
+#      - name: Generate Line Temp File
+#        run: "cat CHANGELOG.md | grep -n '## \\\\' | cut -d: -f1 | head -n 2 >> line.tmp"
+#
+#      - name: Generate Release Log
+#        run: "cat CHANGELOG.md | head -n $((`tail -n 1 line.tmp`-1)) | tail -n +`head -n 1 line.tmp` >> release.log"
+#
+#      - name: Create Release
+#        id: create_release
+#        uses: actions/create-release@v1
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
+#        with:
+#          tag_name: ${{ github.ref }}
+#          release_name: mirai-api-http-${{ steps.tag.outputs.tag }}
+#          body_path: release.log
+#          draft: false
+#          prerelease: false
