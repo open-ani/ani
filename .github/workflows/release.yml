@@ -153,7 +153,7 @@ jobs:
         name: Generate QR code for APK
         uses: snow-actions/qrcode@v1.0.0
         with:
-          text: ${{ steps.upload_apk.outputs.browser_download_url }}
+          text: https://github.com/Him188/animation-garden-desktop/releases/download/${{ steps.tag.outputs.tag }}/AnimationGarden-${{ steps.tag-version.outputs.substring }}.apk
           path: apk-qrcode.png
 
       - if: ${{ env.isMac == 'true' }}
