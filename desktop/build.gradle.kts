@@ -19,6 +19,7 @@
 @file:Suppress("OPT_IN_IS_NOT_ENABLED")
 
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 plugins {
     kotlin("jvm")
@@ -34,12 +35,12 @@ dependencies {
 compose.desktop {
 
     application {
-        mainClass = "me.him188.animationgarden.app.AnimationGardenDesktop"
+        mainClass = "me.him188.animationgarden.desktop.AnimationGardenDesktop"
 //        jvmArgs("--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED")
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "Animation Garden Desktop"
-            description = "Desktop application for Animation Garden"
+            packageName = "AnimationGarden"
+            description = project.description
             vendor = "Him188"
             // adding copyright causes package to fail.
 //            copyright = """
@@ -70,4 +71,8 @@ kotlin.sourceSets.all {
     languageSettings.optIn("androidx.compose.ui.ExperimentalComposeUiApi")
     languageSettings.optIn("androidx.compose.animation.ExperimentalAnimationApi")
     languageSettings.optIn("androidx.compose.foundation.ExperimentalFoundationApi")
+}
+
+tasks.withType(KotlinJvmCompile::class) {
+    kotlinOptions.jvmTarget = "11"
 }

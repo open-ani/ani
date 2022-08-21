@@ -26,7 +26,7 @@ import java.util.*
 actual fun loadResourceBundle(
     context: Context,
     locale: Locale
-): ResourceBundle = ResourceBundleImpl.load(locale)
+): ResourceBundle = ResourceBundleImpl.load(context, locale)
 
 @Stable
 private class ResourceBundleImpl(
@@ -38,21 +38,21 @@ private class ResourceBundleImpl(
     }
 
     companion object {
-        fun load(locale: Locale = Locale.current): ResourceBundle {
+        fun load(context: Context, locale: Locale = Locale.current): ResourceBundle {
             val javaLocale = java.util.Locale.forLanguageTag(locale.toLanguageTag())
             return ResourceBundleImpl(
                 try {
                     PropertyResourceBundle.getBundle(
                         "i18n.app",
                         javaLocale,
-                        ResourceBundle::class.java.classLoader
+                        context::class.java.classLoader
                     )
                 } catch (firstE: MissingResourceException) {
                     try {
                         PropertyResourceBundle.getBundle(
                             "i18n.app",
-                            javaLocale,
-                            ResourceBundle::class.java.classLoader
+                            java.util.Locale.ENGLISH,
+                            context::class.java.classLoader
                         )
                     } catch (e: Throwable) {
                         e.addSuppressed(firstE)

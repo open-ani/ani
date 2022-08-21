@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.app
+package me.him188.animationgarden.desktop
 
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.desktop.ui.tooling.preview.Preview
@@ -34,6 +34,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import me.him188.animationgarden.api.AnimationGardenClient
+import me.him188.animationgarden.app.AppTheme
+import me.him188.animationgarden.app.ProvideCompositionLocalsForPreview
 import me.him188.animationgarden.app.app.*
 import me.him188.animationgarden.app.i18n.LocalI18n
 import me.him188.animationgarden.app.i18n.loadResourceBundle
@@ -50,7 +52,6 @@ object AnimationGardenDesktop {
     @JvmStatic
     fun main(args: Array<String>) {
         application(exitProcessOnExit = true) {
-
 
             val workingDir = remember { File(System.getProperty("user.dir")) }
             val appSettingsProvider = remember {
