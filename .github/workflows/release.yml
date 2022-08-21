@@ -27,7 +27,15 @@ jobs:
         with:
           tag_name: ${{ steps.tag.outputs.tag }}
           release_name: ${{ steps.tag-version.outputs.substring }}
-          body: Automatically created from tag ${{ steps.tag.outputs.tag }}. Do not change anything until assets are uploaded.
+          body: |
+            Automatically created from tag ${{ steps.tag.outputs.tag }}. Do not change anything until assets are uploaded.
+            
+            ----
+            
+            有关附件的说明，查看[下载](https://github.com/Him188/animation-garden-desktop#%E4%B8%8B%E8%BD%BD)。
+            可扫描以下二维码下载 Android 版本：
+            ![](https://github.com/Him188/animation-garden-desktop/releases/download/${{ steps.tag.outputs.tag }}/AnimationGarden-${{ steps.tag-version.outputs.substring }}.apk.qrcode.png)
+
           draft: true
           prerelease: false
     outputs:
@@ -132,13 +140,33 @@ jobs:
       - if: ${{ env.isMac == 'true' }}
         name: Upload Android APK
         uses: actions/upload-release-asset@v1
+        id: upload_apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
         with:
           upload_url: ${{ needs.create-release.outputs.upload_url }}
           asset_path: android/build/outputs/apk/release/animation-garden-android-release.apk
           asset_name: AnimationGarden-${{ steps.tag-version.outputs.substring }}.apk
-          asset_content_type: application/octet-stream
+          asset_content_type: application/vnd.android.package-archive
+
+      - if: ${{ env.isMac == 'true' }}
+        name: Generate QR code for APK
+        uses: snow-actions/qrcode@v1.0.0
+        with:
+          text: ${{ steps.upload_apk.outputs.browser_download_url }}
+          path: apk-qrcode.png
+
+      - if: ${{ env.isMac == 'true' }}
+        name: Upload QR code
+        id: upload_apk_qr
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: apk-qrcode.png
+          asset_name: AnimationGarden-${{ steps.tag-version.outputs.substring }}.apk.qrcode.png
+          asset_content_type: image/png
 
       - name: Assemble
         run: ./gradlew assemble ${{ env.gradleArgs }}
@@ -278,6 +306,19 @@ jobs:
           asset_path: desktop/build/compose/jars/AnimationGarden-linux-x64-${{ steps.tag-version.outputs.substring }}.jar
           asset_name: AnimationGarden-${{ steps.tag-version.outputs.substring }}-debian-amd64.jar
           asset_content_type: application/octet-stream
+    outputs:
+      apk_qr_url: ${{ steps.upload_apk_qr.outputs.browser_download_url }}
+
+#  apk-qrcode:
+#    needs: [ release ]
+#    runs-on: ubuntu-22.04
+#    steps:
+#      - id: update_release
+#        uses: tubone24/update_release@v1.0
+#        env:
+#          GITHUB_TOKEN: ${{ github.token }}
+#        with:
+#          body: \n\n![](${{ needs.release.outputs.apk_qr_url }})
 
 #    steps:
 #      - name: Checkout
