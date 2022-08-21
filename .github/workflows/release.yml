@@ -66,9 +66,16 @@ jobs:
           value: ${{ steps.tag.outputs.tag }}
           index_of_str: "v"
 
-      - uses: actions/setup-java@v2
+      - if: ${{ env.isUnix == 'true' }}
+        uses: actions/setup-java@v2
         with:
           distribution: temurin
+          java-version: 17
+
+      - if: ${{ env.isWindows == 'true' }}
+        uses: actions/setup-java@v2
+        with:
+          distribution: microsoft
           java-version: 17
 
       - name: Setup Gradle
