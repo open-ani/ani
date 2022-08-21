@@ -46,7 +46,7 @@ data class ProxySettings(
     @Stable
     val mode: ProxyMode = ProxyMode.HTTP,
     @Stable
-    val http: HttpProxy = HttpProxy("http://192.168.31.108:7890"),
+    val http: HttpProxy = HttpProxy("http://127.0.0.1:7890"),
     @Stable
     val socks: SocksProxy = SocksProxy("localhost", 7890)
 )
