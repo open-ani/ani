@@ -35,7 +35,7 @@ compose.desktop {
 
     application {
         mainClass = "me.him188.animationgarden.app.AnimationGardenDesktop"
-        jvmArgs("--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED")
+//        jvmArgs("--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED")
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "Animation Garden Desktop"
