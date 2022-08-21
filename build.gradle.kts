@@ -16,18 +16,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-@file:Suppress("OPT_IN_IS_NOT_ENABLED")
-
-import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
-
 buildscript {
     dependencies {
-        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:0.17.3")
+        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:0.18.3")
     }
 }
 
 plugins {
-    kotlin("jvm") apply false
+    kotlin("multiplatform") apply false
+    kotlin("android") apply false
+    id("com.android.library") apply false
+    id("com.android.application") apply false
     id("org.jetbrains.compose") apply false
 }
 
@@ -36,14 +35,14 @@ allprojects {
     version = "1.0.0"
 
     repositories {
-        google()
         mavenCentral()
         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+        google()
     }
 
-    tasks.withType(KotlinJvmCompile::class) {
-        kotlinOptions.jvmTarget = "11"
-    }
+//    tasks.withType(KotlinJvmCompile::class) {
+//        kotlinOptions.jvmTarget = "11"
+//    }
 }
 
 

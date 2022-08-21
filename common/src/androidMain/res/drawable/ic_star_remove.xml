@@ -1,0 +1,27 @@
+<!--
+  ~ Animation Garden App
+  ~ Copyright (C) 2022  Him188
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+        android:width="24dp"
+        android:height="24dp"
+        android:viewportWidth="24"
+        android:viewportHeight="24">
+    <path
+            android:fillColor="#FF000000"
+            android:pathData="M5.8,21L7.4,14L2,9.2L9.2,8.6L12,2L14.8,8.6L22,9.2L18.8,12H18C14.9,12 12.4,14.3 12,17.3L5.8,21M20.1,14.5L18,16.6L15.9,14.5L14.5,15.9L16.6,18L14.5,20.1L15.9,21.5L18,19.4L20.1,21.5L21.5,20.1L19.4,18L21.5,15.9L20.1,14.5Z"/>
+</vector>

@@ -26,19 +26,25 @@ pluginManagement {
 
     plugins {
         kotlin("jvm").version(extra["kotlin.version"] as String)
+        kotlin("multiplatform").version(extra["kotlin.version"] as String)
         kotlin("plugin.serialization").version(extra["kotlin.version"] as String)
         id("org.jetbrains.compose").version(extra["compose.version"] as String)
+        kotlin("android").version(extra["kotlin.version"] as String)
+        id("com.android.application").version(extra["agp.version"] as String)
+        id("com.android.library").version(extra["agp.version"] as String)
     }
 }
 
-rootProject.name = "animation-garden-app"
+rootProject.name = "animation-garden"
 
 fun includeProject(projectPath: String, dir: String? = null) {
     include(projectPath)
     if (dir != null) project(projectPath).projectDir = file(dir)
 }
 
-includeProject(":animation-garden-api", "api")
-includeProject(":animation-garden-desktop", "desktop")
+includeProject(":api", "api")
+includeProject(":common", "common")
+includeProject(":desktop", "desktop")
+includeProject(":animation-garden-android", "android")
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")

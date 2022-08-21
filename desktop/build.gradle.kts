@@ -18,8 +18,6 @@
 
 @file:Suppress("OPT_IN_IS_NOT_ENABLED")
 
-import org.jetbrains.compose.ExperimentalComposeLibrary
-import org.jetbrains.compose.compose
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
 plugins {
@@ -29,37 +27,14 @@ plugins {
     id("kotlinx-atomicfu")
 }
 
-@OptIn(ExperimentalComposeLibrary::class)
 dependencies {
-    implementation(compose.desktop.currentOs) {
-        exclude(compose.material)
-    }
-    implementation(compose.foundation)
-    implementation(compose.ui)
-    implementation(compose.uiTooling)
-    implementation(compose.material3)
-    implementation(compose.runtime)
-    implementation(compose.preview)
-
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.3.3")
-    implementation("net.mamoe.yamlkt:yamlkt:0.12.0")
-
-//    implementation("org.jetbrains.exposed:exposed-core:0.39.1")
-//    implementation("org.jetbrains.exposed:exposed-dao:0.39.1")
-//    implementation("org.jetbrains.exposed:exposed-jdbc:0.39.1")
-//    implementation("org.jetbrains.exposed:exposed-kotlin-datetime:0.39.1")
-//    // https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc
-//    implementation("org.xerial:sqlite-jdbc:3.39.2.0")
-
-    testImplementation(compose.uiTestJUnit4)
-
-    implementation(projects.animationGardenApi)
+    implementation(projects.common)
 }
 
 compose.desktop {
 
     application {
-        mainClass = "me.him188.animationgarden.desktop.AnimationGardenDesktop"
+        mainClass = "me.him188.animationgarden.app.AnimationGardenDesktop"
         jvmArgs("--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED")
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)

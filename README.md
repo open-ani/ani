@@ -9,10 +9,28 @@
 
 ## 下载
 
-此应用支持 macOS、Ubuntu 以及 Windows。
+此应用支持 macOS、Ubuntu、Windows 与 Android。
 可在 [releases](https://github.com/Him188/animation-garden-desktop/releases/latest) 中的 "Assets" 下载最新版本。
 
-对于所有平台，`.zip` 都是解压即用的绿色版本，`.dmg`、`.deb` 和 `.msi` 分别对应 macOS、Ubuntu 和 Windows 的安装程序。可根据偏好选择。
+对于所有桌面平台，`.zip` 都是解压即用的绿色版本，`.dmg`、`.deb` 和 `.msi` 分别对应 macOS、Ubuntu 和 Windows 的安装程序。可根据偏好选择。
+
+对于 Android，请下载 `.apk` 安装包使用。
+
+Android 版与桌面版的功能是一样的（实际上安卓版就是一模一样的桌面版 UI 放到了窄屏幕上），唯一的区别是桌面版可以单独设置代理，而安卓版目前只使用系统代理。
+
+### 提示
+
+#### 访问动漫花园
+
+动漫花园在中国大陆无法通过 IPv4 访问。你可能需要一些技术手段，或者使用 IPv6，才能正常使用。
+
+在桌面端，可以在设置（Windows 在标题栏，macOS 在屏幕左上角点击"动漫花园"）中设置使用代理。代理是默认禁用的。初始的 HTTP 代理设置为连接本地 Clash 并使用 Clash 的默认端口。
+
+在 Android 端，目前没有支持单独设置代理。但 Android 拥有系统级 VPN，使用各大代理软件都可以做到代理动漫花园。（若你确实需要单独设置代理，请发起 issue）
+
+#### 额外设置
+
+部分桌面端会支持额外设置，这些设置都可以由上述方法看到，如果看不到就是没有。例如 macOS 端支持窗口沉浸（将背景颜色绘制到标题栏内，默认启用）。
 
 ## 功能
 
