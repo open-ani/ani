@@ -111,6 +111,35 @@ jobs:
       - name: Clean and download dependencies
         run: ./gradlew clean ${{ env.gradleArgs }}
 
+      - if: ${{ env.isMac == 'true' }}
+        name: Prepare signing key
+        id: android_signing_key
+        uses: timheuer/base64-to-file@v1.1
+        with:
+          fileName: 'android_signing_key'
+          fileDir: './'
+          encodedString: ${{ secrets.SIGNING_RELEASE_STOREFILE }}
+
+      - if: ${{ env.isMac == 'true' }}
+        name: Build Android APK
+        run: ./gradlew assembleRelease ${{ env.gradleArgs }}
+        env:
+          "signing.release.storeFileFromRoot": ${{ steps.android_signing_key.outputs.filePath }}
+          "signing.release.storePassword": ${{ secrets.SIGNING_RELEASE_STOREPASSWORD }}
+          "signing.release.keyAlias": ${{ secrets.SIGNING_RELEASE_KEYALIAS }}
+          "signing.release.keyPassword": ${{ secrets.SIGNING_RELEASE_KEYPASSWORD }}
+
+      - if: ${{ env.isMac == 'true' }}
+        name: Upload Android APK
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: android/build/outputs/apk/release/animation-garden-android-release.apk
+          asset_name: AnimationGarden-${{ steps.tag-version.outputs.substring }}.apk
+          asset_content_type: application/octet-stream
+
       - name: Assemble
         run: ./gradlew assemble ${{ env.gradleArgs }}
 
@@ -118,7 +147,7 @@ jobs:
         run: ./gradlew check ${{ env.gradleArgs }}
 
       - name: Package
-        run: ./gradlew createDistributable package ${{ env.gradleArgs }}
+        run: ./gradlew createDistributable package packageUberJarForCurrentOS ${{ env.gradleArgs }}
       #        continue-on-error: true
 
       #      - if: ${{ env.isMac == 'true' }}
@@ -128,30 +157,6 @@ jobs:
       #          name: errors-${{ matrix.os }}
       #          path: desktop/build/compose/logs/
       #        continue-on-error: true
-
-
-      # Upload packages for build summary
-
-      - if: ${{ env.isMac == 'true' }}
-        name: Upload macOS packages
-        uses: actions/upload-artifact@v3
-        with:
-          name: animation-garden-desktop-macos
-          path: desktop/build/compose/binaries/main/app
-
-      - if: ${{ env.isUbuntu == 'true' }}
-        name: Upload Linux packages
-        uses: actions/upload-artifact@v3
-        with:
-          name: animation-garden-desktop-linux
-          path: desktop/build/compose/binaries/main/app
-
-      - if: ${{ env.isWindows == 'true' }}
-        name: Upload Windows packages
-        uses: actions/upload-artifact@v3
-        with:
-          name: animation-garden-desktop-windows
-          path: desktop/build/compose/binaries/main/app
 
       #      - name: Generate Line Temp File
       #        run: "cat CHANGELOG.md | grep -n '## \\\\' | cut -d: -f1 | head -n 2 >> line.tmp"
@@ -174,8 +179,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
         with:
           upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: desktop/build/compose/binaries/main/dmg/Animation Garden Desktop-${{ steps.tag-version.outputs.substring }}.dmg
-          asset_name: AnimationGardenDesktop_${{ steps.tag.outputs.tag }}_macOS_amd64.dmg
+          asset_path: desktop/build/compose/binaries/main/dmg/AnimationGarden-${{ steps.tag-version.outputs.substring }}.dmg
+          asset_name: AnimationGarden-${{ steps.tag-version.outputs.substring }}-macos-amd64.dmg
           asset_content_type: application/octet-stream
 
       - if: ${{ env.isMac == 'true' }}
@@ -186,8 +191,19 @@ jobs:
         with:
           upload_url: ${{ needs.create-release.outputs.upload_url }}
           asset_path: desktop.zip
-          asset_name: AnimationGardenDesktop_${{ steps.tag.outputs.tag }}_macOS_amd64.zip
+          asset_name: AnimationGarden-${{ steps.tag-version.outputs.substring }}-macos-amd64.zip
           asset_content_type: application/zip
+
+      - if: ${{ env.isMac == 'true' }}
+        name: Upload JAR for macOS
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: desktop/build/compose/jars/AnimationGarden-macos-x64-${{ steps.tag-version.outputs.substring }}.jar
+          asset_name: AnimationGarden-${{ steps.tag-version.outputs.substring }}-macos-amd64.jar
+          asset_content_type: application/octet-stream
 
       # Windows
 
@@ -202,8 +218,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
         with:
           upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: desktop/build/compose/binaries/main/msi/Animation Garden Desktop-${{ steps.tag-version.outputs.substring }}.msi
-          asset_name: AnimationGardenDesktop_${{ steps.tag.outputs.tag }}_Windows_amd64.msi
+          asset_path: desktop/build/compose/binaries/main/msi/AnimationGarden-${{ steps.tag-version.outputs.substring }}.msi
+          asset_name: AnimationGarden-${{ steps.tag-version.outputs.substring }}-windows-amd64.msi
           asset_content_type: application/octet-stream
 
       - if: ${{ env.isWindows == 'true' }}
@@ -214,16 +230,21 @@ jobs:
         with:
           upload_url: ${{ needs.create-release.outputs.upload_url }}
           asset_path: desktop.zip
-          asset_name: AnimationGardenDesktop_${{ steps.tag.outputs.tag }}_Windows_amd64.zip
+          asset_name: AnimationGarden-${{ steps.tag-version.outputs.substring }}-windows-amd64.zip
           asset_content_type: application/zip
 
+      - if: ${{ env.isWindows == 'true' }}
+        name: Upload JAR for Windows
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: desktop/build/compose/jars/AnimationGarden-windows-x64-${{ steps.tag-version.outputs.substring }}.jar
+          asset_name: AnimationGarden-${{ steps.tag-version.outputs.substring }}-windows-amd64.jar
+          asset_content_type: application/octet-stream
+
       # Linux
-
-
-
-      - name: Inspect packaged files on Ubuntu
-        if: ${{ env.isUbuntu == 'true' }}
-        run: cd desktop/build/compose/binaries/main/deb/ && ls
 
       - if: ${{ env.isUbuntu == 'true' }}
         name: Upload installer for Debian
@@ -232,8 +253,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
         with:
           upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: desktop/build/compose/binaries/main/deb/animation-garden-desktop_${{ steps.tag-version.outputs.substring }}-1_amd64.deb
-          asset_name: AnimationGardenDesktop_${{ steps.tag.outputs.tag }}_Debian_amd64.deb
+          asset_path: desktop/build/compose/binaries/main/deb/animationgarden_${{ steps.tag-version.outputs.substring }}-1_amd64.deb
+          asset_name: AnimationGarden-${{ steps.tag-version.outputs.substring }}-debian-amd64.deb
           asset_content_type: application/octet-stream
 
       - if: ${{ env.isUbuntu == 'true' }}
@@ -244,8 +265,19 @@ jobs:
         with:
           upload_url: ${{ needs.create-release.outputs.upload_url }}
           asset_path: desktop.zip
-          asset_name: AnimationGardenDesktop_${{ steps.tag.outputs.tag }}_Debian_amd64.zip
+          asset_name: AnimationGarden-${{ steps.tag-version.outputs.substring }}-debian-amd64.zip
           asset_content_type: application/zip
+
+      - if: ${{ env.isUbuntu == 'true' }}
+        name: Upload JAR for Debian
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: desktop/build/compose/jars/AnimationGarden-linux-x64-${{ steps.tag-version.outputs.substring }}.jar
+          asset_name: AnimationGarden-${{ steps.tag-version.outputs.substring }}-debian-amd64.jar
+          asset_content_type: application/octet-stream
 
 #    steps:
 #      - name: Checkout

@@ -70,6 +70,33 @@ jobs:
       - name: Clean and download dependencies
         run: ./gradlew clean ${{ env.gradleArgs }}
 
+
+      - if: ${{ env.isMac == 'true' }}
+        name: Prepare signing key
+        id: android_signing_key
+        uses: timheuer/base64-to-file@v1.1
+        with:
+          fileName: 'android_signing_key'
+          fileDir: './'
+          encodedString: ${{ secrets.SIGNING_RELEASE_STOREFILE }}
+
+      - if: ${{ env.isMac == 'true' }}
+        name: Build Android APK
+        run: ./gradlew assembleRelease ${{ env.gradleArgs }}
+        env:
+          "signing.release.storeFileFromRoot": ${{ steps.android_signing_key.outputs.filePath }}
+          "signing.release.storePassword": ${{ secrets.SIGNING_RELEASE_STOREPASSWORD }}
+          "signing.release.keyAlias": ${{ secrets.SIGNING_RELEASE_KEYALIAS }}
+          "signing.release.keyPassword": ${{ secrets.SIGNING_RELEASE_KEYPASSWORD }}
+
+      - if: ${{ env.isMac == 'true' }}
+        name: Upload Android APK packages
+        uses: actions/upload-artifact@v3
+        with:
+          name: animation-garden-android
+          path: android/build/outputs/apk/release/animation-garden-android-release.apk
+
+
       - name: Assemble
         run: ./gradlew assemble ${{ env.gradleArgs }}
 
@@ -87,7 +114,6 @@ jobs:
       #          name: errors-${{ matrix.os }}
       #          path: desktop/build/compose/logs/
       #        continue-on-error: true
-
 
       - if: ${{ env.isMac == 'true' }}
         name: Upload macOS packages

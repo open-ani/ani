@@ -31,8 +31,9 @@ plugins {
 }
 
 allprojects {
-    group = "me.him188"
-    version = "1.0.0"
+    group = "me.him188.animationgarden"
+    description = "Desktop application for Animation Garden"
+    version = "1.1.0"
 
     repositories {
         mavenCentral()

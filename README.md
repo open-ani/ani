@@ -12,11 +12,15 @@
 此应用支持 macOS、Ubuntu、Windows 与 Android。
 可在 [releases](https://github.com/Him188/animation-garden-desktop/releases/latest) 中的 "Assets" 下载最新版本。
 
-对于所有桌面平台，`.zip` 都是解压即用的绿色版本，`.dmg`、`.deb` 和 `.msi` 分别对应 macOS、Ubuntu 和 Windows 的安装程序。可根据偏好选择。
+对于所有桌面平台：
+
+- `.zip` 是包含 JRE 的解压即用的绿色版本；
+- `.dmg`、`.deb` 和 `.msi` 分别对应 macOS、Ubuntu 和 Windows 的安装程序；
+- `.jar` 是不包含 JRE 的最小程序，需要配合 JRE 11 及以上使用。
 
 对于 Android，请下载 `.apk` 安装包使用。
 
-Android 版与桌面版的功能是一样的（实际上安卓版就是一模一样的桌面版 UI 放到了窄屏幕上），唯一的区别是桌面版可以单独设置代理，而安卓版目前只使用系统代理。
+Android 版与桌面版的功能是一样的，区别是桌面版可以单独设置代理，而安卓版目前只使用系统代理。
 
 ### 提示
 

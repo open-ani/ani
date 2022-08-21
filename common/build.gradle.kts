@@ -31,8 +31,6 @@ plugins {
 
 kotlin {
     targets {
-//        jvm("common") {
-//        }
         android()
         jvm("desktop") {
             compilations.all {

@@ -44,9 +44,9 @@ data class AppSettings(
 @Serializable
 data class ProxySettings(
     @Stable
-    val mode: ProxyMode = ProxyMode.HTTP,
+    val mode: ProxyMode = ProxyMode.DISABLED,
     @Stable
-    val http: HttpProxy = HttpProxy("http://127.0.0.1:7890"),
+    val http: HttpProxy = HttpProxy("http://localhost:7890"),
     @Stable
     val socks: SocksProxy = SocksProxy("localhost", 7890)
 )

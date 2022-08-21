@@ -18,7 +18,7 @@
 
 @file:Suppress("UnstableApiUsage")
 
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.compose.internal.getLocalProperty
 
 plugins {
     id("org.jetbrains.compose")
@@ -57,7 +57,7 @@ android {
         applicationId = "me.him188.animationgarden"
         minSdk = 26
         targetSdk = 32
-        versionCode = 1
+        versionCode = 2
         versionName = project.version.toString()
     }
     compileOptions {
@@ -67,23 +67,48 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = "1.2.0"
     }
+    signingConfigs {
+        kotlin.runCatching { getProperty("signing.release.storeFileFromRoot") }.getOrNull()?.let {
+            create("release") {
+                storeFile = rootProject.file(it)
+                storePassword = getProperty("signing.release.storePassword")
+                keyAlias = getProperty("signing.release.keyAlias")
+                keyPassword = getProperty("signing.release.keyPassword")
+            }
+        }
+        kotlin.runCatching { getProperty("signing.release.storeFile") }.getOrNull()?.let {
+            create("release") {
+                storeFile = file(it)
+                storePassword = getProperty("signing.release.storePassword")
+                keyAlias = getProperty("signing.release.keyAlias")
+                keyPassword = getProperty("signing.release.keyPassword")
+            }
+        }
+    }
     buildTypes {
         getByName("release") {
             isMinifyEnabled = true
+            signingConfig = signingConfigs.findByName("release")
         }
         getByName("debug") {
             isMinifyEnabled = false
         }
-//        getByName("debug") {
-//            isMinifyEnabled = false
-//        }
     }
     buildFeatures {
         compose = true
     }
 }
 
-tasks.withType(KotlinCompile::class) {
-    this.kotlinOptions.freeCompilerArgs += "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api"
-    this.kotlinOptions.freeCompilerArgs += "-opt-in=androidx.compose.ui.ExperimentalComposeUiApi"
+kotlin.sourceSets.all {
+    languageSettings.optIn("androidx.compose.material3.ExperimentalMaterial3Api")
+    languageSettings.optIn("androidx.compose.ui.ExperimentalComposeUiApi")
+    languageSettings.optIn("androidx.compose.animation.ExperimentalAnimationApi")
+    languageSettings.optIn("androidx.compose.foundation.ExperimentalFoundationApi")
 }
+
+fun getProperty(name: String) =
+    System.getProperty(name)
+        ?: System.getenv(name)
+        ?: properties[name]?.toString()
+        ?: getLocalProperty(name)
+        ?: ext.get(name).toString()
