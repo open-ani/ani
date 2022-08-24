@@ -500,7 +500,12 @@ private fun LiveTopicList(
             exit = exit,
         ) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = AppTheme.colorScheme.primary)
+                SearchResultField(fetchingState) {
+                    Text(
+                        LocalI18n.current.getString("search.empty"),
+                        style = AppTheme.typography.bodyMedium,
+                    )
+                }
             }
         }
         AnimatedVisibility(
@@ -573,27 +578,42 @@ private fun LiveTopicList(
                             }
                         }
 
-                        when (val localFetching = fetchingState) {
-                            FetchingState.Idle, is FetchingState.Fetching -> {
-                                CircularProgressIndicator(color = AppTheme.colorScheme.primary)
-                            }
+                        SearchResultField(fetchingState) {
+                            Text(
+                                LocalI18n.current.getString("search.end"),
+                                style = AppTheme.typography.bodyMedium
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 
-                            FetchingState.Succeed -> {
-                                Text(
-                                    LocalI18n.current.getString("search.end"),
-                                    style = AppTheme.typography.bodyMedium
-                                )
-                            }
+@Composable
+private fun SearchResultField(
+    fetchingState: FetchingState,
+    emptyResult: @Composable () -> Unit,
+) {
+    when (fetchingState) {
+        FetchingState.Idle, is FetchingState.Fetching -> {
+            CircularProgressIndicator(color = AppTheme.colorScheme.primary)
+        }
 
-                            is FetchingState.Failed -> {
-                                Text(
-                                    String.format(
-                                        LocalI18n.current.getString("search.failed"),
-                                        localFetching.exception.localizedMessage
-                                    ),
-                                    style = AppTheme.typography.bodyMedium.run { copy(color = color.copy(alpha = 0.5f)) }
-                                )
-                                // TODO: 2022/8/17 add retry
+        FetchingState.Succeed -> {
+            emptyResult()
+        }
+
+        is FetchingState.Failed -> {
+            Text(
+                String.format(
+                    LocalI18n.current.getString("search.failed"),
+                    fetchingState.exception.localizedMessage
+                ),
+                style = AppTheme.typography.bodyMedium.run { copy(color = color.copy(alpha = 0.5f)) }
+            )
+            // TODO: 2022/8/17 add retry
 //                                ClickableText(
 //                                    AnnotatedString(LocalI18n.current.getString("search.retry")),
 //                                    style = AppTheme.typography.bodyMedium.run { copy(color = color.copy(alpha = 0.5f)) },
@@ -601,11 +621,6 @@ private fun LiveTopicList(
 //                                        app.launchFetchNextPage(false)
 //                                    }
 //                                )
-                            }
-                        }
-                    }
-                }
-            }
         }
     }
 }
