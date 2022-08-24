@@ -37,6 +37,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".activity.PreferencesActivity"/>
+        <activity android:name=".activity.SettingsActivity"/>
+        <activity android:name=".activity.StarredListActivity"/>
     </application>
 </manifest>

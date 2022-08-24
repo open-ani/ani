@@ -49,10 +49,7 @@ import me.him188.animationgarden.api.impl.model.mutate
 import me.him188.animationgarden.api.model.*
 import me.him188.animationgarden.api.model.FileSize.Companion.megaBytes
 import me.him188.animationgarden.app.AppTheme
-import me.him188.animationgarden.app.app.ApplicationState
-import me.him188.animationgarden.app.app.FetchingState
-import me.him188.animationgarden.app.app.StarredAnime
-import me.him188.animationgarden.app.app.doSearch
+import me.him188.animationgarden.app.app.*
 import me.him188.animationgarden.app.i18n.LocalI18n
 import me.him188.animationgarden.app.platform.LocalContext
 import me.him188.animationgarden.app.platform.Res
@@ -71,40 +68,16 @@ fun MainPage(
     // and is safe to be used in callbacks.
 
     val currentApp by rememberUpdatedState(app)
-    val currentTopics by remember { derivedStateOf { currentApp.topicsFlow.asFlow() } }.value.collectAsState()
-    val currentLazyList = rememberLazyListState()
+    val currentTopics by app.topicsFlowState.value.collectAsState()
 
     val appliedKeywordState = rememberSaveable { mutableStateOf("") }
     var currentAppliedKeyword by appliedKeywordState
     val (keywordsInput, onKeywordsInputChange) = rememberSaveable { mutableStateOf(currentAppliedKeyword) }
 
-    val currentStarredAnimeList by app.data.starredAnime.asFlow().collectAsState()
-    val currentSearchQuery by rememberUpdatedState(app.searchQuery)
-    val currentStarredAnime by remember {
-        derivedStateOf {
-            currentStarredAnimeList.find { it.searchQuery == currentSearchQuery.value.keywords }
-        }
-    }
+    val currentStarredAnimeList by app.starredAnimeFlowState.value.collectAsState()
+    val currentStarredAnime by app.rememberCurrentStarredAnimeState()
 
-    val currentOrganizedViewState by remember {
-        val instance = OrganizedViewState()
-        derivedStateOf { // observe topics
-            instance.apply {
-                selectedAlliance.value = currentStarredAnime?.preferredAlliance
-                selectedResolution.value = currentStarredAnime?.preferredResolution
-                selectedSubtitleLanguage.value = currentStarredAnime?.preferredSubtitleLanguage
-
-                setTopics(currentTopics, currentApp.searchQuery.value.keywords)
-            }
-        }
-    }
-    SideEffect {
-        currentApp.currentOrganizedViewState = currentOrganizedViewState
-    }
-
-    val backgroundColor = AppTheme.colorScheme.background
-
-    Column(Modifier.background(color = backgroundColor)) {
+    Column(Modifier.background(color = AppTheme.colorScheme.background)) {
         var starListMode by rememberSaveable { mutableStateOf(false) }
 
         // Search bar, fixed height
@@ -159,38 +132,14 @@ fun MainPage(
             }
 
             // keywords(search query) input
-            ProvideTextStyle(AppTheme.typography.bodyMedium.copy(lineHeight = 16.sp)) {
-                OutlinedTextFieldEx(
-                    keywordsInput,
-                    onKeywordsInputChange,
-                    Modifier
-                        .padding(start = 8.dp)
-                        .height(48.dp)
-                        .defaultMinSize(minWidth = if (starListMode) 0.dp else 96.dp)
-                        .weight(0.8f)
-                        .onEnterKeyEvent {
-                            doSearch()
-                            true
-                        },
-                    placeholder = {
-                        Text(
-                            LocalI18n.current.getString("search.keywords"),
-                            style = AppTheme.typography.bodyMedium.copy(
-                                color = AppTheme.typography.bodyMedium.color.copy(0.3f),
-                                lineHeight = 16.sp
-                            )
-                        )
-                    },
-                    singleLine = true,
-                    shape = AppTheme.shapes.medium,
-                    maxLines = 1,
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                    keyboardActions = KeyboardActions(onSearch = {
-                        doSearch()
-                    }),
-                    contentPadding = PaddingValues(vertical = 6.dp, horizontal = 12.dp)
-                )
-            }
+            SearchTextField(
+                keywordsInput,
+                onKeywordsInputChange,
+                Modifier
+                    .defaultMinSize(minWidth = if (starListMode) 0.dp else 96.dp)
+                    .weight(0.8f),
+                doSearch = { doSearch() }
+            )
 
             // Resizable button for initializing search
             AnimatedSearchButton {
@@ -206,22 +155,19 @@ fun MainPage(
         ) {
 
             // Starred List, expand from/shrink towards start.
+            val springIntSize = spring(
+                dampingRatio = Spring.DampingRatioNoBouncy,
+                stiffness = Spring.StiffnessMediumLow,
+                visibilityThreshold = IntSize.VisibilityThreshold
+            )
             AnimatedVisibility(
                 starListMode,
                 enter = expandHorizontally(
-                    spring(
-                        dampingRatio = Spring.DampingRatioNoBouncy,
-                        stiffness = Spring.StiffnessMediumLow,
-                        visibilityThreshold = IntSize.VisibilityThreshold
-                    ),
+                    springIntSize,
                     expandFrom = Alignment.Start,
                 ),
                 exit = shrinkHorizontally(
-                    spring(
-                        dampingRatio = Spring.DampingRatioNoBouncy,
-                        stiffness = Spring.StiffnessMediumLow,
-                        visibilityThreshold = IntSize.VisibilityThreshold
-                    ),
+                    springIntSize,
                     shrinkTowards = Alignment.Start
                 )
             ) {
@@ -233,7 +179,7 @@ fun MainPage(
                         val currentAnime by rememberUpdatedState(anime)
                         LaunchedEffect(anime.id) {
                             delay(1.seconds) // ignore if user is quickly scrolling
-                            updateStarredAnimeEpisodes(currentApp, anime, currentAnime, app)
+                            updateStarredAnimeEpisodes(currentApp, anime, currentAnime)
                         }
                         StarredAnimeCard(
                             anime = anime,
@@ -244,7 +190,7 @@ fun MainPage(
                                 app.updateSearchQuery(SearchQuery(keywords = currentAnime.searchQuery))
                                 starListMode = false
                                 currentAppliedKeyword = currentAnime.searchQuery
-                                currentOrganizedViewState.selectedEpisode.value = it
+                                currentApp.organizedViewState.selectedEpisode.value = it
                                 onKeywordsInputChange(currentAnime.searchQuery)
                             }
                         )
@@ -253,81 +199,131 @@ fun MainPage(
             }
 
             // Topic Search Result, slide in from/out towards end.
+            val springIntOffset = spring(
+                dampingRatio = Spring.DampingRatioNoBouncy,
+                stiffness = Spring.StiffnessMediumLow,
+                visibilityThreshold = IntOffset.VisibilityThreshold
+            )
             AnimatedVisibility(
                 !starListMode,
                 enter = fadeIn() + slideInHorizontally(
-                    spring(
-                        dampingRatio = Spring.DampingRatioNoBouncy,
-                        stiffness = Spring.StiffnessMediumLow,
-                        visibilityThreshold = IntOffset.VisibilityThreshold
-                    ),
+                    springIntOffset,
                     initialOffsetX = { it },
                 ),
                 exit = fadeOut() + slideOutHorizontally(
-                    spring(
-                        dampingRatio = Spring.DampingRatioNoBouncy,
-                        stiffness = Spring.StiffnessMediumLow,
-                        visibilityThreshold = IntOffset.VisibilityThreshold
-                    ),
+                    springIntOffset,
                     targetOffsetX = { it }
                 )
             ) {
                 // topic searching mode
 
-                // no vertical padding
-                val context by rememberUpdatedState(LocalContext.current)
-                LiveTopicList(
-                    modifier = Modifier,
-                    app = app,
-                    organizedViewState = currentOrganizedViewState,
-                    lazyListState = currentLazyList,
-                    topics = currentTopics,
-                    onClickCard = {
-                        currentApp.applicationScope.launch(Dispatchers.IO) {
-                            it.details?.episode?.let { currentApp.onEpisodeDownloaded(it) }
-                            browse(context, it.magnetLink.value)
-                        }
-                    },
-                    starred = currentStarredAnime != null,
-                    onUpdateFilter = {
-                        currentApp.data.starredAnime.updateStarredAnime(
-                            currentApp.searchQuery.value.keywords.orEmpty(),
-                            currentOrganizedViewState
-                        )
-                    },
-                    onStarredChange = { starred ->
-                        if (starred) {
-                            currentApp.data.starredAnime.mutate {
-                                it + StarredAnime(
-                                    primaryName = currentOrganizedViewState.chineseName.value
-                                        ?: currentOrganizedViewState.otherNames.value.firstOrNull() ?: "",
-                                    secondaryNames = currentOrganizedViewState.otherNames.value,
-                                    searchQuery = currentApp.searchQuery.value.keywords.orEmpty(),
-                                    preferredAlliance = currentOrganizedViewState.selectedAlliance.value,
-                                    preferredResolution = currentOrganizedViewState.selectedResolution.value,
-                                    preferredSubtitleLanguage = currentOrganizedViewState.selectedSubtitleLanguage.value,
-                                    episodes = currentOrganizedViewState.episodes.value,
-                                    starTimeMillis = System.currentTimeMillis()
-                                )
-                            }
-                        } else {
-                            currentApp.data.starredAnime.mutate { list -> list.filterNot { it.searchQuery == currentApp.searchQuery.value.keywords } }
-                        }
-                    },
+                TopicsSearchResult(
+                    app,
+                    currentTopics,
+                    isStarred = currentStarredAnime != null
                 )
             }
         }
     }
 }
 
+@Composable
+fun SearchTextField(
+    text: String,
+    onTextChange: (String) -> Unit,
+    modifier: Modifier,
+    doSearch: () -> Unit,
+) {
+    val currentDoSearch by rememberUpdatedState(doSearch)
+    ProvideTextStyle(AppTheme.typography.bodyMedium.copy(lineHeight = 16.sp)) {
+        OutlinedTextFieldEx(
+            text,
+            onTextChange,
+            modifier
+                .padding(start = 8.dp)
+                .height(48.dp)
+                .onEnterKeyEvent {
+                    currentDoSearch()
+                    true
+                },
+            placeholder = {
+                Text(
+                    LocalI18n.current.getString("search.keywords"),
+                    style = AppTheme.typography.bodyMedium.copy(
+                        color = AppTheme.typography.bodyMedium.color.copy(0.3f),
+                        lineHeight = 16.sp
+                    )
+                )
+            },
+            singleLine = true,
+            shape = AppTheme.shapes.medium,
+            maxLines = 1,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+            keyboardActions = KeyboardActions(onSearch = { currentDoSearch() }),
+            contentPadding = PaddingValues(vertical = 6.dp, horizontal = 12.dp)
+        )
+    }
+}
+
+@Composable
+fun TopicsSearchResult(
+    app: ApplicationState,
+    topics: List<Topic>,
+    isStarred: Boolean,
+    lazyListState: LazyListState = rememberLazyListState(),
+) {
+    // no vertical padding
+    val currentContext by rememberUpdatedState(LocalContext.current)
+    val currentApp by rememberUpdatedState(app)
+    val organizedViewState = app.organizedViewState
+    LiveTopicList(
+        modifier = Modifier,
+        app = app,
+        organizedViewState = organizedViewState,
+        lazyListState = lazyListState,
+        topics = topics,
+        onClickCard = {
+            currentApp.applicationScope.launch(Dispatchers.IO) {
+                it.details?.episode?.let { currentApp.onEpisodeDownloaded(it) }
+                browse(currentContext, it.magnetLink.value)
+            }
+        },
+        starred = isStarred,
+        onUpdateFilter = {
+            currentApp.data.starredAnime.updateStarredAnime(
+                currentApp.searchQuery.value.keywords.orEmpty(),
+                organizedViewState
+            )
+        },
+        onStarredChange = { starred ->
+            if (starred) {
+                currentApp.data.starredAnime.mutate {
+                    it + StarredAnime(
+                        primaryName = organizedViewState.chineseName.value
+                            ?: organizedViewState.otherNames.value.firstOrNull() ?: "",
+                        secondaryNames = organizedViewState.otherNames.value,
+                        searchQuery = currentApp.searchQuery.value.keywords.orEmpty(),
+                        preferredAlliance = organizedViewState.selectedAlliance.value,
+                        preferredResolution = organizedViewState.selectedResolution.value,
+                        preferredSubtitleLanguage = organizedViewState.selectedSubtitleLanguage.value,
+                        episodes = organizedViewState.episodes.value,
+                        starTimeMillis = System.currentTimeMillis()
+                    )
+                }
+            } else {
+                currentApp.data.starredAnime.mutate { list -> list.filterNot { it.searchQuery == currentApp.searchQuery.value.keywords } }
+            }
+        },
+    )
+}
+
 /**
  * Fetch all topics and update known available episodes, until we are sure that it's already up-to-date.
  */
-private suspend fun CoroutineScope.updateStarredAnimeEpisodes(
+suspend fun CoroutineScope.updateStarredAnimeEpisodes(
     currentApp: ApplicationState,
     anime: StarredAnime,
     currentAnime: StarredAnime,
-    app: ApplicationState
 ) {
     val session =
         currentApp.client.value.startSearchSession(SearchQuery(keywords = anime.searchQuery))
@@ -342,7 +338,7 @@ private suspend fun CoroutineScope.updateStarredAnimeEpisodes(
         }
     }
     if (allEpisodesContained(currentAnime, allTopics)) {
-        app.data.starredAnime.updateStarredAnime(anime.searchQuery) {
+        currentApp.data.starredAnime.updateStarredAnime(anime.searchQuery) {
             copy(
                 episodes = (episodes.asSequence() + allTopics.asSequence()
                     .mapNotNull { it.details?.episode }).distinct().toList()
@@ -356,7 +352,7 @@ private fun allEpisodesContained(
     allTopics: MutableList<Topic>
 ) = currentAnime.episodes.all { episode -> allTopics.any { it.details?.episode == episode } }
 
-private fun ApplicationState.removeStarredAnime(
+fun ApplicationState.removeStarredAnime(
     anime: StarredAnime
 ) {
     data.starredAnime.mutate { list -> list.filterNot { it.id == anime.id } }
@@ -391,7 +387,7 @@ fun MutableListFlow<StarredAnime>.updateStarredAnime(
 }
 
 @Composable
-private fun AnimatedSearchButton(onClick: () -> Unit) {
+fun AnimatedSearchButton(onClick: () -> Unit) {
 
     BoxWithConstraints(
         Modifier.wrapContentWidth(), contentAlignment = Alignment.Center
@@ -560,7 +556,7 @@ private fun LiveTopicList(
                     }
                 }
 
-                items(topics, { it.id }, { null }) { topic ->
+                items(topics, { it.id }, { it.details?.otherTitles?.isEmpty() }) { topic ->
                     // animate on selecting filter
                     AnimatedVisibility(
                         visibleTopics.contains(topic),

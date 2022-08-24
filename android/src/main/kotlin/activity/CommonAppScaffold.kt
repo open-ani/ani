@@ -18,12 +18,10 @@
 
 package me.him188.animationgarden.android.activity
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.TopAppBar
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Scaffold
@@ -31,7 +29,9 @@ import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.intl.Locale
@@ -47,8 +47,10 @@ import me.him188.animationgarden.app.ui.LocalAlwaysShowTitlesInSeparateLine
 @Composable
 fun CommonAppScaffold(
     topBar: @Composable () -> Unit,
+    clearFocus: (() -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
+    val currentClearFocus by rememberUpdatedState(newValue = clearFocus)
     val appSettingsManager = remember {
         AnimationGardenApplication.instance.appSettingsManager
     }
@@ -73,11 +75,15 @@ fun CommonAppScaffold(
 //                    MainPage(app = app, 8.dp)
 //                }
 //            }
+        val focus = remember { FocusRequester() }
         Scaffold(
             Modifier
+                .focusRequester(focus)
                 .focusProperties { canFocus = false }
                 .clickable(remember { MutableInteractionSource() }, null) {
                     keyboard?.hide()
+                    focus.freeFocus()
+                    currentClearFocus?.invoke()
                 }
                 .systemBarsPadding(),
             topBar = topBar,
@@ -88,7 +94,12 @@ fun CommonAppScaffold(
             },
 
             ) {
-            Box(modifier = Modifier.padding(it)) {
+            Box(
+                modifier = Modifier
+                    .background(AppTheme.colorScheme.background)
+                    .fillMaxSize()
+                    .padding(it) // padding first
+            ) {
                 Box(modifier = Modifier.padding(top = 0.dp)) {
                     content()
                 }

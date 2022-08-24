@@ -24,10 +24,16 @@ import android.os.Bundle
 import android.view.Window
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -37,9 +43,9 @@ import me.him188.animationgarden.app.app.LocalAppSettingsManager
 import me.him188.animationgarden.app.i18n.LocalI18n
 import me.him188.animationgarden.app.ui.preferences.ProxySettings
 
-class PreferencesActivity : ComponentActivity() {
+class SettingsActivity : ComponentActivity() {
     companion object {
-        fun getIntent(context: Context): Intent = Intent(context, PreferencesActivity::class.java)
+        fun getIntent(context: Context): Intent = Intent(context, SettingsActivity::class.java)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -76,19 +82,17 @@ class PreferencesActivity : ComponentActivity() {
 }
 
 @Composable
-fun SettingsPage() {
+private fun SettingsPage() {
     val manager = LocalAppSettingsManager.current
     val settings by manager.value
-    Surface(Modifier.fillMaxSize()) {
-        Column(Modifier.padding(horizontal = 8.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            ProxySettings(
-                settings,
-                manager,
-                disabledButtonText = { Text(LocalI18n.current.getString("preferences.proxy.mode.system")) },
-                disabledContent = {
-                    Text(LocalI18n.current.getString("preferences.proxy.mode.system.content"))
-                }
-            )
-        }
+    Column(Modifier.padding(horizontal = 8.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        ProxySettings(
+            settings,
+            manager,
+            disabledButtonText = { Text(LocalI18n.current.getString("preferences.proxy.mode.system")) },
+            disabledContent = {
+                Text(LocalI18n.current.getString("preferences.proxy.mode.system.content"))
+            }
+        )
     }
 }

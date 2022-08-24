@@ -22,6 +22,7 @@ import androidx.compose.runtime.*
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.job
 import me.him188.animationgarden.api.AnimationGardenClient
@@ -62,7 +63,17 @@ class ApplicationState(
         mutableStateOf(client.value.startSearchSession(SearchQuery()))
     }
 
-    var currentOrganizedViewState: OrganizedViewState? = null
+
+    // derived
+    @Stable
+    val topicsFlowState: State<StateFlow<List<Topic>>> = derivedStateOf { topicsFlow.asFlow() }
+
+    @Stable
+    val starredAnimeFlowState: State<StateFlow<List<StarredAnime>>> = derivedStateOf { data.starredAnime.asFlow() }
+
+
+    @Stable
+    val organizedViewState: OrganizedViewState = OrganizedViewState()
 
     private val dataFile = workingDir.resolve("data").apply { mkdirs() }.resolve("app.yml")
 
@@ -82,7 +93,7 @@ class ApplicationState(
             onFetchSucceed = {
                 // update starred anime on success
                 searchQuery.value.keywords?.let { query ->
-                    currentOrganizedViewState?.let {
+                    organizedViewState.let {
                         data.starredAnime.updateStarredAnime(query, currentOrganizedViewState = it)
                     }
                 }
@@ -130,4 +141,29 @@ class ApplicationState(
 
 fun ApplicationState.doSearch(keywords: String?) {
     updateSearchQuery(SearchQuery(keywords?.trim(), null, null))
+}
+
+
+@Composable
+fun ApplicationState.rememberCurrentStarredAnimeState(): State<StarredAnime?> {
+    val currentStarredAnimeList by starredAnimeFlowState.value.collectAsState()
+    val starredAnimeState = remember {
+        derivedStateOf {
+            currentStarredAnimeList.find { it.searchQuery == searchQuery.value.keywords }
+        }
+    }
+    val currentStarredAnime by starredAnimeState
+
+    val currentTopics by remember { topicsFlow.asFlow() }.collectAsState()
+    val currentSearchQuery by searchQuery
+    LaunchedEffect(currentStarredAnime, currentTopics, currentSearchQuery) {
+        organizedViewState.apply {
+            selectedAlliance.value = currentStarredAnime?.preferredAlliance
+            selectedResolution.value = currentStarredAnime?.preferredResolution
+            selectedSubtitleLanguage.value = currentStarredAnime?.preferredSubtitleLanguage
+
+            setTopics(currentTopics, currentSearchQuery.keywords)
+        }
+    }
+    return starredAnimeState
 }
