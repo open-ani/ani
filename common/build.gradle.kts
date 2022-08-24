@@ -55,6 +55,7 @@ kotlin {
 //                api("org.jetbrains.compose.ui:ui-text:${ComposeBuildConfig.composeVersion}")
 
                 api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.3.3")
+                api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
                 api("net.mamoe.yamlkt:yamlkt:0.12.0")
 
 //    implementation("org.jetbrains.exposed:exposed-core:0.39.1")

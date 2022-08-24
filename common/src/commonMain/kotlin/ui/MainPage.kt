@@ -34,6 +34,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
@@ -72,10 +73,9 @@ fun MainPage(
     val currentTopics by remember { derivedStateOf { currentApp.topicsFlow.asFlow() } }.value.collectAsState()
     val currentLazyList = rememberLazyListState()
 
-    val appliedKeywordState = remember { mutableStateOf("") }
-    val currentCoroutineScope = rememberCoroutineScope()
+    val appliedKeywordState = rememberSaveable { mutableStateOf("") }
     var currentAppliedKeyword by appliedKeywordState
-    val (keywordsInput, onKeywordsInputChange) = remember { mutableStateOf(currentAppliedKeyword) }
+    val (keywordsInput, onKeywordsInputChange) = rememberSaveable { mutableStateOf(currentAppliedKeyword) }
 
     val currentStarredAnimeList by app.data.starredAnime.asFlow().collectAsState()
     val currentSearchQuery by rememberUpdatedState(app.searchQuery)
@@ -104,7 +104,7 @@ fun MainPage(
     val backgroundColor = AppTheme.colorScheme.background
 
     Column(Modifier.background(color = backgroundColor)) {
-        var starListMode by remember { mutableStateOf(false) }
+        var starListMode by rememberSaveable { mutableStateOf(false) }
 
         // Search bar, fixed height
         Row(

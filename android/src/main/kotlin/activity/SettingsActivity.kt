@@ -54,7 +54,7 @@ class PreferencesActivity : ComponentActivity() {
                     topBar = {
                         CommonTopAppBar(
                             navigationIcon = {
-                                IconButton(onClick = { finishAffinity() }) {
+                                IconButton(onClick = { finish() }) {
                                     Icon(
                                         Icons.Default.ArrowBack, LocalI18n.current.getString("menu.back")
                                     )
