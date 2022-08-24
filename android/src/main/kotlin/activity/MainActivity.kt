@@ -61,9 +61,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        setImmerseStatusBarSystemUiVisibility()
 
         setContent {
+            ImmerseStatusBar()
             MaterialTheme {
                 MainPage()
             }

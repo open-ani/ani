@@ -53,9 +53,9 @@ class PreferencesActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setImmerseStatusBarSystemUiVisibility()
 
         setContent {
+            ImmerseStatusBar()
             MaterialTheme {
                 val context = LocalContext.current
                 CompositionLocalProvider(
