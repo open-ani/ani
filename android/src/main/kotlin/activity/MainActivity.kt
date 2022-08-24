@@ -252,7 +252,6 @@ class MainActivity : ComponentActivity() {
 
             Row(
                 Modifier
-                    .padding(bottom = 16.dp)
                     .fillMaxSize()
             ) {
                 TopicsSearchResult(

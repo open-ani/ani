@@ -574,7 +574,8 @@ private fun LiveTopicList(
                     val hasMorePages by app.fetcher.hasMorePages.collectAsState()
 
                     Box(
-                        Modifier.padding(top = spacedBy + 8.dp, bottom = spacedBy) // extra 8.dp padding
+                        Modifier
+                            .padding(top = spacedBy + 8.dp, bottom = spacedBy + 8.dp) // extra 8.dp padding
                             .fillMaxWidth()
                             .wrapContentHeight(),
                         contentAlignment = Alignment.Center
