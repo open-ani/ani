@@ -21,11 +21,25 @@ package me.him188.animationgarden.app.i18n
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.text.intl.Locale
 import me.him188.animationgarden.app.platform.Context
+import java.util.*
 
 @Stable
 interface ResourceBundle {
     @Stable
     fun getString(name: String): String
+}
+
+
+@Stable
+internal class ResourceBundleImplByProperties(
+    private val delegate: Properties,
+) : ResourceBundle {
+    @Stable
+    override fun getString(name: String): String {
+        return delegate.getProperty(name)!!
+    }
+
+    companion object
 }
 
 @Stable

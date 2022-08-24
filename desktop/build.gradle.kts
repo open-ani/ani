@@ -73,6 +73,9 @@ kotlin.sourceSets.all {
     languageSettings.optIn("androidx.compose.foundation.ExperimentalFoundationApi")
 }
 
+// workaround for resource not found
+//kotlin.sourceSets.main.get().resources.srcDir(project(":common").projectDir.resolve("src/androidMain/res/raw"))
+
 tasks.withType(KotlinJvmCompile::class) {
     kotlinOptions.jvmTarget = "11"
 }

@@ -18,7 +18,6 @@
 
 package me.him188.animationgarden.app.i18n
 
-import androidx.compose.runtime.Stable
 import androidx.compose.ui.text.intl.Locale
 import me.him188.animationgarden.app.R
 import me.him188.animationgarden.app.platform.Context
@@ -27,47 +26,34 @@ import java.util.*
 actual fun loadResourceBundle(
     context: Context,
     locale: Locale
-): ResourceBundle = ResourceBundleImpl.load(context, locale)
+): ResourceBundle = ResourceBundleImplByProperties.load(context, locale)
 
-@Stable
-private class ResourceBundleImpl(
-    private val delegate: Properties,
-) : ResourceBundle {
-    @Stable
-    override fun getString(name: String): String {
-        return delegate.getProperty(name)!!
-    }
-
-    companion object {
-        fun load(context: Context, locale: Locale = Locale.current): ResourceBundle {
-            val properties = Properties().apply {
-                context.resources.openRawResource(R.raw.app_zh).use {
-                    load(it)
+private fun ResourceBundleImplByProperties.Companion.load(
+    context: Context,
+    locale: Locale = Locale.current
+): ResourceBundle {
+    val properties = Properties().apply {
+        val id = when {
+            locale.language.contains("zh", ignoreCase = true) -> {
+                when {
+                    locale.region.contains("CN", ignoreCase = true) -> {
+                        R.raw.app_zh_cn
+                    }
+                    locale.region.contains("TW", ignoreCase = true) ||
+                            locale.region.contains("HK", ignoreCase = true)
+                    -> {
+                        R.raw.app_zh_hk
+                    }
+                    else -> R.raw.app_zh_cn
                 }
             }
-            return ResourceBundleImpl(properties)
-//
-//            val javaLocale = java.util.Locale.forLanguageTag(locale.toLanguageTag())
-//            return ResourceBundleImpl(
-//                try {
-//                    PropertyResourceBundle.getBundle(
-//                        "i18n.app",
-//                        javaLocale,
-//                        ResourceBundle::class.java.classLoader
-//                    )
-//                } catch (firstE: MissingResourceException) {
-//                    try {
-//                        PropertyResourceBundle.getBundle(
-//                            "i18n.app",
-//                            javaLocale,
-//                            ResourceBundle::class.java.classLoader
-//                        )
-//                    } catch (e: Throwable) {
-//                        e.addSuppressed(firstE)
-//                        throw e
-//                    }
-//                }
-//            )
+            else -> {
+                R.raw.app_en
+            }
+        }
+        context.resources.openRawResource(id).use {
+            load(it)
         }
     }
+    return ResourceBundleImplByProperties(properties)
 }

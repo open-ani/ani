@@ -68,6 +68,8 @@ kotlin {
             }
         }
 
+        commonMain.resources.srcDir(projectDir.resolve("src/androidMain/res/raw"))
+
         val commonTest by getting {
             dependencies {
                 implementation(compose.uiTestJUnit4)

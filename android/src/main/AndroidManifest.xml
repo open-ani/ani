@@ -35,16 +35,8 @@
 
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-            <intent-filter>
-                <data android:scheme="growing.9a53e8da096269e7"/>
-
-                <action android:name="android.intent.action.VIEW"/>
-
-                <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.BROWSABLE"/>
-            </intent-filter>
         </activity>
 
-
+        <activity android:name=".activity.PreferencesActivity"/>
     </application>
 </manifest>
