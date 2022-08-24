@@ -103,7 +103,7 @@ fun ColumnScope.ProxySettings(
                 BoxWithSaveButton(
                     showButton = newHost != settings.proxy.socks.host || newPort != settings.proxy.socks.port,
                     onClickSave = {
-                        manager.updateProxyHttpUrl(newHost)
+                        manager.updateProxySocks(newHost, newPort)
                     },
                     buttonHeightOffset = { 8.dp },
                     Modifier.focusGroup(),
@@ -114,12 +114,14 @@ fun ColumnScope.ProxySettings(
                             left = portFocus
                             start = hostFocus
                             end = buttonFocus
-                        }
+                        },
+                    enabled = isPortValid(newPort),
                 ) { width ->
+                    val hostWeight = 0.76f
                     SettingsOutlinedTextField(
                         value = newHost,
                         onValueChange = { newHost = it },
-                        width = width * 0.8f,
+                        width = width * hostWeight,
                         onPressEnter = {
                             portFocus.requestFocus()
                             true
@@ -139,7 +141,7 @@ fun ColumnScope.ProxySettings(
                     SettingsOutlinedTextField(
                         value = remember(newPort) { newPort.toString() },
                         onValueChange = { newPort = it.toIntOrNull() ?: 0 },
-                        width = width * 0.2f,
+                        width = width * (1 - hostWeight),
                         onPressEnter = {
                             manager.updateProxySocks(newHost, newPort)
                             true
@@ -155,6 +157,7 @@ fun ColumnScope.ProxySettings(
                                 start = hostFocus
                                 end = buttonFocus
                             },
+                        isError = !isPortValid(newPort),
                         keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                         label = {
                             Text(LocalI18n.current.getString("preferences.proxy.socks.port"))
@@ -166,11 +169,16 @@ fun ColumnScope.ProxySettings(
     }
 }
 
+@Stable
+private fun isPortValid(newPort: Int) = newPort in 0..65535
+
+@Stable
+private fun isHostValid(host: String) = host.isNotEmpty()
 
 private fun AppSettingsManager.updateProxyHttpUrl(value: String) {
     mutate { copy(proxy = proxy.run { copy(http = http.copy(url = value)) }) }
 }
 
 private fun AppSettingsManager.updateProxySocks(host: String, port: Int) {
-    mutate { copy(proxy = proxy.run { copy(socks = socks.copy(host = host, port = port)) }) }
+    mutate { copy(proxy = proxy.run { copy(socks = socks.copy(host = host, port = port.coerceIn(0..65535))) }) }
 }

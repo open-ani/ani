@@ -127,15 +127,17 @@ data class SocksProxy(
 ) : Proxy()
 
 @Stable
-fun ProxySettings.toKtorProxy(): ProxyConfig? = when (mode) {
-    ProxyMode.HTTP -> {
-        ProxyBuilder.http(http.url)
+fun ProxySettings.toKtorProxy(): ProxyConfig? = kotlin.runCatching {
+    when (mode) {
+        ProxyMode.HTTP -> {
+            ProxyBuilder.http(http.url)
+        }
+        ProxyMode.SOCKS -> {
+            ProxyBuilder.socks(socks.host, socks.port)
+        }
+        ProxyMode.DISABLED -> null
     }
-    ProxyMode.SOCKS -> {
-        ProxyBuilder.socks(socks.host, socks.port)
-    }
-    ProxyMode.DISABLED -> null
-}
+}.getOrNull()
 
 
 @Stable

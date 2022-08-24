@@ -20,11 +20,14 @@ package me.him188.animationgarden.app.ui.preferences
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -46,6 +49,8 @@ fun BoxWithSaveButton(
     buttonHeightOffset: @Composable () -> Dp,
     modifier: Modifier = Modifier,
     buttonModifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    colors: ButtonColors = ButtonDefaults.outlinedButtonColors(),
     content: @Composable RowScope.(width: Dp) -> Unit,
 ) {
     BoxWithConstraints {
@@ -61,8 +66,10 @@ fun BoxWithSaveButton(
                     .fillMaxHeight(),
                 contentAlignment = Alignment.BottomEnd
             ) {
+                val containerColor by colors.containerColor(enabled)
                 Box(
                     buttonModifier
+                        .background(containerColor)
                         .clip(AppTheme.shapes.small)
                         .width(40.dp)
                         .height(this@BoxWithConstraints.maxHeight + buttonHeightOffset())
@@ -70,14 +77,18 @@ fun BoxWithSaveButton(
                         .clickable(
                             remember { MutableInteractionSource() },
                             rememberRipple(),
+                            enabled = enabled,
                             onClick = onClickSave,
                         ),
                     contentAlignment = Alignment.Center
                 ) {
+                    ButtonDefaults.outlinedButtonColors()
+                    val contentColor by colors.contentColor(enabled)
                     Icon(
                         Res.painter.check,
                         LocalI18n.current.getString("preferences.save.changes"),
-                        Modifier.size(24.dp)
+                        Modifier.size(24.dp),
+                        tint = contentColor,
                     )
                 }
             }

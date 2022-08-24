@@ -32,7 +32,7 @@ actual object Resources {
 @Stable
 actual object PainterResources {
     @Stable
-    actual val check: Painter @Composable get() = painterResource("drawable/star-outline.svg")
+    actual val check: Painter @Composable get() = painterResource("drawable/check.svg")
 
     @Stable
     actual val cog: Painter @Composable get() = painterResource("drawable/cog.svg")
