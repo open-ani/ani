@@ -136,6 +136,7 @@ fun MainPage(
                 keywordsInput,
                 onKeywordsInputChange,
                 Modifier
+                    .padding(start = 8.dp)
                     .defaultMinSize(minWidth = if (starListMode) 0.dp else 96.dp)
                     .weight(0.8f),
                 doSearch = { doSearch() }
@@ -240,7 +241,6 @@ fun SearchTextField(
             text,
             onTextChange,
             modifier
-                .padding(start = 8.dp)
                 .height(48.dp)
                 .onEnterKeyEvent {
                     currentDoSearch()
