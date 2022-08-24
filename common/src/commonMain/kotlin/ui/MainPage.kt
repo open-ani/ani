@@ -58,6 +58,7 @@ import me.him188.animationgarden.app.platform.LocalContext
 import me.him188.animationgarden.app.platform.Res
 import me.him188.animationgarden.app.platform.browse
 import me.him188.animationgarden.app.ui.interaction.onEnterKeyEvent
+import me.him188.animationgarden.app.ui.widgets.OutlinedTextFieldEx
 import java.io.File
 import java.time.LocalDateTime
 import kotlin.time.Duration.Companion.seconds
@@ -159,7 +160,7 @@ fun MainPage(
 
             // keywords(search query) input
             ProvideTextStyle(AppTheme.typography.bodyMedium.copy(lineHeight = 16.sp)) {
-                OutlinedTextField(
+                OutlinedTextFieldEx(
                     keywordsInput,
                     onKeywordsInputChange,
                     Modifier
@@ -186,7 +187,8 @@ fun MainPage(
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                     keyboardActions = KeyboardActions(onSearch = {
                         doSearch()
-                    })
+                    }),
+                    contentPadding = PaddingValues(vertical = 6.dp, horizontal = 12.dp)
                 )
             }
 
