@@ -89,9 +89,6 @@ fun MainPage(
                 selectedResolution.value = currentStarredAnime?.preferredResolution
                 selectedSubtitleLanguage.value = currentStarredAnime?.preferredSubtitleLanguage
 
-                currentCoroutineScope.launch {
-                    currentLazyList.scrollToItem(0, 0)
-                }
                 setTopics(currentTopics, currentApp.searchQuery.value.keywords)
             }
         }
