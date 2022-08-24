@@ -30,11 +30,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
 import kotlinx.coroutines.*
@@ -145,6 +149,14 @@ fun MainPage(
                 }
             }
 
+            val keyboard = LocalSoftwareKeyboardController.current
+
+            fun doSearch() {
+                keyboard?.hide()
+                currentAppliedKeyword = keywordsInput.trim()
+                currentApp.doSearch(currentAppliedKeyword)
+            }
+
             // keywords(search query) input
             ProvideTextStyle(AppTheme.typography.bodyMedium.copy(lineHeight = 16.sp)) {
                 OutlinedTextField(
@@ -156,8 +168,7 @@ fun MainPage(
                         .defaultMinSize(minWidth = if (starListMode) 0.dp else 96.dp)
                         .weight(0.8f)
                         .onEnterKeyEvent {
-                            currentAppliedKeyword = keywordsInput.trim()
-                            currentApp.doSearch(currentAppliedKeyword)
+                            doSearch()
                             true
                         },
                     placeholder = {
@@ -172,13 +183,16 @@ fun MainPage(
                     singleLine = true,
                     shape = AppTheme.shapes.medium,
                     maxLines = 1,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                    keyboardActions = KeyboardActions(onSearch = {
+                        doSearch()
+                    })
                 )
             }
 
             // Resizable button for initializing search
             AnimatedSearchButton {
-                currentAppliedKeyword = keywordsInput.trim()
-                currentApp.doSearch(currentAppliedKeyword)
+                doSearch()
             }
         }
 
