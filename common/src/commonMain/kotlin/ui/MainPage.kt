@@ -149,7 +149,7 @@ fun MainPage(
                 }
             }
 
-            val keyboard = LocalSoftwareKeyboardController.current
+            val keyboard by rememberUpdatedState(LocalSoftwareKeyboardController.current)
 
             fun doSearch() {
                 keyboard?.hide()
