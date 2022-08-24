@@ -87,20 +87,27 @@ class MainActivity : ComponentActivity() {
         requestWindowFeature(Window.FEATURE_NO_TITLE)
 
         setContent {
-            ObserveSettingsChanges()
+            val app = remember {
+                AnimationGardenApplication.instance.app
+            }
+
+            ObserveSettingsChanges(app)
+            app.appDataSaver.attachAutoSave()
+
 
             MaterialTheme {
                 ImmerseStatusBar(AppTheme.colorScheme.primary)
 
-                MainPage()
+                MainPage(app)
             }
         }
     }
 
 
     @Composable
-    private fun MainPage() {
+    private fun MainPage(app: ApplicationState) {
         val focus = remember { FocusRequester() }
+
         CommonAppScaffold(
             topBar = {
                 MainTopBar()
@@ -109,23 +116,16 @@ class MainActivity : ComponentActivity() {
                 focus.freeFocus()
             }
         ) {
-            val app = remember {
-                AnimationGardenApplication.instance.app
-            }
             AndroidMainPage(app, focus)
         }
     }
 
     @Composable
-    private fun ObserveSettingsChanges() {
+    private fun ObserveSettingsChanges(app: ApplicationState) {
         val appSettingsManager = remember {
             AnimationGardenApplication.instance.appSettingsManager
         }
         appSettingsManager.attachAutoSave()
-
-        val app = remember {
-            AnimationGardenApplication.instance.app
-        }
 
         val currentAppSettings by rememberUpdatedState(newValue = appSettingsManager.value.value)
         LaunchedEffect(currentAppSettings.proxy) {
