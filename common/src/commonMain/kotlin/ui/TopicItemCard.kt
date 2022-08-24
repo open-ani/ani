@@ -220,17 +220,19 @@ fun ColumnScope.AnimatedTitles(
             if (preferredMainTitle != null) {
                 preferredSecondaryTitle?.let { text ->
                     // gradually hide this title if titles are too long
-                    val alpha by animateFloatAsState(if (LocalAlwaysShowTitlesInSeparateLine.current || titleTooLong) 0f else 1f)
+                    if (!LocalAlwaysShowTitlesInSeparateLine.current) {
+                        val alpha by animateFloatAsState(if (titleTooLong) 0f else 1f)
 
-                    Subtitle(
-                        text,
-                        onOverflowChange = {
-                            titleTooLong = it
-                        },
-                        Modifier
-                            .padding(start = 12.dp)
-                            .alpha(alpha)
-                    )
+                        Subtitle(
+                            text,
+                            onOverflowChange = {
+                                titleTooLong = it
+                            },
+                            Modifier
+                                .padding(start = 12.dp)
+                                .alpha(alpha)
+                        )
+                    }
                 }
             }
         }
@@ -243,9 +245,15 @@ fun ColumnScope.AnimatedTitles(
     // show other language's title in separate line if titles are too long
     if (preferredMainTitle != null) {
         preferredSecondaryTitle?.let { text ->
-            AnimatedVisibility(LocalAlwaysShowTitlesInSeparateLine.current || titleTooLong) {
+            if (LocalAlwaysShowTitlesInSeparateLine.current) {
                 Row(rowModifier, verticalAlignment = Alignment.CenterVertically) {
                     Subtitle(text, onOverflowChange = {})
+                }
+            } else {
+                AnimatedVisibility(titleTooLong) {
+                    Row(rowModifier, verticalAlignment = Alignment.CenterVertically) {
+                        Subtitle(text, onOverflowChange = {})
+                    }
                 }
             }
         }
