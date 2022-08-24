@@ -33,7 +33,7 @@ plugins {
 allprojects {
     group = "me.him188.animationgarden"
     description = "Desktop application for Animation Garden"
-    version = "1.1.1"
+    version = properties["version.name"].toString()
 
     repositories {
         mavenCentral()

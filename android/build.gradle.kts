@@ -57,7 +57,7 @@ android {
         applicationId = "me.him188.animationgarden"
         minSdk = 26
         targetSdk = 32
-        versionCode = 3
+        versionCode = getProperty("version.code").toInt()
         versionName = project.version.toString()
     }
     compileOptions {
