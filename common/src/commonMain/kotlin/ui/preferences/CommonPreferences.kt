@@ -23,6 +23,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -32,6 +33,7 @@ import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import me.him188.animationgarden.app.AppTheme
 import me.him188.animationgarden.app.app.AppSettings
 import me.him188.animationgarden.app.app.AppSettingsManager
 import me.him188.animationgarden.app.app.ProxyMode
@@ -40,7 +42,9 @@ import me.him188.animationgarden.app.i18n.LocalI18n
 @Composable
 fun ColumnScope.ProxySettings(
     settings: AppSettings,
-    manager: AppSettingsManager
+    manager: AppSettingsManager,
+    disabledButtonText: @Composable () -> Unit = { Text(LocalI18n.current.getString("preferences.proxy.mode.disabled")) },
+    disabledContent: (@Composable () -> Unit)? = null,
 ) {
     SettingsGroup({ Text(LocalI18n.current.getString("preferences.proxy")) }) {
         Row(
@@ -51,7 +55,7 @@ fun ColumnScope.ProxySettings(
             LabelledRadioButton(settings.proxy.mode == ProxyMode.DISABLED, {
                 manager.mutate { copy(proxy = proxy.copy(mode = ProxyMode.DISABLED)) }
             }) {
-                Text(LocalI18n.current.getString("preferences.proxy.mode.disabled"))
+                disabledButtonText()
             }
 
             LabelledRadioButton(settings.proxy.mode == ProxyMode.HTTP, {
@@ -67,10 +71,26 @@ fun ColumnScope.ProxySettings(
             }
         }
 
+        val enter = fadeIn() + expandVertically(tween(durationMillis = 200, delayMillis = 200))
+        val exit = fadeOut() + shrinkVertically(tween(durationMillis = 200))
+        if (disabledContent != null) {
+            AnimatedVisibility(
+                settings.proxy.mode == ProxyMode.DISABLED,
+                enter = enter,
+                exit = exit,
+            ) {
+                Row(Modifier.padding(vertical = 8.dp, horizontal = 16.dp)) {
+                    ProvideTextStyle(AppTheme.typography.bodyMedium.run { copy(color = color.copy(alpha = 0.38f)) }) {
+                        disabledContent()
+                    }
+                }
+            }
+        }
+
         AnimatedVisibility(
             settings.proxy.mode == ProxyMode.HTTP,
-            enter = fadeIn() + expandVertically(tween(durationMillis = 200, delayMillis = 200)),
-            exit = fadeOut() + shrinkVertically(tween(durationMillis = 200)),
+            enter = enter,
+            exit = exit,
         ) {
             Row(Modifier.padding(vertical = 8.dp, horizontal = 8.dp).height(48.dp)) {
                 var value by remember { mutableStateOf(settings.proxy.http.url) }
@@ -90,8 +110,8 @@ fun ColumnScope.ProxySettings(
 
         AnimatedVisibility(
             settings.proxy.mode == ProxyMode.SOCKS,
-            enter = fadeIn() + expandVertically(tween(durationMillis = 200, delayMillis = 200)),
-            exit = fadeOut() + shrinkVertically(tween(durationMillis = 200)),
+            enter = enter,
+            exit = exit,
         ) {
             Row(Modifier.padding(vertical = 8.dp, horizontal = 8.dp).height(48.dp)) {
                 var newHost by remember { mutableStateOf(settings.proxy.socks.host) }
