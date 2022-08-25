@@ -92,6 +92,7 @@ class OrganizedViewState {
         this.episodes.value = topics.asSequence()
             .mapNotNull { it.details?.episode }
             .distinctBy { it.raw }
+            .sortedBy { it.raw.length }
             .groupBy { it.raw.length }
             .flatMap { (_, value) ->
                 value.sortedBy { it.raw }
@@ -99,7 +100,7 @@ class OrganizedViewState {
             .toList()
 
         // Sort descending by resolution size.
-        // Example result: 4K, 2K, 1080P, 720P
+        // Example resulst: 4K, 2K, 1080P, 720P
         this.resolutions.value = topics.asSequence()
             .mapNotNull { it.details?.resolution }
             .distinctBy { it.id }
