@@ -27,7 +27,7 @@ import kotlinx.coroutines.withContext
 import me.him188.animationgarden.api.AnimationGardenClient
 import me.him188.animationgarden.app.app.ApplicationState
 import me.him188.animationgarden.app.app.LocalAppSettingsManagerImpl
-import me.him188.animationgarden.app.app.toKtorProxy
+import me.him188.animationgarden.app.app.settings.toKtorProxy
 
 class AnimationGardenApplication : Application() {
     companion object {

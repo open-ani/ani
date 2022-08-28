@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.app.ui.preferences
+package me.him188.animationgarden.app.ui.settings
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
@@ -36,11 +36,11 @@ import androidx.compose.ui.unit.dp
 import me.him188.animationgarden.app.AppTheme
 import me.him188.animationgarden.app.app.AppSettings
 import me.him188.animationgarden.app.app.AppSettingsManager
-import me.him188.animationgarden.app.app.ProxyMode
+import me.him188.animationgarden.app.app.settings.ProxyMode
 import me.him188.animationgarden.app.i18n.LocalI18n
 
 @Composable
-fun ColumnScope.ProxySettings(
+fun ColumnScope.ProxySettingsGroup(
     settings: AppSettings,
     manager: AppSettingsManager,
     disabledButtonText: @Composable () -> Unit = { Text(LocalI18n.current.getString("preferences.proxy.mode.disabled")) },

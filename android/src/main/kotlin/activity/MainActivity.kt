@@ -53,7 +53,7 @@ import me.him188.animationgarden.app.R
 import me.him188.animationgarden.app.app.ApplicationState
 import me.him188.animationgarden.app.app.doSearch
 import me.him188.animationgarden.app.app.rememberCurrentStarredAnimeState
-import me.him188.animationgarden.app.app.toKtorProxy
+import me.him188.animationgarden.app.app.settings.toKtorProxy
 import me.him188.animationgarden.app.i18n.LocalI18n
 import me.him188.animationgarden.app.platform.LocalContext
 import me.him188.animationgarden.app.platform.Res

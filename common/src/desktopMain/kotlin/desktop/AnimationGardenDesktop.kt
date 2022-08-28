@@ -36,7 +36,11 @@ import androidx.compose.ui.window.rememberWindowState
 import me.him188.animationgarden.api.AnimationGardenClient
 import me.him188.animationgarden.app.AppTheme
 import me.him188.animationgarden.app.ProvideCompositionLocalsForPreview
-import me.him188.animationgarden.app.app.*
+import me.him188.animationgarden.app.app.ApplicationState
+import me.him188.animationgarden.app.app.LocalAppSettings
+import me.him188.animationgarden.app.app.LocalAppSettingsManager
+import me.him188.animationgarden.app.app.LocalAppSettingsManagerImpl
+import me.him188.animationgarden.app.app.settings.toKtorProxy
 import me.him188.animationgarden.app.i18n.LocalI18n
 import me.him188.animationgarden.app.i18n.loadResourceBundle
 import me.him188.animationgarden.app.platform.Context

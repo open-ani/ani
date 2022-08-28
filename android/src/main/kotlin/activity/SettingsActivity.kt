@@ -41,7 +41,7 @@ import androidx.compose.ui.unit.dp
 import me.him188.animationgarden.app.AppTheme
 import me.him188.animationgarden.app.app.LocalAppSettingsManager
 import me.him188.animationgarden.app.i18n.LocalI18n
-import me.him188.animationgarden.app.ui.preferences.ProxySettings
+import me.him188.animationgarden.app.ui.settings.ProxySettingsGroup
 
 class SettingsActivity : ComponentActivity() {
     companion object {
@@ -86,7 +86,7 @@ private fun SettingsPage() {
     val manager = LocalAppSettingsManager.current
     val settings by manager.value
     Column(Modifier.padding(horizontal = 8.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        ProxySettings(
+        ProxySettingsGroup(
             settings,
             manager,
             disabledButtonText = { Text(LocalI18n.current.getString("preferences.proxy.mode.system")) },

@@ -45,6 +45,7 @@ fun includeProject(projectPath: String, dir: String? = null) {
 includeProject(":api", "api")
 includeProject(":common", "common")
 includeProject(":desktop", "desktop")
+includeProject(":server", "server")
 includeProject(":animation-garden-android", "android")
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")

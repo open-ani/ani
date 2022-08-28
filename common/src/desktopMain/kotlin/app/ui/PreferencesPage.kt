@@ -35,8 +35,8 @@ import me.him188.animationgarden.app.app.AppSettingsManager
 import me.him188.animationgarden.app.app.LocalAppSettingsManager
 import me.him188.animationgarden.app.i18n.LocalI18n
 import me.him188.animationgarden.app.ui.interaction.PlatformImplementations
-import me.him188.animationgarden.app.ui.preferences.ProxySettings
-import me.him188.animationgarden.app.ui.preferences.SettingsGroup
+import me.him188.animationgarden.app.ui.settings.ProxySettingsGroup
+import me.him188.animationgarden.app.ui.settings.SettingsGroup
 
 @Composable
 fun PreferencesPage() {
@@ -48,7 +48,7 @@ fun PreferencesPage() {
                 MacOSAppearanceSettings(manager, settings)
             }
 
-            ProxySettings(settings, manager)
+            ProxySettingsGroup(settings, manager)
         }
     }
 }

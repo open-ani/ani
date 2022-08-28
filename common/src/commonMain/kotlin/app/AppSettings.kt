@@ -19,11 +19,10 @@
 package me.him188.animationgarden.app.app
 
 import androidx.compose.runtime.*
-import io.ktor.client.engine.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import me.him188.animationgarden.app.app.settings.ProxySettings
 import net.mamoe.yamlkt.Yaml
 import java.io.File
 
@@ -40,25 +39,8 @@ data class AppSettings(
     val proxy: ProxySettings = ProxySettings(),
 )
 
-@Immutable
-@Serializable
-data class ProxySettings(
-    @Stable
-    val mode: ProxyMode = ProxyMode.DISABLED,
-    @Stable
-    val http: HttpProxy = HttpProxy("http://localhost:7890"),
-    @Stable
-    val socks: SocksProxy = SocksProxy("localhost", 7890)
-)
-
-enum class ProxyMode {
-    DISABLED,
-    HTTP,
-    SOCKS
-}
-
 @Stable
-abstract class AppSettingsManager() {
+abstract class AppSettingsManager {
     @Stable
     val value: MutableState<AppSettings> by lazy { mutableStateOf(loadImpl()) }
 
@@ -103,41 +85,6 @@ class LocalAppSettingsManagerImpl(
         file.writeText(Yaml.encodeToString(AppSettings.serializer(), instance))
     }
 }
-
-@Immutable
-@Serializable
-sealed class Proxy
-
-@Serializable
-@SerialName("http")
-@Immutable
-data class HttpProxy(
-    @Stable
-    val url: String
-) : Proxy()
-
-@Serializable
-@SerialName("socks")
-@Immutable
-data class SocksProxy(
-    @Stable
-    val host: String,
-    @Stable
-    val port: Int,
-) : Proxy()
-
-@Stable
-fun ProxySettings.toKtorProxy(): ProxyConfig? = kotlin.runCatching {
-    when (mode) {
-        ProxyMode.HTTP -> {
-            ProxyBuilder.http(http.url)
-        }
-        ProxyMode.SOCKS -> {
-            ProxyBuilder.socks(socks.host, socks.port)
-        }
-        ProxyMode.DISABLED -> null
-    }
-}.getOrNull()
 
 
 @Stable
