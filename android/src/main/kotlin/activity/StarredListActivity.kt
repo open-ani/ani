@@ -44,10 +44,10 @@ import kotlinx.coroutines.delay
 import me.him188.animationgarden.android.AnimationGardenApplication
 import me.him188.animationgarden.app.AppTheme
 import me.him188.animationgarden.app.app.ApplicationState
+import me.him188.animationgarden.app.app.data.StarredAnimeMutations
 import me.him188.animationgarden.app.i18n.LocalI18n
 import me.him188.animationgarden.app.platform.LocalContext
 import me.him188.animationgarden.app.ui.StarredAnimeCard
-import me.him188.animationgarden.app.ui.removeStarredAnime
 import me.him188.animationgarden.app.ui.updateStarredAnimeEpisodes
 import kotlin.time.Duration.Companion.seconds
 
@@ -100,7 +100,7 @@ private fun StarredListPage(app: ApplicationState) {
     val currentApp by rememberUpdatedState(newValue = app)
     val activity by rememberUpdatedState(newValue = LocalContext.current as? ComponentActivity)
 
-    val currentStarredAnimeList by app.starredAnimeFlowState.value.collectAsState()
+    val currentStarredAnimeList by app.starredAnimeListState
 
     LazyColumn(
         Modifier.fillMaxSize(),
@@ -110,12 +110,14 @@ private fun StarredListPage(app: ApplicationState) {
             val currentAnime by rememberUpdatedState(anime)
             LaunchedEffect(anime.id) {
                 delay(1.seconds) // ignore if user is quickly scrolling
-                updateStarredAnimeEpisodes(currentApp, anime, currentAnime)
+                currentApp.updateStarredAnimeEpisodes(anime, currentAnime)
             }
             StarredAnimeCard(
                 anime = anime,
                 onStarRemove = {
-                    currentApp.removeStarredAnime(currentAnime)
+                    currentApp.launchDataSynchronization {
+                        commit(StarredAnimeMutations.Remove(currentAnime.id))
+                    }
                 },
                 onClick = { episode ->
                     activity?.setResult(Activity.RESULT_OK, Intent().apply {

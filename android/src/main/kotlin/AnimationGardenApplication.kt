@@ -20,13 +20,17 @@ package me.him188.animationgarden.android
 
 import android.app.Application
 import android.content.Context
+import android.util.Log
 import androidx.compose.runtime.Stable
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
+import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.*
 import me.him188.animationgarden.api.AnimationGardenClient
+import me.him188.animationgarden.api.impl.createHttpClient
 import me.him188.animationgarden.app.app.ApplicationState
 import me.him188.animationgarden.app.app.LocalAppSettingsManagerImpl
+import me.him188.animationgarden.app.app.data.AppDataSynchronizerImpl
+import me.him188.animationgarden.app.app.settings.createLocalStorage
+import me.him188.animationgarden.app.app.settings.createRemoteSynchronizer
 import me.him188.animationgarden.app.app.settings.toKtorProxy
 
 class AnimationGardenApplication : Application() {
@@ -47,12 +51,34 @@ class AnimationGardenApplication : Application() {
             // do not observe dependency change
             runBlocking {
                 withContext(Dispatchers.IO) {
+                    val tag by lazy(LazyThreadSafetyMode.PUBLICATION) { context.getString(R.string.app_package) }
+                    val scope =
+                        CoroutineScope(SupervisorJob() + CoroutineExceptionHandler { _, throwable ->
+                            Log.e(tag, "Unhandled exception in coroutine", throwable)
+                        })
+
+                    val settings = appSettingsManager.value.value
+
                     ApplicationState(
                         initialClient = AnimationGardenClient.Factory.create {
                             proxy =
-                                appSettingsManager.value.value.proxy.toKtorProxy() // android thinks this is doing network operation
+                                settings.proxy.toKtorProxy() // android thinks this is doing network operation
                         },
-                        workingDir = workingDir
+                        appDataSynchronizer = {
+                            AppDataSynchronizerImpl(
+                                it.coroutineContext,
+                                remoteSynchronizer = settings.sync.createRemoteSynchronizer(createHttpClient()),
+                                backingStorage = settings.sync.createLocalStorage(
+                                    workingDir.resolve("data/app.yml").apply { parentFile.mkdir() }),
+                                localSyncSettingsFlow = snapshotFlow {
+                                    settings.sync.localSync
+                                },
+                                promptSwitchToOffline = {
+                                    TODO("prompt")
+                                }
+                            )
+                        },
+                        applicationScope = scope,
                     )
                 }
             }

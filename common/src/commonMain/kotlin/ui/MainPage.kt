@@ -43,20 +43,20 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.flowOf
 import me.him188.animationgarden.api.AnimationGardenClient
-import me.him188.animationgarden.api.impl.model.MutableListFlow
-import me.him188.animationgarden.api.impl.model.mutate
 import me.him188.animationgarden.api.model.*
 import me.him188.animationgarden.api.model.FileSize.Companion.megaBytes
 import me.him188.animationgarden.app.AppTheme
 import me.him188.animationgarden.app.app.*
+import me.him188.animationgarden.app.app.data.*
+import me.him188.animationgarden.app.app.settings.LocalSyncSettings
 import me.him188.animationgarden.app.i18n.LocalI18n
 import me.him188.animationgarden.app.platform.LocalContext
 import me.him188.animationgarden.app.platform.Res
 import me.him188.animationgarden.app.platform.browse
 import me.him188.animationgarden.app.ui.interaction.onEnterKeyEvent
 import me.him188.animationgarden.app.ui.widgets.OutlinedTextFieldEx
-import java.io.File
 import java.time.LocalDateTime
 import kotlin.time.Duration.Companion.seconds
 
@@ -73,8 +73,8 @@ fun MainPage(
     val appliedKeywordState = rememberSaveable { mutableStateOf("") }
     var currentAppliedKeyword by appliedKeywordState
     val (keywordsInput, onKeywordsInputChange) = rememberSaveable { mutableStateOf(currentAppliedKeyword) }
+    val currentOnKeywordsInputChange by rememberUpdatedState(onKeywordsInputChange)
 
-    val currentStarredAnimeList by app.starredAnimeFlowState.value.collectAsState()
     val currentStarredAnime by app.rememberCurrentStarredAnimeState()
 
     Column(Modifier.background(color = AppTheme.colorScheme.background)) {
@@ -161,6 +161,7 @@ fun MainPage(
                 stiffness = Spring.StiffnessMediumLow,
                 visibilityThreshold = IntSize.VisibilityThreshold
             )
+            val list by app.starredAnimeListState
             AnimatedVisibility(
                 starListMode,
                 enter = expandHorizontally(
@@ -176,23 +177,25 @@ fun MainPage(
                     Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(currentStarredAnimeList, key = { it.id }) { anime ->
+                    items(list, key = { it.id }) { anime ->
                         val currentAnime by rememberUpdatedState(anime)
                         LaunchedEffect(anime.id) {
                             delay(1.seconds) // ignore if user is quickly scrolling
-                            updateStarredAnimeEpisodes(currentApp, anime, currentAnime)
+                            currentApp.updateStarredAnimeEpisodes(anime, currentAnime)
                         }
                         StarredAnimeCard(
                             anime = anime,
                             onStarRemove = {
-                                currentApp.removeStarredAnime(currentAnime)
+                                currentApp.launchDataSynchronization {
+                                    commit(StarredAnimeMutations.Remove(currentAnime.id))
+                                }
                             },
                             onClick = {
-                                app.updateSearchQuery(SearchQuery(keywords = currentAnime.searchQuery))
+                                currentApp.updateSearchQuery(SearchQuery(keywords = currentAnime.searchQuery))
                                 starListMode = false
                                 currentAppliedKeyword = currentAnime.searchQuery
                                 currentApp.organizedViewState.selectedEpisode.value = it
-                                onKeywordsInputChange(currentAnime.searchQuery)
+                                currentOnKeywordsInputChange(currentAnime.searchQuery)
                             }
                         )
                     }
@@ -282,36 +285,29 @@ fun TopicsSearchResult(
         organizedViewState = organizedViewState,
         lazyListState = lazyListState,
         topics = topics,
-        onClickCard = {
-            currentApp.applicationScope.launch(Dispatchers.IO) {
-                it.details?.episode?.let { currentApp.onEpisodeDownloaded(it) }
-                browse(currentContext, it.magnetLink.value)
+        onClickCard = { topic ->
+            currentApp.launchDataSynchronization {
+                topic.details?.episode?.let { currentApp.markEpisodeWatched(it) }
+                withContext(Dispatchers.Main) {
+                    browse(currentContext, topic.magnetLink.value)
+                }
             }
         },
         starred = isStarred,
         onUpdateFilter = {
-            currentApp.data.starredAnime.updateStarredAnime(
-                currentApp.searchQuery.value.keywords.orEmpty(),
-                organizedViewState
-            )
+            currentApp.launchDataSynchronization {
+                val id = searchQuery.value.keywords ?: return@launchDataSynchronization
+                commit(StarredAnimeMutations.UpdateRefreshed(id, id, organizedViewState))
+            }
         },
         onStarredChange = { starred ->
-            if (starred) {
-                currentApp.data.starredAnime.mutate {
-                    it + StarredAnime(
-                        primaryName = organizedViewState.chineseName.value
-                            ?: organizedViewState.otherNames.value.firstOrNull() ?: "",
-                        secondaryNames = organizedViewState.otherNames.value,
-                        searchQuery = currentApp.searchQuery.value.keywords.orEmpty(),
-                        preferredAlliance = organizedViewState.selectedAlliance.value,
-                        preferredResolution = organizedViewState.selectedResolution.value,
-                        preferredSubtitleLanguage = organizedViewState.selectedSubtitleLanguage.value,
-                        episodes = organizedViewState.episodes.value,
-                        starTimeMillis = System.currentTimeMillis()
-                    )
+            currentApp.launchDataSynchronization {
+                val searchQuery = searchQuery.value.keywords ?: return@launchDataSynchronization
+                if (starred) {
+                    commit(StarredAnimeMutations.Add(searchQuery, organizedViewState))
+                } else {
+                    commit(StarredAnimeMutations.Remove(searchQuery))
                 }
-            } else {
-                currentApp.data.starredAnime.mutate { list -> list.filterNot { it.searchQuery == currentApp.searchQuery.value.keywords } }
             }
         },
     )
@@ -320,17 +316,15 @@ fun TopicsSearchResult(
 /**
  * Fetch all topics and update known available episodes, until we are sure that it's already up-to-date.
  */
-suspend fun CoroutineScope.updateStarredAnimeEpisodes(
-    currentApp: ApplicationState,
+context(CoroutineScope) suspend fun ApplicationState.updateStarredAnimeEpisodes(
     anime: StarredAnime,
     currentAnime: StarredAnime,
 ) {
     val session =
-        currentApp.client.value.startSearchSession(SearchQuery(keywords = anime.searchQuery))
+        client.value.startSearchSession(SearchQuery(keywords = anime.searchQuery))
     val allTopics = mutableListOf<Topic>()
-    currentApp.data.starredAnime.updateStarredAnime(anime.searchQuery) {
-        copy(refreshState = RefreshState.Refreshing)
-    }
+
+    dataSynchronizer.commit(StarredAnimeMutations.ChangeRefreshState(anime.id, RefreshState.Refreshing))
     try {
         while (isActive) {
             // always fetch the newest page, which contain the newer episodes.
@@ -341,26 +335,22 @@ suspend fun CoroutineScope.updateStarredAnimeEpisodes(
                 break
             }
         }
+    } catch (e: CancellationException) {
+        dataSynchronizer.commit(StarredAnimeMutations.ChangeRefreshState(anime.id, RefreshState.Cancelled))
+        throw e
     } catch (e: Throwable) {
-        currentApp.data.starredAnime.updateStarredAnime(anime.searchQuery) {
-            copy(refreshState = RefreshState.Failed(e))
-        }
+        dataSynchronizer.commit(StarredAnimeMutations.ChangeRefreshState(anime.id, RefreshState.Failed(e)))
         throw e
     }
 
     val time = System.currentTimeMillis()
     if (allEpisodesContained(currentAnime, allTopics)) {
-        currentApp.data.starredAnime.updateStarredAnime(anime.searchQuery) {
-            copy(
-                episodes = (episodes.asSequence() + allTopics.asSequence()
-                    .mapNotNull { it.details?.episode }).distinct().toList(),
-                refreshState = RefreshState.Success(time)
-            )
-        }
+        dataSynchronizer.commit(
+            StarredAnimeMutations.AddEpisodes(anime.id, allTopics.mapNotNullTo(HashSet()) { it.details?.episode })
+                    then StarredAnimeMutations.ChangeRefreshState(anime.id, RefreshState.Success(time))
+        )
     } else {
-        currentApp.data.starredAnime.updateStarredAnime(anime.searchQuery) {
-            copy(refreshState = RefreshState.Success(time))
-        }
+        dataSynchronizer.commit(StarredAnimeMutations.ChangeRefreshState(anime.id, RefreshState.Success(time)))
     }
 }
 
@@ -368,40 +358,6 @@ private fun allEpisodesContained(
     currentAnime: StarredAnime,
     allTopics: MutableList<Topic>
 ) = currentAnime.episodes.all { episode -> allTopics.any { it.details?.episode == episode } }
-
-fun ApplicationState.removeStarredAnime(
-    anime: StarredAnime
-) {
-    data.starredAnime.mutate { list -> list.filterNot { it.id == anime.id } }
-}
-
-fun MutableListFlow<StarredAnime>.updateStarredAnime(
-    searchQuery: String,
-    currentOrganizedViewState: OrganizedViewState,
-) {
-    return updateStarredAnime(searchQuery) {
-        copy(
-            primaryName = currentOrganizedViewState.chineseName.value
-                ?: currentOrganizedViewState.otherNames.value.firstOrNull() ?: "",
-            secondaryNames = currentOrganizedViewState.otherNames.value,
-            episodes = currentOrganizedViewState.episodes.value,
-            preferredAlliance = currentOrganizedViewState.selectedAlliance.value,
-            preferredResolution = currentOrganizedViewState.selectedResolution.value,
-            preferredSubtitleLanguage = currentOrganizedViewState.selectedSubtitleLanguage.value,
-        )
-    }
-}
-
-fun MutableListFlow<StarredAnime>.updateStarredAnime(
-    searchQuery: String,
-    update: StarredAnime.() -> StarredAnime,
-) {
-    return mutate { list ->
-        list.map { anime ->
-            if (anime.searchQuery == searchQuery) update(anime) else anime
-        }
-    }
-}
 
 @Composable
 fun AnimatedSearchButton(onClick: () -> Unit) {
@@ -652,13 +608,30 @@ private fun SearchResultField(
     }
 }
 
+fun createTestAppDataSynchronizer(scope: CoroutineScope): AppDataSynchronizer {
+    return AppDataSynchronizerImpl(
+        scope.coroutineContext,
+        remoteSynchronizer = null,
+        backingStorage = InMemoryMutableProperty { "" },
+        localSyncSettingsFlow = flowOf(LocalSyncSettings()),
+        promptSwitchToOffline = {
+            it.printStackTrace()
+            true
+        }
+    )
+}
+
 @Preview
 @Composable
 private fun PreviewTopicList() {
     val (starred, onStarredChange) = remember { mutableStateOf(false) }
 
     LiveTopicList(
-        remember { ApplicationState(initialClient = AnimationGardenClient.Factory.create {}, File(".")) },
+        remember {
+            ApplicationState(
+                initialClient = AnimationGardenClient.Factory.create {},
+                appDataSynchronizer = { scope -> createTestAppDataSynchronizer(scope) })
+        },
         remember { OrganizedViewState() },
         topics = mutableListOf<Topic>().apply {
             repeat(10) {

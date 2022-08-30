@@ -60,7 +60,7 @@ import me.him188.animationgarden.app.platform.Res
 import me.him188.animationgarden.app.ui.AnimatedSearchButton
 import me.him188.animationgarden.app.ui.SearchTextField
 import me.him188.animationgarden.app.ui.TopicsSearchResult
-import java.io.File
+import me.him188.animationgarden.app.ui.createTestAppDataSynchronizer
 
 class MainActivity : ComponentActivity() {
     private val starredListActivityLauncher =
@@ -92,7 +92,6 @@ class MainActivity : ComponentActivity() {
             }
 
             ObserveSettingsChanges(app)
-            app.appDataSaver.attachAutoSave()
 
 
             MaterialTheme {
@@ -179,7 +178,7 @@ class MainActivity : ComponentActivity() {
     private fun PreviewMainPage() {
         ProvideCompositionLocalsForPreview {
             val app = remember {
-                ApplicationState(AnimationGardenClient.Factory.create {}, File("."))
+                ApplicationState(AnimationGardenClient.Factory.create {}, { createTestAppDataSynchronizer(it) })
             }
             MaterialTheme {
                 AndroidMainPage(app, remember { FocusRequester() })

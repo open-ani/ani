@@ -40,13 +40,13 @@ import me.him188.animationgarden.app.app.settings.ProxyMode
 import me.him188.animationgarden.app.i18n.LocalI18n
 
 @Composable
-fun ColumnScope.ProxySettingsGroup(
+fun ColumnScope.SyncSettingsGroup(
     settings: AppSettings,
     manager: AppSettingsManager,
     disabledButtonText: @Composable () -> Unit = { Text(LocalI18n.current.getString("preferences.proxy.mode.disabled")) },
     disabledContent: (@Composable () -> Unit)? = null,
 ) {
-    SettingsGroup({ Text(LocalI18n.current.getString("preferences.proxy")) }) {
+    SettingsGroup({ Text(LocalI18n.current.getString("preferences.sync")) }) {
         Row(
             Modifier.height(24.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -187,18 +187,4 @@ fun ColumnScope.ProxySettingsGroup(
             }
         }
     }
-}
-
-@Stable
-fun isPortValid(newPort: Int) = newPort in 0..65535
-
-@Stable
-fun isHostValid(host: String) = host.isNotEmpty()
-
-fun AppSettingsManager.updateProxyHttpUrl(value: String) {
-    mutate { copy(proxy = proxy.run { copy(http = http.copy(url = value)) }) }
-}
-
-fun AppSettingsManager.updateProxySocks(host: String, port: Int) {
-    mutate { copy(proxy = proxy.run { copy(socks = socks.copy(host = host, port = port.coerceIn(0..65535))) }) }
 }

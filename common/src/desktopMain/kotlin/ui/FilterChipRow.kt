@@ -95,6 +95,9 @@ actual fun <T> FilterChipRow(
                                         tint = AppTheme.colorScheme.primary
                                     )
                                 }
+                                RefreshState.Cancelled -> {
+                                    // nop
+                                }
                             }
                         }
                     },

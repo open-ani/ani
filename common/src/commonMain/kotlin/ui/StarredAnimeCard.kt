@@ -88,7 +88,7 @@ fun StarredAnimeCard(
                     verticalAlignment = Alignment.Bottom,
                 ) {
                     FilterChipRow(
-                        list = currentAnime.episodes,
+                        list = remember(currentAnime.episodes) { currentAnime.episodes.toList() },
                         key = { it.raw },
                         isSelected = { false },
                         onClick = onClick,

@@ -18,5 +18,6 @@
 
 <resources>
     <string name="app_name">Animation Garden</string>
+    <string name="app_package" translatable="false">me.him188.animationgarden</string>
 
 </resources>

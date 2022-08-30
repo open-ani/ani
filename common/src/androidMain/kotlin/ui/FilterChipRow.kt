@@ -68,6 +68,9 @@ actual fun <T> FilterChipRow(
                         when (refreshState) {
                             is RefreshState.Failed -> Text(LocalI18n.current.getString("starred.update.failed"))
                             RefreshState.Refreshing -> CircularProgressIndicator()
+                            is RefreshState.Cancelled -> {
+                                // nop
+                            }
                             else -> {}
                         }
                     },

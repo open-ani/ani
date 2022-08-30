@@ -19,35 +19,30 @@
 package me.him188.animationgarden.app.app
 
 import androidx.compose.runtime.*
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.job
 import me.him188.animationgarden.api.AnimationGardenClient
 import me.him188.animationgarden.api.impl.model.KeyedMutableListFlow
 import me.him188.animationgarden.api.impl.model.KeyedMutableListFlowImpl
-import me.him188.animationgarden.api.impl.model.mutate
 import me.him188.animationgarden.api.model.SearchQuery
 import me.him188.animationgarden.api.model.SearchSession
 import me.him188.animationgarden.api.model.Topic
 import me.him188.animationgarden.api.tags.Episode
+import me.him188.animationgarden.app.app.data.AppData
+import me.him188.animationgarden.app.app.data.AppDataSynchronizer
+import me.him188.animationgarden.app.app.data.StarredAnimeMutations
 import me.him188.animationgarden.app.ui.OrganizedViewState
-import me.him188.animationgarden.app.ui.updateStarredAnime
-import java.io.File
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 @Stable
 class ApplicationState(
     initialClient: AnimationGardenClient,
-    workingDir: File,
-) {
+    appDataSynchronizer: (CoroutineScope) -> AppDataSynchronizer,
     @Stable
-    val applicationScope: CoroutineScope =
-        CoroutineScope(SupervisorJob() + CoroutineExceptionHandler { _, throwable ->
-            throwable.printStackTrace()
-        })
-
+    val applicationScope: CoroutineScope = createApplicationScope()
+) {
 
     @Stable
     val searchQuery: MutableState<SearchQuery> = mutableStateOf(SearchQuery())
@@ -68,23 +63,25 @@ class ApplicationState(
     @Stable
     val topicsFlowState: State<StateFlow<List<Topic>>> = derivedStateOf { topicsFlow.asFlow() }
 
-    @Stable
-    val starredAnimeFlowState: State<StateFlow<List<StarredAnime>>> = derivedStateOf { data.starredAnime.asFlow() }
-
+    val starredAnimeListState: State<List<StarredAnime>>
+        @Composable
+        get() {
+            val data by dataState
+            return data.starredAnime.asFlow().collectAsState()
+        }
 
     @Stable
     val organizedViewState: OrganizedViewState = OrganizedViewState()
 
-    private val dataFile = workingDir.resolve("data").apply { mkdirs() }.resolve("app.yml")
 
     @Stable
-    val appDataSaver: AppDataSaver = AppDataSaver(dataFile).apply {
-        reload()
-    }
+    val dataSynchronizer: AppDataSynchronizer = appDataSynchronizer(applicationScope)
 
-    @Stable
-    val data: AppData
-        get() = appDataSaver.data
+    val dataState: State<AppData>
+        @Composable get() = dataSynchronizer.appDataFlow.collectAsState(AppData.initial)
+
+    suspend fun getData() = dataSynchronizer.getData()
+
 
     @Stable
     val fetcher: Fetcher =
@@ -93,12 +90,18 @@ class ApplicationState(
             onFetchSucceed = {
                 // update starred anime on success
                 searchQuery.value.keywords?.let { query ->
-                    organizedViewState.let {
-                        data.starredAnime.updateStarredAnime(query, currentOrganizedViewState = it)
+                    launchDataSynchronization {
+                        commit(StarredAnimeMutations.UpdateRefreshed(query, query, organizedViewState))
                     }
                 }
             }
         )
+
+    inline fun launchDataSynchronization(crossinline action: suspend context(ApplicationState, CoroutineScope, AppDataSynchronizer) () -> Unit) { // AppDataSynchronizer should be extension receiver.
+        applicationScope.launch(start = CoroutineStart.UNDISPATCHED) {
+            action(this@ApplicationState, this, dataSynchronizer)
+        }
+    }
 
     fun updateSearchQuery(searchQuery: SearchQuery) {
         this.searchQuery.value = searchQuery
@@ -118,6 +121,7 @@ class ApplicationState(
 
     @Composable
     fun isEpisodeWatched(episode: Episode): Boolean {
+        val data by dataState
         val starredAnime by remember {
             data.starredAnime.asFlow()
                 .map { list -> list.find { it.searchQuery == searchQuery.value.keywords } }
@@ -126,18 +130,16 @@ class ApplicationState(
         return starredAnime?.watchedEpisodes?.contains(episode) == true
     }
 
-    fun onEpisodeDownloaded(episode: Episode) {
-        data.starredAnime.mutate { list ->
-            list.map { anime ->
-                if (anime.searchQuery == searchQuery.value.keywords) {
-                    anime.run { copy(watchedEpisodes = watchedEpisodes + episode) }
-                } else {
-                    anime
-                }
-            }
-        }
+    suspend fun markEpisodeWatched(episode: Episode) {
+        val id = searchQuery.value.keywords ?: return
+        dataSynchronizer.commit(StarredAnimeMutations.EpisodeWatched(id, episode))
     }
 }
+
+fun createApplicationScope(parentCoroutineContext: CoroutineContext = EmptyCoroutineContext) =
+    CoroutineScope(parentCoroutineContext + SupervisorJob() + CoroutineExceptionHandler { _, throwable ->
+        throwable.printStackTrace()
+    })
 
 fun ApplicationState.doSearch(keywords: String?) {
     updateSearchQuery(SearchQuery(keywords?.trim(), null, null))
@@ -146,7 +148,7 @@ fun ApplicationState.doSearch(keywords: String?) {
 
 @Composable
 fun ApplicationState.rememberCurrentStarredAnimeState(): State<StarredAnime?> {
-    val currentStarredAnimeList by starredAnimeFlowState.value.collectAsState()
+    val currentStarredAnimeList by starredAnimeListState
     val starredAnimeState = remember {
         derivedStateOf {
             currentStarredAnimeList.find { it.searchQuery == searchQuery.value.keywords }
@@ -167,3 +169,25 @@ fun ApplicationState.rememberCurrentStarredAnimeState(): State<StarredAnime?> {
     }
     return starredAnimeState
 }
+
+/*
+客户端每次修改推送:
+- 上次的 sync token
+- 本次 commit
+- 本次修改后的全部数据
+
+服务器验证数据:
+- 当修改基于 HEAD:
+  - 更新数据库
+  - 为当前数据生成 sync token
+  - 返回 sync token 给请求方
+  - 同步 commit 到其他客户端
+- 否则拒绝修改:
+  - 返回最新全部数据和 sync token
+  - 客户端 rebase 并重试
+
+解决冲突: 选择使用本地或者使用服务器存档覆盖
+
+
+一期做无冲突同步和 force push, 二期做 rebase, 三期做 history
+ */
