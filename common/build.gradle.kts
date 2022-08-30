@@ -29,13 +29,16 @@ plugins {
     kotlin("plugin.serialization")
 }
 
+kotlin.sourceSets.all {
+    languageSettings.enableLanguageFeature("ContextReceivers")
+}
+
 kotlin {
     targets {
         android()
         jvm("desktop") {
             compilations.all {
                 kotlinOptions.jvmTarget = "11"
-//                languageSettings.languageVersion = "1.7"
             }
         }
     }
@@ -54,8 +57,9 @@ kotlin {
                 api(compose.runtime)
 //                api("org.jetbrains.compose.ui:ui-text:${ComposeBuildConfig.composeVersion}")
 
-                api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.3.3")
-                api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
+                api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.4.0")
+                api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0")
+                api("org.jetbrains.kotlinx:kotlinx-serialization-protobuf:1.4.0")
                 api("net.mamoe.yamlkt:yamlkt:0.12.0")
 
 //    implementation("org.jetbrains.exposed:exposed-core:0.39.1")
@@ -82,6 +86,7 @@ kotlin {
                 api("androidx.appcompat:appcompat:1.5.0")
                 api("androidx.core:core-ktx:1.8.0")
                 api("androidx.compose.ui:ui-tooling-preview:1.2.1")
+                api("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
                 implementation("androidx.compose.material3:material3:1.0.0-alpha14")
             }
         }
@@ -93,6 +98,8 @@ kotlin {
                 }
 //                api(compose.preview)
                 api(compose.material3)
+                api("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.6.4")
+                runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-debug:1.6.4")
             }
         }
     }
@@ -103,6 +110,8 @@ kotlin.sourceSets.all {
     languageSettings.optIn("androidx.compose.ui.ExperimentalComposeUiApi")
     languageSettings.optIn("androidx.compose.animation.ExperimentalAnimationApi")
     languageSettings.optIn("androidx.compose.foundation.ExperimentalFoundationApi")
+    languageSettings.optIn("kotlin.contracts.ExperimentalContracts")
+    languageSettings.optIn("kotlinx.serialization.ExperimentalSerializationApi")
 }
 
 

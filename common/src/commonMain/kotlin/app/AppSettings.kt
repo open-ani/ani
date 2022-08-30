@@ -23,6 +23,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import me.him188.animationgarden.app.app.settings.ProxySettings
+import me.him188.animationgarden.app.app.settings.SyncSettings
 import net.mamoe.yamlkt.Yaml
 import java.io.File
 
@@ -37,6 +38,9 @@ data class AppSettings(
 
     @Stable
     val proxy: ProxySettings = ProxySettings(),
+
+    @Stable
+    val sync: SyncSettings = SyncSettings(),
 )
 
 @Stable

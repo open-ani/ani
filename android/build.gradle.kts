@@ -104,6 +104,7 @@ kotlin.sourceSets.all {
     languageSettings.optIn("androidx.compose.ui.ExperimentalComposeUiApi")
     languageSettings.optIn("androidx.compose.animation.ExperimentalAnimationApi")
     languageSettings.optIn("androidx.compose.foundation.ExperimentalFoundationApi")
+    languageSettings.enableLanguageFeature("ContextReceivers")
 }
 
 fun getProperty(name: String) =

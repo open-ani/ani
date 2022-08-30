@@ -133,7 +133,7 @@ private fun OrganizedViewContent(
                 }
             }
             FilterChipRow(
-                list = currentWorkState.episodes.value,
+                list = remember(currentWorkState.episodes.value) { currentWorkState.episodes.value.toList() },
                 key = { it.raw },
                 isSelected = { currentWorkState.selectedEpisode.value == it },
                 onClick = onClickEpisode,

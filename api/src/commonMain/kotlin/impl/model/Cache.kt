@@ -78,12 +78,23 @@ internal class CacheImpl : Cache {
     }
 }
 
-interface MutableListFlow<T : Any> : Iterable<T> {
-    var value: List<T>
+interface ListFlow<T : Any> : Iterable<T> {
+    val value: List<T>
     fun asFlow(): StateFlow<List<T>>
-    fun asMutableFlow(): MutableStateFlow<List<T>>
     fun asList(): List<T>
     fun asSequence(): Sequence<T> = value.asSequence()
+}
+
+class ListFlowImpl<T : Any>(override val value: List<T>) : ListFlow<T> {
+    private val flowImpl = MutableStateFlow(value)
+    override fun asFlow(): StateFlow<List<T>> = flowImpl
+    override fun asList(): List<T> = value
+    override fun iterator(): Iterator<T> = value.iterator()
+}
+
+interface MutableListFlow<T : Any> : ListFlow<T>, Iterable<T> {
+    override var value: List<T>
+    fun asMutableFlow(): MutableStateFlow<List<T>>
 }
 
 interface KeyedMutableListFlow<K, T : Any> : MutableListFlow<T> {
@@ -102,6 +113,10 @@ inline fun <K, T : Any> KeyedMutableListFlow<K, T>.getOrSet(key: K, default: () 
 
 inline fun <K, T : R, R> KeyedMutableListFlow<K, T & Any>.getOrDefault(key: K, default: () -> R): R {
     return get(key) ?: return default()
+}
+
+fun <T : Any> mutableListFlowOf(initial: List<T>): MutableListFlow<T> {
+    return MutableListFlowImpl(MutableStateFlow(initial))
 }
 
 open class MutableListFlowImpl<T : Any>(

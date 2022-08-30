@@ -37,7 +37,7 @@ class OrganizedViewState {
     val otherNames: MutableState<List<String>> = mutableStateOf(listOf())
 
     @Stable
-    val episodes: MutableState<List<Episode>> = mutableStateOf(listOf())
+    val episodes: MutableState<Set<Episode>> = mutableStateOf(setOf())
 
     @Stable
     val subtitleLanguages: MutableState<List<SubtitleLanguage>> = mutableStateOf(listOf()) // null element means Other
@@ -97,7 +97,7 @@ class OrganizedViewState {
             .flatMap { (_, value) ->
                 value.sortedBy { it.raw }
             }
-            .toList()
+            .toSet()
 
         // Sort descending by resolution size.
         // Example resulst: 4K, 2K, 1080P, 720P
