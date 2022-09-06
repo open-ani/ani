@@ -328,21 +328,38 @@ suspend fun CoroutineScope.updateStarredAnimeEpisodes(
     val session =
         currentApp.client.value.startSearchSession(SearchQuery(keywords = anime.searchQuery))
     val allTopics = mutableListOf<Topic>()
-    while (isActive) {
-        // always fetch the newest page, which contain the newer episodes.
-        val nextPage = session.nextPage() ?: break
-        allTopics.addAll(nextPage)
-        // if all exising episodes are contained, means we have reached the last updated point.
-        if (allEpisodesContained(currentAnime, allTopics)) {
-            break
-        }
+    currentApp.data.starredAnime.updateStarredAnime(anime.searchQuery) {
+        copy(refreshState = RefreshState.Refreshing)
     }
+    try {
+        while (isActive) {
+            // always fetch the newest page, which contain the newer episodes.
+            val nextPage = session.nextPage() ?: break
+            allTopics.addAll(nextPage)
+            // if all exising episodes are contained, means we have reached the last updated point.
+            if (allEpisodesContained(currentAnime, allTopics)) {
+                break
+            }
+        }
+    } catch (e: Throwable) {
+        currentApp.data.starredAnime.updateStarredAnime(anime.searchQuery) {
+            copy(refreshState = RefreshState.Failed(e))
+        }
+        throw e
+    }
+
+    val time = System.currentTimeMillis()
     if (allEpisodesContained(currentAnime, allTopics)) {
         currentApp.data.starredAnime.updateStarredAnime(anime.searchQuery) {
             copy(
                 episodes = (episodes.asSequence() + allTopics.asSequence()
-                    .mapNotNull { it.details?.episode }).distinct().toList()
+                    .mapNotNull { it.details?.episode }).distinct().toList(),
+                refreshState = RefreshState.Success(time)
             )
+        }
+    } else {
+        currentApp.data.starredAnime.updateStarredAnime(anime.searchQuery) {
+            copy(refreshState = RefreshState.Success(time))
         }
     }
 }

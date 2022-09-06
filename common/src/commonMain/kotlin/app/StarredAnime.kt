@@ -23,6 +23,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import me.him188.animationgarden.api.impl.model.KeyedMutableListFlowImpl
 import me.him188.animationgarden.api.impl.model.MutableListFlow
 import me.him188.animationgarden.api.model.Alliance
@@ -43,8 +44,18 @@ data class StarredAnime(
     val preferredResolution: @Polymorphic Resolution? = null,
     val preferredSubtitleLanguage: @Polymorphic SubtitleLanguage? = null,
     val starTimeMillis: Long,
+    @Transient val refreshState: RefreshState? = null,
 ) {
     val id get() = searchQuery
+}
+
+
+sealed class RefreshState {
+    class Success(val timeMillis: Long) : RefreshState()
+
+    object Refreshing : RefreshState()
+
+    class Failed(val exception: Throwable) : RefreshState()
 }
 
 

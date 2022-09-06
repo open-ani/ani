@@ -103,6 +103,12 @@ fun StarredAnimeCard(
                                 }
                             )
                         },
+                        refreshState = currentAnime.refreshState,
+                        onClickRefreshResult = {
+                            // TODO: 2022/9/5 onClickRefreshState:
+                            // - Mouse hover to show button for retry
+                            // - Right click or long click to see error details
+                        }
                     )
 
 

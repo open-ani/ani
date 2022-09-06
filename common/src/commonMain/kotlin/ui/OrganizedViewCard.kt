@@ -19,11 +19,8 @@
 package me.him188.animationgarden.app.ui
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
@@ -36,6 +33,7 @@ import me.him188.animationgarden.api.tags.Episode
 import me.him188.animationgarden.api.tags.Resolution
 import me.him188.animationgarden.api.tags.SubtitleLanguage
 import me.him188.animationgarden.app.AppTheme
+import me.him188.animationgarden.app.app.RefreshState
 import me.him188.animationgarden.app.i18n.LocalI18n
 import me.him188.animationgarden.app.i18n.loadResourceBundle
 import me.him188.animationgarden.app.platform.LocalContext
@@ -226,29 +224,17 @@ private fun OrganizedViewContent(
 }
 
 @Composable
-fun <T> FilterChipRow(
+expect fun <T> FilterChipRow(
     list: List<T>,
     key: (item: T) -> Any,
     isSelected: @Composable (T) -> Boolean,
     onClick: ((T) -> Unit)?,
     enabled: @Composable (T) -> Boolean,
     elevation: SelectableChipElevation? = FilterChipDefaults.elevatedFilterChipElevation(),
+    refreshState: RefreshState? = null,
+    onClickRefreshResult: (() -> Unit)? = null,
     content: @Composable (T) -> Unit = { Text(it.toString()) },
-) {
-    val currentOnClick by rememberUpdatedState(onClick)
-    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-        items(list, key = key) {
-            ElevatedFilterChip(
-                selected = isSelected(it),
-                onClick = { currentOnClick?.invoke(it) },
-                label = { content(it) },
-                enabled = enabled.invoke(it),
-                elevation = elevation,
-//                modifier = Modifier.animateItemPlacement(tween(200, 100)),
-            )
-        }
-    }
-}
+)
 
 
 @Preview
@@ -269,7 +255,6 @@ private fun PreviewOrganizedWorkView() {
             )
         )
     }
-
     val context = LocalContext.current
     val currentBundle = remember(Locale.current.language) { loadResourceBundle(context) }
     CompositionLocalProvider(LocalI18n provides currentBundle) {
