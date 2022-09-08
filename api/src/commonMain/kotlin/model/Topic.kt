@@ -19,6 +19,7 @@
 package me.him188.animationgarden.api.model
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.protobuf.ProtoNumber
 import me.him188.animationgarden.api.tags.*
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -101,8 +102,8 @@ data class TopicCategory(
 
 @Serializable
 data class Alliance(
-    val id: String,
-    val name: String
+    @ProtoNumber(1) val id: String,
+    @ProtoNumber(2) val name: String
 )
 
 private fun String.truncated(length: Int, truncated: String = "..."): String {

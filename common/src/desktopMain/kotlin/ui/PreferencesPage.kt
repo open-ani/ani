@@ -37,6 +37,7 @@ import me.him188.animationgarden.app.i18n.LocalI18n
 import me.him188.animationgarden.app.ui.interaction.PlatformImplementations
 import me.him188.animationgarden.app.ui.settings.ProxySettingsGroup
 import me.him188.animationgarden.app.ui.settings.SettingsGroup
+import me.him188.animationgarden.app.ui.settings.SyncSettingsGroup
 
 @Composable
 fun PreferencesPage() {
@@ -49,6 +50,7 @@ fun PreferencesPage() {
             }
 
             ProxySettingsGroup(settings, manager)
+            SyncSettingsGroup(settings, manager)
         }
     }
 }

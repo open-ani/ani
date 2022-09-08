@@ -27,20 +27,19 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.suspendCancellableCoroutine
 import me.him188.animationgarden.api.AnimationGardenClient
 import me.him188.animationgarden.api.impl.createHttpClient
+import me.him188.animationgarden.api.protocol.CommitRef
 import me.him188.animationgarden.app.AppTheme
 import me.him188.animationgarden.app.ProvideCompositionLocalsForPreview
 import me.him188.animationgarden.app.app.ApplicationState
@@ -48,6 +47,9 @@ import me.him188.animationgarden.app.app.LocalAppSettings
 import me.him188.animationgarden.app.app.LocalAppSettingsManager
 import me.him188.animationgarden.app.app.LocalAppSettingsManagerImpl
 import me.him188.animationgarden.app.app.data.AppDataSynchronizerImpl
+import me.him188.animationgarden.app.app.data.ConflictAction
+import me.him188.animationgarden.app.app.data.map
+import me.him188.animationgarden.app.app.settings.createFileDelegatedMutableProperty
 import me.him188.animationgarden.app.app.settings.createLocalStorage
 import me.him188.animationgarden.app.app.settings.createRemoteSynchronizer
 import me.him188.animationgarden.app.app.settings.toKtorProxy
@@ -61,7 +63,10 @@ import me.him188.animationgarden.app.ui.WindowEx
 import me.him188.animationgarden.app.ui.createTestAppDataSynchronizer
 import me.him188.animationgarden.app.ui.interaction.PlatformImplementations
 import me.him188.animationgarden.app.ui.interaction.PlatformImplementations.Companion.hostIsMacOs
+import mu.KotlinLogging
 import java.io.File
+
+private val logger = KotlinLogging.logger { }
 
 object AnimationGardenDesktop {
     @JvmStatic
@@ -75,6 +80,8 @@ object AnimationGardenDesktop {
                 File(System.getProperty("user.home")).resolve(currentBundle.getString("save.folder")).apply {
                     mkdir()
                     resolve(currentBundle.getString("save.readme.filename")).writeText(currentBundle.getString("save.readme.content"))
+                }.also {
+                    println("Working dir: ${it.absolutePath}")
                 }
             }
             val appSettingsProvider = remember {
@@ -94,8 +101,8 @@ object AnimationGardenDesktop {
             ) {
                 var prompt: Throwable? by remember { mutableStateOf(null) }
                 if (prompt != null) {
-                    Popup(Alignment.Center) {
-                        Text(prompt?.stackTraceToString().toString())
+                    Window({ prompt = null }, rememberWindowState()) {
+                        Text(prompt?.stackTraceToString().toString(), Modifier.padding(all = 32.dp))
                     }
                 }
 
@@ -110,14 +117,30 @@ object AnimationGardenDesktop {
                             val sync = currentAppSettings.sync
                             AppDataSynchronizerImpl(
                                 scope.coroutineContext,
-                                remoteSynchronizer = sync.createRemoteSynchronizer(createHttpClient()),
+                                remoteSynchronizer = sync.createRemoteSynchronizer(
+                                    httpClient = createHttpClient(),
+                                    localRef = createFileDelegatedMutableProperty(workingDir.resolve("data/commit")).map(
+                                        get = { CommitRef(it) },
+                                        set = { it.toString() },
+                                    ),
+                                    promptConflict = {
+                                        ConflictAction.AcceptServer
+                                    },
+                                    parentCoroutineContext = scope.coroutineContext
+                                ),
                                 backingStorage = sync.createLocalStorage(
                                     workingDir.resolve("data/app.yml").apply { parentFile.mkdirs() }),
                                 localSyncSettingsFlow = localSyncSettingsFlow,
-                                promptSwitchToOffline = { exception ->
-                                    prompt = exception
-                                    suspendCancellableCoroutine { cont ->
-                                        // TODO: 2022/9/7 resume
+                                promptSwitchToOffline = { exception, optional ->
+                                    logger.warn { "Switching to local mode" }
+                                    if (optional) {
+                                        true
+                                    } else {
+                                        prompt = exception
+//                                        suspendCancellableCoroutine { cont ->
+//                                            // TODO: 2022/9/7 resume
+//                                        }
+                                        true
                                     }
                                 }
                             )
@@ -142,7 +165,7 @@ object AnimationGardenDesktop {
 
                 var showPreferences by remember { mutableStateOf(false) }
                 if (showPreferences) {
-                    val state = rememberWindowState(width = 350.dp, height = 280.dp)
+                    val state = rememberWindowState(width = 350.dp, height = 550.dp)
                     WindowEx(
                         state = state,
                         onCloseRequest = {

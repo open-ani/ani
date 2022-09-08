@@ -21,9 +21,7 @@ package me.him188.animationgarden.app.ui.settings
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Row
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.RadioButtonColors
-import androidx.compose.material3.RadioButtonDefaults
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -52,6 +50,33 @@ fun LabelledRadioButton(
         verticalAlignment = Alignment.CenterVertically
     ) {
         RadioButton(selected, onClick, enabled = enabled, interactionSource = interactionSource, colors = colors)
+        label()
+    }
+}
+
+@Composable
+fun LabelledCheckBox(
+    selected: Boolean,
+    onSelectedChange: ((Boolean) -> Unit)?,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
+    colors: CheckboxColors = CheckboxDefaults.colors(),
+    label: @Composable () -> Unit,
+) {
+    Row(
+        modifier.then(
+            if (onSelectedChange != null)
+                Modifier.clickable(
+                    interactionSource,
+                    null,
+                    onClick = { onSelectedChange(!selected) }
+                )
+            else Modifier
+        ),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Checkbox(selected, onSelectedChange, enabled = enabled, interactionSource = interactionSource, colors = colors)
         label()
     }
 }

@@ -614,8 +614,8 @@ fun createTestAppDataSynchronizer(scope: CoroutineScope): AppDataSynchronizer {
         remoteSynchronizer = null,
         backingStorage = InMemoryMutableProperty { "" },
         localSyncSettingsFlow = flowOf(LocalSyncSettings()),
-        promptSwitchToOffline = {
-            it.printStackTrace()
+        promptSwitchToOffline = { exception, _ ->
+            exception.printStackTrace()
             true
         }
     )

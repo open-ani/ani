@@ -18,42 +18,41 @@
 
 package me.him188.animationgarden.server
 
-import io.ktor.http.*
+import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import io.ktor.server.request.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
-import io.ktor.server.util.*
+import io.ktor.server.plugins.callloging.*
+import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.websocket.*
+import kotlinx.serialization.json.Json
+import me.him188.animationgarden.api.model.CommitsModule
+import org.slf4j.event.Level
 import java.io.File
 
 
 object ServerMain {
     @JvmStatic
     fun main(args: Array<String>) {
-        val dataFolder = File(System.getProperty("user.dir"))
-        val data = dataFolder.resolve("data")
-//        val settings = dataFolder.resolve("settings")
-        embeddedServer(Netty) {
-            routing {
-                route("/data/{token}") {
-                    get {
-                        val file = data.resolve(call.parameters.getOrFail("token"))
-                        if (file.exists()) {
-                            call.respond(HttpStatusCode.OK, file.readText())
-                        } else {
-                            call.respond(HttpStatusCode.NoContent)
-                        }
-                    }
+        val appFolder = File(".")
+        appFolder.mkdirs()
 
-                    put {
-                        val file = data.resolve(call.parameters.getOrFail("token"))
-                        file.writeText(call.receiveText())
-                        call.respond(HttpStatusCode.OK)
-                    }
-                }
+        val dataFolder = appFolder.resolve("data")
+        dataFolder.mkdir()
+        println("Data folder: ${dataFolder.absolutePath}")
+
+        embeddedServer(Netty) {
+            install(CallLogging) {
+                level = Level.INFO
             }
+            install(ContentNegotiation) {
+                json(Json {
+                    serializersModule = CommitsModule
+                    ignoreUnknownKeys = true
+                })
+            }
+            install(WebSockets)
+            configureCommitsModule(dataFolder)
         }.start(wait = true)
     }
 }

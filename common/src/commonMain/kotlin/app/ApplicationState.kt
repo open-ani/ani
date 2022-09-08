@@ -78,9 +78,9 @@ class ApplicationState(
     val dataSynchronizer: AppDataSynchronizer = appDataSynchronizer(applicationScope)
 
     val dataState: State<AppData>
-        @Composable get() = dataSynchronizer.appDataFlow.collectAsState(AppData.initial)
+        @Composable get() = dataSynchronizer.appDataFlow.collectAsState(AppData.initial, context = Dispatchers.Main)
 
-    suspend fun getData() = dataSynchronizer.getData()
+    suspend fun getData() = withContext(Dispatchers.Default) { dataSynchronizer.getData() }
 
 
     @Stable

@@ -202,3 +202,19 @@ fun AppSettingsManager.updateProxyHttpUrl(value: String) {
 fun AppSettingsManager.updateProxySocks(host: String, port: Int) {
     mutate { copy(proxy = proxy.run { copy(socks = socks.copy(host = host, port = port.coerceIn(0..65535))) }) }
 }
+
+fun AppSettingsManager.updateLocalSyncEnabled(enabled: Boolean) {
+    mutate { copy(sync = sync.run { copy(localSyncEnabled = enabled) }) }
+}
+
+fun AppSettingsManager.updateRemoteSyncEnabled(enabled: Boolean) {
+    mutate { copy(sync = sync.run { copy(remoteSyncEnabled = enabled) }) }
+}
+
+fun AppSettingsManager.updateRemoteSyncApiUrl(url: String) {
+    mutate { copy(sync = sync.run { copy(remoteSync = remoteSync.copy(apiUrl = url)) }) }
+}
+
+fun AppSettingsManager.updateRemoteSyncToken(token: String) {
+    mutate { copy(sync = sync.run { copy(remoteSync = remoteSync.copy(token = token)) }) }
+}

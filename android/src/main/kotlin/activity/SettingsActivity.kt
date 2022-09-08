@@ -42,6 +42,7 @@ import me.him188.animationgarden.app.AppTheme
 import me.him188.animationgarden.app.app.LocalAppSettingsManager
 import me.him188.animationgarden.app.i18n.LocalI18n
 import me.him188.animationgarden.app.ui.settings.ProxySettingsGroup
+import me.him188.animationgarden.app.ui.settings.SyncSettingsGroup
 
 class SettingsActivity : ComponentActivity() {
     companion object {
@@ -94,5 +95,6 @@ private fun SettingsPage() {
                 Text(LocalI18n.current.getString("preferences.proxy.mode.system.content"))
             }
         )
+        SyncSettingsGroup(settings, manager)
     }
 }

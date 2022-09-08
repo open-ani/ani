@@ -27,6 +27,24 @@ interface MutableProperty<T> {
     suspend fun set(value: T)
 }
 
+@Suppress("UnnecessaryVariable")
+fun <T, R> MutableProperty<T>.map(
+    get: suspend MutableProperty<T>.(T) -> R,
+    set: suspend MutableProperty<R>.(R) -> T,
+): MutableProperty<R> {
+    val mapGet = get
+    val mapSet = set
+    return object : MutableProperty<R> {
+        override suspend fun get(): R {
+            return this@map.mapGet(this@map.get())
+        }
+
+        override suspend fun set(value: R) {
+            this@map.set(mapSet(value))
+        }
+    }
+}
+
 class InMemoryMutableProperty<T>(
     private val initial: suspend () -> T
 ) : MutableProperty<T> {

@@ -60,6 +60,8 @@ kotlin {
                 api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.4.0")
                 api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0")
                 api("org.jetbrains.kotlinx:kotlinx-serialization-protobuf:1.4.0")
+                api("io.ktor:ktor-client-websockets:2.1.0")
+                api("io.ktor:ktor-client-logging:2.1.0")
                 api("net.mamoe.yamlkt:yamlkt:0.12.0")
 
 //    implementation("org.jetbrains.exposed:exposed-core:0.39.1")
