@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.api.protocol
+package me.him188.animationgarden.api.model
 
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.Polymorphic
@@ -26,7 +26,7 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.decodeStructure
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
-import me.him188.animationgarden.api.model.Alliance
+import me.him188.animationgarden.api.protocol.EStarredAnime
 import me.him188.animationgarden.api.tags.Episode
 import me.him188.animationgarden.api.tags.Resolution
 import me.him188.animationgarden.api.tags.SubtitleLanguage
@@ -90,6 +90,10 @@ data class UnsupportedCommit(
 val CommitsModule = SerializersModule {
     polymorphic(Commit::class) {
         subclass(StarredAnimeCommits.Add::class, StarredAnimeCommits.Add.serializer())
+        subclass(StarredAnimeCommits.Remove::class, StarredAnimeCommits.Remove.serializer())
+        subclass(StarredAnimeCommits.Update::class, StarredAnimeCommits.Update.serializer())
+        subclass(StarredAnimeCommits.EpisodeWatched::class, StarredAnimeCommits.EpisodeWatched.serializer())
+        subclass(StarredAnimeCommits.UpdateEpisodes::class, StarredAnimeCommits.UpdateEpisodes.serializer())
         default { UnsupportedCommit.deserializer(it) }
     }
 }

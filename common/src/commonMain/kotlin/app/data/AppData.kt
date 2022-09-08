@@ -28,15 +28,16 @@ import me.him188.animationgarden.api.impl.model.ListFlowImpl
 import me.him188.animationgarden.api.impl.model.MutableListFlow
 import me.him188.animationgarden.api.impl.model.mutate
 import me.him188.animationgarden.api.model.Alliance
-import me.him188.animationgarden.api.protocol.Commit
-import me.him188.animationgarden.api.protocol.StarredAnimeCommits
-import me.him188.animationgarden.api.protocol.UnsupportedCommit
+import me.him188.animationgarden.api.model.Commit
+import me.him188.animationgarden.api.model.StarredAnimeCommits
+import me.him188.animationgarden.api.model.UnsupportedCommit
+import me.him188.animationgarden.api.protocol.EAppData
 import me.him188.animationgarden.api.tags.Episode
 import me.him188.animationgarden.api.tags.Resolution
 import me.him188.animationgarden.api.tags.SubtitleLanguage
 import me.him188.animationgarden.app.app.RefreshState
 import me.him188.animationgarden.app.app.StarredAnime
-import me.him188.animationgarden.app.app.toStarredAnimeEntity
+import me.him188.animationgarden.app.app.toEStarredAnime
 import me.him188.animationgarden.app.ui.OrganizedViewState
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -56,6 +57,14 @@ interface AppData {
             override val starredAnime: ListFlow<StarredAnime> = ListFlowImpl(listOf())
         }
     }
+}
+
+fun AppData.toEAppData(): EAppData {
+    return EAppData(starredAnime = starredAnime.value.map { it.toEStarredAnime() })
+}
+
+fun EAppData.toAppData(): AppData {
+    TODO()
 }
 
 @Stable
@@ -90,16 +99,16 @@ infix fun DataMutation.then(mutation: DataMutation): DataMutation = CombinedData
  * Multiple [DataMutation]s invoked in one commit.
  */
 class CombinedDataMutation(
-    private val mutation: DataMutation,
-    private val then: DataMutation
+    val first: DataMutation,
+    val then: DataMutation
 ) : DataMutation {
     context(DataMutationContext) override suspend fun invoke() {
-        mutation.invoke()
+        first.invoke()
         then.invoke()
     }
 
     context(DataMutationContext) override suspend fun revoke() {
-        mutation.revoke()
+        first.revoke()
         then.revoke()
     }
 }
@@ -121,7 +130,7 @@ object StarredAnimeMutations {
         )
 
 
-        override fun toCommit(): Commit = StarredAnimeCommits.Add(anime.toStarredAnimeEntity())
+        override fun toCommit(): Commit = StarredAnimeCommits.Add(anime.toEStarredAnime())
 
         context(DataMutationContext) override suspend fun invoke() {
             starredAnime.add(anime)

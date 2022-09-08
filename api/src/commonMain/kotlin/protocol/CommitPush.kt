@@ -21,22 +21,13 @@ package me.him188.animationgarden.api.protocol
 import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
-import me.him188.animationgarden.api.model.Alliance
-import me.him188.animationgarden.api.tags.Episode
-import me.him188.animationgarden.api.tags.Resolution
-import me.him188.animationgarden.api.tags.SubtitleLanguage
+import me.him188.animationgarden.api.model.Commit
 
+// pushed from server via websocket
 @Serializable
-data class EStarredAnime(
-    @ProtoNumber(1) val primaryName: String,
-    @ProtoNumber(2) val secondaryNames: List<String> = listOf(),
-    @ProtoNumber(3) val searchQuery: String, // keywords
-    @ProtoNumber(4) val episodes: Set<Episode>,
-    @ProtoNumber(5) val watchedEpisodes: Set<Episode> = setOf(),
-    @ProtoNumber(6) val preferredAlliance: Alliance? = null,
-    @ProtoNumber(7) val preferredResolution: @Polymorphic Resolution? = null,
-    @ProtoNumber(8) val preferredSubtitleLanguage: @Polymorphic SubtitleLanguage? = null,
-    @ProtoNumber(9) val starTimeMillis: Long,
-) {
-    inline val id get() = searchQuery
-}
+data class CommitEvent(
+    @ProtoNumber(1) val baseRef: CommitRef,
+    @ProtoNumber(2) val newRef: CommitRef,
+    @ProtoNumber(3) val commit: @Polymorphic Commit,
+    @ProtoNumber(4) val committer: Committer,
+)

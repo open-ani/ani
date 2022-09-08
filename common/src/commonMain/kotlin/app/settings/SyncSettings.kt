@@ -29,16 +29,19 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import me.him188.animationgarden.api.protocol.CommitRef
+import me.him188.animationgarden.app.app.data.ConflictAction
 import me.him188.animationgarden.app.app.data.MutableProperty
 import me.him188.animationgarden.app.app.data.RemoteSynchronizer
 import me.him188.animationgarden.app.app.data.RemoteSynchronizerImpl
 import java.io.File
+import kotlin.coroutines.CoroutineContext
 import kotlin.random.Random
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
 @Serializable
-class SyncSettings(
+data class SyncSettings(
     /**
      * If disabled, this app will run with fresh data every time.
      */
@@ -49,15 +52,15 @@ class SyncSettings(
 )
 
 @Serializable
-class RemoteSyncSettings(
+data class RemoteSyncSettings(
     val apiUrl: String = "https://sync.animationgarden.him188.moe",
     val token: String = randomSyncToken(),
 ) {
     companion object {
-        private val nonceRanges = arrayOf('a'..'z', 'A'..'z', 0..9)
+        private val nonceRanges = arrayOf('a'..'z', 'A'..'z', '0'..'9')
 
         fun randomSyncToken(length: Int = 32, random: Random = Random): String {
-            return generateSequence { nonceRanges.random(random) }
+            return generateSequence { nonceRanges.random(random).random(random) }
                 .take(length)
                 .joinToString(separator = "")
         }
@@ -88,9 +91,12 @@ private object DurationSerializer : KSerializer<Duration> {
 @Stable
 fun SyncSettings.createRemoteSynchronizer(
     httpClient: HttpClient,
+    localRef: MutableProperty<CommitRef>,
+    promptConflict: suspend () -> ConflictAction,
+    parentCoroutineContext: CoroutineContext,
 ): RemoteSynchronizer? {
     return if (remoteSyncEnabled) {
-        RemoteSynchronizerImpl(httpClient, remoteSync)
+        RemoteSynchronizerImpl(httpClient, remoteSync, localRef, promptConflict, parentCoroutineContext)
     } else {
         null
     }
@@ -101,27 +107,7 @@ fun SyncSettings.createLocalStorage(
     file: File,
 ): MutableProperty<String> {
     return if (localSyncEnabled) {
-        object : MutableProperty<String> {
-            override suspend fun get(): String {
-                return withContext(Dispatchers.IO) {
-                    if (file.exists()) {
-                        file.readText()
-                    } else {
-                        ""
-                    }
-                }
-            }
-
-            override suspend fun set(value: String) {
-                return withContext(Dispatchers.IO) {
-                    try {
-                        file.parentFile.mkdirs()
-                    } catch (_: Exception) {
-                    }
-                    file.writeText(value)
-                }
-            }
-        }
+        createFileDelegatedMutableProperty(file)
     } else {
         object : MutableProperty<String> {
             override suspend fun get(): String {
@@ -131,6 +117,28 @@ fun SyncSettings.createLocalStorage(
             override suspend fun set(value: String) {
                 // nop
             }
+        }
+    }
+}
+
+fun createFileDelegatedMutableProperty(file: File): MutableProperty<String> = object : MutableProperty<String> {
+    override suspend fun get(): String {
+        return withContext(Dispatchers.IO) {
+            if (file.exists()) {
+                file.readText()
+            } else {
+                ""
+            }
+        }
+    }
+
+    override suspend fun set(value: String) {
+        return withContext(Dispatchers.IO) {
+            try {
+                file.parentFile.mkdirs()
+            } catch (_: Exception) {
+            }
+            file.writeText(value)
         }
     }
 }

@@ -21,22 +21,40 @@ package me.him188.animationgarden.api.protocol
 import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
-import me.him188.animationgarden.api.model.Alliance
-import me.him188.animationgarden.api.tags.Episode
-import me.him188.animationgarden.api.tags.Resolution
-import me.him188.animationgarden.api.tags.SubtitleLanguage
+import me.him188.animationgarden.api.model.Commit
 
 @Serializable
-data class EStarredAnime(
-    @ProtoNumber(1) val primaryName: String,
-    @ProtoNumber(2) val secondaryNames: List<String> = listOf(),
-    @ProtoNumber(3) val searchQuery: String, // keywords
-    @ProtoNumber(4) val episodes: Set<Episode>,
-    @ProtoNumber(5) val watchedEpisodes: Set<Episode> = setOf(),
-    @ProtoNumber(6) val preferredAlliance: Alliance? = null,
-    @ProtoNumber(7) val preferredResolution: @Polymorphic Resolution? = null,
-    @ProtoNumber(8) val preferredSubtitleLanguage: @Polymorphic SubtitleLanguage? = null,
-    @ProtoNumber(9) val starTimeMillis: Long,
-) {
-    inline val id get() = searchQuery
+data class PushCommitRequest(
+    @ProtoNumber(1) val base: CommitRef,
+    @ProtoNumber(2) val commit: @Polymorphic Commit,
+    @ProtoNumber(3) val newData: EAppData,
+    @ProtoNumber(4) val committer: Committer,
+)
+
+@Serializable
+data class PushCommitResponse(
+    @ProtoNumber(1) val result: PushCommitResult,
+)
+
+@Serializable
+sealed class PushCommitResult {
+
+    @Serializable
+    class Success(
+        @ProtoNumber(1) val newHeadRef: CommitRef,
+    ) : PushCommitResult()
+
+    @Serializable
+    class OutOfDate(
+        @ProtoNumber(2) val newHeadRef: CommitRef,
+    ) : PushCommitResult()
 }
+
+
+@Serializable
+class SyncRefRequest()
+
+@Serializable
+data class SyncRefResponse(
+    @ProtoNumber(1) val ref: CommitRef
+)

@@ -23,15 +23,21 @@ import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.snapshotFlow
+import io.ktor.client.plugins.logging.*
 import kotlinx.coroutines.*
 import me.him188.animationgarden.api.AnimationGardenClient
 import me.him188.animationgarden.api.impl.createHttpClient
+import me.him188.animationgarden.api.protocol.CommitRef
 import me.him188.animationgarden.app.app.ApplicationState
 import me.him188.animationgarden.app.app.LocalAppSettingsManagerImpl
 import me.him188.animationgarden.app.app.data.AppDataSynchronizerImpl
+import me.him188.animationgarden.app.app.data.map
+import me.him188.animationgarden.app.app.settings.createFileDelegatedMutableProperty
 import me.him188.animationgarden.app.app.settings.createLocalStorage
 import me.him188.animationgarden.app.app.settings.createRemoteSynchronizer
 import me.him188.animationgarden.app.app.settings.toKtorProxy
+import mu.KotlinLogging
+import org.slf4j.MarkerFactory
 
 class AnimationGardenApplication : Application() {
     companion object {
@@ -52,7 +58,7 @@ class AnimationGardenApplication : Application() {
             runBlocking {
                 withContext(Dispatchers.IO) {
                     val tag by lazy(LazyThreadSafetyMode.PUBLICATION) { context.getString(R.string.app_package) }
-                    val scope =
+                    val appScope =
                         CoroutineScope(SupervisorJob() + CoroutineExceptionHandler { _, throwable ->
                             Log.e(tag, "Unhandled exception in coroutine", throwable)
                         })
@@ -64,21 +70,42 @@ class AnimationGardenApplication : Application() {
                             proxy =
                                 settings.proxy.toKtorProxy() // android thinks this is doing network operation
                         },
-                        appDataSynchronizer = {
+                        appDataSynchronizer = { syncScope ->
                             AppDataSynchronizerImpl(
-                                it.coroutineContext,
-                                remoteSynchronizer = settings.sync.createRemoteSynchronizer(createHttpClient()),
+                                syncScope.coroutineContext,
+                                remoteSynchronizer = settings.sync.createRemoteSynchronizer(
+                                    httpClient = createHttpClient(clientConfig = {
+                                        install(Logging) {
+                                            logger = object : Logger {
+                                                private val delegate = KotlinLogging.logger {}
+                                                private val marker = MarkerFactory.getMarker("HTTP")
+                                                override fun log(message: String) {
+                                                    delegate.info(marker, message)
+                                                }
+                                            }
+                                            level = LogLevel.BODY
+                                        }
+                                    }),
+                                    localRef = createFileDelegatedMutableProperty(workingDir.resolve("data/commit")).map(
+                                        get = { CommitRef(it) },
+                                        set = { it.toString() },
+                                    ),
+                                    promptConflict = {
+                                        TODO("prompt")
+                                    },
+                                    parentCoroutineContext = syncScope.coroutineContext
+                                ),
                                 backingStorage = settings.sync.createLocalStorage(
                                     workingDir.resolve("data/app.yml").apply { parentFile.mkdir() }),
                                 localSyncSettingsFlow = snapshotFlow {
                                     settings.sync.localSync
                                 },
-                                promptSwitchToOffline = {
+                                promptSwitchToOffline = { exception, optional ->
                                     TODO("prompt")
                                 }
                             )
                         },
-                        applicationScope = scope,
+                        applicationScope = appScope,
                     )
                 }
             }

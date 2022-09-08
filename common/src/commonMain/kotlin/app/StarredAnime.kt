@@ -20,9 +20,9 @@ package me.him188.animationgarden.app.app
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
-import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import kotlinx.serialization.protobuf.ProtoNumber
 import me.him188.animationgarden.api.model.Alliance
 import me.him188.animationgarden.api.protocol.EStarredAnime
 import me.him188.animationgarden.api.tags.Episode
@@ -32,15 +32,15 @@ import me.him188.animationgarden.api.tags.SubtitleLanguage
 @Serializable
 @Immutable
 data class StarredAnime(
-    val primaryName: String,
-    val secondaryNames: List<String> = listOf(),
-    val searchQuery: String, // keywords
-    val episodes: Set<Episode>,
-    val watchedEpisodes: Set<Episode> = setOf(),
-    val preferredAlliance: Alliance? = null,
-    val preferredResolution: @Polymorphic Resolution? = null,
-    val preferredSubtitleLanguage: @Polymorphic SubtitleLanguage? = null,
-    val starTimeMillis: Long,
+    @ProtoNumber(1) val primaryName: String,
+    @ProtoNumber(2) val secondaryNames: List<String> = listOf(),
+    @ProtoNumber(3) val searchQuery: String, // keywords
+    @ProtoNumber(4) val episodes: Set<Episode>,
+    @ProtoNumber(5) val watchedEpisodes: Set<Episode> = setOf(),
+    @ProtoNumber(6) val preferredAlliance: Alliance? = null,
+    @ProtoNumber(7) val preferredResolution: Resolution? = null,
+    @ProtoNumber(8) val preferredSubtitleLanguage: SubtitleLanguage? = null,
+    @ProtoNumber(9) val starTimeMillis: Long,
     @Transient val refreshState: RefreshState? = null,
 ) {
     val id
@@ -63,7 +63,7 @@ fun EStarredAnime.toStarredAnime(): StarredAnime {
     )
 }
 
-fun StarredAnime.toStarredAnimeEntity(): EStarredAnime {
+fun StarredAnime.toEStarredAnime(): EStarredAnime {
     return EStarredAnime(
         primaryName = primaryName,
         secondaryNames = secondaryNames,
