@@ -38,6 +38,7 @@ import me.him188.animationgarden.api.tags.SubtitleLanguage
 import me.him188.animationgarden.app.app.RefreshState
 import me.him188.animationgarden.app.app.StarredAnime
 import me.him188.animationgarden.app.app.toEStarredAnime
+import me.him188.animationgarden.app.app.toStarredAnime
 import me.him188.animationgarden.app.ui.OrganizedViewState
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -61,6 +62,24 @@ interface AppData {
 
 fun AppData.toEAppData(): EAppData {
     return EAppData(starredAnime = starredAnime.value.map { it.toEStarredAnime() })
+}
+
+fun Commit.toMutation(): DataMutation = when (this) {
+    is StarredAnimeCommits.Add -> StarredAnimeMutations.Add(anime.toStarredAnime())
+    is StarredAnimeCommits.EpisodeWatched -> StarredAnimeMutations.EpisodeWatched(id, episode)
+    is StarredAnimeCommits.Remove -> StarredAnimeMutations.Remove(id)
+    is UnsupportedCommit -> UnsupportedDataMutation(kind)
+    is StarredAnimeCommits.UpdateRefreshed -> StarredAnimeMutations.UpdateRefreshed(
+        id = id,
+        primaryName = primaryName,
+        secondaryNames = secondaryNames,
+        searchQuery = searchQuery,
+        episodes = episodes,
+        preferredAlliance = preferredAlliance,
+        preferredResolution = preferredResolution,
+        preferredSubtitleLanguage = preferredSubtitleLanguage
+    )
+    is StarredAnimeCommits.AddEpisodes -> StarredAnimeMutations.AddEpisodes(id, episode)
 }
 
 fun EAppData.toAppData(): AppData {
@@ -181,7 +200,7 @@ object StarredAnimeMutations {
         )
 
         override fun toCommit(): Commit {
-            return StarredAnimeCommits.Update(
+            return StarredAnimeCommits.UpdateRefreshed(
                 id = id,
                 primaryName = primaryName,
                 secondaryNames = secondaryNames,
@@ -245,7 +264,7 @@ object StarredAnimeMutations {
         private val id: String,
         private val extraEpisodes: Set<Episode>,
     ) : SingleDataMutation {
-        override fun toCommit(): Commit = StarredAnimeCommits.UpdateEpisodes(id, extraEpisodes)
+        override fun toCommit(): Commit = StarredAnimeCommits.AddEpisodes(id, extraEpisodes)
 
         private lateinit var original: Set<Episode>
 

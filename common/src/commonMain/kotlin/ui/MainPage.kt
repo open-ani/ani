@@ -611,7 +611,7 @@ private fun SearchResultField(
 fun createTestAppDataSynchronizer(scope: CoroutineScope): AppDataSynchronizer {
     return AppDataSynchronizerImpl(
         scope.coroutineContext,
-        remoteSynchronizer = null,
+        remoteSynchronizerFactory = { null },
         backingStorage = InMemoryMutableProperty { "" },
         localSyncSettingsFlow = flowOf(LocalSyncSettings()),
         promptSwitchToOffline = { exception, _ ->
