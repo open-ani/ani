@@ -102,6 +102,7 @@ class RemoteSynchronizerImpl(
     private val remoteSettings: RemoteSyncSettings,
     private val localRef: MutableProperty<CommitRef>,
     private val promptConflict: suspend () -> ConflictAction,
+    private val applyMutation: suspend (DataMutation) -> Unit,
     parentCoroutineContext: CoroutineContext,
 ) : RemoteSynchronizer {
     private val scope = CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
@@ -243,18 +244,25 @@ class RemoteSynchronizerImpl(
         }) {
             logger.info { "connection established" }
             incoming.consumeEach { frame ->
-                handleSyncEvent(frame)
+                try {
+                    handleSyncEvent(frame)
+                } catch (e: Exception) {
+                    promptConflict()
+                    logger.error("Exception in data sync connection", e)
+                }
             }
-            logger.info { "fin" }
         }
     }
 
-    private fun handleSyncEvent(frame: Frame) {
+    private suspend fun handleSyncEvent(frame: Frame) {
         when (frame) {
             is Frame.Binary -> {
                 val event = protobuf.decodeFromByteArray(CommitEvent.serializer(), frame.data)
                 logger.trace { "Received event: $event" }
                 if (event.committer.uuid == clientId) return
+                val mutation = event.commit.toMutation()
+                logger.trace { "Corresponding mutation: $mutation" }
+                applyMutation(mutation)
             }
             else -> {
                 logger.trace { "Received unsupported frame: $frame" }
@@ -322,7 +330,7 @@ typealias PromptSwitchToOffline = suspend (Exception, optional: Boolean) -> Bool
 
 class AppDataSynchronizerImpl(
     coroutineContext: CoroutineContext,
-    private val remoteSynchronizer: RemoteSynchronizer?,
+    remoteSynchronizerFactory: (applyMutation: suspend (DataMutation) -> Unit) -> RemoteSynchronizer?,
     private val backingStorage: MutableProperty<String>,
     private val localSyncSettingsFlow: Flow<LocalSyncSettings>,
     /**
@@ -342,6 +350,10 @@ class AppDataSynchronizerImpl(
         get = { load(it) },
         set = { dump(it) }
     )
+
+    private val remoteSynchronizer = remoteSynchronizerFactory { mutation ->
+        this.applyMutation(mutation)
+    }
 
     override suspend fun getData(): DataMutationContext {
         memory?.let { return it }
@@ -401,8 +413,7 @@ class AppDataSynchronizerImpl(
 
     override suspend fun commit(mutation: DataMutation) {
         mutationLock.withLock {
-            val data = getData()
-            with(data) { mutation.invoke() }
+            val data = applyMutation(mutation)
             remoteSynchronizer?.let { remoteSynchronizer ->
                 try {
                     remoteSynchronizer.pushCommit(mutation, data, localDataProperty)
@@ -417,6 +428,12 @@ class AppDataSynchronizerImpl(
                 }
             }
         }
+    }
+
+    private suspend fun applyMutation(mutation: DataMutation): DataMutationContext {
+        val data = getData()
+        with(data) { mutation.invoke() }
+        return data
     }
 
     override suspend fun saveNow() {

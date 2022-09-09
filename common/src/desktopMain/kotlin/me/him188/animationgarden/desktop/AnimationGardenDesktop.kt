@@ -25,6 +25,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -32,11 +35,11 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import dev.dirs.ProjectDirectories
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import me.him188.animationgarden.api.AnimationGardenClient
 import me.him188.animationgarden.api.impl.createHttpClient
@@ -58,10 +61,7 @@ import me.him188.animationgarden.app.i18n.LocalI18n
 import me.him188.animationgarden.app.i18n.loadResourceBundle
 import me.him188.animationgarden.app.platform.Context
 import me.him188.animationgarden.app.platform.LocalContext
-import me.him188.animationgarden.app.ui.MainPage
-import me.him188.animationgarden.app.ui.PreferencesPage
-import me.him188.animationgarden.app.ui.WindowEx
-import me.him188.animationgarden.app.ui.createTestAppDataSynchronizer
+import me.him188.animationgarden.app.ui.*
 import me.him188.animationgarden.app.ui.interaction.PlatformImplementations
 import me.him188.animationgarden.app.ui.interaction.PlatformImplementations.Companion.hostIsMacOs
 import mu.KotlinLogging
@@ -93,48 +93,46 @@ object AnimationGardenDesktop {
 
             val currentAppSettings by rememberUpdatedState(appSettingsProvider.value.value)
             val localSyncSettingsFlow = snapshotFlow { currentAppSettings.sync.localSync }
+            val snackbarState = remember { SnackbarHostState() }
+            val scope by rememberUpdatedState(rememberCoroutineScope())
 
             CompositionLocalProvider(
                 LocalI18n provides currentBundle,
                 LocalAppSettingsManager provides appSettingsProvider
             ) {
-                var prompt: Throwable? by remember { mutableStateOf(null) }
-                if (prompt != null) {
-                    Window({ prompt = null }, rememberWindowState()) {
-                        Text(prompt?.stackTraceToString().toString(), Modifier.padding(all = 32.dp))
-                    }
-                }
-
-
+                val dialogHost = rememberDialogHost()
                 val app = remember {
                     // do not observe dependency change
                     ApplicationState(
                         initialClient = AnimationGardenClient.Factory.create {
                             proxy = currentAppSettings.proxy.toKtorProxy()
                         },
-                        appDataSynchronizer = { scope ->
+                        appDataSynchronizer = { uiScope ->
                             val sync = currentAppSettings.sync
                             AppDataSynchronizerImpl(
-                                scope.coroutineContext,
-                                remoteSynchronizer = sync.createRemoteSynchronizer(
-                                    httpClient = createHttpClient(),
-                                    localRef = createFileDelegatedMutableProperty(
-                                        File(
-                                            projectDirectories.dataDir,
-                                            "commit"
-                                        ).also {
-                                            it.parentFile.mkdirs()
-                                            logger.trace { "Commit file: ${it.absolutePath}" }
-                                        }
-                                    ).map(
-                                        get = { CommitRef(it) },
-                                        set = { it.toString() },
-                                    ),
-                                    promptConflict = {
-                                        ConflictAction.AcceptServer
-                                    },
-                                    parentCoroutineContext = scope.coroutineContext
-                                ),
+                                uiScope.coroutineContext,
+                                remoteSynchronizerFactory = { applyMutation ->
+                                    sync.createRemoteSynchronizer(
+                                        httpClient = createHttpClient(),
+                                        localRef = createFileDelegatedMutableProperty(
+                                            File(
+                                                projectDirectories.dataDir,
+                                                "commit"
+                                            ).also {
+                                                it.parentFile.mkdirs()
+                                                logger.trace { "Commit file: ${it.absolutePath}" }
+                                            }
+                                        ).map(
+                                            get = { CommitRef(it) },
+                                            set = { it.toString() },
+                                        ),
+                                        promptConflict = {
+                                            ConflictAction.AcceptServer
+                                        },
+                                        applyMutation = applyMutation,
+                                        parentCoroutineContext = uiScope.coroutineContext
+                                    )
+                                },
                                 backingStorage = sync.createLocalStorage(
                                     File(projectDirectories.dataDir, "app.yml").also {
                                         it.parentFile.mkdirs()
@@ -143,15 +141,56 @@ object AnimationGardenDesktop {
                                 ),
                                 localSyncSettingsFlow = localSyncSettingsFlow,
                                 promptSwitchToOffline = { exception, optional ->
-                                    logger.warn { "Switching to local mode" }
+                                    logger.warn(exception) { "Switching to local mode" }
+
                                     if (optional) {
+                                        uiScope.launch {
+                                            snackbarState.showSnackbar(
+                                                String.format(
+                                                    currentBundle.getString("sync.failed.switched.to.offline.due.to"),
+                                                    exception.message ?: exception.toString()
+                                                ),
+                                                duration = SnackbarDuration.Long
+                                            )
+                                        }
                                         true
                                     } else {
-                                        prompt = exception
-//                                        suspendCancellableCoroutine { cont ->
-//                                            // TODO: 2022/9/7 resume
-//                                        }
-                                        true
+                                        val result = dialogHost.showConfirmationDialog(
+                                            confirmButtonText = {
+                                                Text(LocalI18n.current.getString("sync.failed.switch.to.offline"))
+                                            },
+                                            cancelButtonText = {
+                                                Text(LocalI18n.current.getString("sync.failed.revoke"))
+                                            }
+                                        ) {
+                                            Text(
+                                                String.format(
+                                                    LocalI18n.current.getString("sync.failed.content"),
+                                                    exception.message ?: exception.toString()
+                                                )
+                                            )
+                                        }
+                                        when (result) {
+                                            DialogResult.CANCELED,
+                                            DialogResult.DISMISSED -> {
+                                                uiScope.launch {
+                                                    snackbarState.showSnackbar(
+                                                        currentBundle.getString("sync.failed.revoked"),
+                                                        duration = SnackbarDuration.Long
+                                                    )
+                                                }
+                                                false
+                                            }
+                                            DialogResult.CONFIRMED -> {
+                                                uiScope.launch {
+                                                    snackbarState.showSnackbar(
+                                                        currentBundle.getString("sync.failed.switched.to.offline"),
+                                                        duration = SnackbarDuration.Long
+                                                    )
+                                                }
+                                                true
+                                            }
+                                        }
                                     }
                                 }
                             )
@@ -198,6 +237,8 @@ object AnimationGardenDesktop {
                     },
                     minimumSize = minimumSize,
                 ) {
+                    SnackbarHost(snackbarState)
+
                     with(platform.menuBarProvider) {
                         MenuBar(onClickPreferences = {
                             showPreferences = true

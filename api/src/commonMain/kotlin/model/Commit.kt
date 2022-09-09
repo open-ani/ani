@@ -36,13 +36,13 @@ sealed interface Commit
 
 object StarredAnimeCommits {
     @Serializable
-    data class Add(private val anime: EStarredAnime) : Commit
+    data class Add(val anime: EStarredAnime) : Commit
 
     @Serializable
-    data class Remove(private val id: String) : Commit
+    data class Remove(val id: String) : Commit
 
     @Serializable
-    data class Update(
+    data class UpdateRefreshed(
         val id: String,
 
         val primaryName: String,
@@ -61,7 +61,7 @@ object StarredAnimeCommits {
     ) : Commit
 
     @Serializable
-    data class UpdateEpisodes(
+    data class AddEpisodes(
         val id: String,
         val episode: Set<Episode>,
     ) : Commit
@@ -69,7 +69,7 @@ object StarredAnimeCommits {
 
 @Serializable
 data class UnsupportedCommit(
-    private val kind: String?
+    val kind: String?
 ) : Commit {
     companion object {
         @Serializable
@@ -91,9 +91,9 @@ val CommitsModule = SerializersModule {
     polymorphic(Commit::class) {
         subclass(StarredAnimeCommits.Add::class, StarredAnimeCommits.Add.serializer())
         subclass(StarredAnimeCommits.Remove::class, StarredAnimeCommits.Remove.serializer())
-        subclass(StarredAnimeCommits.Update::class, StarredAnimeCommits.Update.serializer())
+        subclass(StarredAnimeCommits.UpdateRefreshed::class, StarredAnimeCommits.UpdateRefreshed.serializer())
         subclass(StarredAnimeCommits.EpisodeWatched::class, StarredAnimeCommits.EpisodeWatched.serializer())
-        subclass(StarredAnimeCommits.UpdateEpisodes::class, StarredAnimeCommits.UpdateEpisodes.serializer())
+        subclass(StarredAnimeCommits.AddEpisodes::class, StarredAnimeCommits.AddEpisodes.serializer())
         default { UnsupportedCommit.deserializer(it) }
     }
 }

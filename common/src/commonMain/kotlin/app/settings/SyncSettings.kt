@@ -30,10 +30,7 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import me.him188.animationgarden.api.protocol.CommitRef
-import me.him188.animationgarden.app.app.data.ConflictAction
-import me.him188.animationgarden.app.app.data.MutableProperty
-import me.him188.animationgarden.app.app.data.RemoteSynchronizer
-import me.him188.animationgarden.app.app.data.RemoteSynchronizerImpl
+import me.him188.animationgarden.app.app.data.*
 import java.io.File
 import kotlin.coroutines.CoroutineContext
 import kotlin.random.Random
@@ -93,10 +90,11 @@ fun SyncSettings.createRemoteSynchronizer(
     httpClient: HttpClient,
     localRef: MutableProperty<CommitRef>,
     promptConflict: suspend () -> ConflictAction,
+    applyMutation: suspend (DataMutation) -> Unit,
     parentCoroutineContext: CoroutineContext,
 ): RemoteSynchronizer? {
     return if (remoteSyncEnabled) {
-        RemoteSynchronizerImpl(httpClient, remoteSync, localRef, promptConflict, parentCoroutineContext)
+        RemoteSynchronizerImpl(httpClient, remoteSync, localRef, promptConflict, applyMutation, parentCoroutineContext)
     } else {
         null
     }

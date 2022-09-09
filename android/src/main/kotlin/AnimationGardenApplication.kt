@@ -73,28 +73,31 @@ class AnimationGardenApplication : Application() {
                         appDataSynchronizer = { syncScope ->
                             AppDataSynchronizerImpl(
                                 syncScope.coroutineContext,
-                                remoteSynchronizer = settings.sync.createRemoteSynchronizer(
-                                    httpClient = createHttpClient(clientConfig = {
-                                        install(Logging) {
-                                            logger = object : Logger {
-                                                private val delegate = KotlinLogging.logger {}
-                                                private val marker = MarkerFactory.getMarker("HTTP")
-                                                override fun log(message: String) {
-                                                    delegate.info(marker, message)
+                                remoteSynchronizerFactory = { applyMutation ->
+                                    settings.sync.createRemoteSynchronizer(
+                                        httpClient = createHttpClient(clientConfig = {
+                                            install(Logging) {
+                                                logger = object : Logger {
+                                                    private val delegate = KotlinLogging.logger {}
+                                                    private val marker = MarkerFactory.getMarker("HTTP")
+                                                    override fun log(message: String) {
+                                                        delegate.info(marker, message)
+                                                    }
                                                 }
+                                                level = LogLevel.BODY
                                             }
-                                            level = LogLevel.BODY
-                                        }
-                                    }),
-                                    localRef = createFileDelegatedMutableProperty(workingDir.resolve("data/commit")).map(
-                                        get = { CommitRef(it) },
-                                        set = { it.toString() },
-                                    ),
-                                    promptConflict = {
-                                        TODO("prompt")
-                                    },
-                                    parentCoroutineContext = syncScope.coroutineContext
-                                ),
+                                        }),
+                                        localRef = createFileDelegatedMutableProperty(workingDir.resolve("data/commit")).map(
+                                            get = { CommitRef(it) },
+                                            set = { it.toString() },
+                                        ),
+                                        promptConflict = {
+                                            TODO("prompt")
+                                        },
+                                        applyMutation = applyMutation,
+                                        parentCoroutineContext = syncScope.coroutineContext
+                                    )
+                                },
                                 backingStorage = settings.sync.createLocalStorage(
                                     workingDir.resolve("data/app.yml").apply { parentFile.mkdir() }),
                                 localSyncSettingsFlow = snapshotFlow {
