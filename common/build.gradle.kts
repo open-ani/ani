@@ -63,6 +63,7 @@ kotlin {
                 api("io.ktor:ktor-client-websockets:2.1.0")
                 api("io.ktor:ktor-client-logging:2.1.0")
                 api("net.mamoe.yamlkt:yamlkt:0.12.0")
+                api("dev.dirs:directories:26")
 
 //    implementation("org.jetbrains.exposed:exposed-core:0.39.1")
 //    implementation("org.jetbrains.exposed:exposed-dao:0.39.1")

@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import dev.dirs.ProjectDirectories
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import me.him188.animationgarden.api.AnimationGardenClient
@@ -68,6 +69,9 @@ import java.io.File
 
 private val logger = KotlinLogging.logger { }
 
+
+val projectDirectories: ProjectDirectories by lazy { ProjectDirectories.from("me", "Him188", "Animation Garden") }
+
 object AnimationGardenDesktop {
     @JvmStatic
     fun main(args: Array<String>) {
@@ -75,18 +79,13 @@ object AnimationGardenDesktop {
             val context: Context = LocalContext.current
             val currentBundle = remember(Locale.current.language) { loadResourceBundle(context) }
 
-
-            val workingDir = remember {
-                File(System.getProperty("user.home")).resolve(currentBundle.getString("save.folder")).apply {
-                    mkdir()
-                    resolve(currentBundle.getString("save.readme.filename")).writeText(currentBundle.getString("save.readme.content"))
-                }.also {
-                    println("Working dir: ${it.absolutePath}")
-                }
-            }
             val appSettingsProvider = remember {
-                LocalAppSettingsManagerImpl(workingDir.resolve("data/settings.yml"))
-                    .apply { load() }
+                LocalAppSettingsManagerImpl(
+                    File(projectDirectories.preferenceDir, "settings.yml").also {
+                        it.parentFile.mkdirs()
+                        logger.trace { "Settings file: ${it.absolutePath}" }
+                    }
+                ).apply { load() }
             }
             appSettingsProvider.attachAutoSave()
             val platform = remember { PlatformImplementations.current }
@@ -119,7 +118,15 @@ object AnimationGardenDesktop {
                                 scope.coroutineContext,
                                 remoteSynchronizer = sync.createRemoteSynchronizer(
                                     httpClient = createHttpClient(),
-                                    localRef = createFileDelegatedMutableProperty(workingDir.resolve("data/commit")).map(
+                                    localRef = createFileDelegatedMutableProperty(
+                                        File(
+                                            projectDirectories.dataDir,
+                                            "commit"
+                                        ).also {
+                                            it.parentFile.mkdirs()
+                                            logger.trace { "Commit file: ${it.absolutePath}" }
+                                        }
+                                    ).map(
                                         get = { CommitRef(it) },
                                         set = { it.toString() },
                                     ),
@@ -129,7 +136,11 @@ object AnimationGardenDesktop {
                                     parentCoroutineContext = scope.coroutineContext
                                 ),
                                 backingStorage = sync.createLocalStorage(
-                                    workingDir.resolve("data/app.yml").apply { parentFile.mkdirs() }),
+                                    File(projectDirectories.dataDir, "app.yml").also {
+                                        it.parentFile.mkdirs()
+                                        logger.trace { "Data file: ${it.absolutePath}" }
+                                    }
+                                ),
                                 localSyncSettingsFlow = localSyncSettingsFlow,
                                 promptSwitchToOffline = { exception, optional ->
                                     logger.warn { "Switching to local mode" }
