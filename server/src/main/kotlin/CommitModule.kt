@@ -64,7 +64,7 @@ class CommitManager(
     context(Locked) suspend fun submitCommit(request: PushCommitRequest): CommitRef? {
         if (request.base != headRef) return null
 
-        val newRef = CommitRef.generate()
+        val newRef = headRef.next()
         val event = CommitEvent(request.base, newRef, request.commit, request.committer)
         _eventFlow.emit(event)
         _currentBaseRef.value = newRef
