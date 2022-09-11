@@ -25,10 +25,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
@@ -147,8 +144,6 @@ object AnimationGardenDesktop {
                     },
                     minimumSize = minimumSize,
                 ) {
-                    SnackbarHost(snackbarState)
-
                     with(platform.menuBarProvider) {
                         MenuBar(onClickPreferences = {
                             showPreferences = true
@@ -169,11 +164,19 @@ object AnimationGardenDesktop {
                         }
                     }
 
-                    MainWindowContent(
-                        hostIsMacOs = hostIsMacOs,
-                        app = app,
-                        windowImmersed = windowImmersed
-                    )
+                    Scaffold(
+                        topBar = {},
+                        bottomBar = {},
+                        snackbarHost = {
+                            SnackbarHost(snackbarState)
+                        },
+                    ) {
+                        MainWindowContent(
+                            hostIsMacOs = hostIsMacOs,
+                            app = app,
+                            windowImmersed = windowImmersed
+                        )
+                    }
                 }
             }
         }

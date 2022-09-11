@@ -36,8 +36,11 @@ value class CommitRef(val value: String) {
     // 70402761    0      1
     // base      const  increment
 
-    val base: Long get() = value.take(8).toLong()
+    val base: Long get() = baseStr.toLong()
+    val baseStr: String get() = value.take(8)
+
     val const: Int get() = value[8].digitToInt()
+
     val increment: Long get() = value.drop(9).toLong()
 
     override fun toString(): String = value
@@ -47,6 +50,11 @@ value class CommitRef(val value: String) {
             return CommitRef(random.nextLong(1e7.toLong() until 1e8.toLong()), increment)
         }
     }
+}
+
+fun CommitRef.isParentOf(ref: CommitRef): Boolean {
+    if (this.baseStr != ref.baseStr) return false
+    return this.value < ref.value
 }
 
 fun CommitRef.next(): CommitRef = CommitRef(base, increment.inc())

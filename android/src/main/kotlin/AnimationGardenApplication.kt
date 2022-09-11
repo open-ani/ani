@@ -161,7 +161,7 @@ class AnimationGardenApplication : Application() {
                     }
                 }),
                 localRef = createFileDelegatedMutableProperty(instance.workingDir.resolve("data/commit")).map(
-                    get = { CommitRef(it) },
+                    get = { if (it.isNotEmpty()) CommitRef(it) else CommitRef.generate() },
                     set = { it.toString() },
                 ),
                 promptConflict = {
