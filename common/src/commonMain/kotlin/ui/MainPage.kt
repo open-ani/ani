@@ -529,16 +529,10 @@ private fun LiveTopicList(
                     }
                 }
 
-                items(topics, { it.id }, { it.details?.otherTitles?.isEmpty() }) { topic ->
+                items(visibleTopics, { it.id }, { it.details?.otherTitles?.isEmpty() }) { topic ->
                     // animate on selecting filter
-                    AnimatedVisibility(
-                        visibleTopics.contains(topic),
-                        enter = enter,
-                        exit = exit,
-                    ) {
-                        Box(Modifier.padding(bottom = spacedBy)) {
-                            TopicItemCard(topic) { currentOnClickCard(topic) }
-                        }
+                    Box(Modifier.padding(bottom = spacedBy).animateItemPlacement()) {
+                        TopicItemCard(topic) { currentOnClickCard(topic) }
                     }
                 }
 
