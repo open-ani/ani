@@ -118,27 +118,57 @@ class RemoteSynchronizerImpl(
     ) {
         logger.info { "Attempting to back on sync..." }
         lock.withLock {
-            val httpResp = httpClient.get {
-                url {
-                    url(remoteSettings.apiUrl)
-                    appendPathSegments("data", "commit", remoteSettings.token)
-                    parameter("clientId", clientId)
+            while (true) {
+                val httpResp = httpClient.get {
+                    url {
+                        url(remoteSettings.apiUrl)
+                        appendPathSegments("data", "commit", remoteSettings.token)
+                        parameter("clientId", clientId)
+                    }
+                    contentType(ContentType.Application.Json)
+                    setBody(SyncRefRequest())
                 }
-                contentType(ContentType.Application.Json)
-                setBody(SyncRefRequest())
-            }
-            httpResp.checkSuccess(::FailedRequestException)
+                httpResp.checkSuccess(::FailedRequestException)
 
-            val resp = httpResp.body<SyncRefResponse>()
+                val resp = httpResp.body<SyncRefResponse>()
 
-            if (localRef.get() != resp.ref) {
-                resolveDataConflict(localData)
-            }
-            isSynchronized.value = true
+                val localRef = this.localRef.get()
+                if (localRef != resp.ref) {
+                    logger.info { "different ref" }
 
-            if (logger.isInfoEnabled) {
-                val newRef = localRef.get()
-                logger.info { "Client is now synced with server. localRef = $newRef" }
+                    // check conflict
+                    when {
+                        resp.ref.isParentOf(localRef) -> {
+                            logger.info { "local updated while remote didn't change" }
+                            if (forcePushAllData(localData, resp.ref)) {
+                                logger.info { "successfully force pushed" }
+                            } else {
+                                logger.info { "server has changed just now, retrying" }
+                                continue
+                            }
+                        }
+                        localRef.isParentOf(resp.ref) -> {
+                            logger.info { "remote updated while local didn't change" }
+                            if (useServerData(localData, resp.ref)) {
+                                logger.info { "successfully downloaded newest data" }
+                            } else {
+                                logger.info { "server has changed just now, retrying" }
+                                continue
+                            }
+                        }
+                        else -> {
+                            // total conflict
+                            resolveDataConflict(localData)
+                        }
+                    }
+                }
+                isSynchronized.value = true
+
+                if (logger.isInfoEnabled) {
+                    val newRef = this.localRef.get()
+                    logger.info { "Client is now synced with server. localRef = $newRef" }
+                }
+                break
             }
         }
     }
@@ -150,11 +180,11 @@ class RemoteSynchronizerImpl(
         when (promptConflict()) {
             ConflictAction.AcceptClient -> {
                 logger.info { "Accepting client's data" }
-                forcePushAllData(localData)
+                forcePushAllData(localData, null)
             }
             ConflictAction.AcceptServer -> {
                 logger.info { "Accepting server's data" }
-                useServerData(localData)
+                useServerData(localData, null)
             }
             ConflictAction.StayOffline -> {
                 logger.info { "Dropping sync" }
@@ -165,7 +195,8 @@ class RemoteSynchronizerImpl(
 
     private suspend fun useServerData(
         localData: MutableProperty<AppData>,
-    ) {
+        requireBasedOn: CommitRef?,
+    ): Boolean {
         val httpResp = httpClient.get {
             url {
                 url(remoteSettings.apiUrl)
@@ -177,21 +208,29 @@ class RemoteSynchronizerImpl(
         }
         httpResp.checkSuccess(::FailedRequestException)
 
-        if (httpResp.status == HttpStatusCode.NoContent) {
-            logger.info { "Server holds empty data, force pushing..." }
-            forcePushAllData(localData)
-            logger.info { "Pushed local data to server." }
-        } else {
-            // 200 OK
-            val resp = httpResp.body<GetHeadResponse>()
-            logger.info { "ref=${resp.ref}" }
-            localRef.set(resp.ref)
-            logger.info { "Overriding client data with ${resp.data}" }
-            localData.set(resp.data.toAppData())
+        val resp = httpResp.body<GetHeadResponse>()
+        if (requireBasedOn != null && resp.ref != requireBasedOn) {
+            return false
+        }
+        when (httpResp.status) {
+            HttpStatusCode.NoContent -> {
+                logger.info { "Server holds empty data, force pushing..." }
+                forcePushAllData(localData, resp.ref)
+                logger.info { "Pushed local data to server." }
+                return true
+            }
+            else -> {
+                // 200 OK
+                logger.info { "ref=${resp.ref}" }
+                localRef.set(resp.ref)
+                logger.info { "Overriding client data with ${resp.data}" }
+                localData.set(resp.data.toAppData())
+                return true
+            }
         }
     }
 
-    private suspend fun forcePushAllData(localData: MutableProperty<AppData>) {
+    private suspend fun forcePushAllData(localData: MutableProperty<AppData>, requireBasedOn: CommitRef?): Boolean {
         val data = localData.get()
         logger.info { "Pushing local data: $data" }
         val localRef = localRef.get()
@@ -200,11 +239,14 @@ class RemoteSynchronizerImpl(
                 url(remoteSettings.apiUrl)
                 appendPathSegments("data", "head", remoteSettings.token)
                 parameter("clientId", clientId)
+                parameter("requireBasedOn", requireBasedOn)
             }
             contentType(ContentType.Application.Json)
             setBody(SetHeadRequest(data = data.toEAppData(), ref = localRef))
         }
+        if (httpResp.status == HttpStatusCode.Conflict) return false
         httpResp.checkSuccess(::FailedRequestException)
+        return true
     }
 
     private inline fun HttpResponse.checkSuccess(createException: (message: String) -> Throwable) {
