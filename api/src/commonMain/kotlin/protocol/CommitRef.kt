@@ -25,18 +25,28 @@ import kotlin.random.nextLong
 @Serializable
 @JvmInline
 value class CommitRef(val value: String) {
-    constructor(time: Long, random: Long) : this(
-        time.toString() + random.coerceAtLeast(1e7.toLong()).toString().takeLast(8)
+    init {
+        check(value.length > 9) { "Invalid CommitRef: $value" }
+    }
+
+    constructor(base: Long, increment: Long) : this(
+        base.coerceAtLeast(1e7.toLong()).toString().takeLast(8) + '0' + increment
     )
 
-    val time: Long get() = value.dropLast(8).toLong()
-    val random: Long get() = value.takeLast(8).toLong()
+    // 70402761    0      1
+    // base      const  increment
+
+    val base: Long get() = value.take(8).toLong()
+    val const: Int get() = value[8].digitToInt()
+    val increment: Long get() = value.drop(9).toLong()
 
     override fun toString(): String = value
 
     companion object {
-        fun generate(time: Long = System.currentTimeMillis(), random: Random = Random): CommitRef {
-            return CommitRef(time, random.nextLong(1e7.toLong() until 1e8.toLong()))
+        fun generate(random: Random = Random, increment: Long = 0): CommitRef {
+            return CommitRef(random.nextLong(1e7.toLong() until 1e8.toLong()), increment)
         }
     }
 }
+
+fun CommitRef.next(): CommitRef = CommitRef(base, increment.inc())
