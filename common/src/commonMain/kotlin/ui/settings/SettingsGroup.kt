@@ -30,7 +30,7 @@ import me.him188.animationgarden.app.AppTheme
 @Composable
 fun ColumnScope.SettingsGroup(
     title: @Composable () -> Unit,
-    verticalArrangement: Arrangement.Vertical = Arrangement.Top,
+    verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(4.dp, Alignment.Top),
     horizontalAlignment: Alignment.Horizontal = Alignment.Start,
     content: @Composable ColumnScope.() -> Unit
 ) {

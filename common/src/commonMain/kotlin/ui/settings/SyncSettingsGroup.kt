@@ -18,7 +18,10 @@
 
 package me.him188.animationgarden.app.ui.settings
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -35,9 +38,8 @@ fun ColumnScope.SyncSettingsGroup(
 ) {
     SettingsGroup({ Text(LocalI18n.current.getString("preferences.sync")) }) {
         Row(
-            Modifier.height(24.dp),
+            Modifier.height(30.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             LabelledCheckBox(settings.sync.localSyncEnabled, {
                 manager.updateLocalSyncEnabled(it)
@@ -47,9 +49,8 @@ fun ColumnScope.SyncSettingsGroup(
         }
 
         Row(
-            Modifier.height(24.dp),
+            Modifier.height(30.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             LabelledCheckBox(settings.sync.remoteSyncEnabled, {
                 manager.updateRemoteSyncEnabled(it)
