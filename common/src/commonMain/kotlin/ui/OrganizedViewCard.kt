@@ -122,7 +122,10 @@ private fun OrganizedViewContent(
             }
         )
 
-        Column(Modifier.padding(top = 12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Column(
+            Modifier.padding(top = 12.dp, start = 4.dp, end = 4.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
             val visibleEpisodes by remember {
                 derivedStateOf {
                     currentWorkState.episodes.value.filter { item ->

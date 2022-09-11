@@ -34,6 +34,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import me.him188.animationgarden.api.model.toLogString
 import me.him188.animationgarden.api.protocol.*
 import mu.KotlinLogging
 import org.slf4j.Marker
