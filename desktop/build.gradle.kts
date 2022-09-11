@@ -61,7 +61,7 @@ compose.desktop {
 //                    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //            """.trimIndent()
             licenseFile.set(rootProject.rootDir.resolve("LICENSE"))
-            packageVersion = project.version.toString()
+            packageVersion = properties["package.version"].toString()
         }
     }
 }
