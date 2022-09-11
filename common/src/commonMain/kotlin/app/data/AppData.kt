@@ -23,10 +23,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.compositionLocalOf
 import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.Serializable
-import me.him188.animationgarden.api.impl.model.ListFlow
-import me.him188.animationgarden.api.impl.model.ListFlowImpl
-import me.him188.animationgarden.api.impl.model.MutableListFlow
-import me.him188.animationgarden.api.impl.model.mutate
+import me.him188.animationgarden.api.impl.model.*
 import me.him188.animationgarden.api.model.Alliance
 import me.him188.animationgarden.api.model.Commit
 import me.him188.animationgarden.api.model.StarredAnimeCommits
@@ -60,6 +57,10 @@ interface AppData {
     }
 }
 
+internal class AppDataImpl(
+    override val starredAnime: ListFlow<StarredAnime>
+) : AppData
+
 fun AppData.toEAppData(): EAppData {
     return EAppData(starredAnime = starredAnime.value.map { it.toEStarredAnime() })
 }
@@ -83,7 +84,7 @@ fun Commit.toMutation(): DataMutation = when (this) {
 }
 
 fun EAppData.toAppData(): AppData {
-    TODO()
+    return AppDataImpl(mutableListFlowOf(starredAnime.map { it.toStarredAnime() }))
 }
 
 @Stable

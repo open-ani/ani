@@ -26,7 +26,6 @@ import androidx.compose.material.TopAppBar
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -45,7 +44,7 @@ import me.him188.animationgarden.app.platform.LocalContext
 import me.him188.animationgarden.app.ui.LocalAlwaysShowTitlesInSeparateLine
 
 @Composable
-fun CommonAppScaffold(
+fun BaseComponentActivity.CommonAppScaffold(
     topBar: @Composable () -> Unit,
     clearFocus: (() -> Unit)? = null,
     content: @Composable () -> Unit,
@@ -63,7 +62,6 @@ fun CommonAppScaffold(
         LocalAlwaysShowTitlesInSeparateLine provides true,
     ) {
         val keyboard by rememberUpdatedState(newValue = LocalSoftwareKeyboardController.current)
-        val snackbarHostState = remember { SnackbarHostState() }
 //            Box(modifier = Modifier
 //                .focusProperties { canFocus = false }
 //                .clickable(remember { MutableInteractionSource() }, null) {

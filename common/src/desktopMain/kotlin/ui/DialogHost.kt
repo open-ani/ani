@@ -35,6 +35,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 open class DialogInfo<T>(
+    open val title: @Composable () -> String,
     open val content: @Composable () -> Unit,
     val onCloseWindow: () -> Unit,
     val result: CompletableDeferred<T>,
@@ -47,8 +48,10 @@ class DialogHost internal constructor(
 
     suspend fun <T> showDialog(info: DialogInfo<T>): T {
         lock.withLock {
-            dialogInfoFlow.emit(info)
-            return info.result.await()
+            dialogInfoFlow.emit(info) // notify ui to display it
+            return info.result.await().also {
+                dialogInfoFlow.emit(null)
+            }
         }
     }
 }
@@ -65,11 +68,12 @@ fun rememberDialogHost(): DialogHost {
             }
             dialogInfoFlow.tryEmit(null)
         },
-        rememberDialogState(), visible = currentDialogInfo != null
+        rememberDialogState(),
+        visible = currentDialogInfo != null,
+        title = currentDialogInfo?.title?.invoke() ?: ""
     ) {
         currentDialogInfo?.run {
-            @Suppress("UNCHECKED_CAST")
-            (content as (DialogInfo<*>) -> Unit).invoke(this)
+            content()
         }
     }
     return remember {
@@ -86,51 +90,70 @@ enum class DialogResult {
 }
 
 suspend fun DialogHost.showConfirmationDialog(
+    title: @Composable () -> String,
     confirmButtonText: @Composable () -> Unit,
     cancelButtonText: @Composable () -> Unit,
     content: @Composable () -> Unit,
 ): DialogResult {
     val result = CompletableDeferred<DialogResult>()
-    showDialog(DialogInfo({
-        Column(Modifier.fillMaxSize().padding(all = 16.dp), verticalArrangement = Arrangement.SpaceBetween) {
-            Row {
-                content()
-            }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Button(onClick = { result.complete(DialogResult.CONFIRMED) }) {
-                        confirmButtonText()
+    showDialog(
+        DialogInfo(
+            title = title,
+            content = {
+                Column(Modifier.fillMaxSize().padding(all = 16.dp), verticalArrangement = Arrangement.SpaceBetween) {
+                    Row {
+                        content()
                     }
-                    Button(onClick = { result.complete(DialogResult.CANCELED) }) {
-                        cancelButtonText()
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                            Button(onClick = { result.complete(DialogResult.CONFIRMED) }) {
+                                confirmButtonText()
+                            }
+                            Button(onClick = { result.complete(DialogResult.CANCELED) }) {
+                                cancelButtonText()
+                            }
+                        }
                     }
                 }
-            }
-        }
-    }, onCloseWindow = {
-        result.complete(DialogResult.DISMISSED)
-    }, result))
+            },
+            onCloseWindow = {
+                result.complete(DialogResult.DISMISSED)
+            },
+            result = result
+        )
+    )
+    result.invokeOnCompletion {
+
+    }
     return result.await()
 }
 
 suspend fun DialogHost.showInformationDialog(
+    title: @Composable () -> String,
     buttonText: @Composable () -> Unit,
     content: @Composable () -> Unit,
 ): DialogResult {
     val result = CompletableDeferred<DialogResult>()
-    showDialog(DialogInfo({
-        Column(Modifier.fillMaxSize().padding(all = 16.dp), verticalArrangement = Arrangement.SpaceBetween) {
-            Row {
-                content()
-            }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                Button(onClick = { result.complete(DialogResult.CONFIRMED) }) {
-                    buttonText()
+    showDialog(
+        DialogInfo(
+            title = title,
+            content = {
+                Column(Modifier.fillMaxSize().padding(all = 16.dp), verticalArrangement = Arrangement.SpaceBetween) {
+                    Row {
+                        content()
+                    }
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                        Button(onClick = { result.complete(DialogResult.CONFIRMED) }) {
+                            buttonText()
+                        }
+                    }
                 }
-            }
-        }
-    }, onCloseWindow = {
-        result.complete(DialogResult.DISMISSED)
-    }, result))
+            },
+            onCloseWindow = {
+                result.complete(DialogResult.DISMISSED)
+            },
+            result
+        )
+    )
     return result.await()
 }

@@ -41,6 +41,7 @@ import kotlinx.serialization.encodeToHexString
 import kotlinx.serialization.protobuf.ProtoNumber
 import me.him188.animationgarden.api.impl.model.*
 import me.him188.animationgarden.api.model.Commit
+import me.him188.animationgarden.api.model.toLogString
 import me.him188.animationgarden.api.protocol.*
 import me.him188.animationgarden.app.app.StarredAnime
 import me.him188.animationgarden.app.app.settings.LocalSyncSettings
@@ -121,6 +122,7 @@ class RemoteSynchronizerImpl(
                 url {
                     url(remoteSettings.apiUrl)
                     appendPathSegments("data", "commit", remoteSettings.token)
+                    parameter("clientId", clientId)
                 }
                 contentType(ContentType.Application.Json)
                 setBody(SyncRefRequest())
@@ -168,6 +170,7 @@ class RemoteSynchronizerImpl(
             url {
                 url(remoteSettings.apiUrl)
                 appendPathSegments("data", "head", remoteSettings.token)
+                parameter("clientId", clientId)
             }
             contentType(ContentType.Application.Json)
             setBody(GetHeadRequest())
@@ -196,6 +199,7 @@ class RemoteSynchronizerImpl(
             url {
                 url(remoteSettings.apiUrl)
                 appendPathSegments("data", "head", remoteSettings.token)
+                parameter("clientId", clientId)
             }
             contentType(ContentType.Application.Json)
             setBody(SetHeadRequest(data = data.toEAppData(), ref = localRef))
@@ -258,8 +262,29 @@ class RemoteSynchronizerImpl(
         when (frame) {
             is Frame.Binary -> {
                 val event = protobuf.decodeFromByteArray(CommitEvent.serializer(), frame.data)
-                logger.trace { "Received event: $event" }
                 if (event.committer.uuid == clientId) return
+
+                // check ref
+                val localRef = localRef.get()
+                if (event.baseRef == localRef) {
+                    this.localRef.set(event.newRef)
+                    logger.trace { "Received event '${event.toLogString()}': accepted. New ref: ${event.newRef}" }
+                } else {
+                    logger.trace { "Received event '${event.toLogString()}': conflict." }
+                    TODO("handle conflict")
+//                    when(promptConflict()) {
+//                        ConflictAction.AcceptClient -> {
+//                            forcePushAllData()
+//                        }
+//                        ConflictAction.AcceptServer -> {
+//                            useServerData()
+//                        }
+//                        ConflictAction.StayOffline -> {
+//
+//                        }
+//                    }
+                }
+
                 val mutation = event.commit.toMutation()
                 logger.trace { "Corresponding mutation: $mutation" }
                 applyMutation(mutation)
@@ -275,7 +300,10 @@ class RemoteSynchronizerImpl(
         newData: AppData,
         localData: MutableProperty<AppData>
     ) {
-        if (!isSynchronized.value) return // offline mode
+        if (!isSynchronized.value) {
+            logger.trace { "Not pushing commit because offline" }
+            return // offline mode
+        }
 
         lock.withLock {
             // TODO: 2022/9/7 combined may not be working
@@ -299,13 +327,14 @@ class RemoteSynchronizerImpl(
         newData: AppData,
         localData: MutableProperty<AppData>,
     ) {
-        logger.info { "Committing: ${commit::class.simpleName}" }
-        val req =
-            PushCommitRequest(localRef.get(), commit, newData.toEAppData(), committer = Committer(uuid = clientId))
+        val ref = localRef.get()
+        logger.info { "Pushing commit: ${commit::class.simpleName}. Local ref: $ref" }
+        val req = PushCommitRequest(ref, commit, newData.toEAppData(), committer = Committer(uuid = clientId))
         val httpResp = httpClient.post {
             url {
                 takeFrom(remoteSettings.apiUrl)
                 appendPathSegments("data", "commit", remoteSettings.token)
+                parameter("clientId", clientId)
             }
             contentType(ContentType.Application.Json)
             setBody(req)
@@ -313,9 +342,12 @@ class RemoteSynchronizerImpl(
         val resp = httpResp.body<PushCommitResponse>()
         when (val result = resp.result) {
             is PushCommitResult.Success -> {
-                localRef.set(result.newHeadRef)
+                val newRef = result.newHeadRef
+                logger.info { "Commit ${commit::class.simpleName} success. New ref: $newRef" }
+                localRef.set(newRef)
             }
             is PushCommitResult.OutOfDate -> {
+                logger.info { "Commit ${commit::class.simpleName} conflict" }
                 resolveDataConflict(localData)
             }
         }
@@ -337,6 +369,7 @@ class AppDataSynchronizerImpl(
      * `true`: user agrees to switch to offline mode.
      */
     private val promptSwitchToOffline: PromptSwitchToOffline,
+    private val promptDataCorrupted: suspend (Exception) -> Unit,
 ) : AppDataSynchronizer {
     private val scope =
         CoroutineScope(coroutineContext + SupervisorJob(coroutineContext[Job]) + CoroutineName("LocalAppdataSynchronizer"))
@@ -395,8 +428,13 @@ class AppDataSynchronizerImpl(
         override val starredAnime: MutableListFlow<StarredAnime>
     ) : DataMutationContext
 
-    private fun load(string: String): DataMutationContext {
-        val decoded = protobuf.decodeFromHexString(SerialData.serializer(), string)
+    private suspend fun load(string: String): DataMutationContext {
+        val decoded = try {
+            protobuf.decodeFromHexString(SerialData.serializer(), string)
+        } catch (e: Exception) {
+            promptDataCorrupted(e)
+            SerialData()
+        }
         return DataMutationContextImpl(mutableListFlowOf(decoded.starredAnime))
     }
 
@@ -412,6 +450,7 @@ class AppDataSynchronizerImpl(
 
 
     override suspend fun commit(mutation: DataMutation) {
+        logger.trace { "Commit: $mutation" }
         mutationLock.withLock {
             val data = applyMutation(mutation)
             remoteSynchronizer?.let { remoteSynchronizer ->

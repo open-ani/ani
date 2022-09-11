@@ -51,7 +51,7 @@ import me.him188.animationgarden.app.ui.StarredAnimeCard
 import me.him188.animationgarden.app.ui.updateStarredAnimeEpisodes
 import kotlin.time.Duration.Companion.seconds
 
-class StarredListActivity : ComponentActivity() {
+class StarredListActivity : BaseComponentActivity() {
     companion object {
         const val INTENT_KEYWORD = "me.him188.animationgarden.android.keyword"
         const val INTENT_EPISODE = "me.him188.animationgarden.android.episode"
