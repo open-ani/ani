@@ -617,6 +617,10 @@ fun createTestAppDataSynchronizer(scope: CoroutineScope): AppDataSynchronizer {
         promptSwitchToOffline = { exception, _ ->
             exception.printStackTrace()
             true
+        },
+        promptDataCorrupted = {
+            it.printStackTrace()
+            println("Data corrupted")
         }
     )
 }

@@ -38,7 +38,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import dev.dirs.ProjectDirectories
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import me.him188.animationgarden.api.AnimationGardenClient
@@ -46,18 +48,13 @@ import me.him188.animationgarden.api.impl.createHttpClient
 import me.him188.animationgarden.api.protocol.CommitRef
 import me.him188.animationgarden.app.AppTheme
 import me.him188.animationgarden.app.ProvideCompositionLocalsForPreview
-import me.him188.animationgarden.app.app.ApplicationState
-import me.him188.animationgarden.app.app.LocalAppSettings
-import me.him188.animationgarden.app.app.LocalAppSettingsManager
-import me.him188.animationgarden.app.app.LocalAppSettingsManagerImpl
+import me.him188.animationgarden.app.app.*
 import me.him188.animationgarden.app.app.data.AppDataSynchronizerImpl
 import me.him188.animationgarden.app.app.data.ConflictAction
 import me.him188.animationgarden.app.app.data.map
-import me.him188.animationgarden.app.app.settings.createFileDelegatedMutableProperty
-import me.him188.animationgarden.app.app.settings.createLocalStorage
-import me.him188.animationgarden.app.app.settings.createRemoteSynchronizer
-import me.him188.animationgarden.app.app.settings.toKtorProxy
+import me.him188.animationgarden.app.app.settings.*
 import me.him188.animationgarden.app.i18n.LocalI18n
+import me.him188.animationgarden.app.i18n.ResourceBundle
 import me.him188.animationgarden.app.i18n.loadResourceBundle
 import me.him188.animationgarden.app.platform.Context
 import me.him188.animationgarden.app.platform.LocalContext
@@ -94,7 +91,6 @@ object AnimationGardenDesktop {
             val currentAppSettings by rememberUpdatedState(appSettingsProvider.value.value)
             val localSyncSettingsFlow = snapshotFlow { currentAppSettings.sync.localSync }
             val snackbarState = remember { SnackbarHostState() }
-            val scope by rememberUpdatedState(rememberCoroutineScope())
 
             CompositionLocalProvider(
                 LocalI18n provides currentBundle,
@@ -103,98 +99,12 @@ object AnimationGardenDesktop {
                 val dialogHost = rememberDialogHost()
                 val app = remember {
                     // do not observe dependency change
-                    ApplicationState(
-                        initialClient = AnimationGardenClient.Factory.create {
-                            proxy = currentAppSettings.proxy.toKtorProxy()
-                        },
-                        appDataSynchronizer = { uiScope ->
-                            val sync = currentAppSettings.sync
-                            AppDataSynchronizerImpl(
-                                uiScope.coroutineContext,
-                                remoteSynchronizerFactory = { applyMutation ->
-                                    sync.createRemoteSynchronizer(
-                                        httpClient = createHttpClient(),
-                                        localRef = createFileDelegatedMutableProperty(
-                                            File(
-                                                projectDirectories.dataDir,
-                                                "commit"
-                                            ).also {
-                                                it.parentFile.mkdirs()
-                                                logger.trace { "Commit file: ${it.absolutePath}" }
-                                            }
-                                        ).map(
-                                            get = { CommitRef(it) },
-                                            set = { it.toString() },
-                                        ),
-                                        promptConflict = {
-                                            ConflictAction.AcceptServer
-                                        },
-                                        applyMutation = applyMutation,
-                                        parentCoroutineContext = uiScope.coroutineContext
-                                    )
-                                },
-                                backingStorage = sync.createLocalStorage(
-                                    File(projectDirectories.dataDir, "app.yml").also {
-                                        it.parentFile.mkdirs()
-                                        logger.trace { "Data file: ${it.absolutePath}" }
-                                    }
-                                ),
-                                localSyncSettingsFlow = localSyncSettingsFlow,
-                                promptSwitchToOffline = { exception, optional ->
-                                    logger.warn(exception) { "Switching to local mode" }
-
-                                    if (optional) {
-                                        uiScope.launch {
-                                            snackbarState.showSnackbar(
-                                                String.format(
-                                                    currentBundle.getString("sync.failed.switched.to.offline.due.to"),
-                                                    exception.message ?: exception.toString()
-                                                ),
-                                                duration = SnackbarDuration.Long
-                                            )
-                                        }
-                                        true
-                                    } else {
-                                        val result = dialogHost.showConfirmationDialog(
-                                            confirmButtonText = {
-                                                Text(LocalI18n.current.getString("sync.failed.switch.to.offline"))
-                                            },
-                                            cancelButtonText = {
-                                                Text(LocalI18n.current.getString("sync.failed.revoke"))
-                                            }
-                                        ) {
-                                            Text(
-                                                String.format(
-                                                    LocalI18n.current.getString("sync.failed.content"),
-                                                    exception.message ?: exception.toString()
-                                                )
-                                            )
-                                        }
-                                        when (result) {
-                                            DialogResult.CANCELED,
-                                            DialogResult.DISMISSED -> {
-                                                uiScope.launch {
-                                                    snackbarState.showSnackbar(
-                                                        currentBundle.getString("sync.failed.revoked"),
-                                                        duration = SnackbarDuration.Long
-                                                    )
-                                                }
-                                                false
-                                            }
-                                            DialogResult.CONFIRMED -> {
-                                                uiScope.launch {
-                                                    snackbarState.showSnackbar(
-                                                        currentBundle.getString("sync.failed.switched.to.offline"),
-                                                        duration = SnackbarDuration.Long
-                                                    )
-                                                }
-                                                true
-                                            }
-                                        }
-                                    }
-                                }
-                            )
-                        }
+                    createAppState(
+                        currentAppSettings,
+                        dialogHost,
+                        localSyncSettingsFlow,
+                        snackbarState,
+                        currentBundle
                     )
                 }
                 LaunchedEffect(currentAppSettings.proxy) {
@@ -267,6 +177,156 @@ object AnimationGardenDesktop {
                 }
             }
         }
+    }
+}
+
+private fun createAppState(
+    currentAppSettings: AppSettings,
+    dialogHost: DialogHost,
+    localSyncSettingsFlow: Flow<LocalSyncSettings>,
+    snackbarState: SnackbarHostState,
+    currentBundle: ResourceBundle
+) = ApplicationState(
+    initialClient = AnimationGardenClient.Factory.create {
+        proxy = currentAppSettings.proxy.toKtorProxy()
+    },
+    appDataSynchronizer = { uiScope ->
+        val sync = currentAppSettings.sync
+        AppDataSynchronizerImpl(
+            uiScope.coroutineContext,
+            remoteSynchronizerFactory = { applyMutation ->
+                sync.createRemoteSynchronizer(
+                    httpClient = createHttpClient(),
+                    localRef = createFileDelegatedMutableProperty(
+                        File(
+                            projectDirectories.dataDir,
+                            "commit"
+                        ).also {
+                            it.parentFile.mkdirs()
+                            logger.trace { "Commit file: ${it.absolutePath}" }
+                        }
+                    ).map(
+                        get = { CommitRef(it) },
+                        set = { it.toString() },
+                    ),
+                    promptConflict = { onConflict(dialogHost) },
+                    applyMutation = applyMutation,
+                    parentCoroutineContext = uiScope.coroutineContext
+                )
+            },
+            backingStorage = sync.createLocalStorage(
+                File(projectDirectories.dataDir, "app.yml").also {
+                    it.parentFile.mkdirs()
+                    logger.trace { "Data file: ${it.absolutePath}" }
+                }
+            ),
+            localSyncSettingsFlow = localSyncSettingsFlow,
+            promptSwitchToOffline = { e, optional ->
+                onSwitchToOffline(
+                    dialogHost, uiScope, snackbarState, currentBundle,
+                    e, optional
+                )
+            },
+            promptDataCorrupted = { onDataCorrupted(uiScope, snackbarState, currentBundle, it) },
+        )
+    }
+)
+
+private suspend fun onConflict(dialogHost: DialogHost): ConflictAction {
+    val result = dialogHost.showConfirmationDialog(
+        title = { LocalI18n.current.getString("sync.conflict.dialog.title") },
+        confirmButtonText = {
+            Text(LocalI18n.current.getString("sync.conflict.dialog.useServer"))
+        },
+        cancelButtonText = {
+            Text(LocalI18n.current.getString("sync.conflict.dialog.useLocal"))
+        },
+    ) {
+        Text(LocalI18n.current.getString("sync.conflict.dialog.content"))
+    }
+    return when (result) {
+        DialogResult.CANCELED -> ConflictAction.StayOffline
+        DialogResult.DISMISSED -> ConflictAction.AcceptClient
+        DialogResult.CONFIRMED -> ConflictAction.AcceptServer
+    }
+}
+
+private fun onDataCorrupted(
+    uiScope: CoroutineScope,
+    snackbarState: SnackbarHostState,
+    currentBundle: ResourceBundle,
+    exception: Exception,
+) {
+    uiScope.launch {
+        snackbarState.showSnackbar(
+            String.format(
+                currentBundle.getString("sync.data.corrupted"),
+                exception.message ?: exception.toString()
+            ),
+            duration = SnackbarDuration.Long
+        )
+    }
+}
+
+private suspend fun onSwitchToOffline(
+    dialogHost: DialogHost,
+    uiScope: CoroutineScope,
+    snackbarState: SnackbarHostState,
+    currentBundle: ResourceBundle,
+    exception: Exception,
+    optional: Boolean,
+): Boolean {
+    logger.warn(exception) { "Switching to local mode" }
+
+    return if (optional) {
+        val result = dialogHost.showConfirmationDialog(
+            title = { LocalI18n.current.getString("sync.failed.title") },
+            confirmButtonText = {
+                Text(LocalI18n.current.getString("sync.failed.switch.to.offline"))
+            },
+            cancelButtonText = {
+                Text(LocalI18n.current.getString("sync.failed.revoke"))
+            }
+        ) {
+            Text(
+                String.format(
+                    LocalI18n.current.getString("sync.failed.content"),
+                    exception.message ?: exception.toString()
+                )
+            )
+        }
+        when (result) {
+            DialogResult.CANCELED,
+            DialogResult.DISMISSED -> {
+                uiScope.launch {
+                    snackbarState.showSnackbar(
+                        currentBundle.getString("sync.failed.revoked"),
+                        duration = SnackbarDuration.Long
+                    )
+                }
+                false
+            }
+            DialogResult.CONFIRMED -> {
+                uiScope.launch {
+                    snackbarState.showSnackbar(
+                        currentBundle.getString("sync.failed.switched.to.offline"),
+                        duration = SnackbarDuration.Long
+                    )
+                }
+                true
+            }
+        }
+    } else {
+        uiScope.launch {
+            snackbarState.showSnackbar(
+                String.format(
+                    currentBundle.getString("sync.failed.switched.to.offline.due.to"),
+                    exception.message ?: exception.toString()
+                ),
+                duration = SnackbarDuration.Long
+            )
+        }
+        true
     }
 }
 

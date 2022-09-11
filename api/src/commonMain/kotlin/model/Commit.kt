@@ -26,6 +26,7 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.decodeStructure
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
+import me.him188.animationgarden.api.protocol.CommitEvent
 import me.him188.animationgarden.api.protocol.EStarredAnime
 import me.him188.animationgarden.api.tags.Episode
 import me.him188.animationgarden.api.tags.Resolution
@@ -33,6 +34,10 @@ import me.him188.animationgarden.api.tags.SubtitleLanguage
 
 @Serializable
 sealed interface Commit
+
+
+fun Commit.toLogString(): String = this::class.simpleName ?: this.toString()
+fun CommitEvent.toLogString(): String = this.commit.toLogString()
 
 object StarredAnimeCommits {
     @Serializable

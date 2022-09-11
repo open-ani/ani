@@ -22,12 +22,10 @@ import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import io.ktor.server.plugins.callloging.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.websocket.*
 import kotlinx.serialization.json.Json
 import me.him188.animationgarden.api.model.CommitsModule
-import org.slf4j.event.Level
 import java.io.File
 
 
@@ -42,9 +40,6 @@ object ServerMain {
         println("Data folder: ${dataFolder.absolutePath}")
 
         embeddedServer(Netty) {
-            install(CallLogging) {
-                level = Level.INFO
-            }
             install(ContentNegotiation) {
                 json(Json {
                     serializersModule = CommitsModule
@@ -56,3 +51,14 @@ object ServerMain {
         }.start(wait = true)
     }
 }
+//
+//private fun defaultFormat(call: ApplicationCall): String =
+//    when (val status = call.response.status() ?: "Unhandled") {
+//        HttpStatusCode.Found -> "${status}: " +
+//                "${call.request.toLogStringWithColors()} -> ${call.response.headers[HttpHeaders.Location]}"
+//        "Unhandled" -> "${status}: ${call.request.toLogStringWithColors()}"
+//        else -> "${status}: ${call.request.toLogStringWithColors()}"
+//    }
+//
+//internal fun ApplicationRequest.toLogStringWithColors(): String =
+//    "${httpMethod.value} - ${path()}"

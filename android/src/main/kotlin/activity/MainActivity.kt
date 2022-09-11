@@ -20,7 +20,6 @@ package me.him188.animationgarden.android.activity
 
 import android.os.Bundle
 import android.view.Window
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -62,7 +61,7 @@ import me.him188.animationgarden.app.ui.SearchTextField
 import me.him188.animationgarden.app.ui.TopicsSearchResult
 import me.him188.animationgarden.app.ui.createTestAppDataSynchronizer
 
-class MainActivity : ComponentActivity() {
+class MainActivity : BaseComponentActivity() {
     private val starredListActivityLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             val app = AnimationGardenApplication.instance.app

@@ -22,7 +22,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.Window
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -44,7 +43,7 @@ import me.him188.animationgarden.app.i18n.LocalI18n
 import me.him188.animationgarden.app.ui.settings.ProxySettingsGroup
 import me.him188.animationgarden.app.ui.settings.SyncSettingsGroup
 
-class SettingsActivity : ComponentActivity() {
+class SettingsActivity : BaseComponentActivity() {
     companion object {
         fun getIntent(context: Context): Intent = Intent(context, SettingsActivity::class.java)
     }
