@@ -24,4 +24,8 @@ import kotlinx.serialization.protobuf.ProtoNumber
 @Serializable
 data class EAppData(
     @ProtoNumber(1) val starredAnime: Collection<EStarredAnime>
-)
+) {
+    companion object {
+        val EMPTY = EAppData(listOf())
+    }
+}

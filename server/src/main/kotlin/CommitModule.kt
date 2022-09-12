@@ -121,7 +121,13 @@ fun Application.configureCommitsModule(
                     )
                 } else {
                     logger.info(marker) { withClient { "Request all data. No data found." } }
-                    call.respond(HttpStatusCode.NoContent)
+                    call.respond(
+                        HttpStatusCode.OK,
+                        GetHeadResponse(
+                            data = EAppData.EMPTY,
+                            ref = commitManager.headRef
+                        )
+                    )
                 }
             }
 
