@@ -24,6 +24,10 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.websocket.*
+import kotlinx.cli.ArgParser
+import kotlinx.cli.ArgType
+import kotlinx.cli.ParsingException
+import kotlinx.cli.default
 import kotlinx.serialization.json.Json
 import me.him188.animationgarden.api.model.CommitsModule
 import java.io.File
@@ -32,14 +36,33 @@ import java.io.File
 object ServerMain {
     @JvmStatic
     fun main(args: Array<String>) {
-        val appFolder = File(".")
-        appFolder.mkdirs()
+        val parser = ArgParser("AnimationGarden", useDefaultHelpShortName = false)
+        val dataDir by parser.option(
+            ArgType.String,
+            fullName = "data-dir",
+            shortName = "d",
+            description = "Data directory"
+        ).default(File(System.getProperty("user.dir"), "data").absolutePath)
+        val port by parser.option(
+            ArgType.Port,
+            fullName = "port",
+            shortName = "p",
+            description = "Port number"
+        ).default(6428)
+        val host by parser.option(
+            ArgType.String,
+            fullName = "host",
+            shortName = "h",
+            description = "Listen host"
+        ).default("0.0.0.0")
+        parser.parse(args)
 
-        val dataFolder = appFolder.resolve("data")
+
+        val dataFolder = File(dataDir)
         dataFolder.mkdir()
         println("Data folder: ${dataFolder.absolutePath}")
 
-        embeddedServer(Netty, port = 6428) {
+        embeddedServer(Netty, port = port, host = host) {
             install(ContentNegotiation) {
                 json(Json {
                     serializersModule = CommitsModule
@@ -51,6 +74,19 @@ object ServerMain {
         }.start(wait = true)
     }
 }
+
+
+val ArgType.Companion.Port get() = PortType
+
+object PortType : ArgType<Int>(true) {
+    override val description: kotlin.String
+        get() = ArgType.Int.description
+
+    override fun convert(value: kotlin.String, name: kotlin.String): kotlin.Int =
+        value.toIntOrNull()?.takeIf { it in 0..65535 }
+            ?: throw ParsingException("Option $name is expected to be integer number and within the range 0..65535. $value is provided.")
+}
+
 //
 //private fun defaultFormat(call: ApplicationCall): String =
 //    when (val status = call.response.status() ?: "Unhandled") {
