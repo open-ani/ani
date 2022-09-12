@@ -50,7 +50,7 @@ data class SyncSettings(
 
 @Serializable
 data class RemoteSyncSettings(
-    val apiUrl: String = "https://sync.animationgarden.him188.moe",
+    val apiUrl: String = "https://sync.animationgarden.him188.moe:6428",
     val token: String = randomSyncToken(),
 ) {
     companion object {

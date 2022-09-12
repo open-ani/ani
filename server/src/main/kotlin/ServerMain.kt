@@ -39,7 +39,7 @@ object ServerMain {
         dataFolder.mkdir()
         println("Data folder: ${dataFolder.absolutePath}")
 
-        embeddedServer(Netty) {
+        embeddedServer(Netty, port = 6428) {
             install(ContentNegotiation) {
                 json(Json {
                     serializersModule = CommitsModule
