@@ -18,25 +18,22 @@
 
 package me.him188.animationgarden.app.ui
 
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import me.him188.animationgarden.app.AppTheme
+import com.google.accompanist.flowlayout.FlowMainAxisAlignment
+import com.google.accompanist.flowlayout.FlowRow
 import me.him188.animationgarden.app.app.RefreshState
-import me.him188.animationgarden.app.i18n.LocalI18n
-import me.him188.animationgarden.app.platform.Res
 
 @Suppress("ACTUAL_FUNCTION_WITH_DEFAULT_ARGUMENTS") // otherwise Compose compiler will complain
 @Composable
@@ -46,69 +43,93 @@ actual fun <T> FilterChipRow(
     isSelected: @Composable (T) -> Boolean,
     onClick: ((T) -> Unit)?,
     enabled: @Composable (T) -> Boolean,
+    isExpanded: Boolean,
     elevation: SelectableChipElevation? = FilterChipDefaults.elevatedFilterChipElevation(),
     refreshState: RefreshState? = null,
     onClickRefreshResult: (() -> Unit)? = null,
     content: @Composable (T) -> Unit = { Text(it.toString()) },
 ) {
-    val currentOnClick by rememberUpdatedState(onClick)
-    val currentOnClickRefreshState by rememberUpdatedState(onClickRefreshResult)
-
-    val showSuccessHint by animateFloatAsState(if (refreshState !is RefreshState.Success) 1f else 0f, tween(2000))
-    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-        val cardHeight = 32.dp
-        val textHeight = 24.sp
-        val progressSize = 18.dp
-        val tickSize = 24.dp
-        items(list, key = key) {
-            ElevatedFilterChip(
-                selected = isSelected(it),
-                onClick = { currentOnClick?.invoke(it) },
-                label = {
-                    ProvideTextStyle(LocalTextStyle.current.copy(lineHeight = textHeight)) {
-                        content(it)
-                    }
-                },
-                enabled = enabled.invoke(it),
+    Box {
+        AnimatedVisibility(
+            !isExpanded,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            FilterChipRowByLazyRow(
+                list = list,
+                key = key,
+                isSelected = isSelected,
+                onClick = onClick,
+                enabled = enabled,
                 elevation = elevation,
-                modifier = Modifier.height(cardHeight),
-//                modifier = Modifier.animateItemPlacement(tween(200, 100)),
+                refreshState = refreshState,
+                onClickRefreshResult = onClickRefreshResult,
+                content = content
             )
         }
-        if (refreshState != null && (refreshState !is RefreshState.Success || showSuccessHint > 0)) {
-            item(key = "refreshing") {
-                FilterChip(
-                    selected = false,
-                    onClick = { currentOnClickRefreshState?.invoke() },
-                    label = {
-                        ProvideTextStyle(LocalTextStyle.current.copy(lineHeight = textHeight)) {
-                            when (refreshState) {
-                                is RefreshState.Failed -> Text(LocalI18n.current.getString("starred.update.failed"))
-                                RefreshState.Refreshing -> CircularProgressIndicator(
-                                    Modifier.size(progressSize),
-                                    strokeWidth = 2.dp
-                                )
-                                is RefreshState.Success -> {
-                                    Icon(
-                                        Res.painter.check,
-                                        LocalI18n.current.getString("starred.update.succeed"),
-                                        Modifier.size(tickSize),
-                                        tint = AppTheme.colorScheme.primary
-                                    )
-                                }
-                                RefreshState.Cancelled -> {
-                                    // nop
-                                }
-                            }
-                        }
-                    },
-                    enabled = false,
-                    elevation = elevation,
-                    modifier = Modifier.height(cardHeight),
-                    border = null,
-//                modifier = Modifier.animateItemPlacement(tween(200, 100)),
+        AnimatedVisibility(
+            isExpanded,
+            enter = fadeIn() + expandVertically(expandFrom = Alignment.Top),
+            exit = fadeOut() + shrinkVertically(
+                shrinkTowards = Alignment.Top,
+                animationSpec = spring(
+                    stiffness = Spring.StiffnessLow,
+                    visibilityThreshold = IntSize.VisibilityThreshold
                 )
+            )
+        ) {
+            FlowRow(
+                mainAxisSpacing = 6.dp,
+                crossAxisSpacing = 8.dp,
+                mainAxisAlignment = FlowMainAxisAlignment.SpaceBetween,
+                lastLineMainAxisAlignment = FlowMainAxisAlignment.Start,
+            ) {
+                FilterChipRowByFlowRow(list, isSelected, onClick, content, enabled, elevation, refreshState)
             }
         }
+    }
+}
+
+@Composable
+private fun <T> FilterChipRowByFlowRow(
+    list: List<T>,
+    isSelected: @Composable (T) -> Boolean,
+    onClick: ((T) -> Unit)?,
+    content: @Composable (T) -> Unit,
+    enabled: @Composable (T) -> Boolean,
+    elevation: SelectableChipElevation?,
+    refreshState: RefreshState?,
+) {
+    val showSuccessHint by animateFloatAsState(if (refreshState !is RefreshState.Success) 1f else 0f, tween(2000))
+
+    val currentOnClick by rememberUpdatedState(onClick)
+    val cardHeight = 32.dp
+    val textHeight = 24.sp
+    val progressSize = 18.dp
+    val tickSize = 24.dp
+    for (it in list) {
+        ElevatedFilterChip(
+            selected = isSelected(it),
+            onClick = { currentOnClick?.invoke(it) },
+            label = {
+                ProvideTextStyle(LocalTextStyle.current.copy(lineHeight = textHeight)) {
+                    content(it)
+                }
+            },
+            enabled = enabled.invoke(it),
+            elevation = elevation,
+            modifier = Modifier.height(cardHeight),
+//                modifier = Modifier.animateItemPlacement(tween(200, 100)),
+        )
+    }
+    if (refreshState != null && (refreshState !is RefreshState.Success || showSuccessHint > 0)) {
+        RefreshingChip(
+            refreshState = refreshState,
+            textHeight = textHeight,
+            cardHeight = cardHeight,
+            progressSize = progressSize,
+            tickSize = tickSize,
+            elevation = elevation
+        )
     }
 }

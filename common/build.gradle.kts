@@ -91,6 +91,7 @@ kotlin {
                 api("androidx.compose.ui:ui-tooling-preview:1.2.1")
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
                 implementation("androidx.compose.material3:material3:1.0.0-alpha14")
+                implementation("com.google.accompanist:accompanist-flowlayout:0.25.1")
             }
         }
 

@@ -18,17 +18,12 @@
 
 package me.him188.animationgarden.app.ui
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import me.him188.animationgarden.api.tags.Episode
 import me.him188.animationgarden.app.AppTheme
 import me.him188.animationgarden.app.app.StarredAnime
+import me.him188.animationgarden.app.ui.interaction.onClickEx
 import me.him188.animationgarden.app.ui.widgets.ToggleStarButton
 
 @Composable
@@ -48,16 +44,22 @@ fun StarredAnimeCard(
     val currentAnime by rememberUpdatedState(anime)
     val currentOnStarRemove by rememberUpdatedState(onStarRemove)
     val currentOnClick by rememberUpdatedState(onClick)
+    var isExpanded by remember(anime) { mutableStateOf(false) }
     Box(Modifier.fillMaxHeight()) {
         val shape = AppTheme.shapes.large
         OutlinedCard(
             Modifier
                 .shadow(elevation = 2.dp, shape = shape)
                 .clip(shape)
-                .clickable(
-                    remember { MutableInteractionSource() },
-                    rememberRipple(color = AppTheme.colorScheme.surfaceTint),
-                ) { currentOnClick(null) }
+                .onClickEx(
+                    indication = rememberRipple(color = AppTheme.colorScheme.surfaceTint),
+                    onLongClick = {
+                        currentOnClick(null)
+                    },
+                    onClick = {
+                        isExpanded = !isExpanded
+                    }
+                )
 //                .border(1.dp, AppTheme.colorScheme.outline, shape = AppTheme.shapes.large)
                 .wrapContentSize(),
             shape = shape,
@@ -93,23 +95,23 @@ fun StarredAnimeCard(
                         isSelected = { false },
                         onClick = onClick,
                         enabled = { true },
-                        content = {
-                            Text(
-                                it.raw,
-                                color = if (currentAnime.watchedEpisodes.contains(it)) {
-                                    LocalTextStyle.current.color.copy(alpha = 0.3f)
-                                } else {
-                                    LocalTextStyle.current.color
-                                }
-                            )
-                        },
+                        isExpanded = isExpanded,
                         refreshState = currentAnime.refreshState,
                         onClickRefreshResult = {
                             // TODO: 2022/9/5 onClickRefreshState:
                             // - Mouse hover to show button for retry
                             // - Right click or long click to see error details
                         }
-                    )
+                    ) {
+                        Text(
+                            it.raw,
+                            color = if (currentAnime.watchedEpisodes.contains(it)) {
+                                LocalTextStyle.current.color.copy(alpha = 0.3f)
+                            } else {
+                                LocalTextStyle.current.color
+                            }
+                        )
+                    }
 
 
 //                    val dateFormatted by remember {
