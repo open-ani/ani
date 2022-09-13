@@ -90,6 +90,12 @@ android {
         getByName("release") {
             isMinifyEnabled = true
             signingConfig = signingConfigs.findByName("release")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                projectDir.resolve("proguard-rules.pro").also {
+                    check(it.exists()) { "Could not find ${it.absolutePath}" }
+                }
+            )
         }
         getByName("debug") {
             isMinifyEnabled = false

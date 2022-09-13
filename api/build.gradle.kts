@@ -85,6 +85,16 @@ android {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+    buildTypes.getByName("release") {
+        isMinifyEnabled = true
+        isShrinkResources = false
+        proguardFiles(
+            getDefaultProguardFile("proguard-android-optimize.txt"),
+            projects.animationGardenAndroid.dependencyProject.projectDir.resolve("proguard-rules.pro").also {
+                check(it.exists()) { "Could not find ${it.absolutePath}" }
+            }
+        )
+    }
 }
 
 //tasks.test {
