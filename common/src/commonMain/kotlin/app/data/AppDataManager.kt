@@ -137,30 +137,7 @@ class RemoteSynchronizerImpl(
                     logger.info { "different ref" }
 
                     // check conflict
-                    when {
-                        resp.ref.isParentOf(localRef) -> {
-                            logger.info { "local updated while remote didn't change" }
-                            if (forcePushAllData(localData, resp.ref)) {
-                                logger.info { "successfully force pushed" }
-                            } else {
-                                logger.info { "server has changed just now, retrying" }
-                                continue
-                            }
-                        }
-                        localRef.isParentOf(resp.ref) -> {
-                            logger.info { "remote updated while local didn't change" }
-                            if (useServerData(localData, resp.ref)) {
-                                logger.info { "successfully downloaded newest data" }
-                            } else {
-                                logger.info { "server has changed just now, retrying" }
-                                continue
-                            }
-                        }
-                        else -> {
-                            // total conflict
-                            resolveDataConflict(localData)
-                        }
-                    }
+                    if (!handleDataConflict(resp.ref, localRef, localData)) continue
                 }
                 isSynchronized.value = true
 
@@ -171,6 +148,38 @@ class RemoteSynchronizerImpl(
                 break
             }
         }
+    }
+
+    private suspend fun handleDataConflict(
+        remoteRef: CommitRef,
+        localRef: CommitRef,
+        localData: MutableProperty<AppData>
+    ): Boolean {
+        when {
+            remoteRef.isParentOf(localRef) -> {
+                logger.info { "local updated while remote didn't change" }
+                if (forcePushAllData(localData, remoteRef)) {
+                    logger.info { "successfully force pushed" }
+                } else {
+                    logger.info { "server has changed just now, retrying" }
+                    return false
+                }
+            }
+            localRef.isParentOf(remoteRef) -> {
+                logger.info { "remote updated while local didn't change" }
+                if (useServerData(localData, remoteRef)) {
+                    logger.info { "successfully downloaded newest data" }
+                } else {
+                    logger.info { "server has changed just now, retrying" }
+                    return false
+                }
+            }
+            else -> {
+                // total conflict
+                resolveDataConflict(localData)
+            }
+        }
+        return true
     }
 
     private suspend fun resolveDataConflict(
@@ -371,27 +380,30 @@ class RemoteSynchronizerImpl(
     ) {
         val ref = localRef.get()
         logger.info { "Pushing commit: ${commit::class.simpleName}. Local ref: $ref" }
-        val req = PushCommitRequest(ref, commit, newData.toEAppData(), committer = Committer(uuid = clientId))
-        val httpResp = httpClient.post {
-            url {
-                takeFrom(remoteSettings.apiUrl)
-                appendPathSegments("data", "commit", remoteSettings.token)
-                parameter("clientId", clientId)
+        while (true) {
+            val req = PushCommitRequest(ref, commit, newData.toEAppData(), committer = Committer(uuid = clientId))
+            val httpResp = httpClient.post {
+                url {
+                    takeFrom(remoteSettings.apiUrl)
+                    appendPathSegments("data", "commit", remoteSettings.token)
+                    parameter("clientId", clientId)
+                }
+                contentType(ContentType.Application.Json)
+                setBody(req)
             }
-            contentType(ContentType.Application.Json)
-            setBody(req)
-        }
-        val resp = httpResp.body<PushCommitResponse>()
-        when (val result = resp.result) {
-            is PushCommitResult.Success -> {
-                val newRef = result.newHeadRef
-                logger.info { "Commit ${commit::class.simpleName} success. New ref: $newRef" }
-                localRef.set(newRef)
+            val resp = httpResp.body<PushCommitResponse>()
+            when (val result = resp.result) {
+                is PushCommitResult.Success -> {
+                    val newRef = result.newHeadRef
+                    logger.info { "Commit ${commit::class.simpleName} success. New ref: $newRef" }
+                    localRef.set(newRef)
+                }
+                is PushCommitResult.OutOfDate -> {
+                    logger.info { "Commit ${commit::class.simpleName} conflict" }
+                    if (!handleDataConflict(result.newHeadRef, localRef.get(), localData)) continue
+                }
             }
-            is PushCommitResult.OutOfDate -> {
-                logger.info { "Commit ${commit::class.simpleName} conflict" }
-                resolveDataConflict(localData)
-            }
+            break
         }
     }
 
