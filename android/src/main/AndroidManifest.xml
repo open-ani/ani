@@ -18,6 +18,8 @@
   -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="me.him188.animationgarden.android">
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
 
     <application android:name="AnimationGardenApplication"
                  android:allowBackup="true"

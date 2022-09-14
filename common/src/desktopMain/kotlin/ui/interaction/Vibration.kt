@@ -16,19 +16,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-@file:JvmName("OnClick_common")
-
 package me.him188.animationgarden.app.ui.interaction
 
-import androidx.compose.foundation.Indication
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.ui.Modifier
+import me.him188.animationgarden.app.platform.Context
 
-expect fun Modifier.onClickEx(
-    interactionSource: MutableInteractionSource = MutableInteractionSource(),
-    indication: Indication?,
-    enabled: Boolean = true,
-    onDoubleClick: (() -> Unit)? = null,
-    onLongClick: (() -> Unit)? = null,
-    onClick: () -> Unit
-): Modifier
+actual fun Context.vibrateIfSupported(strength: VibrationStrength) {
+    // not supported
+}

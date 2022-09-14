@@ -32,7 +32,10 @@ import androidx.compose.ui.unit.dp
 import me.him188.animationgarden.api.tags.Episode
 import me.him188.animationgarden.app.AppTheme
 import me.him188.animationgarden.app.app.StarredAnime
+import me.him188.animationgarden.app.platform.LocalContext
+import me.him188.animationgarden.app.ui.interaction.VibrationStrength
 import me.him188.animationgarden.app.ui.interaction.onClickEx
+import me.him188.animationgarden.app.ui.interaction.vibrateIfSupported
 import me.him188.animationgarden.app.ui.widgets.ToggleStarButton
 
 @Composable
@@ -45,6 +48,7 @@ fun StarredAnimeCard(
     val currentOnStarRemove by rememberUpdatedState(onStarRemove)
     val currentOnClick by rememberUpdatedState(onClick)
     var isExpanded by remember(anime) { mutableStateOf(false) }
+    val currentContext by rememberUpdatedState(LocalContext.current)
     Box(Modifier.fillMaxHeight()) {
         val shape = AppTheme.shapes.large
         OutlinedCard(
@@ -54,9 +58,11 @@ fun StarredAnimeCard(
                 .onClickEx(
                     indication = rememberRipple(color = AppTheme.colorScheme.surfaceTint),
                     onLongClick = {
+                        currentContext.vibrateIfSupported(VibrationStrength.HEAVY_CLICK)
                         currentOnClick(null)
                     },
                     onClick = {
+                        currentContext.vibrateIfSupported(VibrationStrength.TICK)
                         isExpanded = !isExpanded
                     }
                 )
