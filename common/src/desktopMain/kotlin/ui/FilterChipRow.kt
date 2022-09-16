@@ -36,5 +36,15 @@ actual fun <T> FilterChipRow(
     onClickRefreshResult: (() -> Unit)? = null,
     content: @Composable (T) -> Unit = { Text(it.toString()) },
 ) {
-    FilterChipRowByLazyRow(list, key, isSelected, onClick, enabled, elevation, refreshState, onClickRefreshResult)
+    FilterChipRowByLazyRow(
+        list,
+        key,
+        isSelected,
+        onClick,
+        enabled,
+        elevation,
+        refreshState,
+        onClickRefreshResult,
+        content
+    )
 }

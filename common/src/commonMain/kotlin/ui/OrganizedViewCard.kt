@@ -212,7 +212,9 @@ private fun OrganizedViewContent(
                 onClick = onClickResolution,
                 enabled = { visibleResolutions.contains(it) },
                 isExpanded = false,
-            )
+            ) {
+                Text(it.id)
+            }
 
             val visibleAlliances by remember {
                 derivedStateOf {
