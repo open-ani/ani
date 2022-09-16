@@ -2,10 +2,9 @@
 
 [动漫花园]: http://www.dmhy.org/
 
-[Compose for Desktop
-]: https://www.jetbrains.com/lp/compose-desktop/
+[Compose Multiplatform]: https://www.jetbrains.com/lp/compose-mpp/
 
-美观且实用的[动漫花园]的桌面程序，使用 [Compose for Desktop] 构建。
+美观且实用的[动漫花园]的多平台应用程序，使用 [Compose Multiplatform] 构建。
 
 ## 下载
 
