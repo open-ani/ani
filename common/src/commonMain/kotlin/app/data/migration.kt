@@ -18,12 +18,13 @@
 
 package me.him188.animationgarden.app.app.data
 
-import mu.KotlinLogging
+import me.him188.animationgarden.api.logging.logger
+import me.him188.animationgarden.api.logging.warn
 import java.io.File
 
 
 object Migrations {
-    private val logger = KotlinLogging.logger { }
+    private val logger = logger()
     fun migrateFile(legacy: File, new: File) {
         if (new.exists()) return
         if (legacy.exists()) {

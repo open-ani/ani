@@ -34,9 +34,11 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import me.him188.animationgarden.api.logging.info
+import me.him188.animationgarden.api.logging.logger
+import me.him188.animationgarden.api.logging.trace
 import me.him188.animationgarden.api.model.toLogString
 import me.him188.animationgarden.api.protocol.*
-import mu.KotlinLogging
 import org.slf4j.Marker
 import org.slf4j.MarkerFactory
 import java.io.File
@@ -95,7 +97,7 @@ fun Application.configureCommitsModule(
         }
     }
 
-    logger.info { "Dumping initial refs." }
+    logger.trace { "Dumping initial refs." }
     for (commitFile in folder.listFiles().orEmpty().filter { it.extension == "commit" }) {
         if (commitFile.isFile) {
             logger.info { "${commitFile.nameWithoutExtension.takeLast(8)}: ${commitFile.readText()}" }
@@ -205,7 +207,7 @@ fun Application.configureCommitsModule(
 
 private object CommitModule
 
-private val logger = KotlinLogging.logger { }
+private val logger = logger()
 private val marker: Marker = MarkerFactory.getMarker(CommitModule::class.qualifiedName)
 
 internal inline fun PipelineContext<*, ApplicationCall>.withClient(message: () -> String): String {

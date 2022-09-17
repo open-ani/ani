@@ -42,6 +42,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import me.him188.animationgarden.api.AnimationGardenClient
 import me.him188.animationgarden.api.impl.createHttpClient
+import me.him188.animationgarden.api.logging.logger
+import me.him188.animationgarden.api.logging.trace
+import me.him188.animationgarden.api.logging.warn
 import me.him188.animationgarden.api.protocol.CommitRef
 import me.him188.animationgarden.app.AppTheme
 import me.him188.animationgarden.app.ProvideCompositionLocalsForPreview
@@ -59,10 +62,9 @@ import me.him188.animationgarden.app.platform.LocalContext
 import me.him188.animationgarden.app.ui.*
 import me.him188.animationgarden.app.ui.interaction.PlatformImplementations
 import me.him188.animationgarden.app.ui.interaction.PlatformImplementations.Companion.hostIsMacOs
-import mu.KotlinLogging
 import java.io.File
 
-private val logger = KotlinLogging.logger { }
+private val logger = logger()
 
 
 val projectDirectories: ProjectDirectories by lazy { ProjectDirectories.from("me", "Him188", "Animation Garden") }

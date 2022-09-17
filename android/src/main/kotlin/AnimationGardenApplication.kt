@@ -27,12 +27,14 @@ import android.view.View
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.snapshotFlow
+import io.ktor.client.*
 import io.ktor.client.plugins.logging.*
 import kotlinx.coroutines.*
 import me.him188.animationgarden.android.activity.BaseComponentActivity
 import me.him188.animationgarden.android.activity.showSnackbarAsync
 import me.him188.animationgarden.api.AnimationGardenClient
 import me.him188.animationgarden.api.impl.createHttpClient
+import me.him188.animationgarden.api.logging.logger
 import me.him188.animationgarden.api.protocol.CommitRef
 import me.him188.animationgarden.app.app.AppSettings
 import me.him188.animationgarden.app.app.ApplicationState
@@ -48,7 +50,6 @@ import me.him188.animationgarden.app.app.settings.toKtorProxy
 import me.him188.animationgarden.app.i18n.ResourceBundle
 import me.him188.animationgarden.app.i18n.loadResourceBundle
 import me.him188.animationgarden.app.ux.showDialog
-import mu.KotlinLogging
 import org.slf4j.MarkerFactory
 import java.io.File
 import kotlin.coroutines.resume
@@ -158,7 +159,7 @@ class AnimationGardenApplication : Application() {
                     clientConfig = {
                         install(Logging) {
                             logger = object : Logger {
-                                private val delegate = KotlinLogging.logger {}
+                                private val delegate = logger(HttpClient::class)
                                 private val marker = MarkerFactory.getMarker("HTTP")
                                 override fun log(message: String) {
                                     delegate.info(marker, message)

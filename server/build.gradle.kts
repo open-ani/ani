@@ -35,8 +35,8 @@ dependencies {
     implementation("io.ktor:ktor-serialization-kotlinx-json:2.1.0")
     implementation("io.ktor:ktor-server-websockets:2.1.0")
 //    implementation("org.jetbrains.xodus:xodus-openAPI:2.0.1")
-//    implementation("org.apache.logging.log4j:log4j-core:2.18.0")
-//    implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.18.0")
+    implementation("org.apache.logging.log4j:log4j-core:2.18.0")
+    implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.18.0")
     implementation(projects.api)
     implementation("org.jetbrains.kotlinx:kotlinx-cli:0.3.5")
 }

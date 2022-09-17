@@ -40,13 +40,15 @@ import kotlinx.serialization.decodeFromHexString
 import kotlinx.serialization.encodeToHexString
 import kotlinx.serialization.protobuf.ProtoNumber
 import me.him188.animationgarden.api.impl.model.*
+import me.him188.animationgarden.api.logging.info
+import me.him188.animationgarden.api.logging.logger
+import me.him188.animationgarden.api.logging.trace
 import me.him188.animationgarden.api.model.Commit
 import me.him188.animationgarden.api.model.toLogString
 import me.him188.animationgarden.api.protocol.*
 import me.him188.animationgarden.app.app.StarredAnime
 import me.him188.animationgarden.app.app.settings.LocalSyncSettings
 import me.him188.animationgarden.app.app.settings.RemoteSyncSettings
-import mu.KotlinLogging
 import java.net.ConnectException
 import java.util.*
 import kotlin.coroutines.CoroutineContext
@@ -90,8 +92,6 @@ interface RemoteSynchronizer {
     fun markOffline()
 }
 
-private val logger = KotlinLogging.logger {}
-
 sealed class ConflictAction {
     object AcceptServer : ConflictAction()
     object AcceptClient : ConflictAction()
@@ -106,6 +106,10 @@ class RemoteSynchronizerImpl(
     private val applyMutation: suspend (DataMutation) -> Unit,
     parentCoroutineContext: CoroutineContext,
 ) : RemoteSynchronizer {
+    private companion object {
+        private val logger = logger()
+    }
+
     private val scope = CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
 
     override val isSynchronized: MutableStateFlow<Boolean> = MutableStateFlow(false)
@@ -426,6 +430,10 @@ class AppDataSynchronizerImpl(
     private val promptSwitchToOffline: PromptSwitchToOffline,
     private val promptDataCorrupted: suspend (Exception) -> Unit,
 ) : AppDataSynchronizer {
+    private companion object {
+        private val logger = logger()
+    }
+
     private val scope =
         CoroutineScope(coroutineContext + SupervisorJob(coroutineContext[Job]) + CoroutineName("LocalAppdataSynchronizer"))
 

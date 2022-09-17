@@ -73,6 +73,7 @@ kotlin {
 //    implementation("org.xerial:sqlite-jdbc:3.39.2.0")
 
                 api(projects.api)
+                implementation("org.slf4j:slf4j-simple:1.7.36")
             }
         }
 
