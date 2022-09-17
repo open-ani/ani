@@ -45,8 +45,14 @@ inline fun <reified T, R> context(c: T, block: context(T) () -> R): R {
     return block(c)
 }
 
+/**
+ * 可提供应用数据的类型.
+ */
 @Stable
 interface AppData {
+    /**
+     * 收藏的番剧列表
+     */
     val starredAnime: ListFlow<StarredAnime>
 
     companion object {
@@ -101,8 +107,16 @@ val LocalDataMutation: ProvidableCompositionLocal<DataMutationContext> =
     compositionLocalOf { error("DataMutationContext is not provided") }
 
 sealed interface DataMutation {
+    /**
+     * 执行这个修改
+     *
+     * @throws Exception 抛任何异常都会导致 APP 立即停止运行
+     */
     context(DataMutationContext) suspend fun invoke()
 
+    /**
+     * 撤销已经进行的修改. 可以 assume [invoke] 已经被执行.
+     */
     context(DataMutationContext) suspend fun revoke()
 }
 
@@ -124,7 +138,16 @@ class CombinedDataMutation(
 ) : DataMutation {
     context(DataMutationContext) override suspend fun invoke() {
         first.invoke()
-        then.invoke()
+        try {
+            then.invoke()
+        } catch (e: Throwable) {
+            try {
+                first.revoke()
+            } catch (e2: Throwable) {
+                e.addSuppressed(e2)
+            }
+            throw e
+        }
     }
 
     context(DataMutationContext) override suspend fun revoke() {

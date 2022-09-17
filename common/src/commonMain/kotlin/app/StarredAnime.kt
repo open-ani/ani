@@ -29,11 +29,17 @@ import me.him188.animationgarden.api.tags.Episode
 import me.him188.animationgarden.api.tags.Resolution
 import me.him188.animationgarden.api.tags.SubtitleLanguage
 
+/**
+ * 表示一个收藏的番剧信息.
+ */
 @Serializable
 @Immutable
 data class StarredAnime(
     @ProtoNumber(1) val primaryName: String,
     @ProtoNumber(2) val secondaryNames: List<String> = listOf(),
+    /**
+     * 搜索时的关键词.
+     */
     @ProtoNumber(3) val searchQuery: String, // keywords
     @ProtoNumber(4) val episodes: Set<Episode>,
     @ProtoNumber(5) val watchedEpisodes: Set<Episode> = setOf(),
