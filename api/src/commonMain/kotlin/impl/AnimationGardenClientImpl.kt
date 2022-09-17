@@ -42,6 +42,7 @@ import me.him188.animationgarden.api.model.SearchQuery
 import me.him188.animationgarden.api.model.SearchSession
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+import kotlin.time.Duration.Companion.seconds
 
 internal class AnimationGardenClientImpl(
     engineConfig: HttpClientEngineConfig.() -> Unit,
@@ -65,7 +66,9 @@ fun createHttpClient(
         maxRetries = 3
         delayMillis { 1000 }
     }
-    install(WebSockets)
+    install(WebSockets) {
+        pingInterval = 20.seconds.inWholeMilliseconds
+    }
     install(HttpCookies)
     install(HttpTimeout)
     clientConfig()

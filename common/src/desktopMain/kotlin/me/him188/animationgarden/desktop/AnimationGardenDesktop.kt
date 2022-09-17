@@ -231,10 +231,10 @@ private fun createAppState(
     initialClient = AnimationGardenClient.Factory.create {
         proxy = currentAppSettings.proxy.toKtorProxy()
     },
-    appDataSynchronizer = { uiScope ->
+    appDataSynchronizer = { dataScope ->
         val sync = currentAppSettings.sync
         AppDataSynchronizerImpl(
-            uiScope.coroutineContext,
+            dataScope.coroutineContext,
             remoteSynchronizerFactory = { applyMutation ->
                 sync.createRemoteSynchronizer(
                     httpClient = createHttpClient({
@@ -256,7 +256,7 @@ private fun createAppState(
                     ),
                     promptConflict = { onConflict(dialogHost) },
                     applyMutation = applyMutation,
-                    parentCoroutineContext = uiScope.coroutineContext
+                    parentCoroutineContext = dataScope.coroutineContext
                 )
             },
             backingStorage = sync.createLocalStorage(
@@ -268,11 +268,11 @@ private fun createAppState(
             localSyncSettingsFlow = localSyncSettingsFlow,
             promptSwitchToOffline = { e, optional ->
                 onSwitchToOffline(
-                    dialogHost, uiScope, snackbarState, currentBundle,
+                    dialogHost, dataScope, snackbarState, currentBundle,
                     e, optional
                 )
             },
-            promptDataCorrupted = { onDataCorrupted(uiScope, snackbarState, currentBundle, it) },
+            promptDataCorrupted = { onDataCorrupted(dataScope, snackbarState, currentBundle, it) },
         )
     }
 )

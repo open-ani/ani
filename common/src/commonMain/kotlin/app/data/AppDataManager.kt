@@ -292,7 +292,8 @@ class RemoteSynchronizerImpl(
 
     private suspend fun connectWebSocket() {
         logger.info { "Starting data sync connection to ${remoteSettings.apiUrl}" }
-        httpClient.webSocket({
+
+        val session = httpClient.webSocketSession {
             url {
                 takeFrom(Url(remoteSettings.apiUrl))
                 protocol = URLProtocol.WS
@@ -300,22 +301,25 @@ class RemoteSynchronizerImpl(
                 parameter("clientId", clientId)
                 logger.info { "URL: ${buildString()}" }
             }
-        }) {
-            logger.info { "connection established" }
-            incoming.consumeEach { frame ->
-                try {
-                    handleSyncEvent(frame)
-                } catch (e: Exception) {
-                    promptConflict()
-                    logger.error("Exception in data sync connection", e)
-                }
-            }
-            logger.info { "WS connection closed normally" }
         }
+
+        logger.info { "connection established" }
+        session.incoming.consumeEach { frame ->
+            try {
+                handleSyncEvent(frame)
+            } catch (e: Exception) {
+                promptConflict()
+                logger.error("Exception in data sync connection", e)
+            }
+        }
+        logger.info { "WS connection closed normally" }
+
+        session.coroutineContext.job.join()
     }
 
     private suspend fun handleSyncEvent(frame: Frame) {
         when (frame) {
+            is Frame.Ping, is Frame.Pong -> {}
             is Frame.Binary -> {
                 val event = protobuf.decodeFromByteArray(CommitEvent.serializer(), frame.data)
                 if (event.committer.uuid == clientId) return

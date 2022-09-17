@@ -170,7 +170,8 @@ fun Application.configureCommitsModule(
                     logger.info(marker) { withClient { "Broadcast CommitEvent: ${event.toLogString()}" } }
                     outgoing.send(Frame.Binary(true, protobuf.encodeToByteArray(CommitEvent.serializer(), event)))
                 }
-            } catch (e: Exception) {
+                logger.info(marker) { withClient { "sync disconnected" } }
+            } catch (e: Throwable) {
                 logger.info(marker, e) { withClient { "sync disconnected" } }
             }
         }

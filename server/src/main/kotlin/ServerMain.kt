@@ -41,6 +41,7 @@ import org.apache.logging.log4j.core.config.Configurator
 import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilderFactory
 import org.apache.logging.log4j.core.config.builder.api.LayoutComponentBuilder
 import java.io.File
+import kotlin.time.Duration.Companion.seconds
 
 object ServerMain {
     init {
@@ -132,7 +133,9 @@ object ServerMain {
                     ignoreUnknownKeys = true
                 })
             }
-            install(WebSockets)
+            install(WebSockets) {
+                pingPeriodMillis = 20.seconds.inWholeMilliseconds
+            }
             configureCommitsModule(dataFolder)
         }.start(wait = true)
     }
