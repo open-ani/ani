@@ -146,7 +146,7 @@ fun Application.configureCommitsModule(
                 val newFile = file.exists()
                 file.writeBytes(protobuf.encodeToByteArray(EAppData.serializer(), request.data))
 
-                if (newFile) {
+                if (!newFile) {
                     logger.info(marker) { withClient { "Force push created. New ref: ${request.ref}" } }
                     call.respond(HttpStatusCode.Created)
                 } else {
