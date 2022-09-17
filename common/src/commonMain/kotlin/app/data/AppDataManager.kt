@@ -418,7 +418,7 @@ class AppDataSynchronizerImpl(
     coroutineContext: CoroutineContext,
     remoteSynchronizerFactory: (applyMutation: suspend (DataMutation) -> Unit) -> RemoteSynchronizer?,
     private val backingStorage: MutableProperty<String>,
-    private val localSyncSettingsFlow: Flow<LocalSyncSettings>,
+    private val localSyncSettingsFlow: Flow<LocalSyncSettings>, // should run with Main dispatcher
     /**
      * `true`: user agrees to switch to offline mode.
      */
@@ -451,11 +451,13 @@ class AppDataSynchronizerImpl(
             if (remoteSynchronizer == null) {
                 logger.info { "Remote sync is not enabled." }
             } else {
-                try {
-                    remoteSynchronizer.syncOfflineHistory(localDataProperty)
-                } catch (e: Exception) {
-                    promptSwitchToOffline.invoke(e, false)
-                    remoteSynchronizer.markOffline()
+                withContext(Dispatchers.IO) {
+                    try {
+                        remoteSynchronizer.syncOfflineHistory(localDataProperty)
+                    } catch (e: Exception) {
+                        promptSwitchToOffline.invoke(e, false)
+                        remoteSynchronizer.markOffline()
+                    }
                 }
             }
             memory?.let { return it }
@@ -525,7 +527,9 @@ class AppDataSynchronizerImpl(
 
     private suspend fun applyMutation(mutation: DataMutation): DataMutationContext {
         val data = getData()
-        with(data) { mutation.invoke() }
+        withContext(Dispatchers.Main.immediate) {
+            with(data) { mutation.invoke() }
+        }
         return data
     }
 

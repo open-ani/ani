@@ -19,8 +19,10 @@
 package me.him188.animationgarden.app.app.data
 
 import kotlinx.atomicfu.atomic
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 
 interface MutableProperty<T> {
     suspend fun get(): T
@@ -53,7 +55,7 @@ class InMemoryMutableProperty<T>(
 
     private suspend fun initValue(): T {
         lock.withLock {
-            val initial = initial()
+            val initial = withContext(Dispatchers.IO) { initial() }
             value.compareAndSet(null, initial)
         }
         return value.value!!
