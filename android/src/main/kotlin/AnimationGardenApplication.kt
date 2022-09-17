@@ -24,7 +24,6 @@ import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import androidx.appcompat.app.AlertDialog
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.snapshotFlow
@@ -47,6 +46,7 @@ import me.him188.animationgarden.app.app.settings.createRemoteSynchronizer
 import me.him188.animationgarden.app.app.settings.toKtorProxy
 import me.him188.animationgarden.app.i18n.ResourceBundle
 import me.him188.animationgarden.app.i18n.loadResourceBundle
+import me.him188.animationgarden.app.ux.showDialog
 import mu.KotlinLogging
 import org.slf4j.MarkerFactory
 import java.io.File
@@ -126,8 +126,6 @@ class AnimationGardenApplication : Application() {
                             createAppDataSynchronizer(
                                 syncScope,
                                 settings,
-                                this@AnimationGardenApplication,
-                                context,
                                 currentBundle
                             )
                         },
@@ -141,9 +139,7 @@ class AnimationGardenApplication : Application() {
     private fun createAppDataSynchronizer(
         syncScope: CoroutineScope,
         settings: AppSettings,
-        animationGardenApplication: AnimationGardenApplication,
-        context: Context,
-        currentBundle: ResourceBundle
+        resourceBundle: ResourceBundle
     ) = AppDataSynchronizerImpl(
         syncScope.coroutineContext,
         remoteSynchronizerFactory = { applyMutation ->
@@ -172,7 +168,7 @@ class AnimationGardenApplication : Application() {
                     set = { it.toString() },
                 ),
                 promptConflict = {
-                    animationGardenApplication.promptConflict(currentBundle)
+                    promptConflict(resourceBundle)
                 },
                 applyMutation = applyMutation,
                 parentCoroutineContext = syncScope.coroutineContext
@@ -185,12 +181,12 @@ class AnimationGardenApplication : Application() {
         },
         promptSwitchToOffline = { exception, optional ->
             Log.e(tag, "promptSwitchToOffline exception", exception)
-            promptSwitchToOffline(optional, context, currentBundle, exception)
+            promptSwitchToOffline(optional, resourceBundle, exception)
         },
         promptDataCorrupted = { exception ->
             (currentActivity as? BaseComponentActivity)?.showSnackbarAsync(
                 String.format(
-                    currentBundle.getString("sync.data.corrupted"),
+                    resourceBundle.getString("sync.data.corrupted"),
                     exception.render()
                 ),
                 duration = SnackbarDuration.Indefinite,
@@ -201,29 +197,23 @@ class AnimationGardenApplication : Application() {
 
     private suspend fun promptSwitchToOffline(
         optional: Boolean,
-        context: Context,
         currentBundle: ResourceBundle,
         exception: Exception
     ) = if (optional) {
-        suspendCancellableCoroutine { cont ->
-            val dialog = AlertDialog.Builder(context)
-                .setPositiveButton(
-                    String.format(
-                        currentBundle.getString("sync.failed.content"),
-                        exception.render()
-                    )
-                ) { _, _ ->
-                    cont.resume(true)
-                    showSnackbarShort(currentBundle.getString("sync.failed.switched.to.offline"))
-                }
-                .setNegativeButton(currentBundle.getString("sync.failed.revoke")) { _, _ ->
-                    cont.resume(false)
-                    showSnackbarShort(currentBundle.getString("sync.failed.revoked"))
-                }
-                .create()
-            dialog.show()
-            cont.invokeOnCancellation {
-                dialog.hide()
+        showDialog { cont ->
+            setPositiveButton(
+                String.format(
+                    currentBundle.getString("sync.failed.content"),
+                    exception.render()
+                )
+            ) { _, _ ->
+                cont.resume(true)
+                showSnackbarShort(currentBundle.getString("sync.failed.switched.to.offline"))
+            }
+
+            setNegativeButton(currentBundle.getString("sync.failed.revoke")) { _, _ ->
+                cont.resume(false)
+                showSnackbarShort(currentBundle.getString("sync.failed.revoked"))
             }
         }
     } else {
@@ -256,24 +246,18 @@ class AnimationGardenApplication : Application() {
         currentBundle: ResourceBundle
     ): ConflictAction {
         val currentActivity = currentActivity ?: return ConflictAction.StayOffline
-        return suspendCancellableCoroutine { cont ->
-            val dialog = AlertDialog.Builder(currentActivity)
-                .setTitle(currentBundle.getString("sync.conflict.dialog.title"))
-                .setMessage(currentBundle.getString("sync.conflict.dialog.content"))
-                .setCancelable(false)
-                .setPositiveButton(currentBundle.getString("sync.conflict.dialog.useServer")) { _, _ ->
-                    cont.resume(ConflictAction.AcceptServer)
-                }
-                .setNegativeButton(currentBundle.getString("sync.conflict.dialog.useLocal")) { _, _ ->
-                    cont.resume(ConflictAction.AcceptClient)
-                }
-                .setNeutralButton(currentBundle.getString("sync.conflict.dialog.offline")) { _, _ ->
-                    cont.resume(ConflictAction.StayOffline)
-                }
-                .create()
-            dialog.show()
-            cont.invokeOnCancellation {
-                dialog.hide()
+        return currentActivity.showDialog { cont ->
+            setTitle(currentBundle.getString("sync.conflict.dialog.title"))
+            setMessage(currentBundle.getString("sync.conflict.dialog.content"))
+            setCancelable(false)
+            setPositiveButton(currentBundle.getString("sync.conflict.dialog.useServer")) { _, _ ->
+                cont.resume(ConflictAction.AcceptServer)
+            }
+            setNegativeButton(currentBundle.getString("sync.conflict.dialog.useLocal")) { _, _ ->
+                cont.resume(ConflictAction.AcceptClient)
+            }
+            setNeutralButton(currentBundle.getString("sync.conflict.dialog.offline")) { _, _ ->
+                cont.resume(ConflictAction.StayOffline)
             }
         }
     }
@@ -286,31 +270,3 @@ class AnimationGardenApplication : Application() {
         instance = Instance(this)
     }
 }
-
-//private class ConflictDialogFragment : DialogFragment() {
-//    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-//        val currentBundle = AnimationGardenApplication.instance.resourceBundle
-//
-//        return MaterialAlertDialogBuilder(requireContext())
-//            .setTitle(currentBundle.getString("sync.conflict.dialog.title"))
-//            .setMessage(currentBundle.getString("sync.conflict.dialog.content"))
-//            .setCancelable(true)
-//            .setItems(
-//                arrayOf(
-//                    currentBundle.getString("sync.conflict.dialog.useServer"),
-//                    currentBundle.getString("sync.conflict.dialog.useLocal"),
-//                    currentBundle.getString("sync.conflict.dialog.offline"),
-//                )
-//            ) { _, which ->
-//                when (which) {
-//                    0 -> cont.resume(ConflictAction.AcceptServer)
-//                    1 -> cont.resume(ConflictAction.AcceptClient)
-//                    2 -> cont.resume(ConflictAction.StayOffline)
-//                }
-//            }
-//            .setOnCancelListener {
-//                cont.resume(ConflictAction.StayOffline)
-//            }
-//            .create()
-//    }
-//}
