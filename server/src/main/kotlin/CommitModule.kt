@@ -54,8 +54,9 @@ class CommitManager(
     val headRef
         get() = _currentBaseRef.value
 
-    fun setHead(ref: CommitRef) {
+    context(Locked) suspend fun setHead(ref: CommitRef) {
         _currentBaseRef.value = ref
+        save(ref)
     }
 
     @PublishedApi
@@ -142,7 +143,9 @@ fun Application.configureCommitsModule(
                 val request = call.receive<SetHeadRequest>()
 
 
-                commitManager.setHead(request.ref)
+                commitManager.transaction {
+                    setHead(request.ref)
+                }
 
                 val file = folder.resolve("$token.dat")
                 val newFile = file.exists()
