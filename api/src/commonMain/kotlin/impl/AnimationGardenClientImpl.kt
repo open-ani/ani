@@ -85,17 +85,13 @@ fun createHttpClient(
                     return Jsoup.parse(string, charset.name())
                 }
 
-                override suspend fun serialize(
+                override suspend fun serializeNullable(
                     contentType: ContentType,
                     charset: Charset,
                     typeInfo: TypeInfo,
-                    value: Any
+                    value: Any?
                 ): OutgoingContent? {
                     return null
-//                    if (contentType != ContentType.Application.Xml && contentType != ContentType.Text.Xml) return null
-//                    if (typeInfo.type.qualifiedName != Document::class.qualifiedName) return null
-//                    if (value !is String) return null
-//                    Jsoup.parse(value, charset.name())
                 }
             },
         ) {}

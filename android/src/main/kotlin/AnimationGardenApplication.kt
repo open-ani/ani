@@ -179,7 +179,7 @@ class AnimationGardenApplication : Application() {
             )
         },
         backingStorage = settings.sync.createLocalStorage(
-            instance.workingDir.resolve("data/app.yml").apply { parentFile.mkdir() }),
+            instance.workingDir.resolve("data/app.yml").apply { parentFile?.mkdir() }),
         localSyncSettingsFlow = snapshotFlow {
             settings.sync.localSync
         },
