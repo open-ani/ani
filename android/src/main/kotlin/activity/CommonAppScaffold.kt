@@ -25,7 +25,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.TopAppBar
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -86,9 +86,7 @@ fun BaseComponentActivity.CommonAppScaffold(
                 .systemBarsPadding(),
             topBar = topBar,
             snackbarHost = {
-                snackbarHostState.currentSnackbarData?.let {
-                    Snackbar(it)
-                }
+                SnackbarHost(snackbarHostState)
             },
 
             ) {
