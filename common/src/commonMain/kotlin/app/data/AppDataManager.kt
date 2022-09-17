@@ -489,11 +489,18 @@ class AppDataSynchronizerImpl(
         val decoded = try {
             protobuf.decodeFromHexString(SerialData.serializer(), string)
         } catch (e: Exception) {
-            promptDataCorrupted(e)
-            SerialData()
+            kotlin.runCatching {
+                jsonForMigration.decodeFromString(SerialData.serializer(), string)
+            }.getOrElse {
+                promptDataCorrupted(e)
+                SerialData()
+            }
         }
-        return DataMutationContextImpl(mutableListFlowOf(decoded.starredAnime))
+        return createDataMutationContext(decoded)
     }
+
+    private fun createDataMutationContext(decoded: SerialData) =
+        DataMutationContextImpl(mutableListFlowOf(decoded.starredAnime))
 
     private fun dump(data: AppData): String {
         return protobuf.encodeToHexString(SerialData.serializer(), data.run {

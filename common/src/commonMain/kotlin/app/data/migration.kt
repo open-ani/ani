@@ -16,18 +16,20 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.api.protocol
+package me.him188.animationgarden.app.app.data
 
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.protobuf.ProtoBuf
-import me.him188.animationgarden.api.model.CommitsModule
+import mu.KotlinLogging
+import java.io.File
 
 
-val protobuf = ProtoBuf {
-    serializersModule = CommitsModule
-}
-
-val jsonForMigration = Json {
-    isLenient = true
-    prettyPrint = true
+object Migrations {
+    private val logger = KotlinLogging.logger { }
+    fun migrateFile(legacy: File, new: File) {
+        if (new.exists()) return
+        if (legacy.exists()) {
+            new.parentFile?.mkdirs()
+            legacy.copyTo(new)
+            logger.warn { "Migrated '${legacy.absolutePath}' to '${new.absolutePath}'" }
+        }
+    }
 }

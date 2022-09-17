@@ -39,6 +39,7 @@ import me.him188.animationgarden.app.app.ApplicationState
 import me.him188.animationgarden.app.app.LocalAppSettingsManagerImpl
 import me.him188.animationgarden.app.app.data.AppDataSynchronizerImpl
 import me.him188.animationgarden.app.app.data.ConflictAction
+import me.him188.animationgarden.app.app.data.Migrations
 import me.him188.animationgarden.app.app.data.map
 import me.him188.animationgarden.app.app.settings.createFileDelegatedMutableProperty
 import me.him188.animationgarden.app.app.settings.createLocalStorage
@@ -95,8 +96,10 @@ class AnimationGardenApplication : Application() {
         val workingDir: File = context.filesDir
 
         @Stable
-        val appSettingsManager = LocalAppSettingsManagerImpl(workingDir.resolve("data/settings.yml"))
-            .apply { load() }
+        val appSettingsManager by lazy {
+            LocalAppSettingsManagerImpl(workingDir.resolve("data/settings.dat"))
+                .apply { load() }
+        }
 
         // Use LocalI18n in compose
         @Stable
@@ -106,6 +109,8 @@ class AnimationGardenApplication : Application() {
         @Stable
         val app by lazy {
             runBlocking {
+                Migrations.tryMigrate(context.filesDir)
+
                 withContext(Dispatchers.IO) {
                     val tag by lazy(LazyThreadSafetyMode.PUBLICATION) { context.getString(R.string.app_package) }
                     val appScope =
@@ -175,7 +180,7 @@ class AnimationGardenApplication : Application() {
             )
         },
         backingStorage = settings.sync.createLocalStorage(
-            instance.workingDir.resolve("data/app.yml").apply { parentFile?.mkdir() }),
+            instance.workingDir.resolve("data/app.dat").apply { parentFile?.mkdir() }),
         localSyncSettingsFlow = snapshotFlow {
             settings.sync.localSync
         },
@@ -269,4 +274,21 @@ class AnimationGardenApplication : Application() {
         super.onCreate()
         instance = Instance(this)
     }
+}
+
+private fun Migrations.tryMigrate(
+    filesDir: File,
+) {
+    val newAppDat = filesDir.resolve("data/app.dat")
+    val newSettings = filesDir.resolve("data/settings.dat")
+
+    // 2.0.0-beta01
+    migrateFile(
+        legacy = filesDir.resolve("data/app.yml"),
+        new = newAppDat,
+    )
+    migrateFile(
+        legacy = filesDir.resolve("data/settings.yml"),
+        new = newSettings,
+    )
 }

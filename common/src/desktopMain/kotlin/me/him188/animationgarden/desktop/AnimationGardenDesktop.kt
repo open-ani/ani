@@ -48,6 +48,7 @@ import me.him188.animationgarden.app.ProvideCompositionLocalsForPreview
 import me.him188.animationgarden.app.app.*
 import me.him188.animationgarden.app.app.data.AppDataSynchronizerImpl
 import me.him188.animationgarden.app.app.data.ConflictAction
+import me.him188.animationgarden.app.app.data.Migrations
 import me.him188.animationgarden.app.app.data.map
 import me.him188.animationgarden.app.app.settings.*
 import me.him188.animationgarden.app.i18n.LocalI18n
@@ -66,16 +67,44 @@ private val logger = KotlinLogging.logger { }
 
 val projectDirectories: ProjectDirectories by lazy { ProjectDirectories.from("me", "Him188", "Animation Garden") }
 
+private fun Migrations.tryMigrate(
+    newAppDat: File = File(projectDirectories.dataDir, "app.dat"),
+    newSettings: File = File(projectDirectories.preferenceDir, "settings.dat")
+) {
+    // 2.0.0-beta01
+    migrateFile(
+        legacy = File(projectDirectories.dataDir, "app.yml"),
+        new = newAppDat,
+    )
+    migrateFile(
+        legacy = File(projectDirectories.preferenceDir, "settings.yml"),
+        new = newSettings,
+    )
+
+    // 1.x
+    migrateFile(
+        legacy = File(System.getProperty("user.dir"), "app.yml"),
+        new = newAppDat,
+    )
+    migrateFile(
+        legacy = File(System.getProperty("user.dir"), "settings.yml"),
+        new = newSettings,
+    )
+}
+
 object AnimationGardenDesktop {
     @JvmStatic
     fun main(args: Array<String>) {
+        Migrations.tryMigrate()
+
+        projectDirectories.dataDir
         application(exitProcessOnExit = true) {
             val context: Context = LocalContext.current
             val currentBundle = remember(Locale.current.language) { loadResourceBundle(context) }
 
             val appSettingsProvider = remember {
                 LocalAppSettingsManagerImpl(
-                    File(projectDirectories.preferenceDir, "settings.yml").also {
+                    File(projectDirectories.preferenceDir, "settings.dat").also {
                         it.parentFile.mkdirs()
                         logger.trace { "Settings file: ${it.absolutePath}" }
                     }
@@ -229,7 +258,7 @@ private fun createAppState(
                 )
             },
             backingStorage = sync.createLocalStorage(
-                File(projectDirectories.dataDir, "app.yml").also {
+                File(projectDirectories.dataDir, "app.dat").also {
                     it.parentFile.mkdirs()
                     logger.trace { "Data file: ${it.absolutePath}" }
                 }
