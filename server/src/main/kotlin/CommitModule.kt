@@ -45,6 +45,7 @@ import java.io.File
 
 class CommitManager(
     baseRef: CommitRef,
+    private val save: suspend (ref: CommitRef) -> Unit,
 ) {
     private val _currentBaseRef = atomic(baseRef)
 
@@ -70,6 +71,7 @@ class CommitManager(
         val event = CommitEvent(request.base, newRef, request.commit, request.committer)
         _eventFlow.emit(event)
         _currentBaseRef.value = newRef
+        save(newRef)
         return newRef
     }
 
@@ -93,7 +95,7 @@ fun Application.configureCommitsModule(
             if (!commitFile.exists()) {
                 commitFile.writeText(CommitRef.generate().toString())
             }
-            CommitManager(CommitRef(commitFile.readText()))
+            CommitManager(CommitRef(commitFile.readText())) { commitFile.writeText(it.toString()) }
         }
     }
 
@@ -159,12 +161,17 @@ fun Application.configureCommitsModule(
             val token = call.parameters.getOrFail("token")
             val clientId = call.parameters.getOrFail("clientId")
             val commitManager = getCommitManager(token)
+            logger.info(marker) { withClient { "sync connected" } }
 
-            commitManager.eventFlow.filter {
-                it.committer.uuid != clientId
-            }.collect { event ->
-                logger.info(marker) { withClient { "Broadcast CommitEvent: ${event.toLogString()}" } }
-                outgoing.send(Frame.Binary(true, protobuf.encodeToByteArray(CommitEvent.serializer(), event)))
+            try {
+                commitManager.eventFlow.filter {
+                    it.committer.uuid != clientId
+                }.collect { event ->
+                    logger.info(marker) { withClient { "Broadcast CommitEvent: ${event.toLogString()}" } }
+                    outgoing.send(Frame.Binary(true, protobuf.encodeToByteArray(CommitEvent.serializer(), event)))
+                }
+            } catch (e: Exception) {
+                logger.info(marker, e) { withClient { "sync disconnected" } }
             }
         }
         route("/data/commit/{token}") {
