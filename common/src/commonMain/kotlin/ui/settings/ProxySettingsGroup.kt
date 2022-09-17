@@ -211,6 +211,10 @@ fun AppSettingsManager.updateRemoteSyncEnabled(enabled: Boolean) {
     mutate { copy(sync = sync.run { copy(remoteSyncEnabled = enabled) }) }
 }
 
+fun AppSettingsManager.updateRemoteSyncUseProxy(useProxy: Boolean) {
+    mutate { copy(sync = sync.run { copy(remoteSync = remoteSync.run { copy(useProxy = useProxy) }) }) }
+}
+
 fun AppSettingsManager.updateRemoteSyncApiUrl(url: String) {
     mutate { copy(sync = sync.run { copy(remoteSync = remoteSync.copy(apiUrl = url)) }) }
 }

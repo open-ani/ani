@@ -56,7 +56,7 @@ internal class AnimationGardenClientImpl(
 
 fun createHttpClient(
     engineConfig: HttpClientEngineConfig.() -> Unit = {},
-    clientConfig: HttpClientConfig<CIOEngineConfig>.() -> Unit = {}
+    clientConfig: HttpClientConfig<CIOEngineConfig>.() -> Unit = {},
 ) = HttpClient(CIO) {
     engine {
         engineConfig()

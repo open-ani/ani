@@ -122,7 +122,7 @@ object AnimationGardenDesktop {
 
                 var showPreferences by remember { mutableStateOf(false) }
                 if (showPreferences) {
-                    val state = rememberWindowState(width = 350.dp, height = 550.dp)
+                    val state = rememberWindowState(width = 350.dp, height = 600.dp)
                     WindowEx(
                         state = state,
                         onCloseRequest = {
@@ -206,7 +206,11 @@ private fun createAppState(
             uiScope.coroutineContext,
             remoteSynchronizerFactory = { applyMutation ->
                 sync.createRemoteSynchronizer(
-                    httpClient = createHttpClient(),
+                    httpClient = createHttpClient({
+                        if (currentAppSettings.sync.remoteSync.useProxy) {
+                            proxy = currentAppSettings.proxy.toKtorProxy()
+                        }
+                    }),
                     localRef = createFileDelegatedMutableProperty(
                         File(
                             projectDirectories.dataDir,

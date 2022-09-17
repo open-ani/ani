@@ -148,18 +148,25 @@ class AnimationGardenApplication : Application() {
         syncScope.coroutineContext,
         remoteSynchronizerFactory = { applyMutation ->
             settings.sync.createRemoteSynchronizer(
-                httpClient = createHttpClient(clientConfig = {
-                    install(Logging) {
-                        logger = object : Logger {
-                            private val delegate = KotlinLogging.logger {}
-                            private val marker = MarkerFactory.getMarker("HTTP")
-                            override fun log(message: String) {
-                                delegate.info(marker, message)
-                            }
+                httpClient = createHttpClient(
+                    engineConfig = {
+                        if (settings.sync.remoteSync.useProxy) {
+                            proxy = settings.proxy.toKtorProxy()
                         }
-                        level = LogLevel.BODY
+                    },
+                    clientConfig = {
+                        install(Logging) {
+                            logger = object : Logger {
+                                private val delegate = KotlinLogging.logger {}
+                                private val marker = MarkerFactory.getMarker("HTTP")
+                                override fun log(message: String) {
+                                    delegate.info(marker, message)
+                                }
+                            }
+                            level = LogLevel.BODY
+                        }
                     }
-                }),
+                ),
                 localRef = createFileDelegatedMutableProperty(instance.workingDir.resolve("data/commit")).map(
                     get = { if (it.isNotEmpty()) CommitRef(it) else CommitRef.generate() },
                     set = { it.toString() },

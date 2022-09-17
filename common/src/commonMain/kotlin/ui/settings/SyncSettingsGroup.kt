@@ -18,6 +18,7 @@
 
 package me.him188.animationgarden.app.ui.settings
 
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
@@ -29,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import me.him188.animationgarden.app.app.AppSettings
 import me.him188.animationgarden.app.app.AppSettingsManager
+import me.him188.animationgarden.app.app.settings.ProxyMode
 import me.him188.animationgarden.app.i18n.LocalI18n
 
 @Composable
@@ -92,6 +94,23 @@ fun ColumnScope.SyncSettingsGroup(
                     Text(LocalI18n.current.getString("preferences.sync.remote.token"))
                 }
             )
+        }
+
+        Row(
+            Modifier.height(30.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            LabelledCheckBox(
+                selected = if (settings.proxy.mode == ProxyMode.DISABLED) false else settings.sync.remoteSync.useProxy,
+                enabled = settings.proxy.mode != ProxyMode.DISABLED,
+                interactionSource = remember { MutableInteractionSource() },
+                onSelectedChange = {
+                    manager.updateRemoteSyncUseProxy(it)
+                    onSaved()
+                }
+            ) {
+                Text(LocalI18n.current.getString("preferences.sync.remote.use.proxy"))
+            }
         }
     }
 }

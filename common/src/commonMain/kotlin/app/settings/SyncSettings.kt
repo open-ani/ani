@@ -52,6 +52,7 @@ data class SyncSettings(
 data class RemoteSyncSettings(
     val apiUrl: String = "https://sync.animationgarden.him188.moe",
     val token: String = randomSyncToken(),
+    val useProxy: Boolean = false,
 ) {
     companion object {
         private val nonceRanges = arrayOf('a'..'z', 'A'..'z', '0'..'9')

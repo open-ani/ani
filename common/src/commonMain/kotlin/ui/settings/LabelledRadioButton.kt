@@ -22,10 +22,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 
 @Composable
 fun LabelledRadioButton(
@@ -54,6 +54,59 @@ fun LabelledRadioButton(
     }
 }
 
+@Stable
+interface LabelColors {
+    @Composable
+    fun textColor(checked: Boolean, enabled: Boolean): Color
+}
+
+@Immutable
+private class DefaultLabelColors(
+    private val checkedTextColor: Color,
+    private val uncheckedTextColor: Color,
+    private val disabledCheckedTextColor: Color,
+    private val disabledUncheckedTextColor: Color,
+) : LabelColors {
+    @Composable
+    override fun textColor(checked: Boolean, enabled: Boolean): Color {
+        return if (checked) {
+            if (enabled) {
+                checkedTextColor
+            } else {
+                disabledCheckedTextColor
+            }
+        } else {
+            if (enabled) {
+                uncheckedTextColor
+            } else {
+                disabledUncheckedTextColor
+            }
+        }
+    }
+
+}
+
+@Immutable
+object LabelDefaults {
+    /**
+     * @see TextFieldDefaults.textFieldColors
+     */
+    @Composable
+    fun labelColors(
+        checkedTextColor: Color = MaterialTheme.colorScheme.onSurface,
+        uncheckedTextColor: Color = MaterialTheme.colorScheme.onSurface,
+        disabledCheckedTextColor: Color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+        disabledUncheckedTextColor: Color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+    ): LabelColors {
+        return DefaultLabelColors(
+            checkedTextColor,
+            uncheckedTextColor,
+            disabledCheckedTextColor,
+            disabledUncheckedTextColor
+        )
+    }
+}
+
 @Composable
 fun LabelledCheckBox(
     selected: Boolean,
@@ -62,6 +115,7 @@ fun LabelledCheckBox(
     enabled: Boolean = true,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     colors: CheckboxColors = CheckboxDefaults.colors(),
+    textColor: LabelColors = LabelDefaults.labelColors(),
     label: @Composable () -> Unit,
 ) {
     Row(
@@ -70,6 +124,7 @@ fun LabelledCheckBox(
                 Modifier.clickable(
                     interactionSource,
                     null,
+                    enabled = enabled,
                     onClick = { onSelectedChange(!selected) }
                 )
             else Modifier
@@ -77,6 +132,9 @@ fun LabelledCheckBox(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Checkbox(selected, onSelectedChange, enabled = enabled, interactionSource = interactionSource, colors = colors)
-        label()
+
+        CompositionLocalProvider(LocalContentColor provides textColor.textColor(selected, enabled)) {
+            label()
+        }
     }
 }
