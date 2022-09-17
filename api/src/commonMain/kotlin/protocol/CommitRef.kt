@@ -20,7 +20,7 @@ package me.him188.animationgarden.api.protocol
 
 import kotlinx.serialization.Serializable
 import kotlin.random.Random
-import kotlin.random.nextLong
+import kotlin.random.nextULong
 
 @Serializable
 @JvmInline
@@ -29,25 +29,25 @@ value class CommitRef(val value: String) {
         check(value.length > 9) { "Invalid CommitRef: $value" }
     }
 
-    constructor(base: Long, increment: Long) : this(
-        base.coerceAtLeast(1e7.toLong()).toString().takeLast(8) + '0' + increment
+    constructor(base: ULong, increment: ULong) : this(
+        base.coerceAtLeast(1e7.toULong()).toString().takeLast(8) + '0' + increment
     )
 
     // 70402761    0      1
     // base      const  increment
 
-    val base: Long get() = baseStr.toLong()
+    val base: ULong get() = baseStr.toULong()
     val baseStr: String get() = value.take(8)
 
     val const: Int get() = value[8].digitToInt()
 
-    val increment: Long get() = value.drop(9).toLong()
+    val increment: ULong get() = value.drop(9).toULong()
 
     override fun toString(): String = value
 
     companion object {
-        fun generate(random: Random = Random, increment: Long = 0): CommitRef {
-            return CommitRef(random.nextLong(1e7.toLong() until 1e8.toLong()), increment)
+        fun generate(random: Random = Random, increment: ULong = 0uL): CommitRef {
+            return CommitRef(random.nextULong(1e7.toULong() until 1e8.toULong()), increment)
         }
     }
 }
