@@ -29,14 +29,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import me.him188.animationgarden.app.AppTheme
 import me.him188.animationgarden.app.app.LocalAppSettingsManager
 import me.him188.animationgarden.app.i18n.LocalI18n
@@ -70,10 +70,10 @@ class SettingsActivity : BaseComponentActivity() {
                                 Text(text = LocalI18n.current.getString("window.settings.title"))
                             },
                         )
-                    }
+                    },
                 ) {
                     Box(modifier = Modifier.padding(vertical = 16.dp)) {
-                        SettingsPage()
+                        SettingsPage(snackbarHostState)
                     }
                 }
             }
@@ -82,9 +82,10 @@ class SettingsActivity : BaseComponentActivity() {
 }
 
 @Composable
-private fun SettingsPage() {
+private fun SettingsPage(snackbar: SnackbarHostState) {
     val manager = LocalAppSettingsManager.current
     val settings by manager.value
+    val scope = rememberCoroutineScope()
     Column(Modifier.padding(horizontal = 8.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         ProxySettingsGroup(
             settings,
@@ -94,6 +95,14 @@ private fun SettingsPage() {
                 Text(LocalI18n.current.getString("preferences.proxy.mode.system.content"))
             }
         )
-        SyncSettingsGroup(settings, manager)
+        val i18n by rememberUpdatedState(LocalI18n.current)
+        SyncSettingsGroup(settings, manager, onSaved = {
+            scope.launch {
+                snackbar.showSnackbar(
+                    i18n.getString("preferences.sync.changes.apply.on.restart"),
+                    withDismissAction = true
+                )
+            }
+        })
     }
 }

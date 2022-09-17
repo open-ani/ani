@@ -22,14 +22,14 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import me.him188.animationgarden.app.app.AppSettings
 import me.him188.animationgarden.app.app.AppSettingsManager
 import me.him188.animationgarden.app.app.LocalAppSettingsManager
@@ -40,9 +40,12 @@ import me.him188.animationgarden.app.ui.settings.SettingsGroup
 import me.him188.animationgarden.app.ui.settings.SyncSettingsGroup
 
 @Composable
-fun PreferencesPage() {
+fun PreferencesPage(
+    snackbar: SnackbarHostState? // pass null for preview only
+) {
     val manager = LocalAppSettingsManager.current
     val settings by manager.value
+    val scope = rememberCoroutineScope()
     Surface(Modifier.fillMaxSize()) {
         Column(Modifier.padding(horizontal = 8.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             if (PlatformImplementations.hostIsMacOs) {
@@ -50,7 +53,15 @@ fun PreferencesPage() {
             }
 
             ProxySettingsGroup(settings, manager)
-            SyncSettingsGroup(settings, manager)
+            val i18n by rememberUpdatedState(LocalI18n.current)
+            SyncSettingsGroup(settings, manager, onSaved = {
+                scope.launch {
+                    snackbar?.showSnackbar(
+                        i18n.getString("preferences.sync.changes.apply.on.restart"),
+                        withDismissAction = true
+                    )
+                }
+            })
         }
     }
 }

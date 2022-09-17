@@ -35,6 +35,7 @@ import me.him188.animationgarden.app.i18n.LocalI18n
 fun ColumnScope.SyncSettingsGroup(
     settings: AppSettings,
     manager: AppSettingsManager,
+    onSaved: () -> Unit,
 ) {
     SettingsGroup({ Text(LocalI18n.current.getString("preferences.sync")) }) {
         Row(
@@ -43,6 +44,7 @@ fun ColumnScope.SyncSettingsGroup(
         ) {
             LabelledCheckBox(settings.sync.localSyncEnabled, {
                 manager.updateLocalSyncEnabled(it)
+                onSaved()
             }) {
                 Text(LocalI18n.current.getString("preferences.sync.local.enabled"))
             }
@@ -54,6 +56,7 @@ fun ColumnScope.SyncSettingsGroup(
         ) {
             LabelledCheckBox(settings.sync.remoteSyncEnabled, {
                 manager.updateRemoteSyncEnabled(it)
+                onSaved()
             }) {
                 Text(LocalI18n.current.getString("preferences.sync.remote.enabled"))
             }
@@ -67,6 +70,7 @@ fun ColumnScope.SyncSettingsGroup(
                 showButton = value != settings.sync.remoteSync.apiUrl,
                 onClickSave = {
                     manager.updateRemoteSyncApiUrl(value)
+                    onSaved()
                 },
                 label = {
                     Text(LocalI18n.current.getString("preferences.sync.remote.server.api.url"))
@@ -82,6 +86,7 @@ fun ColumnScope.SyncSettingsGroup(
                 showButton = value != settings.sync.remoteSync.token,
                 onClickSave = {
                     manager.updateRemoteSyncToken(value)
+                    onSaved()
                 },
                 label = {
                     Text(LocalI18n.current.getString("preferences.sync.remote.token"))

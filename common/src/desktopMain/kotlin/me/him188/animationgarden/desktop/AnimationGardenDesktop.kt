@@ -87,7 +87,7 @@ object AnimationGardenDesktop {
 
             val currentAppSettings by rememberUpdatedState(appSettingsProvider.value.value)
             val localSyncSettingsFlow = snapshotFlow { currentAppSettings.sync.localSync }
-            val snackbarState = remember { SnackbarHostState() }
+            val mainSnackbar = remember { SnackbarHostState() }
 
             CompositionLocalProvider(
                 LocalI18n provides currentBundle,
@@ -100,7 +100,7 @@ object AnimationGardenDesktop {
                         currentAppSettings,
                         dialogHost,
                         localSyncSettingsFlow,
-                        snackbarState,
+                        mainSnackbar,
                         currentBundle
                     )
                 }
@@ -132,7 +132,14 @@ object AnimationGardenDesktop {
                         resizable = false,
                         alwaysOnTop = true,
                     ) {
-                        PreferencesPage()
+                        val snackbar = remember { SnackbarHostState() }
+                        Scaffold(
+                            topBar = {},
+                            bottomBar = {},
+                            snackbarHost = { SnackbarHost(snackbar) }
+                        ) {
+                            PreferencesPage(snackbar)
+                        }
                     }
                 }
 
@@ -168,7 +175,7 @@ object AnimationGardenDesktop {
                         topBar = {},
                         bottomBar = {},
                         snackbarHost = {
-                            SnackbarHost(snackbarState)
+                            SnackbarHost(mainSnackbar)
                         },
                     ) {
                         MainWindowContent(
@@ -260,7 +267,7 @@ private fun onDataCorrupted(
     currentBundle: ResourceBundle,
     exception: Exception,
 ) {
-    uiScope.launch {
+    uiScope.launch(Dispatchers.Main) {
         snackbarState.showSnackbar(
             String.format(
                 currentBundle.getString("sync.data.corrupted"),
@@ -301,7 +308,7 @@ private suspend fun onSwitchToOffline(
         when (result) {
             DialogResult.CANCELED,
             DialogResult.DISMISSED -> {
-                uiScope.launch {
+                uiScope.launch(Dispatchers.Main) {
                     snackbarState.showSnackbar(
                         currentBundle.getString("sync.failed.revoked"),
                         duration = SnackbarDuration.Long
@@ -310,7 +317,7 @@ private suspend fun onSwitchToOffline(
                 false
             }
             DialogResult.CONFIRMED -> {
-                uiScope.launch {
+                uiScope.launch(Dispatchers.Main) {
                     snackbarState.showSnackbar(
                         currentBundle.getString("sync.failed.switched.to.offline"),
                         duration = SnackbarDuration.Long
@@ -320,7 +327,7 @@ private suspend fun onSwitchToOffline(
             }
         }
     } else {
-        uiScope.launch {
+        uiScope.launch(Dispatchers.Main) {
             snackbarState.showSnackbar(
                 String.format(
                     currentBundle.getString("sync.failed.switched.to.offline.due.to"),
@@ -338,7 +345,7 @@ private suspend fun onSwitchToOffline(
 @Preview
 fun PreviewPreferencesWindow() {
     ProvideCompositionLocalsForPreview {
-        PreferencesPage()
+        PreferencesPage(null)
     }
 }
 
