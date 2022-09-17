@@ -306,6 +306,7 @@ class RemoteSynchronizerImpl(
                     logger.error("Exception in data sync connection", e)
                 }
             }
+            logger.info { "WS connection closed normally" }
         }
     }
 
