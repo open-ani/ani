@@ -208,7 +208,8 @@ jobs:
 
       - if: ${{ env.isUnix == 'true' }}
         name: Zip distribution
-        run: zip -q -r desktop.zip desktop/build/compose/binaries/main/app
+        run: zip -q -r desktop.zip *
+        working-directory: desktop/build/compose/binaries/main/app
 
       # macOS
 
@@ -230,7 +231,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
         with:
           upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: desktop.zip
+          asset_path: desktop/build/compose/binaries/main/app/desktop.zip
           asset_name: AnimationGarden-${{ steps.tag-version.outputs.substring }}-macos-amd64.zip
           asset_content_type: application/zip
 
@@ -249,7 +250,7 @@ jobs:
 
       - if: ${{ env.isWindows == 'true' }}
         shell: powershell
-        run: Compress-Archive desktop/build/compose/binaries/main/app/ desktop.zip
+        run: Compress-Archive desktop/build/compose/binaries/main/app/AnimationGarden desktop/build/compose/binaries/main/app/desktop.zip
 
       - if: ${{ env.isWindows == 'true' }}
         name: Upload installer for Windows
@@ -280,7 +281,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
         with:
           upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: desktop.zip
+          asset_path: desktop/build/compose/binaries/main/app/desktop.zip
           asset_name: AnimationGarden-${{ steps.tag-version.outputs.substring }}-windows-amd64.zip
           asset_content_type: application/zip
 
@@ -326,7 +327,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
         with:
           upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: desktop.zip
+          asset_path: desktop/build/compose/binaries/main/app/desktop.zip
           asset_name: AnimationGarden-${{ steps.tag-version.outputs.substring }}-debian-amd64.zip
           asset_content_type: application/zip
 
