@@ -125,7 +125,7 @@ class MainActivity : BaseComponentActivity() {
         }
         appSettingsManager.attachAutoSave()
 
-        val currentAppSettings by rememberUpdatedState(newValue = appSettingsManager.value.value)
+        val currentAppSettings by rememberUpdatedState(newValue = appSettingsManager.value.collectAsState().value)
         LaunchedEffect(currentAppSettings.proxy) {
             // proxy changed, update client
             app.client.value = withContext(Dispatchers.IO) {
