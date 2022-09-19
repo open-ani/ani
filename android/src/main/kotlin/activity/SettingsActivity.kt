@@ -30,10 +30,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
@@ -84,7 +81,7 @@ class SettingsActivity : BaseComponentActivity() {
 @Composable
 private fun SettingsPage(snackbar: SnackbarHostState) {
     val manager = LocalAppSettingsManager.current
-    val settings by manager.value
+    val settings by manager.value.collectAsState()
     val scope = rememberCoroutineScope()
     Column(Modifier.padding(horizontal = 8.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         ProxySettingsGroup(

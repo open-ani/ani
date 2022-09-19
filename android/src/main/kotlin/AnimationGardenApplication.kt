@@ -108,10 +108,10 @@ class AnimationGardenApplication : Application() {
 
         // do not observe dependency change
         @Stable
-        val app by lazy {
-            runBlocking {
+        val app: ApplicationState by lazy {
+            runBlocking(Dispatchers.Default) {
                 Migrations.tryMigrate(context.filesDir)
-
+                val settings = appSettingsManager.value.value // initialize in Main thread
                 withContext(Dispatchers.IO) {
                     val tag by lazy(LazyThreadSafetyMode.PUBLICATION) { context.getString(R.string.app_package) }
                     val appScope =
@@ -119,7 +119,6 @@ class AnimationGardenApplication : Application() {
                             Log.e(tag, "Unhandled exception in coroutine", throwable)
                         })
 
-                    val settings = appSettingsManager.value.value
                     val currentBundle = loadResourceBundle(context)
                     resourceBundle = currentBundle
 

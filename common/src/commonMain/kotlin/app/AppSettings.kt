@@ -20,6 +20,7 @@ package me.him188.animationgarden.app.app
 
 import androidx.compose.runtime.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import me.him188.animationgarden.app.app.settings.ProxySettings
@@ -46,7 +47,7 @@ data class AppSettings(
 @Stable
 abstract class AppSettingsManager {
     @Stable
-    val value: MutableState<AppSettings> by lazy { mutableStateOf(loadImpl()) }
+    val value: MutableStateFlow<AppSettings> by lazy { MutableStateFlow(loadImpl()) }
 
     inline fun mutate(block: AppSettings.() -> AppSettings) {
         value.value = value.value.let(block)
@@ -66,7 +67,7 @@ abstract class AppSettingsManager {
 
     @Composable
     fun attachAutoSave() {
-        val instance by value
+        val instance by value.collectAsState()
         LaunchedEffect(instance) {
             withContext(Dispatchers.IO) {
                 save()
