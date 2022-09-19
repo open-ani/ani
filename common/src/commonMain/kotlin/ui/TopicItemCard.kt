@@ -296,6 +296,7 @@ private fun TagButton(
     val elevation = ButtonDefaults.buttonElevation()
     val interactionSource = remember { MutableInteractionSource() }
     val shadowElevation by elevation.shadowElevation(true, interactionSource)
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
     val defaultContainerColor = AppTheme.colorScheme.surfaceColorAtElevation(shadowElevation)
     val containerColor = if (containerColorEffect == Color.Unspecified) {
         defaultContainerColor

@@ -263,6 +263,17 @@ jobs:
           asset_content_type: application/octet-stream
 
       - if: ${{ env.isWindows == 'true' }}
+        name: Upload installer for Windows
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: desktop/build/compose/binaries/main/exe/AnimationGarden-${{ steps.tag-version.outputs.substring }}.exe
+          asset_name: AnimationGarden-${{ steps.tag-version.outputs.substring }}-windows-amd64.exe
+          asset_content_type: application/octet-stream
+
+      - if: ${{ env.isWindows == 'true' }}
         name: Upload distribution archive for Windows
         uses: actions/upload-release-asset@v1
         env:
@@ -295,6 +306,17 @@ jobs:
           upload_url: ${{ needs.create-release.outputs.upload_url }}
           asset_path: desktop/build/compose/binaries/main/deb/animationgarden_${{ steps.tag-version.outputs.substring }}-1_amd64.deb
           asset_name: AnimationGarden-${{ steps.tag-version.outputs.substring }}-debian-amd64.deb
+          asset_content_type: application/octet-stream
+
+      - if: ${{ env.isUbuntu == 'true' }}
+        name: Upload installer for Red Hat
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: desktop/build/compose/binaries/main/deb/animationgarden_${{ steps.tag-version.outputs.substring }}-1_amd64.rpm
+          asset_name: AnimationGarden-${{ steps.tag-version.outputs.substring }}-redhat-amd64.rpm
           asset_content_type: application/octet-stream
 
       - if: ${{ env.isUbuntu == 'true' }}

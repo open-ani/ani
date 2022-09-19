@@ -98,7 +98,9 @@ fun MainPage(
                     modifier = Modifier.height(48.dp).width(width),
                     shape = AppTheme.shapes.medium,
                     colors = IconButtonDefaults.outlinedIconToggleButtonColors(
-                        checkedContainerColor = AppTheme.colorScheme.surfaceColorAtElevation(1.dp),
+                        checkedContainerColor =
+                        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+                        AppTheme.colorScheme.surfaceColorAtElevation(1.dp),
                     ),
                 ) {
                     Row(
