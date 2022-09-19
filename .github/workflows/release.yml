@@ -35,7 +35,7 @@ jobs:
             
             有关附件的说明，查看[下载](https://github.com/Him188/animation-garden-desktop#%E4%B8%8B%E8%BD%BD)。
             可扫描以下二维码下载 Android 版本：
-            ![](https://github.com/Him188/animation-garden-desktop/releases/download/${{ steps.tag.outputs.tag }}/AnimationGarden-${{ steps.tag-version.outputs.substring }}.apk.qrcode.png)
+            ![](https://github.com/Him188/animation-garden-desktop/releases/download/${{ steps.tag.outputs.tag }}/AnimationGarden-${{ steps.tag-version-without-v.outputs.substring }}.apk.qrcode.png)
 
           draft: true
           prerelease: false
@@ -69,22 +69,22 @@ jobs:
         id: tag
         uses: dawidd6/action-get-tag@v1
 
+      - uses: bhowell2/github-substring-action@v1.0.0
+        id: tag-version-without-v # usage:  ${{ steps.tag-version-without-v.outputs.substring }}
+        with:
+          value: ${{ steps.tag.outputs.tag }}
+          index_of_str: "v"
+          default_return_value: ${{ steps.tag.outputs.tag}}
+
       - id: tag-version-without-metadata
         uses: actions/github-script@0.9.0
         env:
-          tag: ${{ steps.tag.outputs.tag }}
+          tag: ${{ steps.tag-version-without-v.outputs.value }}
         with:
           script: |
             const { tag } = process.env;
             let tag1 = tag.split('-')[0]; // substring before '-'
             core.setOutput('tag', tag1);
-
-      - uses: bhowell2/github-substring-action@v1.0.0
-        id: tag-version # usage:  ${{ steps.tag-version.outputs.substring }}
-        with:
-          value: ${{ steps.tag-version-without-metadata.outputs.tag }}
-          index_of_str: "v"
-          default_return_value: ${{ steps.tag-version-without-metadata.outputs.tag }}
 
       - if: ${{ env.isUnix == 'true' }}
         uses: actions/setup-java@v2
@@ -158,14 +158,14 @@ jobs:
         with:
           upload_url: ${{ needs.create-release.outputs.upload_url }}
           asset_path: android/build/outputs/apk/release/animation-garden-android-release.apk
-          asset_name: AnimationGarden-${{ steps.tag-version.outputs.substring }}.apk
+          asset_name: AnimationGarden-${{ steps.tag-version-without-v.outputs.substring }}.apk
           asset_content_type: application/vnd.android.package-archive
 
       - if: ${{ env.isMac == 'true' }}
         name: Generate QR code for APK
         uses: snow-actions/qrcode@v1.0.0
         with:
-          text: https://github.com/Him188/animation-garden-desktop/releases/download/${{ steps.tag.outputs.tag }}/AnimationGarden-${{ steps.tag-version.outputs.substring }}.apk
+          text: https://github.com/Him188/animation-garden-desktop/releases/download/${{ steps.tag.outputs.tag }}/AnimationGarden-${{ steps.tag-version-without-v.outputs.substring }}.apk
           path: apk-qrcode.png
 
       - if: ${{ env.isMac == 'true' }}
@@ -177,7 +177,7 @@ jobs:
         with:
           upload_url: ${{ needs.create-release.outputs.upload_url }}
           asset_path: apk-qrcode.png
-          asset_name: AnimationGarden-${{ steps.tag-version.outputs.substring }}.apk.qrcode.png
+          asset_name: AnimationGarden-${{ steps.tag-version-without-v.outputs.substring }}.apk.qrcode.png
           asset_content_type: image/png
 
       - name: Assemble
@@ -221,7 +221,7 @@ jobs:
         with:
           upload_url: ${{ needs.create-release.outputs.upload_url }}
           asset_path: desktop/build/compose/binaries/main/dmg/AnimationGarden-${{ steps.tag-version.outputs.substring }}.dmg
-          asset_name: AnimationGarden-${{ steps.tag-version.outputs.substring }}-macos-amd64.dmg
+          asset_name: AnimationGarden-${{ steps.tag-version-without-v.outputs.substring }}-macos-amd64.dmg
           asset_content_type: application/octet-stream
 
       - if: ${{ env.isMac == 'true' }}
@@ -232,7 +232,7 @@ jobs:
         with:
           upload_url: ${{ needs.create-release.outputs.upload_url }}
           asset_path: desktop/build/compose/binaries/main/app/desktop.zip
-          asset_name: AnimationGarden-${{ steps.tag-version.outputs.substring }}-macos-amd64.zip
+          asset_name: AnimationGarden-${{ steps.tag-version-without-v.outputs.substring }}-macos-amd64.zip
           asset_content_type: application/zip
 
       - if: ${{ env.isMac == 'true' }}
@@ -243,7 +243,7 @@ jobs:
         with:
           upload_url: ${{ needs.create-release.outputs.upload_url }}
           asset_path: desktop/build/compose/jars/AnimationGarden-macos-x64-${{ steps.tag-version.outputs.substring }}.jar
-          asset_name: AnimationGarden-${{ steps.tag-version.outputs.substring }}-macos-amd64.jar
+          asset_name: AnimationGarden-${{ steps.tag-version-without-v.outputs.substring }}-macos-amd64.jar
           asset_content_type: application/octet-stream
 
       # Windows
@@ -260,7 +260,7 @@ jobs:
         with:
           upload_url: ${{ needs.create-release.outputs.upload_url }}
           asset_path: desktop/build/compose/binaries/main/msi/AnimationGarden-${{ steps.tag-version.outputs.substring }}.msi
-          asset_name: AnimationGarden-${{ steps.tag-version.outputs.substring }}-windows-amd64.msi
+          asset_name: AnimationGarden-${{ steps.tag-version-without-v.outputs.substring }}-windows-amd64.msi
           asset_content_type: application/octet-stream
 
       - if: ${{ env.isWindows == 'true' }}
@@ -271,7 +271,7 @@ jobs:
         with:
           upload_url: ${{ needs.create-release.outputs.upload_url }}
           asset_path: desktop/build/compose/binaries/main/exe/AnimationGarden-${{ steps.tag-version.outputs.substring }}.exe
-          asset_name: AnimationGarden-${{ steps.tag-version.outputs.substring }}-windows-amd64.exe
+          asset_name: AnimationGarden-${{ steps.tag-version-without-v.outputs.substring }}-windows-amd64.exe
           asset_content_type: application/octet-stream
 
       - if: ${{ env.isWindows == 'true' }}
@@ -282,7 +282,7 @@ jobs:
         with:
           upload_url: ${{ needs.create-release.outputs.upload_url }}
           asset_path: desktop/build/compose/binaries/main/app/desktop.zip
-          asset_name: AnimationGarden-${{ steps.tag-version.outputs.substring }}-windows-amd64.zip
+          asset_name: AnimationGarden-${{ steps.tag-version-without-v.outputs.substring }}-windows-amd64.zip
           asset_content_type: application/zip
 
       - if: ${{ env.isWindows == 'true' }}
@@ -293,7 +293,7 @@ jobs:
         with:
           upload_url: ${{ needs.create-release.outputs.upload_url }}
           asset_path: desktop/build/compose/jars/AnimationGarden-windows-x64-${{ steps.tag-version.outputs.substring }}.jar
-          asset_name: AnimationGarden-${{ steps.tag-version.outputs.substring }}-windows-amd64.jar
+          asset_name: AnimationGarden-${{ steps.tag-version-without-v.outputs.substring }}-windows-amd64.jar
           asset_content_type: application/octet-stream
 
       # Linux
@@ -306,7 +306,7 @@ jobs:
         with:
           upload_url: ${{ needs.create-release.outputs.upload_url }}
           asset_path: desktop/build/compose/binaries/main/deb/animationgarden_${{ steps.tag-version.outputs.substring }}-1_amd64.deb
-          asset_name: AnimationGarden-${{ steps.tag-version.outputs.substring }}-debian-amd64.deb
+          asset_name: AnimationGarden-${{ steps.tag-version-without-v.outputs.substring }}-debian-amd64.deb
           asset_content_type: application/octet-stream
 
       - if: ${{ env.isUbuntu == 'true' }}
@@ -317,7 +317,7 @@ jobs:
         with:
           upload_url: ${{ needs.create-release.outputs.upload_url }}
           asset_path: desktop/build/compose/binaries/main/deb/animationgarden_${{ steps.tag-version.outputs.substring }}-1_amd64.rpm
-          asset_name: AnimationGarden-${{ steps.tag-version.outputs.substring }}-redhat-amd64.rpm
+          asset_name: AnimationGarden-${{ steps.tag-version-without-v.outputs.substring }}-redhat-amd64.rpm
           asset_content_type: application/octet-stream
 
       - if: ${{ env.isUbuntu == 'true' }}
@@ -328,7 +328,7 @@ jobs:
         with:
           upload_url: ${{ needs.create-release.outputs.upload_url }}
           asset_path: desktop/build/compose/binaries/main/app/desktop.zip
-          asset_name: AnimationGarden-${{ steps.tag-version.outputs.substring }}-debian-amd64.zip
+          asset_name: AnimationGarden-${{ steps.tag-version-without-v.outputs.substring }}-debian-amd64.zip
           asset_content_type: application/zip
 
       - if: ${{ env.isUbuntu == 'true' }}
@@ -339,7 +339,7 @@ jobs:
         with:
           upload_url: ${{ needs.create-release.outputs.upload_url }}
           asset_path: desktop/build/compose/jars/AnimationGarden-linux-x64-${{ steps.tag-version.outputs.substring }}.jar
-          asset_name: AnimationGarden-${{ steps.tag-version.outputs.substring }}-debian-amd64.jar
+          asset_name: AnimationGarden-${{ steps.tag-version-without-v.outputs.substring }}-debian-amd64.jar
           asset_content_type: application/octet-stream
     outputs:
       apk_qr_url: ${{ steps.upload_apk_qr.outputs.browser_download_url }}
