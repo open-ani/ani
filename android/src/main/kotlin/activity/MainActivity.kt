@@ -255,7 +255,10 @@ class MainActivity : BaseComponentActivity() {
                 TopicsSearchResult(
                     app,
                     currentTopics,
-                    isStarred = currentStarredAnime != null
+                    isStarred = currentStarredAnime != null,
+                    onClickProxySettings = {
+                        startActivity(SettingsActivity.getIntent(this@MainActivity))
+                    }
                 )
             }
         }

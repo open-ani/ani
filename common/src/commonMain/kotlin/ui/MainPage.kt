@@ -30,6 +30,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
@@ -37,9 +38,12 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
 import kotlinx.coroutines.*
@@ -62,7 +66,9 @@ import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun MainPage(
-    app: ApplicationState, innerPadding: Dp = 16.dp,
+    app: ApplicationState,
+    innerPadding: Dp = 16.dp,
+    onClickProxySettings: () -> Unit,
 ) {
     // properties starting with "current" means it is delegated by a State, so they are observable in 'derived state',
     // and is safe to be used in callbacks.
@@ -226,7 +232,8 @@ fun MainPage(
                 TopicsSearchResult(
                     app,
                     currentTopics,
-                    isStarred = currentStarredAnime != null
+                    isStarred = currentStarredAnime != null,
+                    onClickProxySettings = onClickProxySettings,
                 )
             }
         }
@@ -275,6 +282,7 @@ fun TopicsSearchResult(
     app: ApplicationState,
     topics: List<Topic>,
     isStarred: Boolean,
+    onClickProxySettings: () -> Unit,
     lazyListState: LazyListState = rememberLazyListState(),
 ) {
     // no vertical padding
@@ -282,7 +290,6 @@ fun TopicsSearchResult(
     val currentApp by rememberUpdatedState(app)
     val organizedViewState = app.organizedViewState
     LiveTopicList(
-        modifier = Modifier,
         app = app,
         organizedViewState = organizedViewState,
         lazyListState = lazyListState,
@@ -312,6 +319,8 @@ fun TopicsSearchResult(
                 }
             }
         },
+        onClickProxySettings,
+        modifier = Modifier,
     )
 }
 
@@ -458,6 +467,7 @@ private fun LiveTopicList(
     starred: Boolean,
     onUpdateFilter: () -> Unit,
     onStarredChange: (Boolean) -> Unit,
+    onClickProxySettings: () -> Unit,
     spacedBy: Dp = 12.dp,
     modifier: Modifier = Modifier,
 ) {
@@ -484,7 +494,7 @@ private fun LiveTopicList(
             exit = exit,
         ) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                SearchResultField(fetchingState) {
+                SearchResultField(fetchingState, onClickProxySettings) {
                     Text(
                         LocalI18n.current.getString("search.empty"),
                         style = AppTheme.typography.bodyMedium,
@@ -557,7 +567,7 @@ private fun LiveTopicList(
                             }
                         }
 
-                        SearchResultField(fetchingState) {
+                        SearchResultField(fetchingState, onClickProxySettings) {
                             Text(
                                 LocalI18n.current.getString("search.end"),
                                 style = AppTheme.typography.bodyMedium
@@ -573,8 +583,10 @@ private fun LiveTopicList(
 @Composable
 private fun SearchResultField(
     fetchingState: FetchingState,
+    onClickProxySettings: () -> Unit,
     emptyResult: @Composable () -> Unit,
 ) {
+    val currentOnClickProxySettings by rememberUpdatedState(onClickProxySettings)
     when (fetchingState) {
         FetchingState.Idle, is FetchingState.Fetching -> {
             CircularProgressIndicator(color = AppTheme.colorScheme.primary)
@@ -585,13 +597,28 @@ private fun SearchResultField(
         }
 
         is FetchingState.Failed -> {
-            Text(
-                String.format(
-                    LocalI18n.current.getString("search.failed"),
-                    fetchingState.exception.localizedMessage
-                ),
-                style = AppTheme.typography.bodyMedium.run { copy(color = color.copy(alpha = 0.5f)) }
-            )
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    String.format(
+                        LocalI18n.current.getString("search.failed"),
+                        fetchingState.exception.localizedMessage
+                    ),
+                    style = AppTheme.typography.bodyMedium.run { copy(color = color.copy(alpha = 0.5f)) }
+                )
+                ClickableText(
+                    AnnotatedString(LocalI18n.current.getString("search.failed.check.proxy")),
+                    style = AppTheme.typography.bodyMedium.run {
+                        copy(
+                            color = Color.Blue.copy(alpha = 0.5f),
+                            textDecoration = TextDecoration.Underline
+                        )
+                    },
+                    onClick = { currentOnClickProxySettings() },
+                )
+            }
             // TODO: 2022/8/17 add retry
 //                                ClickableText(
 //                                    AnnotatedString(LocalI18n.current.getString("search.retry")),
@@ -656,6 +683,7 @@ private fun PreviewTopicList() {
         },
         starred = starred,
         onUpdateFilter = {},
-        onStarredChange = onStarredChange
+        onStarredChange = onStarredChange,
+        onClickProxySettings = {}
     )
 }

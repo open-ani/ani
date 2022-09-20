@@ -167,7 +167,7 @@ object AnimationGardenDesktop {
                         Scaffold(
                             topBar = {},
                             bottomBar = {},
-                            snackbarHost = { SnackbarHost(snackbar) }
+                            snackbarHost = { SnackbarHost(snackbar) },
                         ) {
                             PreferencesPage(snackbar)
                         }
@@ -212,7 +212,10 @@ object AnimationGardenDesktop {
                         MainWindowContent(
                             hostIsMacOs = hostIsMacOs,
                             app = app,
-                            windowImmersed = windowImmersed
+                            windowImmersed = windowImmersed,
+                            onClickProxySettings = {
+                                showPreferences = true
+                            }
                         )
                     }
                 }
@@ -389,6 +392,7 @@ private fun MainWindowContent(
     hostIsMacOs: Boolean,
     windowImmersed: Boolean,
     app: ApplicationState,
+    onClickProxySettings: () -> Unit,
 ) {
     Box(
         Modifier.background(color = AppTheme.colorScheme.background)
@@ -404,7 +408,7 @@ private fun MainWindowContent(
             )
 
             Box(Modifier.padding(all = paddingByWindowSize)) {
-                MainPage(app, innerPadding = paddingByWindowSize)
+                MainPage(app, innerPadding = paddingByWindowSize, onClickProxySettings = onClickProxySettings)
             }
         }
     }
@@ -420,6 +424,6 @@ fun PreviewMainWindowMacOS() {
         )
     }
     ProvideCompositionLocalsForPreview {
-        MainWindowContent(hostIsMacOs = false, windowImmersed = false, app)
+        MainWindowContent(hostIsMacOs = false, windowImmersed = false, app, onClickProxySettings = {})
     }
 }
