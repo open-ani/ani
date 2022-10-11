@@ -18,10 +18,14 @@
 
 buildscript {
     dependencies {
+//        val atomicfuVersion = "0.18.3"
+//        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:$atomicfuVersion") {
+//            exclude("org.jetbrains.kotlin", "atomicfu")
+//        }
+//        classpath("org.jetbrains.kotlin", "atomicfu", atomicfuVersion)
         classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:0.18.3")
     }
 }
-
 plugins {
     kotlin("multiplatform") apply false
     kotlin("android") apply false

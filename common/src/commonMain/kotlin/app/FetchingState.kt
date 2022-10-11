@@ -18,7 +18,13 @@
 
 package me.him188.animationgarden.app.app
 
+import androidx.compose.runtime.Stable
+import io.ktor.client.plugins.*
+import io.ktor.util.logging.*
 import me.him188.animationgarden.api.model.SearchQuery
+import me.him188.animationgarden.app.i18n.ResourceBundle
+import org.slf4j.LoggerFactory
+import kotlin.toString as toStringKotlin
 
 sealed class FetchingState {
     object Idle : FetchingState()
@@ -31,4 +37,26 @@ sealed class FetchingState {
     class Failed(
         val exception: Throwable
     ) : Completed()
+}
+
+
+private val logger = LoggerFactory.getLogger(FetchingState::class.java)!!
+
+@Stable
+fun FetchingState.Failed.render(resources: ResourceBundle): String = buildString {
+    val localizedMessage =
+        exception.localizedMessage.toStringKotlin() // use Kotlin's extension since `localizedMessage` is nullable.
+
+    val exception = exception
+    logger.error(exception)
+    if (exception is ResponseException) {
+        when (exception.response.status.value) {
+            in 500 until 600 -> {
+                append(resources.getString("search.failed.tips"))
+                append(resources.getString("search.failed.tips.server.error"))
+            }
+        }
+    }
+
+    append(localizedMessage)
 }

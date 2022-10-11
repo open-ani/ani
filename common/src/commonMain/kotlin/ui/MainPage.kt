@@ -601,11 +601,14 @@ private fun SearchResultField(
                 verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                val resources = LocalI18n.current
                 Text(
-                    String.format(
-                        LocalI18n.current.getString("search.failed"),
-                        fetchingState.exception.localizedMessage
-                    ),
+                    remember(fetchingState) {
+                        String.format(
+                            resources.getString("search.failed"),
+                            fetchingState.render(resources)
+                        )
+                    },
                     style = AppTheme.typography.bodyMedium.run { copy(color = color.copy(alpha = 0.5f)) }
                 )
                 ClickableText(
