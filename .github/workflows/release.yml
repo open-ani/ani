@@ -84,14 +84,14 @@ jobs:
           default_return_value: ${{ steps.tag.outputs.tag }}
 
       - id: tag-version-without-metadata
-        uses: actions/github-script@0.9.0
+        uses: actions/github-script@v6
         env:
-          tag: ${{ steps.tag-version-without-v.outputs.value }}
+          tag: ${{ steps.tag-version-without-v.outputs.substring }}
         with:
           script: |
             const { tag } = process.env;
             let tag1 = tag.split('-')[0]; // substring before '-'
-            core.setOutput('tag', tag1);
+            return tag1;
 
       - if: ${{ env.isUnix == 'true' }}
         uses: actions/setup-java@v2
@@ -227,7 +227,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
         with:
           upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: desktop/build/compose/binaries/main/dmg/AnimationGarden-${{ steps.tag-version.outputs.substring }}.dmg
+          asset_path: desktop/build/compose/binaries/main/dmg/AnimationGarden-${{ steps.tag-version-without-metadata.outputs.result }}.dmg
           asset_name: AnimationGarden-${{ steps.tag-version-without-v.outputs.substring }}-macos-amd64.dmg
           asset_content_type: application/octet-stream
 
@@ -249,7 +249,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
         with:
           upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: desktop/build/compose/jars/AnimationGarden-macos-x64-${{ steps.tag-version.outputs.substring }}.jar
+          asset_path: desktop/build/compose/jars/AnimationGarden-macos-x64-${{ steps.tag-version-without-metadata.outputs.result }}.jar
           asset_name: AnimationGarden-${{ steps.tag-version-without-v.outputs.substring }}-macos-amd64.jar
           asset_content_type: application/octet-stream
 
@@ -266,7 +266,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
         with:
           upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: desktop/build/compose/binaries/main/msi/AnimationGarden-${{ steps.tag-version.outputs.substring }}.msi
+          asset_path: desktop/build/compose/binaries/main/msi/AnimationGarden-${{ steps.tag-version-without-metadata.outputs.result }}.msi
           asset_name: AnimationGarden-${{ steps.tag-version-without-v.outputs.substring }}-windows-amd64.msi
           asset_content_type: application/octet-stream
 
@@ -277,7 +277,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
         with:
           upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: desktop/build/compose/binaries/main/exe/AnimationGarden-${{ steps.tag-version.outputs.substring }}.exe
+          asset_path: desktop/build/compose/binaries/main/exe/AnimationGarden-${{ steps.tag-version-without-metadata.outputs.result }}.exe
           asset_name: AnimationGarden-${{ steps.tag-version-without-v.outputs.substring }}-windows-amd64.exe
           asset_content_type: application/octet-stream
 
@@ -299,7 +299,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
         with:
           upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: desktop/build/compose/jars/AnimationGarden-windows-x64-${{ steps.tag-version.outputs.substring }}.jar
+          asset_path: desktop/build/compose/jars/AnimationGarden-windows-x64-${{ steps.tag-version-without-metadata.outputs.result }}.jar
           asset_name: AnimationGarden-${{ steps.tag-version-without-v.outputs.substring }}-windows-amd64.jar
           asset_content_type: application/octet-stream
 
@@ -312,7 +312,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
         with:
           upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: desktop/build/compose/binaries/main/deb/animationgarden_${{ steps.tag-version.outputs.substring }}-1_amd64.deb
+          asset_path: desktop/build/compose/binaries/main/deb/animationgarden_${{ steps.tag-version-without-metadata.outputs.result }}-1_amd64.deb
           asset_name: AnimationGarden-${{ steps.tag-version-without-v.outputs.substring }}-debian-amd64.deb
           asset_content_type: application/octet-stream
 
@@ -323,7 +323,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
         with:
           upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: desktop/build/compose/binaries/main/deb/animationgarden_${{ steps.tag-version.outputs.substring }}-1_amd64.rpm
+          asset_path: desktop/build/compose/binaries/main/deb/animationgarden_${{ steps.tag-version-without-metadata.outputs.result }}-1_amd64.rpm
           asset_name: AnimationGarden-${{ steps.tag-version-without-v.outputs.substring }}-redhat-amd64.rpm
           asset_content_type: application/octet-stream
 
@@ -345,7 +345,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
         with:
           upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: desktop/build/compose/jars/AnimationGarden-linux-x64-${{ steps.tag-version.outputs.substring }}.jar
+          asset_path: desktop/build/compose/jars/AnimationGarden-linux-x64-${{ steps.tag-version-without-metadata.outputs.result }}.jar
           asset_name: AnimationGarden-${{ steps.tag-version-without-v.outputs.substring }}-debian-amd64.jar
           asset_content_type: application/octet-stream
     outputs:
