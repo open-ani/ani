@@ -46,6 +46,7 @@ includeProject(":api", "api")
 includeProject(":common", "common")
 includeProject(":desktop", "desktop")
 includeProject(":server", "server")
+includeProject(":ci-helper", "ci-helper")
 includeProject(":animation-garden-android", "android")
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")

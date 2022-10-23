@@ -69,20 +69,20 @@ android {
         kotlinCompilerExtensionVersion = "1.2.0"
     }
     signingConfigs {
-        kotlin.runCatching { getProperty("signing.release.storeFileFromRoot") }.getOrNull()?.let {
+        kotlin.runCatching { getProperty("signing_release_storeFileFromRoot") }.getOrNull()?.let {
             create("release") {
                 storeFile = rootProject.file(it)
-                storePassword = getProperty("signing.release.storePassword")
-                keyAlias = getProperty("signing.release.keyAlias")
-                keyPassword = getProperty("signing.release.keyPassword")
+                storePassword = getProperty("signing_release_storePassword")
+                keyAlias = getProperty("signing_release_keyAlias")
+                keyPassword = getProperty("signing_release_keyPassword")
             }
         }
-        kotlin.runCatching { getProperty("signing.release.storeFile") }.getOrNull()?.let {
+        kotlin.runCatching { getProperty("signing_release_storeFile") }.getOrNull()?.let {
             create("release") {
                 storeFile = file(it)
-                storePassword = getProperty("signing.release.storePassword")
-                keyAlias = getProperty("signing.release.keyAlias")
-                keyPassword = getProperty("signing.release.keyPassword")
+                storePassword = getProperty("signing_release_storePassword")
+                keyAlias = getProperty("signing_release_keyAlias")
+                keyPassword = getProperty("signing_release_keyPassword")
             }
         }
     }

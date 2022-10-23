@@ -22,25 +22,36 @@ jobs:
 
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1
+        uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
         with:
           tag_name: ${{ steps.tag.outputs.tag }}
-          release_name: ${{ steps.tag-version.outputs.substring }}
+          name: ${{ steps.tag-version.outputs.substring }}
           body: |
             Automatically created from tag ${{ steps.tag.outputs.tag }}. Do not change anything until assets are uploaded.
             
             ----
             
-            有关附件的说明，查看[下载](https://github.com/Him188/animation-garden-desktop#%E4%B8%8B%E8%BD%BD)。
-            可扫描以下二维码下载 Android 版本：
-            ![](https://github.com/Him188/animation-garden-desktop/releases/download/${{ steps.tag.outputs.tag }}/AnimationGarden-${{ steps.tag-version-without-v.outputs.substring }}.apk.qrcode.png)
+            **附件:**
+            
+            - `.zip` 是包含 JRE 的解压即用的绿色版本；
+            - `.dmg`、`.deb`、`.rpm` 和 `.msi` 分别是 macOS、Debian、RedHat 和 Windows 平台的安装程序；
+            - `.exe` 是包含 JRE 的 Windows 程序，可以直接运行。
+            - `.jar` 是不包含 JRE 的最小程序，需要配合 JRE 11 及以上使用；
+            - `.apk` 是 Android 应用，支持的最低 Android 版本为 8.0。
+            - `-server` 是服务端，解压后执行 `bin/server` 查看用法。
+            
+            注意，桌面平台仅支持 64 位操作系统。在使用 macOS 的安装程序时可能提示文件损坏，这是因为此版本应用没有签名，可以忽略错误继续使用。
+            
+            也可扫描以下二维码下载 Android 版本：
+            ![](https://github.com/Him188/animation-garden-desktop/releases/download/${{ steps.tag.outputs.tag }}/AnimationGarden-${{ steps.tag-version.outputs.substring }}.apk.qrcode.png)
 
           draft: true
           prerelease: false
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
+      id: ${{ steps.create_release.outputs.id }}
 
   release:
     needs: [ create-release ]
@@ -69,29 +80,6 @@ jobs:
         id: tag
         uses: dawidd6/action-get-tag@v1
 
-      - uses: bhowell2/github-substring-action@v1.0.0
-        id: tag-version-without-v # usage:  ${{ steps.tag-version-without-v.outputs.substring }}
-        with:
-          value: ${{ steps.tag.outputs.tag }}
-          index_of_str: "v"
-          default_return_value: ${{ steps.tag.outputs.tag}}
-
-      - uses: bhowell2/github-substring-action@v1.0.0
-        id: tag-version # usage:  ${{ steps.tag-version.outputs.substring }}
-        with:
-          value: ${{ steps.tag.outputs.tag }}
-          index_of_str: "v"
-          default_return_value: ${{ steps.tag.outputs.tag }}
-
-      - id: tag-version-without-metadata
-        uses: actions/github-script@0.9.0
-        env:
-          tag: ${{ steps.tag-version-without-v.outputs.value }}
-        with:
-          script: |
-            const { tag } = process.env;
-            let tag1 = tag.split('-')[0]; // substring before '-'
-            core.setOutput('tag', tag1);
 
       - if: ${{ env.isUnix == 'true' }}
         uses: actions/setup-java@v2
@@ -104,6 +92,7 @@ jobs:
         with:
           distribution: microsoft
           java-version: 17
+
 
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
@@ -132,14 +121,16 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
+
       - if: ${{ env.isUnix == 'true' }}
         run: chmod -R 777 *
+
 
       - name: Clean and download dependencies
         run: ./gradlew clean ${{ env.gradleArgs }}
 
       - if: ${{ env.isMac == 'true' }}
-        name: Prepare signing key
+        name: Prepare Android Signing Key
         id: android_signing_key
         uses: timheuer/base64-to-file@v1.1
         with:
@@ -151,22 +142,19 @@ jobs:
         name: Build Android APK
         run: ./gradlew assembleRelease ${{ env.gradleArgs }}
         env:
-          "signing.release.storeFileFromRoot": ${{ steps.android_signing_key.outputs.filePath }}
-          "signing.release.storePassword": ${{ secrets.SIGNING_RELEASE_STOREPASSWORD }}
-          "signing.release.keyAlias": ${{ secrets.SIGNING_RELEASE_KEYALIAS }}
-          "signing.release.keyPassword": ${{ secrets.SIGNING_RELEASE_KEYPASSWORD }}
+          "signing_release_storeFileFromRoot": ${{ steps.android_signing_key.outputs.filePath }}
+          "signing_release_storePassword": ${{ secrets.SIGNING_RELEASE_STOREPASSWORD }}
+          "signing_release_keyAlias": ${{ secrets.SIGNING_RELEASE_KEYALIAS }}
+          "signing_release_keyPassword": ${{ secrets.SIGNING_RELEASE_KEYPASSWORD }}
 
       - if: ${{ env.isMac == 'true' }}
         name: Upload Android APK
-        uses: actions/upload-release-asset@v1
-        id: upload_apk
+        run: "./gradlew :ci-helper:uploadAndroidApk"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
-        with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: android/build/outputs/apk/release/animation-garden-android-release.apk
-          asset_name: AnimationGarden-${{ steps.tag-version-without-v.outputs.substring }}.apk
-          asset_content_type: application/vnd.android.package-archive
+          GITHUB_REPOSITORY: ${{ secrets.GITHUB_REPOSITORY  }}
+          CI_RELEASE_ID: ${{ needs.create-release.outputs.id }}
+          CI_TAG: ${{ steps.tag.outputs.tag }}
 
       - if: ${{ env.isMac == 'true' }}
         name: Generate QR code for APK
@@ -177,179 +165,58 @@ jobs:
 
       - if: ${{ env.isMac == 'true' }}
         name: Upload QR code
-        id: upload_apk_qr
-        uses: actions/upload-release-asset@v1
+        run: "./gradlew :ci-helper:uploadAndroidApkQR"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
-        with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: apk-qrcode.png
-          asset_name: AnimationGarden-${{ steps.tag-version-without-v.outputs.substring }}.apk.qrcode.png
-          asset_content_type: image/png
+          GITHUB_REPOSITORY: ${{ secrets.GITHUB_REPOSITORY  }}
+          CI_RELEASE_ID: ${{ needs.create-release.outputs.id }}
+          CI_TAG: ${{ steps.tag.outputs.tag }}
 
       - name: Assemble
         run: ./gradlew assemble ${{ env.gradleArgs }}
 
       - name: Check
         run: ./gradlew check ${{ env.gradleArgs }}
-
+      
+      #          createReleaseDistributable 
+      #          packageReleaseDistributionForCurrentOS 
+      #          packageReleaseUberJarForCurrentOS 
       - name: Package
-        run: ./gradlew createDistributable package packageUberJarForCurrentOS ${{ env.gradleArgs }}
-      #        continue-on-error: true
-
-      #      - if: ${{ env.isMac == 'true' }}
-      #        name: Upload error logs
-      #        uses: actions/upload-artifact@v3
-      #        with:
-      #          name: errors-${{ matrix.os }}
-      #          path: desktop/build/compose/logs/
-      #        continue-on-error: true
-
-      #      - name: Generate Line Temp File
-      #        run: "cat CHANGELOG.md | grep -n '## \\\\' | cut -d: -f1 | head -n 2 >> line.tmp"
-      #
-      #      - name: Generate Release Log
-      #        run: "cat CHANGELOG.md | head -n $((`tail -n 1 line.tmp`-1)) | tail -n +`head -n 1 line.tmp` >> release.log"
+        run: >
+          ./gradlew 
+          createDistributable 
+          packageDistributionForCurrentOS 
+          packageUberJarForCurrentOS 
+          ${{ env.gradleArgs }}
 
       # Upload assets for release
 
-      - if: ${{ env.isUnix == 'true' }}
-        name: Zip distribution
-        run: zip -q -r desktop.zip *
-        working-directory: desktop/build/compose/binaries/main/app
+      - name: Upload Desktop Distribution Zip
+        run: "./gradlew :ci-helper:uploadDesktopDistributionZip"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
+          GITHUB_REPOSITORY: ${{ secrets.GITHUB_REPOSITORY  }}
+          CI_RELEASE_ID: ${{ needs.create-release.outputs.id }}
+          CI_TAG: ${{ steps.tag.outputs.tag }}
 
-      # macOS
+      - name: Upload Desktop Installers
+        run: "./gradlew :ci-helper:uploadDesktopInstallers"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
+          GITHUB_REPOSITORY: ${{ secrets.GITHUB_REPOSITORY  }}
+          CI_RELEASE_ID: ${{ needs.create-release.outputs.id }}
+          CI_TAG: ${{ steps.tag.outputs.tag }}
 
       - if: ${{ env.isMac == 'true' }}
-        name: Upload installer for macOS
-        uses: actions/upload-release-asset@v1
+        name: Upload Server Distribution
+        run: "./gradlew :ci-helper:uploadServerDistribution"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
-        with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: desktop/build/compose/binaries/main/dmg/AnimationGarden-${{ steps.tag-version.outputs.substring }}.dmg
-          asset_name: AnimationGarden-${{ steps.tag-version-without-v.outputs.substring }}-macos-amd64.dmg
-          asset_content_type: application/octet-stream
+          GITHUB_REPOSITORY: ${{ secrets.GITHUB_REPOSITORY  }}
+          CI_RELEASE_ID: ${{ needs.create-release.outputs.id }}
+          CI_TAG: ${{ steps.tag.outputs.tag }}
 
-      - if: ${{ env.isMac == 'true' }}
-        name: Upload distribution archive for macOS
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
-        with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: desktop/build/compose/binaries/main/app/desktop.zip
-          asset_name: AnimationGarden-${{ steps.tag-version-without-v.outputs.substring }}-macos-amd64.zip
-          asset_content_type: application/zip
 
-      - if: ${{ env.isMac == 'true' }}
-        name: Upload JAR for macOS
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
-        with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: desktop/build/compose/jars/AnimationGarden-macos-x64-${{ steps.tag-version.outputs.substring }}.jar
-          asset_name: AnimationGarden-${{ steps.tag-version-without-v.outputs.substring }}-macos-amd64.jar
-          asset_content_type: application/octet-stream
-
-      # Windows
-
-      - if: ${{ env.isWindows == 'true' }}
-        shell: powershell
-        run: Compress-Archive desktop/build/compose/binaries/main/app/AnimationGarden desktop/build/compose/binaries/main/app/desktop.zip
-
-      - if: ${{ env.isWindows == 'true' }}
-        name: Upload installer for Windows
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
-        with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: desktop/build/compose/binaries/main/msi/AnimationGarden-${{ steps.tag-version.outputs.substring }}.msi
-          asset_name: AnimationGarden-${{ steps.tag-version-without-v.outputs.substring }}-windows-amd64.msi
-          asset_content_type: application/octet-stream
-
-      - if: ${{ env.isWindows == 'true' }}
-        name: Upload installer for Windows
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
-        with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: desktop/build/compose/binaries/main/exe/AnimationGarden-${{ steps.tag-version.outputs.substring }}.exe
-          asset_name: AnimationGarden-${{ steps.tag-version-without-v.outputs.substring }}-windows-amd64.exe
-          asset_content_type: application/octet-stream
-
-      - if: ${{ env.isWindows == 'true' }}
-        name: Upload distribution archive for Windows
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
-        with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: desktop/build/compose/binaries/main/app/desktop.zip
-          asset_name: AnimationGarden-${{ steps.tag-version-without-v.outputs.substring }}-windows-amd64.zip
-          asset_content_type: application/zip
-
-      - if: ${{ env.isWindows == 'true' }}
-        name: Upload JAR for Windows
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
-        with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: desktop/build/compose/jars/AnimationGarden-windows-x64-${{ steps.tag-version.outputs.substring }}.jar
-          asset_name: AnimationGarden-${{ steps.tag-version-without-v.outputs.substring }}-windows-amd64.jar
-          asset_content_type: application/octet-stream
-
-      # Linux
-
-      - if: ${{ env.isUbuntu == 'true' }}
-        name: Upload installer for Debian
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
-        with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: desktop/build/compose/binaries/main/deb/animationgarden_${{ steps.tag-version.outputs.substring }}-1_amd64.deb
-          asset_name: AnimationGarden-${{ steps.tag-version-without-v.outputs.substring }}-debian-amd64.deb
-          asset_content_type: application/octet-stream
-
-      - if: ${{ env.isUbuntu == 'true' }}
-        name: Upload installer for Red Hat
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
-        with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: desktop/build/compose/binaries/main/deb/animationgarden_${{ steps.tag-version.outputs.substring }}-1_amd64.rpm
-          asset_name: AnimationGarden-${{ steps.tag-version-without-v.outputs.substring }}-redhat-amd64.rpm
-          asset_content_type: application/octet-stream
-
-      - if: ${{ env.isUbuntu == 'true' }}
-        name: Upload distribution archive for Debian
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
-        with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: desktop/build/compose/binaries/main/app/desktop.zip
-          asset_name: AnimationGarden-${{ steps.tag-version-without-v.outputs.substring }}-debian-amd64.zip
-          asset_content_type: application/zip
-
-      - if: ${{ env.isUbuntu == 'true' }}
-        name: Upload JAR for Debian
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
-        with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: desktop/build/compose/jars/AnimationGarden-linux-x64-${{ steps.tag-version.outputs.substring }}.jar
-          asset_name: AnimationGarden-${{ steps.tag-version-without-v.outputs.substring }}-debian-amd64.jar
-          asset_content_type: application/octet-stream
-    outputs:
-      apk_qr_url: ${{ steps.upload_apk_qr.outputs.browser_download_url }}
 
 #  apk-qrcode:
 #    needs: [ release ]
