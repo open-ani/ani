@@ -61,6 +61,10 @@ Android 版与桌面版的功能是一样的。
 
 ![](.README_images/star-and-remembering.gif)
 
+### 多端即时同步
+
+使用同一个同步 token 时，在一个客户端进行修改可以即时同步到其他在线客户端，确保流畅体验。
+
 ### 界面简洁流畅
 
 [MD3]: https://m3.material.io/
