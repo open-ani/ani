@@ -25,7 +25,7 @@ Android 版与桌面版的功能是一样的。
 
 ## 参与
 
-欢迎你提交 [PR](https://github.com/Him188/animation-garden-desktop/pulls) 参与开发。
+欢迎你提交 [PR](https://github.com/Him188/animation-garden-desktop/pulls) [参与开发](CONTRIBUTING.md)。
 
 由于我家有咖啡机，就不需要你捐助咖啡了，谢谢你。
 
