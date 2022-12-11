@@ -296,10 +296,10 @@ fun TopicsSearchResult(
         topics = topics,
         onClickCard = { topic ->
             currentApp.launchDataSynchronization {
-                topic.details?.episode?.let { currentApp.markEpisodeWatched(it) }
                 withContext(Dispatchers.Main) {
                     browse(currentContext, topic.magnetLink.value)
                 }
+                topic.details?.episode?.let { currentApp.markEpisodeWatched(it) }
             }
         },
         starred = isStarred,
