@@ -158,15 +158,11 @@ jobs:
 
       - if: ${{ env.isMac == 'true' }}
         name: Upload Android APK
-        uses: actions/upload-release-asset@v1
-        id: upload_apk
+        run: "./gradlew :ci-helper:uploadAndroidApk"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
-        with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: android/build/outputs/apk/release/animation-garden-android-release.apk
-          asset_name: AnimationGarden-${{ steps.tag-version-without-v.outputs.substring }}.apk
-          asset_content_type: application/vnd.android.package-archive
+          "ci-helper.upload-url": ${{ needs.create-release.outputs.upload_url }}
+          "ci-helper.tag": ${{ steps.tag.outputs.tag }}
 
       - if: ${{ env.isMac == 'true' }}
         name: Generate QR code for APK

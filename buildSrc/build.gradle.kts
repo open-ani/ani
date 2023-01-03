@@ -26,4 +26,6 @@ repositories {
 
 dependencies {
     gradleApi()
+    implementation("io.ktor:ktor-client-core:2.0.3") // Higher versions require too high Kotlin version
+    implementation("io.ktor:ktor-client-okhttp:2.0.3") // Higher versions require too high Kotlin version
 }
