@@ -18,14 +18,10 @@
 
 buildscript {
     dependencies {
-//        val atomicfuVersion = "0.18.3"
-//        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:$atomicfuVersion") {
-//            exclude("org.jetbrains.kotlin", "atomicfu")
-//        }
-//        classpath("org.jetbrains.kotlin", "atomicfu", atomicfuVersion)
-        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:0.18.3")
+        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:0.18.5") // 0.19 requires Kotlin 1.8, but Compose 1.2.2 need exactly 1.7.20
     }
 }
+
 plugins {
     kotlin("multiplatform") apply false
     kotlin("android") apply false

@@ -19,14 +19,12 @@
 @file:Suppress("OPT_IN_IS_NOT_ENABLED", "UnstableApiUsage")
 @file:OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
 
-import org.jetbrains.compose.compose
-
 plugins {
     kotlin("multiplatform")
     id("org.jetbrains.compose")
     id("com.android.library")
-    id("kotlinx-atomicfu")
     kotlin("plugin.serialization")
+    id("kotlinx-atomicfu")
 }
 
 kotlin.sourceSets.all {

@@ -24,8 +24,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
-    id("org.jetbrains.compose")
     id("kotlinx-atomicfu")
+    id("org.jetbrains.compose")
 }
 
 dependencies {

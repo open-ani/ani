@@ -145,7 +145,7 @@ fun WindowEx(
                 appliedState.size = state.size
             }
             if (state.position != appliedState.position) {
-                window.setPositionSafely(state.position)
+                window.setPositionSafely(state.position) { null }
                 appliedState.position = state.position
             }
             if (state.placement != appliedState.placement) {
