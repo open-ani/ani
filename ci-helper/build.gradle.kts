@@ -73,8 +73,10 @@ enum class OS(
 }
 
 
-object ArtifactNamer {
-    private const val APP_NAME = "AnimationGarden"
+val namer = ArtifactNamer()
+
+class ArtifactNamer {
+    private val APP_NAME = "AnimationGarden"
 
     fun getFullVersionFromTag(tag: String): String {
         return tag.substringAfter("v")
@@ -108,7 +110,7 @@ tasks.register("uploadAndroidApk") {
     doLast {
         ReleaseEnvironment().run {
             uploadReleaseAsset(
-                name = ArtifactNamer.androidApp(fullVersion),
+                name = namer.androidApp(fullVersion),
                 contentType = "application/vnd.android.package-archive",
                 file = project(":android").buildDir.resolve("outputs/apk/release").walk()
                     .single { it.extension == "apk" && it.name.contains("release") },
@@ -121,7 +123,7 @@ tasks.register("uploadAndroidApkQR") {
     doLast {
         ReleaseEnvironment().run {
             uploadReleaseAsset(
-                name = ArtifactNamer.androidAppQR(fullVersion),
+                name = namer.androidAppQR(fullVersion),
                 contentType = "image/png",
                 file = rootProject.file("apk-qrcode.png"),
             )
@@ -141,7 +143,7 @@ tasks.register("uploadDesktopDistributionZip") {
     doLast {
         ReleaseEnvironment().run {
             uploadReleaseAsset(
-                name = ArtifactNamer.desktopDistributionFile(
+                name = namer.desktopDistributionFile(
                     fullVersion,
                     osName = hostOS.name.toLowerCase(),
                     suffixName = "zip"
@@ -165,7 +167,7 @@ tasks.register("uploadDesktopInstallers") {
                 archName: String = hostArch,
             ) {
                 uploadReleaseAsset(
-                    name = ArtifactNamer.desktopDistributionFile(fullVersion, osName, archName, suffixName = kind),
+                    name = namer.desktopDistributionFile(fullVersion, osName, archName, suffixName = kind),
                     contentType = "application/octet-stream",
                     file = project(":desktop").buildDir.resolve("compose/binaries/main/$kind")
                         .walk()
@@ -175,7 +177,7 @@ tasks.register("uploadDesktopInstallers") {
 
             // jar
             uploadReleaseAsset(
-                name = ArtifactNamer.desktopDistributionFile(
+                name = namer.desktopDistributionFile(
                     fullVersion,
                     osName = hostOS.name.toLowerCase(),
                     suffixName = "jar"
@@ -219,7 +221,7 @@ class ReleaseEnvironment {
         getProperty("ci-helper.tag").also { println("tag = $it") }
     }
     val fullVersion by lazy {
-        ArtifactNamer.getFullVersionFromTag(tag).also { println("fullVersion = $it") }
+        namer.getFullVersionFromTag(tag).also { println("fullVersion = $it") }
     }
     val releaseId by lazy {
         getProperty("ci-helper.release-id").also { println("releaseId = $it") }
@@ -238,7 +240,7 @@ class ReleaseEnvironment {
     ) {
         check(file.exists()) { "File '${file.absolutePath}' does not exist when attempting to upload '$name'." }
         val tag = getProperty("ci-helper.tag")
-        val fullVersion = ArtifactNamer.getFullVersionFromTag(tag)
+        val fullVersion = namer.getFullVersionFromTag(tag)
         val releaseId = getProperty("ci-helper.release-id")
         val repository = getProperty("GITHUB_REPOSITORY")
         val token = getProperty("GITHUB_TOKEN")
