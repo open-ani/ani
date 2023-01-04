@@ -22,12 +22,12 @@ jobs:
 
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1
+        uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
         with:
           tag_name: ${{ steps.tag.outputs.tag }}
-          release_name: ${{ steps.tag-version.outputs.substring }}
+          name: ${{ steps.tag-version.outputs.substring }}
           body: |
             Automatically created from tag ${{ steps.tag.outputs.tag }}. Do not change anything until assets are uploaded.
             
