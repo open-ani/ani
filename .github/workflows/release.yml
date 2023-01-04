@@ -33,8 +33,17 @@ jobs:
             
             ----
             
-            有关附件的说明，查看[下载](https://github.com/Him188/animation-garden-desktop#%E4%B8%8B%E8%BD%BD)。
-            可扫描以下二维码下载 Android 版本：
+            **附件:**
+            
+            - `.zip` 是包含 JRE 的解压即用的绿色版本；
+            - `.dmg`、`.deb` 和 `.msi` 分别是 macOS、Ubuntu 和 Windows 平台的安装程序；
+            - `.exe` 是包含 JRE 的 Windows 程序，可以直接运行。
+            - `.jar` 是不包含 JRE 的最小程序，需要配合 JRE 11 及以上使用；
+            - `.apk` 是 Android 应用，支持的最低 Android 版本为 8.0。
+            
+            注意，桌面平台仅支持 64 位操作系统。在使用 macOS 的安装程序时可能提示文件损坏，这是因为此版本应用没有签名，可以忽略错误继续使用。
+            
+            也可扫描以下二维码下载 Android 版本：
             ![](https://github.com/Him188/animation-garden-desktop/releases/download/${{ steps.tag.outputs.tag }}/AnimationGarden-${{ steps.tag-version-without-v.outputs.substring }}.apk.qrcode.png)
 
           draft: true
@@ -69,29 +78,6 @@ jobs:
         id: tag
         uses: dawidd6/action-get-tag@v1
 
-      - uses: bhowell2/github-substring-action@v1.0.0
-        id: tag-version-without-v # usage:  ${{ steps.tag-version-without-v.outputs.substring }}
-        with:
-          value: ${{ steps.tag.outputs.tag }}
-          index_of_str: "v"
-          default_return_value: ${{ steps.tag.outputs.tag}}
-
-      - uses: bhowell2/github-substring-action@v1.0.0
-        id: tag-version # usage:  ${{ steps.tag-version.outputs.substring }}
-        with:
-          value: ${{ steps.tag.outputs.tag }}
-          index_of_str: "v"
-          default_return_value: ${{ steps.tag.outputs.tag }}
-
-      - id: tag-version-without-metadata
-        uses: actions/github-script@v6
-        env:
-          tag: ${{ steps.tag-version-without-v.outputs.substring }}
-        with:
-          script: |
-            const { tag } = process.env;
-            let tag1 = tag.split('-')[0]; // substring before '-'
-            return tag1;
 
       - if: ${{ env.isUnix == 'true' }}
         uses: actions/setup-java@v2
@@ -104,6 +90,7 @@ jobs:
         with:
           distribution: microsoft
           java-version: 17
+
 
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
@@ -132,14 +119,16 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
+
       - if: ${{ env.isUnix == 'true' }}
         run: chmod -R 777 *
+
 
       - name: Clean and download dependencies
         run: ./gradlew clean ${{ env.gradleArgs }}
 
       - if: ${{ env.isMac == 'true' }}
-        name: Prepare signing key
+        name: Prepare Android Signing Key
         id: android_signing_key
         uses: timheuer/base64-to-file@v1.1
         with:
@@ -188,8 +177,12 @@ jobs:
         run: ./gradlew check ${{ env.gradleArgs }}
 
       - name: Package
-        run: ./gradlew createDistributable package packageUberJarForCurrentOS ${{ env.gradleArgs }}
-      #        continue-on-error: true
+        run: >
+          ./gradlew 
+          createReleaseDistributable 
+          packageReleaseDistributionForCurrentOS 
+          packageReleaseUberJarForCurrentOS 
+          ${{ env.gradleArgs }}
 
       # Upload assets for release
 

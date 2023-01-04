@@ -112,7 +112,7 @@ tasks.register("uploadAndroidApk") {
             uploadReleaseAsset(
                 name = namer.androidApp(fullVersion),
                 contentType = "application/vnd.android.package-archive",
-                file = project(":android").buildDir.resolve("outputs/apk/release").walk()
+                file = project(":animation-garden-android").buildDir.resolve("outputs/apk/release").walk()
                     .single { it.extension == "apk" && it.name.contains("release") },
             )
         }
