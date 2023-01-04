@@ -58,17 +58,19 @@ tasks.register("uploadAndroidApk") {
     doLast {
         val tag = getProperty("ci-helper.tag")
         val fullVersion = ArtifactNamer.getFullVersionFromTag(tag)
-        val uploadUrl = getProperty("ci-helper.upload-url")
-//        val repository = getProperty("GITHUB_REPOSITORY")
+        val releaseId = getProperty("ci-helper.release-id")
+        val repository = getProperty("GITHUB_REPOSITORY")
         val token = getProperty("GITHUB_TOKEN")
 
         println("tag = $tag")
         println("fullVersion = $fullVersion")
-        println("uploadUrl = $uploadUrl")
+        println("releaseId = $releaseId")
         println("token = ${token.isNotEmpty()}")
+        println("repository = $repository")
 
         runBlocking {
-            val resp = HttpClient().post(uploadUrl) {
+            val url = "https://uploads.github.com/repos/$repository/releases/$releaseId/assets"
+            val resp = HttpClient().post(url) {
                 header("Authorization", "Bearer $token")
                 header("Accept", "application/vnd.github+json")
                 parameter("name", ArtifactNamer.androidApp(fullVersion))
@@ -79,7 +81,7 @@ tasks.register("uploadAndroidApk") {
                 )
             }
             check(resp.status.isSuccess()) {
-                "Request $uploadUrl failed with ${resp.status}. Response: ${
+                "Request $url failed with ${resp.status}. Response: ${
                     resp.runCatching { bodyAsText() }.getOrNull()
                 }"
             }

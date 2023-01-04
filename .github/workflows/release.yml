@@ -161,7 +161,8 @@ jobs:
         run: "./gradlew :ci-helper:uploadAndroidApk"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
-          "ci-helper.upload-url": ${{ needs.create-release.outputs.upload_url }}
+          GITHUB_REPOSITORY: ${{ secrets.GITHUB_REPOSITORY  }}
+          "ci-helper.release-id": ${{ needs.create-release.outputs.id }}
           "ci-helper.tag": ${{ steps.tag.outputs.tag }}
 
       - if: ${{ env.isMac == 'true' }}
