@@ -23,6 +23,7 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
+import org.apache.tools.ant.taskdefs.condition.Os
 
 fun HttpRequestBuilder.contentType(type: String) {
     return contentType(ContentType.parse(type))
@@ -43,47 +44,163 @@ kotlin.sourceSets.all {
     languageSettings.enableLanguageFeature("ContextReceivers")
 }
 
+val hostOS: OS by lazy {
+    when {
+        Os.isFamily(Os.FAMILY_WINDOWS) -> OS.WINDOWS
+        Os.isFamily(Os.FAMILY_MAC) -> OS.MACOS
+        Os.isFamily(Os.FAMILY_UNIX) -> OS.LINUX
+        else -> error("Unsupported OS: ${System.getProperty("os.name")}")
+    }
+}
+
+val hostArch: String by lazy {
+    val arch = System.getProperty("os.arch")
+    when (arch) {
+        "x86_64" -> "amd64"
+        "arm64" -> "arm64"
+        "aarch64" -> "arm64"
+        else -> "Unsupported host architecture: $arch"
+    }
+}
+
+
+enum class OS(
+    val isUnix: Boolean,
+) {
+    WINDOWS(false),
+    MACOS(true),
+    LINUX(true),
+}
+
+
 object ArtifactNamer {
+    private const val APP_NAME = "AnimationGarden"
+
     fun getFullVersionFromTag(tag: String): String {
         return tag.substringAfter("v")
     }
 
     // fullVersion example: 2.0.0-beta03
     fun androidApp(fullVersion: String): String {
-        return "AnimationGarden-$fullVersion.apk"
+        return "$APP_NAME-$fullVersion.apk"
+    }
+
+    fun androidAppQR(fullVersion: String): String {
+        return "${androidApp(fullVersion)}.qrcode.png"
+    }
+
+    // AnimationGarden-2.0.0-beta03-macos-amd64.dmg
+    // AnimationGarden-2.0.0-beta03-macos-arm64.dmg
+    // AnimationGarden-2.0.0-beta03-windows-amd64.msi
+    // AnimationGarden-2.0.0-beta03-debian-amd64.deb
+    // AnimationGarden-2.0.0-beta03-redhat-amd64.rpm
+    fun desktopDistributionFile(
+        fullVersion: String,
+        osName: String,
+        archName: String = hostArch,
+        suffixName: String
+    ): String {
+        return "$APP_NAME-$fullVersion-$osName-$archName.$suffixName"
     }
 }
 
 tasks.register("uploadAndroidApk") {
     doLast {
-        val tag = getProperty("ci-helper.tag")
-        val fullVersion = ArtifactNamer.getFullVersionFromTag(tag)
-        val releaseId = getProperty("ci-helper.release-id")
-        val repository = getProperty("GITHUB_REPOSITORY")
-        val token = getProperty("GITHUB_TOKEN")
+        ReleaseEnvironment().run {
+            uploadReleaseAsset(
+                name = ArtifactNamer.androidApp(fullVersion),
+                contentType = "application/vnd.android.package-archive",
+                file = project(":android").buildDir.resolve("outputs/apk/release").walk()
+                    .single { it.extension == "apk" && it.name.contains("release") },
+            )
+        }
+    }
+}
 
-        println("tag = $tag")
-        println("fullVersion = $fullVersion")
-        println("releaseId = $releaseId")
-        println("token = ${token.isNotEmpty()}")
-        println("repository = $repository")
+tasks.register("uploadAndroidApkQR") {
+    doLast {
+        ReleaseEnvironment().run {
+            uploadReleaseAsset(
+                name = ArtifactNamer.androidAppQR(fullVersion),
+                contentType = "image/png",
+                file = rootProject.file("apk-qrcode.png"),
+            )
+        }
+    }
+}
 
-        runBlocking {
-            val url = "https://uploads.github.com/repos/$repository/releases/$releaseId/assets"
-            val resp = HttpClient().post(url) {
-                header("Authorization", "Bearer $token")
-                header("Accept", "application/vnd.github+json")
-                parameter("name", ArtifactNamer.androidApp(fullVersion))
-                contentType("application/vnd.android.package-archive")
-                setBody(
-                    project(":android").buildDir.resolve("outputs/apk/release").walk()
-                        .single { it.extension == "apk" && it.name.contains("release") }
+val zipDesktopDistribution = tasks.register("zipDesktopDistribution", Zip::class) {
+    dependsOn(":desktop:createDistributable")
+    from(fileTree(project(":desktop").buildDir.resolve("compose/binaries/main/app")))
+    archiveBaseName.set("desktop")
+}
+
+tasks.register("uploadDesktopDistributionZip") {
+    dependsOn(zipDesktopDistribution)
+
+    doLast {
+        ReleaseEnvironment().run {
+            uploadReleaseAsset(
+                name = ArtifactNamer.desktopDistributionFile(
+                    fullVersion,
+                    osName = hostOS.name.toLowerCase(),
+                    suffixName = "zip"
+                ),
+                contentType = "application/octet-stream",
+                file = zipDesktopDistribution.get().archiveFile.get().asFile,
+            )
+        }
+    }
+}
+
+tasks.register("uploadDesktopInstallers") {
+    dependsOn(zipDesktopDistribution)
+
+    doLast {
+        ReleaseEnvironment().run {
+            fun uploadBinary(
+                kind: String,
+
+                osName: String,
+                archName: String = hostArch,
+            ) {
+                uploadReleaseAsset(
+                    name = ArtifactNamer.desktopDistributionFile(fullVersion, osName, archName, suffixName = kind),
+                    contentType = "application/octet-stream",
+                    file = project(":desktop").buildDir.resolve("compose/binaries/main/$kind")
+                        .walk()
+                        .single { it.extension == kind },
                 )
             }
-            check(resp.status.isSuccess()) {
-                "Request $url failed with ${resp.status}. Response: ${
-                    resp.runCatching { bodyAsText() }.getOrNull()
-                }"
+
+            // jar
+            uploadReleaseAsset(
+                name = ArtifactNamer.desktopDistributionFile(
+                    fullVersion,
+                    osName = hostOS.name.toLowerCase(),
+                    suffixName = "jar"
+                ),
+                contentType = "application/octet-stream",
+                file = project(":desktop").buildDir.resolve("compose/jars")
+                    .walk()
+                    .single { it.extension == "jar" },
+            )
+
+            // installers
+            when (hostOS) {
+                OS.WINDOWS -> {
+                    uploadBinary("exe", osName = "windows") // all-in-one executable
+                    uploadBinary("msi", osName = "windows")
+                }
+
+                OS.MACOS -> {
+                    uploadBinary("dmg", osName = "macos")
+                }
+
+                OS.LINUX -> {
+                    uploadBinary("deb", osName = "debian")
+                    uploadBinary("rpm", osName = "redhat")
+                }
             }
         }
     }
@@ -95,3 +212,69 @@ fun getProperty(name: String) =
         ?: properties[name]?.toString()
 //        ?: getLocalProperty(name)
         ?: ext.get(name).toString()
+
+// do not use `object`, compiler bug
+class ReleaseEnvironment {
+    val tag by lazy {
+        getProperty("ci-helper.tag").also { println("tag = $it") }
+    }
+    val fullVersion by lazy {
+        ArtifactNamer.getFullVersionFromTag(tag).also { println("fullVersion = $it") }
+    }
+    val releaseId by lazy {
+        getProperty("ci-helper.release-id").also { println("releaseId = $it") }
+    }
+    val repository by lazy {
+        getProperty("GITHUB_REPOSITORY").also { println("repository = $it") }
+    }
+    val token by lazy {
+        getProperty("GITHUB_TOKEN").also { println("token = ${it.isNotEmpty()}") }
+    }
+
+    fun uploadReleaseAsset(
+        name: String,
+        contentType: String,
+        file: File,
+    ) {
+        check(file.exists()) { "File '${file.absolutePath}' does not exist when attempting to upload '$name'." }
+        val tag = getProperty("ci-helper.tag")
+        val fullVersion = ArtifactNamer.getFullVersionFromTag(tag)
+        val releaseId = getProperty("ci-helper.release-id")
+        val repository = getProperty("GITHUB_REPOSITORY")
+        val token = getProperty("GITHUB_TOKEN")
+        println("tag = $tag")
+        return uploadReleaseAsset(repository, releaseId, token, fullVersion, name, contentType, file)
+    }
+
+    fun uploadReleaseAsset(
+        repository: String,
+        releaseId: String,
+        token: String,
+        fullVersion: String,
+
+        name: String,
+        contentType: String,
+        file: File,
+    ) {
+        println("fullVersion = $fullVersion")
+        println("releaseId = $releaseId")
+        println("token = ${token.isNotEmpty()}")
+        println("repository = $repository")
+
+        runBlocking {
+            val url = "https://uploads.github.com/repos/$repository/releases/$releaseId/assets"
+            val resp = HttpClient().post(url) {
+                header("Authorization", "Bearer $token")
+                header("Accept", "application/vnd.github+json")
+                parameter("name", name)
+                contentType(contentType)
+                setBody(file)
+            }
+            check(resp.status.isSuccess()) {
+                "Request $url failed with ${resp.status}. Response: ${
+                    resp.runCatching { bodyAsText() }.getOrNull()
+                }"
+            }
+        }
+    }
+}
