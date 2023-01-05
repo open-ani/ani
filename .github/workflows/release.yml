@@ -176,13 +176,16 @@ jobs:
 
       - name: Check
         run: ./gradlew check ${{ env.gradleArgs }}
-
+      
+      #          createReleaseDistributable 
+      #          packageReleaseDistributionForCurrentOS 
+      #          packageReleaseUberJarForCurrentOS 
       - name: Package
         run: >
           ./gradlew 
-          createReleaseDistributable 
-          packageReleaseDistributionForCurrentOS 
-          packageReleaseUberJarForCurrentOS 
+          createDistributable 
+          packageDistributionForCurrentOS 
+          packageUberJarForCurrentOS 
           ${{ env.gradleArgs }}
 
       # Upload assets for release
