@@ -207,7 +207,7 @@ jobs:
           CI_TAG: ${{ steps.tag.outputs.tag }}
 
       - if: ${{ env.isMac == 'true' }}
-      - name: Upload Server Distribution
+        name: Upload Server Distribution
         run: "./gradlew :ci-helper:uploadServerDistribution"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
