@@ -50,6 +50,7 @@ jobs:
           prerelease: false
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
+      id: ${{ steps.create_release.outputs.id }}
 
   release:
     needs: [ create-release ]
