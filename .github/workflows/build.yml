@@ -84,10 +84,10 @@ jobs:
         name: Build Android APK
         run: ./gradlew assembleRelease ${{ env.gradleArgs }}
         env:
-          "signing.release.storeFileFromRoot": ${{ steps.android_signing_key.outputs.filePath }}
-          "signing.release.storePassword": ${{ secrets.SIGNING_RELEASE_STOREPASSWORD }}
-          "signing.release.keyAlias": ${{ secrets.SIGNING_RELEASE_KEYALIAS }}
-          "signing.release.keyPassword": ${{ secrets.SIGNING_RELEASE_KEYPASSWORD }}
+          "signing_release_storeFileFromRoot": ${{ steps.android_signing_key.outputs.filePath }}
+          "signing_release_storePassword": ${{ secrets.SIGNING_RELEASE_STOREPASSWORD }}
+          "signing_release_keyAlias": ${{ secrets.SIGNING_RELEASE_KEYALIAS }}
+          "signing_release_keyPassword": ${{ secrets.SIGNING_RELEASE_KEYPASSWORD }}
 
       - if: ${{ env.isMac == 'true' }}
         name: Upload Android APK packages

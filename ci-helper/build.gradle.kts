@@ -103,9 +103,13 @@ class ArtifactNamer {
         fullVersion: String,
         osName: String,
         archName: String = hostArch,
-        suffixName: String
+        extension: String
     ): String {
-        return "$APP_NAME-$fullVersion-$osName-$archName.$suffixName"
+        return "$APP_NAME-$fullVersion-$osName-$archName.$extension"
+    }
+
+    fun server(fullVersion: String, extension: String): String {
+        return "$APP_NAME-server-$fullVersion.$extension"
     }
 }
 
@@ -149,7 +153,7 @@ tasks.register("uploadDesktopDistributionZip") {
                 name = namer.desktopDistributionFile(
                     fullVersion,
                     osName = hostOS.name.toLowerCase(),
-                    suffixName = "zip"
+                    extension = "zip"
                 ),
                 contentType = "application/octet-stream",
                 file = zipDesktopDistribution.get().archiveFile.get().asFile,
@@ -159,7 +163,11 @@ tasks.register("uploadDesktopDistributionZip") {
 }
 
 tasks.register("uploadDesktopInstallers") {
-    dependsOn(zipDesktopDistribution)
+    dependsOn(
+        ":desktop:createDistributable",
+        ":desktop:packageDistributionForCurrentOS",
+        ":desktop:packageUberJarForCurrentOS"
+    )
 
     doLast {
         ReleaseEnvironment().run {
@@ -170,7 +178,7 @@ tasks.register("uploadDesktopInstallers") {
                 archName: String = hostArch,
             ) {
                 uploadReleaseAsset(
-                    name = namer.desktopDistributionFile(fullVersion, osName, archName, suffixName = kind),
+                    name = namer.desktopDistributionFile(fullVersion, osName, archName, extension = kind),
                     contentType = "application/octet-stream",
                     file = project(":desktop").buildDir.resolve("compose/binaries/main/$kind")
                         .walk()
@@ -183,7 +191,7 @@ tasks.register("uploadDesktopInstallers") {
                 name = namer.desktopDistributionFile(
                     fullVersion,
                     osName = hostOS.name.toLowerCase(),
-                    suffixName = "jar"
+                    extension = "jar"
                 ),
                 contentType = "application/octet-stream",
                 file = project(":desktop").buildDir.resolve("compose/jars")
@@ -211,6 +219,23 @@ tasks.register("uploadDesktopInstallers") {
     }
 }
 
+tasks.register("uploadServerDistribution") {
+    dependsOn(
+        ":server:distZip",
+        ":server:distTar",
+    )
+
+    doLast {
+        val distZip = project(":server").tasks.getByName("distZip", Zip::class).archiveFile.get().asFile
+        val distTar = project(":server").tasks.getByName("distTar", Tar::class).archiveFile.get().asFile
+
+        ReleaseEnvironment().run {
+            uploadReleaseAsset(namer.server(fullVersion, "tar"), "application/x-tar", distTar)
+            uploadReleaseAsset(namer.server(fullVersion, "zip"), "application/zip", distZip)
+        }
+    }
+}
+
 fun getProperty(name: String) =
     System.getProperty(name)
         ?: System.getenv(name)
@@ -221,13 +246,13 @@ fun getProperty(name: String) =
 // do not use `object`, compiler bug
 class ReleaseEnvironment {
     val tag by lazy {
-        getProperty("ci-helper.tag").also { println("tag = $it") }
+        getProperty("CI_TAG").also { println("tag = $it") }
     }
     val fullVersion by lazy {
         namer.getFullVersionFromTag(tag).also { println("fullVersion = $it") }
     }
     val releaseId by lazy {
-        getProperty("ci-helper.release-id").also { println("releaseId = $it") }
+        getProperty("CI_RELEASE_ID").also { println("releaseId = $it") }
     }
     val repository by lazy {
         getProperty("GITHUB_REPOSITORY").also { println("repository = $it") }
@@ -242,9 +267,9 @@ class ReleaseEnvironment {
         file: File,
     ) {
         check(file.exists()) { "File '${file.absolutePath}' does not exist when attempting to upload '$name'." }
-        val tag = getProperty("ci-helper.tag")
+        val tag = getProperty("CI_TAG")
         val fullVersion = namer.getFullVersionFromTag(tag)
-        val releaseId = getProperty("ci-helper.release-id")
+        val releaseId = getProperty("CI_RELEASE_ID")
         val repository = getProperty("GITHUB_REPOSITORY")
         val token = getProperty("GITHUB_TOKEN")
         println("tag = $tag")

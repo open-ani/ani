@@ -44,7 +44,7 @@ jobs:
             注意，桌面平台仅支持 64 位操作系统。在使用 macOS 的安装程序时可能提示文件损坏，这是因为此版本应用没有签名，可以忽略错误继续使用。
             
             也可扫描以下二维码下载 Android 版本：
-            ![](https://github.com/Him188/animation-garden-desktop/releases/download/${{ steps.tag.outputs.tag }}/AnimationGarden-${{ steps.tag-version-without-v.outputs.substring }}.apk.qrcode.png)
+            ![](https://github.com/Him188/animation-garden-desktop/releases/download/${{ steps.tag.outputs.tag }}/AnimationGarden-${{ steps.tag-version.outputs.substring }}.apk.qrcode.png)
 
           draft: true
           prerelease: false
@@ -141,10 +141,10 @@ jobs:
         name: Build Android APK
         run: ./gradlew assembleRelease ${{ env.gradleArgs }}
         env:
-          "signing.release.storeFileFromRoot": ${{ steps.android_signing_key.outputs.filePath }}
-          "signing.release.storePassword": ${{ secrets.SIGNING_RELEASE_STOREPASSWORD }}
-          "signing.release.keyAlias": ${{ secrets.SIGNING_RELEASE_KEYALIAS }}
-          "signing.release.keyPassword": ${{ secrets.SIGNING_RELEASE_KEYPASSWORD }}
+          "signing_release_storeFileFromRoot": ${{ steps.android_signing_key.outputs.filePath }}
+          "signing_release_storePassword": ${{ secrets.SIGNING_RELEASE_STOREPASSWORD }}
+          "signing_release_keyAlias": ${{ secrets.SIGNING_RELEASE_KEYALIAS }}
+          "signing_release_keyPassword": ${{ secrets.SIGNING_RELEASE_KEYPASSWORD }}
 
       - if: ${{ env.isMac == 'true' }}
         name: Upload Android APK
@@ -152,8 +152,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
           GITHUB_REPOSITORY: ${{ secrets.GITHUB_REPOSITORY  }}
-          "ci-helper.release-id": ${{ needs.create-release.outputs.id }}
-          "ci-helper.tag": ${{ steps.tag.outputs.tag }}
+          CI_RELEASE_ID: ${{ needs.create-release.outputs.id }}
+          CI_TAG: ${{ steps.tag.outputs.tag }}
 
       - if: ${{ env.isMac == 'true' }}
         name: Generate QR code for APK
@@ -168,8 +168,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
           GITHUB_REPOSITORY: ${{ secrets.GITHUB_REPOSITORY  }}
-          "ci-helper.release-id": ${{ needs.create-release.outputs.id }}
-          "ci-helper.tag": ${{ steps.tag.outputs.tag }}
+          CI_RELEASE_ID: ${{ needs.create-release.outputs.id }}
+          CI_TAG: ${{ steps.tag.outputs.tag }}
 
       - name: Assemble
         run: ./gradlew assemble ${{ env.gradleArgs }}
@@ -195,16 +195,25 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
           GITHUB_REPOSITORY: ${{ secrets.GITHUB_REPOSITORY  }}
-          "ci-helper.release-id": ${{ needs.create-release.outputs.id }}
-          "ci-helper.tag": ${{ steps.tag.outputs.tag }}
+          CI_RELEASE_ID: ${{ needs.create-release.outputs.id }}
+          CI_TAG: ${{ steps.tag.outputs.tag }}
 
       - name: Upload Desktop Installers
         run: "./gradlew :ci-helper:uploadDesktopInstallers"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
           GITHUB_REPOSITORY: ${{ secrets.GITHUB_REPOSITORY  }}
-          "ci-helper.release-id": ${{ needs.create-release.outputs.id }}
-          "ci-helper.tag": ${{ steps.tag.outputs.tag }}
+          CI_RELEASE_ID: ${{ needs.create-release.outputs.id }}
+          CI_TAG: ${{ steps.tag.outputs.tag }}
+
+      - if: ${{ env.isMac == 'true' }}
+      - name: Upload Server Distribution
+        run: "./gradlew :ci-helper:uploadServerDistribution"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
+          GITHUB_REPOSITORY: ${{ secrets.GITHUB_REPOSITORY  }}
+          CI_RELEASE_ID: ${{ needs.create-release.outputs.id }}
+          CI_TAG: ${{ steps.tag.outputs.tag }}
 
 
 
