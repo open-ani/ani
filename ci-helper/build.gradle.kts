@@ -22,6 +22,7 @@ import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.util.cio.*
 import kotlinx.coroutines.runBlocking
 import org.apache.tools.ant.taskdefs.condition.Os
 
@@ -270,7 +271,7 @@ class ReleaseEnvironment {
                 header("Accept", "application/vnd.github+json")
                 parameter("name", name)
                 contentType(contentType)
-                setBody(file)
+                setBody(file.readChannel())
             }
             check(resp.status.isSuccess()) {
                 "Request $url failed with ${resp.status}. Response: ${
