@@ -22,7 +22,9 @@ import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.http.content.*
 import io.ktor.util.cio.*
+import io.ktor.utils.io.*
 import kotlinx.coroutines.runBlocking
 import org.apache.tools.ant.taskdefs.condition.Os
 
@@ -271,7 +273,14 @@ class ReleaseEnvironment {
                 header("Accept", "application/vnd.github+json")
                 parameter("name", name)
                 contentType(contentType)
-                setBody(file.readChannel())
+                setBody(object : OutgoingContent.ReadChannelContent() {
+                    override val contentType: ContentType get() = ContentType.parse(contentType)
+                    override val contentLength: Long = file.length()
+                    override fun readFrom(): ByteReadChannel {
+                        return file.readChannel()
+                    }
+
+                })
             }
             check(resp.status.isSuccess()) {
                 "Request $url failed with ${resp.status}. Response: ${
