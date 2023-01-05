@@ -60,9 +60,10 @@ val hostArch: String by lazy {
     val arch = System.getProperty("os.arch")
     when (arch) {
         "x86_64" -> "amd64"
+        "amd64" -> "amd64"
         "arm64" -> "arm64"
         "aarch64" -> "arm64"
-        else -> "Unsupported host architecture: $arch"
+        else -> error("Unsupported host architecture: $arch")
     }
 }
 
@@ -170,52 +171,7 @@ tasks.register("uploadDesktopInstallers") {
     )
 
     doLast {
-        ReleaseEnvironment().run {
-            fun uploadBinary(
-                kind: String,
-
-                osName: String,
-                archName: String = hostArch,
-            ) {
-                uploadReleaseAsset(
-                    name = namer.desktopDistributionFile(fullVersion, osName, archName, extension = kind),
-                    contentType = "application/octet-stream",
-                    file = project(":desktop").buildDir.resolve("compose/binaries/main/$kind")
-                        .walk()
-                        .single { it.extension == kind },
-                )
-            }
-
-            // jar
-            uploadReleaseAsset(
-                name = namer.desktopDistributionFile(
-                    fullVersion,
-                    osName = hostOS.name.toLowerCase(),
-                    extension = "jar"
-                ),
-                contentType = "application/octet-stream",
-                file = project(":desktop").buildDir.resolve("compose/jars")
-                    .walk()
-                    .single { it.extension == "jar" },
-            )
-
-            // installers
-            when (hostOS) {
-                OS.WINDOWS -> {
-                    uploadBinary("exe", osName = "windows") // all-in-one executable
-                    uploadBinary("msi", osName = "windows")
-                }
-
-                OS.MACOS -> {
-                    uploadBinary("dmg", osName = "macos")
-                }
-
-                OS.LINUX -> {
-                    uploadBinary("deb", osName = "debian")
-                    uploadBinary("rpm", osName = "redhat")
-                }
-            }
-        }
+        ReleaseEnvironment().uploadDesktopDistributions()
     }
 }
 
@@ -236,6 +192,26 @@ tasks.register("uploadServerDistribution") {
     }
 }
 
+tasks.register("prepareArtifactsForManualUpload") {
+    dependsOn(
+        ":desktop:createDistributable",
+        ":desktop:packageDistributionForCurrentOS",
+        ":desktop:packageUberJarForCurrentOS"
+    )
+
+    val distributionDir = project.buildDir.resolve("distribution").apply { mkdirs() }
+
+    doLast {
+        object : ReleaseEnvironment() {
+            override fun uploadReleaseAsset(name: String, contentType: String, file: File) {
+                val target = distributionDir.resolve(name)
+                target.delete()
+                file.copyTo(target)
+            }
+        }.uploadDesktopDistributions()
+    }
+}
+
 fun getProperty(name: String) =
     System.getProperty(name)
         ?: System.getenv(name)
@@ -244,7 +220,7 @@ fun getProperty(name: String) =
         ?: ext.get(name).toString()
 
 // do not use `object`, compiler bug
-class ReleaseEnvironment {
+open class ReleaseEnvironment {
     val tag by lazy {
         getProperty("CI_TAG").also { println("tag = $it") }
     }
@@ -261,7 +237,7 @@ class ReleaseEnvironment {
         getProperty("GITHUB_TOKEN").also { println("token = ${it.isNotEmpty()}") }
     }
 
-    fun uploadReleaseAsset(
+    open fun uploadReleaseAsset(
         name: String,
         contentType: String,
         file: File,
@@ -312,6 +288,58 @@ class ReleaseEnvironment {
                     resp.runCatching { bodyAsText() }.getOrNull()
                 }"
             }
+        }
+    }
+}
+
+fun ReleaseEnvironment.uploadDesktopDistributions() {
+    fun uploadBinary(
+        kind: String,
+
+        osName: String,
+        archName: String = hostArch,
+    ) {
+        uploadReleaseAsset(
+            name = namer.desktopDistributionFile(
+                fullVersion,
+                osName,
+                archName,
+                extension = kind
+            ),
+            contentType = "application/octet-stream",
+            file = project(":desktop").buildDir.resolve("compose/binaries/main/$kind")
+                .walk()
+                .single { it.extension == kind },
+        )
+    }
+
+    // jar
+    uploadReleaseAsset(
+        name = namer.desktopDistributionFile(
+            fullVersion,
+            osName = hostOS.name.toLowerCase(),
+            extension = "jar"
+        ),
+        contentType = "application/octet-stream",
+        file = project(":desktop").buildDir.resolve("compose/jars")
+            .walk()
+            .single { it.extension == "jar" },
+    )
+
+    // installers
+    when (hostOS) {
+        Build_gradle.OS.WINDOWS -> {
+            uploadBinary("exe", osName = "windows") // all-in-one executable
+            uploadBinary("msi", osName = "windows")
+        }
+
+        Build_gradle.OS.MACOS -> {
+            uploadBinary("dmg", osName = "macos")
+        }
+
+        Build_gradle.OS.LINUX -> {
+            uploadBinary("deb", osName = "debian")
+            uploadBinary("rpm", osName = "redhat")
         }
     }
 }
