@@ -32,6 +32,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.ApplicationScope
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import dev.dirs.ProjectDirectories
@@ -117,6 +118,7 @@ object AnimationGardenDesktop {
 
 
             val currentAppSettings by rememberUpdatedState(appSettingsProvider.value.value)
+
             val localSyncSettingsFlow = snapshotFlow { currentAppSettings.sync.localSync }
             val mainSnackbar = remember { SnackbarHostState() }
 
@@ -125,101 +127,112 @@ object AnimationGardenDesktop {
                 LocalAppSettingsManager provides appSettingsProvider,
                 LocalAlwaysShowTitlesInSeparateLine provides true, // for performance, and #41
             ) {
-                val dialogHost = rememberDialogHost()
-                val app = remember {
-                    // do not observe dependency change
-                    createAppState(
-                        currentAppSettings,
-                        dialogHost,
-                        localSyncSettingsFlow,
-                        mainSnackbar,
-                        currentBundle
-                    )
-                }
-                LaunchedEffect(currentAppSettings.proxy) {
-                    // proxy changed, update client
-                    app.client.value = AnimationGardenClient.Factory.create {
-                        proxy = currentAppSettings.proxy.toKtorProxy()
-                    }
-                }
+                content(currentAppSettings, localSyncSettingsFlow, mainSnackbar, currentBundle, platform)
+            }
+        }
+    }
 
-                val currentDensity by rememberUpdatedState(LocalDensity.current)
-                val minimumSize by remember {
-                    derivedStateOf {
-                        with(currentDensity) {
-                            Size(200.dp.toPx(), 200.dp.toPx())
-                        }
-                    }
-                }
+    @Composable
+    private fun ApplicationScope.content(
+        currentAppSettings: AppSettings,
+        localSyncSettingsFlow: Flow<LocalSyncSettings>,
+        mainSnackbar: SnackbarHostState,
+        currentBundle: ResourceBundle,
+        platform: PlatformImplementations
+    ) {
+        val dialogHost = rememberDialogHost()
+        val app = remember {
+            // do not observe dependency change
+            createAppState(
+                currentAppSettings,
+                dialogHost,
+                localSyncSettingsFlow,
+                mainSnackbar,
+                currentBundle
+            )
+        }
+        LaunchedEffect(currentAppSettings.proxy) {
+            // proxy changed, update client
+            app.client.value = AnimationGardenClient.Factory.create {
+                proxy = currentAppSettings.proxy.toKtorProxy()
+            }
+        }
 
-                var showPreferences by remember { mutableStateOf(false) }
-                if (showPreferences) {
-                    val state = rememberWindowState(width = 350.dp, height = 600.dp)
-                    WindowEx(
-                        state = state,
-                        onCloseRequest = {
-                            showPreferences = false
-                        },
-                        title = LocalI18n.current.getString("window.preferences.title"),
-                        resizable = false,
-                        alwaysOnTop = true,
-                    ) {
-                        val snackbar = remember { SnackbarHostState() }
-                        Scaffold(
-                            topBar = {},
-                            bottomBar = {},
-                            snackbarHost = { SnackbarHost(snackbar) },
-                        ) {
-                            PreferencesPage(snackbar)
-                        }
-                    }
+        val currentDensity by rememberUpdatedState(LocalDensity.current)
+        val minimumSize by remember {
+            derivedStateOf {
+                with(currentDensity) {
+                    Size(200.dp.toPx(), 200.dp.toPx())
                 }
+            }
+        }
 
-                WindowEx(
-                    title = LocalI18n.current.getString("window.main.title"),
-                    onCloseRequest = {
-                        runBlocking(Dispatchers.IO) { app.dataSynchronizer.saveNow() }
-                        exitApplication()
-                    },
-                    minimumSize = minimumSize,
+        var showPreferences by remember { mutableStateOf(false) }
+        if (showPreferences) {
+            val state = rememberWindowState(width = 350.dp, height = 600.dp)
+            WindowEx(
+                state = state,
+                onCloseRequest = {
+                    showPreferences = false
+                },
+                title = LocalI18n.current.getString("window.preferences.title"),
+                resizable = false,
+                alwaysOnTop = true,
+            ) {
+                val snackbar = remember { SnackbarHostState() }
+                Scaffold(
+                    topBar = {},
+                    bottomBar = {},
+                    snackbarHost = { SnackbarHost(snackbar) },
                 ) {
-                    with(platform.menuBarProvider) {
-                        MenuBar(onClickPreferences = {
-                            showPreferences = true
-                        })
-                    }
-
-                    // This actually runs only once since app is never changed.
-                    val windowImmersed = LocalAppSettings.current.windowImmersed
-                    if (windowImmersed) {
-                        SideEffect {
-                            window.rootPane.putClientProperty("apple.awt.fullWindowContent", true)
-                            window.rootPane.putClientProperty("apple.awt.transparentTitleBar", true)
-                        }
-                    } else {
-                        SideEffect {
-                            window.rootPane.putClientProperty("apple.awt.fullWindowContent", false)
-                            window.rootPane.putClientProperty("apple.awt.transparentTitleBar", false)
-                        }
-                    }
-
-                    Scaffold(
-                        topBar = {},
-                        bottomBar = {},
-                        snackbarHost = {
-                            SnackbarHost(mainSnackbar)
-                        },
-                    ) {
-                        MainWindowContent(
-                            hostIsMacOs = hostIsMacOs,
-                            app = app,
-                            windowImmersed = windowImmersed,
-                            onClickProxySettings = {
-                                showPreferences = true
-                            }
-                        )
-                    }
+                    PreferencesPage(snackbar)
                 }
+            }
+        }
+
+        WindowEx(
+            title = LocalI18n.current.getString("window.main.title"),
+            onCloseRequest = {
+                runBlocking(Dispatchers.IO) { app.dataSynchronizer.saveNow() }
+                exitApplication()
+            },
+            minimumSize = minimumSize,
+        ) {
+            with(platform.menuBarProvider) {
+                MenuBar(onClickPreferences = {
+                    showPreferences = true
+                })
+            }
+
+            // This actually runs only once since app is never changed.
+            val windowImmersed = LocalAppSettings.current.windowImmersed
+            if (windowImmersed) {
+                SideEffect {
+                    window.rootPane.putClientProperty("apple.awt.fullWindowContent", true)
+                    window.rootPane.putClientProperty("apple.awt.transparentTitleBar", true)
+                }
+            } else {
+                SideEffect {
+                    window.rootPane.putClientProperty("apple.awt.fullWindowContent", false)
+                    window.rootPane.putClientProperty("apple.awt.transparentTitleBar", false)
+                }
+            }
+
+            Scaffold(
+                topBar = {},
+                bottomBar = {},
+                snackbarHost = {
+                    SnackbarHost(mainSnackbar)
+                },
+            ) {
+                MainWindowContent(
+                    hostIsMacOs = hostIsMacOs,
+                    app = app,
+                    windowImmersed = windowImmersed,
+                    onClickProxySettings = {
+                        showPreferences = true
+                    }
+                )
             }
         }
     }
