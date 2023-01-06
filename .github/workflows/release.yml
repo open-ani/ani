@@ -149,7 +149,7 @@ jobs:
 
       - if: ${{ env.isMac == 'true' }}
         name: Upload Android APK
-        run: "./gradlew :ci-helper:uploadAndroidApk"
+        run: "./gradlew :ci-helper:uploadAndroidApk ${{ env.gradleArgs }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
           GITHUB_REPOSITORY: ${{ secrets.GITHUB_REPOSITORY  }}
@@ -165,7 +165,7 @@ jobs:
 
       - if: ${{ env.isMac == 'true' }}
         name: Upload QR code
-        run: "./gradlew :ci-helper:uploadAndroidApkQR"
+        run: "./gradlew :ci-helper:uploadAndroidApkQR ${{ env.gradleArgs }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
           GITHUB_REPOSITORY: ${{ secrets.GITHUB_REPOSITORY  }}
@@ -192,7 +192,7 @@ jobs:
       # Upload assets for release
 
       - name: Upload Desktop Distribution Zip
-        run: "./gradlew :ci-helper:uploadDesktopDistributionZip"
+        run: "./gradlew :ci-helper:uploadDesktopDistributionZip ${{ env.gradleArgs }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
           GITHUB_REPOSITORY: ${{ secrets.GITHUB_REPOSITORY  }}
@@ -200,7 +200,7 @@ jobs:
           CI_TAG: ${{ steps.tag.outputs.tag }}
 
       - name: Upload Desktop Installers
-        run: "./gradlew :ci-helper:uploadDesktopInstallers"
+        run: "./gradlew :ci-helper:uploadDesktopInstallers ${{ env.gradleArgs }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
           GITHUB_REPOSITORY: ${{ secrets.GITHUB_REPOSITORY  }}
@@ -209,7 +209,7 @@ jobs:
 
       - if: ${{ env.isMac == 'true' }}
         name: Upload Server Distribution
-        run: "./gradlew :ci-helper:uploadServerDistribution"
+        run: "./gradlew :ci-helper:uploadServerDistribution ${{ env.gradleArgs }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
           GITHUB_REPOSITORY: ${{ secrets.GITHUB_REPOSITORY  }}
