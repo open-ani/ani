@@ -93,7 +93,7 @@ class MainActivity : BaseComponentActivity() {
             ObserveSettingsChanges(app)
 
 
-            MaterialTheme {
+            MaterialTheme(colorScheme) {
                 ImmerseStatusBar(AppTheme.colorScheme.primary)
 
                 MainPage(app)

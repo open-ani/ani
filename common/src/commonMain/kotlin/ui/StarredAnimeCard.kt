@@ -36,6 +36,7 @@ import me.him188.animationgarden.app.platform.LocalContext
 import me.him188.animationgarden.app.ui.interaction.VibrationStrength
 import me.him188.animationgarden.app.ui.interaction.onClickEx
 import me.him188.animationgarden.app.ui.interaction.vibrateIfSupported
+import me.him188.animationgarden.app.ui.theme.darken
 import me.him188.animationgarden.app.ui.widgets.ToggleStarButton
 
 @Composable
@@ -112,7 +113,7 @@ fun StarredAnimeCard(
                         Text(
                             it.raw,
                             color = if (currentAnime.watchedEpisodes.contains(it)) {
-                                LocalTextStyle.current.color.copy(alpha = 0.3f)
+                                LocalTextStyle.current.color.darken()
                             } else {
                                 LocalTextStyle.current.color
                             }

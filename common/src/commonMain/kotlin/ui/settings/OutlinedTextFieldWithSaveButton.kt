@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import me.him188.animationgarden.app.AppTheme
 import me.him188.animationgarden.app.ui.interaction.onEnterKeyEvent
+import me.him188.animationgarden.app.ui.theme.darken
 import me.him188.animationgarden.app.ui.widgets.OutlinedTextFieldEx
 
 @Composable
@@ -128,7 +129,7 @@ fun SettingsOutlinedTextField(
         placeholder = {
             ProvideTextStyle(
                 AppTheme.typography.bodyMedium.copy(
-                    color = AppTheme.typography.bodyMedium.color.copy(0.3f),
+                    color = AppTheme.typography.bodyMedium.color.darken(),
                     lineHeight = 20.sp
                 )
             ) {

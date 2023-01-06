@@ -60,6 +60,8 @@ import me.him188.animationgarden.app.platform.LocalContext
 import me.him188.animationgarden.app.platform.Res
 import me.him188.animationgarden.app.platform.browse
 import me.him188.animationgarden.app.ui.interaction.onEnterKeyEvent
+import me.him188.animationgarden.app.ui.theme.darken
+import me.him188.animationgarden.app.ui.theme.weaken
 import me.him188.animationgarden.app.ui.widgets.OutlinedTextFieldEx
 import java.time.LocalDateTime
 import kotlin.time.Duration.Companion.seconds
@@ -262,7 +264,7 @@ fun SearchTextField(
                 Text(
                     LocalI18n.current.getString("search.keywords"),
                     style = AppTheme.typography.bodyMedium.copy(
-                        color = AppTheme.typography.bodyMedium.color.copy(0.3f),
+                        color = AppTheme.typography.bodyMedium.color.darken(),
                         lineHeight = 16.sp
                     )
                 )
@@ -609,13 +611,15 @@ private fun SearchResultField(
                             fetchingState.render(resources)
                         )
                     },
-                    style = AppTheme.typography.bodyMedium.run { copy(color = color.copy(alpha = 0.5f)) }
+                    style = AppTheme.typography.bodyMedium.run {
+                        copy(color = color.weaken())
+                    }
                 )
                 ClickableText(
                     AnnotatedString(LocalI18n.current.getString("search.failed.check.proxy")),
                     style = AppTheme.typography.bodyMedium.run {
                         copy(
-                            color = Color.Blue.copy(alpha = 0.5f),
+                            color = Color.Blue.weaken(),
                             textDecoration = TextDecoration.Underline
                         )
                     },

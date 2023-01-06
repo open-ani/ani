@@ -26,6 +26,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import me.him188.animationgarden.app.ui.theme.darken
 
 @Composable
 fun LabelledRadioButton(
@@ -95,8 +96,8 @@ object LabelDefaults {
     fun labelColors(
         checkedTextColor: Color = MaterialTheme.colorScheme.onSurface,
         uncheckedTextColor: Color = MaterialTheme.colorScheme.onSurface,
-        disabledCheckedTextColor: Color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
-        disabledUncheckedTextColor: Color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+        disabledCheckedTextColor: Color = MaterialTheme.colorScheme.onSurface.darken(),
+        disabledUncheckedTextColor: Color = MaterialTheme.colorScheme.onSurface.darken(),
     ): LabelColors {
         return DefaultLabelColors(
             checkedTextColor,

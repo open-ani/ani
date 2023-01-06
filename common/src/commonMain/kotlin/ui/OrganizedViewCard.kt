@@ -46,6 +46,7 @@ import me.him188.animationgarden.app.i18n.LocalI18n
 import me.him188.animationgarden.app.i18n.loadResourceBundle
 import me.him188.animationgarden.app.platform.LocalContext
 import me.him188.animationgarden.app.platform.Res
+import me.him188.animationgarden.app.ui.theme.darken
 import me.him188.animationgarden.app.ui.widgets.ToggleStarButton
 import java.time.LocalDateTime
 
@@ -155,7 +156,7 @@ private fun OrganizedViewContent(
                 Text(
                     it.raw,
                     color = if (isEpisodeWatched(it)) {
-                        LocalTextStyle.current.color.copy(alpha = 0.3f)
+                        LocalTextStyle.current.color.darken()
                     } else {
                         LocalTextStyle.current.color
                     }

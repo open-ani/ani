@@ -47,6 +47,7 @@ import me.him188.animationgarden.api.model.DATE_FORMAT
 import me.him188.animationgarden.api.model.Topic
 import me.him188.animationgarden.api.tags.Episode
 import me.him188.animationgarden.app.AppTheme
+import me.him188.animationgarden.app.ui.theme.weaken
 
 @Immutable
 data class Tag(
@@ -137,7 +138,7 @@ fun TopicItemCard(topic: Topic, onClick: () -> Unit) {
                             Text(
                                 dateFormatted,
                                 style = AppTheme.typography.bodyMedium,
-                                color = AppTheme.typography.bodyMedium.color.copy(alpha = 0.5f),
+                                color = AppTheme.typography.bodyMedium.color.weaken(),
                                 modifier = Modifier.padding(start = 4.dp),
                                 fontWeight = FontWeight.W400,
                                 maxLines = 1,
@@ -270,7 +271,9 @@ private fun Subtitle(
     Text(
         text,
         modifier,
-        style = AppTheme.typography.titleMedium.run { copy(color = color.copy(alpha = 0.5f)) },
+        style = AppTheme.typography.titleMedium.run {
+            copy(color = color.weaken())
+        },
         fontWeight = FontWeight.W400,
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
@@ -306,7 +309,7 @@ private fun TagButton(
     val containerColor = if (containerColorEffect == Color.Unspecified) {
         defaultContainerColor
     } else {
-        containerColorEffect.compositeOver(defaultContainerColor.copy(alpha = 0.5f))
+        containerColorEffect.compositeOver(defaultContainerColor.weaken())
     }
     val shape = AppTheme.shapes.small
     ElevatedButton(

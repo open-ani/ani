@@ -38,6 +38,7 @@ import me.him188.animationgarden.app.app.AppSettings
 import me.him188.animationgarden.app.app.AppSettingsManager
 import me.him188.animationgarden.app.app.settings.ProxyMode
 import me.him188.animationgarden.app.i18n.LocalI18n
+import me.him188.animationgarden.app.ui.theme.darken
 
 @Composable
 fun ColumnScope.ProxySettingsGroup(
@@ -80,7 +81,7 @@ fun ColumnScope.ProxySettingsGroup(
                 exit = exit,
             ) {
                 Row(Modifier.padding(vertical = 8.dp, horizontal = 16.dp)) {
-                    ProvideTextStyle(AppTheme.typography.bodyMedium.run { copy(color = color.copy(alpha = 0.38f)) }) {
+                    ProvideTextStyle(AppTheme.typography.bodyMedium.run { copy(color = color.darken()) }) {
                         disabledContent()
                     }
                 }

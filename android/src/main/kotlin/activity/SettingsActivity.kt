@@ -50,7 +50,7 @@ class SettingsActivity : BaseComponentActivity() {
         requestWindowFeature(Window.FEATURE_NO_TITLE)
 
         setContent {
-            MaterialTheme {
+            MaterialTheme(colorScheme) {
                 ImmerseStatusBar(AppTheme.colorScheme.primary)
 
                 CommonAppScaffold(

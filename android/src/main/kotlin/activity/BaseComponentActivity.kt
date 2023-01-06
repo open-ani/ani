@@ -19,9 +19,9 @@
 package me.him188.animationgarden.android.activity
 
 import androidx.activity.ComponentActivity
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
@@ -30,6 +30,14 @@ import kotlinx.coroutines.launch
 abstract class BaseComponentActivity : ComponentActivity() {
     @Stable
     val snackbarHostState = SnackbarHostState()
+
+    val colorScheme
+        @Composable
+        get() = if (isSystemInDarkTheme()) {
+            darkColorScheme()
+        } else {
+            lightColorScheme()
+        }
 }
 
 suspend fun BaseComponentActivity.showSnackbar(
