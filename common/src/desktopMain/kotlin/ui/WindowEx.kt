@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.*
 import androidx.compose.ui.window.*
 import java.awt.Dimension
+import java.awt.Window
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 import java.awt.event.WindowAdapter
@@ -72,9 +73,7 @@ fun WindowEx(
     val currentOnCloseRequest by rememberUpdatedState(onCloseRequest)
     val currentMinimumSize by rememberUpdatedState(minimumSize)
 
-    val updater = remember {
-        ComponentUpdater()
-    }
+    val updater = remember(::ComponentUpdater)
 
     // the state applied to the window. exist to avoid races between WindowState changes and the state stored inside the native window
     val appliedState = remember {
@@ -91,7 +90,8 @@ fun WindowEx(
         onPreviewKeyEvent = onPreviewKeyEvent,
         onKeyEvent = onKeyEvent,
         create = {
-            ComposeWindow().apply {
+            val graphicsConfiguration = WindowLocationTracker.lastActiveGraphicsConfiguration
+            ComposeWindow(graphicsConfiguration = graphicsConfiguration).apply {
                 // close state is controlled by WindowState.isOpen
                 defaultCloseOperation = JFrame.DO_NOTHING_ON_CLOSE
                 addWindowListener(object : WindowAdapter() {
@@ -121,9 +121,13 @@ fun WindowEx(
                         appliedState.position = currentState.position
                     }
                 })
+                WindowLocationTracker.onWindowCreated(this)
             }
         },
-        dispose = ComposeWindow::dispose,
+        dispose = {
+            WindowLocationTracker.onWindowDisposed(it)
+            it.dispose()
+        },
         update = { window ->
             updater.update {
                 set(currentTitle, window::setTitle)
@@ -145,7 +149,10 @@ fun WindowEx(
                 appliedState.size = state.size
             }
             if (state.position != appliedState.position) {
-                window.setPositionSafely(state.position) { null }
+                window.setPositionSafely(
+                    state.position,
+                    platformDefaultPosition = { WindowLocationTracker.getCascadeLocationFor(window) }
+                )
                 appliedState.position = state.position
             }
             if (state.placement != appliedState.placement) {
