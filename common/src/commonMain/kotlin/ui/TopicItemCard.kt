@@ -247,12 +247,12 @@ fun ColumnScope.AnimatedTitles(
         preferredSecondaryTitle?.let { text ->
             if (LocalAlwaysShowTitlesInSeparateLine.current) {
                 Row(rowModifier, verticalAlignment = Alignment.CenterVertically) {
-                    Subtitle(text, onOverflowChange = {})
+                    Subtitle(text, onOverflowChange = null)
                 }
             } else {
                 AnimatedVisibility(titleTooLong) {
                     Row(rowModifier, verticalAlignment = Alignment.CenterVertically) {
-                        Subtitle(text, onOverflowChange = {})
+                        Subtitle(text, onOverflowChange = null)
                     }
                 }
             }
@@ -261,7 +261,11 @@ fun ColumnScope.AnimatedTitles(
 }
 
 @Composable
-private fun Subtitle(text: String, onOverflowChange: ((Boolean) -> Unit)?, modifier: Modifier = Modifier) {
+private fun Subtitle(
+    text: String,
+    onOverflowChange: ((Boolean) -> Unit)?,
+    modifier: Modifier = Modifier
+) {
     val onOverflowChangeState by rememberUpdatedState(onOverflowChange)
     Text(
         text,
@@ -296,6 +300,7 @@ private fun TagButton(
     val elevation = ButtonDefaults.buttonElevation()
     val interactionSource = remember { MutableInteractionSource() }
     val shadowElevation by elevation.shadowElevation(true, interactionSource)
+
     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
     val defaultContainerColor = AppTheme.colorScheme.surfaceColorAtElevation(shadowElevation)
     val containerColor = if (containerColorEffect == Color.Unspecified) {

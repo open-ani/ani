@@ -122,7 +122,8 @@ object AnimationGardenDesktop {
 
             CompositionLocalProvider(
                 LocalI18n provides currentBundle,
-                LocalAppSettingsManager provides appSettingsProvider
+                LocalAppSettingsManager provides appSettingsProvider,
+                LocalAlwaysShowTitlesInSeparateLine provides true, // for performance, and #41
             ) {
                 val dialogHost = rememberDialogHost()
                 val app = remember {
@@ -354,6 +355,7 @@ private suspend fun onSwitchToOffline(
                 }
                 false
             }
+
             DialogResult.CONFIRMED -> {
                 uiScope.launch(Dispatchers.Main) {
                     snackbarState.showSnackbar(
