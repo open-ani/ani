@@ -66,7 +66,6 @@ import me.him188.animationgarden.app.ui.widgets.OutlinedTextFieldEx
 import java.time.LocalDateTime
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
-import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun MainPage(
@@ -191,10 +190,10 @@ fun MainPage(
                 ) {
                     items(list, key = { it.id }) { anime ->
                         val currentAnime by rememberUpdatedState(anime)
-                        LaunchedEffect(anime.id) {
-                            delay(3.seconds) // ignore if user is quickly scrolling
-                            currentApp.updateStarredAnimeEpisodesIfNeeded(anime, currentAnime)
-                        }
+//                        LaunchedEffect(anime.id) {
+//                            delay(3.seconds) // ignore if user is quickly scrolling
+//                            currentApp.updateStarredAnimeEpisodesIfNeeded(anime, currentAnime)
+//                        }
                         StarredAnimeCard(
                             anime = anime,
                             onStarRemove = {

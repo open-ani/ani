@@ -37,10 +37,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.delay
 import me.him188.animationgarden.android.AnimationGardenApplication
 import me.him188.animationgarden.app.AppTheme
 import me.him188.animationgarden.app.app.ApplicationState
@@ -48,8 +50,6 @@ import me.him188.animationgarden.app.app.data.StarredAnimeMutations
 import me.him188.animationgarden.app.i18n.LocalI18n
 import me.him188.animationgarden.app.platform.LocalContext
 import me.him188.animationgarden.app.ui.StarredAnimeCard
-import me.him188.animationgarden.app.ui.updateStarredAnimeEpisodesIfNeeded
-import kotlin.time.Duration.Companion.seconds
 
 class StarredListActivity : BaseComponentActivity() {
     companion object {
@@ -108,10 +108,10 @@ private fun StarredListPage(app: ApplicationState) {
     ) {
         items(currentStarredAnimeList, key = { it.id }) { anime ->
             val currentAnime by rememberUpdatedState(anime)
-            LaunchedEffect(anime.id) {
-                delay(3.seconds) // ignore if user is quickly scrolling
-                currentApp.updateStarredAnimeEpisodesIfNeeded(anime, currentAnime)
-            }
+//            LaunchedEffect(anime.id) {
+//                delay(3.seconds) // ignore if user is quickly scrolling
+//                currentApp.updateStarredAnimeEpisodesIfNeeded(anime, currentAnime)
+//            }
             StarredAnimeCard(
                 anime = anime,
                 onStarRemove = {
