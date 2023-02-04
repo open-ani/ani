@@ -48,7 +48,7 @@ import me.him188.animationgarden.app.app.data.StarredAnimeMutations
 import me.him188.animationgarden.app.i18n.LocalI18n
 import me.him188.animationgarden.app.platform.LocalContext
 import me.him188.animationgarden.app.ui.StarredAnimeCard
-import me.him188.animationgarden.app.ui.updateStarredAnimeEpisodes
+import me.him188.animationgarden.app.ui.updateStarredAnimeEpisodesIfNeeded
 import kotlin.time.Duration.Companion.seconds
 
 class StarredListActivity : BaseComponentActivity() {
@@ -109,8 +109,8 @@ private fun StarredListPage(app: ApplicationState) {
         items(currentStarredAnimeList, key = { it.id }) { anime ->
             val currentAnime by rememberUpdatedState(anime)
             LaunchedEffect(anime.id) {
-                delay(1.seconds) // ignore if user is quickly scrolling
-                currentApp.updateStarredAnimeEpisodes(anime, currentAnime)
+                delay(3.seconds) // ignore if user is quickly scrolling
+                currentApp.updateStarredAnimeEpisodesIfNeeded(anime, currentAnime)
             }
             StarredAnimeCard(
                 anime = anime,

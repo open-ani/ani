@@ -64,6 +64,8 @@ import me.him188.animationgarden.app.ui.theme.darken
 import me.him188.animationgarden.app.ui.theme.weaken
 import me.him188.animationgarden.app.ui.widgets.OutlinedTextFieldEx
 import java.time.LocalDateTime
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
@@ -190,8 +192,8 @@ fun MainPage(
                     items(list, key = { it.id }) { anime ->
                         val currentAnime by rememberUpdatedState(anime)
                         LaunchedEffect(anime.id) {
-                            delay(1.seconds) // ignore if user is quickly scrolling
-                            currentApp.updateStarredAnimeEpisodes(anime, currentAnime)
+                            delay(3.seconds) // ignore if user is quickly scrolling
+                            currentApp.updateStarredAnimeEpisodesIfNeeded(anime, currentAnime)
                         }
                         StarredAnimeCard(
                             anime = anime,
@@ -326,10 +328,27 @@ fun TopicsSearchResult(
     )
 }
 
+suspend fun ApplicationState.updateStarredAnimeEpisodesIfNeeded(
+    anime: StarredAnime,
+    currentAnime: StarredAnime,
+) {
+    val refreshState = anime.refreshState
+    if (refreshState is RefreshState.Success) {
+        // TODO: 2023/2/4 tentatively given 10 minutes window to avoid too frequent requests
+        if ((System.currentTimeMillis() - refreshState.timeMillis).milliseconds < 10.minutes) {
+            return
+        }
+    }
+    updateStarredAnimeEpisodes(anime, currentAnime)
+}
+
+
+// TODO: 2023/2/4 Refactor updateStarredAnimeEpisodes. Currently it works very delicately!
+
 /**
  * Fetch all topics and update known available episodes, until we are sure that it's already up-to-date.
  */
-context(CoroutineScope) suspend fun ApplicationState.updateStarredAnimeEpisodes(
+suspend fun ApplicationState.updateStarredAnimeEpisodes(
     anime: StarredAnime,
     currentAnime: StarredAnime,
 ) {
@@ -339,7 +358,7 @@ context(CoroutineScope) suspend fun ApplicationState.updateStarredAnimeEpisodes(
 
     dataSynchronizer.commit(StarredAnimeMutations.ChangeRefreshState(anime.id, RefreshState.Refreshing))
     try {
-        while (isActive) {
+        while (currentCoroutineContext().isActive) {
             // always fetch the newest page, which contain the newer episodes.
             val nextPage = session.nextPage() ?: break
             allTopics.addAll(nextPage)
