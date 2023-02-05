@@ -60,6 +60,9 @@ import me.him188.animationgarden.app.platform.LocalContext
 import me.him188.animationgarden.app.platform.Res
 import me.him188.animationgarden.app.platform.browse
 import me.him188.animationgarden.app.ui.interaction.onEnterKeyEvent
+import me.him188.animationgarden.app.ui.search.OrganizedViewCard
+import me.him188.animationgarden.app.ui.search.OrganizedViewState
+import me.him188.animationgarden.app.ui.search.invertSelected
 import me.him188.animationgarden.app.ui.theme.darken
 import me.him188.animationgarden.app.ui.theme.weaken
 import me.him188.animationgarden.app.ui.widgets.OutlinedTextFieldEx

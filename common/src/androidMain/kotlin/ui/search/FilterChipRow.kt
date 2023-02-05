@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.app.ui
+package me.him188.animationgarden.app.ui.search
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*

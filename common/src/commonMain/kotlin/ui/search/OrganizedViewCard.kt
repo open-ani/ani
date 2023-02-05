@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.app.ui
+package me.him188.animationgarden.app.ui.search
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -46,6 +46,7 @@ import me.him188.animationgarden.app.i18n.LocalI18n
 import me.him188.animationgarden.app.i18n.loadResourceBundle
 import me.him188.animationgarden.app.platform.LocalContext
 import me.him188.animationgarden.app.platform.Res
+import me.him188.animationgarden.app.ui.AnimatedTitles
 import me.him188.animationgarden.app.ui.theme.darken
 import me.him188.animationgarden.app.ui.widgets.ToggleStarButton
 import java.time.LocalDateTime

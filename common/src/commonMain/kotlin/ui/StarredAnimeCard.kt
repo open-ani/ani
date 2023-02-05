@@ -36,6 +36,7 @@ import me.him188.animationgarden.app.platform.LocalContext
 import me.him188.animationgarden.app.ui.interaction.VibrationStrength
 import me.him188.animationgarden.app.ui.interaction.onClickEx
 import me.him188.animationgarden.app.ui.interaction.vibrateIfSupported
+import me.him188.animationgarden.app.ui.search.FilterChipRow
 import me.him188.animationgarden.app.ui.theme.darken
 import me.him188.animationgarden.app.ui.widgets.ToggleStarButton
 

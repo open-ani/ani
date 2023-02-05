@@ -36,7 +36,7 @@ import me.him188.animationgarden.app.app.RefreshState
 import me.him188.animationgarden.app.app.StarredAnime
 import me.him188.animationgarden.app.app.toEStarredAnime
 import me.him188.animationgarden.app.app.toStarredAnime
-import me.him188.animationgarden.app.ui.OrganizedViewState
+import me.him188.animationgarden.app.ui.search.OrganizedViewState
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 

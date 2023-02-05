@@ -32,7 +32,7 @@ import me.him188.animationgarden.api.tags.Episode
 import me.him188.animationgarden.app.app.data.AppData
 import me.him188.animationgarden.app.app.data.AppDataSynchronizer
 import me.him188.animationgarden.app.app.data.StarredAnimeMutations
-import me.him188.animationgarden.app.ui.OrganizedViewState
+import me.him188.animationgarden.app.ui.search.OrganizedViewState
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
