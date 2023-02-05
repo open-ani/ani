@@ -18,14 +18,36 @@
 
 package me.him188.animationgarden.app.ui
 
-import androidx.compose.animation.*
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.VisibilityThreshold
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
@@ -33,9 +55,26 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.OutlinedIconToggleButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.ProvideTextStyle
+import androidx.compose.material3.Text
+import androidx.compose.material3.surfaceColorAtElevation
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -45,15 +84,40 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.*
-import kotlinx.coroutines.*
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.withContext
 import me.him188.animationgarden.api.AnimationGardenClient
-import me.him188.animationgarden.api.model.*
+import me.him188.animationgarden.api.model.Alliance
+import me.him188.animationgarden.api.model.DATE_FORMAT
 import me.him188.animationgarden.api.model.FileSize.Companion.megaBytes
+import me.him188.animationgarden.api.model.MagnetLink
+import me.him188.animationgarden.api.model.SearchQuery
+import me.him188.animationgarden.api.model.Topic
+import me.him188.animationgarden.api.model.TopicCategory
+import me.him188.animationgarden.api.model.UserImpl
 import me.him188.animationgarden.app.AppTheme
-import me.him188.animationgarden.app.app.*
-import me.him188.animationgarden.app.app.data.*
+import me.him188.animationgarden.app.app.ApplicationState
+import me.him188.animationgarden.app.app.FetchingState
+import me.him188.animationgarden.app.app.RefreshState
+import me.him188.animationgarden.app.app.StarredAnime
+import me.him188.animationgarden.app.app.data.AppDataSynchronizer
+import me.him188.animationgarden.app.app.data.AppDataSynchronizerImpl
+import me.him188.animationgarden.app.app.data.InMemoryMutableProperty
+import me.him188.animationgarden.app.app.data.StarredAnimeMutations
+import me.him188.animationgarden.app.app.data.then
+import me.him188.animationgarden.app.app.doSearch
+import me.him188.animationgarden.app.app.rememberCurrentStarredAnimeState
+import me.him188.animationgarden.app.app.render
 import me.him188.animationgarden.app.app.settings.LocalSyncSettings
 import me.him188.animationgarden.app.i18n.LocalI18n
 import me.him188.animationgarden.app.platform.LocalContext
@@ -259,7 +323,6 @@ fun SearchTextField(
             text,
             onTextChange,
             modifier
-                .padding(PaddingValues(vertical = 6.dp, horizontal = 12.dp))
                 .height(48.dp)
                 .onEnterKeyEvent {
                     currentDoSearch()
