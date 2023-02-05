@@ -292,6 +292,9 @@ private fun TagsView(tags: List<Tag>) {
     }
 }
 
+/**
+ * 搜索结果卡片中的标签
+ */
 @Composable
 private fun TagButton(
     text: @Composable () -> Unit,
@@ -302,9 +305,10 @@ private fun TagButton(
     val onClickState by rememberUpdatedState(onClick)
     val elevation = ButtonDefaults.buttonElevation()
     val interactionSource = remember { MutableInteractionSource() }
-    val shadowElevation by elevation.shadowElevation(true, interactionSource)
 
     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+    val shadowElevation by elevation.shadowElevation(true, interactionSource)
+
     val defaultContainerColor = AppTheme.colorScheme.surfaceColorAtElevation(shadowElevation)
     val containerColor = if (containerColorEffect == Color.Unspecified) {
         defaultContainerColor

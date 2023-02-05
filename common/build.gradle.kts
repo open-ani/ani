@@ -55,11 +55,11 @@ kotlin {
                 api(compose.runtime)
 //                api("org.jetbrains.compose.ui:ui-text:${ComposeBuildConfig.composeVersion}")
 
-                api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.4.0")
-                api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0")
-                api("org.jetbrains.kotlinx:kotlinx-serialization-protobuf:1.4.0")
-                api("io.ktor:ktor-client-websockets:2.1.0")
-                api("io.ktor:ktor-client-logging:2.1.0")
+                api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.4.1")
+                api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
+                api("org.jetbrains.kotlinx:kotlinx-serialization-protobuf:1.4.1")
+                api("io.ktor:ktor-client-websockets:2.1.1")
+                api("io.ktor:ktor-client-logging:2.1.1")
                 api("net.mamoe.yamlkt:yamlkt:0.12.0")
                 api("dev.dirs:directories:26")
 
@@ -71,7 +71,7 @@ kotlin {
 //    implementation("org.xerial:sqlite-jdbc:3.39.2.0")
 
                 api(projects.api)
-                implementation("org.slf4j:slf4j-simple:1.7.36")
+                implementation("org.slf4j:slf4j-simple:2.0.3")
             }
         }
 
@@ -85,11 +85,11 @@ kotlin {
 
         val androidMain by getting {
             dependencies {
-                api("androidx.appcompat:appcompat:1.5.0")
-                api("androidx.core:core-ktx:1.8.0")
-                api("androidx.compose.ui:ui-tooling-preview:1.2.1")
+                api("androidx.appcompat:appcompat:1.6.0")
+                api("androidx.core:core-ktx:1.9.0")
+                api("androidx.compose.ui:ui-tooling-preview:1.3.3")
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
-                implementation("androidx.compose.material3:material3:1.0.0-alpha14")
+                implementation("androidx.compose.material3:material3:1.1.0-alpha05")
                 implementation("com.google.accompanist:accompanist-flowlayout:0.25.1")
             }
         }
@@ -119,11 +119,11 @@ kotlin.sourceSets.all {
 
 
 android {
-    compileSdk = 32
+    compileSdk = 33
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     defaultConfig {
         minSdk = 26
-        targetSdk = 32
+        targetSdk = 33
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -141,5 +141,5 @@ android {
     }
 }
 dependencies {
-    debugImplementation("androidx.compose.ui:ui-tooling:1.2.1")
+    debugImplementation("androidx.compose.ui:ui-tooling:1.3.3")
 }

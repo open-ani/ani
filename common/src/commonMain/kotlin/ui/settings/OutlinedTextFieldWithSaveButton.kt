@@ -19,11 +19,13 @@
 package me.him188.animationgarden.app.ui.settings
 
 import androidx.compose.foundation.focusGroup
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -39,7 +41,6 @@ import androidx.compose.ui.unit.sp
 import me.him188.animationgarden.app.AppTheme
 import me.him188.animationgarden.app.ui.interaction.onEnterKeyEvent
 import me.him188.animationgarden.app.ui.theme.darken
-import me.him188.animationgarden.app.ui.widgets.OutlinedTextFieldEx
 
 @Composable
 fun OutlinedTextFieldWithSaveButton(
@@ -109,7 +110,7 @@ fun SettingsOutlinedTextField(
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     placeholder: @Composable (() -> Unit)? = null
 ) {
-    OutlinedTextFieldEx(
+    OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
         modifier = modifier
@@ -133,9 +134,10 @@ fun SettingsOutlinedTextField(
                     lineHeight = 20.sp
                 )
             ) {
-                placeholder?.invoke()
+                Box(Modifier.padding(vertical = 6.dp, horizontal = 12.dp)) {
+                    placeholder?.invoke()
+                }
             }
         },
-        contentPadding = PaddingValues(vertical = 6.dp, horizontal = 12.dp)
     )
 }

@@ -66,6 +66,7 @@ fun BoxWithSaveButton(
                     .fillMaxHeight(),
                 contentAlignment = Alignment.BottomEnd
             ) {
+                @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
                 val containerColor by colors.containerColor(enabled)
                 Box(
                     buttonModifier
@@ -82,7 +83,7 @@ fun BoxWithSaveButton(
                         ),
                     contentAlignment = Alignment.Center
                 ) {
-                    ButtonDefaults.outlinedButtonColors()
+                    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
                     val contentColor by colors.contentColor(enabled)
                     Icon(
                         Res.painter.check,

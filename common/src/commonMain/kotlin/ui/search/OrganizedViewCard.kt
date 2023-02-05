@@ -18,34 +18,27 @@
 
 package me.him188.animationgarden.app.ui.search
 
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import me.him188.animationgarden.api.model.*
 import me.him188.animationgarden.api.model.FileSize.Companion.megaBytes
 import me.him188.animationgarden.api.tags.Episode
 import me.him188.animationgarden.api.tags.Resolution
 import me.him188.animationgarden.api.tags.SubtitleLanguage
 import me.him188.animationgarden.app.AppTheme
-import me.him188.animationgarden.app.app.RefreshState
 import me.him188.animationgarden.app.i18n.LocalI18n
 import me.him188.animationgarden.app.i18n.loadResourceBundle
 import me.him188.animationgarden.app.platform.LocalContext
-import me.him188.animationgarden.app.platform.Res
 import me.him188.animationgarden.app.ui.AnimatedTitles
 import me.him188.animationgarden.app.ui.theme.darken
 import me.him188.animationgarden.app.ui.widgets.ToggleStarButton
@@ -239,118 +232,6 @@ private fun OrganizedViewContent(
             }
         }
     }
-}
-
-@Composable
-expect fun <T> FilterChipRow(
-    list: List<T>,
-    key: (item: T) -> Any,
-    isSelected: @Composable (T) -> Boolean,
-    onClick: ((T) -> Unit)?,
-    enabled: @Composable (T) -> Boolean,
-    isExpanded: Boolean,
-    elevation: SelectableChipElevation? = FilterChipDefaults.elevatedFilterChipElevation(),
-    refreshState: RefreshState? = null,
-    onClickRefreshResult: (() -> Unit)? = null,
-    content: @Composable (T) -> Unit = { Text(it.toString()) },
-)
-
-@Suppress("ACTUAL_FUNCTION_WITH_DEFAULT_ARGUMENTS") // otherwise Compose compiler will complain
-@Composable
-fun <T> FilterChipRowByLazyRow(
-    list: List<T>,
-    key: (item: T) -> Any,
-    isSelected: @Composable (T) -> Boolean,
-    onClick: ((T) -> Unit)?,
-    enabled: @Composable (T) -> Boolean,
-    elevation: SelectableChipElevation? = FilterChipDefaults.elevatedFilterChipElevation(),
-    refreshState: RefreshState? = null,
-    onClickRefreshResult: (() -> Unit)? = null,
-    content: @Composable (T) -> Unit = { Text(it.toString()) },
-) {
-    val currentOnClick by rememberUpdatedState(onClick)
-    val currentOnClickRefreshState by rememberUpdatedState(onClickRefreshResult)
-
-
-    val showSuccessHint by animateFloatAsState(if (refreshState !is RefreshState.Success) 1f else 0f, tween(2000))
-    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-        val cardHeight = 32.dp
-        val textHeight = 24.sp
-        val progressSize = 18.dp
-        val tickSize = 24.dp
-        items(list, key = key) {
-            ElevatedFilterChip(
-                selected = isSelected(it),
-                onClick = { currentOnClick?.invoke(it) },
-                label = {
-                    ProvideTextStyle(LocalTextStyle.current.copy(lineHeight = textHeight)) {
-                        content(it)
-                    }
-                },
-                enabled = enabled.invoke(it),
-                elevation = elevation,
-                modifier = Modifier.height(cardHeight),
-//                modifier = Modifier.animateItemPlacement(tween(200, 100)),
-            )
-        }
-        if (refreshState != null && (refreshState !is RefreshState.Success || showSuccessHint > 0)) {
-            item(key = "refreshing") {
-                RefreshingChip(
-                    refreshState = refreshState,
-                    textHeight = textHeight,
-                    cardHeight = cardHeight,
-                    progressSize = progressSize,
-                    tickSize = tickSize,
-                    elevation = elevation,
-                    onClick = currentOnClickRefreshState
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun RefreshingChip(
-    refreshState: RefreshState,
-    textHeight: TextUnit = 24.sp,
-    cardHeight: Dp = 32.dp,
-    progressSize: Dp = 18.dp,
-    tickSize: Dp = 24.dp,
-    elevation: SelectableChipElevation? = null,
-    onClick: (() -> Unit)? = null,
-) {
-    val currentOnClick by rememberUpdatedState(onClick)
-    FilterChip(
-        selected = false,
-        onClick = { currentOnClick?.invoke() },
-        label = {
-            ProvideTextStyle(LocalTextStyle.current.copy(lineHeight = textHeight)) {
-                when (refreshState) {
-                    is RefreshState.Failed -> Text(LocalI18n.current.getString("starred.update.failed"))
-                    RefreshState.Refreshing -> CircularProgressIndicator(
-                        Modifier.size(progressSize),
-                        strokeWidth = 2.dp
-                    )
-                    is RefreshState.Success -> {
-                        Icon(
-                            Res.painter.check,
-                            LocalI18n.current.getString("starred.update.succeed"),
-                            Modifier.size(tickSize),
-                            tint = AppTheme.colorScheme.primary
-                        )
-                    }
-                    RefreshState.Cancelled -> {
-                        // nop
-                    }
-                }
-            }
-        },
-        enabled = false,
-        elevation = elevation,
-        modifier = Modifier.height(cardHeight),
-        border = null,
-//                modifier = Modifier.animateItemPlacement(tween(200, 100)),
-    )
 }
 
 @Preview

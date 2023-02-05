@@ -22,7 +22,10 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.height
-import androidx.compose.material3.*
+import androidx.compose.material3.ElevatedFilterChip
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.ProvideTextStyle
+import androidx.compose.material3.SelectableChipElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
@@ -35,19 +38,18 @@ import com.google.accompanist.flowlayout.FlowMainAxisAlignment
 import com.google.accompanist.flowlayout.FlowRow
 import me.him188.animationgarden.app.app.RefreshState
 
-@Suppress("ACTUAL_FUNCTION_WITH_DEFAULT_ARGUMENTS") // otherwise Compose compiler will complain
 @Composable
-actual fun <T> FilterChipRow(
+actual fun <T> FilterChipRowImpl(
     list: List<T>,
     key: (item: T) -> Any,
     isSelected: @Composable (T) -> Boolean,
     onClick: ((T) -> Unit)?,
     enabled: @Composable (T) -> Boolean,
     isExpanded: Boolean,
-    elevation: SelectableChipElevation? = FilterChipDefaults.elevatedFilterChipElevation(),
-    refreshState: RefreshState? = null,
-    onClickRefreshResult: (() -> Unit)? = null,
-    content: @Composable (T) -> Unit = { Text(it.toString()) },
+    elevation: SelectableChipElevation?,
+    refreshState: RefreshState?,
+    onClickRefreshResult: (() -> Unit)?,
+    content: @Composable (T) -> Unit,
 ) {
     Box {
         AnimatedVisibility(

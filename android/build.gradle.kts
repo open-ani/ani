@@ -18,7 +18,7 @@
 
 @file:Suppress("UnstableApiUsage")
 
-import org.jetbrains.compose.internal.getLocalProperty
+import java.util.*
 
 plugins {
     id("org.jetbrains.compose")
@@ -30,12 +30,12 @@ plugins {
 dependencies {
     implementation(project(":api"))
     implementation(project(":common"))
-    implementation("androidx.activity:activity-compose:1.5.1")
+    implementation("androidx.activity:activity-compose:1.6.1")
 
-    implementation("androidx.core:core-ktx:1.8.0")
-    implementation("androidx.appcompat:appcompat:1.5.0")
+    implementation("androidx.core:core-ktx:1.9.0")
+    implementation("androidx.appcompat:appcompat:1.6.0")
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
-    implementation("com.google.android.material:material:1.6.1")
+    implementation("com.google.android.material:material:1.8.0")
 
     val composeVersion = "1.2.0"
     implementation("androidx.compose.ui:ui:$composeVersion")
@@ -43,21 +43,21 @@ dependencies {
     implementation("androidx.compose.ui:ui-viewbinding:$composeVersion")
     implementation("androidx.compose.foundation:foundation:$composeVersion")
     implementation("androidx.compose.material:material:$composeVersion")
-    implementation("androidx.compose.material3:material3:1.0.0-alpha14")
+    implementation("androidx.compose.material3:material3:1.1.0-alpha05")
 //    implementation("androidx.compose.runtime:runtime-livedata:$composeVersion")
-    implementation("androidx.activity:activity-compose:1.5.1")
-    implementation("androidx.compose.ui:ui-tooling-preview:1.2.1")
+    implementation("androidx.activity:activity-compose:1.6.1")
+    implementation("androidx.compose.ui:ui-tooling-preview:1.3.3")
 
-    runtimeOnly("org.jetbrains.kotlinx:atomicfu:0.18.3")
-    api("io.ktor:ktor-client-core:2.0.3")
+    runtimeOnly("org.jetbrains.kotlinx:atomicfu:0.18.5")
+    api("io.ktor:ktor-client-core:2.1.1")
 }
 
 android {
-    compileSdk = 32
+    compileSdk = 33
     defaultConfig {
         applicationId = "me.him188.animationgarden"
         minSdk = 26
-        targetSdk = 32
+        targetSdk = 33
         versionCode = getProperty("version.code").toInt()
         versionName = project.version.toString()
     }
@@ -120,3 +120,19 @@ fun getProperty(name: String) =
         ?: properties[name]?.toString()
         ?: getLocalProperty(name)
         ?: ext.get(name).toString()
+
+
+val Project.localPropertiesFile get() = project.rootProject.file("local.properties")
+
+fun Project.getLocalProperty(key: String): String? {
+    if (localPropertiesFile.exists()) {
+        val properties = Properties()
+        localPropertiesFile.inputStream().buffered().use { input ->
+            properties.load(input)
+        }
+        return properties.getProperty(key)
+    } else {
+        localPropertiesFile.createNewFile()
+        return null
+    }
+}

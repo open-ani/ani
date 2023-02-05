@@ -66,7 +66,6 @@ import me.him188.animationgarden.app.ui.search.invertSelected
 import me.him188.animationgarden.app.ui.starred.StarredAnimeCard
 import me.him188.animationgarden.app.ui.theme.darken
 import me.him188.animationgarden.app.ui.theme.weaken
-import me.him188.animationgarden.app.ui.widgets.OutlinedTextFieldEx
 import java.time.LocalDateTime
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
@@ -256,10 +255,11 @@ fun SearchTextField(
 ) {
     val currentDoSearch by rememberUpdatedState(doSearch)
     ProvideTextStyle(AppTheme.typography.bodyMedium.copy(lineHeight = 16.sp)) {
-        OutlinedTextFieldEx(
+        OutlinedTextField(
             text,
             onTextChange,
             modifier
+                .padding(PaddingValues(vertical = 6.dp, horizontal = 12.dp))
                 .height(48.dp)
                 .onEnterKeyEvent {
                     currentDoSearch()
@@ -279,7 +279,7 @@ fun SearchTextField(
             maxLines = 1,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
             keyboardActions = KeyboardActions(onSearch = { currentDoSearch() }),
-            contentPadding = PaddingValues(vertical = 6.dp, horizontal = 12.dp)
+//            contentPadding = PaddingValues(vertical = 6.dp, horizontal = 12.dp)
         )
     }
 }
