@@ -134,10 +134,17 @@ android {
         isShrinkResources = false
         proguardFiles(
             getDefaultProguardFile("proguard-android-optimize.txt"),
-            projects.animationGardenAndroid.dependencyProject.projectDir.resolve("proguard-rules.pro").also {
-                check(it.exists()) { "Could not find ${it.absolutePath}" }
-            }
+            projects.animationGardenAndroid.dependencyProject.projectDir.resolve("proguard-rules.pro")
+                .also {
+                    check(it.exists()) { "Could not find ${it.absolutePath}" }
+                }
         )
+    }
+    buildFeatures {
+        compose = true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.4.0"
     }
 }
 dependencies {
