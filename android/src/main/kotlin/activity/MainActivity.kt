@@ -24,15 +24,30 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -41,10 +56,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.withContext
 import me.him188.animationgarden.android.AnimationGardenApplication
 import me.him188.animationgarden.api.AnimationGardenClient
 import me.him188.animationgarden.api.model.SearchQuery
+import me.him188.animationgarden.api.model.SearchSession
+import me.him188.animationgarden.api.model.Topic
 import me.him188.animationgarden.api.tags.Episode
 import me.him188.animationgarden.app.AppTheme
 import me.him188.animationgarden.app.ProvideCompositionLocalsForPreview
@@ -72,11 +91,12 @@ class MainActivity : BaseComponentActivity() {
 
     private fun onReturnFromStarredList(
         result: ActivityResult,
-        app: ApplicationState
+        app: ApplicationState,
     ) {
         val searchQuery = result.data?.getStringExtra(StarredListActivity.INTENT_KEYWORD) ?: return
         app.updateSearchQuery(SearchQuery(keywords = searchQuery))
-        val episode = result.data?.getStringExtra(StarredListActivity.INTENT_EPISODE)?.let { Episode(it) }
+        val episode =
+            result.data?.getStringExtra(StarredListActivity.INTENT_EPISODE)?.let { Episode(it) }
         app.organizedViewState.selectedEpisode.value = episode
         updateAppliedKeyword?.invoke(searchQuery)
     }
@@ -154,7 +174,13 @@ class MainActivity : BaseComponentActivity() {
             },
             actions = {
                 val context = LocalContext.current
-                IconButton(onClick = { starredListActivityLauncher.launch(StarredListActivity.getIntent(context)) }) {
+                IconButton(onClick = {
+                    starredListActivityLauncher.launch(
+                        StarredListActivity.getIntent(
+                            context
+                        )
+                    )
+                }) {
                     Icon(
                         Res.painter.star,
                         LocalI18n.current.getString("menu.starred")
@@ -177,7 +203,15 @@ class MainActivity : BaseComponentActivity() {
     private fun PreviewMainPage() {
         ProvideCompositionLocalsForPreview {
             val app = remember {
-                ApplicationState(AnimationGardenClient.Factory.create {}, { createTestAppDataSynchronizer(it) })
+                ApplicationState(object : AnimationGardenClient {
+                    override fun startSearchSession(filter: SearchQuery): SearchSession {
+                        return object : SearchSession {
+                            override val query: SearchQuery = SearchQuery(null, null, null, null)
+                            override val results: Flow<Topic> = flowOf()
+                            override suspend fun nextPage(): List<Topic>? = null
+                        }
+                    }
+                }, { createTestAppDataSynchronizer(it) })
             }
             MaterialTheme {
                 AndroidMainPage(app, remember { FocusRequester() })
@@ -196,7 +230,11 @@ class MainActivity : BaseComponentActivity() {
 
         val appliedKeywordState = rememberSaveable { mutableStateOf("") }
         var currentAppliedKeyword by appliedKeywordState
-        val (keywordsInput, onKeywordsInputChange) = rememberSaveable { mutableStateOf(currentAppliedKeyword) }
+        val (keywordsInput, onKeywordsInputChange) = rememberSaveable {
+            mutableStateOf(
+                currentAppliedKeyword
+            )
+        }
 
         val currentStarredAnime by app.rememberCurrentStarredAnimeState()
 
