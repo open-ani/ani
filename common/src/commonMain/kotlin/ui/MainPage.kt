@@ -63,6 +63,7 @@ import me.him188.animationgarden.app.ui.interaction.onEnterKeyEvent
 import me.him188.animationgarden.app.ui.search.OrganizedViewCard
 import me.him188.animationgarden.app.ui.search.OrganizedViewState
 import me.him188.animationgarden.app.ui.search.invertSelected
+import me.him188.animationgarden.app.ui.starred.StarredAnimeCard
 import me.him188.animationgarden.app.ui.theme.darken
 import me.him188.animationgarden.app.ui.theme.weaken
 import me.him188.animationgarden.app.ui.widgets.OutlinedTextFieldEx

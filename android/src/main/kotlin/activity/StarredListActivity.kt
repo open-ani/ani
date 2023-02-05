@@ -49,7 +49,7 @@ import me.him188.animationgarden.app.app.ApplicationState
 import me.him188.animationgarden.app.app.data.StarredAnimeMutations
 import me.him188.animationgarden.app.i18n.LocalI18n
 import me.him188.animationgarden.app.platform.LocalContext
-import me.him188.animationgarden.app.ui.StarredAnimeCard
+import me.him188.animationgarden.app.ui.starred.StarredAnimeCard
 
 class StarredListActivity : BaseComponentActivity() {
     companion object {

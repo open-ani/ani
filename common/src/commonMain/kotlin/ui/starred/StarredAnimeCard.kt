@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.app.ui
+package me.him188.animationgarden.app.ui.starred
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.ripple.rememberRipple
@@ -33,6 +33,7 @@ import me.him188.animationgarden.api.tags.Episode
 import me.him188.animationgarden.app.AppTheme
 import me.him188.animationgarden.app.app.StarredAnime
 import me.him188.animationgarden.app.platform.LocalContext
+import me.him188.animationgarden.app.ui.AnimatedTitles
 import me.him188.animationgarden.app.ui.interaction.VibrationStrength
 import me.him188.animationgarden.app.ui.interaction.onClickEx
 import me.him188.animationgarden.app.ui.interaction.vibrateIfSupported
@@ -40,6 +41,9 @@ import me.him188.animationgarden.app.ui.search.FilterChipRow
 import me.him188.animationgarden.app.ui.theme.darken
 import me.him188.animationgarden.app.ui.widgets.ToggleStarButton
 
+/**
+ * 收藏列表中为每个番剧展示的卡片
+ */
 @Composable
 fun StarredAnimeCard(
     anime: StarredAnime,

@@ -42,7 +42,12 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import me.him188.animationgarden.app.AppTheme
 import me.him188.animationgarden.app.platform.Res
+import me.him188.animationgarden.app.ui.search.OrganizedViewCard
+import me.him188.animationgarden.app.ui.starred.StarredAnimeCard
 
+/**
+ * [收藏卡片][StarredAnimeCard]和[统合搜索卡片][OrganizedViewCard]中的收藏按钮 (五角星图标)
+ */
 @Composable
 fun ToggleStarButton(
     starred: Boolean,
