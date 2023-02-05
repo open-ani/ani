@@ -9,13 +9,13 @@
 ## 下载
 
 此应用支持 macOS、Linux、Windows 与 Android。
-可在 [releases](https://github.com/Him188/animation-garden-desktop/releases/latest) 中的 "Assets" 下载最新正式版本。
+可在 [releases](https://github.com/Him188/animation-garden/releases/latest) 中的 "Assets" 下载最新正式版本。
 
-测试版本可以在 [releases](https://github.com/Him188/animation-garden-desktop/releases/) 找到。使用测试版本可以体验最新特性，但可能会遇到一些问题。
+测试版本可以在 [releases](https://github.com/Him188/animation-garden/releases/) 找到。使用测试版本可以体验最新特性，但可能会遇到一些问题。
 
 ## 参与
 
-欢迎你提交 [PR](https://github.com/Him188/animation-garden-desktop/pulls) [参与开发](CONTRIBUTING.md)。
+欢迎你提交 [PR](https://github.com/Him188/animation-garden/pulls) [参与开发](CONTRIBUTING.md)。
 
 由于我家有咖啡机，就不需要你捐助咖啡了，谢谢你。
 

@@ -119,54 +119,54 @@ jobs:
         name: Upload macOS packages
         uses: actions/upload-artifact@v3
         with:
-          name: animation-garden-desktop-macos
+          name: animation-garden-macos
           path: desktop/build/compose/binaries/main/app
 
       - if: ${{ env.isMac == 'true' }}
         name: Upload macOS packages
         uses: actions/upload-artifact@v3
         with:
-          name: animation-garden-desktop-macos-installer
+          name: animation-garden-macos-installer
           path: desktop/build/compose/binaries/main/dmg
 
       - if: ${{ env.isUbuntu == 'true' }}
         name: Upload Linux packages
         uses: actions/upload-artifact@v3
         with:
-          name: animation-garden-desktop-linux
+          name: animation-garden-linux
           path: desktop/build/compose/binaries/main/app
 
       - if: ${{ env.isUbuntu == 'true' }}
         name: Upload Linux packages
         uses: actions/upload-artifact@v3
         with:
-          name: animation-garden-desktop-ubuntu-installer
+          name: animation-garden-ubuntu-installer
           path: desktop/build/compose/binaries/main/deb
 
       - if: ${{ env.isUbuntu == 'true' }}
         name: Upload Linux packages
         uses: actions/upload-artifact@v3
         with:
-          name: animation-garden-desktop-redhat-installer
+          name: animation-garden-redhat-installer
           path: desktop/build/compose/binaries/main/rpm
 
       - if: ${{ env.isWindows == 'true' }}
         name: Upload Windows packages
         uses: actions/upload-artifact@v3
         with:
-          name: animation-garden-desktop-windows
+          name: animation-garden-windows
           path: desktop/build/compose/binaries/main/app
 
       - if: ${{ env.isWindows == 'true' }}
         name: Upload Windows packages
         uses: actions/upload-artifact@v3
         with:
-          name: animation-garden-desktop-windows-installer
+          name: animation-garden-windows-installer
           path: desktop/build/compose/binaries/main/msi
 
       - if: ${{ env.isWindows == 'true' }}
         name: Upload Windows packages
         uses: actions/upload-artifact@v3
         with:
-          name: animation-garden-desktop-windows-installer
+          name: animation-garden-windows-installer
           path: desktop/build/compose/binaries/main/exe
