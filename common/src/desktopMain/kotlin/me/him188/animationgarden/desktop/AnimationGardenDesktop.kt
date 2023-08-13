@@ -72,7 +72,7 @@ val projectDirectories: ProjectDirectories by lazy { ProjectDirectories.from("me
 
 private fun Migrations.tryMigrate(
     newAppDat: File = File(projectDirectories.dataDir, "app.dat"),
-    newSettings: File = File(projectDirectories.preferenceDir, "settings.dat")
+    newSettings: File = File(projectDirectories.preferenceDir, "settings.dat"),
 ) {
     // 2.0.0-beta01
     migrateFile(
@@ -138,7 +138,7 @@ object AnimationGardenDesktop {
         localSyncSettingsFlow: Flow<LocalSyncSettings>,
         mainSnackbar: SnackbarHostState,
         currentBundle: ResourceBundle,
-        platform: PlatformImplementations
+        platform: PlatformImplementations,
     ) {
         val dialogHost = rememberDialogHost()
         val app = remember {
@@ -243,7 +243,7 @@ private fun createAppState(
     dialogHost: DialogHost,
     localSyncSettingsFlow: Flow<LocalSyncSettings>,
     snackbarState: SnackbarHostState,
-    currentBundle: ResourceBundle
+    currentBundle: ResourceBundle,
 ) = ApplicationState(
     initialClient = AnimationGardenClient.Factory.create {
         proxy = currentAppSettings.proxy.toKtorProxy()
@@ -268,7 +268,13 @@ private fun createAppState(
                             logger.trace { "Commit file: ${it.absolutePath}" }
                         }
                     ).map(
-                        get = { CommitRef(it) },
+                        get = {
+                            if (it.isEmpty()) {
+                                CommitRef.generate()
+                            } else {
+                                CommitRef(it)
+                            }
+                        },
                         set = { it.toString() },
                     ),
                     promptConflict = { onConflict(dialogHost) },
@@ -359,7 +365,8 @@ private suspend fun onSwitchToOffline(
         }
         when (result) {
             DialogResult.CANCELED,
-            DialogResult.DISMISSED -> {
+            DialogResult.DISMISSED,
+            -> {
                 uiScope.launch(Dispatchers.Main) {
                     snackbarState.showSnackbar(
                         currentBundle.getString("sync.failed.revoked"),
