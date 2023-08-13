@@ -17,8 +17,6 @@
 
 欢迎你提交 [PR](https://github.com/Him188/animation-garden/pulls) [参与开发](CONTRIBUTING.md)。
 
-由于我家有咖啡机，就不需要你捐助咖啡了，谢谢你。
-
 ## 提示
 
 #### 访问动漫花园
