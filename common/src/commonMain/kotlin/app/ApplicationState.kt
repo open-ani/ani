@@ -67,7 +67,7 @@ class ApplicationState(
         @Composable
         get() {
             val data by dataState
-            return data.starredAnime.asFlow().collectAsState()
+            return data.starredAnime.asFlow().map { it.reversed() }.collectAsState(listOf())
         }
 
     @Stable
