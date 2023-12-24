@@ -31,42 +31,41 @@ kotlin {
         languageSettings.optIn("kotlinx.serialization.ExperimentalSerializationApi")
     }
 
-    targets {
-        android()
-        jvm {
-            compilations.all {
-                kotlinOptions.jvmTarget = "11"
-            }
+    androidTarget()
+    jvm {
+        jvmToolchain(8)
+        compilations.all {
+            kotlinOptions.jvmTarget = "11"
         }
     }
 
     sourceSets {
         val commonMain by getting {
             dependencies {
-                val ktorVersion = "2.1.0"
+                val ktorVersion = "2.3.6"
                 api("io.ktor:ktor-client-core:$ktorVersion")
                 implementation("io.ktor:ktor-client-cio:$ktorVersion")
                 implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
                 implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-                api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.4.0")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-protobuf:1.4.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+                api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.1")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-protobuf:1.4.1")
                 // https://mvnrepository.com/artifact/org.jsoup/jsoup
                 implementation("org.jsoup:jsoup:1.15.2")
                 // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
-                implementation("org.slf4j:slf4j-api:1.7.36")
+                implementation("org.slf4j:slf4j-api:2.0.7")
             }
         }
 
         val commonTest by getting {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-debug:1.6.4")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-debug:1.7.3")
 
                 implementation(kotlin("test-junit5"))
                 // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
-                implementation("org.junit.jupiter:junit-jupiter-api:5.9.0")
+                implementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
                 // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine
-                runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.0")
+                runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.2")
             }
         }
     }

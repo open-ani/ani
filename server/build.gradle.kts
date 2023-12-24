@@ -26,17 +26,17 @@ plugins {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-protobuf:1.4.0")
-    implementation("io.ktor:ktor-server-netty:2.1.0")
-    implementation("io.ktor:ktor-server-call-logging:2.1.0")
-    implementation("io.ktor:ktor-server-content-negotiation:2.1.0")
-    implementation("io.ktor:ktor-serialization-kotlinx-json:2.1.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-protobuf:1.6.1")
+    implementation("io.ktor:ktor-server-netty:2.3.6")
+    implementation("io.ktor:ktor-server-call-logging:2.3.6")
+    implementation("io.ktor:ktor-server-content-negotiation:2.3.6")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.6")
     implementation("io.ktor:ktor-server-websockets:2.1.0")
 //    implementation("org.jetbrains.xodus:xodus-openAPI:2.0.1")
-    implementation("org.apache.logging.log4j:log4j-core:2.18.0")
-    implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.18.0")
+    implementation("org.apache.logging.log4j:log4j-core:2.20.0")
+    implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.20.0")
     implementation(projects.api)
     implementation("org.jetbrains.kotlinx:kotlinx-cli:0.3.5")
 }

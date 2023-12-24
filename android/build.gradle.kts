@@ -53,11 +53,11 @@ dependencies {
 }
 
 android {
-    compileSdk = 33
+    compileSdk = 34
     defaultConfig {
         applicationId = "me.him188.animationgarden"
         minSdk = 26
-        targetSdk = 33
+        targetSdk = 34
         versionCode = getProperty("version.code").toInt()
         versionName = project.version.toString()
     }
@@ -66,7 +66,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_1_8
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.0"
+        kotlinCompilerExtensionVersion = "1.5.6-dev-k2.0.0-Beta1-06a03be2b42"
     }
     signingConfigs {
         kotlin.runCatching { getProperty("signing_release_storeFileFromRoot") }.getOrNull()?.let {

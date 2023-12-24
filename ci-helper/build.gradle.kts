@@ -57,8 +57,7 @@ val hostOS: OS by lazy {
 }
 
 val hostArch: String by lazy {
-    val arch = System.getProperty("os.arch")
-    when (arch) {
+    when (val arch = System.getProperty("os.arch")) {
         "x86_64" -> "amd64"
         "amd64" -> "amd64"
         "arm64" -> "arm64"
@@ -120,7 +119,8 @@ tasks.register("uploadAndroidApk") {
             uploadReleaseAsset(
                 name = namer.androidApp(fullVersion),
                 contentType = "application/vnd.android.package-archive",
-                file = project(":animation-garden-android").buildDir.resolve("outputs/apk/release").walk()
+                file = project(":animation-garden-android").layout.buildDirectory.file("outputs/apk/release")
+                    .get().asFile.walk()
                     .single { it.extension == "apk" && it.name.contains("release") },
             )
         }
@@ -141,7 +141,7 @@ tasks.register("uploadAndroidApkQR") {
 
 val zipDesktopDistribution = tasks.register("zipDesktopDistribution", Zip::class) {
     dependsOn(":desktop:createDistributable")
-    from(fileTree(project(":desktop").buildDir.resolve("compose/binaries/main/app")))
+    from(project(":desktop").layout.buildDirectory.dir("compose/binaries/main/app"))
     archiveBaseName.set("desktop")
 }
 
@@ -153,7 +153,7 @@ tasks.register("uploadDesktopDistributionZip") {
             uploadReleaseAsset(
                 name = namer.desktopDistributionFile(
                     fullVersion,
-                    osName = hostOS.name.toLowerCase(),
+                    osName = hostOS.name.lowercase(),
                     extension = "zip"
                 ),
                 contentType = "application/octet-stream",
@@ -200,10 +200,9 @@ tasks.register("prepareArtifactsForManualUpload") {
     )
     dependsOn(zipDesktopDistribution)
 
-
-    val distributionDir = project.buildDir.resolve("distribution").apply { mkdirs() }
-
     doLast {
+        val distributionDir = project.layout.buildDirectory.dir("distribution").get().asFile.apply { mkdirs() }
+
         object : ReleaseEnvironment() {
             override val fullVersion: String = project.version.toString()
             override fun uploadReleaseAsset(name: String, contentType: String, file: File) {
@@ -217,7 +216,7 @@ tasks.register("prepareArtifactsForManualUpload") {
             uploadReleaseAsset(
                 name = namer.desktopDistributionFile(
                     fullVersion,
-                    osName = hostOS.name.toLowerCase(),
+                    osName = hostOS.name.lowercase(),
                     extension = "zip"
                 ),
                 contentType = "application/octet-stream",
@@ -322,7 +321,7 @@ fun ReleaseEnvironment.uploadDesktopDistributions() {
                 extension = kind
             ),
             contentType = "application/octet-stream",
-            file = project(":desktop").buildDir.resolve("compose/binaries/main/$kind")
+            file = project(":desktop").layout.buildDirectory.dir("compose/binaries/main/$kind").get().asFile
                 .walk()
                 .single { it.extension == kind },
         )
@@ -332,27 +331,27 @@ fun ReleaseEnvironment.uploadDesktopDistributions() {
     uploadReleaseAsset(
         name = namer.desktopDistributionFile(
             fullVersion,
-            osName = hostOS.name.toLowerCase(),
+            osName = hostOS.name.lowercase(),
             extension = "jar"
         ),
         contentType = "application/octet-stream",
-        file = project(":desktop").buildDir.resolve("compose/jars")
+        file = project(":desktop").layout.buildDirectory.dir("compose/jars").get().asFile
             .walk()
             .single { it.extension == "jar" },
     )
 
     // installers
     when (hostOS) {
-        Build_gradle.OS.WINDOWS -> {
+        OS.WINDOWS -> {
             uploadBinary("exe", osName = "windows") // all-in-one executable
             uploadBinary("msi", osName = "windows")
         }
 
-        Build_gradle.OS.MACOS -> {
+        OS.MACOS -> {
             uploadBinary("dmg", osName = "macos")
         }
 
-        Build_gradle.OS.LINUX -> {
+        OS.LINUX -> {
             uploadBinary("deb", osName = "debian")
             uploadBinary("rpm", osName = "redhat")
         }

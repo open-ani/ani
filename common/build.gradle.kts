@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-@file:Suppress("OPT_IN_IS_NOT_ENABLED", "UnstableApiUsage")
+@file:Suppress("UnstableApiUsage")
 @file:OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
 
 plugins {
@@ -32,12 +32,11 @@ kotlin.sourceSets.all {
 }
 
 kotlin {
-    targets {
-        android()
-        jvm("desktop") {
-            compilations.all {
-                kotlinOptions.jvmTarget = "11"
-            }
+    androidTarget()
+    jvm("desktop") {
+        jvmToolchain(8)
+        compilations.all {
+            kotlinOptions.jvmTarget = "11"
         }
     }
 
@@ -55,8 +54,8 @@ kotlin {
                 api(compose.runtime)
 //                api("org.jetbrains.compose.ui:ui-text:${ComposeBuildConfig.composeVersion}")
 
-                api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.4.1")
-                api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
+                api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.1")
+                api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.1")
                 api("org.jetbrains.kotlinx:kotlinx-serialization-protobuf:1.4.1")
                 api("io.ktor:ktor-client-websockets:2.1.1")
                 api("io.ktor:ktor-client-logging:2.1.1")
@@ -79,17 +78,17 @@ kotlin {
 
         val commonTest by getting {
             dependencies {
-                implementation(compose.uiTestJUnit4)
+                implementation(compose.desktop.uiTestJUnit4)
             }
         }
 
         val androidMain by getting {
             dependencies {
-                api("androidx.appcompat:appcompat:1.6.0")
-                api("androidx.core:core-ktx:1.9.0")
-                api("androidx.compose.ui:ui-tooling-preview:1.3.3")
+                api("androidx.appcompat:appcompat:1.6.1")
+                api("androidx.core:core-ktx:1.12.0")
+                api("androidx.compose.ui:ui-tooling-preview:1.5.4")
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
-                implementation("androidx.compose.material3:material3:1.1.0-alpha05")
+                implementation("androidx.compose.material3:material3:1.1.2")
                 implementation("com.google.accompanist:accompanist-flowlayout:0.25.1")
             }
         }
@@ -101,8 +100,8 @@ kotlin {
                 }
 //                api(compose.preview)
                 api(compose.material3)
-                api("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.6.4")
-                runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-debug:1.6.4")
+                api("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.7.3")
+                runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-debug:1.7.3")
             }
         }
     }
@@ -119,11 +118,11 @@ kotlin.sourceSets.all {
 
 
 android {
-    compileSdk = 33
+    compileSdk = 34
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     defaultConfig {
         minSdk = 26
-        targetSdk = 33
+        targetSdk = 34
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -144,9 +143,9 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.0"
+        kotlinCompilerExtensionVersion = "1.5.6-dev-k2.0.0-Beta1-06a03be2b42"
     }
 }
 dependencies {
-    debugImplementation("androidx.compose.ui:ui-tooling:1.3.3")
+    debugImplementation("androidx.compose.ui:ui-tooling:1.5.4")
 }
