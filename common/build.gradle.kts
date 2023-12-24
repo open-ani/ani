@@ -35,8 +35,11 @@ kotlin {
     androidTarget()
     jvm("desktop") {
         jvmToolchain(8)
+    }
+
+    targets.all {
         compilations.all {
-            kotlinOptions.jvmTarget = "11"
+            kotlinOptions.freeCompilerArgs += "-Xexpect-actual-classes"
         }
     }
 

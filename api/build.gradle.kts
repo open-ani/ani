@@ -34,10 +34,14 @@ kotlin {
     androidTarget()
     jvm {
         jvmToolchain(8)
+    }
+
+    targets.all {
         compilations.all {
-            kotlinOptions.jvmTarget = "11"
+            kotlinOptions.freeCompilerArgs += "-Xexpect-actual-classes"
         }
     }
+
 
     sourceSets {
         val commonMain by getting {
