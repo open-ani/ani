@@ -20,15 +20,23 @@ buildscript {
     dependencies {
         classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:${Versions.atomicFU}")
     }
+
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+        google()
+        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+    }
 }
 
 plugins {
     kotlin("multiplatform") apply false
-    kotlin("plugin.serialization") version Versions.kotlinCompiler apply false
     kotlin("android") apply false
+    kotlin("jvm") apply false
+    kotlin("plugin.serialization") version Versions.kotlin apply false
+    id("org.jetbrains.compose") apply false
     id("com.android.library") apply false
     id("com.android.application") apply false
-    id("org.jetbrains.compose") apply false
 }
 
 allprojects {
@@ -52,4 +60,10 @@ allprojects {
 extensions.findByName("buildScan")?.withGroovyBuilder {
     setProperty("termsOfServiceUrl", "https://gradle.com/terms-of-service")
     setProperty("termsOfServiceAgree", "yes")
+}
+
+subprojects {
+    afterEvaluate {
+        kotlin.runCatching { configureFlattenSourceSets() }
+    }
 }

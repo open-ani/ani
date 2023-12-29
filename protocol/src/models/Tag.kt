@@ -16,28 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.api.model
+package me.him188.animationgarden.shared.models
 
-import kotlinx.coroutines.flow.Flow
-import me.him188.animationgarden.shared.models.Alliance
-import me.him188.animationgarden.shared.models.TopicCategory
-
-interface SearchSession {
-    val query: SearchQuery
-
-    val results: Flow<Topic>
-
-    suspend fun nextPage(): List<Topic>?
-}
-
-data class SearchQuery(
-    val keywords: String? = null,
-    val category: TopicCategory? = null,
-    val alliance: Alliance? = null,
-    val ordering: SearchOrdering? = null,
+data class Tag(
+    val id: String,
 )
-
-interface SearchOrdering {
-    val id: String
-    val name: String
-}

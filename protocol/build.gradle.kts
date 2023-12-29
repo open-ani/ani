@@ -16,28 +16,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.api.model
-
-import kotlinx.coroutines.flow.Flow
-import me.him188.animationgarden.shared.models.Alliance
-import me.him188.animationgarden.shared.models.TopicCategory
-
-interface SearchSession {
-    val query: SearchQuery
-
-    val results: Flow<Topic>
-
-    suspend fun nextPage(): List<Topic>?
+plugins {
+    kotlin("jvm")
+    kotlin("plugin.serialization")
+    id("kotlinx-atomicfu")
 }
 
-data class SearchQuery(
-    val keywords: String? = null,
-    val category: TopicCategory? = null,
-    val alliance: Alliance? = null,
-    val ordering: SearchOrdering? = null,
-)
+dependencies {
+    api(`kotlinx-coroutines`)
+    api(`kotlinx-serialization-core`)
+}
 
-interface SearchOrdering {
-    val id: String
-    val name: String
+tasks.withType<Jar> {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE // why is there a duplicate?
 }

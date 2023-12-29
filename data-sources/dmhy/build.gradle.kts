@@ -58,6 +58,8 @@ kotlin {
                 implementation("org.jsoup:jsoup:1.15.2")
                 // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
                 implementation("org.slf4j:slf4j-api:2.0.7")
+
+                api(projects.protocol)
             }
         }
 
@@ -91,7 +93,7 @@ android {
         isShrinkResources = false
         proguardFiles(
             getDefaultProguardFile("proguard-android-optimize.txt"),
-            projects.animationGardenAndroid.dependencyProject.projectDir.resolve("proguard-rules.pro").also {
+            projects.app.android.dependencyProject.projectDir.resolve("proguard-rules.pro").also {
                 check(it.exists()) { "Could not find ${it.absolutePath}" }
             }
         )

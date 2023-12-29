@@ -18,9 +18,9 @@
 
 package me.him188.animationgarden.api.model
 
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.protobuf.ProtoNumber
-import me.him188.animationgarden.api.tags.*
+import me.him188.animationgarden.api.parser.RawTitleParser
+import me.him188.animationgarden.api.parser.parse
+import me.him188.animationgarden.shared.models.*
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -69,7 +69,7 @@ class Topic(
     val commentsCount: Int,
     val magnetLink: MagnetLink,
     val size: FileSize,
-    val author: User
+    val author: User,
 ) {
     val details: TopicDetails? by lazy {
         val builder = TopicDetails.Builder()
@@ -89,22 +89,6 @@ class Topic(
                 "| $author"
     }
 }
-
-@JvmInline
-value class MagnetLink(
-    val value: String
-)
-
-data class TopicCategory(
-    val id: String,
-    val name: String
-)
-
-@Serializable
-data class Alliance(
-    @ProtoNumber(1) val id: String,
-    @ProtoNumber(2) val name: String
-)
 
 private fun String.truncated(length: Int, truncated: String = "..."): String {
     return if (this.length > length) {

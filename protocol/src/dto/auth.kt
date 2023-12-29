@@ -16,28 +16,30 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.api.model
+package me.him188.animationgarden.shared.dto
 
-import kotlinx.coroutines.flow.Flow
-import me.him188.animationgarden.shared.models.Alliance
-import me.him188.animationgarden.shared.models.TopicCategory
+import kotlinx.serialization.Serializable
 
-interface SearchSession {
-    val query: SearchQuery
-
-    val results: Flow<Topic>
-
-    suspend fun nextPage(): List<Topic>?
-}
-
-data class SearchQuery(
-    val keywords: String? = null,
-    val category: TopicCategory? = null,
-    val alliance: Alliance? = null,
-    val ordering: SearchOrdering? = null,
+@Serializable
+class RegisterRequest(
+    val username: String,
+    val password: String,
 )
 
-interface SearchOrdering {
-    val id: String
-    val name: String
-}
+@Serializable
+class LoginResponse(
+    val token: String,
+    val expireTimestamp: Long,
+)
+
+@Serializable
+class AuthRequest(
+    val username: String,
+    val password: String,
+)
+
+@Serializable
+class UserInfo(
+    val username: String,
+    val registeredTimestamp: Long, // timestamp
+)

@@ -16,28 +16,26 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.api.model
+package me.him188.animationgarden.server.modules
 
-import kotlinx.coroutines.flow.Flow
-import me.him188.animationgarden.shared.models.Alliance
-import me.him188.animationgarden.shared.models.TopicCategory
+import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.routing.*
 
-interface SearchSession {
-    val query: SearchQuery
+class SubscriptionModule : KtorModule {
+    override fun Application.install() {
+        routing {
+            authentication {
+                route()
+            }
+        }
+    }
 
-    val results: Flow<Topic>
-
-    suspend fun nextPage(): List<Topic>?
-}
-
-data class SearchQuery(
-    val keywords: String? = null,
-    val category: TopicCategory? = null,
-    val alliance: Alliance? = null,
-    val ordering: SearchOrdering? = null,
-)
-
-interface SearchOrdering {
-    val id: String
-    val name: String
+    private fun RootRoute.route() {
+        get("favorite") {
+            get("all") {
+                call.respondSuccess(listOf(""))
+            }
+        }
+    }
 }

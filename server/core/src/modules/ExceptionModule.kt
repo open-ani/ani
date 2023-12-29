@@ -16,28 +16,22 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.api.model
+package me.him188.animationgarden.server.modules
 
-import kotlinx.coroutines.flow.Flow
-import me.him188.animationgarden.shared.models.Alliance
-import me.him188.animationgarden.shared.models.TopicCategory
+import io.ktor.server.application.*
+import io.ktor.server.plugins.statuspages.*
+import kotlinx.serialization.SerializationException
 
-interface SearchSession {
-    val query: SearchQuery
+class ExceptionModule : KtorModule {
+    override fun Application.install() {
+        install(StatusPages) {
+            exception<Throwable> { call, _ ->
+                call.respondError("Internal server error")
+            }
 
-    val results: Flow<Topic>
-
-    suspend fun nextPage(): List<Topic>?
-}
-
-data class SearchQuery(
-    val keywords: String? = null,
-    val category: TopicCategory? = null,
-    val alliance: Alliance? = null,
-    val ordering: SearchOrdering? = null,
-)
-
-interface SearchOrdering {
-    val id: String
-    val name: String
+            exception<SerializationException> { call, cause ->
+                call.respondError("Invalid request body: ${cause.message}")
+            }
+        }
+    }
 }

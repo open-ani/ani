@@ -20,8 +20,8 @@ package me.him188.animationgarden.api.impl.tags
 
 import me.him188.animationgarden.api.impl.AbstractTest
 import me.him188.animationgarden.api.model.TopicDetails
-import me.him188.animationgarden.api.tags.RawTitleParserImpl
-import me.him188.animationgarden.api.tags.parse
+import me.him188.animationgarden.api.parser.RawTitleParserImpl
+import me.him188.animationgarden.api.parser.parse
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
 

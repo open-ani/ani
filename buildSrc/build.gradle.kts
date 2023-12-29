@@ -33,10 +33,9 @@ sourceSets.main {
 
 private val versionsText = project.projectDir.resolve("src/Versions.kt").readText()
 fun version(name: String): String {
-
     return versionsText.lineSequence()
         .map { it.trim() }
-        .single { it.startsWith("const val $name ") }
+        .singleOrNull { it.startsWith("const val $name ") }.let { it ?: error("Cannot find version $name") }
         .substringAfter('"', "")
         .substringBefore('"', "")
         .also {
@@ -54,7 +53,7 @@ dependencies {
     fun kotlinx(id: String, version: String) = "org.jetbrains.kotlinx:kotlinx-$id:$version"
     fun ktor(id: String, version: String) = "io.ktor:ktor-$id:$version"
 
-    api("org.jetbrains.kotlin", "kotlin-gradle-plugin", version("kotlinCompiler")) {
+    api("org.jetbrains.kotlin", "kotlin-gradle-plugin", version("kotlin")) {
         exclude("org.jetbrains.kotlin", "kotlin-stdlib")
         exclude("org.jetbrains.kotlin", "kotlin-stdlib-common")
         exclude("org.jetbrains.kotlin", "kotlin-reflect")
@@ -62,6 +61,11 @@ dependencies {
 
     api("com.android.tools.build", "gradle", version("androidGradlePlugin"))
     api("org.jetbrains.kotlinx:atomicfu-gradle-plugin:${version("atomicFU")}")
+    // https://mvnrepository.com/artifact/com.android.application/com.android.application.gradle.plugin
+    api("com.android.application:com.android.application.gradle.plugin:${version("androidGradlePlugin")}")
+
+    // https://mvnrepository.com/artifact/org.jetbrains.compose/org.jetbrains.compose.gradle.plugin
+    api("org.jetbrains.compose:org.jetbrains.compose.gradle.plugin:${version("compose")}")
 
 //    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0") {
 //        exclude("org.jetbrains.kotlin", "kotlin-stdlib")

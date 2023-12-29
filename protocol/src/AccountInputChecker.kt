@@ -16,28 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.api.model
+package me.him188.animationgarden.shared
 
-import kotlinx.coroutines.flow.Flow
-import me.him188.animationgarden.shared.models.Alliance
-import me.him188.animationgarden.shared.models.TopicCategory
+object AccountInputChecker {
+    private val usernameRegex = Regex("^[a-zA-Z0-9_]{3,32}$")
 
-interface SearchSession {
-    val query: SearchQuery
-
-    val results: Flow<Topic>
-
-    suspend fun nextPage(): List<Topic>?
-}
-
-data class SearchQuery(
-    val keywords: String? = null,
-    val category: TopicCategory? = null,
-    val alliance: Alliance? = null,
-    val ordering: SearchOrdering? = null,
-)
-
-interface SearchOrdering {
-    val id: String
-    val name: String
+    fun isUsernameValid(username: String): Boolean = username matches usernameRegex
+    fun isPasswordValid(password: String): Boolean =
+        password.length > 6 // security is not our main concern, we want easy-to-use
 }

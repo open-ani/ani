@@ -16,28 +16,28 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.api.model
+package me.him188.animationgarden.shared.models
 
-import kotlinx.coroutines.flow.Flow
-import me.him188.animationgarden.shared.models.Alliance
-import me.him188.animationgarden.shared.models.TopicCategory
+enum class MediaOrigin(
+    val id: String,
+    vararg val otherNames: String,
+) {
+    BDRip("BDRip"),
+    BluRay("Blu-Ray", "BluRay"),
+    WebRip("WebRip"),
+    ;
 
-interface SearchSession {
-    val query: SearchQuery
-
-    val results: Flow<Topic>
-
-    suspend fun nextPage(): List<Topic>?
-}
-
-data class SearchQuery(
-    val keywords: String? = null,
-    val category: TopicCategory? = null,
-    val alliance: Alliance? = null,
-    val ordering: SearchOrdering? = null,
-)
-
-interface SearchOrdering {
-    val id: String
-    val name: String
+    companion object {
+        private val values by lazy { values() }
+        fun tryParse(text: String): MediaOrigin? {
+            for (value in values) {
+                if (text.contains(value.id, ignoreCase = true)
+                    || value.otherNames.any { text.contains(it, ignoreCase = true) }
+                ) {
+                    return value
+                }
+            }
+            return null
+        }
+    }
 }

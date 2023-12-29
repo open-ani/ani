@@ -37,7 +37,6 @@ import io.ktor.utils.io.streams.*
 import kotlinx.serialization.json.Json
 import me.him188.animationgarden.api.AnimationGardenClient
 import me.him188.animationgarden.api.impl.protocol.Network
-import me.him188.animationgarden.api.model.CommitsModule
 import me.him188.animationgarden.api.model.SearchQuery
 import me.him188.animationgarden.api.model.SearchSession
 import org.jsoup.Jsoup
@@ -74,7 +73,6 @@ fun createHttpClient(
     clientConfig()
     install(ContentNegotiation) {
         json(Json {
-            serializersModule = CommitsModule
             ignoreUnknownKeys = true
         })
         register(

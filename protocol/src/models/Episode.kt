@@ -16,28 +16,18 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.api.model
+package me.him188.animationgarden.shared.models
 
-import kotlinx.coroutines.flow.Flow
-import me.him188.animationgarden.shared.models.Alliance
-import me.him188.animationgarden.shared.models.TopicCategory
+import kotlinx.serialization.Serializable
 
-interface SearchSession {
-    val query: SearchQuery
+@Serializable
+@JvmInline
+value class Episode(
+    val raw: String,
+) : Comparable<Episode> {
+    override fun compareTo(other: Episode): Int {
+        return this.raw.compareTo(other.raw) // TODO: 2022/8/4 check episode compare
+    }
 
-    val results: Flow<Topic>
-
-    suspend fun nextPage(): List<Topic>?
-}
-
-data class SearchQuery(
-    val keywords: String? = null,
-    val category: TopicCategory? = null,
-    val alliance: Alliance? = null,
-    val ordering: SearchOrdering? = null,
-)
-
-interface SearchOrdering {
-    val id: String
-    val name: String
+    override fun toString(): String = raw
 }

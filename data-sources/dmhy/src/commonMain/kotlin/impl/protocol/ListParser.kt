@@ -20,10 +20,14 @@ package me.him188.animationgarden.api.impl.protocol
 
 import me.him188.animationgarden.api.impl.model.*
 import me.him188.animationgarden.api.model.*
-import me.him188.animationgarden.api.model.FileSize.Companion.bytes
-import me.him188.animationgarden.api.model.FileSize.Companion.gigaBytes
-import me.him188.animationgarden.api.model.FileSize.Companion.kiloBytes
-import me.him188.animationgarden.api.model.FileSize.Companion.megaBytes
+import me.him188.animationgarden.shared.models.Alliance
+import me.him188.animationgarden.shared.models.FileSize
+import me.him188.animationgarden.shared.models.FileSize.Companion.bytes
+import me.him188.animationgarden.shared.models.FileSize.Companion.gigaBytes
+import me.him188.animationgarden.shared.models.FileSize.Companion.kiloBytes
+import me.him188.animationgarden.shared.models.FileSize.Companion.megaBytes
+import me.him188.animationgarden.shared.models.MagnetLink
+import me.him188.animationgarden.shared.models.TopicCategory
 import org.jsoup.nodes.Document
 import org.jsoup.select.Elements
 import java.time.LocalDateTime

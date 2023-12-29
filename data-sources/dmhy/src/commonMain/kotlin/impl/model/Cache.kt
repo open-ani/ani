@@ -20,11 +20,11 @@ package me.him188.animationgarden.api.impl.model
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import me.him188.animationgarden.api.model.Alliance
-import me.him188.animationgarden.api.model.TopicCategory
 import me.him188.animationgarden.api.model.User
-import me.him188.animationgarden.api.tags.SubtitleLanguage
-import me.him188.animationgarden.api.tags.Tag
+import me.him188.animationgarden.shared.models.Alliance
+import me.him188.animationgarden.shared.models.SubtitleLanguage
+import me.him188.animationgarden.shared.models.Tag
+import me.him188.animationgarden.shared.models.TopicCategory
 
 internal fun interface Observer<T> {
     fun onChange(newValue: T)

@@ -23,16 +23,6 @@ pluginManagement {
         google()
         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     }
-
-    plugins {
-//        kotlin("jvm").version(Versions.kotlinCompiler)
-//        kotlin("multiplatform").version(Versions.kotlinCompiler)
-//        kotlin("plugin.serialization").version(Versions.kotlinCompiler)
-        id("org.jetbrains.compose").version(extra["compose.version"] as String)
-        kotlin("android").version(extra["kotlin.version"] as String)
-        id("com.android.application").version(extra["agp.version"] as String)
-        id("com.android.library").version(extra["agp.version"] as String)
-    }
 }
 
 rootProject.name = "animation-garden"
@@ -42,12 +32,27 @@ fun includeProject(projectPath: String, dir: String? = null) {
     if (dir != null) project(projectPath).projectDir = file(dir)
 }
 
-includeProject(":data-sources:dmhy", "data-sources/dmhy")
-includeProject(":data-sources:dmhy:dataset-tools", "data-sources/dmhy/dataset-tools")
-includeProject(":common", "common")
-includeProject(":desktop", "desktop")
-includeProject(":server", "server")
-includeProject(":ci-helper", "ci-helper")
-includeProject(":animation-garden-android", "android")
+includeProject(":protocol", "protocol") // shared by client and server (targets JVM)
+includeProject(":utils:slf4j-kt", "utils/slf4j-kt") // shared by client and server (targets JVM)
+
+// client
+includeProject(":app:shared", "app/shared") // shared by clients (targets JVM)
+includeProject(":app:desktop", "app/desktop") // desktop JVM client for macOS, Windows, and Linux
+includeProject(":app:android", "app/android") // Android client
+
+// server
+includeProject(":server:core", "server/core") // server core
+includeProject(":server:database", "server/database") // server database interfaces
+includeProject(":server:database-xodus", "server/database-xodus") // database implementation with Xodus
+
+// data sources
+includeProject(":data-sources:dmhy", "data-sources/dmhy") // data source from https://dmhy.org
+includeProject(
+    ":data-sources:dmhy:dataset-tools",
+    "data-sources/dmhy/dataset-tools"
+) // tools for generating dataset for ML title parsing
+
+// ci
+includeProject(":ci-helper", "ci-helper") // 
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
