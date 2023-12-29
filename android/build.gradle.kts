@@ -28,7 +28,7 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":api"))
+    implementation(project(":data-sources:dmhy"))
     implementation(project(":common"))
     implementation("androidx.activity:activity-compose:1.6.1")
 

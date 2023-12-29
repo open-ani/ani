@@ -72,7 +72,7 @@ kotlin {
 //    // https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc
 //    implementation("org.xerial:sqlite-jdbc:3.39.2.0")
 
-                api(projects.api)
+                api(projects.dataSources.dmhy)
                 implementation("org.slf4j:slf4j-simple:2.0.3")
             }
         }

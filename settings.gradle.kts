@@ -42,7 +42,7 @@ fun includeProject(projectPath: String, dir: String? = null) {
     if (dir != null) project(projectPath).projectDir = file(dir)
 }
 
-includeProject(":api", "api")
+includeProject(":data-sources:dmhy", "data-sources/dmhy")
 includeProject(":common", "common")
 includeProject(":desktop", "desktop")
 includeProject(":server", "server")
