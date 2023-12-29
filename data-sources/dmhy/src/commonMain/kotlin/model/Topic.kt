@@ -24,7 +24,6 @@ import me.him188.animationgarden.shared.models.*
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-
 data class TopicDetails(
     val tags: List<String> = listOf(),
     val chineseTitle: String? = null,

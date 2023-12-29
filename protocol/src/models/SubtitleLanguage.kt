@@ -38,7 +38,21 @@ sealed class SubtitleLanguage(
 
     object ChineseSimplified : Chinese("CHS") {
         private val tokens =
-            arrayOf("简中", "GB", "GBK", "简体中文", "中文", "中字", "简", "CHS", "Zh-Hans", "Zh_Hans", "zh_cn", "SC")
+            arrayOf(
+                "简中",
+                "GB",
+                "GBK",
+                "简体中文",
+                "中文",
+                "中字",
+                "簡",
+                "简",
+                "CHS",
+                "Zh-Hans",
+                "Zh_Hans",
+                "zh_cn",
+                "SC"
+            )
 
         override fun matches(text: String): Boolean {
             return tokens.any { text.contains(it, ignoreCase = true) }

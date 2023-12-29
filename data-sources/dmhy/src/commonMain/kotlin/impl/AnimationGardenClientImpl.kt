@@ -86,11 +86,11 @@ fun createHttpClient(
                     return Jsoup.parse(string, charset.name())
                 }
 
-                override suspend fun serializeNullable(
+                override suspend fun serialize(
                     contentType: ContentType,
                     charset: Charset,
                     typeInfo: TypeInfo,
-                    value: Any?
+                    value: Any?,
                 ): OutgoingContent? {
                     return null
                 }

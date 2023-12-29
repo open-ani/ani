@@ -44,7 +44,11 @@ value class MagnetLink(
 data class TopicCategory(
     val id: String,
     val name: String,
-)
+) {
+    companion object {
+        val ANIME = TopicCategory("2", "動畫")
+    }
+}
 
 @Serializable
 data class Alliance(

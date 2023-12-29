@@ -65,5 +65,6 @@ extensions.findByName("buildScan")?.withGroovyBuilder {
 subprojects {
     afterEvaluate {
         kotlin.runCatching { configureFlattenSourceSets() }
+        kotlin.runCatching { configureKotlinOptIns() }
     }
 }

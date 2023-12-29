@@ -374,6 +374,10 @@ abstract class RawTitleParser {
             collectEpisode(Episode(this))
             return true
         }
+        if (this.startsWith("第")) {
+            collectEpisode(Episode(this.removePrefix("第").removeSuffix("话").removeSuffix("話"))) // 千夏字幕組
+            return true
+        }
         if (this.contains("SP", ignoreCase = true) || this.contains("小剧场")) {
             collectEpisode(Episode(this))
             return true
