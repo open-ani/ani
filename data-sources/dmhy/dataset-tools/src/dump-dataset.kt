@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.toList
 import me.him188.animationgarden.api.AnimationGardenClient
 import me.him188.animationgarden.api.model.SearchQuery
 import kotlin.system.exitProcess
@@ -32,17 +32,10 @@ suspend fun main() {
         )
     )
 
+    session.results.toList()
     session.results.first().let {
         println(it.rawTitle)
         println(it.details)
     }
     exitProcess(0)
-
-    csvWriter {}.openAsync("dataset.csv") {
-        writeRow(listOf("Title", "发布时间", "种子", "磁力链接"))
-        session.results.collect { topic ->
-            val details = topic.details ?: return@collect
-            writeRow(listOf(details.chineseTitle, details.otherTitles))
-        }
-    }
 }

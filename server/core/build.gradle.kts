@@ -26,7 +26,7 @@ plugins {
 }
 
 dependencies {
-    api(`kotlinx-coroutines`)
+    api(`kotlinx-coroutines-core`)
     api(`kotlinx-serialization-json`)
     api(`kotlinx-datetime`)
 

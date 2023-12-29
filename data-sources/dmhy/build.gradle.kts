@@ -46,18 +46,16 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                val ktorVersion = "2.3.6"
+                val ktorVersion = Versions.ktor
                 api("io.ktor:ktor-client-core:$ktorVersion")
                 implementation("io.ktor:ktor-client-cio:$ktorVersion")
                 implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
                 implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
-                api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.1")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-protobuf:1.4.1")
-                // https://mvnrepository.com/artifact/org.jsoup/jsoup
-                implementation("org.jsoup:jsoup:1.15.2")
-                // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
-                implementation("org.slf4j:slf4j-api:2.0.7")
+                implementation(`kotlinx-serialization-json`)
+                implementation(`kotlinx-serialization-protobuf`)
+                implementation(`kotlinx-coroutines-core`)
+                implementation("org.jsoup:jsoup:1.15.4")
+                implementation(`slf4j-api`)
 
                 api(projects.protocol)
             }

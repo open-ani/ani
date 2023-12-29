@@ -23,7 +23,7 @@ plugins {
 }
 
 dependencies {
-    api(`kotlinx-coroutines`)
+    api(`kotlinx-coroutines-core`)
     api(`kotlinx-datetime`)
     api(projects.protocol)
 }

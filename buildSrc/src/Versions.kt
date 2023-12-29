@@ -48,9 +48,11 @@ object Versions {
 }
 
 const val `kotlinx-datetime` = "org.jetbrains.kotlinx:kotlinx-datetime:${Versions.kotlinxDatetime}"
-const val `kotlinx-coroutines` = "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.coroutines}"
+const val `kotlinx-coroutines-core` = "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.coroutines}"
 const val `kotlinx-serialization-core` = "org.jetbrains.kotlinx:kotlinx-serialization-core:${Versions.serialization}"
 const val `kotlinx-serialization-json` = "org.jetbrains.kotlinx:kotlinx-serialization-json:${Versions.serialization}"
+const val `kotlinx-serialization-protobuf` =
+    "org.jetbrains.kotlinx:kotlinx-serialization-protobuf:${Versions.serialization}"
 
 const val `koin-core` = "io.insert-koin:koin-core:${Versions.koin}"
 const val `slf4j-api` = "org.slf4j:slf4j-api:${Versions.slf4j}"
