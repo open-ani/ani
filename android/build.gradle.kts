@@ -53,6 +53,7 @@ dependencies {
 }
 
 android {
+    namespace = "me.him188.animationgarden"
     compileSdk = 34
     defaultConfig {
         applicationId = "me.him188.animationgarden"

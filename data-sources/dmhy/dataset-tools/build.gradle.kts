@@ -16,3 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+@file:Suppress("UnstableApiUsage")
+
+plugins {
+    kotlin("jvm")
+    kotlin("plugin.serialization")
+    id("kotlinx-atomicfu")
+}
+
+configureFlattenSourceSets()

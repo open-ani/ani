@@ -25,9 +25,9 @@ pluginManagement {
     }
 
     plugins {
-        kotlin("jvm").version(extra["kotlin.version"] as String)
-        kotlin("multiplatform").version(extra["kotlin.version"] as String)
-        kotlin("plugin.serialization").version(extra["kotlin.version"] as String)
+//        kotlin("jvm").version(Versions.kotlinCompiler)
+//        kotlin("multiplatform").version(Versions.kotlinCompiler)
+//        kotlin("plugin.serialization").version(Versions.kotlinCompiler)
         id("org.jetbrains.compose").version(extra["compose.version"] as String)
         kotlin("android").version(extra["kotlin.version"] as String)
         id("com.android.application").version(extra["agp.version"] as String)
@@ -43,6 +43,7 @@ fun includeProject(projectPath: String, dir: String? = null) {
 }
 
 includeProject(":data-sources:dmhy", "data-sources/dmhy")
+includeProject(":data-sources:dmhy:dataset-tools", "data-sources/dmhy/dataset-tools")
 includeProject(":common", "common")
 includeProject(":desktop", "desktop")
 includeProject(":server", "server")
