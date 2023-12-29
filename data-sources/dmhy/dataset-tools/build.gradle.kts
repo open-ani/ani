@@ -25,3 +25,8 @@ plugins {
 }
 
 configureFlattenSourceSets()
+
+dependencies {
+    api(projects.dataSources.dmhy)
+    implementation("com.github.doyaaaaaken:kotlin-csv-jvm:1.9.2")
+}
