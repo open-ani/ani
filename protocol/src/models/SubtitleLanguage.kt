@@ -36,6 +36,13 @@ sealed class SubtitleLanguage(
 
     sealed class Chinese(id: String) : SubtitleLanguage(id)
 
+    object ChineseCantonese : Chinese("CHC") {
+        private val tokens = arrayOf("粤", "粵", "Cantonese", "CHC", "Yue")
+        override fun matches(text: String): Boolean {
+            return tokens.any { text.contains(it, ignoreCase = true) }
+        }
+    }
+
     object ChineseSimplified : Chinese("CHS") {
         private val tokens =
             arrayOf(
@@ -55,6 +62,7 @@ sealed class SubtitleLanguage(
             )
 
         override fun matches(text: String): Boolean {
+            if (text.contains("繁體中文")) return false
             return tokens.any { text.contains(it, ignoreCase = true) }
         }
     }
@@ -107,7 +115,7 @@ sealed class SubtitleLanguage(
 
 
     companion object {
-        val matchableEntries = arrayOf(ChineseSimplified, ChineseTraditional, Japanese, English)
+        val matchableEntries = arrayOf(ChineseCantonese, ChineseSimplified, ChineseTraditional, Japanese, English)
 
         fun tryParse(value: String): SubtitleLanguage? {
             for (entry in matchableEntries) {

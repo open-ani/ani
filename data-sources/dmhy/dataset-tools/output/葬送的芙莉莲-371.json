@@ -1,0 +1,7176 @@
+[
+  {
+    "input": "[愛戀字幕社][10月新番][葬送的芙莉蓮][Sousou no Frieren][01][1080P][MP4][BIG5][繁中]",
+    "output": {
+      "tags": [
+        "MP4"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "01",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[爱恋字幕社][10月新番][葬送的芙莉莲][Sousou no Frieren][01][1080P][MP4][GB][简中]",
+    "output": {
+      "tags": [
+        "MP4"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "01",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕组][葬送的芙莉莲_Sousou no Frieren][第16话][1080p_AVC][简体][招募新人]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "16",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren [16][HEVC AAC][1080p][简繁日内封][招募翻校]",
+    "output": {
+      "tags": [
+        "HEVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "16",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren [16][AVC AAC][1080p][简日内嵌][招募翻校]",
+    "output": {
+      "tags": [
+        "AVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "16",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉蓮 / 葬送のフリーレン / Sousou no Frieren [16][AVC AAC][1080p][繁日內嵌][招募翻校]",
+    "output": {
+      "tags": [
+        "AVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "16",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [16][1080p][繁體內嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "16",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [16][1080p][简体内嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "16",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [16][1080p][简繁内封]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "16",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉莲 / Sousou no Frieren [16][WebRip][1080p][HEVC_AAC][简繁日内封]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "16",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉莲 / Sousou no Frieren [16][WebRip][1080p][HEVC_AAC][简日内嵌]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "16",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉蓮 / Sousou no Frieren [16][WebRip][1080p][HEVC_AAC][繁日內嵌]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "16",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉莲 / Sousou no Frieren [14v2][WebRip][1080p][HEVC_AAC][简繁日内封]",
+    "output": {
+      "tags": [
+        "14v2",
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": null,
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[jibaketa合成][代理商粵語]葬送的芙莉蓮/ Sousou no Frieren - 10 [粵日雙語+內封繁體中文字幕](WEB 1920x1080 AVC AACx2 SRT MUSE CHT)",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "10",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHC",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[jibaketa合成][代理商粵語]葬送的芙莉蓮/ Sousou no Frieren - 09 [粵日雙語+內封繁體中文字幕](WEB 1920x1080 AVC AACx2 SRT MUSE CHT)",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "09",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHC",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[jibaketa合成][代理商粵語]葬送的芙莉蓮/ Sousou no Frieren - 08 [粵日雙語+內封繁體中文字幕](WEB 1920x1080 AVC AACx2 SRT MUSE CHT)",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "08",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHC",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[沸羊羊字幕组中日双语][葬送的芙莉莲第16集长寿的朋友][2160P+1080P][Crunchyroll][双版本收藏级画质]",
+    "output": {
+      "tags": [
+        "双版本收藏级画质"
+      ],
+      "titles": [
+        "葬送的芙莉莲"
+      ],
+      "episode": "16",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[ANi] Sōsō no Frieren / 葬送的芙莉蓮 - 16 [1080P][Baha][WEB-DL][AAC AVC][CHT][MP4]",
+    "output": {
+      "tags": [
+        "Baha",
+        "WEB-DL",
+        "AAC AVC",
+        "MP4"
+      ],
+      "titles": [
+        "Sōsō no Frieren",
+        "葬送的芙莉蓮"
+      ],
+      "episode": "16",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "【喵萌奶茶屋】★10月新番★[葬送的芙莉蓮 / Sousou no Frieren][15][1080p][繁日雙語][招募翻譯]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "15",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[喵萌奶茶屋&LoliHouse] 葬送的芙莉莲 / Sousou no Frieren - 15 [WebRip 1080p HEVC-10bit AAC][简繁日内封字幕]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "15",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "【喵萌奶茶屋】★10月新番★[葬送的芙莉莲 / Sousou no Frieren][15][1080p][简日双语][招募翻译]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "15",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "【喵萌奶茶屋】★10月新番★[葬送的芙莉蓮 / Sousou no Frieren][14][1080p][繁日雙語][招募翻譯]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "14",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [15][1080p][简繁内封]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "15",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [15][1080p][繁體內嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "15",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [15][1080p][简体内嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "15",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕组][葬送的芙莉莲_Sousou no Frieren][第15话][1080p_AVC][简体][招募新人]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "15",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕组][葬送的芙莉莲_Sousou no Frieren][第14话][1080p_AVC][简体][招募新人]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "14",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉莲 / Sousou no Frieren [15][WebRip][1080p][HEVC_AAC][简繁日内封]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "15",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉莲 / Sousou no Frieren [15][WebRip][1080p][HEVC_AAC][简日内嵌]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "15",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉蓮 / Sousou no Frieren [15][WebRip][1080p][HEVC_AAC][繁日內嵌]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "15",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉蓮 / 葬送のフリーレン / Sousou no Frieren [15][AVC AAC][1080p][繁日內嵌][招募翻校]",
+    "output": {
+      "tags": [
+        "AVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "15",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren [15][AVC AAC][1080p][简日内嵌][招募翻校]",
+    "output": {
+      "tags": [
+        "AVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "15",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren [15][HEVC AAC][1080p][简繁日内封][招募翻校]",
+    "output": {
+      "tags": [
+        "HEVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "15",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[B站沸羊羊都得叫我师傅][葬送的芙莉莲1-14][2160P][Crunchyroll][4K收藏级画质] [114.1 GB]",
+    "output": {
+      "tags": [
+        "Crunchyroll",
+        "4K收藏级画质"
+      ],
+      "titles": [
+        "葬送的芙莉莲"
+      ],
+      "episode": "1-14",
+      "resolution": "2160P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+      ]
+    }
+  },
+  {
+    "input": "[ANi] Sōsō no Frieren / 葬送的芙莉蓮 - 15 [1080P][Baha][WEB-DL][AAC AVC][CHT][MP4]",
+    "output": {
+      "tags": [
+        "Baha",
+        "WEB-DL",
+        "AAC AVC",
+        "MP4"
+      ],
+      "titles": [
+        "Sōsō no Frieren",
+        "葬送的芙莉蓮"
+      ],
+      "episode": "15",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[喵萌奶茶屋&LoliHouse] 葬送的芙莉莲 / Sousou no Frieren - 14 [WebRip 1080p HEVC-10bit AAC][简繁日内封字幕]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "14",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "【喵萌奶茶屋】★10月新番★[葬送的芙莉莲 / Sousou no Frieren][14][1080p][简日双语][招募翻译]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "14",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉莲 / Sousou no Frieren [14][WebRip][1080p][HEVC_AAC][简繁日内封]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "14",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉莲 / Sousou no Frieren [14][WebRip][1080p][HEVC_AAC][简日内嵌]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "14",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉蓮 / Sousou no Frieren [14][WebRip][1080p][HEVC_AAC][繁日內嵌]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "14",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "【悠哈璃羽字幕社】[葬送的芙莉莲_Sousou no Frieren][14][x264 1080p][CHT]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "14",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "【悠哈璃羽字幕社】[葬送的芙莉莲_Sousou no Frieren][14][x264 1080p][CHS]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "14",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "【悠哈璃羽字幕社】[葬送的芙莉莲_Sousou no Frieren][14][x264 1080p][CHS]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "14",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "【悠哈璃羽字幕社】[葬送的芙莉莲_Sousou no Frieren][13][x264 1080p][CHS]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "13",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "【悠哈璃羽字幕社】[葬送的芙莉莲_Sousou no Frieren][12][x264 1080p][CHT]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "12",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "【悠哈璃羽字幕社】[葬送的芙莉莲_Sousou no Frieren][12][x264 1080p][CHS]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "12",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉蓮 / 葬送のフリーレン / Sousou no Frieren [14][AVC AAC][1080p][繁日內嵌][招募翻校]",
+    "output": {
+      "tags": [
+        "AVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "14",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren [14][AVC AAC][1080p][简日内嵌][招募翻校]",
+    "output": {
+      "tags": [
+        "AVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "14",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉蓮 / 葬送のフリーレン / Sousou no Frieren [13][AVC AAC][1080p][繁日內嵌][招募翻校]",
+    "output": {
+      "tags": [
+        "AVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "13",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren [13][AVC AAC][1080p][简日内嵌][招募翻校]",
+    "output": {
+      "tags": [
+        "AVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "13",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren [14][HEVC AAC][1080p][简繁日内封][招募翻校]",
+    "output": {
+      "tags": [
+        "HEVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "14",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren [13][HEVC AAC][1080p][简繁日内封][招募翻校]",
+    "output": {
+      "tags": [
+        "HEVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "13",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [14][1080p][简繁内封]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "14",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [14][1080p][繁體內嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "14",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [14][1080p][简体内嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "14",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "【喵萌奶茶屋】★10月新番★[葬送的芙莉蓮 / Sousou no Frieren][13][1080p][繁日雙語][招募翻譯]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "13",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[ANi] Sōsō no Frieren / 葬送的芙莉蓮 - 14 [1080P][Baha][WEB-DL][AAC AVC][CHT][MP4]",
+    "output": {
+      "tags": [
+        "Baha",
+        "WEB-DL",
+        "AAC AVC",
+        "MP4"
+      ],
+      "titles": [
+        "Sōsō no Frieren",
+        "葬送的芙莉蓮"
+      ],
+      "episode": "14",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[喵萌奶茶屋&LoliHouse] 葬送的芙莉莲 / Sousou no Frieren - 13 [WebRip 1080p HEVC-10bit AAC][简繁日内封字幕]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "13",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "【喵萌奶茶屋】★10月新番★[葬送的芙莉莲 / Sousou no Frieren][13][1080p][简日双语][招募翻译]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "13",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕组][葬送的芙莉莲_Sousou no Frieren][第13话][1080p_HEVC][简繁内封][招募新人]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "13",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕組][葬送的芙莉蓮_Sousou no Frieren][第13話][1080p_AVC][繁體][招募新人]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "13",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕组][葬送的芙莉莲_Sousou no Frieren][第13话][1080p_AVC][简体][招募新人]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "13",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [13][1080p][繁體內嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "13",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [13][1080p][简体内嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "13",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [13][1080p][简繁内封]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "13",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉莲 / Sousou no Frieren [13][WebRip][1080p][HEVC_AAC][简日内嵌]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "13",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉蓮 / Sousou no Frieren [13][WebRip][1080p][HEVC_AAC][繁日內嵌]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "13",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉莲 / Sousou no Frieren [13][WebRip][1080p][HEVC_AAC][简繁日内封]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "13",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[ANi] Sōsō no Frieren / 葬送的芙莉蓮 - 13 [1080P][Baha][WEB-DL][AAC AVC][CHT][MP4]",
+    "output": {
+      "tags": [
+        "Baha",
+        "WEB-DL",
+        "AAC AVC",
+        "MP4"
+      ],
+      "titles": [
+        "Sōsō no Frieren",
+        "葬送的芙莉蓮"
+      ],
+      "episode": "13",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[jibaketa合成][代理商粵語]葬送的芙莉蓮/ Sousou no Frieren - 07 [粵日雙語+內封繁體中文字幕](WEB 1920x1080 AVC AACx2 SRT MUSE CHT)",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "07",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHC",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[jibaketa合成][代理商粵語]葬送的芙莉蓮/ Sousou no Frieren - 06 [粵日雙語+內封繁體中文字幕](WEB 1920x1080 AVC AACx2 SRT MUSE CHT)",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "06",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHC",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[jibaketa合成][代理商粵語]葬送的芙莉蓮/ Sousou no Frieren - 05 [粵日雙語+內封繁體中文字幕](WEB 1920x1080 AVC AACx2 SRT MUSE CHT)",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "05",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHC",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕组][葬送的芙莉莲_Sousou no Frieren][第12话][1080p_HEVC][简繁内封][招募新人]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "12",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕組][葬送的芙莉蓮_Sousou no Frieren][第12話][1080p_AVC][繁體][招募新人]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "12",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[喵萌奶茶屋&LoliHouse] 葬送的芙莉莲 / Sousou no Frieren - 12 [WebRip 1080p HEVC-10bit AAC][简繁日内封字幕]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "12",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "【喵萌奶茶屋】★10月新番★[葬送的芙莉蓮 / Sousou no Frieren][12][1080p][繁日雙語][招募翻譯]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "12",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "【喵萌奶茶屋】★10月新番★[葬送的芙莉莲 / Sousou no Frieren][12][1080p][简日双语][招募翻译]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "12",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕组][葬送的芙莉莲_Sousou no Frieren][第12话][1080p_AVC][简体][招募新人]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "12",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉莲 / Sousou no Frieren [12][WebRip][1080p][HEVC_AAC][简繁日内封]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "12",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉莲 / Sousou no Frieren [12][WebRip][1080p][HEVC_AAC][简日内嵌]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "12",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉蓮 / Sousou no Frieren [12][WebRip][1080p][HEVC_AAC][繁日內嵌]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "12",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉蓮 / 葬送のフリーレン / Sousou no Frieren [12][AVC AAC][1080p][繁日內嵌][招募翻校]",
+    "output": {
+      "tags": [
+        "AVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "12",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren [12][AVC AAC][1080p][简日内嵌][招募翻校]",
+    "output": {
+      "tags": [
+        "AVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "12",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren [12][HEVC AAC][1080p][简繁日内封][招募翻校]",
+    "output": {
+      "tags": [
+        "HEVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "12",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [12][1080p][简体内嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "12",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [12][1080p][繁體內嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "12",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [12][1080p][简繁内封]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "12",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[ANi] Sōsō no Frieren / 葬送的芙莉蓮 - 12 [1080P][Baha][WEB-DL][AAC AVC][CHT][MP4]",
+    "output": {
+      "tags": [
+        "Baha",
+        "WEB-DL",
+        "AAC AVC",
+        "MP4"
+      ],
+      "titles": [
+        "Sōsō no Frieren",
+        "葬送的芙莉蓮"
+      ],
+      "episode": "12",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕组][葬送的芙莉莲_Sousou no Frieren][第11话][1080p_HEVC][简繁内封][招募新人]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "11",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕組][葬送的芙莉蓮_Sousou no Frieren][第11話][1080p_AVC][繁體][招募新人]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "11",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕组][葬送的芙莉莲_Sousou no Frieren][第11话][1080p_AVC][简体][招募新人]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "11",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [11][1080p][繁體內嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "11",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [11][1080p][简体内嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "11",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [11][1080p][简繁内封]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "11",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[喵萌奶茶屋&LoliHouse] 葬送的芙莉莲 / Sousou no Frieren - 11 [WebRip 1080p HEVC-10bit AAC][简繁日内封字幕]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "11",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "【悠哈璃羽字幕社】[葬送的芙莉莲_Sousou no Frieren][11][x264 1080p][CHT]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "11",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "【悠哈璃羽字幕社】[葬送的芙莉莲_Sousou no Frieren][11][x264 1080p][CHS]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "11",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "【喵萌奶茶屋】★10月新番★[葬送的芙莉蓮 / Sousou no Frieren][11][1080p][繁日雙語][招募翻譯]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "11",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "【喵萌奶茶屋】★10月新番★[葬送的芙莉莲 / Sousou no Frieren][11][1080p][简日双语][招募翻译]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "11",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕组][葬送的芙莉莲_Sousou no Frieren][第10话][1080p_HEVC][简繁内封][招募新人]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "10",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕組][葬送的芙莉蓮_Sousou no Frieren][第10話][1080p_AVC][繁體][招募新人]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "10",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕组][葬送的芙莉莲_Sousou no Frieren][第10话][1080p_AVC][简体][招募新人]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "10",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉蓮 / 葬送のフリーレン / Sousou no Frieren [11][AVC AAC][1080p][繁日內嵌]",
+    "output": {
+      "tags": [
+        "AVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "11",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren [11][AVC AAC][1080p][简日内嵌]",
+    "output": {
+      "tags": [
+        "AVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "11",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren [11][HEVC AAC][1080p][简繁日内封]",
+    "output": {
+      "tags": [
+        "HEVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "11",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[❀拨雪寻春❀] 葬送的芙莉蓮 / 葬送のフリーレン / Sousou no Frieren - 11 [WEBRip][AVC-8bit 1080p][繁日内嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "11",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[❀拨雪寻春❀] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren - 11 [WEBRip][AVC-8bit 1080p][简日内嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "11",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[❀拨雪寻春❀] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren - 11 [WEBRip][HEVC-10bit 1080p][简繁日内封]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "11",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉莲 / Sousou no Frieren [11][WebRip][1080p][HEVC_AAC][简繁日内封]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "11",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉莲 / Sousou no Frieren [11][WebRip][1080p][HEVC_AAC][简日内嵌]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "11",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉蓮 / Sousou no Frieren [11][WebRip][1080p][HEVC_AAC][繁日內嵌]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "11",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[ANi] Sōsō no Frieren / 葬送的芙莉蓮 - 11 [1080P][Baha][WEB-DL][AAC AVC][CHT][MP4]",
+    "output": {
+      "tags": [
+        "Baha",
+        "WEB-DL",
+        "AAC AVC",
+        "MP4"
+      ],
+      "titles": [
+        "Sōsō no Frieren",
+        "葬送的芙莉蓮"
+      ],
+      "episode": "11",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[❀拨雪寻春❀] 葬送的芙莉蓮 / 葬送のフリーレン / Sousou no Frieren - 10 [WEBRip][AVC-8bit 1080p][繁日内嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "10",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[❀拨雪寻春❀] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren - 10 [WEBRip][AVC-8bit 1080p][简日内嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "10",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[❀拨雪寻春❀] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren - 10 [WEBRip][HEVC-10bit 1080p][简繁日内封]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "10",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[织梦字幕组] 葬送的芙莉莲 Sousou no Frieren [01] [AVC-8bit 1080P] [CHT＆JPN]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "01",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[织梦字幕组] 葬送的芙莉莲 Sousou no Frieren [01] [AVC-8bit 1080P] [CHS＆JPN]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "01",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[织梦字幕组] 葬送的芙莉莲 Sousou no Frieren [01] [AVC-8bit 720P] [CHT＆JPN]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "01",
+      "resolution": "720P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[织梦字幕组] 葬送的芙莉莲 Sousou no Frieren [01] [AVC-8bit 720P] [CHT＆JPN]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "01",
+      "resolution": "720P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "【喵萌奶茶屋】★10月新番★[葬送的芙莉蓮 / Sousou no Frieren][10][1080p][繁日雙語][v2][招募翻譯]",
+    "output": {
+      "tags": [
+        "v2"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "10",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "【喵萌奶茶屋】★10月新番★[葬送的芙莉莲 / Sousou no Frieren][10][1080p][简日双语][v2][招募翻译]",
+    "output": {
+      "tags": [
+        "v2"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "10",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "【悠哈璃羽字幕社】[葬送的芙莉莲_Sousou no Frieren][10][x264 1080p][CHT]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "10",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "【悠哈璃羽字幕社】[葬送的芙莉莲_Sousou no Frieren][10][x264 1080p][CHS]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "10",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[喵萌奶茶屋&LoliHouse] 葬送的芙莉莲 / Sousou no Frieren - 10v2 [WebRip 1080p HEVC-10bit AAC][简繁日内封字幕]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "10v2",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "【喵萌奶茶屋】★10月新番★[葬送的芙莉蓮 / Sousou no Frieren][10][1080p][繁日雙語][招募翻譯]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "10",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "【喵萌奶茶屋】★10月新番★[葬送的芙莉莲 / Sousou no Frieren][10][1080p][简日双语][招募翻译]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "10",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉蓮 / 葬送のフリーレン / Sousou no Frieren [10v2][AVC AAC][1080p][繁日內嵌]",
+    "output": {
+      "tags": [
+        "10v2",
+        "AVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": null,
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren [10v2][AVC AAC][1080p][简日内嵌]",
+    "output": {
+      "tags": [
+        "10v2",
+        "AVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": null,
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren [10v2][HEVC AAC][1080p][简繁日内封]",
+    "output": {
+      "tags": [
+        "10v2",
+        "HEVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": null,
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉蓮 / 葬送のフリーレン / Sousou no Frieren [08v2][AVC AAC][1080p][繁日內嵌]",
+    "output": {
+      "tags": [
+        "08v2",
+        "AVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": null,
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren [08v2][AVC AAC][1080p][简日内嵌]",
+    "output": {
+      "tags": [
+        "08v2",
+        "AVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": null,
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren [08v2][HEVC AAC][1080p][简繁日内封]",
+    "output": {
+      "tags": [
+        "08v2",
+        "HEVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": null,
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [10][1080p][繁體內嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "10",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [10][1080p][简体内嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "10",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [10][1080p][简繁内封]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "10",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉莲 / Sousou no Frieren [10][WebRip][1080p][HEVC_AAC][简繁日内封]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "10",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉莲 / Sousou no Frieren [10][WebRip][1080p][HEVC_AAC][简日内嵌]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "10",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉蓮 / Sousou no Frieren [10][WebRip][1080p][HEVC_AAC][繁日內嵌]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "10",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[jibaketa合成][代理商粵語]葬送的芙莉蓮/ Sousou no Frieren - 04 [粵日雙語+內封繁體中文字幕](WEB 1920x1080 AVC AACx2 SRT MUSE CHT)",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "04",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHC",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[jibaketa合成][代理商粵語]葬送的芙莉蓮/ Sousou no Frieren - 03 [粵日雙語+內封繁體中文字幕](WEB 1920x1080 AVC AACx2 SRT MUSE CHT)",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "03",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHC",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[jibaketa合成][代理商粵語]葬送的芙莉蓮/ Sousou no Frieren - 02 [粵日雙語+內封繁體中文字幕](WEB 1920x1080 AVC AACx2 SRT MUSE CHT)",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "02",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHC",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[ANi] Sōsō no Frieren / 葬送的芙莉蓮 - 10 [1080P][Baha][WEB-DL][AAC AVC][CHT][MP4]",
+    "output": {
+      "tags": [
+        "Baha",
+        "WEB-DL",
+        "AAC AVC",
+        "MP4"
+      ],
+      "titles": [
+        "Sōsō no Frieren",
+        "葬送的芙莉蓮"
+      ],
+      "episode": "10",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[jibaketa合成][代理商粵語]葬送的芙莉蓮/ Sousou no Frieren - 01 [粵日雙語+內封繁體中文字幕](WEB 1920x1080 AVC AACx2 SRT MUSE CHT)",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "01",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHC",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[喵萌奶茶屋&LoliHouse] 葬送的芙莉莲 / Sousou no Frieren - 09 [WebRip 1080p HEVC-10bit AAC][简繁日内封字幕]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "09",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "【喵萌奶茶屋】★10月新番★[葬送的芙莉蓮 / Sousou no Frieren][09][1080p][繁日雙語][招募翻譯]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "09",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "【喵萌奶茶屋】★10月新番★[葬送的芙莉莲 / Sousou no Frieren][09][1080p][简日双语][招募翻译]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "09",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "【悠哈璃羽字幕社】[葬送的芙莉莲_Sousou no Frieren][09][x264 1080p][CHT]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "09",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "【悠哈璃羽字幕社】[葬送的芙莉莲_Sousou no Frieren][09][x264 1080p][CHS]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "09",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉蓮 / 葬送のフリーレン / Sousou no Frieren [09][AVC AAC][1080p][繁日內嵌]",
+    "output": {
+      "tags": [
+        "AVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "09",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren [09][AVC AAC][1080p][简日内嵌]",
+    "output": {
+      "tags": [
+        "AVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "09",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [09][1080p][简体内嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "09",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [09][1080p][繁體內嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "09",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [09][1080p][简繁内封]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "09",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren [09][HEVC AAC][1080p][简繁日内封]",
+    "output": {
+      "tags": [
+        "HEVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "09",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕组][葬送的芙莉莲_Sousou no Frieren][第09话][1080p_HEVC][简繁内封][招募新人]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "09",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕組][葬送的芙莉蓮_Sousou no Frieren][第09話][1080p_AVC][繁體][招募新人]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "09",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕组][葬送的芙莉莲_Sousou no Frieren][第09话][1080p_AVC][简体][招募新人]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "09",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉莲 / Sousou no Frieren [09][WebRip][1080p][HEVC_AAC][简繁日内封]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "09",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉莲 / Sousou no Frieren [09][WebRip][1080p][HEVC_AAC][简日内嵌]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "09",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉蓮 / Sousou no Frieren [09][WebRip][1080p][HEVC_AAC][繁日內嵌]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "09",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[❀拨雪寻春❀] 葬送的芙莉蓮 / 葬送のフリーレン / Sousou no Frieren - 09 [WEBRip][AVC-8bit 1080p][繁日内嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "09",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[❀拨雪寻春❀] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren - 09 [WEBRip][AVC-8bit 1080p][简日内嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "09",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[❀拨雪寻春❀] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren - 09 [WEBRip][HEVC-10bit 1080p][简繁日内封]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "09",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[ANi] Sōsō no Frieren - 葬送的芙莉蓮 - 09 [1080P][Baha][WEB-DL][AAC AVC][CHT][MP4]",
+    "output": {
+      "tags": [
+        "Baha",
+        "WEB-DL",
+        "AAC AVC",
+        "MP4"
+      ],
+      "titles": [
+        "Sōsō no Frieren",
+        "葬送的芙莉蓮"
+      ],
+      "episode": "09",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕组][葬送的芙莉莲_Sousou no Frieren][第08话][1080p_HEVC][简繁内封][招募新人]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "08",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕組][葬送的芙莉蓮_Sousou no Frieren][第08話][1080p_AVC][繁體][招募新人]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "08",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕组][葬送的芙莉莲_Sousou no Frieren][第08话][1080p_AVC][简体][招募新人]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "08",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[喵萌奶茶屋&LoliHouse] 葬送的芙莉莲 / Sousou no Frieren - 08 [WebRip 1080p HEVC-10bit AAC][简繁日内封字幕]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "08",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "【喵萌奶茶屋】★10月新番★[葬送的芙莉蓮 / Sousou no Frieren][08][1080p][繁日雙語][招募翻譯]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "08",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "【喵萌奶茶屋】★10月新番★[葬送的芙莉莲 / Sousou no Frieren][08][1080p][简日双语][招募翻译]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "08",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [08][1080p][繁體內嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "08",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [08][1080p][简体内嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "08",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [08][1080p][简繁内封]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "08",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉莲 / Sousou no Frieren [08][WebRip][1080p][HEVC_AAC][简繁日内封]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "08",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉莲 / Sousou no Frieren [08][WebRip][1080p][HEVC_AAC][简日内嵌]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "08",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉蓮 / Sousou no Frieren [08][WebRip][1080p][HEVC_AAC][繁日內嵌]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "08",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[Skymoon-Raws x CheeseAni] 葬送的芙莉蓮 / Sousou no Frieren - 08 [ViuTV][WEB-DL][1080p][AVC AAC][繁簡外掛][MP4+ASS](正式版本)",
+    "output": {
+      "tags": [
+        "ViuTV",
+        "WEB-DL",
+        "AVC AAC",
+        "MP4+ASS",
+        "正式版本"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "08",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[Skymoon-Raws x CheeseAni] 葬送的芙莉蓮 / Sousou no Frieren - 08 [ViuTV][WEB-RIP][1080p][AVC AAC][CHT&CHS][SRT][MKV](先行版本)",
+    "output": {
+      "tags": [
+        "ViuTV",
+        "WEB-RIP",
+        "AVC AAC",
+        "SRT",
+        "MKV",
+        "先行版本"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "08",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[❀拨雪寻春❀] 葬送的芙莉蓮 / 葬送のフリーレン / Sousou no Frieren - 08 [WEBRip][AVC-8bit 1080p][繁日内嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "08",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[❀拨雪寻春❀] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren - 08 [WEBRip][AVC-8bit 1080p][简日内嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "08",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "【悠哈璃羽字幕社】[葬送的芙莉莲_Sousou no Frieren][08][x264 1080p][CHT]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "08",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "【悠哈璃羽字幕社】[葬送的芙莉莲_Sousou no Frieren][08][x264 1080p][CHS]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "08",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[❀拨雪寻春❀] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren - 08 [WEBRip][HEVC-10bit 1080p][简繁日内封]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "08",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[ANi] Sōsō no Frieren - 葬送的芙莉蓮 - 08 [1080P][Baha][WEB-DL][AAC AVC][CHT][MP4]",
+    "output": {
+      "tags": [
+        "Baha",
+        "WEB-DL",
+        "AAC AVC",
+        "MP4"
+      ],
+      "titles": [
+        "Sōsō no Frieren",
+        "葬送的芙莉蓮"
+      ],
+      "episode": "08",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕组][葬送的芙莉莲_Sousou no Frieren][第07话][1080p_HEVC][简繁内封][招募新人]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "07",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕組][葬送的芙莉蓮_Sousou no Frieren][第07話][1080p_AVC][繁體][招募新人]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "07",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕组][葬送的芙莉莲_Sousou no Frieren][第07话][1080p_AVC][简体][招募新人]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "07",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉蓮 / 葬送のフリーレン / Sousou no Frieren [07][AVC AAC][1080p][繁日內嵌]",
+    "output": {
+      "tags": [
+        "AVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "07",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren [07][AVC AAC][1080p][简日内嵌]",
+    "output": {
+      "tags": [
+        "AVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "07",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren [07][HEVC AAC][1080p][简繁日内封]",
+    "output": {
+      "tags": [
+        "HEVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "07",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[喵萌奶茶屋&LoliHouse] 葬送的芙莉莲 / Sousou no Frieren - 07 [WebRip 1080p HEVC-10bit AAC][简繁日内封字幕]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "07",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [07][1080p][繁體內嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "07",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [07][1080p][简体内嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "07",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [07][1080p][简繁内封]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "07",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "【喵萌奶茶屋】★10月新番★[葬送的芙莉蓮 / Sousou no Frieren][07][1080p][繁日雙語][招募翻譯]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "07",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "【喵萌奶茶屋】★10月新番★[葬送的芙莉莲 / Sousou no Frieren][07][1080p][简日双语][招募翻译]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "07",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕组][葬送的芙莉莲_Sousou no Frieren][第06话][1080p_HEVC][简繁内封][招募新人]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "06",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕組][葬送的芙莉蓮_Sousou no Frieren][第06話][1080p_AVC][繁體][招募新人]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "06",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉蓮 / Sousou no Frieren [07][WebRip][1080p][HEVC_AAC][繁日內嵌]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "07",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉莲 / Sousou no Frieren [07][WebRip][1080p][HEVC_AAC][简日内嵌]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "07",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉莲 / Sousou no Frieren [07][WebRip][1080p][HEVC_AAC][简繁日内封]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "07",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[❀拨雪寻春❀] 葬送的芙莉蓮 / 葬送のフリーレン / Sousou no Frieren - 07 [WEBRip][AVC-8bit 1080p][繁日内嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "07",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[❀拨雪寻春❀] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren - 07 [WEBRip][AVC-8bit 1080p][简日内嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "07",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "【悠哈璃羽字幕社】[葬送的芙莉莲_Sousou no Frieren][07][x264 1080p][CHT]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "07",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "【悠哈璃羽字幕社】[葬送的芙莉莲_Sousou no Frieren][07][x264 1080p][CHS]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "07",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[❀拨雪寻春❀] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren - 07 [WEBRip][HEVC-10bit 1080p][简繁日内封]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "07",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "【悠哈璃羽字幕社】[葬送的芙莉莲_Sousou no Frieren][06][x264 1080p][CHT]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "06",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "【悠哈璃羽字幕社】[葬送的芙莉莲_Sousou no Frieren][06][x264 1080p][CHS]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "06",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[芝士动物朋友]葬送的芙莉莲 / Sousou no Frieren[06][CR-WebRip][720p-420p8][AVC+AAC][简体内嵌]【该番准备弃坑】",
+    "output": {
+      "tags": [
+        "AVC+AAC",
+        "该番准备弃坑"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "06",
+      "resolution": "720P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[芝士动物朋友]葬送的芙莉莲 / Sousou no Frieren[06][CR-WebRip][720p-420p8][AVC+AAC][繁体内嵌]【该番准备弃坑】",
+    "output": {
+      "tags": [
+        "AVC+AAC",
+        "该番准备弃坑"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "06",
+      "resolution": "720P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[芝士动物朋友]葬送的芙莉莲 / Sousou no Frieren[06][CR-WebRip][990p-420p10][HEVC+OPUS][简繁内封]【该番准备弃坑】",
+    "output": {
+      "tags": [
+        "990p-420p10",
+        "HEVC+OPUS",
+        "该番准备弃坑"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "06",
+      "resolution": null,
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[Skymoon-Raws x CheeseAni] 葬送的芙莉蓮 / Sousou no Frieren - 07 [ViuTV][WEB-DL][1080p][AVC AAC][繁簡外掛][MP4+ASS](正式版本)",
+    "output": {
+      "tags": [
+        "ViuTV",
+        "WEB-DL",
+        "AVC AAC",
+        "MP4+ASS",
+        "正式版本"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "07",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[Skymoon-Raws x CheeseAni] 葬送的芙莉蓮 / Sousou no Frieren - 07 [ViuTV][WEB-RIP][1080p][AVC AAC][CHT&CHS][SRT][MKV](先行版本)",
+    "output": {
+      "tags": [
+        "ViuTV",
+        "WEB-RIP",
+        "AVC AAC",
+        "SRT",
+        "MKV",
+        "先行版本"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "07",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[ANi] Sōsō no Frieren - 葬送的芙莉蓮 - 07 [1080P][Baha][WEB-DL][AAC AVC][CHT][MP4]",
+    "output": {
+      "tags": [
+        "Baha",
+        "WEB-DL",
+        "AAC AVC",
+        "MP4"
+      ],
+      "titles": [
+        "Sōsō no Frieren",
+        "葬送的芙莉蓮"
+      ],
+      "episode": "07",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕组][葬送的芙莉莲_Sousou no Frieren][第06话][1080p_AVC][简体][招募新人]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "06",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉蓮 / 葬送のフリーレン / Sousou no Frieren [06][AVC AAC][1080p][繁日內嵌]",
+    "output": {
+      "tags": [
+        "AVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "06",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren [06][AVC AAC][1080p][简日内嵌]",
+    "output": {
+      "tags": [
+        "AVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "06",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉蓮 / 葬送のフリーレン / Sousou no Frieren [05][AVC AAC][1080p][繁日內嵌]",
+    "output": {
+      "tags": [
+        "AVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "05",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren [05][AVC AAC][1080p][简日内嵌]",
+    "output": {
+      "tags": [
+        "AVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "05",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉蓮 / 葬送のフリーレン / Sousou no Frieren [04][AVC AAC][1080p][繁日內嵌]",
+    "output": {
+      "tags": [
+        "AVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "04",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren [04][AVC AAC][1080p][简日内嵌]",
+    "output": {
+      "tags": [
+        "AVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "04",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉蓮 / 葬送のフリーレン / Sousou no Frieren [03][AVC AAC][1080p][繁日內嵌]",
+    "output": {
+      "tags": [
+        "AVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "03",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren [03][AVC AAC][1080p][简日内嵌]",
+    "output": {
+      "tags": [
+        "AVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "03",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉蓮 / 葬送のフリーレン / Sousou no Frieren [02][AVC AAC][1080p][繁日內嵌]",
+    "output": {
+      "tags": [
+        "AVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "02",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren [02][AVC AAC][1080p][简日内嵌]",
+    "output": {
+      "tags": [
+        "AVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "02",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉蓮 / 葬送のフリーレン / Sousou no Frieren [01][AVC AAC][1080p][繁日內嵌]",
+    "output": {
+      "tags": [
+        "AVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "01",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren [01][AVC AAC][1080p][简日内嵌]",
+    "output": {
+      "tags": [
+        "AVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "01",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[❀拨雪寻春❀] 葬送的芙莉蓮 / 葬送のフリーレン / Sousou no Frieren - 06 [WEBRip][AVC-8bit 1080p][繁日内嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "06",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[❀拨雪寻春❀] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren - 06 [WEBRip][AVC-8bit 1080p][简日内嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "06",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[❀拨雪寻春❀] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren - 06 [WEBRip][HEVC-10bit 1080p][简繁日内封]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "06",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren [06][HEVC AAC][1080p][简繁日内封]",
+    "output": {
+      "tags": [
+        "HEVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "06",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren [05][HEVC AAC][1080p][简繁日内封]",
+    "output": {
+      "tags": [
+        "HEVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "05",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren [04][HEVC AAC][1080p][简繁日内封]",
+    "output": {
+      "tags": [
+        "HEVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "04",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren [03][HEVC AAC][1080p][简繁日内封]",
+    "output": {
+      "tags": [
+        "HEVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "03",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren [02][HEVC AAC][1080p][简繁日内封]",
+    "output": {
+      "tags": [
+        "HEVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "02",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[离谱Sub] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren [01][HEVC AAC][1080p][简繁日内封]",
+    "output": {
+      "tags": [
+        "HEVC AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "01",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [06][1080p][简繁内封]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "06",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕組] 葬送的芙莉莲 / Sousou no Frieren [06][1080p][繁體內嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "06",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [06][1080p][简体内嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "06",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕组][葬送的芙莉莲_Sousou no Frieren][第05话][1080p_HEVC][简繁内封][招募新人]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "05",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕組][葬送的芙莉蓮_Sousou no Frieren][第05話][1080p_AVC][繁體][招募新人]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "05",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[喵萌奶茶屋&LoliHouse] 葬送的芙莉莲 / Sousou no Frieren - 06 [WebRip 1080p HEVC-10bit AAC][简繁日内封字幕]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "06",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "【喵萌奶茶屋】★10月新番★[葬送的芙莉蓮 / Sousou no Frieren][06][1080p][繁日雙語][招募翻譯]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "06",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "【喵萌奶茶屋】★10月新番★[葬送的芙莉莲 / Sousou no Frieren][06][1080p][简日双语][招募翻译]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "06",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕组][葬送的芙莉莲_Sousou no Frieren][第05话][1080p_AVC][简体][招募新人]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "05",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉莲 / Sousou no Frieren [06][WebRip][1080p][HEVC_AAC][简繁日内封]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "06",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉莲 / Sousou no Frieren [06][WebRip][1080p][HEVC_AAC][简日内嵌]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "06",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉蓮 / Sousou no Frieren [06][WebRip][1080p][HEVC_AAC][繁日內嵌]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "06",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "【極影字幕社】 ★10月新番 【葬送的芙莉蓮】【01-03】BIG5_JP MP4_720P",
+    "output": {
+      "tags": [
+        "01-03"
+      ],
+      "titles": [
+        "葬送的芙莉蓮"
+      ],
+      "episode": null,
+      "resolution": null,
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": []
+    }
+  },
+  {
+    "input": "【極影字幕社】 ★10月新番 【葬送的芙莉蓮】【01-03】BIG5_JP MP4_1080P",
+    "output": {
+      "tags": [
+        "01-03"
+      ],
+      "titles": [
+        "葬送的芙莉蓮"
+      ],
+      "episode": null,
+      "resolution": null,
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": []
+    }
+  },
+  {
+    "input": "【极影字幕社】 ★10月新番 【葬送的芙莉莲】【01-03】GB_JP MP4_720P",
+    "output": {
+      "tags": [
+        "01-03"
+      ],
+      "titles": [
+        "葬送的芙莉莲"
+      ],
+      "episode": null,
+      "resolution": null,
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": []
+    }
+  },
+  {
+    "input": "【极影字幕社】 ★10月新番 【葬送的芙莉莲】【01-03】GB_JP MP4_1080P",
+    "output": {
+      "tags": [
+        "01-03"
+      ],
+      "titles": [
+        "葬送的芙莉莲"
+      ],
+      "episode": null,
+      "resolution": null,
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": []
+    }
+  },
+  {
+    "input": "[芝士动物朋友]葬送的芙莉莲 / Sousou no Frieren[05][CR-WebRip][720p-420p8][AVC+AAC][简体内嵌]",
+    "output": {
+      "tags": [
+        "AVC+AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "05",
+      "resolution": "720P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[芝士动物朋友]葬送的芙莉莲 / Sousou no Frieren[05][CR-WebRip][720p-420p8][AVC+AAC][繁体内嵌]",
+    "output": {
+      "tags": [
+        "AVC+AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "05",
+      "resolution": "720P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[Skymoon-Raws x CheeseAni] 葬送的芙莉蓮 / Sousou no Frieren - 06 [ViuTV][WEB-DL][1080p][AVC AAC][繁簡外掛][MP4+ASS](正式版本)",
+    "output": {
+      "tags": [
+        "ViuTV",
+        "WEB-DL",
+        "AVC AAC",
+        "MP4+ASS",
+        "正式版本"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "06",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[Skymoon-Raws x CheeseAni] 葬送的芙莉蓮 / Sousou no Frieren - 06 [ViuTV][WEB-RIP][1080p][AVC AAC][CHT&CHS][SRT][MKV](先行版本)",
+    "output": {
+      "tags": [
+        "ViuTV",
+        "WEB-RIP",
+        "AVC AAC",
+        "SRT",
+        "MKV",
+        "先行版本"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "06",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[ANi] Sōsō no Frieren - 葬送的芙莉蓮 - 06 [1080P][Baha][WEB-DL][AAC AVC][CHT][MP4]",
+    "output": {
+      "tags": [
+        "Baha",
+        "WEB-DL",
+        "AAC AVC",
+        "MP4"
+      ],
+      "titles": [
+        "Sōsō no Frieren",
+        "葬送的芙莉蓮"
+      ],
+      "episode": "06",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "【悠哈璃羽字幕社】[葬送的芙莉莲_Sousou no Frieren][05][x264 1080p][CHS]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "05",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "【悠哈璃羽字幕社】[葬送的芙莉莲_Sousou no Frieren][01-04][x264 1080p][CHT]",
+    "output": {
+      "tags": [
+        "01-04"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": null,
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "【悠哈璃羽字幕社】[葬送的芙莉莲_Sousou no Frieren][01-04][x264 1080p][CHS]",
+    "output": {
+      "tags": [
+        "01-04"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": null,
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[喵萌奶茶屋&LoliHouse] 葬送的芙莉莲 / Sousou no Frieren - 05 [WebRip 1080p HEVC-10bit AAC][简繁日内封字幕]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "05",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "【悠哈璃羽字幕社】[葬送的芙莉莲_Sousou no Frieren][05][x264 1080p][CHT]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "05",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "【悠哈璃羽字幕社】[葬送的芙莉莲_Sousou no Frieren][05][x264 1080p][CHS]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "05",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "【喵萌奶茶屋】★10月新番★[葬送的芙莉蓮 / Sousou no Frieren][05][1080p][繁日雙語][招募翻譯]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "05",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "【喵萌奶茶屋】★10月新番★[葬送的芙莉莲 / Sousou no Frieren][05][1080p][简日双语][招募翻译]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "05",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕組] 葬送的芙莉莲 / Sousou no Frieren [05][1080p][繁體內嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "05",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [05][1080p][简体内嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "05",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [05][1080p][简繁内封]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "05",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "【悠哈璃羽字幕社】[葬送的芙莉莲_Sousou no Frieren][01-04][x264 1080p][CHT]",
+    "output": {
+      "tags": [
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "01-04",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "【悠哈璃羽字幕社】[葬送的芙莉莲_Sousou no Frieren][01-04][x264 1080p][CHS]",
+    "output": {
+      "tags": [
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "01-04",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "【悠哈璃羽字幕社】[葬送的芙莉莲_Sousou no Frieren][01-04][x264 1080p][CHT]",
+    "output": {
+      "tags": [
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "01-04",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "【悠哈璃羽字幕社】[葬送的芙莉莲_Sousou no Frieren][01-04][x264 1080p][CHS]",
+    "output": {
+      "tags": [
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "01-04",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕组][葬送的芙莉莲_Sousou no Frieren][第04话][1080p_HEVC][简繁内封][招募新人](附SPED Bliss)",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "附SPED Bliss",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕組][葬送的芙莉蓮_Sousou no Frieren][第04話][1080p_AVC][繁體][招募新人](附SPED Bliss)",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "附SPED Bliss",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕组][葬送的芙莉莲_Sousou no Frieren][第04话][1080p_AVC][简体][招募新人](附SPED Bliss)",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "附SPED Bliss",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕组][葬送的芙莉莲_Sousou no Frieren][第03话][1080p_HEVC][简繁内封][招募新人]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "03",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕組][葬送的芙莉蓮_Sousou no Frieren][第03話][1080p_AVC][繁體][招募新人]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "03",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[喵萌奶茶屋&LoliHouse] 葬送的芙莉莲 / Sousou no Frieren - 04 [WebRip 1080p HEVC-10bit AAC][简繁日内封字幕]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "04",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "【喵萌奶茶屋】★10月新番★[葬送的芙莉蓮 / Sousou no Frieren][04][1080p][繁日雙語][招募翻譯]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "04",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "【喵萌奶茶屋】★10月新番★[葬送的芙莉莲 / Sousou no Frieren][04][1080p][简日双语][招募翻译]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "04",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕组][葬送的芙莉莲_Sousou no Frieren][第03话][1080p_AVC][简体][招募新人]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "03",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉莲 / Sousou no Frieren [05][WebRip][1080p][HEVC_AAC][简繁日内封]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "05",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉莲 / Sousou no Frieren [05][WebRip][1080p][HEVC_AAC][简日内嵌]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "05",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉蓮 / Sousou no Frieren [05][WebRip][1080p][HEVC_AAC][繁日內嵌]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "05",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[❀拨雪寻春❀] 葬送的芙莉蓮 / 葬送のフリーレン / Sousou no Frieren - 05 [WEBRip][AVC-8bit 1080p][繁日内嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "05",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[❀拨雪寻春❀] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren - 05 [WEBRip][AVC-8bit 1080p][简日内嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "05",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[❀拨雪寻春❀] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren - 05 [WEBRip][HEVC-10bit 1080p][简繁日内封]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "05",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[❀拨雪寻春❀] 葬送的芙莉蓮 / 葬送のフリーレン / Sousou no Frieren - 04 [WEBRip][AVC-8bit 1080p][繁日内嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "04",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[❀拨雪寻春❀] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren - 04 [WEBRip][AVC-8bit 1080p][简日内嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "04",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[❀拨雪寻春❀] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren - 04 [WEBRip][HEVC-10bit 1080p][简繁日内封]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "04",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[❀拨雪寻春❀] 葬送的芙莉蓮 / 葬送のフリーレン / Sousou no Frieren - 03 [WEBRip][AVC-8bit 1080p][繁日内嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "03",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[❀拨雪寻春❀] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren - 03 [WEBRip][AVC-8bit 1080p][简日内嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "03",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[❀拨雪寻春❀] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren - 03 [WEBRip][HEVC-10bit 1080p][简繁日内封]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "03",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[❀拨雪寻春❀] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren - 02 [WEBRip][HEVC-10bit 1080p][简繁日内封]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "02",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[❀拨雪寻春❀] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren - 01 [WEBRip][HEVC-10bit 1080p][简繁日内封]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "01",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[❀拨雪寻春❀] 葬送的芙莉蓮 / 葬送のフリーレン / Sousou no Frieren - 02 [WEBRip][AVC-8bit 1080p][繁日内嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "02",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[❀拨雪寻春❀] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren - 02 [WEBRip][AVC-8bit 1080p][简日内嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "02",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[❀拨雪寻春❀] 葬送的芙莉蓮 / 葬送のフリーレン / Sousou no Frieren - 01 [WEBRip][AVC-8bit 1080p][繁日内嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "01",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[❀拨雪寻春❀] 葬送的芙莉莲 / 葬送のフリーレン / Sousou no Frieren - 01 [WEBRip][AVC-8bit 1080p][简日内嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "葬送のフリーレン",
+        "Sousou no Frieren"
+      ],
+      "episode": "01",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[芝士动物朋友]葬送的芙莉莲 / Sousou no Frieren[05][CR-WebRip][990p-420p10][HEVC+OPUS][简繁内封]",
+    "output": {
+      "tags": [
+        "990p-420p10",
+        "HEVC+OPUS"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "05",
+      "resolution": null,
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "【喵萌奶茶屋】★10月新番★[葬送的芙莉蓮 / Sousou no Frieren][03][1080p][繁日雙語][招募翻譯]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "03",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "【喵萌奶茶屋】★10月新番★[葬送的芙莉莲 / Sousou no Frieren][03][1080p][简日双语][招募翻译]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "03",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[喵萌奶茶屋&LoliHouse] 葬送的芙莉莲 / Sousou no Frieren - 03 [WebRip 1080p HEVC-10bit AAC][简繁日内封字幕]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "03",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[Skymoon-Raws x CheeseAni] 葬送的芙莉蓮 / Sousou no Frieren - 05 [ViuTV][WEB-DL][1080p][AVC AAC][繁簡外掛][MP4+ASS](正式版本)",
+    "output": {
+      "tags": [
+        "ViuTV",
+        "WEB-DL",
+        "AVC AAC",
+        "MP4+ASS",
+        "正式版本"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "05",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[Skymoon-Raws x CheeseAni] 葬送的芙莉蓮 / Sousou no Frieren - 04 [ViuTV][WEB-DL][1080p][AVC AAC][繁簡外掛][MP4+ASS](正式版本)",
+    "output": {
+      "tags": [
+        "ViuTV",
+        "WEB-DL",
+        "AVC AAC",
+        "MP4+ASS",
+        "正式版本"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "04",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[Skymoon-Raws x CheeseAni] 葬送的芙莉蓮 / Sousou no Frieren - 03 [ViuTV][WEB-DL][1080p][AVC AAC][繁簡外掛][MP4+ASS](正式版本)",
+    "output": {
+      "tags": [
+        "ViuTV",
+        "WEB-DL",
+        "AVC AAC",
+        "MP4+ASS",
+        "正式版本"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "03",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[Skymoon-Raws x CheeseAni] 葬送的芙莉蓮 / Sousou no Frieren - 02 [ViuTV][WEB-DL][1080p][AVC AAC][繁簡外掛][MP4+ASS](正式版本)",
+    "output": {
+      "tags": [
+        "ViuTV",
+        "WEB-DL",
+        "AVC AAC",
+        "MP4+ASS",
+        "正式版本"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "02",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[Skymoon-Raws x CheeseAni] 葬送的芙莉蓮 / Sousou no Frieren - 05 [ViuTV][WEB-RIP][1080p][AVC AAC][CHT&CHS][SRT][MKV](先行版本)",
+    "output": {
+      "tags": [
+        "ViuTV",
+        "WEB-RIP",
+        "AVC AAC",
+        "SRT",
+        "MKV",
+        "先行版本"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "05",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉蓮 / Sousou no Frieren [01-04 TVSP][TVRip][1080p][HEVC_AAC][繁日內嵌]",
+    "output": {
+      "tags": [
+        "TVRip",
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "01-04",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉莲 / Sousou no Frieren [01-04 TVSP][TVRip][1080p][HEVC_AAC][简日内嵌]",
+    "output": {
+      "tags": [
+        "TVRip",
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "01-04",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "【喵萌奶茶屋】★10月新番★[葬送的芙莉蓮 / Sousou no Frieren][02][1080p][繁日雙語][招募翻譯]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "02",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "【喵萌奶茶屋】★10月新番★[葬送的芙莉莲 / Sousou no Frieren][02][1080p][简日双语][招募翻译]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "02",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕组][葬送的芙莉莲_Sousou no Frieren][第02话][1080p_HEVC][简繁内封][招募新人]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "02",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕組][葬送的芙莉蓮_Sousou no Frieren][第02話][1080p_AVC][繁體][招募新人]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "02",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[ANi] Sōsō no Frieren - 葬送的芙莉蓮 - 05 [1080P][Baha][WEB-DL][AAC AVC][CHT][V2][MP4]",
+    "output": {
+      "tags": [
+        "Baha",
+        "WEB-DL",
+        "AAC AVC",
+        "V2",
+        "MP4"
+      ],
+      "titles": [
+        "Sōsō no Frieren",
+        "葬送的芙莉蓮"
+      ],
+      "episode": "05",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[ANi] Sōsō no Frieren - 葬送的芙莉蓮 - 05 [1080P][Baha][WEB-DL][AAC AVC][CHT][MP4]",
+    "output": {
+      "tags": [
+        "WEB-DL",
+        "AAC AVC",
+        "MP4"
+      ],
+      "titles": [
+        "Sōsō no Frieren",
+        "葬送的芙莉蓮"
+      ],
+      "episode": "05",
+      "resolution": "1080P",
+      "mediaOrigin": "Baha",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉莲 / Sousou no Frieren [01-04 TVSP][TVRip][1080p][HEVC_AAC][简繁日内封]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "01-04",
+      "resolution": "1080P",
+      "mediaOrigin": "TVRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕组][葬送的芙莉莲_Sousou no Frieren][第02话][1080p_AVC][简体][招募新人]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "02",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[喵萌奶茶屋&LoliHouse] 葬送的芙莉莲 / Sousou no Frieren - 02 [WebRip 1080p HEVC-10bit AAC][简繁日内封字幕]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "02",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕組] 葬送的芙莉莲 / Sousou no Frieren [04][1080p][繁體內嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "04",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [04][1080p][简体内嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "04",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [04][1080p][简繁内封]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "04",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕组][葬送的芙莉莲_Sousou no Frieren][第01话][1080p_HEVC][简繁内封][招募新人]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "01",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕組][葬送的芙莉蓮_Sousou no Frieren][第01話][1080p_AVC][繁體][招募新人]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "01",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[千夏字幕组][葬送的芙莉莲_Sousou no Frieren][第01话][1080p_AVC][简体][招募新人]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "01",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[芝士动物朋友]葬送的芙莉莲 / Sousou no Frieren[02][v2][CR-WebRip][990p-420p10][HEVC+OPUS][简繁内封]【新番速览计划】",
+    "output": {
+      "tags": [
+        "v2",
+        "HEVC+OPUS",
+        "新番速览计划"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "02",
+      "resolution": "990p",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[芝士动物朋友]葬送的芙莉莲 / Sousou no Frieren[01][v2][CR-WebRip][990p-420p10][HEVC+OPUS][简繁内封]【新番速览计划】",
+    "output": {
+      "tags": [
+        "v2",
+        "HEVC+OPUS",
+        "新番速览计划"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "01",
+      "resolution": "990p",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕組] 葬送的芙莉莲 / Sousou no Frieren [03][1080p][繁體內嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "03",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [03][1080p][简体内嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "03",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕組] 葬送的芙莉莲 / Sousou no Frieren [02][1080p][繁體內嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "02",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [02][1080p][简体内嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "02",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [03][1080p][简繁内封]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "03",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [02][1080p][简繁内封]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "02",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[喵萌奶茶屋&LoliHouse] 葬送的芙莉莲 / Sousou no Frieren - 01 [WebRip 1080p HEVC-10bit AAC][简繁日内封字幕]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "01",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "【喵萌奶茶屋】★10月新番★[葬送的芙莉莲 / Sousou no Frieren][01][1080p][繁日雙語][招募翻譯]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "01",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉莲 / Sousou no Frieren [04][WebRip][1080p][HEVC_AAC][简繁日内封]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "04",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉莲 / Sousou no Frieren [04][WebRip][1080p][HEVC_AAC][简日内嵌]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "04",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉蓮 / Sousou no Frieren [04][WebRip][1080p][HEVC_AAC][繁日內嵌]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "04",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉莲 / Sousou no Frieren [03][WebRip][1080p][HEVC_AAC][简繁日内封]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "03",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉莲 / Sousou no Frieren [03][WebRip][1080p][HEVC_AAC][简日内嵌]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "03",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉蓮 / Sousou no Frieren [03][WebRip][1080p][HEVC_AAC][繁日內嵌]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "03",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "【喵萌奶茶屋】★10月新番★[葬送的芙莉莲 / Sousou no Frieren][01][1080p][简日双语][招募翻译]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "01",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕組] 葬送的芙莉莲 / Sousou no Frieren [01][1080p][繁體內嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "01",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [01][1080p][简体内嵌]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "01",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[桜都字幕组] 葬送的芙莉莲 / Sousou no Frieren [01][1080p][简繁内封]",
+    "output": {
+      "tags": [],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "01",
+      "resolution": "1080P",
+      "mediaOrigin": null,
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[Skymoon-Raws x CheeseAni] 葬送的芙莉蓮 / Sousou no Frieren - 04 [ViuTV][WEB-RIP][1080p][AVC AAC][CHT&CHS][SRT][MKV](先行版本)",
+    "output": {
+      "tags": [
+        "ViuTV",
+        "AVC AAC",
+        "SRT",
+        "MKV",
+        "先行版本"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "04",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[Skymoon-Raws x CheeseAni] 葬送的芙莉蓮 / Sousou no Frieren - 03 [ViuTV][WEB-RIP][1080p][AVC AAC][CHT&CHS][SRT][MKV](先行版本)",
+    "output": {
+      "tags": [
+        "ViuTV",
+        "AVC AAC",
+        "SRT",
+        "MKV",
+        "先行版本"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "03",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[Skymoon-Raws x CheeseAni] 葬送的芙莉蓮 / Sousou no Frieren - 02 [ViuTV][WEB-RIP][1080p][AVC AAC][CHT&CHS][SRT][MKV](先行版本)",
+    "output": {
+      "tags": [
+        "ViuTV",
+        "AVC AAC",
+        "SRT",
+        "MKV",
+        "先行版本"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "02",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[芝士动物朋友]葬送的芙莉莲 / Sousou no Frieren[04][CR-WebRip][720p-420p8][AVC+AAC][繁体内嵌]【新番速览计划】",
+    "output": {
+      "tags": [
+        "AVC+AAC",
+        "新番速览计划"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "04",
+      "resolution": "720P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[芝士动物朋友]葬送的芙莉莲 / Sousou no Frieren[04][CR-WebRip][990p-420p10][HEVC+OPUS][简繁内封]【新番速览计划】",
+    "output": {
+      "tags": [
+        "990p-420p10",
+        "HEVC+OPUS",
+        "新番速览计划"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "04",
+      "resolution": null,
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[芝士动物朋友]葬送的芙莉莲 / Sousou no Frieren[03][CR-WebRip][720p-420p8][AVC+AAC][繁体内嵌]【新番速览计划】",
+    "output": {
+      "tags": [
+        "AVC+AAC",
+        "新番速览计划"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "03",
+      "resolution": "720P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[芝士动物朋友]葬送的芙莉莲 / Sousou no Frieren[03][CR-WebRip][720p-420p8][AVC+AAC][简体内嵌]【新番速览计划】",
+    "output": {
+      "tags": [
+        "AVC+AAC",
+        "新番速览计划"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "03",
+      "resolution": "720P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[芝士动物朋友]葬送的芙莉莲 / Sousou no Frieren[03][CR-WebRip][990p-420p10][HEVC+OPUS][简繁内封]【新番速览计划】",
+    "output": {
+      "tags": [
+        "HEVC+OPUS",
+        "新番速览计划"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "03",
+      "resolution": "990p",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[芝士动物朋友]葬送的芙莉莲 / Sousou no Frieren[02][CR-WebRip][720p-420p8][AVC+AAC][简体内嵌]【新番速览计划】",
+    "output": {
+      "tags": [
+        "AVC+AAC",
+        "新番速览计划"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "02",
+      "resolution": "720P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[芝士动物朋友]葬送的芙莉莲 / Sousou no Frieren[02][CR-WebRip][720p-420p8][AVC+AAC][繁体内嵌]【新番速览计划】",
+    "output": {
+      "tags": [
+        "AVC+AAC",
+        "新番速览计划"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "02",
+      "resolution": "720P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[芝士动物朋友]葬送的芙莉莲 / Sousou no Frieren[02][CR-WebRip][990p-420p10][HEVC+OPUS][简繁内封]【新番速览计划】",
+    "output": {
+      "tags": [
+        "HEVC+OPUS",
+        "新番速览计划"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "02",
+      "resolution": "990p",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[芝士动物朋友]葬送的芙莉莲 / Sousou no Frieren[01][CR-WebRip][720p-420p8][AVC+AAC][简体内嵌]【新番速览计划】",
+    "output": {
+      "tags": [
+        "AVC+AAC",
+        "新番速览计划"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "01",
+      "resolution": "720P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS"
+      ]
+    }
+  },
+  {
+    "input": "[芝士动物朋友]葬送的芙莉莲 / Sousou no Frieren[01][CR-WebRip][720p-420p8][AVC+AAC][繁体内嵌]【新番速览计划】",
+    "output": {
+      "tags": [
+        "AVC+AAC",
+        "新番速览计划"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "01",
+      "resolution": "720P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[芝士动物朋友]葬送的芙莉莲 / Sousou no Frieren[01][CR-WebRip][990p-420p10][HEVC+OPUS][简繁内封]【新番速览计划】",
+    "output": {
+      "tags": [
+        "990p-420p10",
+        "HEVC+OPUS",
+        "新番速览计划"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "01",
+      "resolution": null,
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉蓮 / Sousou no Frieren [02][WebRip][1080p][HEVC_AAC][繁日內嵌]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "02",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉莲 / Sousou no Frieren [02][WebRip][1080p][HEVC_AAC][简日内嵌]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "02",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉莲 / Sousou no Frieren [02][WebRip][1080p][HEVC_AAC][简繁日内封]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "02",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[Skymoon-Raws x CheeseAni] 葬送的芙莉蓮 / Sousou no Frieren - 01 [ViuTV][WEB-DL][1080p][AVC AAC][繁簡外掛][MP4+ASS](正式版本)",
+    "output": {
+      "tags": [
+        "ViuTV",
+        "AVC AAC",
+        "MP4+ASS",
+        "正式版本"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "01",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[Skymoon-Raws x CheeseAni] 葬送的芙莉蓮 / Sousou no Frieren - 01 [ViuTV][WEB-RIP][1080p][AVC AAC][CHT&CHS][SRT][MKV](先行版本)",
+    "output": {
+      "tags": [
+        "ViuTV",
+        "AVC AAC",
+        "SRT",
+        "MKV",
+        "先行版本"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "01",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉莲 / Sousou no Frieren [01v2][WebRip][1080p][HEVC_AAC][简繁日内封]",
+    "output": {
+      "tags": [
+        "v2",
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "01",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉蓮 / Sousou no Frieren [01][WebRip][1080p][HEVC_AAC][繁日內嵌]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉蓮",
+        "Sousou no Frieren"
+      ],
+      "episode": "01",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[北宇治字幕组] 葬送的芙莉莲 / Sousou no Frieren [01][WebRip][1080p][HEVC_AAC][简日内嵌]",
+    "output": {
+      "tags": [
+        "HEVC_AAC"
+      ],
+      "titles": [
+        "葬送的芙莉莲",
+        "Sousou no Frieren"
+      ],
+      "episode": "01",
+      "resolution": "1080P",
+      "mediaOrigin": "WebRip",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHS",
+        "JPN"
+      ]
+    }
+  },
+  {
+    "input": "[ANi] Sōsō no Frieren - 葬送的芙莉蓮 - 04 [1080P][Baha][WEB-DL][AAC AVC][CHT][MP4]",
+    "output": {
+      "tags": [
+        "Baha",
+        "WEB-DL",
+        "AAC AVC",
+        "MP4"
+      ],
+      "titles": [
+        "Sōsō no Frieren",
+        "葬送的芙莉蓮"
+      ],
+      "episode": "04",
+      "resolution": "1080P",
+      "mediaOrigin": "Baha",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[ANi] Sōsō no Frieren - 葬送的芙莉蓮 - 03 [1080P][Baha][WEB-DL][AAC AVC][CHT][MP4]",
+    "output": {
+      "tags": [
+        "Baha",
+        "WEB-DL",
+        "AAC AVC",
+        "MP4"
+      ],
+      "titles": [
+        "Sōsō no Frieren",
+        "葬送的芙莉蓮"
+      ],
+      "episode": "03",
+      "resolution": "1080P",
+      "mediaOrigin": "Baha",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[ANi] Sōsō no Frieren - 葬送的芙莉蓮 - 02 [1080P][Baha][WEB-DL][AAC AVC][CHT][MP4]",
+    "output": {
+      "tags": [
+        "Baha",
+        "WEB-DL",
+        "AAC AVC",
+        "MP4"
+      ],
+      "titles": [
+        "Sōsō no Frieren",
+        "葬送的芙莉蓮"
+      ],
+      "episode": "02",
+      "resolution": "1080P",
+      "mediaOrigin": "Baha",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  },
+  {
+    "input": "[ANi] Sōsō no Frieren - 葬送的芙莉蓮 - 01 [1080P][Baha][WEB-DL][AAC AVC][CHT][MP4]",
+    "output": {
+      "tags": [
+        "Baha",
+        "WEB-DL",
+        "AAC AVC",
+        "MP4"
+      ],
+      "titles": [
+        "Sōsō no Frieren",
+        "葬送的芙莉蓮"
+      ],
+      "episode": "01",
+      "resolution": "1080P",
+      "mediaOrigin": "Baha",
+      "frameRate": null,
+      "subtitleLanguages": [
+        "CHT"
+      ]
+    }
+  }
+]

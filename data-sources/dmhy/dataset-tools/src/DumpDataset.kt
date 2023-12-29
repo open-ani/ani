@@ -32,7 +32,7 @@ suspend fun main() {
     val client = AnimationGardenClient.Factory.create {
     }
 
-    val query = "药师少女的独语"
+    val query = "葬送的芙莉莲"
     val session = client.startSearchSession(
         SearchQuery(
             keywords = query,
@@ -43,13 +43,13 @@ suspend fun main() {
     @Serializable
     data class Output(
 //        val alliance: String?,
-        val tags: List<String> = listOf(),
-        val titles: List<String>,
-        val episode: Episode? = null,
-        val resolution: Resolution? = null,
-        val mediaOrigin: MediaOrigin? = null,
-        val frameRate: FrameRate? = null,
-        val subtitleLanguages: List<SubtitleLanguage> = listOf(),
+        var tags: List<String> = listOf(),
+        var titles: List<String>,
+        var episode: Episode? = null,
+        var resolution: Resolution? = null,
+        var mediaOrigin: MediaOrigin? = null,
+        var frameRate: FrameRate? = null,
+        var subtitleLanguages: List<SubtitleLanguage> = listOf(),
     )
 
     @Serializable
@@ -76,6 +76,13 @@ suspend fun main() {
                     subtitleLanguages = subtitleLanguages.toList()
                 )
             }))
+        }
+    }
+
+    for (one in list) {
+        if (one.output.tags.contains("Sousou no Frieren")) {
+            one.output.titles += "Sousou no Frieren"
+            one.output.tags = one.output.tags.filter { it != "Sousou no Frieren" }
         }
     }
 

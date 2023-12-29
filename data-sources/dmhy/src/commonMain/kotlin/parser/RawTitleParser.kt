@@ -78,7 +78,7 @@ class RawTitleParserImpl : RawTitleParser() {
         val exceptTags = exceptTagsBuilder.toString()
             .replace(newAnime) { "" }
             .replace(specialEpisode) { "" }
-        if (exceptTags.isBlank() || allianceName == "极影字幕社") {
+        if (exceptTags.isBlank() || allianceName == "极影字幕社" || text.contains("沸羊羊")) {
             // B 类
             val primaryTitles = unknownTags.removeFirstOrNull()
                 ?: return // may contain multiple languages separated by '/' or other delimiters
