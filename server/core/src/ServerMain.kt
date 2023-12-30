@@ -18,12 +18,16 @@
 
 package me.him188.animationgarden.server
 
+import io.ktor.serialization.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.websocket.*
+import io.ktor.util.reflect.*
+import io.ktor.utils.io.charsets.*
+import io.ktor.websocket.*
 import io.netty.util.internal.logging.InternalLogger
 import io.netty.util.internal.logging.InternalLoggerFactory
 import io.netty.util.internal.logging.Log4J2LoggerFactory
@@ -32,13 +36,13 @@ import kotlinx.cli.ArgType
 import kotlinx.cli.ParsingException
 import kotlinx.cli.default
 import kotlinx.serialization.json.Json
-import me.him188.animationgarden.api.logging.info
-import me.him188.animationgarden.api.logging.logger
-import me.him188.animationgarden.api.model.CommitsModule
+import kotlinx.serialization.serializer
 import me.him188.animationgarden.database.impl.xodus.DatabaseModule
-import me.him188.animationgarden.server.modules.AuthModule
-import me.him188.animationgarden.server.modules.ExceptionModule
-import me.him188.animationgarden.server.modules.install
+import me.him188.animationgarden.datasources.api.DownloadProvider
+import me.him188.animationgarden.datasources.api.NameIndexProvider
+import me.him188.animationgarden.server.modules.*
+import me.him188.animationgarden.utils.logging.info
+import me.him188.animationgarden.utils.logging.logger
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.core.appender.ConsoleAppender
 import org.apache.logging.log4j.core.config.Configurator
@@ -47,6 +51,7 @@ import org.apache.logging.log4j.core.config.builder.api.LayoutComponentBuilder
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
 import java.io.File
+import java.util.*
 import kotlin.time.Duration.Companion.seconds
 
 object ServerMain {
@@ -132,27 +137,46 @@ object ServerMain {
         dataFolder.mkdir()
         logger.info { "Data folder: ${dataFolder.absolutePath}" }
 
+        val json = Json {
+            ignoreUnknownKeys = true
+        }
         embeddedServer(Netty, port = port, host = host) {
             install(ContentNegotiation) {
-                json(Json {
-                    serializersModule = CommitsModule
-                    ignoreUnknownKeys = true
-                })
+                json(json)
             }
             install(WebSockets) {
                 pingPeriodMillis = 20.seconds.inWholeMilliseconds
+                contentConverter = object : WebsocketContentConverter {
+                    override suspend fun deserialize(charset: Charset, typeInfo: TypeInfo, content: Frame): Any? {
+                        if (content !is Frame.Text) {
+                            return null
+                        }
+                        return json.decodeFromString(serializer(typeInfo.reifiedType), content.readText())
+                    }
+
+                    override suspend fun serialize(charset: Charset, typeInfo: TypeInfo, value: Any?): Frame {
+                        return Frame.Text(json.encodeToString(serializer(typeInfo.reifiedType), value as Any))
+                    }
+
+                    override fun isApplicable(frame: Frame): Boolean = frame is Frame.Text
+                }
             }
 
             val application = this
             startKoin {
                 modules(module {
                     single<Application> { application }
+                    single<DownloadProvider> { ServiceLoader.load(DownloadProvider::class.java).first() }
+                    single<NameIndexProvider> { ServiceLoader.load(NameIndexProvider::class.java).first() }
                 })
                 modules(DatabaseModule)
             }
 
-            install(AuthModule())
-            install(ExceptionModule())
+            installModule(AuthModule())
+            installModule(ExceptionModule())
+            installModule(NameIndexModule())
+            installModule(SubscriptionModule())
+            installModule(SearchModule())
         }.start(wait = true)
     }
 }

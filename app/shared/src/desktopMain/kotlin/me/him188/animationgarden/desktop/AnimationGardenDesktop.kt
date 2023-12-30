@@ -41,12 +41,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import me.him188.animationgarden.api.AnimationGardenClient
+import me.him188.animationgarden.api.DmhyClient
 import me.him188.animationgarden.api.impl.createHttpClient
-import me.him188.animationgarden.api.logging.logger
-import me.him188.animationgarden.api.logging.trace
-import me.him188.animationgarden.api.logging.warn
-import me.him188.animationgarden.api.protocol.CommitRef
 import me.him188.animationgarden.app.AppTheme
 import me.him188.animationgarden.app.ProvideCompositionLocalsForPreview
 import me.him188.animationgarden.app.app.*
@@ -153,7 +149,7 @@ object AnimationGardenDesktop {
         }
         LaunchedEffect(currentAppSettings.proxy) {
             // proxy changed, update client
-            app.client.value = AnimationGardenClient.Factory.create {
+            app.client.value = DmhyClient.Factory.create {
                 proxy = currentAppSettings.proxy.toKtorProxy()
             }
         }
@@ -245,7 +241,7 @@ private fun createAppState(
     snackbarState: SnackbarHostState,
     currentBundle: ResourceBundle,
 ) = ApplicationState(
-    initialClient = AnimationGardenClient.Factory.create {
+    initialClient = DmhyClient.Factory.create {
         proxy = currentAppSettings.proxy.toKtorProxy()
     },
     appDataSynchronizer = { dataScope ->
@@ -441,7 +437,7 @@ private fun MainWindowContent(
 fun PreviewMainWindowMacOS() {
     val app = remember {
         ApplicationState(
-            initialClient = AnimationGardenClient.Factory.create {},
+            initialClient = DmhyClient.Factory.create {},
             appDataSynchronizer = { createTestAppDataSynchronizer(it) }
         )
     }

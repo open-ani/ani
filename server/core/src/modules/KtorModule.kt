@@ -24,6 +24,6 @@ interface KtorModule {
     fun Application.install()
 }
 
-fun Application.install(vararg modules: KtorModule) {
+fun Application.installModule(vararg modules: KtorModule) {
     modules.forEach { it.run { install() } }
 }

@@ -45,6 +45,8 @@ object Versions {
     // Server
     const val exposed = "0.45.0"
     const val ktor = "3.0.0-beta-1"
+
+    const val junit = "5.7.2"
 }
 
 const val `kotlinx-datetime` = "org.jetbrains.kotlinx:kotlinx-datetime:${Versions.kotlinxDatetime}"
@@ -56,3 +58,14 @@ const val `kotlinx-serialization-protobuf` =
 
 const val `koin-core` = "io.insert-koin:koin-core:${Versions.koin}"
 const val `slf4j-api` = "org.slf4j:slf4j-api:${Versions.slf4j}"
+const val `slf4j-simple` = "org.slf4j:slf4j-simple:${Versions.slf4j}"
+
+const val `ktor-client-core` = "io.ktor:ktor-client-core:${Versions.ktor}"
+const val `ktor-client-cio` = "io.ktor:ktor-client-cio:${Versions.ktor}"
+const val `ktor-client-content-negotiation` = "io.ktor:ktor-client-content-negotiation:${Versions.ktor}"
+const val `ktor-serialization-kotlinx-json` = "io.ktor:ktor-serialization-kotlinx-json:${Versions.ktor}"
+
+const val `kotlin-test-junit5` = "org.jetbrains.kotlin:kotlin-test-junit5:${Versions.kotlin}"
+const val `junit-jupiter-api` = "org.junit.jupiter:junit-jupiter-api:${Versions.junit}"
+const val `junit-jupiter-params` = "org.junit.jupiter:junit-jupiter-params:${Versions.junit}"
+const val `junit-jupiter-engine` = "org.junit.jupiter:junit-jupiter-engine:${Versions.junit}"

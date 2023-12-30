@@ -22,7 +22,7 @@ import androidx.compose.runtime.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
-import me.him188.animationgarden.api.AnimationGardenClient
+import me.him188.animationgarden.api.DmhyClient
 import me.him188.animationgarden.api.impl.model.KeyedMutableListFlow
 import me.him188.animationgarden.api.impl.model.KeyedMutableListFlowImpl
 import me.him188.animationgarden.api.model.SearchQuery
@@ -38,10 +38,10 @@ import kotlin.coroutines.EmptyCoroutineContext
 
 @Stable
 class ApplicationState(
-    initialClient: AnimationGardenClient,
+    initialClient: DmhyClient,
     appDataSynchronizer: (CoroutineScope) -> AppDataSynchronizer,
     @Stable
-    val applicationScope: CoroutineScope = createApplicationScope()
+    val applicationScope: CoroutineScope = createApplicationScope(),
 ) {
 
     @Stable
@@ -51,7 +51,7 @@ class ApplicationState(
     val topicsFlow: KeyedMutableListFlow<String, Topic> = KeyedMutableListFlowImpl { it.id }
 
     @Stable
-    val client: MutableState<AnimationGardenClient> = mutableStateOf(initialClient)
+    val client: MutableState<DmhyClient> = mutableStateOf(initialClient)
 
     @Stable
     val session: MutableState<SearchSession> by lazy {

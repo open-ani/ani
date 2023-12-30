@@ -45,7 +45,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.withContext
 import me.him188.animationgarden.android.AnimationGardenApplication
-import me.him188.animationgarden.api.AnimationGardenClient
+import me.him188.animationgarden.api.DmhyClient
 import me.him188.animationgarden.api.model.SearchQuery
 import me.him188.animationgarden.api.model.SearchSession
 import me.him188.animationgarden.api.model.Topic
@@ -134,7 +134,7 @@ class MainActivity : BaseComponentActivity() {
         LaunchedEffect(currentAppSettings.proxy) {
             // proxy changed, update client
             app.client.value = withContext(Dispatchers.IO) {
-                AnimationGardenClient.Factory.create {
+                DmhyClient.Factory.create {
                     proxy = currentAppSettings.proxy.toKtorProxy()
                 }
             }
@@ -188,7 +188,7 @@ class MainActivity : BaseComponentActivity() {
     private fun PreviewMainPage() {
         ProvideCompositionLocalsForPreview {
             val app = remember {
-                ApplicationState(object : AnimationGardenClient {
+                ApplicationState(object : DmhyClient {
                     override fun startSearchSession(filter: SearchQuery): SearchSession {
                         return object : SearchSession {
                             override val query: SearchQuery = SearchQuery(null, null, null, null)

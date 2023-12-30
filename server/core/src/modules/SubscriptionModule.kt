@@ -32,7 +32,7 @@ class SubscriptionModule : KtorModule {
     }
 
     private fun RootRoute.route() {
-        get("favorite") {
+        get("subscription") {
             get("all") {
                 call.respondSuccess(listOf(""))
             }

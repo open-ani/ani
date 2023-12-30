@@ -21,9 +21,17 @@ package me.him188.animationgarden.server.modules
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.routing.*
+import io.ktor.server.util.*
+import io.ktor.server.websocket.*
+import io.ktor.websocket.*
+import me.him188.animationgarden.datasources.api.DownloadProvider
+import me.him188.animationgarden.datasources.api.DownloadSearchQuery
 import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
 class SearchModule : KtorModule, KoinComponent {
+    private val downloadProvider: DownloadProvider by inject()
+
     override fun Application.install() {
         routing {
             authentication {
@@ -33,8 +41,18 @@ class SearchModule : KtorModule, KoinComponent {
     }
 
     private fun RootRoute.route() {
-        get("search") {
+        webSocket("search/{name}") {
+            val name = call.parameters.getOrFail("name")
+            val session = downloadProvider.startSearch(
+                DownloadSearchQuery(
+                    keywords = name,
+                )
+            )
 
+            while (true) {
+                val page = session.nextPageOrNull() ?: close()
+                sendSerialized(page)
+            }
         }
     }
 }

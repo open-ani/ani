@@ -56,7 +56,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.flowOf
-import me.him188.animationgarden.api.AnimationGardenClient
+import me.him188.animationgarden.api.DmhyClient
 import me.him188.animationgarden.api.model.Alliance
 import me.him188.animationgarden.api.model.DATE_FORMAT
 import me.him188.animationgarden.api.model.MagnetLink
@@ -80,7 +80,7 @@ import me.him188.animationgarden.app.ui.search.invertSelected
 import me.him188.animationgarden.app.ui.starred.StarredAnimeCard
 import me.him188.animationgarden.app.ui.theme.darken
 import me.him188.animationgarden.app.ui.theme.weaken
-import me.him188.animationgarden.shared.models.FileSize.Companion.megaBytes
+import me.him188.animationgarden.datasources.api.topic.FileSize.Companion.megaBytes
 import java.time.LocalDateTime
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
@@ -377,7 +377,7 @@ suspend fun ApplicationState.updateStarredAnimeEpisodes(
     try {
         while (currentCoroutineContext().isActive) {
             // always fetch the newest page, which contain the newer episodes.
-            val nextPage = session.nextPage() ?: break
+            val nextPage = session.nextPageOrNull() ?: break
             allTopics.addAll(nextPage)
             // if all exising episodes are contained, means we have reached the last updated point.
             if (allEpisodesContained(currentAnime, allTopics)) {
@@ -699,7 +699,7 @@ private fun PreviewTopicList() {
     LiveTopicList(
         remember {
             ApplicationState(
-                initialClient = AnimationGardenClient.Factory.create {},
+                initialClient = DmhyClient.Factory.create {},
                 appDataSynchronizer = { scope -> createTestAppDataSynchronizer(scope) })
         },
         remember { OrganizedViewState() },

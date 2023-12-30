@@ -21,9 +21,9 @@ import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
-import me.him188.animationgarden.api.AnimationGardenClient
-import me.him188.animationgarden.api.model.SearchQuery
-import me.him188.animationgarden.shared.models.*
+import me.him188.animationgarden.api.DmhyClient
+import me.him188.animationgarden.datasources.api.DownloadSearchQuery
+import me.him188.animationgarden.datasources.api.topic.*
 import java.io.File
 
 private val json = Json {
@@ -50,12 +50,12 @@ data class One(
 )
 
 suspend fun main() {
-    val client = AnimationGardenClient.Factory.create {
+    val client = DmhyClient.Factory.create {
     }
 
     val query = "葬送的芙莉莲"
     val session = client.startSearchSession(
-        SearchQuery(
+        DownloadSearchQuery(
             keywords = query,
             category = TopicCategory.ANIME,
         )

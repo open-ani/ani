@@ -25,6 +25,7 @@ plugins {
 dependencies {
     api(`kotlinx-coroutines-core`)
     api(`kotlinx-serialization-core`)
+    api(projects.dataSources.api)
 }
 
 tasks.withType<Jar> {

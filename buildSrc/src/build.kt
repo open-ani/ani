@@ -16,10 +16,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import org.gradle.api.JavaVersion
 import org.gradle.api.Project
-import org.gradle.kotlin.dsl.extra
-import org.gradle.kotlin.dsl.invoke
+import org.gradle.api.plugins.JavaPluginExtension
+import org.gradle.api.tasks.compile.JavaCompile
+import org.gradle.api.tasks.testing.Test
+import org.gradle.kotlin.dsl.*
+import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
+import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
+import org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 /*
  * Animation Garden App
@@ -95,3 +102,92 @@ fun KotlinSourceSet.configureKotlinOptIns() {
         }
     }
 }
+
+fun Project.preConfigureJvmTarget() {
+    val defaultVer = JavaVersion.VERSION_1_8
+
+    tasks.withType(KotlinJvmCompile::class.java) {
+        kotlinOptions.jvmTarget = defaultVer.toString()
+    }
+
+    tasks.withType(JavaCompile::class.java) {
+        sourceCompatibility = defaultVer.toString()
+        targetCompatibility = defaultVer.toString()
+    }
+}
+
+fun Project.configureJvmTarget() {
+    val defaultVer = JavaVersion.VERSION_1_8
+
+    extensions.findByType(JavaPluginExtension::class.java)?.run {
+        sourceCompatibility = defaultVer
+        targetCompatibility = defaultVer
+    }
+
+    allKotlinTargets().all {
+        if (this !is KotlinJvmTarget) return@all
+        this.testRuns["test"].executionTask.configure { useJUnitPlatform() }
+    }
+}
+
+fun Project.configureEncoding() {
+    tasks.withType(JavaCompile::class.java) {
+        options.encoding = "UTF8"
+    }
+}
+
+fun Project.configureKotlinTestSettings() {
+    tasks.withType(Test::class) {
+        useJUnitPlatform()
+    }
+    val b = "Auto-set for project '${project.path}'. (configureKotlinTestSettings)"
+    when {
+        isKotlinJvmProject -> {
+            dependencies {
+                "testImplementation"(kotlin("test-junit5"))?.because(b)
+
+                "testApi"(`junit-jupiter-api`)?.because(b)
+                "testRuntimeOnly"(`junit-jupiter-engine`)?.because(b)
+            }
+        }
+
+        isKotlinMpp -> {
+            kotlinSourceSets?.all {
+                val sourceSet = this
+
+                val target = allKotlinTargets()
+                    .find { it.name == sourceSet.name.substringBeforeLast("Main").substringBeforeLast("Test") }
+
+                if (sourceSet.name.contains("test", ignoreCase = true)) {
+                    if (isJvmFinalTarget(target)) {
+                        // For android, this should be done differently. See Android.kt
+                        sourceSet.configureJvmTest(b)
+                    } else {
+                        if (sourceSet.name == "commonTest") {
+                            sourceSet.dependencies {
+                                implementation(kotlin("test"))?.because(b)
+                                implementation(kotlin("test-annotations-common"))?.because(b)
+                            }
+                        } else {
+                            // can be an Android sourceSet
+                            // Do not even add "kotlin-test" for Android sourceSets. IDEA can't resolve them on sync
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun isJvmFinalTarget(target: KotlinTarget?) =
+    target?.platformType == KotlinPlatformType.jvm
+
+fun KotlinSourceSet.configureJvmTest(because: String) {
+    dependencies {
+        implementation(kotlin("test-junit5"))?.because(because)
+
+        implementation(`junit-jupiter-api`)?.because(because)
+        runtimeOnly(`junit-jupiter-engine`)?.because(because)
+    }
+}
+

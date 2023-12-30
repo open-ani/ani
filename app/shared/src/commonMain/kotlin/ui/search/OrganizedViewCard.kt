@@ -41,7 +41,7 @@ import me.him188.animationgarden.app.platform.LocalContext
 import me.him188.animationgarden.app.ui.AnimatedTitles
 import me.him188.animationgarden.app.ui.theme.darken
 import me.him188.animationgarden.app.ui.widgets.ToggleStarButton
-import me.him188.animationgarden.shared.models.FileSize.Companion.megaBytes
+import me.him188.animationgarden.datasources.api.topic.FileSize.Companion.megaBytes
 import java.time.LocalDateTime
 
 @Composable

@@ -32,7 +32,7 @@ import io.ktor.client.plugins.logging.*
 import kotlinx.coroutines.*
 import me.him188.animationgarden.android.activity.BaseComponentActivity
 import me.him188.animationgarden.android.activity.showSnackbarAsync
-import me.him188.animationgarden.api.AnimationGardenClient
+import me.him188.animationgarden.api.DmhyClient
 import me.him188.animationgarden.api.impl.createHttpClient
 import me.him188.animationgarden.api.logging.logger
 import me.him188.animationgarden.api.protocol.CommitRef
@@ -123,7 +123,7 @@ class AnimationGardenApplication : Application() {
                     resourceBundle = currentBundle
 
                     ApplicationState(
-                        initialClient = AnimationGardenClient.Factory.create {
+                        initialClient = DmhyClient.Factory.create {
                             proxy =
                                 settings.proxy.toKtorProxy() // android thinks this is doing network operation
                         },

@@ -46,7 +46,10 @@ includeProject(":server:database", "server/database") // server database interfa
 includeProject(":server:database-xodus", "server/database-xodus") // database implementation with Xodus
 
 // data sources
+includeProject(":data-sources:api", "data-sources/api") // data source interfaces
 includeProject(":data-sources:dmhy", "data-sources/dmhy") // data source from https://dmhy.org
+includeProject(":data-sources:bangumi", "data-sources/bangumi") // data source from https://bangumi.tv
+
 includeProject(
     ":data-sources:dmhy:dataset-tools",
     "data-sources/dmhy/dataset-tools"

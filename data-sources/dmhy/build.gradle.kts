@@ -16,88 +16,29 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-@file:Suppress("UnstableApiUsage")
-
 plugins {
-    kotlin("multiplatform")
-    id("com.android.library")
+    kotlin("jvm")
     kotlin("plugin.serialization")
     id("kotlinx-atomicfu")
 }
 
-kotlin {
-    sourceSets.all {
-        languageSettings.progressiveMode = true
-        languageSettings.optIn("kotlinx.serialization.ExperimentalSerializationApi")
-    }
+dependencies {
+    val ktorVersion = Versions.ktor
+    api("io.ktor:ktor-client-core:$ktorVersion")
+    implementation("io.ktor:ktor-client-cio:$ktorVersion")
+    implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
+    implementation(`kotlinx-serialization-json`)
+    implementation(`kotlinx-serialization-protobuf`)
+    implementation(`kotlinx-coroutines-core`)
+    implementation("org.jsoup:jsoup:1.15.4")
+    implementation(`slf4j-api`)
 
-    androidTarget()
-    jvm {
-        jvmToolchain(8)
-    }
+    api(projects.dataSources.api)
 
-    targets.all {
-        compilations.all {
-            kotlinOptions.freeCompilerArgs += "-Xexpect-actual-classes"
-        }
-    }
-
-
-    sourceSets {
-        val commonMain by getting {
-            dependencies {
-                val ktorVersion = Versions.ktor
-                api("io.ktor:ktor-client-core:$ktorVersion")
-                implementation("io.ktor:ktor-client-cio:$ktorVersion")
-                implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
-                implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
-                implementation(`kotlinx-serialization-json`)
-                implementation(`kotlinx-serialization-protobuf`)
-                implementation(`kotlinx-coroutines-core`)
-                implementation("org.jsoup:jsoup:1.15.4")
-                implementation(`slf4j-api`)
-
-                api(projects.protocol)
-            }
-        }
-
-        val commonTest by getting {
-            dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-debug:1.7.3")
-
-                implementation(kotlin("test-junit5"))
-                // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
-                implementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
-                // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine
-                runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.2")
-            }
-        }
-    }
+    testImplementation(kotlin("test-junit5"))
 }
 
-android {
-    namespace = "me.him188.animationgarden"
-    compileSdk = 34
-    sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
-    defaultConfig {
-        minSdk = 26
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-    buildTypes.getByName("release") {
-        isMinifyEnabled = true
-        isShrinkResources = false
-        proguardFiles(
-            getDefaultProguardFile("proguard-android-optimize.txt"),
-            projects.app.android.dependencyProject.projectDir.resolve("proguard-rules.pro").also {
-                check(it.exists()) { "Could not find ${it.absolutePath}" }
-            }
-        )
-    }
+tasks.withType<Jar> {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE // why is there a duplicate?
 }
-
-//tasks.test {
-//    useJUnitPlatform()
-//}

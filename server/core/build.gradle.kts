@@ -16,8 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
-
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
@@ -31,8 +29,8 @@ dependencies {
     api(`kotlinx-datetime`)
 
     // submodules
-    api(projects.server.database)
     api(projects.server.databaseXodus)
+    api(projects.server.database)
     api(projects.protocol)
 
     // dependency injection
@@ -40,7 +38,8 @@ dependencies {
 
     // logging
     implementation("org.apache.logging.log4j:log4j-core:2.20.0")
-    implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.20.0")
+    implementation("org.apache.logging.log4j:log4j-slf4j2-impl:2.20.0")
+    implementation(projects.utils.slf4jKt)
 
     // ktor
     @Suppress("LocalVariableName") val ktor_version = Versions.ktor
@@ -57,18 +56,9 @@ dependencies {
 
     // data sources
     implementation(projects.dataSources.dmhy)
+    implementation(projects.dataSources.bangumi)
 }
 
 application {
     mainClass.set("me.him188.animationgarden.server.ServerMain")
-}
-
-tasks.withType(KotlinJvmCompile::class) {
-    kotlinOptions.jvmTarget = "11"
-}
-
-kotlin.sourceSets.all {
-    languageSettings.enableLanguageFeature("ContextReceivers")
-    languageSettings.optIn("kotlinx.serialization.ExperimentalSerializationApi")
-    languageSettings.optIn("kotlinx.coroutines.ExperimentalCoroutinesApi")
 }

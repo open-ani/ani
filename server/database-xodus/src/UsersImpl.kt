@@ -18,15 +18,24 @@
 
 package me.him188.animationgarden.database.impl.xodus
 
-import me.him188.animationgarden.server.database.UserToken
+import me.him188.animationgarden.server.database.UserId
 import me.him188.animationgarden.server.database.Users
+import me.him188.animationgarden.shared.dto.UserInfo
 
 class UsersImpl : Users {
-    override suspend fun createUser(username: String, password: String) {
+    override suspend fun createUser(username: String, password: String): Users.CreateUserResult {
         TODO("Not yet implemented")
     }
 
-    override suspend fun login(username: String, password: String): UserToken {
+    override suspend fun login(username: String, password: String): Users.LoginResult {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getUserIdByToken(token: String): UserId? {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getUserInfo(userId: UserId): UserInfo? {
         TODO("Not yet implemented")
     }
 }

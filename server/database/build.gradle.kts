@@ -27,3 +27,7 @@ dependencies {
     api(`kotlinx-datetime`)
     api(projects.protocol)
 }
+
+tasks.withType<Jar> {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE // why is there a duplicate?
+}

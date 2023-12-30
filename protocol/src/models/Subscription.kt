@@ -18,7 +18,10 @@
 
 package me.him188.animationgarden.shared.models
 
-import kotlinx.serialization.Serializable
+import me.him188.animationgarden.datasources.api.topic.Alliance
+import me.him188.animationgarden.datasources.api.topic.Episode
+import me.him188.animationgarden.datasources.api.topic.Resolution
+import me.him188.animationgarden.datasources.api.topic.SubtitleLanguage
 
 data class Subscription(
     val primaryName: String,
@@ -38,20 +41,4 @@ data class Subscription(
 @JvmInline
 value class MagnetLink(
     val value: String,
-)
-
-@Serializable
-data class TopicCategory(
-    val id: String,
-    val name: String,
-) {
-    companion object {
-        val ANIME = TopicCategory("2", "動畫")
-    }
-}
-
-@Serializable
-data class Alliance(
-    val id: String,
-    val name: String,
 )
