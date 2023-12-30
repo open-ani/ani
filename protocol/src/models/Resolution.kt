@@ -44,14 +44,14 @@ data class Resolution(
     }
 
     companion object {
-        private val R240P = Resolution("240P", 240, "x240")
-        private val R360P = Resolution("360P", 360, "x360")
-        private val R480P = Resolution("480P", 480, "x480")
-        private val R560P = Resolution("560P", 560, "x560")
-        private val R720P = Resolution("720P", 720, "x720")
-        private val R1080P = Resolution("1080P", 1080, "x1080")
-        private val R1440P = Resolution("1440P", 1440, "x1440", displayName = "2K")
-        private val R2160P = Resolution("2160P", 2160, "x2160", displayName = "4K")
+        val R240P = Resolution("240P", 240, "x240")
+        val R360P = Resolution("360P", 360, "x360")
+        val R480P = Resolution("480P", 480, "x480")
+        val R560P = Resolution("560P", 560, "x560")
+        val R720P = Resolution("720P", 720, "x720")
+        val R1080P = Resolution("1080P", 1080, "x1080")
+        val R1440P = Resolution("1440P", 1440, "x1440", displayName = "2K")
+        val R2160P = Resolution("2160P", 2160, "x2160", displayName = "4K")
         val ParseError = Resolution("ERROR", 0, "")
 
         private val entries = arrayOf(

@@ -25,6 +25,8 @@ enum class MediaOrigin(
     BDRip("BDRip"),
     BluRay("Blu-Ray", "BluRay"),
     WebRip("WebRip"),
+    Baha("Baha"),
+    TVRip("TVRip"),
     ;
 
     companion object {
