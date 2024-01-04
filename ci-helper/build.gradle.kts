@@ -141,7 +141,7 @@ tasks.register("uploadAndroidApkQR") {
 
 val zipDesktopDistribution = tasks.register("zipDesktopDistribution", Zip::class) {
     dependsOn(":desktop:createDistributable")
-    from(project(":desktop").layout.buildDirectory.dir("compose/binaries/main/app"))
+    from(project(":app:desktop").layout.buildDirectory.dir("compose/binaries/main/app"))
     archiveBaseName.set("desktop")
 }
 
@@ -321,7 +321,7 @@ fun ReleaseEnvironment.uploadDesktopDistributions() {
                 extension = kind
             ),
             contentType = "application/octet-stream",
-            file = project(":desktop").layout.buildDirectory.dir("compose/binaries/main/$kind").get().asFile
+            file = project(":app:desktop").layout.buildDirectory.dir("compose/binaries/main/$kind").get().asFile
                 .walk()
                 .single { it.extension == kind },
         )
@@ -335,7 +335,7 @@ fun ReleaseEnvironment.uploadDesktopDistributions() {
             extension = "jar"
         ),
         contentType = "application/octet-stream",
-        file = project(":desktop").layout.buildDirectory.dir("compose/jars").get().asFile
+        file = project(":app:desktop").layout.buildDirectory.dir("compose/jars").get().asFile
             .walk()
             .single { it.extension == "jar" },
     )
