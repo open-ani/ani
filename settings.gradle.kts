@@ -41,9 +41,9 @@ includeProject(":app:desktop", "app/desktop") // desktop JVM client for macOS, W
 includeProject(":app:android", "app/android") // Android client
 
 // server
-includeProject(":server:core", "server/core") // server core
-includeProject(":server:database", "server/database") // server database interfaces
-includeProject(":server:database-xodus", "server/database-xodus") // database implementation with Xodus
+//includeProject(":server:core", "server/core") // server core
+//includeProject(":server:database", "server/database") // server database interfaces
+//includeProject(":server:database-xodus", "server/database-xodus") // database implementation with Xodus
 
 // data sources
 includeProject(":data-sources:api", "data-sources/api") // data source interfaces
