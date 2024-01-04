@@ -16,26 +16,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.database.impl.xodus
+package me.him188.animationgarden.server.dbcomponents
 
-import me.him188.animationgarden.server.database.UserId
-import me.him188.animationgarden.server.database.Users
-import me.him188.animationgarden.shared.dto.UserInfo
+import de.mkammerer.argon2.Argon2Factory
+import me.him188.animationgarden.server.database.login.PasswordHash
 
-class UsersImpl : Users {
-    override suspend fun createUser(username: String, password: String): Users.CreateUserResult {
-        TODO("Not yet implemented")
+internal class Argon2Hash : PasswordHash {
+    private val argon2 = Argon2Factory.create()
+
+    override fun hash(password: String): String {
+        return argon2.hash(10, 65536, 1, password)
     }
 
-    override suspend fun login(username: String, password: String): Users.LoginResult {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun getUserIdByToken(token: String): UserId? {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun getUserInfo(userId: UserId): UserInfo? {
-        TODO("Not yet implemented")
+    override fun verify(password: String, hash: String): Boolean {
+        return argon2.verify(hash, password)
     }
 }

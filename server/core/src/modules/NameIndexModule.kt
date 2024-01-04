@@ -21,20 +21,20 @@ package me.him188.animationgarden.server.modules
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.flow.toList
-import me.him188.animationgarden.datasources.api.NameIndexProvider
-import me.him188.animationgarden.datasources.api.NameIndexSearchQuery
+import me.him188.animationgarden.datasources.api.SubjectProvider
+import me.him188.animationgarden.datasources.api.SubjectSearchQuery
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
 class NameIndexModule : KtorModule, KoinComponent {
-    private val nameIndexProvider: NameIndexProvider by inject()
+    private val subjectProvider: SubjectProvider by inject()
 
     override fun Application.install() {
         routing {
             get("search/{query}") {
                 val query = call.parameters["query"] ?: return@get call.respondError("Missing query")
-                val search = nameIndexProvider.startSearch(
-                    NameIndexSearchQuery(
+                val search = subjectProvider.startSearch(
+                    SubjectSearchQuery(
                         keyword = query,
                     )
                 )

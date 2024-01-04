@@ -21,12 +21,12 @@ package me.him188.animationgarden.datasources.bangumi
 import me.him188.animationgarden.datasources.api.*
 
 class BangumiSearchSession(
-    private val query: NameIndexSearchQuery,
+    private val query: SubjectSearchQuery,
     private val pageSize: Int = 25,
-) : AbstractPageBasedSearchSession<SubjectIndex>() {
+) : AbstractPageBasedSearchSession<DataSourceSubject>() {
     private val client = BangumiClient.create()
 
-    override suspend fun nextPageImpl(page: Int): List<SubjectIndex> {
+    override suspend fun nextPageImpl(page: Int): List<DataSourceSubject> {
         return client.searchSubjectByKeywords(
             query.keyword,
             type = convertType(),
@@ -34,13 +34,18 @@ class BangumiSearchSession(
             start = page * pageSize,
             maxResults = pageSize,
         ).map { subject ->
-            SubjectIndex(
+            DataSourceSubject(
                 originalName = subject.name,
                 chineseName = subject.nameCN,
-                images = object : SubjectImages {
+                images = object : DataSourceSubjectImages {
                     override fun forGrid(): String = subject.images.grid
                     override fun forPoster(): String = subject.images.large
-                }
+                },
+                episodeCount = subject.epsCount,
+                ratingScore = subject.rating?.score ?: 0.0,
+                ratingCount = subject.rating?.total ?: 0,
+                rank = subject.rank,
+                sourceUrl = subject.url,
             )
         }
     }
@@ -50,9 +55,9 @@ class BangumiSearchSession(
     }
 }
 
-class BangumiNameIndexProvider : NameIndexProvider {
+class BangumiSubjectProvider : SubjectProvider {
     override val id: String get() = "Bangumi"
 
-    override suspend fun startSearch(query: NameIndexSearchQuery): SearchSession<SubjectIndex> =
+    override suspend fun startSearch(query: SubjectSearchQuery): SearchSession<DataSourceSubject> =
         BangumiSearchSession(query)
 }

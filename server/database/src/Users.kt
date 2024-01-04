@@ -29,7 +29,7 @@ typealias UserId = String
 
 interface Users {
     sealed interface CreateUserResult {
-        data class Success(val token: UserToken) : CreateUserResult // also logs you in!
+        data object Success : CreateUserResult // also logs you in!
         data object UsernameAlreadyExists : CreateUserResult
         data object InvalidUsername : CreateUserResult
         data object InvalidPassword : CreateUserResult
@@ -39,12 +39,29 @@ interface Users {
 
 
     sealed interface LoginResult {
-        data class Success(val token: UserToken) : LoginResult
+        data class Success(
+            val accessToken: UserToken,
+            val refreshToken: UserToken,
+        ) : LoginResult
+
         data object UserNotFound : LoginResult
+        data object PasswordMismatch : LoginResult
     }
 
-    suspend fun login(username: String, password: String): LoginResult
+    suspend fun loginByPassword(username: String, password: String): LoginResult
 
+
+    sealed interface RefreshAccessTokenResult {
+        data class Success(
+            val accessToken: UserToken,
+            val refreshToken: UserToken? = null,
+        ) : RefreshAccessTokenResult
+
+        data object UserNotFound : RefreshAccessTokenResult
+        data object InvalidToken : RefreshAccessTokenResult
+    }
+
+    suspend fun refreshAccessToken(username: String, refreshToken: String): RefreshAccessTokenResult
 
     suspend fun getUserIdByToken(token: String): UserId?
 

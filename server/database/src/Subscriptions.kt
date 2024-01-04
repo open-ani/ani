@@ -16,30 +16,5 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.shared.dto
+package me.him188.animationgarden.server.database
 
-import kotlinx.serialization.Serializable
-
-@Serializable
-class RegisterRequest(
-    val username: String,
-    val password: String,
-)
-
-@Serializable
-class LoginResponse(
-    val token: String,
-    val expireTimestamp: Long,
-)
-
-@Serializable
-class AuthRequest(
-    val username: String,
-    val password: String,
-)
-
-@Serializable
-class UserInfo(
-    val username: String,
-    val timeRegistered: Long,
-)

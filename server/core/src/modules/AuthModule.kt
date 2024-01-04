@@ -74,12 +74,12 @@ class AuthModule : KoinComponent, KtorModule {
 
         post("login") {
             val request = call.receive<AuthRequest>()
-            when (val resp = users.login(request.username, request.password)) {
+            when (val resp = users.loginByPassword(request.username, request.password)) {
                 is Users.LoginResult.Success -> {
                     call.respondSuccess(
                         LoginResponse(
-                            resp.token.token,
-                            resp.token.expireTimestamp
+                            resp.accessToken.token,
+                            resp.accessToken.expireTimestamp
                         )
                     )
                 }

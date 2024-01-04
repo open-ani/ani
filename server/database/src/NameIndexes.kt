@@ -16,37 +16,23 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.shared.models
+package me.him188.animationgarden.server.database
 
-import kotlinx.serialization.Serializable
-import me.him188.animationgarden.datasources.api.DataSourceSubjectImages
+import me.him188.animationgarden.shared.models.Subject
 
-@Serializable
-data class Subject(
-    val id: String, // database id
-    val officialName: String,
-    val chineseName: String,
-    val dataSourceId: String,
+interface NameIndexes {
+    sealed interface GetByIdResult {
+        data class Success(val subject: Subject) : GetByIdResult
+        data object NotFound : GetByIdResult
+    }
 
-    val episodeCount: Int,
-    /**
-     * 平均评分
-     */
-    val ratingScore: Double,
-    /**
-     * 评分人数
-     */
-    val ratingCount: Int,
-    val rank: Int,
-    val sourceUrl: String, // 数据源
-    val images: DataSourceSubjectImages,
-)
+    fun getByOfficialName(officialName: String): GetByIdResult
 
-interface SubjectImages {
-    /**
-     * Get image URL for grid view.
-     */
-    fun forGrid(): String?
 
-    fun forPoster(): String?
+    sealed interface InsertResult {
+        data object Success : InsertResult
+        data object AlreadyExists : InsertResult
+    }
+
+    fun insert(subject: Subject): InsertResult
 }

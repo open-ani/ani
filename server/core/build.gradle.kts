@@ -57,6 +57,9 @@ dependencies {
     // data sources
     implementation(projects.dataSources.dmhy)
     implementation(projects.dataSources.bangumi)
+
+    // utils
+    implementation("de.mkammerer:argon2-jvm:2.5")
 }
 
 application {

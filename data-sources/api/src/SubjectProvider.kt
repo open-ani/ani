@@ -21,30 +21,39 @@ package me.him188.animationgarden.datasources.api
 /**
  * 提供番剧名称索引的数据源. 支持使用关键字搜索正式名称.
  */
-interface NameIndexProvider {
+interface SubjectProvider {
     /**
      * Unique ID. Can be name of the provider.
      */
     val id: String
 
-    suspend fun startSearch(query: NameIndexSearchQuery): SearchSession<SubjectIndex>
+    suspend fun startSearch(query: SubjectSearchQuery): SearchSession<DataSourceSubject>
 }
 
-class SubjectIndex(
+class DataSourceSubject(
     /**
      * 条目官方原名称, 例如番剧为日文名称
      */
     val originalName: String,
-
     /**
      * 条目中文名称
      */
     val chineseName: String,
-
-    val images: SubjectImages,
+    val episodeCount: Int,
+    /**
+     * 平均评分
+     */
+    val ratingScore: Double,
+    /**
+     * 评分人数
+     */
+    val ratingCount: Int,
+    val rank: Int,
+    val sourceUrl: String, // 数据源
+    val images: DataSourceSubjectImages,
 )
 
-interface SubjectImages {
+interface DataSourceSubjectImages {
     /**
      * Get image URL for grid view.
      */
@@ -53,7 +62,7 @@ interface SubjectImages {
     fun forPoster(): String?
 }
 
-class NameIndexSearchQuery(
+class SubjectSearchQuery(
     val keyword: String,
     val type: NameIndexSearchType = NameIndexSearchType.ANIME,
 )

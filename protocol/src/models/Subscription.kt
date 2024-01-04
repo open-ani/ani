@@ -18,18 +18,18 @@
 
 package me.him188.animationgarden.shared.models
 
+import kotlinx.serialization.Serializable
 import me.him188.animationgarden.datasources.api.topic.Alliance
 import me.him188.animationgarden.datasources.api.topic.Episode
 import me.him188.animationgarden.datasources.api.topic.Resolution
 import me.him188.animationgarden.datasources.api.topic.SubtitleLanguage
 
+/**
+ * 订阅的条目.
+ */
+@Serializable
 data class Subscription(
-    val primaryName: String,
-    val secondaryNames: List<String> = listOf(),
-    /**
-     * 搜索时的关键词.
-     */
-    val searchQuery: String, // keywords
+    val name: String, // official name
     val episodes: Set<Episode>,
     val watchedEpisodes: Set<Episode> = setOf(),
     val preferredAlliance: Alliance? = null,

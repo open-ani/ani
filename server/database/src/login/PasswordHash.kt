@@ -16,11 +16,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.database.impl.xodus
+package me.him188.animationgarden.server.database.login
 
-import me.him188.animationgarden.server.database.Users
-import org.koin.dsl.module
-
-val DatabaseModule = module {
-    single<Users> { UsersImpl() }
+interface PasswordHash {
+    fun hash(password: String): String
+    fun verify(password: String, hash: String): Boolean
 }

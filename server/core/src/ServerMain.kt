@@ -37,9 +37,11 @@ import kotlinx.cli.ParsingException
 import kotlinx.cli.default
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
-import me.him188.animationgarden.database.impl.xodus.DatabaseModule
+import me.him188.animationgarden.database.impl.xodus.XodusDatabaseBackend
 import me.him188.animationgarden.datasources.api.DownloadProvider
-import me.him188.animationgarden.datasources.api.NameIndexProvider
+import me.him188.animationgarden.datasources.api.SubjectProvider
+import me.him188.animationgarden.server.database.login.PasswordHash
+import me.him188.animationgarden.server.dbcomponents.Argon2Hash
 import me.him188.animationgarden.server.modules.*
 import me.him188.animationgarden.utils.logging.info
 import me.him188.animationgarden.utils.logging.logger
@@ -162,14 +164,18 @@ object ServerMain {
                 }
             }
 
+            val database = XodusDatabaseBackend(dataFolder.resolve("db"))
             val application = this
             startKoin {
                 modules(module {
                     single<Application> { application }
                     single<DownloadProvider> { ServiceLoader.load(DownloadProvider::class.java).first() }
-                    single<NameIndexProvider> { ServiceLoader.load(NameIndexProvider::class.java).first() }
+                    single<SubjectProvider> { ServiceLoader.load(SubjectProvider::class.java).first() }
                 })
-                modules(DatabaseModule)
+                modules(module {
+                    single<PasswordHash> { Argon2Hash() }
+                })
+                modules(database.koinModule)
             }
 
             installModule(AuthModule())
