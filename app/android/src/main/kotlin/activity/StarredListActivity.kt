@@ -46,10 +46,8 @@ import androidx.compose.ui.unit.dp
 import me.him188.animationgarden.android.AnimationGardenApplication
 import me.him188.animationgarden.app.AppTheme
 import me.him188.animationgarden.app.app.ApplicationState
-import me.him188.animationgarden.app.app.data.StarredAnimeMutations
 import me.him188.animationgarden.app.i18n.LocalI18n
 import me.him188.animationgarden.app.platform.LocalContext
-import me.him188.animationgarden.app.ui.starred.StarredAnimeCard
 
 class StarredListActivity : BaseComponentActivity() {
     companion object {
@@ -76,7 +74,8 @@ class StarredListActivity : BaseComponentActivity() {
                                     finish()
                                 }) {
                                     Icon(
-                                        Icons.Default.ArrowBack, LocalI18n.current.getString("menu.back")
+                                        Icons.Default.ArrowBack,
+                                        LocalI18n.current.getString("menu.back")
                                     )
                                 }
                             },
@@ -112,21 +111,23 @@ private fun StarredListPage(app: ApplicationState) {
 //                delay(3.seconds) // ignore if user is quickly scrolling
 //                currentApp.updateStarredAnimeEpisodesIfNeeded(anime, currentAnime)
 //            }
-            StarredAnimeCard(
-                anime = anime,
-                onStarRemove = {
-                    currentApp.launchDataSynchronization {
-                        commit(StarredAnimeMutations.Remove(currentAnime.id))
-                    }
-                },
-                onClick = { episode ->
-                    activity?.setResult(Activity.RESULT_OK, Intent().apply {
-                        putExtra(StarredListActivity.INTENT_KEYWORD, currentAnime.searchQuery)
-                        putExtra(StarredListActivity.INTENT_EPISODE, episode?.raw)
-                    })
-                    activity?.finish()
-                }
-            )
+
+
+//            StarredAnimeCard(
+//                anime = anime,
+//                onStarRemove = {
+//                    currentApp.launchDataSynchronization {
+//                        commit(StarredAnimeMutations.Remove(currentAnime.id))
+//                    }
+//                },
+//                onClick = { episode ->
+//                    activity?.setResult(Activity.RESULT_OK, Intent().apply {
+//                        putExtra(StarredListActivity.INTENT_KEYWORD, currentAnime.searchQuery)
+//                        putExtra(StarredListActivity.INTENT_EPISODE, episode?.raw)
+//                    })
+//                    activity?.finish()
+//                }
+//            )
         }
     }
 }

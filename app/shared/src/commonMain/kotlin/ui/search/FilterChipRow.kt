@@ -27,7 +27,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ElevatedFilterChip
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.ProvideTextStyle
+import androidx.compose.material3.SelectableChipElevation
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
@@ -38,7 +46,6 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import me.him188.animationgarden.app.AppTheme
-import me.him188.animationgarden.app.app.RefreshState
 import me.him188.animationgarden.app.i18n.LocalI18n
 import me.him188.animationgarden.app.platform.Res
 
@@ -100,7 +107,10 @@ fun <T> FilterChipRowByLazyRow(
     val currentOnClickRefreshState by rememberUpdatedState(onClickRefreshResult)
 
 
-    val showSuccessHint by animateFloatAsState(if (refreshState !is RefreshState.Success) 1f else 0f, tween(2000))
+    val showSuccessHint by animateFloatAsState(
+        if (refreshState != RefreshState.Success) 1f else 0f,
+        tween(2000)
+    )
     LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
         val cardHeight = 32.dp
         val textHeight = 24.sp
@@ -121,7 +131,7 @@ fun <T> FilterChipRowByLazyRow(
 //                modifier = Modifier.animateItemPlacement(tween(200, 100)),
             )
         }
-        if (refreshState != null && (refreshState !is RefreshState.Success || showSuccessHint > 0)) {
+        if (refreshState != null && (refreshState != RefreshState.Success || showSuccessHint > 0)) {
             item(key = "refreshing") {
                 RefreshingChip(
                     refreshState = refreshState,
@@ -135,6 +145,13 @@ fun <T> FilterChipRowByLazyRow(
             }
         }
     }
+}
+
+enum class RefreshState {
+    Refreshing,
+    Success,
+    Failed,
+    Cancelled,
 }
 
 @Composable
@@ -154,13 +171,13 @@ fun RefreshingChip(
         label = {
             ProvideTextStyle(LocalTextStyle.current.copy(lineHeight = textHeight)) {
                 when (refreshState) {
-                    is RefreshState.Failed -> Text(LocalI18n.current.getString("starred.update.failed"))
+                    RefreshState.Failed -> Text(LocalI18n.current.getString("starred.update.failed"))
                     RefreshState.Refreshing -> CircularProgressIndicator(
                         Modifier.size(progressSize),
                         strokeWidth = 2.dp
                     )
 
-                    is RefreshState.Success -> {
+                    RefreshState.Success -> {
                         Icon(
                             Res.painter.check,
                             LocalI18n.current.getString("starred.update.succeed"),

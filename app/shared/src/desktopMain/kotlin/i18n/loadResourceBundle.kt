@@ -18,11 +18,13 @@
 
 package me.him188.animationgarden.app.i18n
 
+import androidx.compose.runtime.Stable
 import androidx.compose.ui.res.ResourceLoader
 import androidx.compose.ui.text.intl.Locale
 import me.him188.animationgarden.app.platform.Context
-import java.util.*
+import java.util.Properties
 
+@Stable
 actual fun loadResourceBundle(
     context: Context,
     locale: Locale

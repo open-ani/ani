@@ -16,21 +16,15 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.app.app.data
+package me.him188.animationgarden.app.ui.subject
 
-import me.him188.animationgarden.api.logging.logger
-import me.him188.animationgarden.api.logging.warn
-import java.io.File
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.tooling.preview.Preview
 
 
-object Migrations {
-    private val logger = logger()
-    fun migrateFile(legacy: File, new: File) {
-        if (new.exists()) return
-        if (legacy.exists()) {
-            new.parentFile?.mkdirs()
-            legacy.copyTo(new)
-            logger.warn { "Migrated '${legacy.absolutePath}' to '${new.absolutePath}'" }
-        }
-    }
+@Composable
+@Preview
+private fun PreviewSubjectList() {
+    val viewModel = SubjectListViewModel()
+    SubjectList(viewModel)
 }

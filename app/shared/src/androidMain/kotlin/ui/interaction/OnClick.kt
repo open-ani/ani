@@ -23,13 +23,12 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.ui.Modifier
 
-@Suppress("ACTUAL_FUNCTION_WITH_DEFAULT_ARGUMENTS")
 actual fun Modifier.onClickEx(
-    interactionSource: MutableInteractionSource = MutableInteractionSource(),
+    interactionSource: MutableInteractionSource,
     indication: Indication?,
-    enabled: Boolean = true,
-    onDoubleClick: (() -> Unit)? = null,
-    onLongClick: (() -> Unit)? = null,
+    enabled: Boolean,
+    onDoubleClick: (() -> Unit)?,
+    onLongClick: (() -> Unit)?,
     onClick: () -> Unit
 ): Modifier = this.combinedClickable(
     interactionSource = interactionSource,

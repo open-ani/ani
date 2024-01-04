@@ -25,77 +25,70 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.ApplicationScope
+import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import dev.dirs.ProjectDirectories
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import me.him188.animationgarden.api.DmhyClient
-import me.him188.animationgarden.api.impl.createHttpClient
 import me.him188.animationgarden.app.AppTheme
 import me.him188.animationgarden.app.ProvideCompositionLocalsForPreview
-import me.him188.animationgarden.app.app.*
-import me.him188.animationgarden.app.app.data.AppDataSynchronizerImpl
-import me.him188.animationgarden.app.app.data.ConflictAction
-import me.him188.animationgarden.app.app.data.Migrations
-import me.him188.animationgarden.app.app.data.map
-import me.him188.animationgarden.app.app.settings.*
+import me.him188.animationgarden.app.app.AppSettings
+import me.him188.animationgarden.app.app.ApplicationState
+import me.him188.animationgarden.app.app.LocalAppSettings
+import me.him188.animationgarden.app.app.LocalAppSettingsManager
+import me.him188.animationgarden.app.app.LocalAppSettingsManagerImpl
+import me.him188.animationgarden.app.app.settings.LocalSyncSettings
+import me.him188.animationgarden.app.app.settings.toKtorProxy
 import me.him188.animationgarden.app.i18n.LocalI18n
 import me.him188.animationgarden.app.i18n.ResourceBundle
 import me.him188.animationgarden.app.i18n.loadResourceBundle
 import me.him188.animationgarden.app.platform.Context
 import me.him188.animationgarden.app.platform.LocalContext
-import me.him188.animationgarden.app.ui.*
+import me.him188.animationgarden.app.ui.DialogHost
+import me.him188.animationgarden.app.ui.LocalAlwaysShowTitlesInSeparateLine
+import me.him188.animationgarden.app.ui.PreferencesPage
 import me.him188.animationgarden.app.ui.interaction.PlatformImplementations
 import me.him188.animationgarden.app.ui.interaction.PlatformImplementations.Companion.hostIsMacOs
+import me.him188.animationgarden.app.ui.rememberDialogHost
+import me.him188.animationgarden.datasources.dmhy.DmhyClient
+import me.him188.animationgarden.utils.logging.logger
+import me.him188.animationgarden.utils.logging.trace
 import java.io.File
 
 private val logger = logger()
 
 
-val projectDirectories: ProjectDirectories by lazy { ProjectDirectories.from("me", "Him188", "Animation Garden") }
-
-private fun Migrations.tryMigrate(
-    newAppDat: File = File(projectDirectories.dataDir, "app.dat"),
-    newSettings: File = File(projectDirectories.preferenceDir, "settings.dat"),
-) {
-    // 2.0.0-beta01
-    migrateFile(
-        legacy = File(projectDirectories.dataDir, "app.yml"),
-        new = newAppDat,
-    )
-    migrateFile(
-        legacy = File(projectDirectories.preferenceDir, "settings.yml"),
-        new = newSettings,
-    )
-
-    // 1.x
-    migrateFile(
-        legacy = File(System.getProperty("user.dir"), "app.yml"),
-        new = newAppDat,
-    )
-    migrateFile(
-        legacy = File(System.getProperty("user.dir"), "settings.yml"),
-        new = newSettings,
+val projectDirectories: ProjectDirectories by lazy {
+    ProjectDirectories.from(
+        "me",
+        "Him188",
+        "Animation Garden"
     )
 }
 
 object AnimationGardenDesktop {
     @JvmStatic
     fun main(args: Array<String>) {
-        Migrations.tryMigrate()
-
         projectDirectories.dataDir
         application(exitProcessOnExit = true) {
             val context: Context = LocalContext.current
@@ -123,7 +116,13 @@ object AnimationGardenDesktop {
                 LocalAppSettingsManager provides appSettingsProvider,
                 LocalAlwaysShowTitlesInSeparateLine provides true, // for performance, and #41
             ) {
-                content(currentAppSettings, localSyncSettingsFlow, mainSnackbar, currentBundle, platform)
+                content(
+                    currentAppSettings,
+                    localSyncSettingsFlow,
+                    mainSnackbar,
+                    currentBundle,
+                    platform
+                )
             }
         }
     }
@@ -149,7 +148,7 @@ object AnimationGardenDesktop {
         }
         LaunchedEffect(currentAppSettings.proxy) {
             // proxy changed, update client
-            app.client.value = DmhyClient.Factory.create {
+            app.client.value = DmhyClient.create {
                 proxy = currentAppSettings.proxy.toKtorProxy()
             }
         }
@@ -166,7 +165,7 @@ object AnimationGardenDesktop {
         var showPreferences by remember { mutableStateOf(false) }
         if (showPreferences) {
             val state = rememberWindowState(width = 350.dp, height = 600.dp)
-            WindowEx(
+            Window(
                 state = state,
                 onCloseRequest = {
                     showPreferences = false
@@ -186,13 +185,13 @@ object AnimationGardenDesktop {
             }
         }
 
-        WindowEx(
+        Window(
             title = LocalI18n.current.getString("window.main.title"),
             onCloseRequest = {
-                runBlocking(Dispatchers.IO) { app.dataSynchronizer.saveNow() }
                 exitApplication()
             },
-            minimumSize = minimumSize,
+
+//            minimumSize = minimumSize,
         ) {
             with(platform.menuBarProvider) {
                 MenuBar(onClickPreferences = {
@@ -244,158 +243,7 @@ private fun createAppState(
     initialClient = DmhyClient.Factory.create {
         proxy = currentAppSettings.proxy.toKtorProxy()
     },
-    appDataSynchronizer = { dataScope ->
-        val sync = currentAppSettings.sync
-        AppDataSynchronizerImpl(
-            dataScope.coroutineContext,
-            remoteSynchronizerFactory = { applyMutation ->
-                sync.createRemoteSynchronizer(
-                    httpClient = createHttpClient({
-                        if (currentAppSettings.sync.remoteSync.useProxy) {
-                            proxy = currentAppSettings.proxy.toKtorProxy()
-                        }
-                    }),
-                    localRef = createFileDelegatedMutableProperty(
-                        File(
-                            projectDirectories.dataDir,
-                            "commit"
-                        ).also {
-                            it.parentFile.mkdirs()
-                            logger.trace { "Commit file: ${it.absolutePath}" }
-                        }
-                    ).map(
-                        get = {
-                            if (it.isEmpty()) {
-                                CommitRef.generate()
-                            } else {
-                                CommitRef(it)
-                            }
-                        },
-                        set = { it.toString() },
-                    ),
-                    promptConflict = { onConflict(dialogHost) },
-                    applyMutation = applyMutation,
-                    parentCoroutineContext = dataScope.coroutineContext
-                )
-            },
-            backingStorage = sync.createLocalStorage(
-                File(projectDirectories.dataDir, "app.dat").also {
-                    it.parentFile.mkdirs()
-                    logger.trace { "Data file: ${it.absolutePath}" }
-                }
-            ),
-            localSyncSettingsFlow = localSyncSettingsFlow,
-            promptSwitchToOffline = { e, optional ->
-                onSwitchToOffline(
-                    dialogHost, dataScope, snackbarState, currentBundle,
-                    e, optional
-                )
-            },
-            promptDataCorrupted = { onDataCorrupted(dataScope, snackbarState, currentBundle, it) },
-        )
-    }
 )
-
-private suspend fun onConflict(dialogHost: DialogHost): ConflictAction {
-    val result = dialogHost.showConfirmationDialog(
-        title = { LocalI18n.current.getString("sync.conflict.dialog.title") },
-        confirmButtonText = {
-            Text(LocalI18n.current.getString("sync.conflict.dialog.useServer"))
-        },
-        cancelButtonText = {
-            Text(LocalI18n.current.getString("sync.conflict.dialog.useLocal"))
-        },
-    ) {
-        Text(LocalI18n.current.getString("sync.conflict.dialog.content"))
-    }
-    return when (result) {
-        DialogResult.CANCELED -> ConflictAction.StayOffline
-        DialogResult.DISMISSED -> ConflictAction.AcceptClient
-        DialogResult.CONFIRMED -> ConflictAction.AcceptServer
-    }
-}
-
-private fun onDataCorrupted(
-    uiScope: CoroutineScope,
-    snackbarState: SnackbarHostState,
-    currentBundle: ResourceBundle,
-    exception: Exception,
-) {
-    uiScope.launch(Dispatchers.Main) {
-        snackbarState.showSnackbar(
-            String.format(
-                currentBundle.getString("sync.data.corrupted"),
-                exception.message ?: exception.toString()
-            ),
-            duration = SnackbarDuration.Long
-        )
-    }
-}
-
-private suspend fun onSwitchToOffline(
-    dialogHost: DialogHost,
-    uiScope: CoroutineScope,
-    snackbarState: SnackbarHostState,
-    currentBundle: ResourceBundle,
-    exception: Exception,
-    optional: Boolean,
-): Boolean {
-    logger.warn(exception) { "Switching to local mode" }
-
-    return if (optional) {
-        val result = dialogHost.showConfirmationDialog(
-            title = { LocalI18n.current.getString("sync.failed.title") },
-            confirmButtonText = {
-                Text(LocalI18n.current.getString("sync.failed.switch.to.offline"))
-            },
-            cancelButtonText = {
-                Text(LocalI18n.current.getString("sync.failed.revoke"))
-            }
-        ) {
-            Text(
-                String.format(
-                    LocalI18n.current.getString("sync.failed.content"),
-                    exception.message ?: exception.toString()
-                )
-            )
-        }
-        when (result) {
-            DialogResult.CANCELED,
-            DialogResult.DISMISSED,
-            -> {
-                uiScope.launch(Dispatchers.Main) {
-                    snackbarState.showSnackbar(
-                        currentBundle.getString("sync.failed.revoked"),
-                        duration = SnackbarDuration.Long
-                    )
-                }
-                false
-            }
-
-            DialogResult.CONFIRMED -> {
-                uiScope.launch(Dispatchers.Main) {
-                    snackbarState.showSnackbar(
-                        currentBundle.getString("sync.failed.switched.to.offline"),
-                        duration = SnackbarDuration.Long
-                    )
-                }
-                true
-            }
-        }
-    } else {
-        uiScope.launch(Dispatchers.Main) {
-            snackbarState.showSnackbar(
-                String.format(
-                    currentBundle.getString("sync.failed.switched.to.offline.due.to"),
-                    exception.message ?: exception.toString()
-                ),
-                duration = SnackbarDuration.Long
-            )
-        }
-        true
-    }
-}
-
 
 @Composable
 @Preview
@@ -426,7 +274,7 @@ private fun MainWindowContent(
             )
 
             Box(Modifier.padding(all = paddingByWindowSize)) {
-                MainPage(app, innerPadding = paddingByWindowSize, onClickProxySettings = onClickProxySettings)
+//                MainPage(app, innerPadding = paddingByWindowSize, onClickProxySettings = onClickProxySettings)
             }
         }
     }
@@ -438,10 +286,13 @@ fun PreviewMainWindowMacOS() {
     val app = remember {
         ApplicationState(
             initialClient = DmhyClient.Factory.create {},
-            appDataSynchronizer = { createTestAppDataSynchronizer(it) }
         )
     }
     ProvideCompositionLocalsForPreview {
-        MainWindowContent(hostIsMacOs = false, windowImmersed = false, app, onClickProxySettings = {})
+        MainWindowContent(
+            hostIsMacOs = false,
+            windowImmersed = false,
+            app,
+            onClickProxySettings = {})
     }
 }

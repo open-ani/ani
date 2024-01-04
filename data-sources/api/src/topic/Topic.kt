@@ -18,6 +18,11 @@
 
 package me.him188.animationgarden.datasources.api.topic
 
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+
 /**
  * 可供下载的搜索出来的一个条目
  */
@@ -47,6 +52,15 @@ class Topic(
      */
     val details: TopicDetails?,
 )
+
+private val DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm")
+
+fun Topic.publishedTimeString(): String {
+    return LocalDateTime.ofInstant(
+        Instant.ofEpochMilli(publishedTime),
+        ZoneId.systemDefault(),
+    ).format(DATE_FORMAT)
+}
 
 class TopicDetails(
     val tags: List<String>,

@@ -60,13 +60,10 @@ import me.him188.animationgarden.api.DmhyClient
 import me.him188.animationgarden.api.model.Alliance
 import me.him188.animationgarden.api.model.DATE_FORMAT
 import me.him188.animationgarden.api.model.MagnetLink
-import me.him188.animationgarden.api.model.SearchQuery
-import me.him188.animationgarden.api.model.Topic
 import me.him188.animationgarden.api.model.TopicCategory
 import me.him188.animationgarden.api.model.UserImpl
 import me.him188.animationgarden.app.AppTheme
 import me.him188.animationgarden.app.app.*
-import me.him188.animationgarden.app.app.RefreshState
 import me.him188.animationgarden.app.app.data.*
 import me.him188.animationgarden.app.app.settings.LocalSyncSettings
 import me.him188.animationgarden.app.i18n.LocalI18n
@@ -76,11 +73,14 @@ import me.him188.animationgarden.app.platform.browse
 import me.him188.animationgarden.app.ui.interaction.onEnterKeyEvent
 import me.him188.animationgarden.app.ui.search.OrganizedViewCard
 import me.him188.animationgarden.app.ui.search.OrganizedViewState
+import me.him188.animationgarden.app.ui.search.RefreshState
 import me.him188.animationgarden.app.ui.search.invertSelected
 import me.him188.animationgarden.app.ui.starred.StarredAnimeCard
 import me.him188.animationgarden.app.ui.theme.darken
 import me.him188.animationgarden.app.ui.theme.weaken
+import me.him188.animationgarden.datasources.api.DownloadSearchQuery
 import me.him188.animationgarden.datasources.api.topic.FileSize.Companion.megaBytes
+import me.him188.animationgarden.datasources.api.topic.Topic
 import java.time.LocalDateTime
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
@@ -220,7 +220,7 @@ fun MainPage(
                                 }
                             },
                             onClick = {
-                                currentApp.updateSearchQuery(SearchQuery(keywords = currentAnime.searchQuery))
+                                currentApp.updateSearchQuery(DownloadSearchQuery(keywords = currentAnime.searchQuery))
                                 starListMode = false
                                 currentAppliedKeyword = currentAnime.searchQuery
                                 currentApp.organizedViewState.selectedEpisode.value = it
@@ -318,7 +318,7 @@ fun TopicsSearchResult(
         onClickCard = { topic ->
             currentApp.launchDataSynchronization {
                 withContext(Dispatchers.Main) {
-                    browse(currentContext, topic.magnetLink.value)
+                    browse(currentContext, topic.magnetLink)
                 }
                 topic.details?.episode?.let { currentApp.markEpisodeWatched(it) }
             }
@@ -370,7 +370,7 @@ suspend fun ApplicationState.updateStarredAnimeEpisodes(
     currentAnime: StarredAnime,
 ) {
     val session =
-        client.value.startSearchSession(SearchQuery(keywords = anime.searchQuery))
+        client.value.startSearchSession(DownloadSearchQuery(keywords = anime.searchQuery))
     val allTopics = mutableListOf<Topic>()
 
     dataSynchronizer.commit(StarredAnimeMutations.ChangeRefreshState(anime.id, RefreshState.Refreshing))
@@ -388,7 +388,12 @@ suspend fun ApplicationState.updateStarredAnimeEpisodes(
         dataSynchronizer.commit(StarredAnimeMutations.ChangeRefreshState(anime.id, RefreshState.Cancelled))
         throw e
     } catch (e: Throwable) {
-        dataSynchronizer.commit(StarredAnimeMutations.ChangeRefreshState(anime.id, RefreshState.Failed(e)))
+        dataSynchronizer.commit(
+            StarredAnimeMutations.ChangeRefreshState(
+                anime.id,
+                RefreshState.Failed
+            )
+        )
         throw e
     }
 
@@ -405,7 +410,7 @@ suspend fun ApplicationState.updateStarredAnimeEpisodes(
 
 private fun allEpisodesContained(
     currentAnime: StarredAnime,
-    allTopics: MutableList<Topic>
+    allTopics: MutableList<Topic>,
 ) = currentAnime.episodes.all { episode -> allTopics.any { it.details?.episode == episode } }
 
 @Composable

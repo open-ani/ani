@@ -21,7 +21,6 @@ package me.him188.animationgarden.app.platform
 import androidx.compose.runtime.ProvidableCompositionLocal
 import android.content.Context as AndroidContext
 
-@Suppress("ACTUAL_WITHOUT_EXPECT")
 actual typealias Context = AndroidContext
 
 actual val LocalContext: ProvidableCompositionLocal<Context>

@@ -61,7 +61,7 @@ fun Project.configureFlattenSourceSets() {
     }
 }
 
-val testExperimentalAnnotations = arrayOf(
+val testOptInAnnotations = arrayOf(
     "kotlin.ExperimentalUnsignedTypes",
     "kotlin.time.ExperimentalTime",
     "io.ktor.util.KtorExperimentalAPI",
@@ -70,10 +70,11 @@ val testExperimentalAnnotations = arrayOf(
     "kotlinx.serialization.ExperimentalSerializationApi",
 )
 
-val experimentalAnnotations = arrayOf(
+val optInAnnotations = arrayOf(
     "kotlin.contracts.ExperimentalContracts",
     "kotlin.experimental.ExperimentalTypeInference",
-    "kotlinx.serialization.ExperimentalSerializationApi"
+    "kotlinx.serialization.ExperimentalSerializationApi",
+    "kotlinx.coroutines.ExperimentalCoroutinesApi"
 )
 
 val testLanguageFeatures: List<String> = listOf(
@@ -93,11 +94,11 @@ fun Project.configureKotlinOptIns() {
 
 fun KotlinSourceSet.configureKotlinOptIns() {
     languageSettings.progressiveMode = true
-    experimentalAnnotations.forEach { a ->
+    optInAnnotations.forEach { a ->
         languageSettings.optIn(a)
     }
     if (name.contains("test", ignoreCase = true)) {
-        testExperimentalAnnotations.forEach { a ->
+        testOptInAnnotations.forEach { a ->
             languageSettings.optIn(a)
         }
     }

@@ -27,7 +27,7 @@ object Versions {
     // common
     const val kotlin = "2.0.0-Beta1"
     const val coroutines = "1.6.4"
-    const val atomicFU = "0.20.0"
+    const val atomicFU = "0.23.1"
     const val serialization = "1.5.0"
     const val kotlinxDatetime = "0.5.0"
     const val koin = "3.5.3"
@@ -50,9 +50,18 @@ object Versions {
 }
 
 const val `kotlinx-datetime` = "org.jetbrains.kotlinx:kotlinx-datetime:${Versions.kotlinxDatetime}"
-const val `kotlinx-coroutines-core` = "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.coroutines}"
-const val `kotlinx-serialization-core` = "org.jetbrains.kotlinx:kotlinx-serialization-core:${Versions.serialization}"
-const val `kotlinx-serialization-json` = "org.jetbrains.kotlinx:kotlinx-serialization-json:${Versions.serialization}"
+const val `kotlinx-coroutines-core` =
+    "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.coroutines}"
+const val `kotlinx-coroutines-android` =
+    "org.jetbrains.kotlinx:kotlinx-coroutines-android:${Versions.coroutines}"
+const val `kotlinx-coroutines-swing` =
+    "org.jetbrains.kotlinx:kotlinx-coroutines-swing:${Versions.coroutines}"
+const val `kotlinx-coroutines-debug` =
+    "org.jetbrains.kotlinx:kotlinx-coroutines-debug:${Versions.coroutines}"
+const val `kotlinx-serialization-core` =
+    "org.jetbrains.kotlinx:kotlinx-serialization-core:${Versions.serialization}"
+const val `kotlinx-serialization-json` =
+    "org.jetbrains.kotlinx:kotlinx-serialization-json:${Versions.serialization}"
 const val `kotlinx-serialization-protobuf` =
     "org.jetbrains.kotlinx:kotlinx-serialization-protobuf:${Versions.serialization}"
 
@@ -62,8 +71,12 @@ const val `slf4j-simple` = "org.slf4j:slf4j-simple:${Versions.slf4j}"
 
 const val `ktor-client-core` = "io.ktor:ktor-client-core:${Versions.ktor}"
 const val `ktor-client-cio` = "io.ktor:ktor-client-cio:${Versions.ktor}"
-const val `ktor-client-content-negotiation` = "io.ktor:ktor-client-content-negotiation:${Versions.ktor}"
-const val `ktor-serialization-kotlinx-json` = "io.ktor:ktor-serialization-kotlinx-json:${Versions.ktor}"
+const val `ktor-client-logging` = "io.ktor:ktor-client-logging:${Versions.ktor}"
+const val `ktor-client-websockets` = "io.ktor:ktor-client-websockets:${Versions.ktor}"
+const val `ktor-client-content-negotiation` =
+    "io.ktor:ktor-client-content-negotiation:${Versions.ktor}"
+const val `ktor-serialization-kotlinx-json` =
+    "io.ktor:ktor-serialization-kotlinx-json:${Versions.ktor}"
 
 const val `kotlin-test-junit5` = "org.jetbrains.kotlin:kotlin-test-junit5:${Versions.kotlin}"
 const val `junit-jupiter-api` = "org.junit.jupiter:junit-jupiter-api:${Versions.junit}"

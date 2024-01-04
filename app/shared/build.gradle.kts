@@ -34,7 +34,7 @@ kotlin.sourceSets.all {
 kotlin {
     androidTarget()
     jvm("desktop") {
-        jvmToolchain(8)
+        jvmToolchain(17)
     }
 
     targets.all {
@@ -52,15 +52,15 @@ kotlin {
             dependencies {
                 api(compose.foundation)
                 api(compose.ui)
-//                api(compose.uiTooling)
+                api(compose.preview)
                 api(compose.material3)
                 api(compose.runtime)
 //                api("org.jetbrains.compose.ui:ui-text:${ComposeBuildConfig.composeVersion}")
 
                 api(`kotlinx-serialization-json`)
-                api("org.jetbrains.kotlinx:kotlinx-serialization-protobuf:1.4.1")
-                api("io.ktor:ktor-client-websockets:2.1.1")
-                api("io.ktor:ktor-client-logging:2.1.1")
+                api(`kotlinx-serialization-protobuf`)
+                api(`ktor-client-websockets`)
+                api(`ktor-client-logging`)
                 api("net.mamoe.yamlkt:yamlkt:0.12.0")
                 api("dev.dirs:directories:26")
 
@@ -73,7 +73,9 @@ kotlin {
 
                 api(projects.protocol)
                 api(projects.dataSources.dmhy)
-                implementation("org.slf4j:slf4j-simple:2.0.3")
+
+                api(projects.utils.slf4jKt)
+                implementation(`slf4j-simple`)
             }
         }
 
@@ -90,7 +92,7 @@ kotlin {
                 api("androidx.appcompat:appcompat:1.6.1")
                 api("androidx.core:core-ktx:1.12.0")
                 api("androidx.compose.ui:ui-tooling-preview:1.5.4")
-                api("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
+                api(`kotlinx-coroutines-android`)
                 implementation("androidx.compose.material3:material3:1.1.2")
                 implementation("com.google.accompanist:accompanist-flowlayout:0.25.1")
             }
@@ -103,8 +105,9 @@ kotlin {
                 }
 //                api(compose.preview)
                 api(compose.material3)
-                api("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.7.3")
-                runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-debug:1.7.3")
+                api(projects.utils.slf4jKt)
+                api(`kotlinx-coroutines-swing`)
+                runtimeOnly(`kotlinx-coroutines-debug`)
             }
         }
     }
@@ -150,5 +153,4 @@ android {
     }
 }
 dependencies {
-    debugImplementation("androidx.compose.ui:ui-tooling:1.5.4")
 }

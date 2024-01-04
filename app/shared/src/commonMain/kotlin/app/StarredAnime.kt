@@ -22,11 +22,10 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
-import me.him188.animationgarden.api.protocol.EStarredAnime
-import me.him188.animationgarden.shared.models.Alliance
-import me.him188.animationgarden.shared.models.Episode
-import me.him188.animationgarden.shared.models.Resolution
-import me.him188.animationgarden.shared.models.SubtitleLanguage
+import me.him188.animationgarden.datasources.api.topic.Alliance
+import me.him188.animationgarden.datasources.api.topic.Episode
+import me.him188.animationgarden.datasources.api.topic.Resolution
+import me.him188.animationgarden.datasources.api.topic.SubtitleLanguage
 
 /**
  * 表示一个收藏的番剧信息.
@@ -50,32 +49,4 @@ data class StarredAnime(
     val id
         @Stable
         get() = searchQuery
-}
-
-fun EStarredAnime.toStarredAnime(): StarredAnime {
-    return StarredAnime(
-        primaryName = primaryName,
-        secondaryNames = secondaryNames,
-        searchQuery = searchQuery,
-        episodes = episodes,
-        watchedEpisodes = watchedEpisodes,
-        preferredAlliance = preferredAlliance,
-        preferredResolution = preferredResolution,
-        preferredSubtitleLanguage = preferredSubtitleLanguage,
-        starTimeMillis = starTimeMillis,
-    )
-}
-
-fun StarredAnime.toEStarredAnime(): EStarredAnime {
-    return EStarredAnime(
-        primaryName = primaryName,
-        secondaryNames = secondaryNames,
-        searchQuery = searchQuery,
-        episodes = episodes,
-        watchedEpisodes = watchedEpisodes,
-        preferredAlliance = preferredAlliance,
-        preferredResolution = preferredResolution,
-        preferredSubtitleLanguage = preferredSubtitleLanguage,
-        starTimeMillis = starTimeMillis,
-    )
 }

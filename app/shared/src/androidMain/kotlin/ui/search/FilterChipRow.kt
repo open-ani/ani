@@ -18,11 +18,23 @@
 
 package me.him188.animationgarden.app.ui.search
 
-import androidx.compose.animation.*
-import androidx.compose.animation.core.*
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.VisibilityThreshold
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.height
-import androidx.compose.material3.*
+import androidx.compose.material3.ElevatedFilterChip
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.ProvideTextStyle
+import androidx.compose.material3.SelectableChipElevation
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
@@ -34,7 +46,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.accompanist.flowlayout.FlowMainAxisAlignment
 import com.google.accompanist.flowlayout.FlowRow
-import me.him188.animationgarden.app.app.RefreshState
 
 @Composable
 actual fun <T> FilterChipRowImpl(
@@ -102,8 +113,9 @@ private fun <T> FilterChipByFlowRow(
     refreshState: RefreshState?,
 ) {
     val showSuccessHint by animateFloatAsState(
-        if (refreshState !is RefreshState.Success) 1f else 0f,
-        tween(2000)
+        if (refreshState != RefreshState.Success) 1f else 0f,
+        tween(2000),
+        label = "showSuccessHint",
     )
 
     val currentOnClick by rememberUpdatedState(onClick)
@@ -133,7 +145,7 @@ private fun <T> FilterChipByFlowRow(
 //                modifier = Modifier.animateItemPlacement(tween(200, 100)),
             )
         }
-        if (refreshState != null && (refreshState !is RefreshState.Success || showSuccessHint > 0)) {
+        if (refreshState != null && (refreshState != RefreshState.Success || showSuccessHint > 0)) {
             RefreshingChip(
                 refreshState = refreshState,
                 textHeight = textHeight,
@@ -150,7 +162,7 @@ private fun <T> FilterChipByFlowRow(
 @Preview(widthDp = 300, heightDp = 100)
 @Preview(widthDp = 100, heightDp = 200)
 @Composable
-private fun PreviewFilterChipRowByFlowRow() {
+internal fun PreviewFilterChipRowByFlowRow() {
     data class Element(
         val content: String,
         val enabled: Boolean,

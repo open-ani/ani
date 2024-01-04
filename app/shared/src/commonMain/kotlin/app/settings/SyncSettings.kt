@@ -18,8 +18,6 @@
 
 package me.him188.animationgarden.app.app.settings
 
-import androidx.compose.runtime.Stable
-import io.ktor.client.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.KSerializer
@@ -29,10 +27,8 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import me.him188.animationgarden.api.protocol.CommitRef
-import me.him188.animationgarden.app.app.data.*
+import me.him188.animationgarden.app.app.data.MutableProperty
 import java.io.File
-import kotlin.coroutines.CoroutineContext
 import kotlin.random.Random
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
@@ -85,40 +81,6 @@ private object DurationSerializer : KSerializer<Duration> {
     }
 }
 
-
-@Stable
-fun SyncSettings.createRemoteSynchronizer(
-    httpClient: HttpClient,
-    localRef: MutableProperty<CommitRef>,
-    promptConflict: suspend () -> ConflictAction,
-    applyMutation: suspend (DataMutation) -> Unit,
-    parentCoroutineContext: CoroutineContext,
-): RemoteSynchronizer? {
-    return if (remoteSyncEnabled) {
-        RemoteSynchronizerImpl(httpClient, remoteSync, localRef, promptConflict, applyMutation, parentCoroutineContext)
-    } else {
-        null
-    }
-}
-
-@Stable
-fun SyncSettings.createLocalStorage(
-    file: File,
-): MutableProperty<String> {
-    return if (localSyncEnabled) {
-        createFileDelegatedMutableProperty(file)
-    } else {
-        object : MutableProperty<String> {
-            override suspend fun get(): String {
-                return ""
-            }
-
-            override suspend fun set(value: String) {
-                // nop
-            }
-        }
-    }
-}
 
 fun createFileDelegatedMutableProperty(file: File): MutableProperty<String> = object : MutableProperty<String> {
     override suspend fun get(): String {

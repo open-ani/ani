@@ -21,9 +21,14 @@ import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
-import me.him188.animationgarden.api.DmhyClient
 import me.him188.animationgarden.datasources.api.DownloadSearchQuery
-import me.him188.animationgarden.datasources.api.topic.*
+import me.him188.animationgarden.datasources.api.topic.Episode
+import me.him188.animationgarden.datasources.api.topic.FrameRate
+import me.him188.animationgarden.datasources.api.topic.MediaOrigin
+import me.him188.animationgarden.datasources.api.topic.Resolution
+import me.him188.animationgarden.datasources.api.topic.SubtitleLanguage
+import me.him188.animationgarden.datasources.api.topic.TopicCategory
+import me.him188.animationgarden.datasources.dmhy.DmhyClient
 import java.io.File
 
 private val json = Json {

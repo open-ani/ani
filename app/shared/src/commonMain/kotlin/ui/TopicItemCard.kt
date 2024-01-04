@@ -20,15 +20,45 @@ package me.him188.animationgarden.app.ui
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.ripple.rememberRipple
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ElevatedButton
+import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.ProvideTextStyle
+import androidx.compose.material3.Text
+import androidx.compose.material3.surfaceColorAtElevation
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.ProvidableCompositionLocal
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -40,14 +70,13 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import me.him188.animationgarden.api.model.DATE_FORMAT
-import me.him188.animationgarden.api.model.Topic
-import me.him188.animationgarden.api.tags.Episode
 import me.him188.animationgarden.app.AppTheme
 import me.him188.animationgarden.app.ui.theme.weaken
+import me.him188.animationgarden.datasources.api.topic.Episode
+import me.him188.animationgarden.datasources.api.topic.Topic
+import me.him188.animationgarden.datasources.api.topic.publishedTimeString
 
 @Immutable
 data class Tag(
@@ -56,7 +85,11 @@ data class Tag(
     @Stable
     val backgroundColor: Color = Color.Unspecified,
 ) {
-    constructor(text: String, backgroundColor: Color = Color.Unspecified) : this(AnnotatedString(text), backgroundColor)
+    constructor(text: String, backgroundColor: Color = Color.Unspecified) : this(
+        AnnotatedString(
+            text
+        ), backgroundColor
+    )
 }
 
 @Composable
@@ -134,7 +167,8 @@ fun TopicItemCard(topic: Topic, onClick: () -> Unit) {
                             }
 
 
-                            val dateFormatted by remember { derivedStateOf { topicState.date.format(DATE_FORMAT) } }
+                            val dateFormatted by remember { derivedStateOf { topicState.publishedTimeString() } }
+
                             Text(
                                 dateFormatted,
                                 style = AppTheme.typography.bodyMedium,
@@ -154,9 +188,10 @@ fun TopicItemCard(topic: Topic, onClick: () -> Unit) {
 
 // Show titles in separate a line on Android to optimize performance
 @Stable
-val LocalAlwaysShowTitlesInSeparateLine: ProvidableCompositionLocal<Boolean> = staticCompositionLocalOf {
-    false
-}
+val LocalAlwaysShowTitlesInSeparateLine: ProvidableCompositionLocal<Boolean> =
+    staticCompositionLocalOf {
+        false
+    }
 
 @Composable
 fun ColumnScope.AnimatedTitles(
@@ -186,7 +221,8 @@ fun ColumnScope.AnimatedTitles(
             if (currentChineseTitle != null) {
                 currentOtherTitles?.joinToString(" / ")?.takeIf { it.isNotBlank() }
             } else if (currentOtherTitles != null) {
-                currentOtherTitles?.asSequence()?.drop(1)?.joinToString(" / ")?.takeIf { it.isNotBlank() }
+                currentOtherTitles?.asSequence()?.drop(1)?.joinToString(" / ")
+                    ?.takeIf { it.isNotBlank() }
             } else {
                 null
             }
@@ -208,7 +244,8 @@ fun ColumnScope.AnimatedTitles(
                 episode?.let { episode ->
                     Text(
                         episode.raw,
-                        Modifier.padding(start = 8.dp).requiredWidth(IntrinsicSize.Max), // always show episode
+                        Modifier.padding(start = 8.dp)
+                            .requiredWidth(IntrinsicSize.Max), // always show episode
                         style = AppTheme.typography.titleMedium,
                         fontWeight = FontWeight.W600,
                         maxLines = 1,
@@ -328,7 +365,10 @@ private fun TagButton(
         ),
         elevation = elevation,
         interactionSource = interactionSource,
-        border = BorderStroke(1.dp, if (containerColorEffect == Color.Unspecified) Color.Gray else containerColor),
+        border = BorderStroke(
+            1.dp,
+            if (containerColorEffect == Color.Unspecified) Color.Gray else containerColor
+        ),
     ) {
         ProvideTextStyle(
             AppTheme.typography.bodySmall.copy(

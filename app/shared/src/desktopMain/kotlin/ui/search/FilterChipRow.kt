@@ -20,7 +20,6 @@ package me.him188.animationgarden.app.ui.search
 
 import androidx.compose.material3.SelectableChipElevation
 import androidx.compose.runtime.Composable
-import me.him188.animationgarden.app.app.RefreshState
 
 @Composable
 actual fun <T> FilterChipRowImpl(

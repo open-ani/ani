@@ -16,8 +16,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+@file:JvmName("Vibration_common")
 
-package me.him188.animationgarden.app.androidx.compose.ui.tooling.preview
+package me.him188.animationgarden.app.ui.interaction
 
-@Suppress("NO_ACTUAL_FOR_EXPECT")
-expect annotation class Preview()
+import me.him188.animationgarden.app.platform.Context
+
+expect fun Context.vibrateIfSupported(strength: VibrationStrength = VibrationStrength.CLICK)
+
+enum class VibrationStrength {
+    TICK,
+    CLICK,
+    HEAVY_CLICK,
+}

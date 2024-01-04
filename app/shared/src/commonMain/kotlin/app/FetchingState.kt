@@ -19,17 +19,17 @@
 package me.him188.animationgarden.app.app
 
 import androidx.compose.runtime.Stable
-import io.ktor.client.plugins.*
-import io.ktor.util.logging.*
-import me.him188.animationgarden.api.model.SearchQuery
+import io.ktor.client.plugins.ResponseException
+import io.ktor.util.logging.error
 import me.him188.animationgarden.app.i18n.ResourceBundle
+import me.him188.animationgarden.datasources.api.DownloadSearchQuery
 import org.slf4j.LoggerFactory
 import kotlin.toString as toStringKotlin
 
 sealed class FetchingState {
     object Idle : FetchingState()
     class Fetching(
-        val query: SearchQuery
+        val query: DownloadSearchQuery
     ) : FetchingState()
 
     sealed class Completed : FetchingState()

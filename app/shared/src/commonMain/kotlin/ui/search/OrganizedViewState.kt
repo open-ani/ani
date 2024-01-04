@@ -18,12 +18,18 @@
 
 package me.him188.animationgarden.app.ui.search
 
-import androidx.compose.runtime.*
-import me.him188.animationgarden.api.model.Alliance
-import me.him188.animationgarden.api.model.Topic
-import me.him188.animationgarden.api.tags.Episode
-import me.him188.animationgarden.api.tags.Resolution
-import me.him188.animationgarden.api.tags.SubtitleLanguage
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.referentialEqualityPolicy
+import androidx.compose.runtime.structuralEqualityPolicy
+import me.him188.animationgarden.datasources.api.topic.Alliance
+import me.him188.animationgarden.datasources.api.topic.Episode
+import me.him188.animationgarden.datasources.api.topic.Resolution
+import me.him188.animationgarden.datasources.api.topic.SubtitleLanguage
+import me.him188.animationgarden.datasources.api.topic.Topic
 
 /**
  * Represents a work, which may be Anime, Manga, Japanese Drama, etc.
@@ -40,7 +46,8 @@ class OrganizedViewState {
     val episodes: MutableState<Set<Episode>> = mutableStateOf(setOf())
 
     @Stable
-    val subtitleLanguages: MutableState<List<SubtitleLanguage>> = mutableStateOf(listOf()) // null element means Other
+    val subtitleLanguages: MutableState<List<SubtitleLanguage>> =
+        mutableStateOf(listOf()) // null element means Other
 
     @Stable
     val resolutions: MutableState<List<Resolution>> = mutableStateOf(listOf())
@@ -50,16 +57,20 @@ class OrganizedViewState {
 
 
     @Stable
-    val selectedEpisode: MutableState<Episode?> = mutableStateOf(null, structuralEqualityPolicy()) // inline class boxed
+    val selectedEpisode: MutableState<Episode?> =
+        mutableStateOf(null, structuralEqualityPolicy()) // inline class boxed
 
     @Stable
-    val selectedSubtitleLanguage: MutableState<SubtitleLanguage?> = mutableStateOf(null, referentialEqualityPolicy())
+    val selectedSubtitleLanguage: MutableState<SubtitleLanguage?> =
+        mutableStateOf(null, referentialEqualityPolicy())
 
     @Stable
-    val selectedResolution: MutableState<Resolution?> = mutableStateOf(null, referentialEqualityPolicy())
+    val selectedResolution: MutableState<Resolution?> =
+        mutableStateOf(null, referentialEqualityPolicy())
 
     @Stable
-    val selectedAlliance: MutableState<Alliance?> = mutableStateOf(null, referentialEqualityPolicy())
+    val selectedAlliance: MutableState<Alliance?> =
+        mutableStateOf(null, referentialEqualityPolicy())
 
     @Stable
     val hasFilter: State<Boolean> = derivedStateOf {
@@ -198,23 +209,6 @@ class OrganizedViewState {
             .sortedByDescending { it.value }
             .firstOrNull()
             ?.key
-
-    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-    private inline fun <T, K, V> Iterable<T>.associateByNotNull(
-        keySelector: (T) -> K?,
-        valueTransform: (T) -> V?
-    ): Map<K, V> {
-        val capacity = mapCapacity(collectionSizeOrDefault(10)).coerceAtLeast(16)
-        val destination = LinkedHashMap<K, V>(capacity)
-        for (element in this) {
-            keySelector(element)?.let { key ->
-                valueTransform.invoke(element)?.let { value ->
-                    destination[key] = value
-                }
-            }
-        }
-        return destination
-    }
 }
 
 fun <T : Any> MutableState<T?>.invertSelected(value: T) {

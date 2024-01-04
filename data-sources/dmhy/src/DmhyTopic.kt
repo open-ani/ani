@@ -18,10 +18,16 @@
 
 package me.him188.animationgarden.datasources.dmhy
 
-import me.him188.animationgarden.datasources.api.topic.*
+import me.him188.animationgarden.datasources.api.topic.Alliance
+import me.him188.animationgarden.datasources.api.topic.Author
+import me.him188.animationgarden.datasources.api.topic.Episode
+import me.him188.animationgarden.datasources.api.topic.FileSize
+import me.him188.animationgarden.datasources.api.topic.FrameRate
+import me.him188.animationgarden.datasources.api.topic.MediaOrigin
+import me.him188.animationgarden.datasources.api.topic.Resolution
+import me.him188.animationgarden.datasources.api.topic.SubtitleLanguage
 import me.him188.animationgarden.datasources.dmhy.impl.titles.RawTitleParser
 import me.him188.animationgarden.datasources.dmhy.impl.titles.parse
-import java.time.format.DateTimeFormatter
 
 class DmhyCategory(
     val id: String,
@@ -82,7 +88,6 @@ data class DmhyTopicDetails(
 }
 
 
-private val DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm")
 
 private fun String.truncated(length: Int, truncated: String = "..."): String {
     return if (this.length > length) {

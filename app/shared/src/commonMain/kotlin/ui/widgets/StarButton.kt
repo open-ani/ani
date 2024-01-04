@@ -24,6 +24,7 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -37,13 +38,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import me.him188.animationgarden.app.AppTheme
 import me.him188.animationgarden.app.platform.Res
-import me.him188.animationgarden.app.ui.search.OrganizedViewCard
-import me.him188.animationgarden.app.ui.starred.StarredAnimeCard
 
 /**
  * [收藏卡片][StarredAnimeCard]和[统合搜索卡片][OrganizedViewCard]中的收藏按钮 (五角星图标)

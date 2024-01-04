@@ -18,7 +18,7 @@
 
 package me.him188.animationgarden.datasources.dmhy
 
-import io.ktor.client.engine.*
+import io.ktor.client.engine.HttpClientEngineConfig
 import me.him188.animationgarden.datasources.api.DownloadProvider
 import me.him188.animationgarden.datasources.api.DownloadSearchQuery
 import me.him188.animationgarden.datasources.api.SearchSession
@@ -26,7 +26,7 @@ import me.him188.animationgarden.datasources.api.topic.Topic
 import me.him188.animationgarden.datasources.dmhy.impl.DmhyClientImpl
 
 
-internal interface DmhyClient {
+interface DmhyClient {
     fun startSearchSession(filter: DownloadSearchQuery): SearchSession<Topic>
 
     companion object Factory {
@@ -36,9 +36,10 @@ internal interface DmhyClient {
 }
 
 
-class DmhyDownloadProvider : DownloadProvider {
+class DmhyDownloadProvider(
+    private val client: DmhyClient = DmhyClient.create { },
+) : DownloadProvider {
     override val id: String get() = "dmhy"
-    private val client = DmhyClient.create { }
 
     override suspend fun startSearch(query: DownloadSearchQuery): SearchSession<Topic> {
         return client.startSearchSession(query)

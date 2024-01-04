@@ -22,11 +22,9 @@ import androidx.compose.foundation.Indication
 import androidx.compose.foundation.indication
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.onClick
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
 @Suppress("ACTUAL_FUNCTION_WITH_DEFAULT_ARGUMENTS")
-@Composable
 actual fun Modifier.onClickEx(
     interactionSource: MutableInteractionSource = MutableInteractionSource(),
     indication: Indication?,
