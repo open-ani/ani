@@ -165,9 +165,9 @@ tasks.register("uploadDesktopDistributionZip") {
 
 tasks.register("uploadDesktopInstallers") {
     dependsOn(
-        ":desktop:createDistributable",
-        ":desktop:packageDistributionForCurrentOS",
-        ":desktop:packageUberJarForCurrentOS"
+        ":app:desktop:createDistributable",
+        ":app:desktop:packageDistributionForCurrentOS",
+        ":app:desktop:packageUberJarForCurrentOS"
     )
 
     doLast {
@@ -194,9 +194,9 @@ tasks.register("uploadDesktopInstallers") {
 
 tasks.register("prepareArtifactsForManualUpload") {
     dependsOn(
-        ":desktop:createDistributable",
-        ":desktop:packageDistributionForCurrentOS",
-        ":desktop:packageUberJarForCurrentOS"
+        ":app:desktop:createDistributable",
+        ":app:desktop:packageDistributionForCurrentOS",
+        ":app:desktop:packageUberJarForCurrentOS"
     )
     dependsOn(zipDesktopDistribution)
 
