@@ -175,22 +175,22 @@ tasks.register("uploadDesktopInstallers") {
     }
 }
 
-tasks.register("uploadServerDistribution") {
-    dependsOn(
-        ":server:distZip",
-        ":server:distTar",
-    )
-
-    doLast {
-        val distZip = project(":server").tasks.getByName("distZip", Zip::class).archiveFile.get().asFile
-        val distTar = project(":server").tasks.getByName("distTar", Tar::class).archiveFile.get().asFile
-
-        ReleaseEnvironment().run {
-            uploadReleaseAsset(namer.server(fullVersion, "tar"), "application/x-tar", distTar)
-            uploadReleaseAsset(namer.server(fullVersion, "zip"), "application/zip", distZip)
-        }
-    }
-}
+//tasks.register("uploadServerDistribution") {
+//    dependsOn(
+//        ":server:distZip",
+//        ":server:distTar",
+//    )
+//
+//    doLast {
+//        val distZip = project(":server").tasks.getByName("distZip", Zip::class).archiveFile.get().asFile
+//        val distTar = project(":server").tasks.getByName("distTar", Tar::class).archiveFile.get().asFile
+//
+//        ReleaseEnvironment().run {
+//            uploadReleaseAsset(namer.server(fullVersion, "tar"), "application/x-tar", distTar)
+//            uploadReleaseAsset(namer.server(fullVersion, "zip"), "application/zip", distZip)
+//        }
+//    }
+//}
 
 tasks.register("prepareArtifactsForManualUpload") {
     dependsOn(
