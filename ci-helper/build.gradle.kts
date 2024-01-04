@@ -140,7 +140,7 @@ tasks.register("uploadAndroidApkQR") {
 }
 
 val zipDesktopDistribution = tasks.register("zipDesktopDistribution", Zip::class) {
-    dependsOn(":desktop:createDistributable")
+    dependsOn(":app:desktop:createDistributable")
     from(project(":app:desktop").layout.buildDirectory.dir("compose/binaries/main/app"))
     archiveBaseName.set("desktop")
 }
