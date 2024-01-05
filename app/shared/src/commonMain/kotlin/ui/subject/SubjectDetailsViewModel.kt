@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.mapNotNull
 import me.him188.animationgarden.app.ui.framework.AbstractViewModel
 import me.him188.animationgarden.datasources.bangumi.BangumiClient
 import me.him188.animationgarden.datasources.bangumi.BangumiSubjectDetails
+import me.him188.animationgarden.datasources.bangumi.BangumiSubjectImageSize
 import me.him188.animationgarden.datasources.bangumi.Rating
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -36,8 +37,12 @@ class SubjectDetailsViewModel(
     val officialName: SharedFlow<String> =
         subjectNotNull.map { it.originalName }.shareInBackground()
 
-    val coverImage: SharedFlow<String> = subjectNotNull.map { it.images.common }
-        .shareInBackground()
+    val coverImage: SharedFlow<String> = subjectNotNull.map {
+        bangumiClient.subjects.getSubjectImageUrl(
+            it.id,
+            BangumiSubjectImageSize.LARGE
+        )
+    }.shareInBackground()
 
     val totalEpisodes: SharedFlow<Int> =
         subjectNotNull.map { it.totalEpisodes }.shareInBackground()

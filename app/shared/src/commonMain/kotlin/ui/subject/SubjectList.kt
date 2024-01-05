@@ -23,13 +23,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -39,10 +37,11 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.BrokenImage
+import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -54,10 +53,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import me.him188.animationgarden.app.platform.LocalContext
+import me.him188.animationgarden.app.ui.foundation.AniKamelImage
+import me.him188.animationgarden.app.ui.foundation.BrokenImagePlaceholder
+import me.him188.animationgarden.app.ui.foundation.LoadingIndicator
 
 /**
  * 番剧预览列表, 双列模式
@@ -71,21 +73,21 @@ fun SubjectPreviewColumn(
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
-        modifier,
+        modifier.background(Color(0xf1f2f4)),
         contentPadding = PaddingValues(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         items(items, key = { it.id }) { subject ->
-            Row {
-                val context = LocalContext.current
-                SubjectPreviewCard(
-                    title = remember(subject.id) {
-                        subject.chineseName.takeIf { it.isNotBlank() } ?: subject.originalName
-                    },
-                    imageUrl = remember(subject.id) { subject.images.landscapeCommon },
-                    onClick = { viewModel.onClickSubjectPreview(context, subject) },
-                )
-            }
+            val context = LocalContext.current
+            SubjectPreviewCard(
+                title = remember(subject.id) {
+                    subject.chineseName.takeIf { it.isNotBlank() } ?: subject.originalName
+                },
+                imageUrl = remember(subject.id) { subject.images.landscapeCommon },
+                onClick = { viewModel.onClickSubjectPreview(context, subject) },
+                Modifier.height(180.dp),
+            )
         }
 
         item("loading", span = { GridItemSpan(maxLineSpan) }, contentType = "loading") {
@@ -123,44 +125,34 @@ fun SubjectPreviewCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Box(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp))
+    ElevatedCard(
+        modifier.clip(RoundedCornerShape(4.dp))
+            .fillMaxWidth()
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onClick
-            )
+                indication = rememberRipple(),
+                onClick = onClick,
+            ),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp),
     ) {
-        Column(modifier.padding(4.dp)) {
-            KamelImage(
+        Column {
+            AniKamelImage(
                 asyncPainterResource(imageUrl),
-                "Image",
-                Modifier.fillMaxWidth().height(120.dp).clip(RoundedCornerShape(8.dp))
-                    .background(Color.LightGray),
-                onLoading = {
-                    Box(
-                        Modifier.fillMaxSize()
-                            .background(Color.LightGray)
-                    ) {
-                        CircularProgressIndicator(it, Modifier.align(Alignment.Center))
-                    }
-                },
-                onFailure = {
-                    LaunchedEffect(true) {
-                        it.printStackTrace()
-                    }
-                    Box(
-                        Modifier.fillMaxSize()
-                            .background(Color.LightGray)
-                    ) {
-                        Icon(Icons.Outlined.BrokenImage, "Broken", Modifier.align(Alignment.Center))
-                    }
-                },
-                animationSpec = tween(500),
+                Modifier.fillMaxWidth().height(120.dp).background(Color.LightGray),
+                title,
                 contentScale = ContentScale.Crop,
+                onLoading = { LoadingIndicator(it) },
+                onFailure = { BrokenImagePlaceholder() },
+                animationSpec = tween(500),
             )
             Spacer(Modifier.height(4.dp))
-            Text(title)
+            Text(
+                title,
+                Modifier.padding(all = 8.dp),
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 2,
+                style = MaterialTheme.typography.titleSmall,
+            )
         }
     }
 }
