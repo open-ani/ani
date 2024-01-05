@@ -75,7 +75,7 @@ import me.him188.animationgarden.utils.logging.logger
 import me.him188.animationgarden.utils.logging.trace
 import java.io.File
 
-private val logger = logger()
+private val logger = logger("AnimationGarden")
 
 
 val projectDirectories: ProjectDirectories by lazy {

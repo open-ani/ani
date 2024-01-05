@@ -18,10 +18,8 @@
 
 package me.him188.animationgarden.app.ui.subject
 
-import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -29,23 +27,6 @@ import kotlinx.coroutines.flow.flow
 import me.him188.animationgarden.datasources.api.SearchSession
 import me.him188.animationgarden.datasources.api.Subject
 import me.him188.animationgarden.datasources.api.SubjectImages
-
-
-@Preview(apiLevel = 33)
-@Composable
-private fun PreviewSubjectPreviewCard() {
-    Row {
-        SubjectPreviewCard(
-            title = "葬送的芙莉莲",
-            imageUrl = "https://lain.bgm.tv/pic/cover/l/13/c5/400602_ZI8Y9.jpg?_gl=1*isepc9*_ga*NDQzNzcwOTYyLjE3MDM4NjE5NzQ.*_ga_1109JLGMHN*MTcwNDQwNjE1MS4xMC4xLjE3MDQ0MDYxNzYuMC4wLjA.",
-            onClick = {
-
-            },
-            Modifier.weight(0.5f)
-        )
-    }
-}
-
 
 @Composable
 @Preview(apiLevel = 33)

@@ -18,6 +18,7 @@
 
 package me.him188.animationgarden.app
 
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
@@ -36,10 +37,12 @@ import me.him188.animationgarden.datasources.bangumi.BangumiClient
 import me.him188.animationgarden.datasources.bangumi.BangumiSubjectProvider
 import me.him188.animationgarden.datasources.dmhy.DmhyClient
 import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 
 @Composable
 fun ProvideCompositionLocalsForPreview(content: @Composable () -> Unit) {
+    runCatching { stopKoin() }
     startKoin {
         modules(module {
             single<DmhyClient> { DmhyClient.create { } }
@@ -61,13 +64,21 @@ fun ProvideCompositionLocalsForPreview(content: @Composable () -> Unit) {
         }
 
     }
-    val context: Context = LocalContext.current
-    val currentBundle = remember(Locale.current.language) { loadResourceBundle(context) }
-    CompositionLocalProvider(
-        LocalI18n provides currentBundle,
-        LocalAppSettingsManager provides appSettingsManager,
-        LocalKamelConfig provides DefaultKamelConfig
-    ) {
-        content()
+    MaterialTheme {
+        PlatformPreviewCompositionLocalProvider {
+
+            val context: Context = LocalContext.current
+            val currentBundle = remember(Locale.current.language) { loadResourceBundle(context) }
+            CompositionLocalProvider(
+                LocalI18n provides currentBundle,
+                LocalAppSettingsManager provides appSettingsManager,
+//        LocalKamelConfig provides DefaultKamelConfig
+            ) {
+                content()
+            }
+        }
     }
 }
+
+@Composable
+expect fun PlatformPreviewCompositionLocalProvider(content: @Composable () -> Unit)

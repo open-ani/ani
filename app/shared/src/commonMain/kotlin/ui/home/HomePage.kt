@@ -18,10 +18,12 @@
 
 package me.him188.animationgarden.app.ui.home
 
+import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
@@ -36,6 +38,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import me.him188.animationgarden.app.ProvideCompositionLocalsForPreview
 import me.him188.animationgarden.app.platform.isInLandscapeMode
 import me.him188.animationgarden.app.ui.search.SearchViewModel
 import me.him188.animationgarden.app.ui.subject.SubjectColumn
@@ -72,10 +75,13 @@ fun HomePagePortrait() {
 
         val viewModel by search.result.collectAsState()
         viewModel?.let {
-            SubjectColumn(it, Modifier.fillMaxSize())
+            SubjectColumn(it, Modifier)
         }
 
-        TabBar(selectedTab = selectedTab, Modifier.fillMaxWidth().padding(horizontal = 12.dp)) {
+        TabBar(
+            selectedTab = selectedTab,
+            Modifier.fillMaxWidth().requiredHeight(80.dp).padding(horizontal = 12.dp)
+        ) {
             tab(
                 PageTab.HOME,
                 icon = { Icon(Icons.Default.Home, "Home") },
@@ -98,4 +104,15 @@ fun HomePagePortrait() {
 }
 
 @Composable
+@Preview
 internal expect fun PreviewHomePage()
+
+@Composable
+internal fun PreviewHomePageImpl() {
+    ProvideCompositionLocalsForPreview {
+        HomePage()
+    }
+}
+
+//@Composable
+//internal expect fun PreviewHomePage()
