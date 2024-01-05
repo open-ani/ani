@@ -31,6 +31,7 @@ interface SubjectProvider {
 }
 
 data class Subject(
+    val id: String,
     /**
      * 条目官方原名称, 例如番剧为日文名称
      */

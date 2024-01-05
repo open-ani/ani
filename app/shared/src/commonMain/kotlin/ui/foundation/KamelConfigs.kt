@@ -22,28 +22,21 @@ import io.kamel.core.config.KamelConfig
 import io.kamel.core.config.httpFetcher
 import io.kamel.core.config.takeFrom
 import io.kamel.image.config.Default
-import io.ktor.client.plugins.HttpRequestRetry
+import io.ktor.client.plugins.BrowserUserAgent
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.plugins.logging.SIMPLE
-import io.ktor.http.isSuccess
 
 val DefaultKamelConfig = KamelConfig {
+    takeFrom(KamelConfig.Default)
     httpFetcher {
-        takeFrom(KamelConfig.Default)
-
-        install(HttpRequestRetry) {
-            maxRetries = 3
-            retryIf { _, httpResponse ->
-                !httpResponse.status.isSuccess()
-            }
-        }
+        BrowserUserAgent()
 
         httpCache(10 * 1024 * 1024)
 
         Logging {
-            level = LogLevel.ALL
+            level = LogLevel.INFO
             logger = Logger.SIMPLE
         }
     }

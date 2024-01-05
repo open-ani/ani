@@ -60,6 +60,7 @@ private fun PreviewSubjectList() {
 
             private val subject
                 get() = Subject(
+                    id = "123",
                     officialName = "葬送的芙莉莲",
                     chineseName = "葬送的芙莉莲",
                     episodeCount = 12,

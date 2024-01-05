@@ -41,10 +41,11 @@ class BangumiSearchSession(
             maxResults = pageSize,
         )?.map { subject ->
             Subject(
+                id = subject.id.toString(),
                 officialName = subject.name,
                 chineseName = subject.nameCN,
                 images = object : SubjectImages {
-                    override fun landscapeCommon(): String = subject.images.common
+                    override fun landscapeCommon(): String = subject.images.large
                     override fun largePoster(): String = subject.images.large
                 },
                 episodeCount = subject.epsCount,

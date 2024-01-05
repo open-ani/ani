@@ -56,7 +56,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
-import io.ktor.http.Url
 import me.him188.animationgarden.datasources.api.Subject
 
 /**
@@ -77,11 +76,11 @@ fun SubjectColumn(
         contentPadding = PaddingValues(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        items(items) { subject ->
+        items(items, key = { it.id }) { subject ->
             Row {
                 SubjectPreviewCard(
                     title = subject.chineseName,
-                    imageUrl = subject.images.landscapeCommon(),
+                    imageUrl = remember(subject.id) { subject.images.landscapeCommon() },
                     onClick = {
                         onClickSubject(subject)
                     },
@@ -89,7 +88,7 @@ fun SubjectColumn(
             }
         }
 
-        item("loading", span = { GridItemSpan(cellsCount) }) {
+        item("loading", span = { GridItemSpan(cellsCount) }, contentType = "loading") {
             val hasMore by viewModel.hasMore.collectAsState()
             val loading by viewModel.loading.collectAsState()
             if (loading || hasMore) {
@@ -133,7 +132,7 @@ fun SubjectPreviewCard(
     ) {
         Column(modifier.padding(4.dp)) {
             KamelImage(
-                asyncPainterResource(Url(imageUrl)),
+                asyncPainterResource(imageUrl),
                 "Image",
                 Modifier.fillMaxWidth().height(120.dp).clip(RoundedCornerShape(8.dp))
                     .background(Color.LightGray),
