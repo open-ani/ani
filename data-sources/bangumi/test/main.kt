@@ -22,9 +22,11 @@ import kotlin.system.exitProcess
 
 suspend fun main() {
     val client = BangumiClient.create()
-    println(client.subjects.getSubjectById(400602))
-
+    client.subjects.getSubjectById(400602)?.infobox?.forEach {
+        println("${it.key}=${it.value}")
+    }
     exitProcess(0)
+
     val res = client.subjects.searchSubjectByKeywords(
         "药屋",
         types = listOf(BangumiSubjectType.ANIME),

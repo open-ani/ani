@@ -11,6 +11,8 @@ import me.him188.animationgarden.app.ui.framework.AbstractViewModel
 import me.him188.animationgarden.datasources.bangumi.BangumiClient
 import me.him188.animationgarden.datasources.bangumi.BangumiSubjectDetails
 import me.him188.animationgarden.datasources.bangumi.BangumiSubjectImageSize
+import me.him188.animationgarden.datasources.bangumi.BangumiSubjectInfo
+import me.him188.animationgarden.datasources.bangumi.BangumiSubjectTag
 import me.him188.animationgarden.datasources.bangumi.Rating
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -47,8 +49,16 @@ class SubjectDetailsViewModel(
     val totalEpisodes: SharedFlow<Int> =
         subjectNotNull.map { it.totalEpisodes }.shareInBackground()
 
+    val tags: SharedFlow<List<BangumiSubjectTag>> =
+        subjectNotNull.map { it.tags }
+            .map { tags -> tags.sortedByDescending { it.count } }
+            .shareInBackground()
+
     val ratingScore: SharedFlow<String> = subjectNotNull.map { it.rating.score }
         .mapLatest { String.format(".2f", it) }.shareInBackground()
     val ratingCounts: SharedFlow<Map<Rating, Int>> =
         subjectNotNull.map { it.rating.count }.shareInBackground()
+
+    val infoboxList: SharedFlow<List<BangumiSubjectInfo>> =
+        subjectNotNull.map { it.infobox }.shareInBackground()
 }

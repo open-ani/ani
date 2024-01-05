@@ -18,9 +18,7 @@
 
 package me.him188.animationgarden.app.ui.home
 
-import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.runtime.Composable
-import me.him188.animationgarden.app.ProvideCompositionLocalsForPreview
 
 
 @Composable
@@ -31,13 +29,6 @@ enum class PageTab {
     HOME,
     SEARCH,
     MY,
-}
-
-@Preview
-@Composable
-internal fun PreviewHomePageLandscape() {
-    ProvideCompositionLocalsForPreview {
-    }
 }
 
 //@Composable
