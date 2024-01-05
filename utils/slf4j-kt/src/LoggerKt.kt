@@ -40,10 +40,8 @@ fun ILoggerFactory.getLogger(clazz: KClass<out Any>): Logger =
 
 inline fun <reified T : Any> ILoggerFactory.getLogger(): Logger = getLogger(T::class)
 
-fun logger(): Logger {
-    val packageLevelClass =
-        generateSequence(Class.forName(Thread.currentThread().stackTrace[2].className)) { it.enclosingClass }.last()
-    return logger(packageLevelClass.kotlin)
+fun logger(name: String): Logger {
+    return LoggerFactory.getILoggerFactory().getLogger(name)
 }
 
 fun logger(clazz: KClass<out Any>): Logger {

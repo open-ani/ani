@@ -25,7 +25,7 @@ import kotlinx.dnq.query.eq
 import kotlinx.dnq.query.firstOrNull
 import kotlinx.dnq.query.query
 import me.him188.animationgarden.server.database.NameIndexes
-import me.him188.animationgarden.shared.models.Subject
+import me.him188.animationgarden.datasources.api.Subject
 
 internal class XdSubjectIndex(entity: Entity) : XdEntity(entity) {
     companion object : XdNaturalEntityType<XdSubjectIndex>()

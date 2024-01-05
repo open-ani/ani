@@ -16,16 +16,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.app.platform
+package me.him188.animationgarden.datasources.bangumi.dto
 
-import androidx.compose.runtime.ProvidableCompositionLocal
-import androidx.compose.runtime.staticCompositionLocalOf
+import kotlinx.serialization.Serializable
 
-actual abstract class Context
-
-internal object ContextImpl : Context()
-
-actual val LocalContext: ProvidableCompositionLocal<Context> = staticCompositionLocalOf {
-    ContextImpl
-}
-
+@Serializable
+data class Avatar(
+    val large: String,
+    val medium: String,
+    val small: String
+)

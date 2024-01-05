@@ -18,22 +18,27 @@
 
 package me.him188.animationgarden.datasources.dmhy.impl
 
-import io.ktor.client.*
-import io.ktor.client.engine.*
-import io.ktor.client.engine.cio.*
-import io.ktor.client.plugins.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.plugins.cookies.*
-import io.ktor.client.plugins.websocket.*
-import io.ktor.http.*
-import io.ktor.http.content.*
-import io.ktor.serialization.*
-import io.ktor.serialization.kotlinx.json.*
-import io.ktor.util.reflect.*
-import io.ktor.utils.io.*
-import io.ktor.utils.io.charsets.*
-import io.ktor.utils.io.jvm.javaio.*
-import io.ktor.utils.io.streams.*
+import io.ktor.client.HttpClient
+import io.ktor.client.HttpClientConfig
+import io.ktor.client.engine.HttpClientEngineConfig
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.engine.cio.CIOEngineConfig
+import io.ktor.client.plugins.HttpRequestRetry
+import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.cookies.HttpCookies
+import io.ktor.client.plugins.websocket.WebSockets
+import io.ktor.http.ContentType
+import io.ktor.http.content.OutgoingContent
+import io.ktor.serialization.ContentConverter
+import io.ktor.serialization.kotlinx.json.json
+import io.ktor.util.reflect.TypeInfo
+import io.ktor.utils.io.ByteReadChannel
+import io.ktor.utils.io.charsets.Charset
+import io.ktor.utils.io.charsets.Charsets
+import io.ktor.utils.io.charsets.decode
+import io.ktor.utils.io.jvm.javaio.toInputStream
+import io.ktor.utils.io.streams.asInput
 import kotlinx.serialization.json.Json
 import me.him188.animationgarden.datasources.api.DownloadSearchQuery
 import me.him188.animationgarden.datasources.api.SearchSession
@@ -89,11 +94,11 @@ fun createHttpClient(
                     return Jsoup.parse(string, charset.name())
                 }
 
-                override suspend fun serialize(
+                override suspend fun serializeNullable(
                     contentType: ContentType,
                     charset: Charset,
                     typeInfo: TypeInfo,
-                    value: Any?,
+                    value: Any?
                 ): OutgoingContent? {
                     return null
                 }

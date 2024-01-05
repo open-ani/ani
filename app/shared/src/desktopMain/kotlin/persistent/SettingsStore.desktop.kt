@@ -16,14 +16,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.app.platform
+package me.him188.animationgarden.app.persistent
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.ProvidableCompositionLocal
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import me.him188.animationgarden.app.platform.Context
 
-expect val LocalContext: ProvidableCompositionLocal<Context>
+actual val Context.settingStore: DataStore<Preferences>
+    get() = TODO("Not yet implemented")
 
-expect abstract class Context
-
-@Composable
-expect fun isInLandscapeMode(): Boolean
+actual val Context.tokenStore: DataStore<Preferences>
+    get() = TODO("Not yet implemented")

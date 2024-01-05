@@ -20,7 +20,6 @@ package me.him188.animationgarden.app.ui
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -384,19 +383,3 @@ private fun TagButton(
 @Stable
 fun Color.contrastTextColor(): Color =
     if (luminance() > 0.5) Color.Black else Color.White
-
-
-@Composable
-@Preview
-private fun PreviewTags() {
-    Column(verticalArrangement = Arrangement.spacedBy(32.dp)) {
-        TagButton({ Text("HEVC-10bit") }, null, containerColorEffect = Color.Unspecified)
-        //     TagsView(listOf("HEVC-10bit", "AAC"))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            for (s in listOf("HEVC-10bit", "AAC")) {
-                TagButton({ Text(s) }, null, containerColorEffect = Color.Unspecified)
-            }
-        }
-    }
-
-}

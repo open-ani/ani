@@ -18,7 +18,7 @@
 
 @file:Suppress("UnstableApiUsage")
 
-import java.util.*
+import java.util.Properties
 
 plugins {
     id("org.jetbrains.compose")
@@ -48,7 +48,6 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.6.1")
     implementation("androidx.compose.ui:ui-tooling-preview:1.3.3")
 
-    runtimeOnly("org.jetbrains.kotlinx:atomicfu:0.18.5")
     api("io.ktor:ktor-client-core:2.1.1")
 }
 

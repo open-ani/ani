@@ -16,14 +16,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.app.platform
+package me.him188.animationgarden.app.ui.home
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.ProvidableCompositionLocal
-
-expect val LocalContext: ProvidableCompositionLocal<Context>
-
-expect abstract class Context
+import androidx.compose.ui.tooling.preview.Preview
+import me.him188.animationgarden.app.ProvideCompositionLocalsForPreview
 
 @Composable
-expect fun isInLandscapeMode(): Boolean
+@Preview
+internal actual fun PreviewHomePage() {
+    ProvideCompositionLocalsForPreview {
+        HomePage()
+    }
+}

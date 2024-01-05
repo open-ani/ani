@@ -18,15 +18,20 @@
 
 package me.him188.animationgarden.datasources.bangumi
 
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.engine.cio.*
-import io.ktor.client.plugins.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.request.*
-import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
-import io.ktor.utils.io.core.*
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.HttpRequestRetry
+import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.basicAuth
+import io.ktor.client.request.get
+import io.ktor.client.request.parameter
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.isSuccess
+import io.ktor.serialization.kotlinx.json.json
+import io.ktor.utils.io.core.Closeable
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -35,17 +40,59 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
+import me.him188.animationgarden.datasources.bangumi.dto.BangumiAccount
 
-internal interface BangumiClient : Closeable {
-    // Bangumi open API: https://github.com/bangumi/api/blob/master/open-api/api.yml
+class BangumiToken(
+    internal val username: String,
+    internal val auth: String,
+    internal val authEncode: String,
+)
 
+interface BangumiClientAccounts {
+    sealed interface LoginResponse {
+        data class Success(
+            val account: BangumiAccount,
+            val token: BangumiToken,
+        ) : LoginResponse
+
+        data object UsernameOrPasswordMismatch : LoginResponse
+        data class UnknownError(
+            val trace: String,
+        ) : LoginResponse
+    }
+
+    suspend fun login(
+        email: String,
+        password: String,
+    ): LoginResponse
+}
+
+interface BangumiClientSubjects {
+    /**
+     * 搜索条目.
+     *
+     * @param keywords 关键字, 例如番剧名称
+     * @param type 条目类型, 默认为 [BangumiSubjectType.ANIME]
+     * @param responseGroup 返回数据大小, 默认为 [BangumiResponseGroup.SMALL]
+     * @param start 开始条数, 默认为 0
+     * @param maxResults 返回条数, 最大为 25
+     * @return 搜索结果, null 表示已经到达最后一条
+     */
     suspend fun searchSubjectByKeywords(
         keywords: String,
         type: BangumiSubjectType? = null,
-        responseGroup: BangumiResponseGroup? = null, // 返回数据大小, 默认为 small
-        start: Int? = null, // 开始条数, 默认为 0
-        maxResults: Int? = null, // 返回条数, 最大为 25
-    ): List<BangumiSubject>
+        responseGroup: BangumiResponseGroup? = null,
+        start: Int? = null,
+        maxResults: Int? = null,
+    ): List<BangumiSubject>?
+}
+
+interface BangumiClient : Closeable {
+    // Bangumi open API: https://github.com/bangumi/api/blob/master/open-api/api.yml
+
+    val accounts: BangumiClientAccounts
+
+    val subjects: BangumiClientSubjects
 
     companion object Factory {
         fun create(): BangumiClient = BangumiClientImpl()
@@ -53,7 +100,7 @@ internal interface BangumiClient : Closeable {
 }
 
 @Serializable
-internal data class BangumiSubject(
+data class BangumiSubject(
     // 以下为 small
     val id: Long,
     val url: String,
@@ -76,7 +123,7 @@ internal data class BangumiSubject(
 )
 
 @Serializable
-internal data class BangumiCollection(
+data class BangumiCollection(
     val wish: Int = 0,
     val collect: Int = 0,
     val doing: Int = 0,
@@ -85,7 +132,7 @@ internal data class BangumiCollection(
 )
 
 @Serializable
-internal data class BangumiRating(
+data class BangumiRating(
     /**
      * 总评分人数
      */
@@ -95,7 +142,7 @@ internal data class BangumiRating(
 )
 
 @Serializable(with = Rating.AsStringSerializer::class)
-internal enum class Rating(
+enum class Rating(
     val id: String,
 ) {
     ONE("1"),
@@ -126,7 +173,7 @@ internal enum class Rating(
 }
 
 @Serializable
-internal data class BangumiSubjectImages(
+data class BangumiSubjectImages(
     val large: String = "",
     val common: String = "",
     val medium: String = "",
@@ -134,7 +181,7 @@ internal data class BangumiSubjectImages(
     val grid: String = "",
 )
 
-internal enum class BangumiResponseGroup(val id: String) {
+enum class BangumiResponseGroup(val id: String) {
     SMALL("small"),
     MEDIUM("medium"),
     LARGE("large"),
@@ -143,7 +190,7 @@ internal enum class BangumiResponseGroup(val id: String) {
 
 // Legacy_SubjectType
 @Serializable(BangumiSubjectType.AsIntSerializer::class)
-internal enum class BangumiSubjectType(val id: Int) {
+enum class BangumiSubjectType(val id: Int) {
     BOOK(1),
     ANIME(2),
     MUSIC(3),
@@ -184,29 +231,64 @@ internal class BangumiClientImpl : BangumiClient {
     @Serializable
     private class SearchSubjectByKeywordsResponse(
 //        val results: Int, // count
-        val list: List<BangumiSubject>,
+        val list: List<BangumiSubject>? = null,
     )
 
-    override suspend fun searchSubjectByKeywords(
-        keywords: String,
-        type: BangumiSubjectType?,
-        responseGroup: BangumiResponseGroup?,
-        start: Int?,
-        maxResults: Int?,
-    ): List<BangumiSubject> {
-        val resp = httpClient.get("https://api.bgm.tv/search/subject/${keywords}") {
-            type?.id?.let { parameter("type", it) }
-            responseGroup?.id?.let { parameter("responseGroup", it) }
-            start?.let { parameter("start", it) }
-            maxResults?.let { parameter("max_results", it) }
-        }
+    override val accounts: BangumiClientAccounts = object : BangumiClientAccounts {
+        override suspend fun login(
+            email: String,
+            password: String
+        ): BangumiClientAccounts.LoginResponse {
+            val resp = httpClient.get("https://api.bgm.tv/auth?source=onAir") {
+                basicAuth(email, password)
+            }
 
-        if (!resp.status.isSuccess()) {
-            throw IllegalStateException("Failed to search subject by keywords: $resp")
-        }
+            when {
+                resp.status.isSuccess() -> {
+                    val body = resp.body<BangumiAccount>()
+                    return BangumiClientAccounts.LoginResponse.Success(
+                        account = body,
+                        token = BangumiToken(
+                            username = email,
+                            auth = body.auth,
+                            authEncode = body.authEncode,
+                        )
+                    )
+                }
 
-        val body = resp.body<SearchSubjectByKeywordsResponse>()
-        return body.list
+                resp.status == HttpStatusCode.Unauthorized -> {
+                    return BangumiClientAccounts.LoginResponse.UsernameOrPasswordMismatch
+                }
+
+                else -> return BangumiClientAccounts.LoginResponse.UnknownError(
+                    trace = resp.bodyAsText()
+                )
+            }
+        }
+    }
+
+    override val subjects: BangumiClientSubjects = object : BangumiClientSubjects {
+        override suspend fun searchSubjectByKeywords(
+            keywords: String,
+            type: BangumiSubjectType?,
+            responseGroup: BangumiResponseGroup?,
+            start: Int?,
+            maxResults: Int?,
+        ): List<BangumiSubject>? {
+            val resp = httpClient.get("https://api.bgm.tv/search/subject/${keywords}") {
+                type?.id?.let { parameter("type", it) }
+                responseGroup?.id?.let { parameter("responseGroup", it) }
+                start?.let { parameter("start", it) }
+                maxResults?.let { parameter("max_results", it) }
+            }
+
+            if (!resp.status.isSuccess()) {
+                throw IllegalStateException("Failed to search subject by keywords: $resp")
+            }
+
+            val body = resp.body<SearchSubjectByKeywordsResponse>()
+            return body.list
+        }
     }
 
     override fun close() {

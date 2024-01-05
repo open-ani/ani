@@ -18,7 +18,7 @@
 
 package me.him188.animationgarden.server.database
 
-import me.him188.animationgarden.shared.models.Subject
+import me.him188.animationgarden.datasources.api.Subject
 
 interface NameIndexes {
     sealed interface GetByIdResult {

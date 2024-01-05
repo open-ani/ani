@@ -18,12 +18,14 @@
 
 package me.him188.animationgarden.app.platform
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.ProvidableCompositionLocal
+import me.him188.animationgarden.datasources.api.SubjectProvider
+import me.him188.animationgarden.datasources.bangumi.BangumiClient
+import me.him188.animationgarden.datasources.bangumi.BangumiSubjectProvider
+import me.him188.animationgarden.datasources.dmhy.DmhyClient
+import org.koin.dsl.module
 
-expect val LocalContext: ProvidableCompositionLocal<Context>
-
-expect abstract class Context
-
-@Composable
-expect fun isInLandscapeMode(): Boolean
+val CommonKoinModule = module {
+    single<DmhyClient> { DmhyClient.create { } }
+    single<BangumiClient> { BangumiClient.create() }
+    single<SubjectProvider> { BangumiSubjectProvider() }
+}

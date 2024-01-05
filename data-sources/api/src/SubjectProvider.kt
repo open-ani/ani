@@ -27,14 +27,14 @@ interface SubjectProvider {
      */
     val id: String
 
-    suspend fun startSearch(query: SubjectSearchQuery): SearchSession<DataSourceSubject>
+    fun startSearch(query: SubjectSearchQuery): SearchSession<Subject>
 }
 
-class DataSourceSubject(
+data class Subject(
     /**
      * 条目官方原名称, 例如番剧为日文名称
      */
-    val originalName: String,
+    val officialName: String,
     /**
      * 条目中文名称
      */
@@ -50,16 +50,16 @@ class DataSourceSubject(
     val ratingCount: Int,
     val rank: Int,
     val sourceUrl: String, // 数据源
-    val images: DataSourceSubjectImages,
+    val images: SubjectImages,
 )
 
-interface DataSourceSubjectImages {
+interface SubjectImages {
     /**
      * Get image URL for grid view.
      */
-    fun forGrid(): String?
+    fun landscapeCommon(): String
 
-    fun forPoster(): String?
+    fun largePoster(): String
 }
 
 class SubjectSearchQuery(

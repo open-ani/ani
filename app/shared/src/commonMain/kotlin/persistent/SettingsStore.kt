@@ -16,37 +16,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.shared.models
+package me.him188.animationgarden.app.persistent
 
-import kotlinx.serialization.Serializable
-import me.him188.animationgarden.datasources.api.DataSourceSubjectImages
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import me.him188.animationgarden.app.platform.Context
 
-@Serializable
-data class Subject(
-    val id: String, // database id
-    val officialName: String,
-    val chineseName: String,
-    val dataSourceId: String,
 
-    val episodeCount: Int,
-    /**
-     * 平均评分
-     */
-    val ratingScore: Double,
-    /**
-     * 评分人数
-     */
-    val ratingCount: Int,
-    val rank: Int,
-    val sourceUrl: String, // 数据源
-    val images: DataSourceSubjectImages,
-)
+expect val Context.settingStore: DataStore<Preferences>
 
-interface SubjectImages {
-    /**
-     * Get image URL for grid view.
-     */
-    fun forGrid(): String?
-
-    fun forPoster(): String?
-}
+expect val Context.tokenStore: DataStore<Preferences>

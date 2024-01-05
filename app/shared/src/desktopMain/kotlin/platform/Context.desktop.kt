@@ -20,10 +20,19 @@ package me.him188.animationgarden.app.platform
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ProvidableCompositionLocal
+import androidx.compose.runtime.compositionLocalOf
+import java.io.File
 
-expect val LocalContext: ProvidableCompositionLocal<Context>
+actual abstract class Context
 
-expect abstract class Context
+internal class ContextImpl(
+    val dataDir: File,
+) : Context()
+
+actual val LocalContext: ProvidableCompositionLocal<Context> = compositionLocalOf {
+    error("No Context provided")
+}
+
 
 @Composable
-expect fun isInLandscapeMode(): Boolean
+actual fun isInLandscapeMode(): Boolean = false

@@ -26,24 +26,24 @@ import android.util.Log
 import android.view.View
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.snapshotFlow
-import io.ktor.client.*
-import io.ktor.client.plugins.logging.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import me.him188.animationgarden.R
 import me.him188.animationgarden.android.activity.BaseComponentActivity
 import me.him188.animationgarden.android.activity.showSnackbarAsync
-import me.him188.animationgarden.app.app.AppSettings
 import me.him188.animationgarden.app.app.ApplicationState
 import me.him188.animationgarden.app.app.LocalAppSettingsManagerImpl
-import me.him188.animationgarden.app.app.data.map
-import me.him188.animationgarden.app.app.settings.createFileDelegatedMutableProperty
 import me.him188.animationgarden.app.app.settings.toKtorProxy
 import me.him188.animationgarden.app.i18n.ResourceBundle
 import me.him188.animationgarden.app.i18n.loadResourceBundle
+import me.him188.animationgarden.app.platform.CommonKoinModule
 import me.him188.animationgarden.app.ux.showDialog
 import me.him188.animationgarden.datasources.dmhy.DmhyClient
-import org.slf4j.MarkerFactory
+import org.koin.core.context.startKoin
 import java.io.File
 import kotlin.coroutines.resume
 
@@ -103,6 +103,10 @@ class AnimationGardenApplication : Application() {
         @Stable
         val app: ApplicationState by lazy {
             runBlocking(Dispatchers.Default) {
+                startKoin {
+                    modules(CommonKoinModule)
+                }
+
                 val settings = appSettingsManager.value.value // initialize in Main thread
                 withContext(Dispatchers.IO) {
                     val tag by lazy(LazyThreadSafetyMode.PUBLICATION) { context.getString(R.string.app_package) }

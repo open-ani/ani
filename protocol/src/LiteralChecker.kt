@@ -16,14 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.app.platform
+package me.him188.animationgarden.shared
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.ProvidableCompositionLocal
+object LiteralChecker {
+    private val usernameRegex = Regex("^[a-zA-Z0-9_]{3,32}$")
 
-expect val LocalContext: ProvidableCompositionLocal<Context>
-
-expect abstract class Context
-
-@Composable
-expect fun isInLandscapeMode(): Boolean
+    fun isUsernameValid(username: String): Boolean = username matches usernameRegex
+    fun isPasswordValid(password: String): Boolean =
+        password.length > 6 // security is not our main concern, we want easy-to-use
+}

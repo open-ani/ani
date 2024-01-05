@@ -16,6 +16,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package androidx.compose.desktop.ui.tooling.preview
+package me.him188.animationgarden.app.platform
 
-annotation class Preview
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ProvidableCompositionLocal
+import androidx.compose.ui.platform.LocalConfiguration
+
+actual typealias Context = android.content.Context
+
+actual val LocalContext: ProvidableCompositionLocal<Context>
+    get() = androidx.compose.ui.platform.LocalContext
+
+@Composable
+actual fun isInLandscapeMode(): Boolean =
+    LocalConfiguration.current.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE

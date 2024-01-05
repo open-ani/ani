@@ -27,7 +27,7 @@ object Versions {
     // common
     const val kotlin = "2.0.0-Beta1"
     const val coroutines = "1.6.4"
-    const val atomicFU = "0.23.1"
+    const val atomicFU = "0.21.0"
     const val serialization = "1.5.0"
     const val kotlinxDatetime = "0.5.0"
     const val koin = "3.5.3"
@@ -44,11 +44,22 @@ object Versions {
 
     // Server
     const val exposed = "0.45.0"
-    const val ktor = "3.0.0-beta-1"
+
+    //    const val ktor = "3.0.0-beta-1"
+    const val ktor = "2.3.7"
 
     const val junit = "5.7.2"
+
+    object Android {
+        const val compileSdk = 34
+        const val minSdk = 26
+    }
 }
 
+// Kotlin
+const val `kotlin-test-junit5` = "org.jetbrains.kotlin:kotlin-test-junit5:${Versions.kotlin}"
+
+// Kotlinx
 const val `kotlinx-datetime` = "org.jetbrains.kotlinx:kotlinx-datetime:${Versions.kotlinxDatetime}"
 const val `kotlinx-coroutines-core` =
     "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.coroutines}"
@@ -64,11 +75,9 @@ const val `kotlinx-serialization-json` =
     "org.jetbrains.kotlinx:kotlinx-serialization-json:${Versions.serialization}"
 const val `kotlinx-serialization-protobuf` =
     "org.jetbrains.kotlinx:kotlinx-serialization-protobuf:${Versions.serialization}"
+const val `atomicfu-jvm` = "org.jetbrains.kotlinx:atomicfu-jvm:${Versions.atomicFU}"
 
-const val `koin-core` = "io.insert-koin:koin-core:${Versions.koin}"
-const val `slf4j-api` = "org.slf4j:slf4j-api:${Versions.slf4j}"
-const val `slf4j-simple` = "org.slf4j:slf4j-simple:${Versions.slf4j}"
-
+// Ktor
 const val `ktor-client-core` = "io.ktor:ktor-client-core:${Versions.ktor}"
 const val `ktor-client-cio` = "io.ktor:ktor-client-cio:${Versions.ktor}"
 const val `ktor-client-logging` = "io.ktor:ktor-client-logging:${Versions.ktor}"
@@ -78,7 +87,24 @@ const val `ktor-client-content-negotiation` =
 const val `ktor-serialization-kotlinx-json` =
     "io.ktor:ktor-serialization-kotlinx-json:${Versions.ktor}"
 
-const val `kotlin-test-junit5` = "org.jetbrains.kotlin:kotlin-test-junit5:${Versions.kotlin}"
+// Koin
+const val `koin-core` = "io.insert-koin:koin-core:${Versions.koin}"
+
+// Slf4j
+const val `slf4j-api` = "org.slf4j:slf4j-api:${Versions.slf4j}"
+const val `slf4j-simple` = "org.slf4j:slf4j-simple:${Versions.slf4j}"
+
+// Junit
 const val `junit-jupiter-api` = "org.junit.jupiter:junit-jupiter-api:${Versions.junit}"
 const val `junit-jupiter-params` = "org.junit.jupiter:junit-jupiter-params:${Versions.junit}"
 const val `junit-jupiter-engine` = "org.junit.jupiter:junit-jupiter-engine:${Versions.junit}"
+
+// Image loading
+//const val `coil` = "io.coil-kt:coil:2.5.0"
+//const val `coil-jvm` = "io.coil-kt:coil-jvm:2.5.0"
+//const val `coil-base` = "io.coil-kt:coil-base:2.5.0"
+//const val `coil-compose` = "io.coil-kt:coil-compose:2.5.0"
+const val `kamel-image` = "media.kamel:kamel-image:0.9.1"
+
+const val `datastore-preferences` = "androidx.datastore:datastore-preferences:1.0.0"
+const val `datastore-preferences-core` = "androidx.datastore:datastore-preferences-core:1.0.0"

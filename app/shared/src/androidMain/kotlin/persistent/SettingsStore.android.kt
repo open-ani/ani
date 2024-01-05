@@ -16,12 +16,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.shared
+package me.him188.animationgarden.app.persistent
 
-object AccountInputChecker {
-    private val usernameRegex = Regex("^[a-zA-Z0-9_]{3,32}$")
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStore
+import me.him188.animationgarden.app.platform.Context
 
-    fun isUsernameValid(username: String): Boolean = username matches usernameRegex
-    fun isPasswordValid(password: String): Boolean =
-        password.length > 6 // security is not our main concern, we want easy-to-use
-}
+actual val Context.settingStore: DataStore<Preferences> by preferencesDataStore("settings")
+
+actual val Context.tokenStore: DataStore<Preferences> by preferencesDataStore("tokens")

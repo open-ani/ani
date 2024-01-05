@@ -44,7 +44,7 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
 abstract class AbstractViewModel : RememberObserver {
-    private val logger = logger()
+    val logger by lazy { logger(this::class) }
 
     private val closed = atomic(false)
     private val isClosed get() = closed.value

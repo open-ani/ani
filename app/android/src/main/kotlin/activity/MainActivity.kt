@@ -24,18 +24,31 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -45,10 +58,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.withContext
+import me.him188.animationgarden.R
 import me.him188.animationgarden.android.AnimationGardenApplication
 import me.him188.animationgarden.app.AppTheme
 import me.him188.animationgarden.app.ProvideCompositionLocalsForPreview
-import me.him188.animationgarden.R
 import me.him188.animationgarden.app.app.ApplicationState
 import me.him188.animationgarden.app.app.doSearch
 import me.him188.animationgarden.app.app.rememberCurrentStarredAnimeState
@@ -56,6 +69,7 @@ import me.him188.animationgarden.app.app.settings.toKtorProxy
 import me.him188.animationgarden.app.i18n.LocalI18n
 import me.him188.animationgarden.app.platform.LocalContext
 import me.him188.animationgarden.app.platform.Res
+import me.him188.animationgarden.app.ui.home.HomePage
 import me.him188.animationgarden.datasources.api.DownloadSearchQuery
 import me.him188.animationgarden.datasources.api.SearchSession
 import me.him188.animationgarden.datasources.api.topic.Episode
@@ -106,17 +120,14 @@ class MainActivity : BaseComponentActivity() {
 
     @Composable
     private fun MainPage(app: ApplicationState) {
-        val focus = remember { FocusRequester() }
-
         CommonAppScaffold(
             topBar = {
-                MainTopBar()
             },
             clearFocus = {
-                focus.freeFocus()
             }
         ) {
-            AndroidMainPage(app, focus)
+            HomePage()
+//            AndroidMainPage(app, focus)
         }
     }
 

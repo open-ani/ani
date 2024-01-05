@@ -18,28 +18,34 @@
 
 package me.him188.animationgarden.datasources.bangumi
 
-import me.him188.animationgarden.datasources.api.*
+import me.him188.animationgarden.datasources.api.AbstractPageBasedSearchSession
+import me.him188.animationgarden.datasources.api.NameIndexSearchType
+import me.him188.animationgarden.datasources.api.SearchSession
+import me.him188.animationgarden.datasources.api.Subject
+import me.him188.animationgarden.datasources.api.SubjectImages
+import me.him188.animationgarden.datasources.api.SubjectProvider
+import me.him188.animationgarden.datasources.api.SubjectSearchQuery
 
 class BangumiSearchSession(
     private val query: SubjectSearchQuery,
     private val pageSize: Int = 25,
-) : AbstractPageBasedSearchSession<DataSourceSubject>() {
+) : AbstractPageBasedSearchSession<Subject>() {
     private val client = BangumiClient.create()
 
-    override suspend fun nextPageImpl(page: Int): List<DataSourceSubject> {
-        return client.searchSubjectByKeywords(
+    override suspend fun nextPageImpl(page: Int): List<Subject>? {
+        return client.subjects.searchSubjectByKeywords(
             query.keyword,
             type = convertType(),
             responseGroup = BangumiResponseGroup.LARGE, // 才有 rating
             start = page * pageSize,
             maxResults = pageSize,
-        ).map { subject ->
-            DataSourceSubject(
-                originalName = subject.name,
+        )?.map { subject ->
+            Subject(
+                officialName = subject.name,
                 chineseName = subject.nameCN,
-                images = object : DataSourceSubjectImages {
-                    override fun forGrid(): String = subject.images.grid
-                    override fun forPoster(): String = subject.images.large
+                images = object : SubjectImages {
+                    override fun landscapeCommon(): String = subject.images.common
+                    override fun largePoster(): String = subject.images.large
                 },
                 episodeCount = subject.epsCount,
                 ratingScore = subject.rating?.score ?: 0.0,
@@ -58,6 +64,6 @@ class BangumiSearchSession(
 class BangumiSubjectProvider : SubjectProvider {
     override val id: String get() = "Bangumi"
 
-    override suspend fun startSearch(query: SubjectSearchQuery): SearchSession<DataSourceSubject> =
+    override fun startSearch(query: SubjectSearchQuery): SearchSession<Subject> =
         BangumiSearchSession(query)
 }

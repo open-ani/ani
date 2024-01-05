@@ -21,7 +21,7 @@ import me.him188.animationgarden.datasources.bangumi.BangumiSubjectType
 
 suspend fun main() {
     val client = BangumiClient.create()
-    val res = client.searchSubjectByKeywords(
+    val res = client.subjects.searchSubjectByKeywords(
         "药物少女的",
         type = BangumiSubjectType.ANIME
     )

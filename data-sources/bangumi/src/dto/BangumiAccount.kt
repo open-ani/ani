@@ -16,12 +16,20 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.app.platform
+package me.him188.animationgarden.datasources.bangumi.dto
 
-import androidx.compose.runtime.ProvidableCompositionLocal
-import android.content.Context as AndroidContext
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-actual typealias Context = AndroidContext
-
-actual val LocalContext: ProvidableCompositionLocal<Context>
-    get() = androidx.compose.ui.platform.LocalContext
+@Serializable
+data class BangumiAccount(
+    val auth: String,
+    @SerialName("auth_encode") val authEncode: String,
+    val avatar: Avatar,
+    val id: Long,
+    val nickname: String,
+    val sign: String,
+    val url: String,
+    @SerialName("usergroup") val userGroup: Int,
+    val username: String
+)
