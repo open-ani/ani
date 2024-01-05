@@ -58,52 +58,6 @@ data class Subject(
     val summary: String,
 )
 
-@Serializable
-data class SubjectDetails(
-    val id: String,
-    val type: SubjectType,
-    val airDate: String, // "2002-04-02"
-    val images: SubjectImages,
-    val summary: String, // can be very long
-    val originalName: String, // 日文
-    val chineseName: String, // 中文
-    val tags: List<Pair<String, Int>>,
-    val score: Double,
-    val rank: Int,
-
-    val nsfw: Boolean = false,
-    val locked: Boolean,
-    val platform: String = "",
-//    val infobox: List<BangumiSubjectInfo>,
-    val volumes: Int = 0,
-    val eps: Int = 1, // 话数
-    val totalEpisodes: Int,
-    val rating: SubjectRating? = null,
-    val collection: SubjectCollection? = null,
-
-    val sourceUrl: String,
-)
-
-
-@Serializable
-data class SubjectCollection(
-    val wish: Int = 0,
-    val collect: Int = 0,
-    val doing: Int = 0,
-    val onHold: Int = 0,
-    val dropped: Int = 0,
-)
-
-@Serializable
-data class SubjectRating(
-    /**
-     * 总评分人数
-     */
-    val total: Int = 0,
-    val count: Map<RatingScore, Int> = mapOf(),
-    val score: Double = 0.0,
-)
-
 @Serializable(with = RatingScore.AsStringSerializer::class)
 enum class RatingScore(
     val id: String,

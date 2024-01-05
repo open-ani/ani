@@ -16,20 +16,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.datasources.bangumi.dto
+package me.him188.animationgarden.datasources.bangumi.models.users
 
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class BangumiAccount(
-    val auth: String,
-    @SerialName("auth_encode") val authEncode: String,
-    val avatar: Avatar,
-    val id: Long,
-    val nickname: String,
-    val sign: String,
-    val url: String,
-    @SerialName("usergroup") val userGroup: Int,
-    val username: String
+data class Avatar(
+    val large: String,
+    val medium: String,
+    val small: String
 )

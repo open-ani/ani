@@ -17,7 +17,7 @@
  */
 
 import me.him188.animationgarden.datasources.bangumi.BangumiClient
-import me.him188.animationgarden.datasources.bangumi.BangumiSubjectType
+import me.him188.animationgarden.datasources.bangumi.models.subjects.BangumiSubjectType
 import kotlin.system.exitProcess
 
 suspend fun main() {

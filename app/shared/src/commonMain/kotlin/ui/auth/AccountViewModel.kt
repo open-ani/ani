@@ -25,7 +25,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import me.him188.animationgarden.app.ui.LocalSession
 import me.him188.animationgarden.app.ui.framework.AbstractViewModel
 import me.him188.animationgarden.datasources.bangumi.BangumiClient
-import me.him188.animationgarden.datasources.bangumi.BangumiClientAccounts
+import me.him188.animationgarden.datasources.bangumi.client.BangumiClientAccounts
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 

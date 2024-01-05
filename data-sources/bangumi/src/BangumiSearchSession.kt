@@ -4,6 +4,8 @@ import me.him188.animationgarden.datasources.api.AbstractPageBasedSearchSession
 import me.him188.animationgarden.datasources.api.Subject
 import me.him188.animationgarden.datasources.api.SubjectSearchQuery
 import me.him188.animationgarden.datasources.api.SubjectType
+import me.him188.animationgarden.datasources.bangumi.models.subjects.BangumiSubjectType
+import me.him188.animationgarden.datasources.bangumi.models.subjects.toSubject
 
 class BangumiSearchSession(
     private val client: BangumiClient,

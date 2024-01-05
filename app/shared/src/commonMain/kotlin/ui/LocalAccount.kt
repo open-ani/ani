@@ -25,8 +25,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import me.him188.animationgarden.app.ui.framework.AbstractViewModel
-import me.him188.animationgarden.datasources.bangumi.BangumiToken
-import me.him188.animationgarden.datasources.bangumi.dto.BangumiAccount
+import me.him188.animationgarden.datasources.bangumi.models.BangumiToken
+import me.him188.animationgarden.datasources.bangumi.models.users.BangumiAccount
 
 class LocalSession : AbstractViewModel() {
     internal class Session(

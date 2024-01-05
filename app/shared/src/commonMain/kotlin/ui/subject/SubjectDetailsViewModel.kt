@@ -9,11 +9,11 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
 import me.him188.animationgarden.app.ui.framework.AbstractViewModel
 import me.him188.animationgarden.datasources.bangumi.BangumiClient
-import me.him188.animationgarden.datasources.bangumi.BangumiSubjectDetails
-import me.him188.animationgarden.datasources.bangumi.BangumiSubjectImageSize
-import me.him188.animationgarden.datasources.bangumi.BangumiSubjectInfo
-import me.him188.animationgarden.datasources.bangumi.BangumiSubjectTag
 import me.him188.animationgarden.datasources.bangumi.Rating
+import me.him188.animationgarden.datasources.bangumi.models.subjects.BangumiSubjectDetails
+import me.him188.animationgarden.datasources.bangumi.models.subjects.BangumiSubjectImageSize
+import me.him188.animationgarden.datasources.bangumi.models.subjects.BangumiSubjectInfo
+import me.him188.animationgarden.datasources.bangumi.models.subjects.BangumiSubjectTag
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
