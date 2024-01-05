@@ -153,8 +153,14 @@ fun BangumiSubject.toSubject(): Subject {
         originalName = subject.name,
         chineseName = subject.nameCN,
         images = SubjectImages(
-            landscapeCommon = "https://api.bgm.tv/v0/subjects/${subject.id}/image?type=common",
-            largePoster = "https://api.bgm.tv/v0/subjects/${subject.id}/image?type=large",
+            landscapeCommon = BangumiClientImpl.getSubjectImageUrl(
+                subject.id,
+                BangumiSubjectImageSize.MEDIUM
+            ),
+            largePoster = BangumiClientImpl.getSubjectImageUrl(
+                subject.id,
+                BangumiSubjectImageSize.LARGE
+            ),
         ),
         score = subject.score,
         rank = subject.rank,
@@ -281,21 +287,23 @@ enum class Rating(
 }
 
 @Serializable
-enum class BangumiSubjectImageSize {
+enum class BangumiSubjectImageSize(
+    val id: String,
+) {
     @SerialName("small")
-    SMALL,
+    SMALL("small"),
 
     @SerialName("medium")
-    MEDIUM,
+    MEDIUM("medium"),
 
     @SerialName("large")
-    LARGE,
+    LARGE("large"),
 
     @SerialName("grid")
-    GRID,
+    GRID("grid"),
 
     @SerialName("common")
-    COMMON,
+    COMMON("grid"),
 }
 
 @Serializable
@@ -315,26 +323,28 @@ enum class BangumiResponseGroup(val id: String) {
 }
 
 @Serializable
-enum class BangumiSort {
+enum class BangumiSort(
+    val id: String,
+) {
     // don't change names, used as .lowercase()
 
     /**
      * 按照匹配程度
      */
     @SerialName("match")
-    MATCH,
+    MATCH("match"),
 
     /**
      * 收藏人数
      */
     @SerialName("heat")
-    HEAT,
+    HEAT("heat"),
 
     @SerialName("rank")
-    RANK,
+    RANK("rank"),
 
     @SerialName("score")
-    SCORE,
+    SCORE("score"),
     ;
 }
 
@@ -440,7 +450,7 @@ internal class BangumiClientImpl(
                 val req = buildJsonObject {
                     put("keyword", keyword)
                     sort?.let { sort ->
-                        put("sort", sort.name.lowercase())
+                        put("sort", sort.id)
                     }
 
                     put("filter", buildJsonObject {
@@ -473,18 +483,17 @@ internal class BangumiClientImpl(
         }
 
         override suspend fun getSubjectImageUrl(id: Long, size: BangumiSubjectImageSize): String {
-            return "https://api.bgm.tv/v0/subject/${id}/image?type=${size.name.lowercase()}"
-//            val resp = httpClient.get("https://api.bgm.tv/v0/subject/${id}/image")
-//
-//            if (!resp.status.isSuccess()) {
-//                throw IllegalStateException("Failed to get subject images by id: $resp")
-//            }
-//
-//            return resp.body()
+            return Companion.getSubjectImageUrl(id, size)
         }
     }
 
     override fun close() {
         httpClient.close()
+    }
+
+    companion object {
+        fun getSubjectImageUrl(id: Long, size: BangumiSubjectImageSize): String {
+            return "https://api.bgm.tv/v0/subjects/${id}/image?type=${size.id.lowercase()}"
+        }
     }
 }
