@@ -30,4 +30,6 @@ dependencies {
     implementation(`ktor-serialization-kotlinx-json`)
 
     testImplementation(`slf4j-simple`)
+
+    implementation(projects.utils.serialization)
 }

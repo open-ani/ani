@@ -25,6 +25,7 @@ plugins {
     id("com.android.application")
     kotlin("android")
     id("kotlinx-atomicfu")
+    id("kotlin-parcelize")
 }
 
 dependencies {

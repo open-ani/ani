@@ -19,6 +19,7 @@
 package me.him188.animationgarden.datasources.bangumi
 
 import io.ktor.client.HttpClient
+import io.ktor.client.HttpClientConfig
 import io.ktor.client.call.body
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.HttpRequestRetry
@@ -27,8 +28,12 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.basicAuth
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.utils.io.core.Closeable
@@ -40,7 +45,14 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
+import me.him188.animationgarden.datasources.api.Subject
+import me.him188.animationgarden.datasources.api.SubjectCollection
+import me.him188.animationgarden.datasources.api.SubjectImages
 import me.him188.animationgarden.datasources.bangumi.dto.BangumiAccount
+import me.him188.animationgarden.utils.serialization.toJsonArray
 
 class BangumiToken(
     internal val username: String,
@@ -71,20 +83,34 @@ interface BangumiClientSubjects {
     /**
      * 搜索条目.
      *
-     * @param keywords 关键字, 例如番剧名称
-     * @param type 条目类型, 默认为 [BangumiSubjectType.ANIME]
+     * @param keyword 关键字, 例如番剧名称
+     * @param types 条目类型, 默认为 [BangumiSubjectType.ANIME]
      * @param responseGroup 返回数据大小, 默认为 [BangumiResponseGroup.SMALL]
-     * @param start 开始条数, 默认为 0
-     * @param maxResults 返回条数, 最大为 25
+     * @param offset 开始条数, 默认为 0
+     * @param limit 返回条数, 最大为 25
      * @return 搜索结果, null 表示已经到达最后一条
      */
     suspend fun searchSubjectByKeywords(
-        keywords: String,
-        type: BangumiSubjectType? = null,
-        responseGroup: BangumiResponseGroup? = null,
-        start: Int? = null,
-        maxResults: Int? = null,
+        keyword: String,
+        offset: Int? = null,
+        limit: Int? = null,
+        sort: BangumiSort? = null,
+        types: List<BangumiSubjectType>? = null,
+        tags: List<String>? = null, // "童年", "原创"
+        airDates: List<String>? = null, // YYYY-MM-DD
+        ratings: List<String>? = null, // ">=6", "<8"
+        ranks: List<String>? = null,
+        nsfw: Boolean? = null,
     ): List<BangumiSubject>?
+
+    suspend fun getSubjectById(
+        id: Long,
+    ): BangumiSubjectDetails?
+
+    suspend fun getSubjectImageUrl(
+        id: Long,
+        size: BangumiSubjectImageSize,
+    ): String
 }
 
 interface BangumiClient : Closeable {
@@ -95,31 +121,112 @@ interface BangumiClient : Closeable {
     val subjects: BangumiClientSubjects
 
     companion object Factory {
-        fun create(): BangumiClient = BangumiClientImpl()
+        fun create(httpClientConfiguration: HttpClientConfig<*>.() -> Unit = {}): BangumiClient =
+            BangumiClientImpl(httpClientConfiguration)
     }
 }
 
 @Serializable
+data class BangumiSubjectTag(
+    val name: String,
+    val count: Int,
+)
+
+@Serializable
 data class BangumiSubject(
-    // 以下为 small
     val id: Long,
-    val url: String,
     val type: BangumiSubjectType,
+    @SerialName("date") val airDate: String, // "2002-04-02"
+    @SerialName("image") val image: String, // cover
+    val summary: String,
     val name: String, // 日文
-    @SerialName("name_cn") val nameCN: String = name, // 中文
-    val images: BangumiSubjectImages,
+    @SerialName("name_cn") val nameCN: String, // 中文
+    val tags: List<BangumiSubjectTag>,
+    val score: Double,
+    val rank: Int,
+)
 
-    // 以下为 medium
-    val summary: String = "",
+fun BangumiSubject.toSubject(): Subject {
+    val subject = this
+    return Subject(
+        id = subject.id.toString(),
+        originalName = subject.name,
+        chineseName = subject.nameCN,
+        images = SubjectImages(
+            landscapeCommon = "https://api.bgm.tv/v0/subjects/${subject.id}/image?type=common",
+            largePoster = "https://api.bgm.tv/v0/subjects/${subject.id}/image?type=large",
+        ),
+        score = subject.score,
+        rank = subject.rank,
+        sourceUrl = "https://bangumi.tv/subject/${subject.id}",
+        tags = subject.tags.map { it.name to it.count },
+        summary = subject.summary,
+    )
+}
+
+//fun BangumiSubjectDetails.toSubjectDetails(): SubjectDetails {
+//    val subject = this
+//    return SubjectDetails(
+//        id = subject.id.toString(),
+//        originalName = subject.name,
+//        chineseName = subject.nameCN,
+//        images = SubjectImages(
+//            landscapeCommon = subject.images.large,
+//            largePoster = subject.images.large,
+//        ),
+//        score = subject.score,
+//        rank = subject.rank,
+//        sourceUrl = "https://bangumi.tv/subject/${subject.id}",
+//        tags = subject.tags.map { it.name to it.count },
+//        summary = subject.summary,
+//        nsfw = subject.nsfw,
+//        locked = subject.locked,
+//        platform = subject.platform,
+//        infobox = subject.infobox,
+//        volumes = subject.volumes,
+//        eps = subject.eps,
+//        totalEpisodes = subject.totalEpisodes,
+////        collection = subject.collection.toSubjectCollection(),
+////        rating = subject.rating.toSubjectRating(),
+//    )
+//}
+
+private fun BangumiCollection.toSubjectCollection(): SubjectCollection? {
+    return SubjectCollection(
+        wish = this.wish,
+        collect = this.collect,
+        doing = this.doing,
+        onHold = this.onHold,
+        dropped = this.dropped,
+    )
+}
+
+@Serializable
+data class BangumiSubjectDetails(
+    val id: Long,
+    val type: BangumiSubjectType,
+    @SerialName("date") val airDate: String, // "2002-04-02"
+    @SerialName("images") val images: BangumiSubjectImages,
+    val summary: String, // can be very long
+    @SerialName("name") val originalName: String, // 日文
+    @SerialName("name_cn") val chineseName: String, // 中文
+    val tags: List<BangumiSubjectTag>,
+
+    val nsfw: Boolean = false,
+    val locked: Boolean,
+    val platform: String = "",
+    val infobox: List<BangumiSubjectInfo>,
+    val volumes: Int = 0,
     val eps: Int = 1, // 话数
-    @SerialName("eps_count") val epsCount: Int = 0, // 实测跟 eps 一样
-    val rank: Int = 0,
-    val collection: BangumiCollection? = null,
+    @SerialName("total_episodes") val totalEpisodes: Int,
+    val rating: BangumiRating,
+    val collection: BangumiCollection,
+)
 
-    // 以下为 large
-    @SerialName("air_date") val airDate: String = "", // "2002-04-02"
-    @SerialName("air_weekday") val airWeekday: Int = 0,
-    val rating: BangumiRating? = null,
+@Serializable
+data class BangumiSubjectInfo(
+    val key: String,
+    val value: JsonElement,
 )
 
 @Serializable
@@ -139,6 +246,7 @@ data class BangumiRating(
     val total: Int = 0,
     val count: Map<Rating, Int> = mapOf(),
     val score: Double = 0.0,
+    val rank: Int,
 )
 
 @Serializable(with = Rating.AsStringSerializer::class)
@@ -173,6 +281,24 @@ enum class Rating(
 }
 
 @Serializable
+enum class BangumiSubjectImageSize {
+    @SerialName("small")
+    SMALL,
+
+    @SerialName("medium")
+    MEDIUM,
+
+    @SerialName("large")
+    LARGE,
+
+    @SerialName("grid")
+    GRID,
+
+    @SerialName("common")
+    COMMON,
+}
+
+@Serializable
 data class BangumiSubjectImages(
     val large: String = "",
     val common: String = "",
@@ -185,6 +311,30 @@ enum class BangumiResponseGroup(val id: String) {
     SMALL("small"),
     MEDIUM("medium"),
     LARGE("large"),
+    ;
+}
+
+@Serializable
+enum class BangumiSort {
+    // don't change names, used as .lowercase()
+
+    /**
+     * 按照匹配程度
+     */
+    @SerialName("match")
+    MATCH,
+
+    /**
+     * 收藏人数
+     */
+    @SerialName("heat")
+    HEAT,
+
+    @SerialName("rank")
+    RANK,
+
+    @SerialName("score")
+    SCORE,
     ;
 }
 
@@ -213,8 +363,11 @@ enum class BangumiSubjectType(val id: Int) {
     }
 }
 
-internal class BangumiClientImpl : BangumiClient {
+internal class BangumiClientImpl(
+    httpClientConfiguration: HttpClientConfig<*>.() -> Unit = {},
+) : BangumiClient {
     private val httpClient = HttpClient(CIO) {
+        httpClientConfiguration()
         install(HttpRequestRetry) {
             maxRetries = 3
             delayMillis { 2000 }
@@ -223,21 +376,20 @@ internal class BangumiClientImpl : BangumiClient {
         install(ContentNegotiation) {
             json(Json {
                 ignoreUnknownKeys = true
-                isLenient
             })
         }
     }
 
     @Serializable
-    private class SearchSubjectByKeywordsResponse(
-//        val results: Int, // count
-        val list: List<BangumiSubject>? = null,
+    private data class SearchSubjectByKeywordsResponse(
+        val total: Int,
+        val data: List<BangumiSubject>? = null,
     )
 
     override val accounts: BangumiClientAccounts = object : BangumiClientAccounts {
         override suspend fun login(
             email: String,
-            password: String
+            password: String,
         ): BangumiClientAccounts.LoginResponse {
             val resp = httpClient.get("https://api.bgm.tv/auth?source=onAir") {
                 basicAuth(email, password)
@@ -269,25 +421,66 @@ internal class BangumiClientImpl : BangumiClient {
 
     override val subjects: BangumiClientSubjects = object : BangumiClientSubjects {
         override suspend fun searchSubjectByKeywords(
-            keywords: String,
-            type: BangumiSubjectType?,
-            responseGroup: BangumiResponseGroup?,
-            start: Int?,
-            maxResults: Int?,
+            keyword: String,
+            offset: Int?,
+            limit: Int?,
+            sort: BangumiSort?,
+            types: List<BangumiSubjectType>?,
+            tags: List<String>?,
+            airDates: List<String>?,
+            ratings: List<String>?,
+            ranks: List<String>?,
+            nsfw: Boolean?,
         ): List<BangumiSubject>? {
-            val resp = httpClient.get("https://api.bgm.tv/search/subject/${keywords}") {
-                type?.id?.let { parameter("type", it) }
-                responseGroup?.id?.let { parameter("responseGroup", it) }
-                start?.let { parameter("start", it) }
-                maxResults?.let { parameter("max_results", it) }
+            val resp = httpClient.post("https://api.bgm.tv/v0/search/subjects") {
+                offset?.let { parameter("offset", it) }
+                limit?.let { parameter("limit", it) }
+
+                contentType(ContentType.Application.Json)
+                val req = buildJsonObject {
+                    put("keyword", keyword)
+                    sort?.let { sort ->
+                        put("sort", sort.name.lowercase())
+                    }
+
+                    put("filter", buildJsonObject {
+                        types?.let { types -> put("type", types.map { it.id }.toJsonArray()) }
+                        ranks?.let { put("rank", it.toJsonArray()) }
+                        tags?.let { put("tag", it.toJsonArray()) }
+                        airDates?.let { put("air_date", it.toJsonArray()) }
+                        ratings?.let { put("rating", it.toJsonArray()) }
+                        nsfw?.let { put("nsfw", it) }
+                    })
+                }
+                setBody(req)
             }
 
             if (!resp.status.isSuccess()) {
                 throw IllegalStateException("Failed to search subject by keywords: $resp")
             }
 
-            val body = resp.body<SearchSubjectByKeywordsResponse>()
-            return body.list
+            return resp.body<SearchSubjectByKeywordsResponse>().data
+        }
+
+        override suspend fun getSubjectById(id: Long): BangumiSubjectDetails? {
+            val resp = httpClient.get("https://api.bgm.tv/v0/subjects/${id}")
+
+            if (!resp.status.isSuccess()) {
+                throw IllegalStateException("Failed to get subject by id: $resp")
+            }
+
+            return resp.body()
+        }
+
+        override suspend fun getSubjectImageUrl(id: Long, size: BangumiSubjectImageSize): String {
+            return "https://api.bgm.tv/v0/subject/${id}/image?type=${size.name.lowercase()}"
+//            val resp = httpClient.get("https://api.bgm.tv/v0/subject/${id}/image")
+//
+//            if (!resp.status.isSuccess()) {
+//                throw IllegalStateException("Failed to get subject images by id: $resp")
+//            }
+//
+//            return resp.body()
         }
     }
 

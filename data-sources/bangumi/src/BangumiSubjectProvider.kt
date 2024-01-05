@@ -18,53 +18,20 @@
 
 package me.him188.animationgarden.datasources.bangumi
 
-import me.him188.animationgarden.datasources.api.AbstractPageBasedSearchSession
-import me.him188.animationgarden.datasources.api.NameIndexSearchType
 import me.him188.animationgarden.datasources.api.SearchSession
 import me.him188.animationgarden.datasources.api.Subject
-import me.him188.animationgarden.datasources.api.SubjectImages
 import me.him188.animationgarden.datasources.api.SubjectProvider
 import me.him188.animationgarden.datasources.api.SubjectSearchQuery
 
-class BangumiSearchSession(
-    private val query: SubjectSearchQuery,
-    private val pageSize: Int = 25,
-) : AbstractPageBasedSearchSession<Subject>() {
-    private val client = BangumiClient.create()
-
-    override suspend fun nextPageImpl(page: Int): List<Subject>? {
-        return client.subjects.searchSubjectByKeywords(
-            query.keyword,
-            type = convertType(),
-            responseGroup = BangumiResponseGroup.LARGE, // 才有 rating
-            start = page * pageSize,
-            maxResults = pageSize,
-        )?.map { subject ->
-            Subject(
-                id = subject.id.toString(),
-                officialName = subject.name,
-                chineseName = subject.nameCN,
-                images = object : SubjectImages {
-                    override fun landscapeCommon(): String = subject.images.large
-                    override fun largePoster(): String = subject.images.large
-                },
-                episodeCount = subject.epsCount,
-                ratingScore = subject.rating?.score ?: 0.0,
-                ratingCount = subject.rating?.total ?: 0,
-                rank = subject.rank,
-                sourceUrl = subject.url,
-            )
-        }
-    }
-
-    private fun convertType() = when (query.type) {
-        NameIndexSearchType.ANIME -> BangumiSubjectType.ANIME
-    }
-}
-
-class BangumiSubjectProvider : SubjectProvider {
+class BangumiSubjectProvider(
+    private val client: BangumiClient = BangumiClient.create(),
+) : SubjectProvider {
     override val id: String get() = "Bangumi"
 
     override fun startSearch(query: SubjectSearchQuery): SearchSession<Subject> =
-        BangumiSearchSession(query)
+        BangumiSearchSession(client, query)
+
+//    override suspend fun getSubjectDetails(id: String): SubjectDetails? {
+//        return client.subjects.getSubjectById(id.toLong())?.toSubjectDetails()
+//    }
 }

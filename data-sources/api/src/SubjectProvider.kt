@@ -18,6 +18,13 @@
 
 package me.him188.animationgarden.datasources.api
 
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+
 /**
  * 提供番剧名称索引的数据源. 支持使用关键字搜索正式名称.
  */
@@ -28,47 +35,119 @@ interface SubjectProvider {
     val id: String
 
     fun startSearch(query: SubjectSearchQuery): SearchSession<Subject>
+//
+//    suspend fun getSubjectDetails(id: String): SubjectDetails?
 }
 
+@Serializable
 data class Subject(
     val id: String,
     /**
      * 条目官方原名称, 例如番剧为日文名称
      */
-    val officialName: String,
+    val originalName: String,
     /**
      * 条目中文名称
      */
     val chineseName: String,
-    val episodeCount: Int,
-    /**
-     * 平均评分
-     */
-    val ratingScore: Double,
-    /**
-     * 评分人数
-     */
-    val ratingCount: Int,
+    val score: Double,
     val rank: Int,
+    val tags: List<Pair<String, Int>>,
     val sourceUrl: String, // 数据源
     val images: SubjectImages,
+    val summary: String,
 )
 
-interface SubjectImages {
-    /**
-     * Get image URL for grid view.
-     */
-    fun landscapeCommon(): String
+@Serializable
+data class SubjectDetails(
+    val id: String,
+    val type: SubjectType,
+    val airDate: String, // "2002-04-02"
+    val images: SubjectImages,
+    val summary: String, // can be very long
+    val originalName: String, // 日文
+    val chineseName: String, // 中文
+    val tags: List<Pair<String, Int>>,
+    val score: Double,
+    val rank: Int,
 
-    fun largePoster(): String
+    val nsfw: Boolean = false,
+    val locked: Boolean,
+    val platform: String = "",
+//    val infobox: List<BangumiSubjectInfo>,
+    val volumes: Int = 0,
+    val eps: Int = 1, // 话数
+    val totalEpisodes: Int,
+    val rating: SubjectRating? = null,
+    val collection: SubjectCollection? = null,
+
+    val sourceUrl: String,
+)
+
+
+@Serializable
+data class SubjectCollection(
+    val wish: Int = 0,
+    val collect: Int = 0,
+    val doing: Int = 0,
+    val onHold: Int = 0,
+    val dropped: Int = 0,
+)
+
+@Serializable
+data class SubjectRating(
+    /**
+     * 总评分人数
+     */
+    val total: Int = 0,
+    val count: Map<RatingScore, Int> = mapOf(),
+    val score: Double = 0.0,
+)
+
+@Serializable(with = RatingScore.AsStringSerializer::class)
+enum class RatingScore(
+    val id: String,
+) {
+    ONE("1"),
+    TWO("2"),
+    THREE("3"),
+    FOUR("4"),
+    FIVE("5"),
+    SIX("6"),
+    SEVEN("7"),
+    EIGHT("8"),
+    NINE("9"),
+    TEN("10"),
+    ;
+
+    internal object AsStringSerializer : KSerializer<RatingScore> {
+        override val descriptor: SerialDescriptor = String.serializer().descriptor
+
+        override fun deserialize(decoder: Decoder): RatingScore {
+            val raw = String.serializer().deserialize(decoder)
+            return entries.firstOrNull { it.id == raw }
+                ?: throw IllegalStateException("Unknown rating: $raw")
+        }
+
+        override fun serialize(encoder: Encoder, value: RatingScore) {
+            return String.serializer().serialize(encoder, value.id)
+        }
+    }
 }
+
+
+@Serializable
+data class SubjectImages(
+    val landscapeCommon: String,
+    val largePoster: String,
+)
 
 class SubjectSearchQuery(
     val keyword: String,
-    val type: NameIndexSearchType = NameIndexSearchType.ANIME,
+    val type: SubjectType = SubjectType.ANIME,
 )
 
-enum class NameIndexSearchType {
+enum class SubjectType {
     ANIME,
 
     /*

@@ -24,9 +24,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import me.him188.animationgarden.app.preview.PreviewData
 import me.him188.animationgarden.datasources.api.SearchSession
 import me.him188.animationgarden.datasources.api.Subject
-import me.him188.animationgarden.datasources.api.SubjectImages
 
 @Composable
 @Preview(apiLevel = 33)
@@ -39,25 +39,7 @@ private fun PreviewSubjectList() {
                 }
             }
 
-            private val subject
-                get() = Subject(
-                    id = "123",
-                    officialName = "葬送的芙莉莲",
-                    chineseName = "葬送的芙莉莲",
-                    episodeCount = 12,
-                    ratingScore = 8.0,
-                    ratingCount = 100,
-                    rank = 1,
-                    sourceUrl = "https://bgm.tv/subject/400602",
-                    images = object : SubjectImages {
-                        override fun landscapeCommon(): String =
-                            "https://lain.bgm.tv/pic/cover/l/13/c5/400602_ZI8Y9.jpg?_gl=1*isepc9*_ga*NDQzNzcwOTYyLjE3MDM4NjE5NzQ.*_ga_1109JLGMHN*MTcwNDQwNjE1MS4xMC4xLjE3MDQ0MDYxNzYuMC4wLjA."
-
-                        override fun largePoster(): String =
-                            "https://lain.bgm.tv/pic/cover/l/13/c5/400602_ZI8Y9.jpg?_gl=1*isepc9*_ga*NDQzNzcwOTYyLjE3MDM4NjE5NzQ.*_ga_1109JLGMHN*MTcwNDQwNjE1MS4xMC4xLjE3MDQ0MDYxNzYuMC4wLjA."
-                    }
-                )
-
+            private val subject get() = PreviewData.SosouNoFurilen
             private val maxCount = 15
             private var count = 0
             override suspend fun nextPageOrNull(): List<Subject>? {
@@ -71,5 +53,5 @@ private fun PreviewSubjectList() {
             }
         })
     }
-    SubjectColumn(viewModel)
+    SubjectPreviewColumn(viewModel)
 }

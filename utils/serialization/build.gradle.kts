@@ -16,20 +16,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import me.him188.animationgarden.datasources.bangumi.BangumiClient
-import me.him188.animationgarden.datasources.bangumi.BangumiSubjectType
-import kotlin.system.exitProcess
+plugins {
+    kotlin("jvm")
+    kotlin("plugin.serialization")
+}
 
-suspend fun main() {
-    val client = BangumiClient.create()
-    println(client.subjects.getSubjectById(400602))
-
-    exitProcess(0)
-    val res = client.subjects.searchSubjectByKeywords(
-        "药屋",
-        types = listOf(BangumiSubjectType.ANIME),
-//        sort = BangumiSort.MATCH,
-    )
-    println(res?.map { it.name })
-
+dependencies {
+    api(`kotlinx-serialization-json`)
 }

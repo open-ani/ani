@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Animation Garden App
   ~ Copyright (C) 2022  Him188
   ~
@@ -18,29 +17,37 @@
   -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.VIBRATE"/>
 
-    <application android:name="AnimationGardenApplication"
-                 android:allowBackup="true"
-                 android:icon="@mipmap/ic_launcher"
-                 android:label="@string/app_name"
-                 android:roundIcon="@mipmap/ic_launcher_round"
-                 android:supportsRtl="true"
-                 android:usesCleartextTraffic="true"
-                 android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.VIBRATE" />
 
-        <activity android:name=".activity.MainActivity"
-                  android:exported="true"
-                  android:launchMode="singleTask">
+    <application
+            android:name="AnimationGardenApplication"
+            android:allowBackup="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:supportsRtl="true"
+            android:usesCleartextTraffic="true"
+            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
+
+        <activity
+                android:name=".activity.MainActivity"
+                android:exported="true"
+                android:launchMode="singleTask">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
+                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <activity android:name=".activity.SettingsActivity"/>
-        <activity android:name=".activity.StarredListActivity"/>
+        <activity
+                android:name=".activity.SubjectDetailsActivity"
+                android:exported="true"
+                android:launchMode="singleTask" />
+
+        <activity android:name=".activity.SettingsActivity" />
+        <activity android:name=".activity.StarredListActivity" />
     </application>
 </manifest>

@@ -45,6 +45,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -56,44 +57,44 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
-import me.him188.animationgarden.datasources.api.Subject
+import me.him188.animationgarden.app.platform.LocalContext
 
 /**
- * 番剧列表, 双列模式
+ * 番剧预览列表, 双列模式
  */
 @Composable
-fun SubjectColumn(
+fun SubjectPreviewColumn(
     viewModel: SubjectListViewModel,
     modifier: Modifier = Modifier,
-    onClickSubject: (Subject) -> Unit = {},
 ) {
     val items by viewModel.list.collectAsState()
 
-    val cellsCount = 2
     LazyVerticalGrid(
-        columns = GridCells.Fixed(cellsCount),
+        columns = GridCells.Fixed(2),
         modifier,
         contentPadding = PaddingValues(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         items(items, key = { it.id }) { subject ->
             Row {
+                val context = LocalContext.current
                 SubjectPreviewCard(
-                    title = subject.chineseName,
-                    imageUrl = remember(subject.id) { subject.images.landscapeCommon() },
-                    onClick = {
-                        onClickSubject(subject)
+                    title = remember(subject.id) {
+                        subject.chineseName.takeIf { it.isNotBlank() } ?: subject.originalName
                     },
+                    imageUrl = remember(subject.id) { subject.images.landscapeCommon },
+                    onClick = { viewModel.onClickSubjectPreview(context, subject) },
                 )
             }
         }
 
-        item("loading", span = { GridItemSpan(cellsCount) }, contentType = "loading") {
+        item("loading", span = { GridItemSpan(maxLineSpan) }, contentType = "loading") {
             val hasMore by viewModel.hasMore.collectAsState()
             val loading by viewModel.loading.collectAsState()
             if (loading || hasMore) {
-                viewModel.loadMore()
-
+                LaunchedEffect(true) {
+                    viewModel.loadMore()
+                }
                 Row(
                     Modifier.fillMaxWidth().height(IntrinsicSize.Min),
                     horizontalArrangement = Arrangement.Center
@@ -113,7 +114,7 @@ fun SubjectColumn(
 }
 
 /**
- * 番剧预览卡片, 一行显示两个的那种, 只有图片和名称
+ * 一个番剧预览卡片, 一行显示两个的那种, 只有图片和名称
  */
 @Composable
 fun SubjectPreviewCard(
@@ -145,7 +146,9 @@ fun SubjectPreviewCard(
                     }
                 },
                 onFailure = {
-                    it.printStackTrace()
+                    LaunchedEffect(true) {
+                        it.printStackTrace()
+                    }
                     Box(
                         Modifier.fillMaxSize()
                             .background(Color.LightGray)

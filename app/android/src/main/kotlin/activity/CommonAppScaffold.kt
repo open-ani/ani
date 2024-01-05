@@ -55,7 +55,7 @@ import me.him188.animationgarden.app.ui.foundation.DefaultKamelConfig
 
 @Composable
 fun BaseComponentActivity.CommonAppScaffold(
-    topBar: @Composable () -> Unit,
+    topBar: @Composable () -> Unit = {},
     clearFocus: (() -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {

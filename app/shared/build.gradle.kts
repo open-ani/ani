@@ -104,6 +104,7 @@ kotlin {
                 api(`datastore-preferences`)
                 implementation("androidx.compose.material3:material3:1.1.2")
                 implementation("com.google.accompanist:accompanist-flowlayout:0.25.1")
+                api("androidx.navigation:navigation-compose:2.7.6")
             }
         }
 

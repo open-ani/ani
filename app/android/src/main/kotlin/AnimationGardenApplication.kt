@@ -105,6 +105,7 @@ class AnimationGardenApplication : Application() {
             runBlocking(Dispatchers.Default) {
                 startKoin {
                     modules(CommonKoinModule)
+                    modules(AndroidModules)
                 }
 
                 val settings = appSettingsManager.value.value // initialize in Main thread

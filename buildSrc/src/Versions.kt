@@ -50,6 +50,8 @@ object Versions {
 
     const val junit = "5.7.2"
 
+    const val accompanist: String = "0.33.2-alpha"
+
     object Android {
         const val compileSdk = 34
         const val minSdk = 26
@@ -108,3 +110,9 @@ const val `kamel-image` = "media.kamel:kamel-image:0.9.1"
 
 const val `datastore-preferences` = "androidx.datastore:datastore-preferences:1.0.0"
 const val `datastore-preferences-core` = "androidx.datastore:datastore-preferences-core:1.0.0"
+
+
+const val `accompanist-placeholder` =
+    "com.google.accompanist:accompanist-placeholder:${Versions.accompanist}"
+const val `accompanist-placeholder-material` =
+    "com.google.accompanist:accompanist-placeholder-material:${Versions.accompanist}"

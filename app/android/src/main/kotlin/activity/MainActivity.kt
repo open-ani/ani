@@ -29,12 +29,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
@@ -50,7 +45,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
@@ -58,7 +52,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.withContext
-import me.him188.animationgarden.R
 import me.him188.animationgarden.android.AnimationGardenApplication
 import me.him188.animationgarden.app.AppTheme
 import me.him188.animationgarden.app.ProvideCompositionLocalsForPreview
@@ -66,9 +59,6 @@ import me.him188.animationgarden.app.app.ApplicationState
 import me.him188.animationgarden.app.app.doSearch
 import me.him188.animationgarden.app.app.rememberCurrentStarredAnimeState
 import me.him188.animationgarden.app.app.settings.toKtorProxy
-import me.him188.animationgarden.app.i18n.LocalI18n
-import me.him188.animationgarden.app.platform.LocalContext
-import me.him188.animationgarden.app.platform.Res
 import me.him188.animationgarden.app.ui.home.HomePage
 import me.him188.animationgarden.datasources.api.DownloadSearchQuery
 import me.him188.animationgarden.datasources.api.SearchSession
@@ -120,12 +110,7 @@ class MainActivity : BaseComponentActivity() {
 
     @Composable
     private fun MainPage(app: ApplicationState) {
-        CommonAppScaffold(
-            topBar = {
-            },
-            clearFocus = {
-            }
-        ) {
+        CommonAppScaffold {
             HomePage()
 //            AndroidMainPage(app, focus)
         }
@@ -149,47 +134,6 @@ class MainActivity : BaseComponentActivity() {
         }
 
     }
-
-
-    @Preview
-    @Composable
-    private fun PreviewMainTopAppBar() {
-        ProvideCompositionLocalsForPreview {
-            MainTopBar()
-        }
-    }
-
-    @Composable
-    private fun MainTopBar() {
-        CommonTopAppBar(
-            title = {
-                Text(text = stringResource(id = R.string.app_name))
-            },
-            actions = {
-                val context = LocalContext.current
-                IconButton(onClick = {
-                    starredListActivityLauncher.launch(
-                        StarredListActivity.getIntent(
-                            context
-                        )
-                    )
-                }) {
-                    Icon(
-                        Res.painter.star,
-                        LocalI18n.current.getString("menu.starred")
-                    )
-                }
-
-                IconButton(onClick = { startActivity(SettingsActivity.getIntent(context)) }) {
-                    Icon(
-                        Icons.Default.Settings,
-                        LocalI18n.current.getString("menu.settings")
-                    )
-                }
-            }
-        )
-    }
-
 
     @Preview
     @Composable
