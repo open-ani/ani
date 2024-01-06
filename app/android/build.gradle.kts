@@ -28,13 +28,13 @@ dependencies {
     implementation(projects.dataSources.dmhy)
     implementation(projects.app.shared)
 
-    implementation(libs.androidx.activity.compose)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.swiperefreshlayout)
     implementation(libs.androidx.material)
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.material3.window.size.class0)
 
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.viewbinding)
@@ -49,12 +49,12 @@ dependencies {
 
 android {
     namespace = "me.him188.animationgarden.android"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
+    compileSdk = getIntProperty("android.compile.sdk")
     defaultConfig {
         applicationId = "me.him188.animationgarden"
-        minSdk = libs.versions.android.minSdk.get().toInt()
-        targetSdk = libs.versions.android.compileSdk.get().toInt()
-        versionCode = getProperty("version.code").toInt()
+        minSdk = getIntProperty("android.min.sdk")
+        targetSdk = getIntProperty("android.compile.sdk")
+        versionCode = getIntProperty("android.version.code")
         versionName = project.version.toString()
     }
     compileOptions {
@@ -62,7 +62,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_1_8
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
+        kotlinCompilerExtensionVersion = libs.versions.jetpack.compose.compiler.get()
     }
     signingConfigs {
         kotlin.runCatching { getProperty("signing_release_storeFileFromRoot") }.getOrNull()?.let {

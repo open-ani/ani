@@ -124,10 +124,10 @@ kotlin {
 
 android {
     namespace = "me.him188.animationgarden"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
+    compileSdk = getIntProperty("android.compile.sdk")
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     defaultConfig {
-        minSdk = libs.versions.android.minSdk.get().toInt()
+        minSdk = getIntProperty("android.min.sdk")
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -148,7 +148,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
+        kotlinCompilerExtensionVersion = libs.versions.jetpack.compose.compiler.get()
     }
 }
 

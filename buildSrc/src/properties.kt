@@ -24,3 +24,6 @@ fun Project.getLocalProperty(key: String): String? {
         null
     }
 }
+
+
+fun Project.getIntProperty(name: String) = getProperty(name).toInt()
