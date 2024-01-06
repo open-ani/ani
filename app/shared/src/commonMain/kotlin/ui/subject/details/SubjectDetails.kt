@@ -5,11 +5,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -35,6 +38,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import io.kamel.core.Resource
 import io.kamel.image.asyncPainterResource
@@ -55,9 +59,12 @@ fun SubjectDetails(viewModel: SubjectDetailsViewModel) {
             val coverImageUrl by viewModel.coverImage.collectAsState(null)
             val coverPainter = asyncPainterResource(coverImageUrl ?: "")
 
+            val density = LocalDensity.current
             // 虚化渐变背景
             Box(
-                Modifier.align(Alignment.TopStart).height(250.dp).fillMaxWidth()
+                Modifier.align(Alignment.TopStart)
+                    .height(250.dp + density.run { WindowInsets.systemBars.getTop(density).toDp() })
+                    .fillMaxWidth()
                     .blur(12.dp)
                     .backgroundWithGradient(
                         coverImageUrl, MaterialTheme.colorScheme.background,
@@ -74,6 +81,7 @@ fun SubjectDetails(viewModel: SubjectDetailsViewModel) {
             SubjectDetailsContent(
                 coverPainter, viewModel,
                 Modifier
+                    .systemBarsPadding()
                     .fillMaxSize()
                     .padding(horizontal = 16.dp)
                     .padding(top = 6.dp, bottom = 16.dp)

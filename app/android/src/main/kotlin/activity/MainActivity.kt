@@ -100,7 +100,7 @@ class MainActivity : BaseComponentActivity() {
 
 
             MaterialTheme(colorScheme) {
-                ImmerseStatusBar(AppTheme.colorScheme.primary)
+                ImmerseStatusBar(AppTheme.colorScheme.background)
 
                 MainPage(app)
             }
