@@ -18,14 +18,20 @@
 
 package me.him188.animationgarden.app.app
 
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.ProvidableCompositionLocal
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.staticCompositionLocalOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import me.him188.animationgarden.app.app.settings.ProxySettings
 import me.him188.animationgarden.app.app.settings.SyncSettings
-import net.mamoe.yamlkt.Yaml
 import java.io.File
 
 @Immutable
@@ -82,12 +88,13 @@ class LocalAppSettingsManagerImpl(
 ) : AppSettingsManager() {
     override fun loadImpl(): AppSettings {
         if (!file.exists()) return AppSettings().also { saveImpl(it) }
-        return Yaml.decodeFromString(AppSettings.serializer(), file.readText())
+        // TODO:  LocalAppSettingsManagerImpl
+        return AppSettings()
     }
 
     override fun saveImpl(instance: AppSettings) {
         file.parentFile?.mkdir()
-        file.writeText(Yaml.encodeToString(AppSettings.serializer(), instance))
+        // TODO:  LocalAppSettingsManagerImpl
     }
 }
 

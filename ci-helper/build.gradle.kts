@@ -18,33 +18,24 @@
 
 @file:Suppress("UnstableApiUsage")
 
-import io.ktor.client.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
-import io.ktor.http.content.*
-import io.ktor.util.cio.*
-import io.ktor.utils.io.*
+import io.ktor.client.HttpClient
+import io.ktor.client.request.header
+import io.ktor.client.request.parameter
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
+import io.ktor.http.content.OutgoingContent
+import io.ktor.http.contentType
+import io.ktor.http.isSuccess
+import io.ktor.util.cio.readChannel
+import io.ktor.utils.io.ByteReadChannel
 import kotlinx.coroutines.runBlocking
 import org.apache.tools.ant.taskdefs.condition.Os
-
-fun HttpRequestBuilder.contentType(type: String) {
-    return contentType(ContentType.parse(type))
-}
-
-
 
 plugins {
     kotlin("jvm")
     id("kotlinx-atomicfu")
-}
-
-kotlin.sourceSets.all {
-    languageSettings.optIn("androidx.compose.material3.ExperimentalMaterial3Api")
-    languageSettings.optIn("androidx.compose.ui.ExperimentalComposeUiApi")
-    languageSettings.optIn("androidx.compose.animation.ExperimentalAnimationApi")
-    languageSettings.optIn("androidx.compose.foundation.ExperimentalFoundationApi")
-    languageSettings.enableLanguageFeature("ContextReceivers")
 }
 
 val hostOS: OS by lazy {
@@ -287,7 +278,7 @@ open class ReleaseEnvironment {
                 header("Authorization", "Bearer $token")
                 header("Accept", "application/vnd.github+json")
                 parameter("name", name)
-                contentType(contentType)
+                contentType(ContentType.parse(contentType))
                 setBody(object : OutgoingContent.ReadChannelContent() {
                     override val contentType: ContentType get() = ContentType.parse(contentType)
                     override val contentLength: Long = file.length()

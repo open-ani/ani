@@ -23,20 +23,17 @@ plugins {
 }
 
 dependencies {
-    val ktorVersion = Versions.ktor
-    api("io.ktor:ktor-client-core:$ktorVersion")
-    implementation("io.ktor:ktor-client-cio:$ktorVersion")
-    implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
-    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
-    implementation(`kotlinx-serialization-json`)
-    implementation(`kotlinx-serialization-protobuf`)
-    implementation(`kotlinx-coroutines-core`)
-    implementation("org.jsoup:jsoup:1.15.4")
-    implementation(`slf4j-api`)
-
     api(projects.dataSources.api)
 
-    testImplementation(kotlin("test-junit5"))
+    api(libs.kotlinx.coroutines.core)
+    api(libs.ktor.client.core)
+
+    implementation(libs.ktor.client.cio)
+    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.serialization.kotlinx.json)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.jsoup)
+    implementation(libs.slf4j.api)
 }
 
 tasks.withType<Jar> {

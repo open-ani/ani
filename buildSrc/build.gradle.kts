@@ -31,7 +31,7 @@ sourceSets.main {
     resources.srcDir("resources")
 }
 
-private val versionsText = project.projectDir.resolve("src/Versions.kt").readText()
+private val versionsText = project.projectDir.resolve("../settings.gradle.kts").readText()
 fun version(name: String): String {
     return versionsText.lineSequence()
         .map { it.trim() }
@@ -45,8 +45,8 @@ fun version(name: String): String {
 }
 
 dependencies {
-    implementation("io.ktor:ktor-client-core:2.3.6") // Higher versions require too high Kotlin version
-    implementation("io.ktor:ktor-client-okhttp:2.3.6") // Higher versions require too high Kotlin version
+    implementation("io.ktor:ktor-client-core:2.3.7")
+    implementation("io.ktor:ktor-client-okhttp:2.3.7")
 }
 
 dependencies {
@@ -65,7 +65,7 @@ dependencies {
     api("com.android.application:com.android.application.gradle.plugin:${version("androidGradlePlugin")}")
 
     // https://mvnrepository.com/artifact/org.jetbrains.compose/org.jetbrains.compose.gradle.plugin
-    api("org.jetbrains.compose:org.jetbrains.compose.gradle.plugin:${version("compose")}")
+    api("org.jetbrains.compose:org.jetbrains.compose.gradle.plugin:${version("composeMultiplatform")}")
 
 //    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0") {
 //        exclude("org.jetbrains.kotlin", "kotlin-stdlib")

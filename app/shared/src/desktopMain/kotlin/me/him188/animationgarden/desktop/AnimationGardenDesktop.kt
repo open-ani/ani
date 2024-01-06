@@ -53,24 +53,19 @@ import kotlinx.coroutines.flow.Flow
 import me.him188.animationgarden.app.AppTheme
 import me.him188.animationgarden.app.ProvideCompositionLocalsForPreview
 import me.him188.animationgarden.app.app.AppSettings
-import me.him188.animationgarden.app.app.ApplicationState
 import me.him188.animationgarden.app.app.LocalAppSettings
 import me.him188.animationgarden.app.app.LocalAppSettingsManager
 import me.him188.animationgarden.app.app.LocalAppSettingsManagerImpl
 import me.him188.animationgarden.app.app.settings.LocalSyncSettings
-import me.him188.animationgarden.app.app.settings.toKtorProxy
 import me.him188.animationgarden.app.i18n.LocalI18n
 import me.him188.animationgarden.app.i18n.ResourceBundle
 import me.him188.animationgarden.app.i18n.loadResourceBundle
 import me.him188.animationgarden.app.platform.Context
 import me.him188.animationgarden.app.platform.LocalContext
-import me.him188.animationgarden.app.ui.DialogHost
-import me.him188.animationgarden.app.ui.LocalAlwaysShowTitlesInSeparateLine
 import me.him188.animationgarden.app.ui.PreferencesPage
 import me.him188.animationgarden.app.ui.interaction.PlatformImplementations
 import me.him188.animationgarden.app.ui.interaction.PlatformImplementations.Companion.hostIsMacOs
 import me.him188.animationgarden.app.ui.rememberDialogHost
-import me.him188.animationgarden.datasources.dmhy.DmhyClient
 import me.him188.animationgarden.utils.logging.logger
 import me.him188.animationgarden.utils.logging.trace
 import java.io.File
@@ -114,7 +109,6 @@ object AnimationGardenDesktop {
             CompositionLocalProvider(
                 LocalI18n provides currentBundle,
                 LocalAppSettingsManager provides appSettingsProvider,
-                LocalAlwaysShowTitlesInSeparateLine provides true, // for performance, and #41
             ) {
                 content(
                     currentAppSettings,
@@ -136,21 +130,12 @@ object AnimationGardenDesktop {
         platform: PlatformImplementations,
     ) {
         val dialogHost = rememberDialogHost()
-        val app = remember {
-            // do not observe dependency change
-            createAppState(
-                currentAppSettings,
-                dialogHost,
-                localSyncSettingsFlow,
-                mainSnackbar,
-                currentBundle
-            )
-        }
         LaunchedEffect(currentAppSettings.proxy) {
             // proxy changed, update client
-            app.client.value = DmhyClient.create {
-                proxy = currentAppSettings.proxy.toKtorProxy()
-            }
+            // TODO:  
+//            app.client.value = DmhyClient.create {
+//                proxy = currentAppSettings.proxy.toKtorProxy()
+//            }
         }
 
         val currentDensity by rememberUpdatedState(LocalDensity.current)
@@ -222,7 +207,6 @@ object AnimationGardenDesktop {
             ) {
                 MainWindowContent(
                     hostIsMacOs = hostIsMacOs,
-                    app = app,
                     windowImmersed = windowImmersed,
                     onClickProxySettings = {
                         showPreferences = true
@@ -233,17 +217,6 @@ object AnimationGardenDesktop {
     }
 }
 
-private fun createAppState(
-    currentAppSettings: AppSettings,
-    dialogHost: DialogHost,
-    localSyncSettingsFlow: Flow<LocalSyncSettings>,
-    snackbarState: SnackbarHostState,
-    currentBundle: ResourceBundle,
-) = ApplicationState(
-    initialClient = DmhyClient.Factory.create {
-        proxy = currentAppSettings.proxy.toKtorProxy()
-    },
-)
 
 @Composable
 @Preview
@@ -257,7 +230,6 @@ fun PreviewPreferencesWindow() {
 private fun MainWindowContent(
     hostIsMacOs: Boolean,
     windowImmersed: Boolean,
-    app: ApplicationState,
     onClickProxySettings: () -> Unit,
 ) {
     Box(
@@ -284,15 +256,12 @@ private fun MainWindowContent(
 @Preview
 fun PreviewMainWindowMacOS() {
     val app = remember {
-        ApplicationState(
-            initialClient = DmhyClient.Factory.create {},
-        )
     }
     ProvideCompositionLocalsForPreview {
         MainWindowContent(
             hostIsMacOs = false,
             windowImmersed = false,
-            app,
-            onClickProxySettings = {})
+            onClickProxySettings = {}
+        )
     }
 }

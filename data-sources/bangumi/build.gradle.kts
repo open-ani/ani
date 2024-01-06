@@ -23,13 +23,12 @@ plugins {
 
 dependencies {
     api(projects.dataSources.api)
-
-    api(`kotlinx-coroutines-core`)
-    implementation(`ktor-client-cio`)
-    implementation(`ktor-client-content-negotiation`)
-    implementation(`ktor-serialization-kotlinx-json`)
-
-    testImplementation(`slf4j-simple`)
-
     implementation(projects.utils.serialization)
+
+    api(libs.kotlinx.coroutines.core)
+    implementation(libs.ktor.client.cio)
+    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.serialization.kotlinx.json)
+
+    testImplementation(libs.slf4j.simple)
 }

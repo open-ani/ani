@@ -75,7 +75,8 @@ val optInAnnotations = arrayOf(
     "kotlin.experimental.ExperimentalTypeInference",
     "kotlinx.serialization.ExperimentalSerializationApi",
     "kotlinx.coroutines.ExperimentalCoroutinesApi",
-    "androidx.compose.foundation.layout.ExperimentalLayoutApi"
+    "androidx.compose.foundation.layout.ExperimentalLayoutApi",
+    "androidx.compose.foundation.ExperimentalFoundationApi"
 )
 
 val testLanguageFeatures: List<String> = listOf(
@@ -138,6 +139,8 @@ fun Project.configureEncoding() {
     }
 }
 
+const val JUNIT_VERSION = "5.7.2"
+
 fun Project.configureKotlinTestSettings() {
     tasks.withType(Test::class) {
         useJUnitPlatform()
@@ -148,8 +151,8 @@ fun Project.configureKotlinTestSettings() {
             dependencies {
                 "testImplementation"(kotlin("test-junit5"))?.because(b)
 
-                "testApi"(`junit-jupiter-api`)?.because(b)
-                "testRuntimeOnly"(`junit-jupiter-engine`)?.because(b)
+                "testApi"("org.junit.jupiter:junit-jupiter-api:$JUNIT_VERSION")?.because(b)
+                "testRuntimeOnly"("org.junit.jupiter:junit-jupiter-engine:${JUNIT_VERSION}")?.because(b)
             }
         }
 
@@ -188,8 +191,8 @@ fun KotlinSourceSet.configureJvmTest(because: String) {
     dependencies {
         implementation(kotlin("test-junit5"))?.because(because)
 
-        implementation(`junit-jupiter-api`)?.because(because)
-        runtimeOnly(`junit-jupiter-engine`)?.because(because)
+        implementation("org.junit.jupiter:junit-jupiter-api:${JUNIT_VERSION}")?.because(because)
+        runtimeOnly("org.junit.jupiter:junit-jupiter-engine:${JUNIT_VERSION}")?.because(because)
     }
 }
 

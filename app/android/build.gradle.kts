@@ -16,10 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-@file:Suppress("UnstableApiUsage")
-
-import java.util.Properties
-
 plugins {
     id("org.jetbrains.compose")
     id("com.android.application")
@@ -31,35 +27,33 @@ plugins {
 dependencies {
     implementation(projects.dataSources.dmhy)
     implementation(projects.app.shared)
-    implementation("androidx.activity:activity-compose:1.8.2")
 
-    implementation("androidx.core:core-ktx:1.12.0")
-    implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
-    implementation("com.google.android.material:material:1.11.0")
-    implementation("androidx.compose.material3:material3-window-size-class:1.1.2")
+    implementation(libs.androidx.activity.compose)
 
-    val composeVersion = "1.5.4"
-    implementation("androidx.compose.ui:ui:$composeVersion")
-    debugImplementation("androidx.compose.ui:ui-tooling:$composeVersion")
-    implementation("androidx.compose.ui:ui-viewbinding:$composeVersion")
-    implementation("androidx.compose.foundation:foundation:$composeVersion")
-    implementation("androidx.compose.material:material:$composeVersion")
-    implementation("androidx.compose.material3:material3:1.1.2")
-//    implementation("androidx.compose.runtime:runtime-livedata:$composeVersion")
-    implementation("androidx.activity:activity-compose:1.8.2")
-    implementation("androidx.compose.ui:ui-tooling-preview:1.5.4")
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.swiperefreshlayout)
+    implementation(libs.androidx.material)
+    implementation(libs.androidx.activity.compose)
 
-    api(`ktor-client-core`)
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.ui.viewbinding)
+    implementation(libs.androidx.compose.foundation)
+    implementation(libs.androidx.compose.material)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.ui.tooling.preview)
+    debugImplementation(libs.androidx.compose.ui.tooling)
+
+    implementation(libs.ktor.client.core)
 }
 
 android {
     namespace = "me.him188.animationgarden.android"
-    compileSdk = 34
+    compileSdk = libs.versions.android.compileSdk.get().toInt()
     defaultConfig {
         applicationId = "me.him188.animationgarden"
-        minSdk = 26
-        targetSdk = 34
+        minSdk = libs.versions.android.minSdk.get().toInt()
+        targetSdk = libs.versions.android.compileSdk.get().toInt()
         versionCode = getProperty("version.code").toInt()
         versionName = project.version.toString()
     }
@@ -68,7 +62,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_1_8
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.6-dev-k2.0.0-Beta1-06a03be2b42"
+        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
     }
     signingConfigs {
         kotlin.runCatching { getProperty("signing_release_storeFileFromRoot") }.getOrNull()?.let {
@@ -105,36 +99,5 @@ android {
     }
     buildFeatures {
         compose = true
-    }
-}
-
-kotlin.sourceSets.all {
-    languageSettings.optIn("androidx.compose.material3.ExperimentalMaterial3Api")
-    languageSettings.optIn("androidx.compose.ui.ExperimentalComposeUiApi")
-    languageSettings.optIn("androidx.compose.animation.ExperimentalAnimationApi")
-    languageSettings.optIn("androidx.compose.foundation.ExperimentalFoundationApi")
-    languageSettings.enableLanguageFeature("ContextReceivers")
-}
-
-fun getProperty(name: String) =
-    System.getProperty(name)
-        ?: System.getenv(name)
-        ?: properties[name]?.toString()
-        ?: getLocalProperty(name)
-        ?: ext.get(name).toString()
-
-
-val Project.localPropertiesFile get() = project.rootProject.file("local.properties")
-
-fun Project.getLocalProperty(key: String): String? {
-    if (localPropertiesFile.exists()) {
-        val properties = Properties()
-        localPropertiesFile.inputStream().buffered().use { input ->
-            properties.load(input)
-        }
-        return properties.getProperty(key)
-    } else {
-        localPropertiesFile.createNewFile()
-        return null
     }
 }

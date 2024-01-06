@@ -72,13 +72,6 @@ compose.desktop {
     }
 }
 
-kotlin.sourceSets.all {
-    languageSettings.optIn("androidx.compose.material3.ExperimentalMaterial3Api")
-    languageSettings.optIn("androidx.compose.ui.ExperimentalComposeUiApi")
-    languageSettings.optIn("androidx.compose.animation.ExperimentalAnimationApi")
-    languageSettings.optIn("androidx.compose.foundation.ExperimentalFoundationApi")
-}
-
 // workaround for resource not found
 //kotlin.sourceSets.main.get().resources.srcDir(project(":common").projectDir.resolve("src/androidMain/res/raw"))
 

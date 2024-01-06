@@ -22,6 +22,6 @@ plugins {
 }
 
 dependencies {
-    implementation(`kotlinx-serialization-core`)
-    api(`kotlinx-coroutines-core`)
+    implementation(libs.kotlinx.serialization.core)
+    api(libs.kotlinx.coroutines.core)
 }

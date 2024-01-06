@@ -17,10 +17,6 @@
  */
 
 buildscript {
-    dependencies {
-        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:${Versions.atomicFU}")
-    }
-
     repositories {
         gradlePluginPortal()
         mavenCentral()
@@ -33,7 +29,7 @@ plugins {
     kotlin("multiplatform") apply false
     kotlin("android") apply false
     kotlin("jvm") apply false
-    kotlin("plugin.serialization") version Versions.kotlin apply false
+    kotlin("plugin.serialization") version libs.versions.kotlin apply false
     id("org.jetbrains.compose") apply false
     id("com.android.library") apply false
     id("com.android.application") apply false
@@ -50,10 +46,6 @@ allprojects {
         maven("https://androidx.dev/storage/compose-compiler/repository/")
         google()
     }
-
-//    tasks.withType(KotlinJvmCompile::class) {
-//        kotlinOptions.jvmTarget = "11"
-//    }
 }
 
 

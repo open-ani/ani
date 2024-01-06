@@ -22,5 +22,5 @@ plugins {
 }
 
 dependencies {
-    api(`kotlinx-serialization-json`)
+    api(libs.kotlinx.serialization.json)
 }
