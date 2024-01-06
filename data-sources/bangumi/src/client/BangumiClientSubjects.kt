@@ -6,6 +6,7 @@ import me.him188.animationgarden.datasources.bangumi.models.subjects.BangumiSubj
 import me.him188.animationgarden.datasources.bangumi.models.subjects.BangumiSubjectDetails
 import me.him188.animationgarden.datasources.bangumi.models.subjects.BangumiSubjectImageSize
 import me.him188.animationgarden.datasources.bangumi.models.subjects.BangumiSubjectType
+import org.openapitools.client.models.RelatedPerson
 
 interface BangumiClientSubjects {
     /**
@@ -39,4 +40,8 @@ interface BangumiClientSubjects {
         id: Long,
         size: BangumiSubjectImageSize,
     ): String
+
+    suspend fun getSubjectPersonsById(
+        id: Long,
+    ): List<RelatedPerson>?
 }

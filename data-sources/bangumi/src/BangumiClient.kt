@@ -55,9 +55,14 @@ import me.him188.animationgarden.datasources.bangumi.models.subjects.BangumiSubj
 import me.him188.animationgarden.datasources.bangumi.models.subjects.BangumiSubjectType
 import me.him188.animationgarden.datasources.bangumi.models.users.BangumiAccount
 import me.him188.animationgarden.utils.serialization.toJsonArray
+import okhttp3.OkHttpClient
+import org.openapitools.client.apis.BangumiApi
+import org.openapitools.client.models.RelatedPerson
 
 interface BangumiClient : Closeable {
     // Bangumi open API: https://github.com/bangumi/api/blob/master/open-api/api.yml
+
+    val api: BangumiApi
 
     val accounts: BangumiClientAccounts
 
@@ -76,6 +81,18 @@ private const val BANGUMI_API_HOST = "https://api.bgm.tv"
 internal class BangumiClientImpl(
     httpClientConfiguration: HttpClientConfig<*>.() -> Unit = {},
 ) : BangumiClient {
+    override val api = BangumiApi(BANGUMI_API_HOST, OkHttpClient.Builder().apply {
+        this.followRedirects(true)
+        addInterceptor { chain ->
+            chain.proceed(
+                chain.request().newBuilder().addHeader(
+                    "User-Agent",
+                    "him188/ani/3.0.0-beta01 (Android) (https://github.com/Him188/animation-garden)"
+                ).build()
+            )
+        }
+    }.build())
+
     private val httpClient = HttpClient(CIO) {
         httpClientConfiguration()
         install(HttpRequestRetry) {
@@ -191,6 +208,16 @@ internal class BangumiClientImpl(
 
         override suspend fun getSubjectImageUrl(id: Long, size: BangumiSubjectImageSize): String {
             return Companion.getSubjectImageUrl(id, size)
+        }
+
+        override suspend fun getSubjectPersonsById(id: Long): List<RelatedPerson> {
+            return api.getRelatedPersonsBySubjectId(id.toInt())
+//            val resp = httpClient.get("$BANGUMI_API_HOST/v0/subjects/${id}/persons")
+//
+//            if (!resp.status.isSuccess()) {
+//                throw IllegalStateException("Failed to get subject persons by id: $resp")
+//            }
+//            return resp.body()
         }
     }
 
