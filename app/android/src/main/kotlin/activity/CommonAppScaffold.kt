@@ -50,7 +50,6 @@ import me.him188.animationgarden.app.app.LocalAppSettingsManager
 import me.him188.animationgarden.app.i18n.LocalI18n
 import me.him188.animationgarden.app.i18n.loadResourceBundle
 import me.him188.animationgarden.app.platform.LocalContext
-import me.him188.animationgarden.app.ui.LocalAlwaysShowTitlesInSeparateLine
 import me.him188.animationgarden.app.ui.foundation.DefaultKamelConfig
 
 @Composable
@@ -69,7 +68,6 @@ fun BaseComponentActivity.CommonAppScaffold(
     CompositionLocalProvider(
         LocalI18n provides currentBundle,
         LocalAppSettingsManager provides appSettingsManager,
-        LocalAlwaysShowTitlesInSeparateLine provides true,
         LocalKamelConfig provides DefaultKamelConfig,
     ) {
         val keyboard by rememberUpdatedState(newValue = LocalSoftwareKeyboardController.current)

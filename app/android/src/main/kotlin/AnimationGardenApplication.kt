@@ -35,14 +35,11 @@ import kotlinx.coroutines.withContext
 import me.him188.animationgarden.R
 import me.him188.animationgarden.android.activity.BaseComponentActivity
 import me.him188.animationgarden.android.activity.showSnackbarAsync
-import me.him188.animationgarden.app.app.ApplicationState
 import me.him188.animationgarden.app.app.LocalAppSettingsManagerImpl
-import me.him188.animationgarden.app.app.settings.toKtorProxy
 import me.him188.animationgarden.app.i18n.ResourceBundle
 import me.him188.animationgarden.app.i18n.loadResourceBundle
 import me.him188.animationgarden.app.platform.CommonKoinModule
 import me.him188.animationgarden.app.ux.showDialog
-import me.him188.animationgarden.datasources.dmhy.DmhyClient
 import org.koin.core.context.startKoin
 import java.io.File
 import kotlin.coroutines.resume
@@ -101,7 +98,7 @@ class AnimationGardenApplication : Application() {
 
         // do not observe dependency change
         @Stable
-        val app: ApplicationState by lazy {
+        val app by lazy {
             runBlocking(Dispatchers.Default) {
                 startKoin {
                     modules(CommonKoinModule)
@@ -118,14 +115,6 @@ class AnimationGardenApplication : Application() {
 
                     val currentBundle = loadResourceBundle(context)
                     resourceBundle = currentBundle
-
-                    ApplicationState(
-                        initialClient = DmhyClient.Factory.create {
-                            proxy =
-                                settings.proxy.toKtorProxy() // android thinks this is doing network operation
-                        },
-                        applicationScope = appScope,
-                    )
                 }
             }
         }
@@ -134,7 +123,7 @@ class AnimationGardenApplication : Application() {
     private suspend fun promptSwitchToOffline(
         optional: Boolean,
         currentBundle: ResourceBundle,
-        exception: Exception
+        exception: Exception,
     ) = if (optional) {
         showDialog { cont ->
             setPositiveButton(
