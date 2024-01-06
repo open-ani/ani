@@ -36,6 +36,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.CardDefaults
@@ -71,13 +72,18 @@ fun SubjectPreviewColumn(
 ) {
     val items by viewModel.list.collectAsState()
 
+    val state = rememberLazyGridState()
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier.background(Color(0xf1f2f4)),
+        state = state,
         contentPadding = PaddingValues(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
+        // 用这个来让 (初始化时) 增加新的元素时, 保持滚动位置在最开始, 而不是到最后
+        item("dummy", span = { GridItemSpan(maxLineSpan) }) {}
+
         items(items, key = { it.id }) { subject ->
             val context = LocalContext.current
             SubjectPreviewCard(
@@ -86,7 +92,7 @@ fun SubjectPreviewColumn(
                 },
                 imageUrl = remember(subject.id) { subject.images.landscapeCommon },
                 onClick = { viewModel.onClickSubjectPreview(context, subject) },
-                Modifier.height(180.dp),
+                Modifier.animateItemPlacement().height(180.dp),
             )
         }
 
