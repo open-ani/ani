@@ -1,4 +1,4 @@
-package me.him188.animationgarden.app.ui.subject
+package me.him188.animationgarden.app.ui.subject.details
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.runtime.Composable

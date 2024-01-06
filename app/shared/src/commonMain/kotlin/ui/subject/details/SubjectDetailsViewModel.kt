@@ -1,4 +1,4 @@
-package me.him188.animationgarden.app.ui.subject
+package me.him188.animationgarden.app.ui.subject.details
 
 import androidx.compose.runtime.Stable
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -7,9 +7,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.toList
 import me.him188.animationgarden.app.ui.framework.AbstractViewModel
+import me.him188.animationgarden.datasources.api.PageBasedSearchSession
 import me.him188.animationgarden.datasources.bangumi.BangumiClient
 import me.him188.animationgarden.datasources.bangumi.Rating
+import me.him188.animationgarden.datasources.bangumi.client.BangumiEpType
+import me.him188.animationgarden.datasources.bangumi.client.BangumiEpisode
 import me.him188.animationgarden.datasources.bangumi.models.subjects.BangumiSubjectDetails
 import me.him188.animationgarden.datasources.bangumi.models.subjects.BangumiSubjectImageSize
 import me.him188.animationgarden.datasources.bangumi.models.subjects.BangumiSubjectInfo
@@ -61,4 +65,25 @@ class SubjectDetailsViewModel(
 
     val infoboxList: SharedFlow<List<BangumiSubjectInfo>> =
         subjectNotNull.map { it.infobox }.shareInBackground()
+
+    val summary: SharedFlow<String> =
+        subjectNotNull.map { it.summary }.shareInBackground()
+
+    val episodesMain: SharedFlow<List<BangumiEpisode>> = episodesFlow(BangumiEpType.MAIN)
+    val episodesPV: SharedFlow<List<BangumiEpisode>> = episodesFlow(BangumiEpType.PV)
+    val episodesSP: SharedFlow<List<BangumiEpisode>> = episodesFlow(BangumiEpType.SP)
+    val episodesOther: SharedFlow<List<BangumiEpisode>> = episodesFlow(BangumiEpType.OTHER)
+
+    private fun episodesFlow(type: BangumiEpType) = this.subjectId.mapLatest { subjectId ->
+        PageBasedSearchSession { page ->
+            bangumiClient.episodes.getEpisodes(
+                subjectId.toLong(),
+                type,
+                offset = page * 100,
+                limit = 100
+            ).also {
+                println("episodesFlow: $it")
+            }
+        }.results.toList()
+    }.shareInBackground()
 }

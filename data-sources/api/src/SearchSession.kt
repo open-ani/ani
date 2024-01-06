@@ -42,19 +42,57 @@ interface SearchSession<out T> {
     suspend fun nextPageOrNull(): List<T>?
 }
 
+//@OverloadResolutionByLambdaReturnType
+//@Suppress("FunctionName")
+//fun <T> PageBasedSearchSession(nextPageOrNull: suspend (page: Int) -> List<T>?): SearchSession<T> {
+//    @Suppress("UnnecessaryVariable", "RedundantSuppression") // two bugs...
+//    val nextPageOrNullImpl = nextPageOrNull
+//    return object : AbstractPageBasedSearchSession<T>() {
+//        override suspend fun nextPageImpl(page: Int): List<T>? = nextPageOrNullImpl(page)
+//    }
+//}
+
+@JvmName("PageBasedSearchSession1")
+@Suppress("FunctionName")
+@OverloadResolutionByLambdaReturnType
+fun <T> PageBasedSearchSession(nextPageOrNull: suspend (page: Int) -> Paged<T>?): SearchSession<T> {
+    @Suppress("UnnecessaryVariable", "RedundantSuppression") // two bugs...
+    val nextPageOrNullImpl = nextPageOrNull
+    return object : AbstractPageBasedSearchSession<T>() {
+        override suspend fun nextPageImpl(page: Int): List<T>? {
+            val paged = nextPageOrNullImpl(page)
+            if (paged == null) {
+                noMorePages()
+                return null
+            }
+            if (!paged.hasMore) {
+                noMorePages()
+            }
+            return paged.page
+        }
+    }
+}
+
 abstract class AbstractPageBasedSearchSession<T> : SearchSession<T> {
     private var page = 0
     private val lock = Mutex()
 
     final override suspend fun nextPageOrNull(): List<T>? = lock.withLock {
+        if (page == Int.MAX_VALUE) {
+            return null
+        }
         val result = nextPageImpl(page)
-        if (result != null) {
+        if (result != null && page != Int.MAX_VALUE) {
             page++
         }
         return result
     }
 
     protected abstract suspend fun nextPageImpl(page: Int): List<T>?
+
+    protected fun noMorePages() {
+        page = Int.MAX_VALUE
+    }
 
     final override val results: Flow<T> by lazy {
         flow {

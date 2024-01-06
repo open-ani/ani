@@ -1,5 +1,6 @@
 package me.him188.animationgarden.datasources.bangumi.client
 
+import me.him188.animationgarden.datasources.api.Paged
 import me.him188.animationgarden.datasources.bangumi.models.search.BangumiSort
 import me.him188.animationgarden.datasources.bangumi.models.subjects.BangumiSubject
 import me.him188.animationgarden.datasources.bangumi.models.subjects.BangumiSubjectDetails
@@ -28,7 +29,7 @@ interface BangumiClientSubjects {
         ratings: List<String>? = null, // ">=6", "<8"
         ranks: List<String>? = null,
         nsfw: Boolean? = null,
-    ): List<BangumiSubject>?
+    ): Paged<BangumiSubject>
 
     suspend fun getSubjectById(
         id: Long,

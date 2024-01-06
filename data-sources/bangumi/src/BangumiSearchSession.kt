@@ -14,15 +14,17 @@ class BangumiSearchSession(
 ) : AbstractPageBasedSearchSession<Subject>() {
 
     override suspend fun nextPageImpl(page: Int): List<Subject>? {
-        return client.subjects.searchSubjectByKeywords(
+        val paged = client.subjects.searchSubjectByKeywords(
             query.keyword,
             offset = page * pageSize,
             // 才有 rating
             limit = pageSize,
             types = listOf(convertType()),
-        )?.map { subject ->
-            subject.toSubject()
+        )
+        if (!paged.hasMore) {
+            noMorePages()
         }
+        return paged.page.map { it.toSubject() }
     }
 
     private fun convertType() = when (query.type) {

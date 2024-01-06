@@ -17,21 +17,22 @@
  */
 
 import me.him188.animationgarden.datasources.bangumi.BangumiClient
-import me.him188.animationgarden.datasources.bangumi.models.subjects.BangumiSubjectType
+import me.him188.animationgarden.datasources.bangumi.client.BangumiEpType
 import kotlin.system.exitProcess
 
 suspend fun main() {
     val client = BangumiClient.create()
-    client.subjects.getSubjectById(400602)?.infobox?.forEach {
-        println("${it.key}=${it.value}")
-    }
+//    client.subjects.getSubjectById(400602)?.infobox?.forEach {
+//        println("${it.key}=${it.value}")
+//    }
+    println(client.episodes.getEpisodes(400602, BangumiEpType.MAIN).page.first())
     exitProcess(0)
 
-    val res = client.subjects.searchSubjectByKeywords(
-        "药屋",
-        types = listOf(BangumiSubjectType.ANIME),
+//    val res = client.subjects.searchSubjectByKeywords(
+//        "药屋",
+//        types = listOf(BangumiSubjectType.ANIME),
 //        sort = BangumiSort.MATCH,
-    )
-    println(res?.map { it.name })
+//    )
+//    println(res.map { it.name })
 
 }

@@ -41,8 +41,12 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import me.him188.animationgarden.datasources.api.Paged
 import me.him188.animationgarden.datasources.bangumi.client.BangumiClientAccounts
+import me.him188.animationgarden.datasources.bangumi.client.BangumiClientEpisodes
 import me.him188.animationgarden.datasources.bangumi.client.BangumiClientSubjects
+import me.him188.animationgarden.datasources.bangumi.client.BangumiEpType
+import me.him188.animationgarden.datasources.bangumi.client.BangumiEpisode
 import me.him188.animationgarden.datasources.bangumi.models.BangumiToken
 import me.him188.animationgarden.datasources.bangumi.models.search.BangumiSort
 import me.him188.animationgarden.datasources.bangumi.models.subjects.BangumiSubject
@@ -59,11 +63,15 @@ interface BangumiClient : Closeable {
 
     val subjects: BangumiClientSubjects
 
+    val episodes: BangumiClientEpisodes
+
     companion object Factory {
         fun create(httpClientConfiguration: HttpClientConfig<*>.() -> Unit = {}): BangumiClient =
             BangumiClientImpl(httpClientConfiguration)
     }
 }
+
+private const val BANGUMI_API_HOST = "https://api.bgm.tv"
 
 internal class BangumiClientImpl(
     httpClientConfiguration: HttpClientConfig<*>.() -> Unit = {},
@@ -93,7 +101,7 @@ internal class BangumiClientImpl(
             email: String,
             password: String,
         ): BangumiClientAccounts.LoginResponse {
-            val resp = httpClient.get("https://api.bgm.tv/auth?source=onAir") {
+            val resp = httpClient.get("$BANGUMI_API_HOST/auth?source=onAir") {
                 basicAuth(email, password)
             }
 
@@ -133,10 +141,10 @@ internal class BangumiClientImpl(
             ratings: List<String>?,
             ranks: List<String>?,
             nsfw: Boolean?,
-        ): List<BangumiSubject>? {
-            val resp = httpClient.post("https://api.bgm.tv/v0/search/subjects") {
-                offset?.let { parameter("offset", it) }
-                limit?.let { parameter("limit", it) }
+        ): Paged<BangumiSubject> {
+            val resp = httpClient.post("$BANGUMI_API_HOST/v0/search/subjects") {
+                parameter("offset", offset)
+                parameter("limit", limit)
 
                 contentType(ContentType.Application.Json)
                 val req = buildJsonObject {
@@ -161,11 +169,18 @@ internal class BangumiClientImpl(
                 throw IllegalStateException("Failed to search subject by keywords: $resp")
             }
 
-            return resp.body<SearchSubjectByKeywordsResponse>().data
+            val body = resp.body<SearchSubjectByKeywordsResponse>()
+            return body.run {
+                Paged(
+                    total,
+                    data == null || (offset ?: 0) + data.size < total,
+                    data.orEmpty()
+                )
+            }
         }
 
         override suspend fun getSubjectById(id: Long): BangumiSubjectDetails? {
-            val resp = httpClient.get("https://api.bgm.tv/v0/subjects/${id}")
+            val resp = httpClient.get("$BANGUMI_API_HOST/v0/subjects/${id}")
 
             if (!resp.status.isSuccess()) {
                 throw IllegalStateException("Failed to get subject by id: $resp")
@@ -179,13 +194,44 @@ internal class BangumiClientImpl(
         }
     }
 
+
+    @Serializable
+    private data class GetEpisodesResp(
+        val total: Int,
+        val data: List<BangumiEpisode>,
+    )
+
+    override val episodes: BangumiClientEpisodes = object : BangumiClientEpisodes {
+        override suspend fun getEpisodes(
+            subjectId: Long,
+            type: BangumiEpType,
+            limit: Int?,
+            offset: Int?,
+        ): Paged<BangumiEpisode> {
+            val resp = httpClient.get("$BANGUMI_API_HOST/v0/episodes") {
+                parameter("subject_id", subjectId)
+                parameter("type", type.id)
+                parameter("limit", limit)
+                parameter("offset", offset)
+            }
+
+            if (!resp.status.isSuccess()) {
+                throw IllegalStateException("Failed to get episodes: $resp")
+            }
+
+            return resp.body<GetEpisodesResp>().run {
+                Paged(total, (offset ?: 0) + data.size < total, data)
+            }
+        }
+    }
+
     override fun close() {
         httpClient.close()
     }
 
     companion object {
         fun getSubjectImageUrl(id: Long, size: BangumiSubjectImageSize): String {
-            return "https://api.bgm.tv/v0/subjects/${id}/image?type=${size.id.lowercase()}"
+            return "$BANGUMI_API_HOST/v0/subjects/${id}/image?type=${size.id.lowercase()}"
         }
     }
 }
