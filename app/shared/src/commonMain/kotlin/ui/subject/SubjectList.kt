@@ -52,6 +52,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
@@ -78,7 +79,7 @@ fun SubjectPreviewColumn(
     val state = rememberLazyGridState()
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
-        modifier.background(Color(0xf1f2f4)),
+        modifier.background(MaterialTheme.colorScheme.background),
         state = state,
         contentPadding = PaddingValues(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -140,14 +141,21 @@ fun SubjectPreviewCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val shape = RoundedCornerShape(8.dp)
     ElevatedCard(
-        modifier.clip(RoundedCornerShape(4.dp))
+        modifier
+            .shadow(0.5.dp, shape)
+            .clip(shape)
             .fillMaxWidth()
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = rememberRipple(),
                 onClick = onClick,
             ),
+        shape = shape,
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+        ),
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp),
     ) {
         Column {

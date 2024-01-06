@@ -1,9 +1,11 @@
 package me.him188.animationgarden.app.ui.home
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Divider
@@ -42,13 +44,16 @@ object MainScreen : Screen {
                 Modifier.statusBarsPadding(),
                 bottomBar = {
                     Column(Modifier.alpha(0.99f)) {
-                        Divider(Modifier.fillMaxWidth(), thickness = 1.dp)
-                        BottomAppBar(
-                            Modifier.height(64.dp),
-                            containerColor = MaterialTheme.colorScheme.background,
-                        ) {
-                            TabNavigationItem(HomeTab)
-                            TabNavigationItem(searchTab)
+                        Column(Modifier.background(MaterialTheme.colorScheme.surface)) {
+                            Divider(Modifier.fillMaxWidth(), thickness = 1.dp)
+                            BottomAppBar(
+                                Modifier.navigationBarsPadding().height(48.dp),
+                                containerColor = MaterialTheme.colorScheme.surface,
+                                tonalElevation = 0.dp,
+                            ) {
+                                TabNavigationItem(HomeTab)
+                                TabNavigationItem(searchTab)
+                            }
                         }
                     }
                 }

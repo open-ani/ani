@@ -23,13 +23,13 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import me.him188.animationgarden.app.ui.theme.aniDarkColorTheme
+import me.him188.animationgarden.app.ui.theme.aniLightColorTheme
 
 abstract class BaseComponentActivity : ComponentActivity() {
     @Stable
@@ -38,9 +38,9 @@ abstract class BaseComponentActivity : ComponentActivity() {
     val currentColorScheme
         @Composable
         get() = if (isSystemInDarkTheme()) {
-            darkColorScheme()
+            aniDarkColorTheme()
         } else {
-            lightColorScheme()
+            aniLightColorTheme()
         }
 }
 

@@ -9,7 +9,9 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.IconToggleButton
+import androidx.compose.material3.IconToggleButtonColors
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -92,10 +94,14 @@ fun CommonAppScaffold(
 }
 
 @Composable
-fun RowScope.TabNavigationItem(tab: Tab) {
+fun RowScope.TabNavigationItem(
+    tab: Tab,
+    colors: IconToggleButtonColors = IconButtonDefaults.iconToggleButtonColors(),
+) {
     val tabNavigator = LocalTabNavigator.current
 
     IconToggleButton(
+        colors = colors,
         checked = tabNavigator.current == tab,
         onCheckedChange = { tabNavigator.current = tab },
         modifier = Modifier.weight(1f),
