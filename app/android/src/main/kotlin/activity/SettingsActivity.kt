@@ -29,14 +29,23 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import me.him188.animationgarden.app.AppTheme
 import me.him188.animationgarden.app.app.LocalAppSettingsManager
 import me.him188.animationgarden.app.i18n.LocalI18n
+import me.him188.animationgarden.app.ui.foundation.CommonAppScaffold
 import me.him188.animationgarden.app.ui.settings.ProxySettingsGroup
 import me.him188.animationgarden.app.ui.settings.SyncSettingsGroup
 
@@ -50,7 +59,7 @@ class SettingsActivity : BaseComponentActivity() {
         requestWindowFeature(Window.FEATURE_NO_TITLE)
 
         setContent {
-            MaterialTheme(colorScheme) {
+            MaterialTheme(currentColorScheme) {
                 ImmerseStatusBar(AppTheme.colorScheme.primary)
 
                 CommonAppScaffold(

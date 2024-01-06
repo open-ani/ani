@@ -20,7 +20,11 @@ package me.him188.animationgarden.android.activity
 
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.*
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.lifecycle.lifecycleScope
@@ -31,7 +35,7 @@ abstract class BaseComponentActivity : ComponentActivity() {
     @Stable
     val snackbarHostState = SnackbarHostState()
 
-    val colorScheme
+    val currentColorScheme
         @Composable
         get() = if (isSystemInDarkTheme()) {
             darkColorScheme()

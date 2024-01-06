@@ -19,69 +19,41 @@
 package me.him188.animationgarden.android.activity
 
 import android.os.Bundle
-import android.view.Window
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
-import me.him188.animationgarden.android.AnimationGardenApplication
-import me.him188.animationgarden.app.AppTheme
-import me.him188.animationgarden.app.ui.home.HomePage
+import androidx.activity.enableEdgeToEdge
+import androidx.core.view.WindowCompat
+import cafe.adriel.voyager.navigator.Navigator
+import cafe.adriel.voyager.transitions.FadeTransition
+import me.him188.animationgarden.app.ui.foundation.AniApp
+import me.him188.animationgarden.app.ui.home.MainScreen
 
 class MainActivity : BaseComponentActivity() {
-    private val starredListActivityLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            val app = AnimationGardenApplication.instance.app
-        }
-
-    private var updateAppliedKeyword: ((String) -> Unit)? = null
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        requestWindowFeature(Window.FEATURE_NO_TITLE)
+
+        enableEdgeToEdge(
+            // 透明状态栏
+            statusBarStyle = SystemBarStyle.auto(
+                android.graphics.Color.TRANSPARENT,
+                android.graphics.Color.TRANSPARENT
+            ),
+            // 透明导航栏
+            navigationBarStyle = SystemBarStyle.auto(
+                android.graphics.Color.TRANSPARENT,
+                android.graphics.Color.TRANSPARENT,
+            )
+        )
+
+        // 允许画到 system bars
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
-            ObserveSettingsChanges()
-
-
-            MaterialTheme(colorScheme) {
-                ImmerseStatusBar(AppTheme.colorScheme.background)
-
-                MainPage()
+            AniApp(currentColorScheme) {
+                Navigator(screen = MainScreen) {
+                    FadeTransition(it)
+                }
             }
         }
-    }
-
-
-    @Composable
-    private fun MainPage() {
-        CommonAppScaffold {
-            HomePage()
-//            AndroidMainPage(app, focus)
-        }
-    }
-
-    @Composable
-    private fun ObserveSettingsChanges() {
-        val appSettingsManager = remember {
-            AnimationGardenApplication.instance.appSettingsManager
-        }
-        appSettingsManager.attachAutoSave()
-
-        val currentAppSettings by rememberUpdatedState(newValue = appSettingsManager.value.collectAsState().value)
-        LaunchedEffect(currentAppSettings.proxy) {
-            // proxy changed, update client
-//            app.client.value = withContext(Dispatchers.IO) {
-//                DmhyClient.Factory.create {
-//                    proxy = currentAppSettings.proxy.toKtorProxy()
-//                }
-//            }
-        }
-
     }
 }

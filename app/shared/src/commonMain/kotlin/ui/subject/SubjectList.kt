@@ -56,11 +56,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.navigator.Navigator
 import io.kamel.image.asyncPainterResource
-import me.him188.animationgarden.app.platform.LocalContext
 import me.him188.animationgarden.app.ui.foundation.AniKamelImage
 import me.him188.animationgarden.app.ui.foundation.BrokenImagePlaceholder
 import me.him188.animationgarden.app.ui.foundation.LoadingIndicator
+import me.him188.animationgarden.app.ui.home.LocalContentPaddings
+import me.him188.animationgarden.app.ui.subject.details.SubjectDetailsScreen
 
 /**
  * 番剧预览列表, 双列模式
@@ -68,6 +70,7 @@ import me.him188.animationgarden.app.ui.foundation.LoadingIndicator
 @Composable
 fun SubjectPreviewColumn(
     viewModel: SubjectListViewModel,
+    subjectDetailsNavigator: Navigator,
     modifier: Modifier = Modifier,
 ) {
     val items by viewModel.list.collectAsState()
@@ -85,13 +88,12 @@ fun SubjectPreviewColumn(
         item("dummy", span = { GridItemSpan(maxLineSpan) }) {}
 
         items(items, key = { it.id }) { subject ->
-            val context = LocalContext.current
             SubjectPreviewCard(
                 title = remember(subject.id) {
                     subject.chineseName.takeIf { it.isNotBlank() } ?: subject.originalName
                 },
                 imageUrl = remember(subject.id) { subject.images.landscapeCommon },
-                onClick = { viewModel.onClickSubjectPreview(context, subject) },
+                onClick = { subjectDetailsNavigator.push(SubjectDetailsScreen(subject.id)) },
                 Modifier.animateItemPlacement().height(180.dp),
             )
         }
@@ -104,7 +106,7 @@ fun SubjectPreviewColumn(
                     viewModel.loadMore()
                 }
                 Row(
-                    Modifier.fillMaxWidth().height(IntrinsicSize.Min),
+                    Modifier.padding(vertical = 8.dp).fillMaxWidth().height(IntrinsicSize.Min),
                     horizontalArrangement = Arrangement.Center
                 ) {
                     CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 1.5.dp)
@@ -115,8 +117,15 @@ fun SubjectPreviewColumn(
                             .align(Alignment.CenterVertically)
                     )
                 }
+                return@item
 //                LinearProgressIndicator(Modifier.fillMaxWidth().padding(horizontal = 16.dp))
             }
+
+            // no more items 
+        }
+
+        item("footer") {
+            Spacer(Modifier.fillMaxWidth().padding(bottom = LocalContentPaddings.current.calculateBottomPadding()))
         }
     }
 }

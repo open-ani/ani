@@ -33,6 +33,7 @@ import me.him188.animationgarden.app.ui.foundation.AniKamelImage
 import me.him188.animationgarden.app.ui.foundation.BrokenImagePlaceholder
 import me.him188.animationgarden.app.ui.foundation.LoadingIndicator
 import me.him188.animationgarden.app.ui.subject.details.SubjectDetailsViewModel
+import me.him188.animationgarden.app.ui.theme.weaken
 
 private const val COVER_WIDTH_TO_HEIGHT_RATIO = 849 / 1200f
 
@@ -108,7 +109,7 @@ private fun Tag(
 ) {
     Box(
         modifier
-            .border(1.dp, MaterialTheme.colorScheme.outline.copy(0.7f), shape)
+            .border(1.dp, MaterialTheme.colorScheme.outline.weaken(), shape)
             .clip(shape)
     ) {
         Row(

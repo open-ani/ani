@@ -21,9 +21,14 @@ package me.him188.animationgarden.app.ui.subject
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.Preview
+import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.Navigator
+import cafe.adriel.voyager.navigator.currentOrThrow
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import me.him188.animationgarden.app.ProvideCompositionLocalsForPreview
 import me.him188.animationgarden.app.preview.PreviewData
 import me.him188.animationgarden.datasources.api.SearchSession
 import me.him188.animationgarden.datasources.api.Subject
@@ -53,5 +58,12 @@ private fun PreviewSubjectList() {
             }
         })
     }
-    SubjectPreviewColumn(viewModel)
+    ProvideCompositionLocalsForPreview {
+        Navigator(screen = object : Screen {
+            @Composable
+            override fun Content() {
+                SubjectPreviewColumn(viewModel, LocalNavigator.currentOrThrow)
+            }
+        })
+    }
 }

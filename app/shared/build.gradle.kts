@@ -80,6 +80,8 @@ kotlin {
                 api(libs.kamel.image) // Image loading
                 api(libs.datastore.preferences.core) // Preferences
                 api(libs.voyager.navigator) // Navigator
+                api(libs.voyager.tabNavigator) // Navigator
+                api(libs.voyager.transitions) // Navigator
 
                 implementation(libs.slf4j.simple)
             }
@@ -103,9 +105,6 @@ kotlin {
                 // Compose
                 api(libs.androidx.compose.ui.tooling.preview)
                 api(libs.androidx.compose.material3)
-                implementation("androidx.compose.material3:material3:1.1.2")
-//                implementation("com.google.accompanist:accompanist-flowlayout:0.25.1")
-                api("androidx.navigation:navigation-compose:2.7.6")
             }
         }
 

@@ -19,16 +19,24 @@
 package me.him188.animationgarden.app.ui.home
 
 import androidx.compose.runtime.Composable
-
+import me.him188.animationgarden.app.platform.isInLandscapeMode
 
 @Composable
-fun HomePageLandscape() {
+fun HomePage() {
+    if (isInLandscapeMode()) {
+        HomePageLandscape()
+    } else {
+        HomePagePortrait()
+    }
 }
 
-enum class PageTab {
-    HOME,
-    SEARCH,
-    MY,
+@Composable
+private fun HomePageLandscape() {
+}
+
+@Composable
+private fun HomePagePortrait() {
+
 }
 
 //@Composable

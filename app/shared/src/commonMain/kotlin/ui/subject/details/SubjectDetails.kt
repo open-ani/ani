@@ -103,7 +103,7 @@ private fun SubjectDetailsContent(
 ) {
     Column(modifier) {
         // 封面, 标题, 标签 
-        SubjectDetailsHeader(coverImage, viewModel, Modifier.padding(top = 16.dp, bottom = 4.dp))
+        SubjectDetailsHeader(coverImage, viewModel, Modifier.padding(top = 8.dp, bottom = 4.dp))
 
 //        ProvideTextStyle(MaterialTheme.typography.titleLarge) {
 //            var selectedTabIndex by remember { mutableStateOf(0) }

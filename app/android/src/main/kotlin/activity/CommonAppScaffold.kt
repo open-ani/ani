@@ -18,100 +18,16 @@
 
 package me.him188.animationgarden.android.activity
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.material.TopAppBar
 import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusProperties
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.text.intl.Locale
-import androidx.compose.ui.unit.dp
-import io.kamel.image.config.LocalKamelConfig
-import me.him188.animationgarden.android.AnimationGardenApplication
 import me.him188.animationgarden.app.AppTheme
-import me.him188.animationgarden.app.app.LocalAppSettingsManager
-import me.him188.animationgarden.app.i18n.LocalI18n
-import me.him188.animationgarden.app.i18n.loadResourceBundle
-import me.him188.animationgarden.app.platform.LocalContext
-import me.him188.animationgarden.app.ui.foundation.DefaultKamelConfig
-
-@Composable
-fun BaseComponentActivity.CommonAppScaffold(
-    topBar: @Composable () -> Unit = {},
-    clearFocus: (() -> Unit)? = null,
-    content: @Composable () -> Unit,
-) {
-    val currentClearFocus by rememberUpdatedState(newValue = clearFocus)
-    val appSettingsManager = remember {
-        AnimationGardenApplication.instance.appSettingsManager
-    }
-
-    val context = LocalContext.current
-    val currentBundle = remember(Locale.current.language) { loadResourceBundle(context) }
-    CompositionLocalProvider(
-        LocalI18n provides currentBundle,
-        LocalAppSettingsManager provides appSettingsManager,
-        LocalKamelConfig provides DefaultKamelConfig,
-    ) {
-        val keyboard by rememberUpdatedState(newValue = LocalSoftwareKeyboardController.current)
-//            Box(modifier = Modifier
-//                .focusProperties { canFocus = false }
-//                .clickable(remember { MutableInteractionSource() }, null) {
-//                    keyboard?.hide()
-//                }
-//                .systemBarsPadding()
-//            ) {
-//                Box(modifier = Modifier.padding(vertical = 16.dp)) {
-//                    MainPage(app = app, 8.dp)
-//                }
-//            }
-        val focus = remember { FocusRequester() }
-        Scaffold(
-            Modifier
-                .focusRequester(focus)
-                .focusProperties { canFocus = false }
-                .clickable(remember { MutableInteractionSource() }, null) {
-                    keyboard?.hide()
-                    focus.freeFocus()
-                    currentClearFocus?.invoke()
-                }
-                .systemBarsPadding(),
-            topBar = topBar,
-            snackbarHost = {
-                SnackbarHost(snackbarHostState)
-            },
-
-            ) {
-            Box(
-                modifier = Modifier
-                    .background(AppTheme.colorScheme.background)
-                    .fillMaxSize()
-                    .padding(it) // padding first
-            ) {
-                Box(modifier = Modifier.padding(top = 0.dp)) {
-                    content()
-                }
-            }
-        }
-    }
-}
 
 
 @Composable
@@ -126,17 +42,18 @@ fun CommonTopAppBar(
     val currentKeyboard by rememberUpdatedState(newValue = LocalSoftwareKeyboardController.current)
 
     CompositionLocalProvider(LocalContentColor provides contentColor) {
-        TopAppBar(
-            title = title,
-            actions = actions,
-            backgroundColor = backgroundColor,
-            contentColor = contentColor,
-            navigationIcon = navigationIcon,
-            modifier = modifier
-                .focusProperties { canFocus = false }
-                .clickable(remember { MutableInteractionSource() }, null) {
-                    currentKeyboard?.hide()
-                },
-        )
+//        TopAppBar(
+//            title = title,
+//            actions = actions,
+//            backgroundColor = backgroundColor,
+//            contentColor = contentColor,
+//            navigationIcon = navigationIcon,
+//            modifier = modifier
+//                .focusProperties { canFocus = false }
+//                .clickable(remember { MutableInteractionSource() }, null) {
+//                    currentKeyboard?.hide()
+//                },
+//        )
+
     }
 }

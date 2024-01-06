@@ -96,15 +96,17 @@ class AnimationGardenApplication : Application() {
         @Stable
         lateinit var resourceBundle: ResourceBundle
 
+        init {
+            startKoin {
+                modules(CommonKoinModule)
+                modules(AndroidModules)
+            }
+        }
+
         // do not observe dependency change
         @Stable
         val app by lazy {
             runBlocking(Dispatchers.Default) {
-                startKoin {
-                    modules(CommonKoinModule)
-                    modules(AndroidModules)
-                }
-
                 val settings = appSettingsManager.value.value // initialize in Main thread
                 withContext(Dispatchers.IO) {
                     val tag by lazy(LazyThreadSafetyMode.PUBLICATION) { context.getString(R.string.app_package) }

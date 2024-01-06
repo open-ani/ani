@@ -6,7 +6,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
 import me.him188.animationgarden.app.ui.subject.details.SubjectDetails
@@ -14,7 +13,6 @@ import me.him188.animationgarden.app.ui.subject.details.SubjectDetailsViewModel
 import org.koin.core.component.KoinComponent
 
 class SubjectDetailsActivity : BaseComponentActivity(), KoinComponent {
-    @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
         super.onCreate(savedInstanceState)
         val subjectId = intent.getStringExtra("subjectId") ?: run {
@@ -33,7 +31,7 @@ class SubjectDetailsActivity : BaseComponentActivity(), KoinComponent {
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
-            MaterialTheme(colorScheme) {
+            MaterialTheme(currentColorScheme) {
 //                val windowSizeClass = calculateWindowSizeClass(this)
 //                val displayFeatures = calculateDisplayFeatures(this)
                 Column(
