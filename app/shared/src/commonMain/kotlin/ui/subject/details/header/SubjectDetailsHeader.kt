@@ -43,7 +43,7 @@ internal fun SubjectDetailsHeader(
     viewModel: SubjectDetailsViewModel,
     modifier: Modifier = Modifier,
 ) {
-    Row(modifier) {
+    Row(modifier, verticalAlignment = Alignment.CenterVertically) {
         val imageWidth = 120.dp
 
         AniKamelImage(

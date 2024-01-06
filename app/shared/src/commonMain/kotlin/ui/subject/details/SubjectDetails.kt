@@ -5,14 +5,17 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -39,6 +42,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.kamel.core.Resource
 import io.kamel.image.asyncPainterResource
@@ -169,7 +173,7 @@ private fun EpisodeList(episodes: List<BangumiEpisode>, modifier: Modifier = Mod
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         items(episodes, key = { it.id }) { episode ->
-            EpisodeItem(episode)
+            EpisodeItem(episode, Modifier.widthIn(min = 60.dp, max = 160.dp))
         }
     }
 }
@@ -182,8 +186,7 @@ fun EpisodeItem(
     val shape = RoundedCornerShape(8.dp)
     ElevatedCard(
         onClick = {},
-        modifier.clip(shape)
-            .fillMaxWidth(),
+        modifier.clip(shape),
         shape = shape,
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp),
     ) {
@@ -192,13 +195,21 @@ fun EpisodeItem(
             Arrangement.spacedBy(8.dp)
         ) {
             Row(
+                Modifier,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
+                // "01"
                 Text(episode.sort.fixToString(2), style = MaterialTheme.typography.bodyMedium)
+
+                Spacer(Modifier.weight(1f, fill = false))
+
+                // "冒险结束"
                 Text(
                     episode.chineseName,
                     Modifier.padding(start = 8.dp),
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
 
@@ -213,7 +224,7 @@ fun EpisodeItem(
                 )
                 Text(
                     remember { "${episode.comment}" },
-                    Modifier.padding(start = 4.dp),
+                    Modifier.offset(y = (-1).dp).padding(start = 4.dp),
                     style = MaterialTheme.typography.bodySmall
                 )
             }
