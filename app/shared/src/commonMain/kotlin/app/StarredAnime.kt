@@ -21,7 +21,6 @@ package me.him188.animationgarden.app.app
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.protobuf.ProtoNumber
 import me.him188.animationgarden.datasources.api.topic.Alliance
 import me.him188.animationgarden.datasources.api.topic.Episode
 import me.him188.animationgarden.datasources.api.topic.Resolution
@@ -33,18 +32,18 @@ import me.him188.animationgarden.datasources.api.topic.SubtitleLanguage
 @Serializable
 @Immutable
 data class StarredAnime(
-    @ProtoNumber(1) val primaryName: String,
-    @ProtoNumber(2) val secondaryNames: List<String> = listOf(),
+    val primaryName: String,
+    val secondaryNames: List<String> = listOf(),
     /**
      * 搜索时的关键词.
      */
-    @ProtoNumber(3) val searchQuery: String, // keywords
-    @ProtoNumber(4) val episodes: Set<Episode>,
-    @ProtoNumber(5) val watchedEpisodes: Set<Episode> = setOf(),
-    @ProtoNumber(6) val preferredAlliance: Alliance? = null,
-    @ProtoNumber(7) val preferredResolution: Resolution? = null,
-    @ProtoNumber(8) val preferredSubtitleLanguage: SubtitleLanguage? = null,
-    @ProtoNumber(9) val starTimeMillis: Long,
+    val searchQuery: String, // keywords
+    val episodes: Set<Episode>,
+    val watchedEpisodes: Set<Episode> = setOf(),
+    val preferredAlliance: Alliance? = null,
+    val preferredResolution: Resolution? = null,
+    val preferredSubtitleLanguage: SubtitleLanguage? = null,
+    val starTimeMillis: Long,
 ) {
     val id
         @Stable

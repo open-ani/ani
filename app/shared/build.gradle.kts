@@ -55,7 +55,7 @@ kotlin {
             dependencies {
                 api(libs.kotlinx.coroutines.core)
                 api(libs.kotlinx.serialization.json)
-                api(libs.kotlinx.serialization.protobuf)
+                compileOnly(libs.atomicfu) // No need to include in the final build since atomicfu Gradle will optimize it out
 
                 // Compose
                 api(compose.foundation)
@@ -79,6 +79,7 @@ kotlin {
                 api(libs.directories) // Data directories on all OSes
                 api(libs.kamel.image) // Image loading
                 api(libs.datastore.preferences.core) // Preferences
+                api(libs.voyager.navigator) // Navigator
 
                 implementation(libs.slf4j.simple)
             }

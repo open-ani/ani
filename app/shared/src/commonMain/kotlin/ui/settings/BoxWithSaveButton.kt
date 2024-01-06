@@ -19,28 +19,22 @@
 package me.him188.animationgarden.app.ui.settings
 
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
-import me.him188.animationgarden.app.AppTheme
-import me.him188.animationgarden.app.i18n.LocalI18n
-import me.him188.animationgarden.app.platform.Res
 
 @Composable
 fun BoxWithSaveButton(
@@ -66,32 +60,33 @@ fun BoxWithSaveButton(
                     .fillMaxHeight(),
                 contentAlignment = Alignment.BottomEnd
             ) {
-                @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-                val containerColor by colors.containerColor(enabled)
-                Box(
-                    buttonModifier
-                        .background(containerColor)
-                        .clip(AppTheme.shapes.small)
-                        .width(40.dp)
-                        .height(this@BoxWithConstraints.maxHeight + buttonHeightOffset())
-                        .border(BorderStroke(1.dp, color = AppTheme.colorScheme.primary), shape = AppTheme.shapes.small)
-                        .clickable(
-                            remember { MutableInteractionSource() },
-                            rememberRipple(),
-                            enabled = enabled,
-                            onClick = onClickSave,
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-                    val contentColor by colors.contentColor(enabled)
-                    Icon(
-                        Res.painter.check,
-                        LocalI18n.current.getString("preferences.save.changes"),
-                        Modifier.size(24.dp),
-                        tint = contentColor,
-                    )
-                }
+                // TODO:  BoxWithSaveButton
+//                @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+//                val containerColor by rememberUpdatedState(if (enabled) colors.containerColor else colors.disabledContainerColor)
+//                Box(
+//                    buttonModifier
+//                        .background(containerColor)
+//                        .clip(AppTheme.shapes.small)
+//                        .width(40.dp)
+//                        .height(this@BoxWithConstraints.maxHeight + buttonHeightOffset())
+//                        .border(BorderStroke(1.dp, color = AppTheme.colorScheme.primary), shape = AppTheme.shapes.small)
+//                        .clickable(
+//                            remember { MutableInteractionSource() },
+//                            rememberRipple(),
+//                            enabled = enabled,
+//                            onClick = onClickSave,
+//                        ),
+//                    contentAlignment = Alignment.Center
+//                ) {
+//                    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+//                    val contentColor by colors.contentColor(enabled)
+//                    Icon(
+//                        Res.painter.check,
+//                        LocalI18n.current.getString("preferences.save.changes"),
+//                        Modifier.size(24.dp),
+//                        tint = contentColor,
+//                    )
+//                }
             }
         }
     }

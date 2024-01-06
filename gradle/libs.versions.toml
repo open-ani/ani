@@ -1,7 +1,6 @@
 [versions]
 kotlin = "2.0.0-Beta1"
 jetpack-compose-compiler = "1.5.6-dev-k2.0.0-Beta1-06a03be2b42" # used by android
-kotlinx-datetime = "0.5.0"
 coroutines = "1.7.3"
 serialization = "1.6.2"
 voyager = "1.0.0"
@@ -10,7 +9,6 @@ ktor = "2.3.7"
 koin = "3.5.3"
 slf4j = "2.0.7"
 jsoup = "1.15.4"
-accompanist = "0.33.2-alpha"
 jetpack-compose = "1.5.4"
 compose-multiplatform = "1.5.11"
 android-gradle-plugin = "8.2.1"
@@ -25,14 +23,15 @@ atomicfu-gradle-plugin = { module = "org.jetbrains.kotlinx:atomicfu-gradle-plugi
 compose-multiplatfrom-gradle-plugin = { module = "org.jetbrains.compose:org.jetbrains.compose.gradle.plugin", version.ref = "compose-multiplatform" }
 
 # Kotlinx
-kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
+#kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "0.5.0" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
 kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "coroutines" }
 kotlinx-coroutines-debug = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-debug", version.ref = "coroutines" }
 kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "serialization" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
-kotlinx-serialization-protobuf = { module = "org.jetbrains.kotlinx:kotlinx-serialization-protobuf", version.ref = "serialization" }
+atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "atomicfu" }
+#kotlinx-serialization-protobuf = { module = "org.jetbrains.kotlinx:kotlinx-serialization-protobuf", version.ref = "serialization" }
 
 # Ktor
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
@@ -64,20 +63,20 @@ datastore-preferences = { module = "androidx.datastore:datastore-preferences", v
 datastore-preferences-core = { module = "androidx.datastore:datastore-preferences-core", version = "1.0.0" }
 
 # Android Accompanist
-accompanist-placeholder = { module = "com.google.accompanist:accompanist-placeholder", version.ref = "accompanist" }
-accompanist-placeholder-material = { module = "com.google.accompanist:accompanist-placeholder-material", version.ref = "accompanist" }
+#accompanist-placeholder = { module = "com.google.accompanist:accompanist-placeholder", version.ref = "accompanist" }
+#accompanist-placeholder-material = { module = "com.google.accompanist:accompanist-placeholder-material", version.ref = "accompanist" }
 
 
 # Voyager
 voyager-navigator = { module = "cafe.adriel.voyager:voyager-navigator", version.ref = "voyager" }
-voyager-screenModel = { module = "cafe.adriel.voyager:voyager-screenmodel", version.ref = "voyager" }
-voyager-bottomSheetNavigator = { module = "cafe.adriel.voyager:voyager-bottom-sheet-navigator", version.ref = "voyager" }
-voyager-tabNavigator = { module = "cafe.adriel.voyager:voyager-tab-navigator", version.ref = "voyager" }
-voyager-transitions = { module = "cafe.adriel.voyager:voyager-transitions", version.ref = "voyager" }
-voyager-koin = { module = "cafe.adriel.voyager:voyager-koin", version.ref = "voyager" }
-voyager-hilt = { module = "cafe.adriel.voyager:voyager-hilt", version.ref = "voyager" }
-voyager-kodein = { module = "cafe.adriel.voyager:voyager-kodein", version.ref = "voyager" }
-voyager-rxjava = { module = "cafe.adriel.voyager:voyager-rxjava", version.ref = "voyager" }
+#voyager-screenModel = { module = "cafe.adriel.voyager:voyager-screenmodel", version.ref = "voyager" }
+#voyager-bottomSheetNavigator = { module = "cafe.adriel.voyager:voyager-bottom-sheet-navigator", version.ref = "voyager" }
+#voyager-tabNavigator = { module = "cafe.adriel.voyager:voyager-tab-navigator", version.ref = "voyager" }
+#voyager-transitions = { module = "cafe.adriel.voyager:voyager-transitions", version.ref = "voyager" }
+#voyager-koin = { module = "cafe.adriel.voyager:voyager-koin", version.ref = "voyager" }
+#voyager-hilt = { module = "cafe.adriel.voyager:voyager-hilt", version.ref = "voyager" }
+#voyager-kodein = { module = "cafe.adriel.voyager:voyager-kodein", version.ref = "voyager" }
+#voyager-rxjava = { module = "cafe.adriel.voyager:voyager-rxjava", version.ref = "voyager" }
 
 
 # Android-only UI libraries
@@ -88,7 +87,7 @@ androidx-appcompat = { module = "androidx.appcompat:appcompat", version = "1.6.1
 androidx-swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version = "1.1.0" }
 androidx-material = { module = "com.google.android.material:material", version = "1.11.0" }
 androidx-material3-window-size-class0 = { module = "androidx.compose.material3:material3-window-size-class", version = "1.1.2" }
-androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version = "2.7.6" }
+#androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version = "2.7.6" }
 
 androidx-compose-ui = { module = "androidx.compose.ui:ui", version.ref = "jetpack-compose" }
 androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "jetpack-compose" }
