@@ -40,10 +40,11 @@ import kotlinx.coroutines.supervisorScope
 import me.him188.animationgarden.shared.Uuid
 import me.him188.animationgarden.utils.logging.logger
 import me.him188.animationgarden.utils.logging.trace
+import moe.tlaster.precompose.viewmodel.ViewModel
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
-abstract class AbstractViewModel : RememberObserver {
+abstract class AbstractViewModel : RememberObserver, ViewModel() {
     val logger by lazy { logger(this::class) }
 
     private val closed = atomic(false)

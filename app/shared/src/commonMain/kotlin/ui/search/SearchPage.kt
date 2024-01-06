@@ -24,13 +24,10 @@ import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
-import cafe.adriel.voyager.navigator.Navigator
 import me.him188.animationgarden.app.platform.isInLandscapeMode
 import me.him188.animationgarden.app.ui.home.LocalContentPaddings
 import me.him188.animationgarden.app.ui.subject.SubjectPreviewColumn
@@ -39,29 +36,21 @@ import me.him188.animationgarden.app.ui.subject.SubjectPreviewColumn
  * 搜索页面
  */
 @Composable
-fun SearchPage(
-    subjectDetailsNavigator: Navigator,
-) {
+fun SearchPage(viewModel: SearchViewModel) {
     if (isInLandscapeMode()) {
-        SearchPageLandscape()
+        SearchPageLandscape(viewModel)
     } else {
-        SearchPagePortrait(subjectDetailsNavigator)
+        SearchPagePortrait(viewModel)
     }
 }
 
 @Composable
-private fun SearchPageLandscape() {
+private fun SearchPageLandscape(viewModel: SearchViewModel) {
+    SearchPagePortrait(viewModel)
 }
 
 @Composable
-private fun SearchPagePortrait(
-    subjectDetailsNavigator: Navigator,
-) {
-    val search = remember { SearchViewModel() }
-    LaunchedEffect(true) {
-        search.search("葬送的芙莉莲")
-    }
-
+private fun SearchPagePortrait(viewModel: SearchViewModel) {
     Column(
         Modifier.padding(
             top = LocalContentPaddings.current.calculateTopPadding(),
@@ -69,9 +58,9 @@ private fun SearchPagePortrait(
             end = LocalContentPaddings.current.calculateEndPadding(LocalLayoutDirection.current),
         ).fillMaxSize()
     ) {
-        val viewModel by search.result.collectAsState()
+        val viewModel by viewModel.result.collectAsState()
         viewModel?.let {
-            SubjectPreviewColumn(it, subjectDetailsNavigator, Modifier)
+            SubjectPreviewColumn(it)
         }
     }
 }

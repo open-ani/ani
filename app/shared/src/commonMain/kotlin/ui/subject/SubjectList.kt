@@ -49,6 +49,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -57,13 +58,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import cafe.adriel.voyager.navigator.Navigator
 import io.kamel.image.asyncPainterResource
+import me.him188.animationgarden.app.platform.LocalContext
 import me.him188.animationgarden.app.ui.foundation.AniKamelImage
 import me.him188.animationgarden.app.ui.foundation.BrokenImagePlaceholder
 import me.him188.animationgarden.app.ui.foundation.LoadingIndicator
 import me.him188.animationgarden.app.ui.home.LocalContentPaddings
-import me.him188.animationgarden.app.ui.subject.details.SubjectDetailsScreen
 
 /**
  * 番剧预览列表, 双列模式
@@ -71,12 +71,12 @@ import me.him188.animationgarden.app.ui.subject.details.SubjectDetailsScreen
 @Composable
 fun SubjectPreviewColumn(
     viewModel: SubjectListViewModel,
-    subjectDetailsNavigator: Navigator,
     modifier: Modifier = Modifier,
 ) {
     val items by viewModel.list.collectAsState()
 
     val state = rememberLazyGridState()
+    val context by rememberUpdatedState(LocalContext.current)
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier.background(MaterialTheme.colorScheme.background),
@@ -94,7 +94,7 @@ fun SubjectPreviewColumn(
                     subject.chineseName.takeIf { it.isNotBlank() } ?: subject.originalName
                 },
                 imageUrl = remember(subject.id) { subject.images.landscapeCommon },
-                onClick = { subjectDetailsNavigator.push(SubjectDetailsScreen(subject.id)) },
+                onClick = { viewModel.navigateToSubjectDetails(context, subject.id) },
                 Modifier.animateItemPlacement().height(180.dp),
             )
         }

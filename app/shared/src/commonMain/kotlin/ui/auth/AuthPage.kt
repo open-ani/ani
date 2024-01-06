@@ -51,9 +51,7 @@ import me.him188.animationgarden.app.ui.framework.launchInBackground
 import me.him188.animationgarden.utils.logging.info
 
 @Composable
-fun AuthPage(
-    viewModel: AccountViewModel,
-) {
+fun AuthPage(viewModel: AccountViewModel) {
     val errorFontSize = 14.sp
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -65,7 +63,7 @@ fun AuthPage(
         val passwordError by viewModel.passwordError.collectAsState()
         val verifyPasswordError by viewModel.verifyPasswordError.collectAsState()
         Text(
-            "Solvo",
+            "Bangumi",
             modifier = Modifier.padding(bottom = 20.dp),
             fontSize = 30.sp,
             fontWeight = FontWeight.W800,
@@ -80,7 +78,7 @@ fun AuthPage(
                 value = viewModel.username.value,
                 onValueChange = { viewModel.setUsername(it) },
                 isError = (usernameError != null),
-                label = { Text("Username") },
+                label = { Text("邮箱") },
                 shape = RoundedCornerShape(8.dp)
             )
         }
@@ -102,7 +100,7 @@ fun AuthPage(
                 value = viewModel.password.value,
                 onValueChange = { viewModel.setPassword(it) },
                 isError = (passwordError != null),
-                label = { Text("Password") },
+                label = { Text("密码") },
                 shape = RoundedCornerShape(8.dp),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Password,

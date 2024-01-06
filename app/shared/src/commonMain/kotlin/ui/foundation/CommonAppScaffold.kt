@@ -7,15 +7,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.ColorScheme
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.IconToggleButton
-import androidx.compose.material3.IconToggleButtonColors
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -28,14 +27,14 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.intl.Locale
-import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
-import cafe.adriel.voyager.navigator.tab.Tab
 import io.kamel.image.config.LocalKamelConfig
 import me.him188.animationgarden.app.AppTheme
 import me.him188.animationgarden.app.i18n.LocalI18n
 import me.him188.animationgarden.app.i18n.loadResourceBundle
 import me.him188.animationgarden.app.platform.LocalContext
+import moe.tlaster.precompose.PreComposeApp
 
 /**
  * 提供 i18n 等组件, 以及背景
@@ -47,17 +46,19 @@ inline fun AniApp(
 ) {
     val context = LocalContext.current
     val currentBundle = remember(Locale.current.language) { loadResourceBundle(context) }
-    CompositionLocalProvider(
-        LocalI18n provides currentBundle,
-        LocalKamelConfig provides DefaultKamelConfig,
-    ) {
-        MaterialTheme(colorScheme) {
-            Box(
-                modifier = Modifier
-                    .background(AppTheme.colorScheme.background)
-                    .fillMaxSize()
-            ) {
-                content()
+    PreComposeApp {
+        CompositionLocalProvider(
+            LocalI18n provides currentBundle,
+            LocalKamelConfig provides DefaultKamelConfig,
+        ) {
+            MaterialTheme(colorScheme) {
+                Box(
+                    modifier = Modifier
+                        .background(AppTheme.colorScheme.background)
+                        .fillMaxSize()
+                ) {
+                    content()
+                }
             }
         }
     }
@@ -95,24 +96,55 @@ fun CommonAppScaffold(
 
 @Composable
 fun RowScope.TabNavigationItem(
-    tab: Tab,
-    colors: IconToggleButtonColors = IconButtonDefaults.iconToggleButtonColors(),
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    icon: @Composable () -> Unit,
+    title: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    val tabNavigator = LocalTabNavigator.current
-
-    IconToggleButton(
-        colors = colors,
-        checked = tabNavigator.current == tab,
-        onCheckedChange = { tabNavigator.current = tab },
-        modifier = Modifier.weight(1f),
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Icon(
-                painter = tab.options.icon!!,
-                contentDescription = tab.options.title,
-                tint = LocalContentColor.current,
-            )
-            Text(tab.options.title, style = MaterialTheme.typography.bodyMedium)
+    Box(modifier.weight(1f)) {
+        Box(
+            modifier = modifier
+                .align(Alignment.Center)
+                .minimumInteractiveComponentSize()
+                .fillMaxSize()
+                .toggleable(
+                    value = checked,
+                    onValueChange = onCheckedChange,
+                    enabled = true,
+                    role = Role.Checkbox,
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = rememberRipple()
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            val contentColor = if (checked) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                LocalContentColor.current
+            }
+            CompositionLocalProvider(LocalContentColor provides contentColor) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    icon()
+                    ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
+                        title()
+                    }
+                }
+            }
         }
+
+//        IconToggleButton(
+//            colors = colors,
+//            checked = checked,
+//            onCheckedChange = onCheckedChange,
+//            modifier = modifier.size(48.dp),
+//        ) {
+//            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+//                icon()
+//                ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
+//                    title()
+//                }
+//            }
+//        }
     }
 }

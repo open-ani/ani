@@ -59,6 +59,7 @@ kotlin {
 
                 // Compose
                 api(compose.foundation)
+                api(compose.animation)
                 api(compose.ui)
                 api(compose.material3)
                 api(compose.materialIconsExtended)
@@ -79,9 +80,9 @@ kotlin {
                 api(libs.directories) // Data directories on all OSes
                 api(libs.kamel.image) // Image loading
                 api(libs.datastore.preferences.core) // Preferences
-                api(libs.voyager.navigator) // Navigator
-                api(libs.voyager.tabNavigator) // Navigator
-                api(libs.voyager.transitions) // Navigator
+                api(libs.precompose) // Navigator
+                api(libs.precompose.koin) // Navigator
+                api(libs.precompose.viewmodel) // Navigator
 
                 implementation(libs.slf4j.simple)
             }
@@ -101,6 +102,7 @@ kotlin {
                 api(libs.datastore.preferences)
                 api(libs.androidx.appcompat)
                 api(libs.androidx.core.ktx)
+                api(libs.koin.android)
 
                 // Compose
                 api(libs.androidx.compose.ui.tooling.preview)

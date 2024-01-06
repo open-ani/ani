@@ -23,17 +23,22 @@ import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.yield
+import me.him188.animationgarden.app.platform.Context
+import me.him188.animationgarden.app.ui.event.SubjectNavigator
 import me.him188.animationgarden.app.ui.framework.AbstractViewModel
 import me.him188.animationgarden.app.ui.framework.launchInBackground
 import me.him188.animationgarden.datasources.api.SearchSession
 import me.him188.animationgarden.datasources.api.Subject
 import me.him188.animationgarden.utils.logging.info
 import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
 @Stable
 class SubjectListViewModel(
     val searchSession: SearchSession<Subject>,
 ) : AbstractViewModel(), KoinComponent {
+    private val subjectNavigator: SubjectNavigator by inject()
+
     private val _loading: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val loading: StateFlow<Boolean> get() = _loading
 
@@ -68,5 +73,10 @@ class SubjectListViewModel(
                 _loading.value = false
             }
         }
+    }
+
+    fun navigateToSubjectDetails(context: Context, subjectId: String) {
+        logger.info { "navigateToSubjectDetails($subjectId)" }
+        subjectNavigator.navigateToSubjectDetails(context, subjectId)
     }
 }

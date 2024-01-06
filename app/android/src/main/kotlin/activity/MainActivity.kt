@@ -23,8 +23,6 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.WindowCompat
-import cafe.adriel.voyager.navigator.Navigator
-import cafe.adriel.voyager.transitions.FadeTransition
 import me.him188.animationgarden.app.ui.foundation.AniApp
 import me.him188.animationgarden.app.ui.home.MainScreen
 
@@ -50,9 +48,7 @@ class MainActivity : BaseComponentActivity() {
 
         setContent {
             AniApp(currentColorScheme) {
-                Navigator(screen = MainScreen) {
-                    FadeTransition(it)
-                }
+                MainScreen()
             }
         }
     }

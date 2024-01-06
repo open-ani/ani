@@ -30,7 +30,9 @@ import me.him188.animationgarden.datasources.api.SubjectSearchQuery
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-class SearchViewModel : AbstractViewModel(), KoinComponent {
+class SearchViewModel(
+    keyword: String?,
+) : AbstractViewModel(), KoinComponent {
     private val subjectProvider: SubjectProvider by inject()
     private val _result: MutableStateFlow<SubjectListViewModel?> = MutableStateFlow(null)
 
@@ -38,6 +40,10 @@ class SearchViewModel : AbstractViewModel(), KoinComponent {
         _result.map { it?.searchSession }.stateInBackground()
 
     val result: StateFlow<SubjectListViewModel?> = _result
+
+    init {
+        keyword?.let { search(it) }
+    }
 
     fun search(keywords: String) {
         _result.value =
