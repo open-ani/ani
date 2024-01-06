@@ -18,8 +18,11 @@ import me.him188.animationgarden.datasources.bangumi.models.subjects.BangumiSubj
 import me.him188.animationgarden.datasources.bangumi.models.subjects.BangumiSubjectImageSize
 import me.him188.animationgarden.datasources.bangumi.models.subjects.BangumiSubjectInfo
 import me.him188.animationgarden.datasources.bangumi.models.subjects.BangumiSubjectTag
+import me.him188.animationgarden.datasources.bangumi.processing.sortByRelation
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import org.openapitools.client.models.RelatedCharacter
+import org.openapitools.client.models.RelatedPerson
 
 @Stable
 class SubjectDetailsViewModel(
@@ -63,11 +66,31 @@ class SubjectDetailsViewModel(
     val ratingCounts: SharedFlow<Map<Rating, Int>> =
         subjectNotNull.map { it.rating.count }.shareInBackground()
 
-    val infoboxList: SharedFlow<List<BangumiSubjectInfo>> =
+    private val infoboxList: SharedFlow<List<BangumiSubjectInfo>> =
         subjectNotNull.map { it.infobox }.shareInBackground()
 
     val summary: SharedFlow<String> =
         subjectNotNull.map { it.summary }.shareInBackground()
+
+    val characters: SharedFlow<List<RelatedCharacter>> = subjectNotNull.map { subject ->
+        bangumiClient.api.getRelatedCharactersBySubjectId(subject.id.toInt())
+            .distinctBy { it.id }
+    }.shareInBackground()
+
+    val relatedPersons: SharedFlow<List<RelatedPerson>> = subjectNotNull.map { subject ->
+        bangumiClient.api.getRelatedPersonsBySubjectId(subject.id.toInt())
+            .sortByRelation()
+            .distinctBy { it.id }
+    }.shareInBackground()
+//
+//    val staff: SharedFlow<Staff> = combine(infoboxList, relatedPersons) { infoboxList, relatedPersons ->
+//        infoboxList to relatedPersons
+//    }.map { (infoboxList, relatedPersons) ->
+//        infoboxList.map { it.key to  }
+//        val company = relatedPersons.filter { it.type == "公司" }
+//        val selectedRelatedPersons = relatedPersons.filter { it.type != "公司" }
+//        Staff(company, selectedRelatedPersons)
+//    }.shareInBackground()
 
     val episodesMain: SharedFlow<List<BangumiEpisode>> = episodesFlow(BangumiEpType.MAIN)
     val episodesPV: SharedFlow<List<BangumiEpisode>> = episodesFlow(BangumiEpType.PV)
@@ -87,3 +110,7 @@ class SubjectDetailsViewModel(
         }.results.toList()
     }.shareInBackground()
 }
+
+//private val ignoredLevels = listOf(
+//    "原画",
+//)

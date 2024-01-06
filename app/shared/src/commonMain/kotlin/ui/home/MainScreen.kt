@@ -42,7 +42,7 @@ val LocalContentPaddings: ProvidableCompositionLocal<PaddingValues> = androidx.c
 @Composable
 fun MainScreen() {
     val accountViewModel = remember { AccountViewModel(isRegister = false) }
-    val searchViewModel = remember { SearchViewModel("") }
+    val searchViewModel = remember { SearchViewModel() }
 
     if (isInLandscapeMode()) {
         MainScreenLandscape()

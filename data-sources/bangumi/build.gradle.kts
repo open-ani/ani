@@ -19,6 +19,17 @@
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
+    idea
+}
+
+sourceSets.main {
+    kotlin.srcDir("gen")
+}
+
+idea {
+    module {
+        generatedSourceDirs.add(file("gen"))
+    }
 }
 
 dependencies {
@@ -29,6 +40,11 @@ dependencies {
     implementation(libs.ktor.client.cio)
     implementation(libs.ktor.client.content.negotiation)
     implementation(libs.ktor.serialization.kotlinx.json)
+
+
+    implementation("com.squareup.moshi:moshi-kotlin:1.14.0")
+    implementation("com.squareup.moshi:moshi-adapters:1.14.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
     testImplementation(libs.slf4j.simple)
 }

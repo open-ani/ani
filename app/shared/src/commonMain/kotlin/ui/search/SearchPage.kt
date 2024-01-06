@@ -67,7 +67,6 @@ private fun SearchPagePortrait(viewModel: SearchViewModel) {
             end = LocalContentPaddings.current.calculateEndPadding(LocalLayoutDirection.current),
         ).fillMaxSize()
     ) {
-
         val query by viewModel.editingQuery.collectAsState()
         val searchActive by viewModel.searchActive.collectAsState()
         SearchBar(
@@ -98,8 +97,8 @@ private fun SearchPagePortrait(viewModel: SearchViewModel) {
 
         }
 
-        val viewModel by viewModel.result.collectAsState()
-        viewModel?.let {
+        val result by viewModel.result.collectAsState()
+        result?.let {
             SubjectPreviewColumn(it)
         }
     }

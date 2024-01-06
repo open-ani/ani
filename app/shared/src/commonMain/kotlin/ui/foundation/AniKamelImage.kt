@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.DefaultAlpha
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import io.kamel.core.Resource
 
@@ -62,10 +63,18 @@ fun LoadingIndicator(progress: Float, modifier: Modifier = Modifier) {
 
 @Composable
 fun BrokenImagePlaceholder(modifier: Modifier = Modifier) {
+    return IconImagePlaceholder(Icons.Outlined.BrokenImage, modifier)
+}
+
+@Composable
+fun IconImagePlaceholder(
+    icon: ImageVector,
+    modifier: Modifier = Modifier,
+) {
     Box(
         modifier.fillMaxSize()
             .background(Color.LightGray)
     ) {
-        Icon(Icons.Outlined.BrokenImage, "Broken", Modifier.align(Alignment.Center))
+        Icon(icon, "Broken", Modifier.align(Alignment.Center))
     }
 }

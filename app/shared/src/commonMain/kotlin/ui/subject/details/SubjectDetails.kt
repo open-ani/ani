@@ -15,22 +15,29 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -41,15 +48,20 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.kamel.core.Resource
 import io.kamel.image.asyncPainterResource
 import me.him188.animationgarden.app.ProvideCompositionLocalsForPreview
 import me.him188.animationgarden.app.preview.PreviewData
+import me.him188.animationgarden.app.ui.foundation.AniKamelImage
+import me.him188.animationgarden.app.ui.foundation.IconImagePlaceholder
 import me.him188.animationgarden.app.ui.foundation.backgroundWithGradient
 import me.him188.animationgarden.app.ui.subject.details.header.SubjectDetailsHeader
+import me.him188.animationgarden.app.ui.theme.weaken
 import me.him188.animationgarden.datasources.bangumi.client.BangumiEpisode
 
 
@@ -87,7 +99,6 @@ fun SubjectDetails(viewModel: SubjectDetailsViewModel) {
                 Modifier
                     .systemBarsPadding()
                     .fillMaxSize()
-                    .padding(horizontal = 16.dp)
                     .padding(top = 6.dp, bottom = 16.dp)
             )
         }
@@ -100,81 +111,148 @@ private fun SubjectDetailsContent(
     coverImage: Resource<Painter>,
     viewModel: SubjectDetailsViewModel,
     modifier: Modifier = Modifier,
+    horizontalPadding: Dp = 16.dp,
 ) {
     Column(modifier) {
         // 封面, 标题, 标签 
-        SubjectDetailsHeader(coverImage, viewModel, Modifier.padding(top = 8.dp, bottom = 4.dp))
+        SubjectDetailsHeader(
+            coverImage,
+            viewModel,
+            Modifier.padding(top = 8.dp, bottom = 4.dp).padding(horizontal = horizontalPadding)
+        )
 
-//        ProvideTextStyle(MaterialTheme.typography.titleLarge) {
-//            var selectedTabIndex by remember { mutableStateOf(0) }
-//            TabRow(
-//                selectedTabIndex,
-//                Modifier.padding(top = 16.dp),
-//                divider = {},
-//                containerColor = Color.Transparent,
-//                indicator = @Composable { tabPositions ->
-//                    if (selectedTabIndex < tabPositions.size) {
-//                        TabRowDefaults.Indicator(
-//                            Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex])
-//                        )
-//                    }
-//                }
-//            ) {
-//                Tab(true, {}) {
-//                    Text("正片")
-//                }
-//                Tab(false, {}) {
-//                    Text("PV")
-//                }
-//                Tab(false, {}) {
-//                    Text("SP")
-//                }
-//                Tab(false, {}) {
-//                    Text("SP")
-//                }
-//            }
-//        }
-        
+        val characters by viewModel.characters.collectAsState(listOf())
+        SectionTitle(Modifier.padding(horizontal = horizontalPadding)) {
+            Text("角色")
+        }
+        PersonList(characters, { it.id }, horizontalPadding, Modifier) {
+            PersonView(
+                avatar = {
+                    Avatar(
+                        it.images?.medium ?: "",
+                        alignment = Alignment.TopStart,
+                        contentScale = ContentScale.Crop
+                    )
+                },
+                text = { Text(it.name, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                role = { Text(it.actors?.firstOrNull()?.name ?: "", maxLines = 1, overflow = TextOverflow.Ellipsis) }
+            )
+        }
+
+        val staff by viewModel.relatedPersons.collectAsState(listOf())
+        SectionTitle(Modifier.padding(horizontal = horizontalPadding)) {
+            Text("Staff")
+        }
+        PersonList(staff, { it.id }, horizontalPadding, Modifier) {
+            PersonView(
+                avatar = { Avatar(it.images?.medium ?: "", contentScale = ContentScale.Crop) },
+                text = { Text(it.name, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                role = { Text(it.relation, maxLines = 1, overflow = TextOverflow.Ellipsis) }
+            )
+        }
+
         val episodesMain by viewModel.episodesMain.collectAsState(listOf())
         if (episodesMain.isNotEmpty()) {
-            SectionTitle { Text("正片", color = MaterialTheme.colorScheme.onBackground) }
-            EpisodeList(episodesMain, Modifier.padding(top = 8.dp))
+            SectionTitle(Modifier.padding(horizontal = horizontalPadding)) { Text("正片") }
+            EpisodeList(episodesMain, horizontalPadding, Modifier.padding(top = 8.dp))
         }
 
         val episodesSP by viewModel.episodesSP.collectAsState(listOf())
         if (episodesSP.isNotEmpty()) {
-            SectionTitle { Text("SP", color = MaterialTheme.colorScheme.onBackground) }
-            EpisodeList(episodesSP, Modifier.padding(top = 8.dp))
+            SectionTitle(Modifier.padding(horizontal = horizontalPadding)) { Text("SP") }
+            EpisodeList(episodesSP, horizontalPadding, Modifier.padding(top = 8.dp))
         }
 
         val episodesPV by viewModel.episodesPV.collectAsState(listOf())
         if (episodesPV.isNotEmpty()) {
-            SectionTitle { Text("PV", color = MaterialTheme.colorScheme.onBackground) }
-            EpisodeList(episodesPV, Modifier.padding(top = 8.dp))
+            SectionTitle(Modifier.padding(horizontal = horizontalPadding)) { Text("PV") }
+            EpisodeList(episodesPV, horizontalPadding, Modifier.padding(top = 8.dp))
         }
-
-//        Column(
-//            Modifier.wrapContentHeight().fillMaxWidth(),
-//            verticalArrangement = Arrangement.spacedBy(8.dp)
-//        ) {
-//            for (bangumiEpisode in episodesMain) {
-//                EpisodeItem(bangumiEpisode)
-//            }
-//        }
     }
 }
 
 @Composable
-private fun EpisodeList(episodes: List<BangumiEpisode>, modifier: Modifier = Modifier) {
+private fun Avatar(
+    url: String,
+    alignment: Alignment = Alignment.Center,
+    contentScale: ContentScale = ContentScale.Fit,
+) {
+    AniKamelImage(
+        asyncPainterResource(url),
+        onLoading = { IconImagePlaceholder(Icons.Outlined.Person) },
+        onFailure = { IconImagePlaceholder(Icons.Outlined.Person) },
+        alignment = alignment,
+        contentScale = contentScale,
+    )
+}
+
+@Composable
+private fun <T> PersonList(
+    list: List<T>,
+    key: (T) -> Any,
+    horizontalPadding: Dp,
+    modifier: Modifier = Modifier,
+    each: @Composable (T) -> Unit,
+) {
+    val spacedBy = 16.dp
+    LazyRow(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(spacedBy),
+    ) {
+        item(key = "spacer header") { Spacer(Modifier.width(horizontalPadding - spacedBy)) }
+        items(list, key = key) { item ->
+            each(item)
+        }
+        item(key = "spacer footer") { Spacer(Modifier.width(horizontalPadding - spacedBy)) }
+    }
+}
+
+@Composable
+private fun PersonView(
+    avatar: @Composable () -> Unit,
+    text: @Composable () -> Unit,
+    role: @Composable () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier.width(64.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onBackground) {
+            Box(Modifier.clip(CircleShape).size(64.dp)) {
+                avatar()
+            }
+            Box(Modifier.padding(top = 4.dp)) {
+                ProvideTextStyle(MaterialTheme.typography.bodySmall) {
+                    text()
+                }
+            }
+            Box(Modifier.padding(top = 4.dp)) {
+                ProvideTextStyle(MaterialTheme.typography.labelSmall) {
+                    CompositionLocalProvider(LocalContentColor provides LocalContentColor.current.weaken()) {
+                        role()
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun EpisodeList(
+    episodes: List<BangumiEpisode>,
+    horizontalPadding: Dp,
+    modifier: Modifier = Modifier,
+) {
+    val horizontalSpacedBy = 8.dp
     LazyHorizontalGrid(
         GridCells.Fixed(1),
         modifier = modifier.height(60.dp).fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(horizontalSpacedBy),
     ) {
+        item(key = "spacer header") { Spacer(Modifier.width(horizontalPadding - horizontalSpacedBy)) }
         items(episodes, key = { it.id }) { episode ->
             EpisodeItem(episode, Modifier.widthIn(min = 60.dp, max = 160.dp))
         }
+        item(key = "spacer footer") { Spacer(Modifier.width(horizontalPadding - horizontalSpacedBy)) }
     }
 }
 
@@ -245,7 +323,9 @@ fun Int.fixToString(length: Int, prefix: Char = '0'): String {
 private fun SectionTitle(modifier: Modifier = Modifier, text: @Composable () -> Unit) {
     Row(modifier.padding(top = 8.dp, bottom = 8.dp)) {
         ProvideTextStyle(MaterialTheme.typography.titleLarge) {
-            text()
+            CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onBackground) {
+                text()
+            }
         }
     }
 }

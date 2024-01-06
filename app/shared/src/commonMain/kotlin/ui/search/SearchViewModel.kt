@@ -31,7 +31,7 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
 class SearchViewModel(
-    keyword: String?,
+    keyword: String? = "葬送的芙莉莲", // TODO: for  debug 
 ) : AbstractViewModel(), KoinComponent {
     private val subjectProvider: SubjectProvider by inject()
     private val _result: MutableStateFlow<SubjectListViewModel?> = MutableStateFlow(null)
