@@ -36,6 +36,11 @@ class SearchViewModel(
     private val subjectProvider: SubjectProvider by inject()
     private val _result: MutableStateFlow<SubjectListViewModel?> = MutableStateFlow(null)
 
+
+    val searchActive: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    val editingQuery: MutableStateFlow<String> = MutableStateFlow(keyword ?: "")
+    val query: MutableStateFlow<String> = MutableStateFlow(keyword ?: "")
+
     val searchSession: StateFlow<SearchSession<Subject>?> =
         _result.map { it?.searchSession }.stateInBackground()
 
@@ -46,9 +51,13 @@ class SearchViewModel(
     }
 
     fun search(keywords: String) {
+        if (keywords.isBlank()) {
+            _result.value = null
+            return
+        }
         _result.value =
             SubjectListViewModel(
-                subjectProvider.startSearch(SubjectSearchQuery(keywords))
+                subjectProvider.startSearch(SubjectSearchQuery(keywords.trim()))
             )
     }
 }

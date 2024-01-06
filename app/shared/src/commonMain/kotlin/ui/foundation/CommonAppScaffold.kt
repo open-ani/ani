@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.ColorScheme
@@ -29,6 +30,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.intl.Locale
+import androidx.compose.ui.unit.dp
 import io.kamel.image.config.LocalKamelConfig
 import me.him188.animationgarden.app.AppTheme
 import me.him188.animationgarden.app.i18n.LocalI18n
@@ -125,8 +127,10 @@ fun RowScope.TabNavigationItem(
             }
             CompositionLocalProvider(LocalContentColor provides contentColor) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    icon()
-                    ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
+                    Box(Modifier.size(24.dp)) {
+                        icon()
+                    }
+                    ProvideTextStyle(MaterialTheme.typography.labelMedium) {
                         title()
                     }
                 }

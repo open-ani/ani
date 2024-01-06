@@ -7,9 +7,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -61,7 +61,7 @@ fun MainScreenPortrait(
     accountViewModel: AccountViewModel,
     searchViewModel: SearchViewModel
 ) {
-    var selectedTab by remember { mutableStateOf("home") }
+    var selectedTab by remember { mutableStateOf("search") }
 
     Scaffold(
         Modifier.statusBarsPadding(),
@@ -80,19 +80,19 @@ fun MainScreenPortrait(
                         TabNavigationItem(
                             selectedTab == "home",
                             { selectedTab = "home" },
-                            icon = { Icon(Icons.Default.Home, null) },
+                            icon = { Icon(Icons.Outlined.Home, null) },
                             title = { Text(text = "首页") },
                         )
                         TabNavigationItem(
                             selectedTab == "search",
                             { selectedTab = "search" },
-                            icon = { Icon(Icons.Default.Search, null) },
+                            icon = { Icon(Icons.Outlined.Search, null) },
                             title = { Text(text = "找番") },
                         )
                         TabNavigationItem(
                             selectedTab == "profile",
                             { selectedTab = "profile" },
-                            icon = { Icon(Icons.Default.Person, null) },
+                            icon = { Icon(Icons.Outlined.Person, null) },
                             title = { Text(text = "我的") },
                         )
                     }

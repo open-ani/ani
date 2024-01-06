@@ -144,7 +144,7 @@ fun SubjectPreviewCard(
     val shape = RoundedCornerShape(8.dp)
     ElevatedCard(
         modifier
-            .shadow(0.5.dp, shape)
+            .shadow(2.dp, shape)
             .clip(shape)
             .fillMaxWidth()
             .clickable(
@@ -156,7 +156,7 @@ fun SubjectPreviewCard(
         colors = CardDefaults.elevatedCardColors(
             containerColor = MaterialTheme.colorScheme.surface,
         ),
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp),
     ) {
         Column {
             AniKamelImage(
