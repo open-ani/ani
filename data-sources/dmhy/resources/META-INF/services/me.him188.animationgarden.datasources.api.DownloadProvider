@@ -1,6 +1,6 @@
 #
-# Animation Garden App
-# Copyright (C) 2022  Him188
+# Ani
+# Copyright (C) 2022-2024 Him188
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,4 +16,4 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-me.him188.animationgarden.datasources.dmhy.DmhyDownloadProvider
+me.him188.ani.datasources.dmhy.DmhyDownloadProvider

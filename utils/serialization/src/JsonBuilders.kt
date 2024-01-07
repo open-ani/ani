@@ -1,4 +1,4 @@
-package me.him188.animationgarden.utils.serialization
+package me.him188.ani.utils.serialization
 
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonPrimitive

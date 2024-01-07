@@ -1,6 +1,6 @@
 <!--
-  ~ Animation Garden App
-  ~ Copyright (C) 2022  Him188
+  ~ Ani
+  ~ Copyright (C) 2022-2024 Him188
   ~
   ~ This program is free software: you can redistribute it and/or modify
   ~ it under the terms of the GNU General Public License as published by
@@ -18,8 +18,8 @@
 
 <component name="ProjectRunConfigurationManager">
     <configuration default="false" name="ServerMain" type="JetRunConfigurationType" nameIsGenerated="true">
-        <option name="MAIN_CLASS_NAME" value="me.him188.animationgarden.server.ServerMain"/>
-        <module name="animation-garden.server.main"/>
+        <option name="MAIN_CLASS_NAME" value="me.him188.ani.server.ServerMain" />
+        <module name="ani.server.main" />
         <shortenClasspath name="NONE"/>
         <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/server/test-sandbox"/>
         <method v="2">

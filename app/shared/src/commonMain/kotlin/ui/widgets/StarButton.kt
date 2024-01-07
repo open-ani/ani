@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.app.ui.widgets
+package me.him188.ani.app.ui.widgets
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearOutSlowInEasing
@@ -38,8 +38,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import me.him188.animationgarden.app.AppTheme
-import me.him188.animationgarden.app.platform.Res
+import me.him188.ani.app.AppTheme
+import me.him188.ani.app.platform.Res
 
 /**
  * [收藏卡片][StarredAnimeCard]和[统合搜索卡片][OrganizedViewCard]中的收藏按钮 (五角星图标)

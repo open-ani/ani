@@ -45,7 +45,7 @@ jobs:
             注意，桌面平台仅支持 64 位操作系统。在使用 macOS 的安装程序时可能提示文件损坏，这是因为此版本应用没有签名，可以忽略错误继续使用。
             
             也可扫描以下二维码下载 Android 版本：
-            ![](https://github.com/Him188/animation-garden/releases/download/${{ steps.tag.outputs.tag }}/AnimationGarden-${{ steps.tag-version.outputs.substring }}.apk.qrcode.png)
+            ![](https://github.com/Him188/ani/releases/download/${{ steps.tag.outputs.tag }}/Ani-${{ steps.tag-version.outputs.substring }}.apk.qrcode.png)
 
           draft: true
           prerelease: false
@@ -160,7 +160,7 @@ jobs:
         name: Generate QR code for APK
         uses: snow-actions/qrcode@v1.0.0
         with:
-          text: https://github.com/Him188/animation-garden/releases/download/${{ steps.tag.outputs.tag }}/AnimationGarden-${{ steps.tag-version.outputs.substring }}.apk
+          text: https://github.com/Him188/ani/releases/download/${{ steps.tag.outputs.tag }}/Ani-${{ steps.tag-version.outputs.substring }}.apk
           path: apk-qrcode.png
 
       - if: ${{ env.isMac == 'true' }}

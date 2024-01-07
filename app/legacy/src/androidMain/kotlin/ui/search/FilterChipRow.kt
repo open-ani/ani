@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.app.ui.search
+package me.him188.ani.app.ui.search
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.accompanist.flowlayout.FlowMainAxisAlignment
 import com.google.accompanist.flowlayout.FlowRow
-import me.him188.animationgarden.app.app.RefreshState
+import me.him188.ani.app.app.RefreshState
 
 @Composable
 actual fun <T> FilterChipRowImpl(

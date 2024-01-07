@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-rootProject.name = "animation-garden"
+rootProject.name = "ani"
 
 pluginManagement {
     repositories {
@@ -38,9 +38,6 @@ fun includeProject(projectPath: String, dir: String? = null) {
     include(projectPath)
     if (dir != null) project(projectPath).projectDir = file(dir)
 }
-
-// Protocol shared by client and server (targets JVM)
-includeProject(":protocol", "protocol")
 
 // Utilities shared by client and server (targeting JVM)
 includeProject(":utils:slf4j-kt", "utils/slf4j-kt") // shared by client and server (targets JVM)

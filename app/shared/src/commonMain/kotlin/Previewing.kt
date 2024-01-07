@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,26 +16,24 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.app
+package me.him188.ani.app
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.text.intl.Locale
-import io.kamel.image.config.LocalKamelConfig
-import me.him188.animationgarden.app.app.AppSettings
-import me.him188.animationgarden.app.app.AppSettingsManager
-import me.him188.animationgarden.app.app.LocalAppSettingsManager
-import me.him188.animationgarden.app.i18n.LocalI18n
-import me.him188.animationgarden.app.i18n.loadResourceBundle
-import me.him188.animationgarden.app.platform.Context
-import me.him188.animationgarden.app.platform.LocalContext
-import me.him188.animationgarden.app.ui.foundation.DefaultKamelConfig
-import me.him188.animationgarden.datasources.api.SubjectProvider
-import me.him188.animationgarden.datasources.bangumi.BangumiClient
-import me.him188.animationgarden.datasources.bangumi.BangumiSubjectProvider
-import me.him188.animationgarden.datasources.dmhy.DmhyClient
+import me.him188.ani.app.app.AppSettings
+import me.him188.ani.app.app.AppSettingsManager
+import me.him188.ani.app.app.LocalAppSettingsManager
+import me.him188.ani.app.i18n.LocalI18n
+import me.him188.ani.app.i18n.loadResourceBundle
+import me.him188.ani.app.platform.Context
+import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.datasources.api.SubjectProvider
+import me.him188.ani.datasources.bangumi.BangumiClient
+import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
+import me.him188.ani.datasources.dmhy.DmhyClient
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module

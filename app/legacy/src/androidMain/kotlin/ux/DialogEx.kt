@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,13 +16,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.app.ux
+package me.him188.ani.app.ux
 
 import androidx.appcompat.app.AlertDialog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
-import me.him188.animationgarden.app.platform.Context
+import me.him188.ani.app.platform.Context
 import kotlin.coroutines.Continuation
 
 suspend inline fun <T> Context.showDialog(crossinline builderAction: AlertDialog.Builder.(cont: Continuation<T>) -> Unit): T {

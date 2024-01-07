@@ -1,4 +1,4 @@
-package me.him188.animationgarden.app.ui.home
+package me.him188.ani.app.ui.home
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
@@ -16,8 +16,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import me.him188.animationgarden.app.ui.subject.SubjectPreviewColumn
-import me.him188.animationgarden.app.ui.theme.weaken
+import me.him188.ani.app.ui.subject.SubjectPreviewColumn
+import me.him188.ani.app.ui.theme.weaken
 
 @Composable
 fun SubjectSearchBar(

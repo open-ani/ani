@@ -1,11 +1,11 @@
-package me.him188.animationgarden.datasources.bangumi.client
+package me.him188.ani.datasources.bangumi.client
 
-import me.him188.animationgarden.datasources.api.Paged
-import me.him188.animationgarden.datasources.bangumi.models.search.BangumiSort
-import me.him188.animationgarden.datasources.bangumi.models.subjects.BangumiSubject
-import me.him188.animationgarden.datasources.bangumi.models.subjects.BangumiSubjectDetails
-import me.him188.animationgarden.datasources.bangumi.models.subjects.BangumiSubjectImageSize
-import me.him188.animationgarden.datasources.bangumi.models.subjects.BangumiSubjectType
+import me.him188.ani.datasources.api.Paged
+import me.him188.ani.datasources.bangumi.models.search.BangumiSort
+import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubject
+import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectDetails
+import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectImageSize
+import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectType
 import org.openapitools.client.models.RelatedPerson
 
 interface BangumiClientSubjects {

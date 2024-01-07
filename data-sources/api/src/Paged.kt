@@ -1,4 +1,4 @@
-package me.him188.animationgarden.datasources.api
+package me.him188.ani.datasources.api
 
 
 data class Paged<T>(

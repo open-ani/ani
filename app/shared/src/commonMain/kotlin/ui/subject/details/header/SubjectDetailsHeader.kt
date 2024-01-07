@@ -1,4 +1,4 @@
-package me.him188.animationgarden.app.ui.subject.details.header
+package me.him188.ani.app.ui.subject.details.header
 
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -29,11 +29,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.kamel.core.Resource
-import me.him188.animationgarden.app.ui.foundation.AniKamelImage
-import me.him188.animationgarden.app.ui.foundation.BrokenImagePlaceholder
-import me.him188.animationgarden.app.ui.foundation.LoadingIndicator
-import me.him188.animationgarden.app.ui.subject.details.SubjectDetailsViewModel
-import me.him188.animationgarden.app.ui.theme.weaken
+import me.him188.ani.app.ui.foundation.AniKamelImage
+import me.him188.ani.app.ui.foundation.BrokenImagePlaceholder
+import me.him188.ani.app.ui.foundation.LoadingIndicator
+import me.him188.ani.app.ui.subject.details.SubjectDetailsViewModel
+import me.him188.ani.app.ui.theme.weaken
 
 private const val COVER_WIDTH_TO_HEIGHT_RATIO = 849 / 1200f
 

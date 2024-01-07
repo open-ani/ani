@@ -1,9 +1,9 @@
-package me.him188.animationgarden.datasources.bangumi.models.subjects
+package me.him188.ani.datasources.bangumi.models.subjects
 
 import kotlinx.serialization.Serializable
-import me.him188.animationgarden.datasources.api.Subject
-import me.him188.animationgarden.datasources.api.SubjectImages
-import me.him188.animationgarden.datasources.bangumi.BangumiClientImpl
+import me.him188.ani.datasources.api.Subject
+import me.him188.ani.datasources.api.SubjectImages
+import me.him188.ani.datasources.bangumi.BangumiClientImpl
 
 @Serializable
 data class BangumiSubjectTag(

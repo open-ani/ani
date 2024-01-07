@@ -1,2 +1,2 @@
-package me.him188.animationgarden.app.ui.home
+package me.him188.ani.app.ui.home
 

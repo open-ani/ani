@@ -1,4 +1,4 @@
-package me.him188.animationgarden.datasources.bangumi
+package me.him188.ani.datasources.bangumi
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable

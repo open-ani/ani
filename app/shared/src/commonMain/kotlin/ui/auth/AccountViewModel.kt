@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,16 +16,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.app.ui.auth
+package me.him188.ani.app.ui.auth
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import kotlinx.coroutines.flow.MutableStateFlow
-import me.him188.animationgarden.app.ui.LocalSession
-import me.him188.animationgarden.app.ui.framework.AbstractViewModel
-import me.him188.animationgarden.datasources.bangumi.BangumiClient
-import me.him188.animationgarden.datasources.bangumi.client.BangumiClientAccounts
+import me.him188.ani.app.ui.LocalSession
+import me.him188.ani.app.ui.framework.AbstractViewModel
+import me.him188.ani.datasources.bangumi.BangumiClient
+import me.him188.ani.datasources.bangumi.client.BangumiClientAccounts
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 

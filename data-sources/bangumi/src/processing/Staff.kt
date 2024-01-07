@@ -1,4 +1,4 @@
-package me.him188.animationgarden.datasources.bangumi.processing
+package me.him188.ani.datasources.bangumi.processing
 
 import org.openapitools.client.models.RelatedPerson
 

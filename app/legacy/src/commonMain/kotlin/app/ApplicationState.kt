@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,18 +16,18 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.app.app
+package me.him188.ani.app.app
 
 import androidx.compose.runtime.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
-import me.him188.animationgarden.app.ui.search.OrganizedViewState
-import me.him188.animationgarden.datasources.api.DownloadSearchQuery
-import me.him188.animationgarden.datasources.api.SearchSession
-import me.him188.animationgarden.datasources.api.topic.Episode
-import me.him188.animationgarden.datasources.api.topic.Topic
-import me.him188.animationgarden.datasources.dmhy.DmhyClient
+import me.him188.ani.app.ui.search.OrganizedViewState
+import me.him188.ani.datasources.api.DownloadSearchQuery
+import me.him188.ani.datasources.api.SearchSession
+import me.him188.ani.datasources.api.topic.Episode
+import me.him188.ani.datasources.api.topic.Topic
+import me.him188.ani.datasources.dmhy.DmhyClient
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 

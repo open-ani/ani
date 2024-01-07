@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,17 +16,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.app.app
+package me.him188.ani.app.app
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
-import me.him188.animationgarden.api.protocol.EStarredAnime
-import me.him188.animationgarden.shared.models.Alliance
-import me.him188.animationgarden.shared.models.Episode
-import me.him188.animationgarden.shared.models.Resolution
-import me.him188.animationgarden.shared.models.SubtitleLanguage
+import me.him188.ani.api.protocol.EStarredAnime
+import me.him188.ani.shared.models.Alliance
+import me.him188.ani.shared.models.Episode
+import me.him188.ani.shared.models.Resolution
+import me.him188.ani.shared.models.SubtitleLanguage
 
 /**
  * 表示一个收藏的番剧信息.

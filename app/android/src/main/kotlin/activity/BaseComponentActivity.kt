@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.android.activity
+package me.him188.ani.android.activity
 
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -28,8 +28,8 @@ import androidx.compose.runtime.Stable
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import me.him188.animationgarden.app.ui.theme.aniDarkColorTheme
-import me.him188.animationgarden.app.ui.theme.aniLightColorTheme
+import me.him188.ani.app.ui.theme.aniDarkColorTheme
+import me.him188.ani.app.ui.theme.aniLightColorTheme
 
 abstract class BaseComponentActivity : ComponentActivity() {
     @Stable

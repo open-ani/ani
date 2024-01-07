@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.android
+package me.him188.ani.android
 
 import android.app.Activity
 import android.app.Application
@@ -32,20 +32,20 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import me.him188.animationgarden.R
-import me.him188.animationgarden.android.activity.BaseComponentActivity
-import me.him188.animationgarden.android.activity.showSnackbarAsync
-import me.him188.animationgarden.app.app.LocalAppSettingsManagerImpl
-import me.him188.animationgarden.app.i18n.ResourceBundle
-import me.him188.animationgarden.app.i18n.loadResourceBundle
-import me.him188.animationgarden.app.platform.CommonKoinModule
-import me.him188.animationgarden.app.ux.showDialog
+import me.him188.ani.R
+import me.him188.ani.android.activity.BaseComponentActivity
+import me.him188.ani.android.activity.showSnackbarAsync
+import me.him188.ani.app.app.LocalAppSettingsManagerImpl
+import me.him188.ani.app.i18n.ResourceBundle
+import me.him188.ani.app.i18n.loadResourceBundle
+import me.him188.ani.app.platform.CommonKoinModule
+import me.him188.ani.app.ux.showDialog
 import org.koin.core.context.startKoin
 import java.io.File
 import kotlin.coroutines.resume
 
-class AnimationGardenApplication : Application() {
-    private val tag = AnimationGardenApplication::class.simpleName
+class AniApplication : Application() {
+    private val tag = AniApplication::class.simpleName
 
     companion object {
         lateinit var instance: Instance

@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.app.ui
+package me.him188.ani.app.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -24,9 +24,9 @@ import androidx.compose.runtime.getValue
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
-import me.him188.animationgarden.app.ui.framework.AbstractViewModel
-import me.him188.animationgarden.datasources.bangumi.models.BangumiToken
-import me.him188.animationgarden.datasources.bangumi.models.users.BangumiAccount
+import me.him188.ani.app.ui.framework.AbstractViewModel
+import me.him188.ani.datasources.bangumi.models.BangumiToken
+import me.him188.ani.datasources.bangumi.models.users.BangumiAccount
 
 class LocalSession : AbstractViewModel() {
     internal class Session(

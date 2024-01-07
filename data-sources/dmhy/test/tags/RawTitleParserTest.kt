@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,12 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.datasources.dmhy.tags
+package me.him188.ani.datasources.dmhy.tags
 
-import me.him188.animationgarden.datasources.dmhy.AbstractTest
-import me.him188.animationgarden.datasources.dmhy.DmhyTopicDetails
-import me.him188.animationgarden.datasources.dmhy.impl.titles.PatternBasedRawTitleParser
-import me.him188.animationgarden.datasources.dmhy.impl.titles.parse
+import me.him188.ani.datasources.dmhy.AbstractTest
+import me.him188.ani.datasources.dmhy.DmhyTopicDetails
+import me.him188.ani.datasources.dmhy.impl.titles.PatternBasedRawTitleParser
+import me.him188.ani.datasources.dmhy.impl.titles.parse
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
 

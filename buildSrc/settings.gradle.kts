@@ -1,4 +1,4 @@
-rootProject.name = "animation-garden"
+rootProject.name = "ani"
 
 dependencyResolutionManagement {
     versionCatalogs {

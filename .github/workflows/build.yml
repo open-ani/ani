@@ -93,8 +93,8 @@ jobs:
         name: Upload Android APK packages
         uses: actions/upload-artifact@v3
         with:
-          name: animation-garden-android
-          path: android/build/outputs/apk/release/animation-garden-android-release.apk
+          name: ani-android
+          path: android/build/outputs/apk/release/ani-android-release.apk
 
 
       - name: Assemble
@@ -119,54 +119,54 @@ jobs:
         name: Upload macOS packages
         uses: actions/upload-artifact@v3
         with:
-          name: animation-garden-macos
+          name: ani-macos
           path: desktop/build/compose/binaries/main/app
 
       - if: ${{ env.isMac == 'true' }}
         name: Upload macOS packages
         uses: actions/upload-artifact@v3
         with:
-          name: animation-garden-macos-installer
+          name: ani-macos-installer
           path: desktop/build/compose/binaries/main/dmg
 
       - if: ${{ env.isUbuntu == 'true' }}
         name: Upload Linux packages
         uses: actions/upload-artifact@v3
         with:
-          name: animation-garden-linux
+          name: ani-linux
           path: desktop/build/compose/binaries/main/app
 
       - if: ${{ env.isUbuntu == 'true' }}
         name: Upload Linux packages
         uses: actions/upload-artifact@v3
         with:
-          name: animation-garden-ubuntu-installer
+          name: ani-ubuntu-installer
           path: desktop/build/compose/binaries/main/deb
 
       - if: ${{ env.isUbuntu == 'true' }}
         name: Upload Linux packages
         uses: actions/upload-artifact@v3
         with:
-          name: animation-garden-redhat-installer
+          name: ani-redhat-installer
           path: desktop/build/compose/binaries/main/rpm
 
       - if: ${{ env.isWindows == 'true' }}
         name: Upload Windows packages
         uses: actions/upload-artifact@v3
         with:
-          name: animation-garden-windows
+          name: ani-windows
           path: desktop/build/compose/binaries/main/app
 
       - if: ${{ env.isWindows == 'true' }}
         name: Upload Windows packages
         uses: actions/upload-artifact@v3
         with:
-          name: animation-garden-windows-installer
+          name: ani-windows-installer
           path: desktop/build/compose/binaries/main/msi
 
       - if: ${{ env.isWindows == 'true' }}
         name: Upload Windows packages
         uses: actions/upload-artifact@v3
         with:
-          name: animation-garden-windows-installer
+          name: ani-windows-installer
           path: desktop/build/compose/binaries/main/exe

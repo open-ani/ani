@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,16 +16,18 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.datasources.dmhy.impl.protocol
+package me.him188.ani.datasources.dmhy.impl.protocol
 
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
-import me.him188.animationgarden.datasources.dmhy.DmhyTopic
-import me.him188.animationgarden.datasources.dmhy.impl.cache.Cache
-import me.him188.animationgarden.datasources.dmhy.impl.cache.CacheImpl
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.request.get
+import io.ktor.client.request.parameter
+import io.ktor.client.statement.HttpResponse
+import io.ktor.http.URLProtocol
+import io.ktor.http.appendPathSegments
+import me.him188.ani.datasources.dmhy.DmhyTopic
+import me.him188.ani.datasources.dmhy.impl.cache.Cache
+import me.him188.ani.datasources.dmhy.impl.cache.CacheImpl
 import org.jsoup.nodes.Document
 
 internal class Network(

@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,16 +16,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.app.app
+package me.him188.ani.app.app
 
 import androidx.compose.runtime.Stable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import me.him188.animationgarden.datasources.api.SearchSession
-import me.him188.animationgarden.datasources.api.topic.Topic
-import me.him188.animationgarden.datasources.dmhy.impl.cache.KeyedMutableListFlow
+import me.him188.ani.datasources.api.SearchSession
+import me.him188.ani.datasources.api.topic.Topic
+import me.him188.ani.datasources.dmhy.impl.cache.KeyedMutableListFlow
 
 class Fetcher(
     private val scope: CoroutineScope,

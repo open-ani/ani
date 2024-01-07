@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.app.ui.settings
+package me.him188.ani.app.ui.settings
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
@@ -38,9 +38,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
-import me.him188.animationgarden.app.AppTheme
-import me.him188.animationgarden.app.i18n.LocalI18n
-import me.him188.animationgarden.app.platform.Res
+import me.him188.ani.app.AppTheme
+import me.him188.ani.app.i18n.LocalI18n
+import me.him188.ani.app.platform.Res
 
 @Composable
 fun BoxWithSaveButton(

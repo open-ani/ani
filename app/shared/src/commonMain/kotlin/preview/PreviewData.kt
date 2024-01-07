@@ -1,7 +1,7 @@
-package me.him188.animationgarden.app.preview
+package me.him188.ani.app.preview
 
-import me.him188.animationgarden.datasources.api.Subject
-import me.him188.animationgarden.datasources.api.SubjectImages
+import me.him188.ani.datasources.api.Subject
+import me.him188.ani.datasources.api.SubjectImages
 
 @Suppress("SpellCheckingInspection")
 object PreviewData {

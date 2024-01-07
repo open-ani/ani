@@ -1,7 +1,7 @@
-package me.him188.animationgarden.android
+package me.him188.ani.android
 
-import me.him188.animationgarden.android.ui.event.AndroidSubjectNavigator
-import me.him188.animationgarden.app.ui.event.SubjectNavigator
+import me.him188.ani.android.ui.event.AndroidSubjectNavigator
+import me.him188.ani.app.ui.event.SubjectNavigator
 import org.koin.dsl.module
 
 val AndroidModules = module {

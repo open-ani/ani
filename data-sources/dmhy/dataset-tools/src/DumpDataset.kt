@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,14 +21,14 @@ import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
-import me.him188.animationgarden.datasources.api.DownloadSearchQuery
-import me.him188.animationgarden.datasources.api.topic.Episode
-import me.him188.animationgarden.datasources.api.topic.FrameRate
-import me.him188.animationgarden.datasources.api.topic.MediaOrigin
-import me.him188.animationgarden.datasources.api.topic.Resolution
-import me.him188.animationgarden.datasources.api.topic.SubtitleLanguage
-import me.him188.animationgarden.datasources.api.topic.TopicCategory
-import me.him188.animationgarden.datasources.dmhy.DmhyClient
+import me.him188.ani.datasources.api.DownloadSearchQuery
+import me.him188.ani.datasources.api.topic.Episode
+import me.him188.ani.datasources.api.topic.FrameRate
+import me.him188.ani.datasources.api.topic.MediaOrigin
+import me.him188.ani.datasources.api.topic.Resolution
+import me.him188.ani.datasources.api.topic.SubtitleLanguage
+import me.him188.ani.datasources.api.topic.TopicCategory
+import me.him188.ani.datasources.dmhy.DmhyClient
 import java.io.File
 
 private val json = Json {

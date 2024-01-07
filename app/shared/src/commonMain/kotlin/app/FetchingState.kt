@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,13 +16,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.app.app
+package me.him188.ani.app.app
 
 import androidx.compose.runtime.Stable
 import io.ktor.client.plugins.ResponseException
 import io.ktor.util.logging.error
-import me.him188.animationgarden.app.i18n.ResourceBundle
-import me.him188.animationgarden.datasources.api.DownloadSearchQuery
+import me.him188.ani.app.i18n.ResourceBundle
+import me.him188.ani.datasources.api.DownloadSearchQuery
 import org.slf4j.LoggerFactory
 import kotlin.toString as toStringKotlin
 

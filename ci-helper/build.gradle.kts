@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -70,7 +70,7 @@ enum class OS(
 val namer = ArtifactNamer()
 
 class ArtifactNamer {
-    private val APP_NAME = "AnimationGarden"
+    private val APP_NAME = "Ani"
 
     fun getFullVersionFromTag(tag: String): String {
         return tag.substringAfter("v")
@@ -85,11 +85,11 @@ class ArtifactNamer {
         return "${androidApp(fullVersion)}.qrcode.png"
     }
 
-    // AnimationGarden-2.0.0-beta03-macos-amd64.dmg
-    // AnimationGarden-2.0.0-beta03-macos-arm64.dmg
-    // AnimationGarden-2.0.0-beta03-windows-amd64.msi
-    // AnimationGarden-2.0.0-beta03-debian-amd64.deb
-    // AnimationGarden-2.0.0-beta03-redhat-amd64.rpm
+    // Ani-2.0.0-beta03-macos-amd64.dmg
+    // Ani-2.0.0-beta03-macos-arm64.dmg
+    // Ani-2.0.0-beta03-windows-amd64.msi
+    // Ani-2.0.0-beta03-debian-amd64.deb
+    // Ani-2.0.0-beta03-redhat-amd64.rpm
     fun desktopDistributionFile(
         fullVersion: String,
         osName: String,
@@ -110,7 +110,7 @@ tasks.register("uploadAndroidApk") {
             uploadReleaseAsset(
                 name = namer.androidApp(fullVersion),
                 contentType = "application/vnd.android.package-archive",
-                file = project(":animation-garden-android").layout.buildDirectory.file("outputs/apk/release")
+                file = project(":ani-android").layout.buildDirectory.file("outputs/apk/release")
                     .get().asFile.walk()
                     .single { it.extension == "apk" && it.name.contains("release") },
             )

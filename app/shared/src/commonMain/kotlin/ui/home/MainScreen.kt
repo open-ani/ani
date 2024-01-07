@@ -1,4 +1,4 @@
-package me.him188.animationgarden.app.ui.home
+package me.him188.ani.app.ui.home
 
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
@@ -31,11 +31,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
-import me.him188.animationgarden.app.platform.isInLandscapeMode
-import me.him188.animationgarden.app.ui.auth.AccountViewModel
-import me.him188.animationgarden.app.ui.auth.AuthPage
-import me.him188.animationgarden.app.ui.collection.CollectionPage
-import me.him188.animationgarden.app.ui.foundation.TabNavigationItem
+import me.him188.ani.app.platform.isInLandscapeMode
+import me.him188.ani.app.ui.auth.AccountViewModel
+import me.him188.ani.app.ui.auth.AuthPage
+import me.him188.ani.app.ui.collection.CollectionPage
+import me.him188.ani.app.ui.foundation.TabNavigationItem
 
 /**
  * 由 bottom bar 等导致的 paddings

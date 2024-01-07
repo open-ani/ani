@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 @file:JvmName("FilterChipRow_common")
 
-package me.him188.animationgarden.app.ui.search
+package me.him188.ani.app.ui.search
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -37,9 +37,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import me.him188.animationgarden.app.AppTheme
-import me.him188.animationgarden.app.i18n.LocalI18n
-import me.him188.animationgarden.app.platform.Res
+import me.him188.ani.app.AppTheme
+import me.him188.ani.app.i18n.LocalI18n
+import me.him188.ani.app.platform.Res
 
 
 @Composable

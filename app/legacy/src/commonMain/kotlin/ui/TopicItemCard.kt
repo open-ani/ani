@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.app.ui
+package me.him188.ani.app.ui
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
@@ -43,11 +43,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import me.him188.animationgarden.api.model.DATE_FORMAT
-import me.him188.animationgarden.api.model.Topic
-import me.him188.animationgarden.api.tags.Episode
-import me.him188.animationgarden.app.AppTheme
-import me.him188.animationgarden.app.ui.theme.weaken
+import me.him188.ani.api.model.DATE_FORMAT
+import me.him188.ani.api.model.Topic
+import me.him188.ani.api.tags.Episode
+import me.him188.ani.app.AppTheme
+import me.him188.ani.app.ui.theme.weaken
 
 @Immutable
 data class Tag(

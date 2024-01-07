@@ -1,6 +1,6 @@
 <!--
-  ~ Animation Garden App
-  ~ Copyright (C) 2022  Him188
+  ~ Ani
+  ~ Copyright (C) 2022-2024 Him188
   ~
   ~ This program is free software: you can redistribute it and/or modify
   ~ it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 <component name="ProjectRunConfigurationManager">
     <configuration default="false" name="DumpDatasetKt" type="JetRunConfigurationType" nameIsGenerated="true">
         <option name="MAIN_CLASS_NAME" value="DumpDatasetKt"/>
-        <module name="animation-garden.data-sources.dmhy.dataset-tools.main"/>
+        <module name="ani.data-sources.dmhy.dataset-tools.main" />
         <shortenClasspath name="NONE"/>
         <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/data-sources/dmhy/dataset-tools"/>
         <method v="2">

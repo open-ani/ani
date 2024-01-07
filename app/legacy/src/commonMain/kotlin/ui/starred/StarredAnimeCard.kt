@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.app.ui.starred
+package me.him188.ani.app.ui.starred
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.ripple.rememberRipple
@@ -29,17 +29,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
-import me.him188.animationgarden.api.tags.Episode
-import me.him188.animationgarden.app.AppTheme
-import me.him188.animationgarden.app.app.StarredAnime
-import me.him188.animationgarden.app.platform.LocalContext
-import me.him188.animationgarden.app.ui.AnimatedTitles
-import me.him188.animationgarden.app.ui.interaction.VibrationStrength
-import me.him188.animationgarden.app.ui.interaction.onClickEx
-import me.him188.animationgarden.app.ui.interaction.vibrateIfSupported
-import me.him188.animationgarden.app.ui.search.FilterChipRow
-import me.him188.animationgarden.app.ui.theme.darken
-import me.him188.animationgarden.app.ui.widgets.ToggleStarButton
+import me.him188.ani.api.tags.Episode
+import me.him188.ani.app.AppTheme
+import me.him188.ani.app.app.StarredAnime
+import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.ui.AnimatedTitles
+import me.him188.ani.app.ui.interaction.VibrationStrength
+import me.him188.ani.app.ui.interaction.onClickEx
+import me.him188.ani.app.ui.interaction.vibrateIfSupported
+import me.him188.ani.app.ui.search.FilterChipRow
+import me.him188.ani.app.ui.theme.darken
+import me.him188.ani.app.ui.widgets.ToggleStarButton
 
 /**
  * 收藏列表中为每个番剧展示的卡片

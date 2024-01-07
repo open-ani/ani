@@ -1,6 +1,6 @@
 <!--
-  ~ Animation Garden App
-  ~ Copyright (C) 2022  Him188
+  ~ Ani
+  ~ Copyright (C) 2022-2024 Him188
   ~
   ~ This program is free software: you can redistribute it and/or modify
   ~ it under the terms of the GNU General Public License as published by
@@ -18,8 +18,8 @@
 
 <component name="ProjectRunConfigurationManager">
     <configuration default="false" name="Run Desktop" type="JetRunConfigurationType">
-        <option name="MAIN_CLASS_NAME" value="me.him188.animationgarden.desktop.AnimationGardenDesktop"/>
-        <module name="animation-garden.common.desktopMain"/>
+        <option name="MAIN_CLASS_NAME" value="me.him188.ani.desktop.AniDesktop" />
+        <module name="ani.common.desktopMain" />
         <shortenClasspath name="NONE"/>
         <option name="VM_PARAMETERS" value="-Dkotlinx.coroutines.debug=on"/>
         <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/desktop/test-sandbox"/>

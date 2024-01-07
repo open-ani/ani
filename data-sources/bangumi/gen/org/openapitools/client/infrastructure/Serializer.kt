@@ -2,8 +2,8 @@ package org.openapitools.client.infrastructure
 
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import me.him188.animationgarden.datasources.bangumi.serializers.CharacterTypeAdapter
-import me.him188.animationgarden.datasources.bangumi.serializers.PersonTypeAdapter
+import me.him188.ani.datasources.bangumi.serializers.CharacterTypeAdapter
+import me.him188.ani.datasources.bangumi.serializers.PersonTypeAdapter
 
 object Serializer {
     @JvmStatic

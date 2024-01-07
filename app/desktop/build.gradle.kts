@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@ dependencies {
 compose.desktop {
 
     application {
-        mainClass = "me.him188.animationgarden.desktop.AnimationGardenDesktop"
+        mainClass = "me.him188.ani.desktop.AniDesktop"
 //        jvmArgs("--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED")
         nativeDistributions {
             targetFormats(
@@ -45,13 +45,13 @@ compose.desktop {
                 TargetFormat.Exe,
                 TargetFormat.Msi,
             )
-            packageName = "AnimationGarden"
+            packageName = "Ani"
             description = project.description
             vendor = "Him188"
             // adding copyright causes package to fail.
 //            copyright = """
-//                    Animation Garden App
-//                    Copyright (C) 2022  Him188
+//                    Ani
+//                    Copyright (C) 2022-2024 Him188
 //
 //                    This program is free software: you can redistribute it and/or modify
 //                    it under the terms of the GNU General Public License as published by

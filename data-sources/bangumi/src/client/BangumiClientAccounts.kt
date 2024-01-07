@@ -1,7 +1,7 @@
-package me.him188.animationgarden.datasources.bangumi.client
+package me.him188.ani.datasources.bangumi.client
 
-import me.him188.animationgarden.datasources.bangumi.models.BangumiToken
-import me.him188.animationgarden.datasources.bangumi.models.users.BangumiAccount
+import me.him188.ani.datasources.bangumi.models.BangumiToken
+import me.him188.ani.datasources.bangumi.models.users.BangumiAccount
 
 interface BangumiClientAccounts {
     sealed interface LoginResponse {

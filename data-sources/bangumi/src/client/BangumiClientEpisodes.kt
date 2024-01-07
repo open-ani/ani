@@ -1,4 +1,4 @@
-package me.him188.animationgarden.datasources.bangumi.client
+package me.him188.ani.datasources.bangumi.client
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
@@ -7,7 +7,7 @@ import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import me.him188.animationgarden.datasources.api.Paged
+import me.him188.ani.datasources.api.Paged
 
 interface BangumiClientEpisodes {
     suspend fun getEpisodes(

@@ -1,4 +1,4 @@
-package me.him188.animationgarden.app.ui.foundation
+package me.him188.ani.app.ui.foundation
 
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text

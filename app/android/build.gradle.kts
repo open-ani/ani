@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,10 +47,10 @@ dependencies {
 }
 
 android {
-    namespace = "me.him188.animationgarden.android"
+    namespace = "me.him188.ani.android"
     compileSdk = getIntProperty("android.compile.sdk")
     defaultConfig {
-        applicationId = "me.him188.animationgarden"
+        applicationId = "me.him188.ani"
         minSdk = getIntProperty("android.min.sdk")
         targetSdk = getIntProperty("android.compile.sdk")
         versionCode = getIntProperty("android.version.code")

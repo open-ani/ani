@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,14 +16,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.app.ui.search
+package me.him188.ani.app.ui.search
 
 import androidx.compose.runtime.*
-import me.him188.animationgarden.api.model.Alliance
-import me.him188.animationgarden.api.model.Topic
-import me.him188.animationgarden.api.tags.Episode
-import me.him188.animationgarden.api.tags.Resolution
-import me.him188.animationgarden.api.tags.SubtitleLanguage
+import me.him188.ani.api.model.Alliance
+import me.him188.ani.api.model.Topic
+import me.him188.ani.api.tags.Episode
+import me.him188.ani.api.tags.Resolution
+import me.him188.ani.api.tags.SubtitleLanguage
 
 /**
  * Represents a work, which may be Anime, Manga, Japanese Drama, etc.

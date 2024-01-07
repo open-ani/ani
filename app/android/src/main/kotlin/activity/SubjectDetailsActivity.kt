@@ -1,4 +1,4 @@
-package me.him188.animationgarden.android.activity
+package me.him188.ani.android.activity
 
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -8,8 +8,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
-import me.him188.animationgarden.app.ui.subject.details.SubjectDetails
-import me.him188.animationgarden.app.ui.subject.details.SubjectDetailsViewModel
+import me.him188.ani.app.ui.subject.details.SubjectDetails
+import me.him188.ani.app.ui.subject.details.SubjectDetailsViewModel
 import org.koin.core.component.KoinComponent
 
 class SubjectDetailsActivity : BaseComponentActivity(), KoinComponent {

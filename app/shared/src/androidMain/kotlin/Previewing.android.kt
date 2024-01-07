@@ -1,4 +1,4 @@
-package me.him188.animationgarden.app
+package me.him188.ani.app
 
 import androidx.compose.runtime.Composable
 

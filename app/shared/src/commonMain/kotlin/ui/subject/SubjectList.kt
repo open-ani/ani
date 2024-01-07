@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.app.ui.subject
+package me.him188.ani.app.ui.subject
 
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -59,11 +59,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.kamel.image.asyncPainterResource
-import me.him188.animationgarden.app.platform.LocalContext
-import me.him188.animationgarden.app.ui.foundation.AniKamelImage
-import me.him188.animationgarden.app.ui.foundation.BrokenImagePlaceholder
-import me.him188.animationgarden.app.ui.foundation.LoadingIndicator
-import me.him188.animationgarden.app.ui.home.LocalContentPaddings
+import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.ui.foundation.AniKamelImage
+import me.him188.ani.app.ui.foundation.BrokenImagePlaceholder
+import me.him188.ani.app.ui.foundation.LoadingIndicator
+import me.him188.ani.app.ui.home.LocalContentPaddings
 
 /**
  * 番剧预览列表, 双列模式

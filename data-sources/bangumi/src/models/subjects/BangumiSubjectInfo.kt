@@ -1,4 +1,4 @@
-package me.him188.animationgarden.datasources.bangumi.models.subjects
+package me.him188.ani.datasources.bangumi.models.subjects
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement

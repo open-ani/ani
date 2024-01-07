@@ -1,4 +1,4 @@
-package me.him188.animationgarden.app.ui.subject.details
+package me.him188.ani.app.ui.subject.details
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -55,14 +55,14 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.kamel.core.Resource
 import io.kamel.image.asyncPainterResource
-import me.him188.animationgarden.app.ProvideCompositionLocalsForPreview
-import me.him188.animationgarden.app.preview.PreviewData
-import me.him188.animationgarden.app.ui.foundation.AniKamelImage
-import me.him188.animationgarden.app.ui.foundation.IconImagePlaceholder
-import me.him188.animationgarden.app.ui.foundation.backgroundWithGradient
-import me.him188.animationgarden.app.ui.subject.details.header.SubjectDetailsHeader
-import me.him188.animationgarden.app.ui.theme.weaken
-import me.him188.animationgarden.datasources.bangumi.client.BangumiEpisode
+import me.him188.ani.app.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.preview.PreviewData
+import me.him188.ani.app.ui.foundation.AniKamelImage
+import me.him188.ani.app.ui.foundation.IconImagePlaceholder
+import me.him188.ani.app.ui.foundation.backgroundWithGradient
+import me.him188.ani.app.ui.subject.details.header.SubjectDetailsHeader
+import me.him188.ani.app.ui.theme.weaken
+import me.him188.ani.datasources.bangumi.client.BangumiEpisode
 
 
 /**

@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 @file:Suppress("NOTHING_TO_INLINE")
 
-package me.him188.animationgarden.datasources.api.topic
+package me.him188.ani.datasources.api.topic
 
 @JvmInline
 value class FileSize(

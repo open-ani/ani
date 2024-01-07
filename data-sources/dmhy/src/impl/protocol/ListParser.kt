@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,19 +16,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.datasources.dmhy.impl.protocol
+package me.him188.ani.datasources.dmhy.impl.protocol
 
-import me.him188.animationgarden.datasources.api.topic.Alliance
-import me.him188.animationgarden.datasources.api.topic.Author
-import me.him188.animationgarden.datasources.api.topic.FileSize
-import me.him188.animationgarden.datasources.api.topic.FileSize.Companion.bytes
-import me.him188.animationgarden.datasources.api.topic.FileSize.Companion.gigaBytes
-import me.him188.animationgarden.datasources.api.topic.FileSize.Companion.kiloBytes
-import me.him188.animationgarden.datasources.api.topic.FileSize.Companion.megaBytes
-import me.him188.animationgarden.datasources.dmhy.DmhyCategory
-import me.him188.animationgarden.datasources.dmhy.DmhyTopic
-import me.him188.animationgarden.datasources.dmhy.impl.cache.Cache
-import me.him188.animationgarden.datasources.dmhy.impl.cache.getOrSet
+import me.him188.ani.datasources.api.topic.Alliance
+import me.him188.ani.datasources.api.topic.Author
+import me.him188.ani.datasources.api.topic.FileSize
+import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
+import me.him188.ani.datasources.api.topic.FileSize.Companion.gigaBytes
+import me.him188.ani.datasources.api.topic.FileSize.Companion.kiloBytes
+import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
+import me.him188.ani.datasources.dmhy.DmhyCategory
+import me.him188.ani.datasources.dmhy.DmhyTopic
+import me.him188.ani.datasources.dmhy.impl.cache.Cache
+import me.him188.ani.datasources.dmhy.impl.cache.getOrSet
 import org.jsoup.nodes.Document
 import org.jsoup.select.Elements
 import java.time.LocalDateTime

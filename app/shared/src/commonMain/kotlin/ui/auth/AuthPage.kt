@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.app.ui.auth
+package me.him188.ani.app.ui.auth
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
@@ -53,8 +53,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import me.him188.animationgarden.app.ui.framework.launchInBackground
-import me.him188.animationgarden.utils.logging.info
+import me.him188.ani.app.ui.framework.launchInBackground
+import me.him188.ani.utils.logging.info
 
 @Composable
 fun AuthPage(viewModel: AccountViewModel) {

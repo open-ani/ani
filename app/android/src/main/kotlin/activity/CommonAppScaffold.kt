@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.android.activity
+package me.him188.ani.android.activity
 
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material3.LocalContentColor
@@ -27,7 +27,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import me.him188.animationgarden.app.AppTheme
+import me.him188.ani.app.AppTheme
 
 
 @Composable

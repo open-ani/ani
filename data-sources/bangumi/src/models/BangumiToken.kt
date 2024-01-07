@@ -1,4 +1,4 @@
-package me.him188.animationgarden.datasources.bangumi.models
+package me.him188.ani.datasources.bangumi.models
 
 class BangumiToken(
     internal val username: String,

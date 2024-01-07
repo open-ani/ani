@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.desktop
+package me.him188.ani.desktop
 
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.desktop.ui.tooling.preview.Preview
@@ -50,38 +50,38 @@ import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import dev.dirs.ProjectDirectories
 import kotlinx.coroutines.flow.Flow
-import me.him188.animationgarden.app.AppTheme
-import me.him188.animationgarden.app.ProvideCompositionLocalsForPreview
-import me.him188.animationgarden.app.app.AppSettings
-import me.him188.animationgarden.app.app.LocalAppSettings
-import me.him188.animationgarden.app.app.LocalAppSettingsManager
-import me.him188.animationgarden.app.app.LocalAppSettingsManagerImpl
-import me.him188.animationgarden.app.app.settings.LocalSyncSettings
-import me.him188.animationgarden.app.i18n.LocalI18n
-import me.him188.animationgarden.app.i18n.ResourceBundle
-import me.him188.animationgarden.app.i18n.loadResourceBundle
-import me.him188.animationgarden.app.platform.Context
-import me.him188.animationgarden.app.platform.LocalContext
-import me.him188.animationgarden.app.ui.PreferencesPage
-import me.him188.animationgarden.app.ui.interaction.PlatformImplementations
-import me.him188.animationgarden.app.ui.interaction.PlatformImplementations.Companion.hostIsMacOs
-import me.him188.animationgarden.app.ui.rememberDialogHost
-import me.him188.animationgarden.utils.logging.logger
-import me.him188.animationgarden.utils.logging.trace
+import me.him188.ani.app.AppTheme
+import me.him188.ani.app.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.app.AppSettings
+import me.him188.ani.app.app.LocalAppSettings
+import me.him188.ani.app.app.LocalAppSettingsManager
+import me.him188.ani.app.app.LocalAppSettingsManagerImpl
+import me.him188.ani.app.app.settings.LocalSyncSettings
+import me.him188.ani.app.i18n.LocalI18n
+import me.him188.ani.app.i18n.ResourceBundle
+import me.him188.ani.app.i18n.loadResourceBundle
+import me.him188.ani.app.platform.Context
+import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.ui.PreferencesPage
+import me.him188.ani.app.ui.interaction.PlatformImplementations
+import me.him188.ani.app.ui.interaction.PlatformImplementations.Companion.hostIsMacOs
+import me.him188.ani.app.ui.rememberDialogHost
+import me.him188.ani.utils.logging.logger
+import me.him188.ani.utils.logging.trace
 import java.io.File
 
-private val logger = logger("AnimationGarden")
+private val logger = logger("Ani")
 
 
 val projectDirectories: ProjectDirectories by lazy {
     ProjectDirectories.from(
         "me",
         "Him188",
-        "Animation Garden"
+        "Ani"
     )
 }
 
-object AnimationGardenDesktop {
+object AniDesktop {
     @JvmStatic
     fun main(args: Array<String>) {
         projectDirectories.dataDir

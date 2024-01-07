@@ -1,4 +1,4 @@
-package me.him188.animationgarden.app.ui.subject.details
+package me.him188.ani.app.ui.subject.details
 
 import androidx.compose.runtime.Stable
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -8,17 +8,17 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
-import me.him188.animationgarden.app.ui.framework.AbstractViewModel
-import me.him188.animationgarden.datasources.api.PageBasedSearchSession
-import me.him188.animationgarden.datasources.bangumi.BangumiClient
-import me.him188.animationgarden.datasources.bangumi.Rating
-import me.him188.animationgarden.datasources.bangumi.client.BangumiEpType
-import me.him188.animationgarden.datasources.bangumi.client.BangumiEpisode
-import me.him188.animationgarden.datasources.bangumi.models.subjects.BangumiSubjectDetails
-import me.him188.animationgarden.datasources.bangumi.models.subjects.BangumiSubjectImageSize
-import me.him188.animationgarden.datasources.bangumi.models.subjects.BangumiSubjectInfo
-import me.him188.animationgarden.datasources.bangumi.models.subjects.BangumiSubjectTag
-import me.him188.animationgarden.datasources.bangumi.processing.sortByRelation
+import me.him188.ani.app.ui.framework.AbstractViewModel
+import me.him188.ani.datasources.api.PageBasedSearchSession
+import me.him188.ani.datasources.bangumi.BangumiClient
+import me.him188.ani.datasources.bangumi.Rating
+import me.him188.ani.datasources.bangumi.client.BangumiEpType
+import me.him188.ani.datasources.bangumi.client.BangumiEpisode
+import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectDetails
+import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectImageSize
+import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectInfo
+import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectTag
+import me.him188.ani.datasources.bangumi.processing.sortByRelation
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.openapitools.client.models.RelatedCharacter

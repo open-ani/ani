@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.desktop
+package me.him188.ani.desktop
 
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.desktop.ui.tooling.preview.Preview
@@ -41,23 +41,23 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import me.him188.animationgarden.app.AppTheme
-import me.him188.animationgarden.app.ProvideCompositionLocalsForPreview
-import me.him188.animationgarden.app.app.*
-import me.him188.animationgarden.app.app.data.map
-import me.him188.animationgarden.app.app.settings.*
-import me.him188.animationgarden.app.i18n.LocalI18n
-import me.him188.animationgarden.app.i18n.ResourceBundle
-import me.him188.animationgarden.app.i18n.loadResourceBundle
-import me.him188.animationgarden.app.platform.Context
-import me.him188.animationgarden.app.platform.LocalContext
-import me.him188.animationgarden.app.ui.*
-import me.him188.animationgarden.app.ui.interaction.PlatformImplementations
-import me.him188.animationgarden.app.ui.interaction.PlatformImplementations.Companion.hostIsMacOs
-import me.him188.animationgarden.datasources.dmhy.DmhyClient
-import me.him188.animationgarden.datasources.dmhy.DmhyDownloadProvider
-import me.him188.animationgarden.utils.logging.logger
-import me.him188.animationgarden.utils.logging.trace
+import me.him188.ani.app.AppTheme
+import me.him188.ani.app.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.app.*
+import me.him188.ani.app.app.data.map
+import me.him188.ani.app.app.settings.*
+import me.him188.ani.app.i18n.LocalI18n
+import me.him188.ani.app.i18n.ResourceBundle
+import me.him188.ani.app.i18n.loadResourceBundle
+import me.him188.ani.app.platform.Context
+import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.ui.*
+import me.him188.ani.app.ui.interaction.PlatformImplementations
+import me.him188.ani.app.ui.interaction.PlatformImplementations.Companion.hostIsMacOs
+import me.him188.ani.datasources.dmhy.DmhyClient
+import me.him188.ani.datasources.dmhy.DmhyDownloadProvider
+import me.him188.ani.utils.logging.logger
+import me.him188.ani.utils.logging.trace
 import java.io.File
 
 private val logger = logger()
@@ -67,11 +67,11 @@ val projectDirectories: ProjectDirectories by lazy {
     ProjectDirectories.from(
         "me",
         "Him188",
-        "Animation Garden"
+        "Ani"
     )
 }
 
-object AnimationGardenDesktop {
+object AniDesktop {
     @JvmStatic
     fun main(args: Array<String>) {
         projectDirectories.dataDir

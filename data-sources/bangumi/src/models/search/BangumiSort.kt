@@ -1,4 +1,4 @@
-package me.him188.animationgarden.datasources.bangumi.models.search
+package me.him188.ani.datasources.bangumi.models.search
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

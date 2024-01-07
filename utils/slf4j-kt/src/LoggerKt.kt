@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 @file:JvmName("LoggerKt")
 
-package me.him188.animationgarden.utils.logging
+package me.him188.ani.utils.logging
 
 import org.slf4j.ILoggerFactory
 import org.slf4j.Logger
@@ -29,8 +29,8 @@ import kotlin.reflect.KClass
 fun ILoggerFactory.getLogger(clazz: KClass<out Any>): Logger =
     getLogger(clazz.qualifiedName?.let {
         when {
-            it.startsWith("me.him188.animationgarden.") -> {
-                it.removePrefix("me.him188.animationgarden.")
+            it.startsWith("me.him188.ani.") -> {
+                it.removePrefix("me.him188.ani.")
             }
             else -> {
                 it

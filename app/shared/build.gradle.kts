@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -66,7 +66,6 @@ kotlin {
                 api(compose.runtime)
 
                 // Subprojects: data sources and utils
-                api(projects.protocol)
                 api(projects.dataSources.dmhy)
                 api(projects.dataSources.bangumi)
                 api(projects.utils.slf4jKt)
@@ -125,7 +124,7 @@ kotlin {
 }
 
 android {
-    namespace = "me.him188.animationgarden"
+    namespace = "me.him188.ani"
     compileSdk = getIntProperty("android.compile.sdk")
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     defaultConfig {

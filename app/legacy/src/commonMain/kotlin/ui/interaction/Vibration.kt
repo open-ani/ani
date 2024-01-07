@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,9 +18,9 @@
 
 @file:JvmName("Vibration_common")
 
-package me.him188.animationgarden.app.ui.interaction
+package me.him188.ani.app.ui.interaction
 
-import me.him188.animationgarden.app.platform.Context
+import me.him188.ani.app.platform.Context
 
 expect fun Context.vibrateIfSupported(strength: VibrationStrength = VibrationStrength.CLICK)
 

@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.app.ui.subject
+package me.him188.ani.app.ui.subject
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -24,10 +24,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import me.him188.animationgarden.app.ProvideCompositionLocalsForPreview
-import me.him188.animationgarden.app.preview.PreviewData
-import me.him188.animationgarden.datasources.api.SearchSession
-import me.him188.animationgarden.datasources.api.Subject
+import me.him188.ani.app.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.preview.PreviewData
+import me.him188.ani.datasources.api.SearchSession
+import me.him188.ani.datasources.api.Subject
 
 @Composable
 @Preview(apiLevel = 33)

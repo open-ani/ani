@@ -1,4 +1,4 @@
-package me.him188.animationgarden.app.ui.foundation
+package me.him188.ani.app.ui.foundation
 
 import androidx.compose.animation.core.FiniteAnimationSpec
 import androidx.compose.animation.core.tween

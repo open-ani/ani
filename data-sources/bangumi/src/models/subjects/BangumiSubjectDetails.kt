@@ -1,8 +1,8 @@
-package me.him188.animationgarden.datasources.bangumi.models.subjects
+package me.him188.ani.datasources.bangumi.models.subjects
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import me.him188.animationgarden.datasources.bangumi.BangumiRating
+import me.him188.ani.datasources.bangumi.BangumiRating
 
 @Serializable
 data class BangumiSubjectDetails(

@@ -1,4 +1,4 @@
-package me.him188.animationgarden.app.ui.foundation
+package me.him188.ani.app.ui.foundation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -34,10 +34,10 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
 import io.kamel.image.config.LocalKamelConfig
-import me.him188.animationgarden.app.AppTheme
-import me.him188.animationgarden.app.i18n.LocalI18n
-import me.him188.animationgarden.app.i18n.loadResourceBundle
-import me.him188.animationgarden.app.platform.LocalContext
+import me.him188.ani.app.AppTheme
+import me.him188.ani.app.i18n.LocalI18n
+import me.him188.ani.app.i18n.loadResourceBundle
+import me.him188.ani.app.platform.LocalContext
 import moe.tlaster.precompose.PreComposeApp
 
 /**

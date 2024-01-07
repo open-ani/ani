@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.app.app.settings
+package me.him188.ani.app.app.settings
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -27,7 +27,7 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import me.him188.animationgarden.app.app.data.MutableProperty
+import me.him188.ani.app.app.data.MutableProperty
 import java.io.File
 import kotlin.random.Random
 import kotlin.time.Duration
@@ -46,7 +46,7 @@ data class SyncSettings(
 
 @Serializable
 data class RemoteSyncSettings(
-    val apiUrl: String = "https://sync.animationgarden.him188.moe",
+    val apiUrl: String = "https://sync.ani.him188.moe",
     val token: String = randomSyncToken(),
     val useProxy: Boolean = false,
 ) {

@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.datasources.dmhy.impl
+package me.him188.ani.datasources.dmhy.impl
 
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
@@ -40,11 +40,11 @@ import io.ktor.utils.io.charsets.decode
 import io.ktor.utils.io.jvm.javaio.toInputStream
 import io.ktor.utils.io.streams.asInput
 import kotlinx.serialization.json.Json
-import me.him188.animationgarden.datasources.api.DownloadSearchQuery
-import me.him188.animationgarden.datasources.api.SearchSession
-import me.him188.animationgarden.datasources.api.topic.Topic
-import me.him188.animationgarden.datasources.dmhy.DmhyClient
-import me.him188.animationgarden.datasources.dmhy.impl.protocol.Network
+import me.him188.ani.datasources.api.DownloadSearchQuery
+import me.him188.ani.datasources.api.SearchSession
+import me.him188.ani.datasources.api.topic.Topic
+import me.him188.ani.datasources.dmhy.DmhyClient
+import me.him188.ani.datasources.dmhy.impl.protocol.Network
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import kotlin.time.Duration.Companion.seconds

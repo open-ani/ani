@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.app.ui.search
+package me.him188.ani.app.ui.search
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.CardDefaults
@@ -30,18 +30,18 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import me.him188.animationgarden.api.model.*
-import me.him188.animationgarden.api.tags.Episode
-import me.him188.animationgarden.api.tags.Resolution
-import me.him188.animationgarden.api.tags.SubtitleLanguage
-import me.him188.animationgarden.app.AppTheme
-import me.him188.animationgarden.app.i18n.LocalI18n
-import me.him188.animationgarden.app.i18n.loadResourceBundle
-import me.him188.animationgarden.app.platform.LocalContext
-import me.him188.animationgarden.app.ui.AnimatedTitles
-import me.him188.animationgarden.app.ui.theme.darken
-import me.him188.animationgarden.app.ui.widgets.ToggleStarButton
-import me.him188.animationgarden.datasources.api.topic.FileSize.Companion.megaBytes
+import me.him188.ani.api.model.*
+import me.him188.ani.api.tags.Episode
+import me.him188.ani.api.tags.Resolution
+import me.him188.ani.api.tags.SubtitleLanguage
+import me.him188.ani.app.AppTheme
+import me.him188.ani.app.i18n.LocalI18n
+import me.him188.ani.app.i18n.loadResourceBundle
+import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.ui.AnimatedTitles
+import me.him188.ani.app.ui.theme.darken
+import me.him188.ani.app.ui.widgets.ToggleStarButton
+import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import java.time.LocalDateTime
 
 @Composable

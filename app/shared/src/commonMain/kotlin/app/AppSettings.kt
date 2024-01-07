@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.app.app
+package me.him188.ani.app.app
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
@@ -30,8 +30,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
-import me.him188.animationgarden.app.app.settings.ProxySettings
-import me.him188.animationgarden.app.app.settings.SyncSettings
+import me.him188.ani.app.app.settings.ProxySettings
+import me.him188.ani.app.app.settings.SyncSettings
 import java.io.File
 
 @Immutable

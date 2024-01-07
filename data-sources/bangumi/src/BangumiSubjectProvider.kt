@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,12 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.datasources.bangumi
+package me.him188.ani.datasources.bangumi
 
-import me.him188.animationgarden.datasources.api.SearchSession
-import me.him188.animationgarden.datasources.api.Subject
-import me.him188.animationgarden.datasources.api.SubjectProvider
-import me.him188.animationgarden.datasources.api.SubjectSearchQuery
+import me.him188.ani.datasources.api.SearchSession
+import me.him188.ani.datasources.api.Subject
+import me.him188.ani.datasources.api.SubjectProvider
+import me.him188.ani.datasources.api.SubjectSearchQuery
 
 class BangumiSubjectProvider(
     private val client: BangumiClient = BangumiClient.create(),

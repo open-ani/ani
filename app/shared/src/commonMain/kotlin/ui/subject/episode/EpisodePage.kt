@@ -1,4 +1,4 @@
-package me.him188.animationgarden.app.ui.subject.episode
+package me.him188.ani.app.ui.subject.episode
 
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column

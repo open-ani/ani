@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,13 +16,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.app.ui.interaction
+package me.him188.ani.app.ui.interaction
 
 import android.annotation.SuppressLint
-import android.os.*
+import android.os.Build
+import android.os.CombinedVibration
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
 import androidx.annotation.RequiresPermission
 import androidx.core.content.getSystemService
-import me.him188.animationgarden.app.platform.Context
+import me.him188.ani.app.platform.Context
 
 @RequiresPermission(android.Manifest.permission.VIBRATE)
 actual fun Context.vibrateIfSupported(strength: VibrationStrength) {

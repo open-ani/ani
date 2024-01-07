@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,15 +16,15 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.android.activity
+package me.him188.ani.android.activity
 
 import android.os.Bundle
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.WindowCompat
-import me.him188.animationgarden.app.ui.foundation.AniApp
-import me.him188.animationgarden.app.ui.home.MainScreen
+import me.him188.ani.app.ui.foundation.AniApp
+import me.him188.ani.app.ui.home.MainScreen
 
 class MainActivity : BaseComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

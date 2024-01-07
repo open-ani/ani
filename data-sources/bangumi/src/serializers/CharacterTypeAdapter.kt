@@ -1,4 +1,4 @@
-package me.him188.animationgarden.datasources.bangumi.serializers
+package me.him188.ani.datasources.bangumi.serializers
 
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi

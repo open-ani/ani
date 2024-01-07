@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,20 +16,20 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.app.ui.subject
+package me.him188.ani.app.ui.subject
 
 import androidx.compose.runtime.Stable
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.yield
-import me.him188.animationgarden.app.platform.Context
-import me.him188.animationgarden.app.ui.event.SubjectNavigator
-import me.him188.animationgarden.app.ui.framework.AbstractViewModel
-import me.him188.animationgarden.app.ui.framework.launchInBackground
-import me.him188.animationgarden.datasources.api.SearchSession
-import me.him188.animationgarden.datasources.api.Subject
-import me.him188.animationgarden.utils.logging.info
+import me.him188.ani.app.platform.Context
+import me.him188.ani.app.ui.event.SubjectNavigator
+import me.him188.ani.app.ui.framework.AbstractViewModel
+import me.him188.ani.app.ui.framework.launchInBackground
+import me.him188.ani.datasources.api.SearchSession
+import me.him188.ani.datasources.api.Subject
+import me.him188.ani.utils.logging.info
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 

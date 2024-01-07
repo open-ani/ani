@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.app.ui.framework
+package me.him188.ani.app.ui.framework
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.RememberObserver
@@ -37,9 +37,9 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
-import me.him188.animationgarden.shared.Uuid
-import me.him188.animationgarden.utils.logging.logger
-import me.him188.animationgarden.utils.logging.trace
+import me.him188.ani.shared.Uuid
+import me.him188.ani.utils.logging.logger
+import me.him188.ani.utils.logging.trace
 import moe.tlaster.precompose.viewmodel.ViewModel
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext

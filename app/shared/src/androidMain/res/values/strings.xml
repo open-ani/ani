@@ -1,6 +1,6 @@
 <!--
-  ~ Animation Garden App
-  ~ Copyright (C) 2022  Him188
+  ~ Ani
+  ~ Copyright (C) 2022-2024 Him188
   ~
   ~ This program is free software: you can redistribute it and/or modify
   ~ it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
   -->
 
 <resources>
-    <string name="app_name">Animation Garden</string>
-    <string name="app_package" translatable="false">me.him188.animationgarden</string>
+    <string name="app_name">Ani</string>
+    <string name="app_package" translatable="false">me.him188.ani</string>
 
 </resources>

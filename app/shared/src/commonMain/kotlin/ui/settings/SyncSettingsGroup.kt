@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.app.ui.settings
+package me.him188.ani.app.ui.settings
 
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.ColumnScope
@@ -24,14 +24,18 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import me.him188.animationgarden.app.app.AppSettings
-import me.him188.animationgarden.app.app.AppSettingsManager
-import me.him188.animationgarden.app.app.settings.ProxyMode
-import me.him188.animationgarden.app.i18n.LocalI18n
+import me.him188.ani.app.app.AppSettings
+import me.him188.ani.app.app.AppSettingsManager
+import me.him188.ani.app.app.settings.ProxyMode
+import me.him188.ani.app.i18n.LocalI18n
 
 @Composable
 fun ColumnScope.SyncSettingsGroup(

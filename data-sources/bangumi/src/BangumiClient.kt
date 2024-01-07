@@ -1,6 +1,6 @@
 /*
- * Animation Garden App
- * Copyright (C) 2022  Him188
+ * Ani
+ * Copyright (C) 2022-2024 Him188
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.datasources.bangumi
+package me.him188.ani.datasources.bangumi
 
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
@@ -41,20 +41,20 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
-import me.him188.animationgarden.datasources.api.Paged
-import me.him188.animationgarden.datasources.bangumi.client.BangumiClientAccounts
-import me.him188.animationgarden.datasources.bangumi.client.BangumiClientEpisodes
-import me.him188.animationgarden.datasources.bangumi.client.BangumiClientSubjects
-import me.him188.animationgarden.datasources.bangumi.client.BangumiEpType
-import me.him188.animationgarden.datasources.bangumi.client.BangumiEpisode
-import me.him188.animationgarden.datasources.bangumi.models.BangumiToken
-import me.him188.animationgarden.datasources.bangumi.models.search.BangumiSort
-import me.him188.animationgarden.datasources.bangumi.models.subjects.BangumiSubject
-import me.him188.animationgarden.datasources.bangumi.models.subjects.BangumiSubjectDetails
-import me.him188.animationgarden.datasources.bangumi.models.subjects.BangumiSubjectImageSize
-import me.him188.animationgarden.datasources.bangumi.models.subjects.BangumiSubjectType
-import me.him188.animationgarden.datasources.bangumi.models.users.BangumiAccount
-import me.him188.animationgarden.utils.serialization.toJsonArray
+import me.him188.ani.datasources.api.Paged
+import me.him188.ani.datasources.bangumi.client.BangumiClientAccounts
+import me.him188.ani.datasources.bangumi.client.BangumiClientEpisodes
+import me.him188.ani.datasources.bangumi.client.BangumiClientSubjects
+import me.him188.ani.datasources.bangumi.client.BangumiEpType
+import me.him188.ani.datasources.bangumi.client.BangumiEpisode
+import me.him188.ani.datasources.bangumi.models.BangumiToken
+import me.him188.ani.datasources.bangumi.models.search.BangumiSort
+import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubject
+import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectDetails
+import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectImageSize
+import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectType
+import me.him188.ani.datasources.bangumi.models.users.BangumiAccount
+import me.him188.ani.utils.serialization.toJsonArray
 import okhttp3.OkHttpClient
 import org.openapitools.client.apis.BangumiApi
 import org.openapitools.client.models.RelatedPerson
@@ -87,7 +87,7 @@ internal class BangumiClientImpl(
             chain.proceed(
                 chain.request().newBuilder().addHeader(
                     "User-Agent",
-                    "him188/ani/3.0.0-beta01 (Android) (https://github.com/Him188/animation-garden)"
+                    "him188/ani/3.0.0-beta01 (Android) (https://github.com/Him188/ani)"
                 ).build()
             )
         }
