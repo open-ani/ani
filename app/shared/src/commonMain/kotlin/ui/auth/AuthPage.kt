@@ -169,7 +169,7 @@ fun AuthPage(viewModel: AccountViewModel) {
         val highlightColor = MaterialTheme.colorScheme.secondary
         val signUpMessage = remember(highlightColor) {
             buildAnnotatedString {
-                append("Does not have an account? Please ")
+                append("")
                 pushStyle(SpanStyle(color = highlightColor))
                 append("sign up")
                 pop()
@@ -180,7 +180,7 @@ fun AuthPage(viewModel: AccountViewModel) {
             buildAnnotatedString {
                 append("Already have an account? Please ")
                 pushStyle(SpanStyle(color = highlightColor))
-                append("login")
+                append("登录")
                 pop()
             }
         }

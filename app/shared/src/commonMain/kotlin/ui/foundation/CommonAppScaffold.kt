@@ -2,6 +2,7 @@ package me.him188.animationgarden.app.ui.foundation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.intl.Locale
@@ -53,10 +55,20 @@ inline fun AniApp(
             LocalI18n provides currentBundle,
             LocalKamelConfig provides DefaultKamelConfig,
         ) {
+            val focusManager by rememberUpdatedState(LocalFocusManager.current)
+            val keyboard by rememberUpdatedState(LocalSoftwareKeyboardController.current)
             MaterialTheme(colorScheme) {
                 Box(
                     modifier = Modifier
                         .background(AppTheme.colorScheme.background)
+                        .focusable(false)
+                        .clickable(
+                            remember { MutableInteractionSource() },
+                            null,
+                        ) {
+                            keyboard?.hide()
+                            focusManager.clearFocus()
+                        }
                         .fillMaxSize()
                 ) {
                     content()
