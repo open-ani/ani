@@ -46,6 +46,9 @@ class AccountViewModel(
     private val _verifyPassword: MutableState<String> = mutableStateOf("")
     val verifyPassword: State<String> get() = _verifyPassword
 
+    private val _isPasswordVisible: MutableState<Boolean> = mutableStateOf(false)
+    val isPasswordVisible: State<Boolean> get() = _isPasswordVisible
+
     val usernameError: MutableStateFlow<String?> = MutableStateFlow(null)
     val usernameValid: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val passwordError: MutableStateFlow<String?> = MutableStateFlow(null)
@@ -72,6 +75,10 @@ class AccountViewModel(
         verifyPasswordError.value = null
     }
 
+    fun setPasswordVisible(it: Boolean) {
+        _isPasswordVisible.value = it
+    }
+
     suspend fun onClickProceed() {
         if (!checkInputs()) return
 
@@ -85,6 +92,7 @@ class AccountViewModel(
         if (isRegister) {
             TODO("Registering is not supported yet")
         }
+
         when (val resp = client.accounts.login(email, password)) {
             is BangumiClientAccounts.LoginResponse.Success -> {
                 localSession.setSession(resp.account, resp.token)

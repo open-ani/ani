@@ -27,7 +27,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Visibility
+import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -45,6 +50,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import me.him188.animationgarden.app.ui.framework.launchInBackground
@@ -79,7 +85,10 @@ fun AuthPage(viewModel: AccountViewModel) {
                 onValueChange = { viewModel.setUsername(it) },
                 isError = (usernameError != null),
                 label = { Text("邮箱") },
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(8.dp),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Email,
+                ),
             )
         }
         AnimatedVisibility(usernameError != null) {
@@ -96,16 +105,29 @@ fun AuthPage(viewModel: AccountViewModel) {
             modifier = Modifier.padding(10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            val isPasswordVisible by viewModel.isPasswordVisible
             OutlinedTextField(
                 value = viewModel.password.value,
                 onValueChange = { viewModel.setPassword(it) },
+                trailingIcon = {
+                    IconToggleButton(
+                        checked = isPasswordVisible,
+                        onCheckedChange = { viewModel.setPasswordVisible(it) },
+                    ) {
+                        Icon(
+                            if (isPasswordVisible) Icons.Outlined.Visibility else Icons.Outlined.VisibilityOff,
+                            null
+                        )
+                    }
+                },
                 isError = (passwordError != null),
                 label = { Text("密码") },
                 shape = RoundedCornerShape(8.dp),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Password,
                 ),
-                visualTransformation = PasswordVisualTransformation('*')
+                visualTransformation = if (isPasswordVisible) VisualTransformation.None
+                else PasswordVisualTransformation('*')
             )
         }
         AnimatedVisibility(passwordError != null) {
@@ -163,7 +185,11 @@ fun AuthPage(viewModel: AccountViewModel) {
             modifier = Modifier.padding(10.dp),
             shape = RoundedCornerShape(8.dp)
         ) {
-            Text(if (isRegister) "Sign up" else "Login")
+            Text(
+                if (isRegister) "注册" else "登录",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold,
+            )
         }
 
         val highlightColor = MaterialTheme.colorScheme.secondary
@@ -178,10 +204,10 @@ fun AuthPage(viewModel: AccountViewModel) {
 
         val loginMessage = remember(highlightColor) {
             buildAnnotatedString {
-                append("Already have an account? Please ")
-                pushStyle(SpanStyle(color = highlightColor))
-                append("登录")
-                pop()
+//                append("Already have an account? Please ")
+//                pushStyle(SpanStyle(color = highlightColor))
+//                append("登录")
+//                pop()
             }
         }
 
