@@ -37,7 +37,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
-import me.him188.ani.shared.Uuid
+import me.him188.ani.app.ui.foundation.LoadingUuidItem
+import me.him188.ani.app.ui.foundation.Uuid
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.trace
 import moe.tlaster.precompose.viewmodel.ViewModel
