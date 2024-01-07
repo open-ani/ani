@@ -75,7 +75,7 @@ class SubjectListViewModel(
         }
     }
 
-    fun navigateToSubjectDetails(context: Context, subjectId: String) {
+    fun navigateToSubjectDetails(context: Context, subjectId: Int) {
         logger.info { "navigateToSubjectDetails($subjectId)" }
         subjectNavigator.navigateToSubjectDetails(context, subjectId)
     }

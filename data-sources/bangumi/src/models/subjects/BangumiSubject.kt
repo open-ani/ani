@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class BangumiSubject(
-    val id: Long,
+    val id: Int,
     val type: BangumiSubjectType,
     @SerialName("date") val airDate: String, // "2002-04-02"
     @SerialName("image") val image: String, // cover

@@ -1,13 +1,10 @@
 package me.him188.ani.android.activity
 
-import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
-import androidx.core.view.WindowCompat
 import me.him188.ani.app.ui.subject.details.SubjectDetails
 import me.him188.ani.app.ui.subject.details.SubjectDetailsViewModel
 import org.koin.core.component.KoinComponent
@@ -15,20 +12,13 @@ import org.koin.core.component.KoinComponent
 class SubjectDetailsActivity : BaseComponentActivity(), KoinComponent {
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
         super.onCreate(savedInstanceState)
-        val subjectId = intent.getStringExtra("subjectId") ?: run {
+        val subjectId = intent.getIntExtra("subjectId", 0).takeIf { it != 0 } ?: run {
             finish()
             return
         }
         val vm = SubjectDetailsViewModel(subjectId)
 
-        enableEdgeToEdge(
-            SystemBarStyle.auto(
-                android.graphics.Color.TRANSPARENT,
-                android.graphics.Color.TRANSPARENT
-            )
-        )
-
-        WindowCompat.setDecorFitsSystemWindows(window, false)
+        enableDrawingToSystemBars()
 
         setContent {
             MaterialTheme(currentColorScheme) {
@@ -45,7 +35,7 @@ class SubjectDetailsActivity : BaseComponentActivity(), KoinComponent {
     }
 
     companion object {
-        fun getIntent(context: android.content.Context, subjectId: String): android.content.Intent {
+        fun getIntent(context: android.content.Context, subjectId: Int): android.content.Intent {
             return android.content.Intent(context, SubjectDetailsActivity::class.java).apply {
                 putExtra("subjectId", subjectId)
             }

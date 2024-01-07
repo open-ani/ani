@@ -6,7 +6,7 @@ import me.him188.ani.datasources.bangumi.BangumiRating
 
 @Serializable
 data class BangumiSubjectDetails(
-    val id: Long,
+    val id: Int,
     val type: BangumiSubjectType,
     @SerialName("date") val airDate: String, // "2002-04-02"
     @SerialName("images") val images: BangumiSubjectImages,

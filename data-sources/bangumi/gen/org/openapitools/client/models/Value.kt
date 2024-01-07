@@ -21,7 +21,5 @@ package org.openapitools.client.models
  */
 
 
-class Value(
-
-)
+typealias Value = Any
 

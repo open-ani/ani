@@ -14,7 +14,7 @@ data class BangumiSubjectTag(
 fun BangumiSubject.toSubject(): Subject {
     val subject = this
     return Subject(
-        id = subject.id.toString(),
+        id = subject.id,
         originalName = subject.name,
         chineseName = subject.nameCN,
         images = SubjectImages(

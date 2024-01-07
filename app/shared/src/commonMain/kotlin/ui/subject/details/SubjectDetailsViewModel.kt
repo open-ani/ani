@@ -1,6 +1,7 @@
 package me.him188.ani.app.ui.subject.details
 
 import androidx.compose.runtime.Stable
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -8,6 +9,9 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.runInterruptible
+import me.him188.ani.app.platform.Context
+import me.him188.ani.app.ui.event.SubjectNavigator
 import me.him188.ani.app.ui.framework.AbstractViewModel
 import me.him188.ani.datasources.api.PageBasedSearchSession
 import me.him188.ani.datasources.bangumi.BangumiClient
@@ -26,15 +30,16 @@ import org.openapitools.client.models.RelatedPerson
 
 @Stable
 class SubjectDetailsViewModel(
-    subjectId: String,
+    subjectId: Int,
 ) : AbstractViewModel(), KoinComponent {
     private val bangumiClient: BangumiClient by inject()
+    private val subjectNavigator: SubjectNavigator by inject()
 //    private val subjectProvider: SubjectProvider by inject()
 
-    val subjectId: MutableStateFlow<String> = MutableStateFlow(subjectId)
+    val subjectId: MutableStateFlow<Int> = MutableStateFlow(subjectId)
 
     private val subject: StateFlow<BangumiSubjectDetails?> = this.subjectId.mapLatest {
-        bangumiClient.subjects.getSubjectById(it.toLong())
+        bangumiClient.subjects.getSubjectById(it)
     }.stateInBackground()
 
     private val subjectNotNull = subject.mapNotNull { it }
@@ -73,12 +78,12 @@ class SubjectDetailsViewModel(
         subjectNotNull.map { it.summary }.shareInBackground()
 
     val characters: SharedFlow<List<RelatedCharacter>> = subjectNotNull.map { subject ->
-        bangumiClient.api.getRelatedCharactersBySubjectId(subject.id.toInt())
+        runInterruptible(Dispatchers.IO) { bangumiClient.api.getRelatedCharactersBySubjectId(subject.id) }
             .distinctBy { it.id }
     }.shareInBackground()
 
     val relatedPersons: SharedFlow<List<RelatedPerson>> = subjectNotNull.map { subject ->
-        bangumiClient.api.getRelatedPersonsBySubjectId(subject.id.toInt())
+        runInterruptible(Dispatchers.IO) { bangumiClient.api.getRelatedPersonsBySubjectId(subject.id) }
             .sortByRelation()
             .distinctBy { it.id }
     }.shareInBackground()
@@ -104,11 +109,13 @@ class SubjectDetailsViewModel(
                 type,
                 offset = page * 100,
                 limit = 100
-            ).also {
-                println("episodesFlow: $it")
-            }
+            )
         }.results.toList()
     }.shareInBackground()
+
+    fun navigateToEpisode(context: Context, episodeId: Int) {
+        subjectNavigator.navigateToEpisode(context, subjectId.value, episodeId)
+    }
 }
 
 //private val ignoredLevels = listOf(

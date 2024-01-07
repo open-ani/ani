@@ -37,6 +37,8 @@ import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.utils.io.core.Closeable
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runInterruptible
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
@@ -196,7 +198,7 @@ internal class BangumiClientImpl(
             }
         }
 
-        override suspend fun getSubjectById(id: Long): BangumiSubjectDetails? {
+        override suspend fun getSubjectById(id: Int): BangumiSubjectDetails? {
             val resp = httpClient.get("$BANGUMI_API_HOST/v0/subjects/${id}")
 
             if (!resp.status.isSuccess()) {
@@ -206,12 +208,12 @@ internal class BangumiClientImpl(
             return resp.body()
         }
 
-        override suspend fun getSubjectImageUrl(id: Long, size: BangumiSubjectImageSize): String {
+        override suspend fun getSubjectImageUrl(id: Int, size: BangumiSubjectImageSize): String {
             return Companion.getSubjectImageUrl(id, size)
         }
 
-        override suspend fun getSubjectPersonsById(id: Long): List<RelatedPerson> {
-            return api.getRelatedPersonsBySubjectId(id.toInt())
+        override suspend fun getSubjectPersonsById(id: Int): List<RelatedPerson> {
+            return runInterruptible(Dispatchers.IO) { api.getRelatedPersonsBySubjectId(id) }
 //            val resp = httpClient.get("$BANGUMI_API_HOST/v0/subjects/${id}/persons")
 //
 //            if (!resp.status.isSuccess()) {
@@ -257,7 +259,7 @@ internal class BangumiClientImpl(
     }
 
     companion object {
-        fun getSubjectImageUrl(id: Long, size: BangumiSubjectImageSize): String {
+        fun getSubjectImageUrl(id: Int, size: BangumiSubjectImageSize): String {
             return "$BANGUMI_API_HOST/v0/subjects/${id}/image?type=${size.id.lowercase()}"
         }
     }

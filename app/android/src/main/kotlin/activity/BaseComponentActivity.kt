@@ -19,12 +19,15 @@
 package me.him188.ani.android.activity
 
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -42,6 +45,17 @@ abstract class BaseComponentActivity : ComponentActivity() {
         } else {
             aniLightColorTheme()
         }
+
+    fun enableDrawingToSystemBars() {
+        enableEdgeToEdge(
+            SystemBarStyle.auto(
+                android.graphics.Color.TRANSPARENT,
+                android.graphics.Color.TRANSPARENT
+            )
+        )
+
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+    }
 }
 
 suspend fun BaseComponentActivity.showSnackbar(

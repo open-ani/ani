@@ -41,7 +41,7 @@ interface SubjectProvider {
 
 @Serializable
 data class Subject(
-    val id: String,
+    val id: Int,
     /**
      * 条目官方原名称, 例如番剧为日文名称
      */

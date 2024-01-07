@@ -44,10 +44,12 @@
 
         <activity
                 android:name=".activity.SubjectDetailsActivity"
-                android:exported="true"
-                android:launchMode="singleTask" />
+                android:exported="true" />
+
+        <activity
+                android:name=".activity.EpisodeActivity"
+                android:exported="true" />
 
         <activity android:name=".activity.SettingsActivity" />
-        <activity android:name=".activity.StarredListActivity" />
     </application>
 </manifest>

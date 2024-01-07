@@ -33,15 +33,15 @@ interface BangumiClientSubjects {
     ): Paged<BangumiSubject>
 
     suspend fun getSubjectById(
-        id: Long,
+        id: Int,
     ): BangumiSubjectDetails?
 
     suspend fun getSubjectImageUrl(
-        id: Long,
+        id: Int,
         size: BangumiSubjectImageSize,
     ): String
 
     suspend fun getSubjectPersonsById(
-        id: Long,
+        id: Int,
     ): List<RelatedPerson>?
 }

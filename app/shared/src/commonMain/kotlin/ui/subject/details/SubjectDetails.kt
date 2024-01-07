@@ -1,6 +1,5 @@
 package me.him188.ani.app.ui.subject.details
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,13 +26,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
@@ -44,6 +41,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -59,8 +57,10 @@ import androidx.compose.ui.unit.dp
 import io.kamel.core.Resource
 import io.kamel.image.asyncPainterResource
 import me.him188.ani.app.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.preview.PreviewData
 import me.him188.ani.app.ui.foundation.AniKamelImage
+import me.him188.ani.app.ui.foundation.AniTopAppBar
 import me.him188.ani.app.ui.foundation.IconImagePlaceholder
 import me.him188.ani.app.ui.foundation.backgroundWithGradient
 import me.him188.ani.app.ui.theme.weaken
@@ -75,66 +75,41 @@ fun SubjectDetails(
     viewModel: SubjectDetailsViewModel,
     goBack: () -> Unit,
 ) {
-    Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-        Box(Modifier.fillMaxWidth()) {
-            val coverImageUrl by viewModel.coverImage.collectAsState(null)
-            val coverPainter = asyncPainterResource(coverImageUrl ?: "")
+    Scaffold(
+        topBar = {
+            AniTopAppBar(goBack, Modifier.statusBarsPadding())
+        },
+        contentWindowInsets = WindowInsets(0.dp)
+    ) { scaffoldPadding ->
+        val coverImageUrl by viewModel.coverImage.collectAsState(null)
+        val coverPainter = asyncPainterResource(coverImageUrl ?: "")
 
-            // 内容
-            Scaffold(
-                topBar = {
-                    Row(
-                        Modifier.statusBarsPadding()
-                            .padding(vertical = 6.dp)
-                            .padding(horizontal = 16.dp)
-                            .height(24.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        IconButton(goBack, Modifier.size(24.dp)) {
-                            Icon(
-                                Icons.Outlined.ArrowBack,
-                                null,
-                                Modifier.size(24.dp)
-                            )
-                        }
-//                Spacer(Modifier.weight(1f, fill = false))
-//                Icon(
-//                    Icons.Outlined.MoreVert,
-//                    null,
-//                    Modifier.size(24.dp)
-//                )
-                    }
-                },
-                contentWindowInsets = WindowInsets(0.dp)
-            ) { scaffoldPadding ->
-                val density = LocalDensity.current
-                // 虚化渐变背景
-                Box(
-                    Modifier.align(Alignment.TopStart)
-                        .height(264.dp + density.run { WindowInsets.systemBars.getTop(density).toDp() })
-                        .fillMaxWidth()
-                        .blur(12.dp)
-                        .backgroundWithGradient(
-                            coverImageUrl, MaterialTheme.colorScheme.background,
-                            brush = Brush.verticalGradient(
-                                0f to Color(0xA2FAFAFA),
-                                0.4f to Color(0xA2FAFAFA),
-                                1.00f to MaterialTheme.colorScheme.background,
-                            ),
-                        )
-                ) {
-                }
-
-                SubjectDetailsContent(
-                    coverPainter, viewModel,
-                    Modifier
-                        .verticalScroll(rememberScrollState())
-                        .padding(scaffoldPadding) // pad top bar
-                        .padding(bottom = 16.dp) // pad bottom
-                        .fillMaxSize()
+        val density = LocalDensity.current
+        // 虚化渐变背景
+        Box(
+            Modifier
+                .height(264.dp + density.run { WindowInsets.systemBars.getTop(density).toDp() })
+                .fillMaxWidth()
+                .blur(12.dp)
+                .backgroundWithGradient(
+                    coverImageUrl, MaterialTheme.colorScheme.background,
+                    brush = Brush.verticalGradient(
+                        0f to Color(0xA2FAFAFA),
+                        0.4f to Color(0xA2FAFAFA),
+                        1.00f to MaterialTheme.colorScheme.background,
+                    ),
                 )
-            }
+        ) {
         }
+
+        SubjectDetailsContent(
+            coverPainter, viewModel,
+            Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(scaffoldPadding) // pad top bar
+                .padding(bottom = 16.dp) // pad bottom
+                .fillMaxSize()
+        )
     }
 }
 
@@ -184,22 +159,39 @@ private fun SubjectDetailsContent(
             )
         }
 
+        val context by rememberUpdatedState(LocalContext.current)
+        
         val episodesMain by viewModel.episodesMain.collectAsState(listOf())
         if (episodesMain.isNotEmpty()) {
             SectionTitle(Modifier.padding(horizontal = horizontalPadding)) { Text("正片") }
-            EpisodeList(episodesMain, horizontalPadding, Modifier.padding(top = 8.dp))
+            EpisodeList(
+                episodesMain,
+                horizontalPadding,
+                { viewModel.navigateToEpisode(context, it.id.toInt()) },
+                Modifier.padding(top = 8.dp)
+            )
         }
 
         val episodesSP by viewModel.episodesSP.collectAsState(listOf())
         if (episodesSP.isNotEmpty()) {
             SectionTitle(Modifier.padding(horizontal = horizontalPadding)) { Text("SP") }
-            EpisodeList(episodesSP, horizontalPadding, Modifier.padding(top = 8.dp))
+            EpisodeList(
+                episodesSP,
+                horizontalPadding,
+                { viewModel.navigateToEpisode(context, it.id.toInt()) },
+                Modifier.padding(top = 8.dp)
+            )
         }
 
         val episodesPV by viewModel.episodesPV.collectAsState(listOf())
         if (episodesPV.isNotEmpty()) {
             SectionTitle(Modifier.padding(horizontal = horizontalPadding)) { Text("PV") }
-            EpisodeList(episodesPV, horizontalPadding, Modifier.padding(top = 8.dp))
+            EpisodeList(
+                episodesPV,
+                horizontalPadding,
+                { viewModel.navigateToEpisode(context, it.id.toInt()) },
+                Modifier.padding(top = 8.dp)
+            )
         }
     }
 }
@@ -274,9 +266,11 @@ private fun PersonView(
 private fun EpisodeList(
     episodes: List<BangumiEpisode>,
     horizontalPadding: Dp,
+    onClickItem: (BangumiEpisode) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val horizontalSpacedBy = 8.dp
+    val onClickItemState by rememberUpdatedState(onClickItem)
     LazyHorizontalGrid(
         GridCells.Fixed(1),
         modifier = modifier.height(60.dp).fillMaxWidth(),
@@ -285,20 +279,30 @@ private fun EpisodeList(
     ) {
         item(key = "spacer header") { Spacer(Modifier.width(horizontalPadding - horizontalSpacedBy)) }
         items(episodes, key = { it.id }) { episode ->
-            EpisodeItem(episode, Modifier.widthIn(min = 60.dp, max = 160.dp))
+            EpisodeItem(episode, { onClickItemState(episode) }, Modifier.widthIn(min = 60.dp, max = 160.dp))
         }
         item(key = "spacer footer") { Spacer(Modifier.width(horizontalPadding - horizontalSpacedBy)) }
     }
 }
 
+/**
+ * 一个剧集:
+ * ```
+ * |------------|
+ * | 01 冒险结束 |
+ * |       评论 |
+ * |------------|
+ * ```
+ */
 @Composable
 fun EpisodeItem(
     episode: BangumiEpisode,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val shape = RoundedCornerShape(8.dp)
     ElevatedCard(
-        onClick = {},
+        onClick,
         modifier.clip(shape),
         shape = shape,
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp),
@@ -372,7 +376,7 @@ internal expect fun PreviewSubjectDetails()
 internal fun PreviewSubjectDetailsImpl() {
     ProvideCompositionLocalsForPreview {
         val vm = remember {
-            SubjectDetailsViewModel(PreviewData.SosouNoFurilenId.toString())
+            SubjectDetailsViewModel(PreviewData.SOSOU_NO_FURILEN_SUBJECT_ID)
         }
         SubjectDetails(vm, goBack = {})
     }
