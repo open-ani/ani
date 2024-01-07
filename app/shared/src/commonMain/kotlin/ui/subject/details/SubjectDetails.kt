@@ -13,8 +13,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyRow
@@ -27,14 +27,17 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -60,7 +63,6 @@ import me.him188.ani.app.preview.PreviewData
 import me.him188.ani.app.ui.foundation.AniKamelImage
 import me.him188.ani.app.ui.foundation.IconImagePlaceholder
 import me.him188.ani.app.ui.foundation.backgroundWithGradient
-import me.him188.ani.app.ui.subject.details.header.SubjectDetailsHeader
 import me.him188.ani.app.ui.theme.weaken
 import me.him188.ani.datasources.bangumi.client.BangumiEpisode
 
@@ -69,38 +71,69 @@ import me.him188.ani.datasources.bangumi.client.BangumiEpisode
  * 一部番的详情页
  */
 @Composable
-fun SubjectDetails(viewModel: SubjectDetailsViewModel) {
+fun SubjectDetails(
+    viewModel: SubjectDetailsViewModel,
+    goBack: () -> Unit,
+) {
     Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-        Box(Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
+        Box(Modifier.fillMaxWidth()) {
             val coverImageUrl by viewModel.coverImage.collectAsState(null)
             val coverPainter = asyncPainterResource(coverImageUrl ?: "")
 
-            val density = LocalDensity.current
-            // 虚化渐变背景
-            Box(
-                Modifier.align(Alignment.TopStart)
-                    .height(250.dp + density.run { WindowInsets.systemBars.getTop(density).toDp() })
-                    .fillMaxWidth()
-                    .blur(12.dp)
-                    .backgroundWithGradient(
-                        coverImageUrl, MaterialTheme.colorScheme.background,
-                        brush = Brush.verticalGradient(
-                            0f to Color(0xA2FAFAFA),
-                            0.4f to Color(0xA2FAFAFA),
-                            1.00f to MaterialTheme.colorScheme.background,
-                        ),
-                    )
-            ) {
-            }
-
             // 内容
-            SubjectDetailsContent(
-                coverPainter, viewModel,
-                Modifier
-                    .systemBarsPadding()
-                    .fillMaxSize()
-                    .padding(top = 6.dp, bottom = 16.dp)
-            )
+            Scaffold(
+                topBar = {
+                    Row(
+                        Modifier.statusBarsPadding()
+                            .padding(vertical = 6.dp)
+                            .padding(horizontal = 16.dp)
+                            .height(24.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(goBack, Modifier.size(24.dp)) {
+                            Icon(
+                                Icons.Outlined.ArrowBack,
+                                null,
+                                Modifier.size(24.dp)
+                            )
+                        }
+//                Spacer(Modifier.weight(1f, fill = false))
+//                Icon(
+//                    Icons.Outlined.MoreVert,
+//                    null,
+//                    Modifier.size(24.dp)
+//                )
+                    }
+                },
+                contentWindowInsets = WindowInsets(0.dp)
+            ) { scaffoldPadding ->
+                val density = LocalDensity.current
+                // 虚化渐变背景
+                Box(
+                    Modifier.align(Alignment.TopStart)
+                        .height(264.dp + density.run { WindowInsets.systemBars.getTop(density).toDp() })
+                        .fillMaxWidth()
+                        .blur(12.dp)
+                        .backgroundWithGradient(
+                            coverImageUrl, MaterialTheme.colorScheme.background,
+                            brush = Brush.verticalGradient(
+                                0f to Color(0xA2FAFAFA),
+                                0.4f to Color(0xA2FAFAFA),
+                                1.00f to MaterialTheme.colorScheme.background,
+                            ),
+                        )
+                ) {
+                }
+
+                SubjectDetailsContent(
+                    coverPainter, viewModel,
+                    Modifier
+                        .verticalScroll(rememberScrollState())
+                        .padding(scaffoldPadding) // pad top bar
+                        .padding(bottom = 16.dp) // pad bottom
+                        .fillMaxSize()
+                )
+            }
         }
     }
 }
@@ -341,6 +374,6 @@ internal fun PreviewSubjectDetailsImpl() {
         val vm = remember {
             SubjectDetailsViewModel(PreviewData.SosouNoFurilenId.toString())
         }
-        SubjectDetails(vm)
+        SubjectDetails(vm, goBack = {})
     }
 }

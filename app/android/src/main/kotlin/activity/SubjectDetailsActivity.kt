@@ -38,7 +38,7 @@ class SubjectDetailsActivity : BaseComponentActivity(), KoinComponent {
                     Modifier
                         .fillMaxSize()
                 ) {
-                    SubjectDetails(vm)
+                    SubjectDetails(vm, goBack = { finish() })
                 }
             }
         }
