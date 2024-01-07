@@ -18,15 +18,22 @@
 
 package me.him188.animationgarden.app.ui.home
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLayoutDirection
 import me.him188.animationgarden.app.platform.isInLandscapeMode
 
 @Composable
-fun HomePage() {
+fun HomePage(searchViewModel: SearchViewModel) {
     if (isInLandscapeMode()) {
         HomePageLandscape()
     } else {
-        HomePagePortrait()
+        HomePagePortrait(searchViewModel)
     }
 }
 
@@ -35,9 +42,17 @@ private fun HomePageLandscape() {
 }
 
 @Composable
-private fun HomePagePortrait() {
-
+private fun HomePagePortrait(searchViewModel: SearchViewModel) {
+    Column(
+        Modifier.padding(
+            top = LocalContentPaddings.current.calculateTopPadding(),
+            start = LocalContentPaddings.current.calculateStartPadding(LocalLayoutDirection.current),
+            end = LocalContentPaddings.current.calculateEndPadding(LocalLayoutDirection.current),
+        ).fillMaxSize()
+    ) {
+    }
 }
+
 
 //@Composable
 //internal expect fun PreviewHomePage()

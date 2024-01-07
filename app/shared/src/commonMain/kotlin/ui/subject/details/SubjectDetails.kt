@@ -172,8 +172,9 @@ private fun SubjectDetailsContent(
 }
 
 @Composable
-private fun Avatar(
+fun Avatar(
     url: String,
+    modifier: Modifier = Modifier,
     alignment: Alignment = Alignment.Center,
     contentScale: ContentScale = ContentScale.Fit,
 ) {
@@ -183,6 +184,7 @@ private fun Avatar(
         onFailure = { IconImagePlaceholder(Icons.Outlined.Person) },
         alignment = alignment,
         contentScale = contentScale,
+        modifier = modifier,
     )
 }
 

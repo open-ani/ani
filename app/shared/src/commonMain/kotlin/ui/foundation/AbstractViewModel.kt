@@ -62,7 +62,7 @@ abstract class AbstractViewModel : RememberObserver, ViewModel() {
         dispose()
     }
 
-    private fun dispose() {
+    fun dispose() {
         if (!closed.compareAndSet(expect = false, update = true)) {
             return
         }

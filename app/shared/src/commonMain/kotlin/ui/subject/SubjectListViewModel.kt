@@ -35,7 +35,7 @@ import org.koin.core.component.inject
 
 @Stable
 class SubjectListViewModel(
-    val searchSession: SearchSession<Subject>,
+    private val searchSession: SearchSession<Subject>,
 ) : AbstractViewModel(), KoinComponent {
     private val subjectNavigator: SubjectNavigator by inject()
 

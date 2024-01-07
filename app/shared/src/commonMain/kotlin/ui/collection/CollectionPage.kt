@@ -16,19 +16,32 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.app.ui.home
+package me.him188.animationgarden.app.ui.collection
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.ui.tooling.preview.Preview
-import me.him188.animationgarden.app.ProvideCompositionLocalsForPreview
+import me.him188.animationgarden.app.platform.isInLandscapeMode
+import me.him188.animationgarden.app.ui.home.SearchViewModel
 
+/**
+ * 搜索页面
+ */
 @Composable
-@Preview(backgroundColor = 0xFF000000, showBackground = true)
-internal fun PreviewHomePagePortrait() {
-    ProvideCompositionLocalsForPreview {
-        HomePage(remember {
-            SearchViewModel()
-        })
+fun CollectionPage(viewModel: SearchViewModel) {
+    if (isInLandscapeMode()) {
+        SearchPageLandscape(viewModel)
+    } else {
+        SearchPagePortrait(viewModel)
     }
 }
+
+@Composable
+private fun SearchPageLandscape(viewModel: SearchViewModel) {
+    SearchPagePortrait(viewModel)
+}
+
+@Composable
+private fun SearchPagePortrait(viewModel: SearchViewModel) {
+}
+
+//@Composable
+//internal expect fun PreviewHomePage()

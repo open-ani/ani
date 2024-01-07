@@ -16,15 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.animationgarden.app.ui.search
+package me.him188.animationgarden.app.ui.home
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
 import me.him188.animationgarden.app.ui.framework.AbstractViewModel
 import me.him188.animationgarden.app.ui.subject.SubjectListViewModel
-import me.him188.animationgarden.datasources.api.SearchSession
-import me.him188.animationgarden.datasources.api.Subject
 import me.him188.animationgarden.datasources.api.SubjectProvider
 import me.him188.animationgarden.datasources.api.SubjectSearchQuery
 import org.koin.core.component.KoinComponent
@@ -39,10 +36,6 @@ class SearchViewModel(
 
     val searchActive: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val editingQuery: MutableStateFlow<String> = MutableStateFlow(keyword ?: "")
-    val query: MutableStateFlow<String> = MutableStateFlow(keyword ?: "")
-
-    val searchSession: StateFlow<SearchSession<Subject>?> =
-        _result.map { it?.searchSession }.stateInBackground()
 
     val result: StateFlow<SubjectListViewModel?> = _result
 
@@ -55,6 +48,7 @@ class SearchViewModel(
             _result.value = null
             return
         }
+        _result.value?.dispose()
         _result.value =
             SubjectListViewModel(
                 subjectProvider.startSearch(SubjectSearchQuery(keywords.trim()))
