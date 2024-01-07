@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.ani.app.ui.framework
+package me.him188.ani.app.ui.foundation
 
 import androidx.compose.runtime.Stable
 import kotlinx.coroutines.flow.Flow
@@ -24,7 +24,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flowOf
-import me.him188.ani.shared.Uuid
 
 
 fun <T> LoadingUuidItem(uuid: Uuid, ready: T?): LoadingUuidItem<T> =
