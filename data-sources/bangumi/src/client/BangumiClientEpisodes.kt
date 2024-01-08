@@ -34,7 +34,7 @@ data class BangumiEpisode(
     /**
      * 同类条目的排序和集数
      */
-    val sort: Int,
+    val sort: Float,
     /**
      * 条目内的集数, 从`1`开始。非本篇剧集的此字段无意义
      */
