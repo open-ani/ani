@@ -31,13 +31,15 @@ class Resolution private constructor(
     val size: Int, // for sorting
     private val otherNames: List<String>,
     private val displayName: String = id,
-) {
+) : Comparable<Resolution> {
     constructor(
         id: String,
         size: Int, // for sorting
         vararg otherNames: String,
         displayName: String = id,
     ) : this(id, size, otherNames.toList(), displayName)
+
+    override fun compareTo(other: Resolution): Int = this.size.compareTo(other.size)
 
     override fun toString(): String {
         return displayName

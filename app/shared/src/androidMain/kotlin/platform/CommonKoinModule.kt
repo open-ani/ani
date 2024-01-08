@@ -18,14 +18,17 @@
 
 package me.him188.ani.app.platform
 
+import me.him188.ani.datasources.api.DownloadProvider
 import me.him188.ani.datasources.api.SubjectProvider
 import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
 import me.him188.ani.datasources.dmhy.DmhyClient
+import me.him188.ani.datasources.dmhy.DmhyDownloadProvider
 import org.koin.dsl.module
 
 val CommonKoinModule = module {
     single<DmhyClient> { DmhyClient.create { } }
     single<BangumiClient> { BangumiClient.create() }
     single<SubjectProvider> { BangumiSubjectProvider() }
+    single<DownloadProvider> { DmhyDownloadProvider() }
 }

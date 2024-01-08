@@ -30,10 +30,12 @@ import me.him188.ani.app.i18n.LocalI18n
 import me.him188.ani.app.i18n.loadResourceBundle
 import me.him188.ani.app.platform.Context
 import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.datasources.api.DownloadProvider
 import me.him188.ani.datasources.api.SubjectProvider
 import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
 import me.him188.ani.datasources.dmhy.DmhyClient
+import me.him188.ani.datasources.dmhy.DmhyDownloadProvider
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
@@ -46,6 +48,7 @@ fun ProvideCompositionLocalsForPreview(content: @Composable () -> Unit) {
             single<DmhyClient> { DmhyClient.create { } }
             single<BangumiClient> { BangumiClient.create() }
             single<SubjectProvider> { BangumiSubjectProvider() }
+            single<DownloadProvider> { DmhyDownloadProvider() }
         })
     }
     val appSettingsManager = remember {

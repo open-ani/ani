@@ -44,7 +44,7 @@ class Topic(
     val magnetLink: String,
     val size: FileSize,
 
-    val alliance: Alliance?,
+    val alliance: String,
     val author: Author,
 
     /**

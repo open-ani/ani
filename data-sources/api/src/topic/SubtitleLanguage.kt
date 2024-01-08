@@ -28,22 +28,21 @@ import kotlinx.serialization.encoding.Encoder
 @Serializable(SubtitleLanguage.Serializer::class)
 sealed class SubtitleLanguage(
     val id: String,
+    private val displayName: String,
 ) {
     abstract fun matches(text: String): Boolean
-    override fun toString(): String {
-        return id
-    }
+    override fun toString(): String = displayName
 
-    sealed class Chinese(id: String) : SubtitleLanguage(id)
+    sealed class Chinese(id: String, displayName: String) : SubtitleLanguage(id, displayName)
 
-    object ChineseCantonese : Chinese("CHC") {
+    object ChineseCantonese : Chinese("CHC", "粤语") {
         private val tokens = arrayOf("粤", "粵", "Cantonese", "CHC", "Yue")
         override fun matches(text: String): Boolean {
             return tokens.any { text.contains(it, ignoreCase = true) }
         }
     }
 
-    object ChineseSimplified : Chinese("CHS") {
+    object ChineseSimplified : Chinese("CHS", "简中") {
         private val tokens =
             arrayOf(
                 "简中",
@@ -67,7 +66,7 @@ sealed class SubtitleLanguage(
         }
     }
 
-    object ChineseTraditional : Chinese("CHT") {
+    object ChineseTraditional : Chinese("CHT", "繁中") {
         private val tokens = arrayOf("繁中", "BIG5", "BIG 5", "繁", "Chinese", "CHT", "TC")
         override fun matches(text: String): Boolean {
             return tokens.any { text.contains(it, ignoreCase = true) }
@@ -75,27 +74,27 @@ sealed class SubtitleLanguage(
 
     }
 
-    object Japanese : SubtitleLanguage("JPN") {
+    object Japanese : SubtitleLanguage("JPN", "日语") {
         private val tokens = arrayOf("日", "Japanese", "JP")
         override fun matches(text: String): Boolean {
             return tokens.any { text.contains(it, ignoreCase = true) }
         }
     }
 
-    object English : SubtitleLanguage("ENG") {
+    object English : SubtitleLanguage("ENG", "英语") {
         private val tokens = arrayOf("英", "English")
         override fun matches(text: String): Boolean {
             return tokens.any { text.contains(it, ignoreCase = true) }
         }
     }
 
-    object Other : SubtitleLanguage("Other") {
+    object Other : SubtitleLanguage("Other", "其他") {
         override fun matches(text: String): Boolean {
             return true
         }
     }
 
-    object ParseError : SubtitleLanguage("ERROR") {
+    object ParseError : SubtitleLanguage("ERROR", "未知") {
         override fun matches(text: String): Boolean {
             return false
         }

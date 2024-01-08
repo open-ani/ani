@@ -30,6 +30,8 @@ internal class DmhySearchSessionImpl(
     private val query: DownloadSearchQuery,
     private val network: Network,
 ) : SearchSession<Topic>, AbstractPageBasedSearchSession<Topic>() {
+    override val initialPage: Int get() = 1
+
     override suspend fun nextPageImpl(page: Int): List<Topic> {
         val (_, result) = network.list(
             page = page,
@@ -47,7 +49,7 @@ internal class DmhySearchSessionImpl(
                 commentsCount = topic.commentsCount,
                 magnetLink = topic.magnetLink,
                 size = topic.size,
-                alliance = topic.alliance,
+                alliance = topic.alliance?.name ?: topic.rawTitle.substringBeforeLast(']').substringAfterLast('['),
                 author = topic.author,
                 details = topic.details?.let { details ->
                     TopicDetails(

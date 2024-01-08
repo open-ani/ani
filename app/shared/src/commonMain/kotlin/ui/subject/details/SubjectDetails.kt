@@ -65,6 +65,7 @@ import me.him188.ani.app.ui.foundation.IconImagePlaceholder
 import me.him188.ani.app.ui.foundation.backgroundWithGradient
 import me.him188.ani.app.ui.theme.weaken
 import me.him188.ani.datasources.bangumi.client.BangumiEpisode
+import me.him188.ani.datasources.bangumi.processing.fixToString
 
 
 /**
@@ -346,15 +347,6 @@ fun EpisodeItem(
                 )
             }
         }
-    }
-}
-
-fun Int.fixToString(length: Int, prefix: Char = '0'): String {
-    val str = this.toString()
-    return if (str.length >= length) {
-        str
-    } else {
-        prefix.toString().repeat(length - str.length) + str
     }
 }
 

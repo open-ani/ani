@@ -6,7 +6,7 @@ import me.him188.ani.datasources.api.SubjectImages
 @Suppress("SpellCheckingInspection")
 object PreviewData {
     const val SOSOU_NO_FURILEN_SUBJECT_ID = 400602
-    const val SOSOU_NO_FURILEN_EPISODE_ID = 400602
+    const val SOSOU_NO_FURILEN_EPISODE_ID = 1227087
     val SosouNoFurilen = Subject(
         id = 400602,
         originalName = "葬送的芙莉莲",

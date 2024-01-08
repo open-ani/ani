@@ -23,6 +23,7 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 
@@ -45,8 +46,10 @@ fun Color.darken(): Color {
     }
 }
 
+@Stable
 fun aniDarkColorTheme(): ColorScheme = darkColorScheme()
 
+@Stable
 fun aniLightColorTheme(): ColorScheme = lightColorScheme(
     background = Color(0xfff1f2f4),
     surface = Color.White,
