@@ -46,6 +46,19 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+/**
+ * 扁平化源集目录结构, 减少文件树层级 by 2
+ *
+ * 变化:
+ * ```
+ * src/${targetName}Main/kotlin -> ${targetName}Main
+ * src/${targetName}Main/resources -> ${targetName}Resources
+ * src/${targetName}Test/kotlin -> ${targetName}Test
+ * src/${targetName}Test/resources -> ${targetName}TestResources
+ * ```
+ *
+ * `${targetName}` 可以是 `common`, `android` `desktop` 等.
+ */
 fun Project.configureFlattenSourceSets() {
     val flatten = extra.runCatching { get("flatten.sourceset") }.getOrNull()?.toString()?.toBoolean() ?: true
     if (!flatten) return
@@ -57,6 +70,43 @@ fun Project.configureFlattenSourceSets() {
         findByName("test")?.apply {
             resources.setSrcDirs(listOf(projectDir.resolve("testResources")))
             java.setSrcDirs(listOf(projectDir.resolve("test")))
+        }
+    }
+}
+
+/**
+ * 扁平化多平台项目的源集目录结构, 减少文件树层级 by 2
+ *
+ * 变化:
+ * ```
+ * src/${targetName}Main/kotlin -> ${targetName}Main
+ * src/${targetName}Main/resources -> ${targetName}Resources
+ * src/${targetName}Test/kotlin -> ${targetName}Test
+ * src/${targetName}Test/resources -> ${targetName}TestResources
+ * ```
+ *
+ * `${targetName}` 可以是 `common`, `android` `desktop` 等.
+ */
+fun Project.configureFlattenMppSourceSets() {
+    kotlinSourceSets?.invoke {
+        fun setForTarget(
+            targetName: String,
+        ) {
+            findByName("${targetName}Main")?.apply {
+                resources.setSrcDirs(listOf(projectDir.resolve("${targetName}Resources")))
+                kotlin.setSrcDirs(listOf(projectDir.resolve("${targetName}Main")))
+            }
+            findByName("${targetName}Test")?.apply {
+                resources.setSrcDirs(listOf(projectDir.resolve("${targetName}TestResources")))
+                kotlin.setSrcDirs(listOf(projectDir.resolve("${targetName}Test")))
+            }
+        }
+
+        setForTarget("common")
+
+        allKotlinTargets().all {
+            val targetName = name
+            setForTarget(targetName)
         }
     }
 }

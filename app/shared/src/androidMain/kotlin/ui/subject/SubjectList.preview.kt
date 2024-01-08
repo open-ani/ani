@@ -21,9 +21,11 @@ package me.him188.ani.app.ui.subject
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.Preview
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.selects.SelectClause0
 import me.him188.ani.app.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.preview.PreviewData
 import me.him188.ani.datasources.api.SearchSession
@@ -39,6 +41,8 @@ private fun PreviewSubjectList() {
                     emit(subject)
                 }
             }
+            private val finished = CompletableDeferred<Subject>()
+            override val onFinish: SelectClause0 = finished.onJoin
 
             private val subject get() = PreviewData.SosouNoFurilen
             private val maxCount = 15

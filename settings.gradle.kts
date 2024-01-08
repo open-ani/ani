@@ -48,6 +48,7 @@ includeProject(
 
 // client
 includeProject(":app:shared", "app/shared") // shared by clients (targets JVM)
+includeProject(":app:video-player", "app/video-player") // 弹幕播放器
 includeProject(":app:desktop", "app/desktop") // desktop JVM client for macOS, Windows, and Linux
 includeProject(":app:android", "app/android") // Android client
 
