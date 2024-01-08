@@ -20,16 +20,10 @@ package me.him188.ani.app
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
-import androidx.compose.ui.text.intl.Locale
 import me.him188.ani.app.app.AppSettings
 import me.him188.ani.app.app.AppSettingsManager
-import me.him188.ani.app.app.LocalAppSettingsManager
-import me.him188.ani.app.i18n.LocalI18n
-import me.him188.ani.app.i18n.loadResourceBundle
-import me.him188.ani.app.platform.Context
-import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.ui.foundation.AniApp
 import me.him188.ani.datasources.api.DownloadProvider
 import me.him188.ani.datasources.api.SubjectProvider
 import me.him188.ani.datasources.bangumi.BangumiClient
@@ -41,7 +35,9 @@ import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 
 @Composable
-fun ProvideCompositionLocalsForPreview(content: @Composable () -> Unit) {
+fun ProvideCompositionLocalsForPreview(
+    content: @Composable () -> Unit,
+) {
     runCatching { stopKoin() }
     startKoin {
         modules(module {
@@ -67,14 +63,7 @@ fun ProvideCompositionLocalsForPreview(content: @Composable () -> Unit) {
     }
     MaterialTheme {
         PlatformPreviewCompositionLocalProvider {
-
-            val context: Context = LocalContext.current
-            val currentBundle = remember(Locale.current.language) { loadResourceBundle(context) }
-            CompositionLocalProvider(
-                LocalI18n provides currentBundle,
-                LocalAppSettingsManager provides appSettingsManager,
-//        LocalKamelConfig provides DefaultKamelConfig
-            ) {
+            AniApp {
                 content()
             }
         }

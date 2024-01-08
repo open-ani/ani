@@ -9,17 +9,21 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
@@ -46,6 +50,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -110,7 +115,7 @@ fun EpisodePageContent(
     onClickVideo: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier) {
+    Column(modifier.navigationBarsPadding()) {
         // 视频
         Box(Modifier.fillMaxWidth().background(Color.Black).statusBarsPadding()) {
             EpisodeVideo(onClickVideo)
@@ -123,18 +128,21 @@ fun EpisodePageContent(
 
         Divider(Modifier.fillMaxWidth())
 
-        // 选择播放源
 
-        Surface(Modifier.fillMaxWidth().weight(1f)) {
+        Surface(Modifier.fillMaxWidth().weight(1f).verticalScroll(rememberScrollState())) {
             Column {
-                EpisodePlaySource(viewModel, Modifier.padding(vertical = PAGE_HORIZONTAL_PADDING))
+                // 选择播放源
+                EpisodePlaySourceSelection(viewModel, Modifier.padding(vertical = 16.dp))
             }
         }
     }
 }
 
+/**
+ * 选择播放源
+ */
 @Composable
-fun EpisodePlaySource(viewModel: EpisodeViewModel, modifier: Modifier = Modifier) {
+private fun EpisodePlaySourceSelection(viewModel: EpisodeViewModel, modifier: Modifier = Modifier) {
     Column(modifier.fillMaxWidth()) {
         val isPlaySourcesLoading by viewModel.isPlaySourcesLoading.collectAsState()
         val playSourceSelector = viewModel.playSourceSelector
@@ -161,7 +169,7 @@ fun EpisodePlaySource(viewModel: EpisodeViewModel, modifier: Modifier = Modifier
 
         PlaySourceFilterRow(
             resolutions,
-            label = { Text("清晰度") },
+            label = { Text("清晰度", overflow = TextOverflow.Visible) },
             key = { it.id },
             eachItem = { item ->
                 InputChip(
@@ -175,7 +183,7 @@ fun EpisodePlaySource(viewModel: EpisodeViewModel, modifier: Modifier = Modifier
 
         PlaySourceFilterRow(
             subtitleLanguages,
-            label = { Text("字幕语言") },
+            label = { Text("字幕语言", overflow = TextOverflow.Visible) },
             key = { it },
             eachItem = { item ->
                 InputChip(
@@ -187,10 +195,9 @@ fun EpisodePlaySource(viewModel: EpisodeViewModel, modifier: Modifier = Modifier
             Modifier.padding(start = PAGE_HORIZONTAL_PADDING).padding(top = 12.dp).height(32.dp)
         )
 
-        PlaySourceFilterRow(
+        PlaySourceFilterFlowRow(
             alliances.orEmpty(),
-            label = { Text("字幕组") },
-            key = { it.id },
+            label = { Text("字幕组", overflow = TextOverflow.Visible) },
             eachItem = { item ->
                 InputChip(
                     item == preferredAlliance,
@@ -234,6 +241,38 @@ fun EpisodePlaySource(viewModel: EpisodeViewModel, modifier: Modifier = Modifier
     }
 }
 
+private val PLAY_SOURCE_LABEL_WIDTH = 68.dp // 正好放得下四个字
+
+@Composable
+private fun <T> PlaySourceFilterFlowRow(
+    items: List<T>,
+    label: @Composable () -> Unit,
+    eachItem: @Composable (item: T) -> Unit,
+    modifier: Modifier,
+) {
+    Row(modifier, verticalAlignment = Alignment.Top) {
+        ProvideTextStyle(MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium)) {
+            Box(Modifier.width(PLAY_SOURCE_LABEL_WIDTH)) {
+                label()
+            }
+        }
+
+        Box(
+            Modifier.padding(horizontal = 16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                for (item in items) {
+                    eachItem(item)
+                }
+            }
+        }
+    }
+}
+
 @Composable
 private fun <T> PlaySourceFilterRow(
     items: List<T>,
@@ -244,7 +283,7 @@ private fun <T> PlaySourceFilterRow(
 ) {
     Row(modifier, verticalAlignment = Alignment.CenterVertically) {
         ProvideTextStyle(MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium)) {
-            Box(Modifier.width(70.dp)) {
+            Box(Modifier.width(PLAY_SOURCE_LABEL_WIDTH)) {
                 label()
             }
         }

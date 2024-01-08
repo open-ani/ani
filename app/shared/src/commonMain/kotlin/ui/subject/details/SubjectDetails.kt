@@ -1,5 +1,6 @@
 package me.him188.ani.app.ui.subject.details
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -87,18 +88,28 @@ fun SubjectDetails(
 
         val density = LocalDensity.current
         // 虚化渐变背景
+        val backgroundColor by rememberUpdatedState(MaterialTheme.colorScheme.background)
+        val surfaceColor by rememberUpdatedState(MaterialTheme.colorScheme.surface)
         Box(
             Modifier
-                .height(264.dp + density.run { WindowInsets.systemBars.getTop(density).toDp() })
+                .height(270.dp + density.run { WindowInsets.systemBars.getTop(density).toDp() })
                 .fillMaxWidth()
                 .blur(12.dp)
                 .backgroundWithGradient(
-                    coverImageUrl, MaterialTheme.colorScheme.background,
-                    brush = Brush.verticalGradient(
-                        0f to Color(0xA2FAFAFA),
-                        0.4f to Color(0xA2FAFAFA),
-                        1.00f to MaterialTheme.colorScheme.background,
-                    ),
+                    coverImageUrl, backgroundColor,
+                    brush = if (isSystemInDarkTheme()) {
+                        Brush.verticalGradient(
+                            0f to surfaceColor.copy(alpha = 0xA2.toFloat() / 0xFF),
+                            0.4f to surfaceColor.copy(alpha = 0xA2.toFloat() / 0xFF),
+                            1.00f to backgroundColor,
+                        )
+                    } else {
+                        Brush.verticalGradient(
+                            0f to Color(0xA2FAFAFA),
+                            0.4f to Color(0xA2FAFAFA),
+                            1.00f to backgroundColor,
+                        )
+                    },
                 )
         ) {
         }
@@ -161,7 +172,7 @@ private fun SubjectDetailsContent(
         }
 
         val context by rememberUpdatedState(LocalContext.current)
-        
+
         val episodesMain by viewModel.episodesMain.collectAsState(listOf())
         if (episodesMain.isNotEmpty()) {
             SectionTitle(Modifier.padding(horizontal = horizontalPadding)) { Text("正片") }
