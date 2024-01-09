@@ -5,12 +5,11 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
-import me.him188.ani.app.activity.BaseComponentActivity
 import me.him188.ani.app.ui.foundation.AniApp
 import me.him188.ani.app.ui.subject.episode.EpisodePage
 import me.him188.ani.app.ui.subject.episode.EpisodeViewModel
 
-class EpisodeActivity : BaseComponentActivity() {
+class EpisodeActivity : AniComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

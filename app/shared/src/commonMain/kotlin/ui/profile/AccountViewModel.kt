@@ -13,8 +13,9 @@ class AccountViewModel : AbstractViewModel(), KoinComponent {
     private val sessionManager: SessionManager by inject()
     private val client: BangumiClient by inject()
 
-    val selfInfo = sessionManager.userId
-        .map { withContext(Dispatchers.IO) { client.api.getMyself() } }
+    val selfInfo = sessionManager.username
+        .map {
+            withContext(Dispatchers.IO) { client.api.getMyself() }
+        }
         .stateInBackground(null)
-
 }

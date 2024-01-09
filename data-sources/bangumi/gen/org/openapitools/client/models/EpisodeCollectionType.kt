@@ -28,14 +28,17 @@ import com.squareup.moshi.JsonClass
 @JsonClass(generateAdapter = false)
 enum class EpisodeCollectionType(val value: kotlin.Int) {
 
+    @Json(name = "0")
+    NOT_COLLECTED(0),
+
     @Json(name = "1")
-    _1(1),
+    WATCHLIST(1),
 
     @Json(name = "2")
-    _2(2),
+    WATCHED(2),
 
     @Json(name = "3")
-    _3(3);
+    DISCARDED(3);
 
     /**
      * Override [toString()] to avoid using the enum variable name as the value, and instead use
@@ -56,10 +59,10 @@ enum class EpisodeCollectionType(val value: kotlin.Int) {
          * Returns a valid [EpisodeCollectionType] for [data], null otherwise.
          */
         fun decode(data: kotlin.Any?): EpisodeCollectionType? = data?.let {
-          val normalizedData = "$it".lowercase()
-          values().firstOrNull { value ->
-            it == value || normalizedData == "$value".lowercase()
-          }
+            val normalizedData = "$it".lowercase()
+            values().firstOrNull { value ->
+                it == value || normalizedData == "$value".lowercase()
+            }
         }
     }
 }

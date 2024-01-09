@@ -5,13 +5,17 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runInterruptible
+import kotlinx.coroutines.withContext
 import me.him188.ani.app.navigation.SubjectNavigator
 import me.him188.ani.app.platform.Context
+import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.datasources.api.PageBasedSearchSession
 import me.him188.ani.datasources.bangumi.BangumiClient
@@ -27,16 +31,19 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.openapitools.client.models.RelatedCharacter
 import org.openapitools.client.models.RelatedPerson
+import org.openapitools.client.models.SubjectCollectionType
+import org.openapitools.client.models.UserSubjectCollectionModifyPayload
 
 @Stable
 class SubjectDetailsViewModel(
-    subjectId: Int,
+    initialSubjectId: Int,
 ) : AbstractViewModel(), KoinComponent {
+    private val sessionManager: SessionManager by inject()
     private val bangumiClient: BangumiClient by inject()
     private val subjectNavigator: SubjectNavigator by inject()
 //    private val subjectProvider: SubjectProvider by inject()
 
-    val subjectId: MutableStateFlow<Int> = MutableStateFlow(subjectId)
+    val subjectId: MutableStateFlow<Int> = MutableStateFlow(initialSubjectId)
 
     private val subject: StateFlow<BangumiSubjectDetails?> = this.subjectId.mapLatest {
         bangumiClient.subjects.getSubjectById(it)
@@ -102,6 +109,43 @@ class SubjectDetailsViewModel(
     val episodesSP: SharedFlow<List<BangumiEpisode>> = episodesFlow(BangumiEpType.SP)
     val episodesOther: SharedFlow<List<BangumiEpisode>> = episodesFlow(BangumiEpType.OTHER)
 
+
+    /**
+     * 全站用户的收藏情况
+     */
+    val collection = subjectNotNull.map { it.collection }.shareInBackground()
+
+    /***
+     * 登录用户的收藏情况
+     */
+    private val selfCollectionType = combine(
+        subjectNotNull,
+        sessionManager.username.filterNotNull()
+    ) { subject, username ->
+        runInterruptible(Dispatchers.IO) { bangumiClient.api.getUserCollection(username, subject.id) }.type
+    }.withLocalCache(null)
+
+    /**
+     * 登录用户是否收藏了该条目.
+     */
+    val selfCollected = selfCollectionType.map { it != null }.shareInBackground()
+
+    /**
+     * 根据登录用户的收藏类型的相应动作, 例如未追番时为 "追番", 已追番时为 "已在看" / "已看完" 等.
+     */
+    val selfCollectionAction = selfCollectionType.map { it.actionText() }.stateInBackground()
+
+    suspend fun setSelfCollectionType(subjectCollectionType: SubjectCollectionType) {
+        selfCollectionType.value = subjectCollectionType
+        withContext(Dispatchers.IO) {
+            bangumiClient.api.postUserCollection(
+                subjectId.value, UserSubjectCollectionModifyPayload(
+                    type = subjectCollectionType,
+                )
+            )
+        }
+    }
+
     private fun episodesFlow(type: BangumiEpType) = this.subjectId.mapLatest { subjectId ->
         PageBasedSearchSession { page ->
             bangumiClient.episodes.getEpisodes(
@@ -121,3 +165,16 @@ class SubjectDetailsViewModel(
 //private val ignoredLevels = listOf(
 //    "原画",
 //)
+
+
+@Stable
+private fun SubjectCollectionType?.actionText(): String {
+    return when (this) {
+        SubjectCollectionType.Wish -> "想看"
+        SubjectCollectionType.Done -> "看过"
+        SubjectCollectionType.Doing -> "在看"
+        SubjectCollectionType.OnHold -> "搁置"
+        SubjectCollectionType.Dropped -> "抛弃"
+        null -> "追番"
+    }
+}

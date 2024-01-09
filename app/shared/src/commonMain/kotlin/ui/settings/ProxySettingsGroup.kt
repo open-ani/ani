@@ -51,7 +51,7 @@ import me.him188.ani.app.app.AppSettings
 import me.him188.ani.app.app.AppSettingsManager
 import me.him188.ani.app.app.settings.ProxyMode
 import me.him188.ani.app.i18n.LocalI18n
-import me.him188.ani.app.ui.theme.darken
+import me.him188.ani.app.ui.theme.stronglyWeaken
 
 @Composable
 fun ColumnScope.ProxySettingsGroup(
@@ -94,7 +94,7 @@ fun ColumnScope.ProxySettingsGroup(
                 exit = exit,
             ) {
                 Row(Modifier.padding(vertical = 8.dp, horizontal = 16.dp)) {
-                    ProvideTextStyle(AppTheme.typography.bodyMedium.run { copy(color = color.darken()) }) {
+                    ProvideTextStyle(AppTheme.typography.bodyMedium.run { copy(color = color.stronglyWeaken()) }) {
                         disabledContent()
                     }
                 }

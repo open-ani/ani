@@ -30,13 +30,11 @@ actual fun BangumiOAuthRequest(
                             onComplete(request.url.getQueryParameter("code") ?: "")
                             return null
                         }
-                        if (urlString.startsWith("https://bgm.tv/oauth/authorize")) {
-                            return null
-                        }
-                        // forbid others
-                        return WebResourceResponse("text/plain", "UTF-8", null)
+                        return null
                     }
                 }
+                settings.blockNetworkImage = false
+                settings.blockNetworkLoads = false
                 settings.userAgentString = getAniUserAgent(currentAniBuildConfig.versionName)
             }
         },

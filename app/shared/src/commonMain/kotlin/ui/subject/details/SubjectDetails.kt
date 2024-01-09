@@ -29,8 +29,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -62,11 +64,15 @@ import me.him188.ani.app.ui.foundation.AniKamelImage
 import me.him188.ani.app.ui.foundation.AniTopAppBar
 import me.him188.ani.app.ui.foundation.IconImagePlaceholder
 import me.him188.ani.app.ui.foundation.PreviewData
+import me.him188.ani.app.ui.foundation.TopAppBarGoBackButton
 import me.him188.ani.app.ui.foundation.backgroundWithGradient
+import me.him188.ani.app.ui.foundation.launchInBackground
+import me.him188.ani.app.ui.theme.slightlyWeaken
 import me.him188.ani.app.ui.theme.weaken
 import me.him188.ani.datasources.bangumi.client.BangumiEpisode
 import me.him188.ani.datasources.bangumi.processing.fixToString
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
+import org.openapitools.client.models.SubjectCollectionType
 
 
 /**
@@ -79,7 +85,7 @@ fun SubjectDetails(
 ) {
     Scaffold(
         topBar = {
-            AniTopAppBar(goBack, Modifier.statusBarsPadding())
+            AniTopAppBar(Modifier.statusBarsPadding()) { TopAppBarGoBackButton(goBack) }
         },
         contentWindowInsets = WindowInsets(0.dp)
     ) { scaffoldPadding ->
@@ -125,6 +131,22 @@ fun SubjectDetails(
     }
 }
 
+private val CollectedActionButtonColors
+    @Composable
+    get() =
+        ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.outlineVariant,
+            contentColor = MaterialTheme.colorScheme.outline
+        )
+
+private val UncollectedActionButtonColors
+    @Composable
+    get() =
+        ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary
+        )
+
 // 详情页内容 (不包含背景)
 @Composable
 private fun SubjectDetailsContent(
@@ -138,8 +160,39 @@ private fun SubjectDetailsContent(
         SubjectDetailsHeader(
             coverImage,
             viewModel,
-            Modifier.padding(top = 8.dp, bottom = 4.dp).padding(horizontal = horizontalPadding)
+            Modifier.padding(top = 8.dp, bottom = 4.dp).padding(start = horizontalPadding)
         )
+
+        Column(Modifier.fillMaxWidth().padding(vertical = 8.dp).padding(horizontal = horizontalPadding)) {
+            val collection by viewModel.collection.collectAsStateWithLifecycle(null)
+            collection?.let {
+                Row {
+                    Text(
+                        "${it.collect} 收藏 / ${it.wish} 想看 / ${it.doing} 在看",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    Text(
+                        " / ${it.onHold} 搁置 / ${it.dropped} 抛弃",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = LocalContentColor.current.slightlyWeaken()
+                    )
+                }
+            }
+
+            val selfCollectionTypeString by viewModel.selfCollectionAction.collectAsStateWithLifecycle()
+            val selfCollected by viewModel.selfCollected.collectAsStateWithLifecycle(true)
+
+            Row(Modifier.align(Alignment.End)) {
+                FilledTonalButton(
+                    onClick = { viewModel.launchInBackground { setSelfCollectionType(SubjectCollectionType.Doing) } },
+                    Modifier.padding(start = 8.dp, top = 8.dp),
+                    colors = if (selfCollected) CollectedActionButtonColors else UncollectedActionButtonColors,
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(selfCollectionTypeString ?: "")
+                }
+            }
+        }
 
         val characters by viewModel.characters.collectAsStateWithLifecycle(listOf())
         SectionTitle(Modifier.padding(horizontal = horizontalPadding)) {

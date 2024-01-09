@@ -1,8 +1,9 @@
 package me.him188.ani.app.ui.foundation
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -17,22 +18,20 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun AniTopAppBar(
-    goBack: () -> Unit,
     modifier: Modifier = Modifier,
+    title: (@Composable () -> Unit)? = null,
+    actions: @Composable RowScope.() -> Unit = {},
 ) {
     Row(
         modifier
             .padding(vertical = 6.dp)
-            .padding(horizontal = 16.dp)
+            .padding(end = 16.dp)
             .height(36.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButton(goBack, Modifier.offset(x = (-16).dp).width(36.dp + 32.dp).height(36.dp)) { // 让可点击区域大一点, 更方便
-            Icon(
-                Icons.Outlined.ArrowBack,
-                null,
-                Modifier.size(24.dp)
-            )
+        actions()
+        Row(Modifier) {
+            title?.invoke()
         }
 //                Spacer(Modifier.weight(1f, fill = false))
 //                Icon(
@@ -42,4 +41,27 @@ fun AniTopAppBar(
 //                )
     }
 
+}
+
+@Composable
+fun TopAppBarGoBackButton(goBack: () -> Unit) {
+    TopAppBarActionButton(goBack) {
+        Icon(
+            Icons.Outlined.ArrowBack,
+            null,
+            Modifier.size(24.dp)
+        )
+    }
+}
+
+@Composable
+fun TopAppBarActionButton(
+    onClick: () -> Unit,
+    content: @Composable () -> Unit,
+) {
+    IconButton(onClick, Modifier.width(36.dp + 16.dp).height(36.dp)) { // 让可点击区域大一点, 更方便
+        Box(Modifier.size(24.dp)) {
+            content()
+        }
+    }
 }

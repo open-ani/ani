@@ -69,4 +69,9 @@ class AuthViewModel : AbstractViewModel(), KoinComponent {
         _error.value = null
         retryCount.intValue++
     }
+
+    fun refresh() {
+        logger.debug { "refresh" }
+        retryCount.intValue++
+    }
 }

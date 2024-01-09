@@ -34,7 +34,7 @@ import me.him188.ani.app.ui.foundation.LoadingIndicator
 import me.him188.ani.app.ui.theme.weaken
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
-private const val COVER_WIDTH_TO_HEIGHT_RATIO = 849 / 1200f
+const val COVER_WIDTH_TO_HEIGHT_RATIO = 849 / 1200f
 
 // 图片和标题
 @Composable
@@ -101,7 +101,7 @@ internal fun SubjectDetailsHeader(
 
 // 一个标签, 例如 "2023年10月", "漫画改"
 @Composable
-private fun Tag(
+fun Tag(
     modifier: Modifier = Modifier,
     shape: RoundedCornerShape = RoundedCornerShape(4.dp),
     label: @Composable RowScope.() -> Unit,

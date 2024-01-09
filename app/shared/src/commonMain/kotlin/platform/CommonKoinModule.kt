@@ -35,6 +35,7 @@ import org.koin.dsl.module
 
 fun getCommonKoinModule(getContext: () -> Context, coroutineScope: CoroutineScope) = module {
     single<TokenRepository> { TokenRepositoryImpl(getContext().tokenStore) }
+    single<SessionManager> { SessionManagerImpl(coroutineScope) }
     single<DmhyClient> {
         DmhyClient.create {
             install(UserAgent) {
@@ -45,7 +46,6 @@ fun getCommonKoinModule(getContext: () -> Context, coroutineScope: CoroutineScop
     single<BangumiClient> { createBangumiClient() }
     single<SubjectProvider> { BangumiSubjectProvider(get<BangumiClient>()) }
     single<DownloadProvider> { DmhyDownloadProvider() }
-    single<SessionManager> { SessionManagerImpl(coroutineScope) }
 }
 
 interface AniBuildConfig {

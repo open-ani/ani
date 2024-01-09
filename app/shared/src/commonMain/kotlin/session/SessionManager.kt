@@ -18,8 +18,9 @@
 
 package me.him188.ani.app.session
 
+import androidx.compose.runtime.Stable
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -28,12 +29,15 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.runInterruptible
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import me.him188.ani.app.data.TokenRepository
 import me.him188.ani.app.navigation.AuthorizationNavigator
 import me.him188.ani.app.navigation.AuthorizationNavigator.AuthorizationResult
+import me.him188.ani.app.platform.Context
 import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.utils.coroutines.ReentrantMutex
-import me.him188.ani.utils.coroutines.withLock
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import org.koin.core.component.KoinComponent
@@ -41,25 +45,26 @@ import org.koin.core.component.inject
 import org.openapitools.client.infrastructure.ApiClient
 
 interface SessionManager {
+    @Stable
     val session: StateFlow<Session?>
-    val userId: Flow<Long?>
+
+    @Stable
+    val username: StateFlow<String?>
+
+    @Stable
     val isSessionValid: StateFlow<Boolean>
+
+    @Stable
     val processingAuth: StateFlow<Boolean>
 
     suspend fun refreshSessionByCode(code: String)
     suspend fun refreshSessionByRefreshToken()
 
-    /***
-     * Require authorization, if not authorized, will navigate to authorization page.
-     *
-     * When this function returns, the session is guaranteed to be valid.
-     *
-     * All calls to
-     *
+    /**
      * @throws AuthorizationCanceledException if user cancels the authorization.
      */
     @Throws(AuthorizationCanceledException::class)
-    suspend fun requireAuthorization()
+    suspend fun requireAuthorization(context: Context, optional: Boolean)
 }
 
 class AuthorizationCanceledException : Exception()
@@ -78,8 +83,12 @@ internal class SessionManagerImpl(
         tokenRepository.session.distinctUntilChanged().onEach {
             ApiClient.accessToken = it?.accessToken
         }.stateIn(coroutineScope, SharingStarted.Eagerly, null)
-    override val userId: Flow<Long?> =
-        session.filterNotNull().map { it.userId }.distinctUntilChanged()
+    override val username: StateFlow<String?> =
+        session.filterNotNull()
+            .map {
+                runInterruptible(Dispatchers.IO) { client.api.getMyself() }.username
+            }
+            .distinctUntilChanged()
             .stateIn(coroutineScope, SharingStarted.Eagerly, null)
 
     override val isSessionValid: StateFlow<Boolean> = session.map { it != null }
@@ -87,9 +96,10 @@ internal class SessionManagerImpl(
 
     private val refreshToken = tokenRepository.refreshToken.stateIn(coroutineScope, SharingStarted.Eagerly, null)
 
+    private val singleAuthLock = Mutex()
     private val mutex = ReentrantMutex()
     override val processingAuth: MutableStateFlow<Boolean> = MutableStateFlow(false)
-    private suspend inline fun <R> processAuth(crossinline block: suspend () -> R) = mutex.withLock {
+    private inline fun <R> processAuth(block: () -> R) {
         processingAuth.value = true
         try {
             block()
@@ -133,30 +143,41 @@ internal class SessionManagerImpl(
         )
     }
 
-    override suspend fun requireAuthorization(): Unit = processAuth {
-        if (isSessionValid.value) return@processAuth
+    override suspend fun requireAuthorization(context: Context, optional: Boolean) {
+        // fast path
+        if (isSessionValid.value) return
         if (refreshToken.value != null) {
             refreshSessionByRefreshToken()
-            return@processAuth
+            return
         }
 
         // require user authorization
-        when (authorizationNavigator.authorize()) {
-            AuthorizationResult.SUCCESS -> {
-                if (isSessionValid.value) {
-                    return@processAuth
-                }
-                throw AuthorizationCanceledException()
+        singleAuthLock.withLock {
+            // check again
+            if (isSessionValid.value) return
+            if (refreshToken.value != null) {
+                refreshSessionByRefreshToken()
+                return
             }
 
-            AuthorizationResult.CANCELLED -> {
-                throw AuthorizationCanceledException()
+            when (authorizationNavigator.authorize(context, optional)) {
+                AuthorizationResult.SUCCESS -> {
+                    if (isSessionValid.value) {
+                        return
+                    }
+                    throw AuthorizationCanceledException()
+                }
+
+                AuthorizationResult.CANCELLED -> {
+                    throw AuthorizationCanceledException()
+                }
             }
         }
     }
 
     private suspend fun setSession(userId: Long, accessToken: String, expiresAt: Long, refreshToken: String) {
         logger.info { "Bangumi session refreshed, userId=${userId}, new expiresAt=$expiresAt" }
+
         tokenRepository.setRefreshToken(refreshToken)
         tokenRepository.setSession(Session(userId, accessToken, expiresAt))
         // session updates automatically

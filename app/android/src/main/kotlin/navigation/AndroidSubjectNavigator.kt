@@ -1,4 +1,4 @@
-package me.him188.ani.android.ui.event
+package me.him188.ani.android.navigation
 
 import me.him188.ani.android.activity.EpisodeActivity
 import me.him188.ani.android.activity.SubjectDetailsActivity

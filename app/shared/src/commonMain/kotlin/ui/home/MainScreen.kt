@@ -32,8 +32,8 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.platform.isInLandscapeMode
 import me.him188.ani.app.ui.collection.CollectionPage
+import me.him188.ani.app.ui.collection.MyCollectionsViewModel
 import me.him188.ani.app.ui.foundation.TabNavigationItem
-import me.him188.ani.app.ui.profile.AccountViewModel
 import me.him188.ani.app.ui.profile.ProfilePage
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
@@ -41,18 +41,18 @@ import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
  * 由 bottom bar 等导致的 paddings
  */
 val LocalContentPaddings: ProvidableCompositionLocal<PaddingValues> = androidx.compose.runtime.compositionLocalOf {
-    error("LocalContentPaddings is not provided")
+    PaddingValues(0.dp)
 }
 
 @Composable
 fun MainScreen() {
-    val accountViewModel = remember { AccountViewModel() }
+    val myCollectionsViewModel = remember { MyCollectionsViewModel() }
     val searchViewModel = remember { SearchViewModel() }
 
     if (isInLandscapeMode()) {
         MainScreenLandscape()
     } else {
-        MainScreenPortrait(accountViewModel, searchViewModel)
+        MainScreenPortrait(myCollectionsViewModel, searchViewModel)
     }
 }
 
@@ -63,7 +63,7 @@ fun MainScreenLandscape() {
 
 @Composable
 fun MainScreenPortrait(
-    accountViewModel: AccountViewModel,
+    myCollectionsViewModel: MyCollectionsViewModel,
     searchViewModel: SearchViewModel
 ) {
     var selectedTab by remember { mutableStateOf("search") }
@@ -133,7 +133,7 @@ fun MainScreenPortrait(
         CompositionLocalProvider(LocalContentPaddings provides paddingValues) {
             when (selectedTab) {
                 "home" -> HomePage(searchViewModel)
-                "collection" -> CollectionPage(searchViewModel)
+                "collection" -> CollectionPage(myCollectionsViewModel)
                 "profile" -> ProfilePage()
             }
         }

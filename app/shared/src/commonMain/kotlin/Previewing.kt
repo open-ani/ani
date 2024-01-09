@@ -20,47 +20,23 @@ package me.him188.ani.app
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import me.him188.ani.app.app.AppSettings
-import me.him188.ani.app.app.AppSettingsManager
-import me.him188.ani.app.platform.createBangumiClient
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.platform.getCommonKoinModule
 import me.him188.ani.app.ui.foundation.AniApp
-import me.him188.ani.datasources.api.DownloadProvider
-import me.him188.ani.datasources.api.SubjectProvider
-import me.him188.ani.datasources.bangumi.BangumiClient
-import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
-import me.him188.ani.datasources.dmhy.DmhyClient
-import me.him188.ani.datasources.dmhy.DmhyDownloadProvider
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
-import org.koin.dsl.module
 
+@OptIn(DelicateCoroutinesApi::class)
 @Composable
 fun ProvideCompositionLocalsForPreview(
     content: @Composable () -> Unit,
 ) {
+    val context = LocalContext.current
     runCatching { stopKoin() }
     startKoin {
-        modules(module {
-            single<DmhyClient> { DmhyClient.create { } }
-            single<BangumiClient> { createBangumiClient() }
-            single<SubjectProvider> { BangumiSubjectProvider(get<BangumiClient>()) }
-            single<DownloadProvider> { DmhyDownloadProvider() }
-        })
-    }
-    val appSettingsManager = remember {
-        object : AppSettingsManager() {
-            @Volatile
-            private var dummyStorage: AppSettings = AppSettings()
-            override fun loadImpl(): AppSettings {
-                return dummyStorage
-            }
-
-            override fun saveImpl(instance: AppSettings) {
-                dummyStorage = instance
-            }
-        }
-
+        modules(getCommonKoinModule({ context }, GlobalScope))
     }
     MaterialTheme {
         PlatformPreviewCompositionLocalProvider {

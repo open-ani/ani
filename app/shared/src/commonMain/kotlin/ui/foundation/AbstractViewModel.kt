@@ -21,23 +21,29 @@ package me.him188.ani.app.ui.foundation
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.RememberObserver
 import kotlinx.atomicfu.atomic
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.WhileSubscribed
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
+import me.him188.ani.app.session.AuthorizationCanceledException
+import me.him188.ani.utils.logging.debug
+import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.trace
 import moe.tlaster.precompose.viewmodel.ViewModel
@@ -100,7 +106,13 @@ abstract class AbstractViewModel : RememberObserver, ViewModel() {
     }
 
     private fun createBackgroundScope(): CoroutineScope {
-        return CoroutineScope(EmptyCoroutineContext) // TODO: 2024/1/4 global exception handler 
+        return CoroutineScope(CoroutineExceptionHandler { coroutineContext, throwable ->
+            if (throwable is AuthorizationCanceledException) {
+                logger.debug { "Authorization canceled" }
+            } else {
+                logger.error(throwable) { "Unhandled exception in background scope" }
+            }
+        })
     }
 
     /**
@@ -159,6 +171,24 @@ abstract class AbstractViewModel : RememberObserver, ViewModel() {
         crossinline calc: suspend (Uuid) -> T?,
     ): List<LoadingUuidItem<T>> {
         return map { scope.load(it) { calc(it) } }
+    }
+
+    fun <T> Flow<T>.withLocalCache(initialValue: T): MutableStateFlow<T> {
+        val localFlow = MutableStateFlow(initialValue)
+        val mergedFlow: StateFlow<T> = merge(this, localFlow).stateInBackground(initialValue)
+        return object : MutableStateFlow<T> by localFlow {
+            override var value: T
+                get() = mergedFlow.value
+                set(value) {
+                    localFlow.value = value
+                }
+
+            override val replayCache: List<T> get() = mergedFlow.replayCache
+
+            override suspend fun collect(collector: FlowCollector<T>): Nothing {
+                mergedFlow.collect(collector)
+            }
+        }
     }
 }
 

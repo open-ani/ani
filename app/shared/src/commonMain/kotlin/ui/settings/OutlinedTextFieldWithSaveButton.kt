@@ -40,7 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import me.him188.ani.app.AppTheme
 import me.him188.ani.app.ui.interaction.onEnterKeyEvent
-import me.him188.ani.app.ui.theme.darken
+import me.him188.ani.app.ui.theme.stronglyWeaken
 
 @Composable
 fun OutlinedTextFieldWithSaveButton(
@@ -130,7 +130,7 @@ fun SettingsOutlinedTextField(
         placeholder = {
             ProvideTextStyle(
                 AppTheme.typography.bodyMedium.copy(
-                    color = AppTheme.typography.bodyMedium.color.darken(),
+                    color = AppTheme.typography.bodyMedium.color.stronglyWeaken(),
                     lineHeight = 20.sp
                 )
             ) {

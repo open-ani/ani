@@ -42,6 +42,7 @@ import me.him188.ani.app.i18n.ResourceBundle
 import me.him188.ani.app.i18n.loadResourceBundle
 import me.him188.ani.app.platform.getCommonKoinModule
 import me.him188.ani.app.ux.showDialog
+import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 import java.io.File
 import kotlin.coroutines.resume
@@ -84,6 +85,7 @@ class AniApplication : Application() {
         })
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     inner class Instance(context: Context) {
         @Stable
         val workingDir: File = context.filesDir
@@ -97,14 +99,6 @@ class AniApplication : Application() {
         // Use LocalI18n in compose
         @Stable
         lateinit var resourceBundle: ResourceBundle
-
-        init {
-            @OptIn(DelicateCoroutinesApi::class)
-            startKoin {
-                modules(getCommonKoinModule({ context }, GlobalScope))
-                modules(AndroidModules)
-            }
-        }
 
         // do not observe dependency change
         @Stable
@@ -175,8 +169,15 @@ class AniApplication : Application() {
     private fun Activity.getRootView() =
         this.findViewById<View>(android.R.id.content)?.rootView
 
+    @OptIn(DelicateCoroutinesApi::class)
     override fun onCreate() {
         super.onCreate()
         instance = Instance(this)
+
+        startKoin {
+            androidContext(this@AniApplication)
+            modules(getCommonKoinModule({ this@AniApplication }, GlobalScope))
+            modules(getAndroidModules())
+        }
     }
 }

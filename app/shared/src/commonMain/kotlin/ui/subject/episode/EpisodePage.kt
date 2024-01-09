@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import me.him188.ani.app.ui.foundation.AniTopAppBar
+import me.him188.ani.app.ui.foundation.TopAppBarGoBackButton
 import me.him188.ani.app.ui.theme.aniDarkColorTheme
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import kotlin.time.Duration.Companion.seconds
@@ -83,7 +84,7 @@ fun EpisodePage(
             val darkBackground = aniDarkColorTheme().onBackground
             CompositionLocalProvider(LocalContentColor provides darkBackground) {
                 AniTopAppBar(
-                    goBack, Modifier.statusBarsPadding()
+                    Modifier.statusBarsPadding()
                         .fillMaxWidth()
                         .alpha(topAppBarAlpha) // alpha 为 0 时也可以点击, 减少返回失败的概率
                         .background(
@@ -93,8 +94,10 @@ fun EpisodePage(
                                 0.612f to darkBackground.copy(alpha = 0.01f),
                                 1.00f to Color.Transparent,
                             )
-                        )
-                )
+                        ),
+                ) {
+                    TopAppBarGoBackButton(goBack)
+                }
             }
         },
         contentWindowInsets = WindowInsets(0.dp)

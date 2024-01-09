@@ -28,6 +28,21 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 
 
+/**
+ * 把颜色稍微变浅一点
+ */
+@Composable
+fun Color.slightlyWeaken(): Color {
+    return if (isSystemInDarkTheme()) {
+        Color.LightGray.compositeOver(this)
+    } else {
+        copy(alpha = 0.7f)
+    }
+}
+
+/**
+ * 把颜色变浅
+ */
 @Composable
 fun Color.weaken(): Color {
     return if (isSystemInDarkTheme()) {
@@ -37,8 +52,11 @@ fun Color.weaken(): Color {
     }
 }
 
+/**
+ * 把颜色变得很浅
+ */
 @Composable
-fun Color.darken(): Color {
+fun Color.stronglyWeaken(): Color {
     return if (isSystemInDarkTheme()) {
         Color.DarkGray.compositeOver(this)
     } else {

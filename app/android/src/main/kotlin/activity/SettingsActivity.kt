@@ -42,7 +42,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import me.him188.ani.app.AppTheme
-import me.him188.ani.app.activity.BaseComponentActivity
 import me.him188.ani.app.activity.CommonTopAppBar
 import me.him188.ani.app.app.LocalAppSettingsManager
 import me.him188.ani.app.i18n.LocalI18n
@@ -51,7 +50,7 @@ import me.him188.ani.app.ui.settings.ProxySettingsGroup
 import me.him188.ani.app.ui.settings.SyncSettingsGroup
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
-class SettingsActivity : BaseComponentActivity() {
+class SettingsActivity : AniComponentActivity() {
     companion object {
         fun getIntent(context: Context): Intent = Intent(context, SettingsActivity::class.java)
     }

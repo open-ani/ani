@@ -22,12 +22,32 @@ import android.os.Bundle
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.core.view.WindowCompat
-import me.him188.ani.app.activity.BaseComponentActivity
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import me.him188.ani.app.session.AuthorizationCanceledException
+import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.ui.foundation.AniApp
 import me.him188.ani.app.ui.home.MainScreen
+import org.koin.android.ext.android.inject
 
-class MainActivity : BaseComponentActivity() {
+class MainActivity : AniComponentActivity() {
+    private val sessionManager: SessionManager by inject()
+
+    private enum class AuthorizationState {
+        PROCESSING,
+        SUCCESS,
+        CANCELLED
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -48,8 +68,57 @@ class MainActivity : BaseComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
-            AniApp(currentColorScheme) {
-                MainScreen()
+            var authorizationState by remember {
+                mutableStateOf(
+                    if (sessionManager.isSessionValid.value) {
+                        AuthorizationState.SUCCESS
+                    } else {
+                        AuthorizationState.PROCESSING
+                    }
+                )
+            }
+            when (authorizationState) {
+                AuthorizationState.PROCESSING -> {
+                    LaunchedEffect(key1 = true) {
+                        lifecycleScope.launch {
+                            authorizationState = try {
+                                sessionManager.requireAuthorization(this@MainActivity, false)
+                                AuthorizationState.SUCCESS
+                            } catch (e: AuthorizationCanceledException) {
+                                AuthorizationState.CANCELLED
+                            }
+                        }
+                    }
+                }
+
+                AuthorizationState.SUCCESS -> {
+                    AniApp(currentColorScheme) {
+                        MainScreen()
+                    }
+                }
+
+                AuthorizationState.CANCELLED -> {
+                    AlertDialog(
+                        onDismissRequest = {
+                            authorizationState = AuthorizationState.PROCESSING
+                        },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                authorizationState = AuthorizationState.PROCESSING
+                            }) {
+                                Text(text = "继续")
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = {
+                                finish()
+                            }) {
+                                Text(text = "退出")
+                            }
+                        },
+                        text = { Text(text = "您需要登录 Bangumi 账号才能使用 Ani") }
+                    )
+                }
             }
         }
     }
