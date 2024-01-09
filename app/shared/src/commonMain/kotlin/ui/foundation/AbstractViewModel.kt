@@ -29,8 +29,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.SharingStarted.Companion.WhileSubscribed
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.WhileSubscribed
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.flow.shareIn
@@ -43,6 +43,7 @@ import me.him188.ani.utils.logging.trace
 import moe.tlaster.precompose.viewmodel.ViewModel
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * 带有 [backgroundScope], 当 [AbstractViewModel] 被 forget 时自动 close scope 以防资源泄露.
@@ -109,17 +110,17 @@ abstract class AbstractViewModel : RememberObserver, ViewModel() {
     }
 
     fun <T> Flow<T>.shareInBackground(
-        started: SharingStarted = WhileSubscribed(5000),
+        started: SharingStarted = SharingStarted.WhileSubscribed(5.seconds),
         replay: Int = 1,
     ): SharedFlow<T> = shareIn(backgroundScope, started, replay)
 
     fun <T> Flow<T>.stateInBackground(
         initialValue: T,
-        started: SharingStarted = WhileSubscribed(5000),
+        started: SharingStarted = SharingStarted.WhileSubscribed(5.seconds),
     ): StateFlow<T> = stateIn(backgroundScope, started, initialValue)
 
     fun <T> Flow<T>.stateInBackground(
-        started: SharingStarted = WhileSubscribed(5000),
+        started: SharingStarted = SharingStarted.WhileSubscribed(5.seconds),
     ): StateFlow<T?> = stateIn(backgroundScope, started, null)
 
 
