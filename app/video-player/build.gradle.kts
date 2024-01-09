@@ -98,6 +98,9 @@ kotlin {
                 // Compose
                 api(libs.androidx.compose.ui.tooling.preview)
                 api(libs.androidx.compose.material3)
+
+                api(libs.androidx.media3.ui)
+                api(libs.androidx.media3.exoplayer)
             }
         }
 
@@ -148,4 +151,3 @@ android {
 dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
 }
- 

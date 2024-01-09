@@ -94,6 +94,9 @@ androidx-material = { module = "com.google.android.material:material", version =
 androidx-material3-window-size-class0 = { module = "androidx.compose.material3:material3-window-size-class", version = "1.1.2" }
 #androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version = "2.7.6" }
 
+androidx-media3-ui = { module = "androidx.media3:media3-ui", version = "1.2.0" }
+androidx-media3-exoplayer = { module = "androidx.media3:media3-exoplayer", version = "1.2.0" }
+
 androidx-compose-ui = { module = "androidx.compose.ui:ui", version.ref = "jetpack-compose" }
 androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "jetpack-compose" }
 androidx-compose-ui-viewbinding = { module = "androidx.compose.ui:ui-viewbinding", version.ref = "jetpack-compose" }
