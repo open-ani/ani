@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.ani.android.activity
+package me.him188.ani.app.activity
 
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material3.LocalContentColor

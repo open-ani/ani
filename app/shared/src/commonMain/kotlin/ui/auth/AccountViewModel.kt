@@ -18,134 +18,20 @@
 
 package me.him188.ani.app.ui.auth
 
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import kotlinx.coroutines.flow.MutableStateFlow
-import me.him188.ani.app.ui.LocalSession
+import kotlinx.coroutines.flow.StateFlow
 import me.him188.ani.app.ui.framework.AbstractViewModel
 import me.him188.ani.datasources.bangumi.BangumiClient
-import me.him188.ani.datasources.bangumi.client.BangumiClientAccounts
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-class AccountViewModel(
-    isRegister: Boolean,
-) : AbstractViewModel(), KoinComponent {
-    private val client: BangumiClient by inject()
-    private val localSession: LocalSession by inject()
+class AccountViewModel : AbstractViewModel(), KoinComponent {
+    private val bangumiClient: BangumiClient by inject()
+    private val _code: MutableStateFlow<String?> = MutableStateFlow(null)
+    val code: StateFlow<String?> get() = _code
 
-    val isRegister = MutableStateFlow(isRegister)
-
-    private val _username: MutableState<String> = mutableStateOf("")
-    val username: State<String> get() = _username
-
-    private val _password: MutableState<String> = mutableStateOf("")
-    val password: State<String> get() = _password
-
-    private val _verifyPassword: MutableState<String> = mutableStateOf("")
-    val verifyPassword: State<String> get() = _verifyPassword
-
-    private val _isPasswordVisible: MutableState<Boolean> = mutableStateOf(false)
-    val isPasswordVisible: State<Boolean> get() = _isPasswordVisible
-
-    val usernameError: MutableStateFlow<String?> = MutableStateFlow(null)
-    val usernameValid: MutableStateFlow<Boolean> = MutableStateFlow(false)
-    val passwordError: MutableStateFlow<String?> = MutableStateFlow(null)
-    val verifyPasswordError: MutableStateFlow<String?> = MutableStateFlow(null)
-
-
-    val isProcessing: MutableStateFlow<Boolean> = MutableStateFlow(false)
-
-    fun setUsername(username: String) {
-        flushErrors()
-        _username.value = username.trim()
-        usernameError.value = null
-    }
-
-    fun setPassword(password: String) {
-        flushErrors()
-        _password.value = password
-        passwordError.value = null
-    }
-
-    fun setVerifyPassword(password: String) {
-        flushErrors()
-        _verifyPassword.value = password
-        verifyPasswordError.value = null
-    }
-
-    fun setPasswordVisible(it: Boolean) {
-        _isPasswordVisible.value = it
-    }
-
-    suspend fun onClickProceed() {
-        if (!checkInputs()) return
-
-        val username = username.value
-        val password = password.value
-
-        doAuth(username, password, isRegister.value)
-    }
-
-    private suspend fun doAuth(email: String, password: String, isRegister: Boolean) {
-        if (isRegister) {
-            TODO("Registering is not supported yet")
-        }
-
-        when (val resp = client.accounts.login(email, password)) {
-            is BangumiClientAccounts.LoginResponse.Success -> {
-                localSession.setSession(resp.account, resp.token)
-            }
-
-            is BangumiClientAccounts.LoginResponse.UnknownError -> {
-                verifyPasswordError.value = "Unknown error: ${resp.trace}"
-            }
-
-            BangumiClientAccounts.LoginResponse.UsernameOrPasswordMismatch -> {
-                verifyPasswordError.value = "Username or password mismatch"
-            }
-        }
-    }
-
-    private fun checkInputs(): Boolean {
-        val username = username.value
-        if (username.isEmpty()) {
-            usernameError.value = "Please enter username"
-            return false
-        }
-        val password = password.value
-        if (password.isEmpty()) {
-            passwordError.value = "Please enter password"
-            return false
-        }
-        val verifyPassword = verifyPassword.value
-        if (verifyPassword.isEmpty() && isRegister.value) {
-            verifyPasswordError.value = "Please re-enter your password"
-            return false
-        }
-        if (password != verifyPassword && isRegister.value) {
-            verifyPasswordError.value = "Passwords do not match. Please re-enter your password"
-            return false
-        }
-        return true
-    }
-
-    fun onClickSwitch() {
-        flush()
-        if (isProcessing.value) return
-    }
-
-    private fun flush() {
-        _username.value = ""
-        _password.value = ""
-        _verifyPassword.value = ""
-        flushErrors()
-    }
-
-    private fun flushErrors() {
-        usernameError.value = null
-        passwordError.value = null
-        usernameValid.value = false
+    suspend fun setCode(code: String) {
+        _code.value = code
+        println(bangumiClient.getAccessToken(code))
     }
 }

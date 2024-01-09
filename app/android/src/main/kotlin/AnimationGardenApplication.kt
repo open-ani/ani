@@ -33,8 +33,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import me.him188.ani.R
-import me.him188.ani.android.activity.BaseComponentActivity
-import me.him188.ani.android.activity.showSnackbarAsync
+import me.him188.ani.app.activity.BaseComponentActivity
+import me.him188.ani.app.activity.showSnackbarAsync
 import me.him188.ani.app.app.LocalAppSettingsManagerImpl
 import me.him188.ani.app.i18n.ResourceBundle
 import me.him188.ani.app.i18n.loadResourceBundle

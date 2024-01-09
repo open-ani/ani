@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
+import me.him188.ani.app.activity.BaseComponentActivity
 import me.him188.ani.app.ui.subject.details.SubjectDetails
 import me.him188.ani.app.ui.subject.details.SubjectDetailsViewModel
 import org.koin.core.component.KoinComponent

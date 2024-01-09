@@ -43,6 +43,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import me.him188.ani.app.AppTheme
+import me.him188.ani.app.activity.BaseComponentActivity
+import me.him188.ani.app.activity.CommonTopAppBar
 import me.him188.ani.app.app.LocalAppSettingsManager
 import me.him188.ani.app.i18n.LocalI18n
 import me.him188.ani.app.ui.foundation.CommonAppScaffold

@@ -24,7 +24,7 @@ import me.him188.ani.datasources.api.SubjectProvider
 import me.him188.ani.datasources.api.SubjectSearchQuery
 
 class BangumiSubjectProvider(
-    private val client: BangumiClient = BangumiClient.create(),
+    private val client: BangumiClient,
 ) : SubjectProvider {
     override val id: String get() = "Bangumi"
 

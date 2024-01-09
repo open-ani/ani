@@ -28,7 +28,10 @@ import org.koin.dsl.module
 
 val CommonKoinModule = module {
     single<DmhyClient> { DmhyClient.create { } }
-    single<BangumiClient> { BangumiClient.create() }
-    single<SubjectProvider> { BangumiSubjectProvider() }
+    single<BangumiClient> { createBangumiClient() }
+    single<SubjectProvider> { BangumiSubjectProvider(get<BangumiClient>()) }
     single<DownloadProvider> { DmhyDownloadProvider() }
 }
+
+
+expect fun createBangumiClient(): BangumiClient

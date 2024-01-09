@@ -25,13 +25,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.ui.framework.AbstractViewModel
-import me.him188.ani.datasources.bangumi.models.BangumiToken
+import me.him188.ani.datasources.bangumi.models.BangumiAccessToken
 import me.him188.ani.datasources.bangumi.models.users.BangumiAccount
 
 class LocalSession : AbstractViewModel() {
     internal class Session(
         val account: BangumiAccount,
-        val token: BangumiToken,
+        val token: BangumiAccessToken,
     )
 
     internal var _session: MutableStateFlow<Session?> = MutableStateFlow(null)
@@ -39,17 +39,17 @@ class LocalSession : AbstractViewModel() {
     val account: StateFlow<BangumiAccount?>
         get() = _session.map { it?.account }.stateInBackground()
 
-    val token: StateFlow<BangumiToken?>
+    val token: StateFlow<BangumiAccessToken?>
         get() = _session.map { it?.token }.stateInBackground()
 
-    fun setSession(account: BangumiAccount, token: BangumiToken) {
+    fun setSession(account: BangumiAccount, token: BangumiAccessToken) {
 
         _session.value = Session(account, token)
     }
 }
 
 @Composable
-fun LocalSession.tokenOrNavigate(navigateToAuth: () -> Nothing): BangumiToken {
+fun LocalSession.tokenOrNavigate(navigateToAuth: () -> Nothing): BangumiAccessToken {
     val token by token.collectAsState(null)
     return token ?: navigateToAuth()
 }

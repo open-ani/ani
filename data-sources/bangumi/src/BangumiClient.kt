@@ -25,37 +25,33 @@ import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.request.basicAuth
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
-import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
-import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.utils.io.core.Closeable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runInterruptible
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import me.him188.ani.datasources.api.Paged
-import me.him188.ani.datasources.bangumi.client.BangumiClientAccounts
 import me.him188.ani.datasources.bangumi.client.BangumiClientEpisodes
 import me.him188.ani.datasources.bangumi.client.BangumiClientSubjects
 import me.him188.ani.datasources.bangumi.client.BangumiEpType
 import me.him188.ani.datasources.bangumi.client.BangumiEpisode
-import me.him188.ani.datasources.bangumi.models.BangumiToken
+import me.him188.ani.datasources.bangumi.models.BangumiAccessToken
 import me.him188.ani.datasources.bangumi.models.search.BangumiSort
 import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubject
 import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectDetails
 import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectImageSize
 import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectType
-import me.him188.ani.datasources.bangumi.models.users.BangumiAccount
 import me.him188.ani.utils.serialization.toJsonArray
 import okhttp3.OkHttpClient
 import org.openapitools.client.apis.BangumiApi
@@ -64,25 +60,75 @@ import org.openapitools.client.models.RelatedPerson
 interface BangumiClient : Closeable {
     // Bangumi open API: https://github.com/bangumi/api/blob/master/open-api/api.yml
 
-    val api: BangumiApi
+    /*
+    {
+    "access_token":"YOUR_ACCESS_TOKEN",
+    "expires_in":604800,
+    "token_type":"Bearer",
+    "scope":null,
+    "refresh_token":"YOUR_REFRESH_TOKEN"
+    "user_id" : USER_ID
+    }
+     */
+    @Serializable
+    data class GetAccessTokenResponse(
+        @SerialName("expires_in") val expiresIn: Int,
+        @SerialName("user_id") val userId: Int,
+        @SerialName("access_token") val accessToken: String,
+        @SerialName("refresh_token") val refreshToken: String,
+    )
 
-    val accounts: BangumiClientAccounts
+    suspend fun getAccessToken(code: String): BangumiAccessToken
+    suspend fun refreshAccessToken(refreshToken: String): BangumiAccessToken
+
+    val api: BangumiApi
 
     val subjects: BangumiClientSubjects
 
     val episodes: BangumiClientEpisodes
 
     companion object Factory {
-        fun create(httpClientConfiguration: HttpClientConfig<*>.() -> Unit = {}): BangumiClient =
-            BangumiClientImpl(httpClientConfiguration)
+        fun create(
+            clientId: String,
+            clientSecret: String,
+            httpClientConfiguration: HttpClientConfig<*>.() -> Unit = {}
+        ): BangumiClient =
+            BangumiClientImpl(clientId, clientSecret, httpClientConfiguration)
     }
 }
 
 private const val BANGUMI_API_HOST = "https://api.bgm.tv"
+private const val BANGUMI_HOST = "https://bgm.tv"
 
 internal class BangumiClientImpl(
+    private val clientId: String,
+    private val clientSecret: String,
     httpClientConfiguration: HttpClientConfig<*>.() -> Unit = {},
 ) : BangumiClient {
+    override suspend fun getAccessToken(code: String): BangumiAccessToken {
+        val resp = httpClient.post("$BANGUMI_HOST/oauth/access_token") {
+            parameter("grant_type", "authorization_code")
+            parameter("client_id", clientId)
+            parameter("client_secret", clientSecret)
+            parameter("code", code)
+            parameter("redirect_uri", "ani://bangumi-oauth-callback")
+        }
+
+        if (!resp.status.isSuccess()) {
+            throw IllegalStateException("Failed to get access token: $resp")
+        }
+
+        val body = resp.body<BangumiClient.GetAccessTokenResponse>()
+        return BangumiAccessToken(
+            body.userId.toString(),
+            body.accessToken
+        )
+    }
+
+    override suspend fun refreshAccessToken(refreshToken: String): BangumiAccessToken {
+        TODO("Not yet implemented")
+    }
+
     override val api = BangumiApi(BANGUMI_API_HOST, OkHttpClient.Builder().apply {
         this.followRedirects(true)
         addInterceptor { chain ->
@@ -114,39 +160,6 @@ internal class BangumiClientImpl(
         val total: Int,
         val data: List<BangumiSubject>? = null,
     )
-
-    override val accounts: BangumiClientAccounts = object : BangumiClientAccounts {
-        override suspend fun login(
-            email: String,
-            password: String,
-        ): BangumiClientAccounts.LoginResponse {
-            val resp = httpClient.get("$BANGUMI_API_HOST/auth?source=onAir") {
-                basicAuth(email, password)
-            }
-
-            when {
-                resp.status.isSuccess() -> {
-                    val body = resp.body<BangumiAccount>()
-                    return BangumiClientAccounts.LoginResponse.Success(
-                        account = body,
-                        token = BangumiToken(
-                            username = email,
-                            auth = body.auth,
-                            authEncode = body.authEncode,
-                        )
-                    )
-                }
-
-                resp.status == HttpStatusCode.Unauthorized -> {
-                    return BangumiClientAccounts.LoginResponse.UsernameOrPasswordMismatch
-                }
-
-                else -> return BangumiClientAccounts.LoginResponse.UnknownError(
-                    trace = resp.bodyAsText()
-                )
-            }
-        }
-    }
 
     override val subjects: BangumiClientSubjects = object : BangumiClientSubjects {
         override suspend fun searchSubjectByKeywords(

@@ -25,6 +25,7 @@ suspend fun main() {
 //    client.subjects.getSubjectById(400602)?.infobox?.forEach {
 //        println("${it.key}=${it.value}")
 //    }
+
     println(client.episodes.getEpisodes(400602, BangumiEpType.MAIN).page.first())
     exitProcess(0)
 

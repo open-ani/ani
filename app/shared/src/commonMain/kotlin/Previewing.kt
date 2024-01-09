@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import me.him188.ani.app.app.AppSettings
 import me.him188.ani.app.app.AppSettingsManager
+import me.him188.ani.app.platform.createBangumiClient
 import me.him188.ani.app.ui.foundation.AniApp
 import me.him188.ani.datasources.api.DownloadProvider
 import me.him188.ani.datasources.api.SubjectProvider
@@ -42,8 +43,8 @@ fun ProvideCompositionLocalsForPreview(
     startKoin {
         modules(module {
             single<DmhyClient> { DmhyClient.create { } }
-            single<BangumiClient> { BangumiClient.create() }
-            single<SubjectProvider> { BangumiSubjectProvider() }
+            single<BangumiClient> { createBangumiClient() }
+            single<SubjectProvider> { BangumiSubjectProvider(get<BangumiClient>()) }
             single<DownloadProvider> { DmhyDownloadProvider() }
         })
     }

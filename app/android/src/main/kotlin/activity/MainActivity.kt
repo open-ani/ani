@@ -23,6 +23,7 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.WindowCompat
+import me.him188.ani.app.activity.BaseComponentActivity
 import me.him188.ani.app.ui.foundation.AniApp
 import me.him188.ani.app.ui.home.MainScreen
 

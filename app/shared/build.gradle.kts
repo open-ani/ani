@@ -129,6 +129,9 @@ android {
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     defaultConfig {
         minSdk = getIntProperty("android.min.sdk")
+        buildConfigField("String", "VERSION_NAME", "\"${getProperty("version.name")}\"")
+        buildConfigField("String", "BANGUMI_OAUTH_CLIENT_ID", "\"${getProperty("bangumi.oauth.client.id")}\"")
+        buildConfigField("String", "BANGUMI_OAUTH_CLIENT_SECRET", "\"${getProperty("bangumi.oauth.client.secret")}\"")
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -147,6 +150,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = libs.versions.jetpack.compose.compiler.get()
