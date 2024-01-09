@@ -17,7 +17,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,6 +32,7 @@ import me.him188.ani.app.ui.foundation.AniKamelImage
 import me.him188.ani.app.ui.foundation.BrokenImagePlaceholder
 import me.him188.ani.app.ui.foundation.LoadingIndicator
 import me.him188.ani.app.ui.theme.weaken
+import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
 private const val COVER_WIDTH_TO_HEIGHT_RATIO = 849 / 1200f
 
@@ -60,8 +60,8 @@ internal fun SubjectDetailsHeader(
         )
 
         Column(Modifier.padding(horizontal = 16.dp, vertical = 2.dp)) {
-            val chineseName by viewModel.chineseName.collectAsState("")
-            val officialName by viewModel.officialName.collectAsState("")
+            val chineseName by viewModel.chineseName.collectAsStateWithLifecycle("")
+            val officialName by viewModel.officialName.collectAsStateWithLifecycle("")
             Text(
                 chineseName,
                 Modifier.offset(y = (-2).dp),
@@ -73,7 +73,7 @@ internal fun SubjectDetailsHeader(
                 style = MaterialTheme.typography.bodyMedium
             )
 
-            val tags by viewModel.tags.collectAsState(listOf())
+            val tags by viewModel.tags.collectAsStateWithLifecycle(listOf())
 
             Box(Modifier.height(56.dp).clip(RectangleShape)) {
                 FlowRow(
@@ -87,7 +87,7 @@ internal fun SubjectDetailsHeader(
                 }
             }
 
-            val summary by viewModel.summary.collectAsState("")
+            val summary by viewModel.summary.collectAsStateWithLifecycle("")
             Text(
                 summary,
                 Modifier.height(108.dp / 2).padding(top = 4.dp),

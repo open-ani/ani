@@ -67,7 +67,7 @@ abstract class AppSettingsManager {
 
     @Composable
     fun attachAutoSave() {
-        val instance by value.collectAsState()
+        val instance by value.collectAsStateWithLifecycle()
         LaunchedEffect(instance) {
             withContext(Dispatchers.IO) {
                 save()

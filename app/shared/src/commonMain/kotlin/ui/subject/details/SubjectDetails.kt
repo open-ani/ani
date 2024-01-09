@@ -39,7 +39,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -67,6 +66,7 @@ import me.him188.ani.app.ui.foundation.backgroundWithGradient
 import me.him188.ani.app.ui.theme.weaken
 import me.him188.ani.datasources.bangumi.client.BangumiEpisode
 import me.him188.ani.datasources.bangumi.processing.fixToString
+import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
 
 /**
@@ -83,7 +83,7 @@ fun SubjectDetails(
         },
         contentWindowInsets = WindowInsets(0.dp)
     ) { scaffoldPadding ->
-        val coverImageUrl by viewModel.coverImage.collectAsState(null)
+        val coverImageUrl by viewModel.coverImage.collectAsStateWithLifecycle(null)
         val coverPainter = asyncPainterResource(coverImageUrl ?: "")
 
         val density = LocalDensity.current
@@ -141,7 +141,7 @@ private fun SubjectDetailsContent(
             Modifier.padding(top = 8.dp, bottom = 4.dp).padding(horizontal = horizontalPadding)
         )
 
-        val characters by viewModel.characters.collectAsState(listOf())
+        val characters by viewModel.characters.collectAsStateWithLifecycle(listOf())
         SectionTitle(Modifier.padding(horizontal = horizontalPadding)) {
             Text("角色")
         }
@@ -159,7 +159,7 @@ private fun SubjectDetailsContent(
             )
         }
 
-        val staff by viewModel.relatedPersons.collectAsState(listOf())
+        val staff by viewModel.relatedPersons.collectAsStateWithLifecycle(listOf())
         SectionTitle(Modifier.padding(horizontal = horizontalPadding)) {
             Text("Staff")
         }
@@ -173,7 +173,7 @@ private fun SubjectDetailsContent(
 
         val context by rememberUpdatedState(LocalContext.current)
 
-        val episodesMain by viewModel.episodesMain.collectAsState(listOf())
+        val episodesMain by viewModel.episodesMain.collectAsStateWithLifecycle(listOf())
         if (episodesMain.isNotEmpty()) {
             SectionTitle(Modifier.padding(horizontal = horizontalPadding)) { Text("正片") }
             EpisodeList(
@@ -184,7 +184,7 @@ private fun SubjectDetailsContent(
             )
         }
 
-        val episodesSP by viewModel.episodesSP.collectAsState(listOf())
+        val episodesSP by viewModel.episodesSP.collectAsStateWithLifecycle(listOf())
         if (episodesSP.isNotEmpty()) {
             SectionTitle(Modifier.padding(horizontal = horizontalPadding)) { Text("SP") }
             EpisodeList(
@@ -195,7 +195,7 @@ private fun SubjectDetailsContent(
             )
         }
 
-        val episodesPV by viewModel.episodesPV.collectAsState(listOf())
+        val episodesPV by viewModel.episodesPV.collectAsStateWithLifecycle(listOf())
         if (episodesPV.isNotEmpty()) {
             SectionTitle(Modifier.padding(horizontal = horizontalPadding)) { Text("PV") }
             EpisodeList(

@@ -46,7 +46,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -64,6 +63,7 @@ import me.him188.ani.app.ui.foundation.AniKamelImage
 import me.him188.ani.app.ui.foundation.BrokenImagePlaceholder
 import me.him188.ani.app.ui.foundation.LoadingIndicator
 import me.him188.ani.app.ui.home.LocalContentPaddings
+import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
 /**
  * 番剧预览列表, 双列模式
@@ -73,7 +73,7 @@ fun SubjectPreviewColumn(
     viewModel: SubjectListViewModel,
     modifier: Modifier = Modifier,
 ) {
-    val items by viewModel.list.collectAsState()
+    val items by viewModel.list.collectAsStateWithLifecycle()
 
     val state = rememberLazyGridState()
     val context by rememberUpdatedState(LocalContext.current)
@@ -100,8 +100,8 @@ fun SubjectPreviewColumn(
         }
 
         item("loading", span = { GridItemSpan(maxLineSpan) }, contentType = "loading") {
-            val hasMore by viewModel.hasMore.collectAsState()
-            val loading by viewModel.loading.collectAsState()
+            val hasMore by viewModel.hasMore.collectAsStateWithLifecycle()
+            val loading by viewModel.loading.collectAsStateWithLifecycle()
             if (loading || hasMore) {
                 LaunchedEffect(true) {
                     viewModel.loadMore()

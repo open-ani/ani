@@ -4,9 +4,9 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
 import me.him188.ani.app.activity.BaseComponentActivity
+import me.him188.ani.app.ui.foundation.AniApp
 import me.him188.ani.app.ui.subject.episode.EpisodePage
 import me.him188.ani.app.ui.subject.episode.EpisodeViewModel
 
@@ -26,7 +26,7 @@ class EpisodeActivity : BaseComponentActivity() {
 
         val vm = EpisodeViewModel(subjectId, episodeId)
         setContent {
-            MaterialTheme(currentColorScheme) {
+            AniApp(currentColorScheme) {
                 Column(Modifier.fillMaxSize()) {
                     EpisodePage(vm, goBack = { finish() })
                 }

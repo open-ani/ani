@@ -44,7 +44,7 @@ fun PreferencesPage(
     snackbar: SnackbarHostState? // pass null for preview only
 ) {
     val manager = LocalAppSettingsManager.current
-    val settings by manager.value.collectAsState()
+    val settings by manager.value.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     Surface(Modifier.fillMaxSize()) {
         Column(

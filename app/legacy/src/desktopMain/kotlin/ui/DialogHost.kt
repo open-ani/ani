@@ -21,7 +21,7 @@ package me.him188.ani.app.ui
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -59,7 +59,7 @@ class DialogHost internal constructor(
 @Composable
 fun rememberDialogHost(): DialogHost {
     val dialogInfoFlow = remember { MutableSharedFlow<DialogInfo<*>?>() }
-    val currentDialogInfo by dialogInfoFlow.collectAsState(null)
+    val currentDialogInfo by dialogInfoFlow.collectAsStateWithLifecycle(null)
     Dialog(
         {
             currentDialogInfo?.let { info ->

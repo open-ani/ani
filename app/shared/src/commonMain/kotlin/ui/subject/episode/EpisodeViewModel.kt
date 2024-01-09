@@ -16,8 +16,8 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.withContext
-import me.him188.ani.app.ui.framework.AbstractViewModel
-import me.him188.ani.app.ui.framework.launchInBackground
+import me.him188.ani.app.ui.foundation.AbstractViewModel
+import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.datasources.api.DownloadProvider
 import me.him188.ani.datasources.api.DownloadSearchQuery
 import me.him188.ani.datasources.api.SearchSession

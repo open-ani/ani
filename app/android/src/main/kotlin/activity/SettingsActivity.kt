@@ -35,7 +35,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
@@ -50,6 +49,7 @@ import me.him188.ani.app.i18n.LocalI18n
 import me.him188.ani.app.ui.foundation.CommonAppScaffold
 import me.him188.ani.app.ui.settings.ProxySettingsGroup
 import me.him188.ani.app.ui.settings.SyncSettingsGroup
+import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
 class SettingsActivity : BaseComponentActivity() {
     companion object {
@@ -92,7 +92,7 @@ class SettingsActivity : BaseComponentActivity() {
 @Composable
 private fun SettingsPage(snackbar: SnackbarHostState) {
     val manager = LocalAppSettingsManager.current
-    val settings by manager.value.collectAsState()
+    val settings by manager.value.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     Column(Modifier.padding(horizontal = 8.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         ProxySettingsGroup(

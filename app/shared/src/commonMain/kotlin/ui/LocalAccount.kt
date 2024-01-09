@@ -19,14 +19,14 @@
 package me.him188.ani.app.ui
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
-import me.him188.ani.app.ui.framework.AbstractViewModel
+import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.datasources.bangumi.models.BangumiAccessToken
 import me.him188.ani.datasources.bangumi.models.users.BangumiAccount
+import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
 class LocalSession : AbstractViewModel() {
     internal class Session(
@@ -50,6 +50,6 @@ class LocalSession : AbstractViewModel() {
 
 @Composable
 fun LocalSession.tokenOrNavigate(navigateToAuth: () -> Nothing): BangumiAccessToken {
-    val token by token.collectAsState(null)
+    val token by token.collectAsStateWithLifecycle(null)
     return token ?: navigateToAuth()
 }

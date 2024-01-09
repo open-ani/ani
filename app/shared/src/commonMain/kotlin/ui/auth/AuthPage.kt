@@ -23,12 +23,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import me.him188.ani.app.ui.framework.launchInBackground
+import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.home.LocalContentPaddings
+import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
 @Composable
 fun AuthPage(viewModel: AccountViewModel) {
@@ -37,7 +37,7 @@ fun AuthPage(viewModel: AccountViewModel) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        val code by viewModel.code.collectAsState()
+        val code by viewModel.code.collectAsStateWithLifecycle()
         if (code == null) {
             BangumiOAuthRequest({ viewModel.launchInBackground { setCode(it) } }, Modifier.fillMaxSize())
         } else {

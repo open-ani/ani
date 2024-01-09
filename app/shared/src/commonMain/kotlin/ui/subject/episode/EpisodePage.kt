@@ -38,7 +38,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -56,6 +55,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import me.him188.ani.app.ui.foundation.AniTopAppBar
 import me.him188.ani.app.ui.theme.aniDarkColorTheme
+import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import kotlin.time.Duration.Companion.seconds
 
 private val PAGE_HORIZONTAL_PADDING = 16.dp
@@ -144,15 +144,15 @@ fun EpisodePageContent(
 @Composable
 private fun EpisodePlaySourceSelection(viewModel: EpisodeViewModel, modifier: Modifier = Modifier) {
     Column(modifier.fillMaxWidth()) {
-        val isPlaySourcesLoading by viewModel.isPlaySourcesLoading.collectAsState()
+        val isPlaySourcesLoading by viewModel.isPlaySourcesLoading.collectAsStateWithLifecycle()
         val playSourceSelector = viewModel.playSourceSelector
 
-        val resolutions by playSourceSelector.resolutions.collectAsState()
-        val subtitleLanguages by playSourceSelector.subtitleLanguages.collectAsState()
-        val alliances by playSourceSelector.availableAlliances.collectAsState(null)
-        val preferredResolution by playSourceSelector.preferredResolution.collectAsState()
-        val preferredLanguage by playSourceSelector.preferredSubtitleLanguage.collectAsState()
-        val preferredAlliance by playSourceSelector.preferredAlliance.collectAsState()
+        val resolutions by playSourceSelector.resolutions.collectAsStateWithLifecycle()
+        val subtitleLanguages by playSourceSelector.subtitleLanguages.collectAsStateWithLifecycle()
+        val alliances by playSourceSelector.availableAlliances.collectAsStateWithLifecycle(null)
+        val preferredResolution by playSourceSelector.preferredResolution.collectAsStateWithLifecycle()
+        val preferredLanguage by playSourceSelector.preferredSubtitleLanguage.collectAsStateWithLifecycle()
+        val preferredAlliance by playSourceSelector.preferredAlliance.collectAsStateWithLifecycle()
 
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
@@ -360,13 +360,13 @@ fun EpisodePlaySourceItem(
 fun EpisodeTitle(viewModel: EpisodeViewModel, modifier: Modifier = Modifier) {
     Column(modifier) {
         Row {
-            val subjectTitle by viewModel.subjectTitle.collectAsState()
+            val subjectTitle by viewModel.subjectTitle.collectAsStateWithLifecycle()
             Text(subjectTitle ?: "", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         }
 
         Row(Modifier.padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-            val episodeTitle by viewModel.episodeTitle.collectAsState()
-            val episodeEp by viewModel.episodeEp.collectAsState()
+            val episodeTitle by viewModel.episodeTitle.collectAsStateWithLifecycle()
+            val episodeEp by viewModel.episodeEp.collectAsStateWithLifecycle()
             val shape = RoundedCornerShape(8.dp)
             Box(
                 Modifier.border(1.dp, MaterialTheme.colorScheme.outlineVariant, shape = shape)

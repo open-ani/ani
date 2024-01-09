@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.ani.app.ui.framework
+package me.him188.ani.app.ui.foundation
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.RememberObserver
@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.SharingStarted.Companion.WhileSubscribed
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.runningFold
@@ -37,14 +38,18 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
-import me.him188.ani.app.ui.foundation.LoadingUuidItem
-import me.him188.ani.app.ui.foundation.Uuid
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.trace
 import moe.tlaster.precompose.viewmodel.ViewModel
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
+/**
+ * 带有 [backgroundScope], 当 [AbstractViewModel] 被 forget 时自动 close scope 以防资源泄露.
+ *
+ * 因此 [AbstractViewModel] 需要与 compose remember 一起使用, 否则需手动管理生命周期.
+ * 在构造 [AbstractViewModel] 时需要考虑其声明周期问题.
+ */ // We can't use Android's Viewmodel because it's not available in Desktop platforms. 
 abstract class AbstractViewModel : RememberObserver, ViewModel() {
     val logger by lazy { logger(this::class) }
 
@@ -104,17 +109,17 @@ abstract class AbstractViewModel : RememberObserver, ViewModel() {
     }
 
     fun <T> Flow<T>.shareInBackground(
-        started: SharingStarted = SharingStarted.Eagerly,
+        started: SharingStarted = WhileSubscribed(5000),
         replay: Int = 1,
     ): SharedFlow<T> = shareIn(backgroundScope, started, replay)
 
     fun <T> Flow<T>.stateInBackground(
         initialValue: T,
-        started: SharingStarted = SharingStarted.Eagerly,
+        started: SharingStarted = WhileSubscribed(5000),
     ): StateFlow<T> = stateIn(backgroundScope, started, initialValue)
 
     fun <T> Flow<T>.stateInBackground(
-        started: SharingStarted = SharingStarted.Eagerly,
+        started: SharingStarted = WhileSubscribed(5000),
     ): StateFlow<T?> = stateIn(backgroundScope, started, null)
 
 

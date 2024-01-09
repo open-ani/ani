@@ -36,7 +36,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.collectAsStateWithLifecycle
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -95,7 +95,7 @@ fun MainPage(
     // and is safe to be used in callbacks.
 
     val currentApp by rememberUpdatedState(app)
-    val currentTopics by app.topicsFlowState.value.collectAsState()
+    val currentTopics by app.topicsFlowState.value.collectAsStateWithLifecycle()
 
     val appliedKeywordState = rememberSaveable { mutableStateOf("") }
     var currentAppliedKeyword by appliedKeywordState
@@ -527,7 +527,7 @@ private fun LiveTopicList(
     }
 
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopStart) {
-        val fetchingState by app.fetcher.fetchingState.collectAsState()
+        val fetchingState by app.fetcher.fetchingState.collectAsStateWithLifecycle()
         val showProgress = fetchingState != FetchingState.Idle && topics.isEmpty()
 
         // animate on changing search query
@@ -593,7 +593,7 @@ private fun LiveTopicList(
 
                 // dummy footer. When footer gets into visible area, `LaunchedEffect` comes with its composition.
                 item("refresh footer", contentType = "refresh footer") {
-                    val hasMorePages by app.fetcher.hasMorePages.collectAsState()
+                    val hasMorePages by app.fetcher.hasMorePages.collectAsStateWithLifecycle()
 
                     Box(
                         Modifier

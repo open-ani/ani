@@ -20,7 +20,7 @@ package me.him188.ani.app.ui.home
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import me.him188.ani.app.ui.framework.AbstractViewModel
+import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.subject.SubjectListViewModel
 import me.him188.ani.datasources.api.SubjectProvider
 import me.him188.ani.datasources.api.SubjectSearchQuery

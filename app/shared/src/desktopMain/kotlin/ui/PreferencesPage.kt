@@ -32,7 +32,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -55,7 +55,7 @@ fun PreferencesPage(
     snackbar: SnackbarHostState? // pass null for preview only
 ) {
     val manager = LocalAppSettingsManager.current
-    val settings by manager.value.collectAsState()
+    val settings by manager.value.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     Surface(Modifier.fillMaxSize()) {
         Column(Modifier.padding(horizontal = 8.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {

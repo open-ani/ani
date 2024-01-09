@@ -11,21 +11,21 @@ import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import me.him188.ani.app.ui.subject.SubjectPreviewColumn
 import me.him188.ani.app.ui.theme.weaken
+import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
 @Composable
 fun SubjectSearchBar(
     viewModel: SearchViewModel,
     modifier: Modifier = Modifier,
 ) {
-    val query by viewModel.editingQuery.collectAsState()
-    val searchActive by viewModel.searchActive.collectAsState()
+    val query by viewModel.editingQuery.collectAsStateWithLifecycle()
+    val searchActive by viewModel.searchActive.collectAsStateWithLifecycle()
     val keyboard by rememberUpdatedState(LocalSoftwareKeyboardController.current)
     SearchBar(
         query,
@@ -53,7 +53,7 @@ fun SubjectSearchBar(
         },
         colors = SearchBarDefaults.colors(dividerColor = MaterialTheme.colorScheme.outline.weaken()),
     ) {
-        val result by viewModel.result.collectAsState()
+        val result by viewModel.result.collectAsStateWithLifecycle()
         result?.let {
             SubjectPreviewColumn(it)
         }

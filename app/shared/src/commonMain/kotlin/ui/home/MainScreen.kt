@@ -22,7 +22,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ProvidableCompositionLocal
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,6 +35,7 @@ import me.him188.ani.app.ui.auth.AccountViewModel
 import me.him188.ani.app.ui.auth.AuthPage
 import me.him188.ani.app.ui.collection.CollectionPage
 import me.him188.ani.app.ui.foundation.TabNavigationItem
+import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
 /**
  * 由 bottom bar 等导致的 paddings
@@ -72,7 +72,7 @@ fun MainScreenPortrait(
         Modifier.statusBarsPadding(),
         topBar = {
             Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface)) {
-                val searchActive by searchViewModel.searchActive.collectAsState()
+                val searchActive by searchViewModel.searchActive.collectAsStateWithLifecycle()
                 val paddingHorizontal by animateDpAsState(if (searchActive) 0.dp else 8.dp)
                 val paddingVertical by animateDpAsState(if (searchActive) 0.dp else 4.dp)
                 Row(

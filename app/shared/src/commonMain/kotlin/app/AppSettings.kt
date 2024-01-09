@@ -23,7 +23,6 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import kotlinx.coroutines.Dispatchers
@@ -32,6 +31,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import me.him188.ani.app.app.settings.ProxySettings
 import me.him188.ani.app.app.settings.SyncSettings
+import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import java.io.File
 
 @Immutable
@@ -73,7 +73,7 @@ abstract class AppSettingsManager {
 
     @Composable
     fun attachAutoSave() {
-        val instance by value.collectAsState()
+        val instance by value.collectAsStateWithLifecycle()
         LaunchedEffect(instance) {
             withContext(Dispatchers.IO) {
                 save()

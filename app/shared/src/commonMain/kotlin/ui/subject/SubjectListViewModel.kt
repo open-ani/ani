@@ -25,8 +25,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.yield
 import me.him188.ani.app.platform.Context
 import me.him188.ani.app.ui.event.SubjectNavigator
-import me.him188.ani.app.ui.framework.AbstractViewModel
-import me.him188.ani.app.ui.framework.launchInBackground
+import me.him188.ani.app.ui.foundation.AbstractViewModel
+import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.datasources.api.SearchSession
 import me.him188.ani.datasources.api.Subject
 import me.him188.ani.utils.logging.info

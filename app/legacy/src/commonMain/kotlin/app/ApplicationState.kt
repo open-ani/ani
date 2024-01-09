@@ -56,7 +56,7 @@ class ApplicationState(
         @Composable
         get() {
             val data by dataState
-            return data.starredAnime.asFlow().map { it.reversed() }.collectAsState(listOf())
+            return data.starredAnime.asFlow().map { it.reversed() }.collectAsStateWithLifecycle(listOf())
         }
 
     @Stable
@@ -111,7 +111,7 @@ class ApplicationState(
         val starredAnime by remember {
             data.starredAnime.asFlow()
                 .map { list -> list.find { it.searchQuery == searchQuery.value.keywords } }
-        }.collectAsState(null)
+        }.collectAsStateWithLifecycle(null)
 
         return starredAnime?.watchedEpisodes?.contains(episode) == true
     }
@@ -141,7 +141,7 @@ fun ApplicationState.rememberCurrentStarredAnimeState(): State<StarredAnime?> {
     }
     val currentStarredAnime by starredAnimeState
 
-    val currentTopics by remember { topicsFlow.asFlow() }.collectAsState()
+    val currentTopics by remember { topicsFlow.asFlow() }.collectAsStateWithLifecycle()
     val currentSearchQuery by searchQuery
     LaunchedEffect(currentStarredAnime, currentTopics, currentSearchQuery) {
         organizedViewState.apply {

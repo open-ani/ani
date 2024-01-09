@@ -20,7 +20,7 @@ package me.him188.ani.app.ui.auth
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import me.him188.ani.app.ui.framework.AbstractViewModel
+import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.datasources.bangumi.BangumiClient
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
