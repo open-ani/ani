@@ -29,6 +29,7 @@ import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectTag
 import me.him188.ani.datasources.bangumi.processing.sortByRelation
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import org.openapitools.client.infrastructure.ClientException
 import org.openapitools.client.models.RelatedCharacter
 import org.openapitools.client.models.RelatedPerson
 import org.openapitools.client.models.SubjectCollectionType
@@ -122,7 +123,14 @@ class SubjectDetailsViewModel(
         subjectNotNull,
         sessionManager.username.filterNotNull()
     ) { subject, username ->
-        runInterruptible(Dispatchers.IO) { bangumiClient.api.getUserCollection(username, subject.id) }.type
+        runCatching {
+            runInterruptible(Dispatchers.IO) { bangumiClient.api.getUserCollection(username, subject.id) }.type
+        }.onFailure {
+            if (it is ClientException && it.statusCode == 404) {
+                // 用户没有收藏这个
+                return@combine null
+            }
+        }.getOrNull()
     }.withLocalCache(null)
 
     /**
