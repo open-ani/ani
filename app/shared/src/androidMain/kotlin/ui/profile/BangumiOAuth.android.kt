@@ -1,4 +1,4 @@
-package me.him188.ani.app.ui.auth
+package me.him188.ani.app.ui.profile
 
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
@@ -8,11 +8,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import io.ktor.http.encodeURLParameter
-import me.him188.ani.BuildConfig
+import me.him188.ani.app.platform.currentAniBuildConfig
+import me.him188.ani.app.platform.getAniUserAgent
 
 @Composable
 actual fun BangumiOAuthRequest(
-    onUpdateCode: (String) -> Unit,
+    onComplete: (String) -> Unit,
+    onFailed: (Throwable) -> Unit,
     modifier: Modifier,
 ) {
     AndroidView(
@@ -23,22 +25,26 @@ actual fun BangumiOAuthRequest(
                         view: WebView?,
                         request: WebResourceRequest
                     ): WebResourceResponse? {
-                        if (request.url.toString().startsWith("ani://bangumi-oauth-callback")) {
-                            onUpdateCode(request.url.getQueryParameter("code") ?: "")
+                        val urlString = request.url.toString()
+                        if (urlString.startsWith("ani://bangumi-oauth-callback")) {
+                            onComplete(request.url.getQueryParameter("code") ?: "")
                             return null
                         }
-                        return null
+                        if (urlString.startsWith("https://bgm.tv/oauth/authorize")) {
+                            return null
+                        }
+                        // forbid others
+                        return WebResourceResponse("text/plain", "UTF-8", null)
                     }
                 }
-                settings.userAgentString =
-                    "him188/ani/${BuildConfig.VERSION_NAME} (Android) (https://github.com/Him188/ani)"
+                settings.userAgentString = getAniUserAgent(currentAniBuildConfig.versionName)
             }
         },
         modifier,
         update = {
             it.loadUrl(
                 "https://bgm.tv/oauth/authorize" +
-                        "?client_id=${BuildConfig.BANGUMI_OAUTH_CLIENT_ID}" +
+                        "?client_id=${currentAniBuildConfig.bangumiOauthClientId}" +
                         "&response_type=code" +
                         "&redirect_uri=" + "ani://bangumi-oauth-callback".encodeURLParameter()
             )

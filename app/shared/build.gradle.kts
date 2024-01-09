@@ -69,6 +69,7 @@ kotlin {
                 api(projects.dataSources.dmhy)
                 api(projects.dataSources.bangumi)
                 api(projects.utils.slf4jKt)
+                api(projects.utils.coroutines)
 
                 // Ktor
                 api(libs.ktor.client.websockets)

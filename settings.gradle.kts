@@ -41,10 +41,8 @@ fun includeProject(projectPath: String, dir: String? = null) {
 
 // Utilities shared by client and server (targeting JVM)
 includeProject(":utils:slf4j-kt", "utils/slf4j-kt") // shared by client and server (targets JVM)
-includeProject(
-    ":utils:serialization",
-    "utils/serialization"
-)
+includeProject(":utils:serialization", "utils/serialization")
+includeProject(":utils:coroutines", "utils/coroutines")
 
 // client
 includeProject(":app:shared", "app/shared") // shared by clients (targets JVM)

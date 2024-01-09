@@ -31,10 +31,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.platform.isInLandscapeMode
-import me.him188.ani.app.ui.auth.AccountViewModel
-import me.him188.ani.app.ui.auth.AuthPage
 import me.him188.ani.app.ui.collection.CollectionPage
 import me.him188.ani.app.ui.foundation.TabNavigationItem
+import me.him188.ani.app.ui.profile.AccountViewModel
+import me.him188.ani.app.ui.profile.ProfilePage
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
 /**
@@ -134,7 +134,7 @@ fun MainScreenPortrait(
             when (selectedTab) {
                 "home" -> HomePage(searchViewModel)
                 "collection" -> CollectionPage(searchViewModel)
-                "profile" -> AuthPage(accountViewModel)
+                "profile" -> ProfilePage()
             }
         }
     }

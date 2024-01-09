@@ -20,7 +20,6 @@ package me.him188.ani.datasources.dmhy.impl
 
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
-import io.ktor.client.engine.HttpClientEngineConfig
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.engine.cio.CIOEngineConfig
 import io.ktor.client.plugins.HttpRequestRetry
@@ -50,7 +49,7 @@ import org.jsoup.nodes.Document
 import kotlin.time.Duration.Companion.seconds
 
 internal class DmhyClientImpl(
-    engineConfig: HttpClientEngineConfig.() -> Unit,
+    engineConfig: HttpClientConfig<*>.() -> Unit,
 ) : DmhyClient {
     @Suppress("DEPRECATION")
     private val network: Network = Network(createHttpClient(engineConfig))
@@ -63,12 +62,8 @@ internal class DmhyClientImpl(
 
 @Deprecated("")
 fun createHttpClient(
-    engineConfig: HttpClientEngineConfig.() -> Unit = {},
     clientConfig: HttpClientConfig<CIOEngineConfig>.() -> Unit = {},
 ) = HttpClient(CIO) {
-    engine {
-        engineConfig()
-    }
     install(HttpRequestRetry) {
         maxRetries = 3
         delayMillis { 1000 }

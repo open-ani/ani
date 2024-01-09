@@ -28,7 +28,9 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.runtime.Stable
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -38,7 +40,7 @@ import me.him188.ani.app.activity.showSnackbarAsync
 import me.him188.ani.app.app.LocalAppSettingsManagerImpl
 import me.him188.ani.app.i18n.ResourceBundle
 import me.him188.ani.app.i18n.loadResourceBundle
-import me.him188.ani.app.platform.CommonKoinModule
+import me.him188.ani.app.platform.getCommonKoinModule
 import me.him188.ani.app.ux.showDialog
 import org.koin.core.context.startKoin
 import java.io.File
@@ -97,8 +99,9 @@ class AniApplication : Application() {
         lateinit var resourceBundle: ResourceBundle
 
         init {
+            @OptIn(DelicateCoroutinesApi::class)
             startKoin {
-                modules(CommonKoinModule)
+                modules(getCommonKoinModule({ context }, GlobalScope))
                 modules(AndroidModules)
             }
         }

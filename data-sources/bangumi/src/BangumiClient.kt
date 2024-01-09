@@ -46,7 +46,6 @@ import me.him188.ani.datasources.bangumi.client.BangumiClientEpisodes
 import me.him188.ani.datasources.bangumi.client.BangumiClientSubjects
 import me.him188.ani.datasources.bangumi.client.BangumiEpType
 import me.him188.ani.datasources.bangumi.client.BangumiEpisode
-import me.him188.ani.datasources.bangumi.models.BangumiAccessToken
 import me.him188.ani.datasources.bangumi.models.search.BangumiSort
 import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubject
 import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectDetails
@@ -70,16 +69,30 @@ interface BangumiClient : Closeable {
     "user_id" : USER_ID
     }
      */
+
     @Serializable
     data class GetAccessTokenResponse(
-        @SerialName("expires_in") val expiresIn: Int,
-        @SerialName("user_id") val userId: Int,
+        @SerialName("expires_in") val expiresIn: Long,
+        @SerialName("user_id") val userId: Long,
         @SerialName("access_token") val accessToken: String,
         @SerialName("refresh_token") val refreshToken: String,
     )
 
-    suspend fun getAccessToken(code: String): BangumiAccessToken
-    suspend fun refreshAccessToken(refreshToken: String): BangumiAccessToken
+    /**
+     * 用 OAuth 回调的 code 换 access token 和 refresh token
+     */
+    suspend fun exchangeTokens(code: String): GetAccessTokenResponse
+    suspend fun refreshAccessToken(refreshToken: String): GetAccessTokenResponse
+
+    @Serializable
+    data class GetTokenStatusResponse(
+        @SerialName("access_token") val accessToken: String,
+        @SerialName("client_id") val clientId: String,
+        @SerialName("expires") val expires: Long, // timestamp
+        @SerialName("user_id") val userId: Int,
+    )
+
+    suspend fun getTokenStatus(accessToken: String): GetTokenStatusResponse
 
     val api: BangumiApi
 
@@ -105,28 +118,54 @@ internal class BangumiClientImpl(
     private val clientSecret: String,
     httpClientConfiguration: HttpClientConfig<*>.() -> Unit = {},
 ) : BangumiClient {
-    override suspend fun getAccessToken(code: String): BangumiAccessToken {
+    override suspend fun exchangeTokens(code: String): BangumiClient.GetAccessTokenResponse {
         val resp = httpClient.post("$BANGUMI_HOST/oauth/access_token") {
-            parameter("grant_type", "authorization_code")
-            parameter("client_id", clientId)
-            parameter("client_secret", clientSecret)
-            parameter("code", code)
-            parameter("redirect_uri", "ani://bangumi-oauth-callback")
+            contentType(ContentType.Application.Json)
+            setBody(buildJsonObject {
+                put("grant_type", "authorization_code")
+                put("client_id", clientId)
+                put("client_secret", clientSecret)
+                put("code", code)
+                put("redirect_uri", "ani://bangumi-oauth-callback")
+            })
         }
 
         if (!resp.status.isSuccess()) {
             throw IllegalStateException("Failed to get access token: $resp")
         }
 
-        val body = resp.body<BangumiClient.GetAccessTokenResponse>()
-        return BangumiAccessToken(
-            body.userId.toString(),
-            body.accessToken
-        )
+        return resp.body<BangumiClient.GetAccessTokenResponse>()
     }
 
-    override suspend fun refreshAccessToken(refreshToken: String): BangumiAccessToken {
-        TODO("Not yet implemented")
+    override suspend fun refreshAccessToken(refreshToken: String): BangumiClient.GetAccessTokenResponse {
+        val resp = httpClient.post("$BANGUMI_HOST/oauth/access_token") {
+            contentType(ContentType.Application.Json)
+            setBody(buildJsonObject {
+                put("grant_type", "refresh_token")
+                put("client_id", clientId)
+                put("client_secret", clientSecret)
+                put("refresh_token", refreshToken)
+                put("redirect_uri", "ani://bangumi-oauth-callback")
+            })
+        }
+
+        if (!resp.status.isSuccess()) {
+            throw IllegalStateException("Failed to get access token: $resp")
+        }
+
+        return resp.body<BangumiClient.GetAccessTokenResponse>()
+    }
+
+    override suspend fun getTokenStatus(accessToken: String): BangumiClient.GetTokenStatusResponse {
+        val resp = httpClient.post("$BANGUMI_HOST/oauth/token_status") {
+            parameter("access_token", accessToken)
+        }
+
+        if (!resp.status.isSuccess()) {
+            throw IllegalStateException("Failed to get token status: $resp")
+        }
+
+        return resp.body<BangumiClient.GetTokenStatusResponse>()
     }
 
     override val api = BangumiApi(BANGUMI_API_HOST, OkHttpClient.Builder().apply {

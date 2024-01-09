@@ -27,7 +27,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.selects.SelectClause0
 import me.him188.ani.app.ProvideCompositionLocalsForPreview
-import me.him188.ani.app.preview.PreviewData
+import me.him188.ani.app.ui.foundation.PreviewData
 import me.him188.ani.datasources.api.SearchSession
 import me.him188.ani.datasources.api.Subject
 

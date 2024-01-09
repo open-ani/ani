@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.withContext
@@ -29,7 +30,9 @@ import me.him188.ani.datasources.bangumi.processing.nameCNOrName
 import me.him188.ani.datasources.bangumi.processing.renderEpisodeSp
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import org.openapitools.client.models.EpisodeCollectionType
 import org.openapitools.client.models.EpisodeDetail
+import org.openapitools.client.models.PutUserEpisodeCollectionRequest
 import java.util.concurrent.ConcurrentLinkedQueue
 
 @Stable
@@ -61,6 +64,25 @@ class EpisodeViewModel(
     val episodeTitle = episode.filterNotNull().mapLatest { episode ->
         episode.nameCNOrName()
     }.stateInBackground()
+
+
+    private val remoteEpisodeWatched = episode.filterNotNull().map {
+        bangumiClient.api.getUserEpisodeCollection(it.id).type == EpisodeCollectionType._2
+    }
+    private val localEpisodeWatched = MutableStateFlow(false)
+    val episodeWatched = merge(remoteEpisodeWatched, localEpisodeWatched).stateInBackground(false)
+
+    fun setEpisodeWatched(watched: Boolean) {
+        episode.value?.let {
+            bangumiClient.api.putUserEpisodeCollection(
+                it.id, PutUserEpisodeCollectionRequest(
+                    type = if (watched) EpisodeCollectionType._2 else EpisodeCollectionType._1
+                )
+            )
+        }
+        localEpisodeWatched.value = watched
+    }
+
 
     // 动漫花园等数据源搜搜结果
     private val _isPlaySourcesLoading = MutableStateFlow(true)

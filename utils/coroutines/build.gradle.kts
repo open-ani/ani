@@ -16,22 +16,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.ani.app.ui.auth
+plugins {
+    kotlin("jvm")
+}
 
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import me.him188.ani.app.ui.foundation.AbstractViewModel
-import me.him188.ani.datasources.bangumi.BangumiClient
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
-
-class AccountViewModel : AbstractViewModel(), KoinComponent {
-    private val bangumiClient: BangumiClient by inject()
-    private val _code: MutableStateFlow<String?> = MutableStateFlow(null)
-    val code: StateFlow<String?> get() = _code
-
-    suspend fun setCode(code: String) {
-        _code.value = code
-        println(bangumiClient.getAccessToken(code))
-    }
+dependencies {
+    api(libs.kotlinx.coroutines.core)
+    testImplementation(libs.kotlinx.coroutines.test)
 }

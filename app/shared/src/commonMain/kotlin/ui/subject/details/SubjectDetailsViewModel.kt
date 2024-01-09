@@ -10,8 +10,8 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runInterruptible
+import me.him188.ani.app.navigation.SubjectNavigator
 import me.him188.ani.app.platform.Context
-import me.him188.ani.app.ui.event.SubjectNavigator
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.datasources.api.PageBasedSearchSession
 import me.him188.ani.datasources.bangumi.BangumiClient

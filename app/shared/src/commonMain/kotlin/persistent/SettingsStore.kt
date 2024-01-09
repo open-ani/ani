@@ -20,9 +20,18 @@ package me.him188.ani.app.persistent
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.longPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import me.him188.ani.app.platform.Context
 
 
 expect val Context.settingStore: DataStore<Preferences>
 
 expect val Context.tokenStore: DataStore<Preferences>
+
+object TokenStoreKeys {
+    val USER_ID = longPreferencesKey("user_id")
+    val REFRESH_TOKEN = stringPreferencesKey("refresh_token")
+    val ACCESS_TOKEN = stringPreferencesKey("access_token")
+    val ACCESS_TOKEN_EXPIRE_AT = longPreferencesKey("access_token_expire_at")
+}

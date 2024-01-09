@@ -18,7 +18,7 @@
 
 package me.him188.ani.datasources.dmhy
 
-import io.ktor.client.engine.HttpClientEngineConfig
+import io.ktor.client.HttpClientConfig
 import me.him188.ani.datasources.api.DownloadProvider
 import me.him188.ani.datasources.api.DownloadSearchQuery
 import me.him188.ani.datasources.api.SearchSession
@@ -30,7 +30,7 @@ interface DmhyClient {
     fun startSearchSession(filter: DownloadSearchQuery): SearchSession<Topic>
 
     companion object Factory {
-        fun create(engineConfig: HttpClientEngineConfig.() -> Unit): DmhyClient =
+        fun create(engineConfig: HttpClientConfig<*>.() -> Unit): DmhyClient =
             DmhyClientImpl(engineConfig)
     }
 }

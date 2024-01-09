@@ -1,4 +1,4 @@
-package me.him188.ani.app.preview
+package me.him188.ani.app.ui.foundation
 
 import me.him188.ani.datasources.api.Subject
 import me.him188.ani.datasources.api.SubjectImages

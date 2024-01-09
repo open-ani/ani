@@ -5,6 +5,7 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import me.him188.ani.datasources.bangumi.serializers.CharacterTypeAdapter
 import me.him188.ani.datasources.bangumi.serializers.PersonTypeAdapter
 import me.him188.ani.datasources.bangumi.serializers.SubjectTypeAdapter
+import me.him188.ani.datasources.bangumi.serializers.UserGroupAdapter
 
 object Serializer {
     @JvmStatic
@@ -20,6 +21,7 @@ object Serializer {
         .add(BigIntegerAdapter())
         .add(PersonTypeAdapter())
         .add(SubjectTypeAdapter())
+        .add(UserGroupAdapter())
         .add(CharacterTypeAdapter())
 
     @JvmStatic

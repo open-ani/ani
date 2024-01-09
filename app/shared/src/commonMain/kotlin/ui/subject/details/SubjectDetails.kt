@@ -58,10 +58,10 @@ import io.kamel.core.Resource
 import io.kamel.image.asyncPainterResource
 import me.him188.ani.app.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.platform.LocalContext
-import me.him188.ani.app.preview.PreviewData
 import me.him188.ani.app.ui.foundation.AniKamelImage
 import me.him188.ani.app.ui.foundation.AniTopAppBar
 import me.him188.ani.app.ui.foundation.IconImagePlaceholder
+import me.him188.ani.app.ui.foundation.PreviewData
 import me.him188.ani.app.ui.foundation.backgroundWithGradient
 import me.him188.ani.app.ui.theme.weaken
 import me.him188.ani.datasources.bangumi.client.BangumiEpisode

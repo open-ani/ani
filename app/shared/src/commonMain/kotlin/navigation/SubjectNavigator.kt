@@ -1,4 +1,4 @@
-package me.him188.ani.app.ui.event
+package me.him188.ani.app.navigation
 
 import me.him188.ani.app.platform.Context
 

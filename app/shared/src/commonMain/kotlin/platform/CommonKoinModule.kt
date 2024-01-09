@@ -18,6 +18,13 @@
 
 package me.him188.ani.app.platform
 
+import io.ktor.client.plugins.UserAgent
+import kotlinx.coroutines.CoroutineScope
+import me.him188.ani.app.data.TokenRepository
+import me.him188.ani.app.data.TokenRepositoryImpl
+import me.him188.ani.app.persistent.tokenStore
+import me.him188.ani.app.session.SessionManager
+import me.him188.ani.app.session.SessionManagerImpl
 import me.him188.ani.datasources.api.DownloadProvider
 import me.him188.ani.datasources.api.SubjectProvider
 import me.him188.ani.datasources.bangumi.BangumiClient
@@ -26,12 +33,36 @@ import me.him188.ani.datasources.dmhy.DmhyClient
 import me.him188.ani.datasources.dmhy.DmhyDownloadProvider
 import org.koin.dsl.module
 
-val CommonKoinModule = module {
-    single<DmhyClient> { DmhyClient.create { } }
+fun getCommonKoinModule(getContext: () -> Context, coroutineScope: CoroutineScope) = module {
+    single<TokenRepository> { TokenRepositoryImpl(getContext().tokenStore) }
+    single<DmhyClient> {
+        DmhyClient.create {
+            install(UserAgent) {
+                agent = getAniUserAgent(currentAniBuildConfig.versionName)
+            }
+        }
+    }
     single<BangumiClient> { createBangumiClient() }
     single<SubjectProvider> { BangumiSubjectProvider(get<BangumiClient>()) }
     single<DownloadProvider> { DmhyDownloadProvider() }
+    single<SessionManager> { SessionManagerImpl(coroutineScope) }
 }
 
+interface AniBuildConfig {
+    val versionName: String
+    val bangumiOauthClientId: String
+    val bangumiOauthClientSecret: String
+
+    companion object
+}
+
+expect val currentAniBuildConfig: AniBuildConfig
+
+fun getAniUserAgent(
+    version: String,
+    platform: String = Platform.currentPlatform().name,
+): String {
+    return "him188/ani/$version ($platform) (https://github.com/Him188/ani)"
+}
 
 expect fun createBangumiClient(): BangumiClient

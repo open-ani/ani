@@ -1,4 +1,4 @@
-package me.him188.ani.app.ui.auth
+package me.him188.ani.app.ui.profile
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
  */
 @Composable
 expect fun BangumiOAuthRequest(
-    onUpdateCode: (String) -> Unit,
+    onComplete: (String) -> Unit,
+    onFailed: (Throwable) -> Unit,
     modifier: Modifier = Modifier,
 )
