@@ -31,7 +31,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.flow.map
 import me.him188.ani.app.platform.isInLandscapeMode
 import me.him188.ani.app.ui.collection.CollectionPage
 import me.him188.ani.app.ui.collection.MyCollectionsViewModel
@@ -101,11 +100,13 @@ fun MainScreenPortrait(
             }
         },
         bottomBar = {
+            fun closeSearch() {
+                searchViewModel.searchActive.value = false
+            }
+
             Column(Modifier.alpha(0.97f)) {
                 Column(Modifier.background(MaterialTheme.colorScheme.surface)) {
                     Divider(thickness = 1.dp)
-                    val currentRoute by navigator.currentEntry.map { it?.route?.route }
-                        .collectAsStateWithLifecycle(null)
 
                     BottomAppBar(
                         Modifier
@@ -115,20 +116,29 @@ fun MainScreenPortrait(
                         tonalElevation = 0.dp,
                     ) {
                         TabNavigationItem(
-                            currentRoute?.startsWith("home") == true,
-                            { navigator.navigate("home") },
+                            selectedTab == "home",
+                            {
+                                selectedTab = "home"
+                                closeSearch()
+                            },
                             icon = { Icon(Icons.Outlined.Home, null) },
                             title = { Text(text = "首页") },
                         )
                         TabNavigationItem(
-                            currentRoute?.startsWith("collection") == true,
-                            { navigator.navigate("collection") },
+                            selectedTab == "collection",
+                            {
+                                selectedTab = "collection"
+                                closeSearch()
+                            },
                             icon = { Icon(Icons.Outlined.Search, null) },
                             title = { Text(text = "追番") },
                         )
                         TabNavigationItem(
-                            currentRoute?.startsWith("profile") == true,
-                            { navigator.navigate("profile") },
+                            selectedTab == "profile",
+                            {
+                                selectedTab = "profile"
+                                closeSearch()
+                            },
                             icon = { Icon(Icons.Outlined.Person, null) },
                             title = { Text(text = "我的") },
                         )
@@ -140,20 +150,13 @@ fun MainScreenPortrait(
         CompositionLocalProvider(LocalContentPaddings provides paddingValues) {
             NavHost(navigator, initialRoute = "home") {
                 scene("home") {
-                    HomePage(searchViewModel)
-                }
-                scene("collection") {
-                    CollectionPage(myCollectionsViewModel)
-                }
-                scene("profile") {
-                    ProfilePage()
+                    when (selectedTab) {
+                        "home" -> HomePage(searchViewModel)
+                        "collection" -> CollectionPage(myCollectionsViewModel)
+                        "profile" -> ProfilePage()
+                    }
                 }
             }
-//            when (selectedTab) {
-//                "home" -> HomePage(searchViewModel)
-//                "collection" -> CollectionPage(myCollectionsViewModel)
-//                "profile" -> ProfilePage()
-//            }
         }
     }
 }
