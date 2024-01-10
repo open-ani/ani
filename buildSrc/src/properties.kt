@@ -3,11 +3,14 @@ import java.io.File
 import java.util.Properties
 
 fun Project.getProperty(name: String) =
+    getPropertyOrNull(name) ?: error("Property $name not found")
+
+fun Project.getPropertyOrNull(name: String) =
     System.getProperty(name)
         ?: System.getenv(name)
         ?: properties[name]?.toString()
         ?: getLocalProperty(name)
-        ?: extensions.extraProperties.get(name).toString()
+        ?: extensions.extraProperties.runCatching { get(name).toString() }.getOrNull()
 
 
 val Project.localPropertiesFile: File get() = project.rootProject.file("local.properties")

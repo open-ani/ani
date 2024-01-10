@@ -124,6 +124,13 @@ kotlin {
     }
 }
 
+val bangumiClientId = getPropertyOrNull("bangumi.oauth.client.id")
+val bangumiClientSecret = getPropertyOrNull("bangumi.oauth.client.secret")
+
+if (bangumiClientId == null || bangumiClientSecret == null) {
+    logger.warn("bangumi.oauth.client.id or bangumi.oauth.client.secret is not set. Bangumi authorization will not work. Get a token from https://bgm.tv/dev/app and set them in local.properties.")
+}
+
 android {
     namespace = "me.him188.ani"
     compileSdk = getIntProperty("android.compile.sdk")
@@ -131,8 +138,8 @@ android {
     defaultConfig {
         minSdk = getIntProperty("android.min.sdk")
         buildConfigField("String", "VERSION_NAME", "\"${getProperty("version.name")}\"")
-        buildConfigField("String", "BANGUMI_OAUTH_CLIENT_ID", "\"${getProperty("bangumi.oauth.client.id")}\"")
-        buildConfigField("String", "BANGUMI_OAUTH_CLIENT_SECRET", "\"${getProperty("bangumi.oauth.client.secret")}\"")
+        buildConfigField("String", "BANGUMI_OAUTH_CLIENT_ID", "\"$bangumiClientId\"")
+        buildConfigField("String", "BANGUMI_OAUTH_CLIENT_SECRET", "\"$bangumiClientSecret\"")
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
