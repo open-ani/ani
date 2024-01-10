@@ -56,6 +56,8 @@ fun Project.allKotlinCompilations(action: (KotlinCompilation<KotlinCommonOptions
     }
 }
 
+//val ANI_DISAMBIGUATION: Attribute<String> = Attribute.of("me.him188.ani.disambiguation", String::class.java)
+
 inline fun org.gradle.api.NamedDomainObjectProvider<KotlinSourceSet>.dependencies(crossinline block: context(KotlinSourceSet) KotlinDependencyHandler.() -> Unit) {
     configure {
         dependencies {

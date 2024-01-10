@@ -29,10 +29,10 @@ plugins {
 }
 
 kotlin {
+    jvmToolchain(17)
+
     androidTarget()
-    jvm("desktop") {
-        jvmToolchain(17)
-    }
+    jvm("desktop")
 
     configureFlattenMppSourceSets()
 
@@ -42,79 +42,15 @@ kotlin {
         removeIf { it.name == "androidTestFixtures" }
         removeIf { it.name == "androidTestFixturesDebug" }
         removeIf { it.name == "androidTestFixturesRelease" }
+    }
 
-        val commonMain by getting {
-            dependencies {
-                api(libs.kotlinx.coroutines.core)
-                api(libs.kotlinx.serialization.json)
-                compileOnly(libs.atomicfu) // No need to include in the final build since atomicfu Gradle will optimize it out
+    sourceSets.commonMain.dependencies {
+        api(projects.app.shared)
+    }
 
-                // Compose
-                api(compose.foundation)
-                api(compose.animation)
-                api(compose.ui)
-                api(compose.material3)
-                api(compose.materialIconsExtended)
-                api(compose.runtime)
-
-                // Subprojects: data sources and utils
-                api(projects.dataSources.dmhy)
-                api(projects.dataSources.bangumi)
-                api(projects.utils.slf4jKt)
-
-                // Ktor
-                api(libs.ktor.client.websockets)
-                api(libs.ktor.client.logging)
-
-                // Others
-                api(libs.koin.core) // dependency injection
-                api(libs.directories) // Data directories on all OSes
-                api(libs.kamel.image) // Image loading
-                api(libs.datastore.preferences.core) // Preferences
-                api(libs.precompose) // Navigator
-                api(libs.precompose.koin) // Navigator
-                api(libs.precompose.viewmodel) // Navigator
-
-                implementation(libs.slf4j.simple)
-            }
-        }
-
-        commonMain.resources.srcDir(projectDir.resolve("src/androidMain/res/raw"))
-
-        val commonTest by getting {
-            dependencies {
-                implementation(compose.desktop.uiTestJUnit4)
-            }
-        }
-
-        val androidMain by getting {
-            dependencies {
-                api(libs.kotlinx.coroutines.android)
-                api(libs.datastore.preferences)
-                api(libs.androidx.appcompat)
-                api(libs.androidx.core.ktx)
-                api(libs.koin.android)
-
-                // Compose
-                api(libs.androidx.compose.ui.tooling.preview)
-                api(libs.androidx.compose.material3)
-
-                api(libs.androidx.media3.ui)
-                api(libs.androidx.media3.exoplayer)
-            }
-        }
-
-        val desktopMain by getting {
-            dependencies {
-                api(compose.desktop.currentOs) {
-                    exclude(compose.material) // We use material3
-                }
-                api(compose.material3)
-                api(projects.utils.slf4jKt)
-                api(libs.kotlinx.coroutines.swing)
-                runtimeOnly(libs.kotlinx.coroutines.debug)
-            }
-        }
+    sourceSets.androidMain.dependencies {
+        api(libs.androidx.media3.ui)
+        api(libs.androidx.media3.exoplayer)
     }
 }
 
@@ -134,10 +70,7 @@ android {
         isShrinkResources = false
         proguardFiles(
             getDefaultProguardFile("proguard-android-optimize.txt"),
-            projects.app.android.dependencyProject.projectDir.resolve("proguard-rules.pro")
-                .also {
-                    check(it.exists()) { "Could not find ${it.absolutePath}" }
-                }
+            *sharedAndroidProguardRules(),
         )
     }
     buildFeatures {
