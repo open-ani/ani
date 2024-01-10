@@ -20,6 +20,8 @@ package me.him188.ani.app.platform
 
 import io.ktor.client.plugins.UserAgent
 import kotlinx.coroutines.CoroutineScope
+import me.him188.ani.app.data.CollectionRepository
+import me.him188.ani.app.data.CollectionRepositoryImpl
 import me.him188.ani.app.data.TokenRepository
 import me.him188.ani.app.data.TokenRepositoryImpl
 import me.him188.ani.app.persistent.tokenStore
@@ -46,6 +48,7 @@ fun getCommonKoinModule(getContext: () -> Context, coroutineScope: CoroutineScop
     single<BangumiClient> { createBangumiClient() }
     single<SubjectProvider> { BangumiSubjectProvider(get<BangumiClient>()) }
     single<DownloadProvider> { DmhyDownloadProvider() }
+    single<CollectionRepository> { CollectionRepositoryImpl() }
 }
 
 interface AniBuildConfig {
