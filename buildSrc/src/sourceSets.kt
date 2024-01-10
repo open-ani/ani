@@ -25,6 +25,8 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinSingleTargetExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
+import org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler
+import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
 
 /*
@@ -70,5 +72,13 @@ val Project.isKotlinMpp: Boolean get() = extensions.findByName("kotlin") is Kotl
 fun Project.allKotlinCompilations(action: (KotlinCompilation<KotlinCommonOptions>) -> Unit) {
     allKotlinTargets().all {
         compilations.all(action)
+    }
+}
+
+inline fun org.gradle.api.NamedDomainObjectProvider<KotlinSourceSet>.dependencies(crossinline block: context(KotlinSourceSet) KotlinDependencyHandler.() -> Unit) {
+    configure {
+        dependencies {
+            block(this)
+        }
     }
 }

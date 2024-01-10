@@ -28,15 +28,11 @@ plugins {
     id("kotlinx-atomicfu")
 }
 
-kotlin.sourceSets.all {
-    languageSettings.enableLanguageFeature("ContextReceivers")
-}
+extra.set("ani.jvm.target", 17)
 
 kotlin {
     androidTarget()
-    jvm("desktop") {
-        jvmToolchain(17)
-    }
+    jvm("desktop")
 
     targets.all {
         compilations.all {
@@ -50,79 +46,70 @@ kotlin {
         removeIf { it.name == "androidTestFixtures" }
         removeIf { it.name == "androidTestFixturesDebug" }
         removeIf { it.name == "androidTestFixturesRelease" }
-
-        val commonMain by getting {
-            dependencies {
-                api(libs.kotlinx.coroutines.core)
-                api(libs.kotlinx.serialization.json)
-                compileOnly(libs.atomicfu) // No need to include in the final build since atomicfu Gradle will optimize it out
-
-                // Compose
-                api(compose.foundation)
-                api(compose.animation)
-                api(compose.ui)
-                api(compose.material3)
-                api(compose.materialIconsExtended)
-                api(compose.runtime)
-
-                // Subprojects: data sources and utils
-                api(projects.dataSources.dmhy)
-                api(projects.dataSources.bangumi)
-                api(projects.utils.slf4jKt)
-                api(projects.utils.coroutines)
-
-                // Ktor
-                api(libs.ktor.client.websockets)
-                api(libs.ktor.client.logging)
-
-                // Others
-                api(libs.koin.core) // dependency injection
-                api(libs.directories) // Data directories on all OSes
-                api(libs.kamel.image) // Image loading
-                api(libs.datastore.preferences.core) // Preferences
-                api(libs.precompose) // Navigator
-                api(libs.precompose.koin) // Navigator
-                api(libs.precompose.viewmodel) // Navigator
-
-                implementation(libs.slf4j.simple)
-            }
-        }
-
-        commonMain.resources.srcDir(projectDir.resolve("src/androidMain/res/raw"))
-
-        val commonTest by getting {
-            dependencies {
-                implementation(compose.desktop.uiTestJUnit4)
-            }
-        }
-
-        val androidMain by getting {
-            dependencies {
-                api(libs.kotlinx.coroutines.android)
-                api(libs.datastore.preferences)
-                api(libs.androidx.appcompat)
-                api(libs.androidx.core.ktx)
-                api(libs.koin.android)
-
-                // Compose
-                api(libs.androidx.compose.ui.tooling.preview)
-                api(libs.androidx.compose.material3)
-            }
-        }
-
-        val desktopMain by getting {
-            dependencies {
-                api(compose.desktop.currentOs) {
-                    exclude(compose.material) // We use material3
-                }
-                api(compose.material3)
-                api(projects.utils.slf4jKt)
-                api(libs.kotlinx.coroutines.swing)
-                runtimeOnly(libs.kotlinx.coroutines.debug)
-            }
-        }
     }
 }
+
+kotlin {
+    sourceSets.commonMain.dependencies {
+        api(libs.kotlinx.coroutines.core)
+        api(libs.kotlinx.serialization.json)
+        compileOnly(libs.atomicfu) // No need to include in the final build since atomicfu Gradle will optimize it out
+
+        // Compose
+        api(compose.foundation)
+        api(compose.animation)
+        api(compose.ui)
+        api(compose.material3)
+        api(compose.materialIconsExtended)
+        api(compose.runtime)
+
+        // Subprojects: data sources and utils
+        api(projects.dataSources.dmhy)
+        api(projects.dataSources.bangumi)
+        api(projects.utils.slf4jKt)
+        api(projects.utils.coroutines)
+
+        // Ktor
+        api(libs.ktor.client.websockets)
+        api(libs.ktor.client.logging)
+
+        // Others
+        api(libs.koin.core) // dependency injection
+        api(libs.directories) // Data directories on all OSes
+        api(libs.kamel.image) // Image loading
+        api(libs.datastore.preferences.core) // Preferences
+        api(libs.precompose) // Navigator
+        api(libs.precompose.koin) // Navigator
+        api(libs.precompose.viewmodel) // Navigator
+
+        implementation(libs.slf4j.simple)
+    }
+
+    sourceSets.androidMain.dependencies {
+        api(libs.kotlinx.coroutines.android)
+        api(libs.datastore.preferences)
+        api(libs.androidx.appcompat)
+        api(libs.androidx.core.ktx)
+        api(libs.koin.android)
+
+        // Compose
+        api(libs.androidx.compose.ui.tooling.preview)
+        api(libs.androidx.compose.material3)
+    }
+
+    sourceSets.named("desktopMain").dependencies {
+        api(compose.desktop.currentOs) {
+            exclude(compose.material) // We use material3
+        }
+        api(compose.material3)
+        api(projects.utils.slf4jKt)
+        api(libs.kotlinx.coroutines.swing)
+        runtimeOnly(libs.kotlinx.coroutines.debug)
+    }
+}
+
+
+configureFlattenMppSourceSets()
 
 val bangumiClientId = getPropertyOrNull("bangumi.oauth.client.id")
 val bangumiClientSecret = getPropertyOrNull("bangumi.oauth.client.secret")
@@ -134,26 +121,18 @@ if (bangumiClientId == null || bangumiClientSecret == null) {
 android {
     namespace = "me.him188.ani"
     compileSdk = getIntProperty("android.compile.sdk")
-    sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     defaultConfig {
         minSdk = getIntProperty("android.min.sdk")
         buildConfigField("String", "VERSION_NAME", "\"${getProperty("version.name")}\"")
         buildConfigField("String", "BANGUMI_OAUTH_CLIENT_ID", "\"$bangumiClientId\"")
         buildConfigField("String", "BANGUMI_OAUTH_CLIENT_SECRET", "\"$bangumiClientSecret\"")
     }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
     buildTypes.getByName("release") {
         isMinifyEnabled = true
         isShrinkResources = false
         proguardFiles(
             getDefaultProguardFile("proguard-android-optimize.txt"),
-            projects.app.android.dependencyProject.projectDir.resolve("proguard-rules.pro")
-                .also {
-                    check(it.exists()) { "Could not find ${it.absolutePath}" }
-                }
+            *sharedAndroidProguardRules(),
         )
     }
     buildFeatures {

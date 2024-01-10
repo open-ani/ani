@@ -16,17 +16,23 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import com.android.build.api.dsl.CommonExtension
+import kotlinx.atomicfu.plugin.gradle.withKotlinTargets
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.testing.Test
+import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.gradle.kotlin.dsl.*
+import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmAndroidCompilation
 import org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
+import java.io.File
 
 /*
  * Ani
@@ -79,6 +85,9 @@ fun Project.configureFlattenSourceSets() {
  *
  * 变化:
  * ```
+ * src/androidMain/res -> androidRes
+ * src/androidMain/assets -> androidAssets
+ * src/androidMain/aidl -> androidAidl
  * src/${targetName}Main/kotlin -> ${targetName}Main
  * src/${targetName}Main/resources -> ${targetName}Resources
  * src/${targetName}Test/kotlin -> ${targetName}Test
@@ -109,6 +118,16 @@ fun Project.configureFlattenMppSourceSets() {
             setForTarget(targetName)
         }
     }
+
+    extensions.configure(CommonExtension::class) {
+        this.sourceSets["main"].res.srcDirs(projectDir.resolve("androidRes"))
+        this.sourceSets["main"].assets.srcDirs(projectDir.resolve("androidAssets"))
+        this.sourceSets["main"].aidl.srcDirs(projectDir.resolve("androidAidl"))
+    }
+}
+
+fun Project.sharedAndroidProguardRules(): Array<File> {
+    return arrayOf(file(project(":app:shared").projectDir.resolve("proguard-rules.pro")))
 }
 
 val testOptInAnnotations = arrayOf(
@@ -158,30 +177,59 @@ fun KotlinSourceSet.configureKotlinOptIns() {
     }
 }
 
-fun Project.preConfigureJvmTarget() {
-    val defaultVer = JavaVersion.VERSION_1_8
+val DEFAULT_JVM_TARGET = JavaVersion.VERSION_1_8
+
+
+private fun Project.getProjectPreferredJvmTargetVersion() = extra.runCatching { get("ani.jvm.target") }.fold(
+    onSuccess = { JavaVersion.toVersion(it.toString()) },
+    onFailure = { DEFAULT_JVM_TARGET }
+)
+
+fun Project.configureJvmTarget() {
+    val ver = getProjectPreferredJvmTargetVersion()
+    logger.info("JVM target for project ${this.path} is: $ver")
+
+    // 我也不知道到底设置谁就够了, 反正全都设置了
 
     tasks.withType(KotlinJvmCompile::class.java) {
-        kotlinOptions.jvmTarget = defaultVer.toString()
+        kotlinOptions.jvmTarget = ver.toString()
     }
 
     tasks.withType(JavaCompile::class.java) {
-        sourceCompatibility = defaultVer.toString()
-        targetCompatibility = defaultVer.toString()
+        sourceCompatibility = ver.toString()
+        targetCompatibility = ver.toString()
     }
-}
 
-fun Project.configureJvmTarget() {
-    val defaultVer = JavaVersion.VERSION_1_8
+    extensions.findByType(KotlinProjectExtension::class)?.apply {
+        jvmToolchain(ver.getMajorVersion().toInt())
+    }
+
+    extensions.findByType(JavaPluginExtension::class)?.apply {
+        toolchain {
+            languageVersion.set(JavaLanguageVersion.of(ver.getMajorVersion()))
+            sourceCompatibility = ver
+            targetCompatibility = ver
+        }
+    }
+
+    withKotlinTargets {
+        it.compilations.all {
+            if (this is KotlinJvmAndroidCompilation) {
+                kotlinOptions.jvmTarget = ver.toString()
+            }
+        }
+    }
 
     extensions.findByType(JavaPluginExtension::class.java)?.run {
-        sourceCompatibility = defaultVer
-        targetCompatibility = defaultVer
+        sourceCompatibility = ver
+        targetCompatibility = ver
     }
 
-    allKotlinTargets().all {
-        if (this !is KotlinJvmTarget) return@all
-        this.testRuns["test"].executionTask.configure { useJUnitPlatform() }
+    extensions.findByType(CommonExtension::class)?.apply {
+        compileOptions {
+            sourceCompatibility = ver
+            targetCompatibility = ver
+        }
     }
 }
 
@@ -197,6 +245,12 @@ fun Project.configureKotlinTestSettings() {
     tasks.withType(Test::class) {
         useJUnitPlatform()
     }
+
+    allKotlinTargets().all {
+        if (this !is KotlinJvmTarget) return@all
+        this.testRuns["test"].executionTask.configure { useJUnitPlatform() }
+    }
+
     val b = "Auto-set for project '${project.path}'. (configureKotlinTestSettings)"
     when {
         isKotlinJvmProject -> {

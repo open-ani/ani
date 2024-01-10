@@ -26,6 +26,12 @@ repositories {
     gradlePluginPortal()
 }
 
+kotlin.sourceSets.all {
+    languageSettings {
+        enableLanguageFeature("ContextReceivers")
+    }
+}
+
 sourceSets.main {
     kotlin.srcDir("src")
     resources.srcDir("resources")
