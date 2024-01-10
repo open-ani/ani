@@ -32,7 +32,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -49,6 +48,7 @@ import me.him188.ani.app.ui.interaction.PlatformImplementations
 import me.him188.ani.app.ui.settings.ProxySettingsGroup
 import me.him188.ani.app.ui.settings.SettingsGroup
 import me.him188.ani.app.ui.settings.SyncSettingsGroup
+import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
 @Composable
 fun PreferencesPage(
