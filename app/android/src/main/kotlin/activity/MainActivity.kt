@@ -22,9 +22,6 @@ import android.os.Bundle
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -68,57 +65,60 @@ class MainActivity : AniComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
+            // 当前授权状态
             var authorizationState by remember {
                 mutableStateOf(
-                    if (sessionManager.isSessionValid.value) {
-                        AuthorizationState.SUCCESS
+                    if (sessionManager.isSessionValid.value == true) {
+                        AuthorizationState.SUCCESS // 已经登录
                     } else {
-                        AuthorizationState.PROCESSING
+                        AuthorizationState.PROCESSING // 后台还在处理或者未登录
                     }
                 )
             }
-            when (authorizationState) {
-                AuthorizationState.PROCESSING -> {
-                    LaunchedEffect(key1 = true) {
-                        lifecycleScope.launch {
-                            authorizationState = try {
-                                sessionManager.requireAuthorization(this@MainActivity, false)
-                                AuthorizationState.SUCCESS
-                            } catch (e: AuthorizationCanceledException) {
-                                AuthorizationState.CANCELLED
+
+            AniApp(currentColorScheme) {
+                when (authorizationState) {
+                    AuthorizationState.PROCESSING -> {
+                        LaunchedEffect(key1 = true) {
+                            lifecycleScope.launch {
+                                authorizationState = try {
+                                    sessionManager.requireAuthorization(this@MainActivity, false)
+                                    AuthorizationState.SUCCESS
+                                } catch (e: AuthorizationCanceledException) {
+                                    AuthorizationState.CANCELLED
+                                }
                             }
                         }
                     }
-                }
 
-                AuthorizationState.SUCCESS -> {
-                    AniApp(currentColorScheme) {
-                        MainScreen()
+                    AuthorizationState.SUCCESS -> {
+                    }
+
+                    AuthorizationState.CANCELLED -> {
+//                        AlertDialog(
+//                            onDismissRequest = {
+//                                authorizationState = AuthorizationState.PROCESSING
+//                            },
+//                            confirmButton = {
+//                                TextButton(onClick = {
+//                                    authorizationState = AuthorizationState.PROCESSING
+//                                }) {
+//                                    Text(text = "继续")
+//                                }
+//                            },
+//                            dismissButton = {
+//                                TextButton(onClick = {
+//                                    finish()
+//                                }) {
+//                                    Text(text = "退出")
+//                                }
+//                            },
+//                            text = { Text(text = "您需要登录 Bangumi 账号才能使用 Ani") }
+//                        )
                     }
                 }
 
-                AuthorizationState.CANCELLED -> {
-                    AlertDialog(
-                        onDismissRequest = {
-                            authorizationState = AuthorizationState.PROCESSING
-                        },
-                        confirmButton = {
-                            TextButton(onClick = {
-                                authorizationState = AuthorizationState.PROCESSING
-                            }) {
-                                Text(text = "继续")
-                            }
-                        },
-                        dismissButton = {
-                            TextButton(onClick = {
-                                finish()
-                            }) {
-                                Text(text = "退出")
-                            }
-                        },
-                        text = { Text(text = "您需要登录 Bangumi 账号才能使用 Ani") }
-                    )
-                }
+                MainScreen()
             }
         }
     }

@@ -52,5 +52,23 @@
         <activity
                 android:name=".activity.AuthorizationActivity"
                 android:exported="true" />
+
+        <activity
+                android:name=".activity.AuthorizationCallbackActivity"
+                android:exported="true">
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <!-- If a user clicks on a shared link that uses the "http" scheme, your
+                     app should be able to delegate that traffic to "https". -->
+                <data android:scheme="ani" />
+
+                <!-- Include one or more domains that should be verified. -->
+                <data android:host="bangumi-oauth-callback" />
+            </intent-filter>
+        </activity>
     </application>
 </manifest>

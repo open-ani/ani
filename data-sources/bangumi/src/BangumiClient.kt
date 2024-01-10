@@ -81,8 +81,8 @@ interface BangumiClient : Closeable {
     /**
      * 用 OAuth 回调的 code 换 access token 和 refresh token
      */
-    suspend fun exchangeTokens(code: String): GetAccessTokenResponse
-    suspend fun refreshAccessToken(refreshToken: String): GetAccessTokenResponse
+    suspend fun exchangeTokens(code: String, callbackUrl: String): GetAccessTokenResponse
+    suspend fun refreshAccessToken(refreshToken: String, callbackUrl: String): GetAccessTokenResponse
 
     @Serializable
     data class GetTokenStatusResponse(
@@ -118,7 +118,7 @@ internal class BangumiClientImpl(
     private val clientSecret: String,
     httpClientConfiguration: HttpClientConfig<*>.() -> Unit = {},
 ) : BangumiClient {
-    override suspend fun exchangeTokens(code: String): BangumiClient.GetAccessTokenResponse {
+    override suspend fun exchangeTokens(code: String, callbackUrl: String): BangumiClient.GetAccessTokenResponse {
         val resp = httpClient.post("$BANGUMI_HOST/oauth/access_token") {
             contentType(ContentType.Application.Json)
             setBody(buildJsonObject {
@@ -126,7 +126,7 @@ internal class BangumiClientImpl(
                 put("client_id", clientId)
                 put("client_secret", clientSecret)
                 put("code", code)
-                put("redirect_uri", "ani://bangumi-oauth-callback")
+                put("redirect_uri", callbackUrl)
             })
         }
 
@@ -137,7 +137,10 @@ internal class BangumiClientImpl(
         return resp.body<BangumiClient.GetAccessTokenResponse>()
     }
 
-    override suspend fun refreshAccessToken(refreshToken: String): BangumiClient.GetAccessTokenResponse {
+    override suspend fun refreshAccessToken(
+        refreshToken: String,
+        callbackUrl: String
+    ): BangumiClient.GetAccessTokenResponse {
         val resp = httpClient.post("$BANGUMI_HOST/oauth/access_token") {
             contentType(ContentType.Application.Json)
             setBody(buildJsonObject {
@@ -145,7 +148,7 @@ internal class BangumiClientImpl(
                 put("client_id", clientId)
                 put("client_secret", clientSecret)
                 put("refresh_token", refreshToken)
-                put("redirect_uri", "ani://bangumi-oauth-callback")
+                put("redirect_uri", callbackUrl)
             })
         }
 

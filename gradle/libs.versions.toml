@@ -93,6 +93,7 @@ androidx-appcompat = { module = "androidx.appcompat:appcompat", version = "1.6.1
 androidx-swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version = "1.1.0" }
 androidx-material = { module = "com.google.android.material:material", version = "1.11.0" }
 androidx-material3-window-size-class0 = { module = "androidx.compose.material3:material3-window-size-class", version = "1.1.2" }
+androidx-browser = { module = "androidx.browser:browser", version = "1.7.0" }
 #androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version = "2.7.6" }
 
 androidx-media3-ui = { module = "androidx.media3:media3-ui", version = "1.2.0" }

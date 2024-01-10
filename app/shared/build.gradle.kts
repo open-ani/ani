@@ -91,6 +91,7 @@ kotlin {
         api(libs.androidx.appcompat)
         api(libs.androidx.core.ktx)
         api(libs.koin.android)
+        implementation(libs.androidx.browser)
 
         // Compose
         api(libs.androidx.compose.ui.tooling.preview)

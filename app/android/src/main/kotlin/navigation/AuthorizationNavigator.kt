@@ -15,17 +15,22 @@ import org.koin.core.component.inject
 class AndroidAuthorizationNavigator : AuthorizationNavigator, DefaultLifecycleObserver, KoinComponent {
     private val sessionManager: SessionManager by inject()
 
-    override suspend fun authorize(context: Context, optional: Boolean): AuthorizationResult = mutex.withLock {
-        if (sessionManager.isSessionValid.value) {
-            return@withLock AuthorizationResult.SUCCESS
+    override val authorizationCallbackUrl: String
+        get() = "ani://bangumi-oauth-callback"
+
+    override suspend fun navigateToAuthorization(context: Context, optional: Boolean): AuthorizationResult =
+        mutex.withLock {
+            if (sessionManager.isSessionValid.value == true) {
+                return@withLock AuthorizationResult.SUCCESS
+            }
+
+            check(currentResult == null) { "currentResult should be null" }
+            currentResult = CompletableDeferred()
+            context.startActivity(AuthorizationActivity.getIntent(context, optional))
+            val res = currentResult!!.await()
+            currentResult = null
+            return res
         }
-        check(currentResult == null) { "currentResult should be null" }
-        currentResult = CompletableDeferred()
-        context.startActivity(AuthorizationActivity.getIntent(context, optional))
-        val res = currentResult!!.await()
-        currentResult = null
-        return res
-    }
 
     companion object {
         private val mutex = Mutex()

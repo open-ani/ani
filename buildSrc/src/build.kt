@@ -31,6 +31,7 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmAndroidCompilation
 import org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 import java.io.File
 
@@ -177,7 +178,7 @@ fun KotlinSourceSet.configureKotlinOptIns() {
     }
 }
 
-val DEFAULT_JVM_TARGET = JavaVersion.VERSION_1_8
+val DEFAULT_JVM_TARGET = JavaVersion.VERSION_11
 
 
 private fun Project.getProjectPreferredJvmTargetVersion() = extra.runCatching { get("ani.jvm.target") }.fold(
@@ -192,6 +193,10 @@ fun Project.configureJvmTarget() {
     // 我也不知道到底设置谁就够了, 反正全都设置了
 
     tasks.withType(KotlinJvmCompile::class.java) {
+        kotlinOptions.jvmTarget = ver.toString()
+    }
+
+    tasks.withType(KotlinCompile::class.java) {
         kotlinOptions.jvmTarget = ver.toString()
     }
 

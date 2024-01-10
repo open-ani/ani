@@ -56,10 +56,6 @@ android {
         versionCode = getIntProperty("android.version.code")
         versionName = project.version.toString()
     }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
     composeOptions {
         kotlinCompilerExtensionVersion = libs.versions.jetpack.compose.compiler.get()
     }

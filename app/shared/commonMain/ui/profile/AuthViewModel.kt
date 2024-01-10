@@ -36,8 +36,15 @@ import org.koin.core.component.inject
 class AuthViewModel : AbstractViewModel(), KoinComponent {
     private val sessionManager: SessionManager by inject()
 
+    /**
+     * 当前授权是否正在进行中
+     */
     val isProcessing = sessionManager.processingAuth
-    val needAuth: StateFlow<Boolean> = sessionManager.isSessionValid.map { !it }.stateInBackground(false)
+
+    /**
+     * 需要进行授权
+     */
+    val needAuth: StateFlow<Boolean> = sessionManager.isSessionValid.map { it != true }.stateInBackground(false)
 
     /**
      * 当前是第几次尝试

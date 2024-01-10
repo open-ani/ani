@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -30,12 +31,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.flow.map
 import me.him188.ani.app.platform.isInLandscapeMode
 import me.him188.ani.app.ui.collection.CollectionPage
 import me.him188.ani.app.ui.collection.MyCollectionsViewModel
 import me.him188.ani.app.ui.foundation.TabNavigationItem
 import me.him188.ani.app.ui.profile.ProfilePage
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
+import moe.tlaster.precompose.navigation.NavHost
+import moe.tlaster.precompose.navigation.rememberNavigator
 
 /**
  * 由 bottom bar 等导致的 paddings
@@ -68,6 +72,7 @@ fun MainScreenPortrait(
 ) {
     var selectedTab by remember { mutableStateOf("search") }
 
+    val navigator = rememberNavigator()
     Scaffold(
         Modifier.statusBarsPadding(),
         topBar = {
@@ -99,8 +104,10 @@ fun MainScreenPortrait(
             Column(Modifier.alpha(0.97f)) {
                 Column(Modifier.background(MaterialTheme.colorScheme.surface)) {
                     Divider(thickness = 1.dp)
+                    val currentRoute by navigator.currentEntry.map { it?.route?.route }
+                        .collectAsStateWithLifecycle(null)
 
-                    androidx.compose.material3.BottomAppBar(
+                    BottomAppBar(
                         Modifier
                             .navigationBarsPadding()
                             .height(48.dp),
@@ -108,20 +115,20 @@ fun MainScreenPortrait(
                         tonalElevation = 0.dp,
                     ) {
                         TabNavigationItem(
-                            selectedTab == "home",
-                            { selectedTab = "home" },
+                            currentRoute?.startsWith("home") == true,
+                            { navigator.navigate("home") },
                             icon = { Icon(Icons.Outlined.Home, null) },
                             title = { Text(text = "首页") },
                         )
                         TabNavigationItem(
-                            selectedTab == "collection",
-                            { selectedTab = "collection" },
+                            currentRoute?.startsWith("collection") == true,
+                            { navigator.navigate("collection") },
                             icon = { Icon(Icons.Outlined.Search, null) },
                             title = { Text(text = "追番") },
                         )
                         TabNavigationItem(
-                            selectedTab == "profile",
-                            { selectedTab = "profile" },
+                            currentRoute?.startsWith("profile") == true,
+                            { navigator.navigate("profile") },
                             icon = { Icon(Icons.Outlined.Person, null) },
                             title = { Text(text = "我的") },
                         )
@@ -131,11 +138,22 @@ fun MainScreenPortrait(
         }
     ) { paddingValues ->
         CompositionLocalProvider(LocalContentPaddings provides paddingValues) {
-            when (selectedTab) {
-                "home" -> HomePage(searchViewModel)
-                "collection" -> CollectionPage(myCollectionsViewModel)
-                "profile" -> ProfilePage()
+            NavHost(navigator, initialRoute = "home") {
+                scene("home") {
+                    HomePage(searchViewModel)
+                }
+                scene("collection") {
+                    CollectionPage(myCollectionsViewModel)
+                }
+                scene("profile") {
+                    ProfilePage()
+                }
             }
+//            when (selectedTab) {
+//                "home" -> HomePage(searchViewModel)
+//                "collection" -> CollectionPage(myCollectionsViewModel)
+//                "profile" -> ProfilePage()
+//            }
         }
     }
 }
