@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<lint>
+    <issue id="Instantiatable"
+            severity="ignore" /> <!-- lint does not support multiplatfrom dependencies -->
+</lint>
