@@ -52,7 +52,5 @@
         <activity
                 android:name=".activity.AuthorizationActivity"
                 android:exported="true" />
-
-        <activity android:name=".activity.SettingsActivity" />
     </application>
 </manifest>
