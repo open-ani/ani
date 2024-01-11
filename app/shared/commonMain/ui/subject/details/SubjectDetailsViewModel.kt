@@ -11,7 +11,8 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runInterruptible
-import kotlinx.coroutines.withContext
+import me.him188.ani.app.data.SubjectRepository
+import me.him188.ani.app.data.setSubjectCollectionTypeOrDelete
 import me.him188.ani.app.navigation.SubjectNavigator
 import me.him188.ani.app.platform.Context
 import me.him188.ani.app.session.SessionManager
@@ -32,7 +33,6 @@ import org.openapitools.client.infrastructure.ClientException
 import org.openapitools.client.models.RelatedCharacter
 import org.openapitools.client.models.RelatedPerson
 import org.openapitools.client.models.SubjectCollectionType
-import org.openapitools.client.models.UserSubjectCollectionModifyPayload
 import java.util.Optional
 
 @Stable
@@ -42,6 +42,7 @@ class SubjectDetailsViewModel(
     private val sessionManager: SessionManager by inject()
     private val bangumiClient: BangumiClient by inject()
     private val subjectNavigator: SubjectNavigator by inject()
+    private val subjectRepository: SubjectRepository by inject()
 //    private val subjectProvider: SubjectProvider by inject()
 
     val subjectId: MutableStateFlow<Int> = MutableStateFlow(initialSubjectId)
@@ -150,23 +151,12 @@ class SubjectDetailsViewModel(
      */
     val selfCollectionAction = selfCollectionType.shareInBackground()
 
+    /**
+     * null means delete
+     */
     suspend fun setSelfCollectionType(subjectCollectionType: SubjectCollectionType?) {
         selfCollectionType.emit(Optional.ofNullable(subjectCollectionType))
-        withContext(Dispatchers.IO) {
-            if (subjectCollectionType == null) {
-                bangumiClient.api.postUserCollection(
-                    subjectId.value, UserSubjectCollectionModifyPayload(
-                        type = subjectCollectionType,
-                    )
-                )
-            } else {
-                bangumiClient.api.postUserCollection(
-                    subjectId.value, UserSubjectCollectionModifyPayload(
-                        type = subjectCollectionType,
-                    )
-                )
-            }
-        }
+        subjectRepository.setSubjectCollectionTypeOrDelete(subjectId.value, subjectCollectionType)
     }
 
     private fun episodesFlow(type: BangumiEpType) = this.subjectId.mapLatest { subjectId ->

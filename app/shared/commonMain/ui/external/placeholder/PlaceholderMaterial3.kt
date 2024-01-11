@@ -30,7 +30,7 @@ import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.isSpecified
 
 /**
- * Returns the value used as the the `color` parameter value on [Modifier.placeholder].
+ * Returns the value used as the the `color` parameter value on [Modifier.basicPlaceholder].
  *
  * @param backgroundColor The current background color of the layout. Defaults to
  * `MaterialTheme.colorScheme.surface`.
@@ -79,7 +79,7 @@ fun PlaceholderDefaults.shimmerHighlightColor(
  * Draws some skeleton UI which is typically used whilst content is 'loading'.
  *
  * To customize the color and shape of the placeholder, you can use the foundation version of
- * [Modifier.placeholder], along with the values provided by [PlaceholderDefaults].
+ * [Modifier.basicPlaceholder], along with the values provided by [PlaceholderDefaults].
  *
  * A cross-fade transition will be applied to the content and placeholder UI when the [visible]
  * value changes. The transition can be customized via the [contentFadeTransitionSpec] and
@@ -111,7 +111,7 @@ fun Modifier.placeholder(
     placeholderFadeTransitionSpec: @Composable Transition.Segment<Boolean>.() -> FiniteAnimationSpec<Float> = { spring() },
     contentFadeTransitionSpec: @Composable Transition.Segment<Boolean>.() -> FiniteAnimationSpec<Float> = { spring() },
 ): Modifier = composed {
-    Modifier.placeholder(
+    Modifier.basicPlaceholder(
         visible = visible,
         color = if (color.isSpecified) color else PlaceholderDefaults.color(),
         shape = shape ?: MaterialTheme.shapes.small,

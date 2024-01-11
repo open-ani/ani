@@ -192,8 +192,8 @@ fun CollectionActionButton(
             showDropdown = showDropdown,
             onDismissRequest = { showDropdown = false },
             onClick = {
-                onEdit(it.type)
                 showDropdown = false
+                onEdit(it.type)
             },
         )
     }

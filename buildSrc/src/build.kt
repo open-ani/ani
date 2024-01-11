@@ -145,6 +145,7 @@ val optInAnnotations = arrayOf(
     "kotlin.experimental.ExperimentalTypeInference",
     "kotlinx.serialization.ExperimentalSerializationApi",
     "kotlinx.coroutines.ExperimentalCoroutinesApi",
+    "kotlinx.coroutines.FlowPreview",
     "androidx.compose.foundation.layout.ExperimentalLayoutApi",
     "androidx.compose.foundation.ExperimentalFoundationApi",
     "androidx.compose.material3.ExperimentalMaterial3Api",

@@ -116,11 +116,12 @@ private fun CollectionPagePortrait(contentPadding: PaddingValues, viewModel: MyC
 //            }
         }
     ) { localPaddingValues ->
+        val collections by viewModel.collections.collectAsStateWithLifecycle(null)
+        val isLoading by viewModel.isLoading.collectAsStateWithLifecycle(true)
+        val isLoggedIn by viewModel.isLoggedIn.collectAsStateWithLifecycle(true)
+
         Column(Modifier.fillMaxSize()) {
-            val collections by viewModel.collections.collectAsStateWithLifecycle(listOf())
-            val isEmpty by viewModel.isEmpty.collectAsStateWithLifecycle(null)
-            val isLoggedIn by viewModel.isLoggedIn.collectAsStateWithLifecycle(true)
-            if (collections.isEmpty() && isEmpty == true) {
+            if (!isLoading && collections?.isEmpty() == true) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     val context = LocalContext.current
                     if (!isLoggedIn) {
@@ -132,8 +133,19 @@ private fun CollectionPagePortrait(contentPadding: PaddingValues, viewModel: MyC
                     }
                 }
             } else {
-                MyCollectionColumn(collections, viewModel, localPaddingValues + contentPadding)
+                MyCollectionColumn(
+                    collections.orEmpty(), viewModel, localPaddingValues + contentPadding,
+                    Modifier.fillMaxWidth()
+                )
             }
+//            if (isLoading) {
+//                Row(
+//                    Modifier.padding(top = 8.dp).fillMaxWidth(),
+//                    horizontalArrangement = Arrangement.Center
+//                ) {
+//                    CircularProgressIndicator(Modifier.size(32.dp))
+//                }
+//            }
         }
     }
 }
@@ -142,11 +154,12 @@ private fun CollectionPagePortrait(contentPadding: PaddingValues, viewModel: MyC
 private fun ColumnScope.MyCollectionColumn(
     collections: List<SubjectCollectionItem>,
     viewModel: MyCollectionsViewModel,
-    contentPadding: PaddingValues
+    contentPadding: PaddingValues,
+    modifier: Modifier = Modifier,
 ) {
     val spacedBy = 8.dp
     LazyColumn(
-        Modifier.padding(horizontal = 12.dp).padding(vertical = 12.dp).fillMaxSize(),
+        modifier.padding(horizontal = 12.dp).padding(vertical = 12.dp),
         rememberLazyListState(),
         verticalArrangement = Arrangement.spacedBy(spacedBy),
     ) {
@@ -262,7 +275,7 @@ private fun CollectionItemContent(
                     currentType = item.collectionType,
                     showDropdown, { showDropdown = false },
                     onClick = { action ->
-                        viewModel.launchInBackground { updateCollection(item.subjectId, action) }
+                        viewModel.launchInBackground { updateSubjectCollection(item.subjectId, action) }
                     }
                 )
             }

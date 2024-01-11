@@ -25,8 +25,13 @@ import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger
+import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
+import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
@@ -54,13 +59,16 @@ import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectType
 import me.him188.ani.datasources.bangumi.processing.fixToString
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
+import me.him188.ani.utils.logging.trace
 import me.him188.ani.utils.logging.warn
 import me.him188.ani.utils.serialization.toJsonArray
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import org.openapitools.client.apis.BangumiApi
+import org.openapitools.client.infrastructure.ApiClient
 import org.openapitools.client.models.RelatedPerson
+import org.openapitools.client.models.UserSubjectCollectionModifyPayload
 
 interface BangumiClient : Closeable {
     // Bangumi open API: https://github.com/bangumi/api/blob/master/open-api/api.yml
@@ -99,6 +107,15 @@ interface BangumiClient : Closeable {
     )
 
     suspend fun getTokenStatus(accessToken: String): GetTokenStatusResponse
+
+    suspend fun patchSubjectCollection(
+        subjectId: Int,
+        subjectCollectionModifyPayload: UserSubjectCollectionModifyPayload,
+    )
+
+    suspend fun deleteSubjectCollection(
+        subjectId: Int
+    )
 
     val api: BangumiApi
 
@@ -178,6 +195,33 @@ internal class BangumiClientImpl(
         return resp.body<BangumiClient.GetTokenStatusResponse>()
     }
 
+    override suspend fun patchSubjectCollection(
+        subjectId: Int,
+        subjectCollectionModifyPayload: UserSubjectCollectionModifyPayload
+    ) {
+        val resp = httpClient.patch("$BANGUMI_API_HOST/v0/users/-/collections/$subjectId") {
+            bearerAuth(ApiClient.accessToken ?: error("Not authorized"))
+            contentType(ContentType.Application.Json)
+            setBody(buildJsonObject {
+                subjectCollectionModifyPayload.type?.let { put("type", it.value) }
+                subjectCollectionModifyPayload.rate?.let { put("rate", it) }
+                subjectCollectionModifyPayload.epStatus?.let { put("ep_status", it) }
+                subjectCollectionModifyPayload.volStatus?.let { put("vol_status", it) }
+                subjectCollectionModifyPayload.comment?.let { put("comment", it) }
+                subjectCollectionModifyPayload.`private`?.let { put("private", it) }
+                subjectCollectionModifyPayload.tags?.let { put("tags", it.toJsonArray()) }
+            })
+        }
+
+        if (!resp.status.isSuccess()) {
+            throw IllegalStateException("Failed to patch subject collection: $resp")
+        }
+    }
+
+    override suspend fun deleteSubjectCollection(subjectId: Int) {
+        // not implemented
+    }
+
     override val api = BangumiApi(BANGUMI_API_HOST, OkHttpClient.Builder().apply {
         this.followRedirects(true)
         addInterceptor { chain ->
@@ -224,6 +268,14 @@ internal class BangumiClientImpl(
             json(Json {
                 ignoreUnknownKeys = true
             })
+        }
+        Logging {
+            level = LogLevel.INFO
+            logger = object : Logger {
+                override fun log(message: String) {
+                    this@BangumiClientImpl.logger.trace { "[ktor] $message" }
+                }
+            }
         }
     }
 

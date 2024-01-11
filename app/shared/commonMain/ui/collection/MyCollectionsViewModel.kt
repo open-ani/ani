@@ -1,16 +1,20 @@
 package me.him188.ani.app.ui.collection
 
-import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.toList
-import me.him188.ani.app.data.CollectionRepository
 import me.him188.ani.app.data.EpisodeRepository
 import me.him188.ani.app.data.SubjectRepository
+import me.him188.ani.app.data.setSubjectCollectionTypeOrDelete
 import me.him188.ani.app.navigation.AuthorizationNavigator
 import me.him188.ani.app.navigation.SubjectNavigator
 import me.him188.ani.app.platform.Context
@@ -28,11 +32,9 @@ import org.openapitools.client.models.SubjectCollectionType
 import org.openapitools.client.models.SubjectType
 import org.openapitools.client.models.UserEpisodeCollection
 import org.openapitools.client.models.UserSubjectCollection
-import kotlin.time.Duration.Companion.seconds
 
 class MyCollectionsViewModel : AbstractViewModel(), KoinComponent {
     private val sessionManager: SessionManager by inject()
-    private val collectionRepository: CollectionRepository by inject()
     private val subjectRepository: SubjectRepository by inject()
     private val episodeRepository: EpisodeRepository by inject()
     private val authorizationNavigator: AuthorizationNavigator by inject()
@@ -40,13 +42,17 @@ class MyCollectionsViewModel : AbstractViewModel(), KoinComponent {
 
     val isLoggedIn = sessionManager.isSessionValid.filterNotNull().shareInBackground()
 
-    val collections = sessionManager.username.filterNotNull().flatMapLatest { username ->
-        collectionRepository.getCollections(username).map { raw ->
-            raw.convertToItem()
-        }.runningList()
-    }.shareInBackground()
+    val isLoading = MutableStateFlow(true)
 
-    val isEmpty = collections.map { it.isEmpty() }.debounce(0.5.seconds).shareInBackground()
+    val collections = sessionManager.username.filterNotNull().flatMapLatest { username ->
+        isLoading.value = true
+        subjectRepository.getSubjectCollections(username).map { raw ->
+            raw.convertToItem()
+        }.runningList().onCompletion {
+            isLoading.value = false
+        }
+    }.localCachedStateFlow(null)
+
 
     private suspend fun UserSubjectCollection.convertToItem() = coroutineScope {
         val subject = async {
@@ -82,16 +88,15 @@ class MyCollectionsViewModel : AbstractViewModel(), KoinComponent {
         subjectNavigator.navigateToEpisode(context, subjectId, episodeId)
     }
 
-    suspend fun updateCollection(subjectId: Int, action: SubjectCollectionAction) {
-        if (action.type == null) {
-            collectionRepository.removeCollection(subjectId)
-        } else {
-            collectionRepository.updateCollection(subjectId, action.type)
+    suspend fun updateSubjectCollection(subjectId: Int, action: SubjectCollectionAction) {
+        collections.value?.find { it.subjectId == subjectId }?.let {
+            it.collectionType = action.type
         }
+        subjectRepository.setSubjectCollectionTypeOrDelete(subjectId, action.type)
     }
 }
 
-@Immutable
+@Stable
 class SubjectCollectionItem(
     val subjectId: Int,
     val displayName: String,
@@ -108,8 +113,13 @@ class SubjectCollectionItem(
     val lastWatchedEpIndex: Int?,
 
     val episodes: List<UserEpisodeCollection>,
-    val collectionType: SubjectCollectionType,
+    collectionType: SubjectCollectionType,
 ) {
+    /**
+     * Null means not collected
+     */
+    var collectionType: SubjectCollectionType? by mutableStateOf(collectionType)
+
     val onAirDescription = if (isOnAir) {
         if (latestEp == null) {
             "连载中"

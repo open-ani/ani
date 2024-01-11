@@ -50,7 +50,7 @@ import androidx.compose.ui.platform.debugInspectorInfo
 import androidx.compose.ui.unit.LayoutDirection
 
 /**
- * Contains default values used by [Modifier.placeholder] and [PlaceholderHighlight].
+ * Contains default values used by [Modifier.basicPlaceholder] and [PlaceholderHighlight].
  */
 object PlaceholderDefaults {
     /**
@@ -101,7 +101,7 @@ object PlaceholderDefaults {
  * @param contentFadeTransitionSpec The transition spec to use when fading the content
  * on/off screen. The boolean parameter defined for the transition is [visible].
  */
-fun Modifier.placeholder(
+fun Modifier.basicPlaceholder(
     visible: Boolean,
     color: Color,
     shape: Shape = RectangleShape,
