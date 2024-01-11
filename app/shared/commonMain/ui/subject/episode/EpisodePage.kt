@@ -204,11 +204,9 @@ private fun PlaySourceSelectionAction(
     val preferredAlliance by playSourceSelector.preferredAlliance.collectAsStateWithLifecycle()
 
 
-    var showPlaySourceSheet by remember { mutableStateOf(false) }
-
     ActionButton(
         onClick = {
-            showPlaySourceSheet = true
+            viewModel.showPlaySourceSheet = true
         },
         icon = { Icon(Icons.Default.DisplaySettings, null) },
         text = { Text("数据源") },
@@ -216,9 +214,9 @@ private fun PlaySourceSelectionAction(
         isPlaySourcesLoading
     )
 
-    if (showPlaySourceSheet) {
+    if (viewModel.showPlaySourceSheet) {
         ModalBottomSheet(
-            onDismissRequest = { showPlaySourceSheet = false },
+            onDismissRequest = { viewModel.showPlaySourceSheet = false },
             Modifier
         ) {
             Column(
@@ -270,7 +268,7 @@ private fun PlaySourceSelectionAction(
                 )
 
                 TextButton(
-                    { showPlaySourceSheet = false },
+                    { viewModel.showPlaySourceSheet = false },
                     Modifier.align(Alignment.End).padding(horizontal = 8.dp)
                 ) {
                     Text("完成")
