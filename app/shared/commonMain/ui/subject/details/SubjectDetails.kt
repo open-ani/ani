@@ -30,8 +30,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.Card
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
@@ -371,11 +370,11 @@ fun EpisodeItem(
     modifier: Modifier = Modifier,
 ) {
     val shape = RoundedCornerShape(8.dp)
-    ElevatedCard(
+    Card(
         onClick,
         modifier.clip(shape),
         shape = shape,
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp),
+//        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
     ) {
         Column(
             Modifier.padding(horizontal = 16.dp, vertical = 8.dp),

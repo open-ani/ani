@@ -46,8 +46,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -60,7 +58,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -69,7 +66,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.style.TextOverflow
@@ -83,11 +79,11 @@ import me.him188.ani.app.ui.foundation.AniTopAppBar
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.subject.details.COVER_WIDTH_TO_HEIGHT_RATIO
 import me.him188.ani.app.ui.subject.details.Tag
+import me.him188.ani.app.ui.theme.stronglyWeaken
 import me.him188.ani.app.ui.theme.weaken
 import me.him188.ani.datasources.bangumi.processing.isOnAir
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.openapitools.client.models.EpisodeCollectionType
-import org.openapitools.client.models.SubjectCollectionType
 import org.openapitools.client.models.UserEpisodeCollection
 
 /**
@@ -237,23 +233,6 @@ private fun CollectionItem(
     }
 }
 
-@Stable
-class SubjectCollectionAction(
-    val title: String,
-    val titleColor: @Composable () -> Color,
-    val type: SubjectCollectionType?,
-)
-
-@Stable
-private val SUBJECT_COLLECTION_ACTIONS = listOf(
-    SubjectCollectionAction("想看", { MaterialTheme.colorScheme.primary }, SubjectCollectionType.Wish),
-    SubjectCollectionAction("在看", { MaterialTheme.colorScheme.primary }, SubjectCollectionType.Doing),
-    SubjectCollectionAction("看过", { MaterialTheme.colorScheme.primary }, SubjectCollectionType.Done),
-    SubjectCollectionAction("搁置", { MaterialTheme.colorScheme.primary }, SubjectCollectionType.OnHold),
-    SubjectCollectionAction("抛弃", { MaterialTheme.colorScheme.primary }, SubjectCollectionType.Dropped),
-    SubjectCollectionAction("取消追番", { MaterialTheme.colorScheme.error }, null),
-)
-
 @Composable
 private fun CollectionItemContent(
     item: SubjectCollectionItem,
@@ -279,9 +258,13 @@ private fun CollectionItemContent(
                     Icon(Icons.Outlined.MoreVert, null, Modifier.size(20.dp))
                 }
 
-                EditCollectionTypeDropDown(showDropdown, { showDropdown = false }, onClick = { action ->
-                    viewModel.launchInBackground { updateCollection(item.subjectId, action) }
-                })
+                EditCollectionTypeDropDown(
+                    currentType = item.collectionType,
+                    showDropdown, { showDropdown = false },
+                    onClick = { action ->
+                        viewModel.launchInBackground { updateCollection(item.subjectId, action) }
+                    }
+                )
             }
         }
 
@@ -354,40 +337,9 @@ private fun CollectionItemContent(
 }
 
 @Composable
-private fun EditCollectionTypeDropDown(
-    showDropdown: Boolean,
-    onDismissRequest: () -> Unit,
-    onClick: (action: SubjectCollectionAction) -> Unit,
-) {
-    DropdownMenu(
-        showDropdown,
-        onDismissRequest = onDismissRequest,
-    ) {
-        for (action in SUBJECT_COLLECTION_ACTIONS) {
-            val onClickState by rememberUpdatedState(onClick)
-            val onDismissRequestState by rememberUpdatedState(onDismissRequest)
-            DropdownMenuItem(
-                text = {
-                    Text(
-                        action.title,
-                        style = MaterialTheme.typography.labelMedium,
-                        color = action.titleColor()
-                    )
-                },
-                onClick = {
-                    onClickState(action)
-                    onDismissRequestState()
-                }
-            )
-
-        }
-    }
-}
-
-@Composable
 private fun SmallEpisodeButton(
     it: UserEpisodeCollection,
-    onClick: () -> Unit = { },
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     FilledTonalButton(
@@ -403,7 +355,7 @@ private fun SmallEpisodeButton(
                     MaterialTheme.colorScheme.primary.weaken()
 
                 it.episode.isOnAir() == true ->  // 未开播
-                    MaterialTheme.colorScheme.onSurface.copy(0.38f)
+                    MaterialTheme.colorScheme.onSurface.stronglyWeaken()
 
                 // 还没看
                 else -> MaterialTheme.colorScheme.primary
