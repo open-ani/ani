@@ -122,8 +122,9 @@ private fun CollectionPagePortrait(contentPadding: PaddingValues, viewModel: MyC
     ) { localPaddingValues ->
         Column(Modifier.fillMaxSize()) {
             val collections by viewModel.collections.collectAsStateWithLifecycle(listOf())
+            val isEmpty by viewModel.isEmpty.collectAsStateWithLifecycle(null)
             val isLoggedIn by viewModel.isLoggedIn.collectAsStateWithLifecycle(true)
-            if (collections.isEmpty()) {
+            if (collections.isEmpty() && isEmpty == true) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     val context = LocalContext.current
                     if (!isLoggedIn) {

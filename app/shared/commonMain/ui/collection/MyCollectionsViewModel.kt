@@ -3,10 +3,10 @@ package me.him188.ani.app.ui.collection
 import androidx.compose.runtime.Immutable
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.toList
 import me.him188.ani.app.data.CollectionRepository
 import me.him188.ani.app.data.EpisodeRepository
@@ -28,6 +28,7 @@ import org.openapitools.client.models.SubjectCollectionType
 import org.openapitools.client.models.SubjectType
 import org.openapitools.client.models.UserEpisodeCollection
 import org.openapitools.client.models.UserSubjectCollection
+import kotlin.time.Duration.Companion.seconds
 
 class MyCollectionsViewModel : AbstractViewModel(), KoinComponent {
     private val sessionManager: SessionManager by inject()
@@ -42,10 +43,10 @@ class MyCollectionsViewModel : AbstractViewModel(), KoinComponent {
     val collections = sessionManager.username.filterNotNull().flatMapLatest { username ->
         collectionRepository.getCollections(username).map { raw ->
             raw.convertToItem()
-        }.runningList().onEach {
-            println(it)
-        }
+        }.runningList()
     }.shareInBackground()
+
+    val isEmpty = collections.map { it.isEmpty() }.debounce(0.5.seconds).shareInBackground()
 
     private suspend fun UserSubjectCollection.convertToItem() = coroutineScope {
         val subject = async {
