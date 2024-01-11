@@ -61,8 +61,8 @@ class MyCollectionsViewModel : AbstractViewModel(), KoinComponent {
             }
         }
         val latestEp = async {
-            eps.lastOrNull { it.episode.isOnAir() == true }
-                ?: eps.lastOrNull { it.episode.isOnAir() != false }
+            eps.lastOrNull { it.episode.isOnAir() == false }
+                ?: eps.lastOrNull { it.episode.isOnAir() != true }
         }
 
         createItem(subject.await(), isOnAir.await(), latestEp.await(), lastWatchedEp.await(), eps)
