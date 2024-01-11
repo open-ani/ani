@@ -44,6 +44,7 @@ data class DmhyTopic(
     val magnetLink: String,
     val size: FileSize,
     val author: Author,
+    val link: String,
 ) {
     val details: DmhyTopicDetails? by lazy {
         DmhyTopicDetails.Builder().apply {

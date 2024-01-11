@@ -1,7 +1,13 @@
 package me.him188.ani.app.ui.subject.episode
 
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.ClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -16,6 +22,8 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.withContext
+import me.him188.ani.app.navigation.BrowserNavigator
+import me.him188.ani.app.platform.Context
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.datasources.api.DownloadProvider
@@ -32,13 +40,13 @@ import org.koin.core.component.inject
 import org.openapitools.client.models.EpisodeDetail
 import java.util.concurrent.ConcurrentLinkedQueue
 
-@Stable
 class EpisodeViewModel(
     initialSubjectId: Int,
     initialEpisodeId: Int,
 ) : AbstractViewModel(), KoinComponent {
     private val bangumiClient by inject<BangumiClient>()
     private val dmhyClient by inject<DownloadProvider>()
+    private val browserNavigator: BrowserNavigator by inject()
 
     private val episodeId: MutableStateFlow<Int> = MutableStateFlow(initialEpisodeId)
 
@@ -46,18 +54,22 @@ class EpisodeViewModel(
         emit(withContext(Dispatchers.IO) { bangumiClient.api.getSubjectById(initialSubjectId) })
     }.stateInBackground()
 
+    @Stable
     val episode = episodeId.mapLatest { episodeId ->
         withContext(Dispatchers.IO) { bangumiClient.api.getEpisodeById(episodeId) }
     }.stateInBackground()
 
+    @Stable
     val subjectTitle = subjectDetails.filterNotNull().mapLatest { subject ->
         subject.nameCNOrName()
     }.stateInBackground()
 
+    @Stable
     val episodeEp = episode.filterNotNull().mapLatest { episode ->
         episode.renderEpisodeSp()
     }.stateInBackground()
 
+    @Stable
     val episodeTitle = episode.filterNotNull().mapLatest { episode ->
         episode.nameCNOrName()
     }.stateInBackground()
@@ -83,8 +95,11 @@ class EpisodeViewModel(
 
     // 动漫花园等数据源搜搜结果
     private val _isPlaySourcesLoading = MutableStateFlow(true)
+
+    @Stable
     val isPlaySourcesLoading: StateFlow<Boolean> get() = _isPlaySourcesLoading
 
+    @Stable
     val playSources: SharedFlow<Collection<PlaySource>?> = combine(episode, subjectTitle) { episode, subjectTitle ->
         episode to subjectTitle
     }.mapNotNull { (episode, subjectTitle) ->
@@ -133,6 +148,8 @@ class EpisodeViewModel(
                 subtitleLanguage = details.subtitleLanguages.firstOrNull()?.toString() ?: "生肉",
                 resolution = details.resolution ?: Resolution.R1080P, // 默认 1080P, 因为目前大概都是 1080P
                 dataSource = "动漫花园",
+                originalUrl = it.link,
+                magnetLink = it.magnetLink,
             )
         }
 
@@ -143,15 +160,37 @@ class EpisodeViewModel(
         backgroundScope
     )
 
-    private val _currentPlaySource = MutableStateFlow<PlaySource?>(null)
-    val currentPlaySource: StateFlow<PlaySource?> get() = _currentPlaySource
-
-    fun setCurrentPlaySource(playSource: PlaySource?) {
-        _currentPlaySource.value = playSource
-    }
+    var showPlaySourceSheet by mutableStateOf(false)
 
     fun setEpisodeId(episodeId: Int) {
         this.episodeId.value = episodeId
+    }
+
+    suspend fun copyDownloadLink(clipboardManager: ClipboardManager, snackbar: SnackbarHostState) {
+        playSourceSelector.targetPlaySource.value?.let {
+            clipboardManager.setText(AnnotatedString(it.magnetLink))
+            snackbar.showSnackbar("已复制下载链接")
+        } ?: run {
+            snackbar.showSnackbar("请先选择数据源")
+        }
+    }
+
+    suspend fun browsePlaySource(context: Context, snackbar: SnackbarHostState) {
+        playSourceSelector.targetPlaySource.value?.let {
+            browserNavigator.openBrowser(context, it.originalUrl)
+        } ?: run {
+            snackbar.showSnackbar("请先选择数据源")
+            showPlaySourceSheet = true
+        }
+    }
+
+    suspend fun browseDownload(context: Context, snackbar: SnackbarHostState) {
+        playSourceSelector.targetPlaySource.value?.let {
+            browserNavigator.openMagnetLink(context, it.originalUrl)
+        } ?: run {
+            snackbar.showSnackbar("请先选择数据源")
+            showPlaySourceSheet = true
+        }
     }
 }
 
@@ -161,5 +200,7 @@ data class PlaySource(
     val alliance: String,
     val subtitleLanguage: String, // null means raw
     val resolution: Resolution,
-    val dataSource: String,
+    val dataSource: String, // dmhy
+    val originalUrl: String,
+    val magnetLink: String,
 )

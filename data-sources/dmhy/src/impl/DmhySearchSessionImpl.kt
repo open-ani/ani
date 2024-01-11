@@ -62,7 +62,8 @@ internal class DmhySearchSessionImpl(
                         mediaOrigin = details.mediaOrigin,
                         subtitleLanguages = details.subtitleLanguages,
                     )
-                }
+                },
+                link = topic.link,
             )
         }
     }

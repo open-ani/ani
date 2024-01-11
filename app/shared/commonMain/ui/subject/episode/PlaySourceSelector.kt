@@ -106,7 +106,7 @@ class PlaySourceSelector(
             preferredAlliance,
         ) { list, resolution, language, alliance ->
             list.firstOrNull { it.resolution == resolution && it.subtitleLanguage == language && it.alliance == alliance?.playSource?.alliance }
-        }.shareIn(coroutineScope, started = SharingStarted.Eagerly, replay = 1)
+        }.stateIn(coroutineScope, started = SharingStarted.Eagerly, null)
 }
 
 @Immutable

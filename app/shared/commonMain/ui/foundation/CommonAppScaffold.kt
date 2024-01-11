@@ -7,7 +7,9 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.ripple.rememberRipple
@@ -16,6 +18,8 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -54,6 +58,7 @@ inline fun AniApp(
         CompositionLocalProvider(
             LocalI18n provides currentBundle,
             LocalKamelConfig provides DefaultKamelConfig,
+            LocalSnackbar provides remember { SnackbarHostState() },
         ) {
             val focusManager by rememberUpdatedState(LocalFocusManager.current)
             val keyboard by rememberUpdatedState(LocalSoftwareKeyboardController.current)
@@ -71,7 +76,15 @@ inline fun AniApp(
                         }
                         .fillMaxSize()
                 ) {
-                    content()
+                    Scaffold(
+                        snackbarHost = {
+                            SnackbarHost(LocalSnackbar.current, Modifier.navigationBarsPadding())
+                        },
+                        contentWindowInsets = WindowInsets(0.dp),
+                    ) {
+                        // no need to use paddings
+                        content()
+                    }
                 }
             }
         }

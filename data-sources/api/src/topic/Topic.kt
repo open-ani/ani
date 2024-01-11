@@ -51,6 +51,8 @@ class Topic(
      * 解析后的标题信息
      */
     val details: TopicDetails?,
+
+    val link: String,
 )
 
 private val DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm")

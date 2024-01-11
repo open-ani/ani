@@ -1,5 +1,6 @@
 package me.him188.ani.app.ui.subject.episode
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -10,7 +11,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -23,13 +23,18 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowOutward
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.DisplaySettings
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.Icon
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -38,12 +43,14 @@ import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,14 +58,18 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.AniTopAppBar
+import me.him188.ani.app.ui.foundation.LocalSnackbar
 import me.him188.ani.app.ui.foundation.TopAppBarGoBackButton
+import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.theme.slightlyWeaken
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
@@ -138,12 +149,38 @@ fun EpisodePageContent(
 
         Divider(Modifier.fillMaxWidth())
 
+        Row(
+            Modifier.padding(horizontal = PAGE_HORIZONTAL_PADDING, vertical = 16.dp).fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.Top,
+        ) {
+            // 选择播放源
+            PlaySourceSelectionAction(viewModel)
 
-        Surface(Modifier.fillMaxWidth().weight(1f).verticalScroll(rememberScrollState())) {
-            Column {
-                // 选择播放源
-                EpisodePlaySourceSelection(viewModel, Modifier.padding(vertical = 16.dp))
-            }
+            val clipboard by rememberUpdatedState(LocalClipboardManager.current)
+            val snackbar by rememberUpdatedState(LocalSnackbar.current)
+            ActionButton(
+                onClick = { viewModel.launchInBackground { copyDownloadLink(clipboard, snackbar) } },
+                icon = { Icon(Icons.Default.ContentCopy, null) },
+                text = { Text("复制磁力") },
+                modifier,
+            )
+
+            val context = LocalContext.current
+
+            ActionButton(
+                onClick = { viewModel.launchInBackground { browseDownload(context, snackbar) } },
+                icon = { Icon(Icons.Default.Download, null) },
+                text = { Text("下载") },
+                modifier,
+            )
+
+            ActionButton(
+                onClick = { viewModel.launchInBackground { browsePlaySource(context, snackbar) } },
+                icon = { Icon(Icons.Default.ArrowOutward, null) },
+                text = { Text("原始页面") },
+                modifier,
+            )
         }
     }
 }
@@ -152,42 +189,44 @@ fun EpisodePageContent(
  * 选择播放源
  */
 @Composable
-private fun EpisodePlaySourceSelection(viewModel: EpisodeViewModel, modifier: Modifier = Modifier) {
-    Column(modifier.fillMaxWidth()) {
-        val isPlaySourcesLoading by viewModel.isPlaySourcesLoading.collectAsStateWithLifecycle()
-        val playSourceSelector = viewModel.playSourceSelector
+private fun PlaySourceSelectionAction(
+    viewModel: EpisodeViewModel,
+    modifier: Modifier = Modifier
+) {
+    val isPlaySourcesLoading by viewModel.isPlaySourcesLoading.collectAsStateWithLifecycle()
+    val playSourceSelector = viewModel.playSourceSelector
 
-        val resolutions by playSourceSelector.resolutions.collectAsStateWithLifecycle()
-        val subtitleLanguages by playSourceSelector.subtitleLanguages.collectAsStateWithLifecycle()
-        val alliances by playSourceSelector.availableAlliances.collectAsStateWithLifecycle(null)
-        val preferredResolution by playSourceSelector.preferredResolution.collectAsStateWithLifecycle()
-        val preferredLanguage by playSourceSelector.preferredSubtitleLanguage.collectAsStateWithLifecycle()
-        val preferredAlliance by playSourceSelector.preferredAlliance.collectAsStateWithLifecycle()
+    val resolutions by playSourceSelector.resolutions.collectAsStateWithLifecycle()
+    val subtitleLanguages by playSourceSelector.subtitleLanguages.collectAsStateWithLifecycle()
+    val alliances by playSourceSelector.availableAlliances.collectAsStateWithLifecycle(null)
+    val preferredResolution by playSourceSelector.preferredResolution.collectAsStateWithLifecycle()
+    val preferredLanguage by playSourceSelector.preferredSubtitleLanguage.collectAsStateWithLifecycle()
+    val preferredAlliance by playSourceSelector.preferredAlliance.collectAsStateWithLifecycle()
 
 
-        var showPlaySourceSheet by remember { mutableStateOf(false) }
-        Row(
-            Modifier.height(IntrinsicSize.Min).clickable {
-                showPlaySourceSheet = true
-            },
-            verticalAlignment = Alignment.CenterVertically,
+    var showPlaySourceSheet by remember { mutableStateOf(false) }
+
+    ActionButton(
+        onClick = {
+            showPlaySourceSheet = true
+        },
+        icon = { Icon(Icons.Default.DisplaySettings, null) },
+        text = { Text("数据源") },
+        modifier,
+        isPlaySourcesLoading
+    )
+
+    if (showPlaySourceSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showPlaySourceSheet = false },
+            Modifier
         ) {
-            Text(
-                "数据源",
-                Modifier.padding(start = PAGE_HORIZONTAL_PADDING),
-                style = MaterialTheme.typography.titleMedium,
-                maxLines = 1,
-            )
-            if (isPlaySourcesLoading) {
-                Box(Modifier.padding(start = 12.dp).height(24.dp), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
-                }
-            }
-        }
-
-        if (showPlaySourceSheet) {
-            ModalBottomSheet(
-                onDismissRequest = { showPlaySourceSheet = false },
+            Column(
+                Modifier
+                    .navigationBarsPadding()
+                    .padding(vertical = 12.dp, horizontal = PAGE_HORIZONTAL_PADDING)
+                    .fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 PlaySourceFilterRow(
                     resolutions,
@@ -200,7 +239,7 @@ private fun EpisodePlaySourceSelection(viewModel: EpisodeViewModel, modifier: Mo
                             label = { Text(remember(item) { item.toString() }) }
                         )
                     },
-                    Modifier.padding(start = PAGE_HORIZONTAL_PADDING).padding(top = 12.dp).height(32.dp)
+                    Modifier.height(32.dp)
                 )
 
                 PlaySourceFilterRow(
@@ -214,7 +253,7 @@ private fun EpisodePlaySourceSelection(viewModel: EpisodeViewModel, modifier: Mo
                             label = { Text(item) }
                         )
                     },
-                    Modifier.padding(start = PAGE_HORIZONTAL_PADDING).padding(top = 12.dp).height(32.dp)
+                    Modifier.height(32.dp)
                 )
 
                 PlaySourceFilterFlowRow(
@@ -224,15 +263,23 @@ private fun EpisodePlaySourceSelection(viewModel: EpisodeViewModel, modifier: Mo
                         InputChip(
                             item == preferredAlliance,
                             onClick = { playSourceSelector.setPreferredAlliance(item) },
-                            label = { Text(item.displayName) }
+                            label = { Text(item.displayName) },
+                            Modifier.height(32.dp)
                         )
                     },
-                    Modifier.padding(start = PAGE_HORIZONTAL_PADDING).padding(top = 12.dp).height(32.dp)
                 )
 
-                Spacer(Modifier.navigationBarsPadding().padding(bottom = 16.dp))
+                TextButton(
+                    { showPlaySourceSheet = false },
+                    Modifier.align(Alignment.End).padding(horizontal = 8.dp)
+                ) {
+                    Text("完成")
+                }
             }
+
+            Spacer(Modifier.navigationBarsPadding())
         }
+    }
 
 //        Box(
 //            Modifier.fillMaxWidth().height(80.dp).padding(top = PAGE_HORIZONTAL_PADDING),
@@ -264,6 +311,44 @@ private fun EpisodePlaySourceSelection(viewModel: EpisodeViewModel, modifier: Mo
 //                }
 //            }
 //        }
+}
+
+/**
+ * 数据源; 下载; 分享
+ */
+@Composable
+private fun ActionButton(
+    onClick: () -> Unit,
+    icon: @Composable () -> Unit,
+    text: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+    isLoading: Boolean = false,
+) {
+    Column(
+        modifier
+            .clip(RoundedCornerShape(8.dp))
+            .clickable(
+                remember { MutableInteractionSource() },
+                indication = rememberRipple(bounded = false),
+                onClick = onClick
+            )
+            .size(64.dp)
+            .padding(all = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceEvenly
+    ) {
+        icon()
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            ProvideTextStyle(MaterialTheme.typography.labelMedium) {
+                text()
+            }
+
+            AnimatedVisibility(isLoading) {
+                Box(Modifier.padding(start = 8.dp).height(12.dp), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(Modifier.size(12.dp), strokeWidth = 2.dp)
+                }
+            }
+        }
     }
 }
 
@@ -274,11 +359,11 @@ private fun <T> PlaySourceFilterFlowRow(
     items: List<T>,
     label: @Composable () -> Unit,
     eachItem: @Composable (item: T) -> Unit,
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
 ) {
     Row(modifier, verticalAlignment = Alignment.Top) {
-        ProvideTextStyle(MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium)) {
-            Box(Modifier.width(PLAY_SOURCE_LABEL_WIDTH)) {
+        ProvideTextStyle(MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Medium)) {
+            Box(Modifier.padding(top = 4.dp).width(PLAY_SOURCE_LABEL_WIDTH)) {
                 label()
             }
         }
@@ -406,7 +491,8 @@ fun EpisodeTitle(viewModel: EpisodeViewModel, modifier: Modifier = Modifier) {
             ) {
                 Text(
                     episodeEp ?: "01",
-                    style = MaterialTheme.typography.labelLarge.run { copy(color = color.slightlyWeaken()) },
+                    style = MaterialTheme.typography.labelLarge,
+                    color = LocalContentColor.current.slightlyWeaken(),
                 )
             }
 
