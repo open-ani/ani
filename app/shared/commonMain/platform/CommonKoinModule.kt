@@ -18,6 +18,7 @@
 
 package me.him188.ani.app.platform
 
+import androidx.compose.runtime.Stable
 import io.ktor.client.plugins.UserAgent
 import kotlinx.coroutines.CoroutineScope
 import me.him188.ani.app.data.CollectionRepository
@@ -57,14 +58,17 @@ fun getCommonKoinModule(getContext: () -> Context, coroutineScope: CoroutineScop
     single<EpisodeRepository> { EpisodeRepositoryImpl() }
 }
 
+@Stable
 interface AniBuildConfig {
     val versionName: String
     val bangumiOauthClientId: String
     val bangumiOauthClientSecret: String
+    val isDebug: Boolean
 
     companion object
 }
 
+@Stable
 expect val currentAniBuildConfig: AniBuildConfig
 
 fun getAniUserAgent(

@@ -18,6 +18,7 @@
 
 package me.him188.ani.app.ui.profile
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,14 +28,23 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.ui.home.LocalContentPaddings
 import me.him188.ani.app.ui.subject.details.Avatar
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
@@ -52,8 +62,39 @@ fun ProfilePage() {
             selfInfo?.let {
                 SelfInfo(it)
             }
+
+            // debug
+            if (currentAniBuildConfig.isDebug) {
+                DebugInfoView(viewModel)
+            }
         }
     }
+}
+
+@Composable
+@OptIn(DelicateCoroutinesApi::class)
+private fun DebugInfoView(viewModel: AccountViewModel) {
+    val debugInfo by viewModel.debugInfo.collectAsStateWithLifecycle(null)
+    val clipboard = LocalClipboardManager.current
+    val snackbar = remember { SnackbarHostState() }
+
+    Column(Modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        for ((name, value) in debugInfo?.properties.orEmpty()) {
+            TextButton(
+                onClick = {
+                    value?.let { clipboard.setText(AnnotatedString(it)) }
+                    GlobalScope.launch {
+                        snackbar.showSnackbar("Copied")
+                    }
+                },
+                Modifier.fillMaxWidth()
+            ) {
+                Text("$name: $value")
+            }
+        }
+    }
+
+    SnackbarHost(snackbar)
 }
 
 @Composable
