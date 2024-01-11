@@ -413,7 +413,7 @@ fun EpisodeItem(
 @Composable
 private fun SectionTitle(modifier: Modifier = Modifier, text: @Composable () -> Unit) {
     Row(modifier.padding(top = 8.dp, bottom = 8.dp)) {
-        ProvideTextStyle(MaterialTheme.typography.titleLarge) {
+        ProvideTextStyle(MaterialTheme.typography.titleMedium) {
             CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onBackground) {
                 text()
             }
