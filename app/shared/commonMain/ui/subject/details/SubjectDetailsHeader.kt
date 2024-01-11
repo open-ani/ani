@@ -109,7 +109,8 @@ fun Tag(
     Box(
         modifier
             .border(1.dp, MaterialTheme.colorScheme.outline.weaken(), shape)
-            .clip(shape)
+            .clip(shape),
+        contentAlignment = Alignment.Center
     ) {
         Row(
             Modifier.height(22.dp).padding(horizontal = 4.dp, vertical = 2.dp),

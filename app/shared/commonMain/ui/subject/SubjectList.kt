@@ -39,9 +39,9 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -142,7 +142,7 @@ fun SubjectPreviewCard(
     modifier: Modifier = Modifier,
 ) {
     val shape = RoundedCornerShape(8.dp)
-    ElevatedCard(
+    Card(
         modifier
             .shadow(2.dp, shape)
             .clip(shape)
@@ -153,9 +153,6 @@ fun SubjectPreviewCard(
                 onClick = onClick,
             ),
         shape = shape,
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-        ),
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp),
     ) {
         Column {

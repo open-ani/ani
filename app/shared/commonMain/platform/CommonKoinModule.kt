@@ -22,6 +22,10 @@ import io.ktor.client.plugins.UserAgent
 import kotlinx.coroutines.CoroutineScope
 import me.him188.ani.app.data.CollectionRepository
 import me.him188.ani.app.data.CollectionRepositoryImpl
+import me.him188.ani.app.data.EpisodeRepository
+import me.him188.ani.app.data.EpisodeRepositoryImpl
+import me.him188.ani.app.data.SubjectRepository
+import me.him188.ani.app.data.SubjectRepositoryImpl
 import me.him188.ani.app.data.TokenRepository
 import me.him188.ani.app.data.TokenRepositoryImpl
 import me.him188.ani.app.persistent.tokenStore
@@ -49,6 +53,8 @@ fun getCommonKoinModule(getContext: () -> Context, coroutineScope: CoroutineScop
     single<SubjectProvider> { BangumiSubjectProvider(get<BangumiClient>()) }
     single<DownloadProvider> { DmhyDownloadProvider() }
     single<CollectionRepository> { CollectionRepositoryImpl() }
+    single<SubjectRepository> { SubjectRepositoryImpl() }
+    single<EpisodeRepository> { EpisodeRepositoryImpl() }
 }
 
 interface AniBuildConfig {

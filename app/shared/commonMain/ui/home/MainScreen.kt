@@ -79,6 +79,7 @@ fun MainScreenPortrait(
                 val searchActive by searchViewModel.searchActive.collectAsStateWithLifecycle()
                 val paddingHorizontal by animateDpAsState(if (searchActive) 0.dp else 8.dp)
                 val paddingVertical by animateDpAsState(if (searchActive) 0.dp else 4.dp)
+
                 Row(
                     Modifier.fillMaxWidth()
                         .then(if (!searchActive) Modifier.height(64.dp) else Modifier)
@@ -146,13 +147,13 @@ fun MainScreenPortrait(
                 }
             }
         }
-    ) { paddingValues ->
-        CompositionLocalProvider(LocalContentPaddings provides paddingValues) {
+    ) { contentPadding ->
+        CompositionLocalProvider(LocalContentPaddings provides contentPadding) {
             NavHost(navigator, initialRoute = "home") {
                 scene("home") {
                     when (selectedTab) {
-                        "home" -> HomePage(searchViewModel)
-                        "collection" -> CollectionPage(myCollectionsViewModel)
+                        "home" -> HomePage(searchViewModel, contentPadding)
+                        "collection" -> CollectionPage(contentPadding, myCollectionsViewModel)
                         "profile" -> ProfilePage()
                     }
                 }

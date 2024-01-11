@@ -51,8 +51,13 @@ import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubject
 import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectDetails
 import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectImageSize
 import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectType
+import me.him188.ani.utils.logging.info
+import me.him188.ani.utils.logging.logger
+import me.him188.ani.utils.logging.warn
 import me.him188.ani.utils.serialization.toJsonArray
 import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
 import org.openapitools.client.apis.BangumiApi
 import org.openapitools.client.models.RelatedPerson
 
@@ -118,6 +123,7 @@ internal class BangumiClientImpl(
     private val clientSecret: String,
     httpClientConfiguration: HttpClientConfig<*>.() -> Unit = {},
 ) : BangumiClient {
+    private val logger = logger(this::class)
     override suspend fun exchangeTokens(code: String, callbackUrl: String): BangumiClient.GetAccessTokenResponse {
         val resp = httpClient.post("$BANGUMI_HOST/oauth/access_token") {
             contentType(ContentType.Application.Json)
@@ -180,6 +186,29 @@ internal class BangumiClientImpl(
                     "him188/ani/3.0.0-beta01 (Android) (https://github.com/Him188/ani)"
                 ).build()
             )
+        }
+        // add logger
+        addInterceptor { chain ->
+            val request: Request = chain.request()
+            val t1 = System.nanoTime()
+            logger.info {
+                "Sending request ${request.url} on ${chain.connection()}"
+            }
+
+            val response: Response = chain.proceed(request)
+
+            val t2 = System.nanoTime()
+            if (response.code in 200..399) {
+                logger.info {
+                    "Received resp   ${response.request.url} in ${(t2 - t1) / 1e6}ms: ${response.code} ${response.message}"
+                }
+            } else {
+                logger.warn {
+                    "Received resp   ${response.request.url} in ${(t2 - t1) / 1e6}ms: ${response.code} ${response.message}"
+                }
+            }
+
+            response
         }
     }.build())
 

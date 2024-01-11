@@ -19,6 +19,7 @@
 package me.him188.ani.app.ui.home
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,14 +27,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.dp
 import me.him188.ani.app.platform.isInLandscapeMode
 
 @Composable
-fun HomePage(searchViewModel: SearchViewModel) {
+fun HomePage(
+    searchViewModel: SearchViewModel,
+    contentPadding: PaddingValues = PaddingValues(0.dp)
+) {
     if (isInLandscapeMode()) {
         HomePageLandscape()
     } else {
-        HomePagePortrait(searchViewModel)
+        HomePagePortrait(contentPadding, searchViewModel)
     }
 }
 
@@ -42,12 +47,15 @@ private fun HomePageLandscape() {
 }
 
 @Composable
-private fun HomePagePortrait(searchViewModel: SearchViewModel) {
+private fun HomePagePortrait(
+    contentPadding: PaddingValues,
+    searchViewModel: SearchViewModel
+) {
     Column(
         Modifier.padding(
-            top = LocalContentPaddings.current.calculateTopPadding(),
-            start = LocalContentPaddings.current.calculateStartPadding(LocalLayoutDirection.current),
-            end = LocalContentPaddings.current.calculateEndPadding(LocalLayoutDirection.current),
+            top = contentPadding.calculateTopPadding(),
+            start = contentPadding.calculateStartPadding(LocalLayoutDirection.current),
+            end = contentPadding.calculateEndPadding(LocalLayoutDirection.current),
         ).fillMaxSize()
     ) {
     }

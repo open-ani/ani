@@ -1,6 +1,8 @@
 package me.him188.ani.app.ui.home
 
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Search
@@ -14,7 +16,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.subject.SubjectPreviewColumn
 import me.him188.ani.app.ui.theme.weaken
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
@@ -27,6 +31,7 @@ fun SubjectSearchBar(
     val query by viewModel.editingQuery.collectAsStateWithLifecycle()
     val searchActive by viewModel.searchActive.collectAsStateWithLifecycle()
     val keyboard by rememberUpdatedState(LocalSoftwareKeyboardController.current)
+    val shape = RoundedCornerShape(16.dp)
     SearchBar(
         query,
         onQueryChange = {
@@ -38,7 +43,11 @@ fun SubjectSearchBar(
         },
         searchActive,
         onActiveChange = { viewModel.searchActive.value = it },
-        modifier.fillMaxWidth(),
+        modifier
+            .offset(y = 4.dp)
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, shape = shape)
+            .offset(y = (-4).dp),
+        shape = shape,
         placeholder = { Text("搜索") },
         leadingIcon = { Icon(Icons.Outlined.Search, null) },
         trailingIcon = {
@@ -51,7 +60,10 @@ fun SubjectSearchBar(
                 }
             }
         },
-        colors = SearchBarDefaults.colors(dividerColor = MaterialTheme.colorScheme.outline.weaken()),
+        colors = SearchBarDefaults.colors(
+            containerColor = Color.Transparent,
+            dividerColor = MaterialTheme.colorScheme.outline.weaken(),
+        ),
     ) {
         val result by viewModel.result.collectAsStateWithLifecycle()
         result?.let {
