@@ -5,6 +5,9 @@ import me.him188.ani.datasources.api.SubjectImages
 
 @Suppress("SpellCheckingInspection")
 object PreviewData {
+    const val MADE_IN_ABYSS_MOVIE_SUBJECT_ID = 230914
+    const val MADE_IN_ABYSS_MOVIE_EPISODE_ID = 920023
+
     const val SOSOU_NO_FURILEN_SUBJECT_ID = 400602
     const val SOSOU_NO_FURILEN_EPISODE_ID = 1227087
     val SosouNoFurilen = Subject(

@@ -10,7 +10,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -31,6 +33,7 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -53,9 +56,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.AniTopAppBar
 import me.him188.ani.app.ui.foundation.TopAppBarGoBackButton
 import me.him188.ani.app.ui.theme.aniDarkColorTheme
+import me.him188.ani.app.ui.theme.slightlyWeaken
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import kotlin.time.Duration.Companion.seconds
 
@@ -159,59 +164,75 @@ private fun EpisodePlaySourceSelection(viewModel: EpisodeViewModel, modifier: Mo
         val preferredLanguage by playSourceSelector.preferredSubtitleLanguage.collectAsStateWithLifecycle()
         val preferredAlliance by playSourceSelector.preferredAlliance.collectAsStateWithLifecycle()
 
-        Row(verticalAlignment = Alignment.CenterVertically) {
+
+        var showPlaySourceSheet by remember { mutableStateOf(false) }
+        Row(
+            Modifier.height(IntrinsicSize.Min).clickable {
+                showPlaySourceSheet = true
+            },
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             Text(
                 "数据源",
                 Modifier.padding(start = PAGE_HORIZONTAL_PADDING),
-                style = MaterialTheme.typography.titleLarge,
+                style = MaterialTheme.typography.titleMedium,
+                maxLines = 1,
             )
             if (isPlaySourcesLoading) {
-                Box(Modifier.padding(start = 12.dp).height(32.dp), contentAlignment = Alignment.Center) {
+                Box(Modifier.padding(start = 12.dp).height(24.dp), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
                 }
             }
         }
 
-        PlaySourceFilterRow(
-            resolutions,
-            label = { Text("清晰度", overflow = TextOverflow.Visible) },
-            key = { it.id },
-            eachItem = { item ->
-                InputChip(
-                    item == preferredResolution,
-                    onClick = { playSourceSelector.setPreferredResolution(item) },
-                    label = { Text(remember(item) { item.toString() }) }
+        if (showPlaySourceSheet) {
+            ModalBottomSheet(
+                onDismissRequest = { showPlaySourceSheet = false },
+            ) {
+                PlaySourceFilterRow(
+                    resolutions,
+                    label = { Text("清晰度", overflow = TextOverflow.Visible) },
+                    key = { it.id },
+                    eachItem = { item ->
+                        InputChip(
+                            item == preferredResolution,
+                            onClick = { playSourceSelector.setPreferredResolution(item) },
+                            label = { Text(remember(item) { item.toString() }) }
+                        )
+                    },
+                    Modifier.padding(start = PAGE_HORIZONTAL_PADDING).padding(top = 12.dp).height(32.dp)
                 )
-            },
-            Modifier.padding(start = PAGE_HORIZONTAL_PADDING).padding(top = 12.dp).height(32.dp)
-        )
 
-        PlaySourceFilterRow(
-            subtitleLanguages,
-            label = { Text("字幕语言", overflow = TextOverflow.Visible) },
-            key = { it },
-            eachItem = { item ->
-                InputChip(
-                    item == preferredLanguage,
-                    onClick = { playSourceSelector.setPreferredSubtitleLanguage(item) },
-                    label = { Text(item) }
+                PlaySourceFilterRow(
+                    subtitleLanguages,
+                    label = { Text("字幕语言", overflow = TextOverflow.Visible) },
+                    key = { it },
+                    eachItem = { item ->
+                        InputChip(
+                            item == preferredLanguage,
+                            onClick = { playSourceSelector.setPreferredSubtitleLanguage(item) },
+                            label = { Text(item) }
+                        )
+                    },
+                    Modifier.padding(start = PAGE_HORIZONTAL_PADDING).padding(top = 12.dp).height(32.dp)
                 )
-            },
-            Modifier.padding(start = PAGE_HORIZONTAL_PADDING).padding(top = 12.dp).height(32.dp)
-        )
 
-        PlaySourceFilterFlowRow(
-            alliances.orEmpty(),
-            label = { Text("字幕组", overflow = TextOverflow.Visible) },
-            eachItem = { item ->
-                InputChip(
-                    item == preferredAlliance,
-                    onClick = { playSourceSelector.setPreferredAlliance(item) },
-                    label = { Text(item.displayName) }
+                PlaySourceFilterFlowRow(
+                    alliances.orEmpty(),
+                    label = { Text("字幕组", overflow = TextOverflow.Visible) },
+                    eachItem = { item ->
+                        InputChip(
+                            item == preferredAlliance,
+                            onClick = { playSourceSelector.setPreferredAlliance(item) },
+                            label = { Text(item.displayName) }
+                        )
+                    },
+                    Modifier.padding(start = PAGE_HORIZONTAL_PADDING).padding(top = 12.dp).height(32.dp)
                 )
-            },
-            Modifier.padding(start = PAGE_HORIZONTAL_PADDING).padding(top = 12.dp).height(32.dp)
-        )
+
+                Spacer(Modifier.navigationBarsPadding().padding(bottom = 16.dp))
+            }
+        }
 
 //        Box(
 //            Modifier.fillMaxWidth().height(80.dp).padding(top = PAGE_HORIZONTAL_PADDING),
@@ -287,7 +308,7 @@ private fun <T> PlaySourceFilterRow(
     modifier: Modifier,
 ) {
     Row(modifier, verticalAlignment = Alignment.CenterVertically) {
-        ProvideTextStyle(MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium)) {
+        ProvideTextStyle(MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Medium)) {
             Box(Modifier.width(PLAY_SOURCE_LABEL_WIDTH)) {
                 label()
             }
@@ -364,9 +385,13 @@ fun EpisodePlaySourceItem(
 @Composable
 fun EpisodeTitle(viewModel: EpisodeViewModel, modifier: Modifier = Modifier) {
     Column(modifier) {
-        Row {
-            val subjectTitle by viewModel.subjectTitle.collectAsStateWithLifecycle()
-            Text(subjectTitle ?: "", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        val subjectTitle by viewModel.subjectTitle.collectAsStateWithLifecycle()
+        Row(Modifier.placeholder(subjectTitle == null)) {
+            Text(
+                subjectTitle ?: "placeholder",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
         }
 
         Row(Modifier.padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -375,17 +400,19 @@ fun EpisodeTitle(viewModel: EpisodeViewModel, modifier: Modifier = Modifier) {
             val shape = RoundedCornerShape(8.dp)
             Box(
                 Modifier.border(1.dp, MaterialTheme.colorScheme.outlineVariant, shape = shape)
+                    .placeholder(episodeEp == null)
                     .clip(shape)
                     .padding(horizontal = 4.dp, vertical = 2.dp)
             ) {
                 Text(
-                    episodeEp ?: "",
-                    style = MaterialTheme.typography.titleMedium,
+                    episodeEp ?: "01",
+                    style = MaterialTheme.typography.labelLarge.run { copy(color = color.slightlyWeaken()) },
                 )
             }
+
             Text(
-                episodeTitle ?: "",
-                Modifier.padding(start = 8.dp),
+                episodeTitle ?: "placeholder",
+                Modifier.padding(start = 8.dp).placeholder(episodeEp == null),
                 style = MaterialTheme.typography.titleMedium,
             )
         }
