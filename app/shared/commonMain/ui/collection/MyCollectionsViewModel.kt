@@ -80,6 +80,14 @@ class MyCollectionsViewModel : AbstractViewModel(), KoinComponent {
     fun navigateToEpisode(context: Context, subjectId: Int, episodeId: Int) {
         subjectNavigator.navigateToEpisode(context, subjectId, episodeId)
     }
+
+    suspend fun updateCollection(subjectId: Int, action: SubjectCollectionAction) {
+        if (action.type == null) {
+            collectionRepository.removeCollection(subjectId)
+        } else {
+            collectionRepository.updateCollection(subjectId, action.type)
+        }
+    }
 }
 
 @Immutable
