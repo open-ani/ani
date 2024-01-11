@@ -18,14 +18,12 @@
 
 package me.him188.ani.app.ui.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.compositeOver
 
 
 /**
@@ -33,11 +31,12 @@ import androidx.compose.ui.graphics.compositeOver
  */
 @Composable
 fun Color.slightlyWeaken(): Color {
-    return if (isSystemInDarkTheme()) {
-        Color.LightGray.compositeOver(this)
-    } else {
-        copy(alpha = 0.7f)
-    }
+    return copy(alpha = 1 - 0.38f)
+//    return if (isSystemInDarkTheme()) {
+//        Color.LightGray.compositeOver(this)
+//    } else {
+//        copy(alpha = 1 - 0.38f)
+//    }
 }
 
 /**
@@ -45,11 +44,13 @@ fun Color.slightlyWeaken(): Color {
  */
 @Composable
 fun Color.weaken(): Color {
-    return if (isSystemInDarkTheme()) {
-        Color.Gray.compositeOver(this)
-    } else {
-        copy(alpha = 0.5f)
-    }
+    return copy(alpha = 0.5f)
+//    return if (isSystemInDarkTheme()) {
+//        copy(alpha = 0.5f)
+////        Color.Gray.compositeOver(this)
+//    } else {
+//        copy(alpha = 0.5f)
+//    }
 }
 
 /**
@@ -57,15 +58,24 @@ fun Color.weaken(): Color {
  */
 @Composable
 fun Color.stronglyWeaken(): Color {
-    return if (isSystemInDarkTheme()) {
-        Color.DarkGray.compositeOver(this)
-    } else {
-        copy(alpha = 0.38f)
-    }
+    return copy(alpha = 0.38f)
+//    return if (isSystemInDarkTheme()) {
+//        Color.DarkGray.compositeOver(this)
+//    } else {
+//        copy(alpha = 0.38f)
+//    }
 }
 
 @Stable
-fun aniDarkColorTheme(): ColorScheme = darkColorScheme()
+fun aniDarkColorTheme(): ColorScheme {
+    PaletteTokens.run {
+        return darkColorScheme(
+            background = Neutral10,
+            surface = Neutral20,
+            surfaceVariant = NeutralVariant20,
+        )
+    }
+}
 
 @Stable
 fun aniLightColorTheme(): ColorScheme = lightColorScheme(
