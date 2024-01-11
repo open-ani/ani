@@ -104,7 +104,7 @@ jobs:
         run: ./gradlew check ${{ env.gradleArgs }}
 
       - name: Package
-        run: ./gradlew createDistributable package ${{ env.gradleArgs }}
+        run: ./gradlew createDistributable packageDistributionForCurrentOS ${{ env.gradleArgs }}
       #        continue-on-error: true
 
       #      - if: ${{ env.isMac == 'true' }}

@@ -16,10 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-@file:Suppress("OPT_IN_IS_NOT_ENABLED")
-
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
-import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 plugins {
     kotlin("jvm")
@@ -32,19 +29,23 @@ dependencies {
     implementation(projects.app.shared)
 }
 
-compose.desktop {
+extra.set("ani.jvm.target", 17)
 
+compose.desktop {
     application {
         mainClass = "me.him188.ani.desktop.AniDesktop"
 //        jvmArgs("--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED")
         nativeDistributions {
-            targetFormats(
-                TargetFormat.Deb,
-                TargetFormat.Rpm,
-                TargetFormat.Dmg,
-                TargetFormat.Exe,
-                TargetFormat.Msi,
-            )
+            targetFormats(*buildList {
+                add(TargetFormat.Deb)
+                add(TargetFormat.Rpm)
+                add(TargetFormat.Dmg)
+                add(TargetFormat.Exe)
+                add(TargetFormat.Msi)
+                if (getOs() == Os.Windows) {
+                    add(TargetFormat.AppImage) // portable distribution (installation-free)
+                }
+            }.toTypedArray())
             packageName = "Ani"
             description = project.description
             vendor = "Him188"
@@ -74,7 +75,3 @@ compose.desktop {
 
 // workaround for resource not found
 //kotlin.sourceSets.main.get().resources.srcDir(project(":common").projectDir.resolve("src/androidMain/res/raw"))
-
-tasks.withType(KotlinJvmCompile::class) {
-    kotlinOptions.jvmTarget = "11"
-}
