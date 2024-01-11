@@ -13,6 +13,7 @@ jetpack-compose = "1.5.4"
 compose-multiplatform = "1.5.11"
 android-gradle-plugin = "8.2.1"
 accompanist = "0.33.2-alpha"
+datastore = "1.0.0"
 
 [libraries]
 # Build
@@ -63,8 +64,10 @@ kamel-image = { module = "media.kamel:kamel-image", version = "0.9.1" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 
 # Android Datastore
-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version = "1.0.0" }
-datastore-preferences-core = { module = "androidx.datastore:datastore-preferences-core", version = "1.0.0" }
+datastore = { module = "androidx.datastore:datastore", version.ref = "datastore" }
+datastore-core = { module = "androidx.datastore:datastore-core", version.ref = "datastore" }
+datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
+datastore-preferences-core = { module = "androidx.datastore:datastore-preferences-core", version.ref = "datastore" }
 
 # Android Accompanist
 accompanist-placeholder = { module = "com.google.accompanist:accompanist-placeholder", version.ref = "accompanist" }

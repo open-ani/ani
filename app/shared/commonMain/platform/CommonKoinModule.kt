@@ -23,10 +23,13 @@ import io.ktor.client.plugins.UserAgent
 import kotlinx.coroutines.CoroutineScope
 import me.him188.ani.app.data.EpisodeRepository
 import me.him188.ani.app.data.EpisodeRepositoryImpl
+import me.him188.ani.app.data.PreferredAllianceRepository
+import me.him188.ani.app.data.PreferredAllianceRepositoryImpl
 import me.him188.ani.app.data.SubjectRepository
 import me.him188.ani.app.data.SubjectRepositoryImpl
 import me.him188.ani.app.data.TokenRepository
 import me.him188.ani.app.data.TokenRepositoryImpl
+import me.him188.ani.app.persistent.preferredAllianceStore
 import me.him188.ani.app.persistent.tokenStore
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.session.SessionManagerImpl
@@ -40,6 +43,7 @@ import org.koin.dsl.module
 
 fun getCommonKoinModule(getContext: () -> Context, coroutineScope: CoroutineScope) = module {
     single<TokenRepository> { TokenRepositoryImpl(getContext().tokenStore) }
+    single<PreferredAllianceRepository> { PreferredAllianceRepositoryImpl(getContext().preferredAllianceStore) }
     single<SessionManager> { SessionManagerImpl(coroutineScope) }
     single<DmhyClient> {
         DmhyClient.create {

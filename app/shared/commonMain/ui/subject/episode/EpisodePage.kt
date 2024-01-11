@@ -149,38 +149,77 @@ fun EpisodePageContent(
 
         Divider(Modifier.fillMaxWidth())
 
-        Row(
-            Modifier.padding(horizontal = PAGE_HORIZONTAL_PADDING, vertical = 16.dp).fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.Top,
-        ) {
-            // 选择播放源
-            PlaySourceSelectionAction(viewModel)
+        Column(Modifier.padding(vertical = 16.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            NowPlayingLabel(viewModel, Modifier.padding(horizontal = PAGE_HORIZONTAL_PADDING).fillMaxWidth())
 
-            val clipboard by rememberUpdatedState(LocalClipboardManager.current)
-            val snackbar by rememberUpdatedState(LocalSnackbar.current)
-            ActionButton(
-                onClick = { viewModel.launchInBackground { copyDownloadLink(clipboard, snackbar) } },
-                icon = { Icon(Icons.Default.ContentCopy, null) },
-                text = { Text("复制磁力") },
-                modifier,
-            )
+            Row(
+                Modifier.padding(horizontal = PAGE_HORIZONTAL_PADDING).fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.Top,
+            ) {
+                // 选择播放源
+                PlaySourceSelectionAction(viewModel)
 
-            val context = LocalContext.current
+                val clipboard by rememberUpdatedState(LocalClipboardManager.current)
+                val snackbar by rememberUpdatedState(LocalSnackbar.current)
+                ActionButton(
+                    onClick = { viewModel.launchInBackground { copyDownloadLink(clipboard, snackbar) } },
+                    icon = { Icon(Icons.Default.ContentCopy, null) },
+                    text = { Text("复制磁力") },
+                    modifier,
+                )
 
-            ActionButton(
-                onClick = { viewModel.launchInBackground { browseDownload(context, snackbar) } },
-                icon = { Icon(Icons.Default.Download, null) },
-                text = { Text("下载") },
-                modifier,
-            )
+                val context = LocalContext.current
 
-            ActionButton(
-                onClick = { viewModel.launchInBackground { browsePlaySource(context, snackbar) } },
-                icon = { Icon(Icons.Default.ArrowOutward, null) },
-                text = { Text("原始页面") },
-                modifier,
-            )
+                ActionButton(
+                    onClick = { viewModel.launchInBackground { browseDownload(context, snackbar) } },
+                    icon = { Icon(Icons.Default.Download, null) },
+                    text = { Text("下载") },
+                    modifier,
+                )
+
+                ActionButton(
+                    onClick = { viewModel.launchInBackground { browsePlaySource(context, snackbar) } },
+                    icon = { Icon(Icons.Default.ArrowOutward, null) },
+                    text = { Text("原始页面") },
+                    modifier,
+                )
+            }
+        }
+    }
+}
+
+
+/**
+ * 显示正在播放的那行字
+ */
+@Composable
+private fun NowPlayingLabel(viewModel: EpisodeViewModel, modifier: Modifier = Modifier) {
+    Row(modifier) {
+        val playing by viewModel.playSourceSelector.targetPlaySourceCandidate.collectAsStateWithLifecycle()
+        ProvideTextStyle(MaterialTheme.typography.labelMedium) {
+            if (playing != null) {
+                Column {
+                    Row {
+                        Text(
+                            "正在播放: ",
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                        Text(
+                            playing?.render() ?: "",
+                            color = MaterialTheme.colorScheme.secondary,
+                        )
+                    }
+
+                    Text(
+                        remember(playing) { playing?.playSource?.originalTitle ?: "" },
+                        Modifier.padding(top = 8.dp),
+                        color = LocalContentColor.current.slightlyWeaken(),
+                    )
+                }
+            } else {
+                Text("请选择数据源")
+            }
         }
     }
 }
@@ -198,10 +237,10 @@ private fun PlaySourceSelectionAction(
 
     val resolutions by playSourceSelector.resolutions.collectAsStateWithLifecycle()
     val subtitleLanguages by playSourceSelector.subtitleLanguages.collectAsStateWithLifecycle()
-    val alliances by playSourceSelector.availableAlliances.collectAsStateWithLifecycle(null)
+    val alliances by playSourceSelector.candidates.collectAsStateWithLifecycle(null)
     val preferredResolution by playSourceSelector.preferredResolution.collectAsStateWithLifecycle()
     val preferredLanguage by playSourceSelector.preferredSubtitleLanguage.collectAsStateWithLifecycle()
-    val preferredAlliance by playSourceSelector.preferredAlliance.collectAsStateWithLifecycle()
+    val preferredAlliance by playSourceSelector.finalSelectedAllianceMangled.collectAsStateWithLifecycle(null)
 
 
     ActionButton(
@@ -259,9 +298,9 @@ private fun PlaySourceSelectionAction(
                     label = { Text("字幕组", overflow = TextOverflow.Visible) },
                     eachItem = { item ->
                         InputChip(
-                            item == preferredAlliance,
-                            onClick = { playSourceSelector.setPreferredAlliance(item) },
-                            label = { Text(item.displayName) },
+                            item.allianceMangled == preferredAlliance,
+                            onClick = { viewModel.launchInBackground { playSourceSelector.setPreferredCandidate(item) } },
+                            label = { Text(item.allianceMangled) },
                             Modifier.height(32.dp)
                         )
                     },
@@ -468,7 +507,7 @@ fun EpisodePlaySourceItem(
 @Composable
 fun EpisodeTitle(viewModel: EpisodeViewModel, modifier: Modifier = Modifier) {
     Column(modifier) {
-        val subjectTitle by viewModel.subjectTitle.collectAsStateWithLifecycle()
+        val subjectTitle by viewModel.subjectTitle.collectAsStateWithLifecycle(null)
         Row(Modifier.placeholder(subjectTitle == null)) {
             Text(
                 subjectTitle ?: "placeholder",
@@ -478,8 +517,8 @@ fun EpisodeTitle(viewModel: EpisodeViewModel, modifier: Modifier = Modifier) {
         }
 
         Row(Modifier.padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-            val episodeTitle by viewModel.episodeTitle.collectAsStateWithLifecycle()
-            val episodeEp by viewModel.episodeEp.collectAsStateWithLifecycle()
+            val episodeTitle by viewModel.episodeTitle.collectAsStateWithLifecycle(null)
+            val episodeEp by viewModel.episodeEp.collectAsStateWithLifecycle(null)
             val shape = RoundedCornerShape(8.dp)
             Box(
                 Modifier.border(1.dp, MaterialTheme.colorScheme.outlineVariant, shape = shape)

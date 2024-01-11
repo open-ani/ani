@@ -29,6 +29,7 @@ import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.datasources.api.DownloadProvider
 import me.him188.ani.datasources.api.DownloadSearchQuery
 import me.him188.ani.datasources.api.SearchSession
+import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.Resolution
 import me.him188.ani.datasources.api.topic.Topic
 import me.him188.ani.datasources.api.topic.TopicCategory
@@ -52,27 +53,27 @@ class EpisodeViewModel(
 
     private val subjectDetails = flow {
         emit(withContext(Dispatchers.IO) { bangumiClient.api.getSubjectById(initialSubjectId) })
-    }.stateInBackground()
+    }.shareInBackground()
 
     @Stable
     val episode = episodeId.mapLatest { episodeId ->
         withContext(Dispatchers.IO) { bangumiClient.api.getEpisodeById(episodeId) }
-    }.stateInBackground()
+    }.shareInBackground()
 
     @Stable
     val subjectTitle = subjectDetails.filterNotNull().mapLatest { subject ->
         subject.nameCNOrName()
-    }.stateInBackground()
+    }.shareInBackground()
 
     @Stable
     val episodeEp = episode.filterNotNull().mapLatest { episode ->
         episode.renderEpisodeSp()
-    }.stateInBackground()
+    }.shareInBackground()
 
     @Stable
     val episodeTitle = episode.filterNotNull().mapLatest { episode ->
         episode.nameCNOrName()
-    }.stateInBackground()
+    }.shareInBackground()
 
 
 //    private val remoteEpisodeWatched = episode.filterNotNull().map {
@@ -103,9 +104,6 @@ class EpisodeViewModel(
     val playSources: SharedFlow<Collection<PlaySource>?> = combine(episode, subjectTitle) { episode, subjectTitle ->
         episode to subjectTitle
     }.mapNotNull { (episode, subjectTitle) ->
-        if (episode == null || subjectTitle == null) {
-            return@mapNotNull null
-        }
 
         _isPlaySourcesLoading.emit(true)
         val session = dmhyClient.startSearch(
@@ -150,11 +148,14 @@ class EpisodeViewModel(
                 dataSource = "动漫花园",
                 originalUrl = it.link,
                 magnetLink = it.magnetLink,
+                originalTitle = it.rawTitle,
+                size = it.size,
             )
         }
 
     @Stable
     val playSourceSelector = PlaySourceSelector(
+        subjectDetails.map { it.id },
         listOf(),
         playSources.filterNotNull(),
         backgroundScope
@@ -167,8 +168,8 @@ class EpisodeViewModel(
     }
 
     suspend fun copyDownloadLink(clipboardManager: ClipboardManager, snackbar: SnackbarHostState) {
-        playSourceSelector.targetPlaySource.value?.let {
-            clipboardManager.setText(AnnotatedString(it.magnetLink))
+        playSourceSelector.targetPlaySourceCandidate.value?.let {
+            clipboardManager.setText(AnnotatedString(it.playSource.magnetLink))
             snackbar.showSnackbar("已复制下载链接")
         } ?: run {
             snackbar.showSnackbar("请先选择数据源")
@@ -176,8 +177,8 @@ class EpisodeViewModel(
     }
 
     suspend fun browsePlaySource(context: Context, snackbar: SnackbarHostState) {
-        playSourceSelector.targetPlaySource.value?.let {
-            browserNavigator.openBrowser(context, it.originalUrl)
+        playSourceSelector.targetPlaySourceCandidate.value?.let {
+            browserNavigator.openBrowser(context, it.playSource.originalUrl)
         } ?: run {
             snackbar.showSnackbar("请先选择数据源")
             showPlaySourceSheet = true
@@ -185,8 +186,8 @@ class EpisodeViewModel(
     }
 
     suspend fun browseDownload(context: Context, snackbar: SnackbarHostState) {
-        playSourceSelector.targetPlaySource.value?.let {
-            browserNavigator.openMagnetLink(context, it.originalUrl)
+        playSourceSelector.targetPlaySourceCandidate.value?.let {
+            browserNavigator.openMagnetLink(context, it.playSource.originalUrl)
         } ?: run {
             snackbar.showSnackbar("请先选择数据源")
             showPlaySourceSheet = true
@@ -203,4 +204,6 @@ data class PlaySource(
     val dataSource: String, // dmhy
     val originalUrl: String,
     val magnetLink: String,
+    val originalTitle: String,
+    val size: FileSize,
 )

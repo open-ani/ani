@@ -8,24 +8,29 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
+import me.him188.ani.app.data.PreferredAllianceRepository
+import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.datasources.api.topic.Resolution
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
 /**
  * 播放源筛选器.
- *
- * [setPreferredResolution] 和 [setPreferredSubtitleLanguage] 后, [availableAlliances] 会更新.
- *
- * [setPreferredAlliance] 后, [targetPlaySource] 即为目标播放源 [PlaySource].
  */
 @Stable
 class PlaySourceSelector(
+    subjectId: Flow<Int>,
     initialPlaySources: List<PlaySource>,
     playSources: Flow<Collection<PlaySource>>, // may change concurrently
-    coroutineScope: CoroutineScope,
-) {
+    override val backgroundScope: CoroutineScope,
+) : KoinComponent, HasBackgroundScope {
+    private val preferredAllianceRepository: PreferredAllianceRepository by inject()
+    private val subjectId = subjectId.stateIn(backgroundScope, SharingStarted.Eagerly, 1)
+
     /// subtitleLanguages
 
     val subtitleLanguages: StateFlow<List<String>> =
@@ -35,7 +40,7 @@ class PlaySourceSelector(
                 list.map { it.subtitleLanguage }.distinct()
             }
             .stateIn(
-                coroutineScope,
+                backgroundScope,
                 started = SharingStarted.Eagerly,
                 initialPlaySources.map { it.subtitleLanguage }.distinct()
             )
@@ -60,7 +65,7 @@ class PlaySourceSelector(
                 .sortedByDescending { it }
         }
         .stateIn(
-            coroutineScope,
+            backgroundScope,
             started = SharingStarted.Eagerly,
             initialPlaySources.map { it.resolution }.distinct(),
         )
@@ -76,7 +81,18 @@ class PlaySourceSelector(
 
     /// alliances
 
-    val availableAlliances = combine(
+    /**
+     * 记录的上次选择的联盟.
+     */
+    private val storedPreferredAlliance = subjectId
+        .flatMapLatest { preferredAllianceRepository.preferredAlliance(it) }
+        .map { it }
+        .stateInBackground()
+
+    /**
+     * 当前可用的联盟.
+     */
+    val candidates = combine(
         playSources,
         preferredResolution,
         preferredSubtitleLanguage,
@@ -86,35 +102,73 @@ class PlaySourceSelector(
             .flatMap { (name, values) ->
                 values.createCandidates(name)
             }
-    }.shareIn(coroutineScope, started = SharingStarted.Eagerly, replay = 1)
+    }.stateInBackground()
 
-    private val _preferredAlliance: MutableStateFlow<PlaySourceCandidate?> = MutableStateFlow(null) // TODO: 记录起来 
+    /**
+     * 第一个可用的联盟.
+     */
+    private val firstAlliance = candidates.map {
+        it?.firstOrNull()?.allianceMangled
+    }.shareInBackground()
 
-    val preferredAlliance: StateFlow<PlaySourceCandidate?> get() = _preferredAlliance
+    /**
+     * 用户本次会话中选择的联盟.
+     */
+    private val userPreferredAlliance: MutableStateFlow<PlaySourceCandidate?> = MutableStateFlow(null)
 
-    fun setPreferredAlliance(resolution: PlaySourceCandidate) {
-        _preferredAlliance.value = resolution
+    val finalSelectedAllianceMangled = combine(
+        userPreferredAlliance,
+        firstAlliance,
+        storedPreferredAlliance
+    ) { userPreferredAlliance, firstAlliance, storedPreferredAlliance ->
+        userPreferredAlliance?.allianceMangled ?: storedPreferredAlliance ?: firstAlliance
+    }.shareInBackground()
+
+    /**
+     * 设置用户期望的字幕组.
+     */
+    suspend fun setPreferredCandidate(candidate: PlaySourceCandidate) {
+        userPreferredAlliance.value = candidate
+        preferredAllianceRepository.setPreferredAlliance(subjectId.value, candidate.playSource.alliance)
     }
 
     /// filtered
 
-    val targetPlaySource =
-        combine(
-            playSources,
-            preferredResolution,
-            preferredSubtitleLanguage,
-            preferredAlliance,
-        ) { list, resolution, language, alliance ->
-            list.firstOrNull { it.resolution == resolution && it.subtitleLanguage == language && it.alliance == alliance?.playSource?.alliance }
-        }.stateIn(coroutineScope, started = SharingStarted.Eagerly, null)
+    /**
+     * 最终观看或下载的播放源.
+     */
+    val targetPlaySourceCandidate = combine(
+        candidates.filterNotNull(),
+        preferredResolution,
+        preferredSubtitleLanguage,
+        finalSelectedAllianceMangled,
+    ) { list, resolution, language, allianceMangled ->
+        list.firstOrNull { playSource ->
+            playSource.playSource.resolution == resolution && playSource.playSource.subtitleLanguage == language && playSource.allianceMangled == allianceMangled
+        }
+    }.stateInBackground()
 }
 
 @Immutable
 class PlaySourceCandidate(
-    val displayName: String,
+    val allianceMangled: String,
     val playSource: PlaySource,
 ) {
     val id get() = playSource.id
+}
+
+/**
+ * 展示给用户的内容
+ */
+@Stable
+fun PlaySourceCandidate.render(): String {
+    val playing = this
+    return listOf(
+        playing.playSource.resolution,
+        playing.playSource.subtitleLanguage,
+        playing.playSource.size,
+        playing.allianceMangled,
+    ).joinToString(" · ")
 }
 
 private fun List<PlaySource>.createCandidates(name: String): List<PlaySourceCandidate> =

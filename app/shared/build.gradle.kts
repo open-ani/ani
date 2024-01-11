@@ -77,6 +77,7 @@ kotlin {
         api(libs.koin.core) // dependency injection
         api(libs.directories) // Data directories on all OSes
         api(libs.kamel.image) // Image loading
+        api(libs.datastore.core) // Data Persistence
         api(libs.datastore.preferences.core) // Preferences
         api(libs.precompose) // Navigator
         api(libs.precompose.koin) // Navigator
@@ -87,6 +88,7 @@ kotlin {
 
     sourceSets.androidMain.dependencies {
         api(libs.kotlinx.coroutines.android)
+        api(libs.datastore)
         api(libs.datastore.preferences)
         api(libs.androidx.appcompat)
         api(libs.androidx.core.ktx)
