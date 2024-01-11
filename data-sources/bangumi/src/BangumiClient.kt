@@ -51,6 +51,7 @@ import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubject
 import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectDetails
 import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectImageSize
 import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectType
+import me.him188.ani.datasources.bangumi.processing.fixToString
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
@@ -192,7 +193,7 @@ internal class BangumiClientImpl(
             val request: Request = chain.request()
             val t1 = System.nanoTime()
             logger.info {
-                "Sending request ${request.url} on ${chain.connection()}"
+                "Sending ${request.method.fixToString(5, ' ')} ${request.url} on ${chain.connection()}"
             }
 
             val response: Response = chain.proceed(request)
@@ -200,11 +201,11 @@ internal class BangumiClientImpl(
             val t2 = System.nanoTime()
             if (response.code in 200..399) {
                 logger.info {
-                    "Received resp   ${response.request.url} in ${(t2 - t1) / 1e6}ms: ${response.code} ${response.message}"
+                    "Received resp  ${response.request.url} in ${(t2 - t1) / 1e6}ms: ${response.code} ${response.message}"
                 }
             } else {
                 logger.warn {
-                    "Received resp   ${response.request.url} in ${(t2 - t1) / 1e6}ms: ${response.code} ${response.message}"
+                    "Received resp  ${response.request.url} in ${(t2 - t1) / 1e6}ms: ${response.code} ${response.message}"
                 }
             }
 

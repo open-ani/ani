@@ -51,15 +51,16 @@ class AuthorizationActivity : AniComponentActivity() {
                         .fillMaxSize(),
                     topBar = {
                         AniTopAppBar(
+                            actions = {
+                                if (allowBack) {
+                                    TopAppBarGoBackButton { finish() }
+                                }
+                                TopAppBarActionButton(onClick = { vm.refresh() }) {
+                                    Icon(Icons.Outlined.Refresh, contentDescription = "Refresh")
+                                }
+                            },
                             title = { Text(text = "登录 Bangumi") }
-                        ) {
-                            if (allowBack) {
-                                TopAppBarGoBackButton { finish() }
-                            }
-                            TopAppBarActionButton(onClick = { vm.refresh() }) {
-                                Icon(Icons.Outlined.Refresh, contentDescription = "Refresh")
-                            }
-                        }
+                        )
                     }
                 ) { contentPadding ->
                     AuthRequestPage(

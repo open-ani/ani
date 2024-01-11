@@ -95,9 +95,11 @@ fun EpisodePage(
                                 1.00f to Color.Transparent,
                             )
                         ),
-                ) {
-                    TopAppBarGoBackButton(goBack)
-                }
+                    actions = {
+                        TopAppBarGoBackButton(goBack)
+                    },
+                    containerColor = Color.Transparent
+                )
             }
         },
         contentWindowInsets = WindowInsets(0.dp)

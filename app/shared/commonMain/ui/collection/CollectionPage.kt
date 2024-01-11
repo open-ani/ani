@@ -54,6 +54,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -72,11 +73,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import io.kamel.image.asyncPainterResource
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.isInLandscapeMode
 import me.him188.ani.app.ui.foundation.AniKamelImage
+import me.him188.ani.app.ui.foundation.AniTopAppBar
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.subject.details.COVER_WIDTH_TO_HEIGHT_RATIO
 import me.him188.ani.app.ui.subject.details.Tag
@@ -106,29 +109,34 @@ private fun CollectionPageLandscape(contentPadding: PaddingValues, viewModel: My
 
 @Composable
 private fun CollectionPagePortrait(contentPadding: PaddingValues, viewModel: MyCollectionsViewModel) {
-    Column(
-        Modifier.statusBarsPadding()
-            .padding(
-                start = contentPadding.calculateStartPadding(LocalLayoutDirection.current),
-                end = contentPadding.calculateEndPadding(LocalLayoutDirection.current),
+    Scaffold(
+        topBar = {
+            AniTopAppBar(
+                Modifier.statusBarsPadding(),
+                title = { Text("我的追番", style = MaterialTheme.typography.titleMedium) },
             )
-            .fillMaxSize()
-    ) {
-        val collections by viewModel.collections.collectAsStateWithLifecycle(listOf())
-        val isLoggedIn by viewModel.isLoggedIn.collectAsStateWithLifecycle(true)
-        if (collections.isEmpty()) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                val context = LocalContext.current
-                if (!isLoggedIn) {
-                    TextButton({ viewModel.launchInBackground { navigateToAuth(context) } }) {
-                        Text("请先登录", style = MaterialTheme.typography.titleMedium)
+//            AniTopAppBar(Modifier.background(MaterialTheme.colorScheme.surface)) {
+//                Text("我的追番", style = MaterialTheme.typography.titleMedium)
+//            }
+        }
+    ) { localPaddingValues ->
+        Column(Modifier.fillMaxSize()) {
+            val collections by viewModel.collections.collectAsStateWithLifecycle(listOf())
+            val isLoggedIn by viewModel.isLoggedIn.collectAsStateWithLifecycle(true)
+            if (collections.isEmpty()) {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    val context = LocalContext.current
+                    if (!isLoggedIn) {
+                        TextButton({ viewModel.launchInBackground { navigateToAuth(context) } }) {
+                            Text("请先登录", style = MaterialTheme.typography.titleMedium)
+                        }
+                    } else {
+                        Text("~ 空空如也 ~", style = MaterialTheme.typography.titleMedium)
                     }
-                } else {
-                    Text("~ 空空如也 ~", style = MaterialTheme.typography.titleMedium)
                 }
+            } else {
+                MyCollectionColumn(collections, viewModel, localPaddingValues + contentPadding)
             }
-        } else {
-            MyCollectionColumn(collections, viewModel, contentPadding)
         }
     }
 }
@@ -145,7 +153,9 @@ private fun ColumnScope.MyCollectionColumn(
         rememberLazyListState(),
         verticalArrangement = Arrangement.spacedBy(spacedBy),
     ) {
-        item { Spacer(Modifier.padding(top = contentPadding.calculateTopPadding() - spacedBy)) }
+        (contentPadding.calculateTopPadding() - spacedBy).coerceAtLeast(0.dp).takeIf { it > 0.dp }?.let {
+            item { Spacer(Modifier.height(it)) }
+        }
         items(collections, key = { it.subjectId }) { collection ->
             var visible by remember { mutableStateOf(false) }
             val context = LocalContext.current
@@ -168,8 +178,9 @@ private fun ColumnScope.MyCollectionColumn(
                 visible = true
             }
         }
-        item {
-            Spacer(Modifier.padding(bottom = contentPadding.calculateBottomPadding() - spacedBy))
+
+        (contentPadding.calculateBottomPadding() - spacedBy).coerceAtLeast(0.dp).takeIf { it > 0.dp }?.let {
+            item { Spacer(Modifier.height(it)) }
         }
     }
 }
@@ -363,8 +374,8 @@ private fun EditCollectionTypeDropDown(
                     )
                 },
                 onClick = {
-                    onDismissRequestState()
                     onClickState(action)
+                    onDismissRequestState()
                 }
             )
 
@@ -405,3 +416,15 @@ private fun SmallEpisodeButton(
 
 @Composable
 internal expect fun PreviewCollectionPage()
+
+
+@Composable
+private operator fun PaddingValues.plus(contentPadding: PaddingValues): PaddingValues {
+    val layoutDirection = LocalLayoutDirection.current
+    return PaddingValues(
+        start = calculateStartPadding(layoutDirection) + contentPadding.calculateStartPadding(layoutDirection),
+        top = calculateTopPadding() + contentPadding.calculateTopPadding(),
+        end = calculateEndPadding(layoutDirection) + contentPadding.calculateEndPadding(layoutDirection),
+        bottom = calculateBottomPadding() + contentPadding.calculateBottomPadding(),
+    )
+}

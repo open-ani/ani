@@ -1,6 +1,8 @@
 package me.him188.ani.app.ui.home
 
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -65,9 +67,11 @@ fun SubjectSearchBar(
             dividerColor = MaterialTheme.colorScheme.outline.weaken(),
         ),
     ) {
-        val result by viewModel.result.collectAsStateWithLifecycle()
-        result?.let {
-            SubjectPreviewColumn(it)
+        Column(Modifier.fillMaxSize()) {
+            val result by viewModel.result.collectAsStateWithLifecycle()
+            result?.let {
+                SubjectPreviewColumn(it)
+            }
         }
     }
 }

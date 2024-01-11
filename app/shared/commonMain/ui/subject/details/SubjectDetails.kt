@@ -85,7 +85,12 @@ fun SubjectDetails(
 ) {
     Scaffold(
         topBar = {
-            AniTopAppBar(Modifier.statusBarsPadding()) { TopAppBarGoBackButton(goBack) }
+            AniTopAppBar(
+                Modifier.statusBarsPadding(),
+                paddingStart = 12.dp,
+                actions = { TopAppBarGoBackButton(goBack) },
+                containerColor = Color.Transparent,
+            )
         },
         contentWindowInsets = WindowInsets(0.dp)
     ) { scaffoldPadding ->

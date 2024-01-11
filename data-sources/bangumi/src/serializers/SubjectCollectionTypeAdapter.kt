@@ -15,7 +15,7 @@ class SubjectCollectionTypeAdapter : JsonAdapter.Factory {
             }
 
             override fun toJson(writer: com.squareup.moshi.JsonWriter, value: SubjectCollectionType?) {
-                writer.value(SubjectCollectionType.encode(value))
+                writer.value(value?.value)
             }
         }
     }
