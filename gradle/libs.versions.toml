@@ -12,6 +12,7 @@ jsoup = "1.15.4"
 jetpack-compose = "1.5.4"
 compose-multiplatform = "1.5.11"
 android-gradle-plugin = "8.2.1"
+accompanist = "0.33.2-alpha"
 
 [libraries]
 # Build
@@ -66,8 +67,8 @@ datastore-preferences = { module = "androidx.datastore:datastore-preferences", v
 datastore-preferences-core = { module = "androidx.datastore:datastore-preferences-core", version = "1.0.0" }
 
 # Android Accompanist
-#accompanist-placeholder = { module = "com.google.accompanist:accompanist-placeholder", version.ref = "accompanist" }
-#accompanist-placeholder-material = { module = "com.google.accompanist:accompanist-placeholder-material", version.ref = "accompanist" }
+accompanist-placeholder = { module = "com.google.accompanist:accompanist-placeholder", version.ref = "accompanist" }
+accompanist-placeholder-material = { module = "com.google.accompanist:accompanist-placeholder-material", version.ref = "accompanist" }
 
 
 # Navigation

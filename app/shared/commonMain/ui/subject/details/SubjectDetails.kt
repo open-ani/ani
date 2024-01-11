@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -59,6 +60,7 @@ import io.kamel.core.Resource
 import io.kamel.image.asyncPainterResource
 import me.him188.ani.app.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.AniKamelImage
 import me.him188.ani.app.ui.foundation.AniTopAppBar
 import me.him188.ani.app.ui.foundation.IconImagePlaceholder
@@ -167,10 +169,15 @@ private fun SubjectDetailsContent(
             Modifier.padding(top = 8.dp, bottom = 4.dp).padding(start = horizontalPadding)
         )
 
+        // 收藏数据和收藏按钮
         Column(Modifier.fillMaxWidth().padding(vertical = 8.dp).padding(horizontal = horizontalPadding)) {
             val collection by viewModel.collection.collectAsStateWithLifecycle(null)
-            collection?.let {
-                Row {
+            // 数据
+            Row(Modifier.placeholder(visible = collection == null).fillMaxWidth()) {
+                if (collection == null) {
+                    Text(" ", style = MaterialTheme.typography.bodySmall) // spacer
+                }
+                collection?.let {
                     Text(
                         "${it.collect} 收藏 / ${it.wish} 想看 / ${it.doing} 在看",
                         style = MaterialTheme.typography.bodySmall
@@ -184,21 +191,26 @@ private fun SubjectDetailsContent(
             }
 
             val selfCollectionTypeString by viewModel.selfCollectionAction.collectAsStateWithLifecycle()
-            val selfCollected by viewModel.selfCollected.collectAsStateWithLifecycle(true)
+            val selfCollected by viewModel.selfCollected.collectAsStateWithLifecycle(null)
 
-            Row(Modifier.align(Alignment.End)) {
+            Row(
+                Modifier.padding(start = 8.dp, top = 8.dp)
+                    .align(Alignment.End)
+                    .placeholder(visible = selfCollected == null)
+            ) {
+                // 收藏按钮
                 FilledTonalButton(
                     onClick = { viewModel.launchInBackground { setSelfCollectionType(SubjectCollectionType.Doing) } },
-                    Modifier.padding(start = 8.dp, top = 8.dp),
-                    colors = if (selfCollected) CollectedActionButtonColors else UncollectedActionButtonColors,
+                    Modifier,
+                    colors = if (selfCollected == true) CollectedActionButtonColors else UncollectedActionButtonColors,
                     shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text(selfCollectionTypeString ?: "")
+                    Text(selfCollectionTypeString ?: "追番")
                 }
             }
         }
 
-        val characters by viewModel.characters.collectAsStateWithLifecycle(listOf())
+        val characters by viewModel.characters.collectAsStateWithLifecycle(null)
         SectionTitle(Modifier.padding(horizontal = horizontalPadding)) {
             Text("角色")
         }
@@ -216,7 +228,7 @@ private fun SubjectDetailsContent(
             )
         }
 
-        val staff by viewModel.relatedPersons.collectAsStateWithLifecycle(listOf())
+        val staff by viewModel.relatedPersons.collectAsStateWithLifecycle(null)
         SectionTitle(Modifier.padding(horizontal = horizontalPadding)) {
             Text("Staff")
         }
@@ -284,7 +296,7 @@ fun Avatar(
 
 @Composable
 private fun <T> PersonList(
-    list: List<T>,
+    list: List<T>?,
     key: (T) -> Any,
     horizontalPadding: Dp,
     modifier: Modifier = Modifier,
@@ -292,11 +304,11 @@ private fun <T> PersonList(
 ) {
     val spacedBy = 16.dp
     LazyRow(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.placeholder(visible = list == null).fillMaxWidth().heightIn(min = 100.dp),
         horizontalArrangement = Arrangement.spacedBy(spacedBy),
     ) {
         item(key = "spacer header") { Spacer(Modifier.width(horizontalPadding - spacedBy)) }
-        items(list, key = key) { item ->
+        items(list.orEmpty(), key = key) { item ->
             each(item)
         }
         item(key = "spacer footer") { Spacer(Modifier.width(horizontalPadding - spacedBy)) }

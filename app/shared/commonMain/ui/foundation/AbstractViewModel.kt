@@ -26,8 +26,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -173,7 +175,7 @@ abstract class AbstractViewModel : RememberObserver, ViewModel() {
         return map { scope.load(it) { calc(it) } }
     }
 
-    fun <T> Flow<T>.withLocalCache(initialValue: T): MutableStateFlow<T> {
+    fun <T> Flow<T>.localCachedStateFlow(initialValue: T): MutableStateFlow<T> {
         val localFlow = MutableStateFlow(initialValue)
         val mergedFlow: StateFlow<T> = merge(this, localFlow).stateInBackground(initialValue)
         return object : MutableStateFlow<T> by localFlow {
@@ -183,6 +185,22 @@ abstract class AbstractViewModel : RememberObserver, ViewModel() {
                     localFlow.value = value
                 }
 
+            override val replayCache: List<T> get() = mergedFlow.replayCache
+
+            override suspend fun collect(collector: FlowCollector<T>): Nothing {
+                mergedFlow.collect(collector)
+            }
+        }
+    }
+
+    fun <T> Flow<T>.localCachedSharedFlow(
+        started: SharingStarted = SharingStarted.WhileSubscribed(5.seconds),
+        replay: Int = 1,
+        onBufferOverflow: BufferOverflow = BufferOverflow.DROP_OLDEST,
+    ): MutableSharedFlow<T> {
+        val localFlow = MutableSharedFlow<T>(replay, onBufferOverflow = onBufferOverflow)
+        val mergedFlow: SharedFlow<T> = merge(this, localFlow).shareInBackground(started, replay = replay)
+        return object : MutableSharedFlow<T> by localFlow {
             override val replayCache: List<T> get() = mergedFlow.replayCache
 
             override suspend fun collect(collector: FlowCollector<T>): Nothing {

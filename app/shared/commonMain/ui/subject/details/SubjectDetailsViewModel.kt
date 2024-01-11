@@ -4,7 +4,6 @@ import androidx.compose.runtime.Stable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
@@ -46,9 +45,9 @@ class SubjectDetailsViewModel(
 
     val subjectId: MutableStateFlow<Int> = MutableStateFlow(initialSubjectId)
 
-    private val subject: StateFlow<BangumiSubjectDetails?> = this.subjectId.mapLatest {
+    private val subject: SharedFlow<BangumiSubjectDetails?> = this.subjectId.mapLatest {
         bangumiClient.subjects.getSubjectById(it)
-    }.stateInBackground()
+    }.shareInBackground()
 
     private val subjectNotNull = subject.mapNotNull { it }
 
@@ -131,7 +130,7 @@ class SubjectDetailsViewModel(
                 return@combine null
             }
         }.getOrNull()
-    }.withLocalCache(null)
+    }.localCachedSharedFlow()
 
     /**
      * 登录用户是否收藏了该条目.
@@ -144,7 +143,7 @@ class SubjectDetailsViewModel(
     val selfCollectionAction = selfCollectionType.map { it.actionText() }.stateInBackground()
 
     suspend fun setSelfCollectionType(subjectCollectionType: SubjectCollectionType) {
-        selfCollectionType.value = subjectCollectionType
+        selfCollectionType.emit(subjectCollectionType)
         withContext(Dispatchers.IO) {
             bangumiClient.api.postUserCollection(
                 subjectId.value, UserSubjectCollectionModifyPayload(
