@@ -38,6 +38,11 @@
 #    static <1>$$serializer INSTANCE;
 #}
 
-
 -dontwarn javax.annotation.Nullable
 -dontwarn javax.annotation.ParametersAreNonnullByDefault
+
+
+# Keep API interfaces
+-keep class org.openapitools.** {
+	*;
+}
