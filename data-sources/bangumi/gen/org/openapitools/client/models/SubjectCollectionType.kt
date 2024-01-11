@@ -56,7 +56,7 @@ enum class SubjectCollectionType(val value: kotlin.Int) {
         /**
          * Converts the provided [data] to a [String] on success, null otherwise.
          */
-        fun encode(data: kotlin.Any?): kotlin.String? = if (data is SubjectCollectionType) "$data" else null
+        fun encode(data: kotlin.Any?): Int? = if (data is SubjectCollectionType) data.value else null
 
         /**
          * Returns a valid [SubjectCollectionType] for [data], null otherwise.

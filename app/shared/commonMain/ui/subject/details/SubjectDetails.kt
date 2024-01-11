@@ -30,9 +30,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -60,6 +58,7 @@ import io.kamel.core.Resource
 import io.kamel.image.asyncPainterResource
 import me.him188.ani.app.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.ui.collection.CollectionActionButton
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.AniKamelImage
 import me.him188.ani.app.ui.foundation.AniTopAppBar
@@ -74,6 +73,7 @@ import me.him188.ani.datasources.bangumi.client.BangumiEpisode
 import me.him188.ani.datasources.bangumi.processing.fixToString
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.openapitools.client.models.SubjectCollectionType
+import kotlin.jvm.optionals.getOrNull
 
 
 /**
@@ -137,22 +137,6 @@ fun SubjectDetails(
     }
 }
 
-private val CollectedActionButtonColors
-    @Composable
-    get() =
-        ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.outlineVariant,
-            contentColor = MaterialTheme.colorScheme.outline
-        )
-
-private val UncollectedActionButtonColors
-    @Composable
-    get() =
-        ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary
-        )
-
 // 详情页内容 (不包含背景)
 @Composable
 private fun SubjectDetailsContent(
@@ -190,23 +174,19 @@ private fun SubjectDetailsContent(
                 }
             }
 
-            val selfCollectionTypeString by viewModel.selfCollectionAction.collectAsStateWithLifecycle()
+            val selfCollectionType by viewModel.selfCollectionAction.collectAsStateWithLifecycle(null)
             val selfCollected by viewModel.selfCollected.collectAsStateWithLifecycle(null)
 
             Row(
-                Modifier.padding(start = 8.dp, top = 8.dp)
-                    .align(Alignment.End)
-                    .placeholder(visible = selfCollected == null)
+                Modifier.padding(start = 8.dp, top = 8.dp).align(Alignment.End)
             ) {
                 // 收藏按钮
-                FilledTonalButton(
-                    onClick = { viewModel.launchInBackground { setSelfCollectionType(SubjectCollectionType.Doing) } },
-                    Modifier,
-                    colors = if (selfCollected == true) CollectedActionButtonColors else UncollectedActionButtonColors,
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text(selfCollectionTypeString ?: "追番")
-                }
+                CollectionActionButton(
+                    onEdit = { viewModel.launchInBackground { setSelfCollectionType(it) } },
+                    collected = selfCollected,
+                    type = selfCollectionType?.getOrNull(),
+                    onCollect = { viewModel.launchInBackground { setSelfCollectionType(SubjectCollectionType.Doing) } },
+                )
             }
         }
 

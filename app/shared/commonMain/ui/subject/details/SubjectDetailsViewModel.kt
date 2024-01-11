@@ -33,6 +33,7 @@ import org.openapitools.client.models.RelatedCharacter
 import org.openapitools.client.models.RelatedPerson
 import org.openapitools.client.models.SubjectCollectionType
 import org.openapitools.client.models.UserSubjectCollectionModifyPayload
+import java.util.Optional
 
 @Stable
 class SubjectDetailsViewModel(
@@ -117,6 +118,8 @@ class SubjectDetailsViewModel(
 
     /***
      * 登录用户的收藏情况
+     *
+     * 未登录或网络错误时为 `null`.
      */
     private val selfCollectionType = combine(
         subjectNotNull,
@@ -124,32 +127,45 @@ class SubjectDetailsViewModel(
     ) { subject, username ->
         runCatching {
             runInterruptible(Dispatchers.IO) { bangumiClient.api.getUserCollection(username, subject.id) }.type
+                .let { Optional.of(it) }
         }.onFailure {
             if (it is ClientException && it.statusCode == 404) {
                 // 用户没有收藏这个
-                return@combine null
+                return@combine Optional.empty()
             }
         }.getOrNull()
     }.localCachedSharedFlow()
 
     /**
      * 登录用户是否收藏了该条目.
+     *
+     * 未登录或网络错误时为 `null`.
      */
-    val selfCollected = selfCollectionType.map { it != null }.shareInBackground()
+    val selfCollected = selfCollectionType.map { it?.isPresent }.shareInBackground()
 
     /**
      * 根据登录用户的收藏类型的相应动作, 例如未追番时为 "追番", 已追番时为 "已在看" / "已看完" 等.
+     *
+     * 未登录或网络错误时为 `null`.
      */
-    val selfCollectionAction = selfCollectionType.map { it.actionText() }.stateInBackground()
+    val selfCollectionAction = selfCollectionType.shareInBackground()
 
-    suspend fun setSelfCollectionType(subjectCollectionType: SubjectCollectionType) {
-        selfCollectionType.emit(subjectCollectionType)
+    suspend fun setSelfCollectionType(subjectCollectionType: SubjectCollectionType?) {
+        selfCollectionType.emit(Optional.ofNullable(subjectCollectionType))
         withContext(Dispatchers.IO) {
-            bangumiClient.api.postUserCollection(
-                subjectId.value, UserSubjectCollectionModifyPayload(
-                    type = subjectCollectionType,
+            if (subjectCollectionType == null) {
+                bangumiClient.api.postUserCollection(
+                    subjectId.value, UserSubjectCollectionModifyPayload(
+                        type = subjectCollectionType,
+                    )
                 )
-            )
+            } else {
+                bangumiClient.api.postUserCollection(
+                    subjectId.value, UserSubjectCollectionModifyPayload(
+                        type = subjectCollectionType,
+                    )
+                )
+            }
         }
     }
 
@@ -172,16 +188,3 @@ class SubjectDetailsViewModel(
 //private val ignoredLevels = listOf(
 //    "原画",
 //)
-
-
-@Stable
-private fun SubjectCollectionType?.actionText(): String {
-    return when (this) {
-        SubjectCollectionType.Wish -> "想看"
-        SubjectCollectionType.Done -> "看过"
-        SubjectCollectionType.Doing -> "在看"
-        SubjectCollectionType.OnHold -> "搁置"
-        SubjectCollectionType.Dropped -> "抛弃"
-        null -> "追番"
-    }
-}
