@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -77,7 +78,10 @@ fun TopAppBarActionButton(
     onClick: () -> Unit,
     content: @Composable () -> Unit,
 ) {
-    IconButton(onClick, Modifier.width(36.dp).height(36.dp)) { // 让可点击区域大一点, 更方便
+    IconButton(
+        onClick,
+        Modifier.offset(x = (-8).dp, y = (-8).dp).width(36.dp + 16.dp).height(36.dp + 16.dp)
+    ) { // 让可点击区域大一点, 更方便
         Box(Modifier.size(24.dp)) {
             content()
         }
