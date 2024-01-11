@@ -392,7 +392,7 @@ private fun SmallEpisodeButton(
     FilledTonalButton(
         onClick,
         modifier.size(36.dp),
-        shape = RoundedCornerShape(4.dp),
+        shape = RoundedCornerShape(8.dp),
         contentPadding = PaddingValues(horizontal = 4.dp, vertical = 2.dp),
         colors = ButtonDefaults.elevatedButtonColors(
 //            containerColor = MaterialTheme.colorScheme.onSurface.copy(0.12f),
