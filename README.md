@@ -16,7 +16,8 @@
 
 ## 3.0 开发进程
 
-Ani 3.0 完全重写, 继续使用 [Compose Multiplatform] 实现多平台, 将私有追番进度服务器改为使用 Bangumi,
+Ani 3.0 正在开发中. 继续使用 [Compose Multiplatform] 实现多平台, 将私有追番进度服务器改为使用
+Bangumi,
 并从 Bangumi 获取番剧信息以及相关评论等.
 
 ### 模块列表
@@ -36,10 +37,6 @@ ani
 └── utils (模块共享工具库)
 ```
 
-### 数据源列表
-
-每个数据源的实现与客户端独立.
-
 ## 下载
 
 Ani 支持 Android 和桌面端 (macOS、Linux、Windows)。
@@ -51,6 +48,29 @@ Ani 支持 Android 和桌面端 (macOS、Linux、Windows)。
 使用测试版本可以体验最新特性，但可能不稳定。
 
 3.0 开发测试版本可以在每个 commit 的自动构建中找到。
+
+## 功能截图
+
+快速开发中, 我每隔几天会更一下截图. 实际样式请以最新版本为准.
+
+采用 Material Design 风格, 支持同步系统的浅色和深色主题。
+
+### 个人收藏页面
+
+<img width="200" src=".readme/images/collection/collection-light.jpeg" alt="collection-light">
+<img width="200" src=".readme/images/collection/collection-dark.jpg" alt="collection-dark">
+
+### 番剧详情页面
+
+<img width="200" src=".readme/images/subject/subject-light.jpeg" alt="subject-light">
+<img width="200" src=".readme/images/subject/subject-dark.jpg" alt="subject-dark">
+
+### 剧集详情与播放页面
+
+<img width="200" src=".readme/images/episode/episode-dark.jpg" alt="episode-dark">
+<img width="200" src=".readme/images/episode/episode-playsource-dark.jpg" alt="episode-light">
+
+备注: 播放器正在开发中, 目前仅支持选择播放o源并记录上次的选择然后复制链接.
 
 ## 参与开发
 
