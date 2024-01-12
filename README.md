@@ -53,21 +53,50 @@ Ani 支持 Android 和桌面端 (macOS、Linux、Windows)。
 
 快速开发中, 我每隔几天会更一下截图. 实际样式请以最新版本为准.
 
-采用 Material Design 风格, 支持同步系统的浅色和深色主题。
+采用 Material 3 风格 (略有根据个人审美调整), 支持同步系统的浅色和深色主题。
+
+### 登录
+
+使用 Bangumi OAuth 登录. 登录状态可以保持较久.
 
 ### 个人收藏页面
+
+- 同步 Bangumi 收藏
+- 支持修改收藏状态
+- "已完结" / "连载至" 标签展示连载情况
+- 自动滚动到上次观看的剧集, 已观看过的剧集展示颜色更浅
 
 <img width="300" src=".readme/images/collection/collection-light.jpeg" alt="collection-light"/> <img width="300" src=".readme/images/collection/collection-dark.jpg" alt="collection-dark"/>
 
 ### 番剧详情页面
 
+根据一般人找番时会关注的如下几点设计:
+
+- 开播时间
+- 声优
+- 制作公司, 监督
+- 海报第一印象
+- 角色第一印象
+- 追番人数
+
+待 3.0 正式版发布后的未来会增加其他更多补充信息.
+
 <img width="300" src=".readme/images/subject/subject-light.jpeg" alt="subject-light"/> <img width="300" src=".readme/images/subject/subject-dark.jpg" alt="subject-dark"/>
 
 ### 剧集详情与播放页面
 
+- 后台自动从[动漫花园][dmhy]拉取字幕组资源并解析标题
+- 支持选择一般人最关心的参数: 清晰度, 字幕语言, 字幕组
+- 默认选择第一个字幕组, 无需配置即可自动播放
+- 手动修改字幕组后会为此番剧记住字幕组选择, 下次自动选择
+
 <img width="300" src=".readme/images/episode/episode-dark.jpg" alt="episode-dark"/> <img width="300" src=".readme/images/episode/episode-playsource-dark.jpg" alt="episode-light"/>
 
-备注: 播放器正在开发中, 目前仅支持选择播放o源并记录上次的选择然后复制链接.
+备注: 播放器正在开发中, 目前仅支持选择播放源并记录上次的选择然后复制链接.
+
+### 标题 / 标签搜索页面
+
+~重构掉了, 下次补上~
 
 ## 参与开发
 
