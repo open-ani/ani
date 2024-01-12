@@ -18,10 +18,6 @@
 
 rootProject.name = "ani"
 
-plugins {
-    id("org.gradle.toolchains.foojay-resolver-convention") version "0.5.0"
-}
-
 pluginManagement {
     repositories {
         gradlePluginPortal()
@@ -36,6 +32,10 @@ pluginManagement {
             }
         }
     }
+}
+
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "0.5.0"
 }
 
 fun includeProject(projectPath: String, dir: String? = null) {
