@@ -3,6 +3,7 @@ package me.him188.ani.app.ui.collection
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
@@ -11,6 +12,7 @@ import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.ListAlt
 import androidx.compose.material.icons.filled.PlayCircleOutline
 import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -33,42 +35,51 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.external.placeholder.placeholder
-import org.openapitools.client.models.SubjectCollectionType
-import java.util.Optional
-import kotlin.jvm.optionals.getOrNull
+import me.him188.ani.datasources.api.CollectionType
 
-
-@Stable
-val SubjectCollectionActions = listOf(
+private val SubjectCollectionActionsCommon = listOf(
     SubjectCollectionAction(
         { Text("想看") },
         { Icon(Icons.Default.ListAlt, null) },
-        SubjectCollectionType.Wish
+        CollectionType.Wish
     ),
     SubjectCollectionAction(
         { Text("在看") },
         { Icon(Icons.Default.PlayCircleOutline, null) },
-        SubjectCollectionType.Doing
+        CollectionType.Doing
     ),
     SubjectCollectionAction(
         { Text("看过") },
         { Icon(Icons.Default.Done, null) },
-        SubjectCollectionType.Done
+        CollectionType.Done
     ),
     SubjectCollectionAction(
         { Text("搁置") },
         { Icon(Icons.Default.AccessTime, null) },
-        SubjectCollectionType.OnHold
+        CollectionType.OnHold
     ),
     SubjectCollectionAction(
         { Text("抛弃") },
         { Icon(Icons.Default.Remove, null) },
-        SubjectCollectionType.Dropped
+        CollectionType.Dropped
     ),
+)
+
+@Stable
+val SubjectCollectionActionsForEdit = SubjectCollectionActionsCommon + listOf(
     SubjectCollectionAction(
         { Text("取消追番", color = MaterialTheme.colorScheme.error) },
         { Icon(Icons.Default.DeleteOutline, null) },
-        null
+        type = CollectionType.NotCollected,
+    ),
+)
+
+@Stable
+val SubjectCollectionActionsForCollect = SubjectCollectionActionsCommon + listOf(
+    SubjectCollectionAction(
+        { Text("追番") },
+        { Icon(Icons.Default.Star, null) },
+        type = CollectionType.NotCollected,
     ),
 )
 
@@ -76,12 +87,12 @@ val SubjectCollectionActions = listOf(
 class SubjectCollectionAction(
     val title: @Composable () -> Unit,
     val icon: @Composable () -> Unit,
-    val type: SubjectCollectionType?,
+    val type: CollectionType,
 )
 
 @Composable
 fun EditCollectionTypeDropDown(
-    currentType: SubjectCollectionType?,
+    currentType: CollectionType?,
     showDropdown: Boolean,
     onDismissRequest: () -> Unit,
     onClick: (action: SubjectCollectionAction) -> Unit,
@@ -91,7 +102,7 @@ fun EditCollectionTypeDropDown(
         onDismissRequest = onDismissRequest,
         offset = DpOffset(x = 0.dp, y = 4.dp),
     ) {
-        for (action in SubjectCollectionActions) {
+        for (action in SubjectCollectionActionsForEdit) {
             val onClickState by rememberUpdatedState(onClick)
             val onDismissRequestState by rememberUpdatedState(onDismissRequest)
             val color = action.colorForCurrent(currentType)
@@ -119,7 +130,7 @@ fun EditCollectionTypeDropDown(
 
 @Composable
 private fun SubjectCollectionAction.colorForCurrent(
-    currentType: SubjectCollectionType?
+    currentType: CollectionType?
 ) = if (currentType == type) {
     MaterialTheme.colorScheme.primary
 } else {
@@ -155,12 +166,12 @@ private val UncollectedActionButtonColors
 @Composable
 fun CollectionActionButton(
     collected: Boolean?,
-    type: Optional<SubjectCollectionType>?,
+    type: CollectionType?,
     onCollect: () -> Unit,
-    onEdit: (newType: SubjectCollectionType?) -> Unit,
+    onEdit: (newType: CollectionType) -> Unit,
 ) {
     val action = remember(type) {
-        SubjectCollectionActions.find { it.type == type?.getOrNull() }
+        SubjectCollectionActionsForCollect.find { it.type == type }
     }
     Box(Modifier.placeholder(collected == null || type == null)) {
         var showDropdown by remember { mutableStateOf(false) }
@@ -176,21 +187,24 @@ fun CollectionActionButton(
             colors = if (collected == true) CollectedActionButtonColors else UncollectedActionButtonColors,
             shape = RoundedCornerShape(8.dp)
         ) {
-            if (action != null) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    action.icon()
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (action != null) {
+                    Box(Modifier.size(16.dp)) {
+                        action.icon()
+                    }
 
                     Row(Modifier.padding(start = 8.dp)) {
                         action.title()
                     }
+                } else {
+                    Text("载入") // 随便什么都行, 占空间
                 }
-            } else {
-                Text("载入") // 随便什么都行, 占空间
             }
+
         }
 
         EditCollectionTypeDropDown(
-            currentType = type?.getOrNull(),
+            currentType = type,
             showDropdown = showDropdown,
             onDismissRequest = { showDropdown = false },
             onClick = {

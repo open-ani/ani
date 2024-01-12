@@ -69,10 +69,10 @@ import me.him188.ani.app.ui.foundation.backgroundWithGradient
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.theme.slightlyWeaken
 import me.him188.ani.app.ui.theme.weaken
+import me.him188.ani.datasources.api.CollectionType
 import me.him188.ani.datasources.bangumi.client.BangumiEpisode
 import me.him188.ani.datasources.bangumi.processing.fixToString
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
-import org.openapitools.client.models.SubjectCollectionType
 
 
 /**
@@ -184,7 +184,7 @@ private fun SubjectDetailsContent(
                     onEdit = { viewModel.launchInBackground { setSelfCollectionType(it) } },
                     collected = selfCollected,
                     type = selfCollectionType,
-                    onCollect = { viewModel.launchInBackground { setSelfCollectionType(SubjectCollectionType.Doing) } },
+                    onCollect = { viewModel.launchInBackground { setSelfCollectionType(CollectionType.Doing) } },
                 )
             }
         }

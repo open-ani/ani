@@ -20,9 +20,12 @@ import me.him188.ani.app.navigation.SubjectNavigator
 import me.him188.ani.app.platform.Context
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.ui.foundation.AbstractViewModel
+import me.him188.ani.datasources.api.CollectionType
 import me.him188.ani.datasources.bangumi.processing.airSeason
 import me.him188.ani.datasources.bangumi.processing.isOnAir
 import me.him188.ani.datasources.bangumi.processing.nameCNOrName
+import me.him188.ani.datasources.bangumi.processing.toCollectionType
+import me.him188.ani.datasources.bangumi.processing.toSubjectCollectionType
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.openapitools.client.models.EpType
@@ -92,7 +95,7 @@ class MyCollectionsViewModel : AbstractViewModel(), KoinComponent {
         collections.value?.find { it.subjectId == subjectId }?.let {
             it.collectionType = action.type
         }
-        subjectRepository.setSubjectCollectionTypeOrDelete(subjectId, action.type)
+        subjectRepository.setSubjectCollectionTypeOrDelete(subjectId, action.type.toSubjectCollectionType())
     }
 }
 
@@ -115,10 +118,7 @@ class SubjectCollectionItem(
     val episodes: List<UserEpisodeCollection>,
     collectionType: SubjectCollectionType,
 ) {
-    /**
-     * Null means not collected
-     */
-    var collectionType: SubjectCollectionType? by mutableStateOf(collectionType)
+    var collectionType: CollectionType by mutableStateOf(collectionType.toCollectionType())
 
     val onAirDescription = if (isOnAir) {
         if (latestEp == null) {

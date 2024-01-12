@@ -17,6 +17,7 @@ import me.him188.ani.app.navigation.SubjectNavigator
 import me.him188.ani.app.platform.Context
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.ui.foundation.AbstractViewModel
+import me.him188.ani.datasources.api.CollectionType
 import me.him188.ani.datasources.api.PageBasedSearchSession
 import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.datasources.bangumi.Rating
@@ -27,13 +28,13 @@ import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectImageSize
 import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectInfo
 import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectTag
 import me.him188.ani.datasources.bangumi.processing.sortByRelation
+import me.him188.ani.datasources.bangumi.processing.toCollectionType
+import me.him188.ani.datasources.bangumi.processing.toSubjectCollectionType
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.openapitools.client.infrastructure.ClientException
 import org.openapitools.client.models.RelatedCharacter
 import org.openapitools.client.models.RelatedPerson
-import org.openapitools.client.models.SubjectCollectionType
-import java.util.Optional
 
 @Stable
 class SubjectDetailsViewModel(
@@ -128,11 +129,11 @@ class SubjectDetailsViewModel(
     ) { subject, username ->
         runCatching {
             runInterruptible(Dispatchers.IO) { bangumiClient.api.getUserCollection(username, subject.id) }.type
-                .let { Optional.of(it) }
+                .toCollectionType()
         }.onFailure {
             if (it is ClientException && it.statusCode == 404) {
                 // 用户没有收藏这个
-                return@combine Optional.empty()
+                return@combine CollectionType.NotCollected
             }
         }.getOrNull()
     }.localCachedSharedFlow()
@@ -142,7 +143,7 @@ class SubjectDetailsViewModel(
      *
      * 未登录或网络错误时为 `null`.
      */
-    val selfCollected = selfCollectionType.map { it?.isPresent }.shareInBackground()
+    val selfCollected = selfCollectionType.map { it != CollectionType.NotCollected }.shareInBackground()
 
     /**
      * 根据登录用户的收藏类型的相应动作, 例如未追番时为 "追番", 已追番时为 "已在看" / "已看完" 等.
@@ -154,9 +155,12 @@ class SubjectDetailsViewModel(
     /**
      * null means delete
      */
-    suspend fun setSelfCollectionType(subjectCollectionType: SubjectCollectionType?) {
-        selfCollectionType.emit(Optional.ofNullable(subjectCollectionType))
-        subjectRepository.setSubjectCollectionTypeOrDelete(subjectId.value, subjectCollectionType)
+    suspend fun setSelfCollectionType(subjectCollectionType: CollectionType) {
+        selfCollectionType.emit(subjectCollectionType)
+        subjectRepository.setSubjectCollectionTypeOrDelete(
+            subjectId.value,
+            subjectCollectionType.toSubjectCollectionType()
+        )
     }
 
     private fun episodesFlow(type: BangumiEpType) = this.subjectId.mapLatest { subjectId ->

@@ -55,7 +55,7 @@ class SubjectRepositoryImpl : SubjectRepository, KoinComponent {
     override suspend fun patchSubjectCollection(subjectId: Int, payload: UserSubjectCollectionModifyPayload) {
         withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                client.patchSubjectCollection(subjectId, payload)
+                client.postSubjectCollection(subjectId, payload)
             }
         }
     }
