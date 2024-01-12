@@ -73,9 +73,11 @@ fun ProxySettings.toKtorProxy(): ProxyConfig? = kotlin.runCatching {
         ProxyMode.HTTP -> {
             ProxyBuilder.http(http.url)
         }
+
         ProxyMode.SOCKS -> {
             ProxyBuilder.socks(socks.host, socks.port)
         }
+
         ProxyMode.DISABLED -> null
     }
 }.getOrNull()

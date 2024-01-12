@@ -18,21 +18,10 @@
 
 package me.him188.ani.app.app
 
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.staticCompositionLocalOf
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import me.him188.ani.app.app.settings.ProxySettings
-import me.him188.ani.app.app.settings.SyncSettings
-import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
-import java.io.File
 
 @Immutable
 @Serializable
@@ -45,69 +34,4 @@ data class AppSettings(
 
     @Stable
     val proxy: ProxySettings = ProxySettings(),
-
-    @Stable
-    val sync: SyncSettings = SyncSettings(),
 )
-
-@Stable
-abstract class AppSettingsManager {
-    @Stable
-    val value: MutableStateFlow<AppSettings> by lazy { MutableStateFlow(loadImpl()) }
-
-    inline fun mutate(block: AppSettings.() -> AppSettings) {
-        value.value = value.value.let(block)
-    }
-
-    fun load() {
-        value.value = loadImpl()
-    }
-
-    protected abstract fun loadImpl(): AppSettings
-
-    fun save() {
-        saveImpl(value.value)
-    }
-
-    protected abstract fun saveImpl(instance: AppSettings)
-
-    @Composable
-    fun attachAutoSave() {
-        val instance by value.collectAsStateWithLifecycle()
-        LaunchedEffect(instance) {
-            withContext(Dispatchers.IO) {
-                save()
-            }
-        }
-    }
-}
-
-@Stable
-class LocalAppSettingsManagerImpl(
-    private val file: File
-) : AppSettingsManager() {
-    override fun loadImpl(): AppSettings {
-        if (!file.exists()) return AppSettings().also { saveImpl(it) }
-        // TODO:  LocalAppSettingsManagerImpl
-        return AppSettings()
-    }
-
-    override fun saveImpl(instance: AppSettings) {
-        file.parentFile?.mkdir()
-        // TODO:  LocalAppSettingsManagerImpl
-    }
-}
-
-
-@Stable
-val LocalAppSettingsManager: ProvidableCompositionLocal<AppSettingsManager> = staticCompositionLocalOf {
-    error("No AppSettingsManager provided in current context")
-}
-
-@Stable
-object LocalAppSettings {
-    @Stable
-    val current
-        @Composable
-        get() = LocalAppSettingsManager.current.value.value
-}

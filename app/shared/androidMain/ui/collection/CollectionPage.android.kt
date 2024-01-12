@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.dp
-import me.him188.ani.app.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 
 @Composable
 @Preview(widthDp = 1080 / 2, heightDp = 2400 / 2, showBackground = true)

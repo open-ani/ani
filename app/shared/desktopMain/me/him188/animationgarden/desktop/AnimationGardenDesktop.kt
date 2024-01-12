@@ -30,7 +30,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -38,7 +37,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.platform.LocalDensity
@@ -49,26 +47,18 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import dev.dirs.ProjectDirectories
-import kotlinx.coroutines.flow.Flow
 import me.him188.ani.app.AppTheme
-import me.him188.ani.app.ProvideCompositionLocalsForPreview
-import me.him188.ani.app.app.AppSettings
-import me.him188.ani.app.app.LocalAppSettings
-import me.him188.ani.app.app.LocalAppSettingsManager
-import me.him188.ani.app.app.LocalAppSettingsManagerImpl
-import me.him188.ani.app.app.settings.LocalSyncSettings
 import me.him188.ani.app.i18n.LocalI18n
 import me.him188.ani.app.i18n.ResourceBundle
 import me.him188.ani.app.i18n.loadResourceBundle
 import me.him188.ani.app.platform.Context
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.PreferencesPage
+import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.interaction.PlatformImplementations
 import me.him188.ani.app.ui.interaction.PlatformImplementations.Companion.hostIsMacOs
 import me.him188.ani.app.ui.rememberDialogHost
 import me.him188.ani.utils.logging.logger
-import me.him188.ani.utils.logging.trace
-import java.io.File
 
 private val logger = logger("Ani")
 
@@ -89,30 +79,13 @@ object AniDesktop {
             val context: Context = LocalContext.current
             val currentBundle = remember(Locale.current.language) { loadResourceBundle(context) }
 
-            val appSettingsProvider = remember {
-                LocalAppSettingsManagerImpl(
-                    File(projectDirectories.preferenceDir, "settings.dat").also {
-                        it.parentFile.mkdirs()
-                        logger.trace { "Settings file: ${it.absolutePath}" }
-                    }
-                ).apply { load() }
-            }
-            appSettingsProvider.attachAutoSave()
             val platform = remember { PlatformImplementations.current }
-
-
-            val currentAppSettings by rememberUpdatedState(appSettingsProvider.value.value)
-
-            val localSyncSettingsFlow = snapshotFlow { currentAppSettings.sync.localSync }
             val mainSnackbar = remember { SnackbarHostState() }
 
             CompositionLocalProvider(
                 LocalI18n provides currentBundle,
-                LocalAppSettingsManager provides appSettingsProvider,
             ) {
                 content(
-                    currentAppSettings,
-                    localSyncSettingsFlow,
                     mainSnackbar,
                     currentBundle,
                     platform
@@ -123,20 +96,11 @@ object AniDesktop {
 
     @Composable
     private fun ApplicationScope.content(
-        currentAppSettings: AppSettings,
-        localSyncSettingsFlow: Flow<LocalSyncSettings>,
         mainSnackbar: SnackbarHostState,
         currentBundle: ResourceBundle,
         platform: PlatformImplementations,
     ) {
         val dialogHost = rememberDialogHost()
-        LaunchedEffect(currentAppSettings.proxy) {
-            // proxy changed, update client
-            // TODO:  
-//            app.client.value = DmhyClient.create {
-//                proxy = currentAppSettings.proxy.toKtorProxy()
-//            }
-        }
 
         val currentDensity by rememberUpdatedState(LocalDensity.current)
         val minimumSize by remember {
@@ -185,7 +149,7 @@ object AniDesktop {
             }
 
             // This actually runs only once since app is never changed.
-            val windowImmersed = LocalAppSettings.current.windowImmersed
+            val windowImmersed = true
             if (windowImmersed) {
                 SideEffect {
                     window.rootPane.putClientProperty("apple.awt.fullWindowContent", true)

@@ -56,7 +56,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.kamel.core.Resource
 import io.kamel.image.asyncPainterResource
-import me.him188.ani.app.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.collection.CollectionActionButton
 import me.him188.ani.app.ui.external.placeholder.placeholder
@@ -64,6 +63,7 @@ import me.him188.ani.app.ui.foundation.AniKamelImage
 import me.him188.ani.app.ui.foundation.AniTopAppBar
 import me.him188.ani.app.ui.foundation.IconImagePlaceholder
 import me.him188.ani.app.ui.foundation.PreviewData
+import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.TopAppBarGoBackButton
 import me.him188.ani.app.ui.foundation.backgroundWithGradient
 import me.him188.ani.app.ui.foundation.launchInBackground

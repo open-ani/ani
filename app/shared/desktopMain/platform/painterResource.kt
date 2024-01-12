@@ -18,10 +18,7 @@
 
 package me.him188.ani.app.platform
 
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
-import androidx.compose.ui.graphics.painter.Painter
-import  androidx.compose.ui.res.painterResource
 
 @Stable
 actual object Resources {
@@ -31,24 +28,7 @@ actual object Resources {
 
 @Stable
 actual object PainterResources {
-    @Stable
-    actual val check: Painter @Composable get() = painterResource("drawable/check.svg")
+//    @Stable
+//    actual val check: Painter @Composable get() = painterResource("drawable/check.svg")
 
-    @Stable
-    actual val cog: Painter @Composable get() = painterResource("drawable/cog.svg")
-
-    @Stable
-    actual val magnify: Painter @Composable get() = painterResource("drawable/magnify.svg")
-
-    @Stable
-    actual val star: Painter @Composable get() = painterResource("drawable/star.svg")
-
-    @Stable
-    actual val star_outline: Painter @Composable get() = painterResource("drawable/star-outline.svg")
-
-    @Stable
-    actual val star_plus_outline: Painter @Composable get() = painterResource("drawable/star-plus-outline.svg")
-
-    @Stable
-    actual val star_remove: Painter @Composable get() = painterResource("drawable/star-remove.svg")
 }

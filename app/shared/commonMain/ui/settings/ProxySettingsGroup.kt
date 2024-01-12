@@ -48,7 +48,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.AppTheme
 import me.him188.ani.app.app.AppSettings
-import me.him188.ani.app.app.AppSettingsManager
 import me.him188.ani.app.app.settings.ProxyMode
 import me.him188.ani.app.i18n.LocalI18n
 import me.him188.ani.app.ui.theme.stronglyWeaken
@@ -56,7 +55,6 @@ import me.him188.ani.app.ui.theme.stronglyWeaken
 @Composable
 fun ColumnScope.ProxySettingsGroup(
     settings: AppSettings,
-    manager: AppSettingsManager,
     disabledButtonText: @Composable () -> Unit = { Text(LocalI18n.current.getString("preferences.proxy.mode.disabled")) },
     disabledContent: (@Composable () -> Unit)? = null,
 ) {
@@ -67,19 +65,19 @@ fun ColumnScope.ProxySettingsGroup(
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             LabelledRadioButton(settings.proxy.mode == ProxyMode.DISABLED, {
-                manager.mutate { copy(proxy = proxy.copy(mode = ProxyMode.DISABLED)) }
+//                manager.mutate { copy(proxy = proxy.copy(mode = ProxyMode.DISABLED)) }
             }) {
                 disabledButtonText()
             }
 
             LabelledRadioButton(settings.proxy.mode == ProxyMode.HTTP, {
-                manager.mutate { copy(proxy = proxy.copy(mode = ProxyMode.HTTP)) }
+//                manager.mutate { copy(proxy = proxy.copy(mode = ProxyMode.HTTP)) }
             }) {
                 Text(LocalI18n.current.getString("preferences.proxy.mode.http"))
             }
 
             LabelledRadioButton(settings.proxy.mode == ProxyMode.SOCKS, {
-                manager.mutate { copy(proxy = proxy.copy(mode = ProxyMode.SOCKS)) }
+//                manager.mutate { copy(proxy = proxy.copy(mode = ProxyMode.SOCKS)) }
             }) {
                 Text(LocalI18n.current.getString("preferences.proxy.mode.socks"))
             }
@@ -113,7 +111,7 @@ fun ColumnScope.ProxySettingsGroup(
                     onValueChange = { value = it },
                     showButton = value != settings.proxy.http.url,
                     onClickSave = {
-                        manager.updateProxyHttpUrl(value)
+//                        manager.updateProxyHttpUrl(value)
                     },
                     label = {
                         Text(LocalI18n.current.getString("preferences.proxy.http.url"))
@@ -137,7 +135,7 @@ fun ColumnScope.ProxySettingsGroup(
                 BoxWithSaveButton(
                     showButton = newHost != settings.proxy.socks.host || newPort != settings.proxy.socks.port,
                     onClickSave = {
-                        manager.updateProxySocks(newHost, newPort)
+//                        manager.updateProxySocks(newHost, newPort)
                     },
                     buttonHeightOffset = { 8.dp },
                     Modifier.focusGroup(),
@@ -177,7 +175,7 @@ fun ColumnScope.ProxySettingsGroup(
                         onValueChange = { newPort = it.toIntOrNull() ?: 0 },
                         width = width * (1 - hostWeight),
                         onPressEnter = {
-                            manager.updateProxySocks(newHost, newPort)
+//                            manager.updateProxySocks(newHost, newPort)
                             true
                         },
                         Modifier
@@ -208,31 +206,3 @@ fun isPortValid(newPort: Int) = newPort in 0..65535
 
 @Stable
 fun isHostValid(host: String) = host.isNotEmpty()
-
-fun AppSettingsManager.updateProxyHttpUrl(value: String) {
-    mutate { copy(proxy = proxy.run { copy(http = http.copy(url = value)) }) }
-}
-
-fun AppSettingsManager.updateProxySocks(host: String, port: Int) {
-    mutate { copy(proxy = proxy.run { copy(socks = socks.copy(host = host, port = port.coerceIn(0..65535))) }) }
-}
-
-fun AppSettingsManager.updateLocalSyncEnabled(enabled: Boolean) {
-    mutate { copy(sync = sync.run { copy(localSyncEnabled = enabled) }) }
-}
-
-fun AppSettingsManager.updateRemoteSyncEnabled(enabled: Boolean) {
-    mutate { copy(sync = sync.run { copy(remoteSyncEnabled = enabled) }) }
-}
-
-fun AppSettingsManager.updateRemoteSyncUseProxy(useProxy: Boolean) {
-    mutate { copy(sync = sync.run { copy(remoteSync = remoteSync.run { copy(useProxy = useProxy) }) }) }
-}
-
-fun AppSettingsManager.updateRemoteSyncApiUrl(url: String) {
-    mutate { copy(sync = sync.run { copy(remoteSync = remoteSync.copy(apiUrl = url)) }) }
-}
-
-fun AppSettingsManager.updateRemoteSyncToken(token: String) {
-    mutate { copy(sync = sync.run { copy(remoteSync = remoteSync.copy(token = token)) }) }
-}

@@ -10,8 +10,8 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import me.him188.ani.app.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.torrent.TorrentDownloadSession
+import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.videoplayer.AbstractPlayerController
 import me.him188.ani.app.videoplayer.PlayerState
 import me.him188.ani.app.videoplayer.Video

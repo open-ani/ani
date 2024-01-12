@@ -18,9 +18,7 @@
 
 package me.him188.ani.app.platform
 
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
-import androidx.compose.ui.graphics.painter.Painter
 
 @Suppress("unused") // false positive
 typealias Res = Resources
@@ -33,24 +31,4 @@ expect object Resources {
 
 @Stable
 expect object PainterResources {
-    @Stable
-    val check: Painter @Composable get
-
-    @Stable
-    val cog: Painter @Composable get
-
-    @Stable
-    val magnify: Painter @Composable get
-
-    @Stable
-    val star: Painter @Composable get
-
-    @Stable
-    val star_outline: Painter @Composable get
-
-    @Stable
-    val star_plus_outline: Painter @Composable get
-
-    @Stable
-    val star_remove: Painter @Composable get
 }
