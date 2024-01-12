@@ -17,26 +17,9 @@
 
 ## 3.0 开发进程
 
-Ani 3.0 正在开发中. 继续使用 [Compose Multiplatform] 实现多平台, 将私有追番进度服务器改为使用
+Ani 3.0 **正在**开发中. 继续使用 [Compose Multiplatform] 实现多平台, 将私有追番进度服务器改为使用
 Bangumi,
 并从 Bangumi 获取番剧信息以及相关评论等.
-
-### 模块列表
-
-```
-ani
-├── buildSrc (Gradle 构建)
-├── ci-helper (GitHub release 用)
-├── data-sources (数据源)
-│   ├── api (数据源抽象)
-│   ├── bangumi (Bangumi API)
-│   └── dmhy (动漫花园 API)
-├── app (客户端)
-│   ├── shared (通用)
-│   ├── desktop (桌面端)
-│   └── android (Android 客户端)
-└── utils (模块共享工具库)
-```
 
 ## 下载
 
