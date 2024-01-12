@@ -63,6 +63,9 @@ kamel-image = { module = "media.kamel:kamel-image", version = "0.9.1" }
 # Jsoup - HTML parsing (for dmhy)
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 
+# Torrent
+libtorrent4j = { module = "org.libtorrent4j:libtorrent4j", version = "2.1.0-31" }
+
 # Android Datastore
 datastore = { module = "androidx.datastore:datastore", version.ref = "datastore" }
 datastore-core = { module = "androidx.datastore:datastore-core", version.ref = "datastore" }

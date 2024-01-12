@@ -46,3 +46,7 @@
 -keep class org.openapitools.** {
 	*;
 }
+
+# Torrent4j
+-keep class org.libtorrent4j.swig.libtorrent_jni {*;}
+

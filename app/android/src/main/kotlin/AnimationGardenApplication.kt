@@ -177,7 +177,7 @@ class AniApplication : Application() {
         startKoin {
             androidContext(this@AniApplication)
             modules(getCommonKoinModule({ this@AniApplication }, GlobalScope))
-            modules(getAndroidModules())
+            modules(getAndroidModules(applicationContext.cacheDir.resolve("torrent-caches").apply { mkdir() }))
         }
     }
 }
