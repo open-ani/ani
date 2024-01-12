@@ -34,6 +34,8 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import org.openapitools.client.models.SubjectCollectionType
+import java.util.Optional
+import kotlin.jvm.optionals.getOrNull
 
 
 @Stable
@@ -153,12 +155,12 @@ private val UncollectedActionButtonColors
 @Composable
 fun CollectionActionButton(
     collected: Boolean?,
-    type: SubjectCollectionType?,
+    type: Optional<SubjectCollectionType>?,
     onCollect: () -> Unit,
     onEdit: (newType: SubjectCollectionType?) -> Unit,
 ) {
     val action = remember(type) {
-        SubjectCollectionActions.find { it.type == type }
+        SubjectCollectionActions.find { it.type == type?.getOrNull() }
     }
     Box(Modifier.placeholder(collected == null || type == null)) {
         var showDropdown by remember { mutableStateOf(false) }
@@ -188,7 +190,7 @@ fun CollectionActionButton(
         }
 
         EditCollectionTypeDropDown(
-            currentType = type,
+            currentType = type?.getOrNull(),
             showDropdown = showDropdown,
             onDismissRequest = { showDropdown = false },
             onClick = {

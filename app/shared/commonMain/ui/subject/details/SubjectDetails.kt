@@ -73,7 +73,6 @@ import me.him188.ani.datasources.bangumi.client.BangumiEpisode
 import me.him188.ani.datasources.bangumi.processing.fixToString
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.openapitools.client.models.SubjectCollectionType
-import kotlin.jvm.optionals.getOrNull
 
 
 /**
@@ -184,7 +183,7 @@ private fun SubjectDetailsContent(
                 CollectionActionButton(
                     onEdit = { viewModel.launchInBackground { setSelfCollectionType(it) } },
                     collected = selfCollected,
-                    type = selfCollectionType?.getOrNull(),
+                    type = selfCollectionType,
                     onCollect = { viewModel.launchInBackground { setSelfCollectionType(SubjectCollectionType.Doing) } },
                 )
             }
