@@ -1,3 +1,7 @@
+import Os.Linux
+import Os.MacOS
+import Os.Windows
+
 /*
  * Ani
  * Copyright (C) 2022-2024 Him188
@@ -46,10 +50,21 @@ kotlin {
 
     sourceSets.androidMain.dependencies {
         api(libs.kotlinx.coroutines.android)
+        implementation(libs.libtorrent4j.android.arm64)
     }
 
     sourceSets.named("desktopMain").dependencies {
         api(libs.kotlinx.coroutines.swing)
+        implementation(
+            when (getOs()) {
+                Windows -> libs.libtorrent4j.windows
+                MacOS -> libs.libtorrent4j.macos
+                Linux -> libs.libtorrent4j.linux
+                else -> {
+                    logger.warn("Unrecognized architecture, libtorrent4j will not be included")
+                }
+            }
+        )
     }
 }
 

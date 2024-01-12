@@ -36,7 +36,6 @@ class PlaySourceSelector(
     val subtitleLanguages: StateFlow<List<String>> =
         playSources
             .map { list ->
-                println("subtitleLanguages: ${list.map { it.subtitleLanguage }.distinct()}")
                 list.map { it.subtitleLanguage }.distinct()
             }
             .stateIn(

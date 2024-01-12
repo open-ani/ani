@@ -1,14 +1,12 @@
 package me.him188.ani.app.ui.subject.episode
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
@@ -45,33 +43,30 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.isActive
 import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.torrent.PieceState
 import me.him188.ani.app.ui.external.placeholder.placeholder
-import me.him188.ani.app.ui.foundation.AniTopAppBar
 import me.him188.ani.app.ui.foundation.LocalSnackbar
-import me.him188.ani.app.ui.foundation.TopAppBarGoBackButton
 import me.him188.ani.app.ui.foundation.launchInBackground
-import me.him188.ani.app.ui.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.theme.slightlyWeaken
+import me.him188.ani.app.videoplayer.rememberPlayerController
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import kotlin.time.Duration.Companion.seconds
 
@@ -83,48 +78,12 @@ fun EpisodePage(
     goBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var topAppBarVisible by remember { mutableStateOf(false) }
-    val topAppBarAlpha by animateFloatAsState(if (topAppBarVisible) 1f else 0f)
-    LaunchedEffect(topAppBarVisible) {
-        // 2 秒后隐藏 TopAppBar
-        if (topAppBarVisible) {
-            launch {
-                delay(2.seconds)
-                topAppBarVisible = false
-            }
-        }
-    }
-
     Scaffold(
-        topBar = {
-            val darkBackground = aniDarkColorTheme().onBackground
-            CompositionLocalProvider(LocalContentColor provides darkBackground) {
-                AniTopAppBar(
-                    Modifier.statusBarsPadding()
-                        .fillMaxWidth()
-                        .alpha(topAppBarAlpha) // alpha 为 0 时也可以点击, 减少返回失败的概率
-                        .background(
-                            // 渐变, 靠近视频的区域透明
-                            brush = Brush.verticalGradient(
-                                0f to darkBackground.copy(alpha = 0.02f),
-                                0.612f to darkBackground.copy(alpha = 0.01f),
-                                1.00f to Color.Transparent,
-                            )
-                        ),
-                    actions = {
-                        TopAppBarGoBackButton(goBack)
-                    },
-                    containerColor = Color.Transparent
-                )
-            }
-        },
         contentWindowInsets = WindowInsets(0.dp)
     ) {
         EpisodePageContent(
             viewModel,
-            onClickVideo = {
-                topAppBarVisible = !topAppBarVisible
-            },
+            onClickGoBack = goBack,
             modifier
         )
     }
@@ -133,14 +92,48 @@ fun EpisodePage(
 @Composable
 fun EpisodePageContent(
     viewModel: EpisodeViewModel,
-    onClickVideo: () -> Unit = {},
+    onClickGoBack: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Column(modifier.navigationBarsPadding()) {
         // 视频
+        val video by viewModel.video.collectAsStateWithLifecycle(null)
         Box(Modifier.fillMaxWidth().background(Color.Black).statusBarsPadding()) {
-            EpisodeVideo(onClickVideo)
+            EpisodeVideo(video, rememberPlayerController(video), onClickGoBack)
         }
+
+        video?.let { vid ->
+            Row(Modifier.border(1.dp, MaterialTheme.colorScheme.onBackground).padding(all = 16.dp)) {
+                val arr by vid.torrentSource!!.pieces.collectAsStateWithLifecycle(mutableListOf())
+                var refresh by remember { mutableIntStateOf(0) }
+                LaunchedEffect(true) {
+                    while (isActive) {
+                        delay(3.seconds)
+                        refresh++
+                    }
+                }
+                key(refresh) {
+                    (arr.asSequence().take(30) + arr.asReversed().asSequence().take(30)).forEach {
+                        Box(
+                            Modifier.weight(1f)
+                                .background(
+                                    color = when (it) {
+                                        PieceState.NOT_AVAILABLE -> Color.Magenta
+                                        PieceState.READY -> Color.Blue
+                                        PieceState.FAILED -> Color.Red
+                                        PieceState.DOWNLOADING -> Color.Yellow
+                                        PieceState.FINISHED -> Color.Green
+                                        else -> Color.Red
+                                    }
+                                )
+                        ) {
+                            Spacer(Modifier.height(16.dp))
+                        }
+                    }
+                }
+            }
+        }
+
 
         // 标题
         Surface(Modifier.fillMaxWidth()) {
@@ -538,21 +531,6 @@ fun EpisodeTitle(viewModel: EpisodeViewModel, modifier: Modifier = Modifier) {
                 Modifier.padding(start = 8.dp).placeholder(episodeEp == null),
                 style = MaterialTheme.typography.titleMedium,
             )
-        }
-    }
-}
-
-@Composable
-private fun EpisodeVideo(
-    onClickVideo: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    BoxWithConstraints(modifier.fillMaxWidth()) {
-        Box(
-            Modifier.fillMaxWidth().height(maxWidth * 9 / 16)
-                .clickable(remember { MutableInteractionSource() }, indication = null, onClick = onClickVideo)
-        ) { // 16:9 box
-            // TODO: video 
         }
     }
 }

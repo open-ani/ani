@@ -24,9 +24,12 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.getCommonKoinModule
+import me.him188.ani.app.torrent.TorrentDownloader
 import me.him188.ani.app.ui.foundation.AniApp
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
+import org.koin.dsl.module
+import kotlin.io.path.createTempDirectory
 
 @OptIn(DelicateCoroutinesApi::class)
 @Composable
@@ -37,6 +40,9 @@ fun ProvideCompositionLocalsForPreview(
     runCatching { stopKoin() }
     startKoin {
         modules(getCommonKoinModule({ context }, GlobalScope))
+        modules(module {
+            single<TorrentDownloader> { TorrentDownloader(createTempDirectory("ani-temp").toFile()) }
+        })
     }
     MaterialTheme {
         PlatformPreviewCompositionLocalProvider {

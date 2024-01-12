@@ -14,6 +14,7 @@ compose-multiplatform = "1.5.11"
 android-gradle-plugin = "8.2.1"
 accompanist = "0.33.2-alpha"
 datastore = "1.0.0"
+libtorrent4j = "2.1.0-31"
 
 [libraries]
 # Build
@@ -64,7 +65,11 @@ kamel-image = { module = "media.kamel:kamel-image", version = "0.9.1" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 
 # Torrent
-libtorrent4j = { module = "org.libtorrent4j:libtorrent4j", version = "2.1.0-31" }
+libtorrent4j = { module = "org.libtorrent4j:libtorrent4j", version.ref = "libtorrent4j" }
+libtorrent4j-android-arm64 = { module = "org.libtorrent4j:libtorrent4j-android-arm64", version.ref = "libtorrent4j" }
+libtorrent4j-macos = { module = "org.libtorrent4j:libtorrent4j-macos", version.ref = "libtorrent4j" }
+libtorrent4j-windows = { module = "org.libtorrent4j:libtorrent4j-winds", version.ref = "libtorrent4j" }
+libtorrent4j-linux = { module = "org.libtorrent4j:libtorrent4j-linux", version.ref = "libtorrent4j" }
 
 # Android Datastore
 datastore = { module = "androidx.datastore:datastore", version.ref = "datastore" }
@@ -92,7 +97,7 @@ precompose-viewmodel = { module = "moe.tlaster:precompose-viewmodel", version = 
 #voyager-rxjava = { module = "cafe.adriel.voyager:voyager-rxjava", version.ref = "voyager" }
 
 
-# Android-only UI libraries
+# Android-only libraries
 # Each library has its own version, so we don't use `Versions` here.
 androidx-core-ktx = { module = "androidx.core:core-ktx", version = "1.12.0" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version = "1.8.2" }
@@ -102,6 +107,7 @@ androidx-material = { module = "com.google.android.material:material", version =
 androidx-material3-window-size-class0 = { module = "androidx.compose.material3:material3-window-size-class", version = "1.1.2" }
 androidx-browser = { module = "androidx.browser:browser", version = "1.7.0" }
 #androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version = "2.7.6" }
+slf4j-android = { module = "uk.uuid.slf4j:slf4j-android", version = "2.0.7-0" }
 
 androidx-media3-ui = { module = "androidx.media3:media3-ui", version = "1.2.0" }
 androidx-media3-exoplayer = { module = "androidx.media3:media3-exoplayer", version = "1.2.0" }

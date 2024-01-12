@@ -68,6 +68,7 @@ kotlin {
         api(projects.dataSources.bangumi)
         api(projects.utils.slf4jKt)
         api(projects.utils.coroutines)
+        api(projects.app.torrent)
 
         // Ktor
         api(libs.ktor.client.websockets)
@@ -83,7 +84,7 @@ kotlin {
         api(libs.precompose.koin) // Navigator
         api(libs.precompose.viewmodel) // Navigator
 
-        implementation(libs.slf4j.simple)
+        implementation(libs.slf4j.api)
     }
 
     sourceSets.androidMain.dependencies {
@@ -94,10 +95,14 @@ kotlin {
         api(libs.androidx.core.ktx)
         api(libs.koin.android)
         implementation(libs.androidx.browser)
+        implementation(libs.slf4j.android)
 
         // Compose
         api(libs.androidx.compose.ui.tooling.preview)
         api(libs.androidx.compose.material3)
+
+        implementation(libs.androidx.media3.ui)
+        implementation(libs.androidx.media3.exoplayer)
     }
 
     sourceSets.named("desktopMain").dependencies {

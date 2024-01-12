@@ -18,6 +18,7 @@
 
 package me.him188.ani.app.ui.foundation
 
+import androidx.annotation.CallSuper
 import androidx.compose.runtime.RememberObserver
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -50,7 +51,8 @@ abstract class AbstractViewModel : RememberObserver, ViewModel(), HasBackgroundS
         }
 
 
-    final override fun onAbandoned() {
+    @CallSuper
+    override fun onAbandoned() {
         logger.trace { "${this::class.simpleName} onAbandoned" }
         dispose()
     }
@@ -66,7 +68,8 @@ abstract class AbstractViewModel : RememberObserver, ViewModel(), HasBackgroundS
 
     private var referenceCount = 0
 
-    final override fun onForgotten() {
+    @CallSuper
+    override fun onForgotten() {
         referenceCount--
         logger.trace { "${this::class.simpleName} onForgotten, remaining refCount=$referenceCount" }
         if (referenceCount == 0) {
@@ -74,7 +77,8 @@ abstract class AbstractViewModel : RememberObserver, ViewModel(), HasBackgroundS
         }
     }
 
-    final override fun onRemembered() {
+    @CallSuper
+    override fun onRemembered() {
         referenceCount++
         logger.trace { "${this::class.simpleName} onRemembered, refCount=$referenceCount" }
         if (!_backgroundScope.isActive) {

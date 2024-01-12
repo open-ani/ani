@@ -13,9 +13,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
@@ -26,6 +28,8 @@ import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.Context
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.launchInBackground
+import me.him188.ani.app.videoplayer.Video
+import me.him188.ani.app.videoplayer.torrent.TorrentVideoFactory
 import me.him188.ani.datasources.api.DownloadProvider
 import me.him188.ani.datasources.api.DownloadSearchQuery
 import me.him188.ani.datasources.api.SearchSession
@@ -40,6 +44,7 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.openapitools.client.models.EpisodeDetail
 import java.util.concurrent.ConcurrentLinkedQueue
+import kotlin.time.Duration.Companion.seconds
 
 class EpisodeViewModel(
     initialSubjectId: Int,
@@ -48,6 +53,7 @@ class EpisodeViewModel(
     private val bangumiClient by inject<BangumiClient>()
     private val dmhyClient by inject<DownloadProvider>()
     private val browserNavigator: BrowserNavigator by inject()
+    private val torrentVideoFactory: TorrentVideoFactory by inject()
 
     private val episodeId: MutableStateFlow<Int> = MutableStateFlow(initialEpisodeId)
 
@@ -160,6 +166,21 @@ class EpisodeViewModel(
         playSources.filterNotNull(),
         backgroundScope
     )
+
+    @Stable
+    val video = MutableStateFlow<Video?>(null)
+
+    init {
+        playSourceSelector.targetPlaySourceCandidate
+            .debounce(1.seconds)
+            .mapNotNull { playSource ->
+                playSource?.let {
+                    video.value?.close()
+                    video.value = torrentVideoFactory.createFromMagnet(it.playSource.magnetLink)
+                }
+            }
+            .launchIn(backgroundScope)
+    }
 
     var showPlaySourceSheet by mutableStateOf(false)
 
