@@ -57,18 +57,15 @@ Ani 支持 Android 和桌面端 (macOS、Linux、Windows)。
 
 ### 个人收藏页面
 
-<img width="200" src=".readme/images/collection/collection-light.jpeg" alt="collection-light">
-<img width="200" src=".readme/images/collection/collection-dark.jpg" alt="collection-dark">
+<img width="200" src=".readme/images/collection/collection-light.jpeg" alt="collection-light"/> <img width="200" src=".readme/images/collection/collection-dark.jpg" alt="collection-dark"/>
 
 ### 番剧详情页面
 
-<img width="200" src=".readme/images/subject/subject-light.jpeg" alt="subject-light">
-<img width="200" src=".readme/images/subject/subject-dark.jpg" alt="subject-dark">
+<img width="200" src=".readme/images/subject/subject-light.jpeg" alt="subject-light"/> <img width="200" src=".readme/images/subject/subject-dark.jpg" alt="subject-dark"/>
 
 ### 剧集详情与播放页面
 
-<img width="200" src=".readme/images/episode/episode-dark.jpg" alt="episode-dark">
-<img width="200" src=".readme/images/episode/episode-playsource-dark.jpg" alt="episode-light">
+<img width="200" src=".readme/images/episode/episode-dark.jpg" alt="episode-dark"/> <img width="200" src=".readme/images/episode/episode-playsource-dark.jpg" alt="episode-light"/>
 
 备注: 播放器正在开发中, 目前仅支持选择播放o源并记录上次的选择然后复制链接.
 
