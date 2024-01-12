@@ -43,7 +43,7 @@ ani
 Ani 支持 Android 和桌面端 (macOS、Linux、Windows)。
 
 3.0 重构还在进行中, 2.0 正式版本可在 [releases](https://github.com/Him188/ani/releases/latest)
-中的 "Assets" 下载最新正式版本。
+中的 "Assets" 下载最新正式版本。(注意: 2.0 与 3.0 完全不同)
 
 2.x 测试版本可以在 [releases](https://github.com/Him188/ani/releases/) 找到。
 使用测试版本可以体验最新特性，但可能不稳定。
