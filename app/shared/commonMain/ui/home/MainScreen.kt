@@ -63,7 +63,7 @@ fun MainScreenPortrait(
     myCollectionsViewModel: MyCollectionsViewModel,
     searchViewModel: SearchViewModel
 ) {
-    var selectedTab by remember { mutableStateOf("search") }
+    var selectedTab by remember { mutableStateOf("collection") }
 
     val navigator = rememberNavigator()
     Scaffold(
