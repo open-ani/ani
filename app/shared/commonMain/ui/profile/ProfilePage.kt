@@ -21,6 +21,7 @@ package me.him188.ani.app.ui.profile
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -92,10 +93,15 @@ private fun DebugInfoView(viewModel: AccountViewModel) {
                 Text("$name: $value")
             }
         }
+
+        PlatformDebugInfoItems(viewModel, snackbar)
     }
 
     SnackbarHost(snackbar)
 }
+
+@Composable
+internal expect fun ColumnScope.PlatformDebugInfoItems(viewModel: AccountViewModel, snackbar: SnackbarHostState)
 
 @Composable
 private fun SelfInfo(selfInfo: User) {

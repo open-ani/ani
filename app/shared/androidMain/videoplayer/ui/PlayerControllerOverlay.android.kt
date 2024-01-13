@@ -31,6 +31,7 @@ internal actual fun PreviewVideoControllerOverlay() {
                 override val length: StateFlow<Int> = MutableStateFlow(100)
                 override val torrentSource: TorrentDownloadSession?
                     get() = null
+                override val headersAvailable: Flow<Boolean> = MutableStateFlow(true)
 
                 override fun close() {
                 }

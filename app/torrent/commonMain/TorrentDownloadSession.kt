@@ -47,6 +47,7 @@ internal class TorrentDownloadSessionImpl(
     private val sessionManager: SessionManager,
     private val torrentInfo: TorrentInfo,
     override val savedFile: File,
+    private val downloadHeaderChunks: Int,
 ) : TorrentDownloadSession {
     private val logger = logger(this::class)
 
@@ -71,6 +72,7 @@ internal class TorrentDownloadSessionImpl(
     private val onFinish = CompletableDeferred(Unit)
 
     private lateinit var handle: TorrentHandle
+    private lateinit var piecePriorities: Array<Priority>
 
     internal val listener = object : AlertListener {
         override fun types(): IntArray? = null
@@ -85,14 +87,16 @@ internal class TorrentDownloadSessionImpl(
                     val pieceAvailability = handle.pieceAvailability()
                     logger.info { "Total ${pieceAvailability.size} pieces" }
                     logger.info { "Download first and last 10 first." }
-                    for (i in pieceAvailability.indices) {
-                        if (i < 16 || i >= pieceAvailability.lastIndex - 16) {
-                            handle.piecePriority(i, Priority.TOP_PRIORITY)
-                            handle.setPieceDeadline(i, (System.currentTimeMillis() / 1000 + 10).toInt())
-                        }
-                    }
-                    pieces.value = MutableList(pieceAvailability.size) { PieceState.READY }
 
+                    // 根据实际测试, 只给部分 piece 设置优先级为 TOP_PRIORITY 并不一定会让这部分优先下载. 必须得忽略其他 pieces.
+                    piecePriorities = Array(pieceAvailability.size) { Priority.LOW }
+                    for (i in (0..16) + (pieceAvailability.lastIndex - 16..pieceAvailability.lastIndex)) {
+                        piecePriorities[i] = Priority.TOP_PRIORITY
+                    }
+
+                    // TODO: 做一个状态, 最初只下载头尾区块, 然后根据当前下载进度, 只请求最近的区块. 优先确保即将要播放的区块下载完成.
+                    handle.prioritizePieces(piecePriorities)
+                    pieces.value = MutableList(pieceAvailability.size) { PieceState.READY }
 
                     // Add trackers
                     trackers.lines().map { it.trim() }.filter { it.isNotEmpty() }.forEach {
@@ -146,11 +150,6 @@ internal class TorrentDownloadSessionImpl(
 
                 AlertType.BLOCK_FINISHED -> {
                     val a = alert as BlockFinishedAlert
-
-                    val pieceIndex = a.pieceIndex()
-                    if (pieceIndex < pieces.value.size) {
-                        pieces.value[pieceIndex] = PieceState.FINISHED
-                    }
 
                     state.value = TorrentDownloadState.Downloading
 

@@ -15,8 +15,6 @@ import androidx.media3.datasource.FileDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
@@ -24,14 +22,10 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.transformLatest
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.platform.Context
 import me.him188.ani.app.platform.LocalContext
-import me.him188.ani.app.torrent.PieceState
 import me.him188.ani.app.ui.foundation.AbstractViewModel
-import kotlin.time.Duration.Companion.seconds
 
 @Composable
 actual fun rememberPlayerController(video: Video?): PlayerController {
@@ -69,42 +63,20 @@ internal class ExoPlayerController @UiThread constructor(
         }
     }
 
-    /**
-     * 是否有足够的缓冲来播放视频
-     */
-    val hasEnoughBuffer: Flow<Boolean> = video.transformLatest {
-        while (currentCoroutineContext().isActive) {
-            val pieces = it.torrentSource!!.pieces.value
-
-            val firstNotFinished = pieces.indexOfFirst { it != PieceState.FINISHED }
-            if (firstNotFinished == -1) {
-                println("全部下载完成")
-                emit(true)
-                return@transformLatest
-            }
-            if (pieces.asSequence().take(16).all { it == PieceState.FINISHED }
-                && pieces.reversed().asSequence().take(16).all { it == PieceState.FINISHED }
-            ) {
-                println("First and last pieces downloaded")
-                emit(true)
-            }
-            delay(1.seconds)
-        }
-    }.shareInBackground()
+    private val headersAvailable: Flow<Boolean> = video.flatMapLatest { it.headersAvailable }.shareInBackground()
 
     init {
         video
             .map { it.file.toURI().toString() }
             .distinctUntilChanged()
-            .combine(hasEnoughBuffer) { uri, hasEnoughBuffer ->
-//                .map { uri ->
-                if (!hasEnoughBuffer) {
-                    println("没有 buffer")
+            .combine(headersAvailable) { uri, headersAvailable ->
+                if (!headersAvailable) {
                     return@combine
                 } // 等有足够的缓冲再让 Exo 加载视频头
+
                 withContext(Dispatchers.Main.immediate) {
                     if (player.mediaItemCount != 0) {
-                        return@withContext
+                        return@withContext // already loaded
                     }
                     println("加载视频: $uri")
                     val factory = ProgressiveMediaSource.Factory(FileDataSource.Factory())

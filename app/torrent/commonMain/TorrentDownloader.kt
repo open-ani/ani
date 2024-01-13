@@ -4,6 +4,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import me.him188.ani.app.torrent.TorrentConfig.DEFAULT_DOWNLOAD_HEADER_CHUNKS
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import org.libtorrent4j.AlertListener
@@ -30,7 +31,15 @@ public interface TorrentDownloader {
     public fun startDownload(data: EncodedTorrentData): TorrentDownloadSession
 }
 
-public fun TorrentDownloader(cacheDirectory: File): TorrentDownloader = TorrentDownloaderImpl(cacheDirectory)
+public object TorrentConfig {
+    public const val DEFAULT_DOWNLOAD_HEADER_CHUNKS: Int = 8
+}
+
+public fun TorrentDownloader(
+    cacheDirectory: File,
+    downloadHeaderChunks: Int = DEFAULT_DOWNLOAD_HEADER_CHUNKS
+): TorrentDownloader =
+    TorrentDownloaderImpl(cacheDirectory, downloadHeaderChunks)
 
 public class TorrentLibInfo(
     public val vendor: String,//  "libtorrent"
@@ -39,6 +48,7 @@ public class TorrentLibInfo(
 
 internal class TorrentDownloaderImpl(
     cacheDirectory: File,
+    private val downloadHeaderChunks: Int,
 ) : TorrentDownloader {
     private val logger = logger(this::class)
     override val vendor: TorrentLibInfo = TorrentLibInfo(
@@ -119,7 +129,11 @@ internal class TorrentDownloaderImpl(
         priorities[0] = Priority.TOP_PRIORITY
 
         val session =
-            TorrentDownloadSessionImpl(sessionManager, ti, downloadCacheDir.resolve(ti.files().fileName(0)))
+            TorrentDownloadSessionImpl(
+                sessionManager, ti,
+                downloadCacheDir.resolve(ti.files().fileName(0)),
+                downloadHeaderChunks,
+            )
         sessionManager.addListener(session.listener)
 
         logger.info { "Starting session" }

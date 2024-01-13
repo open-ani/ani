@@ -42,5 +42,11 @@ interface Video : AutoCloseable {
     // temporarily for debug
     val torrentSource: TorrentDownloadSession?
 
+    /**
+     * 是否已经获取到视频首尾区块 (即可以让播放器去识别 metadata)
+     */
+    @Stable
+    val headersAvailable: Flow<Boolean>
+
     override fun close()
 }

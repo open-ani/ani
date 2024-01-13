@@ -113,7 +113,7 @@ fun EpisodePageContent(
                     }
                 }
                 key(refresh) {
-                    (arr.asSequence().take(30) + arr.asReversed().asSequence().take(30)).forEach {
+                    (arr.asSequence().take(30) + arr.takeLast(30)).forEach {
                         Box(
                             Modifier.weight(1f)
                                 .background(
