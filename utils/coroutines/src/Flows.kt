@@ -16,3 +16,18 @@ fun <T, R> Flow<T>.runningFoldNoInitialEmit(
         emit(accumulator)
     }
 }
+
+/**
+ * Maps each value to a [R] using the given [mapper] function, and closes the previous [R] if any.
+ */
+fun <T, R : AutoCloseable> Flow<T>.mapAutoClose(
+    @BuilderInference mapper: (T) -> R
+): Flow<R> = flow {
+    var last: R? = null
+    collect { value ->
+        last?.close()
+        val new = mapper(value)
+        emit(new)
+        last = new
+    }
+}

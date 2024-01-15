@@ -1,8 +1,6 @@
 package me.him188.ani.app.torrent
 
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -36,11 +34,9 @@ import kotlin.time.Duration.Companion.seconds
  */
 public interface TorrentDownloadSession : DownloadStats, AutoCloseable {
     public val saveDirectory: File
+    public val state: Flow<TorrentDownloadState>
 
     public suspend fun createDeferredFile(): DeferredFile
-
-    public val state: Flow<TorrentDownloadState>
-//    val metadata: Flow<TorrentMetadata>
 }
 
 public sealed class TorrentDownloadState {
@@ -57,8 +53,6 @@ internal class TorrentDownloadSessionImpl(
     override val saveDirectory: File,
 ) : TorrentDownloadSession {
     private val logger = logger(this::class)
-
-    private val scope = CoroutineScope(SupervisorJob())
 
     override val state: MutableStateFlow<TorrentDownloadState> = MutableStateFlow(TorrentDownloadState.Ready)
 
@@ -94,9 +88,6 @@ internal class TorrentDownloadSessionImpl(
         pieces
     )
 
-    override val playableByteIndexExclusive: MutableStateFlow<Long> =
-        MutableStateFlow(0)
-
     override val isFinished: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
     private val onFinish = CompletableDeferred(Unit)
@@ -104,27 +95,9 @@ internal class TorrentDownloadSessionImpl(
 
     private lateinit var piecePriorities: Array<Priority>
 
-
-    private var playablePieceIndexExclusive = 0
-
     @Synchronized
     private fun onPieceDownloaded(index: Int) {
         pieces[index].state.value = PieceState.FINISHED
-
-        if (playablePieceIndexExclusive >= pieces.size) {
-            return
-        }
-        for (i in playablePieceIndexExclusive until pieces.size) {
-            if (pieces[i].state.value != PieceState.FINISHED) {
-                break
-            }
-            playablePieceIndexExclusive++
-        }
-        if (playablePieceIndexExclusive >= pieces.size) {
-            playableByteIndexExclusive.tryEmit(pieces.last().run { offset + size }.toLong())
-        } else {
-            playableByteIndexExclusive.tryEmit(pieces[playablePieceIndexExclusive].offset)
-        }
     }
 
     internal val listener = object : AlertListener {

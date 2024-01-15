@@ -16,6 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -24,12 +25,16 @@ import me.him188.ani.app.videoplayer.PlayerController
 import me.him188.ani.app.videoplayer.VideoPlayerView
 import me.him188.ani.app.videoplayer.VideoSource
 import me.him188.ani.app.videoplayer.ui.PlayerControllerOverlay
+import me.him188.ani.app.videoplayer.ui.PlayerControllerOverlayBottomBar
 import me.him188.ani.app.videoplayer.ui.PlayerControllerOverlayTopBar
 import me.him188.ani.app.videoplayer.ui.VideoLoadingIndicator
 import me.him188.ani.datasources.api.topic.FileSize
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import kotlin.time.Duration.Companion.seconds
 
+/**
+ * 剧集详情页面顶部的视频控件.
+ */
 @Composable
 internal fun EpisodeVideo(
     video: VideoSource<*>?,
@@ -92,13 +97,10 @@ internal fun EpisodeVideo(
                     }
                 },
                 bottomBar = {
-//                    video?.let {
-//                        PlayerControllerOverlayBottomBar(
-//                            video = it,
-//                            controller = playerController,
-//                            modifier = Modifier.padding(bottom = 8.dp).alpha(controllerAlpha).fillMaxWidth()
-//                        )
-//                    }
+                    PlayerControllerOverlayBottomBar(
+                        controller = playerController,
+                        modifier = Modifier.padding(bottom = 8.dp).alpha(controllerAlpha).fillMaxWidth()
+                    )
                 },
                 Modifier.matchParentSize()
             )

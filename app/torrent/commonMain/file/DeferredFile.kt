@@ -5,7 +5,6 @@ import me.him188.ani.app.torrent.model.Piece
 import me.him188.ani.app.torrent.model.awaitFinished
 import me.him188.ani.app.torrent.model.lastIndex
 import me.him188.ani.app.torrent.model.startIndex
-import me.him188.ani.utils.logging.logger
 
 public interface DeferredFile {
     public val offset: Long
@@ -30,10 +29,6 @@ internal class TorrentDeferredFileImpl(
     private val file: SeekableInput,
     private val pieces: List<Piece>,
 ) : DeferredFile {
-    private companion object {
-        private val logger = logger(TorrentDeferredFileImpl::class)
-    }
-
     private val totalLength = pieces.maxOf { it.offset + it.size }
 
     override var offset: Long = 0

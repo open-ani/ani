@@ -9,41 +9,34 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import me.him188.ani.app.torrent.TorrentDownloadSession
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.videoplayer.AbstractPlayerController
 import me.him188.ani.app.videoplayer.PlayerState
-import me.him188.ani.app.videoplayer.Video
-import java.io.File
+import me.him188.ani.app.videoplayer.VideoProperties
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 @Preview(widthDp = 160 * 4, heightDp = 90 * 4, showBackground = true)
 @Composable
 internal actual fun PreviewVideoControllerOverlay() {
     ProvideCompositionLocalsForPreview {
-        val video = remember {
-            object : Video {
-                override val file: File get() = File("")
-                override val totalBytes: Flow<Long> = MutableStateFlow(100)
-                override val downloadedBytes: Flow<Long> = MutableStateFlow(70)
-                override val downloadRate: StateFlow<Long> = MutableStateFlow(100)
-                override val overallDownloadProgress: Flow<Float> = MutableStateFlow(0.7f)
-                override val length: StateFlow<Int> = MutableStateFlow(100)
-                override val torrentSource: TorrentDownloadSession?
-                    get() = null
-                val headersAvailable: Flow<Boolean> = MutableStateFlow(true)
-//                override val playableByteIndex: Flow<Int> get() = MutableStateFlow(70)
-
-                override fun close() {
-                }
-            }
-        }
         val controller = remember {
             object : AbstractPlayerController() {
                 override val state: MutableStateFlow<PlayerState> = MutableStateFlow(PlayerState.PLAYING)
-
-                override val playedDuration: StateFlow<Int> = MutableStateFlow(30)
-
+                override val videoProperties: Flow<VideoProperties> = MutableStateFlow(
+                    VideoProperties(
+                        title = "Test Video",
+                        heightPx = 1080,
+                        widthPx = 1920,
+                        videoBitrate = 100,
+                        audioBitrate = 100,
+                        frameRate = 30f,
+                        duration = 100.milliseconds,
+                    )
+                )
+                override val bufferProgress: Flow<Float> = MutableStateFlow(30f)
+                override val playedDuration: Flow<Duration> = MutableStateFlow(0.seconds)
                 override val playProgress: Flow<Float> = MutableStateFlow(0.5f)
 
                 override fun pause() {
@@ -53,6 +46,10 @@ internal actual fun PreviewVideoControllerOverlay() {
                 override fun resume() {
                     state.value = PlayerState.PLAYING
                 }
+
+                override fun setSpeed(speed: Float) {
+                    TODO("Not yet implemented")
+                }
             }
         }
         PlayerControllerOverlay(
@@ -61,7 +58,6 @@ internal actual fun PreviewVideoControllerOverlay() {
             },
             bottomBar = {
                 PlayerControllerOverlayBottomBar(
-                    video = video,
                     controller = controller,
                     Modifier
                         .fillMaxWidth()

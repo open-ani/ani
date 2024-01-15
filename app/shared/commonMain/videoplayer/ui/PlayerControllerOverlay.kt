@@ -39,8 +39,9 @@ import me.him188.ani.app.ui.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.theme.slightlyWeaken
 import me.him188.ani.app.ui.theme.weaken
 import me.him188.ani.app.videoplayer.PlayerController
-import me.him188.ani.app.videoplayer.Video
+import me.him188.ani.datasources.bangumi.processing.fixToString
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
+import kotlin.time.Duration.Companion.milliseconds
 
 
 /**
@@ -86,7 +87,6 @@ internal expect fun PreviewVideoControllerOverlay()
 
 @Composable
 fun PlayerControllerOverlayBottomBar(
-    video: Video,
     controller: PlayerController,
     modifier: Modifier = Modifier,
 ) {
@@ -121,13 +121,18 @@ fun PlayerControllerOverlayBottomBar(
             }
         }
 
-        val downloadProgress by video.overallDownloadProgress.collectAsStateWithLifecycle(0f)
-        val lengthDuration by video.length.collectAsStateWithLifecycle(0)
-        val playedDuration by controller.playedDuration.collectAsStateWithLifecycle(0)
+        val bufferProgress by controller.bufferProgress.collectAsStateWithLifecycle(0f)
+        val videoProperties by controller.videoProperties.collectAsStateWithLifecycle(null)
+        val playedDuration by controller.playedDuration.collectAsStateWithLifecycle(0.milliseconds)
         val playProgress by controller.playProgress.collectAsStateWithLifecycle(0f)
 
         Text(
-            text = remember(playedDuration, lengthDuration) { renderSeconds(playedDuration, lengthDuration) },
+            text = remember(playedDuration, videoProperties) {
+                renderSeconds(
+                    playedDuration.inWholeSeconds,
+                    videoProperties?.duration?.inWholeSeconds
+                )
+            },
             Modifier.padding(end = 8.dp),
             style = MaterialTheme.typography.labelSmall,
         )
@@ -135,7 +140,7 @@ fun PlayerControllerOverlayBottomBar(
         Box(Modifier.weight(1f).height(4.dp).padding(horizontal = 8.dp), contentAlignment = Alignment.Center) {
             LinearProgressIndicator(
                 modifier = Modifier.matchParentSize(),
-                progress = downloadProgress,
+                progress = bufferProgress,
                 trackColor = MaterialTheme.colorScheme.tertiary.weaken(),
             )
             LinearProgressIndicator(
@@ -157,13 +162,26 @@ fun PlayerControllerOverlayBottomBar(
     }
 }
 
-private fun renderSeconds(played: Int, length: Int): String {
+private fun renderSeconds(played: Long, length: Long?): String {
+    if (length == null) {
+        return "00:00 / 00:00"
+    }
     return if (played < 60 && length < 60) {
-        "0:${played} / 0:${length}"
+        "00:${played} / 00:${length}"
     } else if (played < 3600 && length < 3600) {
-        "${played / 60}:${played % 60} / ${length / 60}:${length % 60}"
+        val startM = (played / 60).fixToString(2)
+        val startS = (played % 60).fixToString(2)
+        val endM = (length / 60).fixToString(2)
+        val endS = (length % 60).fixToString(2)
+        """$startM:$startS / $endM:$endS"""
     } else {
-        "${played / 3600}:${played % 3600 / 60}:${played % 60} / ${length / 3600}:${length % 3600 / 60}:${length % 60}"
+        val startH = (played / 3600).fixToString(2)
+        val startM = (played % 3600 / 60).fixToString(2)
+        val startS = (played % 60).fixToString(2)
+        val endH = (length / 3600).fixToString(2)
+        val endM = (length % 3600 / 60).fixToString(2)
+        val endS = (length % 60).fixToString(2)
+        """$startH:$startM:$startS / $endH:$endM:$endS"""
     }
 }
 

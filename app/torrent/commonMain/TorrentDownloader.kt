@@ -76,7 +76,6 @@ public suspend fun TorrentDownloader(
 
     return TorrentDownloaderImpl(
         cacheDirectory,
-        downloadHeaderChunks,
         sessionManager,
     )
 }
@@ -88,7 +87,6 @@ public class TorrentLibInfo(
 
 internal class TorrentDownloaderImpl(
     cacheDirectory: File,
-    private val downloadHeaderChunks: Int,
     private val sessionManager: SessionManager,
 ) : TorrentDownloader {
     private val logger = logger(this::class)

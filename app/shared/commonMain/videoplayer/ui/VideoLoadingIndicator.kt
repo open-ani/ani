@@ -21,7 +21,7 @@ fun VideoLoadingIndicator(
 ) {
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp)
-        Row(Modifier.padding(top = 4.dp)) {
+        Row(Modifier.padding(top = 8.dp)) {
             ProvideTextStyle(textStyle) {
                 text()
             }

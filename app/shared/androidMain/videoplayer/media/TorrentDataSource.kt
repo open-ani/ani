@@ -1,6 +1,6 @@
 @file:OptIn(UnstableApi::class)
 
-package me.him188.ani.app.videoplayer
+package me.him188.ani.app.videoplayer.media
 
 import android.net.Uri
 import androidx.annotation.OptIn
@@ -46,14 +46,12 @@ class TorrentDataSource(
         }
 
         if (file.bytesRemaining <= 0L) {
-//            logger.info { "Reading buffer, curr offset=${file.offset}, attempting to read $length: EOF" }
             return C.RESULT_END_OF_INPUT
         }
 
         return runBlocking {
             file.read(buffer, offset, length)
         }.also {
-//            logger.info { "Reading buffer, curr offset=${file.offset}, attempting to read $length, result read $it" }
             bytesTransferred(it)
         }
     }

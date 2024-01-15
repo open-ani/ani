@@ -35,8 +35,6 @@ import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.session.SessionManagerImpl
 import me.him188.ani.app.torrent.TorrentDownloaderManager
 import me.him188.ani.app.torrent.TorrentDownloaderManagerImpl
-import me.him188.ani.app.videoplayer.torrent.TorrentVideoFactory
-import me.him188.ani.app.videoplayer.torrent.TorrentVideoFactoryImpl
 import me.him188.ani.datasources.api.DownloadProvider
 import me.him188.ani.datasources.api.SubjectProvider
 import me.him188.ani.datasources.bangumi.BangumiClient
@@ -61,7 +59,6 @@ fun getCommonKoinModule(getContext: () -> Context, coroutineScope: CoroutineScop
     single<DownloadProvider> { DmhyDownloadProvider() }
     single<SubjectRepository> { SubjectRepositoryImpl() }
     single<EpisodeRepository> { EpisodeRepositoryImpl() }
-    single<TorrentVideoFactory> { TorrentVideoFactoryImpl() }
     single<TorrentDownloaderManager> { TorrentDownloaderManagerImpl(coroutineScope.coroutineContext) }
 }
 
