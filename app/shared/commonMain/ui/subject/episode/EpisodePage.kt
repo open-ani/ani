@@ -43,13 +43,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -58,17 +54,13 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 import me.him188.ani.app.platform.LocalContext
-import me.him188.ani.app.torrent.PieceState
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.LocalSnackbar
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.theme.slightlyWeaken
 import me.him188.ani.app.videoplayer.rememberPlayerController
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
-import kotlin.time.Duration.Companion.seconds
 
 private val PAGE_HORIZONTAL_PADDING = 16.dp
 
@@ -97,42 +89,42 @@ fun EpisodePageContent(
 ) {
     Column(modifier.navigationBarsPadding()) {
         // 视频
-        val video by viewModel.video.collectAsStateWithLifecycle(null)
+        val video by viewModel.videoSource.collectAsStateWithLifecycle(null)
         Box(Modifier.fillMaxWidth().background(Color.Black).statusBarsPadding()) {
-            EpisodeVideo(video, rememberPlayerController(video), onClickGoBack)
+            EpisodeVideo(video, rememberPlayerController(viewModel.videoSource), onClickGoBack)
         }
 
-        video?.let { vid ->
-            Row(Modifier.border(1.dp, MaterialTheme.colorScheme.onBackground).padding(all = 16.dp)) {
-                val arr by vid.torrentSource!!.pieces.collectAsStateWithLifecycle(mutableListOf())
-                var refresh by remember { mutableIntStateOf(0) }
-                LaunchedEffect(true) {
-                    while (isActive) {
-                        delay(3.seconds)
-                        refresh++
-                    }
-                }
-                key(refresh) {
-                    (arr.asSequence().take(30) + arr.takeLast(30)).forEach {
-                        Box(
-                            Modifier.weight(1f)
-                                .background(
-                                    color = when (it) {
-                                        PieceState.NOT_AVAILABLE -> Color.Magenta
-                                        PieceState.READY -> Color.Blue
-                                        PieceState.FAILED -> Color.Red
-                                        PieceState.DOWNLOADING -> Color.Yellow
-                                        PieceState.FINISHED -> Color.Green
-                                        else -> Color.Red
-                                    }
-                                )
-                        ) {
-                            Spacer(Modifier.height(16.dp))
-                        }
-                    }
-                }
-            }
-        }
+//        video?.let { vid ->
+//            Row(Modifier.border(1.dp, MaterialTheme.colorScheme.onBackground).padding(all = 16.dp)) {
+//                val arr by vid.torrentSource!!.pieces.collectAsStateWithLifecycle(mutableListOf())
+//                var refresh by remember { mutableIntStateOf(0) }
+//                LaunchedEffect(true) {
+//                    while (isActive) {
+//                        delay(3.seconds)
+//                        refresh++
+//                    }
+//                }
+//                key(refresh) {
+//                    (arr.asSequence().take(30) + arr.takeLast(30)).forEach {
+//                        Box(
+//                            Modifier.weight(1f)
+//                                .background(
+//                                    color = when (it) {
+//                                        PieceState.NOT_AVAILABLE -> Color.Magenta
+//                                        PieceState.READY -> Color.Blue
+//                                        PieceState.FAILED -> Color.Red
+//                                        PieceState.DOWNLOADING -> Color.Yellow
+//                                        PieceState.FINISHED -> Color.Green
+//                                        else -> Color.Red
+//                                    }
+//                                )
+//                        ) {
+//                            Spacer(Modifier.height(16.dp))
+//                        }
+//                    }
+//                }
+//            }
+//        }
 
 
         // 标题

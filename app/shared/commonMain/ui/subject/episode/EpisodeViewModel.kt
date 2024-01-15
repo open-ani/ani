@@ -17,7 +17,6 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
@@ -26,10 +25,11 @@ import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.Context
+import me.him188.ani.app.torrent.TorrentDownloaderManager
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.launchInBackground
-import me.him188.ani.app.videoplayer.Video
-import me.him188.ani.app.videoplayer.torrent.TorrentVideoFactory
+import me.him188.ani.app.videoplayer.TorrentVideoSource
+import me.him188.ani.app.videoplayer.VideoSource
 import me.him188.ani.datasources.api.DownloadProvider
 import me.him188.ani.datasources.api.DownloadSearchQuery
 import me.him188.ani.datasources.api.SearchSession
@@ -53,7 +53,7 @@ class EpisodeViewModel(
     private val bangumiClient by inject<BangumiClient>()
     private val dmhyClient by inject<DownloadProvider>()
     private val browserNavigator: BrowserNavigator by inject()
-    private val torrentVideoFactory: TorrentVideoFactory by inject()
+    private val torrentDownloaderManager: TorrentDownloaderManager by inject()
 
     private val episodeId: MutableStateFlow<Int> = MutableStateFlow(initialEpisodeId)
 
@@ -168,19 +168,17 @@ class EpisodeViewModel(
     )
 
     @Stable
-    val video = MutableStateFlow<Video?>(null)
-
-    init {
-        playSourceSelector.targetPlaySourceCandidate
-            .debounce(1.seconds)
-            .mapNotNull { playSource ->
-                playSource?.let {
-                    video.value?.close()
-                    video.value = torrentVideoFactory.createFromMagnet(it.playSource.magnetLink)
-                }
+    val videoSource: SharedFlow<VideoSource<*>?> = playSourceSelector.targetPlaySourceCandidate
+        .debounce(1.seconds)
+        .combine(torrentDownloaderManager.torrentDownloader) { video, torrentDownloader ->
+            video to torrentDownloader
+        }
+        .transformLatest { (playSource, torrentDownloader) ->
+            emit(null)
+            playSource?.let {
+                emit(TorrentVideoSource(torrentDownloader.fetchMagnet(it.playSource.magnetLink)))
             }
-            .launchIn(backgroundScope)
-    }
+        }.shareInBackground()
 
     var showPlaySourceSheet by mutableStateOf(false)
 

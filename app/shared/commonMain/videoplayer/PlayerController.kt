@@ -86,4 +86,4 @@ enum class PlayerState(
 }
 
 @Composable
-expect fun rememberPlayerController(video: Video?): PlayerController
+expect fun rememberPlayerController(videoSource: Flow<VideoSource<*>?>): PlayerController

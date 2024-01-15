@@ -48,6 +48,11 @@ kotlin {
         implementation(projects.utils.slf4jKt)
     }
 
+    sourceSets.commonTest.dependencies {
+        api(libs.kotlinx.coroutines.test)
+        runtimeOnly(libs.slf4j.simple)
+    }
+
     sourceSets.androidMain.dependencies {
         api(libs.kotlinx.coroutines.android)
         implementation(libs.libtorrent4j.android.arm64)

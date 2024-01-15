@@ -33,6 +33,8 @@ import me.him188.ani.app.persistent.preferredAllianceStore
 import me.him188.ani.app.persistent.tokenStore
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.session.SessionManagerImpl
+import me.him188.ani.app.torrent.TorrentDownloaderManager
+import me.him188.ani.app.torrent.TorrentDownloaderManagerImpl
 import me.him188.ani.app.videoplayer.torrent.TorrentVideoFactory
 import me.him188.ani.app.videoplayer.torrent.TorrentVideoFactoryImpl
 import me.him188.ani.datasources.api.DownloadProvider
@@ -60,6 +62,7 @@ fun getCommonKoinModule(getContext: () -> Context, coroutineScope: CoroutineScop
     single<SubjectRepository> { SubjectRepositoryImpl() }
     single<EpisodeRepository> { EpisodeRepositoryImpl() }
     single<TorrentVideoFactory> { TorrentVideoFactoryImpl() }
+    single<TorrentDownloaderManager> { TorrentDownloaderManagerImpl(coroutineScope.coroutineContext) }
 }
 
 @Stable

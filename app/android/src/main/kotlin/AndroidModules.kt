@@ -7,6 +7,7 @@ import me.him188.ani.app.navigation.AuthorizationNavigator
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.navigation.SubjectNavigator
 import me.him188.ani.app.torrent.TorrentDownloader
+import me.him188.ani.app.torrent.TorrentDownloaderFactory
 import org.koin.dsl.module
 import java.io.File
 
@@ -16,5 +17,11 @@ fun getAndroidModules(
     single<SubjectNavigator> { AndroidSubjectNavigator() }
     single<AuthorizationNavigator> { AndroidAuthorizationNavigator() }
     single<BrowserNavigator> { AndroidBrowserNavigator() }
-    single<TorrentDownloader> { TorrentDownloader(torrentCacheDir) }
+    single<TorrentDownloaderFactory> {
+        TorrentDownloaderFactory {
+            TorrentDownloader(
+                cacheDirectory = torrentCacheDir,
+            )
+        }
+    }
 }

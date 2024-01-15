@@ -31,6 +31,8 @@ import kotlinx.coroutines.withContext
 import me.him188.ani.app.i18n.ResourceBundle
 import me.him188.ani.app.i18n.loadResourceBundle
 import me.him188.ani.app.platform.getCommonKoinModule
+import me.him188.ani.app.torrent.TorrentDownloaderManager
+import org.koin.android.ext.android.getKoin
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 
@@ -97,5 +99,7 @@ class AniApplication : Application() {
             modules(getCommonKoinModule({ this@AniApplication }, GlobalScope))
             modules(getAndroidModules(applicationContext.cacheDir.resolve("torrent-caches").apply { mkdir() }))
         }
+
+        getKoin().get<TorrentDownloaderManager>().torrentDownloader // start sharing, connect to DHT now
     }
 }

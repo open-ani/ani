@@ -121,7 +121,7 @@ fun PlayerControllerOverlayBottomBar(
             }
         }
 
-        val downloadProgress by video.downloadProgress.collectAsStateWithLifecycle(0f)
+        val downloadProgress by video.overallDownloadProgress.collectAsStateWithLifecycle(0f)
         val lengthDuration by video.length.collectAsStateWithLifecycle(0)
         val playedDuration by controller.playedDuration.collectAsStateWithLifecycle(0)
         val playProgress by controller.playProgress.collectAsStateWithLifecycle(0f)
