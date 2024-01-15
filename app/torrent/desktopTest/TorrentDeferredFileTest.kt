@@ -1,7 +1,6 @@
 package me.him188.ani.app.torrent
 
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
@@ -38,9 +37,7 @@ internal class TorrentDeferredFileTest {
 
     private val file: TorrentDeferredFileImpl by lazy {
         TorrentDeferredFileImpl(
-            CompletableDeferred(
-                RandomAccessFile(tempFile.absolutePath, "r").asSeekableInput(),
-            ),
+            RandomAccessFile(tempFile.absolutePath, "r").asSeekableInput(),
             pieces,
         )
     }
