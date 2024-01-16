@@ -214,6 +214,7 @@ internal class TorrentDownloadSessionImpl(
     override fun close() {
         removeListener(listener)
         torrentHandle?.let(closeHandle)
+        logger.info { "Closing torrent" }
     }
 }
 
