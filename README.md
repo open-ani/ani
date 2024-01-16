@@ -67,7 +67,7 @@ Ani 支持 Android 和桌面端 (macOS、Linux、Windows)。
 
 <img width="300" src=".readme/images/subject/subject-light.jpeg" alt="subject-light"/> <img width="300" src=".readme/images/subject/subject-dark.jpg" alt="subject-dark"/>
 
-### 剧集详情与播放页面
+### 剧集详情
 
 - 后台自动从[动漫花园][dmhy]拉取字幕组资源并解析标题
 - 支持选择一般人最关心的参数: 清晰度, 字幕语言, 字幕组
@@ -76,7 +76,18 @@ Ani 支持 Android 和桌面端 (macOS、Linux、Windows)。
 
 <img width="300" src=".readme/images/episode/episode-dark.jpg" alt="episode-dark"/> <img width="300" src=".readme/images/episode/episode-playsource-dark.jpg" alt="episode-light"/>
 
-备注: 播放器正在开发中, 目前仅支持选择播放源并记录上次的选择然后复制链接.
+### 在线视频播放
+
+- 选择字幕组后自动开始播放.
+- 第一个里程碑会支持播放/暂停, 显示播放进度, 拖动进度条, 切换全屏/小窗.
+- 播放完成后自动标记为已观看, 并跳转到下一集.
+- 倍速播放, 手势调音量等辅助功能将在之后的里程碑实现.
+
+<img width="300" src=".readme/images/episode/episode-player-loading.jpg" alt="episode-player-loading"/> <img width="300" src=".readme/images/episode/episode-player-playing.jpg" alt="episode-player-playing"/>
+
+### 弹幕与评论
+
+计划中, 将在第二个里程碑支持.
 
 ### 标题 / 标签搜索页面
 
