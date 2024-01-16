@@ -90,8 +90,9 @@ fun EpisodePageContent(
     Column(modifier.navigationBarsPadding()) {
         // 视频
         val video by viewModel.videoSource.collectAsStateWithLifecycle(null)
+        val videoSourceSelected by viewModel.videoSourceSelected.collectAsStateWithLifecycle(false)
         Box(Modifier.fillMaxWidth().background(Color.Black).statusBarsPadding()) {
-            EpisodeVideo(video, rememberPlayerController(viewModel.videoSource), onClickGoBack)
+            EpisodeVideo(videoSourceSelected, video, rememberPlayerController(viewModel.videoSource), onClickGoBack)
         }
 
 //        video?.let { vid ->

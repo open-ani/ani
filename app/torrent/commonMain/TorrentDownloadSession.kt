@@ -168,6 +168,7 @@ internal class TorrentDownloadSessionImpl(
 
                     AlertType.BLOCK_FINISHED -> {
                         val a = alert as BlockFinishedAlert
+                        torrentHandle = alert.handle()
 
                         state.value = TorrentDownloadState.Downloading
 

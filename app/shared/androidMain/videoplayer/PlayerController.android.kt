@@ -12,6 +12,7 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.delay
@@ -29,7 +30,7 @@ import me.him188.ani.app.platform.Context
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.launchInBackground
-import me.him188.ani.app.videoplayer.media.DataSourceAdapter
+import me.him188.ani.app.videoplayer.media.TorrentDataSource
 import me.him188.ani.utils.logging.info
 import org.koin.core.component.KoinComponent
 import kotlin.time.Duration
@@ -51,9 +52,18 @@ internal class ExoPlayerController @UiThread constructor(
     videoFlow: Flow<VideoSource<*>?>,
     context: Context,
 ) : PlayerController, AbstractViewModel(), KoinComponent {
+
+    private var playingResource: AutoCloseable? = null
     private val mediaSourceFactory = videoFlow.filterNotNull()
         .flatMapLatest { video ->
-            DataSourceAdapter.mediaSourceFactory(video)
+            when (video) {
+                is TorrentVideoSource -> video.startStreaming().map {
+                    playingResource = it
+                    ProgressiveMediaSource.Factory { TorrentDataSource(it) }
+                }
+
+                else -> error("Unsupported video type: ${video::class}")
+            }
         }
 
     init {
@@ -161,12 +171,18 @@ internal class ExoPlayerController @UiThread constructor(
 
     override fun onAbandoned() {
         super.onAbandoned()
-        player.release()
+        close()
     }
 
     override fun onForgotten() {
         super.onForgotten()
+        close()
+    }
+
+    override fun close() {
+        super.close()
         player.release()
+        playingResource?.close()
     }
 
     override fun setSpeed(speed: Float) {

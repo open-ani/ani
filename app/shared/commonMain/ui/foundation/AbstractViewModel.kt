@@ -104,4 +104,9 @@ abstract class AbstractViewModel : RememberObserver, ViewModel(), HasBackgroundS
      */
     protected open fun init() {
     }
+
+    @CallSuper
+    override fun close() {
+        super.close()
+    }
 }

@@ -66,7 +66,7 @@ class TorrentDataSource(
             this.uri = uri
             transferInitializing(dataSpec)
 
-            logger.info { "Starting torrent download" }
+            logger.info { "Acquiring torrent DeferredFile" }
             file = runBlocking { session.createDeferredFile() }
         }
 

@@ -4,6 +4,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -87,7 +88,7 @@ fun SubjectDetails(
         topBar = {
             AniTopAppBar(
                 Modifier.statusBarsPadding(),
-                paddingStart = 12.dp,
+                padding = PaddingValues(start = 12.dp, top = 6.dp, end = 16.dp, bottom = 6.dp),
                 actions = { TopAppBarGoBackButton(goBack) },
                 containerColor = Color.Transparent,
             )

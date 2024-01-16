@@ -1,22 +1,31 @@
 package me.him188.ani.app.videoplayer
 
+import android.view.View
+import androidx.annotation.OptIn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.PlayerView
+import androidx.media3.ui.PlayerView.ControllerVisibilityListener
 
+@OptIn(UnstableApi::class)
 @Composable
 actual fun VideoPlayerView(
     playerController: PlayerController,
     modifier: Modifier
 ) {
-    val density = LocalDensity.current
     AndroidView(
         factory = { context ->
             PlayerView(context).apply {
+                val videoView = this
                 (playerController as? ExoPlayerController)?.let {
                     player = it.player
+                    setControllerVisibilityListener(ControllerVisibilityListener { visibility ->
+                        if (visibility == View.VISIBLE) {
+                            videoView.hideController();
+                        }
+                    })
                 }
             }
         },
@@ -27,10 +36,6 @@ actual fun VideoPlayerView(
             (playerController as? ExoPlayerController)?.let {
                 view.player = it.player
             }
-//                view.layoutParams = view.layoutParams.apply {
-//                    width = maxWidth
-//                    height = (maxWidth * 9 / 16).toInt()
-//                }
         },
     )
 }

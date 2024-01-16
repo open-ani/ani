@@ -1,9 +1,9 @@
 package me.him188.ani.app.videoplayer.ui
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -31,7 +31,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.foundation.AniTopAppBar
@@ -90,16 +89,8 @@ fun PlayerControllerOverlayBottomBar(
     controller: PlayerController,
     modifier: Modifier = Modifier,
 ) {
-    val darkBackground = aniDarkColorTheme().background
     Row(
-        Modifier.background(
-            // 渐变, 靠近视频的区域透明
-            brush = Brush.verticalGradient(
-                0f to Color.Transparent,
-                (1 - 0.612f) to darkBackground.copy(alpha = 0.08f),
-                1f to darkBackground.copy(alpha = 0.9f),
-            )
-        ).then(modifier), verticalAlignment = Alignment.CenterVertically
+        modifier, verticalAlignment = Alignment.CenterVertically
     ) {
         // 播放 / 暂停按钮
         val state by controller.state.collectAsStateWithLifecycle(null)
@@ -114,9 +105,9 @@ fun PlayerControllerOverlayBottomBar(
                 },
             ) {
                 if (state?.isPlaying == true) {
-                    Icon(Icons.Default.PlayArrow, contentDescription = null)
-                } else {
                     Icon(Icons.Default.Pause, contentDescription = null)
+                } else {
+                    Icon(Icons.Default.PlayArrow, contentDescription = null)
                 }
             }
         }
@@ -188,27 +179,21 @@ private fun renderSeconds(played: Long, length: Long?): String {
 
 @Composable
 fun PlayerControllerOverlayTopBar(
-    alpha: Float,
-    startActions: @Composable RowScope.() -> Unit,
+    startActions: @Composable (RowScope.() -> Unit),
     modifier: Modifier = Modifier,
 ) {
-    val darkBackground = aniDarkColorTheme().background
     CompositionLocalProvider(LocalContentColor provides aniDarkColorTheme().onBackground) {
         AniTopAppBar(
-            Modifier
-                .alpha(alpha)
-                .background(
-                    // 渐变, 靠近视频的区域透明
-                    brush = Brush.verticalGradient(
-                        0f to darkBackground.copy(alpha = 0.9f),
-                        0.612f to darkBackground.copy(alpha = 0.8f),
-                        1.00f to Color.Transparent,
-                    )
-                )
-                .then(modifier)
+            modifier
                 .fillMaxWidth(),
             actions = startActions,
-            containerColor = Color.Transparent
+            containerColor = Color.Transparent,
+            padding = PaddingValues(
+                start = 4.dp,
+                top = 2.dp,
+                end = 4.dp,
+                bottom = 2.dp
+            )
         )
     }
 }

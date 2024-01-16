@@ -2,6 +2,7 @@ package me.him188.ani.app.ui.foundation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,13 +20,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun AniTopAppBar(
     modifier: Modifier = Modifier,
-    paddingStart: Dp = 16.dp,
+    padding: PaddingValues = PaddingValues(start = 16.dp, top = 6.dp, end = 16.dp, bottom = 6.dp),
     actions: @Composable (RowScope.() -> Unit)? = null,
     title: (@Composable () -> Unit)? = null,
     containerColor: Color = MaterialTheme.colorScheme.surface,
@@ -36,19 +36,18 @@ fun AniTopAppBar(
     ) {
         Row(
             modifier
-                .padding(vertical = 6.dp)
-                .padding(end = 16.dp)
+                .padding(padding)
                 .height(36.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             actions?.let {
-                Row(Modifier.padding(start = paddingStart)) {
+                Row(Modifier) {
                     it()
                 }
             }
 
             title?.let {
-                Row(Modifier.padding(start = paddingStart)) {
+                Row(Modifier) {
                     it()
                 }
             }

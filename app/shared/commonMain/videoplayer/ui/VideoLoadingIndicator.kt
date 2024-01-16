@@ -15,12 +15,15 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun VideoLoadingIndicator(
+    showProgress: Boolean,
     text: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     textStyle: TextStyle = MaterialTheme.typography.labelSmall,
 ) {
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp)
+        if (showProgress) {
+            CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp)
+        }
         Row(Modifier.padding(top = 8.dp)) {
             ProvideTextStyle(textStyle) {
                 text()

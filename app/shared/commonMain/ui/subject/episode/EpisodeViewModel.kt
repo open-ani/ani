@@ -9,6 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -168,6 +169,10 @@ class EpisodeViewModel(
     )
 
     @Stable
+    val videoSourceSelected: Flow<Boolean> =
+        playSourceSelector.targetPlaySourceCandidate.map { it != null }
+
+    @Stable
     val videoSource: SharedFlow<VideoSource<*>?> = playSourceSelector.targetPlaySourceCandidate
         .debounce(1.seconds)
         .combine(torrentDownloaderManager.torrentDownloader) { video, torrentDownloader ->
@@ -176,7 +181,11 @@ class EpisodeViewModel(
         .transformLatest { (playSource, torrentDownloader) ->
             emit(null)
             playSource?.let {
-                emit(TorrentVideoSource(torrentDownloader.fetchMagnet(it.playSource.magnetLink)))
+                try {
+                    emit(TorrentVideoSource(torrentDownloader.fetchMagnet(it.playSource.magnetLink)))
+                } catch (e: Exception) {
+                    emit(null)
+                }
             }
         }.shareInBackground()
 

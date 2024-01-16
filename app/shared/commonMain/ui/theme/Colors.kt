@@ -26,31 +26,19 @@ import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.Color
 
 
-/**
- * 把颜色稍微变浅一点
- */
+@Composable
+fun Color.looming(): Color {
+    return copy(alpha = 0.90f)
+}
+
 @Composable
 fun Color.slightlyWeaken(): Color {
     return copy(alpha = 1 - 0.38f)
-//    return if (isSystemInDarkTheme()) {
-//        Color.LightGray.compositeOver(this)
-//    } else {
-//        copy(alpha = 1 - 0.38f)
-//    }
 }
 
-/**
- * 把颜色变浅
- */
 @Composable
 fun Color.weaken(): Color {
     return copy(alpha = 0.5f)
-//    return if (isSystemInDarkTheme()) {
-//        copy(alpha = 0.5f)
-////        Color.Gray.compositeOver(this)
-//    } else {
-//        copy(alpha = 0.5f)
-//    }
 }
 
 /**
@@ -59,11 +47,6 @@ fun Color.weaken(): Color {
 @Composable
 fun Color.stronglyWeaken(): Color {
     return copy(alpha = 0.38f)
-//    return if (isSystemInDarkTheme()) {
-//        Color.DarkGray.compositeOver(this)
-//    } else {
-//        copy(alpha = 0.38f)
-//    }
 }
 
 @Stable
