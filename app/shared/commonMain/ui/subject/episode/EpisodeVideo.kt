@@ -110,7 +110,7 @@ internal fun EpisodeVideo(
                                         //                                val speed by video.downloadRate.collectAsStateWithLifecycle(null)
                                         Text("正在缓冲")
                                         LaunchedEffect(true) {
-                                            delay(5.seconds)
+                                            delay(10.seconds)
                                             loadedTooLong = true
                                         }
                                     }
