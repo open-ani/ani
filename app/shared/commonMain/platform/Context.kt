@@ -27,3 +27,5 @@ expect abstract class Context
 
 @Composable
 expect fun isInLandscapeMode(): Boolean
+
+expect fun Context.changeOrientation(landscape: Boolean)

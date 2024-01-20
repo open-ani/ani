@@ -7,10 +7,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -18,11 +20,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import me.him188.ani.app.platform.isInLandscapeMode
 import me.him188.ani.app.ui.foundation.TopAppBarGoBackButton
 import me.him188.ani.app.ui.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.theme.looming
@@ -45,6 +49,7 @@ internal fun EpisodeVideo(
     video: VideoSource<*>?,
     playerController: PlayerController,
     onClickGoBack: () -> Unit,
+    onClickFullScreen: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val (controllerVisible, setControllerVisible) = remember { mutableStateOf(true) }
@@ -60,16 +65,25 @@ internal fun EpisodeVideo(
         }
     }
 
-    BoxWithConstraints(modifier.fillMaxWidth()) {
+    BoxWithConstraints(
+        modifier.then(if (isInLandscapeMode()) Modifier.fillMaxWidth() else Modifier.fillMaxHeight()),
+        contentAlignment = Alignment.Center
+    ) {
         Box(
-            Modifier.fillMaxWidth().height(maxWidth * 9 / 16)
-                .clickable(
-                    remember { MutableInteractionSource() },
-                    indication = null,
-                    onClick = {
-                        setControllerVisible(!controllerVisible)
-                    }
-                )
+            Modifier.then(
+                if (isInLandscapeMode()) {
+                    Modifier.fillMaxHeight().width(maxHeight * 16 / 9)
+                } else {
+                    Modifier.fillMaxWidth()
+                        .height(maxWidth * 9 / 16)
+                }
+            ).clickable(
+                remember { MutableInteractionSource() },
+                indication = null,
+                onClick = {
+                    setControllerVisible(!controllerVisible)
+                }
+            )
         ) { // 16:9 box
             VideoPlayerView(playerController, Modifier.matchParentSize())
 
@@ -122,6 +136,7 @@ internal fun EpisodeVideo(
                 bottomBar = {
                     PlayerControllerOverlayBottomBar(
                         controller = playerController,
+                        onClickFullScreen = onClickFullScreen,
                         modifier = Modifier
                             .alpha(controllerAlpha)
                             .background(color = aniDarkColorTheme().background.looming())

@@ -87,6 +87,7 @@ internal expect fun PreviewVideoControllerOverlay()
 @Composable
 fun PlayerControllerOverlayBottomBar(
     controller: PlayerController,
+    onClickFullScreen: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -143,9 +144,7 @@ fun PlayerControllerOverlayBottomBar(
 
         Box(Modifier.padding(horizontal = 8.dp).size(32.dp)) {
             IconButton(
-                onClick = {
-                    // TODO: full screen 
-                },
+                onClick = onClickFullScreen,
             ) {
                 Icon(Icons.Default.Fullscreen, contentDescription = null)
             }

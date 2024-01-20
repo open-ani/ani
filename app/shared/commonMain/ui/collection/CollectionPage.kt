@@ -134,7 +134,7 @@ private fun CollectionPagePortrait(contentPadding: PaddingValues, viewModel: MyC
                 }
             } else {
                 MyCollectionColumn(
-                    collections.orEmpty(), viewModel, localPaddingValues + contentPadding,
+                    viewModel, localPaddingValues + contentPadding,
                     Modifier.fillMaxWidth()
                 )
             }
@@ -152,11 +152,11 @@ private fun CollectionPagePortrait(contentPadding: PaddingValues, viewModel: MyC
 
 @Composable
 private fun ColumnScope.MyCollectionColumn(
-    collections: List<SubjectCollectionItem>,
     viewModel: MyCollectionsViewModel,
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
 ) {
+    val collections by viewModel.collections.collectAsStateWithLifecycle(null)
     val spacedBy = 8.dp
     LazyColumn(
         modifier.padding(horizontal = 12.dp).padding(vertical = 12.dp),
@@ -166,7 +166,7 @@ private fun ColumnScope.MyCollectionColumn(
         (contentPadding.calculateTopPadding() - spacedBy).coerceAtLeast(0.dp).takeIf { it > 0.dp }?.let {
             item { Spacer(Modifier.height(it)) }
         }
-        items(collections, key = { it.subjectId }) { collection ->
+        items(collections.orEmpty(), key = { it.subjectId }) { collection ->
             var visible by remember { mutableStateOf(false) }
             AnimatedVisibility(
                 visible,

@@ -191,6 +191,13 @@ class EpisodeViewModel(
 
     var showPlaySourceSheet by mutableStateOf(false)
 
+    val _isFullscreen: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    val isFullscreen: StateFlow<Boolean> = _isFullscreen
+
+    fun setFullscreen(fullscreen: Boolean) {
+        _isFullscreen.value = fullscreen
+    }
+
     fun setEpisodeId(episodeId: Int) {
         this.episodeId.value = episodeId
     }

@@ -59,6 +59,7 @@ internal actual fun PreviewVideoControllerOverlay() {
             bottomBar = {
                 PlayerControllerOverlayBottomBar(
                     controller = controller,
+                    onClickFullScreen = {},
                     Modifier
                         .fillMaxWidth()
                         .height(48.dp)

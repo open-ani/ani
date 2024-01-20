@@ -30,3 +30,12 @@ actual val LocalContext: ProvidableCompositionLocal<Context>
 @Composable
 actual fun isInLandscapeMode(): Boolean =
     LocalConfiguration.current.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+
+actual fun Context.changeOrientation(landscape: Boolean) {
+    val orientation = if (landscape) {
+        android.content.res.Configuration.ORIENTATION_LANDSCAPE
+    } else {
+        android.content.res.Configuration.ORIENTATION_PORTRAIT
+    }
+    resources.configuration.orientation = orientation
+}
