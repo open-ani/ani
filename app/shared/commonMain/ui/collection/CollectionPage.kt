@@ -176,10 +176,10 @@ private fun ColumnScope.MyCollectionColumn(
                 CollectionItem(
                     collection,
                     onClick = {
-                        navigator.navigator.navigate("/subjects/${collection.subjectId}")
+                        navigator.navigateSubjectDetails(collection.subjectId)
                     },
                     onClickEpisode = {
-                        navigator.navigator.navigate("/subjects/${collection.subjectId}/episodes/${it.episode.id}")
+                        navigator.navigateEpisodeDetails(collection.subjectId, it.episode.id)
                     },
                     viewModel,
                 )

@@ -33,11 +33,11 @@ class DesktopContext(
     val dataStoreDir: File,
 ) : Context() {
     val tokenStore: DataStore<Preferences> = PreferenceDataStoreFactory.create {
-        dataStoreDir.resolve("tokens")
+        dataStoreDir.resolve("tokens.preferences_pb")
     }
 
     val settingStore: DataStore<Preferences> = PreferenceDataStoreFactory.create {
-        dataStoreDir.resolve("settings")
+        dataStoreDir.resolve("settings.preferences_pb")
     }
 }
 

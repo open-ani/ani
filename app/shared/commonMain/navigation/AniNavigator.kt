@@ -17,6 +17,18 @@ interface AniNavigator {
 
     val navigator: Navigator
 
+    fun navigateSubjectDetails(subjectId: Int) {
+        navigator.navigate("/subjects/$subjectId")
+    }
+
+    fun navigateEpisodeDetails(subjectId: Int, episodeId: Int) {
+        navigator.navigate("/subjects/$subjectId/episodes/$episodeId")
+    }
+
+    fun navigateHome() {
+        navigator.navigate("/home")
+    }
+
     suspend fun requestBangumiAuthorization(): AuthorizationResult
 }
 

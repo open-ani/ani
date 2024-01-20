@@ -13,8 +13,6 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runInterruptible
 import me.him188.ani.app.data.SubjectRepository
 import me.him188.ani.app.data.setSubjectCollectionTypeOrDelete
-import me.him188.ani.app.navigation.SubjectNavigator
-import me.him188.ani.app.platform.Context
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.datasources.api.CollectionType
@@ -42,7 +40,6 @@ class SubjectDetailsViewModel(
 ) : AbstractViewModel(), KoinComponent {
     private val sessionManager: SessionManager by inject()
     private val bangumiClient: BangumiClient by inject()
-    private val subjectNavigator: SubjectNavigator by inject()
     private val subjectRepository: SubjectRepository by inject()
 //    private val subjectProvider: SubjectProvider by inject()
 
@@ -173,10 +170,6 @@ class SubjectDetailsViewModel(
             )
         }.results.toList()
     }.shareInBackground()
-
-    fun navigateToEpisode(context: Context, episodeId: Int) {
-        subjectNavigator.navigateToEpisode(context, subjectId.value, episodeId)
-    }
 }
 
 //private val ignoredLevels = listOf(

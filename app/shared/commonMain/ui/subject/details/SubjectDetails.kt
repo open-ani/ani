@@ -57,7 +57,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.kamel.core.Resource
 import io.kamel.image.asyncPainterResource
-import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.ui.collection.CollectionActionButton
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.AniKamelImage
@@ -220,15 +220,14 @@ private fun SubjectDetailsContent(
             )
         }
 
-        val context by rememberUpdatedState(LocalContext.current)
-
+        val navigator = LocalNavigator.current
         val episodesMain by viewModel.episodesMain.collectAsStateWithLifecycle(listOf())
         if (episodesMain.isNotEmpty()) {
             SectionTitle(Modifier.padding(horizontal = horizontalPadding)) { Text("正片") }
             EpisodeList(
                 episodesMain,
                 horizontalPadding,
-                { viewModel.navigateToEpisode(context, it.id.toInt()) },
+                { navigator.navigateEpisodeDetails(viewModel.subjectId.value, it.id.toInt()) },
                 Modifier.padding(top = 8.dp)
             )
         }
@@ -239,7 +238,7 @@ private fun SubjectDetailsContent(
             EpisodeList(
                 episodesSP,
                 horizontalPadding,
-                { viewModel.navigateToEpisode(context, it.id.toInt()) },
+                { navigator.navigateEpisodeDetails(viewModel.subjectId.value, it.id.toInt()) },
                 Modifier.padding(top = 8.dp)
             )
         }
@@ -250,7 +249,7 @@ private fun SubjectDetailsContent(
             EpisodeList(
                 episodesPV,
                 horizontalPadding,
-                { viewModel.navigateToEpisode(context, it.id.toInt()) },
+                { navigator.navigateEpisodeDetails(viewModel.subjectId.value, it.id.toInt()) },
                 Modifier.padding(top = 8.dp)
             )
         }

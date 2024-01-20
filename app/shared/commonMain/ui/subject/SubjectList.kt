@@ -58,6 +58,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.kamel.image.asyncPainterResource
+import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.foundation.AniKamelImage
 import me.him188.ani.app.ui.foundation.BrokenImagePlaceholder
@@ -89,12 +90,13 @@ fun SubjectPreviewColumn(
         item("dummy", span = { GridItemSpan(maxLineSpan) }) {}
 
         items(items, key = { it.id }) { subject ->
+            val navigator = LocalNavigator.current
             SubjectPreviewCard(
                 title = remember(subject.id) {
                     subject.chineseName.takeIf { it.isNotBlank() } ?: subject.originalName
                 },
                 imageUrl = remember(subject.id) { subject.images.landscapeCommon },
-                onClick = { viewModel.navigateToSubjectDetails(context, subject.id) },
+                onClick = { navigator.navigateSubjectDetails(subject.id) },
                 Modifier.animateItemPlacement().height(180.dp),
             )
         }

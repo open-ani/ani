@@ -15,8 +15,6 @@ import kotlinx.coroutines.flow.toList
 import me.him188.ani.app.data.EpisodeRepository
 import me.him188.ani.app.data.SubjectRepository
 import me.him188.ani.app.data.setSubjectCollectionTypeOrDelete
-import me.him188.ani.app.navigation.SubjectNavigator
-import me.him188.ani.app.platform.Context
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.datasources.api.CollectionType
@@ -39,7 +37,6 @@ class MyCollectionsViewModel : AbstractViewModel(), KoinComponent {
     private val sessionManager: SessionManager by inject()
     private val subjectRepository: SubjectRepository by inject()
     private val episodeRepository: EpisodeRepository by inject()
-    private val subjectNavigator: SubjectNavigator by inject()
 
     val isLoggedIn = sessionManager.isSessionValid.filterNotNull().shareInBackground()
 
@@ -74,14 +71,6 @@ class MyCollectionsViewModel : AbstractViewModel(), KoinComponent {
         }
 
         createItem(subject.await(), isOnAir.await(), latestEp.await(), lastWatchedEp.await(), eps)
-    }
-
-    fun navigateToSubject(context: Context, subjectId: Int) {
-        subjectNavigator.navigateToSubjectDetails(context, subjectId)
-    }
-
-    fun navigateToEpisode(context: Context, subjectId: Int, episodeId: Int) {
-        subjectNavigator.navigateToEpisode(context, subjectId, episodeId)
     }
 
     suspend fun updateSubjectCollection(subjectId: Int, action: SubjectCollectionAction) {

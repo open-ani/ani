@@ -42,18 +42,6 @@
         </activity>
 
         <activity
-                android:name=".activity.SubjectDetailsActivity"
-                android:exported="true" />
-
-        <activity
-                android:name=".activity.EpisodeActivity"
-                android:exported="true" />
-
-        <!--        <activity-->
-        <!--                android:name=".activity.AuthorizationActivity"-->
-        <!--                android:exported="true" />-->
-
-        <activity
                 android:name=".activity.AuthorizationCallbackActivity"
                 android:exported="true">
             <intent-filter android:autoVerify="true">
