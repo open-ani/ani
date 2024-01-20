@@ -19,6 +19,8 @@
 @file:Suppress("UnstableApiUsage")
 @file:OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
 
+import com.android.build.gradle.internal.cxx.io.writeTextIfDifferent
+
 
 plugins {
     kotlin("multiplatform")
@@ -26,6 +28,7 @@ plugins {
     id("com.android.library")
     kotlin("plugin.serialization")
     id("kotlinx-atomicfu")
+    idea
 }
 
 extra.set("ani.jvm.target", 17)
@@ -158,4 +161,34 @@ android {
 dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
 }
- 
+
+
+val buildConfigDesktopDir = layout.buildDirectory.file("generated/source/buildConfigDesktop")
+
+idea {
+    module {
+        generatedSourceDirs.add(buildConfigDesktopDir.get().asFile)
+    }
+}
+
+kotlin.sourceSets.getByName("desktopMain") {
+    kotlin.srcDirs(buildConfigDesktopDir)
+}
+
+//tasks.register("generateBuildConfigForDesktop") {
+//    doLast {
+//        
+//    }
+//}
+val file = buildConfigDesktopDir.get().asFile.resolve("AniBuildConfig.kt").apply { createNewFile() }
+file.writeTextIfDifferent(
+    """
+            package me.him188.ani.app.platform
+            object AniBuildConfigDesktop : AniBuildConfig {
+                override val versionName = "${project.version}"
+                override val bangumiOauthClientId = "$bangumiClientId"
+                override val bangumiOauthClientSecret = "$bangumiClientSecret"
+                override val isDebug = false
+            }
+            """.trimIndent()
+)

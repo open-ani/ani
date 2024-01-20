@@ -1,20 +1,7 @@
 package me.him188.ani.app.platform
 
 import androidx.compose.runtime.Stable
-import io.ktor.client.plugins.UserAgent
 import me.him188.ani.BuildConfig
-import me.him188.ani.datasources.bangumi.BangumiClient
-
-actual fun createBangumiClient(): BangumiClient {
-    return BangumiClient.create(
-        currentAniBuildConfig.bangumiOauthClientId,
-        currentAniBuildConfig.bangumiOauthClientSecret
-    ) {
-        install(UserAgent) {
-            agent = getAniUserAgent(currentAniBuildConfig.versionName)
-        }
-    }
-}
 
 private object AniBuildConfigAndroid : AniBuildConfig {
     override val versionName: String

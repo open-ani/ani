@@ -84,4 +84,13 @@ fun getAniUserAgent(
     return "him188/ani/$version ($platform) (https://github.com/Him188/ani)"
 }
 
-expect fun createBangumiClient(): BangumiClient
+fun createBangumiClient(): BangumiClient {
+    return BangumiClient.create(
+        currentAniBuildConfig.bangumiOauthClientId,
+        currentAniBuildConfig.bangumiOauthClientSecret
+    ) {
+        install(UserAgent) {
+            agent = getAniUserAgent(currentAniBuildConfig.versionName)
+        }
+    }
+}
