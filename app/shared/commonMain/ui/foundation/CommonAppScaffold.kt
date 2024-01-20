@@ -44,13 +44,10 @@ import me.him188.ani.app.i18n.loadResourceBundle
 import me.him188.ani.app.platform.LocalContext
 import moe.tlaster.precompose.PreComposeApp
 
-/**
- * 提供 i18n 等组件, 以及背景
- */
 @Composable
-inline fun AniApp(
+fun AniApp(
     colorScheme: ColorScheme = MaterialTheme.colorScheme,
-    crossinline content: @Composable () -> Unit
+    content: @Composable () -> Unit
 ) {
     val context = LocalContext.current
     val currentBundle = remember(Locale.current.language) { loadResourceBundle(context) }

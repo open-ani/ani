@@ -34,6 +34,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -45,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.ui.home.LocalContentPaddings
 import me.him188.ani.app.ui.subject.details.Avatar
@@ -53,6 +55,10 @@ import org.openapitools.client.models.User
 
 @Composable
 fun ProfilePage() {
+    val navigator = LocalNavigator.current
+    LaunchedEffect(true) {
+        navigator.requestBangumiAuthorization()
+    }
     val viewModel = remember { AccountViewModel() }
     Column(
         modifier = Modifier.padding(LocalContentPaddings.current).fillMaxSize(),

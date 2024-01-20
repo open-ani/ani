@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import me.him188.ani.app.ui.foundation.AniApp
 import me.him188.ani.app.ui.foundation.AniTopAppBar
 import me.him188.ani.app.ui.foundation.launchInBackground
+import me.him188.ani.app.ui.home.currentAuthViewModel
 
 
 class AuthorizationCallbackActivity : AniComponentActivity() {
@@ -36,7 +37,7 @@ class AuthorizationCallbackActivity : AniComponentActivity() {
 
         enableDrawingToSystemBars()
 
-        val vm = AuthorizationActivity.currentAuthViewModel ?: return
+        val vm = currentAuthViewModel ?: return
         vm.launchInBackground {
             val code = data.getQueryParameter("code")!!
             setCode(code)

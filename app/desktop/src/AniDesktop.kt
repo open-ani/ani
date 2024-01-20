@@ -41,6 +41,8 @@ import dev.dirs.ProjectDirectories
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import me.him188.ani.app.AppTheme
+import me.him188.ani.app.navigation.AniNavigator
+import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.DesktopContext
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.getCommonKoinModule
@@ -161,9 +163,12 @@ private fun MainWindowContent(
                 },
             )
 
-            Box(Modifier.padding(all = paddingByWindowSize)) {
-                AniApp {
-                    MainScreen()
+            val aniNavigator = remember { AniNavigator() }
+            CompositionLocalProvider(LocalNavigator provides aniNavigator) {
+                Box(Modifier.padding(all = paddingByWindowSize)) {
+                    AniApp {
+                        MainScreen(aniNavigator)
+                    }
                 }
             }
         }

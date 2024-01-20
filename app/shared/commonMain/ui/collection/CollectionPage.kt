@@ -72,7 +72,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import io.kamel.image.asyncPainterResource
-import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.isInLandscapeMode
 import me.him188.ani.app.ui.foundation.AniKamelImage
 import me.him188.ani.app.ui.foundation.AniTopAppBar
@@ -123,9 +123,9 @@ private fun CollectionPagePortrait(contentPadding: PaddingValues, viewModel: MyC
         Column(Modifier.fillMaxSize()) {
             if (!isLoading && collections?.isEmpty() == true) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    val context = LocalContext.current
+                    val navigator = LocalNavigator.current
                     if (!isLoggedIn) {
-                        TextButton({ viewModel.launchInBackground { navigateToAuth(context) } }) {
+                        TextButton({ viewModel.launchInBackground { navigator.requestBangumiAuthorization() } }) {
                             Text("请先登录", style = MaterialTheme.typography.titleMedium)
                         }
                     } else {
@@ -168,18 +168,18 @@ private fun ColumnScope.MyCollectionColumn(
         }
         items(collections, key = { it.subjectId }) { collection ->
             var visible by remember { mutableStateOf(false) }
-            val context = LocalContext.current
             AnimatedVisibility(
                 visible,
                 enter = fadeIn()
             ) {
+                val navigator = LocalNavigator.current
                 CollectionItem(
                     collection,
                     onClick = {
-                        viewModel.navigateToSubject(context, collection.subjectId)
+                        navigator.navigator.navigate("/subjects/${collection.subjectId}")
                     },
                     onClickEpisode = {
-                        viewModel.navigateToEpisode(context, collection.subjectId, it.episode.id)
+                        navigator.navigator.navigate("/subjects/${collection.subjectId}/episodes/${it.episode.id}")
                     },
                     viewModel,
                 )

@@ -49,9 +49,9 @@
                 android:name=".activity.EpisodeActivity"
                 android:exported="true" />
 
-        <activity
-                android:name=".activity.AuthorizationActivity"
-                android:exported="true" />
+        <!--        <activity-->
+        <!--                android:name=".activity.AuthorizationActivity"-->
+        <!--                android:exported="true" />-->
 
         <activity
                 android:name=".activity.AuthorizationCallbackActivity"

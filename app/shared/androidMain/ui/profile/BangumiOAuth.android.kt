@@ -16,12 +16,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import io.ktor.http.encodeURLParameter
-import me.him188.ani.app.navigation.AuthorizationNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.currentAniBuildConfig
-import org.koin.mp.KoinPlatform
-
-private val authorizationNavigator: AuthorizationNavigator by KoinPlatform.getKoin().inject()
+import me.him188.ani.app.session.BangumiAuthorizationConstants
 
 private enum class LaunchChromeStatus {
     LAUNCHING,
@@ -47,7 +44,7 @@ actual fun BangumiOAuthRequest(
                         "https://bgm.tv/oauth/authorize" +
                                 "?client_id=${currentAniBuildConfig.bangumiOauthClientId}" +
                                 "&response_type=code" +
-                                "&redirect_uri=" + authorizationNavigator.authorizationCallbackUrl.encodeURLParameter()
+                                "&redirect_uri=" + BangumiAuthorizationConstants.CALLBACK_URL.encodeURLParameter()
                     )
                 )
                 launchChromeStatus = LaunchChromeStatus.LAUNCHED

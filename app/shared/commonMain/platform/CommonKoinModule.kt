@@ -25,6 +25,7 @@ import me.him188.ani.app.data.EpisodeRepository
 import me.him188.ani.app.data.EpisodeRepositoryImpl
 import me.him188.ani.app.data.PreferredAllianceRepository
 import me.him188.ani.app.data.PreferredAllianceRepositoryImpl
+import me.him188.ani.app.data.ProfileRepository
 import me.him188.ani.app.data.SubjectRepository
 import me.him188.ani.app.data.SubjectRepositoryImpl
 import me.him188.ani.app.data.TokenRepository
@@ -59,6 +60,7 @@ fun getCommonKoinModule(getContext: () -> Context, coroutineScope: CoroutineScop
     single<DownloadProvider> { DmhyDownloadProvider() }
     single<SubjectRepository> { SubjectRepositoryImpl() }
     single<EpisodeRepository> { EpisodeRepositoryImpl() }
+    single<ProfileRepository> { ProfileRepository() }
     single<TorrentDownloaderManager> { TorrentDownloaderManagerImpl(coroutineScope.coroutineContext) }
 }
 

@@ -20,6 +20,7 @@ package me.him188.ani.app.session
 
 import androidx.compose.runtime.Stable
 import io.ktor.utils.io.errors.IOException
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,14 +32,14 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.runInterruptible
+import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import me.him188.ani.app.data.ProfileRepository
 import me.him188.ani.app.data.TokenRepository
-import me.him188.ani.app.navigation.AuthorizationNavigator
-import me.him188.ani.app.navigation.AuthorizationNavigator.AuthorizationResult
-import me.him188.ani.app.platform.Context
+import me.him188.ani.app.navigation.AniNavigator
+import me.him188.ani.app.navigation.AuthorizationResult
 import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.utils.coroutines.ReentrantMutex
 import me.him188.ani.utils.logging.info
@@ -92,7 +93,7 @@ interface SessionManager {
      * @throws AuthorizationCanceledException if user cancels the authorization.
      */
     @Throws(AuthorizationCanceledException::class)
-    suspend fun requireAuthorization(context: Context, optional: Boolean)
+    suspend fun requireAuthorization(navigator: AniNavigator, optional: Boolean)
 }
 
 class AuthorizationCanceledException : Exception()
@@ -102,7 +103,7 @@ internal class SessionManagerImpl(
     coroutineScope: CoroutineScope,
 ) : KoinComponent, SessionManager {
     private val tokenRepository: TokenRepository by inject()
-    private val authorizationNavigator: AuthorizationNavigator by inject()
+    private val profileRepository: ProfileRepository by inject()
     private val client: BangumiClient by inject()
 
     private val logger = logger(SessionManager::class)
@@ -114,7 +115,7 @@ internal class SessionManagerImpl(
     override val username: StateFlow<String?> =
         session.filterNotNull()
             .map {
-                runInterruptible(Dispatchers.IO) { client.api.getMyself() }.username
+                profileRepository.getSelf()?.username
             }
             .distinctUntilChanged()
             .stateIn(coroutineScope, SharingStarted.Eagerly, null)
@@ -122,7 +123,13 @@ internal class SessionManagerImpl(
     override val isSessionValid: StateFlow<Boolean?> = session.map { it != null }
         .stateIn(coroutineScope, SharingStarted.Eagerly, null)
 
-    private val refreshToken = tokenRepository.refreshToken.stateIn(coroutineScope, SharingStarted.Eagerly, null)
+    private val refreshTokenLoaded = CompletableDeferred<Boolean>()
+    private val refreshToken = tokenRepository.refreshToken
+        .transformLatest {
+            emit(it)
+            refreshTokenLoaded.complete(true)
+        }
+        .stateIn(coroutineScope, SharingStarted.Eagerly, null)
 
     private val singleAuthLock = Mutex()
     private val mutex = ReentrantMutex()
@@ -137,7 +144,7 @@ internal class SessionManagerImpl(
     }
 
     override suspend fun refreshSessionByCode(code: String) {
-        val accessToken = client.exchangeTokens(code, callbackUrl = authorizationNavigator.authorizationCallbackUrl)
+        val accessToken = client.exchangeTokens(code, callbackUrl = BangumiAuthorizationConstants.CALLBACK_URL)
         setSession(
             accessToken.userId,
             accessToken.accessToken,
@@ -156,7 +163,7 @@ internal class SessionManagerImpl(
         // session is invalid, refresh it
         val refreshToken = refreshToken.value ?: return@processAuth
         val newAccessToken = runCatching {
-            client.refreshAccessToken(refreshToken, authorizationNavigator.authorizationCallbackUrl)
+            client.refreshAccessToken(refreshToken, BangumiAuthorizationConstants.CALLBACK_URL)
         }.getOrNull()
         if (newAccessToken == null) {
             logger.info { "Bangumi session refresh failed, refreshToken=$refreshToken" }
@@ -171,9 +178,10 @@ internal class SessionManagerImpl(
         )
     }
 
-    override suspend fun requireAuthorization(context: Context, optional: Boolean) {
+    override suspend fun requireAuthorization(navigator: AniNavigator, optional: Boolean) {
         // fast path
         if (isSessionValid.value == true) return
+        refreshTokenLoaded.await()
         if (refreshToken.value != null) {
             withContext(Dispatchers.IO) { refreshSessionByRefreshToken() }
             return
@@ -188,7 +196,7 @@ internal class SessionManagerImpl(
                 return
             }
 
-            when (authorizationNavigator.navigateToAuthorization(context, optional)) {
+            when (navigator.requestBangumiAuthorization()) {
                 AuthorizationResult.SUCCESS -> {
                     if (isSessionValid.value == true) {
                         return
