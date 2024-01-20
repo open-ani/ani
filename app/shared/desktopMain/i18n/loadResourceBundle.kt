@@ -34,6 +34,9 @@ internal fun ResourceBundleImplByProperties.Companion.load(
     context: Context,
     locale: Locale = Locale.current
 ): ResourceBundle {
+    return ResourceBundleImplByProperties(
+        Properties()
+    )
     val properties = Properties().apply {
         val id = when {
             locale.language.contains("zh", ignoreCase = true) -> {

@@ -21,9 +21,17 @@ package me.him188.ani.app.persistent
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import me.him188.ani.app.platform.Context
+import me.him188.ani.app.platform.DesktopContext
 
 actual val Context.settingStore: DataStore<Preferences>
-    get() = TODO("Not yet implemented")
+    get() {
+        this as DesktopContext
+        return settingStore
+    }
+
 
 actual val Context.tokenStore: DataStore<Preferences>
-    get() = TODO("Not yet implemented")
+    get() {
+        this as DesktopContext
+        return tokenStore
+    }

@@ -47,15 +47,18 @@ fun MainScreen() {
     val searchViewModel = remember { SearchViewModel() }
 
     if (isInLandscapeMode()) {
-        MainScreenLandscape()
+        MainScreenLandscape(myCollectionsViewModel, searchViewModel)
     } else {
         MainScreenPortrait(myCollectionsViewModel, searchViewModel)
     }
 }
 
 @Composable
-fun MainScreenLandscape() {
-
+fun MainScreenLandscape(
+    myCollectionsViewModel: MyCollectionsViewModel,
+    searchViewModel: SearchViewModel
+) {
+    MainScreenPortrait(myCollectionsViewModel, searchViewModel)
 }
 
 @Composable

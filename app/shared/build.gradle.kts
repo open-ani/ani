@@ -118,6 +118,9 @@ kotlin {
 
 
 configureFlattenMppSourceSets()
+kotlin.sourceSets {
+    getByName("desktopMain").resources.srcDirs("androidRes/raw")
+}
 
 val bangumiClientId = getPropertyOrNull("bangumi.oauth.client.id")
 val bangumiClientSecret = getPropertyOrNull("bangumi.oauth.client.secret")

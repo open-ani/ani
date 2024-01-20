@@ -21,13 +21,25 @@ package me.him188.ani.app.platform
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.compositionLocalOf
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.core.Preferences
 import java.io.File
 
 actual abstract class Context
 
-internal class ContextImpl(
+class DesktopContext(
     val dataDir: File,
-) : Context()
+    val dataStoreDir: File,
+) : Context() {
+    val tokenStore: DataStore<Preferences> = PreferenceDataStoreFactory.create {
+        dataStoreDir.resolve("tokens")
+    }
+
+    val settingStore: DataStore<Preferences> = PreferenceDataStoreFactory.create {
+        dataStoreDir.resolve("settings")
+    }
+}
 
 actual val LocalContext: ProvidableCompositionLocal<Context> = compositionLocalOf {
     error("No Context provided")

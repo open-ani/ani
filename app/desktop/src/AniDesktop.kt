@@ -25,40 +25,36 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.ApplicationScope
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import dev.dirs.ProjectDirectories
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import me.him188.ani.app.AppTheme
-import me.him188.ani.app.i18n.LocalI18n
-import me.him188.ani.app.i18n.ResourceBundle
-import me.him188.ani.app.i18n.loadResourceBundle
-import me.him188.ani.app.platform.Context
+import me.him188.ani.app.platform.DesktopContext
 import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.platform.getCommonKoinModule
+import me.him188.ani.app.torrent.TorrentDownloader
+import me.him188.ani.app.torrent.TorrentDownloaderFactory
 import me.him188.ani.app.ui.PreferencesPage
+import me.him188.ani.app.ui.foundation.AniApp
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.ui.home.MainScreen
 import me.him188.ani.app.ui.interaction.PlatformImplementations
-import me.him188.ani.app.ui.interaction.PlatformImplementations.Companion.hostIsMacOs
-import me.him188.ani.app.ui.rememberDialogHost
 import me.him188.ani.utils.logging.logger
+import org.koin.core.context.startKoin
+import org.koin.dsl.module
+import java.io.File
 
 private val logger = logger("Ani")
 
@@ -74,80 +70,51 @@ val projectDirectories: ProjectDirectories by lazy {
 object AniDesktop {
     @JvmStatic
     fun main(args: Array<String>) {
-        projectDirectories.dataDir
-        application(exitProcessOnExit = true) {
-            val context: Context = LocalContext.current
-            val currentBundle = remember(Locale.current.language) { loadResourceBundle(context) }
+        val context = DesktopContext(
+            File(projectDirectories.dataDir),
+            File(projectDirectories.dataDir)
+        )
 
+        val coroutineScope = CoroutineScope(SupervisorJob())
+
+        startKoin {
+            modules(getCommonKoinModule({ context }, coroutineScope))
+            modules(module {
+//                single<SubjectNavigator> { AndroidSubjectNavigator() }
+//                single<AuthorizationNavigator> { AndroidAuthorizationNavigator() }
+//                single<BrowserNavigator> { AndroidBrowserNavigator() }
+                single<TorrentDownloaderFactory> {
+                    TorrentDownloaderFactory {
+                        TorrentDownloader(
+                            cacheDirectory = File(projectDirectories.cacheDir).resolve("torrent"),
+                        )
+                    }
+                }
+            })
+        }
+
+        application(exitProcessOnExit = true) {
             val platform = remember { PlatformImplementations.current }
             val mainSnackbar = remember { SnackbarHostState() }
-
-            CompositionLocalProvider(
-                LocalI18n provides currentBundle,
-            ) {
-                content(
-                    mainSnackbar,
-                    currentBundle,
-                    platform
-                )
+            CompositionLocalProvider(LocalContext provides context) {
+                content()
             }
         }
     }
 
     @Composable
-    private fun ApplicationScope.content(
-        mainSnackbar: SnackbarHostState,
-        currentBundle: ResourceBundle,
-        platform: PlatformImplementations,
-    ) {
-        val dialogHost = rememberDialogHost()
-
-        val currentDensity by rememberUpdatedState(LocalDensity.current)
-        val minimumSize by remember {
-            derivedStateOf {
-                with(currentDensity) {
-                    Size(200.dp.toPx(), 200.dp.toPx())
-                }
-            }
-        }
-
-        var showPreferences by remember { mutableStateOf(false) }
-        if (showPreferences) {
-            val state = rememberWindowState(width = 350.dp, height = 600.dp)
-            Window(
-                state = state,
-                onCloseRequest = {
-                    showPreferences = false
-                },
-                title = LocalI18n.current.getString("window.preferences.title"),
-                resizable = false,
-                alwaysOnTop = true,
-            ) {
-                val snackbar = remember { SnackbarHostState() }
-                Scaffold(
-                    topBar = {},
-                    bottomBar = {},
-                    snackbarHost = { SnackbarHost(snackbar) },
-                ) {
-                    PreferencesPage(snackbar)
-                }
-            }
-        }
-
+    private fun ApplicationScope.content() {
         Window(
-            title = LocalI18n.current.getString("window.main.title"),
+            title = "ani",
             onCloseRequest = {
                 exitApplication()
             },
-
-//            minimumSize = minimumSize,
+            state = rememberWindowState(
+                height = 1920.dp / 2,
+                width = 1080.dp / 2,
+            ),
+            resizable = false,
         ) {
-            with(platform.menuBarProvider) {
-                MenuBar(onClickPreferences = {
-                    showPreferences = true
-                })
-            }
-
             // This actually runs only once since app is never changed.
             val windowImmersed = true
             if (windowImmersed) {
@@ -162,21 +129,7 @@ object AniDesktop {
                 }
             }
 
-            Scaffold(
-                topBar = {},
-                bottomBar = {},
-                snackbarHost = {
-                    SnackbarHost(mainSnackbar)
-                },
-            ) {
-                MainWindowContent(
-                    hostIsMacOs = hostIsMacOs,
-                    windowImmersed = windowImmersed,
-                    onClickProxySettings = {
-                        showPreferences = true
-                    }
-                )
-            }
+            MainWindowContent(hostIsMacOs = PlatformImplementations.hostIsMacOs, windowImmersed = windowImmersed)
         }
     }
 }
@@ -194,7 +147,6 @@ fun PreviewPreferencesWindow() {
 private fun MainWindowContent(
     hostIsMacOs: Boolean,
     windowImmersed: Boolean,
-    onClickProxySettings: () -> Unit,
 ) {
     Box(
         Modifier.background(color = AppTheme.colorScheme.background)
@@ -210,7 +162,9 @@ private fun MainWindowContent(
             )
 
             Box(Modifier.padding(all = paddingByWindowSize)) {
-//                MainPage(app, innerPadding = paddingByWindowSize, onClickProxySettings = onClickProxySettings)
+                AniApp {
+                    MainScreen()
+                }
             }
         }
     }
@@ -224,8 +178,7 @@ fun PreviewMainWindowMacOS() {
     ProvideCompositionLocalsForPreview {
         MainWindowContent(
             hostIsMacOs = false,
-            windowImmersed = false,
-            onClickProxySettings = {}
+            windowImmersed = false
         )
     }
 }
