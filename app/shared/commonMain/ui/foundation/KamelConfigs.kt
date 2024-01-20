@@ -28,16 +28,19 @@ import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.plugins.logging.SIMPLE
 
-val DefaultKamelConfig = KamelConfig {
-    takeFrom(KamelConfig.Default)
-    httpFetcher {
-        BrowserUserAgent()
+fun getDefaultKamelConfig(isProduction: Boolean) = KamelConfig {
+    if (isProduction) {
+        takeFrom(KamelConfig.Default)
 
-        httpCache(10 * 1024 * 1024)
+        httpFetcher {
+            BrowserUserAgent()
 
-        Logging {
-            level = LogLevel.INFO
-            logger = Logger.SIMPLE
+            httpCache(10 * 1024 * 1024)
+
+            Logging {
+                level = LogLevel.INFO
+                logger = Logger.SIMPLE
+            }
         }
     }
 }

@@ -57,7 +57,7 @@ inline fun AniApp(
     PreComposeApp {
         CompositionLocalProvider(
             LocalI18n provides currentBundle,
-            LocalKamelConfig provides DefaultKamelConfig,
+            LocalKamelConfig provides getDefaultKamelConfig(isProduction = !LocalIsPreviewing.current),
             LocalSnackbar provides remember { SnackbarHostState() },
         ) {
             val focusManager by rememberUpdatedState(LocalFocusManager.current)

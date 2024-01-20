@@ -20,6 +20,8 @@ package me.him188.ani.app.ui.foundation
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.compositionLocalOf
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import me.him188.ani.app.platform.LocalContext
@@ -30,6 +32,10 @@ import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 import kotlin.io.path.createTempDirectory
+
+val LocalIsPreviewing = compositionLocalOf {
+    false
+}
 
 @OptIn(DelicateCoroutinesApi::class)
 @Composable
@@ -52,8 +58,10 @@ fun ProvideCompositionLocalsForPreview(
     }
     MaterialTheme {
         PlatformPreviewCompositionLocalProvider {
-            AniApp {
-                content()
+            CompositionLocalProvider(LocalIsPreviewing provides true) {
+                AniApp {
+                    content()
+                }
             }
         }
     }
