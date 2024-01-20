@@ -180,7 +180,10 @@ kotlin.sourceSets.getByName("desktopMain") {
 //        
 //    }
 //}
-val file = buildConfigDesktopDir.get().asFile.resolve("AniBuildConfig.kt").apply { createNewFile() }
+val file = buildConfigDesktopDir.get().asFile.resolve("AniBuildConfig.kt").apply {
+    parentFile.mkdirs()
+    createNewFile()
+}
 file.writeTextIfDifferent(
     """
             package me.him188.ani.app.platform
