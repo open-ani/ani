@@ -4,8 +4,6 @@ package me.him188.ani.app.videoplayer
 
 import androidx.annotation.OptIn
 import androidx.annotation.UiThread
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackException
@@ -27,7 +25,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.platform.Context
-import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.videoplayer.media.TorrentDataSource
@@ -36,14 +33,6 @@ import org.koin.core.component.KoinComponent
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
-
-@Composable
-actual fun rememberPlayerController(videoSource: Flow<VideoSource<*>?>): PlayerController {
-    val context = LocalContext.current
-    return remember {
-        ExoPlayerController(videoSource, context)
-    }
-}
 
 actual fun PlayerController(context: Context, videoSource: Flow<VideoSource<*>?>): PlayerController {
     return ExoPlayerController(videoSource, context)

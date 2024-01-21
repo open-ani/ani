@@ -1,6 +1,5 @@
 package me.him188.ani.app.videoplayer
 
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
@@ -82,8 +81,5 @@ enum class PlayerState(
     FINISHED(isPlaying = false),
     ;
 }
-
-@Composable
-expect fun rememberPlayerController(videoSource: Flow<VideoSource<*>?>): PlayerController
 
 expect fun PlayerController(context: Context, videoSource: Flow<VideoSource<*>?>): PlayerController

@@ -1,17 +1,11 @@
 package me.him188.ani.app.videoplayer
 
-import androidx.compose.runtime.Composable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import me.him188.ani.app.platform.Context
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
-
-@Composable
-actual fun rememberPlayerController(videoSource: Flow<VideoSource<*>?>): PlayerController {
-    TODO("Not yet implemented")
-}
 
 actual fun PlayerController(context: Context, videoSource: Flow<VideoSource<*>?>): PlayerController {
     return DesktopPlayerController()
