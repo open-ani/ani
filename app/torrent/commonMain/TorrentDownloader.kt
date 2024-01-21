@@ -1,10 +1,7 @@
 package me.him188.ani.app.torrent
 
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeoutOrNull
-import me.him188.ani.app.torrent.DefaultTorrentConfig.DEFAULT_DOWNLOAD_HEADER_CHUNKS
 import me.him188.ani.app.torrent.model.EncodedTorrentData
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
@@ -16,7 +13,6 @@ import org.libtorrent4j.TorrentInfo
 import org.libtorrent4j.alerts.Alert
 import org.libtorrent4j.alerts.AlertType
 import java.io.File
-import kotlin.time.Duration.Companion.seconds
 
 
 public interface TorrentDownloader : AutoCloseable {
@@ -34,12 +30,10 @@ public fun interface TorrentDownloaderFactory {
 private val logger = logger(TorrentDownloader::class)
 
 public suspend fun TorrentDownloader(
-    cacheDirectory: File,
-    downloadHeaderChunks: Int = DEFAULT_DOWNLOAD_HEADER_CHUNKS
+    cacheDirectory: File
 ): TorrentDownloader {
     val sessionManager = SessionManager()
 
-    val dht = CompletableDeferred<Unit>()
     val listener = object : AlertListener {
         override fun types(): IntArray {
             return intArrayOf(AlertType.SESSION_STATS.swig(), AlertType.DHT_STATS.swig())
@@ -50,28 +44,45 @@ public suspend fun TorrentDownloader(
                 sessionManager.postDhtStats()
             }
 
-            if (alert.type() == AlertType.DHT_STATS) {
-                val nodes: Long = sessionManager.stats().dhtNodes()
-                // wait for at least 10 nodes in the DHT.
-                if (nodes >= 10) {
-                    dht.complete(Unit)
-                }
-            }
+//            if (alert.type() == AlertType.DHT_STATS) {
+//                val nodes: Long = sessionManager.stats().dhtNodes()
+//                // wait for at least 10 nodes in the DHT.
+//                if (nodes >= 10) {
+//                    dht.complete(Unit)
+//                }
+//            }
         }
     }
     sessionManager.addListener(listener)
     logger.info { "Starting SessionManager" }
     sessionManager.start()
+    sessionManager.applySettings(sessionManager.settings().apply {
+        isEnableDht = true
+        activeDhtLimit(300)
+        downloadRateLimit(0)
+        connectionsLimit(200)
+        maxPeerlistSize(1000)
+        dhtBootstrapNodes = setOf(
+            dhtBootstrapNodes.split(",") + listOf(
+                "router.utorrent.com:6881",
+                "router.bittorrent.com:6881",
+                "dht.transmissionbt.com:6881",
+                "router.bitcomet.com:6881",
+            )
+        ).joinToString(",")
+    })
     logger.info { "postDhtStats" }
     sessionManager.postDhtStats()
-    logger.info { "Waiting for nodes in DHT" }
-    val dhtResult = withTimeoutOrNull(30.seconds) {
-        dht.await()
-    }
-    if (dhtResult == null) {
-        logger.info { "DHT bootstrap failed" }
-        error("DHT bootstrap failed")
-    }
+    // No need to wait for DHT, some devices may not have access to the DHT network.
+    
+//    logger.info { "Waiting for nodes in DHT" }
+//    val dhtResult = withTimeoutOrNull(30.seconds) {
+//        dht.await()
+//    }
+//    if (dhtResult == null) {
+//        logger.info { "DHT bootstrap failed" }
+//        error("DHT bootstrap failed")
+//    }
     sessionManager.removeListener(listener)
 
     return TorrentDownloaderImpl(
