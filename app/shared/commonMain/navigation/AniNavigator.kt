@@ -21,8 +21,11 @@ interface AniNavigator {
         navigator.navigate("/subjects/$subjectId")
     }
 
-    fun navigateEpisodeDetails(subjectId: Int, episodeId: Int) {
-        navigator.navigate("/subjects/$subjectId/episodes/$episodeId")
+    fun navigateEpisodeDetails(subjectId: Int, episodeId: Int, fullscreen: Boolean = false) {
+        navigator.navigate(
+            "/subjects/$subjectId/episodes/$episodeId?fullscreen=$fullscreen",
+            NavOptions(launchSingleTop = true, includePath = true)
+        )
     }
 
     fun navigateHome() {

@@ -25,7 +25,19 @@ expect val LocalContext: ProvidableCompositionLocal<Context>
 
 expect abstract class Context
 
+/**
+ * Returns `true` if the app is in landscape mode.
+ */
 @Composable
 expect fun isInLandscapeMode(): Boolean
 
-expect fun Context.setFullScreen(fullscreen: Boolean)
+/**
+ * Request to set the fullscreen, landscape mode, hiding status bars and navigation bars.
+ *
+ * If [fullscreen] is `true`, the app will enter fullscreen mode.
+ * Otherwise, the app go back to the users' preferred mode.
+ *
+ * Note that when [fullscreen] is `false`, the system bars will be visible,
+ * but the app may be still in landscape mode if the user's system is in landscape mode.
+ */
+expect fun Context.setRequestFullScreen(fullscreen: Boolean)

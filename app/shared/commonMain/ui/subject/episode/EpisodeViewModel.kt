@@ -17,7 +17,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
@@ -29,6 +28,7 @@ import me.him188.ani.app.platform.Context
 import me.him188.ani.app.torrent.TorrentDownloaderManager
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.launchInBackground
+import me.him188.ani.app.videoplayer.PlayerController
 import me.him188.ani.app.videoplayer.TorrentVideoSource
 import me.him188.ani.app.videoplayer.VideoSource
 import me.him188.ani.datasources.api.DownloadProvider
@@ -50,16 +50,20 @@ import kotlin.time.Duration.Companion.seconds
 class EpisodeViewModel(
     initialSubjectId: Int,
     initialEpisodeId: Int,
+    initialIsFullscreen: Boolean = false,
+    context: Context,
 ) : AbstractViewModel(), KoinComponent {
     private val bangumiClient by inject<BangumiClient>()
     private val dmhyClient by inject<DownloadProvider>()
     private val browserNavigator: BrowserNavigator by inject()
     private val torrentDownloaderManager: TorrentDownloaderManager by inject()
 
-    private val episodeId: MutableStateFlow<Int> = MutableStateFlow(initialEpisodeId)
+    val episodeId: MutableStateFlow<Int> = MutableStateFlow(initialEpisodeId)
 
-    private val subjectDetails = flow {
-        emit(withContext(Dispatchers.IO) { bangumiClient.api.getSubjectById(initialSubjectId) })
+    val subjectId: MutableStateFlow<Int> = MutableStateFlow(initialSubjectId)
+
+    private val subjectDetails = subjectId.mapLatest {
+        withContext(Dispatchers.IO) { bangumiClient.api.getSubjectById(initialSubjectId) } // TODO: replace with data layer 
     }.shareInBackground()
 
     @Stable
@@ -189,13 +193,20 @@ class EpisodeViewModel(
             }
         }.shareInBackground()
 
+    @Stable
+    val playerController: PlayerController = PlayerController(context, videoSource)
+
     var showPlaySourceSheet by mutableStateOf(false)
 
-    val _isFullscreen: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    val _isFullscreen: MutableStateFlow<Boolean> = MutableStateFlow(initialIsFullscreen)
     val isFullscreen: StateFlow<Boolean> = _isFullscreen
 
     fun setFullscreen(fullscreen: Boolean) {
         _isFullscreen.value = fullscreen
+    }
+
+    fun setSubjectId(subjectId: Int) {
+        this.subjectId.value = subjectId
     }
 
     fun setEpisodeId(episodeId: Int) {

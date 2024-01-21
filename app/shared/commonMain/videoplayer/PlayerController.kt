@@ -5,6 +5,7 @@ import androidx.compose.runtime.Stable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
+import me.him188.ani.app.platform.Context
 import kotlin.time.Duration
 
 /**
@@ -84,3 +85,5 @@ enum class PlayerState(
 
 @Composable
 expect fun rememberPlayerController(videoSource: Flow<VideoSource<*>?>): PlayerController
+
+expect fun PlayerController(context: Context, videoSource: Flow<VideoSource<*>?>): PlayerController

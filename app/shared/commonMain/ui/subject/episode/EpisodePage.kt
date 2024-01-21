@@ -44,12 +44,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -59,13 +57,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.platform.LocalContext
-import me.him188.ani.app.platform.setFullScreen
+import me.him188.ani.app.platform.setRequestFullScreen
 import me.him188.ani.app.ui.external.placeholder.placeholder
+import me.him188.ani.app.ui.foundation.BackPressedHandler
 import me.him188.ani.app.ui.foundation.LocalSnackbar
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.theme.slightlyWeaken
-import me.him188.ani.app.videoplayer.PlayerController
-import me.him188.ani.app.videoplayer.rememberPlayerController
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
 private val PAGE_HORIZONTAL_PADDING = 16.dp
@@ -79,10 +76,8 @@ fun EpisodePage(
     Scaffold(
         contentWindowInsets = WindowInsets(0.dp)
     ) {
-        val playerController = rememberPlayerController(viewModel.videoSource)
         EpisodePageContent(
             viewModel,
-            playerController,
             onClickGoBack = goBack,
             modifier
         )
@@ -97,12 +92,23 @@ fun FullscreenPlayerView(viewModel: EpisodeViewModel) {
 @Composable
 fun EpisodePageContent(
     viewModel: EpisodeViewModel,
-    playerController: PlayerController,
     onClickGoBack: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    var isFullScreen by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
+    val isFullscreen by viewModel.isFullscreen.collectAsState()
+    val onClickGoBackState by rememberUpdatedState(onClickGoBack)
+    BackPressedHandler(
+        enabled = isFullscreen, // else, use the default back handler by PreCompose (`navigator.goBack()`)
+        onBackPressed = {
+            if (isFullscreen) {
+                context.setRequestFullScreen(false)
+                viewModel.setFullscreen(false)
+            } else {
+                onClickGoBackState()
+            }
+        }
+    )
 //    if (isFullScreen) {
 //        DisposableEffect(true) {
 //            onDispose {
@@ -110,21 +116,32 @@ fun EpisodePageContent(
 //            }
 //        }
 //    }
-    Column(modifier.then(if (isFullScreen) Modifier else Modifier.navigationBarsPadding())) {
+    Column(modifier.then(if (isFullscreen) Modifier.fillMaxSize() else Modifier.navigationBarsPadding())) {
         // 视频
         val video by viewModel.videoSource.collectAsStateWithLifecycle(null)
         val videoSourceSelected by viewModel.videoSourceSelected.collectAsStateWithLifecycle(false)
         Box(
             Modifier.fillMaxWidth().background(Color.Black)
-                .then(if (isFullScreen) Modifier else Modifier.statusBarsPadding())
+                .then(if (isFullscreen) Modifier.fillMaxSize() else Modifier.statusBarsPadding())
         ) {
-            EpisodeVideo(videoSourceSelected, video, playerController,
-                onClickGoBack,
+            EpisodeVideo(
+                videoSourceSelected, video, viewModel.playerController,
+                onClickGoBackState,
                 onClickFullScreen = {
-                    context.setFullScreen(!isFullScreen)
-                    isFullScreen = !isFullScreen
-                }
+                    if (isFullscreen) {
+                        context.setRequestFullScreen(false)
+                        viewModel.setFullscreen(false)
+                    } else {
+                        viewModel.setFullscreen(true)
+                        context.setRequestFullScreen(true)
+                    }
+                },
+                isFullscreen = isFullscreen
             )
+        }
+
+        if (isFullscreen) {
+            return@Column
         }
 
 //        video?.let { vid ->
@@ -186,8 +203,6 @@ fun EpisodePageContent(
                     text = { Text("复制磁力") },
                     modifier,
                 )
-
-                val context = LocalContext.current
 
                 ActionButton(
                     onClick = { viewModel.launchInBackground { browseDownload(context, snackbar) } },

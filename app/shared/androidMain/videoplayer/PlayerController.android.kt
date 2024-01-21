@@ -45,6 +45,11 @@ actual fun rememberPlayerController(videoSource: Flow<VideoSource<*>?>): PlayerC
     }
 }
 
+actual fun PlayerController(context: Context, videoSource: Flow<VideoSource<*>?>): PlayerController {
+    return ExoPlayerController(videoSource, context)
+}
+
+
 /**
  * Must be remembered
  */

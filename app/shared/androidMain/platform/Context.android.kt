@@ -20,6 +20,8 @@ package me.him188.ani.app.platform
 
 import android.app.Activity
 import android.os.Build
+import android.util.Log
+import android.view.View
 import android.view.WindowInsets
 import android.view.WindowInsetsController
 import android.view.WindowManager
@@ -38,30 +40,53 @@ actual fun isInLandscapeMode(): Boolean =
     LocalConfiguration.current.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
 
 @Suppress("USELESS_CAST") // compiler bug
-actual fun Context.setFullScreen(fullscreen: Boolean) {
+actual fun Context.setRequestFullScreen(fullscreen: Boolean) {
+    Log.i("setRequestFullScreen", "Requesting fullscreen: $fullscreen, context=$this")
     if (this is Activity) {
         if (fullscreen) {
+            // go landscape
             requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+
+            // hide bars
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 window.insetsController?.hide(WindowInsets.Type.statusBars().or(WindowInsets.Type.navigationBars()))
                 window.insetsController?.systemBarsBehavior =
                     WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             } else {
+                val decorView = window.decorView
                 @Suppress("DEPRECATION")
-                (this as Activity).window.setFlags(
-                    WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                    WindowManager.LayoutParams.FLAG_FULLSCREEN
-                )
+                decorView.systemUiVisibility =
+                    (View.SYSTEM_UI_FLAG_IMMERSIVE // Set the content to appear under the system bars so that the
+                            // content doesn't resize when the system bars hide and show.
+                            or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN // Hide the nav bar and status bar
+                            or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                            or View.SYSTEM_UI_FLAG_FULLSCREEN)
             }
+
+            // keep screen on
+            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         } else {
+            // cancel landscape
+            requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+
+            // show bars
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 window.insetsController?.show(WindowInsets.Type.statusBars().or(WindowInsets.Type.navigationBars()))
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    window.insetsController?.systemBarsBehavior = WindowInsetsController.BEHAVIOR_DEFAULT
+                }
             } else {
+                val decorView = window.decorView
+                @Suppress("DEPRECATION")
+                decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_IMMERSIVE
                 @Suppress("DEPRECATION")
                 (this as Activity).window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
             }
 
-            requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+            // don't keep screen on
+            window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
     } else {
         val orientation = if (fullscreen) {

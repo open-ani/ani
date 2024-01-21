@@ -51,6 +51,7 @@ internal fun EpisodeVideo(
     onClickGoBack: () -> Unit,
     onClickFullScreen: () -> Unit,
     modifier: Modifier = Modifier,
+    isFullscreen: Boolean = isInLandscapeMode(),
 ) {
     val (controllerVisible, setControllerVisible) = remember { mutableStateOf(true) }
 
@@ -66,25 +67,26 @@ internal fun EpisodeVideo(
     }
 
     BoxWithConstraints(
-        modifier.then(if (isInLandscapeMode()) Modifier.fillMaxHeight() else Modifier.fillMaxWidth()),
+        modifier.then(if (isFullscreen) Modifier.fillMaxHeight() else Modifier.fillMaxWidth()),
         contentAlignment = Alignment.Center
     ) {
         Box(
-            Modifier.then(
-                if (isInLandscapeMode()) {
-                    Modifier.fillMaxSize()
+            Modifier
+                .then(
+                    if (isFullscreen) {
+                        Modifier.fillMaxSize()
 //                    Modifier.fillMaxHeight().width(maxHeight * 16 / 9)
-                } else {
-                    Modifier.fillMaxWidth()
-                        .height(maxWidth * 9 / 16)
-                }
-            ).clickable(
-                remember { MutableInteractionSource() },
-                indication = null,
-                onClick = {
-                    setControllerVisible(!controllerVisible)
-                }
-            )
+                    } else {
+                        Modifier.fillMaxWidth()
+                            .height(maxWidth * 9 / 16)
+                    }
+                ).clickable(
+                    remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = {
+                        setControllerVisible(!controllerVisible)
+                    }
+                )
         ) { // 16:9 box
             VideoPlayerView(playerController, Modifier.matchParentSize())
 
