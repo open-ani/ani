@@ -99,7 +99,7 @@ internal object ListParser {
                 magnetLink = magnetLink,
                 size = createFileSize(size),
                 author = context.users.getOrSet(authorId) { Author(authorId, authorName) },
-                link = link,
+                link = "https://dmhy.org/${link.removePrefix("/")}",
             )
         }
 

@@ -346,7 +346,7 @@ private class EpisodeViewModelImpl(
 
     override suspend fun browseDownload(context: Context, snackbar: SnackbarHostState) {
         playSourceSelector.targetPlaySourceCandidate.value?.let {
-            browserNavigator.openMagnetLink(context, it.playSource.originalUrl)
+            browserNavigator.openMagnetLink(context, it.playSource.magnetLink)
         } ?: run {
             snackbar.showSnackbar("请先选择数据源")
             isShowPlaySourceSheet = true

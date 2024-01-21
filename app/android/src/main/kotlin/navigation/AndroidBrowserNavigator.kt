@@ -34,7 +34,9 @@ class AndroidBrowserNavigator : BrowserNavigator {
     }
 
     private fun view(url: String, context: Context) {
-        val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        val browserIntent = Intent(Intent.ACTION_VIEW).apply {
+            setData(Uri.parse(url))
+        }
         context.startActivity(browserIntent)
     }
 }
