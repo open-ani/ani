@@ -31,6 +31,7 @@ import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.videoplayer.PlayerController
+import me.him188.ani.app.videoplayer.PlayerControllerFactory
 import me.him188.ani.app.videoplayer.TorrentVideoSource
 import me.him188.ani.app.videoplayer.VideoSource
 import me.him188.ani.datasources.api.DownloadProvider
@@ -158,6 +159,7 @@ private class EpisodeViewModelImpl(
     private val dmhyClient by inject<DownloadProvider>()
     private val browserNavigator: BrowserNavigator by inject()
     private val torrentDownloaderManager: TorrentDownloaderManager by inject()
+    private val playerControllerFactory: PlayerControllerFactory by inject()
 
     override val episodeId: MutableStateFlow<Int> = MutableStateFlow(initialEpisodeId)
 
@@ -307,7 +309,7 @@ private class EpisodeViewModelImpl(
     override val isVideoReady: Flow<Boolean> = videoSource.map { it != null }
 
     @Stable
-    override val playerController: PlayerController = PlayerController(context, videoSource)
+    override val playerController: PlayerController = playerControllerFactory.create(context, videoSource)
 
     override var isShowPlaySourceSheet by mutableStateOf(false)
 

@@ -34,8 +34,11 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
-actual fun PlayerController(context: Context, videoSource: Flow<VideoSource<*>?>): PlayerController {
-    return ExoPlayerController(videoSource, context)
+
+class ExoPlayerControllerFactory : PlayerControllerFactory {
+    override fun create(context: Context, videoSource: Flow<VideoSource<*>?>): PlayerController {
+        return ExoPlayerController(videoSource, context)
+    }
 }
 
 

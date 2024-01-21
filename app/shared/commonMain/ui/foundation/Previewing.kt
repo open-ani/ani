@@ -21,6 +21,7 @@ package me.him188.ani.app.ui.foundation
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.compositionLocalOf
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -28,6 +29,8 @@ import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.getCommonKoinModule
 import me.him188.ani.app.torrent.TorrentDownloader
 import me.him188.ani.app.torrent.TorrentDownloaderFactory
+import me.him188.ani.app.videoplayer.DummyPlayerController
+import me.him188.ani.app.videoplayer.PlayerControllerFactory
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
@@ -42,22 +45,30 @@ val LocalIsPreviewing = compositionLocalOf {
 fun ProvideCompositionLocalsForPreview(
     content: @Composable () -> Unit,
 ) {
-    val context = LocalContext.current
-    runCatching { stopKoin() }
-    startKoin {
-        modules(getCommonKoinModule({ context }, GlobalScope))
-        modules(module {
-            single<TorrentDownloaderFactory> {
-                TorrentDownloaderFactory {
-                    TorrentDownloader(
-                        cacheDirectory = createTempDirectory("ani-temp").toFile(),
-                    )
-                }
-            }
-        })
-    }
+
     MaterialTheme {
         PlatformPreviewCompositionLocalProvider {
+            val context = LocalContext.current
+            SideEffect {
+                runCatching { stopKoin() }
+                startKoin {
+                    modules(getCommonKoinModule({ context }, GlobalScope))
+                    modules(module {
+                        single<TorrentDownloaderFactory> {
+                            TorrentDownloaderFactory {
+                                TorrentDownloader(
+                                    cacheDirectory = createTempDirectory("ani-temp").toFile(),
+                                )
+                            }
+                        }
+                        single<PlayerControllerFactory> {
+                            PlayerControllerFactory { _, _ ->
+                                DummyPlayerController()
+                            }
+                        }
+                    })
+                }
+            }
             CompositionLocalProvider(LocalIsPreviewing provides true) {
                 AniApp {
                     content()

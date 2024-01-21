@@ -1,5 +1,7 @@
 package me.him188.ani.app.videoplayer.ui
 
+import androidx.compose.desktop.ui.tooling.preview.Preview
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -33,14 +35,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import me.him188.ani.app.ui.foundation.AniTopAppBar
+import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.theme.slightlyWeaken
 import me.him188.ani.app.ui.theme.weaken
+import me.him188.ani.app.videoplayer.AbstractPlayerController
 import me.him188.ani.app.videoplayer.PlayerController
+import me.him188.ani.app.videoplayer.PlayerState
+import me.him188.ani.app.videoplayer.VideoProperties
 import me.him188.ani.datasources.bangumi.processing.fixToString
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 
 /**
@@ -81,8 +91,61 @@ fun PlayerControllerOverlay(
 }
 
 @Composable
-internal expect fun PreviewVideoControllerOverlay()
+internal expect fun PreviewPlayerControllerOverlay()
 
+@Preview
+@Composable
+internal fun PreviewPlayerControllerOverlayImpl() {
+    ProvideCompositionLocalsForPreview {
+        val controller = remember {
+            object : AbstractPlayerController() {
+                override val state: MutableStateFlow<PlayerState> = MutableStateFlow(PlayerState.PLAYING)
+                override val videoProperties: Flow<VideoProperties> = MutableStateFlow(
+                    VideoProperties(
+                        title = "Test Video",
+                        heightPx = 1080,
+                        widthPx = 1920,
+                        videoBitrate = 100,
+                        audioBitrate = 100,
+                        frameRate = 30f,
+                        duration = 100.milliseconds,
+                    )
+                )
+                override val bufferProgress: Flow<Float> = MutableStateFlow(30f)
+                override val playedDuration: Flow<Duration> = MutableStateFlow(0.seconds)
+                override val playProgress: Flow<Float> = MutableStateFlow(0.5f)
+
+                override fun pause() {
+                    state.value = PlayerState.PAUSED
+                }
+
+                override fun resume() {
+                    state.value = PlayerState.PLAYING
+                }
+
+                override fun setSpeed(speed: Float) {
+                    TODO("Not yet implemented")
+                }
+            }
+        }
+        Box(modifier = Modifier.background(Color.Black)) {
+            PlayerControllerOverlay(
+                topBar = {
+
+                },
+                bottomBar = {
+                    PlayerControllerOverlayBottomBar(
+                        controller = controller,
+                        onClickFullScreen = {},
+                        Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                    )
+                },
+            )
+        }
+    }
+}
 
 @Composable
 fun PlayerControllerOverlayBottomBar(
@@ -157,7 +220,7 @@ private fun renderSeconds(played: Long, length: Long?): String {
         return "00:00 / 00:00"
     }
     return if (played < 60 && length < 60) {
-        "00:${played} / 00:${length}"
+        "00:${played.fixToString(2)} / 00:${length.fixToString(2)}"
     } else if (played < 3600 && length < 3600) {
         val startM = (played / 60).fixToString(2)
         val startS = (played % 60).fixToString(2)
