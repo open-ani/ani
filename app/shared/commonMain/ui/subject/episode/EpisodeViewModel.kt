@@ -1,5 +1,6 @@
 package me.him188.ani.app.ui.subject.episode
 
+import androidx.annotation.UiThread
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
@@ -27,6 +28,7 @@ import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.Context
 import me.him188.ani.app.torrent.TorrentDownloaderManager
 import me.him188.ani.app.ui.foundation.AbstractViewModel
+import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.videoplayer.PlayerController
 import me.him188.ani.app.videoplayer.TorrentVideoSource
@@ -47,42 +49,141 @@ import org.openapitools.client.models.EpisodeDetail
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.time.Duration.Companion.seconds
 
-class EpisodeViewModel(
+interface EpisodeViewModel : HasBackgroundScope {
+    // Subject
+
+    @Stable
+    val subjectId: StateFlow<Int>
+    fun setSubjectId(subjectId: Int)
+
+    @Stable
+    val subjectTitle: SharedFlow<String>
+
+    // Episode
+
+    @Stable
+    val episodeId: StateFlow<Int>
+    fun setEpisodeId(episodeId: Int)
+
+    @Stable
+    val episode: SharedFlow<EpisodeDetail>
+
+    @Stable
+    val episodeTitle: Flow<String>
+
+    @Stable
+    val episodeEp: Flow<String>
+
+
+    @Stable
+    val isFullscreen: StateFlow<Boolean>
+
+    fun setFullscreen(fullscreen: Boolean)
+
+    // Video
+
+    /**
+     * `true` if a play source is selected by user (or automatically)
+     */
+    @Stable
+    val playSourceSelected: Flow<Boolean>
+
+    /**
+     * `true` if the list of play sources are still downloading (e.g. from dmhy).
+     */
+    @Stable
+    val isPlaySourcesLoading: StateFlow<Boolean>
+
+    @Stable
+    val playSourceSelector: PlaySourceSelector
+
+    /**
+     * `true` if the video is ready to play.
+     *
+     * This does not guarantee that there is enough buffer to play the video.
+     * For torrent videos, `true` means the magnet link is resolved and we can start downloading.
+     */
+    @Stable
+    val isVideoReady: Flow<Boolean>
+
+    /**
+     * Play controller for video view. This can be saved even when window configuration changes (i.e. everything recomposes).
+     */
+    @Stable
+    val playerController: PlayerController
+
+    /**
+     * `true` if the bottom sheet for choosing play source should be shown.
+     */
+    var isShowPlaySourceSheet: Boolean
+
+    @UiThread
+    suspend fun copyDownloadLink(clipboardManager: ClipboardManager, snackbar: SnackbarHostState)
+
+    @UiThread
+    suspend fun browsePlaySource(context: Context, snackbar: SnackbarHostState)
+
+    @UiThread
+    suspend fun browseDownload(context: Context, snackbar: SnackbarHostState)
+}
+
+fun EpisodeViewModel(
     initialSubjectId: Int,
     initialEpisodeId: Int,
     initialIsFullscreen: Boolean = false,
     context: Context,
-) : AbstractViewModel(), KoinComponent {
+): EpisodeViewModel = EpisodeViewModelImpl(initialSubjectId, initialEpisodeId, initialIsFullscreen, context)
+
+@Immutable
+data class PlaySource(
+    val id: String, // must be unique
+    val alliance: String,
+    val subtitleLanguage: String, // null means raw
+    val resolution: Resolution,
+    val dataSource: String, // dmhy
+    val originalUrl: String,
+    val magnetLink: String,
+    val originalTitle: String,
+    val size: FileSize,
+)
+
+
+private class EpisodeViewModelImpl(
+    initialSubjectId: Int,
+    initialEpisodeId: Int,
+    initialIsFullscreen: Boolean = false,
+    context: Context,
+) : AbstractViewModel(), KoinComponent, EpisodeViewModel {
     private val bangumiClient by inject<BangumiClient>()
     private val dmhyClient by inject<DownloadProvider>()
     private val browserNavigator: BrowserNavigator by inject()
     private val torrentDownloaderManager: TorrentDownloaderManager by inject()
 
-    val episodeId: MutableStateFlow<Int> = MutableStateFlow(initialEpisodeId)
+    override val episodeId: MutableStateFlow<Int> = MutableStateFlow(initialEpisodeId)
 
-    val subjectId: MutableStateFlow<Int> = MutableStateFlow(initialSubjectId)
+    override val subjectId: MutableStateFlow<Int> = MutableStateFlow(initialSubjectId)
 
     private val subjectDetails = subjectId.mapLatest {
         withContext(Dispatchers.IO) { bangumiClient.api.getSubjectById(initialSubjectId) } // TODO: replace with data layer 
     }.shareInBackground()
 
     @Stable
-    val episode = episodeId.mapLatest { episodeId ->
+    override val episode: SharedFlow<EpisodeDetail> = episodeId.mapLatest { episodeId ->
         withContext(Dispatchers.IO) { bangumiClient.api.getEpisodeById(episodeId) }
     }.shareInBackground()
 
     @Stable
-    val subjectTitle = subjectDetails.filterNotNull().mapLatest { subject ->
+    override val subjectTitle: SharedFlow<String> = subjectDetails.filterNotNull().mapLatest { subject ->
         subject.nameCNOrName()
     }.shareInBackground()
 
     @Stable
-    val episodeEp = episode.filterNotNull().mapLatest { episode ->
+    override val episodeEp = episode.filterNotNull().mapLatest { episode ->
         episode.renderEpisodeSp()
     }.shareInBackground()
 
     @Stable
-    val episodeTitle = episode.filterNotNull().mapLatest { episode ->
+    override val episodeTitle = episode.filterNotNull().mapLatest { episode ->
         episode.nameCNOrName()
     }.shareInBackground()
 
@@ -109,37 +210,38 @@ class EpisodeViewModel(
     private val _isPlaySourcesLoading = MutableStateFlow(true)
 
     @Stable
-    val isPlaySourcesLoading: StateFlow<Boolean> get() = _isPlaySourcesLoading
+    override val isPlaySourcesLoading: StateFlow<Boolean> get() = _isPlaySourcesLoading
 
     @Stable
-    val playSources: SharedFlow<Collection<PlaySource>?> = combine(episode, subjectTitle) { episode, subjectTitle ->
-        episode to subjectTitle
-    }.mapNotNull { (episode, subjectTitle) ->
+    private val playSources: SharedFlow<Collection<PlaySource>?> =
+        combine(episode, subjectTitle) { episode, subjectTitle ->
+            episode to subjectTitle
+        }.mapNotNull { (episode, subjectTitle) ->
 
-        _isPlaySourcesLoading.emit(true)
-        val session = dmhyClient.startSearch(
-            DownloadSearchQuery(
-                keywords = subjectTitle,
-                category = TopicCategory.ANIME,
+            _isPlaySourcesLoading.emit(true)
+            val session = dmhyClient.startSearch(
+                DownloadSearchQuery(
+                    keywords = subjectTitle,
+                    category = TopicCategory.ANIME,
+                )
             )
-        )
-        // 等完成时将 _isPlaySourcesLoading 设置为 false
-        launchInBackground {
-            select {
-                session.onFinish {
-                    _isPlaySourcesLoading.emit(false)
+            // 等完成时将 _isPlaySourcesLoading 设置为 false
+            launchInBackground {
+                select {
+                    session.onFinish {
+                        _isPlaySourcesLoading.emit(false)
+                    }
                 }
             }
-        }
 
-        processDmhyResults(session, episode)
-    }.transformLatest { flow ->
-        val list = ConcurrentLinkedQueue<PlaySource>()
-        flow.collect {
-            list.add(it)
-            emit(list)
-        }
-    }.shareInBackground()
+            processDmhyResults(session, episode)
+        }.transformLatest { flow ->
+            val list = ConcurrentLinkedQueue<PlaySource>()
+            flow.collect {
+                list.add(it)
+                emit(list)
+            }
+        }.shareInBackground()
 
     private fun processDmhyResults(
         session: SearchSession<Topic>,
@@ -165,7 +267,7 @@ class EpisodeViewModel(
         }
 
     @Stable
-    val playSourceSelector = PlaySourceSelector(
+    override val playSourceSelector = PlaySourceSelector(
         subjectDetails.map { it.id },
         listOf(),
         playSources.filterNotNull(),
@@ -173,11 +275,19 @@ class EpisodeViewModel(
     )
 
     @Stable
-    val videoSourceSelected: Flow<Boolean> =
+    override val playSourceSelected: Flow<Boolean> =
         playSourceSelector.targetPlaySourceCandidate.map { it != null }
 
+
+    /**
+     * The [VideoSource] selected to play.
+     *
+     * `null` has two possible meanings:
+     * - List of video sources are still downloading so user has nothing to select.
+     * - The sources are available but user has not yet selected one.
+     */
     @Stable
-    val videoSource: SharedFlow<VideoSource<*>?> = playSourceSelector.targetPlaySourceCandidate
+    private val videoSource: SharedFlow<VideoSource<*>?> = playSourceSelector.targetPlaySourceCandidate
         .debounce(1.seconds)
         .combine(torrentDownloaderManager.torrentDownloader) { video, torrentDownloader ->
             video to torrentDownloader
@@ -194,26 +304,29 @@ class EpisodeViewModel(
         }.shareInBackground()
 
     @Stable
-    val playerController: PlayerController = PlayerController(context, videoSource)
+    override val isVideoReady: Flow<Boolean> = videoSource.map { it != null }
 
-    var showPlaySourceSheet by mutableStateOf(false)
+    @Stable
+    override val playerController: PlayerController = PlayerController(context, videoSource)
 
-    val _isFullscreen: MutableStateFlow<Boolean> = MutableStateFlow(initialIsFullscreen)
-    val isFullscreen: StateFlow<Boolean> = _isFullscreen
+    override var isShowPlaySourceSheet by mutableStateOf(false)
 
-    fun setFullscreen(fullscreen: Boolean) {
-        _isFullscreen.value = fullscreen
+    @Stable
+    override val isFullscreen: MutableStateFlow<Boolean> = MutableStateFlow(initialIsFullscreen)
+
+    override fun setFullscreen(fullscreen: Boolean) {
+        isFullscreen.value = fullscreen
     }
 
-    fun setSubjectId(subjectId: Int) {
+    override fun setSubjectId(subjectId: Int) {
         this.subjectId.value = subjectId
     }
 
-    fun setEpisodeId(episodeId: Int) {
+    override fun setEpisodeId(episodeId: Int) {
         this.episodeId.value = episodeId
     }
 
-    suspend fun copyDownloadLink(clipboardManager: ClipboardManager, snackbar: SnackbarHostState) {
+    override suspend fun copyDownloadLink(clipboardManager: ClipboardManager, snackbar: SnackbarHostState) {
         playSourceSelector.targetPlaySourceCandidate.value?.let {
             clipboardManager.setText(AnnotatedString(it.playSource.magnetLink))
             snackbar.showSnackbar("已复制下载链接")
@@ -222,34 +335,21 @@ class EpisodeViewModel(
         }
     }
 
-    suspend fun browsePlaySource(context: Context, snackbar: SnackbarHostState) {
+    override suspend fun browsePlaySource(context: Context, snackbar: SnackbarHostState) {
         playSourceSelector.targetPlaySourceCandidate.value?.let {
             browserNavigator.openBrowser(context, it.playSource.originalUrl)
         } ?: run {
             snackbar.showSnackbar("请先选择数据源")
-            showPlaySourceSheet = true
+            isShowPlaySourceSheet = true
         }
     }
 
-    suspend fun browseDownload(context: Context, snackbar: SnackbarHostState) {
+    override suspend fun browseDownload(context: Context, snackbar: SnackbarHostState) {
         playSourceSelector.targetPlaySourceCandidate.value?.let {
             browserNavigator.openMagnetLink(context, it.playSource.originalUrl)
         } ?: run {
             snackbar.showSnackbar("请先选择数据源")
-            showPlaySourceSheet = true
+            isShowPlaySourceSheet = true
         }
     }
 }
-
-@Immutable
-data class PlaySource(
-    val id: String, // must be unique
-    val alliance: String,
-    val subtitleLanguage: String, // null means raw
-    val resolution: Resolution,
-    val dataSource: String, // dmhy
-    val originalUrl: String,
-    val magnetLink: String,
-    val originalTitle: String,
-    val size: FileSize,
-)

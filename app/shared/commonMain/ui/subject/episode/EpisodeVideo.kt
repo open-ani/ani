@@ -32,7 +32,6 @@ import me.him188.ani.app.ui.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.theme.looming
 import me.him188.ani.app.videoplayer.PlayerController
 import me.him188.ani.app.videoplayer.VideoPlayerView
-import me.him188.ani.app.videoplayer.VideoSource
 import me.him188.ani.app.videoplayer.ui.PlayerControllerOverlay
 import me.him188.ani.app.videoplayer.ui.PlayerControllerOverlayBottomBar
 import me.him188.ani.app.videoplayer.ui.PlayerControllerOverlayTopBar
@@ -46,7 +45,7 @@ import kotlin.time.Duration.Companion.seconds
 @Composable
 internal fun EpisodeVideo(
     videoSourceSelected: Boolean,
-    video: VideoSource<*>?,
+    videoReady: Boolean,
     playerController: PlayerController,
     onClickGoBack: () -> Unit,
     onClickFullScreen: () -> Unit,
@@ -115,7 +114,7 @@ internal fun EpisodeVideo(
                                         Text("请选择数据源")
                                     }
 
-                                    video == null -> {
+                                    !videoReady -> {
                                         Text("正在下载种子")
                                     }
 

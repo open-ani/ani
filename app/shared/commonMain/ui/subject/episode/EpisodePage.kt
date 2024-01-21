@@ -62,6 +62,7 @@ import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.BackPressedHandler
 import me.him188.ani.app.ui.foundation.LocalSnackbar
 import me.him188.ani.app.ui.foundation.launchInBackground
+import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.app.ui.theme.slightlyWeaken
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
@@ -82,11 +83,6 @@ fun EpisodePage(
             modifier
         )
     }
-}
-
-@Composable
-fun FullscreenPlayerView(viewModel: EpisodeViewModel) {
-    Modifier.fillMaxSize()
 }
 
 @Composable
@@ -118,14 +114,14 @@ fun EpisodePageContent(
 //    }
     Column(modifier.then(if (isFullscreen) Modifier.fillMaxSize() else Modifier.navigationBarsPadding())) {
         // 视频
-        val video by viewModel.videoSource.collectAsStateWithLifecycle(null)
-        val videoSourceSelected by viewModel.videoSourceSelected.collectAsStateWithLifecycle(false)
+        val videoReady by viewModel.isVideoReady.collectAsStateWithLifecycle(false)
+        val selected by viewModel.playSourceSelected.collectAsStateWithLifecycle(false)
         Box(
             Modifier.fillMaxWidth().background(Color.Black)
                 .then(if (isFullscreen) Modifier.fillMaxSize() else Modifier.statusBarsPadding())
         ) {
             EpisodeVideo(
-                videoSourceSelected, video, viewModel.playerController,
+                selected, videoReady, viewModel.playerController,
                 onClickGoBackState,
                 onClickFullScreen = {
                     if (isFullscreen) {
@@ -198,21 +194,33 @@ fun EpisodePageContent(
                 val clipboard by rememberUpdatedState(LocalClipboardManager.current)
                 val snackbar by rememberUpdatedState(LocalSnackbar.current)
                 ActionButton(
-                    onClick = { viewModel.launchInBackground { copyDownloadLink(clipboard, snackbar) } },
+                    onClick = {
+                        viewModel.launchInMain {
+                            copyDownloadLink(clipboard, snackbar)
+                        }
+                    },
                     icon = { Icon(Icons.Default.ContentCopy, null) },
                     text = { Text("复制磁力") },
                     modifier,
                 )
 
                 ActionButton(
-                    onClick = { viewModel.launchInBackground { browseDownload(context, snackbar) } },
+                    onClick = {
+                        viewModel.launchInMain {
+                            browseDownload(context, snackbar)
+                        }
+                    },
                     icon = { Icon(Icons.Default.Download, null) },
                     text = { Text("下载") },
                     modifier,
                 )
 
                 ActionButton(
-                    onClick = { viewModel.launchInBackground { browsePlaySource(context, snackbar) } },
+                    onClick = {
+                        viewModel.launchInMain {
+                            browsePlaySource(context, snackbar)
+                        }
+                    },
                     icon = { Icon(Icons.Default.ArrowOutward, null) },
                     text = { Text("原始页面") },
                     modifier,
@@ -278,7 +286,7 @@ private fun PlaySourceSelectionAction(
 
     ActionButton(
         onClick = {
-            viewModel.showPlaySourceSheet = true
+            viewModel.isShowPlaySourceSheet = true
         },
         icon = { Icon(Icons.Default.DisplaySettings, null) },
         text = { Text("数据源") },
@@ -286,9 +294,9 @@ private fun PlaySourceSelectionAction(
         isPlaySourcesLoading
     )
 
-    if (viewModel.showPlaySourceSheet) {
+    if (viewModel.isShowPlaySourceSheet) {
         ModalBottomSheet(
-            onDismissRequest = { viewModel.showPlaySourceSheet = false },
+            onDismissRequest = { viewModel.isShowPlaySourceSheet = false },
             Modifier
         ) {
             Column(
@@ -340,7 +348,7 @@ private fun PlaySourceSelectionAction(
                 )
 
                 TextButton(
-                    { viewModel.showPlaySourceSheet = false },
+                    { viewModel.isShowPlaySourceSheet = false },
                     Modifier.align(Alignment.End).padding(horizontal = 8.dp)
                 ) {
                     Text("完成")

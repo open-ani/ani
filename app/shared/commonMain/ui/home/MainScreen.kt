@@ -35,6 +35,7 @@ import me.him188.ani.app.ui.auth.AuthRequestScene
 import me.him188.ani.app.ui.collection.CollectionPage
 import me.him188.ani.app.ui.collection.MyCollectionsViewModel
 import me.him188.ani.app.ui.foundation.TabNavigationItem
+import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.profile.AuthViewModel
 import me.him188.ani.app.ui.profile.ProfilePage
 import me.him188.ani.app.ui.subject.details.SubjectDetailsScene
@@ -124,7 +125,7 @@ fun MainScreenPortrait(
             }
             val initialIsFullscreen = backStackEntry.query<Boolean>("fullscreen") ?: false
             val context = LocalContext.current
-            val vm = viewModel<EpisodeViewModel> {
+            val vm = rememberViewModel<EpisodeViewModel> {
                 EpisodeViewModel(
                     initialSubjectId = subjectId,
                     initialEpisodeId = episodeId,

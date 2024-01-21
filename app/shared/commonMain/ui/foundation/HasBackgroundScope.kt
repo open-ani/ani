@@ -3,6 +3,7 @@ package me.him188.ani.app.ui.foundation
 import androidx.compose.runtime.MutableState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
@@ -121,6 +122,16 @@ fun <V : HasBackgroundScope> V.launchInBackground(
     block: suspend V.() -> Unit,
 ): Job {
     return backgroundScope.launch(context, start) {
+        block()
+    }
+}
+
+fun <V : HasBackgroundScope> V.launchInMain(
+    context: CoroutineContext = EmptyCoroutineContext,
+    start: CoroutineStart = CoroutineStart.DEFAULT,
+    block: suspend V.() -> Unit,
+): Job {
+    return backgroundScope.launch(context + Dispatchers.Main.immediate, start) {
         block()
     }
 }
