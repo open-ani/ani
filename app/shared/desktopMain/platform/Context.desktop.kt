@@ -49,5 +49,5 @@ actual val LocalContext: ProvidableCompositionLocal<Context> = compositionLocalO
 @Composable
 actual fun isInLandscapeMode(): Boolean = false
 
-actual fun Context.changeOrientation(landscape: Boolean) {
+actual fun Context.setFullScreen(fullscreen: Boolean) {
 }

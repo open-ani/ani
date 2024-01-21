@@ -48,6 +48,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,7 +59,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.platform.LocalContext
-import me.him188.ani.app.platform.changeOrientation
+import me.him188.ani.app.platform.setFullScreen
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.LocalSnackbar
 import me.him188.ani.app.ui.foundation.launchInBackground
@@ -100,18 +101,28 @@ fun EpisodePageContent(
     onClickGoBack: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    var isFullScreen by remember { mutableStateOf(false) }
+    var isFullScreen by rememberSaveable { mutableStateOf(false) }
+    val context = LocalContext.current
+//    if (isFullScreen) {
+//        DisposableEffect(true) {
+//            onDispose {
+//                context.setFullScreen(false)
+//            }
+//        }
+//    }
     Column(modifier.then(if (isFullScreen) Modifier else Modifier.navigationBarsPadding())) {
         // 视频
         val video by viewModel.videoSource.collectAsStateWithLifecycle(null)
         val videoSourceSelected by viewModel.videoSourceSelected.collectAsStateWithLifecycle(false)
-        Box(Modifier.fillMaxWidth().background(Color.Black).statusBarsPadding()) {
-            val context = LocalContext.current
+        Box(
+            Modifier.fillMaxWidth().background(Color.Black)
+                .then(if (isFullScreen) Modifier else Modifier.statusBarsPadding())
+        ) {
             EpisodeVideo(videoSourceSelected, video, playerController,
                 onClickGoBack,
                 onClickFullScreen = {
+                    context.setFullScreen(!isFullScreen)
                     isFullScreen = !isFullScreen
-                    context.changeOrientation(isFullScreen)
                 }
             )
         }

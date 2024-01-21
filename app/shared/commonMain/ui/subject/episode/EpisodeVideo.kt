@@ -8,11 +8,11 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -66,13 +66,14 @@ internal fun EpisodeVideo(
     }
 
     BoxWithConstraints(
-        modifier.then(if (isInLandscapeMode()) Modifier.fillMaxWidth() else Modifier.fillMaxHeight()),
+        modifier.then(if (isInLandscapeMode()) Modifier.fillMaxHeight() else Modifier.fillMaxWidth()),
         contentAlignment = Alignment.Center
     ) {
         Box(
             Modifier.then(
                 if (isInLandscapeMode()) {
-                    Modifier.fillMaxHeight().width(maxHeight * 16 / 9)
+                    Modifier.fillMaxSize()
+//                    Modifier.fillMaxHeight().width(maxHeight * 16 / 9)
                 } else {
                     Modifier.fillMaxWidth()
                         .height(maxWidth * 9 / 16)
