@@ -179,6 +179,7 @@ internal class ExoPlayerController @UiThread constructor(
 
     override fun close() {
         super.close()
+        player.stop()
         player.release()
         playingResource?.close()
     }
