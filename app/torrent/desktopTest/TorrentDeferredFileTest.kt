@@ -11,6 +11,7 @@ import me.him188.ani.app.torrent.file.TorrentInput
 import me.him188.ani.app.torrent.file.asSeekableInput
 import me.him188.ani.app.torrent.file.readBytes
 import me.him188.ani.app.torrent.model.Piece
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.io.RandomAccessFile
@@ -43,6 +44,11 @@ internal class TorrentDeferredFileTest {
             RandomAccessFile(tempFile.absolutePath, "r").asSeekableInput(),
             pieces,
         )
+    }
+
+    @AfterEach
+    fun afterTest() {
+        file.close()
     }
 
     @Test
