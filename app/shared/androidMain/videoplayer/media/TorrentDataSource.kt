@@ -14,7 +14,7 @@ import androidx.media3.datasource.DataSpec
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import me.him188.ani.app.torrent.TorrentDownloadSession
-import me.him188.ani.app.torrent.file.DeferredFile
+import me.him188.ani.app.torrent.file.SeekableInput
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 
@@ -37,7 +37,7 @@ class TorrentDataSource(
 
     private var uri: Uri? = null
 
-    private lateinit var file: DeferredFile
+    private lateinit var file: SeekableInput
     private var opened = false
 
     override fun read(buffer: ByteArray, offset: Int, length: Int): Int {
@@ -67,7 +67,7 @@ class TorrentDataSource(
             transferInitializing(dataSpec)
 
             logger.info { "Acquiring torrent DeferredFile" }
-            file = runBlocking { session.createDeferredFile() }
+            file = runBlocking { session.createInput() }
         }
 
         logger.info { "Waiting for totalBytes" }
@@ -97,6 +97,7 @@ class TorrentDataSource(
         logger.info { "Closing DataSource" }
         uri = null
         if (opened) {
+            file.close()
             session.close()
             transferEnded()
         }

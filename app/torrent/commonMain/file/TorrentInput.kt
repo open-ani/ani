@@ -6,29 +6,23 @@ import me.him188.ani.app.torrent.model.awaitFinished
 import me.him188.ani.app.torrent.model.lastIndex
 import me.him188.ani.app.torrent.model.startIndex
 
-public interface DeferredFile {
-    public val offset: Long
-    public val bytesRemaining: Long
 
-    public suspend fun seek(offset: Long)
-
-    public suspend fun read(buffer: ByteArray, offset: Int, length: Int): Int
-}
-
-public suspend fun DeferredFile.readBytes(maxLength: Int = 4096): ByteArray {
-    val buffer = ByteArray(maxLength)
-    val actualLength = read(buffer, 0, maxLength)
-    return if (actualLength != buffer.size) {
-        buffer.copyOf(newSize = actualLength)
-    } else {
-        buffer
-    }
-}
-
-internal class TorrentDeferredFileImpl(
+/**
+ * A [SeekableInput] that reads from a torrent save file.
+ *
+ * It takes the advantage of the fact that the torrent save file is a concatenation of all pieces,
+ * and awaits [Piece]s to be finished when they are sought and read.
+ */
+internal class TorrentInput(
+    /**
+     * The torrent save file.
+     */
     private val file: SeekableInput,
+    /**
+     * The corresponding pieces of the [file].
+     */
     private val pieces: List<Piece>,
-) : DeferredFile {
+) : SeekableInput {
     private val totalLength = pieces.maxOf { it.offset + it.size }
 
     override var offset: Long = 0
@@ -38,7 +32,9 @@ internal class TorrentDeferredFileImpl(
         seekImpl(offset)
     }
 
-    // Returns max read
+    /**
+     * Returns max bytes available for read without suspending to wait for more piece to be downloaded.
+     */
     private suspend fun seekImpl(offset: Long): Long {
         this.offset = offset
         val index = findPiece(offset)
@@ -60,7 +56,11 @@ internal class TorrentDeferredFileImpl(
         val pieceAvailableSize = seekImpl(this.offset)
         val maxRead = length.toUInt().toLong().coerceAtMost(pieceAvailableSize)
         return file.read(buffer, offset, maxRead.toInt()).also {
-            this@TorrentDeferredFileImpl.offset += it
+            this@TorrentInput.offset += it
         }
+    }
+
+    override fun close() {
+        this.file.close()
     }
 }

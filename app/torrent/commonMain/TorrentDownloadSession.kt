@@ -8,8 +8,8 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.getAndUpdate
-import me.him188.ani.app.torrent.file.DeferredFile
-import me.him188.ani.app.torrent.file.TorrentDeferredFileImpl
+import me.him188.ani.app.torrent.file.SeekableInput
+import me.him188.ani.app.torrent.file.TorrentInput
 import me.him188.ani.app.torrent.file.asSeekableInput
 import me.him188.ani.app.torrent.model.Piece
 import me.him188.ani.utils.logging.info
@@ -36,7 +36,7 @@ public interface TorrentDownloadSession : DownloadStats, AutoCloseable {
     public val saveDirectory: File
     public val state: Flow<TorrentDownloadState>
 
-    public suspend fun createDeferredFile(): DeferredFile
+    public suspend fun createInput(): SeekableInput
 }
 
 public sealed class TorrentDownloadState {
@@ -71,7 +71,7 @@ internal class TorrentDownloadSessionImpl(
     override var pieces: List<Piece> =
         Piece.buildPieces(torrentInfo.numPieces()) { torrentInfo.pieceSize(it).toUInt().toLong() }
 
-    override suspend fun createDeferredFile(): DeferredFile = TorrentDeferredFileImpl(
+    override suspend fun createInput(): SeekableInput = TorrentInput(
         run {
             while (true) {
                 val file = saveDirectory.walk().singleOrNull { it.isFile }

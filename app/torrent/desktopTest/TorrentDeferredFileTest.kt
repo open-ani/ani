@@ -7,7 +7,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.yield
-import me.him188.ani.app.torrent.file.TorrentDeferredFileImpl
+import me.him188.ani.app.torrent.file.TorrentInput
 import me.him188.ani.app.torrent.file.asSeekableInput
 import me.him188.ani.app.torrent.file.readBytes
 import me.him188.ani.app.torrent.model.Piece
@@ -32,11 +32,14 @@ internal class TorrentDeferredFileTest {
     private val pieces = Piece.buildPieces(ceil(sampleTextByteArray.size.toFloat() / 16).toInt()) { 16 }
 
     private val tempFile by lazy {
-        tempDir.resolve("test.txt").apply { writeText(sampleText) }
+        tempDir.resolve("test.txt").apply {
+            parentFile.mkdirs()
+            writeText(sampleText)
+        }
     }
 
-    private val file: TorrentDeferredFileImpl by lazy {
-        TorrentDeferredFileImpl(
+    private val file: TorrentInput by lazy {
+        TorrentInput(
             RandomAccessFile(tempFile.absolutePath, "r").asSeekableInput(),
             pieces,
         )
