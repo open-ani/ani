@@ -15,6 +15,11 @@ import org.libtorrent4j.alerts.AlertType
 import java.io.File
 
 
+/**
+ * A torrent downloader which holds connection to the DHT network and peers.
+ *
+ * It must be closed when it is no longer needed.
+ */
 public interface TorrentDownloader : AutoCloseable {
     public val vendor: TorrentLibInfo
 
@@ -23,13 +28,23 @@ public interface TorrentDownloader : AutoCloseable {
     public fun startDownload(data: EncodedTorrentData): TorrentDownloadSession
 }
 
+/**
+ * A factory for creating [TorrentDownloader] instances without any argument.
+ */
 public fun interface TorrentDownloaderFactory {
     public suspend fun create(): TorrentDownloader
 }
 
 private val logger = logger(TorrentDownloader::class)
 
-public suspend fun TorrentDownloader(
+/**
+ * Creates a new [TorrentDownloader] instance.
+ *
+ * The returned instance must be closed when it is no longer needed.
+ *
+ * @see TorrentDownloader
+ */
+public fun TorrentDownloader(
     cacheDirectory: File
 ): TorrentDownloader {
     val sessionManager = SessionManager()
@@ -74,7 +89,7 @@ public suspend fun TorrentDownloader(
     logger.info { "postDhtStats" }
     sessionManager.postDhtStats()
     // No need to wait for DHT, some devices may not have access to the DHT network.
-    
+
 //    logger.info { "Waiting for nodes in DHT" }
 //    val dhtResult = withTimeoutOrNull(30.seconds) {
 //        dht.await()
@@ -90,11 +105,6 @@ public suspend fun TorrentDownloader(
         sessionManager,
     )
 }
-
-public class TorrentLibInfo(
-    public val vendor: String,//  "libtorrent"
-    public val version: String, // LibTorrent.version()
-)
 
 internal class TorrentDownloaderImpl(
     cacheDirectory: File,

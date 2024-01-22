@@ -30,19 +30,42 @@ import java.io.RandomAccessFile
 import kotlin.time.Duration.Companion.seconds
 
 /**
+ * Represents a torrent download session.
+ *
  * Needs to be closed.
+ *
+ * @See TorrentDownloader
  */
 public interface TorrentDownloadSession : DownloadStats, AutoCloseable {
-    public val saveDirectory: File
     public val state: Flow<TorrentDownloadState>
 
+    /**
+     * Opens the downloaded file as a [SeekableInput].
+     */
     public suspend fun createInput(): SeekableInput
 }
 
 public sealed class TorrentDownloadState {
-    public data object Ready : TorrentDownloadState()
+    /**
+     * The session is ready and awaiting for the torrent to be added.
+     */
+    public data object Starting : TorrentDownloadState()
+
+    /**
+     * The torrent is being fetched from the network.
+     *
+     * Piece information may not be available yet.
+     */
     public data object FetchingMetadata : TorrentDownloadState()
+
+    /**
+     * Pieces are being downloaded.
+     */
     public data object Downloading : TorrentDownloadState()
+
+    /**
+     * All pieces have been downloaded successfully.
+     */
     public data object Finished : TorrentDownloadState()
 }
 
@@ -50,11 +73,17 @@ internal class TorrentDownloadSessionImpl(
     private val removeListener: (listener: AlertListener) -> Unit,
     private val closeHandle: (handle: TorrentHandle) -> Unit,
     private val torrentInfo: TorrentInfo,
-    override val saveDirectory: File,
+    /**
+     * The directory where the torrent is saved.
+     *
+     * The directory may contain multiple files, or a single file.
+     * The files are not guaranteed to be present at the moment when this function returns.
+     */
+    private val saveDirectory: File,
 ) : TorrentDownloadSession {
     private val logger = logger(this::class)
 
-    override val state: MutableStateFlow<TorrentDownloadState> = MutableStateFlow(TorrentDownloadState.Ready)
+    override val state: MutableStateFlow<TorrentDownloadState> = MutableStateFlow(TorrentDownloadState.Starting)
 
     //    private val _totalBytes = MutableStateFlow(torrentInfo.totalSize())
     override val totalBytes: Flow<Long> = MutableStateFlow(torrentInfo.sizeOnDisk())
@@ -68,6 +97,8 @@ internal class TorrentDownloadSessionImpl(
         MutableSharedFlow(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
     override val peerCount: MutableStateFlow<Int> = MutableStateFlow(0)
+
+    @OptIn(ExperimentalTorrentApi::class)
     override var pieces: List<Piece> =
         Piece.buildPieces(torrentInfo.numPieces()) { torrentInfo.pieceSize(it).toUInt().toLong() }
 
