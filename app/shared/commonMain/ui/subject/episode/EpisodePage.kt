@@ -93,17 +93,18 @@ fun EpisodePageContent(
 ) {
     val context = LocalContext.current
     val isFullscreen by viewModel.isFullscreen.collectAsState()
-    val onClickGoBackState by rememberUpdatedState(onClickGoBack)
-    BackPressedHandler(
-        enabled = isFullscreen, // else, use the default back handler by PreCompose (`navigator.goBack()`)
-        onBackPressed = {
+    val goBack = remember(onClickGoBack) {
+        {
             if (isFullscreen) {
                 context.setRequestFullScreen(false)
                 viewModel.setFullscreen(false)
-            } else {
-                onClickGoBackState()
             }
+            onClickGoBack()
         }
+    }
+    BackPressedHandler(
+        enabled = isFullscreen, // else, use the default back handler by PreCompose (`navigator.goBack()`)
+        onBackPressed = goBack
     )
 //    if (isFullScreen) {
 //        DisposableEffect(true) {
@@ -122,7 +123,7 @@ fun EpisodePageContent(
         ) {
             EpisodeVideo(
                 selected, videoReady, viewModel.playerController,
-                onClickGoBackState,
+                goBack,
                 onClickFullScreen = {
                     if (isFullscreen) {
                         context.setRequestFullScreen(false)
