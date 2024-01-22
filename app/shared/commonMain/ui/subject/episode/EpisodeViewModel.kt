@@ -4,9 +4,6 @@ import androidx.annotation.UiThread
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import kotlinx.coroutines.Dispatchers
@@ -19,6 +16,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
@@ -123,7 +121,8 @@ interface EpisodeViewModel : HasBackgroundScope {
     /**
      * `true` if the bottom sheet for choosing play source should be shown.
      */
-    var isShowPlaySourceSheet: Boolean
+    val isShowPlaySourceSheet: StateFlow<Boolean>
+    fun setShowPlaySourceSheet(show: Boolean)
 
     @UiThread
     suspend fun copyDownloadLink(clipboardManager: ClipboardManager, snackbar: SnackbarHostState)
@@ -319,7 +318,10 @@ private class EpisodeViewModelImpl(
     @Stable
     override val playerController: PlayerController = playerControllerFactory.create(context, videoSource)
 
-    override var isShowPlaySourceSheet by mutableStateOf(false)
+    override val isShowPlaySourceSheet = MutableStateFlow(false)
+    override fun setShowPlaySourceSheet(show: Boolean) {
+        isShowPlaySourceSheet.value = show
+    }
 
     @Stable
     override val isFullscreen: MutableStateFlow<Boolean> = MutableStateFlow(initialIsFullscreen)
@@ -346,29 +348,31 @@ private class EpisodeViewModelImpl(
     }
 
     override suspend fun copyDownloadLink(clipboardManager: ClipboardManager, snackbar: SnackbarHostState) {
-        playSourceSelector.targetPlaySourceCandidate.value?.let {
+        requestPlaySourceCandidate()?.let {
             clipboardManager.setText(AnnotatedString(it.playSource.magnetLink))
             snackbar.showSnackbar("已复制下载链接")
-        } ?: run {
-            snackbar.showSnackbar("请先选择数据源")
         }
     }
 
     override suspend fun browsePlaySource(context: Context, snackbar: SnackbarHostState) {
-        playSourceSelector.targetPlaySourceCandidate.value?.let {
+        requestPlaySourceCandidate()?.let {
             browserNavigator.openBrowser(context, it.playSource.originalUrl)
-        } ?: run {
-            snackbar.showSnackbar("请先选择数据源")
-            isShowPlaySourceSheet = true
         }
     }
 
     override suspend fun browseDownload(context: Context, snackbar: SnackbarHostState) {
-        playSourceSelector.targetPlaySourceCandidate.value?.let {
+        requestPlaySourceCandidate()?.let {
             browserNavigator.openMagnetLink(context, it.playSource.magnetLink)
-        } ?: run {
-            snackbar.showSnackbar("请先选择数据源")
-            isShowPlaySourceSheet = true
         }
+    }
+
+    private suspend fun requestPlaySourceCandidate(): PlaySourceCandidate? {
+        val candidate = playSourceSelector.targetPlaySourceCandidate.value
+        if (candidate != null) {
+            return candidate
+        }
+        setShowPlaySourceSheet(true)
+        isShowPlaySourceSheet.first { !it } // await closed
+        return playSourceSelector.targetPlaySourceCandidate.value
     }
 }
