@@ -29,16 +29,16 @@ interface PlayerController {
      * 当前播放进度秒数
      */
     @Stable
-    val playedDuration: Flow<Duration>
+    val playedDuration: StateFlow<Duration>
 
     @Stable
-    val bufferProgress: Flow<Float>
+    val bufferProgress: StateFlow<Float>
 
     /**
      * 当前播放进度比例 `0..1`
      */
     @Stable
-    val playProgress: Flow<Float>
+    val playProgress: StateFlow<Float>
 
     /**
      * 暂停播放, 直到 [pause]
@@ -105,9 +105,9 @@ class DummyPlayerController : PlayerController {
         )
     )
     override val isBuffering: Flow<Boolean> = MutableStateFlow(true)
-    override val playedDuration: Flow<Duration> = MutableStateFlow(0.seconds)
-    override val bufferProgress: Flow<Float> = MutableStateFlow(0f)
-    override val playProgress: Flow<Float> = MutableStateFlow(0f)
+    override val playedDuration: StateFlow<Duration> = MutableStateFlow(10.seconds)
+    override val bufferProgress: StateFlow<Float> = MutableStateFlow(0.5f)
+    override val playProgress: StateFlow<Float> = MutableStateFlow(0.3f)
 
     override fun pause() {
     }

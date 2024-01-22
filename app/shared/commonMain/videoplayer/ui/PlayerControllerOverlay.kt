@@ -34,23 +34,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import me.him188.ani.app.ui.foundation.AniTopAppBar
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.theme.slightlyWeaken
-import me.him188.ani.app.ui.theme.weaken
-import me.him188.ani.app.videoplayer.AbstractPlayerController
+import me.him188.ani.app.videoplayer.DummyPlayerController
 import me.him188.ani.app.videoplayer.PlayerController
-import me.him188.ani.app.videoplayer.PlayerState
-import me.him188.ani.app.videoplayer.VideoProperties
 import me.him188.ani.datasources.bangumi.processing.fixToString
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
 
 
 /**
@@ -98,35 +91,7 @@ internal expect fun PreviewPlayerControllerOverlay()
 internal fun PreviewPlayerControllerOverlayImpl() {
     ProvideCompositionLocalsForPreview {
         val controller = remember {
-            object : AbstractPlayerController() {
-                override val state: MutableStateFlow<PlayerState> = MutableStateFlow(PlayerState.PLAYING)
-                override val videoProperties: Flow<VideoProperties> = MutableStateFlow(
-                    VideoProperties(
-                        title = "Test Video",
-                        heightPx = 1080,
-                        widthPx = 1920,
-                        videoBitrate = 100,
-                        audioBitrate = 100,
-                        frameRate = 30f,
-                        duration = 100.milliseconds,
-                    )
-                )
-                override val bufferProgress: Flow<Float> = MutableStateFlow(30f)
-                override val playedDuration: Flow<Duration> = MutableStateFlow(0.seconds)
-                override val playProgress: Flow<Float> = MutableStateFlow(0.5f)
-
-                override fun pause() {
-                    state.value = PlayerState.PAUSED
-                }
-
-                override fun resume() {
-                    state.value = PlayerState.PLAYING
-                }
-
-                override fun setSpeed(speed: Float) {
-                    TODO("Not yet implemented")
-                }
-            }
+            DummyPlayerController()
         }
         Box(modifier = Modifier.background(Color.Black)) {
             PlayerControllerOverlay(
@@ -176,10 +141,10 @@ fun PlayerControllerOverlayBottomBar(
             }
         }
 
-        val bufferProgress by controller.bufferProgress.collectAsStateWithLifecycle(0f)
+        val bufferProgress by controller.bufferProgress.collectAsStateWithLifecycle()
         val videoProperties by controller.videoProperties.collectAsStateWithLifecycle(null)
-        val playedDuration by controller.playedDuration.collectAsStateWithLifecycle(0.milliseconds)
-        val playProgress by controller.playProgress.collectAsStateWithLifecycle(0f)
+        val playedDuration by controller.playedDuration.collectAsStateWithLifecycle()
+        val playProgress by controller.playProgress.collectAsStateWithLifecycle()
 
         Text(
             text = remember(playedDuration, videoProperties) {
@@ -196,12 +161,16 @@ fun PlayerControllerOverlayBottomBar(
             LinearProgressIndicator(
                 modifier = Modifier.matchParentSize(),
                 progress = bufferProgress,
-                trackColor = MaterialTheme.colorScheme.tertiary.weaken(),
+                color = aniDarkColorTheme().onSurface,
+                trackColor = aniDarkColorTheme().surface,
+                strokeCap = StrokeCap.Round,
             )
             LinearProgressIndicator(
-                modifier = Modifier.matchParentSize().alpha(0.9f),
+                modifier = Modifier.matchParentSize().alpha(0.8f),
                 progress = playProgress,
-                trackColor = MaterialTheme.colorScheme.primary,
+                color = aniDarkColorTheme().primary,
+                trackColor = aniDarkColorTheme().surface,
+                strokeCap = StrokeCap.Round,
             )
         }
 
@@ -217,7 +186,7 @@ fun PlayerControllerOverlayBottomBar(
 
 private fun renderSeconds(played: Long, length: Long?): String {
     if (length == null) {
-        return "00:00 / 00:00"
+        return "00:${played.fixToString(2)} / 00:00"
     }
     return if (played < 60 && length < 60) {
         "00:${played.fixToString(2)} / 00:${length.fixToString(2)}"
