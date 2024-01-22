@@ -7,7 +7,7 @@ import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 
 @Composable
-@Preview(widthDp = 1080 / 2, heightDp = 2400 / 2, showBackground = true)
+@Preview(widthDp = 1080 / 3, heightDp = 2400 / 3, showBackground = true)
 internal actual fun PreviewEpisodePage() {
     ProvideCompositionLocalsForPreview {
         val context = LocalContext.current

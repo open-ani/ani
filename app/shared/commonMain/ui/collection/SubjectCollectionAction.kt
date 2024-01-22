@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.ListAlt
 import androidx.compose.material.icons.filled.PlayCircleOutline
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -24,6 +25,7 @@ import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,53 +39,65 @@ import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.datasources.api.CollectionType
 
-private val SubjectCollectionActionsCommon = listOf(
-    SubjectCollectionAction(
+@Immutable
+object SubjectCollectionActions {
+    val Wish = SubjectCollectionAction(
         { Text("想看") },
         { Icon(Icons.Default.ListAlt, null) },
         CollectionType.Wish
-    ),
-    SubjectCollectionAction(
+    )
+    val Doing = SubjectCollectionAction(
         { Text("在看") },
         { Icon(Icons.Default.PlayCircleOutline, null) },
         CollectionType.Doing
-    ),
-    SubjectCollectionAction(
+    )
+    val Done = SubjectCollectionAction(
         { Text("看过") },
         { Icon(Icons.Default.Done, null) },
         CollectionType.Done
-    ),
-    SubjectCollectionAction(
+    )
+    val OnHold = SubjectCollectionAction(
         { Text("搁置") },
         { Icon(Icons.Default.AccessTime, null) },
         CollectionType.OnHold
-    ),
-    SubjectCollectionAction(
+    )
+    val Dropped = SubjectCollectionAction(
         { Text("抛弃") },
         { Icon(Icons.Default.Remove, null) },
         CollectionType.Dropped
-    ),
-)
-
-@Stable
-val SubjectCollectionActionsForEdit = SubjectCollectionActionsCommon + listOf(
-    SubjectCollectionAction(
+    )
+    val DeleteCollection = SubjectCollectionAction(
         { Text("取消追番", color = MaterialTheme.colorScheme.error) },
         { Icon(Icons.Default.DeleteOutline, null) },
         type = CollectionType.NotCollected,
-    ),
+    )
+    val Collect = SubjectCollectionAction(
+        { Text("追番") },
+        { Icon(Icons.Default.Star, null) },
+        type = CollectionType.NotCollected,
+    )
+}
+
+private val SubjectCollectionActionsCommon
+    get() = listOf(
+        SubjectCollectionActions.Wish,
+        SubjectCollectionActions.Doing,
+        SubjectCollectionActions.Done,
+        SubjectCollectionActions.OnHold,
+        SubjectCollectionActions.Dropped,
+    )
+
+@Stable
+val SubjectCollectionActionsForEdit = SubjectCollectionActionsCommon + listOf(
+    SubjectCollectionActions.DeleteCollection,
 )
 
 @Stable
 val SubjectCollectionActionsForCollect = SubjectCollectionActionsCommon + listOf(
-    SubjectCollectionAction(
-        { Text("追番") },
-        { Icon(Icons.Default.Star, null) },
-        type = CollectionType.NotCollected,
-    ),
+    SubjectCollectionActions.Collect,
 )
 
-@Stable
+@Immutable
 class SubjectCollectionAction(
     val title: @Composable () -> Unit,
     val icon: @Composable () -> Unit,
@@ -96,13 +110,14 @@ fun EditCollectionTypeDropDown(
     showDropdown: Boolean,
     onDismissRequest: () -> Unit,
     onClick: (action: SubjectCollectionAction) -> Unit,
+    actions: List<SubjectCollectionAction> = SubjectCollectionActionsForEdit
 ) {
     DropdownMenu(
         showDropdown,
         onDismissRequest = onDismissRequest,
         offset = DpOffset(x = 0.dp, y = 4.dp),
     ) {
-        for (action in SubjectCollectionActionsForEdit) {
+        for (action in actions) {
             val onClickState by rememberUpdatedState(onClick)
             val onDismissRequestState by rememberUpdatedState(onDismissRequest)
             val color = action.colorForCurrent(currentType)
@@ -175,33 +190,17 @@ fun CollectionActionButton(
     }
     Box(Modifier.placeholder(collected == null || type == null)) {
         var showDropdown by remember { mutableStateOf(false) }
-        FilledTonalButton(
+        BasicSubjectCollectionActionButton(
+            action,
             onClick = {
                 when (collected) {
-                    null -> return@FilledTonalButton
+                    null -> return@BasicSubjectCollectionActionButton
                     false -> onCollect()
                     true -> showDropdown = true
                 }
             },
-            Modifier,
-            colors = if (collected == true) CollectedActionButtonColors else UncollectedActionButtonColors,
-            shape = RoundedCornerShape(8.dp)
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                if (action != null) {
-                    Box(Modifier.size(16.dp)) {
-                        action.icon()
-                    }
-
-                    Row(Modifier.padding(start = 8.dp)) {
-                        action.title()
-                    }
-                } else {
-                    Text("载入") // 随便什么都行, 占空间
-                }
-            }
-
-        }
+            colors = if (collected == true) CollectedActionButtonColors else UncollectedActionButtonColors
+        )
 
         EditCollectionTypeDropDown(
             currentType = type,
@@ -213,4 +212,35 @@ fun CollectionActionButton(
             },
         )
     }
+}
+
+@Composable
+fun BasicSubjectCollectionActionButton(
+    action: SubjectCollectionAction?,
+    onClick: () -> Unit,
+    colors: ButtonColors,
+    modifier: Modifier = Modifier,
+) {
+    FilledTonalButton(
+        onClick = onClick,
+        modifier,
+        colors = colors,
+        shape = RoundedCornerShape(8.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            if (action != null) {
+                Box(Modifier.size(16.dp)) {
+                    action.icon()
+                }
+
+                Row(Modifier.padding(start = 8.dp)) {
+                    action.title()
+                }
+            } else {
+                Text("载入") // 随便什么都行, 占空间
+            }
+        }
+
+    }
+
 }

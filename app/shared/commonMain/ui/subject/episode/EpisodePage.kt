@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
@@ -56,6 +58,7 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import me.him188.ani.app.platform.Context
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.setRequestFullScreen
 import me.him188.ani.app.ui.external.placeholder.placeholder
@@ -65,6 +68,7 @@ import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.app.ui.theme.slightlyWeaken
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
+import org.openapitools.client.models.EpisodeCollectionType
 
 private val PAGE_HORIZONTAL_PADDING = 16.dp
 
@@ -185,50 +189,64 @@ fun EpisodePageContent(
         Column(Modifier.padding(vertical = 16.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             NowPlayingLabel(viewModel, Modifier.padding(horizontal = PAGE_HORIZONTAL_PADDING).fillMaxWidth())
 
-            Row(
-                Modifier.padding(horizontal = PAGE_HORIZONTAL_PADDING).fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.Top,
-            ) {
-                // 选择播放源
-                PlaySourceSelectionAction(viewModel)
-
-                val clipboard by rememberUpdatedState(LocalClipboardManager.current)
-                val snackbar by rememberUpdatedState(LocalSnackbar.current)
-                ActionButton(
-                    onClick = {
-                        viewModel.launchInMain {
-                            copyDownloadLink(clipboard, snackbar)
-                        }
-                    },
-                    icon = { Icon(Icons.Default.ContentCopy, null) },
-                    text = { Text("复制磁力") },
-                    modifier,
-                )
-
-                ActionButton(
-                    onClick = {
-                        viewModel.launchInMain {
-                            browseDownload(context, snackbar)
-                        }
-                    },
-                    icon = { Icon(Icons.Default.Download, null) },
-                    text = { Text("下载") },
-                    modifier,
-                )
-
-                ActionButton(
-                    onClick = {
-                        viewModel.launchInMain {
-                            browsePlaySource(context, snackbar)
-                        }
-                    },
-                    icon = { Icon(Icons.Default.ArrowOutward, null) },
-                    text = { Text("原始页面") },
-                    modifier,
-                )
-            }
+            EpisodeActionButtons(viewModel, modifier, context)
         }
+    }
+}
+
+/**
+ * 一行功能按钮.
+ *
+ * 选择播放源, 复制磁力, 下载, 原始页面.
+ */
+@Composable
+private fun EpisodeActionButtons(
+    viewModel: EpisodeViewModel,
+    modifier: Modifier,
+    context: Context
+) {
+    Row(
+        Modifier.padding(horizontal = PAGE_HORIZONTAL_PADDING).fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.Top,
+    ) {
+        // 选择播放源
+        PlaySourceSelectionAction(viewModel)
+
+        val clipboard by rememberUpdatedState(LocalClipboardManager.current)
+        val snackbar by rememberUpdatedState(LocalSnackbar.current)
+        ActionButton(
+            onClick = {
+                viewModel.launchInMain {
+                    copyDownloadLink(clipboard, snackbar)
+                }
+            },
+            icon = { Icon(Icons.Default.ContentCopy, null) },
+            text = { Text("复制磁力") },
+            modifier,
+        )
+
+        ActionButton(
+            onClick = {
+                viewModel.launchInMain {
+                    browseDownload(context, snackbar)
+                }
+            },
+            icon = { Icon(Icons.Default.Download, null) },
+            text = { Text("下载") },
+            modifier,
+        )
+
+        ActionButton(
+            onClick = {
+                viewModel.launchInMain {
+                    browsePlaySource(context, snackbar)
+                }
+            },
+            icon = { Icon(Icons.Default.ArrowOutward, null) },
+            text = { Text("原始页面") },
+            modifier,
+        )
     }
 }
 
@@ -547,41 +565,65 @@ fun EpisodePlaySourceItem(
 
 }
 
+/**
+ * 剧集标题, 序号
+ */
 @Composable
-fun EpisodeTitle(viewModel: EpisodeViewModel, modifier: Modifier = Modifier) {
-    Column(modifier) {
-        val subjectTitle by viewModel.subjectTitle.collectAsStateWithLifecycle(null)
-        Row(Modifier.placeholder(subjectTitle == null)) {
-            Text(
-                subjectTitle ?: "placeholder",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
-        }
-
-        Row(Modifier.padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-            val episodeTitle by viewModel.episodeTitle.collectAsStateWithLifecycle(null)
-            val episodeEp by viewModel.episodeEp.collectAsStateWithLifecycle(null)
-            val shape = RoundedCornerShape(8.dp)
-            Box(
-                Modifier.border(1.dp, MaterialTheme.colorScheme.outlineVariant, shape = shape)
-                    .placeholder(episodeEp == null)
-                    .clip(shape)
-                    .padding(horizontal = 4.dp, vertical = 2.dp)
-            ) {
+fun EpisodeTitle(
+    viewModel: EpisodeViewModel,
+    modifier: Modifier = Modifier
+) {
+    Row(modifier) {
+        Column {
+            val subjectTitle by viewModel.subjectTitle.collectAsStateWithLifecycle(null)
+            Row(Modifier.placeholder(subjectTitle == null)) {
                 Text(
-                    episodeEp ?: "01",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = LocalContentColor.current.slightlyWeaken(),
+                    subjectTitle ?: "placeholder",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
 
-            Text(
-                episodeTitle ?: "placeholder",
-                Modifier.padding(start = 8.dp).placeholder(episodeEp == null),
-                style = MaterialTheme.typography.titleMedium,
-            )
+            Row(Modifier.padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                val episodeTitle by viewModel.episodeTitle.collectAsStateWithLifecycle(null)
+                val episodeEp by viewModel.episodeEp.collectAsStateWithLifecycle(null)
+                val shape = RoundedCornerShape(8.dp)
+                Box(
+                    Modifier.border(1.dp, MaterialTheme.colorScheme.outlineVariant, shape = shape)
+                        .placeholder(episodeEp == null)
+                        .clip(shape)
+                        .padding(horizontal = 4.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        episodeEp ?: "01",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = LocalContentColor.current.slightlyWeaken(),
+                    )
+                }
+
+                Text(
+                    episodeTitle ?: "placeholder",
+                    Modifier.padding(start = 8.dp).placeholder(episodeEp == null),
+                    style = MaterialTheme.typography.titleSmall,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
         }
+
+        Spacer(Modifier.weight(1f))
+
+        val collectionType by viewModel.episodeCollectionType.collectAsStateWithLifecycle(EpisodeCollectionType.WATCHLIST)
+
+        EpisodeCollectionActionButton(
+            collectionType,
+            onClick = { target ->
+                viewModel.launchInBackground {
+                    setEpisodeCollectionType(target)
+                }
+            },
+            Modifier.requiredWidth(IntrinsicSize.Max).align(Alignment.CenterVertically)
+        )
     }
 }
 

@@ -1,6 +1,7 @@
 package me.him188.ani.datasources.bangumi.processing
 
 import me.him188.ani.datasources.api.CollectionType
+import org.openapitools.client.models.EpisodeCollectionType
 import org.openapitools.client.models.SubjectCollectionType
 
 
@@ -23,5 +24,25 @@ fun SubjectCollectionType?.toCollectionType(): CollectionType {
         SubjectCollectionType.OnHold -> CollectionType.OnHold
         SubjectCollectionType.Dropped -> CollectionType.Dropped
         null -> CollectionType.NotCollected
+    }
+}
+
+fun EpisodeCollectionType.toCollectionType(): CollectionType {
+    return when (this) {
+        EpisodeCollectionType.NOT_COLLECTED -> CollectionType.NotCollected
+        EpisodeCollectionType.WATCHLIST -> CollectionType.Wish
+        EpisodeCollectionType.WATCHED -> CollectionType.Done
+        EpisodeCollectionType.DISCARDED -> CollectionType.Dropped
+    }
+}
+
+fun CollectionType.toEpisodeCollectionType(): EpisodeCollectionType {
+    return when (this) {
+        CollectionType.NotCollected -> EpisodeCollectionType.NOT_COLLECTED
+        CollectionType.Wish -> EpisodeCollectionType.WATCHLIST
+        CollectionType.Doing -> EpisodeCollectionType.WATCHLIST
+        CollectionType.Done -> EpisodeCollectionType.WATCHED
+        CollectionType.OnHold -> EpisodeCollectionType.WATCHLIST
+        CollectionType.Dropped -> EpisodeCollectionType.DISCARDED
     }
 }

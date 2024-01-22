@@ -31,6 +31,7 @@ import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
+import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
@@ -65,6 +66,7 @@ import okhttp3.Request
 import okhttp3.Response
 import org.openapitools.client.apis.BangumiApi
 import org.openapitools.client.infrastructure.ApiClient
+import org.openapitools.client.models.PatchUserSubjectEpisodeCollectionRequest
 import org.openapitools.client.models.RelatedPerson
 import org.openapitools.client.models.UserSubjectCollectionModifyPayload
 
@@ -109,6 +111,11 @@ interface BangumiClient : Closeable {
     suspend fun postSubjectCollection(
         subjectId: Int,
         subjectCollectionModifyPayload: UserSubjectCollectionModifyPayload,
+    )
+
+    suspend fun postEpisodeCollection(
+        subjectId: Int,
+        payload: PatchUserSubjectEpisodeCollectionRequest,
     )
 
     suspend fun deleteSubjectCollection(
@@ -213,6 +220,26 @@ internal class BangumiClientImpl(
 
         if (!resp.status.isSuccess()) {
             throw IllegalStateException("Failed to patch subject collection: $resp")
+        }
+    }
+
+    override suspend fun postEpisodeCollection(
+        subjectId: Int,
+        payload: PatchUserSubjectEpisodeCollectionRequest
+    ) {
+        // https://api.bgm.tv/v0/users/-/collections/-/episodes/1279620 
+        // /v0/users/-/collections/{subject_id}/episodes
+        val resp = httpClient.patch("$BANGUMI_API_HOST/v0/users/-/collections/$subjectId/episodes") {
+            bearerAuth(ApiClient.accessToken ?: error("Not authorized"))
+            contentType(ContentType.Application.Json)
+            setBody(buildJsonObject {
+                put("episode_id", payload.episodeId.toJsonArray())
+                put("type", payload.type.value)
+            })
+        }
+
+        if (!resp.status.isSuccess()) {
+            throw IllegalStateException("Failed to patch episode collection: $resp")
         }
     }
 

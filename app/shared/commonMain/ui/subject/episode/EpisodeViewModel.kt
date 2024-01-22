@@ -11,6 +11,7 @@ import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,6 +25,7 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.withContext
+import me.him188.ani.app.data.EpisodeRepository
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.Context
 import me.him188.ani.app.torrent.TorrentDownloaderManager
@@ -46,6 +48,7 @@ import me.him188.ani.datasources.bangumi.processing.nameCNOrName
 import me.him188.ani.datasources.bangumi.processing.renderEpisodeSp
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import org.openapitools.client.models.EpisodeCollectionType
 import org.openapitools.client.models.EpisodeDetail
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.time.Duration.Companion.seconds
@@ -75,11 +78,15 @@ interface EpisodeViewModel : HasBackgroundScope {
     @Stable
     val episodeEp: Flow<String>
 
-
     @Stable
     val isFullscreen: StateFlow<Boolean>
 
     fun setFullscreen(fullscreen: Boolean)
+
+    // Collection
+
+    val episodeCollectionType: SharedFlow<EpisodeCollectionType>
+    suspend fun setEpisodeCollectionType(type: EpisodeCollectionType)
 
     // Video
 
@@ -160,6 +167,7 @@ private class EpisodeViewModelImpl(
     private val browserNavigator: BrowserNavigator by inject()
     private val torrentDownloaderManager: TorrentDownloaderManager by inject()
     private val playerControllerFactory: PlayerControllerFactory by inject()
+    private val episodeRepository: EpisodeRepository by inject()
 
     override val episodeId: MutableStateFlow<Int> = MutableStateFlow(initialEpisodeId)
 
@@ -318,6 +326,15 @@ private class EpisodeViewModelImpl(
 
     override fun setFullscreen(fullscreen: Boolean) {
         isFullscreen.value = fullscreen
+    }
+
+    override val episodeCollectionType: MutableSharedFlow<EpisodeCollectionType> = episodeId.mapNotNull {
+        episodeRepository.getEpisodeCollection(it)?.type
+    }.localCachedSharedFlow()
+
+    override suspend fun setEpisodeCollectionType(type: EpisodeCollectionType) {
+        episodeCollectionType.tryEmit(type)
+        episodeRepository.setEpisodeCollection(subjectId.value, listOf(episodeId.value), type)
     }
 
     override fun setSubjectId(subjectId: Int) {
