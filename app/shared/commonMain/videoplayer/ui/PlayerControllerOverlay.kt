@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.foundation.AniTopAppBar
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.ui.foundation.TopAppBarGoBackButton
 import me.him188.ani.app.ui.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.theme.slightlyWeaken
 import me.him188.ani.app.videoplayer.DummyPlayerController
@@ -96,7 +97,14 @@ internal fun PreviewPlayerControllerOverlayImpl() {
         Box(modifier = Modifier.background(Color.Black)) {
             PlayerControllerOverlay(
                 topBar = {
-
+                    PlayerControllerOverlayTopBar(
+                        startActions = {
+                            TopAppBarGoBackButton {}
+                        },
+                        Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                    )
                 },
                 bottomBar = {
                     PlayerControllerOverlayBottomBar(
