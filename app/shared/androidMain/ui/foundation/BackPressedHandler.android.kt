@@ -35,7 +35,8 @@ private fun BackPressedHandlerTiramisu(
 ) {
     val enabledState by rememberUpdatedState(newValue = enabled)
     val callbackState by rememberUpdatedState(newValue = callback)
-    val onBackPressedDispatcherOwner = LocalContext.current as OnBackPressedDispatcherOwner
+    val onBackPressedDispatcherOwner =
+        LocalContext.current as? OnBackPressedDispatcherOwner // can be null in preview mode
     val lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current
 
     // If activity or lifecycle change, re-register
@@ -50,7 +51,7 @@ private fun BackPressedHandlerTiramisu(
                 }
             }
 
-            onBackPressedDispatcherOwner.onBackPressedDispatcher.addCallback(lifecycleOwner, theCallback)
+            onBackPressedDispatcherOwner?.onBackPressedDispatcher?.addCallback(lifecycleOwner, theCallback)
 
             onDispose {
                 theCallback.remove()
