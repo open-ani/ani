@@ -133,7 +133,7 @@ internal class ExoPlayerController @UiThread constructor(
 
     override val state: MutableStateFlow<PlayerState> = MutableStateFlow(PlayerState.PAUSED_BUFFERING)
     override val videoProperties: MutableStateFlow<VideoProperties> = MutableStateFlow(VideoProperties.EMPTY)
-    override val bufferProgress: StateFlow<Float> = MutableStateFlow(0f)
+    override val bufferProgress: MutableStateFlow<Float> = MutableStateFlow(0f)
     override val isBuffering: Flow<Boolean> by lazy {
         state.map { it == PlayerState.PAUSED_BUFFERING }
     }
@@ -150,8 +150,9 @@ internal class ExoPlayerController @UiThread constructor(
     init {
         launchInBackground {
             while (true) {
-                playedDuration.value = withContext(Dispatchers.Main) {
-                    player.currentPosition.milliseconds
+                withContext(Dispatchers.Main) {
+                    playedDuration.value = player.currentPosition.milliseconds
+                    bufferProgress.value = player.bufferedPercentage.toFloat()
                 }
                 delay(1.seconds)
             }
