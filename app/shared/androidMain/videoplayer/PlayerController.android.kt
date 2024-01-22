@@ -5,17 +5,15 @@ package me.him188.ani.app.videoplayer
 import androidx.annotation.OptIn
 import androidx.annotation.UiThread
 import androidx.media3.common.MediaItem
-import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -94,6 +92,25 @@ internal class ExoPlayerController @UiThread constructor(
                     logger.warn("ExoPlayer error: ${error.errorCodeName}")
                 }
 
+                override fun onVideoSizeChanged(videoSize: VideoSize) {
+                    super.onVideoSizeChanged(videoSize)
+                    updateVideoProperties()
+                }
+
+                private fun updateVideoProperties() {
+                    val video = videoFormat!!
+                    val audio = audioFormat!!
+                    videoProperties.value = VideoProperties(
+                        title = mediaMetadata.title?.toString(),
+                        heightPx = video.height,
+                        widthPx = video.width,
+                        videoBitrate = video.bitrate,
+                        audioBitrate = audio.bitrate,
+                        frameRate = video.frameRate,
+                        duration = duration.milliseconds,
+                    )
+                }
+
                 override fun onPlaybackStateChanged(playbackState: Int) {
                     when (playbackState) {
                         Player.STATE_BUFFERING -> state.value = PlayerState.PAUSED_BUFFERING
@@ -110,29 +127,12 @@ internal class ExoPlayerController @UiThread constructor(
                         state.value = PlayerState.PAUSED
                     }
                 }
-
-                override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
-                    val video = videoFormat!!
-                    val audio = audioFormat!!
-                    videoProperties.tryEmit(
-                        VideoProperties(
-                            title = mediaMetadata.title?.toString(),
-                            heightPx = video.height,
-                            widthPx = video.width,
-                            videoBitrate = video.bitrate,
-                            audioBitrate = audio.bitrate,
-                            frameRate = video.frameRate,
-                            duration = duration.milliseconds,
-                        )
-                    )
-                }
             })
         }
     }
 
     override val state: MutableStateFlow<PlayerState> = MutableStateFlow(PlayerState.PAUSED_BUFFERING)
-    override val videoProperties: MutableSharedFlow<VideoProperties> =
-        MutableSharedFlow(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    override val videoProperties: MutableStateFlow<VideoProperties> = MutableStateFlow(VideoProperties.EMPTY)
     override val bufferProgress: StateFlow<Float> = MutableStateFlow(0f)
     override val isBuffering: Flow<Boolean> by lazy {
         state.map { it == PlayerState.PAUSED_BUFFERING }

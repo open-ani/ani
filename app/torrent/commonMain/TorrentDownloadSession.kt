@@ -68,7 +68,7 @@ internal class TorrentDownloadSessionImpl(
         MutableSharedFlow(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
     override val peerCount: MutableStateFlow<Int> = MutableStateFlow(0)
-    override val pieces: List<Piece> =
+    override var pieces: List<Piece> =
         Piece.buildPieces(torrentInfo.numPieces()) { torrentInfo.pieceSize(it).toUInt().toLong() }
 
     override suspend fun createDeferredFile(): DeferredFile = TorrentDeferredFileImpl(
@@ -97,7 +97,16 @@ internal class TorrentDownloadSessionImpl(
 
     @Synchronized
     private fun onPieceDownloaded(index: Int) {
-        pieces[index].state.value = PieceState.FINISHED
+        pieceAtIndex(index).state.value = PieceState.FINISHED
+    }
+
+    private fun pieceAtIndex(pieceIndex: Int): Piece {
+//        if (pieceIndex > pieces.lastIndex) {
+//            repeat(pieceIndex - pieces.lastIndex) {
+//                pieces.add(Piece(pieceIndex + it, piecesiz))
+//            }
+//        }
+        return pieces[pieceIndex]
     }
 
     internal val listener = object : AlertListener {
@@ -114,6 +123,10 @@ internal class TorrentDownloadSessionImpl(
                         logger.info { "Total ${pieceAvailability.size} pieces" }
                         logger.info { "Download first and last 10 first." }
                         torrentHandle = handle
+
+                        val torrentInfo = handle.torrentFile()
+                        pieces =
+                            Piece.buildPieces(torrentInfo.numPieces()) { torrentInfo.pieceSize(it).toUInt().toLong() }
 
                         // 根据实际测试, 只给部分 piece 设置优先级为 TOP_PRIORITY 并不一定会让这部分优先下载. 必须得忽略其他 pieces.
                         piecePriorities = Array(pieceAvailability.size) { Priority.LOW }
@@ -156,7 +169,7 @@ internal class TorrentDownloadSessionImpl(
                     AlertType.BLOCK_DOWNLOADING -> {
                         val a = alert as BlockDownloadingAlert
                         val pieceIndex = a.pieceIndex()
-                        pieces[pieceIndex].state.value = PieceState.DOWNLOADING
+                        pieceAtIndex(pieceIndex).state.value = PieceState.DOWNLOADING
                     }
 
                     AlertType.PIECE_FINISHED -> {
