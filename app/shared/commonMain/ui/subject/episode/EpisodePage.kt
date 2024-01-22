@@ -107,7 +107,7 @@ fun EpisodePageContent(
         enabled = isFullscreen, // else, use the default back handler by PreCompose (`navigator.goBack()`)
         onBackPressed = goBack
     )
-//    if (isFullScreen) {
+//    if (isFullScreen) 
 //        DisposableEffect(true) {
 //            onDispose {
 //                context.setFullScreen(false)

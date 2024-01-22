@@ -91,10 +91,10 @@ jobs:
 
       - if: ${{ env.isMac == 'true' }}
         name: Upload Android APK packages
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ani-android
-          path: android/build/outputs/apk/release/ani-android-release.apk
+          path: app/android/build/outputs/apk/release/android-release.apk
 
 
       - name: Assemble
