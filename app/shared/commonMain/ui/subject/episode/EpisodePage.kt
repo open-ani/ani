@@ -95,6 +95,7 @@ fun EpisodePageContent(
     val isFullscreen by viewModel.isFullscreen.collectAsState()
     val goBack = remember(onClickGoBack) {
         {
+            viewModel.playerController.pause()
             if (isFullscreen) {
                 context.setRequestFullScreen(false)
                 viewModel.setFullscreen(false)
