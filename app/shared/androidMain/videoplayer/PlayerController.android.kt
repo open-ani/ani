@@ -23,7 +23,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.platform.Context
-import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.videoplayer.media.TorrentDataSource
 import me.him188.ani.utils.logging.info
@@ -46,7 +45,9 @@ class ExoPlayerControllerFactory : PlayerControllerFactory {
 internal class ExoPlayerController @UiThread constructor(
     videoFlow: Flow<VideoSource<*>?>,
     context: Context,
-) : PlayerController, AbstractViewModel(), KoinComponent {
+) : AbstractPlayerController(),
+    AutoCloseable,
+    KoinComponent {
 
     private var playingResource: AutoCloseable? = null
     private val mediaSourceFactory = videoFlow.filterNotNull()
@@ -138,14 +139,20 @@ internal class ExoPlayerController @UiThread constructor(
         state.map { it == PlayerState.PAUSED_BUFFERING }
     }
 
+    override suspend fun onSeekTo(duration: Duration) {
+        withContext(Dispatchers.Main) {
+            player.seekTo(duration.inWholeMilliseconds)
+        }
+    }
+
     override val playedDuration: MutableStateFlow<Duration> = MutableStateFlow(0.milliseconds)
     override val playProgress: StateFlow<Float> =
         combine(videoProperties, playedDuration) { properties, duration ->
             if (properties.duration == 0.milliseconds) {
                 return@combine 0f
             }
-            (duration / properties.duration).toFloat()
-        }.filterNotNull().stateInBackground(0f)
+            (duration / properties.duration).toFloat().coerceIn(0f, 1f)
+        }.stateInBackground(0f)
 
     init {
         launchInBackground {

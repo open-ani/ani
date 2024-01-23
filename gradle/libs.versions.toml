@@ -117,6 +117,6 @@ androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", versi
 androidx-compose-ui-viewbinding = { module = "androidx.compose.ui:ui-viewbinding", version.ref = "jetpack-compose" }
 androidx-compose-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "jetpack-compose" }
 androidx-compose-material = { module = "androidx.compose.material:material", version.ref = "jetpack-compose" }
-androidx-compose-material3 = { module = "androidx.compose.material3:material3", version = "1.2.0-beta01" }
+androidx-compose-material3 = { module = "androidx.compose.material3:material3", version = "1.2.0-beta02" }
 androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "jetpack-compose" }
 # compose-runtime-livedata = { module = "androidx.compose.runtime:runtime-livedata", version.ref = "jetpackCompose" }

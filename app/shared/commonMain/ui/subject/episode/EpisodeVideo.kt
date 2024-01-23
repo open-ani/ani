@@ -25,7 +25,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import me.him188.ani.app.platform.isInLandscapeMode
 import me.him188.ani.app.ui.foundation.TopAppBarGoBackButton
 import me.him188.ani.app.ui.theme.aniDarkColorTheme
@@ -33,8 +32,8 @@ import me.him188.ani.app.ui.theme.looming
 import me.him188.ani.app.videoplayer.PlayerController
 import me.him188.ani.app.videoplayer.VideoPlayerView
 import me.him188.ani.app.videoplayer.ui.PlayerControllerOverlay
-import me.him188.ani.app.videoplayer.ui.PlayerControllerOverlayBottomBar
 import me.him188.ani.app.videoplayer.ui.PlayerControllerOverlayTopBar
+import me.him188.ani.app.videoplayer.ui.PlayerProgressController
 import me.him188.ani.app.videoplayer.ui.VideoLoadingIndicator
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import kotlin.time.Duration.Companion.seconds
@@ -55,15 +54,15 @@ internal fun EpisodeVideo(
     val (controllerVisible, setControllerVisible) = remember { mutableStateOf(true) }
 
     val controllerAlpha by animateFloatAsState(if (controllerVisible) 1f else 0f, tween())
-    LaunchedEffect(controllerVisible) {
-        // 2 秒后隐藏 TopAppBar
-        if (controllerVisible) {
-            launch {
-                delay(2.seconds)
-                setControllerVisible(false)
-            }
-        }
-    }
+//    LaunchedEffect(controllerVisible) {
+//        // 2 秒后隐藏 TopAppBar
+//        if (controllerVisible) {
+//            launch {
+//                delay(2.seconds)
+//                setControllerVisible(false)
+//            }
+//        }
+//    }
 
     BoxWithConstraints(
         modifier.then(if (isFullscreen) Modifier.fillMaxHeight() else Modifier.fillMaxWidth()),
@@ -136,7 +135,7 @@ internal fun EpisodeVideo(
                     }
                 },
                 bottomBar = {
-                    PlayerControllerOverlayBottomBar(
+                    PlayerProgressController(
                         controller = playerController,
                         onClickFullScreen = onClickFullScreen,
                         modifier = Modifier

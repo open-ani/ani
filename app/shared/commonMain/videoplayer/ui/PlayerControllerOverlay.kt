@@ -20,21 +20,22 @@ import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.foundation.AniTopAppBar
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
@@ -45,6 +46,7 @@ import me.him188.ani.app.videoplayer.DummyPlayerController
 import me.him188.ani.app.videoplayer.PlayerController
 import me.him188.ani.datasources.bangumi.processing.fixToString
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
+import kotlin.time.Duration.Companion.milliseconds
 
 
 /**
@@ -107,7 +109,7 @@ internal fun PreviewPlayerControllerOverlayImpl() {
                     )
                 },
                 bottomBar = {
-                    PlayerControllerOverlayBottomBar(
+                    PlayerProgressController(
                         controller = controller,
                         onClickFullScreen = {},
                         Modifier
@@ -121,7 +123,7 @@ internal fun PreviewPlayerControllerOverlayImpl() {
 }
 
 @Composable
-fun PlayerControllerOverlayBottomBar(
+fun PlayerProgressController(
     controller: PlayerController,
     onClickFullScreen: () -> Unit,
     modifier: Modifier = Modifier,
@@ -152,33 +154,50 @@ fun PlayerControllerOverlayBottomBar(
         val bufferProgress by controller.bufferProgress.collectAsStateWithLifecycle()
         val videoProperties by controller.videoProperties.collectAsStateWithLifecycle(null)
         val playedDuration by controller.playedDuration.collectAsStateWithLifecycle()
-        val playProgress by controller.playProgress.collectAsStateWithLifecycle()
+        val sliderPosition by controller.previewingOrPlayingProgress.collectAsStateWithLifecycle(0f)
+
+        val playedDurationSeconds = remember(playedDuration) { playedDuration.inWholeSeconds }
+        val totalDurationSeconds = remember(videoProperties) { videoProperties?.duration?.inWholeSeconds ?: 0L }
+        val totalDurationMillis = remember(videoProperties) { videoProperties?.duration?.inWholeMilliseconds ?: 0L }
 
         Text(
-            text = remember(playedDuration, videoProperties) {
-                renderSeconds(
-                    playedDuration.inWholeSeconds,
-                    videoProperties?.duration?.inWholeSeconds
-                )
-            },
+            text = renderSeconds(playedDurationSeconds, totalDurationSeconds),
             Modifier.padding(end = 8.dp),
             style = MaterialTheme.typography.labelSmall,
         )
 
-        Box(Modifier.weight(1f).height(4.dp).padding(horizontal = 8.dp), contentAlignment = Alignment.Center) {
-            LinearProgressIndicator(
-                modifier = Modifier.matchParentSize(),
-                progress = bufferProgress,
-                color = aniDarkColorTheme().onSurface,
-                trackColor = aniDarkColorTheme().surface,
-                strokeCap = StrokeCap.Round,
-            )
-            LinearProgressIndicator(
-                modifier = Modifier.matchParentSize().alpha(0.8f),
-                progress = playProgress,
-                color = aniDarkColorTheme().primary,
-                trackColor = aniDarkColorTheme().surface,
-                strokeCap = StrokeCap.Round,
+        Box(Modifier.weight(1f).padding(horizontal = 8.dp), contentAlignment = Alignment.Center) {
+//            LinearProgressIndicator(
+//                modifier = Modifier.padding(horizontal = 8.dp).matchParentSize(),
+//                progress = bufferProgress,
+//                color = aniDarkColorTheme().onSurface,
+//                trackColor = aniDarkColorTheme().surface,
+//                strokeCap = StrokeCap.Round,
+//            )
+//            LinearProgressIndicator(
+//                modifier = Modifier.matchParentSize().alpha(0.8f),
+//                progress = playProgress,
+//                color = aniDarkColorTheme().primary,
+//                trackColor = aniDarkColorTheme().surface,
+//                strokeCap = StrokeCap.Round,
+//            )
+            Slider(
+                value = sliderPosition,
+                valueRange = 0f..1f,
+                onValueChange = {
+                    controller.setPreviewingProgress(it)
+                    controller.seekTo((it * totalDurationMillis).toLong().milliseconds)
+                },
+                track = {
+                    SliderDefaults.Track(
+                        it,
+                        colors = SliderDefaults.colors(
+                            activeTrackColor = aniDarkColorTheme().secondary,
+                            inactiveTrackColor = aniDarkColorTheme().surface,
+                        )
+                    )
+                },
+                modifier = Modifier.alpha(0.8f).matchParentSize(),
             )
         }
 
@@ -192,6 +211,7 @@ fun PlayerControllerOverlayBottomBar(
     }
 }
 
+@Stable
 private fun renderSeconds(played: Long, length: Long?): String {
     if (length == null) {
         return "00:${played.fixToString(2)} / 00:00"
