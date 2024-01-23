@@ -32,7 +32,7 @@ import kotlinx.coroutines.launch
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.ui.foundation.AniApp
-import me.him188.ani.app.ui.home.MainScreen
+import me.him188.ani.app.ui.main.MainScreen
 import org.koin.android.ext.android.inject
 
 

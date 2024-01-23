@@ -30,7 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import me.him188.ani.app.AppTheme
+import me.him188.ani.app.ui.theme.AppTheme
 
 @Composable
 fun ColumnScope.SettingsGroup(

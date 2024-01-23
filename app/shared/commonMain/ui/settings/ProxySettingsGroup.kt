@@ -46,10 +46,10 @@ import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import me.him188.ani.app.AppTheme
 import me.him188.ani.app.app.AppSettings
 import me.him188.ani.app.app.settings.ProxyMode
 import me.him188.ani.app.i18n.LocalI18n
+import me.him188.ani.app.ui.theme.AppTheme
 import me.him188.ani.app.ui.theme.stronglyWeaken
 
 @Composable

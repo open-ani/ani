@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 import me.him188.ani.app.ui.foundation.AniApp
 import me.him188.ani.app.ui.foundation.AniTopAppBar
 import me.him188.ani.app.ui.foundation.launchInBackground
-import me.him188.ani.app.ui.home.currentAuthViewModel
+import me.him188.ani.app.ui.main.currentAuthViewModel
 
 
 class AuthorizationCallbackActivity : AniComponentActivity() {
