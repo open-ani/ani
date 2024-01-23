@@ -25,6 +25,7 @@ import androidx.compose.runtime.remember
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.isActive
 import me.him188.ani.app.session.AuthorizationCanceledException
@@ -103,7 +104,7 @@ abstract class AbstractViewModel : RememberObserver, ViewModel(), HasBackgroundS
             } else {
                 logger.error(throwable) { "Unhandled exception in background scope" }
             }
-        })
+        } + SupervisorJob())
     }
 
     /**
