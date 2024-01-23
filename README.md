@@ -24,6 +24,11 @@ Ani 3.0 **正在**开发中. 继续使用 [Compose Multiplatform] 实现多平�
 Bangumi,
 并从 Bangumi 获取番剧信息以及相关评论等.
 
+### 参与开发
+
+欢迎你提交 PR 参与开发, 如果很大兴趣我也很乐意为这个项目创建一个组织以共同维护.
+有关项目技术细节请参考 [CONTRIBUTING](CONTRIBUTING.md)。
+
 ## 下载
 
 Ani 支持 Android 和桌面端 (macOS、Linux、Windows)。
@@ -105,10 +110,6 @@ Compose 在安卓上的预览和生态比较好, 因此先做了安卓. 桌面�
 桌面端计划初版不会做视频播放, 只做跳转下载. 桌面端做好后移动端也将会支持平板模式 (复用).
 
 桌面端视频播放功能可能会用外置播放器, 配合悬浮窗弹幕引擎? 如有更好方案欢迎指点.
-
-## 参与开发
-
-欢迎你提交 [PR](https://github.com/Him188/ani/pulls) [参与开发](CONTRIBUTING.md)。
 
 ## 提示
 
