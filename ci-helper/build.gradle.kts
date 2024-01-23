@@ -110,7 +110,7 @@ tasks.register("uploadAndroidApk") {
             uploadReleaseAsset(
                 name = namer.androidApp(fullVersion),
                 contentType = "application/vnd.android.package-archive",
-                file = project(":ani-android").layout.buildDirectory.file("outputs/apk/release")
+                file = project(":app:ani-android").layout.buildDirectory.file("outputs/apk/release")
                     .get().asFile.walk()
                     .single { it.extension == "apk" && it.name.contains("release") },
             )
