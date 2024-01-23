@@ -22,7 +22,14 @@ jobs:
           - macos-12
     env:
       enableLocalPublishingTest: 'false'
-      gradleArgs: --scan "-Dorg.gradle.jvmargs=-Xmx4096m" "-Dfile.encoding=UTF-8" --no-configuration-cache
+      gradleArgs: >-
+        --scan
+        "-Dorg.gradle.jvmargs=-Xmx4096m" 
+        "-Dfile.encoding=UTF-8"
+        --no-configuration-cache 
+        "-Pbangumi.oauth.client.id=${{ secrets.BANGUMI_OAUTH_CLIENT_ID }}" 
+        "-Pbangumi.oauth.client.secret=${{ secrets.BANGUMI_OAUTH_CLIENT_SECRET }}"
+
       isMac: ${{ startsWith(matrix.os, 'macos') }}
       isWindows: ${{ startsWith(matrix.os, 'windows') }}
       isUbuntu: ${{ startsWith(matrix.os, 'ubuntu') }}
