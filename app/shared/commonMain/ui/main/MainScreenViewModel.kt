@@ -1,4 +1,4 @@
-package me.him188.ani.app.ui.home
+package me.him188.ani.app.ui.main
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

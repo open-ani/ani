@@ -48,7 +48,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.currentAniBuildConfig
-import me.him188.ani.app.ui.home.LocalContentPaddings
+import me.him188.ani.app.ui.main.LocalContentPaddings
 import me.him188.ani.app.ui.subject.details.Avatar
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.openapitools.client.models.User

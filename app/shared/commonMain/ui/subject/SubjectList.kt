@@ -63,7 +63,7 @@ import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.foundation.AniKamelImage
 import me.him188.ani.app.ui.foundation.BrokenImagePlaceholder
 import me.him188.ani.app.ui.foundation.LoadingIndicator
-import me.him188.ani.app.ui.home.LocalContentPaddings
+import me.him188.ani.app.ui.main.LocalContentPaddings
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
 /**

@@ -1,4 +1,4 @@
-package me.him188.ani.app.ui.home
+package me.him188.ani.app.ui.main
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -36,6 +36,8 @@ import me.him188.ani.app.ui.collection.CollectionPage
 import me.him188.ani.app.ui.collection.MyCollectionsViewModel
 import me.him188.ani.app.ui.foundation.TabNavigationItem
 import me.him188.ani.app.ui.foundation.rememberViewModel
+import me.him188.ani.app.ui.home.HomePage
+import me.him188.ani.app.ui.home.SearchViewModel
 import me.him188.ani.app.ui.profile.AuthViewModel
 import me.him188.ani.app.ui.profile.ProfilePage
 import me.him188.ani.app.ui.subject.details.SubjectDetailsScene

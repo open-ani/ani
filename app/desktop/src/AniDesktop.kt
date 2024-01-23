@@ -48,11 +48,10 @@ import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.getCommonKoinModule
 import me.him188.ani.app.torrent.TorrentDownloader
 import me.him188.ani.app.torrent.TorrentDownloaderFactory
-import me.him188.ani.app.ui.PreferencesPage
 import me.him188.ani.app.ui.foundation.AniApp
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
-import me.him188.ani.app.ui.home.MainScreen
 import me.him188.ani.app.ui.interaction.PlatformImplementations
+import me.him188.ani.app.ui.main.MainScreen
 import me.him188.ani.utils.logging.logger
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
@@ -136,14 +135,6 @@ object AniDesktop {
     }
 }
 
-
-@Composable
-@Preview
-fun PreviewPreferencesWindow() {
-    ProvideCompositionLocalsForPreview {
-        PreferencesPage(null)
-    }
-}
 
 @Composable
 private fun MainWindowContent(
