@@ -184,6 +184,10 @@ val generateAniBuildConfigDesktop = tasks.register("generateAniBuildConfigDeskto
         createNewFile()
     }
 
+    inputs.property("project.version", project.version)
+    inputs.property("bangumiClientId", bangumiClientId)
+    inputs.property("bangumiClientSecret", bangumiClientSecret)
+
     outputs.file(file)
 
     val text = """
