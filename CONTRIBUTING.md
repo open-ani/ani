@@ -102,8 +102,10 @@ Ani 使用 Gradle Version Catalogs. 依赖位于 `gradle/libs.versions.toml`.
    替换相应内容为你应用的):
     - `bangumi.oauth.client.id=bgmXXXXXXXX`
     - `bangumi.oauth.client.secret=XXXXXXXX`
-5. 在 IDE 同步项目, 待同步完成后查看 `me.him188.ani.android.BuildConfig`, 你应当能看到你的应用 ID 和
-   Secret 已经更新到项目构建中.
+5. 在 IDE 同步项目, 执行一次构建 (`./gradlew build`). 待构建完成后 (双击 shift)
+   查看生成的 `me.him188.ani.android.BuildConfig`, 你应当能看到你的应用 ID 和
+   Secret 已经更新到该文件中.
+   > 桌面端也会自动有类似的 BuildConfig 文件生成. 它与 Android 端的是同步的.
 
 ### 配置 Android 签名
 

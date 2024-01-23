@@ -19,8 +19,6 @@
 @file:Suppress("UnstableApiUsage")
 @file:OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
 
-import com.android.build.gradle.internal.cxx.io.writeTextIfDifferent
-
 
 plugins {
     kotlin("multiplatform")
@@ -180,12 +178,15 @@ kotlin.sourceSets.getByName("desktopMain") {
 //        
 //    }
 //}
-val file = buildConfigDesktopDir.get().asFile.resolve("AniBuildConfig.kt").apply {
-    parentFile.mkdirs()
-    createNewFile()
-}
-file.writeTextIfDifferent(
-    """
+val generateAniBuildConfigDesktop = tasks.register("generateAniBuildConfigDesktop") {
+    val file = buildConfigDesktopDir.get().asFile.resolve("AniBuildConfig.kt").apply {
+        parentFile.mkdirs()
+        createNewFile()
+    }
+
+    outputs.file(file)
+
+    val text = """
             package me.him188.ani.app.platform
             object AniBuildConfigDesktop : AniBuildConfig {
                 override val versionName = "${project.version}"
@@ -194,4 +195,16 @@ file.writeTextIfDifferent(
                 override val isDebug = false
             }
             """.trimIndent()
-)
+
+    outputs.upToDateWhen {
+        file.exists() && file.readText().trim() == text.trim()
+    }
+
+    doLast {
+        file.writeText(text)
+    }
+}
+
+tasks.named("compileKotlinDesktop") {
+    dependsOn(generateAniBuildConfigDesktop)
+}
