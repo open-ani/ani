@@ -16,10 +16,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.ani.app.ui.interaction
+@file:JvmName("Vibration_common")
+
+package me.him188.ani.app.interaction
 
 import me.him188.ani.app.platform.Context
 
-actual fun Context.vibrateIfSupported(strength: VibrationStrength) {
-    // not supported
+expect fun Context.vibrateIfSupported(strength: VibrationStrength = VibrationStrength.CLICK)
+
+enum class VibrationStrength {
+    TICK,
+    CLICK,
+    HEAVY_CLICK,
 }

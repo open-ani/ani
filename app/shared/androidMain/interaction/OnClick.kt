@@ -16,16 +16,25 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.ani.app.ui.interaction
+package me.him188.ani.app.interaction
 
+import androidx.compose.foundation.Indication
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEvent
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onKeyEvent
 
-actual inline fun Modifier.onEnterKeyEvent(crossinline action: (KeyEvent) -> Boolean) = onKeyEvent {
-    if (it.key == Key.Enter || it.key == Key.NumPadEnter) {
-        action(it)
-    } else false
-}
+actual fun Modifier.onClickEx(
+    interactionSource: MutableInteractionSource,
+    indication: Indication?,
+    enabled: Boolean,
+    onDoubleClick: (() -> Unit)?,
+    onLongClick: (() -> Unit)?,
+    onClick: () -> Unit
+): Modifier = this.combinedClickable(
+    interactionSource = interactionSource,
+    indication = indication,
+    enabled = enabled,
+    onClick = onClick,
+    onLongClick = onLongClick,
+    onDoubleClick = onDoubleClick
+)

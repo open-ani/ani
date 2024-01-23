@@ -16,8 +16,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.ani.app.ui.interaction
+package me.him188.ani.app.interaction
 
-abstract class KeyShortcuts {
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.window.FrameWindowScope
+
+interface MenuBarProvider {
+    @Composable
+    fun FrameWindowScope.MenuBar(
+        onClickPreferences: () -> Unit,
+    )
 }
-

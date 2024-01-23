@@ -39,7 +39,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import me.him188.ani.app.AppTheme
-import me.him188.ani.app.ui.interaction.onEnterKeyEvent
+import me.him188.ani.app.interaction.onEnterKeyEvent
 import me.him188.ani.app.ui.theme.stronglyWeaken
 
 @Composable

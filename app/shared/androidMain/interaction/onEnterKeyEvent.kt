@@ -16,19 +16,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-@file:JvmName("OnClick_common")
+package me.him188.ani.app.interaction
 
-package me.him188.ani.app.ui.interaction
-
-import androidx.compose.foundation.Indication
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEvent
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
 
-expect fun Modifier.onClickEx(
-    interactionSource: MutableInteractionSource = MutableInteractionSource(),
-    indication: Indication?,
-    enabled: Boolean = true,
-    onDoubleClick: (() -> Unit)? = null,
-    onLongClick: (() -> Unit)? = null,
-    onClick: () -> Unit
-): Modifier
+actual inline fun Modifier.onEnterKeyEvent(crossinline action: (KeyEvent) -> Boolean): Modifier =
+    this.onKeyEvent {
+        if (it.key == Key.Enter || it.key == Key.NumPadEnter) {
+            action(it)
+        } else false
+    }

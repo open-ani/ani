@@ -17,7 +17,3 @@
  */
 
 package me.him188.ani.app
-
-import androidx.compose.material3.MaterialTheme
-
-typealias AppTheme = MaterialTheme
