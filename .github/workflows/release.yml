@@ -127,6 +127,9 @@ jobs:
 
       - name: Clean and download dependencies
         run: ./gradlew clean ${{ env.gradleArgs }}
+        env:
+          "bangumi.oauth.client.id": ${{ secrets.BANGUMI_OAUTH_CLIENT_ID }}
+          "bangumi.oauth.client.secret": ${{ secrets.BANGUMI_OAUTH_CLIENT_SECRET }}
 
       - if: ${{ env.isMac == 'true' }}
         name: Prepare Android Signing Key
@@ -136,6 +139,9 @@ jobs:
           fileName: 'android_signing_key'
           fileDir: './'
           encodedString: ${{ secrets.SIGNING_RELEASE_STOREFILE }}
+        env:
+          "bangumi.oauth.client.id": ${{ secrets.BANGUMI_OAUTH_CLIENT_ID }}
+          "bangumi.oauth.client.secret": ${{ secrets.BANGUMI_OAUTH_CLIENT_SECRET }}
 
       - if: ${{ env.isMac == 'true' }}
         name: Build Android APK
@@ -145,6 +151,8 @@ jobs:
           "signing_release_storePassword": ${{ secrets.SIGNING_RELEASE_STOREPASSWORD }}
           "signing_release_keyAlias": ${{ secrets.SIGNING_RELEASE_KEYALIAS }}
           "signing_release_keyPassword": ${{ secrets.SIGNING_RELEASE_KEYPASSWORD }}
+          "bangumi.oauth.client.id": ${{ secrets.BANGUMI_OAUTH_CLIENT_ID }}
+          "bangumi.oauth.client.secret": ${{ secrets.BANGUMI_OAUTH_CLIENT_SECRET }}
 
       - if: ${{ env.isMac == 'true' }}
         name: Upload Android APK
@@ -173,9 +181,15 @@ jobs:
 
       - name: Assemble
         run: ./gradlew assemble ${{ env.gradleArgs }}
+        env:
+          "bangumi.oauth.client.id": ${{ secrets.BANGUMI_OAUTH_CLIENT_ID }}
+          "bangumi.oauth.client.secret": ${{ secrets.BANGUMI_OAUTH_CLIENT_SECRET }}
 
       - name: Check
         run: ./gradlew check ${{ env.gradleArgs }}
+        env:
+          "bangumi.oauth.client.id": ${{ secrets.BANGUMI_OAUTH_CLIENT_ID }}
+          "bangumi.oauth.client.secret": ${{ secrets.BANGUMI_OAUTH_CLIENT_SECRET }}
       
       #          createReleaseDistributable 
       #          packageReleaseDistributionForCurrentOS 
@@ -187,6 +201,9 @@ jobs:
           packageDistributionForCurrentOS 
           packageUberJarForCurrentOS 
           ${{ env.gradleArgs }}
+        env:
+          "bangumi.oauth.client.id": ${{ secrets.BANGUMI_OAUTH_CLIENT_ID }}
+          "bangumi.oauth.client.secret": ${{ secrets.BANGUMI_OAUTH_CLIENT_SECRET }}
 
       # Upload assets for release
 
