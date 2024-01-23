@@ -28,14 +28,10 @@ Bangumi,
 
 Ani 支持 Android 和桌面端 (macOS、Linux、Windows)。
 
-3.0 重构还在进行中, 2.0 正式版本可在 [releases](https://github.com/Him188/ani/releases/latest)
+3.0 重构还在进行中, 3.0 测试版可以在 [releases](https://github.com/Him188/ani/releases/latest)
 中的 "Assets" 下载最新正式版本。(注意: 2.0 与 3.0 完全不同)
 
-2.x 测试版本可以在 [releases](https://github.com/Him188/ani/releases/) 找到。
-使用测试版本可以体验最新特性，但可能不稳定。
-
-~3.0 开发测试版本可以在每个 commit 的自动构建中找到。~ CD 发生了点意外, 3.0 构建没在运行,
-等第一个里程碑发布后会修复.
+3.0 开发测试版本可以在每个 commit 的 macos-12 构建中找到。
 
 ## 未来 3.0 功能截图
 
@@ -90,13 +86,17 @@ Ani 支持 Android 和桌面端 (macOS、Linux、Windows)。
 
 <img width="300" src=".readme/images/episode/episode-player-loading.jpg" alt="episode-player-loading"/> <img width="300" src=".readme/images/episode/episode-player-playing.jpg" alt="episode-player-playing"/>
 
+### 全屏播放
+
+<img width="600" src=".readme/images/episode/episode-player-fullscreen.jpg" alt="episode-player-fullscreen"/>
+
 ### 弹幕与评论
 
 计划中, 将在第二个里程碑支持.
 
 ### 标题 / 标签搜索页面
 
-~重构掉了, 下次补上~
+在首页, 目前支持使用标题关键词搜索. 其他搜索方式计划实现中.
 
 ### 桌面端
 
