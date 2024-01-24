@@ -10,14 +10,14 @@ import me.him188.ani.utils.logging.logger
 class AndroidBrowserNavigator : BrowserNavigator {
     private val logger = logger(this::class)
 
-    override fun openBrowser(context: Context, url: String): Boolean {
-        return runCatching {
+    override fun openBrowser(context: Context, url: String) {
+        runCatching {
             launchChromeTab(context, url)
         }.recoverCatching {
             view(url, context)
         }.onFailure {
             logger.warn("Failed to open tab", it)
-        }.isSuccess
+        }
     }
 
     private fun launchChromeTab(context: Context, url: String) {
@@ -25,12 +25,12 @@ class AndroidBrowserNavigator : BrowserNavigator {
         intent.launchUrl(context, Uri.parse(url))
     }
 
-    override fun openMagnetLink(context: Context, url: String): Boolean {
-        return kotlin.runCatching {
+    override fun openMagnetLink(context: Context, url: String) {
+        kotlin.runCatching {
             view(url, context)
         }.onFailure {
             logger.warn("Failed to open browser", it)
-        }.isSuccess
+        }
     }
 
     private fun view(url: String, context: Context) {
