@@ -77,7 +77,7 @@ interface SessionManager {
     val processingAuth: StateFlow<Boolean>
 
     @Throws(IOException::class)
-    suspend fun refreshSessionByCode(code: String)
+    suspend fun refreshSessionByCode(code: String, callbackUrl: String)
 
     @Throws(IOException::class)
     suspend fun refreshSessionByRefreshToken()
@@ -143,8 +143,8 @@ internal class SessionManagerImpl(
         }
     }
 
-    override suspend fun refreshSessionByCode(code: String) {
-        val accessToken = client.exchangeTokens(code, callbackUrl = BangumiAuthorizationConstants.CALLBACK_URL)
+    override suspend fun refreshSessionByCode(code: String, callbackUrl: String) {
+        val accessToken = client.exchangeTokens(code, callbackUrl = callbackUrl)
         setSession(
             accessToken.userId,
             accessToken.accessToken,
