@@ -11,6 +11,8 @@ import androidx.compose.ui.Modifier
  */
 @Composable
 expect fun BangumiOAuthRequest(
+    vm: AuthViewModel,
     onFailed: (Throwable) -> Unit,
     modifier: Modifier = Modifier,
 )
+

@@ -39,6 +39,7 @@ fun AuthRequestPage(
         if (needAuth) {
             key(viewModel.retryCount.value) {
                 BangumiOAuthRequest(
+                    viewModel,
                     onFailed = {
                         viewModel.onAuthFailed(it)
                     },

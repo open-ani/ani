@@ -10,6 +10,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import me.him188.ani.app.session.BangumiAuthorizationConstants
 import me.him188.ani.app.ui.foundation.AniApp
 import me.him188.ani.app.ui.foundation.AniTopAppBar
 import me.him188.ani.app.ui.foundation.launchInBackground
@@ -40,7 +41,7 @@ class AuthorizationCallbackActivity : AniComponentActivity() {
         val vm = currentAuthViewModel ?: return
         vm.launchInBackground {
             val code = data.getQueryParameter("code")!!
-            setCode(code)
+            setCode(code, BangumiAuthorizationConstants.CALLBACK_URL)
             finish()
         }
 

@@ -40,12 +40,14 @@ import androidx.compose.ui.window.rememberWindowState
 import dev.dirs.ProjectDirectories
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import me.him188.ani.app.interaction.PlatformImplementations
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.DesktopContext
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.getCommonKoinModule
+import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.torrent.TorrentDownloader
 import me.him188.ani.app.torrent.TorrentDownloaderFactory
 import me.him188.ani.app.ui.foundation.AniApp
@@ -78,7 +80,7 @@ object AniDesktop {
 
         val coroutineScope = CoroutineScope(SupervisorJob())
 
-        startKoin {
+        val koin = startKoin {
             modules(getCommonKoinModule({ context }, coroutineScope))
             modules(module {
 //                single<SubjectNavigator> { AndroidSubjectNavigator() }
@@ -94,17 +96,27 @@ object AniDesktop {
             })
         }
 
+        val navigator = AniNavigator()
+
+        val sessionManager by koin.koin.inject<SessionManager>()
+
+        coroutineScope.launch {
+            sessionManager.requireAuthorization(navigator, optional = true)
+        }
+
         application(exitProcessOnExit = true) {
             val platform = remember { PlatformImplementations.current }
             val mainSnackbar = remember { SnackbarHostState() }
             CompositionLocalProvider(LocalContext provides context) {
-                content()
+                content(navigator)
             }
         }
     }
 
     @Composable
-    private fun ApplicationScope.content() {
+    private fun ApplicationScope.content(
+        aniNavigator: AniNavigator,
+    ) {
         Window(
             title = "ani",
             onCloseRequest = {
@@ -130,7 +142,11 @@ object AniDesktop {
                 }
             }
 
-            MainWindowContent(hostIsMacOs = PlatformImplementations.hostIsMacOs, windowImmersed = windowImmersed)
+            MainWindowContent(
+                hostIsMacOs = PlatformImplementations.hostIsMacOs,
+                windowImmersed = windowImmersed,
+                aniNavigator
+            )
         }
     }
 }
@@ -140,6 +156,7 @@ object AniDesktop {
 private fun MainWindowContent(
     hostIsMacOs: Boolean,
     windowImmersed: Boolean,
+    aniNavigator: AniNavigator,
 ) {
     Box(
         Modifier.background(color = AppTheme.colorScheme.background)
@@ -154,7 +171,6 @@ private fun MainWindowContent(
                 },
             )
 
-            val aniNavigator = remember { AniNavigator() }
             CompositionLocalProvider(LocalNavigator provides aniNavigator) {
                 Box(Modifier.padding(all = paddingByWindowSize)) {
                     AniApp {
@@ -169,12 +185,11 @@ private fun MainWindowContent(
 @Composable
 @Preview
 fun PreviewMainWindowMacOS() {
-    val app = remember {
-    }
     ProvideCompositionLocalsForPreview {
         MainWindowContent(
             hostIsMacOs = false,
-            windowImmersed = false
+            windowImmersed = false,
+            aniNavigator = remember { AniNavigator() },
         )
     }
 }

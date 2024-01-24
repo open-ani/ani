@@ -114,6 +114,11 @@ kotlin {
         api(projects.utils.slf4jKt)
         api(libs.kotlinx.coroutines.swing)
         runtimeOnly(libs.kotlinx.coroutines.debug)
+
+        runtimeOnly(libs.slf4j.simple)
+        implementation(libs.ktor.server.cio)
+        implementation(libs.ktor.server.content.negotiation)
+        implementation(libs.ktor.serialization.kotlinx.json)
     }
 }
 
@@ -185,7 +190,7 @@ val generateAniBuildConfigDesktop = tasks.register("generateAniBuildConfigDeskto
     }
 
     inputs.property("project.version", project.version)
-    inputs.property("bangumiClientId", bangumiClientId).optional(true)
+    inputs.property("bangumiClientIdDesktop", bangumiClientId).optional(true)
     inputs.property("bangumiClientSecret", bangumiClientSecret).optional(true)
 
     outputs.file(file)

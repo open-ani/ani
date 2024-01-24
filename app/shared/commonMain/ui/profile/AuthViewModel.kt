@@ -58,16 +58,21 @@ class AuthViewModel : AbstractViewModel(), KoinComponent {
      */
     val authError: StateFlow<String?> = _error
 
-    suspend fun setCode(code: String) {
+    suspend fun setCode(code: String, callbackUrl: String) {
         runCatching {
-            withContext(Dispatchers.IO) { sessionManager.refreshSessionByCode(code) }
+            withContext(Dispatchers.IO) {
+                sessionManager.refreshSessionByCode(
+                    code,
+                    callbackUrl
+                )
+            }
         }.onFailure {
             onAuthFailed(it)
         }
     }
 
     fun onAuthFailed(throwable: Throwable) {
-        _error.value = "登录失败, 请重试"
+        _error.value = "登录失败, 请重试\n\n错误信息: ${throwable.stackTraceToString()}"
     }
 
     @UiThread
