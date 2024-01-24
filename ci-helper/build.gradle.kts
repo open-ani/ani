@@ -70,7 +70,7 @@ enum class OS(
 val namer = ArtifactNamer()
 
 class ArtifactNamer {
-    private val APP_NAME = "Ani"
+    private val APP_NAME = "ani"
 
     fun getFullVersionFromTag(tag: String): String {
         return tag.substringAfter("v")
