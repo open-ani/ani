@@ -158,22 +158,22 @@ private fun MainWindowContent(
     windowImmersed: Boolean,
     aniNavigator: AniNavigator,
 ) {
-    Box(
-        Modifier.background(color = AppTheme.colorScheme.background)
-            .padding(top = if (hostIsMacOs && windowImmersed) 16.dp else 0.dp) // safe area for macOS if windowImmersed
-    ) {
-        BoxWithConstraints(Modifier.fillMaxSize()) {
-            val paddingByWindowSize by animateDpAsState(
-                if (maxWidth > 400.dp) {
-                    16.dp
-                } else {
-                    8.dp
-                },
-            )
+    AniApp {
+        Box(
+            Modifier.background(color = AppTheme.colorScheme.background)
+                .padding(top = if (hostIsMacOs && windowImmersed) 16.dp else 0.dp) // safe area for macOS if windowImmersed
+        ) {
+            BoxWithConstraints(Modifier.fillMaxSize()) {
+                val paddingByWindowSize by animateDpAsState(
+                    if (maxWidth > 400.dp) {
+                        16.dp
+                    } else {
+                        8.dp
+                    },
+                )
 
-            CompositionLocalProvider(LocalNavigator provides aniNavigator) {
-                Box(Modifier.padding(all = paddingByWindowSize)) {
-                    AniApp {
+                CompositionLocalProvider(LocalNavigator provides aniNavigator) {
+                    Box(Modifier.padding(all = paddingByWindowSize)) {
                         MainScreen(aniNavigator)
                     }
                 }
