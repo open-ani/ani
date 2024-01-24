@@ -78,6 +78,15 @@ interface PlayerController {
      * 跳转到指定位置
      */
     fun seekTo(duration: Duration)
+
+    val subjectId: Flow<Int>
+    val episodeId: Flow<Int>
+
+    fun onUpdatePlayerPosition(handler: (position: Long) -> Unit)
+
+    fun updatePlayingInfo(subjectId: Int, episodeId: Int)
+
+    fun updatePlayerPosition(position: Long)
 }
 
 abstract class AbstractPlayerController : PlayerController, AbstractViewModel() {
@@ -146,6 +155,25 @@ abstract class AbstractPlayerController : PlayerController, AbstractViewModel() 
     @CallSuper
     final override fun seekTo(duration: Duration) {
         seekToDebouncer.value = duration
+    }
+
+    override var subjectId = MutableStateFlow(0)
+    override var episodeId = MutableStateFlow(0)
+
+    override fun updatePlayingInfo(subjectId: Int, episodeId: Int) {
+        this.subjectId.value = subjectId
+        this.episodeId.value = episodeId
+    }
+
+    var handler: (position: Long) -> Unit = {}
+        protected set
+
+    override fun onUpdatePlayerPosition(handler: (position: Long) -> Unit) {
+        this.handler = handler
+    }
+
+    override fun updatePlayerPosition(position: Long) {
+        handler.invoke(position)
     }
 }
 

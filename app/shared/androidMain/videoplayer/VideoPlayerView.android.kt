@@ -5,9 +5,11 @@ import androidx.annotation.OptIn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.PlayerView
 import androidx.media3.ui.PlayerView.ControllerVisibilityListener
+import me.him188.ani.app.app.AppLifeCycle
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -23,9 +25,21 @@ actual fun VideoPlayerView(
                     player = it.player
                     setControllerVisibilityListener(ControllerVisibilityListener { visibility ->
                         if (visibility == View.VISIBLE) {
-                            videoView.hideController();
+                            videoView.hideController()
                         }
                     })
+                    // 暂停时保存进度
+                    it.player.addListener(object : Player.Listener {
+                        override fun onIsPlayingChanged(isPlaying: Boolean) {
+                            if (!isPlaying) playerController.updatePlayerPosition(it.player.currentPosition)
+                        }
+                    })
+                    AppLifeCycle.addPausedListener("video_player") {
+                        playerController.updatePlayerPosition(it.player.currentPosition)
+                    }
+                    AppLifeCycle.addDestroyListener("video_player") {
+                        playerController.updatePlayerPosition(it.player.currentPosition)
+                    }
                 }
             }
         },

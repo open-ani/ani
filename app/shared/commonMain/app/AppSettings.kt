@@ -22,6 +22,9 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 import me.him188.ani.app.app.settings.ProxySettings
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.days
+import kotlin.time.DurationUnit
 
 @Immutable
 @Serializable
@@ -34,4 +37,9 @@ data class AppSettings(
 
     @Stable
     val proxy: ProxySettings = ProxySettings(),
+
+    /**
+     * 保存播放进度的时长, 超出时长的记录将被删除
+     */
+    val keepPlayPosition: Duration = 30.days
 )

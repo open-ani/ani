@@ -69,6 +69,7 @@ import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.app.ui.theme.slightlyWeaken
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.openapitools.client.models.EpisodeCollectionType
+import kotlin.time.Duration.Companion.milliseconds
 
 private val PAGE_HORIZONTAL_PADDING = 16.dp
 
@@ -122,12 +123,23 @@ fun EpisodePageContent(
         // 视频
         val videoReady by viewModel.isVideoReady.collectAsStateWithLifecycle(false)
         val selected by viewModel.playSourceSelected.collectAsStateWithLifecycle(false)
+        val subjectId by viewModel.subjectId.collectAsStateWithLifecycle(0)
+        val episodeId by viewModel.episodeId.collectAsStateWithLifecycle(0)
+        val position by viewModel.episodePosition.collectAsStateWithLifecycle(0)
+
         Box(
             Modifier.fillMaxWidth().background(Color.Black)
                 .then(if (isFullscreen) Modifier.fillMaxSize() else Modifier.statusBarsPadding())
         ) {
             EpisodeVideo(
-                selected, videoReady, viewModel.playerController,
+                selected, videoReady,
+                viewModel.playerController.also {
+                    it.updatePlayingInfo(subjectId, episodeId)
+                    it.seekTo(position.milliseconds)
+                    it.onUpdatePlayerPosition { position ->
+                        viewModel.setEpisodePosition(position)
+                    }
+                },
                 goBack,
                 onClickFullScreen = {
                     if (isFullscreen) {

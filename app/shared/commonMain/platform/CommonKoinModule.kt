@@ -21,6 +21,8 @@ package me.him188.ani.app.platform
 import androidx.compose.runtime.Stable
 import io.ktor.client.plugins.UserAgent
 import kotlinx.coroutines.CoroutineScope
+import me.him188.ani.app.data.AppSettingsRepository
+import me.him188.ani.app.data.AppSettingsRepositoryImpl
 import me.him188.ani.app.data.EpisodeRepository
 import me.him188.ani.app.data.EpisodeRepositoryImpl
 import me.him188.ani.app.data.PreferredAllianceRepository
@@ -30,6 +32,8 @@ import me.him188.ani.app.data.SubjectRepository
 import me.him188.ani.app.data.SubjectRepositoryImpl
 import me.him188.ani.app.data.TokenRepository
 import me.him188.ani.app.data.TokenRepositoryImpl
+import me.him188.ani.app.persistent.appSettingsStore
+import me.him188.ani.app.persistent.episodePositionStore
 import me.him188.ani.app.persistent.preferredAllianceStore
 import me.him188.ani.app.persistent.tokenStore
 import me.him188.ani.app.session.SessionManager
@@ -47,6 +51,7 @@ import org.koin.dsl.module
 fun getCommonKoinModule(getContext: () -> Context, coroutineScope: CoroutineScope) = module {
     single<TokenRepository> { TokenRepositoryImpl(getContext().tokenStore) }
     single<PreferredAllianceRepository> { PreferredAllianceRepositoryImpl(getContext().preferredAllianceStore) }
+    single<AppSettingsRepository> { AppSettingsRepositoryImpl(getContext().appSettingsStore) }
     single<SessionManager> { SessionManagerImpl(coroutineScope) }
     single<DmhyClient> {
         DmhyClient.create {
@@ -59,7 +64,7 @@ fun getCommonKoinModule(getContext: () -> Context, coroutineScope: CoroutineScop
     single<SubjectProvider> { BangumiSubjectProvider(get<BangumiClient>()) }
     single<DownloadProvider> { DmhyDownloadProvider() }
     single<SubjectRepository> { SubjectRepositoryImpl() }
-    single<EpisodeRepository> { EpisodeRepositoryImpl() }
+    single<EpisodeRepository> { EpisodeRepositoryImpl(getContext().episodePositionStore) }
     single<ProfileRepository> { ProfileRepository() }
     single<TorrentDownloaderManager> { TorrentDownloaderManagerImpl(coroutineScope.coroutineContext) }
 }

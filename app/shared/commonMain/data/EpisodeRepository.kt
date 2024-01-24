@@ -1,9 +1,20 @@
 package me.him188.ani.app.data
 
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.MapSerializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.json.Json
 import me.him188.ani.datasources.api.PageBasedSearchSession
 import me.him188.ani.datasources.api.Paged
 import me.him188.ani.datasources.bangumi.BangumiClient
+import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -33,10 +44,27 @@ interface EpisodeRepository {
      * 设置多个剧集的收藏状态.
      */
     suspend fun setEpisodeCollection(subjectId: Int, episodeId: List<Int>, type: EpisodeCollectionType)
+
+    /**
+     * 获取该剧集的播放进度
+     *
+     * @param key subjectId + '.' + episodeId
+     */
+    fun getEpisodePosition(key: String): Flow<Long>
+
+    /**
+     * 设置该剧集的播放进度
+     *
+     * @param key subjectId + '.' + episodeId
+     */
+    suspend fun setEpisodePosition(key: String, position: Long)
 }
 
-internal class EpisodeRepositoryImpl : EpisodeRepository, KoinComponent {
+internal class EpisodeRepositoryImpl(
+    private val store: DataStore<Preferences>
+) : EpisodeRepository, KoinComponent {
     private val client by inject<BangumiClient>()
+    private val settings by inject<AppSettingsRepository>()
     private val logger = logger(EpisodeRepositoryImpl::class)
 
     override suspend fun getEpisodesBySubjectId(subjectId: Int, type: EpType): Flow<Episode> {
@@ -95,4 +123,32 @@ internal class EpisodeRepositoryImpl : EpisodeRepository, KoinComponent {
             logger.warn("Exception in setEpisodeCollection", e)
         }
     }
+
+    private val serializer by lazy { MapSerializer(String.serializer(), EpisodePosition.serializer()) }
+
+    override fun getEpisodePosition(key: String): Flow<Long> {
+        return store.data
+            .map { it[stringPreferencesKey(key)] }
+            .map { if (it == null) 0 else Json.decodeFromString(serializer, it)[key]?.position ?: 0 }
+    }
+
+    override suspend fun setEpisodePosition(key: String, position: Long) {
+        logger.info { "Saved episode positions: $position" }
+        val now = System.currentTimeMillis()
+        val ep = EpisodePosition(position, now)
+        val keep = settings.settings.first().keepPlayPosition.inWholeMilliseconds
+        store.edit { preferences ->
+            val map = preferences[stringPreferencesKey(key)]
+                ?.let { Json.decodeFromString(serializer, it) }
+                ?: mapOf()
+            val positions = map.filter { now - it.value.time < keep } + (key to ep)
+            preferences[stringPreferencesKey(key)] = Json.encodeToString(serializer, positions)
+        }
+    }
 }
+
+@Serializable
+data class EpisodePosition(
+    val position: Long,
+    val time: Long,
+)

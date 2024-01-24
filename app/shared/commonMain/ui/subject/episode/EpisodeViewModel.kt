@@ -86,6 +86,11 @@ interface EpisodeViewModel : HasBackgroundScope {
     val episodeCollectionType: SharedFlow<EpisodeCollectionType>
     suspend fun setEpisodeCollectionType(type: EpisodeCollectionType)
 
+    // episode play position
+
+    val episodePosition: Flow<Long>
+    fun setEpisodePosition(position: Long)
+
     // Video
 
     /**
@@ -337,6 +342,16 @@ private class EpisodeViewModelImpl(
     override suspend fun setEpisodeCollectionType(type: EpisodeCollectionType) {
         episodeCollectionType.tryEmit(type)
         episodeRepository.setEpisodeCollection(subjectId.value, listOf(episodeId.value), type)
+    }
+
+    override val episodePosition = combine(subjectId, episodeId) { sid, eid ->
+        episodeRepository.getEpisodePosition("$sid.$eid").first()
+    }
+
+    override fun setEpisodePosition(position: Long) {
+        combine(subjectId, episodeId) { sid, eid ->
+            episodeRepository.setEpisodePosition("$sid.$eid", position)
+        }
     }
 
     override fun setSubjectId(subjectId: Int) {

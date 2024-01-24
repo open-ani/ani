@@ -28,6 +28,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import me.him188.ani.app.app.AppLifeCycle
 import me.him188.ani.app.i18n.ResourceBundle
 import me.him188.ani.app.i18n.loadResourceBundle
 import me.him188.ani.app.platform.getCommonKoinModule
@@ -56,6 +57,7 @@ class AniApplication : Application() {
             }
 
             override fun onActivityPaused(activity: Activity) {
+                AppLifeCycle.callPaused()
             }
 
             override fun onActivityStopped(activity: Activity) {
@@ -68,6 +70,7 @@ class AniApplication : Application() {
             }
 
             override fun onActivityDestroyed(activity: Activity) {
+                AppLifeCycle.callDestroy()
             }
         })
     }
