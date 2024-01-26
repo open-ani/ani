@@ -56,6 +56,11 @@ includeProject(":app:torrent", "app/torrent") // Torrent downloader
 includeProject(":app:desktop", "app/desktop") // desktop JVM client for macOS, Windows, and Linux
 includeProject(":app:android", "app/android") // Android client
 
+// danmaku
+includeProject(":danmaku:api", "danmaku/api") // danmaku source interfaces
+includeProject(":danmaku:engine", "danmaku/engine") // danmaku engine
+includeProject(":danmaku:ui", "danmaku/ui") // danmaku UI composable
+
 // server
 //includeProject(":server:core", "server/core") // server core
 //includeProject(":server:database", "server/database") // server database interfaces
