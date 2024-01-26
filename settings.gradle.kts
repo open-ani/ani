@@ -59,6 +59,7 @@ includeProject(":app:android", "app/android") // Android client
 // danmaku
 includeProject(":danmaku:api", "danmaku/api") // danmaku source interfaces
 includeProject(":danmaku:ui", "danmaku/ui") // danmaku UI composable
+includeProject(":danmaku:dandanplay", "danmaku/dandanplay")
 
 // server
 //includeProject(":server:core", "server/core") // server core
