@@ -1,0 +1,15 @@
+### Match episodeId
+POST https://api.dandanplay.net/api/v2/match
+Content-Type: application/json
+
+{
+    "fileName": "[爱恋字幕社][10月新番][葬送的芙莉莲][Sousou no Frieren][01][1080P][MP4][GB][简中]",
+    "fileHash": "0805b7f980d59b64dd382fe00b3ba2a5",
+    "fileSize": 129000,
+    "videoDuration": 1440,
+    "matchMode": "hashAndFileName"
+}
+
+### Get List
+GET https://api.dandanplay.net/api/v2/comment/176170001?chConvert=0&withRelated=true
+
