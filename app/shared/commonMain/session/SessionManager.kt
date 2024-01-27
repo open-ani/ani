@@ -47,6 +47,7 @@ import me.him188.ani.utils.logging.logger
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.openapitools.client.infrastructure.ApiClient
+import kotlin.contracts.contract
 
 /**
  * 授权状态管理器
@@ -80,7 +81,7 @@ interface SessionManager {
     suspend fun refreshSessionByCode(code: String, callbackUrl: String)
 
     @Throws(IOException::class)
-    suspend fun refreshSessionByRefreshToken()
+    suspend fun refreshSessionByRefreshToken(): Boolean
 
     /**
      * 请求登录.
@@ -136,10 +137,15 @@ internal class SessionManagerImpl(
     private val singleAuthLock = Mutex()
     private val mutex = ReentrantMutex()
     override val processingAuth: MutableStateFlow<Boolean> = MutableStateFlow(false)
-    private inline fun <R> processAuth(block: () -> R) {
+
+
+    private inline fun <R> processAuth(block: () -> R): R {
+        contract {
+            callsInPlace(block, kotlin.contracts.InvocationKind.EXACTLY_ONCE)
+        }
         processingAuth.value = true
         try {
-            block()
+            return block()
         } finally {
             processingAuth.value = false
         }
@@ -155,29 +161,30 @@ internal class SessionManagerImpl(
         )
     }
 
-    override suspend fun refreshSessionByRefreshToken() = processAuth {
-        val session = session.replayCache.firstOrNull() ?: return@processAuth
+    override suspend fun refreshSessionByRefreshToken(): Boolean = processAuth {
+        val session = session.replayCache.firstOrNull() ?: return false
         if (session.expiresIn > System.currentTimeMillis()) {
             // session is valid
-            return@processAuth
+            return true
         }
 
         // session is invalid, refresh it
-        val refreshToken = refreshToken.value ?: return@processAuth
+        val refreshToken = refreshToken.value ?: return false
         val newAccessToken = runCatching {
             client.refreshAccessToken(refreshToken, BangumiAuthorizationConstants.CALLBACK_URL)
         }.getOrNull()
         if (newAccessToken == null) {
             logger.info { "Bangumi session refresh failed, refreshToken=$refreshToken" }
-            return@processAuth
+            return false
         }
         // success
         setSession(
             session.userId,
             newAccessToken.accessToken,
             System.currentTimeMillis() + newAccessToken.expiresIn,
-            refreshToken
+            newAccessToken.refreshToken
         )
+        return true
     }
 
     override suspend fun requireAuthorization(navigator: AniNavigator, optional: Boolean) {
@@ -185,8 +192,9 @@ internal class SessionManagerImpl(
         if (isSessionValid.value == true) return
         refreshTokenLoaded.await()
         if (refreshToken.value != null) {
-            withContext(Dispatchers.IO) { refreshSessionByRefreshToken() }
-            return
+            if (withContext(Dispatchers.IO) { refreshSessionByRefreshToken() }) {
+                return
+            }
         }
 
         // require user authorization
@@ -194,8 +202,9 @@ internal class SessionManagerImpl(
             // check again
             if (isSessionValid.filterNotNull().first()) return // 等待数据库请求完成, 如果已经登录则不再请求授权
             if (refreshToken.value != null) {
-                withContext(Dispatchers.IO) { refreshSessionByRefreshToken() }
-                return
+                if (withContext(Dispatchers.IO) { refreshSessionByRefreshToken() }) {
+                    return
+                }
             }
 
             when (navigator.requestBangumiAuthorization()) {
