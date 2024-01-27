@@ -31,8 +31,8 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.DisplaySettings
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.ripple.rememberRipple
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -72,6 +72,9 @@ import org.openapitools.client.models.EpisodeCollectionType
 
 private val PAGE_HORIZONTAL_PADDING = 16.dp
 
+/**
+ * 番剧详情 (播放) 页面
+ */
 @Composable
 fun EpisodePage(
     viewModel: EpisodeViewModel,
@@ -97,6 +100,8 @@ fun EpisodePageContent(
 ) {
     val context = LocalContext.current
     val isFullscreen by viewModel.isFullscreen.collectAsState()
+
+    // 处理当用户点击返回键时, 如果是全屏, 则退出全屏
     val goBack = remember(onClickGoBack) {
         {
             viewModel.playerController.pause()
@@ -111,13 +116,7 @@ fun EpisodePageContent(
         enabled = isFullscreen, // else, use the default back handler by PreCompose (`navigator.goBack()`)
         onBackPressed = goBack
     )
-//    if (isFullScreen) 
-//        DisposableEffect(true) {
-//            onDispose {
-//                context.setFullScreen(false)
-//            }
-//        }
-//    }
+
     Column(modifier.then(if (isFullscreen) Modifier.fillMaxSize() else Modifier.navigationBarsPadding())) {
         // 视频
         val videoReady by viewModel.isVideoReady.collectAsStateWithLifecycle(false)
@@ -520,56 +519,6 @@ private fun <T> PlaySourceFilterRow(
             }
         }
     }
-}
-
-@Composable
-fun EpisodePlaySourceItem(
-    playSource: PlaySource,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val shape = RoundedCornerShape(8.dp)
-    ElevatedCard(
-        onClick,
-        modifier.clip(shape),
-        shape = shape,
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp),
-    ) {
-        Column(
-            Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            Arrangement.spacedBy(8.dp),
-        ) {
-            Row(
-                Modifier,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(playSource.subtitleLanguage, style = MaterialTheme.typography.bodyMedium)
-                Text(
-                    playSource.resolution.toString(),
-                    Modifier.padding(start = 8.dp),
-                    style = MaterialTheme.typography.labelMedium
-                )
-            }
-
-            Row(
-                Modifier.align(Alignment.End),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(playSource.alliance, style = MaterialTheme.typography.bodySmall)
-//                Icon(
-//                    Icons.Outlined.ChatBubbleOutline,
-//                    null,
-//                    Modifier.size(16.dp)
-//                )
-//                Text(
-//                    remember { "${episode.comment}" },
-//                    Modifier.offset(y = (-1).dp).padding(start = 4.dp),
-//                    style = MaterialTheme.typography.bodySmall
-//                )
-            }
-        }
-    }
-
 }
 
 /**

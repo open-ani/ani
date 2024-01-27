@@ -112,22 +112,6 @@ abstract class AbstractPlayerController : PlayerController, AbstractViewModel() 
                 playingProgress
             }
         }
-//        isPreviewing.transform {
-//            coroutineScope {
-//                launch {
-//                    kotlinx.coroutines.delay(2.seconds)
-//                    isPreviewing.value = false
-//                }
-//                previewingProgress
-//                emit()
-//            }
-//        }
-//        combine(
-//            previewingProgress,
-//            playProgress,
-//        ) { previewing, playing ->
-//            previewing ?: playing
-//        }
     }
 
     private val seekToDebouncer: MutableStateFlow<Duration> = MutableStateFlow(0.seconds)
