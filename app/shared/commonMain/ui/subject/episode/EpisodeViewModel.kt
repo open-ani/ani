@@ -2,7 +2,6 @@ package me.him188.ani.app.ui.subject.episode
 
 import androidx.annotation.UiThread
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.text.AnnotatedString
@@ -37,7 +36,6 @@ import me.him188.ani.app.videoplayer.VideoSource
 import me.him188.ani.datasources.api.DownloadProvider
 import me.him188.ani.datasources.api.DownloadSearchQuery
 import me.him188.ani.datasources.api.SearchSession
-import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.Resolution
 import me.him188.ani.datasources.api.topic.Topic
 import me.him188.ani.datasources.api.topic.TopicCategory
@@ -140,19 +138,6 @@ fun EpisodeViewModel(
     initialIsFullscreen: Boolean = false,
     context: Context,
 ): EpisodeViewModel = EpisodeViewModelImpl(initialSubjectId, initialEpisodeId, initialIsFullscreen, context)
-
-@Immutable
-data class PlaySource(
-    val id: String, // must be unique
-    val alliance: String,
-    val subtitleLanguage: String, // null means raw
-    val resolution: Resolution,
-    val dataSource: String, // dmhy
-    val originalUrl: String,
-    val magnetLink: String,
-    val originalTitle: String,
-    val size: FileSize,
-)
 
 
 private class EpisodeViewModelImpl(

@@ -19,6 +19,9 @@ actual fun VideoPlayerView(
         factory = { context ->
             PlayerView(context).apply {
                 val videoView = this
+                controllerAutoShow = false
+                useController = false
+                controllerHideOnTouch = false
                 (playerController as? ExoPlayerController)?.let {
                     player = it.player
                     setControllerVisibilityListener(ControllerVisibilityListener { visibility ->
