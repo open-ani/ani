@@ -49,6 +49,7 @@ fun DandanplayDanmaku.toDanmakuOrNull(): Danmaku? {
     }
 
     return Danmaku(
+        id = cid.toString(),
         time = time.toDoubleOrNull() ?: return null,
         senderId = userId,
         location = when (mode.toIntOrNull()) {
