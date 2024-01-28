@@ -17,7 +17,6 @@
  */
 
 import com.android.build.api.dsl.CommonExtension
-import kotlinx.atomicfu.plugin.gradle.withKotlinTargets
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPluginExtension
@@ -29,6 +28,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
+import org.jetbrains.kotlin.gradle.plugin.KotlinTargetsContainer
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmAndroidCompilation
 import org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -179,7 +179,7 @@ fun KotlinSourceSet.configureKotlinOptIns() {
     }
 }
 
-val DEFAULT_JVM_TARGET = JavaVersion.VERSION_11
+val DEFAULT_JVM_TARGET = JavaVersion.VERSION_17
 
 
 private fun Project.getProjectPreferredJvmTargetVersion() = extra.runCatching { get("ani.jvm.target") }.fold(
@@ -308,3 +308,13 @@ fun KotlinSourceSet.configureJvmTest(because: String) {
     }
 }
 
+
+fun Project.withKotlinTargets(fn: (KotlinTarget) -> Unit) {
+    extensions.findByType(KotlinTargetsContainer::class.java)?.let { kotlinExtension ->
+        // find all compilations given sourceSet belongs to
+        kotlinExtension.targets
+            .all {
+                fn(this)
+            }
+    }
+}
