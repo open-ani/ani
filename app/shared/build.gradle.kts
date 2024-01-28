@@ -101,6 +101,10 @@ kotlin {
         implementation(libs.slf4j.api)
     }
 
+    sourceSets.commonTest.dependencies {
+        implementation(libs.kotlinx.coroutines.test)
+    }
+
     sourceSets.androidMain.dependencies {
         api(libs.kotlinx.coroutines.android)
         api(libs.datastore)
