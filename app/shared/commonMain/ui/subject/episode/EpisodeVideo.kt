@@ -43,6 +43,8 @@ import me.him188.ani.app.videoplayer.VideoPlayerView
 import me.him188.ani.app.videoplayer.ui.PlayerNavigationBar
 import me.him188.ani.app.videoplayer.ui.PlayerProgressController
 import me.him188.ani.app.videoplayer.ui.VideoLoadingIndicator
+import me.him188.ani.danmaku.ui.DanmakuHost
+import me.him188.ani.danmaku.ui.DanmakuHostState
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import kotlin.time.Duration.Companion.seconds
 
@@ -155,6 +157,7 @@ internal fun EpisodeVideo(
     videoSourceSelected: Boolean,
     videoReady: Boolean,
     playerController: PlayerController,
+    danmakuHostState: DanmakuHostState,
     onClickGoBack: () -> Unit,
     onClickFullScreen: () -> Unit,
     modifier: Modifier = Modifier,
@@ -183,6 +186,9 @@ internal fun EpisodeVideo(
         },
         floatingMessage = {
             EpisodeVideoLoadingIndicator(playerController, videoSourceSelected, videoReady)
+        },
+        danmakuHost = {
+            DanmakuHost(danmakuHostState, Modifier.matchParentSize())
         },
         modifier = modifier,
         isFullscreen = isFullscreen
