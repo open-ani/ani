@@ -185,5 +185,5 @@ private class TimeBasedDanmakuSessionTest {
     }
 
     private fun dummyDanmaku(time: Double, text: String = "$time") =
-        Danmaku(time, text, DanmakuLocation.NORMAL, text, 0)
+        Danmaku(text, time, text, DanmakuLocation.NORMAL, text, 0)
 }

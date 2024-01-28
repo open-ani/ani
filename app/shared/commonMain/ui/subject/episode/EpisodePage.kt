@@ -65,6 +65,7 @@ import me.him188.ani.app.ui.foundation.LocalSnackbar
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.app.ui.theme.slightlyWeaken
+import me.him188.ani.danmaku.ui.rememberDanmakuHostState
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.openapitools.client.models.EpisodeCollectionType
 
@@ -125,6 +126,7 @@ fun EpisodePageContent(
         ) {
             EpisodeVideo(
                 selected, videoReady, viewModel.playerController,
+                danmakuHostState = rememberDanmakuHostState(viewModel.danmakuFlow),
                 goBack,
                 onClickFullScreen = {
                     if (isFullscreen) {
