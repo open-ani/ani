@@ -65,7 +65,7 @@ kotlin {
         // Others
         api(libs.koin.core) // dependency injection
 
-        api(projects.danmaku.api)
+        implementation(projects.danmaku.api)
 
         implementation(libs.slf4j.api)
     }

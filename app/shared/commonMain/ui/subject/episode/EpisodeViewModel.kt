@@ -33,6 +33,7 @@ import me.him188.ani.app.videoplayer.PlayerController
 import me.him188.ani.app.videoplayer.PlayerControllerFactory
 import me.him188.ani.app.videoplayer.TorrentVideoSource
 import me.him188.ani.app.videoplayer.VideoSource
+import me.him188.ani.danmaku.ui.DanmakuState
 import me.him188.ani.datasources.api.DownloadProvider
 import me.him188.ani.datasources.api.DownloadSearchQuery
 import me.him188.ani.datasources.api.SearchSession
@@ -130,6 +131,17 @@ interface EpisodeViewModel : HasBackgroundScope {
 
     @UiThread
     suspend fun browseDownload(context: Context, snackbar: SnackbarHostState)
+
+    // Danmaku
+
+    val danmakuFlow: Flow<DanmakuState> get() = error("")
+
+    private suspend fun x() {
+        val danmaku = danmakuFlow.first().danmaku
+        val time = danmaku.time
+
+        val danmaku2: me.him188.ani.danmaku.api.Danmaku = danmaku
+    }
 }
 
 fun EpisodeViewModel(

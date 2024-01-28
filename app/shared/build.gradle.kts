@@ -64,10 +64,17 @@ kotlin {
         api(compose.materialIconsExtended)
         api(compose.runtime)
 
-        // Subprojects: data sources and utils
+        // Data sources
+        api(projects.dataSources.api)
         api(projects.dataSources.dmhy)
         api(projects.dataSources.acgRip)
         api(projects.dataSources.bangumi)
+
+        // Danmaku
+        api(projects.danmaku.api)
+        api(projects.danmaku.ui)
+        api(projects.danmaku.dandanplay)
+
         api(projects.utils.slf4jKt)
         api(projects.utils.coroutines)
         api(projects.app.torrent)
