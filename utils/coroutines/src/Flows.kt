@@ -20,14 +20,40 @@ fun <T, R> Flow<T>.runningFoldNoInitialEmit(
 /**
  * Maps each value to a [R] using the given [mapper] function, and closes the previous [R] if any.
  */
-fun <T, R : AutoCloseable> Flow<T>.mapAutoClose(
-    @BuilderInference mapper: (T) -> R
+inline fun <T, R : AutoCloseable> Flow<T>.mapAutoClose(
+    @BuilderInference crossinline mapper: suspend (T) -> R
 ): Flow<R> = flow {
     var last: R? = null
     collect { value ->
         last?.close()
         val new = mapper(value)
         emit(new)
+        last = new
+    }
+}
+
+fun <T : AutoCloseable?> Flow<T>.closeOnReplacement(): Flow<T> = flow {
+    var last: T? = null
+    collect { value ->
+        last?.close()
+        emit(value)
+        last = value
+    }
+}
+
+/**
+ * Maps each value to a [R] using the given [mapper] function, and closes the previous [R] if any.
+ */
+inline fun <T, R : AutoCloseable> Flow<T>.mapNotNullAutoClose(
+    @BuilderInference crossinline mapper: suspend (T) -> R?
+): Flow<R> = flow {
+    var last: R? = null
+    collect { value ->
+        last?.close()
+        val new = mapper(value)
+        if (new != null) {
+            emit(new)
+        }
         last = new
     }
 }

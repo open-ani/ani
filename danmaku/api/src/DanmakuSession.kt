@@ -4,10 +4,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.transformLatest
-import java.io.Closeable
 import kotlin.time.Duration
 
-interface DanmakuSession : Closeable {
+interface DanmakuSession : AutoCloseable {
     /**
      * 创建一个随视频进度 [progress] 匹配到的弹幕数据流.
      *
@@ -20,6 +19,14 @@ interface DanmakuSession : Closeable {
      * 当 [progress] [完结][Flow.onCompletion] 时, 本函数返回的 flow 也会 [完结][Flow.onCompletion].
      */
     fun at(progress: Flow<Duration>): Flow<Danmaku>
+}
+
+fun emptyDanmakuSession(): DanmakuSession {
+    return object : DanmakuSession {
+        override fun at(progress: Flow<Duration>): Flow<Danmaku> = emptyFlow()
+        override fun close() {
+        }
+    }
 }
 
 class TimeBasedDanmakuSession private constructor(

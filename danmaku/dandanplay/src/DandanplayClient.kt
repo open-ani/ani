@@ -12,6 +12,7 @@ import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.accept
 import io.ktor.client.request.get
+import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
@@ -121,7 +122,7 @@ class DandanplayClient(
         fileSize: Long,
         videoDuration: Duration
     ): DandanplayMatchVideoResponse {
-        val response = client.get("https://api.acplay.net/api/v2/danmaku/match") {
+        val response = client.post("https://api.dandanplay.net/api/v2/match") {
             contentType(ContentType.Application.Json)
             accept(ContentType.Application.Json)
             setBody(buildJsonObject {
@@ -139,7 +140,8 @@ class DandanplayClient(
     suspend fun getDanmakuList(
         episodeId: Long,
     ): List<DandanplayDanmaku> {
-        val response = client.get("https://api.acplay.net/api/v2/comment/${episodeId}") {
+        val response =
+            client.get("https://api.dandanplay.net/api/v2/comment/${episodeId}?chConvert=0&withRelated=true") {
             accept(ContentType.Application.Json)
         }.body<DandanplayDanmakuListResponse>()
         return response.comments

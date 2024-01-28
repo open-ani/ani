@@ -86,7 +86,7 @@ fun DanmakuHost(
         for (track in state.tracks) {
             DanmakuTrack(track, Modifier.fillMaxWidth()) {
                 for (danmaku in track.visibleDanmaku) {
-                    key(danmaku.danmaku.hashCode()) {
+                    key(danmaku.danmaku.id) {
                         danmaku(danmaku)
                     }
                 }
@@ -132,6 +132,7 @@ class DanmakuTrackState(
      */
     fun trySend(danmaku: Danmaku): Boolean = channel.trySend(danmaku).isSuccess
 
+    @Stable
     internal val visibleDanmaku: MutableList<DanmakuState> = SnapshotStateList()
 
 
@@ -169,7 +170,7 @@ abstract class DanmakuTrackScope {
 @Composable
 fun DanmakuTrackScope.danmaku(
     danmaku: DanmakuState,
-    style: TextStyle = MaterialTheme.typography.labelSmall,
+    style: TextStyle = MaterialTheme.typography.bodyMedium,
 ) {
     danmakuImpl(danmaku, style)
 }
