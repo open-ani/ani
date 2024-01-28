@@ -57,9 +57,9 @@ includeProject(":app:desktop", "app/desktop") // desktop JVM client for macOS, W
 includeProject(":app:android", "app/android") // Android client
 
 // danmaku
-includeProject(":danmaku:api", "danmaku/api") // danmaku source interfaces
-includeProject(":danmaku:ui", "danmaku/ui") // danmaku UI composable
-includeProject(":danmaku:dandanplay", "danmaku/dandanplay")
+//includeProject(":danmaku:api", "danmaku/api") // danmaku source interfaces
+//includeProject(":danmaku:ui", "danmaku/ui") // danmaku UI composable
+//includeProject(":danmaku:dandanplay", "danmaku/dandanplay")
 
 // server
 //includeProject(":server:core", "server/core") // server core

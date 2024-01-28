@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-    implementation(projects.danmaku.api)
+    api(projects.danmaku.api)
     api(projects.utils.slf4jKt)
     
     api(libs.kotlinx.coroutines.core)

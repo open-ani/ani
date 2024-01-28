@@ -50,6 +50,8 @@ kotlin {
     }
 }
 
+configureFlattenMppSourceSets()
+
 kotlin {
     sourceSets.commonMain.dependencies {
         api(libs.kotlinx.coroutines.core)
@@ -71,9 +73,9 @@ kotlin {
         api(projects.dataSources.bangumi)
 
         // Danmaku
-        api(projects.danmaku.api)
-        api(projects.danmaku.ui)
-        api(projects.danmaku.dandanplay)
+//        api(projects.danmaku.api)
+//        api(projects.danmaku.ui)
+//        api(projects.danmaku.dandanplay)
 
         api(projects.utils.slf4jKt)
         api(projects.utils.coroutines)
@@ -82,6 +84,9 @@ kotlin {
         // Ktor
         api(libs.ktor.client.websockets)
         api(libs.ktor.client.logging)
+        api(libs.ktor.client.cio)
+        api(libs.ktor.client.content.negotiation)
+        api(libs.ktor.serialization.kotlinx.json)
 
         // Others
         api(libs.koin.core) // dependency injection
@@ -128,10 +133,28 @@ kotlin {
         implementation(libs.ktor.server.content.negotiation)
         implementation(libs.ktor.serialization.kotlinx.json)
     }
+
+    sourceSets {
+        // TODO: 临时解决方案, KT-65362 Cannot resolve declarations from a dependency when there are multiple JVM-only project dependencies in a JVM-Android MPP
+        //  https://youtrack.jetbrains.com/issue/KT-65362
+        // Danmaku
+        commonMain {
+            kotlin.srcDirs(rootProject.projectDir.resolve("danmaku/api/src/"))
+            kotlin.srcDirs(rootProject.projectDir.resolve("danmaku/dandanplay/src/"))
+            kotlin.srcDirs(rootProject.projectDir.resolve("danmaku/ui/commonMain/"))
+        }
+        getByName("desktopTest") {
+            kotlin.srcDirs(rootProject.projectDir.resolve("danmaku/api/test/"))
+        }
+        androidMain {
+            kotlin.srcDirs(rootProject.projectDir.resolve("danmaku/ui/androidMain/"))
+        }
+        getByName("desktopMain") {
+            kotlin.srcDirs(rootProject.projectDir.resolve("danmaku/ui/desktopMain/"))
+        }
+    }
 }
 
-
-configureFlattenMppSourceSets()
 kotlin.sourceSets {
     getByName("desktopMain").resources.srcDirs("androidRes/raw")
 }
