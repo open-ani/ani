@@ -38,6 +38,9 @@ import me.him188.ani.app.torrent.TorrentDownloaderManager
 import me.him188.ani.app.torrent.TorrentDownloaderManagerImpl
 import me.him188.ani.datasources.acgrip.AcgRipDownloadProvider
 import me.him188.ani.datasources.api.CombinedDownloadProvider
+import me.him188.ani.danmaku.api.DanmakuProvider
+import me.him188.ani.danmaku.dandanplay.DandanplayClient
+import me.him188.ani.danmaku.dandanplay.DandanplayDanmakuProvider
 import me.him188.ani.datasources.api.DownloadProvider
 import me.him188.ani.datasources.api.SubjectProvider
 import me.him188.ani.datasources.bangumi.BangumiClient
@@ -66,6 +69,13 @@ fun getCommonKoinModule(getContext: () -> Context, coroutineScope: CoroutineScop
     single<EpisodeRepository> { EpisodeRepositoryImpl() }
     single<ProfileRepository> { ProfileRepository() }
     single<TorrentDownloaderManager> { TorrentDownloaderManagerImpl(coroutineScope.coroutineContext) }
+    single<DanmakuProvider> {
+        DandanplayDanmakuProvider(dandanplayClient = DandanplayClient {
+            install(UserAgent) {
+                agent = getAniUserAgent(currentAniBuildConfig.versionName)
+            }
+        })
+    }
 }
 
 @Stable

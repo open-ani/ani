@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
@@ -34,6 +35,7 @@ import me.him188.ani.app.videoplayer.PlayerControllerFactory
 import me.him188.ani.app.videoplayer.TorrentVideoSource
 import me.him188.ani.app.videoplayer.VideoSource
 import me.him188.ani.danmaku.api.Danmaku
+import me.him188.ani.danmaku.api.DanmakuProvider
 import me.him188.ani.datasources.api.DownloadProvider
 import me.him188.ani.datasources.api.DownloadSearchQuery
 import me.him188.ani.datasources.api.SearchSession
@@ -43,6 +45,7 @@ import me.him188.ani.datasources.api.topic.TopicCategory
 import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.datasources.bangumi.processing.nameCNOrName
 import me.him188.ani.datasources.bangumi.processing.renderEpisodeSp
+import me.him188.ani.utils.coroutines.closeOnReplacement
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.openapitools.client.models.EpisodeCollectionType
@@ -134,7 +137,8 @@ interface EpisodeViewModel : HasBackgroundScope {
 
     // Danmaku
 
-    val danmakuFlow: Flow<Danmaku> get() = error("")
+    @Stable
+    val danmakuFlow: Flow<Danmaku>
 }
 
 fun EpisodeViewModel(
@@ -157,6 +161,7 @@ private class EpisodeViewModelImpl(
     private val torrentDownloaderManager: TorrentDownloaderManager by inject()
     private val playerControllerFactory: PlayerControllerFactory by inject()
     private val episodeRepository: EpisodeRepository by inject()
+    private val danmakuProvider: DanmakuProvider by inject()
 
     override val episodeId: MutableStateFlow<Int> = MutableStateFlow(initialEpisodeId)
 
@@ -355,6 +360,20 @@ private class EpisodeViewModelImpl(
             browserNavigator.openMagnetLink(context, it.playSource.magnetLink)
         }
     }
+
+    override val danmakuFlow: Flow<Danmaku> = combine(
+        playSourceSelector.targetPlaySourceCandidate.filterNotNull(),
+        playerController.videoProperties
+    ) { playSourceCandidate, video ->
+        danmakuProvider.startSession(
+            playSourceCandidate.playSource.originalTitle,
+            "aa".repeat(16),
+            1L, // TODO: 提供 file size 给 danmaku, 获得更准确的结果
+            video.duration
+        )
+    }.filterNotNull()
+        .closeOnReplacement()
+        .flatMapLatest { it.at(playerController.playedDuration) }
 
     private suspend fun requestPlaySourceCandidate(): PlaySourceCandidate? {
         val candidate = playSourceSelector.targetPlaySourceCandidate.value

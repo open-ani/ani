@@ -89,6 +89,13 @@ internal fun VideoScaffold(
                 Box(Modifier.matchParentSize()) // 防止点击事件传播到 video 里
             }
 
+            // 弹幕
+            Box(Modifier.matchParentSize().fillMaxWidth().padding(vertical = 8.dp)) {
+                CompositionLocalProvider(LocalContentColor provides aniDarkColorTheme().onBackground) {
+                    danmakuHost()
+                }
+            }
+
             Column(Modifier.fillMaxSize().background(Color.Transparent)) {
                 val controllerBackground = aniDarkColorTheme().background.copy(0.8f)
 
@@ -104,7 +111,7 @@ internal fun VideoScaffold(
                             .background(color = controllerBackground)
                             .statusBarsPadding()
                             .padding(top = 12.dp)
-                            .height(32.dp),
+                            .height(28.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         CompositionLocalProvider(LocalContentColor provides aniDarkColorTheme().onBackground) {
@@ -113,10 +120,7 @@ internal fun VideoScaffold(
                     }
                 }
 
-                // 弹幕
-                Box(Modifier.weight(1f, fill = true).padding(all = 8.dp)) {
-                    danmakuHost()
-                }
+                Box(Modifier.weight(1f, fill = true))
 
                 // 底部控制栏: 播放/暂停, 进度条, 切换全屏
                 AnimatedVisibility(
@@ -138,6 +142,7 @@ internal fun VideoScaffold(
                 }
             }
 
+            // 悬浮消息, 例如正在缓冲
             Box(Modifier.matchParentSize(), contentAlignment = Alignment.Center) {
                 ProvideTextStyle(MaterialTheme.typography.labelSmall) {
                     CompositionLocalProvider(LocalContentColor provides aniDarkColorTheme().onBackground.slightlyWeaken()) {
