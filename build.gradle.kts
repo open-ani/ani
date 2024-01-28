@@ -60,5 +60,6 @@ subprojects {
         configureKotlinTestSettings()
         configureEncoding()
         configureJvmTarget()
+        configureCompose()
     }
 }
