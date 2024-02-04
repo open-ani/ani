@@ -2,13 +2,11 @@ package me.him188.ani.app.navigation
 
 import androidx.compose.runtime.compositionLocalOf
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.delay
 import me.him188.ani.app.session.SessionManager
 import moe.tlaster.precompose.navigation.NavOptions
 import moe.tlaster.precompose.navigation.Navigator
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import kotlin.time.Duration.Companion.seconds
 
 interface AniNavigator {
     fun setNavigator(
@@ -54,9 +52,6 @@ class AniNavigatorImpl(
         if (sessionManager.isSessionValid.value == true) {
             return AuthorizationResult.SUCCESS
         }
-
-
-        delay(2.seconds)
 
         return _navigator.await().navigateForResult("/auth", NavOptions(launchSingleTop = true)) as AuthorizationResult
     }
