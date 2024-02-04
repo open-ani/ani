@@ -112,6 +112,7 @@ internal class SessionManagerImpl(
         tokenRepository.session.distinctUntilChanged().onEach {
             ApiClient.accessToken = it?.accessToken
         }.stateIn(coroutineScope, SharingStarted.Eagerly, null)
+
     override val username: StateFlow<String?> =
         session.filterNotNull()
             .map {
@@ -120,8 +121,9 @@ internal class SessionManagerImpl(
             .distinctUntilChanged()
             .stateIn(coroutineScope, SharingStarted.Eagerly, null)
 
-    override val isSessionValid: StateFlow<Boolean?> = session.map { it != null }
-        .stateIn(coroutineScope, SharingStarted.Eagerly, null)
+    override val isSessionValid: StateFlow<Boolean?> =
+        session.map { it != null && it.expiresIn > System.currentTimeMillis() && profileRepository.getSelf() != null }
+            .stateIn(coroutineScope, SharingStarted.Eagerly, null)
 
     private val refreshTokenLoaded = CompletableDeferred<Boolean>()
     private val refreshToken = tokenRepository.refreshToken
