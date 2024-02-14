@@ -18,21 +18,17 @@
 
 package me.him188.ani.datasources.dmhy
 
+import me.him188.ani.datasources.api.titles.ParsedTopicTitle
+import me.him188.ani.datasources.api.titles.RawTitleParser
+import me.him188.ani.datasources.api.titles.parse
 import me.him188.ani.datasources.api.topic.Alliance
 import me.him188.ani.datasources.api.topic.Author
-import me.him188.ani.datasources.api.topic.Episode
 import me.him188.ani.datasources.api.topic.FileSize
-import me.him188.ani.datasources.api.topic.FrameRate
-import me.him188.ani.datasources.api.topic.MediaOrigin
-import me.him188.ani.datasources.api.topic.Resolution
-import me.him188.ani.datasources.api.topic.SubtitleLanguage
-import me.him188.ani.datasources.dmhy.impl.titles.RawTitleParser
-import me.him188.ani.datasources.dmhy.impl.titles.parse
 
 class DmhyCategory(
     val id: String,
     val name: String,
-) 
+)
 
 data class DmhyTopic(
     val id: String,
@@ -46,49 +42,12 @@ data class DmhyTopic(
     val author: Author,
     val link: String,
 ) {
-    val details: DmhyTopicDetails? by lazy {
-        DmhyTopicDetails.Builder().apply {
+    val details: ParsedTopicTitle? by lazy {
+        ParsedTopicTitle.Builder().apply {
             RawTitleParser.getParserFor().parse(rawTitle, alliance?.name, this)
         }.build()
     }
 }
-
-data class DmhyTopicDetails(
-    val tags: List<String> = listOf(),
-    val chineseTitle: String? = null,
-    val otherTitles: List<String> = listOf(),
-    val episode: Episode? = null,
-    val resolution: Resolution? = null,
-    val frameRate: FrameRate? = null,
-    val mediaOrigin: MediaOrigin? = null,
-    val subtitleLanguages: List<SubtitleLanguage> = listOf(),
-) {
-    class Builder {
-        var tags = mutableSetOf<String>()
-        var chineseTitle: String? = null
-        var otherTitles = mutableSetOf<String>()
-        var episode: Episode? = null
-        var resolution: Resolution? = null
-        var frameRate: FrameRate? = null
-        var mediaOrigin: MediaOrigin? = null
-        var subtitleLanguages = mutableSetOf<SubtitleLanguage>()
-
-        fun build(): DmhyTopicDetails {
-            return DmhyTopicDetails(
-                tags = tags.toList(),
-                chineseTitle = chineseTitle?.trim(),
-                otherTitles = otherTitles.mapNotNull { title -> title.trim().takeIf { it.isNotEmpty() } },
-                episode = episode,
-                resolution = resolution,
-                frameRate = frameRate,
-                mediaOrigin = mediaOrigin,
-                subtitleLanguages = subtitleLanguages.toList()
-            )
-        }
-    }
-}
-
-
 
 private fun String.truncated(length: Int, truncated: String = "..."): String {
     return if (this.length > length) {

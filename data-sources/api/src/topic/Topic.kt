@@ -45,7 +45,7 @@ class Topic(
     val size: FileSize,
 
     val alliance: String,
-    val author: Author,
+    val author: Author?,
 
     /**
      * 解析后的标题信息
@@ -53,7 +53,11 @@ class Topic(
     val details: TopicDetails?,
 
     val link: String,
-)
+) {
+    override fun toString(): String {
+        return "Topic(id='$id', publishedTime=$publishedTime, category=$category, rawTitle='$rawTitle', commentsCount=$commentsCount, magnetLink='$magnetLink', size=$size, alliance='$alliance', author=$author, details=$details, link='$link')"
+    }
+}
 
 private val DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm")
 

@@ -162,7 +162,7 @@ private class EpisodeViewModelImpl(
     context: Context,
 ) : AbstractViewModel(), KoinComponent, EpisodeViewModel {
     private val bangumiClient by inject<BangumiClient>()
-    private val dmhyClient by inject<DownloadProvider>()
+    private val downloadProvider by inject<DownloadProvider>()
     private val browserNavigator: BrowserNavigator by inject()
     private val torrentDownloaderManager: TorrentDownloaderManager by inject()
     private val playerControllerFactory: PlayerControllerFactory by inject()
@@ -228,7 +228,7 @@ private class EpisodeViewModelImpl(
         }.mapNotNull { (episode, subjectTitle) ->
 
             _isPlaySourcesLoading.emit(true)
-            val session = dmhyClient.startSearch(
+            val session = downloadProvider.startSearch(
                 DownloadSearchQuery(
                     keywords = subjectTitle,
                     category = TopicCategory.ANIME,
@@ -263,11 +263,11 @@ private class EpisodeViewModelImpl(
         .map {
             val details = it.details!!
             PlaySource(
-                id = "dmhy-${it.id}",
+                id = it.id,
                 alliance = it.alliance,
                 subtitleLanguage = details.subtitleLanguages.firstOrNull()?.toString() ?: "生肉",
                 resolution = details.resolution ?: Resolution.R1080P, // 默认 1080P, 因为目前大概都是 1080P
-                dataSource = "动漫花园",
+                dataSource = "TODO",
                 originalUrl = it.link,
                 magnetLink = it.magnetLink,
                 originalTitle = it.rawTitle,

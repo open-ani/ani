@@ -64,6 +64,7 @@ includeProject(":app:android", "app/android") // Android client
 // data sources
 includeProject(":data-sources:api", "data-sources/api") // data source interfaces
 includeProject(":data-sources:dmhy", "data-sources/dmhy") // data source from https://dmhy.org
+includeProject(":data-sources:acg-rip", "data-sources/acg.rip") // data source from https://acg.rip
 includeProject(
     ":data-sources:bangumi",
     "data-sources/bangumi"

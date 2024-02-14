@@ -18,6 +18,9 @@
 
 package me.him188.ani.datasources.api
 
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.mapNotNull
 import me.him188.ani.datasources.api.topic.Alliance
 import me.him188.ani.datasources.api.topic.Topic
 import me.him188.ani.datasources.api.topic.TopicCategory
@@ -35,6 +38,37 @@ interface DownloadProvider {
      * Starts a search session.
      */
     suspend fun startSearch(query: DownloadSearchQuery): SearchSession<Topic>
+}
+
+fun CombinedDownloadProvider(
+    vararg providers: DownloadProvider,
+): CombinedDownloadProvider = CombinedDownloadProvider(providers.toList())
+
+class CombinedDownloadProvider(
+    private val providers: List<DownloadProvider>,
+) : DownloadProvider {
+    override val id: String get() = "combined: ${providers.joinToString { it.id }}"
+
+    override suspend fun startSearch(query: DownloadSearchQuery): SearchSession<Topic> {
+        val sessions = providers.mapNotNull { runCatching { it.startSearch(query) }.getOrNull() }
+        return PageBasedSearchSession {
+            sessions.asFlow()
+                .mapNotNull { session ->
+                    session.nextPageOrNull()?.takeIf { it.isNotEmpty() }
+                }
+                .firstOrNull()
+                ?.let { r ->
+                    Paged(r.size, true, r)
+                }
+//            var res: List<Topic>? = null
+//            sessions.forEach { session ->
+//                session?.nextPageOrNull()?.also { res = it }
+//            }
+//            res?.let { r ->
+//                Paged(r.size, true, r)
+//            }
+        }
+    }
 }
 
 interface DownloadProviderFactory {

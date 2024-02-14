@@ -16,20 +16,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.ani.datasources.dmhy.tags
+package me.him188.ani.datasources.api
 
-import me.him188.ani.datasources.dmhy.AbstractTest
-import me.him188.ani.datasources.dmhy.DmhyTopicDetails
-import me.him188.ani.datasources.dmhy.impl.titles.PatternBasedRawTitleParser
-import me.him188.ani.datasources.dmhy.impl.titles.parse
+import me.him188.ani.datasources.api.titles.ParsedTopicTitle
+import me.him188.ani.datasources.api.titles.PatternBasedRawTitleParser
+import me.him188.ani.datasources.api.titles.parse
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
 
-internal class RawTitleParserTest : AbstractTest() {
-
-
+internal class RawTitleParserTest {
     val data = mapOf(
-        "Lilith-Raws [Lilith-Raws] Overlord IV - 05 [Baha][WEB-DL][1080p][AVC AAC][CHT][MP4]" to DmhyTopicDetails(
+        "Lilith-Raws [Lilith-Raws] Overlord IV - 05 [Baha][WEB-DL][1080p][AVC AAC][CHT][MP4]" to ParsedTopicTitle(
             listOf("Baha", "WEB-DL", "AVC", "AAC", "MP4")
         )
     )
@@ -51,7 +48,7 @@ internal class RawTitleParserTest : AbstractTest() {
         return dataA.map { data ->
             val allianceName = data.substringBefore(' ').trim()
             DynamicTest.dynamicTest(allianceName) {
-                val builder = DmhyTopicDetails.Builder()
+                val builder = ParsedTopicTitle.Builder()
                 parser.parse(
                     data.substringAfter(' ').trim(),
                     allianceName,

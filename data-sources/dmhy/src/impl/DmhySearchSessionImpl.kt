@@ -21,9 +21,9 @@ package me.him188.ani.datasources.dmhy.impl
 import me.him188.ani.datasources.api.AbstractPageBasedSearchSession
 import me.him188.ani.datasources.api.DownloadSearchQuery
 import me.him188.ani.datasources.api.SearchSession
+import me.him188.ani.datasources.api.titles.toTopicDetails
 import me.him188.ani.datasources.api.topic.Topic
 import me.him188.ani.datasources.api.topic.TopicCategory
-import me.him188.ani.datasources.api.topic.TopicDetails
 import me.him188.ani.datasources.dmhy.impl.protocol.Network
 
 internal class DmhySearchSessionImpl(
@@ -51,18 +51,7 @@ internal class DmhySearchSessionImpl(
                 size = topic.size,
                 alliance = topic.alliance?.name ?: topic.rawTitle.substringBeforeLast(']').substringAfterLast('['),
                 author = topic.author,
-                details = topic.details?.let { details ->
-                    TopicDetails(
-                        tags = details.tags,
-                        chineseTitle = details.chineseTitle,
-                        otherTitles = details.otherTitles,
-                        episode = details.episode,
-                        resolution = details.resolution,
-                        frameRate = details.frameRate,
-                        mediaOrigin = details.mediaOrigin,
-                        subtitleLanguages = details.subtitleLanguages,
-                    )
-                },
+                details = topic.details?.toTopicDetails(),
                 link = topic.link,
             )
         }

@@ -16,19 +16,18 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.ani.datasources.dmhy.impl.titles
+package me.him188.ani.datasources.api.titles
 
 import me.him188.ani.datasources.api.topic.Episode
 import me.him188.ani.datasources.api.topic.FrameRate
 import me.him188.ani.datasources.api.topic.MediaOrigin
 import me.him188.ani.datasources.api.topic.Resolution
 import me.him188.ani.datasources.api.topic.SubtitleLanguage
-import me.him188.ani.datasources.dmhy.DmhyTopicDetails
 
 /**
  * 人工适配的
  */
-internal class PatternBasedRawTitleParser : RawTitleParser() {
+class PatternBasedRawTitleParser : RawTitleParser() {
     private val brackets = Regex("""[\[【(](.*?)[]】)]""")
     private val newAnime = Regex("(?:★?|★(.*)?)([0-9]|[一二三四五六七八九十]{0,4}) ?[月年] ?(?:新番|日剧)★?")
     private val specialEpisode = Regex("★特别篇") // 风之圣殿
@@ -357,18 +356,4 @@ internal class PatternBasedRawTitleParser : RawTitleParser() {
         }
         return false
     }
-}
-
-internal fun RawTitleParser.parse(text: String, allianceName: String?, builder: DmhyTopicDetails.Builder) {
-    return parse(
-        text, allianceName,
-        collectTag = { builder.tags.add(it) },
-        collectChineseTitle = { builder.chineseTitle = it },
-        collectOtherTitle = { builder.otherTitles.add(it) },
-        collectEpisode = { builder.episode = it },
-        collectResolution = { builder.resolution = it },
-        collectFrameRate = { builder.frameRate = it },
-        collectMediaOrigin = { builder.mediaOrigin = it },
-        collectSubtitleLanguage = { builder.subtitleLanguages.add(it) }
-    )
 }

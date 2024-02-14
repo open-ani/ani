@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.selects.SelectClause0
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -55,13 +56,30 @@ interface SearchSession<out T> {
 //    }
 //}
 
+@Suppress("FunctionName")
+fun <T> SingleShotSearchSession(getAll: suspend () -> Flow<T>): SearchSession<T> {
+    return object : AbstractPageBasedSearchSession<T>() {
+        override suspend fun nextPageImpl(page: Int): List<T> {
+            val paged = getAll()
+            noMorePages()
+            return paged.toList()
+        }
+    }
+}
+
 @JvmName("PageBasedSearchSession1")
 @Suppress("FunctionName")
 @OverloadResolutionByLambdaReturnType
-fun <T> PageBasedSearchSession(nextPageOrNull: suspend (page: Int) -> Paged<T>?): SearchSession<T> {
+fun <T> PageBasedSearchSession(
+    initialPage: Int = 0,
+    nextPageOrNull: suspend (page: Int) -> Paged<T>?
+): SearchSession<T> {
+    val initialPage1 = initialPage
+
     @Suppress("UnnecessaryVariable", "RedundantSuppression") // two bugs...
     val nextPageOrNullImpl = nextPageOrNull
     return object : AbstractPageBasedSearchSession<T>() {
+        override val initialPage: Int get() = initialPage1
         override suspend fun nextPageImpl(page: Int): List<T>? {
             val paged = nextPageOrNullImpl(page)
             if (paged == null) {
