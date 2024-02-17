@@ -248,6 +248,11 @@ private fun EpisodeActionButtons(
             modifier,
         )
     }
+
+    val showPlaySourceSheet by viewModel.isShowPlaySourceSheet.collectAsStateWithLifecycle()
+    if (showPlaySourceSheet) {
+        PlaySourceSheet(viewModel)
+    }
 }
 
 
@@ -291,18 +296,9 @@ private fun NowPlayingLabel(viewModel: EpisodeViewModel, modifier: Modifier = Mo
 @Composable
 private fun PlaySourceSelectionAction(
     viewModel: EpisodeViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val isPlaySourcesLoading by viewModel.isPlaySourcesLoading.collectAsStateWithLifecycle()
-    val playSourceSelector = viewModel.playSourceSelector
-
-    val resolutions by playSourceSelector.resolutions.collectAsStateWithLifecycle()
-    val subtitleLanguages by playSourceSelector.subtitleLanguages.collectAsStateWithLifecycle()
-    val alliances by playSourceSelector.candidates.collectAsStateWithLifecycle(null)
-    val preferredResolution by playSourceSelector.preferredResolution.collectAsStateWithLifecycle()
-    val preferredLanguage by playSourceSelector.preferredSubtitleLanguage.collectAsStateWithLifecycle()
-    val preferredAlliance by playSourceSelector.finalSelectedAllianceMangled.collectAsStateWithLifecycle(null)
-
 
     ActionButton(
         onClick = {
@@ -313,72 +309,6 @@ private fun PlaySourceSelectionAction(
         modifier,
         isPlaySourcesLoading
     )
-
-    val showPlaySourceSheet by viewModel.isShowPlaySourceSheet.collectAsStateWithLifecycle()
-    if (showPlaySourceSheet) {
-        ModalBottomSheet(
-            onDismissRequest = { viewModel.setShowPlaySourceSheet(false) },
-            Modifier
-        ) {
-            Column(
-                Modifier
-                    .navigationBarsPadding()
-                    .padding(vertical = 12.dp, horizontal = PAGE_HORIZONTAL_PADDING)
-                    .fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                PlaySourceFilterRow(
-                    resolutions,
-                    label = { Text("清晰度", overflow = TextOverflow.Visible) },
-                    key = { it.id },
-                    eachItem = { item ->
-                        InputChip(
-                            item == preferredResolution,
-                            onClick = { playSourceSelector.setPreferredResolution(item) },
-                            label = { Text(remember(item) { item.toString() }) }
-                        )
-                    },
-                    Modifier.height(32.dp)
-                )
-
-                PlaySourceFilterRow(
-                    subtitleLanguages,
-                    label = { Text("字幕语言", overflow = TextOverflow.Visible) },
-                    key = { it },
-                    eachItem = { item ->
-                        InputChip(
-                            item == preferredLanguage,
-                            onClick = { playSourceSelector.setPreferredSubtitleLanguage(item) },
-                            label = { Text(item) }
-                        )
-                    },
-                    Modifier.height(32.dp)
-                )
-
-                PlaySourceFilterFlowRow(
-                    alliances.orEmpty(),
-                    label = { Text("字幕组", overflow = TextOverflow.Visible) },
-                    eachItem = { item ->
-                        InputChip(
-                            item.allianceMangled == preferredAlliance,
-                            onClick = { viewModel.launchInBackground { playSourceSelector.setPreferredCandidate(item) } },
-                            label = { Text(item.allianceMangled) },
-                            Modifier.height(32.dp)
-                        )
-                    },
-                )
-
-                TextButton(
-                    { viewModel.setShowPlaySourceSheet(false) },
-                    Modifier.align(Alignment.End).padding(horizontal = 8.dp)
-                ) {
-                    Text("完成")
-                }
-            }
-
-            Spacer(Modifier.navigationBarsPadding())
-        }
-    }
 
 //        Box(
 //            Modifier.fillMaxWidth().height(80.dp).padding(top = PAGE_HORIZONTAL_PADDING),
@@ -410,6 +340,82 @@ private fun PlaySourceSelectionAction(
 //                }
 //            }
 //        }
+}
+
+@Composable
+private fun PlaySourceSheet(
+    viewModel: EpisodeViewModel
+) {
+    ModalBottomSheet(
+        onDismissRequest = { viewModel.setShowPlaySourceSheet(false) },
+        Modifier
+    ) {
+        val playSourceSelector = viewModel.playSourceSelector
+        val resolutions by playSourceSelector.resolutions.collectAsStateWithLifecycle()
+        val subtitleLanguages by playSourceSelector.subtitleLanguages.collectAsStateWithLifecycle()
+        val alliances by playSourceSelector.candidates.collectAsStateWithLifecycle(null)
+        val preferredResolution by playSourceSelector.preferredResolution.collectAsStateWithLifecycle()
+        val preferredLanguage by playSourceSelector.preferredSubtitleLanguage.collectAsStateWithLifecycle()
+        val preferredAlliance by playSourceSelector.finalSelectedAllianceMangled.collectAsStateWithLifecycle(null)
+
+        Column(
+            Modifier
+                .navigationBarsPadding()
+                .padding(vertical = 12.dp, horizontal = PAGE_HORIZONTAL_PADDING)
+                .fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            PlaySourceFilterRow(
+                resolutions,
+                label = { Text("清晰度", overflow = TextOverflow.Visible) },
+                key = { it.id },
+                eachItem = { item ->
+                    InputChip(
+                        item == preferredResolution,
+                        onClick = { playSourceSelector.setPreferredResolution(item) },
+                        label = { Text(remember(item) { item.toString() }) }
+                    )
+                },
+                Modifier.height(32.dp)
+            )
+
+            PlaySourceFilterRow(
+                subtitleLanguages,
+                label = { Text("字幕语言", overflow = TextOverflow.Visible) },
+                key = { it },
+                eachItem = { item ->
+                    InputChip(
+                        item == preferredLanguage,
+                        onClick = { playSourceSelector.setPreferredSubtitleLanguage(item) },
+                        label = { Text(item) }
+                    )
+                },
+                Modifier.height(32.dp)
+            )
+
+            PlaySourceFilterFlowRow(
+                alliances.orEmpty(),
+                label = { Text("字幕组", overflow = TextOverflow.Visible) },
+                eachItem = { item ->
+                    InputChip(
+                        item.allianceMangled == preferredAlliance,
+                        onClick = { viewModel.launchInBackground { playSourceSelector.setPreferredCandidate(item) } },
+                        label = { Text(item.allianceMangled) },
+                        Modifier.height(32.dp)
+                    )
+                },
+            )
+
+            TextButton(
+                { viewModel.setShowPlaySourceSheet(false) },
+                Modifier.align(Alignment.End).padding(horizontal = 8.dp)
+            ) {
+                Text("完成")
+            }
+        }
+
+        Spacer(Modifier.navigationBarsPadding())
+    }
 }
 
 /**
