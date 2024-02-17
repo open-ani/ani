@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -134,8 +135,8 @@ object AniDesktop {
                 exitApplication()
             },
             state = rememberWindowState(
-                height = 1920.dp / 2,
-                width = 1080.dp / 2,
+                height = 1920.dp / 2.2f,
+                width = 1080.dp / 2.2f,
             ),
             resizable = false,
         ) {
@@ -172,15 +173,17 @@ private fun MainWindowContent(
     AniApp(aniColorScheme()) {
         Box(
             Modifier.background(color = AppTheme.colorScheme.background)
-                .padding(top = if (hostIsMacOs && windowImmersed) 16.dp else 0.dp) // safe area for macOS if windowImmersed
+                .statusBarsPadding()
+                .padding(top = if (hostIsMacOs && windowImmersed) 28.dp else 0.dp) // safe area for macOS if windowImmersed
         ) {
             BoxWithConstraints(Modifier.fillMaxSize()) {
                 val paddingByWindowSize by animateDpAsState(
-                    if (maxWidth > 400.dp) {
-                        16.dp
-                    } else {
-                        8.dp
-                    },
+                    0.dp
+//                    if (maxWidth > 400.dp) {
+//                        16.dp
+//                    } else {
+//                        8.dp
+//                    },
                 )
 
                 CompositionLocalProvider(LocalNavigator provides aniNavigator) {
