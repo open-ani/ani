@@ -18,6 +18,7 @@
 
 package me.him188.ani.app.ui.foundation
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -29,6 +30,7 @@ import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.getCommonKoinModule
 import me.him188.ani.app.torrent.TorrentDownloader
 import me.him188.ani.app.torrent.TorrentDownloaderFactory
+import me.him188.ani.app.ui.theme.aniColorScheme
 import me.him188.ani.app.videoplayer.DummyPlayerController
 import me.him188.ani.app.videoplayer.PlayerControllerFactory
 import org.koin.core.context.startKoin
@@ -43,9 +45,9 @@ val LocalIsPreviewing = compositionLocalOf {
 @OptIn(DelicateCoroutinesApi::class)
 @Composable
 fun ProvideCompositionLocalsForPreview(
+    isDark: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit,
 ) {
-
     MaterialTheme {
         PlatformPreviewCompositionLocalProvider {
             val context = LocalContext.current
@@ -70,7 +72,7 @@ fun ProvideCompositionLocalsForPreview(
                 }
             }
             CompositionLocalProvider(LocalIsPreviewing provides true) {
-                AniApp {
+                AniApp(aniColorScheme(isDark)) {
                     content()
                 }
             }

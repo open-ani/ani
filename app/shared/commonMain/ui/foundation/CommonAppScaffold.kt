@@ -42,11 +42,12 @@ import me.him188.ani.app.i18n.LocalI18n
 import me.him188.ani.app.i18n.loadResourceBundle
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.theme.AppTheme
+import me.him188.ani.app.ui.theme.aniColorScheme
 import moe.tlaster.precompose.PreComposeApp
 
 @Composable
 fun AniApp(
-    colorScheme: ColorScheme = MaterialTheme.colorScheme,
+    colorScheme: ColorScheme = aniColorScheme(),
     content: @Composable () -> Unit
 ) {
     val context = LocalContext.current

@@ -56,6 +56,7 @@ import me.him188.ani.app.ui.foundation.AniApp
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.main.MainScreen
 import me.him188.ani.app.ui.theme.AppTheme
+import me.him188.ani.app.ui.theme.aniColorScheme
 import me.him188.ani.app.videoplayer.DummyPlayerController
 import me.him188.ani.app.videoplayer.PlayerControllerFactory
 import me.him188.ani.utils.logging.logger
@@ -168,7 +169,7 @@ private fun MainWindowContent(
     windowImmersed: Boolean,
     aniNavigator: AniNavigator,
 ) {
-    AniApp {
+    AniApp(aniColorScheme()) {
         Box(
             Modifier.background(color = AppTheme.colorScheme.background)
                 .padding(top = if (hostIsMacOs && windowImmersed) 16.dp else 0.dp) // safe area for macOS if windowImmersed
