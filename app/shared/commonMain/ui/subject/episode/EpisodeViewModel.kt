@@ -246,9 +246,9 @@ private class EpisodeViewModelImpl(
             processDmhyResults(session, episode)
         }.transformLatest { flow ->
             val list = ConcurrentLinkedQueue<PlaySource>()
-            flow.collect {
-                list.add(it)
-                emit(list)
+            flow.collect { source ->
+                list.add(source)
+                emit(list.distinctBy { it.originalTitle })
             }
         }.shareInBackground()
 
