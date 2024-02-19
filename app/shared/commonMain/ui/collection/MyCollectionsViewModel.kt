@@ -79,6 +79,15 @@ class MyCollectionsViewModel : AbstractViewModel(), KoinComponent {
         }
         subjectRepository.setSubjectCollectionTypeOrDelete(subjectId, action.type.toSubjectCollectionType())
     }
+
+    suspend fun setAllEpisodesWatched(subjectId: Int) {
+        val ids = episodeRepository.getEpisodesBySubjectId(subjectId, EpType.MainStory).map { it.id }.toList()
+        episodeRepository.setEpisodeCollection(
+            subjectId,
+            ids,
+            EpisodeCollectionType.WATCHED,
+        )
+    }
 }
 
 @Stable

@@ -274,10 +274,12 @@ private fun CollectionItemContent(
                 EditCollectionTypeDropDown(
                     currentType = item.collectionType,
                     showDropdown, { showDropdown = false },
+                    onSetAllEpisodesDone = {
+                        viewModel.launchInBackground { viewModel.setAllEpisodesWatched(item.subjectId) }
+                    },
                     onClick = { action ->
                         viewModel.launchInBackground { updateSubjectCollection(item.subjectId, action) }
-                    }
-                )
+                    })
             }
         }
 

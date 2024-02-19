@@ -6,11 +6,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runInterruptible
+import me.him188.ani.app.data.EpisodeRepository
 import me.him188.ani.app.data.SubjectRepository
 import me.him188.ani.app.data.setSubjectCollectionTypeOrDelete
 import me.him188.ani.app.session.SessionManager
@@ -31,6 +33,7 @@ import me.him188.ani.datasources.bangumi.processing.toSubjectCollectionType
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.openapitools.client.infrastructure.ClientException
+import org.openapitools.client.models.EpisodeCollectionType
 import org.openapitools.client.models.RelatedCharacter
 import org.openapitools.client.models.RelatedPerson
 
@@ -41,6 +44,7 @@ class SubjectDetailsViewModel(
     private val sessionManager: SessionManager by inject()
     private val bangumiClient: BangumiClient by inject()
     private val subjectRepository: SubjectRepository by inject()
+    private val episodeRepository: EpisodeRepository by inject()
 //    private val subjectProvider: SubjectProvider by inject()
 
     val subjectId: MutableStateFlow<Int> = MutableStateFlow(initialSubjectId)
@@ -157,6 +161,14 @@ class SubjectDetailsViewModel(
         subjectRepository.setSubjectCollectionTypeOrDelete(
             subjectId.value,
             subjectCollectionType.toSubjectCollectionType()
+        )
+    }
+
+    suspend fun setAllEpisodesWatched() {
+        episodeRepository.setEpisodeCollection(
+            subjectId.value,
+            episodesMain.first().map { it.id.toInt() },
+            EpisodeCollectionType.WATCHED,
         )
     }
 

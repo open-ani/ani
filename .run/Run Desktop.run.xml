@@ -1,6 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-    <configuration default="false" name="Run Desktop" type="JetRunConfigurationType"
-            activateToolWindowBeforeRun="false">
+    <configuration default="false" name="Run Desktop" type="JetRunConfigurationType">
         <option name="MAIN_CLASS_NAME" value="me.him188.ani.desktop.AniDesktop" />
         <module name="ani.app.desktop.main" />
         <shortenClasspath name="NONE" />

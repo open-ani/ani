@@ -13,6 +13,8 @@ import androidx.compose.material.icons.filled.ListAlt
 import androidx.compose.material.icons.filled.PlayCircleOutline
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
@@ -23,6 +25,7 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
@@ -109,9 +112,38 @@ fun EditCollectionTypeDropDown(
     currentType: CollectionType?,
     showDropdown: Boolean,
     onDismissRequest: () -> Unit,
+    onSetAllEpisodesDone: (() -> Unit)?,
     onClick: (action: SubjectCollectionAction) -> Unit,
-    actions: List<SubjectCollectionAction> = SubjectCollectionActionsForEdit
+    actions: List<SubjectCollectionAction> = SubjectCollectionActionsForEdit,
 ) {
+    // 同时设置所有剧集为看过
+    var showSetAllEpisodesDialog by remember { mutableStateOf(false) }
+    if (showSetAllEpisodesDialog && onSetAllEpisodesDone != null) {
+        AlertDialog(
+            onDismissRequest = {
+                showSetAllEpisodesDialog = false
+            },
+            text = {
+                Text("要同时设置所有剧集为看过吗？")
+            },
+            confirmButton = {
+                Button({
+                    showSetAllEpisodesDialog = false
+                    onSetAllEpisodesDone.invoke()
+                }) {
+                    Text("设置")
+                }
+            },
+            dismissButton = {
+                TextButton({
+                    showSetAllEpisodesDialog = false
+                }) {
+                    Text("取消")
+                }
+            }
+        )
+    }
+
     DropdownMenu(
         showDropdown,
         onDismissRequest = onDismissRequest,
@@ -137,6 +169,9 @@ fun EditCollectionTypeDropDown(
                 onClick = {
                     onClickState(action)
                     onDismissRequestState()
+                    if (action == SubjectCollectionActions.Done) {
+                        showSetAllEpisodesDialog = true
+                    }
                 }
             )
         }
@@ -184,6 +219,7 @@ fun CollectionActionButton(
     type: CollectionType?,
     onCollect: () -> Unit,
     onEdit: (newType: CollectionType) -> Unit,
+    onSetAllEpisodesDone: () -> Unit,
 ) {
     val action = remember(type) {
         SubjectCollectionActionsForCollect.find { it.type == type }
@@ -206,6 +242,7 @@ fun CollectionActionButton(
             currentType = type,
             showDropdown = showDropdown,
             onDismissRequest = { showDropdown = false },
+            onSetAllEpisodesDone = onSetAllEpisodesDone,
             onClick = {
                 showDropdown = false
                 onEdit(it.type)

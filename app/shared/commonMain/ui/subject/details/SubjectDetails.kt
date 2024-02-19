@@ -182,10 +182,11 @@ private fun SubjectDetailsContent(
             ) {
                 // 收藏按钮
                 CollectionActionButton(
-                    onEdit = { viewModel.launchInBackground { setSelfCollectionType(it) } },
                     collected = selfCollected,
                     type = selfCollectionType,
                     onCollect = { viewModel.launchInBackground { setSelfCollectionType(CollectionType.Doing) } },
+                    onEdit = { viewModel.launchInBackground { setSelfCollectionType(it) } },
+                    onSetAllEpisodesDone = { viewModel.launchInBackground { setAllEpisodesWatched() } },
                 )
             }
         }

@@ -120,6 +120,7 @@ fun EpisodeCollectionActionButton(
             currentType = collectionType?.toCollectionType(),
             showDropdown = showDropdown,
             onDismissRequest = { showDropdown = false },
+            onSetAllEpisodesDone = null,
             onClick = {
                 showDropdown = false
                 onClick(it.type.toEpisodeCollectionType())
