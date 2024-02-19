@@ -20,6 +20,7 @@ package me.him188.ani.app.ui.collection
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -46,7 +47,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
@@ -181,6 +181,15 @@ private fun ColumnScope.MyCollectionColumn(
                     onClickEpisode = {
                         navigator.navigateEpisodeDetails(collection.subjectId, it.episode.id)
                     },
+                    onLongClickEpisode = {
+                        viewModel.launchInBackground {
+                            viewModel.setEpisodeWatched(
+                                collection.subjectId,
+                                it.episode.id,
+                                it.type != EpisodeCollectionType.WATCHED
+                            )
+                        }
+                    },
                     viewModel,
                 )
             }
@@ -195,11 +204,15 @@ private fun ColumnScope.MyCollectionColumn(
     }
 }
 
+/**
+ * 追番列表的一个条目卡片
+ */
 @Composable
 private fun CollectionItem(
     item: SubjectCollectionItem,
     onClick: () -> Unit,
     onClickEpisode: (episode: UserEpisodeCollection) -> Unit,
+    onLongClickEpisode: (episode: UserEpisodeCollection) -> Unit,
     viewModel: MyCollectionsViewModel,
     modifier: Modifier = Modifier,
 ) {
@@ -221,6 +234,7 @@ private fun CollectionItem(
                 CollectionItemContent(
                     item,
                     onClickEpisode,
+                    onLongClickEpisode,
                     viewModel,
                     Modifier.fillMaxSize()
                         .padding(start = 8.dp)
@@ -246,15 +260,20 @@ private fun CollectionItem(
     }
 }
 
+/**
+ * 追番列表的一个条目卡片的内容
+ */
 @Composable
 private fun CollectionItemContent(
     item: SubjectCollectionItem,
     onClickEpisode: (episode: UserEpisodeCollection) -> Unit,
+    onLongClickEpisode: (episode: UserEpisodeCollection) -> Unit,
     viewModel: MyCollectionsViewModel,
     modifier: Modifier = Modifier,
 ) {
     val onClickEpisodeState by rememberUpdatedState(onClickEpisode)
     Column(modifier) {
+        // 标题和右上角菜单
         Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), verticalAlignment = Alignment.CenterVertically) {
             Text(
                 item.displayName,
@@ -279,7 +298,8 @@ private fun CollectionItemContent(
                     },
                     onClick = { action ->
                         viewModel.launchInBackground { updateSubjectCollection(item.subjectId, action) }
-                    })
+                    }
+                )
             }
         }
 
@@ -306,6 +326,7 @@ private fun CollectionItemContent(
             }
         }
 
+        // 剧集列表
         Row(Modifier.padding(top = 4.dp).weight(1f), verticalAlignment = Alignment.CenterVertically) {
             val state = rememberLazyListState()
             LazyRow(
@@ -314,7 +335,11 @@ private fun CollectionItemContent(
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 items(item.episodes) {
-                    SmallEpisodeButton(it, onClick = { onClickEpisodeState(it) })
+                    SmallEpisodeButton(
+                        it,
+                        onClick = { onClickEpisodeState(it) },
+                        onLongClick = { onLongClickEpisode(it) },
+                    )
                 }
             }
 
@@ -355,11 +380,13 @@ private fun CollectionItemContent(
 private fun SmallEpisodeButton(
     it: UserEpisodeCollection,
     onClick: () -> Unit,
+    onLongClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    FilledTonalButton(
-        onClick,
-        modifier.size(36.dp),
+    me.him188.ani.app.ui.foundation.FilledTonalButton(
+        onClick = onClick,
+        onLongClick = onLongClick,
+        modifier = modifier.combinedClickable(onLongClick = onLongClick, onClick = onClick).size(36.dp),
         shape = RoundedCornerShape(8.dp),
         contentPadding = PaddingValues(horizontal = 4.dp, vertical = 2.dp),
         colors = ButtonDefaults.elevatedButtonColors(

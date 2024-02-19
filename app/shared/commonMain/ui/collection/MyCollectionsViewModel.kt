@@ -88,6 +88,25 @@ class MyCollectionsViewModel : AbstractViewModel(), KoinComponent {
             EpisodeCollectionType.WATCHED,
         )
     }
+
+    suspend fun setEpisodeWatched(subjectId: Int, episodeId: Int, watched: Boolean) {
+        val newType = if (watched) EpisodeCollectionType.WATCHED else EpisodeCollectionType.WATCHLIST
+        collections.value?.find { it.subjectId == subjectId }?.let { collection ->
+            collection.episodes = collection.episodes.map { episode ->
+                if (episode.episode.id == episodeId) {
+                    episode.copy(type = newType)
+                } else {
+                    episode
+                }
+            }
+        }
+
+        episodeRepository.setEpisodeCollection(
+            subjectId,
+            listOf(episodeId),
+            newType,
+        )
+    }
 }
 
 @Stable
@@ -106,10 +125,11 @@ class SubjectCollectionItem(
     val latestEp: UserEpisodeCollection?,
     val lastWatchedEpIndex: Int?,
 
-    val episodes: List<UserEpisodeCollection>,
+    episodes: List<UserEpisodeCollection>,
     collectionType: SubjectCollectionType,
 ) {
     var collectionType: CollectionType by mutableStateOf(collectionType.toCollectionType())
+    var episodes by mutableStateOf(episodes)
 
     val onAirDescription = if (isOnAir) {
         if (latestEp == null) {
