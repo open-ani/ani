@@ -280,9 +280,8 @@ private fun CollectionItemContent(
                 style = MaterialTheme.typography.titleMedium,
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 1,
+                modifier = Modifier.weight(1f)
             )
-
-            Spacer(Modifier.weight(1f, fill = true))
 
             Box {
                 var showDropdown by remember { mutableStateOf(false) }
