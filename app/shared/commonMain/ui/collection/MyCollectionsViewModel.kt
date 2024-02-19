@@ -81,6 +81,11 @@ class MyCollectionsViewModel : AbstractViewModel(), KoinComponent {
     }
 
     suspend fun setAllEpisodesWatched(subjectId: Int) {
+        collections.value?.find { it.subjectId == subjectId }?.let { collection ->
+            collection.episodes = collection.episodes.map { episode ->
+                episode.copy(type = EpisodeCollectionType.WATCHED)
+            }
+        }
         val ids = episodeRepository.getEpisodesBySubjectId(subjectId, EpType.MainStory).map { it.id }.toList()
         episodeRepository.setEpisodeCollection(
             subjectId,

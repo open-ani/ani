@@ -165,6 +165,7 @@ class SubjectDetailsViewModel(
     }
 
     suspend fun setAllEpisodesWatched() {
+        
         episodeRepository.setEpisodeCollection(
             subjectId.value,
             episodesMain.first().map { it.id.toInt() },
