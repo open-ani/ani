@@ -19,6 +19,7 @@
 package me.him188.ani.app.ui.collection
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -159,9 +160,10 @@ private fun ColumnScope.MyCollectionColumn(
 ) {
     val collections by viewModel.collections.collectAsStateWithLifecycle(null)
     val spacedBy = 8.dp
+    val state = rememberLazyListState()
     LazyColumn(
         modifier.padding(horizontal = 12.dp).padding(vertical = 12.dp),
-        rememberLazyListState(),
+        state,
         verticalArrangement = Arrangement.spacedBy(spacedBy),
     ) {
         (contentPadding.calculateTopPadding() - spacedBy).coerceAtLeast(0.dp).takeIf { it > 0.dp }?.let {
@@ -169,7 +171,10 @@ private fun ColumnScope.MyCollectionColumn(
         }
         items(collections.orEmpty(), key = { it.subjectId }) { collection ->
             var targetAlpha by remember { mutableStateOf(0f) }
-            val alpha by animateFloatAsState(targetAlpha, tween(150))
+            val alpha by animateFloatAsState(
+                targetAlpha,
+                if (state.canScrollBackward || state.canScrollForward) snap(0) else tween(150)
+            )
             Box(Modifier.alpha(alpha)) {
                 val navigator = LocalNavigator.current
                 CollectionItem(
