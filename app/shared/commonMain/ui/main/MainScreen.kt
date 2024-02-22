@@ -11,7 +11,7 @@ import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -162,7 +162,7 @@ private fun HomeScene(
 
             Column(Modifier.alpha(0.97f)) {
                 Column(Modifier.background(MaterialTheme.colorScheme.surface)) {
-                    Divider(thickness = 1.dp)
+                    HorizontalDivider(thickness = 1.dp)
 
                     BottomAppBar(
                         Modifier

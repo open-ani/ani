@@ -184,10 +184,10 @@ fun Button(
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     content: @Composable RowScope.() -> Unit
 ) {
-    val containerColor = colors.containerColor(enabled).value
-    val contentColor = colors.contentColor(enabled).value
+    val containerColor = colors.containerColor(enabled)
+    val contentColor = colors.contentColor(enabled)
     val shadowElevation = elevation?.shadowElevation(enabled, interactionSource)?.value ?: 0.dp
-    val tonalElevation = elevation?.tonalElevation(enabled, interactionSource)?.value ?: 0.dp
+    val tonalElevation = elevation?.tonalElevation(enabled) ?: 0.dp
     Surface(
         modifier = modifier.semantics { role = Role.Button }.combinedClickable(
             interactionSource = interactionSource,

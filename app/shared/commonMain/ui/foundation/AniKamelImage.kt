@@ -57,7 +57,10 @@ fun LoadingIndicator(progress: Float, modifier: Modifier = Modifier) {
         modifier.fillMaxSize()
             .background(Color.LightGray)
     ) {
-        CircularProgressIndicator(progress, Modifier.align(Alignment.Center))
+        CircularProgressIndicator(
+            progress = { progress },
+            modifier = Modifier.align(Alignment.Center),
+        )
     }
 }
 

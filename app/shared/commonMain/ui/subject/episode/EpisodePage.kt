@@ -33,8 +33,8 @@ import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.LocalContentColor
@@ -184,7 +184,7 @@ fun EpisodePageContent(
             EpisodeTitle(viewModel, Modifier.padding(horizontal = PAGE_HORIZONTAL_PADDING, vertical = 16.dp))
         }
 
-        Divider(Modifier.fillMaxWidth())
+        HorizontalDivider(Modifier.fillMaxWidth())
 
         Column(Modifier.padding(vertical = 16.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             NowPlayingLabel(viewModel, Modifier.padding(horizontal = PAGE_HORIZONTAL_PADDING).fillMaxWidth())

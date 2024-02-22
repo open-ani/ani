@@ -6,10 +6,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ListAlt
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.ListAlt
 import androidx.compose.material.icons.filled.PlayCircleOutline
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Star
@@ -46,7 +46,7 @@ import me.him188.ani.datasources.api.CollectionType
 object SubjectCollectionActions {
     val Wish = SubjectCollectionAction(
         { Text("想看") },
-        { Icon(Icons.Default.ListAlt, null) },
+        { Icon(Icons.AutoMirrored.Filled.ListAlt, null) },
         CollectionType.Wish
     )
     val Doing = SubjectCollectionAction(

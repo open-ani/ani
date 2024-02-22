@@ -1,3 +1,5 @@
+import org.jetbrains.compose.ComposeExtension
+
 /*
  * Ani
  * Copyright (C) 2022-2024 Him188
@@ -60,5 +62,10 @@ subprojects {
         configureKotlinTestSettings()
         configureEncoding()
         configureJvmTarget()
+        kotlin.runCatching {
+            extensions.findByType(ComposeExtension::class)?.apply {
+                this.kotlinCompilerPlugin.set(libs.versions.compose.multiplatform.compiler.get())
+            }
+        }
     }
 }
