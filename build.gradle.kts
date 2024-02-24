@@ -62,7 +62,6 @@ subprojects {
         configureKotlinTestSettings()
         configureEncoding()
         configureJvmTarget()
-        configureCompose()
         kotlin.runCatching {
             extensions.findByType(ComposeExtension::class)?.apply {
                 this.kotlinCompilerPlugin.set(libs.versions.compose.multiplatform.compiler.get())
