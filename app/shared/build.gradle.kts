@@ -146,15 +146,19 @@ kotlin {
             kotlin.srcDirs(rootProject.projectDir.resolve("danmaku/api/src/"))
             kotlin.srcDirs(rootProject.projectDir.resolve("danmaku/dandanplay/src/"))
             kotlin.srcDirs(rootProject.projectDir.resolve("danmaku/ui/commonMain/"))
+
+            kotlin.srcDirs(rootProject.projectDir.resolve("app/video-player/commonMain"))
         }
         getByName("desktopTest") {
             kotlin.srcDirs(rootProject.projectDir.resolve("danmaku/api/test/"))
         }
         androidMain {
             kotlin.srcDirs(rootProject.projectDir.resolve("danmaku/ui/androidMain/"))
+            kotlin.srcDirs(rootProject.projectDir.resolve("app/video-player/androidMain"))
         }
         getByName("desktopMain") {
             kotlin.srcDirs(rootProject.projectDir.resolve("danmaku/ui/desktopMain/"))
+            kotlin.srcDirs(rootProject.projectDir.resolve("app/video-player/desktopMain"))
         }
     }
 }
