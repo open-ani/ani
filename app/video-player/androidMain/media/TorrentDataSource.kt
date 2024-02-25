@@ -68,6 +68,7 @@ class TorrentDataSource(
 
             logger.info { "Acquiring torrent DeferredFile" }
             file = runBlocking { session.createInput() }
+            opened = true
         }
 
         logger.info { "Waiting for totalBytes" }
@@ -98,7 +99,6 @@ class TorrentDataSource(
         uri = null
         if (opened) {
             file.close()
-            session.close()
             transferEnded()
         }
     }

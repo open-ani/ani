@@ -149,15 +149,6 @@ internal class TorrentDownloaderImpl(
             logger.warn { "Reopening a torrent session, returning existing" }
             return it
         }
-        dataToSession[hash] = TorrentDownloadSessionImpl(
-            removeListener = { sessionManager.removeListener(it) },
-            closeHandle = { sessionManager.remove(it) },
-            torrentInfo = ti,
-            saveDirectory = saveDirectory,
-            onClose = {
-                dataToSession.remove(hash)
-            }
-        )
         val session =
             TorrentDownloadSessionImpl(
                 removeListener = { sessionManager.removeListener(it) },
@@ -168,6 +159,7 @@ internal class TorrentDownloaderImpl(
                     dataToSession.remove(hash)
                 }
             )
+        dataToSession[hash] = session
         sessionManager.addListener(session.listener)
 
         val priorities = Priority.array(Priority.IGNORE, ti.numFiles())
@@ -182,7 +174,8 @@ internal class TorrentDownloaderImpl(
                 null,
                 priorities,
                 null,
-                TorrentFlags.SEQUENTIAL_DOWNLOAD,//.or_(TorrentFlags.NEED_SAVE_RESUME)
+                TorrentFlags.UPDATE_SUBSCRIBE,
+//                TorrentFlags.SEQUENTIAL_DOWNLOAD,//.or_(TorrentFlags.NEED_SAVE_RESUME)
             )
             logger.info { "Torrent download started." }
         } catch (e: Throwable) {
