@@ -18,7 +18,6 @@ import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import org.libtorrent4j.AlertListener
 import org.libtorrent4j.AnnounceEntry
-import org.libtorrent4j.Priority
 import org.libtorrent4j.TorrentHandle
 import org.libtorrent4j.TorrentInfo
 import org.libtorrent4j.alerts.AddTorrentAlert
@@ -123,15 +122,12 @@ internal class TorrentDownloadSessionImpl(
             onSeek = { piece ->
                 logger.info { "[TorrentDownloadControl] Set piece ${piece.pieceIndex} priority to TOP because it was requested " }
                 val pieces = handle.await().pieces
-                handle.await().torrentHandle.let { handle ->
-                    handle.piecePriority(piece.pieceIndex, Priority.TOP_PRIORITY)
+                jobsToDoInHandle.add { handle ->
                     handle.setPieceDeadline(piece.pieceIndex, System.currentTimeMillis().and(0x0FFF_FFFFL).toInt())
-
                     for (i in (piece.pieceIndex + 1..piece.pieceIndex + 3)) {
                         if (i < pieces.size - 1) {
-                            handle.piecePriority(piece.pieceIndex, Priority.SIX)
                             handle.setPieceDeadline(
-                                piece.pieceIndex,
+                                i,
                                 System.currentTimeMillis().and(0x0FFF_FFFFL).toInt() + i
                             )
                         }
@@ -183,14 +179,30 @@ internal class TorrentDownloadSessionImpl(
                 when (type) {
                     AlertType.ADD_TORRENT -> {
                         logger.info { "Torrent added" }
-                        val handle = (alert as AddTorrentAlert).handle()
-                        torrentHandle = handle
+                        val torrentHandle = (alert as AddTorrentAlert).handle()
+                        this@TorrentDownloadSessionImpl.torrentHandle = torrentHandle
 
                         // Add trackers
                         trackers.lines().map { it.trim() }.filter { it.isNotEmpty() }.forEach {
-                            handle.addTracker(AnnounceEntry(it))
+                            torrentHandle.addTracker(AnnounceEntry(it))
                         }
-                        handle.resume()
+
+                        // Initialize [pieces]
+                        val torrentInfo = torrentHandle.torrentFile()
+                        val numPieces = torrentInfo.numPieces()
+                        val pieces =
+                            Piece.buildPieces(numPieces) { torrentInfo.pieceSize(it).toUInt().toLong() }
+
+                        if (pieces.isNotEmpty()) {
+//                            torrentHandle.piecePriority(0, Priority.TOP_PRIORITY)
+                            torrentHandle.setPieceDeadline(0, 0)
+//                            torrentHandle.piecePriority(pieces.lastIndex, Priority.TOP_PRIORITY)
+                            torrentHandle.setPieceDeadline(pieces.lastIndex, 0)
+                        }
+
+                        this@TorrentDownloadSessionImpl.handle.complete(Handle(pieces, torrentHandle))
+
+                        torrentHandle.resume()
                     }
 
                     // This alert is posted when a torrent completes checking. i.e. when it transitions out of the checking files state into a state where it is ready to start downloading
@@ -205,20 +217,6 @@ internal class TorrentDownloadSessionImpl(
                         logger.info { "Total ${pieceAvailability.size} pieces" }
 
 
-                        // Initialize [pieces]
-                        val torrentInfo = torrentHandle.torrentFile()
-                        val numPieces = torrentInfo.numPieces()
-                        val pieces =
-                            Piece.buildPieces(numPieces) { torrentInfo.pieceSize(it).toUInt().toLong() }
-
-                        if (pieces.isNotEmpty()) {
-                            torrentHandle.piecePriority(0, Priority.TOP_PRIORITY)
-                            torrentHandle.setPieceDeadline(0, 0)
-                            torrentHandle.piecePriority(pieces.lastIndex, Priority.TOP_PRIORITY)
-                            torrentHandle.setPieceDeadline(pieces.lastIndex, 0)
-                        }
-
-                        this@TorrentDownloadSessionImpl.handle.complete(Handle(pieces, torrentHandle))
 //                        torrentHandle.prioritizePieces(pieces.indices.map { Priority.LOW }.toTypedArray())
 //                        handleOrNull()?.controller?.onTorrentResumed()
 
@@ -324,7 +322,7 @@ internal class TorrentDownloadSessionImpl(
                 logger.info { "[TorrentDownloadControl] Prioritizing pieces: $pieceIndexes" }
                 pieceIndexes.forEach { index ->
                     jobsToDoInHandle.add { handle ->
-                        handle.piecePriority(index, Priority.TOP_PRIORITY)
+//                        handle.piecePriority(index, Priority.TOP_PRIORITY)
                     }
                 }
                 lastPrioritizedIndexes = pieceIndexes.toList()
