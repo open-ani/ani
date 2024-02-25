@@ -35,7 +35,7 @@ class Topic(
     /**
      * 发布时间戳
      */
-    val publishedTime: Long,
+    val publishedTime: Long?,
 
     val category: TopicCategory,
 
@@ -61,11 +61,13 @@ class Topic(
 
 private val DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm")
 
-fun Topic.publishedTimeString(): String {
-    return LocalDateTime.ofInstant(
-        Instant.ofEpochMilli(publishedTime),
-        ZoneId.systemDefault(),
-    ).format(DATE_FORMAT)
+fun Topic.publishedTimeString(): String? {
+    return publishedTime?.let {
+        LocalDateTime.ofInstant(
+            Instant.ofEpochMilli(it),
+            ZoneId.systemDefault(),
+        ).format(DATE_FORMAT)
+    }
 }
 
 class TopicDetails(

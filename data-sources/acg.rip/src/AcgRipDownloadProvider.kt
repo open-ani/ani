@@ -56,6 +56,7 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 import kotlin.time.Duration.Companion.seconds
 
 
@@ -96,7 +97,7 @@ class AcgRipClientImpl(
     }
 }
 
-private val FORMATTER = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss Z")
+private val FORMATTER = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss Z", Locale.ENGLISH)
 
 private fun parseDocument(document: Document): List<Topic> {
     val items = document.getElementsByTag("item")
@@ -109,7 +110,8 @@ private fun parseDocument(document: Document): List<Topic> {
         Topic(
             id = "acgrip-${element.getElementsByTag("guid").text().substringAfterLast("/")}",
             publishedTime = element.getElementsByTag("pubDate").text().let {
-                ZonedDateTime.parse(it, FORMATTER).toEpochSecond()
+                // java.time.format.DateTimeParseException: Text 'Sun, 25 Feb 2024 08:32:16 -0800' could not be parsed at index 0
+                runCatching { ZonedDateTime.parse(it, FORMATTER).toEpochSecond() }.getOrNull()
             },
             category = TopicCategory.ANIME,
             rawTitle = title,

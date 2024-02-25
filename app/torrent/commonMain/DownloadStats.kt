@@ -2,7 +2,6 @@ package me.him188.ani.app.torrent
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
-import me.him188.ani.app.torrent.model.Piece
 
 /**
  * @see TorrentDownloader
@@ -20,9 +19,6 @@ public interface DownloadStats {
     public val isFinished: Flow<Boolean>
 
     public val peerCount: Flow<Int>
-
-    @ExperimentalTorrentApi
-    public val pieces: List<Piece>
 
     /**
      * Waits for all pieces to be downloaded
