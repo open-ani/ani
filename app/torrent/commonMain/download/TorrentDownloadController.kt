@@ -1,6 +1,7 @@
 package me.him188.ani.app.torrent.download
 
 import me.him188.ani.app.torrent.model.Piece
+import me.him188.ani.app.torrent.model.lastIndex
 
 /**
  * Torrent 下载优先级控制器.
@@ -48,18 +49,27 @@ public class TorrentDownloadController(
     private val pieces: List<Piece>,
     private val priorities: PiecePriorities,
     private val windowSize: Int = 32,
-    private val headerSize: Long = 4096,
-    private val footerSize: Long = 4096,
+    private val headerSize: Long = 128 * 1024,
+    private val footerSize: Long = 128 * 1024,
 ) {
     private val totalSize: Long = pieces.sumOf { it.size }
 
     internal var state: State = State.Metadata(
-        requestedPieces = (pieces.takeWhile { it.offset < headerSize } + pieces.takeLastWhile { totalSize - 1 - it.offset < footerSize }).map { it.pieceIndex },
+        requestedPieces = (pieces.takeWhile { it.offset < headerSize } + pieces.dropWhile { it.lastIndex < totalSize - footerSize }).map { it.pieceIndex },
     )
+
+    public val downloadingPieces: List<Int> get() = state.downloadingPieces.toList()
 
     @Synchronized
     public fun onTorrentResumed() {
         priorities.downloadOnly(state.downloadingPieces)
+    }
+
+    @Synchronized
+    public fun onAllRequestedPiecesDownloaded() {
+        for (downloadingPiece in state.downloadingPieces.toList()) { // avoid ConcurrentModificationException
+            onPieceDownloaded(downloadingPiece)
+        }
     }
 
     @Synchronized
@@ -70,7 +80,7 @@ public class TorrentDownloadController(
                 if (state.allPiecesDownloaded()) {
                     this.state = State.Sequential(
                         pieces.indexOfFirst { it.offset >= headerSize },
-                        pieces.indexOfFirst { totalSize - 1 - it.offset < footerSize } - 1,
+                        pieces.indexOfFirst { it.lastIndex >= totalSize - footerSize } - 1,
                         windowSize = windowSize,
                     ).also {
                         priorities.downloadOnly(it.downloadingPieces)
@@ -90,7 +100,24 @@ public class TorrentDownloadController(
             }
         }
     }
+
+//    private val _debugInfo: MutableStateFlow<DebugInfo> = MutableStateFlow(DebugInfo())
+//    public val debugInfo: StateFlow<DebugInfo> get() = _debugInfo
+
+    @Synchronized
+    public fun getDebugInfo(): DebugInfo {
+        return DebugInfo(
+            state = state::class.toString(),
+            downloadingPieces = state.downloadingPieces.toList()
+        )
+    }
+
+    public data class DebugInfo(
+        val state: String,
+        val downloadingPieces: List<Int>
+    )
 }
+
 
 public interface PiecePriorities {
     /**
@@ -115,6 +142,10 @@ internal sealed class State {
         fun onPieceDownloaded(pieceIndex: Int) {
             downloadingPieces.remove(pieceIndex)
         }
+
+        override fun toString(): String {
+            return "Metadata(requestedPieces=$requestedPieces, downloadingPieces=$downloadingPieces)"
+        }
     }
 
     /**
@@ -129,7 +160,10 @@ internal sealed class State {
         val windowSize: Int = 32,
     ) : State() {
         init {
-            require(windowSize > 0) { "concurrency must be greater than 0" }
+            require(windowSize > 0) { "windowSize must be greater than 0" }
+            require(startIndex >= 0) { "startIndex must be greater than or equal to 0" }
+            require(lastIndex >= 0) { "lastIndex must be greater than or equal to 0" }
+            require(startIndex <= lastIndex) { "startIndex must be less than or equal to lastIndex" }
         }
 
         internal var currentWindowStart = startIndex

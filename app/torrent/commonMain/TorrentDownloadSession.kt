@@ -1,6 +1,7 @@
 package me.him188.ani.app.torrent
 
 import kotlinx.coroutines.flow.Flow
+import me.him188.ani.app.torrent.download.TorrentDownloadController
 import me.him188.ani.app.torrent.file.SeekableInput
 
 /**
@@ -11,6 +12,8 @@ import me.him188.ani.app.torrent.file.SeekableInput
  * @See TorrentDownloader
  */
 public interface TorrentDownloadSession : DownloadStats, AutoCloseable {
+    public val torrentDownloadController: Flow<TorrentDownloadController>
+
     public val state: Flow<TorrentDownloadState>
 
     /**

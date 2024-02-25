@@ -24,6 +24,9 @@ interface PlayerController {
     val state: StateFlow<PlayerState>
 
     @Stable
+    val videoSource: StateFlow<VideoSource<*>?>
+
+    @Stable
     val videoProperties: Flow<VideoProperties>
 
     /**
@@ -167,6 +170,7 @@ fun interface PlayerControllerFactory {
  */
 class DummyPlayerController : AbstractPlayerController() {
     override val state: StateFlow<PlayerState> = MutableStateFlow(PlayerState.PAUSED_BUFFERING)
+    override val videoSource: StateFlow<VideoSource<*>?> = MutableStateFlow(null)
     override val videoProperties: Flow<VideoProperties> = MutableStateFlow(
         VideoProperties(
             title = "Test Video",

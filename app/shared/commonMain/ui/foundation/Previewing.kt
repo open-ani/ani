@@ -46,6 +46,9 @@ val LocalIsPreviewing = compositionLocalOf {
 @Composable
 fun ProvideCompositionLocalsForPreview(
     isDark: Boolean = isSystemInDarkTheme(),
+    playerControllerFactory: PlayerControllerFactory = PlayerControllerFactory { _, _ ->
+        DummyPlayerController()
+    },
     content: @Composable () -> Unit,
 ) {
     MaterialTheme {
@@ -64,9 +67,7 @@ fun ProvideCompositionLocalsForPreview(
                             }
                         }
                         single<PlayerControllerFactory> {
-                            PlayerControllerFactory { _, _ ->
-                                DummyPlayerController()
-                            }
+                            playerControllerFactory
                         }
                     })
                 }

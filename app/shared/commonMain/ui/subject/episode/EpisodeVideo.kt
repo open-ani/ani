@@ -34,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
+import me.him188.ani.app.platform.AniBuildConfig
 import me.him188.ani.app.platform.isInLandscapeMode
 import me.him188.ani.app.ui.foundation.TopAppBarGoBackButton
 import me.him188.ani.app.ui.theme.aniDarkColorTheme
@@ -190,7 +191,17 @@ internal fun EpisodeVideo(
             )
         },
         floatingMessage = {
-            EpisodeVideoLoadingIndicator(playerController, videoSourceSelected, videoReady)
+            Column {
+                EpisodeVideoLoadingIndicator(playerController, videoSourceSelected, videoReady)
+                if (AniBuildConfig.current().isDebug) {
+                    playerController.videoSource.collectAsStateWithLifecycle().value?.let {
+                        EpisodeVideoDebugInfo(
+                            it,
+                            Modifier.padding(8.dp)
+                        )
+                    }
+                }
+            }
         },
         danmakuHost = {
             DanmakuHost(danmakuHostState, Modifier.matchParentSize())

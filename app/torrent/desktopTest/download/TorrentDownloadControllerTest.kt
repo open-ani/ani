@@ -61,6 +61,40 @@ internal class TorrentDownloadControllerTest {
     }
 
     @Test
+    fun `request header and footer for large piece`() {
+        val prioritizer = TorrentDownloadController(
+            buildPieceList {
+                // 0
+                piece(17465)
+                piece(17465)
+                piece(17465)
+                piece(17465)
+
+                // 4
+                piece(17465)
+                piece(17465)
+                piece(17465)
+                piece(17465)
+                piece(17465)
+                piece(17465)
+
+                // 10
+                piece(17465)
+                piece(17465)
+                piece(17465)
+                piece(17465)
+            },
+            priorities,
+            windowSize = 2,
+            headerSize = 4096,
+            footerSize = 4096,
+        )
+        val state = prioritizer.state
+        assertIs<State.Metadata>(state)
+        assertEquals(listOf(0, 13), state.requestedPieces)
+    }
+
+    @Test
     fun `stay in Metadata state when not all pieces arrive`() {
         val prioritizer = createPrioritizer()
         assertIs<State.Metadata>(prioritizer.state)
@@ -113,6 +147,31 @@ internal class TorrentDownloadControllerTest {
             assertIs<State.Sequential>(this)
             assertEquals(4, startIndex)
             assertEquals(9, lastIndex)
+        }
+    }
+
+    @Test
+    fun `Sequential state startIndex and lastIndex large piece`() {
+        val prioritizer = TorrentDownloadController(
+            buildPieceList {
+                piece(17465) // 0
+                piece(17465)
+                piece(17465)
+                piece(17465)
+                piece(17465) // 4
+            },
+            priorities,
+            windowSize = 2,
+            headerSize = 4096,
+            footerSize = 4096,
+        )
+        for (i in listOf(0, 4)) {
+            prioritizer.onPieceDownloaded(i)
+        }
+        prioritizer.state.run {
+            assertIs<State.Sequential>(this)
+            assertEquals(1, startIndex)
+            assertEquals(3, lastIndex)
         }
     }
 
