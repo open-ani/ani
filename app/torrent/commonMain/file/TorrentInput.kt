@@ -22,6 +22,7 @@ internal class TorrentInput(
      * The corresponding pieces of the [file].
      */
     private val pieces: List<Piece>,
+    private val onSeek: suspend (Piece) -> Unit = { }
 ) : SeekableInput {
     private val totalLength = pieces.maxOf { it.offset + it.size }
 
@@ -43,6 +44,7 @@ internal class TorrentInput(
         }
         val piece = pieces[index]
         if (piece.state.value != PieceState.FINISHED) {
+            onSeek(piece)
             piece.awaitFinished()
         }
         file.seek(offset)
