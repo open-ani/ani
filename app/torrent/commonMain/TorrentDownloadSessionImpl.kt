@@ -7,10 +7,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.getAndUpdate
 import me.him188.ani.app.torrent.download.PiecePriorities
-import me.him188.ani.app.torrent.download.TorrentDownloadController
 import me.him188.ani.app.torrent.file.SeekableInput
 import me.him188.ani.app.torrent.file.TorrentInput
 import me.him188.ani.app.torrent.file.asSeekableInput
@@ -31,6 +29,7 @@ import org.libtorrent4j.alerts.PieceFinishedAlert
 import org.libtorrent4j.alerts.TorrentResumedAlert
 import java.io.File
 import java.io.RandomAccessFile
+import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.time.Duration.Companion.seconds
 
 internal class TorrentDownloadSessionImpl(
@@ -46,14 +45,13 @@ internal class TorrentDownloadSessionImpl(
     private val saveDirectory: File,
 ) : TorrentDownloadSession {
     private val logger = logger(this::class)
-    override val torrentDownloadController: Flow<TorrentDownloadController>
-        get() = flow {
-            emit(handle.await().controller)
-        }
+//    override val torrentDownloadController: Flow<TorrentDownloadController>
+//        get() = flow {
+//            emit(handle.await().controller)
+//        }
 
     override val state: MutableStateFlow<TorrentDownloadState> = MutableStateFlow(TorrentDownloadState.Starting)
 
-    //    private val _totalBytes = MutableStateFlow(torrentInfo.totalSize())
     override val totalBytes: Flow<Long> = MutableStateFlow(torrentInfo.sizeOnDisk())
 
     private val _downloadedBytes = MutableSharedFlow<Long>(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
@@ -70,16 +68,16 @@ internal class TorrentDownloadSessionImpl(
         val pieces: List<Piece>,
         var torrentHandle: TorrentHandle,
     ) {
-        val controller: TorrentDownloadController = TorrentDownloadController(
-            pieces,
-            { torrentHandle }.asPiecePriorities()
-        )
+//        val controller: TorrentDownloadController = TorrentDownloadController(
+//            pieces,
+//            { torrentHandle }.asPiecePriorities()
+//        )
 
         @Synchronized
         fun onPieceDownloaded(index: Int) {
             pieces[index].state.value = PieceState.FINISHED
-            logger.info { "[TorrentDownloadControl] Piece downloaded: $index. Was downloading ${controller.getDebugInfo().downloadingPieces}" }
-            controller.onPieceDownloaded(index)
+            logger.info { "[TorrentDownloadControl] Piece downloaded: $index. " } // Was downloading ${controller.getDebugInfo().downloadingPieces}
+//            controller.onPieceDownloaded(index)
         }
 
         @Synchronized
@@ -88,15 +86,23 @@ internal class TorrentDownloadSessionImpl(
         }
 
         @Synchronized
-        fun onAllRequestedPiecesDownloaded() {
-            controller.downloadingPieces.forEach {
-                pieces[it].state.value = PieceState.FINISHED
+        fun onFinished() {
+            pieces.forEach {
+                it.state.value = PieceState.FINISHED
             }
-            controller.onAllRequestedPiecesDownloaded()
         }
+
+//        @Synchronized
+//        fun onAllRequestedPiecesDownloaded() {
+////            controller.downloadingPieces.forEach {
+////                pieces[it].state.value = PieceState.FINISHED
+////            }
+////            controller.onAllRequestedPiecesDownloaded()
+//        }
     }
 
     private val handle: CompletableDeferred<Handle> = CompletableDeferred()
+    private val jobsToDoInHandle = ConcurrentLinkedQueue<(TorrentHandle) -> Unit>()
 
     private fun handleOrNull(): Handle? = handle.takeIf { it.isCompleted }?.getCompleted()
 
@@ -114,7 +120,13 @@ internal class TorrentDownloadSessionImpl(
             @Suppress("UNREACHABLE_CODE") // compiler bug
             error("")
         },
-        handle.await().pieces
+        handle.await().pieces,
+        onSeek = { piece ->
+            logger.info { "[TorrentDownloadControl] Set piece ${piece.pieceIndex} priority to TOP because it was requested " }
+            jobsToDoInHandle.add { handle ->
+                handle.piecePriority(piece.pieceIndex, Priority.TOP_PRIORITY)
+            }
+        }
     )
 
     override val isFinished: MutableStateFlow<Boolean> = MutableStateFlow(false)
@@ -179,7 +191,6 @@ internal class TorrentDownloadSessionImpl(
                         logger.info { "TORRENT_RESUMED" }
                         val pieceAvailability = torrentHandle.pieceAvailability()
                         logger.info { "Total ${pieceAvailability.size} pieces" }
-                        logger.info { "Download first and last 10 first." }
 
 
                         // Initialize [pieces]
@@ -195,22 +206,17 @@ internal class TorrentDownloadSessionImpl(
                         // Prioritize pieces
                         // 根据实际测试, 只给部分 piece 设置优先级为 TOP_PRIORITY 并不一定会让这部分优先下载. 必须得忽略其他 pieces.
                         val piecePriorities = Array(numPieces) { Priority.LOW }
-                        for (i in (0..16.coerceAtMost(piecePriorities.lastIndex))
-                                + (numPieces - 1 - 16..<numPieces)) {
+                        for (i in (0..4.coerceAtMost(piecePriorities.lastIndex))
+                                + (numPieces - 1 - 4..<numPieces)) {
                             piecePriorities[i] = Priority.TOP_PRIORITY
                         }
                         torrentHandle.prioritizePieces(piecePriorities)
+                        logger.info { "Priorities set" }
 
                         state.value = TorrentDownloadState.FetchingMetadata
-                        logger.info { "Torrent resumed" }
                         _downloadedBytes.tryEmit(0)
-                        //                    _totalBytes.tryEmit(torrentInfo.totalSize())
                         progress.tryEmit(0f)
                     }
-
-                    //                AlertType.METADATA_RECEIVED -> {
-                    //                    logger.info { "Metadata received" }
-                    //                }
 
                     AlertType.PEER_CONNECT -> {
                         peerCount.getAndUpdate { it + 1 }
@@ -238,8 +244,15 @@ internal class TorrentDownloadSessionImpl(
 
                     AlertType.BLOCK_FINISHED -> {
                         val a = alert as BlockFinishedAlert
-                        torrentHandle = alert.handle()
-                        handleOrNull()?.torrentHandle = alert.handle()
+
+                        val handle = alert.handle()
+                        torrentHandle = handle
+                        handleOrNull()?.torrentHandle = handle
+
+                        while (jobsToDoInHandle.isNotEmpty()) {
+                            val job = jobsToDoInHandle.poll()
+                            job(handle)
+                        }
 
                         val totalWanted = a.handle().status().totalWanted()
                         val totalDone = a.handle().status().totalDone()
@@ -250,17 +263,12 @@ internal class TorrentDownloadSessionImpl(
 
                     AlertType.TORRENT_FINISHED -> {
                         logger.info { "Torrent finished" }
-//                        torrentHandle!!.piecePriorities().forEachIndexed { index, priority ->
-//                            if (priority != Priority.IGNORE) {
-                        handleOrNull()?.onAllRequestedPiecesDownloaded()
+                        handleOrNull()?.onFinished()
                             ?: error("Torrent handle should not be null")
-//                            }
-//                        }
-
-//                        downloadRate.tryEmit(0)
-//                        progress.tryEmit(1f)
-//                        state.value = TorrentDownloadState.Finished
-//                        isFinished.value = true
+                        downloadRate.tryEmit(0)
+                        progress.tryEmit(1f)
+                        state.value = TorrentDownloadState.Finished
+                        isFinished.value = true
                     }
 
                     else -> {
@@ -296,13 +304,10 @@ internal class TorrentDownloadSessionImpl(
                 }
                 logger.info { "[TorrentDownloadControl] Prioritizing pieces: $pieceIndexes" }
                 pieceIndexes.forEach { index ->
-//                    if (priorities[index] != Priority.TOP_PRIORITY) {
-//                        piecePriority(index, Priority.TOP_PRIORITY)
-//                    }
                     invoke().piecePriority(index, Priority.TOP_PRIORITY)
                 }
                 logger.info { "[TorrentDownloadControl] Resuming" }
-                invoke().resume()
+//                invoke().resume()
                 lastPrioritizedIndexes = pieceIndexes.toList()
             }
         }
