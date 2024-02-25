@@ -107,7 +107,9 @@ internal class ExoPlayerController @UiThread constructor(
                     }
                     launchInBackground {
                         delay(1.seconds)
-                        updateVideoPropertiesOrLaunch()
+                        withContext(Dispatchers.Main) {
+                            updateVideoPropertiesOrLaunch()
+                        }
                     }
                 }
 
