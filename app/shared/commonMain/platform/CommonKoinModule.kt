@@ -36,11 +36,11 @@ import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.session.SessionManagerImpl
 import me.him188.ani.app.torrent.TorrentDownloaderManager
 import me.him188.ani.app.torrent.TorrentDownloaderManagerImpl
-import me.him188.ani.datasources.acgrip.AcgRipDownloadProvider
-import me.him188.ani.datasources.api.CombinedDownloadProvider
 import me.him188.ani.danmaku.api.DanmakuProvider
 import me.him188.ani.danmaku.dandanplay.DandanplayClient
 import me.him188.ani.danmaku.dandanplay.DandanplayDanmakuProvider
+import me.him188.ani.datasources.acgrip.AcgRipDownloadProvider
+import me.him188.ani.datasources.api.CombinedDownloadProvider
 import me.him188.ani.datasources.api.DownloadProvider
 import me.him188.ani.datasources.api.SubjectProvider
 import me.him188.ani.datasources.bangumi.BangumiClient
@@ -85,7 +85,10 @@ interface AniBuildConfig {
     val bangumiOauthClientSecret: String
     val isDebug: Boolean
 
-    companion object
+    companion object {
+        @Stable
+        fun current(): AniBuildConfig = currentAniBuildConfig
+    }
 }
 
 @Stable

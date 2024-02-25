@@ -49,8 +49,11 @@ internal class ExoPlayerController @UiThread constructor(
     AutoCloseable,
     KoinComponent {
 
+    override val videoSource: StateFlow<VideoSource<*>?> = videoFlow.stateInBackground()
+
     private var playingResource: AutoCloseable? = null
-    private val mediaSourceFactory = videoFlow.filterNotNull()
+    private val mediaSourceFactory = videoSource
+        .filterNotNull()
         .flatMapLatest { video ->
             when (video) {
                 is TorrentVideoSource -> video.startStreaming().map {
@@ -65,7 +68,7 @@ internal class ExoPlayerController @UiThread constructor(
     init {
         logger.info { "ExoPlayerController created" }
 
-        videoFlow.combine(mediaSourceFactory) { source, factory ->
+        videoSource.combine(mediaSourceFactory) { source, factory ->
             if (source == null) {
                 logger.info { "Cleaning up player since source is null" }
                 withContext(Dispatchers.Main.immediate) {
@@ -95,12 +98,22 @@ internal class ExoPlayerController @UiThread constructor(
 
                 override fun onVideoSizeChanged(videoSize: VideoSize) {
                     super.onVideoSizeChanged(videoSize)
-                    updateVideoProperties()
+                    updateVideoPropertiesOrLaunch()
                 }
 
-                private fun updateVideoProperties() {
-                    val video = videoFormat!!
-                    val audio = audioFormat!!
+                private fun updateVideoPropertiesOrLaunch() {
+                    if (updateVideoProperties()) {
+                        return
+                    }
+                    launchInBackground {
+                        delay(1.seconds)
+                        updateVideoPropertiesOrLaunch()
+                    }
+                }
+
+                private fun updateVideoProperties(): Boolean {
+                    val video = videoFormat ?: return false
+                    val audio = audioFormat ?: return false
                     videoProperties.value = VideoProperties(
                         title = mediaMetadata.title?.toString(),
                         heightPx = video.height,
@@ -110,6 +123,7 @@ internal class ExoPlayerController @UiThread constructor(
                         frameRate = video.frameRate,
                         duration = duration.milliseconds,
                     )
+                    return true
                 }
 
                 override fun onPlaybackStateChanged(playbackState: Int) {
