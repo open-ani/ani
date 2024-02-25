@@ -5,9 +5,11 @@ import kotlinx.coroutines.withContext
 import me.him188.ani.app.torrent.model.EncodedTorrentData
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
+import me.him188.ani.utils.logging.warn
 import org.libtorrent4j.AlertListener
 import org.libtorrent4j.Priority
 import org.libtorrent4j.SessionManager
+import org.libtorrent4j.Sha1Hash
 import org.libtorrent4j.TorrentFlags
 import org.libtorrent4j.TorrentInfo
 import org.libtorrent4j.alerts.Alert
@@ -131,26 +133,46 @@ internal class TorrentDownloaderImpl(
         mkdirs()
     }
 
+    private val dataToSession = mutableMapOf<Sha1Hash, TorrentDownloadSession>()
+
+    @Synchronized
     override fun startDownload(data: EncodedTorrentData): TorrentDownloadSession {
         logger.info { "Starting torrent download session" }
 
         logger.info { "Decoding torrent info, input length=${data.data.size}" }
         val ti = TorrentInfo(data.data)
-        logger.info { "Decoded TorrentInfo: $ti" }
-
-        val priorities = Priority.array(Priority.IGNORE, ti.numFiles())
-        logger.info { "File name: ${ti.files().fileName(0)}" }
-        priorities[0] = Priority.TOP_PRIORITY
+        logger.info { "Decoded TorrentInfo: ${ti.infoHash()}" }
 
         val saveDirectory = downloadCacheDir.resolve(data.data.contentHashCode().toString()).apply { mkdirs() }
+        val hash = ti.infoHash()
+        dataToSession[hash]?.let {
+            logger.warn { "Reopening a torrent session, returning existing" }
+            return it
+        }
+        dataToSession[hash] = TorrentDownloadSessionImpl(
+            removeListener = { sessionManager.removeListener(it) },
+            closeHandle = { sessionManager.remove(it) },
+            torrentInfo = ti,
+            saveDirectory = saveDirectory,
+            onClose = {
+                dataToSession.remove(hash)
+            }
+        )
         val session =
             TorrentDownloadSessionImpl(
                 removeListener = { sessionManager.removeListener(it) },
                 closeHandle = { sessionManager.remove(it) },
                 torrentInfo = ti,
                 saveDirectory = saveDirectory,
+                onClose = {
+                    dataToSession.remove(hash)
+                }
             )
         sessionManager.addListener(session.listener)
+
+        val priorities = Priority.array(Priority.IGNORE, ti.numFiles())
+        logger.info { "File name: ${ti.files().fileName(0)}" }
+        priorities[0] = Priority.TOP_PRIORITY
 
         try {
             logger.info { "Starting torrent download" }

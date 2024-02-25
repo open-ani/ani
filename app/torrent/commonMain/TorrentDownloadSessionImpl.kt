@@ -44,6 +44,7 @@ internal class TorrentDownloadSessionImpl(
      * The files are not guaranteed to be present at the moment when this function returns.
      */
     private val saveDirectory: File,
+    private val onClose: () -> Unit,
 ) : TorrentDownloadSession {
     private val logger = logger(this::class.simpleName + "@${this.hashCode()}")
 //    override val torrentDownloadController: Flow<TorrentDownloadController>
@@ -107,6 +108,7 @@ internal class TorrentDownloadSessionImpl(
                     logger.info { "Get file: ${file.absolutePath}" }
                     return@run RandomAccessFile(file, "r").asSeekableInput()
                 }
+                logger.info { "Still waiting to get file... saveDirectory: $saveDirectory" }
 
                 delay(1.seconds)
             }
@@ -197,11 +199,10 @@ internal class TorrentDownloadSessionImpl(
 //                        handleOrNull()?.controller?.onTorrentResumed()
 
                         // Prioritize pieces
-                        // 根据实际测试, 只给部分 piece 设置优先级为 TOP_PRIORITY 并不一定会让这部分优先下载. 必须得忽略其他 pieces.
                         val piecePriorities = Array(numPieces) { Priority.LOW }
-                        for (i in (0..4.coerceAtMost(piecePriorities.lastIndex))
-                                + (numPieces - 1 - 4..<numPieces)) {
-                            piecePriorities[i] = Priority.TOP_PRIORITY
+                        for (i in (0..2.coerceAtMost(piecePriorities.lastIndex))
+                                + (numPieces - 1 - 2..<numPieces)) {
+                            piecePriorities[i] = Priority.SIX
                         }
                         torrentHandle.prioritizePieces(piecePriorities)
                         logger.info { "Priorities set" }
@@ -278,9 +279,10 @@ internal class TorrentDownloadSessionImpl(
     }
 
     override fun close() {
+        logger.info { "Closing torrent" }
         removeListener(listener)
         torrentHandle?.let(closeHandle)
-        logger.info { "Closing torrent" }
+        onClose()
     }
 
     private fun createPiecePriorities(): PiecePriorities {
