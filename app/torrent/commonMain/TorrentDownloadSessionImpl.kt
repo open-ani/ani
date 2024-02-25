@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.getAndUpdate
 import me.him188.ani.app.torrent.download.PiecePriorities
+import me.him188.ani.app.torrent.download.TorrentDownloadController
 import me.him188.ani.app.torrent.file.SeekableInput
 import me.him188.ani.app.torrent.file.TorrentInput
 import me.him188.ani.app.torrent.file.asSeekableInput
@@ -44,7 +45,7 @@ internal class TorrentDownloadSessionImpl(
      */
     private val saveDirectory: File,
 ) : TorrentDownloadSession {
-    private val logger = logger(this::class)
+    private val logger = logger(this::class.simpleName + "@${this.hashCode()}")
 //    override val torrentDownloadController: Flow<TorrentDownloadController>
 //        get() = flow {
 //            emit(handle.await().controller)
@@ -68,16 +69,16 @@ internal class TorrentDownloadSessionImpl(
         val pieces: List<Piece>,
         var torrentHandle: TorrentHandle,
     ) {
-//        val controller: TorrentDownloadController = TorrentDownloadController(
-//            pieces,
-//            { torrentHandle }.asPiecePriorities()
-//        )
+        val controller: TorrentDownloadController = TorrentDownloadController(
+            pieces,
+            createPiecePriorities()
+        )
 
         @Synchronized
         fun onPieceDownloaded(index: Int) {
             pieces[index].state.value = PieceState.FINISHED
             logger.info { "[TorrentDownloadControl] Piece downloaded: $index. " } // Was downloading ${controller.getDebugInfo().downloadingPieces}
-//            controller.onPieceDownloaded(index)
+            controller.onPieceDownloaded(index)
         }
 
         @Synchronized
@@ -91,14 +92,6 @@ internal class TorrentDownloadSessionImpl(
                 it.state.value = PieceState.FINISHED
             }
         }
-
-//        @Synchronized
-//        fun onAllRequestedPiecesDownloaded() {
-////            controller.downloadingPieces.forEach {
-////                pieces[it].state.value = PieceState.FINISHED
-////            }
-////            controller.onAllRequestedPiecesDownloaded()
-//        }
     }
 
     private val handle: CompletableDeferred<Handle> = CompletableDeferred()
@@ -290,7 +283,7 @@ internal class TorrentDownloadSessionImpl(
         logger.info { "Closing torrent" }
     }
 
-    private fun (() -> TorrentHandle).asPiecePriorities(): PiecePriorities {
+    private fun createPiecePriorities(): PiecePriorities {
         return object : PiecePriorities {
             //            private val priorities = Array(torrentFile().numPieces()) { Priority.IGNORE }
             private var lastPrioritizedIndexes: Collection<Int>? = null
@@ -304,10 +297,10 @@ internal class TorrentDownloadSessionImpl(
                 }
                 logger.info { "[TorrentDownloadControl] Prioritizing pieces: $pieceIndexes" }
                 pieceIndexes.forEach { index ->
-                    invoke().piecePriority(index, Priority.TOP_PRIORITY)
+                    jobsToDoInHandle.add { handle ->
+                        handle.piecePriority(index, Priority.TOP_PRIORITY)
+                    }
                 }
-                logger.info { "[TorrentDownloadControl] Resuming" }
-//                invoke().resume()
                 lastPrioritizedIndexes = pieceIndexes.toList()
             }
         }
