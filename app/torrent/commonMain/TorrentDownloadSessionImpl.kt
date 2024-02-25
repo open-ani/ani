@@ -100,8 +100,9 @@ internal class TorrentDownloadSessionImpl(
 
     private fun handleOrNull(): Handle? = handle.takeIf { it.isCompleted }?.getCompleted()
 
-    override suspend fun createInput(): SeekableInput = TorrentInput(
-        run {
+    override suspend fun createInput(): SeekableInput {
+        logger.info { "createInput: finding cache file" }
+        val file = run {
             while (true) {
                 val file = saveDirectory.walk().singleOrNull { it.isFile }
                 if (file != null) {
@@ -114,15 +115,31 @@ internal class TorrentDownloadSessionImpl(
             }
             @Suppress("UNREACHABLE_CODE") // compiler bug
             error("")
-        },
-        handle.await().pieces,
-        onSeek = { piece ->
-            logger.info { "[TorrentDownloadControl] Set piece ${piece.pieceIndex} priority to TOP because it was requested " }
-            jobsToDoInHandle.add { handle ->
-                handle.piecePriority(piece.pieceIndex, Priority.TOP_PRIORITY)
-            }
         }
-    )
+        logger.info { "createInput: got cache file, awaiting handle" }
+        return TorrentInput(
+            file,
+            handle.await().pieces,
+            onSeek = { piece ->
+                logger.info { "[TorrentDownloadControl] Set piece ${piece.pieceIndex} priority to TOP because it was requested " }
+                val pieces = handle.await().pieces
+                handle.await().torrentHandle.let { handle ->
+                    handle.piecePriority(piece.pieceIndex, Priority.TOP_PRIORITY)
+                    handle.setPieceDeadline(piece.pieceIndex, System.currentTimeMillis().and(0x0FFF_FFFFL).toInt())
+
+                    for (i in (piece.pieceIndex + 1..piece.pieceIndex + 3)) {
+                        if (i < pieces.size - 1) {
+                            handle.piecePriority(piece.pieceIndex, Priority.SIX)
+                            handle.setPieceDeadline(
+                                piece.pieceIndex,
+                                System.currentTimeMillis().and(0x0FFF_FFFFL).toInt() + i
+                            )
+                        }
+                    }
+                }
+            }
+        )
+    }
 
     override val isFinished: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
@@ -194,17 +211,24 @@ internal class TorrentDownloadSessionImpl(
                         val pieces =
                             Piece.buildPieces(numPieces) { torrentInfo.pieceSize(it).toUInt().toLong() }
 
+                        if (pieces.isNotEmpty()) {
+                            torrentHandle.piecePriority(0, Priority.TOP_PRIORITY)
+                            torrentHandle.setPieceDeadline(0, 0)
+                            torrentHandle.piecePriority(pieces.lastIndex, Priority.TOP_PRIORITY)
+                            torrentHandle.setPieceDeadline(pieces.lastIndex, 0)
+                        }
+
                         this@TorrentDownloadSessionImpl.handle.complete(Handle(pieces, torrentHandle))
 //                        torrentHandle.prioritizePieces(pieces.indices.map { Priority.LOW }.toTypedArray())
 //                        handleOrNull()?.controller?.onTorrentResumed()
 
                         // Prioritize pieces
-                        val piecePriorities = Array(numPieces) { Priority.LOW }
-                        for (i in (0..2.coerceAtMost(piecePriorities.lastIndex))
-                                + (numPieces - 1 - 2..<numPieces)) {
-                            piecePriorities[i] = Priority.SIX
-                        }
-                        torrentHandle.prioritizePieces(piecePriorities)
+//                        val piecePriorities = Array(numPieces) { Priority.LOW }
+//                        for (i in (0..2.coerceAtMost(piecePriorities.lastIndex))
+//                                + (numPieces - 1 - 2..<numPieces)) {
+//                            piecePriorities[i] = Priority.SIX
+//                        }
+//                        torrentHandle.prioritizePieces(piecePriorities)
                         logger.info { "Priorities set" }
 
                         state.value = TorrentDownloadState.FetchingMetadata

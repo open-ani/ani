@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
@@ -293,6 +294,7 @@ private class EpisodeViewModelImpl(
     @Stable
     private val videoSource: SharedFlow<VideoSource<*>?> = playSourceSelector.targetPlaySourceCandidate
         .debounce(1.seconds)
+        .distinctUntilChanged()
         .combine(torrentDownloaderManager.torrentDownloader) { video, torrentDownloader ->
             video to torrentDownloader
         }
