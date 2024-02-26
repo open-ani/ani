@@ -248,27 +248,7 @@ fun DanmakuTrack(
                         }
                         .wrapContentSize()
                 ) {
-                    Text(
-                        danmaku.danmaku.text,
-                        overflow = TextOverflow.Visible,
-                        maxLines = 1,
-                        softWrap = false,
-                        style = style.copy(
-                            color = Color.Black,
-                            drawStyle = Stroke(
-                                miter = 10f,
-                                width = 5f,
-                                join = StrokeJoin.Round,
-                            )
-                        ),
-                    )
-                    Text(
-                        danmaku.danmaku.text,
-                        overflow = TextOverflow.Visible,
-                        maxLines = 1,
-                        softWrap = false,
-                        style = style,
-                    )
+                    DanmakuText(danmaku.danmaku.text, style)
                 }
             }
         }
@@ -288,6 +268,32 @@ fun DanmakuTrack(
         scope.content()
     }
 }
+
+@Composable
+private fun DanmakuText(text: String, style: TextStyle) {
+    Text(
+        text,
+        overflow = TextOverflow.Visible,
+        maxLines = 1,
+        softWrap = false,
+        style = style.copy(
+            color = Color.Black,
+            drawStyle = Stroke(
+                miter = 6f,
+                width = 4f,
+                join = StrokeJoin.Round,
+            )
+        ),
+    )
+    Text(
+        text,
+        overflow = TextOverflow.Visible,
+        maxLines = 1,
+        softWrap = false,
+        style = style,
+    )
+}
+
 
 @Composable
 internal expect fun PreviewDanmakuHost()
