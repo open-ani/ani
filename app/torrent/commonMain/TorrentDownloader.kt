@@ -14,6 +14,7 @@ import org.libtorrent4j.TorrentFlags
 import org.libtorrent4j.TorrentInfo
 import org.libtorrent4j.alerts.Alert
 import org.libtorrent4j.alerts.AlertType
+import org.libtorrent4j.swig.settings_pack
 import java.io.File
 
 
@@ -160,6 +161,12 @@ internal class TorrentDownloaderImpl(
                 }
             )
         dataToSession[hash] = session
+        sessionManager.settings().run {
+            //  https://libtorrent.org/reference-Settings.html#settings_pack
+//            setInteger(settings_pack.int_types.piece_timeout.swigValue(), 3)
+            setInteger(settings_pack.int_types.request_timeout.swigValue(), 3)
+            setInteger(settings_pack.int_types.peer_timeout.swigValue(), 3)
+        }
         sessionManager.addListener(session.listener)
 
         val priorities = Priority.array(Priority.IGNORE, ti.numFiles())
