@@ -27,8 +27,10 @@ jobs:
         "-Dorg.gradle.jvmargs=-Xmx4096m" 
         "-Dfile.encoding=UTF-8"
         --no-configuration-cache 
-        "-Pbangumi.oauth.client.id=${{ secrets.BANGUMI_OAUTH_CLIENT_ID }}" 
-        "-Pbangumi.oauth.client.secret=${{ secrets.BANGUMI_OAUTH_CLIENT_SECRET }}"
+        "-Pbangumi.oauth.client.android.appId=${{ secrets.BANGUMI_OAUTH_CLIENT_ANDROID_ID }}" 
+        "-Pbangumi.oauth.client.android.secret=${{ secrets.BANGUMI_OAUTH_CLIENT_ANDROID_SECRET }}"
+        "-Pbangumi.oauth.client.desktop.appId=${{ secrets.BANGUMI_OAUTH_CLIENT_DESKTOP_ID }}" 
+        "-Pbangumi.oauth.client.desktop.secret=${{ secrets.BANGUMI_OAUTH_CLIENT_DESKTOP_SECRET }}"
 
       isMac: ${{ startsWith(matrix.os, 'macos') }}
       isWindows: ${{ startsWith(matrix.os, 'windows') }}

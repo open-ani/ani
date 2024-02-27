@@ -10,7 +10,7 @@ object BangumiAuthorizationConstants {
     const val CALLBACK_URL = "ani://bangumi-oauth-callback"
 
     fun makeOAuthUrl(
-        clientId: String = currentAniBuildConfig.bangumiOauthClientId,
+        clientId: String = currentAniBuildConfig.bangumiOauthClientAppId,
         callbackUrl: String = CALLBACK_URL,
     ): String {
         return "https://bgm.tv/oauth/authorize" +

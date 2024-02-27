@@ -81,7 +81,7 @@ fun getCommonKoinModule(getContext: () -> Context, coroutineScope: CoroutineScop
 @Stable
 interface AniBuildConfig {
     val versionName: String
-    val bangumiOauthClientId: String
+    val bangumiOauthClientAppId: String
     val bangumiOauthClientSecret: String
     val isDebug: Boolean
 
@@ -103,7 +103,7 @@ fun getAniUserAgent(
 
 fun createBangumiClient(): BangumiClient {
     return BangumiClient.create(
-        currentAniBuildConfig.bangumiOauthClientId,
+        currentAniBuildConfig.bangumiOauthClientAppId,
         currentAniBuildConfig.bangumiOauthClientSecret
     ) {
         install(UserAgent) {

@@ -93,19 +93,34 @@ Ani 使用 Gradle Version Catalogs. 依赖位于 `gradle/libs.versions.toml`.
 
 1. 前往 <https://bangumi.tv/dev/app>
 2. 创建一个新应用
-    - 应用名任意
+    - 应用名任意, 例如 Ani Android
     - 主页地址请**不要**填写本项目地址, 请填写你的私人 fork 地址或个人主页地址.
 3. 编辑你刚刚创建的新应用
     - 回调地址设置为 `ani://bangumi-oauth-callback`
     - 记录 App ID 和 App Secret
 4. 在项目根目录的 `local.properties` 或 Gradle Home 的 `gradle.properties` 中添加如下内容 (
    替换相应内容为你应用的):
-    - `bangumi.oauth.client.id=bgmXXXXXXXX`
-    - `bangumi.oauth.client.secret=XXXXXXXX`
-5. 在 IDE 同步项目, 执行一次构建 (`./gradlew build`). 待构建完成后 (双击 shift)
+    - `bangumi.oauth.client.android.appId=bgmXXXXXXXX`
+    - `bangumi.oauth.client.android.secret=XXXXXXXX`
+
+5. 再次前往 <https://bangumi.tv/dev/app>
+6. 再次创建一个新应用
+    - 应用名任意, 例如 Ani Desktop
+    - 主页地址请**不要**填写本项目地址, 请填写你的私人 fork 地址或个人主页地址.
+7. 编辑你刚刚创建的新应用
+    - 回调地址**留空** (必须留空, 否则在桌面端登录时会报错地址不符, 因为桌面端使用 HTTP
+      服务器完成回调)
+    - 记录 App ID 和 App Secret
+8. 在项目根目录的 `local.properties` 或 Gradle Home 的 `gradle.properties` 中添加如下内容 (
+   替换相应内容为你应用的):
+    - `bangumi.oauth.client.desktop.appId=bgmXXXXXXXX`
+    - `bangumi.oauth.client.desktop.secret=XXXXXXXX`
+
+9. 在 IDE 同步项目, 执行一次构建 (`./gradlew build`). 待构建完成后 (双击 shift)
    查看生成的 `me.him188.ani.android.BuildConfig`, 你应当能看到你的应用 ID 和
    Secret 已经更新到该文件中.
-   > 桌面端也会自动有类似的 BuildConfig 文件生成. 它与 Android 端的是同步的.
+   > 桌面端也会自动有类似的 BuildConfig 文件生成 (`
+   me.him188.ani.app.platform.AniBuildConfigDesktop). 它与 Android 端的是同步的.
 
 ### 配置 Android 签名
 

@@ -167,11 +167,18 @@ kotlin.sourceSets {
     getByName("desktopMain").resources.srcDirs("androidRes/raw")
 }
 
-val bangumiClientId = getPropertyOrNull("bangumi.oauth.client.id")
-val bangumiClientSecret = getPropertyOrNull("bangumi.oauth.client.secret")
+val bangumiClientAndroidAppId = getPropertyOrNull("bangumi.oauth.client.android.appId")
+val bangumiClientAndroidSecret = getPropertyOrNull("bangumi.oauth.client.android.secret")
 
-if (bangumiClientId == null || bangumiClientSecret == null) {
-    logger.warn("bangumi.oauth.client.id or bangumi.oauth.client.secret is not set. Bangumi authorization will not work. Get a token from https://bgm.tv/dev/app and set them in local.properties.")
+val bangumiClientDesktopAppId = getPropertyOrNull("bangumi.oauth.client.desktop.appId")
+val bangumiClientDesktopSecret = getPropertyOrNull("bangumi.oauth.client.desktop.secret")
+
+if (bangumiClientAndroidAppId == null || bangumiClientAndroidSecret == null) {
+    logger.warn("bangumi.oauth.client.android.appId or bangumi.oauth.client.android.secret is not set. Bangumi authorization will not work. Get a token from https://bgm.tv/dev/app and set them in local.properties.")
+}
+
+if (bangumiClientDesktopAppId == null || bangumiClientDesktopSecret == null) {
+    logger.warn("bangumi.oauth.client.desktop.appId or bangumi.oauth.client.desktop.secret is not set. Bangumi authorization will not work. Get a token from https://bgm.tv/dev/app and set them in local.properties.")
 }
 
 android {
@@ -180,8 +187,8 @@ android {
     defaultConfig {
         minSdk = getIntProperty("android.min.sdk")
         buildConfigField("String", "VERSION_NAME", "\"${getProperty("version.name")}\"")
-        buildConfigField("String", "BANGUMI_OAUTH_CLIENT_ID", "\"$bangumiClientId\"")
-        buildConfigField("String", "BANGUMI_OAUTH_CLIENT_SECRET", "\"$bangumiClientSecret\"")
+        buildConfigField("String", "BANGUMI_OAUTH_CLIENT_APP_ID", "\"$bangumiClientAndroidAppId\"")
+        buildConfigField("String", "BANGUMI_OAUTH_CLIENT_SECRET", "\"$bangumiClientAndroidSecret\"")
     }
     buildTypes.getByName("release") {
         isMinifyEnabled = true
@@ -229,8 +236,8 @@ val generateAniBuildConfigDesktop = tasks.register("generateAniBuildConfigDeskto
     }
 
     inputs.property("project.version", project.version)
-    inputs.property("bangumiClientIdDesktop", bangumiClientId).optional(true)
-    inputs.property("bangumiClientSecret", bangumiClientSecret).optional(true)
+    inputs.property("bangumiClientAppIdDesktop", bangumiClientDesktopAppId).optional(true)
+    inputs.property("bangumiClientSecret", bangumiClientDesktopSecret).optional(true)
 
     outputs.file(file)
 
@@ -238,8 +245,8 @@ val generateAniBuildConfigDesktop = tasks.register("generateAniBuildConfigDeskto
             package me.him188.ani.app.platform
             object AniBuildConfigDesktop : AniBuildConfig {
                 override val versionName = "${project.version}"
-                override val bangumiOauthClientId = "$bangumiClientId"
-                override val bangumiOauthClientSecret = "$bangumiClientSecret"
+                override val bangumiOauthClientAppId = "$bangumiClientDesktopAppId"
+                override val bangumiOauthClientSecret = "$bangumiClientDesktopSecret"
                 override val isDebug = false
             }
             """.trimIndent()
