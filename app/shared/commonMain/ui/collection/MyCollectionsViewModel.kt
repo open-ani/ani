@@ -1,5 +1,6 @@
 package me.him188.ani.app.ui.collection
 
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,10 +39,13 @@ class MyCollectionsViewModel : AbstractViewModel(), KoinComponent {
     private val subjectRepository: SubjectRepository by inject()
     private val episodeRepository: EpisodeRepository by inject()
 
+    @Stable
     val isLoggedIn = sessionManager.isSessionValid.filterNotNull().shareInBackground()
 
+    @Stable
     val isLoading = MutableStateFlow(true)
 
+    @Stable
     val collections = sessionManager.username.filterNotNull().flatMapLatest { username ->
         isLoading.value = true
         subjectRepository.getSubjectCollections(username).map { raw ->
@@ -50,6 +54,9 @@ class MyCollectionsViewModel : AbstractViewModel(), KoinComponent {
             isLoading.value = false
         }
     }.localCachedStateFlow(null)
+
+    @Stable
+    val collectionsListState = LazyListState()
 
 
     private suspend fun UserSubjectCollection.convertToItem() = coroutineScope {

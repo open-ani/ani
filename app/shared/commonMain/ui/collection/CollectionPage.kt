@@ -25,7 +25,6 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -153,14 +152,14 @@ private fun CollectionPagePortrait(contentPadding: PaddingValues, viewModel: MyC
 }
 
 @Composable
-private fun ColumnScope.MyCollectionColumn(
+private fun MyCollectionColumn(
     viewModel: MyCollectionsViewModel,
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
 ) {
-    val collections by viewModel.collections.collectAsStateWithLifecycle(null)
+    val collections by viewModel.collections.collectAsStateWithLifecycle()
     val spacedBy = 8.dp
-    val state = rememberLazyListState()
+    val state = viewModel.collectionsListState
     LazyColumn(
         modifier.padding(horizontal = 12.dp).padding(vertical = 12.dp),
         state,
