@@ -24,6 +24,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -31,6 +32,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.sync.Mutex
@@ -57,7 +59,7 @@ interface SessionManager {
      * Currently active session.
      */
     @Stable
-    val session: StateFlow<Session?>
+    val session: SharedFlow<Session?>
 
     /**
      * Current user name. `null` means user is not logged in.
@@ -109,10 +111,10 @@ internal class SessionManagerImpl(
 
     private val logger = logger(SessionManager::class)
 
-    override val session: StateFlow<Session?> =
+    override val session: SharedFlow<Session?> =
         tokenRepository.session.distinctUntilChanged().onEach {
             ApiClient.accessToken = it?.accessToken
-        }.stateIn(coroutineScope, SharingStarted.Eagerly, null)
+        }.shareIn(coroutineScope, SharingStarted.Eagerly)
 
     override val username: StateFlow<String?> =
         session.filterNotNull()
@@ -162,7 +164,7 @@ internal class SessionManagerImpl(
     }
 
     override suspend fun refreshSessionByRefreshToken(): Boolean = processAuth {
-        val session = session.replayCache.firstOrNull() ?: return false
+        val session = session.first() ?: return false
         if (session.expiresIn > System.currentTimeMillis()) {
             // session is valid
             return true
