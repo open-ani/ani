@@ -398,7 +398,7 @@ private fun SmallEpisodeButton(
                 it.type == EpisodeCollectionType.WATCHED || it.type == EpisodeCollectionType.DISCARDED ->
                     MaterialTheme.colorScheme.primary.weaken()
 
-                it.episode.isOnAir() == true ->  // 未开播
+                it.episode.isOnAir() != false ->  // 未开播
                     MaterialTheme.colorScheme.onSurface.stronglyWeaken()
 
                 // 还没看

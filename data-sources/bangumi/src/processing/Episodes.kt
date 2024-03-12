@@ -27,11 +27,11 @@ fun EpisodeDetail.nameCNOrName() =
 
 
 /**
- * 在未来开播
+ * 剧集在今天或者未来播出时返回 `true`. 解析失败时返回 `null`.
  */
 fun Episode.isOnAir(): Boolean? {
     val airDate = parseAirDate(airdate) ?: return null
-    return LocalDate.now(ZoneOffset.ofHours(+8)).isBefore(airDate)
+    return !LocalDate.now(ZoneOffset.ofHours(+8)).isAfter(airDate)
 }
 
 fun parseAirDate(date: String): LocalDate? {
