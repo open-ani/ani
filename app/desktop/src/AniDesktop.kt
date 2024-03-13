@@ -138,7 +138,7 @@ object AniDesktop {
                 height = 1920.dp / 2.2f,
                 width = 1080.dp / 2.2f,
             ),
-            resizable = false,
+            resizable = true,
         ) {
             // This actually runs only once since app is never changed.
             val windowImmersed = true
