@@ -1,6 +1,7 @@
 package me.him188.ani.app.ui.subject.episode
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -61,8 +62,10 @@ import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.setRequestFullScreen
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.LocalSnackbar
+import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.launchInMain
+import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.theme.slightlyWeaken
 import me.him188.ani.danmaku.ui.rememberDanmakuHostState
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
@@ -585,6 +588,23 @@ fun EpisodeTitle(
             },
             Modifier.requiredWidth(IntrinsicSize.Max).align(Alignment.CenterVertically)
         )
+    }
+}
+
+@Preview
+@Composable
+private fun PreviewEpisodePageDesktop() {
+    ProvideCompositionLocalsForPreview {
+        val context = LocalContext.current
+        val vm = rememberViewModel<EpisodeViewModel> {
+            EpisodeViewModel(
+                initialSubjectId = 0,
+                initialEpisodeId = 0,
+                initialIsFullscreen = false,
+                context,
+            )
+        }
+        EpisodePage(vm, {})
     }
 }
 
