@@ -142,24 +142,43 @@ kotlin {
         // TODO: 临时解决方案, KT-65362 Cannot resolve declarations from a dependency when there are multiple JVM-only project dependencies in a JVM-Android MPP
         //  https://youtrack.jetbrains.com/issue/KT-65362
         // Danmaku
-        commonMain {
-            kotlin.srcDirs(rootProject.projectDir.resolve("danmaku/api/src/"))
-            kotlin.srcDirs(rootProject.projectDir.resolve("danmaku/dandanplay/src/"))
-            kotlin.srcDirs(rootProject.projectDir.resolve("danmaku/ui/commonMain/"))
 
-            kotlin.srcDirs(rootProject.projectDir.resolve("app/video-player/commonMain"))
+        fun submodule(dir: String) {
+            commonMain {
+                kotlin.srcDirs(rootProject.projectDir.resolve("$dir/src/"))
+                kotlin.srcDirs(rootProject.projectDir.resolve("$dir/commonMain/"))
+                kotlin.srcDirs(rootProject.projectDir.resolve("$dir/common/"))
+            }
+            commonTest {
+                kotlin.srcDirs(rootProject.projectDir.resolve("$dir/test/"))
+                kotlin.srcDirs(rootProject.projectDir.resolve("$dir/commonTest/"))
+            }
+            androidMain {
+                kotlin.srcDirs(rootProject.projectDir.resolve("$dir/androidMain/"))
+                kotlin.srcDirs(rootProject.projectDir.resolve("$dir/android/"))
+            }
+            getByName("desktopMain") {
+                kotlin.srcDirs(rootProject.projectDir.resolve("$dir/desktopMain/"))
+                kotlin.srcDirs(rootProject.projectDir.resolve("$dir/desktop/"))
+            }
+            commonTest {
+                kotlin.srcDirs(rootProject.projectDir.resolve("$dir/commonTest/"))
+            }
+            getByName("androidUnitTest") {
+                kotlin.srcDirs(rootProject.projectDir.resolve("$dir/androidUnitTest/"))
+            }
+            getByName("desktopTest") {
+                kotlin.srcDirs(rootProject.projectDir.resolve("$dir/desktopTest/"))
+            }
         }
-        getByName("desktopTest") {
-            kotlin.srcDirs(rootProject.projectDir.resolve("danmaku/api/test/"))
-        }
-        androidMain {
-            kotlin.srcDirs(rootProject.projectDir.resolve("danmaku/ui/androidMain/"))
-            kotlin.srcDirs(rootProject.projectDir.resolve("app/video-player/androidMain"))
-        }
-        getByName("desktopMain") {
-            kotlin.srcDirs(rootProject.projectDir.resolve("danmaku/ui/desktopMain/"))
-            kotlin.srcDirs(rootProject.projectDir.resolve("app/video-player/desktopMain"))
-        }
+
+        submodule("danmaku/api")
+        submodule("danmaku/dandanplay")
+        submodule("danmaku/ui")
+
+        submodule("app/shared/foundation")
+        submodule("app/shared/bangumi-authentication")
+        submodule("app/video-player")
     }
 }
 

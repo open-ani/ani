@@ -18,7 +18,7 @@ import org.openapitools.client.models.SubjectType
 import org.openapitools.client.models.UserSubjectCollection
 import org.openapitools.client.models.UserSubjectCollectionModifyPayload
 
-interface SubjectRepository {
+interface SubjectRepository : Repository {
     suspend fun getSubject(id: Int): Subject?
 
 

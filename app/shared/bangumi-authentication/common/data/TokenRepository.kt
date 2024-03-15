@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.map
 import me.him188.ani.app.persistent.TokenStoreKeys
 import me.him188.ani.app.session.Session
 
-interface TokenRepository {
+interface TokenRepository : Repository {
     val refreshToken: Flow<String?>
     suspend fun setRefreshToken(value: String)
 

@@ -7,4 +7,4 @@ package me.him188.ani.app.data
  * - 所有访问数据的接口都只会抛出 [RepositoryException], 用于向调用方传递已知的情况, 例如网络连接失败.
  *   其他异常属于 bug.
  */
-sealed interface Repository
+interface Repository

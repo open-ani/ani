@@ -13,7 +13,7 @@ import org.openapitools.client.models.EpisodeCollectionType
 import org.openapitools.client.models.PatchUserSubjectEpisodeCollectionRequest
 import org.openapitools.client.models.UserEpisodeCollection
 
-interface EpisodeRepository {
+interface EpisodeRepository : Repository {
     /**
      * 获取条目下的所有剧集.
      */

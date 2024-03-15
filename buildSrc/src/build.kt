@@ -104,7 +104,7 @@ fun Project.configureFlattenMppSourceSets() {
         ) {
             findByName("${targetName}Main")?.apply {
                 resources.setSrcDirs(listOf(projectDir.resolve("${targetName}Resources")))
-                kotlin.setSrcDirs(listOf(projectDir.resolve("${targetName}Main")))
+                kotlin.setSrcDirs(listOf(projectDir.resolve("${targetName}Main"), projectDir.resolve(targetName)))
             }
             findByName("${targetName}Test")?.apply {
                 resources.setSrcDirs(listOf(projectDir.resolve("${targetName}TestResources")))
