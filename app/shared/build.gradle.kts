@@ -178,6 +178,8 @@ kotlin {
 
         submodule("app/shared/foundation")
         submodule("app/shared/bangumi-authentication")
+        submodule("app/shared/data")
+        submodule("app/shared/ui-profile")
         submodule("app/video-player")
     }
 }
