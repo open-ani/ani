@@ -184,13 +184,13 @@ kotlin {
         submodule("app/shared/bangumi-authentication")
         submodule("app/shared/video-player")
 
-        submodule("app/shared/ui-profile")
-        submodule("app/shared/ui-subject-collection")
-        submodule("app/shared/ui-subject-details")
-        submodule("app/shared/ui-subject-search")
-        submodule("app/shared/ui-episode")
-        submodule("app/shared/ui-home")
-        submodule("app/shared/ui-main")
+        submodule("app/shared/pages/profile")
+        submodule("app/shared/pages/subject-collection")
+        submodule("app/shared/pages/subject-details")
+        submodule("app/shared/pages/subject-search")
+        submodule("app/shared/pages/episode-play")
+        submodule("app/shared/pages/home")
+        submodule("app/shared/pages/main")
     }
 }
 
