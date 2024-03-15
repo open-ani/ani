@@ -3,7 +3,6 @@ package me.him188.ani.app.videoplayer
 import android.graphics.Color
 import android.graphics.Typeface
 import android.view.View
-import androidx.annotation.OptIn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView

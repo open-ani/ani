@@ -2,7 +2,6 @@
 
 package me.him188.ani.app.videoplayer
 
-import androidx.annotation.OptIn
 import androidx.annotation.UiThread
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException

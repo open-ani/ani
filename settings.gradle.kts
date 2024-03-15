@@ -48,11 +48,12 @@ includeProject(":utils:slf4j-kt", "utils/slf4j-kt") // shared by client and serv
 includeProject(":utils:serialization", "utils/serialization")
 includeProject(":utils:coroutines", "utils/coroutines")
 
+
+includeProject(":torrent", "torrent") // Torrent downloader
+
+
 // client
 includeProject(":app:shared", "app/shared") // shared by clients (targets JVM)
-//includeProject(":app:video-player", "app/video-player") // 弹幕播放器
-includeProject(":app:torrent", "app/torrent") // Torrent downloader
-//includeProject(":app:bangumi-oauth", "app/bangumi-oauth") // 弹幕播放器
 includeProject(":app:desktop", "app/desktop") // desktop JVM client for macOS, Windows, and Linux
 includeProject(":app:android", "app/android") // Android client
 

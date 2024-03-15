@@ -79,7 +79,7 @@ kotlin {
 
         api(projects.utils.slf4jKt)
         api(projects.utils.coroutines)
-        api(projects.app.torrent)
+        api(projects.torrent)
 
         // Ktor
         api(libs.ktor.client.websockets)
@@ -180,7 +180,7 @@ kotlin {
         submodule("app/shared/bangumi-authentication")
         submodule("app/shared/data")
         submodule("app/shared/ui-profile")
-        submodule("app/video-player")
+        submodule("app/shared/video-player")
     }
 }
 

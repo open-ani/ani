@@ -3,7 +3,6 @@
 package me.him188.ani.app.videoplayer.media
 
 import android.net.Uri
-import androidx.annotation.OptIn
 import androidx.media3.common.C
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.util.UnstableApi
