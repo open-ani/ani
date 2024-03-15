@@ -32,8 +32,6 @@ import androidx.compose.material.icons.filled.DisplaySettings
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.InputChip
@@ -62,13 +60,13 @@ import me.him188.ani.app.platform.Context
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.setRequestFullScreen
 import me.him188.ani.app.ui.external.placeholder.placeholder
-import me.him188.ani.app.ui.foundation.BackPressedHandler
 import me.him188.ani.app.ui.foundation.LocalSnackbar
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.app.ui.theme.slightlyWeaken
 import me.him188.ani.danmaku.ui.rememberDanmakuHostState
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
+import moe.tlaster.precompose.navigation.BackHandler
 import org.openapitools.client.models.EpisodeCollectionType
 
 private val PAGE_HORIZONTAL_PADDING = 16.dp
@@ -109,14 +107,19 @@ fun EpisodePageContent(
             if (isFullscreen) {
                 context.setRequestFullScreen(false)
                 viewModel.setFullscreen(false)
+            } else {
+                onClickGoBack()
             }
+        }
+    }
+
+    BackHandler {
+        if (isFullscreen) {
+            goBack()
+        } else {
             onClickGoBack()
         }
     }
-    BackPressedHandler(
-        enabled = isFullscreen, // else, use the default back handler by PreCompose (`navigator.goBack()`)
-        onBackPressed = goBack
-    )
 
     Column(modifier.then(if (isFullscreen) Modifier.fillMaxSize() else Modifier.navigationBarsPadding())) {
         // 视频
@@ -129,7 +132,7 @@ fun EpisodePageContent(
             EpisodeVideo(
                 selected, videoReady, viewModel.playerController,
                 danmakuHostState = rememberDanmakuHostState(viewModel.danmakuFlow),
-                goBack,
+                onClickGoBack = goBack,
                 onClickFullScreen = {
                     if (isFullscreen) {
                         context.setRequestFullScreen(false)
