@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.ani.app.app
+package me.him188.ani.app.ui.foundation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember

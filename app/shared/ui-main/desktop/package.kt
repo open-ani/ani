@@ -16,22 +16,4 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.ani.app.app
-
-import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.Stable
-import kotlinx.serialization.Serializable
-import me.him188.ani.app.app.settings.ProxySettings
-
-@Immutable
-@Serializable
-data class AppSettings(
-    /**
-     * macOS 窗口沉浸, 把背景画入标题栏
-     */
-    @Stable
-    val windowImmersed: Boolean = true,
-
-    @Stable
-    val proxy: ProxySettings = ProxySettings(),
-)
+package me.him188.ani.app
