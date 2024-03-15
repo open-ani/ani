@@ -1,4 +1,4 @@
-package me.him188.ani.app.ui.auth
+package me.him188.ani.app.ui.profile.auth
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

@@ -31,7 +31,6 @@ import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.isInLandscapeMode
-import me.him188.ani.app.ui.auth.AuthRequestScene
 import me.him188.ani.app.ui.collection.CollectionPage
 import me.him188.ani.app.ui.collection.MyCollectionsViewModel
 import me.him188.ani.app.ui.foundation.TabNavigationItem
@@ -40,6 +39,7 @@ import me.him188.ani.app.ui.home.HomePage
 import me.him188.ani.app.ui.home.SearchViewModel
 import me.him188.ani.app.ui.profile.AuthViewModel
 import me.him188.ani.app.ui.profile.ProfilePage
+import me.him188.ani.app.ui.profile.auth.AuthRequestScene
 import me.him188.ani.app.ui.subject.details.SubjectDetailsScene
 import me.him188.ani.app.ui.subject.details.SubjectDetailsViewModel
 import me.him188.ani.app.ui.subject.episode.EpisodeScene
