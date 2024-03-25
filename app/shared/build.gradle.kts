@@ -278,7 +278,7 @@ val generateAniBuildConfigDesktop = tasks.register("generateAniBuildConfigDeskto
                 override val versionName = "${project.version}"
                 override val bangumiOauthClientAppId = "$bangumiClientDesktopAppId"
                 override val bangumiOauthClientSecret = "$bangumiClientDesktopSecret"
-                override val isDebug = false
+                override val isDebug = true
             }
             """.trimIndent()
 

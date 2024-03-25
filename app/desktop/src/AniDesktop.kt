@@ -112,16 +112,16 @@ object AniDesktop {
 
         val sessionManager by koin.koin.inject<SessionManager>()
 
-        coroutineScope.launch {
-            sessionManager.requireAuthorization(navigator, optional = true)
-        }
-
         application(exitProcessOnExit = true) {
             val platform = remember { PlatformImplementations.current }
             val mainSnackbar = remember { SnackbarHostState() }
             CompositionLocalProvider(LocalContext provides context) {
                 content(navigator)
             }
+        }
+
+        coroutineScope.launch {
+            sessionManager.requireOnline(navigator)
         }
     }
 

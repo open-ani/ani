@@ -259,13 +259,13 @@ private fun SubjectDetailsContent(
 
 @Composable
 fun Avatar(
-    url: String,
+    url: String?,
     modifier: Modifier = Modifier,
     alignment: Alignment = Alignment.Center,
     contentScale: ContentScale = ContentScale.Fit,
 ) {
     AniKamelImage(
-        asyncPainterResource(url),
+        asyncPainterResource(url ?: ""),
         onLoading = { IconImagePlaceholder(Icons.Outlined.Person) },
         onFailure = { IconImagePlaceholder(Icons.Outlined.Person) },
         alignment = alignment,

@@ -1,5 +1,3 @@
-@file:OptIn(UnstableApi::class)
-
 package me.him188.ani.app.videoplayer
 
 import androidx.annotation.UiThread
@@ -32,6 +30,7 @@ import kotlin.time.Duration.Companion.seconds
 
 
 class ExoPlayerControllerFactory : PlayerControllerFactory {
+    @UnstableApi
     override fun create(context: Context, videoSource: Flow<VideoSource<*>?>): PlayerController {
         return ExoPlayerController(videoSource, context)
     }
@@ -41,6 +40,7 @@ class ExoPlayerControllerFactory : PlayerControllerFactory {
 /**
  * Must be remembered
  */
+@UnstableApi
 internal class ExoPlayerController @UiThread constructor(
     videoFlow: Flow<VideoSource<*>?>,
     context: Context,

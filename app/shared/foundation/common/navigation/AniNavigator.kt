@@ -2,11 +2,9 @@ package me.him188.ani.app.navigation
 
 import androidx.compose.runtime.compositionLocalOf
 import kotlinx.coroutines.CompletableDeferred
-import me.him188.ani.app.session.SessionManager
 import moe.tlaster.precompose.navigation.NavOptions
 import moe.tlaster.precompose.navigation.Navigator
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 
 interface AniNavigator {
     fun setNavigator(
@@ -30,7 +28,12 @@ interface AniNavigator {
         navigator.navigate("/home")
     }
 
-    suspend fun requestBangumiAuthorization(): AuthorizationResult
+    /**
+     * 登录页面
+     */
+    fun navigateAuth() {
+        navigator.navigate("/auth", NavOptions(launchSingleTop = true))
+    }
 }
 
 fun AniNavigator(): AniNavigator = AniNavigatorImpl()
@@ -42,18 +45,8 @@ class AniNavigatorImpl(
     override val navigator: Navigator
         get() = _navigator.getCompleted()
 
-    private val sessionManager: SessionManager by inject()
-
     override fun setNavigator(navigator: Navigator) {
         this._navigator.complete(navigator)
-    }
-
-    override suspend fun requestBangumiAuthorization(): AuthorizationResult {
-        if (sessionManager.isSessionValid.value == true) {
-            return AuthorizationResult.SUCCESS
-        }
-
-        return _navigator.await().navigateForResult("/auth", NavOptions(launchSingleTop = true)) as AuthorizationResult
     }
 }
 

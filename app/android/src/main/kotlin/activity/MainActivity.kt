@@ -19,6 +19,7 @@
 package me.him188.ani.android.activity
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowInsets
@@ -30,6 +31,8 @@ import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import me.him188.ani.app.navigation.AniNavigator
+import me.him188.ani.app.session.BangumiAuthorizationConstants
+import me.him188.ani.app.session.OAuthResult
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.ui.foundation.AniApp
 import me.him188.ani.app.ui.main.MainScreen
@@ -38,6 +41,23 @@ import org.koin.android.ext.android.inject
 
 class MainActivity : AniComponentActivity() {
     private val sessionManager: SessionManager by inject()
+
+    private val aniNavigator = AniNavigator()
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        val data = intent.data ?: return
+
+        val hasCallbackCode = data.queryParameterNames?.contains("code") == true
+        if (hasCallbackCode) {
+            sessionManager.processingRequest.value?.onCallback(
+                Result.success(
+                    OAuthResult(data.getQueryParameter("code")!!, BangumiAuthorizationConstants.CALLBACK_URL)
+                )
+            )
+//            aniNavigator.navigateAuthResult(data.getQueryParameter("code")!!)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,8 +78,6 @@ class MainActivity : AniComponentActivity() {
         // 允许画到 system bars
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
-        val aniNavigator = AniNavigator()
-
         setContent {
             AniApp(currentColorScheme) {
                 MainScreen(aniNavigator)
@@ -67,7 +85,9 @@ class MainActivity : AniComponentActivity() {
         }
 
         lifecycleScope.launch {
-            sessionManager.requireAuthorization(aniNavigator, optional = true)
+            runCatching {
+                sessionManager.requireOnline(aniNavigator)
+            }
         }
     }
 

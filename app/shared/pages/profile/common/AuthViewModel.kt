@@ -21,12 +21,12 @@ package me.him188.ani.app.ui.profile
 import androidx.annotation.UiThread
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableIntStateOf
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.withContext
+import me.him188.ani.app.session.OAuthResult
 import me.him188.ani.app.session.SessionManager
+import me.him188.ani.app.ui.feedback.ErrorMessage
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.utils.logging.debug
 import org.koin.core.component.KoinComponent
@@ -39,46 +39,46 @@ class AuthViewModel : AbstractViewModel(), KoinComponent {
     /**
      * 当前授权是否正在进行中
      */
-    val isProcessing = sessionManager.processingAuth
+    val isProcessing = sessionManager.processingRequest
 
     /**
      * 需要进行授权
      */
-    val needAuth: StateFlow<Boolean> = sessionManager.isSessionValid.map { it != true }.stateInBackground(false)
+    val needAuth: StateFlow<Boolean> = sessionManager.isSessionValid.map { it != true }.stateInBackground(true)
 
     /**
      * 当前是第几次尝试
      */
     val retryCount = mutableIntStateOf(0)
 
-    private val _error: MutableStateFlow<String?> = MutableStateFlow(null)
-
     /**
      * 展示登录失败的错误
      */
-    val authError: StateFlow<String?> = _error
+    val authError: MutableStateFlow<ErrorMessage?> = MutableStateFlow(null)
 
-    suspend fun setCode(code: String, callbackUrl: String) {
+    fun setCode(code: String, callbackUrl: String) {
         runCatching {
-            withContext(Dispatchers.IO) {
-                sessionManager.refreshSessionByCode(
-                    code,
-                    callbackUrl
+            sessionManager.processingRequest.value?.onCallback(
+                Result.success(
+                    OAuthResult(
+                        code,
+                        callbackUrl
+                    )
                 )
-            }
+            )
         }.onFailure {
             onAuthFailed(it)
         }
     }
 
     fun onAuthFailed(throwable: Throwable) {
-        _error.value = "登录失败, 请重试\n\n错误信息: ${throwable.stackTraceToString()}"
+        authError.value = ErrorMessage.simple("登录失败, 请重试", throwable)
     }
 
     @UiThread
     fun dismissError() {
         logger.debug { "dismissError" }
-        _error.value = null
+        authError.value = null
         retryCount.intValue++
     }
 
@@ -86,5 +86,9 @@ class AuthViewModel : AbstractViewModel(), KoinComponent {
     fun refresh() {
         logger.debug { "refresh" }
         retryCount.intValue++
+    }
+
+    fun onCancel() {
+        sessionManager.processingRequest.value?.cancel()
     }
 }

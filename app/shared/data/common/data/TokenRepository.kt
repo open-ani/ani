@@ -3,9 +3,10 @@ package me.him188.ani.app.data
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.longPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import me.him188.ani.app.persistent.TokenStoreKeys
 import me.him188.ani.app.session.Session
 
 interface TokenRepository : Repository {
@@ -14,39 +15,56 @@ interface TokenRepository : Repository {
 
     val session: Flow<Session?>
     suspend fun setSession(session: Session)
-}
 
+    suspend fun clear()
+}
 
 internal class TokenRepositoryImpl(
     store: DataStore<Preferences>,
 ) : TokenRepository {
+    private companion object Keys {
+        val USER_ID = longPreferencesKey("user_id")
+        val REFRESH_TOKEN = stringPreferencesKey("refresh_token")
+        val ACCESS_TOKEN = stringPreferencesKey("access_token")
+        val ACCESS_TOKEN_EXPIRE_AT = longPreferencesKey("access_token_expire_at")
+    }
+
     private val tokenStore = store
 
-    override val refreshToken: Flow<String?> = tokenStore.data.map { it[TokenStoreKeys.REFRESH_TOKEN] }
+    override val refreshToken: Flow<String?> = tokenStore.data.map { it[REFRESH_TOKEN] }
 
     override suspend fun setRefreshToken(value: String) {
-        tokenStore.edit { it[TokenStoreKeys.REFRESH_TOKEN] = value }
+        tokenStore.edit { it[REFRESH_TOKEN] = value }
     }
 
     override val session: Flow<Session?> = tokenStore.data.map { preferences ->
-        val userId = preferences[TokenStoreKeys.USER_ID]
-        val accessToken = preferences[TokenStoreKeys.ACCESS_TOKEN]
-        val expireAt = preferences[TokenStoreKeys.ACCESS_TOKEN_EXPIRE_AT]
+        val userId = preferences[USER_ID]
+        val accessToken = preferences[ACCESS_TOKEN]
+        val expireAt = preferences[ACCESS_TOKEN_EXPIRE_AT]
         if (userId == null || accessToken == null || expireAt == null) {
             return@map null
         }
         Session(
             userId = userId,
             accessToken = accessToken,
-            expiresIn = expireAt,
+            expiresAt = expireAt,
         )
     }
 
     override suspend fun setSession(session: Session) {
         tokenStore.edit {
-            it[TokenStoreKeys.USER_ID] = session.userId
-            it[TokenStoreKeys.ACCESS_TOKEN] = session.accessToken
-            it[TokenStoreKeys.ACCESS_TOKEN_EXPIRE_AT] = session.expiresIn
+            it[USER_ID] = session.userId
+            it[ACCESS_TOKEN] = session.accessToken
+            it[ACCESS_TOKEN_EXPIRE_AT] = session.expiresAt
+        }
+    }
+
+    override suspend fun clear() {
+        tokenStore.edit {
+            it.remove(USER_ID)
+            it.remove(ACCESS_TOKEN)
+            it.remove(ACCESS_TOKEN_EXPIRE_AT)
+            it.remove(REFRESH_TOKEN)
         }
     }
 }

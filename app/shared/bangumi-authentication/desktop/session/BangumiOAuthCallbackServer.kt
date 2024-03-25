@@ -16,12 +16,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
+import kotlin.random.Random
 
 class BangumiOAuthCallbackServer(
     private val onCodeReceived: suspend BangumiOAuthCallbackServer.(code: String) -> Unit // runs on Ktor thread.
 ) : AutoCloseable {
     private val server by lazy {
-        embeddedServer(CIO) {
+        embeddedServer(CIO, port = Random.nextInt(40000, 50000)) {
             install(ContentNegotiation) {
                 json(Json {
                     ignoreUnknownKeys = true
@@ -36,7 +37,7 @@ class BangumiOAuthCallbackServer(
                     call.respondText(
                         "<h3>您现在可以关闭本页面并返回 ani</h3>",
                         contentType = ContentType.Text.Html,
-                        status = HttpStatusCode.BadRequest
+                        status = HttpStatusCode.OK
                     )
                     onCodeReceived(code)
                 }
@@ -57,7 +58,7 @@ class BangumiOAuthCallbackServer(
     @OptIn(DelicateCoroutinesApi::class)
     override fun close() {
         GlobalScope.launch(Dispatchers.IO) {
-            server.stop(5000, 5000)
+            server.stop(0, 0)
         }
     }
 }

@@ -54,7 +54,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
@@ -78,6 +77,7 @@ import me.him188.ani.app.platform.isInLandscapeMode
 import me.him188.ani.app.ui.foundation.AniKamelImage
 import me.him188.ani.app.ui.foundation.AniTopAppBar
 import me.him188.ani.app.ui.foundation.launchInBackground
+import me.him188.ani.app.ui.profile.UnauthorizedTips
 import me.him188.ani.app.ui.subject.details.COVER_WIDTH_TO_HEIGHT_RATIO
 import me.him188.ani.app.ui.subject.details.Tag
 import me.him188.ani.app.ui.theme.stronglyWeaken
@@ -124,11 +124,8 @@ private fun CollectionPagePortrait(contentPadding: PaddingValues, viewModel: MyC
         Column(Modifier.fillMaxSize()) {
             if (!isLoading && collections?.isEmpty() == true) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    val navigator = LocalNavigator.current
                     if (!isLoggedIn) {
-                        TextButton({ viewModel.launchInBackground { navigator.requestBangumiAuthorization() } }) {
-                            Text("请先登录", style = MaterialTheme.typography.titleMedium)
-                        }
+                        UnauthorizedTips()
                     } else {
                         Text("~ 空空如也 ~", style = MaterialTheme.typography.titleMedium)
                     }

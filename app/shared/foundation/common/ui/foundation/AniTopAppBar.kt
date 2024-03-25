@@ -7,10 +7,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.Icon
@@ -38,16 +36,16 @@ fun AniTopAppBar(
             modifier
                 .padding(padding)
                 .height(36.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             actions?.let {
-                Row(Modifier) {
+                Row(Modifier, verticalAlignment = Alignment.CenterVertically) {
                     it()
                 }
             }
 
             title?.let {
-                Row(Modifier) {
+                Row(Modifier, verticalAlignment = Alignment.CenterVertically) {
                     it()
                 }
             }
@@ -79,7 +77,7 @@ fun TopAppBarActionButton(
 ) {
     IconButton(
         onClick,
-        Modifier.offset(x = (-8).dp, y = (-8).dp).width(36.dp + 16.dp).height(36.dp + 16.dp)
+//        Modifier.offset(x = (-8).dp, y = (-8).dp).width(36.dp + 16.dp).height(36.dp + 16.dp)
     ) { // 让可点击区域大一点, 更方便
         Box(Modifier.size(24.dp)) {
             content()

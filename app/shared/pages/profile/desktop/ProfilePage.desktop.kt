@@ -6,4 +6,5 @@ import androidx.compose.runtime.Composable
 
 @Composable
 internal actual fun ColumnScope.PlatformDebugInfoItems(viewModel: AccountViewModel, snackbar: SnackbarHostState) {
+
 }

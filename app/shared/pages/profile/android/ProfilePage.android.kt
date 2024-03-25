@@ -5,8 +5,13 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.tooling.preview.Preview
 import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.launchInBackground
+import org.openapitools.client.models.Avatar
+import org.openapitools.client.models.User
+import org.openapitools.client.models.UserGroup
 
 @Composable
 internal actual fun ColumnScope.PlatformDebugInfoItems(viewModel: AccountViewModel, snackbar: SnackbarHostState) {
@@ -18,5 +23,27 @@ internal actual fun ColumnScope.PlatformDebugInfoItems(viewModel: AccountViewMod
         }
     }) {
         Text("Clear cache")
+    }
+}
+
+@Preview
+@Composable
+internal fun PreviewSelfInfo() {
+    ProvideCompositionLocalsForPreview {
+        SelfInfo(
+            User(
+                username = "username",
+                avatar = Avatar(
+                    "https://example.com/avatar.jpg",
+                    "https://example.com/avatar.jpg",
+                    "https://example.com/avatar.jpg"
+                ),
+                id = 1,
+                nickname = "",
+                sign = "Sign ".repeat(3),
+                userGroup = UserGroup.User,
+            ),
+            true
+        )
     }
 }

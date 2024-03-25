@@ -90,22 +90,19 @@ fun MainScreenLandscape(
     )
 }
 
-var currentAuthViewModel: AuthViewModel? = null // TODO: remove this shit
-
 @Composable
 fun MainScreenPortrait(
     navigator: Navigator,
     myCollectionsViewModel: MyCollectionsViewModel,
     searchViewModel: SearchViewModel
 ) {
-    val authViewModel = remember { AuthViewModel().also { currentAuthViewModel = it } }
-//    val subjectDetailsViewModel = remember { SubjectDetailsViewModel() }
     NavHost(navigator, initialRoute = "/home") {
         scene("/home") {
             HomeScene(searchViewModel, myCollectionsViewModel)
         }
         scene("/auth") { backStackEntry ->
             val allowBack = backStackEntry.query("allowBack") ?: false
+            val authViewModel = remember { AuthViewModel() }
             AuthRequestScene(authViewModel, allowBack, navigator)
         }
         scene("/subjects/{subjectId}") { backStackEntry ->

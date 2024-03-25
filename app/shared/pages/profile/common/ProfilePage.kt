@@ -18,61 +18,58 @@
 
 package me.him188.ani.app.ui.profile
 
+import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.currentAniBuildConfig
+import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.main.LocalContentPaddings
-import me.him188.ani.app.ui.subject.details.Avatar
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.openapitools.client.models.User
 
 @Composable
-fun ProfilePage() {
-    val navigator = LocalNavigator.current
-    LaunchedEffect(true) {
-        navigator.requestBangumiAuthorization()
-    }
+fun ProfilePage(modifier: Modifier = Modifier) {
     val viewModel = remember { AccountViewModel() }
     Column(
-        modifier = Modifier.padding(LocalContentPaddings.current).fillMaxSize(),
+        modifier = modifier
+            .systemBarsPadding()
+            .padding(LocalContentPaddings.current).fillMaxSize(),
     ) {
         // user profile
         val selfInfo by viewModel.selfInfo.collectAsStateWithLifecycle()
         Column {
-            selfInfo?.let {
-                SelfInfo(it)
-            }
+            SelfInfo(
+                selfInfo,
+                viewModel.isLoggedIn.collectAsStateWithLifecycle().value,
+                Modifier.fillMaxWidth()
+            )
 
             // debug
             if (currentAniBuildConfig.isDebug) {
-                DebugInfoView(viewModel)
+                DebugInfoView(viewModel, Modifier.padding(horizontal = 16.dp))
             }
         }
     }
@@ -80,12 +77,14 @@ fun ProfilePage() {
 
 @Composable
 @OptIn(DelicateCoroutinesApi::class)
-private fun DebugInfoView(viewModel: AccountViewModel) {
+private fun DebugInfoView(viewModel: AccountViewModel, modifier: Modifier = Modifier) {
     val debugInfo by viewModel.debugInfo.collectAsStateWithLifecycle(null)
     val clipboard = LocalClipboardManager.current
     val snackbar = remember { SnackbarHostState() }
 
-    Column(Modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text("Debug Tools", style = MaterialTheme.typography.titleMedium)
+
         for ((name, value) in debugInfo?.properties.orEmpty()) {
             TextButton(
                 onClick = {
@@ -100,6 +99,10 @@ private fun DebugInfoView(viewModel: AccountViewModel) {
             }
         }
 
+        Button({ viewModel.logout() }, enabled = viewModel.logoutEnabled) {
+            Text("Log out")
+        }
+
         PlatformDebugInfoItems(viewModel, snackbar)
     }
 
@@ -110,18 +113,32 @@ private fun DebugInfoView(viewModel: AccountViewModel) {
 internal expect fun ColumnScope.PlatformDebugInfoItems(viewModel: AccountViewModel, snackbar: SnackbarHostState)
 
 @Composable
-private fun SelfInfo(selfInfo: User) {
-    Row(Modifier.fillMaxWidth().padding(16.dp)) {
-        Box(Modifier.size(64.dp).clip(CircleShape)) {
-            Avatar(selfInfo.avatar.medium, Modifier.matchParentSize())
-        }
+internal fun SelfInfo(selfInfo: User?, isLoggedIn: Boolean?, modifier: Modifier = Modifier) {
+    Box {
+        UserInfoRow(selfInfo, {}, modifier)
 
-        Column(Modifier.padding(horizontal = 16.dp)) {
-            Row {
-                Text(selfInfo.nickname, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
-//                Text(selfInfo.username, style = MaterialTheme)
+        if (isLoggedIn == false) {
+            Surface(Modifier.matchParentSize()) {
+                UnauthorizedTips(Modifier.fillMaxSize())
             }
-            Text(selfInfo.sign, style = MaterialTheme.typography.bodySmall)
         }
+    }
+}
+
+
+@Preview
+@Composable
+private fun PreviewSelfInfo() {
+    ProvideCompositionLocalsForPreview {
+        SelfInfo(null, false)
+    }
+}
+
+
+@Preview
+@Composable
+private fun PreviewProfilePage() {
+    ProvideCompositionLocalsForPreview {
+        ProfilePage()
     }
 }

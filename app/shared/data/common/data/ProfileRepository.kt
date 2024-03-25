@@ -8,7 +8,7 @@ import org.openapitools.client.infrastructure.ClientException
 import org.openapitools.client.models.User
 
 interface ProfileRepository {
-    suspend fun getSelf(): User?
+    suspend fun getSelfOrNull(): User?
 }
 
 fun ProfileRepository(): ProfileRepository {
@@ -19,7 +19,7 @@ internal class ProfileRepositoryImpl : ProfileRepository, KoinComponent {
     private val client: BangumiClient by inject()
     private val logger = logger(this::class)
 
-    override suspend fun getSelf(): User? {
+    override suspend fun getSelfOrNull(): User? {
         return try {
             client.api.getMyself()
         } catch (e: ClientException) {

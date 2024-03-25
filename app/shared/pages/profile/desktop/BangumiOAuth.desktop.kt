@@ -21,9 +21,16 @@ import java.net.URI
 
 @Composable
 actual fun BangumiOAuthRequest(vm: AuthViewModel, onFailed: (Throwable) -> Unit, modifier: Modifier) {
+
     val server = remember {
         BangumiOAuthCallbackServer {
             vm.setCode(it, getCallbackUrl())
+        }
+    }
+
+    DisposableEffect(server) {
+        onDispose {
+            server.close()
         }
     }
 

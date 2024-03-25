@@ -1,5 +1,9 @@
 package me.him188.ani.app.ui.profile
 
+import androidx.annotation.UiThread
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
@@ -7,6 +11,7 @@ import me.him188.ani.app.data.ProfileRepository
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.ui.foundation.AbstractViewModel
+import me.him188.ani.app.ui.foundation.launchInBackground
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -16,9 +21,11 @@ class AccountViewModel : AbstractViewModel(), KoinComponent {
 
     val selfInfo = sessionManager.username
         .map {
-            profileRepository.getSelf()
+            if (it == null) null else profileRepository.getSelfOrNull()
         }
         .stateInBackground(null)
+
+    val isLoggedIn = sessionManager.isSessionValid
 
     val debugInfo = debugInfoFlow().shareInBackground()
 
@@ -31,6 +38,18 @@ class AccountViewModel : AbstractViewModel(), KoinComponent {
         DebugInfo(properties = buildMap {
             put("accessToken", session?.accessToken)
         })
+    }
+
+    var logoutEnabled by mutableStateOf(true)
+        private set
+
+    @UiThread
+    fun logout() {
+        logoutEnabled = false
+        launchInBackground {
+            sessionManager.logout()
+        }
+        logoutEnabled = true
     }
 }
 

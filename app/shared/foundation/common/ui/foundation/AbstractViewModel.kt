@@ -28,7 +28,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.isActive
-import me.him188.ani.app.session.AuthorizationCanceledException
+import me.him188.ani.app.session.AuthorizationCancelledException
 import me.him188.ani.utils.logging.debug
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.logger
@@ -99,7 +99,7 @@ abstract class AbstractViewModel : RememberObserver, ViewModel(), HasBackgroundS
 
     private fun createBackgroundScope(): CoroutineScope {
         return CoroutineScope(CoroutineExceptionHandler { coroutineContext, throwable ->
-            if (throwable is AuthorizationCanceledException) {
+            if (throwable is AuthorizationCancelledException) {
                 logger.debug { "Authorization canceled" }
             } else {
                 logger.error(throwable) { "Unhandled exception in background scope" }

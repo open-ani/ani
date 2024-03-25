@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.toList
+import me.him188.ani.app.ViewModelAuthSupport
 import me.him188.ani.app.data.EpisodeRepository
 import me.him188.ani.app.data.SubjectRepository
 import me.him188.ani.app.data.setSubjectCollectionTypeOrDelete
@@ -34,7 +35,7 @@ import org.openapitools.client.models.SubjectType
 import org.openapitools.client.models.UserEpisodeCollection
 import org.openapitools.client.models.UserSubjectCollection
 
-class MyCollectionsViewModel : AbstractViewModel(), KoinComponent {
+class MyCollectionsViewModel : AbstractViewModel(), KoinComponent, ViewModelAuthSupport {
     private val sessionManager: SessionManager by inject()
     private val subjectRepository: SubjectRepository by inject()
     private val episodeRepository: EpisodeRepository by inject()
