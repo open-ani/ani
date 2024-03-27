@@ -73,10 +73,10 @@ import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import io.kamel.image.asyncPainterResource
 import me.him188.ani.app.navigation.LocalNavigator
-import me.him188.ani.app.platform.isInLandscapeMode
 import me.him188.ani.app.ui.foundation.AniKamelImage
 import me.him188.ani.app.ui.foundation.AniTopAppBar
 import me.him188.ani.app.ui.foundation.launchInBackground
+import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.profile.UnauthorizedTips
 import me.him188.ani.app.ui.subject.details.COVER_WIDTH_TO_HEIGHT_RATIO
 import me.him188.ani.app.ui.subject.details.Tag
@@ -91,21 +91,8 @@ import org.openapitools.client.models.UserEpisodeCollection
  * 追番列表
  */
 @Composable
-fun CollectionPage(contentPadding: PaddingValues = PaddingValues(0.dp), viewModel: MyCollectionsViewModel) {
-    if (isInLandscapeMode()) {
-        CollectionPageLandscape(contentPadding, viewModel)
-    } else {
-        CollectionPagePortrait(contentPadding, viewModel)
-    }
-}
-
-@Composable
-private fun CollectionPageLandscape(contentPadding: PaddingValues, viewModel: MyCollectionsViewModel) {
-    CollectionPagePortrait(contentPadding, viewModel)
-}
-
-@Composable
-private fun CollectionPagePortrait(contentPadding: PaddingValues, viewModel: MyCollectionsViewModel) {
+fun CollectionPage(contentPadding: PaddingValues = PaddingValues(0.dp)) {
+    val vm = rememberViewModel { MyCollectionsViewModel() }
     Scaffold(
         topBar = {
             AniTopAppBar(
@@ -117,9 +104,9 @@ private fun CollectionPagePortrait(contentPadding: PaddingValues, viewModel: MyC
 //            }
         }
     ) { localPaddingValues ->
-        val collections by viewModel.collections.collectAsStateWithLifecycle(null)
-        val isLoading by viewModel.isLoading.collectAsStateWithLifecycle(true)
-        val isLoggedIn by viewModel.isLoggedIn.collectAsStateWithLifecycle(true)
+        val collections by vm.collections.collectAsStateWithLifecycle(null)
+        val isLoading by vm.isLoading.collectAsStateWithLifecycle(true)
+        val isLoggedIn by vm.isLoggedIn.collectAsStateWithLifecycle(true)
 
         Column(Modifier.fillMaxSize()) {
             if (!isLoading && collections?.isEmpty() == true) {
@@ -132,7 +119,7 @@ private fun CollectionPagePortrait(contentPadding: PaddingValues, viewModel: MyC
                 }
             } else {
                 MyCollectionColumn(
-                    viewModel, localPaddingValues + contentPadding,
+                    vm, localPaddingValues + contentPadding,
                     Modifier.fillMaxWidth()
                 )
             }

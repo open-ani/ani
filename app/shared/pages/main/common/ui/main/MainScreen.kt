@@ -1,51 +1,23 @@
 package me.him188.ani.app.ui.main
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.StarOutline
-import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
-import me.him188.ani.app.platform.isInLandscapeMode
-import me.him188.ani.app.ui.collection.CollectionPage
-import me.him188.ani.app.ui.collection.MyCollectionsViewModel
-import me.him188.ani.app.ui.foundation.TabNavigationItem
 import me.him188.ani.app.ui.foundation.rememberViewModel
-import me.him188.ani.app.ui.home.HomePage
-import me.him188.ani.app.ui.home.SearchViewModel
 import me.him188.ani.app.ui.profile.AuthViewModel
-import me.him188.ani.app.ui.profile.ProfilePage
 import me.him188.ani.app.ui.profile.auth.AuthRequestScene
 import me.him188.ani.app.ui.subject.details.SubjectDetailsScene
 import me.him188.ani.app.ui.subject.details.SubjectDetailsViewModel
 import me.him188.ani.app.ui.subject.episode.EpisodeScene
 import me.him188.ani.app.ui.subject.episode.EpisodeViewModel
 import moe.tlaster.precompose.navigation.NavHost
-import moe.tlaster.precompose.navigation.Navigator
 import moe.tlaster.precompose.navigation.path
 import moe.tlaster.precompose.navigation.query
 import moe.tlaster.precompose.navigation.rememberNavigator
@@ -62,151 +34,54 @@ val LocalContentPaddings: ProvidableCompositionLocal<PaddingValues> = androidx.c
 fun MainScreen(aniNavigator: AniNavigator) {
     val navigator = rememberNavigator()
     CompositionLocalProvider(LocalNavigator provides aniNavigator) {
-        // 当前授权状态
-        val myCollectionsViewModel = remember { MyCollectionsViewModel() }
-        val searchViewModel = remember { SearchViewModel() }
-
-        if (isInLandscapeMode()) {
-            MainScreenLandscape(navigator, myCollectionsViewModel, searchViewModel)
-        } else {
-            MainScreenPortrait(navigator, myCollectionsViewModel, searchViewModel)
+        NavHost(navigator, initialRoute = "/home") {
+            scene("/home") {
+                HomeScene()
+            }
+            scene("/auth") { backStackEntry ->
+                val allowBack = backStackEntry.query<Boolean?>("allowBack") ?: false
+                val authViewModel = remember { AuthViewModel() }
+                AuthRequestScene(authViewModel, allowBack, navigator)
+            }
+            scene("/subjects/{subjectId}") { backStackEntry ->
+                val subjectId = backStackEntry.path<Int>("subjectId") ?: run {
+                    navigator.goBack()
+                    return@scene
+                }
+                val vm = viewModel<SubjectDetailsViewModel> { SubjectDetailsViewModel(subjectId) }
+                SubjectDetailsScene(vm, navigator)
+            }
+            scene("/subjects/{subjectId}/episodes/{episodeId}") { backStackEntry ->
+                val subjectId = backStackEntry.path<Int>("subjectId") ?: run {
+                    navigator.goBack()
+                    return@scene
+                }
+                val episodeId = backStackEntry.path<Int>("episodeId") ?: run {
+                    navigator.goBack()
+                    return@scene
+                }
+                val initialIsFullscreen = backStackEntry.query<Boolean>("fullscreen") ?: false
+                val context = LocalContext.current
+                val vm = rememberViewModel<EpisodeViewModel> {
+                    EpisodeViewModel(
+                        initialSubjectId = subjectId,
+                        initialEpisodeId = episodeId,
+                        initialIsFullscreen = initialIsFullscreen,
+                        context,
+                    )
+                }
+                // TODO: 当切换到全屏时, 会整个 recompose, 导致这里会重新 evaluate, 但是 path 里 fullscreen 参数没有变, 
+                //  如果 vm.setFullscreen(initialIsFullscreen), 就会覆盖掉用户的操作, 导致全屏状态时 vm.isFullscreen 为 false
+                //            vm.setFullscreen(initialIsFullscreen)
+                SideEffect {
+                    vm.setSubjectId(subjectId)
+                    vm.setEpisodeId(episodeId)
+                }
+                EpisodeScene(vm)
+            }
         }
         SideEffect {
             aniNavigator.setNavigator(navigator)
-        }
-    }
-}
-
-@Composable
-fun MainScreenLandscape(
-    navigator: Navigator,
-    myCollectionsViewModel: MyCollectionsViewModel,
-    searchViewModel: SearchViewModel
-) {
-    MainScreenPortrait(
-        navigator,
-        myCollectionsViewModel,
-        searchViewModel
-    )
-}
-
-@Composable
-fun MainScreenPortrait(
-    navigator: Navigator,
-    myCollectionsViewModel: MyCollectionsViewModel,
-    searchViewModel: SearchViewModel
-) {
-    NavHost(navigator, initialRoute = "/home") {
-        scene("/home") {
-            HomeScene(searchViewModel, myCollectionsViewModel)
-        }
-        scene("/auth") { backStackEntry ->
-            val allowBack = backStackEntry.query("allowBack") ?: false
-            val authViewModel = remember { AuthViewModel() }
-            AuthRequestScene(authViewModel, allowBack, navigator)
-        }
-        scene("/subjects/{subjectId}") { backStackEntry ->
-            val subjectId = backStackEntry.path<Int>("subjectId") ?: run {
-                navigator.goBack()
-                return@scene
-            }
-            val vm = viewModel<SubjectDetailsViewModel> { SubjectDetailsViewModel(subjectId) }
-            SubjectDetailsScene(vm, navigator)
-        }
-        scene("/subjects/{subjectId}/episodes/{episodeId}") { backStackEntry ->
-            val subjectId = backStackEntry.path<Int>("subjectId") ?: run {
-                navigator.goBack()
-                return@scene
-            }
-            val episodeId = backStackEntry.path<Int>("episodeId") ?: run {
-                navigator.goBack()
-                return@scene
-            }
-            val initialIsFullscreen = backStackEntry.query<Boolean>("fullscreen") ?: false
-            val context = LocalContext.current
-            val vm = rememberViewModel<EpisodeViewModel> {
-                EpisodeViewModel(
-                    initialSubjectId = subjectId,
-                    initialEpisodeId = episodeId,
-                    initialIsFullscreen = initialIsFullscreen,
-                    context,
-                )
-            }
-            // TODO: 当切换到全屏时, 会整个 recompose, 导致这里会重新 evaluate, 但是 path 里 fullscreen 参数没有变, 
-            //  如果 vm.setFullscreen(initialIsFullscreen), 就会覆盖掉用户的操作, 导致全屏状态时 vm.isFullscreen 为 false
-//            vm.setFullscreen(initialIsFullscreen)
-            SideEffect {
-                vm.setSubjectId(subjectId)
-                vm.setEpisodeId(episodeId)
-            }
-            EpisodeScene(vm)
-        }
-    }
-}
-
-@Composable
-private fun HomeScene(
-    searchViewModel: SearchViewModel,
-    myCollectionsViewModel: MyCollectionsViewModel
-) {
-    var selectedTab by remember { mutableStateOf("collection") }
-    Scaffold(
-        Modifier,
-        bottomBar = {
-            fun closeSearch() {
-                searchViewModel.searchActive.value = false
-            }
-
-            Column(Modifier.alpha(0.97f)) {
-                Column(Modifier.background(MaterialTheme.colorScheme.surface)) {
-                    HorizontalDivider(thickness = 1.dp)
-
-                    BottomAppBar(
-                        Modifier
-                            .navigationBarsPadding()
-                            .height(48.dp),
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        tonalElevation = 0.dp,
-                    ) {
-                        TabNavigationItem(
-                            selectedTab == "home",
-                            {
-                                selectedTab = "home"
-                                closeSearch()
-                            },
-                            icon = { Icon(Icons.Outlined.Home, null) },
-                            title = { Text(text = "首页") },
-                        )
-                        TabNavigationItem(
-                            selectedTab == "collection",
-                            {
-                                selectedTab = "collection"
-                                closeSearch()
-                            },
-                            icon = { Icon(Icons.Outlined.StarOutline, null) },
-                            title = { Text(text = "追番") },
-                        )
-                        TabNavigationItem(
-                            selectedTab == "profile",
-                            {
-                                selectedTab = "profile"
-                                closeSearch()
-                            },
-                            icon = { Icon(Icons.Outlined.Person, null) },
-                            title = { Text(text = "我的") },
-                        )
-                    }
-                }
-            }
-        },
-        contentWindowInsets = WindowInsets(0.dp)
-    ) { contentPadding ->
-        CompositionLocalProvider(LocalContentPaddings provides contentPadding) {
-            when (selectedTab) {
-                "home" -> HomePage(searchViewModel, contentPadding)
-                "collection" -> CollectionPage(contentPadding, myCollectionsViewModel)
-                "profile" -> ProfilePage()
-            }
         }
     }
 }

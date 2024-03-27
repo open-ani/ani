@@ -29,36 +29,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
-import me.him188.ani.app.platform.isInLandscapeMode
+import me.him188.ani.app.ui.foundation.rememberViewModel
 
 @Composable
 fun HomePage(
-    searchViewModel: SearchViewModel,
-    contentPadding: PaddingValues = PaddingValues(0.dp)
-) {
-    if (isInLandscapeMode()) {
-        HomePageLandscape()
-    } else {
-        HomePagePortrait(contentPadding, searchViewModel)
-    }
-}
-
-@Composable
-private fun HomePageLandscape() {
-}
-
-@Composable
-private fun HomePagePortrait(
-    contentPadding: PaddingValues,
-    searchViewModel: SearchViewModel
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    modifier: Modifier = Modifier,
 ) {
     Column(
-        Modifier.padding(
+        modifier.padding(
             top = contentPadding.calculateTopPadding(),
             start = contentPadding.calculateStartPadding(LocalLayoutDirection.current),
             end = contentPadding.calculateEndPadding(LocalLayoutDirection.current),
         ).fillMaxSize()
     ) {
+        val searchViewModel = rememberViewModel { SearchViewModel() }
         SubjectSearchBar(searchViewModel, Modifier.fillMaxWidth())
     }
 }
