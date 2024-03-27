@@ -64,6 +64,7 @@ import me.him188.ani.app.platform.setRequestFullScreen
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.LocalSnackbar
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.ui.foundation.effects.ScreenOnEffect
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.app.ui.foundation.rememberViewModel
@@ -112,6 +113,8 @@ fun EpisodePageContent(
         context.setRequestFullScreen(false)
         viewModel.setFullscreen(false)
     }
+
+    ScreenOnEffect()
 
     Column(modifier.then(if (isFullscreen) Modifier.fillMaxSize() else Modifier.navigationBarsPadding())) {
         // 视频
