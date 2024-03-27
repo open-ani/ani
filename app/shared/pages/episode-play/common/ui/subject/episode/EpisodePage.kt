@@ -47,8 +47,11 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -64,6 +67,7 @@ import me.him188.ani.app.platform.setRequestFullScreen
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.LocalSnackbar
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.ui.foundation.effects.OnLifecycleEvent
 import me.him188.ani.app.ui.foundation.effects.ScreenOnEffect
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.launchInMain
@@ -71,6 +75,7 @@ import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.theme.slightlyWeaken
 import me.him188.ani.danmaku.ui.rememberDanmakuHostState
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
+import moe.tlaster.precompose.lifecycle.Lifecycle
 import moe.tlaster.precompose.navigation.BackHandler
 import org.openapitools.client.models.EpisodeCollectionType
 
@@ -115,6 +120,28 @@ fun EpisodePageContent(
     }
 
     ScreenOnEffect()
+
+    // 切后台自动暂停
+    var pausedVideo by rememberSaveable { mutableStateOf(true) } // live after configuration change
+    OnLifecycleEvent {
+        if (it == Lifecycle.State.InActive || it == Lifecycle.State.Destroyed) {
+            if (viewModel.playerController.state.value.isPlaying) {
+                pausedVideo = true
+                viewModel.playerController.pause() // 正在播放时, 切到后台自动暂停
+            } else {
+                // 如果不是正在播放, 则不操作暂停, 当下次切回前台时, 也不要恢复播放
+                pausedVideo = false
+            }
+        } else if (it == Lifecycle.State.Active && pausedVideo) {
+            viewModel.launchInMain {
+                viewModel.playerController.resume() // 切回前台自动恢复, 当且仅当之前是自动暂停的
+            }
+            pausedVideo = false
+        } else {
+            pausedVideo = false
+        }
+    }
+
 
     Column(modifier.then(if (isFullscreen) Modifier.fillMaxSize() else Modifier.navigationBarsPadding())) {
         // 视频
