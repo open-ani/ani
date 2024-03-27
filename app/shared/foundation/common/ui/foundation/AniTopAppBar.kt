@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import me.him188.ani.app.navigation.LocalBackHandler
 
 @Composable
 fun AniTopAppBar(
@@ -56,6 +57,14 @@ fun AniTopAppBar(
 //                    Modifier.size(24.dp)
 //                )
         }
+    }
+}
+
+@Composable
+fun TopAppBarGoBackButton() {
+    val handler = LocalBackHandler.current
+    TopAppBarGoBackButton {
+        handler.onBackPress()
     }
 }
 

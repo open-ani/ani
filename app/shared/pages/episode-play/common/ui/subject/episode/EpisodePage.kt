@@ -57,6 +57,7 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.Context
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.setRequestFullScreen
@@ -80,7 +81,6 @@ private val PAGE_HORIZONTAL_PADDING = 16.dp
 @Composable
 fun EpisodePage(
     viewModel: EpisodeViewModel,
-    goBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -88,7 +88,6 @@ fun EpisodePage(
     ) {
         EpisodePageContent(
             viewModel,
-            onClickGoBack = goBack,
             modifier
         )
     }
@@ -97,31 +96,21 @@ fun EpisodePage(
 @Composable
 fun EpisodePageContent(
     viewModel: EpisodeViewModel,
-    onClickGoBack: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     val isFullscreen by viewModel.isFullscreen.collectAsState()
 
     // 处理当用户点击返回键时, 如果是全屏, 则退出全屏
-    val goBack = remember(onClickGoBack) {
-        {
-            viewModel.playerController.pause()
-            if (isFullscreen) {
-                context.setRequestFullScreen(false)
-                viewModel.setFullscreen(false)
-            } else {
-                onClickGoBack()
-            }
-        }
+    val navigator = LocalNavigator.current
+    BackHandler {
+        viewModel.playerController.pause()
+        navigator.navigator.goBack()
     }
 
-    BackHandler {
-        if (isFullscreen) {
-            goBack()
-        } else {
-            onClickGoBack()
-        }
+    BackHandler(enabled = isFullscreen) {
+        context.setRequestFullScreen(false)
+        viewModel.setFullscreen(false)
     }
 
     Column(modifier.then(if (isFullscreen) Modifier.fillMaxSize() else Modifier.navigationBarsPadding())) {
@@ -135,7 +124,6 @@ fun EpisodePageContent(
             EpisodeVideo(
                 selected, videoReady, viewModel.playerController,
                 danmakuHostState = rememberDanmakuHostState(viewModel.danmakuFlow),
-                onClickGoBack = goBack,
                 onClickFullScreen = {
                     if (isFullscreen) {
                         context.setRequestFullScreen(false)
@@ -604,7 +592,7 @@ private fun PreviewEpisodePageDesktop() {
                 context,
             )
         }
-        EpisodePage(vm, {})
+        EpisodePage(vm)
     }
 }
 

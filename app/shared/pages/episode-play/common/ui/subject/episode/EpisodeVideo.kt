@@ -164,20 +164,19 @@ internal fun EpisodeVideo(
     videoReady: Boolean,
     playerController: PlayerController,
     danmakuHostState: DanmakuHostState,
-    onClickGoBack: () -> Unit,
     onClickFullScreen: () -> Unit,
     modifier: Modifier = Modifier,
     isFullscreen: Boolean = isInLandscapeMode(),
 ) {
-    val (controllerVisible, setControllerVisible) = remember { mutableStateOf(true) }
+    val controllerVisible by playerController.controllerVisible.collectAsStateWithLifecycle()
 
     VideoScaffold(
         controllersVisible = controllerVisible,
-        onControllersVisibleChange = setControllerVisible,
+        onControllersVisibleChange = { playerController.setControllerVisible(it) },
         topBar = {
             PlayerNavigationBar(
                 actions = {
-                    TopAppBarGoBackButton(onClickGoBack)
+                    TopAppBarGoBackButton()
                 },
             )
         },
