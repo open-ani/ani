@@ -1,3 +1,5 @@
+@file:Suppress("ERROR_SUPPRESSION")
+
 package me.him188.ani.app.ui.foundation
 
 import androidx.compose.foundation.BorderStroke

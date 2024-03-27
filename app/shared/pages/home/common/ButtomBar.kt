@@ -72,12 +72,12 @@ fun TabIcon(
 }
 
 @Composable
-inline fun <Tab> TabBar(
+fun <Tab> TabBar(
     selectedTab: MutableState<Tab>,
     modifier: Modifier = Modifier,
     selectedContentColor: Color = MaterialTheme.colorScheme.primary,
     unselectedContentColor: Color = LocalContentColor.current,
-    crossinline block: @Composable TabBarScope<Tab>.() -> Unit,
+    block: @Composable TabBarScope<Tab>.() -> Unit,
 ) {
     val selectedTabState by rememberUpdatedState(selectedTab)
     val selectedContentColorState by rememberUpdatedState(selectedContentColor)

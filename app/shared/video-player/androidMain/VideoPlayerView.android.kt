@@ -11,7 +11,7 @@ import androidx.media3.ui.CaptionStyleCompat
 import androidx.media3.ui.PlayerView
 import androidx.media3.ui.PlayerView.ControllerVisibilityListener
 
-@OptIn(UnstableApi::class)
+@androidx.annotation.OptIn(UnstableApi::class)
 @Composable
 actual fun VideoPlayerView(
     playerController: PlayerController,
@@ -40,7 +40,7 @@ actual fun VideoPlayerView(
                     player = it.player
                     setControllerVisibilityListener(ControllerVisibilityListener { visibility ->
                         if (visibility == View.VISIBLE) {
-                            videoView.hideController();
+                            videoView.hideController()
                         }
                     })
                 }

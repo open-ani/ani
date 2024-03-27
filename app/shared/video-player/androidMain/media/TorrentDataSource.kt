@@ -1,4 +1,4 @@
-@file:OptIn(UnstableApi::class)
+@file:androidx.annotation.OptIn(UnstableApi::class)
 
 package me.him188.ani.app.videoplayer.media
 
@@ -17,6 +17,7 @@ import me.him188.ani.app.torrent.file.SeekableInput
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 
+@UnstableApi
 class TorrentDataSourceException(
     override val message: String? = null,
     override val cause: Throwable? = null,
@@ -26,6 +27,7 @@ class TorrentDataSourceException(
 /**
  * Wrap of a [TorrentDownloadSession] into a [DataSource].
  */
+@androidx.annotation.OptIn(UnstableApi::class)
 class TorrentDataSource(
     private val session: TorrentDownloadSession,
 ) : BaseDataSource(true) {
