@@ -125,7 +125,7 @@ private fun CollectionPagePortrait(contentPadding: PaddingValues, viewModel: MyC
             if (!isLoading && collections?.isEmpty() == true) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     if (!isLoggedIn) {
-                        UnauthorizedTips()
+                        UnauthorizedTips(Modifier.fillMaxSize())
                     } else {
                         Text("~ 空空如也 ~", style = MaterialTheme.typography.titleMedium)
                     }
@@ -136,14 +136,6 @@ private fun CollectionPagePortrait(contentPadding: PaddingValues, viewModel: MyC
                     Modifier.fillMaxWidth()
                 )
             }
-//            if (isLoading) {
-//                Row(
-//                    Modifier.padding(top = 8.dp).fillMaxWidth(),
-//                    horizontalArrangement = Arrangement.Center
-//                ) {
-//                    CircularProgressIndicator(Modifier.size(32.dp))
-//                }
-//            }
         }
     }
 }

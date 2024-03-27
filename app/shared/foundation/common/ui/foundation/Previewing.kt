@@ -24,8 +24,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.remember
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
+import me.him188.ani.app.navigation.AniNavigator
+import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.getCommonKoinModule
 import me.him188.ani.app.torrent.TorrentDownloader
@@ -72,7 +75,8 @@ fun ProvideCompositionLocalsForPreview(
                     })
                 }
             }
-            CompositionLocalProvider(LocalIsPreviewing provides true) {
+            val aniNavigator = remember { AniNavigator() }
+            CompositionLocalProvider(LocalIsPreviewing provides true, LocalNavigator provides aniNavigator) {
                 AniApp(aniColorScheme(isDark)) {
                     content()
                 }

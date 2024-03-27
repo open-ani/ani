@@ -52,7 +52,7 @@ import org.koin.dsl.module
 fun getCommonKoinModule(getContext: () -> Context, coroutineScope: CoroutineScope) = module {
     single<TokenRepository> { TokenRepositoryImpl(getContext().tokenStore) }
     single<PreferredAllianceRepository> { PreferredAllianceRepositoryImpl(getContext().preferredAllianceStore) }
-    single<SessionManager> { SessionManagerImpl(coroutineScope) }
+    single<SessionManager> { SessionManagerImpl() }
     single<DmhyClient> {
         DmhyClient.create {
             install(UserAgent) {

@@ -2,8 +2,8 @@ package me.him188.ani.app.ui.profile
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,7 +24,7 @@ fun UnauthorizedTips(
 
     val navigator = LocalNavigator.current
     Box(modifier, contentAlignment = Alignment.Center) {
-        TextButton({ vm.requireOnline(navigator = navigator) }) {
+        OutlinedButton({ vm.requireOnline(navigator = navigator) }) {
             Text("请先登录", style = MaterialTheme.typography.titleMedium)
         }
     }

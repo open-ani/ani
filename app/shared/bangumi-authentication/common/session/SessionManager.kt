@@ -21,7 +21,6 @@ package me.him188.ani.app.session
 import androidx.compose.runtime.Stable
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -31,8 +30,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.shareIn
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -44,6 +41,7 @@ import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.datasources.bangumi.BangumiClient
+import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import org.koin.core.component.KoinComponent
@@ -119,7 +117,6 @@ sealed class AuthorizationException : Exception()
 
 
 internal class SessionManagerImpl(
-    coroutineScope: CoroutineScope,
 ) : KoinComponent, SessionManager, HasBackgroundScope by BackgroundScope() {
     private val tokenRepository: TokenRepository by inject()
     private val profileRepository: ProfileRepository by inject()
@@ -130,21 +127,22 @@ internal class SessionManagerImpl(
     override val session: SharedFlow<Session?> =
         tokenRepository.session.distinctUntilChanged().onEach {
             ApiClient.accessToken = it?.accessToken
-        }.shareIn(coroutineScope, SharingStarted.Eagerly)
+        }.shareInBackground(SharingStarted.Eagerly)
 
     override val username: StateFlow<String?> =
         session
             .map {
-                if (it == null) {
+                if (it == null || it.expiresAt <= System.currentTimeMillis()) {
                     null
-                } else profileRepository.getSelfOrNull()?.username
+                } else
+                    profileRepository.getSelfOrNull()?.username
             }
             .distinctUntilChanged()
-            .stateIn(coroutineScope, SharingStarted.Eagerly, null)
+            .stateInBackground(SharingStarted.Eagerly)
 
     override val isSessionValid: StateFlow<Boolean?> =
-        session.map { it != null && it.expiresAt > System.currentTimeMillis() && profileRepository.getSelfOrNull() != null }
-            .stateIn(coroutineScope, SharingStarted.Eagerly, null)
+        username.map { it != null }
+            .stateInBackground(SharingStarted.Eagerly)
 
     private val refreshTokenLoaded = CompletableDeferred<Boolean>()
     private val refreshToken = tokenRepository.refreshToken
@@ -152,7 +150,7 @@ internal class SessionManagerImpl(
             emit(it)
             refreshTokenLoaded.complete(true)
         }
-        .stateIn(coroutineScope, SharingStarted.Eagerly, null)
+        .shareInBackground(SharingStarted.Eagerly)
 
     private val singleAuthLock = Mutex()
     override val processingRequest: MutableStateFlow<ExternalOAuthRequest?> = MutableStateFlow(null)
@@ -165,7 +163,7 @@ internal class SessionManagerImpl(
         }
 
         // session is invalid, refresh it
-        val refreshToken = refreshToken.value ?: return false
+        val refreshToken = refreshToken.first() ?: return false
         val newAccessToken = runCatching {
             withContext(Dispatchers.IO) {
                 client.refreshAccessToken(
@@ -196,7 +194,7 @@ internal class SessionManagerImpl(
             // not online, try to refresh
             refreshTokenLoaded.await()
             if (isSessionValid.value == true) return // check again because this might have changed
-            if (refreshToken.value != null) {
+            if (refreshToken.first() != null) {
                 if (tryRefreshSessionByRefreshToken()) {
                     return
                 }
@@ -237,9 +235,11 @@ internal class SessionManagerImpl(
     override fun requireOnlineAsync(navigator: AniNavigator) {
         launchInBackground {
             try {
+                processingRequest.value?.cancel()
                 requireOnline(navigator)
+                logger.info { "requireOnline: success" }
             } catch (e: AuthorizationException) {
-                logger.info(e) { "Authorization failed" }
+                logger.error(e) { "Authorization failed" }
             }
         }
     }
