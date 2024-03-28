@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
@@ -103,7 +104,7 @@ internal fun SubjectDetailsHeader(
 @Composable
 fun Tag(
     modifier: Modifier = Modifier,
-    shape: RoundedCornerShape = RoundedCornerShape(4.dp),
+    shape: Shape = MaterialTheme.shapes.small,
     label: @Composable RowScope.() -> Unit,
 ) {
     Box(
@@ -113,7 +114,7 @@ fun Tag(
         contentAlignment = Alignment.Center
     ) {
         Row(
-            Modifier.height(22.dp).padding(horizontal = 4.dp, vertical = 2.dp),
+            Modifier.padding(horizontal = 6.dp, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             label()

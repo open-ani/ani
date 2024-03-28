@@ -4,16 +4,15 @@ import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.StarOutline
-import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,7 +25,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.collection.CollectionPage
-import me.him188.ani.app.ui.foundation.TabNavigationItem
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.home.HomePage
 import me.him188.ani.app.ui.home.SearchViewModel
@@ -49,41 +47,69 @@ fun HomeScene() {
                 Column(Modifier.background(MaterialTheme.colorScheme.surface)) {
                     HorizontalDivider(thickness = 1.dp)
 
-                    BottomAppBar(
-                        Modifier
-                            .navigationBarsPadding()
-                            .height(48.dp),
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        tonalElevation = 0.dp,
-                    ) {
-                        TabNavigationItem(
+                    NavigationBar {
+                        NavigationBarItem(
                             selectedTab == "home",
                             {
                                 selectedTab = "home"
                                 closeSearch()
                             },
                             icon = { Icon(Icons.Outlined.Home, null) },
-                            title = { Text(text = "首页") },
+                            label = { Text(text = "首页") }
                         )
-                        TabNavigationItem(
+                        NavigationBarItem(
                             selectedTab == "collection",
                             {
                                 selectedTab = "collection"
                                 closeSearch()
                             },
                             icon = { Icon(Icons.Outlined.StarOutline, null) },
-                            title = { Text(text = "追番") },
+                            label = { Text(text = "追番") }
                         )
-                        TabNavigationItem(
+                        NavigationBarItem(
                             selectedTab == "profile",
                             {
                                 selectedTab = "profile"
                                 closeSearch()
                             },
                             icon = { Icon(Icons.Outlined.Person, null) },
-                            title = { Text(text = "我的") },
+                            label = { Text(text = "我的") }
                         )
                     }
+//                    BottomAppBar(
+//                        Modifier
+//                            .navigationBarsPadding(),
+//                        containerColor = MaterialTheme.colorScheme.surface,
+//                        tonalElevation = 0.dp,
+//                    ) {
+//                        TabNavigationItem(
+//                            selectedTab == "home",
+//                            {
+//                                selectedTab = "home"
+//                                closeSearch()
+//                            },
+//                            icon = { Icon(Icons.Outlined.Home, null) },
+//                            title = { Text(text = "首页") },
+//                        )
+//                        TabNavigationItem(
+//                            selectedTab == "collection",
+//                            {
+//                                selectedTab = "collection"
+//                                closeSearch()
+//                            },
+//                            icon = { Icon(Icons.Outlined.StarOutline, null) },
+//                            title = { Text(text = "追番") },
+//                        )
+//                        TabNavigationItem(
+//                            selectedTab == "profile",
+//                            {
+//                                selectedTab = "profile"
+//                                closeSearch()
+//                            },
+//                            icon = { Icon(Icons.Outlined.Person, null) },
+//                            title = { Text(text = "我的") },
+//                        )
+//                    }
                 }
             }
         },

@@ -144,6 +144,8 @@ class SubjectCollectionItem(
     var collectionType: CollectionType by mutableStateOf(collectionType.toCollectionType())
     var episodes by mutableStateOf(episodes)
 
+    val latestEpIndex: Int? = episodes.indexOfFirst { it.episode.id == latestEp?.episode?.id }.takeIf { it != -1 }
+
     val onAirDescription = if (isOnAir) {
         if (latestEp == null) {
             "连载中"
