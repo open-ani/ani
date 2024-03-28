@@ -28,6 +28,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -219,7 +220,7 @@ private fun EpisodeVideoLoadingIndicator(
 ) {
     val isBuffering by playerController.isBuffering.collectAsStateWithLifecycle(true)
     if (isBuffering) {
-        var loadedTooLong by remember { mutableStateOf(false) }
+        var loadedTooLong by rememberSaveable { mutableStateOf(false) }
         VideoLoadingIndicator(
             showProgress = videoSourceSelected,
             text = {

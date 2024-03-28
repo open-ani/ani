@@ -34,6 +34,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -117,7 +118,7 @@ fun EditCollectionTypeDropDown(
     actions: List<SubjectCollectionAction> = SubjectCollectionActionsForEdit,
 ) {
     // 同时设置所有剧集为看过
-    var showSetAllEpisodesDialog by remember { mutableStateOf(false) }
+    var showSetAllEpisodesDialog by rememberSaveable { mutableStateOf(false) }
     if (showSetAllEpisodesDialog && onSetAllEpisodesDone != null) {
         AlertDialog(
             onDismissRequest = {
@@ -225,7 +226,7 @@ fun CollectionActionButton(
         SubjectCollectionActionsForCollect.find { it.type == type }
     }
     Box(Modifier.placeholder(collected == null || type == null)) {
-        var showDropdown by remember { mutableStateOf(false) }
+        var showDropdown by rememberSaveable { mutableStateOf(false) }
         BasicSubjectCollectionActionButton(
             action,
             onClick = {

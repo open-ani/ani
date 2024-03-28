@@ -35,7 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -84,7 +84,7 @@ fun MyCollectionColumn(
 
         items(collections, key = { it.subjectId }) { collection ->
             // 在首次加载时展示一个渐入的动画, 随后不再展示
-            var targetAlpha by remember { mutableStateOf(0f) }
+            var targetAlpha by rememberSaveable { mutableStateOf(0f) }
             val alpha by animateFloatAsState(
                 targetAlpha,
                 if (state.canScrollBackward || state.canScrollForward)
@@ -204,7 +204,7 @@ private fun CollectionItemContent(
             )
 
             Box {
-                var showDropdown by remember { mutableStateOf(false) }
+                var showDropdown by rememberSaveable { mutableStateOf(false) }
                 IconButton({ showDropdown = true }, Modifier.fillMaxHeight().padding()) {
                     Icon(Icons.Outlined.MoreVert, null, Modifier.size(24.dp))
                 }
@@ -239,7 +239,7 @@ private fun CollectionItemContent(
 
         Spacer(Modifier.weight(1f))
 
-        var showEpisodeProgressDialog by remember { mutableStateOf(false) }
+        var showEpisodeProgressDialog by rememberSaveable { mutableStateOf(false) }
         if (showEpisodeProgressDialog) {
             val navigator = LocalNavigator.current
             EpisodeProgressDialog(
