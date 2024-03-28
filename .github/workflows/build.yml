@@ -165,17 +165,3 @@ jobs:
         with:
           name: ani-windows
           path: desktop/build/compose/binaries/main/app
-
-      - if: ${{ env.isWindows == 'true' }}
-        name: Upload Windows packages
-        uses: actions/upload-artifact@v3
-        with:
-          name: ani-windows-installer
-          path: desktop/build/compose/binaries/main/msi
-
-      - if: ${{ env.isWindows == 'true' }}
-        name: Upload Windows packages
-        uses: actions/upload-artifact@v3
-        with:
-          name: ani-windows-installer
-          path: desktop/build/compose/binaries/main/exe
