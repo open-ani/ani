@@ -268,7 +268,7 @@ private fun CollectionItemContent(
 
             val onPlay: () -> Unit = {
                 item.lastWatchedEpIndex?.let {
-                    item.episodes.getOrNull(it)
+                    item.episodes.getOrNull(it + 1)
                 }?.let {
                     onClickEpisode(it)
                 }
