@@ -88,6 +88,13 @@ jobs:
         id: tag
         uses: dawidd6/action-get-tag@v1
 
+      - uses: bhowell2/github-substring-action@v1.0.0
+        id: tag-version # usage:  ${{ steps.tag-version.outputs.substring }}
+        with:
+          value: ${{ steps.tag.outputs.tag }}
+          index_of_str: "v"
+          default_return_value: ${{ steps.tag.outputs.tag }}
+
 
       - if: ${{ env.isUnix == 'true' }}
         uses: actions/setup-java@v2
