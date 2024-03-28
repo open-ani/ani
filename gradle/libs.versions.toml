@@ -1,26 +1,27 @@
 [versions]
-kotlin = "2.0.0-Beta4"
-coroutines = "1.7.3"
+kotlin = "2.0.0-Beta5"
+coroutines = "1.8.0"
 serialization = "1.6.2"
 voyager = "1.0.0"
 atomicfu = "0.21.0"
 ktor = "2.3.7"
 koin = "3.5.3"
-slf4j = "2.0.7"
+slf4j = "2.0.12"
 jsoup = "1.15.4"
-android-gradle-plugin = "8.2.1"
+android-gradle-plugin = "8.2.2"
 accompanist = "0.33.2-alpha"
 datastore = "1.0.0"
 libtorrent4j = "2.1.0-31"
 
-jetpack-compose = "1.6.1"
+# https://androidx.tech/artifacts/compose.material/material-android/
+jetpack-compose = "1.6.4"
 # https://androidx.dev/storage/compose-compiler/repository
-jetpack-compose-compiler = "1.5.11-dev-k2.0.0-Beta4-21f5e479a96" # used by android
+jetpack-compose-compiler = "1.5.11-dev-k2.0.0-Beta5-b5a216d0ac6" # used by android
 # https://github.com/JetBrains/compose-multiplatform/releases
 # https://www.jetbrains.com/help/kotlin-multiplatform-dev/compose-compatibility-and-versioning.html#use-a-developer-version-of-compose-multiplatform-compiler
-compose-multiplatform = "1.6.0-rc02"
+compose-multiplatform = "1.6.10-dev1551"
 # https://maven.pkg.jetbrains.space/public/p/compose/dev/org/jetbrains/compose/compiler/compiler/
-compose-multiplatform-compiler = "1.5.9-kt-2.0.0-Beta4"
+compose-multiplatform-compiler = "1.5.11-kt-2.0.0-Beta5"
 
 [libraries]
 # Build

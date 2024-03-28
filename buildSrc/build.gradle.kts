@@ -33,6 +33,12 @@ kotlin.sourceSets.all {
     }
 }
 
+kotlin {
+    compilerOptions {
+        optIn.add("org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi")
+    }
+}
+
 sourceSets.main {
     kotlin.srcDir("src")
     resources.srcDir("resources")

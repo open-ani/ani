@@ -24,6 +24,7 @@ import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.testing.Test
 import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.gradle.kotlin.dsl.*
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
@@ -194,11 +195,11 @@ fun Project.configureJvmTarget() {
     // 我也不知道到底设置谁就够了, 反正全都设置了
 
     tasks.withType(KotlinJvmCompile::class.java) {
-        kotlinOptions.jvmTarget = ver.toString()
+        compilerOptions.jvmTarget.set(JvmTarget.fromTarget(ver.toString()))
     }
 
     tasks.withType(KotlinCompile::class.java) {
-        kotlinOptions.jvmTarget = ver.toString()
+        compilerOptions.jvmTarget.set(JvmTarget.fromTarget(ver.toString()))
     }
 
     tasks.withType(JavaCompile::class.java) {
@@ -221,7 +222,11 @@ fun Project.configureJvmTarget() {
     withKotlinTargets {
         it.compilations.all {
             if (this is KotlinJvmAndroidCompilation) {
-                kotlinOptions.jvmTarget = ver.toString()
+                compileTaskProvider.configure {
+                    compilerOptions {
+                        jvmTarget.set(JvmTarget.fromTarget(ver.toString()))
+                    }
+                }
             }
         }
     }

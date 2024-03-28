@@ -16,8 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-@file:Suppress("JAVA_MODULE_DOES_NOT_EXPORT_PACKAGE")
-
 package me.him188.ani.app.interaction
 
 import androidx.compose.runtime.Composable

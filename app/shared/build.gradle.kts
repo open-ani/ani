@@ -17,7 +17,9 @@
  */
 
 @file:Suppress("UnstableApiUsage")
-@file:OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
+@file:OptIn(ExperimentalKotlinGradlePluginApi::class)
+
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 
 
 plugins {
@@ -35,10 +37,8 @@ kotlin {
     androidTarget()
     jvm("desktop")
 
-    targets.all {
-        compilations.all {
-            kotlinOptions.freeCompilerArgs += "-Xexpect-actual-classes"
-        }
+    compilerOptions {
+        freeCompilerArgs.add("-Xexpect-actual-classes")
     }
 
     sourceSets {
