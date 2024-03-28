@@ -40,8 +40,6 @@ compose.desktop {
                 add(TargetFormat.Deb)
                 add(TargetFormat.Rpm)
                 add(TargetFormat.Dmg)
-                add(TargetFormat.Exe)
-                add(TargetFormat.Msi)
                 if (getOs() == Os.Windows) {
                     add(TargetFormat.AppImage) // portable distribution (installation-free)
                 }
