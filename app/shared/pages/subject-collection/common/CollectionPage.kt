@@ -90,6 +90,8 @@ fun CollectionPage(contentPadding: PaddingValues = PaddingValues(0.dp)) {
         val scope = rememberCoroutineScope()
 
         Column(Modifier.padding(topBarPaddings).fillMaxSize()) {
+            val isLoading by vm.isLoading.collectAsStateWithLifecycle()
+
             SecondaryScrollableTabRow(
                 selectedTabIndex = pagerState.currentPage,
                 indicator = @Composable { tabPositions ->
@@ -104,13 +106,17 @@ fun CollectionPage(contentPadding: PaddingValues = PaddingValues(0.dp)) {
                         selected = pagerState.currentPage == index,
                         onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
                         text = {
-                            Text(text = collectionType.displayText())
+                            val type = COLLECTION_TABS[index]
+                            val collections by vm.collectionsByType(type)
+                            if (isLoading) {
+                                Text(text = collectionType.displayText())
+                            } else {
+                                Text(text = collectionType.displayText() + " " + collections.size)
+                            }
                         }
                     )
                 }
             }
-
-            val isLoading by vm.isLoading.collectAsStateWithLifecycle()
 
             HorizontalPager(state = pagerState, Modifier.fillMaxSize()) { index ->
                 val type = COLLECTION_TABS[index]
