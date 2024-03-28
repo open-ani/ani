@@ -303,7 +303,7 @@ private fun CollectionItemContent(
                     me.him188.ani.app.ui.foundation.Button(
                         onClick = onPlay,
                     ) {
-                        Text("继续观看 ${item.lastWatchedEpIndex + 1}")
+                        Text("继续观看 ${item.lastWatchedEpIndex + 2}")
                     }
                 }
 
