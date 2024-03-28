@@ -128,7 +128,7 @@ internal fun SelfInfo(selfInfo: User?, isLoggedIn: Boolean?, modifier: Modifier 
 
 @Preview
 @Composable
-private fun PreviewSelfInfo() {
+private fun PreviewSelfInfoCommon() {
     ProvideCompositionLocalsForPreview {
         SelfInfo(null, false)
     }
