@@ -4,10 +4,12 @@ import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.StarOutline
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -17,13 +19,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import me.him188.ani.app.ui.collection.CollectionPage
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.home.HomePage
@@ -34,7 +34,8 @@ import me.him188.ani.app.ui.profile.ProfilePage
 @Preview
 @Composable
 fun HomeScene() {
-    var selectedTab by remember { mutableStateOf("collection") }
+    val pages = rememberPagerState(1) { 3 }
+    val scope = rememberCoroutineScope()
     Scaffold(
         Modifier,
         bottomBar = {
@@ -49,30 +50,36 @@ fun HomeScene() {
 
                     NavigationBar {
                         NavigationBarItem(
-                            selectedTab == "home",
-                            {
-                                selectedTab = "home"
+                            pages.currentPage == 0,
+                            onClick = {
+                                scope.launch {
+                                    pages.scrollToPage(0)
+                                }
                                 closeSearch()
                             },
-                            icon = { Icon(Icons.Outlined.Home, null) },
+                            icon = { Icon(Icons.Default.Home, null) },
                             label = { Text(text = "首页") }
                         )
                         NavigationBarItem(
-                            selectedTab == "collection",
-                            {
-                                selectedTab = "collection"
+                            pages.currentPage == 1,
+                            onClick = {
+                                scope.launch {
+                                    pages.scrollToPage(1)
+                                }
                                 closeSearch()
                             },
-                            icon = { Icon(Icons.Outlined.StarOutline, null) },
+                            icon = { Icon(Icons.Default.Star, null) },
                             label = { Text(text = "追番") }
                         )
                         NavigationBarItem(
-                            selectedTab == "profile",
-                            {
-                                selectedTab = "profile"
+                            pages.currentPage == 2,
+                            onClick = {
+                                scope.launch {
+                                    pages.scrollToPage(2)
+                                }
                                 closeSearch()
                             },
-                            icon = { Icon(Icons.Outlined.Person, null) },
+                            icon = { Icon(Icons.Default.Person, null) },
                             label = { Text(text = "我的") }
                         )
                     }
@@ -116,10 +123,12 @@ fun HomeScene() {
         contentWindowInsets = WindowInsets(0.dp)
     ) { contentPadding ->
         CompositionLocalProvider(LocalContentPaddings provides contentPadding) {
-            when (selectedTab) {
-                "home" -> HomePage(contentPadding)
-                "collection" -> CollectionPage(contentPadding)
-                "profile" -> ProfilePage()
+            HorizontalPager(pages, userScrollEnabled = false) {
+                when (it) {
+                    0 -> HomePage(contentPadding)
+                    1 -> CollectionPage(contentPadding)
+                    2 -> ProfilePage()
+                }
             }
         }
     }

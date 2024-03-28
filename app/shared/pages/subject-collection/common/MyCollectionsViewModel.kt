@@ -1,13 +1,17 @@
 package me.him188.ani.app.ui.collection
 
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
@@ -25,6 +29,7 @@ import me.him188.ani.datasources.bangumi.processing.isOnAir
 import me.him188.ani.datasources.bangumi.processing.nameCNOrName
 import me.him188.ani.datasources.bangumi.processing.toCollectionType
 import me.him188.ani.datasources.bangumi.processing.toSubjectCollectionType
+import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.openapitools.client.models.EpType
@@ -57,6 +62,23 @@ class MyCollectionsViewModel : AbstractViewModel(), KoinComponent, ViewModelAuth
     }.localCachedStateFlow(null)
 
     @Stable
+    private val _collectionsByType: Map<CollectionType, Flow<List<SubjectCollectionItem>>> =
+        CollectionType.entries.associateWith { type ->
+            collections.map {
+                it.orEmpty().filter { collection -> collection.collectionType == type }
+            }
+        }
+
+    @Composable
+    fun collectionsByType(type: CollectionType): State<List<SubjectCollectionItem>> {
+        val state = (_collectionsByType[type] ?: emptyFlow()) // 不应该是 null, 但 defensive
+            .collectAsStateWithLifecycle(
+                collections.value.orEmpty().filter { collection -> collection.collectionType == type }
+            )
+        return state
+    }
+
+    @Stable
     val collectionsListState = LazyListState()
 
 
@@ -82,8 +104,12 @@ class MyCollectionsViewModel : AbstractViewModel(), KoinComponent, ViewModelAuth
     }
 
     suspend fun updateSubjectCollection(subjectId: Int, action: SubjectCollectionAction) {
-        collections.value?.find { it.subjectId == subjectId }?.let {
-            it.collectionType = action.type
+        collections.value = collections.value?.map { item ->
+            if (item.subjectId == subjectId) {
+                item.copy(collectionType = action.type.toSubjectCollectionType())
+            } else {
+                item
+            }
         }
         subjectRepository.setSubjectCollectionTypeOrDelete(subjectId, action.type.toSubjectCollectionType())
     }
@@ -139,9 +165,9 @@ class SubjectCollectionItem(
     val lastWatchedEpIndex: Int?,
 
     episodes: List<UserEpisodeCollection>,
-    collectionType: SubjectCollectionType,
+    collectionType: SubjectCollectionType?,
 ) {
-    var collectionType: CollectionType by mutableStateOf(collectionType.toCollectionType())
+    val collectionType: CollectionType = collectionType.toCollectionType()
     var episodes by mutableStateOf(episodes)
 
     val latestEpIndex: Int? = episodes.indexOfFirst { it.episode.id == latestEp?.episode?.id }.takeIf { it != -1 }
@@ -157,6 +183,32 @@ class SubjectCollectionItem(
     }
 
     val serialProgress = "全 $totalEps 话"
+
+    fun copy(
+        subjectId: Int = this.subjectId,
+        displayName: String = this.displayName,
+        image: String = this.image,
+        rate: Int? = this.rate,
+        date: String? = this.date,
+        totalEps: Int = this.totalEps,
+        isOnAir: Boolean = this.isOnAir,
+        latestEp: UserEpisodeCollection? = this.latestEp,
+        lastWatchedEpIndex: Int? = this.lastWatchedEpIndex,
+        episodes: List<UserEpisodeCollection> = this.episodes,
+        collectionType: SubjectCollectionType? = this.collectionType.toSubjectCollectionType(),
+    ) = SubjectCollectionItem(
+        subjectId = subjectId,
+        displayName = displayName,
+        image = image,
+        rate = rate,
+        date = date,
+        totalEps = totalEps,
+        isOnAir = isOnAir,
+        latestEp = latestEp,
+        lastWatchedEpIndex = lastWatchedEpIndex,
+        episodes = episodes,
+        collectionType = collectionType,
+    )
 }
 
 private fun UserSubjectCollection.createItem(
