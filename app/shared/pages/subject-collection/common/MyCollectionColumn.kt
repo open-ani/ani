@@ -23,7 +23,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.MoreVert
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -37,7 +36,6 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -68,6 +66,7 @@ fun MyCollectionColumn(
     collections: List<SubjectCollectionItem>,
     viewModel: MyCollectionsViewModel,
     contentPadding: PaddingValues,
+    doneButton: (item: SubjectCollectionItem) -> (@Composable () -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
     val spacedBy = 16.dp
@@ -109,15 +108,16 @@ fun MyCollectionColumn(
                     onClickEpisode = {
                         navigator.navigateEpisodeDetails(collection.subjectId, it.episode.id)
                     },
-                    onLongClickEpisode = {
+                    onLongClickEpisode = { item ->
                         viewModel.launchInBackground {
-                            viewModel.setEpisodeWatched(
+                            setEpisodeWatched(
                                 collection.subjectId,
-                                it.episode.id,
-                                it.type != EpisodeCollectionType.WATCHED
+                                item.episode.id,
+                                watched = item.type != EpisodeCollectionType.WATCHED
                             )
                         }
                     },
+                    doneButton = doneButton(collection),
                     viewModel,
                 )
             }
@@ -142,6 +142,7 @@ private fun CollectionItem(
     onClick: () -> Unit,
     onClickEpisode: (episode: UserEpisodeCollection) -> Unit,
     onLongClickEpisode: (episode: UserEpisodeCollection) -> Unit,
+    doneButton: @Composable (() -> Unit)?,
     viewModel: MyCollectionsViewModel,
     modifier: Modifier = Modifier,
 ) {
@@ -165,6 +166,7 @@ private fun CollectionItem(
                     item,
                     onClickEpisode,
                     onLongClickEpisode,
+                    doneButton,
                     viewModel,
                     Modifier.fillMaxSize()
                         .padding(start = 16.dp),
@@ -197,10 +199,10 @@ private fun CollectionItemContent(
     item: SubjectCollectionItem,
     onClickEpisode: (episode: UserEpisodeCollection) -> Unit,
     onLongClickEpisode: (episode: UserEpisodeCollection) -> Unit,
+    doneButton: (@Composable () -> Unit)?,
     viewModel: MyCollectionsViewModel,
     modifier: Modifier = Modifier,
 ) {
-    val onClickEpisodeState by rememberUpdatedState(onClickEpisode)
     Column(modifier) {
         // 标题和右上角菜单
         Row(
@@ -262,8 +264,8 @@ private fun CollectionItemContent(
             ) {
                 EpisodeProgressRow(
                     item = item,
-                    onClickEpisodeState = {},
-                    onLongClickEpisode = {}
+                    onClickEpisodeState = onClickEpisode,
+                    onLongClickEpisode = onLongClickEpisode
                 )
             }
         }
@@ -308,35 +310,10 @@ private fun CollectionItemContent(
                 }
 
                 else -> {
-                    Button(
-                        {},
-                        enabled = false
-                    ) {
-                        Text("已看完", style = MaterialTheme.typography.labelLarge)
-                    }
+                    doneButton?.invoke()
                 }
             }
         }
-
-//        // 剧集列表
-//        EpisodeProgressRow(
-//            item, onClickEpisodeState,
-//            onLongClickEpisode,
-//            Modifier.padding(top = 4.dp).weight(1f)
-//        )
-
-//                val tags = item.subject?.tags
-//
-//                Box(Modifier.height(28.dp).clip(RectangleShape)) {
-//                    FlowRow(
-//                        Modifier.padding(top = 8.dp),
-//                        horizontalArrangement = Arrangement.spacedBy(3.dp),
-//                    ) {
-//                        for (tag in tags.orEmpty()) {
-//                            Tag { Text(tag.name, style = MaterialTheme.typography.labelMedium) }
-//                        }
-//                    }
-//                }
     }
 }
 

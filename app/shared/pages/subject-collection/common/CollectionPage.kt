@@ -30,6 +30,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SecondaryScrollableTabRow
@@ -46,6 +47,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.profile.UnauthorizedTips
@@ -111,7 +113,8 @@ fun CollectionPage(contentPadding: PaddingValues = PaddingValues(0.dp)) {
             val isLoading by vm.isLoading.collectAsStateWithLifecycle()
 
             HorizontalPager(state = pagerState, Modifier.fillMaxSize()) { index ->
-                val collections by vm.collectionsByType(COLLECTION_TABS[index])
+                val type = COLLECTION_TABS[index]
+                val collections by vm.collectionsByType(type)
                 if (collections.isEmpty()) {
                     Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
                         Spacer(Modifier.height(32.dp))
@@ -134,6 +137,26 @@ fun CollectionPage(contentPadding: PaddingValues = PaddingValues(0.dp)) {
                         collections,
                         vm,
                         contentPadding,
+                        doneButton = {
+                            if (type == CollectionType.Done) {
+                                null
+                            } else {
+                                {
+                                    FilledTonalButton(
+                                        {
+                                            vm.launchInBackground {
+                                                updateSubjectCollection(
+                                                    it.subjectId,
+                                                    SubjectCollectionActions.Done
+                                                )
+                                            }
+                                        },
+                                    ) {
+                                        Text("移至\"看过\"")
+                                    }
+                                }
+                            }
+                        },
                         Modifier.fillMaxSize()
                     )
                 }

@@ -51,6 +51,11 @@ fun Color.stronglyWeaken(): Color {
 }
 
 @Composable
+fun Color.disabledWeaken(): Color {
+    return copy(alpha = 0.12f)
+}
+
+@Composable
 fun aniColorScheme(
     dark: Boolean = isSystemInDarkTheme()
 ): ColorScheme {

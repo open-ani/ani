@@ -1,6 +1,5 @@
 package me.him188.ani.app.ui.collection
 
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
@@ -77,9 +76,6 @@ class MyCollectionsViewModel : AbstractViewModel(), KoinComponent, ViewModelAuth
             )
         return state
     }
-
-    @Stable
-    val collectionsListState = LazyListState()
 
 
     private suspend fun UserSubjectCollection.convertToItem() = coroutineScope {
@@ -170,7 +166,9 @@ class SubjectCollectionItem(
     val collectionType: CollectionType = collectionType.toCollectionType()
     var episodes by mutableStateOf(episodes)
 
-    val latestEpIndex: Int? = episodes.indexOfFirst { it.episode.id == latestEp?.episode?.id }.takeIf { it != -1 }
+    val latestEpIndex: Int? = episodes.indexOfFirst { it.episode.id == latestEp?.episode?.id }
+        .takeIf { it != -1 }
+        ?: episodes.lastIndex.takeIf { it != -1 }
 
     val onAirDescription = if (isOnAir) {
         if (latestEp == null) {
