@@ -5,6 +5,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.runBlocking
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import org.openapitools.client.models.Episode
@@ -20,6 +21,7 @@ internal actual fun PreviewCollectionPage() {
         rememberViewModel {
             MyCollectionsViewModel().apply {
                 isLoading.value = false
+                runBlocking { isLoggedIn.emit(true) }
                 collections.value = testCollections()
             }
         }
@@ -81,7 +83,7 @@ private fun testCollections(): List<SubjectCollectionItem> {
                 latestEp = latestEp,
                 lastWatchedEpIndex = null,
                 episodes = eps,
-                collectionType = SubjectCollectionType.Wish
+                collectionType = SubjectCollectionType.Doing
             )
         )
         add(
@@ -96,13 +98,28 @@ private fun testCollections(): List<SubjectCollectionItem> {
                 latestEp = latestEp,
                 lastWatchedEpIndex = 0,
                 episodes = eps,
-                collectionType = SubjectCollectionType.Wish
+                collectionType = SubjectCollectionType.Doing
             )
         )
         add(
             SubjectCollectionItem(
                 subjectId = id++,
                 displayName = "葬送的芙莉莲 3",
+                image = "",
+                rate = null,
+                date = "2023 年 10 月",
+                totalEps = 2,
+                isOnAir = true,
+                latestEp = latestEp,
+                lastWatchedEpIndex = 1,
+                episodes = eps,
+                collectionType = SubjectCollectionType.Doing
+            )
+        )
+        add(
+            SubjectCollectionItem(
+                subjectId = id++,
+                displayName = "葬送的芙莉莲 4",
                 image = "",
                 rate = null,
                 date = "2023 年 10 月",

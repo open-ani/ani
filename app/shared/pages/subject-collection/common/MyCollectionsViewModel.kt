@@ -45,7 +45,7 @@ class MyCollectionsViewModel : AbstractViewModel(), KoinComponent, ViewModelAuth
     private val episodeRepository: EpisodeRepository by inject()
 
     @Stable
-    val isLoggedIn = sessionManager.isSessionValid.filterNotNull().shareInBackground()
+    val isLoggedIn = sessionManager.isSessionValid.filterNotNull().localCachedSharedFlow()
 
     @Stable
     val isLoading = MutableStateFlow(true)

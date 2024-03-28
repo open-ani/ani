@@ -169,23 +169,8 @@ private fun CollectionItem(
                     doneButton,
                     viewModel,
                     Modifier.fillMaxSize()
-                        .padding(start = 16.dp),
+                        .padding(start = 12.dp),
                 )
-
-                Box(Modifier.padding(all = 15.dp).align(Alignment.TopEnd)) {
-
-//                    FilledTonalButton(
-//                        onClick = { },
-//                        Modifier.width(64.dp).height(32.dp),
-//                        colors = ButtonDefaults.filledTonalButtonColors(
-//                            containerColor = MaterialTheme.colorScheme.secondary,
-//                            contentColor = MaterialTheme.colorScheme.onSecondary,
-//                        ),
-//                        shape = RoundedCornerShape(bottomStart = 4.dp),
-//                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 2.dp),
-//                    ) {
-//                    }
-                }
             }
         }
     }
@@ -272,8 +257,8 @@ private fun CollectionItemContent(
 
         Row(
             Modifier
-                .padding(vertical = 16.dp)
-                .padding(horizontal = 16.dp)
+                .padding(vertical = 12.dp)
+                .padding(horizontal = 12.dp)
                 .align(Alignment.End),
             verticalAlignment = Alignment.CenterVertically
         ) {
