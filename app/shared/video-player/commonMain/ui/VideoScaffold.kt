@@ -4,11 +4,10 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.BoxWithConstraintsScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -24,7 +23,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -34,6 +32,7 @@ import me.him188.ani.app.platform.isInLandscapeMode
 import me.him188.ani.app.ui.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.theme.slightlyWeaken
 import me.him188.ani.app.videoplayer.VideoPlayerView
+import me.him188.ani.app.videoplayer.ui.guesture.VideoGestureHost
 
 /**
  * 视频播放器框架, 可以自定义组合控制器等部分.
@@ -42,14 +41,15 @@ import me.him188.ani.app.videoplayer.VideoPlayerView
  *
  * - 悬浮消息: [floatingMessage], 例如正在缓冲
  * - 控制器: [topBar] 和 [bottomBar]
+ * - 手势: [gestureHost]
  * - 弹幕: [danmakuHost]
  * - 视频: [video]
  *
  * @param controllersVisible 是否展示 [topBar] 和 [bottomBar]
- * @param onControllersVisibleChange 当用户点击屏幕的回调
  * @param topBar [PlayerNavigationBar]
  * @param video [VideoPlayerView]. video 不会接受到点击事件.
  * @param danmakuHost 为 `DanmakuHost` 留的区域
+ * @param gestureHost 手势区域, 例如快进/快退, 音量调节等. See [VideoGestureHost]
  * @param floatingMessage 悬浮消息, 例如正在缓冲. 将会对齐到中央
  * @param bottomBar [PlayerProgressController]
  * @param isFullscreen 当前是否处于全屏模式. 全屏时此框架会 [Modifier.fillMaxSize], 否则会限制为一个 16:9 的框.
@@ -57,13 +57,13 @@ import me.him188.ani.app.videoplayer.VideoPlayerView
 @Composable
 fun VideoScaffold(
     controllersVisible: Boolean = true,
-    onControllersVisibleChange: (Boolean) -> Unit,
     topBar: @Composable RowScope.() -> Unit = {},
     /**
      * @see VideoPlayerView
      */
     video: @Composable BoxScope.() -> Unit = {},
     danmakuHost: @Composable BoxScope.() -> Unit = {},
+    gestureHost: @Composable BoxWithConstraintsScope.() -> Unit = {},
     floatingMessage: @Composable BoxScope.() -> Unit = {},
     /**
      * @see PlayerProgressController
@@ -89,13 +89,6 @@ fun VideoScaffold(
             Box(
                 Modifier
                     .background(Color.Transparent)
-                    .clickable(
-                        remember { MutableInteractionSource() },
-                        indication = null,
-                        onClick = {
-                            onControllersVisibleChange(!controllersVisible)
-                        }
-                    )
                     .matchParentSize()
             ) {
                 video()
@@ -107,6 +100,11 @@ fun VideoScaffold(
                 CompositionLocalProvider(LocalContentColor provides aniDarkColorTheme().onBackground) {
                     danmakuHost()
                 }
+            }
+
+            // 控制手势
+            BoxWithConstraints(Modifier.matchParentSize(), contentAlignment = Alignment.Center) {
+                gestureHost()
             }
 
             Column(Modifier.fillMaxSize().background(Color.Transparent)) {

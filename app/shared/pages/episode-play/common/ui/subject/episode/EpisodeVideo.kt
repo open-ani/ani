@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -16,10 +17,13 @@ import me.him188.ani.app.platform.AniBuildConfig
 import me.him188.ani.app.platform.isInLandscapeMode
 import me.him188.ani.app.videoplayer.PlayerController
 import me.him188.ani.app.videoplayer.VideoPlayerView
+import me.him188.ani.app.videoplayer.togglePause
 import me.him188.ani.app.videoplayer.ui.PlayerNavigationBar
 import me.him188.ani.app.videoplayer.ui.PlayerProgressController
 import me.him188.ani.app.videoplayer.ui.VideoLoadingIndicator
 import me.him188.ani.app.videoplayer.ui.VideoScaffold
+import me.him188.ani.app.videoplayer.ui.guesture.VideoGestureHost
+import me.him188.ani.app.videoplayer.ui.guesture.rememberSwipeSeekerState
 import me.him188.ani.danmaku.ui.DanmakuHost
 import me.him188.ani.danmaku.ui.DanmakuHostState
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
@@ -40,11 +44,11 @@ internal fun EpisodeVideo(
     modifier: Modifier = Modifier,
     isFullscreen: Boolean = isInLandscapeMode(),
 ) {
-    val controllerVisible by playerController.controllerVisible.collectAsStateWithLifecycle()
+    // Don't rememberSavable. 刻意让每次切换都是隐藏的
+    var controllerVisible by remember { mutableStateOf(false) }
 
     VideoScaffold(
         controllersVisible = controllerVisible,
-        onControllersVisibleChange = { playerController.setControllerVisible(it) },
         topBar = {
             PlayerNavigationBar(
                 title = if (isFullscreen) {
@@ -57,11 +61,16 @@ internal fun EpisodeVideo(
         video = {
             VideoPlayerView(playerController, Modifier.matchParentSize())
         },
-        bottomBar = {
-            PlayerProgressController(
-                controller = playerController,
-                isFullscreen = isFullscreen,
-                onClickFullscreen = onClickFullScreen,
+        danmakuHost = {
+            DanmakuHost(danmakuHostState, Modifier.matchParentSize())
+        },
+        gestureHost = {
+            VideoGestureHost(
+                rememberSwipeSeekerState(constraints.maxWidth) {
+                    playerController.seekTo(playerController.playedDuration.value + it.seconds)
+                },
+                onClickScreen = { controllerVisible = !controllerVisible },
+                onDoubleClickScreen = { playerController.togglePause() },
             )
         },
         floatingMessage = {
@@ -77,8 +86,12 @@ internal fun EpisodeVideo(
                 }
             }
         },
-        danmakuHost = {
-            DanmakuHost(danmakuHostState, Modifier.matchParentSize())
+        bottomBar = {
+            PlayerProgressController(
+                controller = playerController,
+                isFullscreen = isFullscreen,
+                onClickFullscreen = onClickFullScreen,
+            )
         },
         modifier = modifier,
         isFullscreen = isFullscreen

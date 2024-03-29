@@ -11,6 +11,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.preview.PHONE_LANDSCAPE
 import me.him188.ani.app.videoplayer.DummyPlayerController
+import me.him188.ani.app.videoplayer.ui.guesture.VideoGestureHost
+import me.him188.ani.app.videoplayer.ui.guesture.rememberSwipeSeekerState
 
 @Preview(device = PHONE_LANDSCAPE)
 @Composable
@@ -25,7 +27,6 @@ private fun PreviewVideoScaffoldFullscreen() = ProvideCompositionLocalsForPrevie
 
     VideoScaffold(
         controllersVisible = controllerVisible,
-        onControllersVisibleChange = { controller.setControllerVisible(it) },
         topBar = {
             PlayerNavigationBar(
                 title = { Text(text = "Title") },
@@ -36,11 +37,15 @@ private fun PreviewVideoScaffoldFullscreen() = ProvideCompositionLocalsForPrevie
         video = {
 //            AniKamelImage(resource = asyncPainterResource(data = "https://picsum.photos/536/354"))
         },
-        bottomBar = {
-            PlayerProgressController(
-                controller = controller,
-                isFullscreen = true,
-                onClickFullscreen = {},
+        danmakuHost = {
+        },
+        gestureHost = {
+            VideoGestureHost(
+                rememberSwipeSeekerState(constraints.maxWidth) {
+
+                },
+                onClickScreen = {},
+                onDoubleClickScreen = {}
             )
         },
         floatingMessage = {
@@ -49,7 +54,12 @@ private fun PreviewVideoScaffoldFullscreen() = ProvideCompositionLocalsForPrevie
             }
 
         },
-        danmakuHost = {
+        bottomBar = {
+            PlayerProgressController(
+                controller = controller,
+                isFullscreen = true,
+                onClickFullscreen = {},
+            )
         },
         modifier = Modifier,
         isFullscreen = true,

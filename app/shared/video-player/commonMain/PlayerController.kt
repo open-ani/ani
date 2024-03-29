@@ -81,17 +81,15 @@ interface PlayerController {
      * 跳转到指定位置
      */
     fun seekTo(duration: Duration)
-
-
-    @Stable
-    val controllerVisible: StateFlow<Boolean>
-
-    fun setControllerVisible(visible: Boolean)
 }
 
-fun PlayerController.showController() = setControllerVisible(true)
-
-fun PlayerController.hideController() = setControllerVisible(false)
+fun PlayerController.togglePause() {
+    if (state.value.isPlaying) {
+        pause()
+    } else {
+        resume()
+    }
+}
 
 abstract class AbstractPlayerController : PlayerController, AbstractViewModel() {
     override val isBuffering: Flow<Boolean> by lazy {
@@ -143,12 +141,6 @@ abstract class AbstractPlayerController : PlayerController, AbstractViewModel() 
     @CallSuper
     final override fun seekTo(duration: Duration) {
         seekToDebouncer.value = duration
-    }
-
-    final override val controllerVisible: MutableStateFlow<Boolean> = MutableStateFlow(false)
-
-    final override fun setControllerVisible(visible: Boolean) {
-        controllerVisible.value = visible
     }
 }
 
