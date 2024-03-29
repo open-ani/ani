@@ -60,7 +60,8 @@ internal fun EpisodeVideo(
         bottomBar = {
             PlayerProgressController(
                 controller = playerController,
-                onClickFullScreen = onClickFullScreen,
+                isFullscreen = isFullscreen,
+                onClickFullscreen = onClickFullScreen,
             )
         },
         floatingMessage = {

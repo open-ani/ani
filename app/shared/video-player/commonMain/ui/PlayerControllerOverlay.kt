@@ -90,7 +90,8 @@ internal fun PreviewPlayerControllerOverlayImpl() {
                 bottomBar = {
                     PlayerProgressController(
                         controller = controller,
-                        onClickFullScreen = {},
+                        isFullscreen = true,
+                        onClickFullscreen = {},
                         Modifier
                             .fillMaxWidth()
                             .height(48.dp)

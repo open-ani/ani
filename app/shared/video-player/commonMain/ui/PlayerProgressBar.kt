@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Fullscreen
+import androidx.compose.material.icons.rounded.FullscreenExit
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material3.Icon
@@ -31,7 +32,8 @@ import kotlin.time.Duration.Companion.milliseconds
 @Composable
 fun PlayerProgressController(
     controller: PlayerController,
-    onClickFullScreen: () -> Unit,
+    isFullscreen: Boolean,
+    onClickFullscreen: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -50,14 +52,13 @@ fun PlayerProgressController(
                 },
             ) {
                 if (state?.isPlaying == true) {
-                    Icon(Icons.Rounded.Pause, contentDescription = null)
+                    Icon(Icons.Rounded.Pause, contentDescription = "Pause")
                 } else {
-                    Icon(Icons.Rounded.PlayArrow, contentDescription = null)
+                    Icon(Icons.Rounded.PlayArrow, contentDescription = "Play")
                 }
             }
         }
 
-        val bufferProgress by controller.bufferProgress.collectAsStateWithLifecycle()
         val videoProperties by controller.videoProperties.collectAsStateWithLifecycle(null)
         val playedDuration by controller.playedDuration.collectAsStateWithLifecycle()
         val sliderPosition by controller.previewingOrPlayingProgress.collectAsStateWithLifecycle(0f)
@@ -107,11 +108,15 @@ fun PlayerProgressController(
             )
         }
 
-        Box(Modifier.padding(horizontal = 8.dp)) {
+        Box(Modifier.padding(end = 8.dp)) {
             IconButton(
-                onClick = onClickFullScreen,
+                onClick = onClickFullscreen,
             ) {
-                Icon(Icons.Rounded.Fullscreen, contentDescription = null)
+                if (isFullscreen) {
+                    Icon(Icons.Rounded.FullscreenExit, contentDescription = "Exit Fullscreen")
+                } else {
+                    Icon(Icons.Rounded.Fullscreen, contentDescription = "Enter Fullscreen")
+                }
             }
         }
     }

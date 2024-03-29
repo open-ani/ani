@@ -14,7 +14,7 @@ import me.him188.ani.app.videoplayer.DummyPlayerController
 
 @Preview(device = PHONE_LANDSCAPE)
 @Composable
-private fun PreviewVideoScaffold() = ProvideCompositionLocalsForPreview {
+private fun PreviewVideoScaffoldFullscreen() = ProvideCompositionLocalsForPreview {
     val controller = remember {
         DummyPlayerController()
     }
@@ -39,7 +39,8 @@ private fun PreviewVideoScaffold() = ProvideCompositionLocalsForPreview {
         bottomBar = {
             PlayerProgressController(
                 controller = controller,
-                onClickFullScreen = {},
+                isFullscreen = true,
+                onClickFullscreen = {},
             )
         },
         floatingMessage = {
