@@ -23,7 +23,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
-import me.him188.ani.app.ui.foundation.TopAppBarGoBackButton
 import me.him188.ani.app.ui.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.theme.slightlyWeaken
 import me.him188.ani.app.videoplayer.DummyPlayerController
@@ -80,8 +79,8 @@ internal fun PreviewPlayerControllerOverlayImpl() {
             PlayerControllerOverlay(
                 topBar = {
                     PlayerNavigationBar(
+                        title = null,
                         actions = {
-                            TopAppBarGoBackButton {}
                         },
                         Modifier
                             .fillMaxWidth()

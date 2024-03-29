@@ -3,11 +3,10 @@ package me.him188.ani.app.videoplayer.ui
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Fullscreen
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.rounded.Fullscreen
+import androidx.compose.material.icons.rounded.Pause
+import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -21,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.theme.aniDarkColorTheme
 import me.him188.ani.app.videoplayer.PlayerController
@@ -39,7 +39,7 @@ fun PlayerProgressController(
     ) {
         // 播放 / 暂停按钮
         val state by controller.state.collectAsStateWithLifecycle(null)
-        Box(Modifier.padding(horizontal = 8.dp).size(32.dp)) {
+        Box(Modifier.padding(horizontal = 8.dp)) {
             IconButton(
                 onClick = {
                     if (state?.isPlaying == true) {
@@ -50,9 +50,9 @@ fun PlayerProgressController(
                 },
             ) {
                 if (state?.isPlaying == true) {
-                    Icon(Icons.Default.Pause, contentDescription = null)
+                    Icon(Icons.Rounded.Pause, contentDescription = null)
                 } else {
-                    Icon(Icons.Default.PlayArrow, contentDescription = null)
+                    Icon(Icons.Rounded.PlayArrow, contentDescription = null)
                 }
             }
         }
@@ -99,7 +99,7 @@ fun PlayerProgressController(
                         it,
                         colors = SliderDefaults.colors(
                             activeTrackColor = aniDarkColorTheme().secondary,
-                            inactiveTrackColor = aniDarkColorTheme().surface,
+                            inactiveTrackColor = Color.DarkGray,
                         )
                     )
                 },
@@ -107,11 +107,11 @@ fun PlayerProgressController(
             )
         }
 
-        Box(Modifier.padding(horizontal = 8.dp).size(32.dp)) {
+        Box(Modifier.padding(horizontal = 8.dp)) {
             IconButton(
                 onClick = onClickFullScreen,
             ) {
-                Icon(Icons.Default.Fullscreen, contentDescription = null)
+                Icon(Icons.Rounded.Fullscreen, contentDescription = null)
             }
         }
     }

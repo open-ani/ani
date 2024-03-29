@@ -152,7 +152,9 @@ fun EpisodePageContent(
                 .then(if (isFullscreen) Modifier.fillMaxSize() else Modifier.statusBarsPadding())
         ) {
             EpisodeVideo(
-                selected, videoReady, viewModel.playerController,
+                selected, videoReady,
+                viewModel.episodeTitle.collectAsStateWithLifecycle("").value,
+                viewModel.playerController,
                 danmakuHostState = rememberDanmakuHostState(viewModel.danmakuFlow),
                 onClickFullScreen = {
                     if (isFullscreen) {
