@@ -34,7 +34,7 @@ fun Color.looming(): Color {
 
 @Composable
 fun Color.slightlyWeaken(): Color {
-    return copy(alpha = 1 - 0.38f)
+    return copy(alpha = 0.618f)
 }
 
 @Composable
@@ -42,12 +42,9 @@ fun Color.weaken(): Color {
     return copy(alpha = 0.5f)
 }
 
-/**
- * 把颜色变得很浅
- */
 @Composable
 fun Color.stronglyWeaken(): Color {
-    return copy(alpha = 0.38f)
+    return copy(alpha = 1 - 0.618f)
 }
 
 @Composable
