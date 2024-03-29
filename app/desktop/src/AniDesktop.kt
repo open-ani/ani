@@ -175,6 +175,7 @@ private fun MainWindowContent(
             Modifier.background(color = AppTheme.colorScheme.background)
                 .statusBarsPadding()
                 .padding(top = if (hostIsMacOs && windowImmersed) 28.dp else 0.dp) // safe area for macOS if windowImmersed
+                .fillMaxSize()
         ) {
             BoxWithConstraints(Modifier.fillMaxSize()) {
                 val paddingByWindowSize by animateDpAsState(

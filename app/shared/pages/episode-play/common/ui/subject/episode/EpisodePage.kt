@@ -41,11 +41,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -65,7 +69,6 @@ import me.him188.ani.app.platform.Context
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.setRequestFullScreen
 import me.him188.ani.app.ui.external.placeholder.placeholder
-import me.him188.ani.app.ui.foundation.LocalSnackbar
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.effects.OnLifecycleEvent
 import me.him188.ani.app.ui.foundation.effects.ScreenOnEffect
@@ -81,6 +84,10 @@ import org.openapitools.client.models.EpisodeCollectionType
 
 private val PAGE_HORIZONTAL_PADDING = 16.dp
 
+private val LocalSnackbar = compositionLocalOf<SnackbarHostState> {
+    error("No SnackbarHostState provided")
+}
+
 /**
  * 番剧详情 (播放) 页面
  */
@@ -89,13 +96,19 @@ fun EpisodePage(
     viewModel: EpisodeViewModel,
     modifier: Modifier = Modifier,
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
     Scaffold(
+        snackbarHost = {
+            SnackbarHost(snackbarHostState, Modifier.navigationBarsPadding())
+        },
         contentWindowInsets = WindowInsets(0.dp)
     ) {
-        EpisodePageContent(
-            viewModel,
-            modifier
-        )
+        CompositionLocalProvider(LocalSnackbar provides snackbarHostState) {
+            EpisodePageContent(
+                viewModel,
+                modifier
+            )
+        }
     }
 }
 

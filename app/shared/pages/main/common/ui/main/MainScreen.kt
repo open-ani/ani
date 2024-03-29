@@ -1,11 +1,13 @@
 package me.him188.ani.app.ui.main
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.LocalNavigator
@@ -34,7 +36,7 @@ val LocalContentPaddings: ProvidableCompositionLocal<PaddingValues> = androidx.c
 fun MainScreen(aniNavigator: AniNavigator) {
     val navigator = rememberNavigator()
     CompositionLocalProvider(LocalNavigator provides aniNavigator) {
-        NavHost(navigator, initialRoute = "/home") {
+        NavHost(navigator, initialRoute = "/home", modifier = Modifier.fillMaxSize()) {
             scene("/home") {
                 HomeScene()
             }
