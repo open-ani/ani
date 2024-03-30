@@ -14,6 +14,7 @@ import me.him188.ani.app.ui.subject.episode.components.EpisodePlayerTitle
 import me.him188.ani.app.videoplayer.DummyPlayerController
 import me.him188.ani.app.videoplayer.ui.guesture.VideoGestureHost
 import me.him188.ani.app.videoplayer.ui.guesture.rememberSwipeSeekerState
+import me.him188.ani.app.videoplayer.ui.top.PlayerTopBar
 
 @Preview(device = PHONE_LANDSCAPE)
 @Composable
@@ -29,7 +30,7 @@ private fun PreviewVideoScaffoldFullscreen() = ProvideCompositionLocalsForPrevie
     VideoScaffold(
         controllersVisible = controllerVisible,
         topBar = {
-            PlayerNavigationBar(
+            PlayerTopBar(
                 title = {
                     EpisodePlayerTitle(
                         ep = "28",

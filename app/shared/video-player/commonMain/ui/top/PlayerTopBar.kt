@@ -1,4 +1,4 @@
-package me.him188.ani.app.videoplayer.ui
+package me.him188.ani.app.videoplayer.ui.top
 
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,7 +20,7 @@ import me.him188.ani.app.ui.theme.aniDarkColorTheme
  * 播放器顶部导航栏
  */
 @Composable
-fun PlayerNavigationBar(
+fun PlayerTopBar(
     title: @Composable (() -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {},
     modifier: Modifier = Modifier,

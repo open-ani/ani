@@ -18,12 +18,12 @@ import me.him188.ani.app.platform.isInLandscapeMode
 import me.him188.ani.app.videoplayer.PlayerController
 import me.him188.ani.app.videoplayer.VideoPlayerView
 import me.him188.ani.app.videoplayer.togglePause
-import me.him188.ani.app.videoplayer.ui.PlayerNavigationBar
 import me.him188.ani.app.videoplayer.ui.PlayerProgressController
 import me.him188.ani.app.videoplayer.ui.VideoLoadingIndicator
 import me.him188.ani.app.videoplayer.ui.VideoScaffold
 import me.him188.ani.app.videoplayer.ui.guesture.VideoGestureHost
 import me.him188.ani.app.videoplayer.ui.guesture.rememberSwipeSeekerState
+import me.him188.ani.app.videoplayer.ui.top.PlayerTopBar
 import me.him188.ani.danmaku.ui.DanmakuHost
 import me.him188.ani.danmaku.ui.DanmakuHostState
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
@@ -51,7 +51,7 @@ internal fun EpisodeVideo(
     VideoScaffold(
         controllersVisible = controllerVisible,
         topBar = {
-            PlayerNavigationBar(
+            PlayerTopBar(
                 title = if (isFullscreen) {
                     { title() }
                 } else {

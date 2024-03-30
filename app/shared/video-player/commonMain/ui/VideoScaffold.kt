@@ -33,6 +33,7 @@ import me.him188.ani.app.ui.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.theme.slightlyWeaken
 import me.him188.ani.app.videoplayer.VideoPlayerView
 import me.him188.ani.app.videoplayer.ui.guesture.VideoGestureHost
+import me.him188.ani.app.videoplayer.ui.top.PlayerTopBar
 
 /**
  * 视频播放器框架, 可以自定义组合控制器等部分.
@@ -46,7 +47,7 @@ import me.him188.ani.app.videoplayer.ui.guesture.VideoGestureHost
  * - 视频: [video]
  *
  * @param controllersVisible 是否展示 [topBar] 和 [bottomBar]
- * @param topBar [PlayerNavigationBar]
+ * @param topBar [PlayerTopBar]
  * @param video [VideoPlayerView]. video 不会接受到点击事件.
  * @param danmakuHost 为 `DanmakuHost` 留的区域
  * @param gestureHost 手势区域, 例如快进/快退, 音量调节等. See [VideoGestureHost]
