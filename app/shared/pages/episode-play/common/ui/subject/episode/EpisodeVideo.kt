@@ -32,12 +32,13 @@ import kotlin.time.Duration.Companion.seconds
 
 /**
  * 剧集详情页面顶部的视频控件.
+ * @param title 仅在全屏时显示的标题
  */
 @Composable
 internal fun EpisodeVideo(
     videoSourceSelected: Boolean,
     videoReady: Boolean,
-    videoTitle: String,
+    title: @Composable () -> Unit,
     playerController: PlayerController,
     danmakuHostState: DanmakuHostState,
     onClickFullScreen: () -> Unit,
@@ -52,7 +53,7 @@ internal fun EpisodeVideo(
         topBar = {
             PlayerNavigationBar(
                 title = if (isFullscreen) {
-                    { Text(videoTitle) }
+                    { title() }
                 } else {
                     null
                 },

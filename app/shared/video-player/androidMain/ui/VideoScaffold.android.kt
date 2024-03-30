@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.preview.PHONE_LANDSCAPE
+import me.him188.ani.app.ui.subject.episode.components.EpisodePlayerTitle
 import me.him188.ani.app.videoplayer.DummyPlayerController
 import me.him188.ani.app.videoplayer.ui.guesture.VideoGestureHost
 import me.him188.ani.app.videoplayer.ui.guesture.rememberSwipeSeekerState
@@ -29,7 +30,13 @@ private fun PreviewVideoScaffoldFullscreen() = ProvideCompositionLocalsForPrevie
         controllersVisible = controllerVisible,
         topBar = {
             PlayerNavigationBar(
-                title = { Text(text = "Title") },
+                title = {
+                    EpisodePlayerTitle(
+                        ep = "28",
+                        episodeTitle = "因为下次再见的时候会很难为情",
+                        subjectTitle = "葬送的芙莉莲"
+                    )
+                },
                 actions = {
                 },
             )

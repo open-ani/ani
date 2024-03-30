@@ -53,6 +53,7 @@ import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.subject.episode.components.EpisodeActionRow
+import me.him188.ani.app.ui.subject.episode.components.EpisodePlayerTitle
 import me.him188.ani.app.ui.theme.slightlyWeaken
 import me.him188.ani.danmaku.ui.rememberDanmakuHostState
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
@@ -145,10 +146,10 @@ fun EpisodePageContent(
             EpisodeVideo(
                 selected, videoReady,
                 title = {
-                    val title by viewModel.episodeTitle.collectAsStateWithLifecycle("")
+                    val epTitle by viewModel.episodeTitle.collectAsStateWithLifecycle("")
+                    val subjectTitle by viewModel.subjectTitle.collectAsStateWithLifecycle("")
                     val ep by viewModel.episodeEp.collectAsStateWithLifecycle(null)
-                    EpisodePlayerTopBarTitle(ep, title)
-                    // 过长时隐藏标题, 保留序号
+                    EpisodePlayerTitle(ep, epTitle, subjectTitle)
                 },
                 viewModel.playerController,
                 danmakuHostState = rememberDanmakuHostState(viewModel.danmakuFlow),
@@ -290,6 +291,7 @@ fun EpisodeTitle(
                         episodeEp ?: "01",
                         style = MaterialTheme.typography.labelMedium,
                         color = LocalContentColor.current.slightlyWeaken(),
+                        softWrap = false, maxLines = 1
                     )
                 }
 
@@ -297,6 +299,7 @@ fun EpisodeTitle(
                     episodeTitle ?: "placeholder",
                     Modifier.padding(start = 8.dp).placeholder(episodeEp == null),
                     style = MaterialTheme.typography.titleSmall,
+                    softWrap = false, maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
             }
