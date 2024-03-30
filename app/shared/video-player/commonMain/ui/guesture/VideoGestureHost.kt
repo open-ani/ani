@@ -22,14 +22,20 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
+import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.platform.StreamType
+import me.him188.ani.app.platform.getComponentAccessors
 import me.him188.ani.app.ui.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.theme.slightlyWeaken
 import me.him188.ani.app.videoplayer.ui.guesture.SwipeSeekerState.Companion.swipeToSeek
@@ -97,10 +103,11 @@ fun SeekPositionIndicator(
 @Composable
 fun VideoGestureHost(
     seekerState: SwipeSeekerState,
-    onClickScreen: () -> Unit,
-    onDoubleClickScreen: () -> Unit,
+    onClickScreen: () -> Unit = {},
+    onDoubleClickScreen: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
+
     BoxWithConstraints {
         Row(Modifier.align(Alignment.TopCenter).padding(top = 80.dp)) {
             AnimatedVisibility(
@@ -111,8 +118,17 @@ fun VideoGestureHost(
                 SeekPositionIndicator(seekerState.deltaSeconds)
             }
         }
+        val maxHeight = maxHeight
 
-        Row(
+
+        val context by rememberUpdatedState(LocalContext.current)
+        val audioController by remember {
+            derivedStateOf {
+                getComponentAccessors(context = context).audioManager?.asLevelController(StreamType.MUSIC)
+            }
+        }
+
+        Box(
             modifier
                 .combinedClickable(
                     remember { MutableInteractionSource() },
@@ -120,20 +136,18 @@ fun VideoGestureHost(
                     onClick = onClickScreen,
                     onDoubleClick = onDoubleClickScreen,
                 )
+                .then(
+                    audioController?.let {
+                        Modifier.swipeLevelControl(
+                            it,
+                            ((maxHeight - 100.dp) / 20).coerceAtLeast(4.dp),
+                            Orientation.Vertical
+                        )
+                    } ?: Modifier
+                )
                 .swipeToSeek(seekerState, Orientation.Horizontal)
                 .fillMaxSize()
-        ) {
-            Box(
-                Modifier.weight(1f)
-//                    .draggable(state, Orientation.Vertical)
-            )
-
-            Box(Modifier.weight(1f))
-
-            Box(
-                Modifier.weight(1f)
-            )
-        }
+        )
     }
 }
 

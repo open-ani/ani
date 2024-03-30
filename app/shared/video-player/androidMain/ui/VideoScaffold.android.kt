@@ -1,6 +1,7 @@
 package me.him188.ani.app.videoplayer.ui
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -53,7 +54,8 @@ private fun PreviewVideoScaffoldFullscreen() = ProvideCompositionLocalsForPrevie
 
                 },
                 onClickScreen = {},
-                onDoubleClickScreen = {}
+                onDoubleClickScreen = {},
+                Modifier.fillMaxSize()
             )
         },
         floatingMessage = {

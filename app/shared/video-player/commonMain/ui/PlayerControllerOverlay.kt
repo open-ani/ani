@@ -26,6 +26,7 @@ import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.theme.slightlyWeaken
 import me.him188.ani.app.videoplayer.DummyPlayerController
+import me.him188.ani.app.videoplayer.ui.top.PlayerTopBar
 
 
 /**
@@ -78,7 +79,7 @@ internal fun PreviewPlayerControllerOverlayImpl() {
         Box(modifier = Modifier.background(Color.Black)) {
             PlayerControllerOverlay(
                 topBar = {
-                    PlayerNavigationBar(
+                    PlayerTopBar(
                         title = null,
                         actions = {
                         },
