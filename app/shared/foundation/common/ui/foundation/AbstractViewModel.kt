@@ -22,7 +22,6 @@ import androidx.annotation.CallSuper
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.RememberObserver
 import androidx.compose.runtime.remember
-import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -38,6 +37,7 @@ import moe.tlaster.precompose.stateholder.LocalStateHolder
 import moe.tlaster.precompose.stateholder.SavedStateHolder
 import moe.tlaster.precompose.stateholder.StateHolder
 import moe.tlaster.precompose.viewmodel.ViewModel
+import java.util.concurrent.atomic.AtomicIntegerFieldUpdater
 import kotlin.reflect.KClass
 
 /**
@@ -49,8 +49,13 @@ import kotlin.reflect.KClass
 abstract class AbstractViewModel : RememberObserver, ViewModel(), HasBackgroundScope {
     val logger by lazy { logger(this::class) }
 
-    private val closed = atomic(false)
-    private val isClosed get() = closed.value
+    /**
+     * @see CLOSED
+     */
+    @Volatile
+    private var closed: Int = 0
+
+    private val isClosed get() = closed == 1
 
     private var _backgroundScope = createBackgroundScope()
     override val backgroundScope: CoroutineScope
@@ -66,7 +71,7 @@ abstract class AbstractViewModel : RememberObserver, ViewModel(), HasBackgroundS
     }
 
     fun dispose() {
-        if (!closed.compareAndSet(expect = false, update = true)) {
+        if (!CLOSED.compareAndSet(this, 0, 1)) {
             return
         }
 //        if (_backgroundScope.isInitialized()) {
@@ -116,6 +121,12 @@ abstract class AbstractViewModel : RememberObserver, ViewModel(), HasBackgroundS
     @CallSuper
     override fun close() {
         super.close()
+    }
+
+    private companion object {
+        @JvmStatic
+        val CLOSED: AtomicIntegerFieldUpdater<AbstractViewModel> =
+            AtomicIntegerFieldUpdater.newUpdater(AbstractViewModel::class.java, "closed")
     }
 }
 
