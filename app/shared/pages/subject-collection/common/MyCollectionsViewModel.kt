@@ -14,10 +14,12 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flatMapMerge
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import me.him188.ani.app.ViewModelAuthSupport
 import me.him188.ani.app.data.EpisodeRepository
 import me.him188.ani.app.data.SubjectRepository
@@ -55,8 +57,13 @@ class MyCollectionsViewModel : AbstractViewModel(), KoinComponent, ViewModelAuth
     @Stable
     val collections = sessionManager.username.filterNotNull().flatMapLatest { username ->
         isLoading.value = true
+        val parallelism = Semaphore(16)
         subjectRepository.getSubjectCollections(username).flatMapMerge { raw ->
-            flowOf(raw.convertToItem())
+            flow {
+                parallelism.withPermit {
+                    emit(raw.convertToItem())
+                }
+            }
         }.runningList().onCompletion {
             isLoading.value = false
         }
