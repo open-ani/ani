@@ -13,6 +13,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flatMapMerge
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.toList
@@ -53,8 +55,8 @@ class MyCollectionsViewModel : AbstractViewModel(), KoinComponent, ViewModelAuth
     @Stable
     val collections = sessionManager.username.filterNotNull().flatMapLatest { username ->
         isLoading.value = true
-        subjectRepository.getSubjectCollections(username).map { raw ->
-            raw.convertToItem()
+        subjectRepository.getSubjectCollections(username).flatMapMerge { raw ->
+            flowOf(raw.convertToItem())
         }.runningList().onCompletion {
             isLoading.value = false
         }
@@ -89,7 +91,7 @@ class MyCollectionsViewModel : AbstractViewModel(), KoinComponent, ViewModelAuth
         val lastWatchedEp = async {
             eps.indexOfLast {
                 it.type == EpisodeCollectionType.WATCHED || it.type == EpisodeCollectionType.DISCARDED
-            }
+            }.takeIf { it != -1 }
         }
         val latestEp = async {
             eps.lastOrNull { it.episode.isOnAir() == false }
@@ -144,6 +146,33 @@ class MyCollectionsViewModel : AbstractViewModel(), KoinComponent, ViewModelAuth
     }
 }
 
+sealed class ContinueWatchingStatus {
+    data object Start : ContinueWatchingStatus()
+
+    /**
+     * 还未开播
+     */
+    data object NotOnAir : ContinueWatchingStatus()
+
+    /**
+     * 继续看
+     */
+    class Continue(
+        val episodeIndex: Int,
+        val episodeSort: String, // "12.5"
+    ) : ContinueWatchingStatus()
+
+    /**
+     * 看到了, 但是下一集还没更新
+     */
+    class Watched(
+        val episodeIndex: Int,
+        val episodeSort: String, // "12.5"
+    ) : ContinueWatchingStatus()
+
+    data object Done : ContinueWatchingStatus()
+}
+
 @Stable
 class SubjectCollectionItem(
     val subjectId: Int,
@@ -153,6 +182,9 @@ class SubjectCollectionItem(
 
     val date: String?,
     val totalEps: Int,
+    /**
+     * 是否正在播出, 或者在未来会播出
+     */
     val isOnAir: Boolean,
     /**
      * 最新更新到
@@ -163,6 +195,11 @@ class SubjectCollectionItem(
     episodes: List<UserEpisodeCollection>,
     collectionType: SubjectCollectionType?,
 ) {
+    /**
+     * 是否已经开播了第一集
+     */
+    val hasStarted = episodes.firstOrNull()?.episode?.isOnAir() == false
+
     val collectionType: CollectionType = collectionType.toCollectionType()
     var episodes by mutableStateOf(episodes)
 
@@ -181,6 +218,41 @@ class SubjectCollectionItem(
     }
 
     val serialProgress = "全 $totalEps 话"
+
+    val continueWatchingStatus = run {
+        val item = this
+        when (item.lastWatchedEpIndex) {
+            // 还没看过
+            null -> {
+                if (item.hasStarted) {
+                    ContinueWatchingStatus.Start
+                } else {
+                    ContinueWatchingStatus.NotOnAir
+                }
+            }
+
+            // 看了第 n 集并且还有第 n+1 集
+            in 0..<item.totalEps - 1 -> {
+                if (item.latestEpIndex != null && item.lastWatchedEpIndex < item.latestEpIndex) {
+                    // 更新了 n+1 集
+                    ContinueWatchingStatus.Continue(
+                        item.lastWatchedEpIndex + 1,
+                        episodes.getOrNull(item.lastWatchedEpIndex + 1)?.episode?.sort?.toString() ?: ""
+                    )
+                } else {
+                    // 还没更新
+                    ContinueWatchingStatus.Watched(
+                        item.lastWatchedEpIndex,
+                        episodes.getOrNull(item.lastWatchedEpIndex)?.episode?.sort?.toString() ?: ""
+                    )
+                }
+            }
+
+            else -> {
+                ContinueWatchingStatus.Done
+            }
+        }
+    }
 
     fun copy(
         subjectId: Int = this.subjectId,

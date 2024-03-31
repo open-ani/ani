@@ -47,6 +47,8 @@ import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.ui.foundation.AsyncImage
+import me.him188.ani.app.ui.foundation.Button
+import me.him188.ani.app.ui.foundation.FilledTonalButton
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.subject.details.COVER_WIDTH_TO_HEIGHT_RATIO
@@ -266,35 +268,41 @@ private fun CollectionItemContent(
             }
 
             val onPlay: () -> Unit = {
-                item.lastWatchedEpIndex?.let {
+                (item.lastWatchedEpIndex?.let {
                     item.episodes.getOrNull(it + 1)
-                }?.let {
+                } ?: item.lastWatchedEpIndex?.let {
+                    item.episodes.getOrNull(it)
+                })?.let {
                     onClickEpisode(it)
                 }
             }
-            when {
-                // 还没看过
-                item.lastWatchedEpIndex == null -> {
-                    me.him188.ani.app.ui.foundation.Button(
-                        onClick = onPlay,
-                    ) {
+            when (val status = item.continueWatchingStatus) {
+                is ContinueWatchingStatus.Continue -> {
+                    Button(onClick = onPlay) {
+                        Text("继续观看 ${status.episodeSort}")
+                    }
+                }
+
+                ContinueWatchingStatus.Done -> {
+                    doneButton?.invoke()
+                }
+
+                ContinueWatchingStatus.NotOnAir -> {
+                    FilledTonalButton(onClick = onPlay) {
+                        Text("还未开播")
+                    }
+                }
+
+                ContinueWatchingStatus.Start -> {
+                    Button(onClick = onPlay) {
                         Text("开始观看")
                     }
                 }
 
-                // 看了第 n 集并且还有第 n+1 集
-                item.lastWatchedEpIndex in item.episodes.indices
-                        && item.latestEpIndex != null
-                        && item.lastWatchedEpIndex < item.latestEpIndex -> {
-                    me.him188.ani.app.ui.foundation.Button(
-                        onClick = onPlay,
-                    ) {
-                        Text("继续观看 ${item.lastWatchedEpIndex + 2}")
+                is ContinueWatchingStatus.Watched -> {
+                    FilledTonalButton(onClick = onPlay) {
+                        Text("看到 ${status.episodeSort}")
                     }
-                }
-
-                else -> {
-                    doneButton?.invoke()
                 }
             }
         }
