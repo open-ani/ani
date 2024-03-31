@@ -95,6 +95,7 @@ kotlin {
 //        api(libs.coil.gif) // Image loading
         api(libs.coil.svg) // Image loading
         api(libs.coil.compose.core) // Image loading
+        api(libs.coil.network.okhttp) // Image loading
         api(libs.datastore.core) // Data Persistence
         api(libs.datastore.preferences.core) // Preferences
         api(libs.precompose) // Navigator
