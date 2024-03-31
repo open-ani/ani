@@ -22,7 +22,6 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.remember
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -57,23 +56,21 @@ fun ProvideCompositionLocalsForPreview(
     MaterialTheme {
         PlatformPreviewCompositionLocalProvider {
             val context = LocalContext.current
-            SideEffect {
-                runCatching { stopKoin() }
-                startKoin {
-                    modules(getCommonKoinModule({ context }, GlobalScope))
-                    modules(module {
-                        single<TorrentDownloaderFactory> {
-                            TorrentDownloaderFactory {
-                                TorrentDownloader(
-                                    cacheDirectory = createTempDirectory("ani-temp").toFile(),
-                                )
-                            }
+            runCatching { stopKoin() }
+            startKoin {
+                modules(getCommonKoinModule({ context }, GlobalScope))
+                modules(module {
+                    single<TorrentDownloaderFactory> {
+                        TorrentDownloaderFactory {
+                            TorrentDownloader(
+                                cacheDirectory = createTempDirectory("ani-temp").toFile(),
+                            )
                         }
-                        single<PlayerControllerFactory> {
-                            playerControllerFactory
-                        }
-                    })
-                }
+                    }
+                    single<PlayerControllerFactory> {
+                        playerControllerFactory
+                    }
+                })
             }
             val aniNavigator = remember { AniNavigator() }
             CompositionLocalProvider(
