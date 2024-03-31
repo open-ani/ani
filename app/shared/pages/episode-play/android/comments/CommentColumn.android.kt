@@ -3,10 +3,13 @@ package me.him188.ani.app.ui.subject.episode.comments
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewFontScale
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import org.openapitools.client.models.Avatar
 import org.openapitools.client.models.User
 import org.openapitools.client.models.UserGroup
+import kotlin.random.Random
+import kotlin.time.Duration.Companion.days
 
 @Preview
 @Composable
@@ -16,7 +19,7 @@ private fun PreviewCommentColumn() {
     }
 }
 
-@Preview
+@PreviewFontScale
 @Composable
 private fun PreviewComment() {
     ProvideCompositionLocalsForPreview {
@@ -41,7 +44,13 @@ private fun PreviewComment() {
                     id = "nominavi",
                     type = 8010,
                     summary = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet.",
-                    createdAt = System.currentTimeMillis(),
+                    createdAt = run {
+                        if (Random.nextBoolean()) {
+                            System.currentTimeMillis()
+                        } else {
+                            System.currentTimeMillis() - 2.days.inWholeMilliseconds
+                        }
+                    },
                     authorUsername = null
                 )
             }

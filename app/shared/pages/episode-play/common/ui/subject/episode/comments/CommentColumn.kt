@@ -15,7 +15,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.tools.formatDateTime
 import me.him188.ani.app.ui.external.placeholder.placeholder
-import me.him188.ani.app.ui.subject.details.Avatar
+import me.him188.ani.app.ui.foundation.avatar.AvatarImage
 import org.openapitools.client.models.User
 
 
@@ -39,9 +39,9 @@ fun Comment(
             Box(
                 Modifier.clip(CircleShape)
             ) {
-                Avatar(
+                AvatarImage(
                     author?.avatar?.small ?: "",
-                    Modifier.size(32.dp)
+                    Modifier.size(36.dp)
                 )
             }
             Column(Modifier.padding(start = 8.dp)) {
