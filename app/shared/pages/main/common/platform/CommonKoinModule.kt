@@ -23,6 +23,8 @@ import io.ktor.client.plugins.UserAgent
 import kotlinx.coroutines.CoroutineScope
 import me.him188.ani.app.data.EpisodeRepository
 import me.him188.ani.app.data.EpisodeRepositoryImpl
+import me.him188.ani.app.data.EpisodeRevisionRepository
+import me.him188.ani.app.data.EpisodeRevisionRepositoryImpl
 import me.him188.ani.app.data.PreferredAllianceRepository
 import me.him188.ani.app.data.PreferredAllianceRepositoryImpl
 import me.him188.ani.app.data.ProfileRepository
@@ -30,6 +32,8 @@ import me.him188.ani.app.data.SubjectRepository
 import me.him188.ani.app.data.SubjectRepositoryImpl
 import me.him188.ani.app.data.TokenRepository
 import me.him188.ani.app.data.TokenRepositoryImpl
+import me.him188.ani.app.data.UserRepository
+import me.him188.ani.app.data.UserRepositoryImpl
 import me.him188.ani.app.persistent.preferredAllianceStore
 import me.him188.ani.app.persistent.tokenStore
 import me.him188.ani.app.session.SessionManager
@@ -66,6 +70,8 @@ fun getCommonKoinModule(getContext: () -> Context, coroutineScope: CoroutineScop
         CombinedDownloadProvider(DmhyDownloadProvider(), AcgRipDownloadProvider()) // TODO: replace with factory loaders
     }
     single<SubjectRepository> { SubjectRepositoryImpl() }
+    single<UserRepository> { UserRepositoryImpl() }
+    single<EpisodeRevisionRepository> { EpisodeRevisionRepositoryImpl() }
     single<EpisodeRepository> { EpisodeRepositoryImpl() }
     single<ProfileRepository> { ProfileRepository() }
     single<TorrentDownloaderManager> { TorrentDownloaderManagerImpl(coroutineScope.coroutineContext) }

@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import me.him188.ani.app.platform.AniBuildConfig
 import me.him188.ani.app.platform.isInLandscapeMode
+import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.videoplayer.PlayerController
 import me.him188.ani.app.videoplayer.VideoPlayerView
 import me.him188.ani.app.videoplayer.togglePause
@@ -60,7 +61,11 @@ internal fun EpisodeVideo(
             )
         },
         video = {
-            VideoPlayerView(playerController, Modifier.matchParentSize())
+            if (LocalIsPreviewing.current) {
+                Text("预览模式")
+            } else {
+                VideoPlayerView(playerController, Modifier.matchParentSize())
+            }
         },
         danmakuHost = {
             DanmakuHost(danmakuHostState, Modifier.matchParentSize())
