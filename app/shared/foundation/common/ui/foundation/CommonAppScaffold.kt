@@ -37,6 +37,8 @@ import io.kamel.image.config.LocalKamelConfig
 import me.him188.ani.app.i18n.LocalI18n
 import me.him188.ani.app.i18n.loadResourceBundle
 import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.tools.LocalTimeFormatter
+import me.him188.ani.app.tools.TimeFormatter
 import me.him188.ani.app.ui.theme.AppTheme
 import me.him188.ani.app.ui.theme.aniColorScheme
 import moe.tlaster.precompose.PreComposeApp
@@ -53,6 +55,7 @@ fun AniApp(
         CompositionLocalProvider(
             LocalI18n provides currentBundle,
             LocalKamelConfig provides getDefaultKamelConfig(isProduction = !LocalIsPreviewing.current),
+            LocalTimeFormatter provides remember { TimeFormatter() },
         ) {
             val focusManager by rememberUpdatedState(LocalFocusManager.current)
             val keyboard by rememberUpdatedState(LocalSoftwareKeyboardController.current)

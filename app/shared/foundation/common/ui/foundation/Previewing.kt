@@ -76,7 +76,10 @@ fun ProvideCompositionLocalsForPreview(
                 }
             }
             val aniNavigator = remember { AniNavigator() }
-            CompositionLocalProvider(LocalIsPreviewing provides true, LocalNavigator provides aniNavigator) {
+            CompositionLocalProvider(
+                LocalIsPreviewing provides true,
+                LocalNavigator provides aniNavigator,
+            ) {
                 AniApp(aniColorScheme(isDark)) {
                     content()
                 }
