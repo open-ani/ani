@@ -23,20 +23,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import io.kamel.image.asyncPainterResource
 import me.him188.ani.app.ui.external.placeholder.placeholder
-import me.him188.ani.app.ui.foundation.AniKamelImage
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.ui.foundation.avatar.AvatarImage
 import org.openapitools.client.models.Avatar
 import org.openapitools.client.models.User
 import org.openapitools.client.models.UserGroup
-import java.io.File
 
 
 @Composable
@@ -121,22 +117,6 @@ fun UserInfoRow(
     }
 }
 
-
-// AvatarImage can be retrieved from a file path or a url
-@Composable
-fun AvatarImage(
-    url: String?, modifier: Modifier = Modifier,
-    filePath: String? = null,
-    colorFilter: ColorFilter? = null,
-) {
-    AniKamelImage(
-        asyncPainterResource(if (filePath != null) File(filePath) else url ?: ""),
-        contentDescription = "Avatar",
-        modifier = modifier,
-        contentScale = ContentScale.Crop,
-        colorFilter = colorFilter
-    )
-}
 
 
 private val sampleUser = User(

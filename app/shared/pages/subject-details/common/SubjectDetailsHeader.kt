@@ -1,6 +1,5 @@
 package me.him188.ani.app.ui.subject.details
 
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -24,14 +23,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import io.kamel.core.Resource
-import me.him188.ani.app.ui.foundation.AniKamelImage
-import me.him188.ani.app.ui.foundation.BrokenImagePlaceholder
-import me.him188.ani.app.ui.foundation.LoadingIndicator
+import me.him188.ani.app.ui.foundation.AsyncImage
 import me.him188.ani.app.ui.theme.weaken
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
@@ -40,24 +35,22 @@ const val COVER_WIDTH_TO_HEIGHT_RATIO = 849 / 1200f
 // 图片和标题
 @Composable
 internal fun SubjectDetailsHeader(
-    coverImage: Resource<Painter>,
+    coverImage: Any?,
     viewModel: SubjectDetailsViewModel,
     modifier: Modifier = Modifier,
 ) {
     Row(modifier, verticalAlignment = Alignment.CenterVertically) {
         val imageWidth = 120.dp
 
-        AniKamelImage(
+        AsyncImage(
             coverImage,
+            null,
             Modifier
                 .clip(RoundedCornerShape(6.dp))
                 .width(imageWidth)
                 .height(imageWidth / COVER_WIDTH_TO_HEIGHT_RATIO)
                 .background(Color.LightGray),
             contentScale = ContentScale.Crop,
-            onLoading = { LoadingIndicator(it) },
-            onFailure = { BrokenImagePlaceholder() },
-            animationSpec = tween(500),
         )
 
         Column(Modifier.padding(horizontal = 16.dp, vertical = 2.dp)) {

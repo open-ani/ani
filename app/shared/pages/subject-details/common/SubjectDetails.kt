@@ -30,7 +30,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
-import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
@@ -49,23 +48,19 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import io.kamel.core.Resource
-import io.kamel.image.asyncPainterResource
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.ui.collection.CollectionActionButton
 import me.him188.ani.app.ui.external.placeholder.placeholder
-import me.him188.ani.app.ui.foundation.AniKamelImage
 import me.him188.ani.app.ui.foundation.AniTopAppBar
-import me.him188.ani.app.ui.foundation.IconImagePlaceholder
 import me.him188.ani.app.ui.foundation.PreviewData
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.TopAppBarGoBackButton
+import me.him188.ani.app.ui.foundation.avatar.AvatarImage
 import me.him188.ani.app.ui.foundation.backgroundWithGradient
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.theme.slightlyWeaken
@@ -96,7 +91,6 @@ fun SubjectDetails(
         contentWindowInsets = WindowInsets(0.dp)
     ) { scaffoldPadding ->
         val coverImageUrl by viewModel.coverImage.collectAsStateWithLifecycle(null)
-        val coverPainter = asyncPainterResource(coverImageUrl ?: "")
 
         val density = LocalDensity.current
         // 虚化渐变背景
@@ -127,7 +121,7 @@ fun SubjectDetails(
         }
 
         SubjectDetailsContent(
-            coverPainter, viewModel,
+            coverImageUrl, viewModel,
             Modifier
                 .verticalScroll(rememberScrollState())
                 .padding(scaffoldPadding) // pad top bar
@@ -140,7 +134,7 @@ fun SubjectDetails(
 // 详情页内容 (不包含背景)
 @Composable
 private fun SubjectDetailsContent(
-    coverImage: Resource<Painter>,
+    coverImage: Any?,
     viewModel: SubjectDetailsViewModel,
     modifier: Modifier = Modifier,
     horizontalPadding: Dp = 16.dp,
@@ -198,7 +192,7 @@ private fun SubjectDetailsContent(
         PersonList(characters, { it.id }, horizontalPadding, Modifier) {
             PersonView(
                 avatar = {
-                    Avatar(
+                    AvatarImage(
                         it.images?.medium ?: "",
                         alignment = Alignment.TopStart,
                         contentScale = ContentScale.Crop
@@ -215,7 +209,7 @@ private fun SubjectDetailsContent(
         }
         PersonList(staff, { it.id }, horizontalPadding, Modifier) {
             PersonView(
-                avatar = { Avatar(it.images?.medium ?: "", contentScale = ContentScale.Crop) },
+                avatar = { AvatarImage(it.images?.medium ?: "", contentScale = ContentScale.Crop) },
                 text = { Text(it.name, maxLines = 1, overflow = TextOverflow.Ellipsis) },
                 role = { Text(it.relation, maxLines = 1, overflow = TextOverflow.Ellipsis) }
             )
@@ -255,23 +249,6 @@ private fun SubjectDetailsContent(
             )
         }
     }
-}
-
-@Composable
-fun Avatar(
-    url: String?,
-    modifier: Modifier = Modifier,
-    alignment: Alignment = Alignment.Center,
-    contentScale: ContentScale = ContentScale.Fit,
-) {
-    AniKamelImage(
-        asyncPainterResource(url ?: ""),
-        onLoading = { IconImagePlaceholder(Icons.Outlined.Person) },
-        onFailure = { IconImagePlaceholder(Icons.Outlined.Person) },
-        alignment = alignment,
-        contentScale = contentScale,
-        modifier = modifier,
-    )
 }
 
 @Composable

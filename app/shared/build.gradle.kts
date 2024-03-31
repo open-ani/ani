@@ -91,7 +91,10 @@ kotlin {
         // Others
         api(libs.koin.core) // dependency injection
         api(libs.directories) // Data directories on all OSes
-        api(libs.kamel.image) // Image loading
+        api(libs.coil.core) // Image loading
+//        api(libs.coil.gif) // Image loading
+        api(libs.coil.svg) // Image loading
+        api(libs.coil.compose.core) // Image loading
         api(libs.datastore.core) // Data Persistence
         api(libs.datastore.preferences.core) // Preferences
         api(libs.precompose) // Navigator
@@ -118,6 +121,8 @@ kotlin {
         // Compose
         api(libs.androidx.compose.ui.tooling.preview)
         api(libs.androidx.compose.material3)
+
+        api(libs.coil)
 
         implementation(libs.androidx.media3.ui)
         implementation(libs.androidx.media3.exoplayer)

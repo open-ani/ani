@@ -45,9 +45,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
-import io.kamel.image.asyncPainterResource
 import me.him188.ani.app.navigation.LocalNavigator
-import me.him188.ani.app.ui.foundation.AniKamelImage
+import me.him188.ani.app.ui.foundation.AsyncImage
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.subject.details.COVER_WIDTH_TO_HEIGHT_RATIO
@@ -154,11 +153,11 @@ private fun CollectionItem(
         shape = cardShape,
     ) {
         Row(Modifier.weight(1f, fill = false)) {
-            AniKamelImage(
-                asyncPainterResource(item.image),
+            AsyncImage(
+                item.image,
+                contentDescription = null,
                 modifier = Modifier
                     .height(height).width(height * COVER_WIDTH_TO_HEIGHT_RATIO),
-                contentDescription = null,
             )
 
             Box(Modifier.weight(1f)) {

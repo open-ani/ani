@@ -10,7 +10,7 @@ import java.time.temporal.ChronoUnit
  */
 // TimeFormatterTest
 class TimeFormatter(
-    private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+    private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
         .withZone(ZoneId.systemDefault()),
     private val getTimeNow: () -> Long = { System.currentTimeMillis() },
 ) {

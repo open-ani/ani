@@ -18,7 +18,6 @@
 
 package me.him188.ani.app.ui.subject
 
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -57,12 +56,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import io.kamel.image.asyncPainterResource
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
-import me.him188.ani.app.ui.foundation.AniKamelImage
-import me.him188.ani.app.ui.foundation.BrokenImagePlaceholder
-import me.him188.ani.app.ui.foundation.LoadingIndicator
+import me.him188.ani.app.ui.foundation.AsyncImage
 import me.him188.ani.app.ui.main.LocalContentPaddings
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
@@ -158,14 +154,11 @@ fun SubjectPreviewCard(
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp),
     ) {
         Column {
-            AniKamelImage(
-                asyncPainterResource(imageUrl),
-                Modifier.fillMaxWidth().height(120.dp).background(Color.LightGray),
+            AsyncImage(
+                imageUrl,
                 title,
+                Modifier.fillMaxWidth().height(120.dp).background(Color.LightGray),
                 contentScale = ContentScale.Crop,
-                onLoading = { LoadingIndicator(it) },
-                onFailure = { BrokenImagePlaceholder() },
-                animationSpec = tween(500),
             )
             Spacer(Modifier.height(4.dp))
             Text(

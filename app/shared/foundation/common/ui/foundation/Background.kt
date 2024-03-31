@@ -8,8 +8,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
-import io.kamel.core.getOrNull
-import io.kamel.image.asyncPainterResource
 
 
 val DEFAULT_BACKGROUND_BRUSH = Brush.verticalGradient(
@@ -58,11 +56,12 @@ fun Modifier.paintBackground(painter: Painter): Modifier = composed {
     )
 }
 
-fun Modifier.paintBackground(data: Any): Modifier = composed {
-    asyncPainterResource(data).getOrNull()?.let {
-        paint(
-            it,
-            contentScale = ContentScale.Crop,
-        )
-    } ?: Modifier
+fun Modifier.paintBackground(data: Any?): Modifier = composed {
+    paint(
+        coil3.compose.rememberAsyncImagePainter(
+            data,
+            LocalImageLoader.current,
+        ),
+        contentScale = ContentScale.Crop,
+    )
 }

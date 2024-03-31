@@ -19,6 +19,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -33,7 +34,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
-import io.kamel.image.config.LocalKamelConfig
+import coil3.compose.LocalPlatformContext
 import me.him188.ani.app.i18n.LocalI18n
 import me.him188.ani.app.i18n.loadResourceBundle
 import me.him188.ani.app.platform.LocalContext
@@ -51,10 +52,17 @@ fun AniApp(
 ) {
     val context = LocalContext.current
     val currentBundle = remember(Locale.current.language) { loadResourceBundle(context) }
+    val coilContext = LocalPlatformContext.current
+    val imageLoader by remember {
+        derivedStateOf {
+            getDefaultImageLoader(coilContext)
+        }
+    }
+
     PreComposeApp {
         CompositionLocalProvider(
             LocalI18n provides currentBundle,
-            LocalKamelConfig provides getDefaultKamelConfig(isProduction = !LocalIsPreviewing.current),
+            LocalImageLoader provides imageLoader,
             LocalTimeFormatter provides remember { TimeFormatter() },
         ) {
             val focusManager by rememberUpdatedState(LocalFocusManager.current)
