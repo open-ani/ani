@@ -76,13 +76,15 @@ class SubjectRepositoryImpl : SubjectRepository, KoinComponent {
         return PageBasedPagedSource { page ->
             try {
                 val pageSize = 30
-                client.api.getUserCollectionsByUsername(
-                    username,
-                    offset = page * pageSize, limit = pageSize,
-                    subjectType = subjectType,
-                    type = subjectCollectionType,
-                ).run {
-                    Paged.processPagedResponse(total, pageSize, data)
+                withContext(Dispatchers.IO) {
+                    client.api.getUserCollectionsByUsername(
+                        username,
+                        offset = page * pageSize, limit = pageSize,
+                        subjectType = subjectType,
+                        type = subjectCollectionType,
+                    ).run {
+                        Paged.processPagedResponse(total, pageSize, data)
+                    }
                 }
             } catch (e: ClientException) {
                 logger.warn("Exception in getCollections", e)

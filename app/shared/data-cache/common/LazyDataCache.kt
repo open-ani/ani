@@ -3,8 +3,6 @@ package me.him188.ani.app.tools.caching
 import androidx.compose.runtime.Stable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,12 +17,14 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import me.him188.ani.datasources.api.PagedSource
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
+import me.him188.ani.utils.logging.logger
+import me.him188.ani.utils.logging.warn
 
 /**
  * A data collection, where the data is loaded from a remote source.
@@ -80,31 +80,24 @@ inline val <T> LazyDataCache<T>.value get() = data.value
  */
 fun <T> LazyDataCache(
     nextPageOrNull: Flow<PagedSource<T>>,
-    parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
-): LazyDataCache<T> = LazyDataCacheImpl(nextPageOrNull, parentCoroutineContext)
+): LazyDataCache<T> = LazyDataCacheImpl(nextPageOrNull)
 
 fun <T> LazyDataCache(
     nextPageOrNull: PagedSource<T>,
-    parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
-): LazyDataCache<T> = LazyDataCacheImpl(flowOf(nextPageOrNull), parentCoroutineContext)
+): LazyDataCache<T> = LazyDataCacheImpl(flowOf(nextPageOrNull))
 
-fun <T> Flow<PagedSource<T>>.cacheIn(
-    scope: CoroutineScope,
-): LazyDataCache<T> = LazyDataCache(this, scope.coroutineContext)
+fun <T> Flow<PagedSource<T>>.cached(): LazyDataCache<T> = LazyDataCache(this)
 
-fun <T> PagedSource<T>.cacheIn(
-    scope: CoroutineScope,
-): LazyDataCache<T> = LazyDataCache(this, scope.coroutineContext)
+fun <T> PagedSource<T>.cached(): LazyDataCache<T> = LazyDataCache(this)
 
 
 class LazyDataCacheImpl<T>(
     source: Flow<PagedSource<T>>,
-    parentCoroutineContext: CoroutineContext,
 ) : LazyDataCache<T> {
     override val data: MutableStateFlow<List<T>> = MutableStateFlow(emptyList())
 
     private val scope =
-        CoroutineScope(parentCoroutineContext + Dispatchers.Default + SupervisorJob(parentCoroutineContext[Job]))
+        CoroutineScope(Dispatchers.Default) // Note that a job is not needed as we rely on the [source]'s completion to complete our [currentSource].
 
     private val sourceCompleted = MutableStateFlow(false)
     private val requestInProgress = MutableStateFlow(false)
@@ -121,7 +114,15 @@ class LazyDataCacheImpl<T>(
         }.stateIn(scope, SharingStarted.Eagerly, null)
 
     override suspend fun requestMore() {
-        scope.launch {
+        if (!scope.isActive) {
+            if (logger.isWarnEnabled) {
+                logger.warn(IllegalStateException()) {
+                    "requestMore called after the cache is closed"
+                }
+            }
+        }
+
+        withContext(Dispatchers.IO) {
             val nextScope = this
             val daemon = launch {
                 sourceCompleted.filter { it }.first()
@@ -132,7 +133,9 @@ class LazyDataCacheImpl<T>(
                 val source = currentSource.filterNotNull().first()
                 val resp = source.nextPageOrNull()
                 if (resp != null) {
+                    logger.warn("wait for lock")
                     lock.withLock {
+                        logger.warn("got lock")
                         data.value += resp
                     }
                 }
@@ -140,7 +143,7 @@ class LazyDataCacheImpl<T>(
                 requestInProgress.value = false
                 daemon.cancel()
             }
-        }.join()
+        }
     }
 
     override suspend fun mutate(action: suspend List<T>.() -> List<T>) {
@@ -156,5 +159,9 @@ class LazyDataCacheImpl<T>(
 
     override fun close() {
         scope.cancel()
+    }
+
+    private companion object {
+        val logger = logger(LazyDataCacheImpl::class)
     }
 }

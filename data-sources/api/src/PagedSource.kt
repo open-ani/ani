@@ -18,6 +18,7 @@
 
 package me.him188.ani.datasources.api
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,6 +31,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import java.util.concurrent.atomic.AtomicIntegerFieldUpdater
 
 /**
  * 一个搜索请求.
@@ -48,6 +50,12 @@ interface PagedSource<out T> {
      * 主动查询下一页. 当已经没有下一页时返回 `null`. 注意, 若有使用 [results], 主动操作 [nextPageOrNull] 将导致 [results] 会跳过该页.
      */
     suspend fun nextPageOrNull(): List<T>?
+
+    /**
+     * Update the page counter to the previous page if there is one.
+     * Do nothing if there isn't.
+     */
+    fun backToPrevious()
 }
 
 suspend inline fun PagedSource<*>.awaitFinished() {
@@ -62,9 +70,18 @@ inline fun <T, R> PagedSource<T>.map(crossinline transform: suspend (T) -> R): P
         }
         override val finished: StateFlow<Boolean> get() = self.finished
         override suspend fun nextPageOrNull(): List<R>? {
-            return self.nextPageOrNull()?.map {
-                transform(it)
+            return try {
+                self.nextPageOrNull()?.map {
+                    transform(it)
+                }
+            } catch (e: CancellationException) {
+                self.backToPrevious() // reset page index
+                throw e
             }
+        }
+
+        override fun backToPrevious() {
+            self.backToPrevious()
         }
     }
 }
@@ -108,6 +125,7 @@ fun <T> PageBasedPagedSource(
 
 abstract class AbstractPageBasedPagedSource<T> : PagedSource<T> {
     @Suppress("LeakingThis")
+    @Volatile
     private var page = initialPage
     private val lock = Mutex()
     override val finished = MutableStateFlow(false)
@@ -115,7 +133,7 @@ abstract class AbstractPageBasedPagedSource<T> : PagedSource<T> {
     protected open val initialPage: Int get() = 0
 
     final override suspend fun nextPageOrNull(): List<T>? = lock.withLock {
-        if (page == Int.MAX_VALUE) {
+        if (PAGE.get(this) == Int.MAX_VALUE) {
             noMorePages()
             return null
         }
@@ -124,8 +142,8 @@ abstract class AbstractPageBasedPagedSource<T> : PagedSource<T> {
             noMorePages()
             return null
         }
-        if (page != Int.MAX_VALUE) {
-            page++
+        if (PAGE.get(this) != Int.MAX_VALUE) {
+            PAGE.incrementAndGet(this)
         }
         return result
     }
@@ -133,11 +151,15 @@ abstract class AbstractPageBasedPagedSource<T> : PagedSource<T> {
     protected abstract suspend fun nextPageImpl(page: Int): List<T>?
 
     protected fun noMorePages() {
-        if (page == Int.MAX_VALUE) {
+        if (PAGE.get(this) == Int.MAX_VALUE) {
             return // already finished
         }
-        page = Int.MAX_VALUE
+        PAGE.set(this, Int.MAX_VALUE)
         finished.value = true
+    }
+
+    final override fun backToPrevious() {
+        PAGE.decrementAndGet(this)
     }
 
     final override val results: Flow<T> by lazy {
@@ -151,5 +173,12 @@ abstract class AbstractPageBasedPagedSource<T> : PagedSource<T> {
                 emitAll(result.asFlow())
             }
         }
+    }
+
+    private companion object {
+        @JvmStatic
+        val PAGE: AtomicIntegerFieldUpdater<AbstractPageBasedPagedSource<*>> =
+            AtomicIntegerFieldUpdater.newUpdater(AbstractPageBasedPagedSource::class.java, "page")
+        // Note: kotlinx atomic does not work well in this multiplatform project
     }
 }

@@ -15,7 +15,7 @@ import me.him188.ani.app.data.SubjectRepository
 import me.him188.ani.app.data.setSubjectCollectionTypeOrDelete
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.tools.caching.LazyDataCache
-import me.him188.ani.app.tools.caching.cacheIn
+import me.him188.ani.app.tools.caching.cached
 import me.him188.ani.app.tools.caching.value
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
@@ -64,7 +64,7 @@ class MyCollectionsViewModelImpl : AbstractViewModel(), KoinComponent, MyCollect
             ).map {
                 it.convertToItem()
             }
-        }.cacheIn(backgroundScope)
+        }.cached()
     }
 
     @Stable

@@ -55,6 +55,9 @@ private fun PreviewSubjectList() {
                     listOf(subject)
                 }
             }
+
+            override fun backToPrevious() {
+            }
         })
     }
     ProvideCompositionLocalsForPreview {
