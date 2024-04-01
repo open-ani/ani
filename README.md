@@ -8,21 +8,21 @@
 
 [Compose Multiplatform]: https://www.jetbrains.com/lp/compose-mpp/
 
+[acg.rip]: https://acg.rip
+
 集找番、追番、弹幕看番的一站式追番平台。
 
-使用 [Bangumi][Bangumi] 的番剧索引以及观看记录功能，支持 [动漫花园][dmhy]
-等下载源，未来接入[弹弹play][ddplay]等平台实现在线弹幕播放。
+使用 [Bangumi][Bangumi] 的番剧索引以及观看记录功能，支持 [动漫花园][dmhy] 和 [acg.rip][acg.rip]
+数据源，接入[弹弹play][ddplay]平台实现在线弹幕播放.
 
 开发重点在于找番和追番的实际体验, 可能不会追求对 Bangumi 功能接入的完整性.
 项目来源于我和朋友的真实追番需求: 记录追番进度, 下载字幕组资源等.
 
-> 我不是专业客户端开发人员, 开发纯属兴趣, 不过比较讲究代码质量, 欢迎各位指点.
+> 我不是专业客户端开发人员, 开发纯属兴趣, 不过有点讲究代码质量, 欢迎各位指点.
 
 ## 3.0 开发进程
 
-Ani 3.0 **正在**开发中. 继续使用 [Compose Multiplatform] 实现多平台, 将私有追番进度服务器改为使用
-Bangumi,
-并从 Bangumi 获取番剧信息以及相关评论等.
+Ani 3.0 **正在**开发中. 跨平台架构. UI 框架使用 [Compose Multiplatform].
 
 ### 参与开发
 
@@ -33,31 +33,34 @@ Bangumi,
 
 Ani 支持 Android 和桌面端 (macOS、Linux、Windows)。
 
-3.0 重构还在进行中, 3.0 测试版可以在 [releases](https://github.com/Him188/ani/releases/latest)
-中的 "Assets" 下载最新正式版本。(注意: 2.0 与 3.0 完全不同)
+3.0 开发还在进行中, 我会每隔几个修改发布一个 beta 测试版本,
+请关注 [releases](https://github.com/Him188/ani/releases/latest)
+以下载最新正式版本。(注意: 2.0 与 3.0 完全不同, 不建议使用 2.0 (*它大概率已经不能用了*))
 
-3.0 开发测试版本可以在每个 commit 的 macos-12 构建中找到。
+测试版本有*非常多*问题, ~*目前请不要抱有太大期望*~. 欢迎测试并在 issue 反馈问题.
 
-## 未来 3.0 功能截图
+## 功能截图
 
 快速开发中, 我每隔几天会更一下截图. 实际样式请以最新版本为准.
 
-采用 Material 3 风格 (略有根据个人审美调整), 支持同步系统的浅色和深色主题。
+主要采用 Material 3 风格, 支持同步系统的浅色和深色主题.
+
+因为使用的是安卓原生 Compose, 应用可全程保持屏幕刷新率运行.
 
 ### 登录
 
 使用 Bangumi OAuth (浏览器) 登录, 即软件会跳转到 Bangumi 官网授权, 不要求在客户端内输入账号密码.
 
-### 个人收藏页面
+### 管理追番
 
 - 同步 Bangumi 收藏
-- 支持修改收藏状态
-- "已完结" / "连载至" 标签展示连载情况
-- 自动滚动到上次观看的剧集, 已观看过的剧集展示颜色更浅
+- 快捷修改收藏状态
+- 按"在看/想看/看过"分类
+- 快速跳转到下一集
 
 <img width="300" src=".readme/images/collection/collection-light.jpeg" alt="collection-light"/> <img width="300" src=".readme/images/collection/collection-dark.jpg" alt="collection-dark"/>
 
-### 番剧详情页面
+### 条目详情
 
 根据一般人找番时会关注的如下几点设计:
 
@@ -69,47 +72,47 @@ Ani 支持 Android 和桌面端 (macOS、Linux、Windows)。
 - 追番人数
 - 评分 *(计划实现)*
 
-待 3.0 正式版发布后的未来会增加其他更多补充信息.
-
 <img width="300" src=".readme/images/subject/subject-light.jpeg" alt="subject-light"/> <img width="300" src=".readme/images/subject/subject-dark.jpg" alt="subject-dark"/>
-
-### 剧集详情
-
-- 后台自动从[动漫花园][dmhy]拉取字幕组资源并解析标题
-- 支持选择一般人最关心的参数: 清晰度, 字幕语言, 字幕组
-- 默认选择第一个字幕组, 无需配置即可自动播放
-- 手动修改字幕组后会为此番剧记住字幕组选择, 下次自动选择
-
-<img width="300" src=".readme/images/episode/episode-dark.jpg" alt="episode-dark"/> <img width="300" src=".readme/images/episode/episode-playsource-dark.jpg" alt="episode-light"/>
 
 ### 在线视频播放
 
-- 选择字幕组后自动开始播放.
-- 第一个里程碑会支持播放/暂停, 显示播放进度, 拖动进度条, 切换全屏/小窗.
-- 播放完成后自动标记为已观看, 并跳转到下一集.
-- 倍速播放, 手势调音量等辅助功能将在之后的里程碑实现.
+- 从[动漫花园][dmhy]与[acg.rip](https://acg.rip)拉取字幕组资源
+- 支持按清晰度, 字幕语言与字幕组选择视频源
+- 手动修改字幕组后下次播放会自动选择
+
+<img width="300" src=".readme/images/episode/episode-dark.jpg" alt="episode-dark"/> <img width="300" src=".readme/images/episode/episode-playsource-dark.jpg" alt="episode-light"/>
+
+视频手势:
+
+- 双击屏幕切换播放/暂停
+- 左右滑动屏幕快进/快退
+- 在屏幕右边上下滑动调整音量
+
+- *倍速播放等其他辅助功能将在之后的里程碑实现*
 
 <img width="300" src=".readme/images/episode/episode-player-loading.jpg" alt="episode-player-loading"/> <img width="300" src=".readme/images/episode/episode-player-playing.jpg" alt="episode-player-playing"/>
 
-### 全屏播放
+### 视频弹幕
+
+- 从 [弹弹play][ddplay] 获取弹幕
 
 <img width="600" src=".readme/images/episode/episode-player-fullscreen.jpg" alt="episode-player-fullscreen"/>
 
-### 弹幕与评论
+<img width="600" src=".readme/images/episode/episode-player-fullscreen-controller.jpg" alt="episode-player-fullscreen"/>
 
-计划中, 将在第二个里程碑支持.
+### 评论
 
-### 标题 / 标签搜索页面
+UI 写好了, 但是 Bangumi 目前没提供评论的 API, 在考虑怎么解决.
+
+### 以标题搜索
 
 在首页, 目前支持使用标题关键词搜索. 其他搜索方式计划实现中.
 
 ### 桌面端
 
-Compose 在安卓上的预览和生态比较好, 因此先做了安卓. 桌面端一定会开发, 因为我个人平常看番主要使用桌面端.
+除了 (目前) 不支持视频播放以外, 与 Android 端功能一致. 可使用 "下载" 功能跳转到外部下载器下载视频.
 
-桌面端计划初版不会做视频播放, 只做跳转下载. 桌面端做好后移动端也将会支持平板模式 (复用).
-
-桌面端视频播放功能可能会用外置播放器, 配合悬浮窗弹幕引擎? 如有更好方案欢迎指点.
+桌面端视频播放功能未来可能会用外置播放器, 配合悬浮窗弹幕引擎? 如有更好方案欢迎指点.
 
 ## 提示
 
