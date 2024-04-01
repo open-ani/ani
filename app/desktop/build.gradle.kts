@@ -40,9 +40,9 @@ compose.desktop {
                 add(TargetFormat.Deb)
                 add(TargetFormat.Rpm)
                 add(TargetFormat.Dmg)
-                if (getOs() == Os.Windows) {
-                    add(TargetFormat.AppImage) // portable distribution (installation-free)
-                }
+//                if (getOs() == Os.Windows) {
+//                    add(TargetFormat.AppImage) // portable distribution (installation-free)
+//                }
             }.toTypedArray())
             packageName = "Ani"
             description = project.description
