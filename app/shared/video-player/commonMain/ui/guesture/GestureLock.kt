@@ -100,7 +100,7 @@ fun LockedScreenGestureHost(
             .clickable(
                 remember { MutableInteractionSource() },
                 indication = null,
-                onClick = { setControllerVisible(!controllerVisible) },
+                onClick = { setControllerVisible(true) },
             ).fillMaxSize(),
     )
 
@@ -126,8 +126,13 @@ fun LockableVideoGestureHost(
     if (locked) {
         LockedScreenGestureHost(controllerVisible, setControllerVisible, modifier)
     } else {
-        VideoGestureHost(seekerState, {
-            setControllerVisible(!controllerVisible)
-        }, onDoubleClickScreen, modifier)
+        VideoGestureHost(
+            seekerState,
+            onClickScreen = {
+                setControllerVisible(!controllerVisible)
+            },
+            onDoubleClickScreen,
+            modifier
+        )
     }
 }
