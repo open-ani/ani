@@ -6,7 +6,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -20,7 +19,6 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -123,10 +121,6 @@ class LazyDataCacheImpl<T>(
         }.stateIn(scope, SharingStarted.Eagerly, null)
 
     override suspend fun requestMore() {
-        if (sourceCompleted.value) {
-            return
-        }
-
         scope.launch {
             val nextScope = this
             val daemon = launch {
@@ -135,17 +129,11 @@ class LazyDataCacheImpl<T>(
             }
             try {
                 requestInProgress.value = true
-                while (currentCoroutineContext().isActive) {
-                    if (sourceCompleted.value) {
-                        return@launch
-                    }
-                    val source = currentSource.filterNotNull().first()
-                    val resp = source.nextPageOrNull()
-                    if (resp != null) {
-                        lock.withLock {
-                            data.value += resp
-                        }
-                        return@launch
+                val source = currentSource.filterNotNull().first()
+                val resp = source.nextPageOrNull()
+                if (resp != null) {
+                    lock.withLock {
+                        data.value += resp
                     }
                 }
             } finally {
