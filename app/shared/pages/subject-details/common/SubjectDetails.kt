@@ -121,8 +121,7 @@ fun SubjectDetails(
         }
 
         SubjectDetailsContent(
-            coverImageUrl, viewModel,
-            Modifier
+            viewModel, Modifier
                 .verticalScroll(rememberScrollState())
                 .padding(scaffoldPadding) // pad top bar
                 .padding(bottom = 16.dp) // pad bottom
@@ -134,7 +133,6 @@ fun SubjectDetails(
 // 详情页内容 (不包含背景)
 @Composable
 private fun SubjectDetailsContent(
-    coverImage: Any?,
     viewModel: SubjectDetailsViewModel,
     modifier: Modifier = Modifier,
     horizontalPadding: Dp = 16.dp,
@@ -142,7 +140,6 @@ private fun SubjectDetailsContent(
     Column(modifier) {
         // 封面, 标题, 标签 
         SubjectDetailsHeader(
-            coverImage,
             viewModel,
             Modifier.padding(top = 8.dp, bottom = 4.dp).padding(start = horizontalPadding)
         )

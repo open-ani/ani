@@ -101,7 +101,7 @@ interface AniBuildConfig {
 expect val currentAniBuildConfig: AniBuildConfig
 
 fun getAniUserAgent(
-    version: String,
+    version: String = currentAniBuildConfig.versionName,
     platform: String = Platform.currentPlatform().name,
 ): String {
     return "him188/ani/$version ($platform) (https://github.com/Him188/ani)"

@@ -65,7 +65,7 @@ class SubjectDetailsViewModel(
     val coverImage: SharedFlow<String> = subjectNotNull.map {
         bangumiClient.subjects.getSubjectImageUrl(
             it.id,
-            BangumiSubjectImageSize.LARGE
+            BangumiSubjectImageSize.MEDIUM
         )
     }.shareInBackground()
 

@@ -1,6 +1,5 @@
 package me.him188.ani.app.ui.subject.details
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,7 +11,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,7 +18,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
@@ -35,23 +32,26 @@ const val COVER_WIDTH_TO_HEIGHT_RATIO = 849 / 1200f
 // 图片和标题
 @Composable
 internal fun SubjectDetailsHeader(
-    coverImage: Any?,
     viewModel: SubjectDetailsViewModel,
     modifier: Modifier = Modifier,
 ) {
     Row(modifier, verticalAlignment = Alignment.CenterVertically) {
         val imageWidth = 120.dp
 
-        AsyncImage(
-            coverImage,
-            null,
+        Box(
             Modifier
-                .clip(RoundedCornerShape(6.dp))
-                .width(imageWidth)
-                .height(imageWidth / COVER_WIDTH_TO_HEIGHT_RATIO)
-                .background(Color.LightGray),
-            contentScale = ContentScale.Crop,
-        )
+                .clip(MaterialTheme.shapes.medium)
+        ) {
+            val coverImage by viewModel.coverImage.collectAsStateWithLifecycle(null)
+            AsyncImage(
+                coverImage,
+                null,
+                Modifier
+                    .width(imageWidth)
+                    .height(imageWidth / COVER_WIDTH_TO_HEIGHT_RATIO),
+                contentScale = ContentScale.Crop,
+            )
+        }
 
         Column(Modifier.padding(horizontal = 16.dp, vertical = 2.dp)) {
             val chineseName by viewModel.chineseName.collectAsStateWithLifecycle("")

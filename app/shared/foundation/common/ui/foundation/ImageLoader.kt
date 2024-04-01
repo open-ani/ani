@@ -21,9 +21,12 @@ package me.him188.ani.app.ui.foundation
 import coil3.ImageLoader
 import coil3.PlatformContext
 import coil3.memory.MemoryCache
+import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.request.CachePolicy
 import coil3.request.crossfade
 import coil3.svg.SvgDecoder
+import me.him188.ani.app.platform.getAniUserAgent
+import okhttp3.OkHttpClient
 
 //
 //fun getDefaultKamelConfig(isProduction: Boolean) = KamelConfig {
@@ -65,6 +68,19 @@ fun getDefaultImageLoader(
 
         components {
             add(SvgDecoder.Factory())
+
+            val client = OkHttpClient.Builder().apply {
+                addInterceptor { chain ->
+                    chain.proceed(
+                        chain.request().newBuilder().addHeader(
+                            "User-Agent",
+                            getAniUserAgent()
+                        ).build()
+                    )
+                }
+            }.build()
+
+            add(OkHttpNetworkFetcherFactory(client))
         }
 
         config()
