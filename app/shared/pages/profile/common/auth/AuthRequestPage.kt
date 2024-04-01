@@ -7,9 +7,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
@@ -21,7 +23,6 @@ import me.him188.ani.app.ui.foundation.AniTopAppBar
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.TopAppBarActionButton
 import me.him188.ani.app.ui.foundation.TopAppBarGoBackButton
-import me.him188.ani.app.ui.loading.ConnectingDialog
 import me.him188.ani.app.ui.profile.AuthViewModel
 import me.him188.ani.app.ui.profile.BangumiOAuthRequest
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
@@ -88,20 +89,15 @@ fun AuthRequestPage(
 private fun AuthResults(viewModel: AuthViewModel) {
     val isProcessing by viewModel.isProcessing.collectAsStateWithLifecycle()
     if (isProcessing != null) {
-        ConnectingDialog(text = null)
-//        Dialog(onDismissRequest = {}, DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)) {
-//            Box(
-//                Modifier
-//                    .clip(RoundedCornerShape(16.dp))
-//                    .size(100.dp)
-//                    .background(MaterialTheme.colorScheme.background),
-//                contentAlignment = Alignment.Center,
-//            ) {
-//                CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onBackground) {
-//                    CircularProgressIndicator()
-//                }
-//            }
-//        }
+        AlertDialog(
+            onDismissRequest = {},
+            text = { Text("请在打开的窗口中完成登录") },
+            confirmButton = {
+                TextButton(onClick = { viewModel.onCancel() }) {
+                    Text("取消")
+                }
+            }
+        )
     }
 
     ErrorDialogHost(
