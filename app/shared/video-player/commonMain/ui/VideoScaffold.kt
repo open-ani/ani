@@ -147,17 +147,7 @@ fun VideoScaffold(
                     }
                 }
 
-                Box(Modifier.weight(1f, fill = true).fillMaxWidth()) {
-                    Column(Modifier.padding(end = 16.dp).align(Alignment.CenterEnd)) {
-                        AnimatedVisibility(
-                            visible = controllersVisible,
-                            enter = fadeIn(),
-                            exit = fadeOut(),
-                        ) {
-                            rhsBar()
-                        }
-                    }
-                }
+                Box(Modifier.weight(1f, fill = true).fillMaxWidth())
 
                 // 底部控制栏: 播放/暂停, 进度条, 切换全屏
                 AnimatedVisibility(
@@ -184,6 +174,21 @@ fun VideoScaffold(
                             CompositionLocalProvider(LocalContentColor provides Color.White) {
                                 bottomBar()
                             }
+                        }
+                    }
+                }
+            }
+
+            Column(Modifier.fillMaxSize().background(Color.Transparent)) {
+                // Separate from controllers, to fix position when controllers are/aren't hidden
+                Box(Modifier.weight(1f, fill = true).fillMaxWidth()) {
+                    Column(Modifier.padding(end = 16.dp).align(Alignment.CenterEnd)) {
+                        AnimatedVisibility(
+                            visible = controllersVisible,
+                            enter = fadeIn(),
+                            exit = fadeOut(),
+                        ) {
+                            rhsBar()
                         }
                     }
                 }
