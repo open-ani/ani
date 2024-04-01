@@ -22,7 +22,8 @@ import me.him188.ani.app.videoplayer.togglePause
 import me.him188.ani.app.videoplayer.ui.PlayerProgressController
 import me.him188.ani.app.videoplayer.ui.VideoLoadingIndicator
 import me.him188.ani.app.videoplayer.ui.VideoScaffold
-import me.him188.ani.app.videoplayer.ui.guesture.VideoGestureHost
+import me.him188.ani.app.videoplayer.ui.guesture.GestureLock
+import me.him188.ani.app.videoplayer.ui.guesture.LockableVideoGestureHost
 import me.him188.ani.app.videoplayer.ui.guesture.rememberSwipeSeekerState
 import me.him188.ani.app.videoplayer.ui.top.PlayerTopBar
 import me.him188.ani.danmaku.ui.DanmakuHost
@@ -48,9 +49,11 @@ internal fun EpisodeVideo(
 ) {
     // Don't rememberSavable. 刻意让每次切换都是隐藏的
     var controllerVisible by remember { mutableStateOf(false) }
+    var isLocked by remember { mutableStateOf(false) }
 
     VideoScaffold(
         controllersVisible = controllerVisible,
+        gestureLocked = isLocked,
         topBar = {
             PlayerTopBar(
                 title = if (isFullscreen) {
@@ -71,11 +74,13 @@ internal fun EpisodeVideo(
             DanmakuHost(danmakuHostState, Modifier.matchParentSize())
         },
         gestureHost = {
-            VideoGestureHost(
+            LockableVideoGestureHost(
                 rememberSwipeSeekerState(constraints.maxWidth) {
                     playerController.seekTo(playerController.playedDuration.value + it.seconds)
                 },
-                onClickScreen = { controllerVisible = !controllerVisible },
+                controllerVisible = controllerVisible,
+                locked = isLocked,
+                setControllerVisible = { controllerVisible = it },
                 onDoubleClickScreen = { playerController.togglePause() },
             )
         },
@@ -90,6 +95,11 @@ internal fun EpisodeVideo(
                         )
                     }
                 }
+            }
+        },
+        rhsBar = {
+            if (isFullscreen) {
+                GestureLock(isLocked = isLocked, onClick = { isLocked = !isLocked })
             }
         },
         bottomBar = {

@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.BoxWithConstraintsScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -41,23 +42,25 @@ import me.him188.ani.app.videoplayer.ui.top.PlayerTopBar
  * 视频播放器框架由以下层级组成, 由上至下:
  *
  * - 悬浮消息: [floatingMessage], 例如正在缓冲
- * - 控制器: [topBar] 和 [bottomBar]
+ * - 控制器: [topBar], [rhsBar] 和 [bottomBar]
  * - 手势: [gestureHost]
  * - 弹幕: [danmakuHost]
  * - 视频: [video]
  *
- * @param controllersVisible 是否展示 [topBar] 和 [bottomBar]
+ * @param controllersVisible 是否展示 [topBar], [rhsBar] 和 [bottomBar]
  * @param topBar [PlayerTopBar]
  * @param video [VideoPlayerView]. video 不会接受到点击事件.
  * @param danmakuHost 为 `DanmakuHost` 留的区域
  * @param gestureHost 手势区域, 例如快进/快退, 音量调节等. See [VideoGestureHost]
  * @param floatingMessage 悬浮消息, 例如正在缓冲. 将会对齐到中央
+ * @param rhsBar 右侧控制栏, 锁定手势等.
  * @param bottomBar [PlayerProgressController]
  * @param isFullscreen 当前是否处于全屏模式. 全屏时此框架会 [Modifier.fillMaxSize], 否则会限制为一个 16:9 的框.
  */
 @Composable
 fun VideoScaffold(
     controllersVisible: Boolean = true,
+    gestureLocked: Boolean = false,
     topBar: @Composable RowScope.() -> Unit = {},
     /**
      * @see VideoPlayerView
@@ -66,6 +69,7 @@ fun VideoScaffold(
     danmakuHost: @Composable BoxScope.() -> Unit = {},
     gestureHost: @Composable BoxWithConstraintsScope.() -> Unit = {},
     floatingMessage: @Composable BoxScope.() -> Unit = {},
+    rhsBar: @Composable ColumnScope.() -> Unit = {},
     /**
      * @see PlayerProgressController
      */
@@ -109,30 +113,17 @@ fun VideoScaffold(
             }
 
             Column(Modifier.fillMaxSize().background(Color.Transparent)) {
-                val backgroundColor = aniDarkColorTheme().background
-
                 // 顶部控制栏: 返回键, 标题, 设置
                 AnimatedVisibility(
-                    visible = controllersVisible,
+                    visible = controllersVisible && !gestureLocked,
                     enter = fadeIn(),
                     exit = fadeOut(),
                 ) {
                     Box {
                         Box(
                             Modifier
-//                                .offset(x = 0.dp, y = (-3).dp)
-//                                .clipToBounds()
-//                                .offset(x = 0.dp, y = (3).dp)
                                 .matchParentSize()
                                 .background(
-//                                    Brush.verticalGradient(
-//                                        0f to Color.Transparent.copy(0.65f),
-//                                        0.2f to Color.Transparent.copy(0.40f),
-//                                        0.4f to Color.Transparent.copy(0.25f),
-//                                        0.6f to Color.Transparent.copy(0.10f),
-//                                        0.9f to Color.Transparent.copy(0.01f),
-//                                        1f to Color.Transparent,
-//                                    )
                                     Brush.verticalGradient(
                                         0f to Color.Transparent.copy(0.72f),
                                         0.32f to Color.Transparent.copy(0.45f),
@@ -156,11 +147,21 @@ fun VideoScaffold(
                     }
                 }
 
-                Box(Modifier.weight(1f, fill = true))
+                Box(Modifier.weight(1f, fill = true).fillMaxWidth()) {
+                    Column(Modifier.padding(end = 16.dp).align(Alignment.CenterEnd)) {
+                        AnimatedVisibility(
+                            visible = controllersVisible,
+                            enter = fadeIn(),
+                            exit = fadeOut(),
+                        ) {
+                            rhsBar()
+                        }
+                    }
+                }
 
                 // 底部控制栏: 播放/暂停, 进度条, 切换全屏
                 AnimatedVisibility(
-                    visible = controllersVisible,
+                    visible = controllersVisible && !gestureLocked,
                     enter = fadeIn(),
                     exit = fadeOut(),
                 ) {

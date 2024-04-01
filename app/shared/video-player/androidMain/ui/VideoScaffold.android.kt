@@ -7,13 +7,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.preview.PHONE_LANDSCAPE
 import me.him188.ani.app.ui.subject.episode.components.EpisodePlayerTitle
 import me.him188.ani.app.videoplayer.DummyPlayerController
-import me.him188.ani.app.videoplayer.ui.guesture.VideoGestureHost
+import me.him188.ani.app.videoplayer.ui.guesture.GestureLock
+import me.him188.ani.app.videoplayer.ui.guesture.LockableVideoGestureHost
 import me.him188.ani.app.videoplayer.ui.guesture.rememberSwipeSeekerState
 import me.him188.ani.app.videoplayer.ui.top.PlayerTopBar
 
@@ -24,12 +26,14 @@ private fun PreviewVideoScaffoldFullscreen() = ProvideCompositionLocalsForPrevie
         DummyPlayerController()
     }
 
-    val controllerVisible by remember {
+    var controllerVisible by remember {
         mutableStateOf(true)
     }
+    var isLocked by remember { mutableStateOf(false) }
 
     VideoScaffold(
         controllersVisible = controllerVisible,
+        gestureLocked = isLocked,
         topBar = {
             PlayerTopBar(
                 title = {
@@ -49,13 +53,15 @@ private fun PreviewVideoScaffoldFullscreen() = ProvideCompositionLocalsForPrevie
         danmakuHost = {
         },
         gestureHost = {
-            VideoGestureHost(
+            LockableVideoGestureHost(
                 rememberSwipeSeekerState(constraints.maxWidth) {
 
                 },
-                onClickScreen = {},
-                onDoubleClickScreen = {},
-                Modifier.fillMaxSize()
+                controllerVisible = controllerVisible,
+                locked = isLocked,
+                setControllerVisible = { controllerVisible = it },
+                Modifier.fillMaxSize(),
+                onDoubleClickScreen = {}
             )
         },
         floatingMessage = {
@@ -63,6 +69,9 @@ private fun PreviewVideoScaffoldFullscreen() = ProvideCompositionLocalsForPrevie
                 VideoLoadingIndicator(true, text = { Text(text = "正在缓冲") })
             }
 
+        },
+        rhsBar = {
+            GestureLock(isLocked = isLocked, onClick = { isLocked = !isLocked })
         },
         bottomBar = {
             PlayerProgressController(

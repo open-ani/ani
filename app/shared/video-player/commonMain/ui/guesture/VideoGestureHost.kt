@@ -107,7 +107,6 @@ fun VideoGestureHost(
     onDoubleClickScreen: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-
     BoxWithConstraints {
         Row(Modifier.align(Alignment.TopCenter).padding(top = 80.dp)) {
             AnimatedVisibility(
