@@ -63,9 +63,9 @@ import kotlin.time.Duration.Companion.seconds
 @Stable
 private val COLLECTION_TABS = listOf(
     UnifiedCollectionType.DROPPED,
-    UnifiedCollectionType.ON_HOLD,
-    UnifiedCollectionType.DOING,
     UnifiedCollectionType.WISH,
+    UnifiedCollectionType.DOING,
+    UnifiedCollectionType.ON_HOLD,
     UnifiedCollectionType.DONE,
 )
 
