@@ -18,7 +18,7 @@ class TimeFormatterTest {
 
     @Test
     fun testJustNow() {
-        assertEquals("0 秒前", timeFormatter.format(fixedTime))
+        assertEquals("刚刚", timeFormatter.format(fixedTime))
     }
 
     @Test
