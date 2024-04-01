@@ -20,7 +20,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ButtonElevation
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ElevatedButton
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -60,7 +59,7 @@ import androidx.compose.ui.unit.dp
  * an action is, the higher emphasis its button should be.
  *
  * - See [Button] for a high-emphasis button without a shadow, also known as a filled button.
- * - See [ElevatedButton] for a [FilledTonalButton] with a shadow.
+ * - See [ElevatedButton] for a [FilledTonalCombinedClickButton] with a shadow.
  * - See [OutlinedButton] for a medium-emphasis button with a border.
  * - See [TextButton] for a low-emphasis button with no border.
  *
@@ -86,7 +85,7 @@ import androidx.compose.ui.unit.dp
  * [Interaction]s and customize the appearance / behavior of this button in different states.
  */
 @Composable
-fun FilledTonalButton(
+fun FilledTonalCombinedClickButton(
     onClick: () -> Unit,
     onClickLabel: String? = null,
     onLongClick: (() -> Unit)? = {},
@@ -103,7 +102,7 @@ fun FilledTonalButton(
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     content: @Composable RowScope.() -> Unit
 ) =
-    Button(
+    CombinedClickButton(
         onClick = onClick,
         onClickLabel = onClickLabel,
         onLongClick = onLongClick,
@@ -143,7 +142,7 @@ fun FilledTonalButton(
  * - See [OutlinedButton] for a medium-emphasis button with a border.
  * - See [ElevatedButton] for an [OutlinedButton] with a shadow.
  * - See [TextButton] for a low-emphasis button with no border.
- * - See [FilledTonalButton] for a middle ground between [OutlinedButton] and [Button].
+ * - See [FilledTonalCombinedClickButton] for a middle ground between [OutlinedButton] and [Button].
  *
  * The default text style for internal [Text] components will be set to [Typography.labelLarge].
  *
@@ -169,7 +168,7 @@ fun FilledTonalButton(
  */
 @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 @Composable
-fun Button(
+fun CombinedClickButton(
     onClick: () -> Unit,
     onClickLabel: String? = null,
     onLongClick: (() -> Unit)? = {},

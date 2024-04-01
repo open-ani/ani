@@ -128,7 +128,7 @@ private fun SmallEpisodeButton(
     onLongClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    me.him188.ani.app.ui.foundation.FilledTonalButton(
+    me.him188.ani.app.ui.foundation.FilledTonalCombinedClickButton(
         onClick = onClick,
         onLongClick = onLongClick,
         modifier = modifier.combinedClickable(onLongClick = onLongClick, onClick = onClick).size(48.dp),

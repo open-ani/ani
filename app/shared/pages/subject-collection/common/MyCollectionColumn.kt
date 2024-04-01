@@ -23,6 +23,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -47,8 +48,6 @@ import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.ui.foundation.AsyncImage
-import me.him188.ani.app.ui.foundation.Button
-import me.him188.ani.app.ui.foundation.FilledTonalButton
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.subject.details.COVER_WIDTH_TO_HEIGHT_RATIO
@@ -288,7 +287,7 @@ private fun CollectionItemContent(
                 }
 
                 ContinueWatchingStatus.NotOnAir -> {
-                    FilledTonalButton(onClick = onPlay) {
+                    androidx.compose.material3.FilledTonalButton(onClick = onPlay) {
                         Text("还未开播")
                     }
                 }
@@ -300,7 +299,7 @@ private fun CollectionItemContent(
                 }
 
                 is ContinueWatchingStatus.Watched -> {
-                    FilledTonalButton(onClick = onPlay) {
+                    androidx.compose.material3.FilledTonalButton(onClick = onPlay) {
                         Text("看到 ${status.episodeSort}")
                     }
                 }
