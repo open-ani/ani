@@ -30,6 +30,8 @@ import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.getCommonKoinModule
+import me.him188.ani.app.session.SessionManager
+import me.him188.ani.app.session.TestSessionManagers
 import me.him188.ani.app.torrent.TorrentDownloader
 import me.him188.ani.app.torrent.TorrentDownloaderFactory
 import me.him188.ani.app.ui.theme.aniColorScheme
@@ -37,6 +39,7 @@ import me.him188.ani.app.videoplayer.DummyPlayerController
 import me.him188.ani.app.videoplayer.PlayerControllerFactory
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
+import org.koin.core.module.Module
 import org.koin.dsl.module
 import kotlin.io.path.createTempDirectory
 
@@ -51,6 +54,7 @@ fun ProvideCompositionLocalsForPreview(
     playerControllerFactory: PlayerControllerFactory = PlayerControllerFactory { _, _ ->
         DummyPlayerController()
     },
+    module: Module.() -> Unit = {},
     content: @Composable () -> Unit,
 ) {
     MaterialTheme {
@@ -70,6 +74,8 @@ fun ProvideCompositionLocalsForPreview(
                     single<PlayerControllerFactory> {
                         playerControllerFactory
                     }
+                    single<SessionManager> { TestSessionManagers.Online }
+                    module()
                 })
             }
             val aniNavigator = remember { AniNavigator() }

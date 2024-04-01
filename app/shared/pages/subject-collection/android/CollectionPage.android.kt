@@ -19,12 +19,18 @@ import java.math.BigDecimal
 internal actual fun PreviewCollectionPage() {
     ProvideCompositionLocalsForPreview {
         rememberViewModel {
-            MyCollectionsViewModel().apply {
-                isLoading.value = false
-                runBlocking { isLoggedIn.emit(true) }
-                collections.value = testCollections()
+            MyCollectionsViewModelImpl().apply {
+                val testData = testCollections()
+                runBlocking {
+                    collectionsByType.forEach { (type, cache) ->
+                        cache.mutate {
+                            testData.filter { it.collectionType == type }
+                        }
+                    }
+                }
             }
         }
+
         CollectionPage(contentPadding = PaddingValues(0.dp))
     }
 }

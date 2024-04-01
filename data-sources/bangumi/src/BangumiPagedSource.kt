@@ -1,17 +1,17 @@
 package me.him188.ani.datasources.bangumi
 
-import me.him188.ani.datasources.api.AbstractPageBasedSearchSession
+import me.him188.ani.datasources.api.AbstractPageBasedPagedSource
 import me.him188.ani.datasources.api.Subject
 import me.him188.ani.datasources.api.SubjectSearchQuery
 import me.him188.ani.datasources.api.SubjectType
 import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectType
 import me.him188.ani.datasources.bangumi.models.subjects.toSubject
 
-class BangumiSearchSession(
+class BangumiPagedSource(
     private val client: BangumiClient,
     private val query: SubjectSearchQuery,
     private val pageSize: Int = 25,
-) : AbstractPageBasedSearchSession<Subject>() {
+) : AbstractPageBasedPagedSource<Subject>() {
 
     override suspend fun nextPageImpl(page: Int): List<Subject>? {
         val paged = client.subjects.searchSubjectByKeywords(

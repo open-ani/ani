@@ -22,6 +22,7 @@ import androidx.compose.runtime.Stable
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -48,6 +49,7 @@ import me.him188.ani.utils.logging.logger
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.openapitools.client.infrastructure.ApiClient
+import kotlin.time.Duration.Companion.days
 
 /**
  * Bangumi 授权状态管理器
@@ -74,7 +76,7 @@ interface SessionManager {
      * 当前授权是否有效. `null` means not yet known, i.e. waiting for database query on start up.
      */
     @Stable
-    val isSessionValid: StateFlow<Boolean?>
+    val isSessionValid: Flow<Boolean?>
 
     /**
      * 当前正在进行中的授权请求.
@@ -104,6 +106,32 @@ interface SessionManager {
     fun requireOnlineAsync(navigator: AniNavigator)
 
     suspend fun logout()
+}
+
+object TestSessionManagers {
+    val Online = object : SessionManager {
+        override val session: MutableStateFlow<Session?> = MutableStateFlow(
+            Session(
+                userId = 1,
+                accessToken = "testToken",
+                expiresAt = System.currentTimeMillis() + 1.days.inWholeMilliseconds,
+            )
+        )
+        override val username: MutableStateFlow<String?> = MutableStateFlow("test")
+        override val isSessionValid: Flow<Boolean?> = session.map { it != null }
+        override val processingRequest: MutableStateFlow<ExternalOAuthRequest?> = MutableStateFlow(null)
+
+        override suspend fun requireOnline(navigator: AniNavigator) {
+        }
+
+        override fun requireOnlineAsync(navigator: AniNavigator) {
+        }
+
+        override suspend fun logout() {
+            username.value = null
+            session.value = null
+        }
+    }
 }
 
 class AuthorizationCancelledException(
@@ -141,9 +169,8 @@ internal class SessionManagerImpl(
             .distinctUntilChanged()
             .stateInBackground(SharingStarted.Eagerly)
 
-    override val isSessionValid: StateFlow<Boolean?> =
+    override val isSessionValid: Flow<Boolean?> =
         username.map { it != null }
-            .stateInBackground(SharingStarted.Eagerly)
 
     private val refreshTokenLoaded = CompletableDeferred<Boolean>()
     private val refreshToken = tokenRepository.refreshToken
@@ -189,12 +216,12 @@ internal class SessionManagerImpl(
 
     override suspend fun requireOnline(navigator: AniNavigator) {
         // fast path, already online
-        if (isSessionValid.value == true) return
+        if (isSessionValid.first() == true) return
 
         singleAuthLock.withLock {
             // not online, try to refresh
             refreshTokenLoaded.await()
-            if (isSessionValid.value == true) return // check again because this might have changed
+            if (isSessionValid.first() == true) return // check again because this might have changed
             if (refreshToken.first() != null) {
                 if (tryRefreshSessionByRefreshToken()) {
                     return

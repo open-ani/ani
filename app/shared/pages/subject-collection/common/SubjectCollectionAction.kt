@@ -41,44 +41,44 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.external.placeholder.placeholder
-import me.him188.ani.datasources.api.CollectionType
+import me.him188.ani.datasources.api.UnifiedCollectionType
 
 @Immutable
 object SubjectCollectionActions {
     val Wish = SubjectCollectionAction(
         { Text("想看") },
         { Icon(Icons.AutoMirrored.Filled.ListAlt, null) },
-        CollectionType.Wish
+        UnifiedCollectionType.WISH
     )
     val Doing = SubjectCollectionAction(
         { Text("在看") },
         { Icon(Icons.Default.PlayCircleOutline, null) },
-        CollectionType.Doing
+        UnifiedCollectionType.DOING
     )
     val Done = SubjectCollectionAction(
         { Text("看过") },
         { Icon(Icons.Default.Done, null) },
-        CollectionType.Done
+        UnifiedCollectionType.DONE
     )
     val OnHold = SubjectCollectionAction(
         { Text("搁置") },
         { Icon(Icons.Default.AccessTime, null) },
-        CollectionType.OnHold
+        UnifiedCollectionType.ON_HOLD
     )
     val Dropped = SubjectCollectionAction(
         { Text("抛弃") },
         { Icon(Icons.Default.Remove, null) },
-        CollectionType.Dropped
+        UnifiedCollectionType.DROPPED
     )
     val DeleteCollection = SubjectCollectionAction(
         { Text("取消追番", color = MaterialTheme.colorScheme.error) },
         { Icon(Icons.Default.DeleteOutline, null) },
-        type = CollectionType.NotCollected,
+        type = UnifiedCollectionType.NOT_COLLECTED,
     )
     val Collect = SubjectCollectionAction(
         { Text("追番") },
         { Icon(Icons.Default.Star, null) },
-        type = CollectionType.NotCollected,
+        type = UnifiedCollectionType.NOT_COLLECTED,
     )
 }
 
@@ -105,13 +105,17 @@ val SubjectCollectionActionsForCollect = SubjectCollectionActionsCommon + listOf
 class SubjectCollectionAction(
     val title: @Composable () -> Unit,
     val icon: @Composable () -> Unit,
-    val type: CollectionType,
+    val type: UnifiedCollectionType,
 )
 
+/**
+ * A drop down menu to edit the collection type of a subject.
+ * Also includes a dialog to set all episodes as watched when the user attempts to mark the subject as [UnifiedCollectionType.DONE].
+ */
 @Composable
 fun EditCollectionTypeDropDown(
-    currentType: CollectionType?,
-    showDropdown: Boolean,
+    currentType: UnifiedCollectionType?,
+    expanded: Boolean,
     onDismissRequest: () -> Unit,
     onSetAllEpisodesDone: (() -> Unit)?,
     onClick: (action: SubjectCollectionAction) -> Unit,
@@ -146,7 +150,7 @@ fun EditCollectionTypeDropDown(
     }
 
     DropdownMenu(
-        showDropdown,
+        expanded,
         onDismissRequest = onDismissRequest,
         offset = DpOffset(x = 0.dp, y = 4.dp),
     ) {
@@ -181,7 +185,7 @@ fun EditCollectionTypeDropDown(
 
 @Composable
 private fun SubjectCollectionAction.colorForCurrent(
-    currentType: CollectionType?
+    currentType: UnifiedCollectionType?
 ) = if (currentType == type) {
     MaterialTheme.colorScheme.primary
 } else {
@@ -217,9 +221,9 @@ private val UncollectedActionButtonColors
 @Composable
 fun CollectionActionButton(
     collected: Boolean?,
-    type: CollectionType?,
+    type: UnifiedCollectionType?,
     onCollect: () -> Unit,
-    onEdit: (newType: CollectionType) -> Unit,
+    onEdit: (newType: UnifiedCollectionType) -> Unit,
     onSetAllEpisodesDone: () -> Unit,
 ) {
     val action = remember(type) {
@@ -241,7 +245,7 @@ fun CollectionActionButton(
 
         EditCollectionTypeDropDown(
             currentType = type,
-            showDropdown = showDropdown,
+            expanded = showDropdown,
             onDismissRequest = { showDropdown = false },
             onSetAllEpisodesDone = onSetAllEpisodesDone,
             onClick = {
@@ -253,7 +257,7 @@ fun CollectionActionButton(
 }
 
 @Composable
-fun BasicSubjectCollectionActionButton(
+private fun BasicSubjectCollectionActionButton(
     action: SubjectCollectionAction?,
     onClick: () -> Unit,
     colors: ButtonColors,

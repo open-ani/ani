@@ -1,7 +1,7 @@
 package me.him188.ani.app.data
 
 import kotlinx.coroutines.flow.Flow
-import me.him188.ani.datasources.api.PageBasedSearchSession
+import me.him188.ani.datasources.api.PageBasedPagedSource
 import me.him188.ani.datasources.api.Paged
 import me.him188.ani.datasources.api.processPagedResponse
 import me.him188.ani.datasources.bangumi.BangumiClient
@@ -31,7 +31,7 @@ class EpisodeRevisionRepositoryImpl : EpisodeRevisionRepository, KoinComponent {
     private val logger = logger(EpisodeRepositoryImpl::class)
 
     override fun getCommentsByEpisodeId(episodeId: Int): Flow<Comment> {
-        return PageBasedSearchSession { page ->
+        return PageBasedPagedSource { page ->
             try {
                 val pageSize = 30
                 client.api.getEpisodeRevisions(

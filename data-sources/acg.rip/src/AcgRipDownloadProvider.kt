@@ -43,9 +43,9 @@ import io.ktor.utils.io.streams.asInput
 import kotlinx.serialization.json.Json
 import me.him188.ani.datasources.api.DownloadProvider
 import me.him188.ani.datasources.api.DownloadSearchQuery
-import me.him188.ani.datasources.api.PageBasedSearchSession
+import me.him188.ani.datasources.api.PageBasedPagedSource
 import me.him188.ani.datasources.api.Paged
-import me.him188.ani.datasources.api.SearchSession
+import me.him188.ani.datasources.api.PagedSource
 import me.him188.ani.datasources.api.titles.RawTitleParser
 import me.him188.ani.datasources.api.titles.parse
 import me.him188.ani.datasources.api.titles.toTopicDetails
@@ -61,7 +61,7 @@ import kotlin.time.Duration.Companion.seconds
 
 
 interface AcgRipClient {
-    fun startSearchSession(filter: DownloadSearchQuery): SearchSession<Topic>
+    fun startSearchSession(filter: DownloadSearchQuery): PagedSource<Topic>
 
     companion object Factory {
         fun create(engineConfig: HttpClientConfig<*>.() -> Unit): AcgRipClient =
@@ -75,7 +75,7 @@ class AcgRipDownloadProvider(
 ) : DownloadProvider {
     override val id: String get() = "acg.rip"
 
-    override suspend fun startSearch(query: DownloadSearchQuery): SearchSession<Topic> {
+    override suspend fun startSearch(query: DownloadSearchQuery): PagedSource<Topic> {
         return client.startSearchSession(query)
     }
 }
@@ -84,8 +84,8 @@ class AcgRipClientImpl(
     engineConfig: HttpClientConfig<*>.() -> Unit,
 ) : AcgRipClient {
     private val client = createHttpClient(engineConfig)
-    override fun startSearchSession(filter: DownloadSearchQuery): SearchSession<Topic> {
-        return PageBasedSearchSession(initialPage = 1) { page ->
+    override fun startSearchSession(filter: DownloadSearchQuery): PagedSource<Topic> {
+        return PageBasedPagedSource(initialPage = 1) { page ->
             val resp = client.get("https://acg.rip/$page.xml") {
                 parameter("term", filter.keywords)
             }

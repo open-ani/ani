@@ -65,7 +65,7 @@ import me.him188.ani.app.ui.foundation.backgroundWithGradient
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.theme.slightlyWeaken
 import me.him188.ani.app.ui.theme.weaken
-import me.him188.ani.datasources.api.CollectionType
+import me.him188.ani.datasources.api.UnifiedCollectionType
 import me.him188.ani.datasources.bangumi.client.BangumiEpisode
 import me.him188.ani.datasources.bangumi.processing.fixToString
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
@@ -175,7 +175,7 @@ private fun SubjectDetailsContent(
                 CollectionActionButton(
                     collected = selfCollected,
                     type = selfCollectionType,
-                    onCollect = { viewModel.launchInBackground { setSelfCollectionType(CollectionType.Doing) } },
+                    onCollect = { viewModel.launchInBackground { setSelfCollectionType(UnifiedCollectionType.DOING) } },
                     onEdit = { viewModel.launchInBackground { setSelfCollectionType(it) } },
                     onSetAllEpisodesDone = { viewModel.launchInBackground { setAllEpisodesWatched() } },
                 )

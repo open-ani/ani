@@ -25,14 +25,14 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.yield
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.launchInBackground
-import me.him188.ani.datasources.api.SearchSession
+import me.him188.ani.datasources.api.PagedSource
 import me.him188.ani.datasources.api.Subject
 import me.him188.ani.utils.logging.info
 import org.koin.core.component.KoinComponent
 
 @Stable
 class SubjectListViewModel(
-    private val searchSession: SearchSession<Subject>,
+    private val pagedSource: PagedSource<Subject>,
 ) : AbstractViewModel(), KoinComponent {
     private val _loading: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val loading: StateFlow<Boolean> get() = _loading
@@ -54,7 +54,7 @@ class SubjectListViewModel(
 
             try {
                 logger.info { "Requesting next page" }
-                val nextPage = searchSession.nextPageOrNull()
+                val nextPage = pagedSource.nextPageOrNull()
                 if (nextPage == null) {
                     _hasMore.value = false
                 } else {

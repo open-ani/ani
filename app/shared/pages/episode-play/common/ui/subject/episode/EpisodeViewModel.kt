@@ -22,7 +22,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.transformLatest
-import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.EpisodeRepository
 import me.him188.ani.app.navigation.BrowserNavigator
@@ -40,7 +39,8 @@ import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuProvider
 import me.him188.ani.datasources.api.DownloadProvider
 import me.him188.ani.datasources.api.DownloadSearchQuery
-import me.him188.ani.datasources.api.SearchSession
+import me.him188.ani.datasources.api.PagedSource
+import me.him188.ani.datasources.api.awaitFinished
 import me.him188.ani.datasources.api.topic.Resolution
 import me.him188.ani.datasources.api.topic.Topic
 import me.him188.ani.datasources.api.topic.TopicCategory
@@ -233,11 +233,8 @@ private class EpisodeViewModelImpl(
             )
             // 等完成时将 _isPlaySourcesLoading 设置为 false
             launchInBackground {
-                select {
-                    session.onFinish {
-                        _isPlaySourcesLoading.emit(false)
-                    }
-                }
+                session.awaitFinished()
+                _isPlaySourcesLoading.emit(false)
             }
 
             processDmhyResults(session, episode)
@@ -250,7 +247,7 @@ private class EpisodeViewModelImpl(
         }.shareInBackground()
 
     private fun processDmhyResults(
-        session: SearchSession<Topic>,
+        session: PagedSource<Topic>,
         currentEpisode: EpisodeDetail
     ) = session.results
         .filter { it.details != null }

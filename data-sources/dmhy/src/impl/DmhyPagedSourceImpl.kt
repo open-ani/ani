@@ -18,18 +18,18 @@
 
 package me.him188.ani.datasources.dmhy.impl
 
-import me.him188.ani.datasources.api.AbstractPageBasedSearchSession
+import me.him188.ani.datasources.api.AbstractPageBasedPagedSource
 import me.him188.ani.datasources.api.DownloadSearchQuery
-import me.him188.ani.datasources.api.SearchSession
+import me.him188.ani.datasources.api.PagedSource
 import me.him188.ani.datasources.api.titles.toTopicDetails
 import me.him188.ani.datasources.api.topic.Topic
 import me.him188.ani.datasources.api.topic.TopicCategory
 import me.him188.ani.datasources.dmhy.impl.protocol.Network
 
-internal class DmhySearchSessionImpl(
+internal class DmhyPagedSourceImpl(
     private val query: DownloadSearchQuery,
     private val network: Network,
-) : SearchSession<Topic>, AbstractPageBasedSearchSession<Topic>() {
+) : PagedSource<Topic>, AbstractPageBasedPagedSource<Topic>() {
     override val initialPage: Int get() = 1
 
     override suspend fun nextPageImpl(page: Int): List<Topic> {

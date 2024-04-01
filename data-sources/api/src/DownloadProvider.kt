@@ -37,7 +37,7 @@ interface DownloadProvider {
     /**
      * Starts a search session.
      */
-    suspend fun startSearch(query: DownloadSearchQuery): SearchSession<Topic>
+    suspend fun startSearch(query: DownloadSearchQuery): PagedSource<Topic>
 }
 
 fun CombinedDownloadProvider(
@@ -49,9 +49,9 @@ class CombinedDownloadProvider(
 ) : DownloadProvider {
     override val id: String get() = "combined: ${providers.joinToString { it.id }}"
 
-    override suspend fun startSearch(query: DownloadSearchQuery): SearchSession<Topic> {
+    override suspend fun startSearch(query: DownloadSearchQuery): PagedSource<Topic> {
         val sessions = providers.mapNotNull { runCatching { it.startSearch(query) }.getOrNull() }
-        return PageBasedSearchSession {
+        return PageBasedPagedSource {
             sessions.asFlow()
                 .mapNotNull { session ->
                     session.nextPageOrNull()?.takeIf { it.isNotEmpty() }

@@ -1,39 +1,32 @@
 package me.him188.ani.app.ui.collection
 
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flatMapMerge
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withPermit
 import me.him188.ani.app.ViewModelAuthSupport
 import me.him188.ani.app.data.EpisodeRepository
 import me.him188.ani.app.data.SubjectRepository
 import me.him188.ani.app.data.setSubjectCollectionTypeOrDelete
 import me.him188.ani.app.session.SessionManager
+import me.him188.ani.app.tools.caching.LazyDataCache
+import me.him188.ani.app.tools.caching.cacheIn
+import me.him188.ani.app.tools.caching.value
 import me.him188.ani.app.ui.foundation.AbstractViewModel
+import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.runUntilSuccess
-import me.him188.ani.datasources.api.CollectionType
+import me.him188.ani.datasources.api.UnifiedCollectionType
+import me.him188.ani.datasources.api.map
 import me.him188.ani.datasources.bangumi.processing.airSeason
 import me.him188.ani.datasources.bangumi.processing.isOnAir
 import me.him188.ani.datasources.bangumi.processing.nameCNOrName
 import me.him188.ani.datasources.bangumi.processing.toCollectionType
 import me.him188.ani.datasources.bangumi.processing.toSubjectCollectionType
-import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.openapitools.client.models.EpType
@@ -44,49 +37,38 @@ import org.openapitools.client.models.SubjectType
 import org.openapitools.client.models.UserEpisodeCollection
 import org.openapitools.client.models.UserSubjectCollection
 
-class MyCollectionsViewModel : AbstractViewModel(), KoinComponent, ViewModelAuthSupport {
+interface MyCollectionsViewModel : HasBackgroundScope, ViewModelAuthSupport {
+    @Stable
+    fun collectionsByType(type: UnifiedCollectionType): LazyDataCache<SubjectCollectionItem>
+
+    suspend fun setCollectionType(subjectId: Int, type: UnifiedCollectionType)
+
+    suspend fun setAllEpisodesWatched(subjectId: Int)
+
+    suspend fun setEpisodeWatched(subjectId: Int, episodeId: Int, watched: Boolean)
+}
+
+fun MyCollectionsViewModel(): MyCollectionsViewModel = MyCollectionsViewModelImpl()
+
+class MyCollectionsViewModelImpl : AbstractViewModel(), KoinComponent, MyCollectionsViewModel {
     private val sessionManager: SessionManager by inject()
     private val subjectRepository: SubjectRepository by inject()
     private val episodeRepository: EpisodeRepository by inject()
 
     @Stable
-    val isLoggedIn = sessionManager.isSessionValid.filterNotNull().localCachedSharedFlow()
-
-    @Stable
-    val isLoading = MutableStateFlow(true)
-
-    @Stable
-    val collections = sessionManager.username.filterNotNull().flatMapLatest { username ->
-        isLoading.value = true
-        val parallelism = Semaphore(16)
-        runUntilSuccess { subjectRepository.getSubjectCollections(username) }.flatMapMerge { raw ->
-            flow {
-                parallelism.withPermit {
-                    emit(runUntilSuccess { raw.convertToItem() })
-                }
+    val collectionsByType = UnifiedCollectionType.entries.associateWith { type ->
+        sessionManager.username.filterNotNull().map { username ->
+            subjectRepository.getSubjectCollections(
+                username,
+                subjectCollectionType = type.toSubjectCollectionType(),
+            ).map {
+                it.convertToItem()
             }
-        }.runningList().onCompletion {
-            isLoading.value = false
-        }
-    }.localCachedStateFlow(null)
-
-    @Stable
-    private val _collectionsByType: Map<CollectionType, Flow<List<SubjectCollectionItem>>> =
-        CollectionType.entries.associateWith { type ->
-            collections.map {
-                it.orEmpty().filter { collection -> collection.collectionType == type }
-            }
-        }
-
-    @Composable
-    fun collectionsByType(type: CollectionType): State<List<SubjectCollectionItem>> {
-        val state = (_collectionsByType[type] ?: emptyFlow()) // 不应该是 null, 但 defensive
-            .collectAsStateWithLifecycle(
-                collections.value.orEmpty().filter { collection -> collection.collectionType == type }
-            )
-        return state
+        }.cacheIn(backgroundScope)
     }
 
+    @Stable
+    override fun collectionsByType(type: UnifiedCollectionType) = collectionsByType[type]!!
 
     private suspend fun UserSubjectCollection.convertToItem() = coroutineScope {
         val subject = async {
@@ -111,19 +93,23 @@ class MyCollectionsViewModel : AbstractViewModel(), KoinComponent, ViewModelAuth
         createItem(subject.await(), isOnAir.await(), latestEp.await(), lastWatchedEp.await(), eps)
     }
 
-    suspend fun updateSubjectCollection(subjectId: Int, action: SubjectCollectionAction) {
-        collections.value = collections.value?.map { item ->
-            if (item.subjectId == subjectId) {
-                item.copy(collectionType = action.type.toSubjectCollectionType())
-            } else {
-                item
+    override suspend fun setCollectionType(subjectId: Int, type: UnifiedCollectionType) {
+        val cache = findContainingCache(subjectId) ?: return // not found
+        cache.mutate {
+            map { item ->
+                if (item.subjectId == subjectId) {
+                    item.copy(collectionType = type.toSubjectCollectionType())
+                } else {
+                    item
+                }
             }
         }
-        subjectRepository.setSubjectCollectionTypeOrDelete(subjectId, action.type.toSubjectCollectionType())
+        subjectRepository.setSubjectCollectionTypeOrDelete(subjectId, type.toSubjectCollectionType())
     }
 
-    suspend fun setAllEpisodesWatched(subjectId: Int) {
-        collections.value?.find { it.subjectId == subjectId }?.let { collection ->
+    override suspend fun setAllEpisodesWatched(subjectId: Int) {
+        val cache = findContainingCache(subjectId) ?: return
+        cache.value.find { it.subjectId == subjectId }?.let { collection ->
             collection.episodes = collection.episodes.map { episode ->
                 episode.copy(type = EpisodeCollectionType.WATCHED)
             }
@@ -136,9 +122,11 @@ class MyCollectionsViewModel : AbstractViewModel(), KoinComponent, ViewModelAuth
         )
     }
 
-    suspend fun setEpisodeWatched(subjectId: Int, episodeId: Int, watched: Boolean) {
+    override suspend fun setEpisodeWatched(subjectId: Int, episodeId: Int, watched: Boolean) {
+        val cache = findContainingCache(subjectId) ?: return
+
         val newType = if (watched) EpisodeCollectionType.WATCHED else EpisodeCollectionType.WATCHLIST
-        collections.value?.find { it.subjectId == subjectId }?.let { collection ->
+        cache.value.find { it.subjectId == subjectId }?.let { collection ->
             collection.episodes = collection.episodes.map { episode ->
                 if (episode.episode.id == episodeId) {
                     episode.copy(type = newType)
@@ -154,6 +142,12 @@ class MyCollectionsViewModel : AbstractViewModel(), KoinComponent, ViewModelAuth
             newType,
         )
     }
+
+    /**
+     * Finds the cache that contains the subject.
+     */
+    private fun findContainingCache(subjectId: Int) =
+        collectionsByType.values.firstOrNull { list -> list.value.any { it.subjectId == subjectId } }
 }
 
 sealed class ContinueWatchingStatus {
@@ -210,7 +204,7 @@ class SubjectCollectionItem(
      */
     val hasStarted = episodes.firstOrNull()?.episode?.isOnAir() == false
 
-    val collectionType: CollectionType = collectionType.toCollectionType()
+    val collectionType: UnifiedCollectionType = collectionType.toCollectionType()
     var episodes by mutableStateOf(episodes)
 
     val latestEpIndex: Int? = episodes.indexOfFirst { it.episode.id == latestEp?.episode?.id }

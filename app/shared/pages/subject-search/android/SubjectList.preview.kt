@@ -21,28 +21,27 @@ package me.him188.ani.app.ui.subject
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.Preview
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.selects.SelectClause0
 import me.him188.ani.app.ui.foundation.PreviewData
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
-import me.him188.ani.datasources.api.SearchSession
+import me.him188.ani.datasources.api.PagedSource
 import me.him188.ani.datasources.api.Subject
 
 @Composable
 @Preview(apiLevel = 33)
 private fun PreviewSubjectList() {
     val viewModel = remember {
-        SubjectListViewModel(object : SearchSession<Subject> {
+        SubjectListViewModel(object : PagedSource<Subject> {
             override val results: Flow<Subject> = flow {
                 while (true) {
                     emit(subject)
                 }
             }
-            private val finished = CompletableDeferred<Subject>()
-            override val onFinish: SelectClause0 = finished.onJoin
+            override val finished: StateFlow<Boolean> = MutableStateFlow(false)
 
             private val subject get() = PreviewData.SosouNoFurilen
             private val maxCount = 15

@@ -1,11 +1,11 @@
 package me.him188.ani.app.data
 
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
-import me.him188.ani.datasources.api.PageBasedSearchSession
+import me.him188.ani.datasources.api.PageBasedPagedSource
 import me.him188.ani.datasources.api.Paged
+import me.him188.ani.datasources.api.PagedSource
 import me.him188.ani.datasources.api.processPagedResponse
 import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.utils.logging.logger
@@ -22,11 +22,11 @@ interface SubjectRepository : Repository {
     suspend fun getSubject(id: Int): Subject?
 
 
-    suspend fun getSubjectCollections(
+    fun getSubjectCollections(
         username: String,
         subjectType: SubjectType? = null,
         subjectCollectionType: SubjectCollectionType? = null,
-    ): Flow<UserSubjectCollection>
+    ): PagedSource<UserSubjectCollection>
 
     suspend fun patchSubjectCollection(subjectId: Int, payload: UserSubjectCollectionModifyPayload)
     suspend fun deleteSubjectCollection(subjectId: Int)
@@ -68,12 +68,12 @@ class SubjectRepositoryImpl : SubjectRepository, KoinComponent {
         }
     }
 
-    override suspend fun getSubjectCollections(
+    override fun getSubjectCollections(
         username: String,
         subjectType: SubjectType?,
         subjectCollectionType: SubjectCollectionType?,
-    ): Flow<UserSubjectCollection> = runInterruptible(Dispatchers.IO) {
-        PageBasedSearchSession { page ->
+    ): PagedSource<UserSubjectCollection> {
+        return PageBasedPagedSource { page ->
             try {
                 val pageSize = 30
                 client.api.getUserCollectionsByUsername(
@@ -88,7 +88,7 @@ class SubjectRepositoryImpl : SubjectRepository, KoinComponent {
                 logger.warn("Exception in getCollections", e)
                 null
             }
-        }.results
+        }
     }
 }
 

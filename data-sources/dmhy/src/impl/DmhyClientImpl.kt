@@ -40,7 +40,7 @@ import io.ktor.utils.io.jvm.javaio.toInputStream
 import io.ktor.utils.io.streams.asInput
 import kotlinx.serialization.json.Json
 import me.him188.ani.datasources.api.DownloadSearchQuery
-import me.him188.ani.datasources.api.SearchSession
+import me.him188.ani.datasources.api.PagedSource
 import me.him188.ani.datasources.api.topic.Topic
 import me.him188.ani.datasources.dmhy.DmhyClient
 import me.him188.ani.datasources.dmhy.impl.protocol.Network
@@ -55,8 +55,8 @@ internal class DmhyClientImpl(
     private val network: Network = Network(createHttpClient(engineConfig))
 
 
-    override fun startSearchSession(filter: DownloadSearchQuery): SearchSession<Topic> {
-        return DmhySearchSessionImpl(filter, network)
+    override fun startSearchSession(filter: DownloadSearchQuery): PagedSource<Topic> {
+        return DmhyPagedSourceImpl(filter, network)
     }
 }
 

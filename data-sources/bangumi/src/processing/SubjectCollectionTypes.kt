@@ -1,48 +1,48 @@
 package me.him188.ani.datasources.bangumi.processing
 
-import me.him188.ani.datasources.api.CollectionType
+import me.him188.ani.datasources.api.UnifiedCollectionType
 import org.openapitools.client.models.EpisodeCollectionType
 import org.openapitools.client.models.SubjectCollectionType
 
 
-fun CollectionType.toSubjectCollectionType(): SubjectCollectionType? {
+fun UnifiedCollectionType.toSubjectCollectionType(): SubjectCollectionType? {
     return when (this) {
-        CollectionType.Wish -> SubjectCollectionType.Wish
-        CollectionType.Doing -> SubjectCollectionType.Doing
-        CollectionType.Done -> SubjectCollectionType.Done
-        CollectionType.OnHold -> SubjectCollectionType.OnHold
-        CollectionType.Dropped -> SubjectCollectionType.Dropped
-        CollectionType.NotCollected -> null
+        UnifiedCollectionType.WISH -> SubjectCollectionType.Wish
+        UnifiedCollectionType.DOING -> SubjectCollectionType.Doing
+        UnifiedCollectionType.DONE -> SubjectCollectionType.Done
+        UnifiedCollectionType.ON_HOLD -> SubjectCollectionType.OnHold
+        UnifiedCollectionType.DROPPED -> SubjectCollectionType.Dropped
+        UnifiedCollectionType.NOT_COLLECTED -> null
     }
 }
 
-fun SubjectCollectionType?.toCollectionType(): CollectionType {
+fun SubjectCollectionType?.toCollectionType(): UnifiedCollectionType {
     return when (this) {
-        SubjectCollectionType.Wish -> CollectionType.Wish
-        SubjectCollectionType.Doing -> CollectionType.Doing
-        SubjectCollectionType.Done -> CollectionType.Done
-        SubjectCollectionType.OnHold -> CollectionType.OnHold
-        SubjectCollectionType.Dropped -> CollectionType.Dropped
-        null -> CollectionType.NotCollected
+        SubjectCollectionType.Wish -> UnifiedCollectionType.WISH
+        SubjectCollectionType.Doing -> UnifiedCollectionType.DOING
+        SubjectCollectionType.Done -> UnifiedCollectionType.DONE
+        SubjectCollectionType.OnHold -> UnifiedCollectionType.ON_HOLD
+        SubjectCollectionType.Dropped -> UnifiedCollectionType.DROPPED
+        null -> UnifiedCollectionType.NOT_COLLECTED
     }
 }
 
-fun EpisodeCollectionType.toCollectionType(): CollectionType {
+fun EpisodeCollectionType.toCollectionType(): UnifiedCollectionType {
     return when (this) {
-        EpisodeCollectionType.NOT_COLLECTED -> CollectionType.NotCollected
-        EpisodeCollectionType.WATCHLIST -> CollectionType.Wish
-        EpisodeCollectionType.WATCHED -> CollectionType.Done
-        EpisodeCollectionType.DISCARDED -> CollectionType.Dropped
+        EpisodeCollectionType.NOT_COLLECTED -> UnifiedCollectionType.NOT_COLLECTED
+        EpisodeCollectionType.WATCHLIST -> UnifiedCollectionType.WISH
+        EpisodeCollectionType.WATCHED -> UnifiedCollectionType.DONE
+        EpisodeCollectionType.DISCARDED -> UnifiedCollectionType.DROPPED
     }
 }
 
-fun CollectionType.toEpisodeCollectionType(): EpisodeCollectionType {
+fun UnifiedCollectionType.toEpisodeCollectionType(): EpisodeCollectionType {
     return when (this) {
-        CollectionType.NotCollected -> EpisodeCollectionType.NOT_COLLECTED
-        CollectionType.Wish -> EpisodeCollectionType.WATCHLIST
-        CollectionType.Doing -> EpisodeCollectionType.WATCHLIST
-        CollectionType.Done -> EpisodeCollectionType.WATCHED
-        CollectionType.OnHold -> EpisodeCollectionType.WATCHLIST
-        CollectionType.Dropped -> EpisodeCollectionType.DISCARDED
+        UnifiedCollectionType.NOT_COLLECTED -> EpisodeCollectionType.NOT_COLLECTED
+        UnifiedCollectionType.WISH -> EpisodeCollectionType.WATCHLIST
+        UnifiedCollectionType.DOING -> EpisodeCollectionType.WATCHLIST
+        UnifiedCollectionType.DONE -> EpisodeCollectionType.WATCHED
+        UnifiedCollectionType.ON_HOLD -> EpisodeCollectionType.WATCHLIST
+        UnifiedCollectionType.DROPPED -> EpisodeCollectionType.DISCARDED
     }
 }

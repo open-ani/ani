@@ -17,8 +17,8 @@ import me.him188.ani.app.data.SubjectRepository
 import me.him188.ani.app.data.setSubjectCollectionTypeOrDelete
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.ui.foundation.AbstractViewModel
-import me.him188.ani.datasources.api.CollectionType
-import me.him188.ani.datasources.api.PageBasedSearchSession
+import me.him188.ani.datasources.api.PageBasedPagedSource
+import me.him188.ani.datasources.api.UnifiedCollectionType
 import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.datasources.bangumi.Rating
 import me.him188.ani.datasources.bangumi.client.BangumiEpType
@@ -134,7 +134,7 @@ class SubjectDetailsViewModel(
         }.onFailure {
             if (it is ClientException && it.statusCode == 404) {
                 // 用户没有收藏这个
-                return@combine CollectionType.NotCollected
+                return@combine UnifiedCollectionType.NOT_COLLECTED
             }
         }.getOrNull()
     }.localCachedSharedFlow()
@@ -144,7 +144,7 @@ class SubjectDetailsViewModel(
      *
      * 未登录或网络错误时为 `null`.
      */
-    val selfCollected = selfCollectionType.map { it != CollectionType.NotCollected }.shareInBackground()
+    val selfCollected = selfCollectionType.map { it != UnifiedCollectionType.NOT_COLLECTED }.shareInBackground()
 
     /**
      * 根据登录用户的收藏类型的相应动作, 例如未追番时为 "追番", 已追番时为 "已在看" / "已看完" 等.
@@ -156,7 +156,7 @@ class SubjectDetailsViewModel(
     /**
      * null means delete
      */
-    suspend fun setSelfCollectionType(subjectCollectionType: CollectionType) {
+    suspend fun setSelfCollectionType(subjectCollectionType: UnifiedCollectionType) {
         selfCollectionType.emit(subjectCollectionType)
         subjectRepository.setSubjectCollectionTypeOrDelete(
             subjectId.value,
@@ -174,7 +174,7 @@ class SubjectDetailsViewModel(
     }
 
     private fun episodesFlow(type: BangumiEpType) = this.subjectId.mapLatest { subjectId ->
-        PageBasedSearchSession { page ->
+        PageBasedPagedSource { page ->
             bangumiClient.episodes.getEpisodes(
                 subjectId.toLong(),
                 type,

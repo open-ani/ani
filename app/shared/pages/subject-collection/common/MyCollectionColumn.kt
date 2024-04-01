@@ -25,6 +25,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
@@ -33,9 +34,12 @@ import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -44,33 +48,50 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.flow.debounce
 import me.him188.ani.app.navigation.LocalNavigator
+import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.ui.foundation.AsyncImage
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
-import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.subject.details.COVER_WIDTH_TO_HEIGHT_RATIO
 import me.him188.ani.app.ui.subject.details.Tag
-import org.openapitools.client.models.EpisodeCollectionType
+import me.him188.ani.datasources.api.UnifiedCollectionType
 import org.openapitools.client.models.UserEpisodeCollection
+import kotlin.time.Duration.Companion.seconds
 
 /**
- * 我的追番的番剧列表
+ * Lazy column of [item]s, designed for My Collections.
+ *
+ * @param item composes each item. See [SubjectCollectionItem]
+ * @param onEmpty content to be displayed when [LazyDataCache.data] is empty.
  * @param contentPadding 要求该 column 的内容必须保持的 padding.
- * [MyCollectionColumn] 将会允许元素渲染到这些区域, 但会在列表首尾添加 padding.
+ * [SubjectCollectionsColumn] 将会允许元素渲染到这些区域, 但会在列表首尾添加 padding.
  * 这样可以让列表渲染到 bottom bar 的下面 (bottom bar 设置 alpha 0.97), 而用户又能正常地滑动到列表尾部并完整显示最后一个元素.
  */
 @Composable
-fun MyCollectionColumn(
-    collections: List<SubjectCollectionItem>,
-    viewModel: MyCollectionsViewModel,
-    contentPadding: PaddingValues,
-    doneButton: (item: SubjectCollectionItem) -> (@Composable () -> Unit)?,
+fun SubjectCollectionsColumn(
+    cache: LazyDataCache<SubjectCollectionItem>,
+    item: @Composable (item: SubjectCollectionItem) -> Unit,
+    onEmpty: @Composable () -> Unit,
     modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
     val spacedBy = 16.dp
     val state = rememberLazyListState()
+
+    val data by cache.data.collectAsState()
+
+    // 如果不 debounce, 会导致刚刚加载完成后会显示一小会 "空空如也"
+    val isCompleted by remember(cache) { cache.isCompleted.debounce(1.seconds) }.collectAsState(false)
+
+    if (data.isEmpty() && isCompleted) {
+        onEmpty()
+        return
+    }
+
     LazyColumn(
         modifier.padding(horizontal = 12.dp).padding(vertical = 0.dp),
         state,
@@ -82,47 +103,39 @@ fun MyCollectionColumn(
             item { Spacer(Modifier.height(it)) }
         }
 
-        items(collections, key = { it.subjectId }) { collection ->
+        items(data, key = { it.subjectId }) { collection ->
             // 在首次加载时展示一个渐入的动画, 随后不再展示
             var targetAlpha by rememberSaveable { mutableStateOf(0f) }
             val alpha by animateFloatAsState(
                 targetAlpha,
-                if (state.canScrollBackward || state.canScrollForward)
+                if (state.canScrollBackward || state.canScrollForward) {
                     snap(0)
-                else tween(150)
+                } else tween(150)
             )
             Box(
                 Modifier.then(
-                    if (LocalIsPreviewing.current) // 预览模式下无动画
+                    if (LocalIsPreviewing.current) { // 预览模式下无动画
                         Modifier
-                    else
+                    } else
                         Modifier.alpha(alpha)
                 ).animateItemPlacement()
             ) {
-                val navigator = LocalNavigator.current
-                CollectionItem(
-                    collection,
-                    onClick = {
-                        navigator.navigateSubjectDetails(collection.subjectId)
-                    },
-                    onClickEpisode = {
-                        navigator.navigateEpisodeDetails(collection.subjectId, it.episode.id)
-                    },
-                    onLongClickEpisode = { item ->
-                        viewModel.launchInBackground {
-                            setEpisodeWatched(
-                                collection.subjectId,
-                                item.episode.id,
-                                watched = item.type != EpisodeCollectionType.WATCHED
-                            )
-                        }
-                    },
-                    doneButton = doneButton(collection),
-                    viewModel,
-                )
+                item(collection)
             }
             SideEffect {
                 targetAlpha = 1f
+            }
+        }
+
+        if (!isCompleted) {
+            item("dummy loader") {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                    CircularProgressIndicator()
+                }
+
+                LaunchedEffect(true) {
+                    cache.requestMore()
+                }
             }
         }
 
@@ -135,23 +148,26 @@ fun MyCollectionColumn(
 
 /**
  * 追番列表的一个条目卡片
+ *
+ * @param onClick on clicking this card (background)
  */
 @Composable
-private fun CollectionItem(
+fun SubjectCollectionItem(
     item: SubjectCollectionItem,
     onClick: () -> Unit,
     onClickEpisode: (episode: UserEpisodeCollection) -> Unit,
     onLongClickEpisode: (episode: UserEpisodeCollection) -> Unit,
-    doneButton: @Composable (() -> Unit)?,
-    viewModel: MyCollectionsViewModel,
+    onSetAllEpisodesDone: () -> Unit,
+    onSetCollectionType: (new: UnifiedCollectionType) -> Unit,
     modifier: Modifier = Modifier,
+    height: Dp = 148.dp,
+    shape: RoundedCornerShape = RoundedCornerShape(8.dp),
+    doneButton: @Composable (() -> Unit)? = null,
 ) {
-    val cardShape = RoundedCornerShape(8.dp)
-    val height = 148.dp
     Card(
         onClick,
-        modifier.clip(cardShape).fillMaxWidth().height(height),
-        shape = cardShape,
+        modifier.clip(shape).fillMaxWidth().height(height),
+        shape = shape,
     ) {
         Row(Modifier.weight(1f, fill = false)) {
             AsyncImage(
@@ -162,14 +178,14 @@ private fun CollectionItem(
             )
 
             Box(Modifier.weight(1f)) {
-                CollectionItemContent(
+                SubjectCollectionItemContent(
                     item,
                     onClickEpisode,
                     onLongClickEpisode,
-                    doneButton,
-                    viewModel,
-                    Modifier.fillMaxSize()
-                        .padding(start = 12.dp),
+                    onSetAllEpisodesDone,
+                    onSetCollectionType,
+                    Modifier.padding(start = 12.dp).fillMaxSize(),
+                    doneButton = doneButton,
                 )
             }
         }
@@ -180,13 +196,14 @@ private fun CollectionItem(
  * 追番列表的一个条目卡片的内容
  */
 @Composable
-private fun CollectionItemContent(
+private fun SubjectCollectionItemContent(
     item: SubjectCollectionItem,
     onClickEpisode: (episode: UserEpisodeCollection) -> Unit,
     onLongClickEpisode: (episode: UserEpisodeCollection) -> Unit,
-    doneButton: (@Composable () -> Unit)?,
-    viewModel: MyCollectionsViewModel,
+    onSetAllEpisodesDone: (() -> Unit)?,
+    onSetCollectionType: (new: UnifiedCollectionType) -> Unit,
     modifier: Modifier = Modifier,
+    doneButton: @Composable (() -> Unit)? = null,
 ) {
     Column(modifier) {
         // 标题和右上角菜单
@@ -212,11 +229,9 @@ private fun CollectionItemContent(
                 EditCollectionTypeDropDown(
                     currentType = item.collectionType,
                     showDropdown, { showDropdown = false },
-                    onSetAllEpisodesDone = {
-                        viewModel.launchInBackground { viewModel.setAllEpisodesWatched(item.subjectId) }
-                    },
+                    onSetAllEpisodesDone = onSetAllEpisodesDone,
                     onClick = { action ->
-                        viewModel.launchInBackground { updateSubjectCollection(item.subjectId, action) }
+                        onSetCollectionType(action.type)
                     }
                 )
             }
@@ -309,6 +324,7 @@ private fun CollectionItemContent(
 }
 
 
+// The label "已完结 · 全 28 话"
 @Composable
 private fun OnAirLabel(
     item: SubjectCollectionItem,

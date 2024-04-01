@@ -46,6 +46,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.ui.isLoggedIn
 import me.him188.ani.app.ui.main.LocalContentPaddings
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.openapitools.client.models.User
@@ -60,10 +61,11 @@ fun ProfilePage(modifier: Modifier = Modifier) {
     ) {
         // user profile
         val selfInfo by viewModel.selfInfo.collectAsStateWithLifecycle()
+        val loggedIn by isLoggedIn()
         Column {
             SelfInfo(
                 selfInfo,
-                viewModel.isLoggedIn.collectAsStateWithLifecycle().value,
+                loggedIn,
                 Modifier.fillMaxWidth()
             )
 

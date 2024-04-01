@@ -18,7 +18,7 @@
 
 package me.him188.ani.datasources.bangumi
 
-import me.him188.ani.datasources.api.SearchSession
+import me.him188.ani.datasources.api.PagedSource
 import me.him188.ani.datasources.api.Subject
 import me.him188.ani.datasources.api.SubjectProvider
 import me.him188.ani.datasources.api.SubjectSearchQuery
@@ -28,8 +28,8 @@ class BangumiSubjectProvider(
 ) : SubjectProvider {
     override val id: String get() = "Bangumi"
 
-    override fun startSearch(query: SubjectSearchQuery): SearchSession<Subject> =
-        BangumiSearchSession(client, query)
+    override fun startSearch(query: SubjectSearchQuery): PagedSource<Subject> =
+        BangumiPagedSource(client, query)
 
 //    override suspend fun getSubjectDetails(id: String): SubjectDetails? {
 //        return client.subjects.getSubjectById(id.toLong())?.toSubjectDetails()

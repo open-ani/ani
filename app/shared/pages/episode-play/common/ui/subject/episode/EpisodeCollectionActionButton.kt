@@ -27,7 +27,7 @@ import me.him188.ani.app.ui.collection.EditCollectionTypeDropDown
 import me.him188.ani.app.ui.collection.SubjectCollectionAction
 import me.him188.ani.app.ui.collection.SubjectCollectionActions
 import me.him188.ani.app.ui.external.placeholder.placeholder
-import me.him188.ani.datasources.api.CollectionType
+import me.him188.ani.datasources.api.UnifiedCollectionType
 import me.him188.ani.datasources.bangumi.processing.toCollectionType
 import me.him188.ani.datasources.bangumi.processing.toEpisodeCollectionType
 import org.openapitools.client.models.EpisodeCollectionType
@@ -37,7 +37,7 @@ private val ACTIONS = listOf(
     SubjectCollectionAction(
         { Text("取消看过") },
         { Icon(Icons.Default.AccessTime, null) },
-        CollectionType.Wish
+        UnifiedCollectionType.WISH
     ),
     SubjectCollectionActions.Done,
     SubjectCollectionActions.Dropped,
@@ -118,7 +118,7 @@ fun EpisodeCollectionActionButton(
 
         EditCollectionTypeDropDown(
             currentType = collectionType?.toCollectionType(),
-            showDropdown = showDropdown,
+            expanded = showDropdown,
             onDismissRequest = { showDropdown = false },
             onSetAllEpisodesDone = null,
             onClick = {

@@ -21,13 +21,13 @@ package me.him188.ani.datasources.dmhy
 import io.ktor.client.HttpClientConfig
 import me.him188.ani.datasources.api.DownloadProvider
 import me.him188.ani.datasources.api.DownloadSearchQuery
-import me.him188.ani.datasources.api.SearchSession
+import me.him188.ani.datasources.api.PagedSource
 import me.him188.ani.datasources.api.topic.Topic
 import me.him188.ani.datasources.dmhy.impl.DmhyClientImpl
 
 
 interface DmhyClient {
-    fun startSearchSession(filter: DownloadSearchQuery): SearchSession<Topic>
+    fun startSearchSession(filter: DownloadSearchQuery): PagedSource<Topic>
 
     companion object Factory {
         fun create(engineConfig: HttpClientConfig<*>.() -> Unit): DmhyClient =
@@ -41,7 +41,7 @@ class DmhyDownloadProvider(
 ) : DownloadProvider {
     override val id: String get() = "dmhy"
 
-    override suspend fun startSearch(query: DownloadSearchQuery): SearchSession<Topic> {
+    override suspend fun startSearch(query: DownloadSearchQuery): PagedSource<Topic> {
         return client.startSearchSession(query)
     }
 }

@@ -18,27 +18,31 @@
 
 package me.him188.ani.datasources.api
 
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.selects.SelectClause0
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 /**
  * 一个搜索请求.
  *
- * **Stateful.** [SearchSession] 会持有当前查询状态信息, 例如当前页码.
+ * **Stateful.** [PagedSource] 会持有当前查询状态信息, 例如当前页码.
  */
-interface SearchSession<out T> {
+interface PagedSource<out T> {
     /**
      * 全部搜索结果, 以 [Flow] 形式提供, 惰性请求.
      */
     val results: Flow<T>
-    val onFinish: SelectClause0
+
+    val finished: StateFlow<Boolean>
 
     /**
      * 主动查询下一页. 当已经没有下一页时返回 `null`. 注意, 若有使用 [results], 主动操作 [nextPageOrNull] 将导致 [results] 会跳过该页.
@@ -46,19 +50,29 @@ interface SearchSession<out T> {
     suspend fun nextPageOrNull(): List<T>?
 }
 
-//@OverloadResolutionByLambdaReturnType
-//@Suppress("FunctionName")
-//fun <T> PageBasedSearchSession(nextPageOrNull: suspend (page: Int) -> List<T>?): SearchSession<T> {
-//    @Suppress("UnnecessaryVariable", "RedundantSuppression") // two bugs...
-//    val nextPageOrNullImpl = nextPageOrNull
-//    return object : AbstractPageBasedSearchSession<T>() {
-//        override suspend fun nextPageImpl(page: Int): List<T>? = nextPageOrNullImpl(page)
-//    }
-//}
+suspend inline fun PagedSource<*>.awaitFinished() {
+    this.finished.filter { it }.first()
+}
+
+inline fun <T, R> PagedSource<T>.map(crossinline transform: suspend (T) -> R): PagedSource<R> {
+    val self = this
+    return object : PagedSource<R> {
+        override val results: Flow<R> = self.results.map {
+            transform(it)
+        }
+        override val finished: StateFlow<Boolean> get() = self.finished
+        override suspend fun nextPageOrNull(): List<R>? {
+            return self.nextPageOrNull()?.map {
+                transform(it)
+            }
+        }
+    }
+}
+
 
 @Suppress("FunctionName")
-fun <T> SingleShotSearchSession(getAll: suspend () -> Flow<T>): SearchSession<T> {
-    return object : AbstractPageBasedSearchSession<T>() {
+fun <T> SingleShotPagedSource(getAll: suspend () -> Flow<T>): PagedSource<T> {
+    return object : AbstractPageBasedPagedSource<T>() {
         override suspend fun nextPageImpl(page: Int): List<T> {
             val paged = getAll()
             noMorePages()
@@ -67,18 +81,16 @@ fun <T> SingleShotSearchSession(getAll: suspend () -> Flow<T>): SearchSession<T>
     }
 }
 
-@JvmName("PageBasedSearchSession1")
 @Suppress("FunctionName")
-@OverloadResolutionByLambdaReturnType
-fun <T> PageBasedSearchSession(
+fun <T> PageBasedPagedSource(
     initialPage: Int = 0,
     nextPageOrNull: suspend (page: Int) -> Paged<T>?
-): SearchSession<T> {
+): PagedSource<T> {
     val initialPage1 = initialPage
 
     @Suppress("UnnecessaryVariable", "RedundantSuppression") // two bugs...
     val nextPageOrNullImpl = nextPageOrNull
-    return object : AbstractPageBasedSearchSession<T>() {
+    return object : AbstractPageBasedPagedSource<T>() {
         override val initialPage: Int get() = initialPage1
         override suspend fun nextPageImpl(page: Int): List<T>? {
             val paged = nextPageOrNullImpl(page)
@@ -94,12 +106,11 @@ fun <T> PageBasedSearchSession(
     }
 }
 
-abstract class AbstractPageBasedSearchSession<T> : SearchSession<T> {
+abstract class AbstractPageBasedPagedSource<T> : PagedSource<T> {
     @Suppress("LeakingThis")
     private var page = initialPage
     private val lock = Mutex()
-    private val finished = CompletableDeferred<Unit>(null)
-    override val onFinish: SelectClause0 get() = finished.onJoin
+    override val finished = MutableStateFlow(false)
 
     protected open val initialPage: Int get() = 0
 
@@ -126,7 +137,7 @@ abstract class AbstractPageBasedSearchSession<T> : SearchSession<T> {
             return // already finished
         }
         page = Int.MAX_VALUE
-        finished.complete(Unit)
+        finished.value = true
     }
 
     final override val results: Flow<T> by lazy {
