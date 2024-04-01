@@ -19,7 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.flatMapMerge
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flow
 import me.him188.ani.app.data.Comment
 import me.him188.ani.app.data.EpisodeRevisionRepository
 import me.him188.ani.app.data.UserRepository
@@ -42,13 +42,15 @@ class CommentViewModel(
 
     val comments = revisionRepository.getCommentsByEpisodeId(episodeId)
         .flatMapMerge { comment ->
-            flowOf(UiComment(comment,
-                comment.authorUsername?.let { username ->
-                    runUntilSuccess {
-                        userRepo.getUserByUsername(username)
+            flow {
+                emit(UiComment(comment,
+                    comment.authorUsername?.let { username ->
+                        runUntilSuccess {
+                            userRepo.getUserByUsername(username)
+                        }
                     }
-                }
-            ))
+                ))
+            }
         }
         .runningList()
         .shareInBackground()

@@ -26,6 +26,7 @@ import me.him188.ani.app.data.SubjectRepository
 import me.him188.ani.app.data.setSubjectCollectionTypeOrDelete
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.ui.foundation.AbstractViewModel
+import me.him188.ani.app.ui.foundation.runUntilSuccess
 import me.him188.ani.datasources.api.CollectionType
 import me.him188.ani.datasources.bangumi.processing.airSeason
 import me.him188.ani.datasources.bangumi.processing.isOnAir
@@ -58,10 +59,10 @@ class MyCollectionsViewModel : AbstractViewModel(), KoinComponent, ViewModelAuth
     val collections = sessionManager.username.filterNotNull().flatMapLatest { username ->
         isLoading.value = true
         val parallelism = Semaphore(16)
-        subjectRepository.getSubjectCollections(username).flatMapMerge { raw ->
+        runUntilSuccess { subjectRepository.getSubjectCollections(username) }.flatMapMerge { raw ->
             flow {
                 parallelism.withPermit {
-                    emit(raw.convertToItem())
+                    emit(runUntilSuccess { raw.convertToItem() })
                 }
             }
         }.runningList().onCompletion {
@@ -89,9 +90,11 @@ class MyCollectionsViewModel : AbstractViewModel(), KoinComponent, ViewModelAuth
 
     private suspend fun UserSubjectCollection.convertToItem() = coroutineScope {
         val subject = async {
-            subjectRepository.getSubject(subjectId)
+            runUntilSuccess { subjectRepository.getSubject(subjectId) }
         }
-        val eps = episodeRepository.getSubjectEpisodeCollection(subjectId, EpType.MainStory).toList()
+        val eps = runUntilSuccess {
+            episodeRepository.getSubjectEpisodeCollection(subjectId, EpType.MainStory)
+        }.toList()
         val isOnAir = async {
             eps.firstOrNull { it.episode.isOnAir() == true } != null
         }

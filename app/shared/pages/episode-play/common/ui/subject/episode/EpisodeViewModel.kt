@@ -31,6 +31,7 @@ import me.him188.ani.app.torrent.TorrentDownloaderManager
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
+import me.him188.ani.app.ui.foundation.runUntilSuccess
 import me.him188.ani.app.videoplayer.PlayerController
 import me.him188.ani.app.videoplayer.PlayerControllerFactory
 import me.him188.ani.app.videoplayer.TorrentVideoSource
@@ -169,12 +170,12 @@ private class EpisodeViewModelImpl(
     override val subjectId: MutableStateFlow<Int> = MutableStateFlow(initialSubjectId)
 
     private val subjectDetails = subjectId.mapLatest {
-        withContext(Dispatchers.IO) { bangumiClient.api.getSubjectById(initialSubjectId) } // TODO: replace with data layer 
+        runUntilSuccess { withContext(Dispatchers.IO) { bangumiClient.api.getSubjectById(initialSubjectId) } }// TODO: replace with data layer 
     }.shareInBackground()
 
     @Stable
     override val episode: SharedFlow<EpisodeDetail> = episodeId.mapLatest { episodeId ->
-        withContext(Dispatchers.IO) { bangumiClient.api.getEpisodeById(episodeId) }
+        runUntilSuccess { withContext(Dispatchers.IO) { bangumiClient.api.getEpisodeById(episodeId) } }
     }.shareInBackground()
 
     @Stable

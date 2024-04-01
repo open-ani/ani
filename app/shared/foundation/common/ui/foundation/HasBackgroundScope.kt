@@ -33,6 +33,7 @@ import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.cancellation.CancellationException
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 /**
@@ -343,8 +344,11 @@ fun <V : HasBackgroundScope> V.launchInMain(
 /**
  * Runs the block multiple times, returns when it succeeds the first time. with a delay between each attempt.
  */
-suspend inline fun <R, V : HasBackgroundScope> V.runUntilSuccess(block: V.() -> R): R {
+suspend inline fun <R, V : HasBackgroundScope> V.runUntilSuccess(
+    block: V.() -> R
+): R {
     contract { callsInPlace(block, InvocationKind.AT_LEAST_ONCE) }
+    var failed = 0
     while (currentCoroutineContext().isActive) {
         try {
             return block()
@@ -354,9 +358,20 @@ suspend inline fun <R, V : HasBackgroundScope> V.runUntilSuccess(block: V.() -> 
             } else {
                 e.printStackTrace()
             }
-            delay(3.seconds)
+            failed++
+            delay(backoffDelay(failed))
         }
     }
     yield() // throws CancellationException()
     throw CancellationException() // should not reach, defensive
+}
+
+@PublishedApi
+internal fun backoffDelay(failureCount: Int): Duration {
+    return when (failureCount) {
+        0, 1 -> 1.seconds
+        2 -> 2.seconds
+        3 -> 4.seconds
+        else -> 8.seconds
+    }
 }
