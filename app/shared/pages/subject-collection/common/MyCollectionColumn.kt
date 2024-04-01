@@ -286,7 +286,7 @@ private fun SubjectCollectionItemContent(
                     item.episodes.getOrNull(it + 1)
                 } ?: item.lastWatchedEpIndex?.let {
                     item.episodes.getOrNull(it)
-                })?.let {
+                } ?: item.episodes.firstOrNull())?.let {
                     onClickEpisode(it)
                 }
             }
