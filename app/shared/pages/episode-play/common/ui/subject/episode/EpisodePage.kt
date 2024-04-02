@@ -39,7 +39,7 @@ import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.subject.episode.components.EpisodePlayerTitle
 import me.him188.ani.app.ui.subject.episode.details.EpisodeDetails
-import me.him188.ani.danmaku.ui.rememberDanmakuHostState
+import me.him188.ani.danmaku.ui.DanmakuHostState
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.lifecycle.Lifecycle
 import moe.tlaster.precompose.navigation.BackHandler
@@ -136,7 +136,9 @@ fun EpisodePageContent(
                     EpisodePlayerTitle(ep, epTitle, subjectTitle)
                 },
                 viewModel.playerController,
-                danmakuHostState = rememberDanmakuHostState(viewModel.danmakuFlow),
+                danmakuHostState = remember {
+                    DanmakuHostState(viewModel.danmakuFlow)
+                },
                 onClickFullScreen = {
                     if (isFullscreen) {
                         context.setRequestFullScreen(false)
