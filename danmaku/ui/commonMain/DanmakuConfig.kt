@@ -3,6 +3,7 @@ package me.him188.ani.danmaku.ui
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.TextStyle
@@ -10,6 +11,7 @@ import androidx.compose.ui.text.style.TextMotion
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import me.him188.ani.danmaku.api.Danmaku
 
 /**
@@ -39,20 +41,30 @@ class DanmakuConfig(
 
 @Immutable
 class DanmakuStyle(
-    private val fontSize: TextUnit = TextUnit.Unspecified,
-    val alpha: Float = 1.0f,
-    private val strokeWidth: Float = 4f,
-    private val strokeMiter: Float = 6f,
+    private val fontSize: TextUnit = 18.sp,
+    val alpha: Float = 0.7f,
+    private val strokeColor: Color = Color.Black,
+    private val stroke: Stroke? = Stroke(
+        miter = 1.5f,
+        width = 6f,
+        join = StrokeJoin.Round,
+    ),
+    private val shadow: Shadow? = null,
 ) {
     @Stable
-    fun toTextStyle(): TextStyle = TextStyle(
+    fun styleForBorder(): TextStyle = TextStyle(
         fontSize = fontSize,
-        color = Color.Black,
-        drawStyle = Stroke(
-            miter = strokeMiter,
-            width = strokeWidth,
-            join = StrokeJoin.Round,
-        ),
+        color = strokeColor,
+        drawStyle = stroke,
+        textMotion = TextMotion.Animated,
+        shadow = shadow,
+    )
+
+    // 'inside' the border
+    @Stable
+    fun styleForText(): TextStyle = TextStyle(
+        fontSize = fontSize,
+        color = Color.White,
         textMotion = TextMotion.Animated,
     )
 }

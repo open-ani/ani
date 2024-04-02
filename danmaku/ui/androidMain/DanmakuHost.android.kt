@@ -1,6 +1,9 @@
 package me.him188.ani.danmaku.ui
 
+import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import android.content.res.Configuration.UI_MODE_TYPE_NORMAL
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -8,6 +11,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.datasource.LoremIpsum
 import kotlinx.coroutines.delay
@@ -60,3 +64,25 @@ internal actual fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
     )
 }
 
+@Composable
+@Preview("Light", showBackground = true)
+@Preview("Dark", showBackground = true, uiMode = UI_MODE_NIGHT_YES or UI_MODE_TYPE_NORMAL)
+private fun PreviewDanmakuText() {
+    ProvideCompositionLocalsForPreview {
+        Surface(color = Color.White) {
+            DanmakuText(
+                remember {
+                    object : DanmakuState {
+                        override val danmaku: Danmaku = Danmaku(
+                            "1", 0.0, "1",
+                            DanmakuLocation.NORMAL,
+                            text = "Hello, world!",
+                            0
+                        )
+                    }
+                },
+                DanmakuStyle()
+            )
+        }
+    }
+}

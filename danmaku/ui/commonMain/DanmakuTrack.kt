@@ -188,14 +188,7 @@ fun DanmakuTrack(
                         }
                         .wrapContentSize()
                 ) {
-                    Text(
-                        danmaku.danmaku.text,
-                        Modifier.alpha(style.alpha),
-                        overflow = TextOverflow.Visible,
-                        maxLines = 1,
-                        softWrap = false,
-                        style = MaterialTheme.typography.bodyMedium.merge(style.toTextStyle()),
-                    )
+                    DanmakuText(danmaku, style)
                 }
             }
         }
@@ -213,5 +206,36 @@ fun DanmakuTrack(
         trackSize = it.size
     }) {
         scope.content()
+    }
+}
+
+/**
+ * The actual text of the danmaku.
+ *
+ * It is always white with black border.
+ */
+@Composable
+fun DanmakuText(
+    danmaku: DanmakuState,
+    style: DanmakuStyle,
+    modifier: Modifier = Modifier
+) {
+    Box(modifier.alpha(style.alpha)) {
+        Text(
+            danmaku.danmaku.text,
+            Modifier,
+            overflow = TextOverflow.Visible,
+            maxLines = 1,
+            softWrap = false,
+            style = MaterialTheme.typography.bodyMedium.merge(style.styleForBorder()),
+        )
+        Text(
+            danmaku.danmaku.text,
+            Modifier,
+            overflow = TextOverflow.Visible,
+            maxLines = 1,
+            softWrap = false,
+            style = MaterialTheme.typography.bodyMedium.merge(style.styleForText()),
+        )
     }
 }
