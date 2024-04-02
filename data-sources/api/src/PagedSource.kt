@@ -31,7 +31,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import java.util.concurrent.atomic.AtomicIntegerFieldUpdater
 
 /**
  * 一个搜索请求.
@@ -45,6 +44,8 @@ interface PagedSource<out T> {
     val results: Flow<T>
 
     val finished: StateFlow<Boolean>
+
+    val currentPage: StateFlow<Int>
 
     /**
      * 总共的结果数量. 该数量不一定提供.
@@ -74,6 +75,7 @@ inline fun <T, R> PagedSource<T>.map(crossinline transform: suspend (T) -> R): P
             transform(it)
         }
         override val finished: StateFlow<Boolean> get() = self.finished
+        override val currentPage: StateFlow<Int> get() = self.currentPage
         override val totalSize: StateFlow<Int?> get() = self.totalSize
 
         override suspend fun nextPageOrNull(): List<R>? {
@@ -122,12 +124,10 @@ fun <T> PageBasedPagedSource(
     initialPage: Int = 0,
     nextPageOrNull: suspend PagedSourceContext.(page: Int) -> Paged<T>?
 ): PagedSource<T> {
-    val initialPage1 = initialPage
-
     @Suppress("UnnecessaryVariable", "RedundantSuppression") // two bugs...
     val nextPageOrNullImpl = nextPageOrNull
     return object : AbstractPageBasedPagedSource<T>() {
-        override val initialPage: Int get() = initialPage1
+        override val currentPage: MutableStateFlow<Int> = MutableStateFlow(initialPage)
         private inline val self get() = this
         private val context = object : PagedSourceContext {
             override fun setTotalSize(size: Int) {
@@ -151,8 +151,8 @@ fun <T> PageBasedPagedSource(
 
 abstract class AbstractPageBasedPagedSource<T> : PagedSource<T> {
     @Suppress("LeakingThis")
-    @Volatile
-    private var page = initialPage
+    override val currentPage: MutableStateFlow<Int> = MutableStateFlow(initialPage)
+
     private val lock = Mutex()
     override val finished = MutableStateFlow(false)
 
@@ -163,13 +163,19 @@ abstract class AbstractPageBasedPagedSource<T> : PagedSource<T> {
             noMorePages()
             return null
         }
-        val result = nextPageImpl(PAGE.get(this))
+        val result = nextPageImpl(currentPage.value)
         if (result == null) {
             noMorePages()
             return null
         }
         if (!finished.value) {
-            PAGE.incrementAndGet(this)
+            while (!currentPage.compareAndSet(currentPage.value, currentPage.value + 1)) {
+                @Suppress("ControlFlowWithEmptyBody")
+                for (i in 0..4) {
+                    // some backoff
+                }
+                // retry
+            }
         }
         return result
     }
@@ -186,13 +192,20 @@ abstract class AbstractPageBasedPagedSource<T> : PagedSource<T> {
     final override fun backToPrevious() {
         // This is actually not thread-safe, but it's fine for now
 
-        if (PAGE.get(this) == 0) {
+        if (currentPage.value == 0) {
             return
         }
         if (finished.value) {
             finished.value = false
         }
-        PAGE.decrementAndGet(this)
+
+        while (!currentPage.compareAndSet(currentPage.value, currentPage.value - 1)) {
+            @Suppress("ControlFlowWithEmptyBody")
+            for (i in 0..4) {
+                // some backoff
+            }
+            // retry
+        }
     }
 
     final override val results: Flow<T> by lazy {
@@ -212,12 +225,5 @@ abstract class AbstractPageBasedPagedSource<T> : PagedSource<T> {
 
     protected fun setTotalSize(size: Int) {
         totalSize.value = size
-    }
-
-    private companion object {
-        @JvmStatic
-        val PAGE: AtomicIntegerFieldUpdater<AbstractPageBasedPagedSource<*>> =
-            AtomicIntegerFieldUpdater.newUpdater(AbstractPageBasedPagedSource::class.java, "page")
-        // Note: kotlinx atomic does not work well in this multiplatform project
     }
 }

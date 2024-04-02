@@ -42,17 +42,17 @@ private fun PreviewSubjectList() {
                 }
             }
             override val finished: StateFlow<Boolean> = MutableStateFlow(false)
+            override val currentPage = MutableStateFlow(0)
             override val totalSize: StateFlow<Int?> = MutableStateFlow(null)
 
             private val subject get() = PreviewData.SosouNoFurilen
             private val maxCount = 15
-            private var count = 0
             override suspend fun nextPageOrNull(): List<Subject>? {
                 delay(500)
-                return if (count >= maxCount) {
+                return if (currentPage.value >= maxCount) {
                     null
                 } else {
-                    count++
+                    currentPage.value++
                     listOf(subject)
                 }
             }

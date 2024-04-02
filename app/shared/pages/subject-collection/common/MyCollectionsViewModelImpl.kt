@@ -9,8 +9,6 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withPermit
 import me.him188.ani.app.ViewModelAuthSupport
 import me.him188.ani.app.data.EpisodeRepository
 import me.him188.ani.app.data.SubjectRepository
@@ -74,8 +72,8 @@ class MyCollectionsViewModelImpl : AbstractViewModel(), KoinComponent, MyCollect
     override fun collectionsByType(type: UnifiedCollectionType) = collectionsByType[type]!!
 
     override fun init() {
-        val loadCollectionsLock = Semaphore(1)
         // 获取第一页, 得到数量
+        // 不要太快, 测试到的如果全并行就会导致 "在看" 没有数据, 不清楚是哪边问题.
         launchInBackground {
             // 按实用顺序加载
             listOf(
@@ -84,9 +82,11 @@ class MyCollectionsViewModelImpl : AbstractViewModel(), KoinComponent, MyCollect
                 UnifiedCollectionType.ON_HOLD,
                 UnifiedCollectionType.DONE,
                 UnifiedCollectionType.DROPPED,
-            ).forEach {
-                loadCollectionsLock.withPermit { // 不要太快, 测试到的如果全并行就会导致 "在看" 没有数据, 不清楚是哪边问题.
-                    collectionsByType[it]?.requestMore()
+            ).forEach { type ->
+                collectionsByType[type]?.let { cache ->
+                    if (cache.data.value.isEmpty()) {
+                        cache.requestMore()
+                    }
                 }
             }
         }

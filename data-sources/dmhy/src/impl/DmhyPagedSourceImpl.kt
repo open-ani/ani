@@ -18,6 +18,7 @@
 
 package me.him188.ani.datasources.dmhy.impl
 
+import kotlinx.coroutines.flow.MutableStateFlow
 import me.him188.ani.datasources.api.AbstractPageBasedPagedSource
 import me.him188.ani.datasources.api.DownloadSearchQuery
 import me.him188.ani.datasources.api.PagedSource
@@ -30,7 +31,7 @@ internal class DmhyPagedSourceImpl(
     private val query: DownloadSearchQuery,
     private val network: Network,
 ) : PagedSource<Topic>, AbstractPageBasedPagedSource<Topic>() {
-    override val initialPage: Int get() = 1
+    override val currentPage: MutableStateFlow<Int> = MutableStateFlow(1)
 
     override suspend fun nextPageImpl(page: Int): List<Topic> {
         val (_, result) = network.list(
