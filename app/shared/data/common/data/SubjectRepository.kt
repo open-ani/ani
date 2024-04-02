@@ -100,8 +100,3 @@ private class LruCache<K, V>(private val maxSize: Int) : LinkedHashMap<K, V>(max
         return size > maxSize
     }
 }
-
-/*
-- 将追番列表改为惰性加载
-  - 已知问题: 顶部分类 "想看 x" 的计数只能在加载完所有数据后才能计算, 因此会不能看到. 
- */
