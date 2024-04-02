@@ -47,6 +47,11 @@ interface PagedSource<out T> {
     val finished: StateFlow<Boolean>
 
     /**
+     * 总共的结果数量. 该数量不一定提供.
+     */
+    val totalSize: StateFlow<Int?>
+
+    /**
      * 主动查询下一页. 当已经没有下一页时返回 `null`. 注意, 若有使用 [results], 主动操作 [nextPageOrNull] 将导致 [results] 会跳过该页.
      */
     suspend fun nextPageOrNull(): List<T>?
@@ -69,6 +74,8 @@ inline fun <T, R> PagedSource<T>.map(crossinline transform: suspend (T) -> R): P
             transform(it)
         }
         override val finished: StateFlow<Boolean> get() = self.finished
+        override val totalSize: StateFlow<Int?> get() = self.totalSize
+
         override suspend fun nextPageOrNull(): List<R>? {
             return try {
                 self.nextPageOrNull()?.map {
@@ -86,12 +93,23 @@ inline fun <T, R> PagedSource<T>.map(crossinline transform: suspend (T) -> R): P
     }
 }
 
+interface PagedSourceContext {
+    fun setTotalSize(size: Int)
+}
+
 
 @Suppress("FunctionName")
-fun <T> SingleShotPagedSource(getAll: suspend () -> Flow<T>): PagedSource<T> {
+fun <T> SingleShotPagedSource(getAll: suspend PagedSourceContext.() -> Flow<T>): PagedSource<T> {
     return object : AbstractPageBasedPagedSource<T>() {
+        private inline val self get() = this
+        private val context = object : PagedSourceContext {
+            override fun setTotalSize(size: Int) {
+                self.setTotalSize(size)
+            }
+        }
+
         override suspend fun nextPageImpl(page: Int): List<T> {
-            val paged = getAll()
+            val paged = getAll(context)
             noMorePages()
             return paged.toList()
         }
@@ -101,7 +119,7 @@ fun <T> SingleShotPagedSource(getAll: suspend () -> Flow<T>): PagedSource<T> {
 @Suppress("FunctionName")
 fun <T> PageBasedPagedSource(
     initialPage: Int = 0,
-    nextPageOrNull: suspend (page: Int) -> Paged<T>?
+    nextPageOrNull: suspend PagedSourceContext.(page: Int) -> Paged<T>?
 ): PagedSource<T> {
     val initialPage1 = initialPage
 
@@ -109,8 +127,15 @@ fun <T> PageBasedPagedSource(
     val nextPageOrNullImpl = nextPageOrNull
     return object : AbstractPageBasedPagedSource<T>() {
         override val initialPage: Int get() = initialPage1
+        private inline val self get() = this
+        private val context = object : PagedSourceContext {
+            override fun setTotalSize(size: Int) {
+                self.setTotalSize(size)
+            }
+        }
+
         override suspend fun nextPageImpl(page: Int): List<T>? {
-            val paged = nextPageOrNullImpl(page)
+            val paged = nextPageOrNullImpl(context, page)
             if (paged == null) {
                 noMorePages()
                 return null
@@ -133,16 +158,16 @@ abstract class AbstractPageBasedPagedSource<T> : PagedSource<T> {
     protected open val initialPage: Int get() = 0
 
     final override suspend fun nextPageOrNull(): List<T>? = lock.withLock {
-        if (PAGE.get(this) == Int.MAX_VALUE) {
+        if (finished.value) {
             noMorePages()
             return null
         }
-        val result = nextPageImpl(page)
+        val result = nextPageImpl(PAGE.get(this))
         if (result == null) {
             noMorePages()
             return null
         }
-        if (PAGE.get(this) != Int.MAX_VALUE) {
+        if (!finished.value) {
             PAGE.incrementAndGet(this)
         }
         return result
@@ -151,14 +176,21 @@ abstract class AbstractPageBasedPagedSource<T> : PagedSource<T> {
     protected abstract suspend fun nextPageImpl(page: Int): List<T>?
 
     protected fun noMorePages() {
-        if (PAGE.get(this) == Int.MAX_VALUE) {
-            return // already finished
+        if (finished.value) {
+            return
         }
-        PAGE.set(this, Int.MAX_VALUE)
         finished.value = true
     }
 
     final override fun backToPrevious() {
+        // This is actually not thread-safe, but it's fine for now
+        
+        if (PAGE.get(this) == 0) {
+            return
+        }
+        if (finished.value) {
+            finished.value = false
+        }
         PAGE.decrementAndGet(this)
     }
 
@@ -173,6 +205,12 @@ abstract class AbstractPageBasedPagedSource<T> : PagedSource<T> {
                 emitAll(result.asFlow())
             }
         }
+    }
+
+    final override val totalSize: MutableStateFlow<Int?> = MutableStateFlow(null)
+
+    protected fun setTotalSize(size: Int) {
+        totalSize.value = size
     }
 
     private companion object {
