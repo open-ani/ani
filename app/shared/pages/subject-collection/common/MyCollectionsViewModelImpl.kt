@@ -9,6 +9,8 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import me.him188.ani.app.ViewModelAuthSupport
 import me.him188.ani.app.data.EpisodeRepository
 import me.him188.ani.app.data.SubjectRepository
@@ -19,6 +21,7 @@ import me.him188.ani.app.tools.caching.cached
 import me.him188.ani.app.tools.caching.value
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
+import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.runUntilSuccess
 import me.him188.ani.datasources.api.UnifiedCollectionType
 import me.him188.ani.datasources.api.map
@@ -64,11 +67,30 @@ class MyCollectionsViewModelImpl : AbstractViewModel(), KoinComponent, MyCollect
             ).map {
                 it.convertToItem()
             }
-        }.cached()
+        }.cached(debugName = "collectionsByType-${type.name}")
     }
 
     @Stable
     override fun collectionsByType(type: UnifiedCollectionType) = collectionsByType[type]!!
+
+    override fun init() {
+        val loadCollectionsLock = Semaphore(1)
+        // 获取第一页, 得到数量
+        launchInBackground {
+            // 按实用顺序加载
+            listOf(
+                UnifiedCollectionType.DOING,
+                UnifiedCollectionType.WISH,
+                UnifiedCollectionType.ON_HOLD,
+                UnifiedCollectionType.DONE,
+                UnifiedCollectionType.DROPPED,
+            ).forEach {
+                loadCollectionsLock.withPermit { // 不要太快, 测试到的如果全并行就会导致 "在看" 没有数据, 不清楚是哪边问题.
+                    collectionsByType[it]?.requestMore()
+                }
+            }
+        }
+    }
 
     private suspend fun UserSubjectCollection.convertToItem() = coroutineScope {
         val subject = async {

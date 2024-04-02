@@ -37,14 +37,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.tools.caching.LazyDataCache
@@ -56,12 +53,11 @@ import me.him188.ani.app.ui.profile.UnauthorizedTips
 import me.him188.ani.datasources.api.UnifiedCollectionType
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.openapitools.client.models.EpisodeCollectionType
-import kotlin.time.Duration.Companion.seconds
 
 
 // 有顺序, https://github.com/Him188/ani/issues/73
 @Stable
-private val COLLECTION_TABS = listOf(
+val COLLECTION_TABS_SORTED = listOf(
     UnifiedCollectionType.DROPPED,
     UnifiedCollectionType.WISH,
     UnifiedCollectionType.DOING,
@@ -84,7 +80,8 @@ fun CollectionPage(contentPadding: PaddingValues = PaddingValues(0.dp)) {
     ) { topBarPaddings ->
         val isLoggedIn by isLoggedIn()
 
-        val pagerState = rememberPagerState(initialPage = COLLECTION_TABS.size / 2) { COLLECTION_TABS.size }
+        val pagerState =
+            rememberPagerState(initialPage = COLLECTION_TABS_SORTED.size / 2) { COLLECTION_TABS_SORTED.size }
         val scope = rememberCoroutineScope()
 
         // Pager with TabRow
@@ -98,21 +95,18 @@ fun CollectionPage(contentPadding: PaddingValues = PaddingValues(0.dp)) {
                 },
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                COLLECTION_TABS.forEachIndexed { index, collectionType ->
+                COLLECTION_TABS_SORTED.forEachIndexed { index, collectionType ->
                     Tab(
                         selected = pagerState.currentPage == index,
                         onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
                         text = {
-                            val type = COLLECTION_TABS[index]
+                            val type = COLLECTION_TABS_SORTED[index]
                             val cache = vm.collectionsByType(type)
-                            val collections by cache.data.collectAsStateWithLifecycle()
-                            val isCompleted by remember(cache) { cache.isCompleted.debounce(1.seconds) }.collectAsState(
-                                false
-                            )
-                            if (!isCompleted) {
+                            val size by cache.totalSize.collectAsStateWithLifecycle(null)
+                            if (size == null) {
                                 Text(text = collectionType.displayText())
                             } else {
-                                Text(text = collectionType.displayText() + " " + collections.size)
+                                Text(text = collectionType.displayText() + " " + size)
                             }
                         }
                     )
@@ -120,7 +114,7 @@ fun CollectionPage(contentPadding: PaddingValues = PaddingValues(0.dp)) {
             }
 
             HorizontalPager(state = pagerState, Modifier.fillMaxSize()) { index ->
-                val type = COLLECTION_TABS[index]
+                val type = COLLECTION_TABS_SORTED[index]
                 val cache = vm.collectionsByType(type)
                 TabContent(cache, vm, type, isLoggedIn, contentPadding, Modifier.fillMaxSize())
             }

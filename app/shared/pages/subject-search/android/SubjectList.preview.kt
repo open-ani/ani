@@ -42,6 +42,7 @@ private fun PreviewSubjectList() {
                 }
             }
             override val finished: StateFlow<Boolean> = MutableStateFlow(false)
+            override val totalSize: StateFlow<Int?> = MutableStateFlow(null)
 
             private val subject get() = PreviewData.SosouNoFurilen
             private val maxCount = 15

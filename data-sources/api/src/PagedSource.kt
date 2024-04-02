@@ -77,8 +77,9 @@ inline fun <T, R> PagedSource<T>.map(crossinline transform: suspend (T) -> R): P
         override val totalSize: StateFlow<Int?> get() = self.totalSize
 
         override suspend fun nextPageOrNull(): List<R>? {
+            val nextPageOrNull = self.nextPageOrNull()
             return try {
-                self.nextPageOrNull()?.map {
+                nextPageOrNull?.map {
                     transform(it)
                 }
             } catch (e: CancellationException) {
@@ -184,7 +185,7 @@ abstract class AbstractPageBasedPagedSource<T> : PagedSource<T> {
 
     final override fun backToPrevious() {
         // This is actually not thread-safe, but it's fine for now
-        
+
         if (PAGE.get(this) == 0) {
             return
         }

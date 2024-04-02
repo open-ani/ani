@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
@@ -17,12 +18,14 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import me.him188.ani.datasources.api.PagedSource
+import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
 
@@ -45,6 +48,14 @@ interface LazyDataCache<T> : AutoCloseable {
      */
     @Stable
     val data: StateFlow<List<T>>
+
+    /**
+     * Total size of the data. It can change if [requestMore].
+     *
+     * It can be `null` if not known.
+     */
+    @Stable
+    val totalSize: Flow<Int?>
 
     @Stable
     val lock: Mutex
@@ -80,19 +91,26 @@ inline val <T> LazyDataCache<T>.value get() = data.value
  */
 fun <T> LazyDataCache(
     nextPageOrNull: Flow<PagedSource<T>>,
-): LazyDataCache<T> = LazyDataCacheImpl(nextPageOrNull)
+    debugName: String? = null,
+): LazyDataCache<T> = LazyDataCacheImpl(nextPageOrNull, debugName)
 
 fun <T> LazyDataCache(
     nextPageOrNull: PagedSource<T>,
-): LazyDataCache<T> = LazyDataCacheImpl(flowOf(nextPageOrNull))
+    debugName: String? = null,
+): LazyDataCache<T> = LazyDataCacheImpl(flowOf(nextPageOrNull), debugName)
 
-fun <T> Flow<PagedSource<T>>.cached(): LazyDataCache<T> = LazyDataCache(this)
+fun <T> Flow<PagedSource<T>>.cached(
+    debugName: String? = null,
+): LazyDataCache<T> = LazyDataCache(this, debugName)
 
-fun <T> PagedSource<T>.cached(): LazyDataCache<T> = LazyDataCache(this)
+fun <T> PagedSource<T>.cached(
+    debugName: String? = null,
+): LazyDataCache<T> = LazyDataCache(this, debugName)
 
 
 class LazyDataCacheImpl<T>(
     source: Flow<PagedSource<T>>,
+    private val debugName: String? = null,
 ) : LazyDataCache<T> {
     override val data: MutableStateFlow<List<T>> = MutableStateFlow(emptyList())
 
@@ -107,11 +125,19 @@ class LazyDataCacheImpl<T>(
     private val currentSource: StateFlow<PagedSource<T>?> =
         source.onEach {
             lock.withLock {
+                logger.info { "LazyDataCacheImpl($debugName): source changed, clearing all cached data (previous size = ${data.value.size})" }
                 data.value = emptyList()
             }
         }.onCompletion {
             sourceCompleted.value = true
         }.stateIn(scope, SharingStarted.Eagerly, null)
+    override val totalSize: Flow<Int?> = currentSource.transformLatest { source ->
+        if (source == null) {
+            emit(null)
+            return@transformLatest
+        }
+        emitAll(source.totalSize)
+    }
 
     override suspend fun requestMore() {
         if (!scope.isActive) {
@@ -126,6 +152,7 @@ class LazyDataCacheImpl<T>(
             val nextScope = this
             val daemon = launch {
                 sourceCompleted.filter { it }.first()
+                logger.warn { "sourceCompleted, stopping requestMore" }
                 nextScope.cancel() // stop when the source is completed
             }
             try {
@@ -133,9 +160,7 @@ class LazyDataCacheImpl<T>(
                 val source = currentSource.filterNotNull().first()
                 val resp = source.nextPageOrNull()
                 if (resp != null) {
-                    logger.warn("wait for lock")
                     lock.withLock {
-                        logger.warn("got lock")
                         data.value += resp
                     }
                 }
