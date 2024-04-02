@@ -75,7 +75,7 @@ class SubjectRepositoryImpl : SubjectRepository, KoinComponent {
     ): PagedSource<UserSubjectCollection> {
         return PageBasedPagedSource { page ->
             try {
-                val pageSize = 30
+                val pageSize = 10
                 withContext(Dispatchers.IO) {
                     client.api.getUserCollectionsByUsername(
                         username,
