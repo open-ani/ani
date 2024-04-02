@@ -1,8 +1,9 @@
-package me.him188.ani.app.ui.subject.episode.components
+package me.him188.ani.app.ui.subject.episode.details
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -18,20 +19,23 @@ fun EpisodePlayerTitle(
     modifier: Modifier = Modifier
 ) {
     Column(modifier, horizontalAlignment = Alignment.Start) {
-        Row(Modifier, verticalAlignment = Alignment.CenterVertically) {
-            // 过长时隐藏标题, 保留序号
-            Text(
-                remember(ep, episodeTitle) { (ep ?: "01") + "  " + episodeTitle },
-                softWrap = false, maxLines = 1, overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.titleMedium,
-            )
+        ProvideTextStyle(MaterialTheme.typography.titleMedium) {
+            Row {
+                Text(
+                    subjectTitle,
+                    softWrap = false, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                )
+            }
         }
-        Row {
-            Text(
-                subjectTitle,
-                style = MaterialTheme.typography.titleSmall,
-                softWrap = false, maxLines = 1, overflow = TextOverflow.Ellipsis,
-            )
+        ProvideTextStyle(MaterialTheme.typography.titleSmall) {
+            Row(Modifier, verticalAlignment = Alignment.CenterVertically) {
+                // 过长时隐藏标题, 保留序号
+                Text(
+                    remember(ep, episodeTitle) { (ep ?: "01") + "  " + episodeTitle },
+                    softWrap = false, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                )
+            }
+
         }
     }
 }

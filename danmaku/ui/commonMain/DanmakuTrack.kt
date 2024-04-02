@@ -217,10 +217,11 @@ fun DanmakuTrack(
 @Composable
 fun DanmakuText(
     danmaku: DanmakuState,
-    style: DanmakuStyle,
+    style: DanmakuStyle = DanmakuStyle.Default,
     modifier: Modifier = Modifier
 ) {
     Box(modifier.alpha(style.alpha)) {
+        // Black text with stronger stroke
         Text(
             danmaku.danmaku.text,
             Modifier,
@@ -229,6 +230,8 @@ fun DanmakuText(
             softWrap = false,
             style = MaterialTheme.typography.bodyMedium.merge(style.styleForBorder()),
         )
+        // Covered by a white, smaller text.
+        // So the resulting look is a white text with black border.
         Text(
             danmaku.danmaku.text,
             Modifier,

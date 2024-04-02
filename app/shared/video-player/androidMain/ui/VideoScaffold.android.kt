@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.preview.PHONE_LANDSCAPE
-import me.him188.ani.app.ui.subject.episode.components.EpisodePlayerTitle
+import me.him188.ani.app.ui.subject.episode.details.EpisodePlayerTitle
 import me.him188.ani.app.videoplayer.DummyPlayerController
 import me.him188.ani.app.videoplayer.ui.guesture.GestureLock
 import me.him188.ani.app.videoplayer.ui.guesture.LockableVideoGestureHost

@@ -23,7 +23,7 @@ class DanmakuConfig(
      * Controls the text styles of the [Danmaku].
      * For example, font size, stroke width.
      */
-    val style: DanmakuStyle = DanmakuStyle(),
+    val style: DanmakuStyle = DanmakuStyle.Default,
     /**
      * Time for the [Danmaku] to move from the right edge to the left edge of the screen.
      * In other words, it controls the movement speed of a [Danmaku].
@@ -67,4 +67,8 @@ class DanmakuStyle(
         color = Color.White,
         textMotion = TextMotion.Animated,
     )
+
+    companion object {
+        val Default = DanmakuStyle()
+    }
 }
