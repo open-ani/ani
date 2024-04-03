@@ -1,5 +1,8 @@
 package me.him188.ani.app.videoplayer.ui
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -43,11 +46,18 @@ fun PlayerProgressController(
     modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier.padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically
+        modifier
+            .clickable(remember { MutableInteractionSource() }, null, onClick = {}) // Consume touch event
+            .padding(
+                horizontal = if (isFullscreen) 8.dp else 4.dp,
+                vertical = if (isFullscreen) 4.dp else 2.dp
+            ),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         // 播放 / 暂停按钮
         val state by controller.state.collectAsStateWithLifecycle(null)
-        Row(Modifier.padding(horizontal = 8.dp)) {
+        Row {
             // Play / Pause
             IconButton(
                 onClick = {
@@ -87,11 +97,11 @@ fun PlayerProgressController(
 
         Text(
             text = renderSeconds(playedDurationSeconds, totalDurationSeconds),
-            Modifier.padding(end = 8.dp),
+            Modifier,
             style = MaterialTheme.typography.labelSmall,
         )
 
-        Box(Modifier.weight(1f).padding(horizontal = 8.dp), contentAlignment = Alignment.Center) {
+        Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
 //            LinearProgressIndicator(
 //                modifier = Modifier.padding(horizontal = 8.dp).matchParentSize(),
 //                progress = bufferProgress,
@@ -126,7 +136,7 @@ fun PlayerProgressController(
             )
         }
 
-        Box(Modifier.padding(end = 8.dp)) {
+        Box(Modifier) {
             IconButton(
                 onClick = onClickFullscreen,
             ) {
