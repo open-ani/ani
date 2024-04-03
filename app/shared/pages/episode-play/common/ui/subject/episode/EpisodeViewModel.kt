@@ -386,9 +386,7 @@ private class EpisodeViewModelImpl(
         .closeOnReplacement()
         .flatMapLatest { it.at(playerController.playedDuration) }
 
-    override val danmakuHostState: DanmakuHostState = DanmakuHostState(
-        danmakuFlow,
-    )
+    override val danmakuHostState: DanmakuHostState = DanmakuHostState()
 
     override fun init() {
         super.init()
@@ -399,6 +397,12 @@ private class EpisodeViewModelImpl(
                 } else {
                     danmakuHostState.pause()
                 }
+            }
+        }
+
+        launchInBackground {
+            danmakuFlow.collect { danmaku ->
+                danmakuHostState.trySend(danmaku)
             }
         }
     }
