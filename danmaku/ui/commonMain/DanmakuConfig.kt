@@ -55,7 +55,7 @@ class DanmakuConfig(
     }
 
     override fun toString(): String {
-        return "DanmakuConfig(style=$style, durationMillis=$speed, safeSeparation=$safeSeparation)"
+        return "DanmakuConfig(style=$style, speed=$speed, safeSeparation=$safeSeparation)"
     }
 
     companion object {
