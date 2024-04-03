@@ -112,7 +112,8 @@ fun VideoGestureHost(
             AnimatedVisibility(
                 visible = seekerState.isSeeking,
                 enter = fadeIn(tween(durationMillis = 100)),
-                exit = fadeOut(tween(durationMillis = 500, delayMillis = 250))
+                exit = fadeOut(tween(durationMillis = 500, delayMillis = 250)),
+                label = "SeekPositionIndicator"
             ) {
                 SeekPositionIndicator(seekerState.deltaSeconds)
             }

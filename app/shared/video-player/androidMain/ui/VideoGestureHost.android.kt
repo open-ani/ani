@@ -1,6 +1,10 @@
 package me.him188.ani.app.videoplayer.ui
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.videoplayer.ui.guesture.SeekPositionIndicator
@@ -10,7 +14,16 @@ import me.him188.ani.app.videoplayer.ui.guesture.SeekPositionIndicator
 @Composable
 private fun PreviewSeekPositionIndicatorForward() {
     ProvideCompositionLocalsForPreview {
-        SeekPositionIndicator(deltaDuration = 10)
+        Box {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .background(Color.Transparent)
+            ) {
+
+            }
+            SeekPositionIndicator(deltaDuration = 10)
+        }
     }
 }
 
@@ -18,7 +31,16 @@ private fun PreviewSeekPositionIndicatorForward() {
 @Composable
 private fun PreviewSeekPositionIndicatorBackward() {
     ProvideCompositionLocalsForPreview {
-        SeekPositionIndicator(deltaDuration = -10)
+        Box {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .background(Color.Transparent)
+            ) {
+
+            }
+            SeekPositionIndicator(deltaDuration = -10)
+        }
     }
 }
 
@@ -26,6 +48,15 @@ private fun PreviewSeekPositionIndicatorBackward() {
 @Composable
 private fun PreviewSeekPositionIndicatorBackwardMinutes() {
     ProvideCompositionLocalsForPreview {
-        SeekPositionIndicator(deltaDuration = -90)
+        Box {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .background(Color.Transparent)
+            ) {
+
+            }
+            SeekPositionIndicator(deltaDuration = -90)
+        }
     }
 }
