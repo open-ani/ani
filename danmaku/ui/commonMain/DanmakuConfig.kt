@@ -30,7 +30,7 @@ class DanmakuConfig(
      *
      * Unit: dp/s
      */
-    val speed: Float = 32f,
+    val speed: Float = 38f,
     /**
      * The minimum distance between two [Danmaku]s so that they don't overlap.
      */
@@ -66,7 +66,7 @@ class DanmakuConfig(
 @Immutable
 class DanmakuStyle(
     val fontSize: TextUnit = 18.sp,
-    val alpha: Float = 0.7f,
+    val alpha: Float = 0.8f,
     val strokeColor: Color = Color.Black,
     val strokeWidth: Float = 4f,
     val shadow: Shadow? = null,

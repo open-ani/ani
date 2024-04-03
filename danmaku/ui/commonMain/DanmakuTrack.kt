@@ -255,7 +255,7 @@ fun DanmakuTrack(
 
                 // Automatically (re-)start animation also on configuration change
                 LaunchedEffect(
-                    danmaku.hasMeasured,
+                    danmaku.textWidth, // listen to settings change, because target distance will also change
                     trackState.isPaused,
                     configState.speed,
                     density

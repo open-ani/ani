@@ -128,8 +128,8 @@ fun EpisodeVideoSettings(
                         danmakuConfig.copy(danmakuConfig.style.copy(fontSize = DanmakuStyle.Default.fontSize * it))
                     )
                 },
-                valueRange = 0.20f..3f,
-                steps = ((3f - 0.20f) / 0.1f).toInt() - 1,
+                valueRange = 0.50f..1.5f,
+                steps = ((1.5f - 0.50f) / 0.05f).toInt() - 1,
             )
         }
 
