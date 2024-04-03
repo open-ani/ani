@@ -2,6 +2,8 @@ package me.him188.ani.app.ui.subject.episode.video.settings
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.Icon
@@ -102,7 +104,7 @@ fun EpisodeVideoSettings(
     setDanmakuConfig: (config: DanmakuConfig) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier) {
+    Column(modifier.verticalScroll(rememberScrollState())) {
         Text(
             "弹幕设置",
             Modifier.padding(horizontal = 8.dp, vertical = 8.dp),

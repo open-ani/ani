@@ -25,6 +25,18 @@ private fun PreviewEpisodeVideoSettings() {
     }
 }
 
+@Preview(heightDp = 200)
+@Composable
+private fun PreviewEpisodeVideoSettingsSmall() {
+    ProvideCompositionLocalsForPreview {
+        EpisodeVideoSettings(
+            remember {
+                EpisodeVideoSettingsViewModel()
+            }
+        )
+    }
+}
+
 @Preview(device = Devices.TABLET)
 @Preview
 @Composable
