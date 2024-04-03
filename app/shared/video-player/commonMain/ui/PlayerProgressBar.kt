@@ -43,7 +43,7 @@ fun PlayerProgressController(
     modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier, verticalAlignment = Alignment.CenterVertically
+        modifier.padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically
     ) {
         // 播放 / 暂停按钮
         val state by controller.state.collectAsStateWithLifecycle(null)
