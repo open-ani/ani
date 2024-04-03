@@ -42,8 +42,6 @@ import kotlinx.coroutines.launch
 import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuLocation
 import java.util.UUID
-import kotlin.math.abs
-import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.seconds
 
 class DanmakuState internal constructor(
@@ -102,37 +100,28 @@ class DanmakuState internal constructor(
      *
      * Returns when the animation has ended,
      * which means the danmaku has moved out of the screen (to the start).
+     *
+     * @param baseSpeed px/s
      */
     suspend fun animateMove(
         screenWidth: Int,
-        durationMillis: Int,
+        baseSpeed: Float,
     ) {
         require(screenWidth != 0) { "screenWidth must not be 0" }
         require(textWidth != -1) { "textWidth must be measured" }
-        val safeWidth = textWidth + properties.safeShift
-
-        // To achieve constant speed:
-        // speed = screenWidth / durationMillis = actualWidth / t
-        // t = durationMillis * actualWidth / screenWidth
-        val animationDurationMillis =
-            (durationMillis * abs((screenWidth + safeWidth).toDouble() / screenWidth)).roundToInt()
-
-        @Suppress("UnnecessaryVariable", "RedundantSuppression") // We'd better rename it for clearer logic
-        val totalStartOffset = screenWidth
-        val totalTargetOffset = -safeWidth
+        val totalDistance = textWidth + properties.safeShift
 
         val startTime = withFrameNanos { it }
-        val duration = animationDurationMillis * 1_000_000L
-        val speed = (totalTargetOffset - totalStartOffset) / duration.toFloat()
+        val speed = -baseSpeed / 1_000_000_000f // px/ns
 
         if (!animationStarted) {
-            offset = totalStartOffset
+            offset = screenWidth
             animationStarted = true
         }
 
         val startOffset = offset
 
-        while (offset > totalTargetOffset) {
+        while (offset > -totalDistance) {
             // Update offset on every frame
             withFrameNanos {
                 val elapsed = it - startTime
@@ -262,11 +251,14 @@ fun DanmakuTrack(
 
                 // Late-init by [onPlaced]
                 var positionInParent by remember { mutableStateOf(Offset.Zero) }
+                val density by rememberUpdatedState(LocalDensity.current)
 
                 // Automatically (re-)start animation also on configuration change
                 LaunchedEffect(
                     danmaku.hasMeasured,
-                    trackState.isPaused
+                    trackState.isPaused,
+                    configState.speed,
+                    density
                 ) {
                     if (!danmaku.hasMeasured || trackState.trackSize == IntSize.Zero) {
                         return@LaunchedEffect // Not yet measured, i.e. 
@@ -321,7 +313,7 @@ fun DanmakuTrack(
 
                     danmaku.animateMove(
                         trackState.trackSize.width,
-                        configState.durationMillis
+                        configState.speed * density.density
                     )
                 }
 
@@ -375,7 +367,7 @@ fun DanmakuText(
         Text(
             danmaku.danmaku.text,
             Modifier,
-            overflow = TextOverflow.Visible,
+            overflow = TextOverflow.Clip,
             maxLines = 1,
             softWrap = false,
             style = baseStyle.merge(style.styleForBorder()),
@@ -385,7 +377,7 @@ fun DanmakuText(
         Text(
             danmaku.danmaku.text,
             Modifier,
-            overflow = TextOverflow.Visible,
+            overflow = TextOverflow.Clip,
             maxLines = 1,
             softWrap = false,
             style = baseStyle.merge(style.styleForText()),

@@ -27,8 +27,10 @@ class DanmakuConfig(
     /**
      * Time for the [Danmaku] to move from the right edge to the left edge of the screen.
      * In other words, it controls the movement speed of a [Danmaku].
+     *
+     * Unit: dp/s
      */
-    val durationMillis: Int = 15_000,
+    val speed: Float = 32f,
     /**
      * The minimum distance between two [Danmaku]s so that they don't overlap.
      */
@@ -36,24 +38,24 @@ class DanmakuConfig(
 ) {
     fun copy(
         style: DanmakuStyle = this.style,
-        durationMillis: Int = this.durationMillis,
+        speed: Float = this.speed,
         safeSeparation: Dp = this.safeSeparation,
     ): DanmakuConfig {
         if (style == this.style &&
-            durationMillis == this.durationMillis &&
+            speed == this.speed &&
             safeSeparation == this.safeSeparation
         ) {
             return this
         }
         return DanmakuConfig(
             style = style,
-            durationMillis = durationMillis,
+            speed = speed,
             safeSeparation = safeSeparation,
         )
     }
 
     override fun toString(): String {
-        return "DanmakuConfig(style=$style, durationMillis=$durationMillis, safeSeparation=$safeSeparation)"
+        return "DanmakuConfig(style=$style, durationMillis=$speed, safeSeparation=$safeSeparation)"
     }
 
     companion object {

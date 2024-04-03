@@ -32,8 +32,6 @@ import me.him188.ani.utils.logging.logger
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import kotlin.math.exp
-import kotlin.math.ln
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.seconds
 
@@ -90,9 +88,21 @@ fun EpisodeVideoSettings(
     vm: EpisodeVideoSettingsViewModel,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier) {
-        val danmakuConfig by vm.danmakuConfig.collectAsStateWithLifecycle(DanmakuConfig.Default)
+    val danmakuConfig by vm.danmakuConfig.collectAsStateWithLifecycle(DanmakuConfig.Default)
+    return EpisodeVideoSettings(
+        danmakuConfig = danmakuConfig,
+        setDanmakuConfig = vm::setDanmakuConfig,
+        modifier = modifier,
+    )
+}
 
+@Composable
+fun EpisodeVideoSettings(
+    danmakuConfig: DanmakuConfig,
+    setDanmakuConfig: (config: DanmakuConfig) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier) {
         Text(
             "弹幕设置",
             Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
@@ -112,7 +122,7 @@ fun EpisodeVideoSettings(
             Slider(
                 value = fontSize,
                 onValueChange = {
-                    vm.setDanmakuConfig(
+                    setDanmakuConfig(
                         danmakuConfig.copy(danmakuConfig.style.copy(fontSize = DanmakuStyle.Default.fontSize * it))
                     )
                 },
@@ -134,7 +144,7 @@ fun EpisodeVideoSettings(
             Slider(
                 value = alpha,
                 onValueChange = {
-                    vm.setDanmakuConfig(
+                    setDanmakuConfig(
                         danmakuConfig.copy(danmakuConfig.style.copy(alpha = it))
                     )
                 },
@@ -159,7 +169,7 @@ fun EpisodeVideoSettings(
                 valueRange = 0f..2f,
                 steps = ((2f - 0f) / 0.1f).toInt() - 1,
                 onValueChangeFinished = {
-                    vm.setDanmakuConfig(
+                    setDanmakuConfig(
                         danmakuConfig.copy(danmakuConfig.style.copy(strokeMidth = strokeMiterValue * DanmakuStyle.Default.strokeWidth))
                     )
                 }
@@ -167,12 +177,10 @@ fun EpisodeVideoSettings(
         }
 
         Column {
-            // 相对于 ln(1f / DanmakuConfig.Default.durationMillis) 的倍数
             var speed by remember(danmakuConfig) {
                 mutableFloatStateOf(
-                    ln(1f / danmakuConfig.durationMillis)
-                            / ln(1f / DanmakuConfig.Default.durationMillis)
-                ) // convert to linear so that users set by %
+                    danmakuConfig.speed / DanmakuConfig.Default.speed
+                )
             }
             Text(
                 "弹幕速度: ${(speed * 100).roundToInt()}%",
@@ -187,12 +195,12 @@ fun EpisodeVideoSettings(
             Slider(
                 value = speed,
                 onValueChange = { speed = it },
-                valueRange = 0.2f..2f,
-                steps = ((2f - 0.2f) / 0.1f).toInt() - 1,
+                valueRange = 0.2f..3f,
+                steps = ((3f - 0.2f) / 0.1f).toInt() - 1,
                 onValueChangeFinished = {
-                    vm.setDanmakuConfig(
+                    setDanmakuConfig(
                         danmakuConfig.copy(
-                            durationMillis = (1f / exp(speed * ln(1f / DanmakuConfig.Default.durationMillis))).roundToInt()
+                            speed = speed * DanmakuConfig.Default.speed
                         )
                     )
                 }
