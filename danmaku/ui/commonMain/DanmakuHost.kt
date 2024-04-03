@@ -13,8 +13,6 @@ import kotlinx.coroutines.flow.Flow
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.danmaku.api.Danmaku
-import me.him188.ani.danmaku.api.DanmakuLocation
-import java.util.UUID
 
 interface DanmakuHostState {
     @Stable
@@ -37,7 +35,8 @@ interface DanmakuHostState {
  */
 fun DanmakuHostState(
     danmakuFlow: Flow<Danmaku>,
-): DanmakuHostState = DanmakuHostStateImpl(danmakuFlow)
+    danmakuProperties: DanmakuProperties = DanmakuProperties.Default,
+): DanmakuHostState = DanmakuHostStateImpl(danmakuFlow, danmakuProperties)
 
 /**
  * 容纳[弹幕轨道][DanmakuTrack]的 [Column].
@@ -67,28 +66,16 @@ fun DanmakuHost(
     }
 }
 
-
-interface DanmakuState {
-    @Stable
-    val danmaku: Danmaku
-}
-
-internal object DummyDanmakuState : DanmakuState {
-    override val danmaku: Danmaku = Danmaku(
-        UUID.randomUUID().toString(), 0.0, "1",
-        DanmakuLocation.NORMAL, "dummy", 0
-    )
-}
-
 internal class DanmakuHostStateImpl(
     private val danmakuFlow: Flow<Danmaku>,
+    danmakuProperties: DanmakuProperties,
 ) : DanmakuHostState, AbstractViewModel() {
     override val tracks: List<DanmakuTrackState> = listOf(
-        DanmakuTrackState(10),
-        DanmakuTrackState(10),
-        DanmakuTrackState(10),
-        DanmakuTrackState(10),
-        DanmakuTrackState(10)
+        DanmakuTrackState(10, danmakuProperties),
+        DanmakuTrackState(10, danmakuProperties),
+        DanmakuTrackState(10, danmakuProperties),
+        DanmakuTrackState(10, danmakuProperties),
+        DanmakuTrackState(10, danmakuProperties)
     )
 
     override fun init() {

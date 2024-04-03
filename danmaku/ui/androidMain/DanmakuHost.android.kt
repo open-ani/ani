@@ -72,14 +72,14 @@ private fun PreviewDanmakuText() {
         Surface(color = Color.White) {
             DanmakuText(
                 remember {
-                    object : DanmakuState {
-                        override val danmaku: Danmaku = Danmaku(
+                    DanmakuState(
+                        Danmaku(
                             "1", 0.0, "1",
                             DanmakuLocation.NORMAL,
                             text = "Hello, world!",
                             0
                         )
-                    }
+                    )
                 },
                 style = DanmakuStyle()
             )

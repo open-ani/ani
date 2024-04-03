@@ -124,6 +124,7 @@ fun EpisodePageContent(
         // 视频
         val videoReady by viewModel.isVideoReady.collectAsStateWithLifecycle(false)
         val selected by viewModel.playSourceSelected.collectAsStateWithLifecycle(false)
+        val danmakuConfig = viewModel.danmakuConfig.collectAsStateWithLifecycle(DanmakuConfig.Default).value
         Box(
             Modifier.fillMaxWidth().background(Color.Black)
                 .then(if (isFullscreen) Modifier.fillMaxSize() else Modifier.statusBarsPadding())
@@ -137,8 +138,8 @@ fun EpisodePageContent(
                     EpisodePlayerTitle(ep, epTitle, subjectTitle)
                 },
                 viewModel.playerController,
-                danmakuConfig = viewModel.danmakuConfig.collectAsStateWithLifecycle(DanmakuConfig.Default).value,
-                danmakuHostState = remember {
+                danmakuConfig = danmakuConfig,
+                danmakuHostState = remember(viewModel) {
                     DanmakuHostState(viewModel.danmakuFlow)
                 },
                 onClickFullScreen = {
