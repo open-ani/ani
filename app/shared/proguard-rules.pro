@@ -25,18 +25,15 @@
 # @Serializable and @Polymorphic are used at runtime for polymorphic serialization.
 -keepattributes RuntimeVisibleAnnotations,AnnotationDefault
 
-# Serializer for classes with named companion objects are retrieved using `getDeclaredClasses`.
-# If you have any, uncomment and replace classes with those containing named companion objects.
-#-keepattributes InnerClasses # Needed for `getDeclaredClasses`.
-#-if @kotlinx.serialization.Serializable class
-#com.example.myapplication.HasNamedCompanion, # <-- List serializable classes with named companions.
-#com.example.myapplication.HasNamedCompanion2
-#{
-#    static **$* *;
-#}
-#-keepnames class <1>$$serializer { # -keepnames suffices; class is kept when serializer() is kept.
-#    static <1>$$serializer INSTANCE;
-#}
+# Don't print notes about potential mistakes or omissions in the configuration for kotlinx-serialization classes
+# See also https://github.com/Kotlin/kotlinx.serialization/issues/1900
+-dontnote kotlinx.serialization.**
+
+# Serialization core uses `java.lang.ClassValue` for caching inside these specified classes.
+# If there is no `java.lang.ClassValue` (for example, in Android), then R8/ProGuard will print a warning.
+# However, since in this case they will not be used, we can disable these warnings
+-dontwarn kotlinx.serialization.internal.ClassValueReferences
+
 
 -dontwarn javax.annotation.Nullable
 -dontwarn javax.annotation.ParametersAreNonnullByDefault
