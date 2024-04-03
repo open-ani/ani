@@ -61,6 +61,7 @@ class MyCollectionsViewModelImpl : AbstractViewModel(), KoinComponent, MyCollect
         sessionManager.username.filterNotNull().map { username ->
             subjectRepository.getSubjectCollections(
                 username,
+                subjectType = SubjectType.Anime,
                 subjectCollectionType = type.toSubjectCollectionType(),
             ).map {
                 it.convertToItem()
