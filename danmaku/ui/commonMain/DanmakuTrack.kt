@@ -35,6 +35,8 @@ import androidx.compose.ui.unit.LayoutDirection
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.isActive
 import me.him188.ani.danmaku.api.Danmaku
+import kotlin.math.abs
+import kotlin.math.roundToInt
 
 class DanmakuTrackState(
     private val maxCount: Int,
@@ -101,7 +103,7 @@ fun DanmakuTrack(
     state: DanmakuTrackState,
     modifier: Modifier = Modifier,
     config: DanmakuConfig = DanmakuConfig.Default,
-    content: @Composable DanmakuTrackScope.() -> Unit,
+    content: @Composable DanmakuTrackScope.() -> Unit, // box scope
 ) {
     var trackSize by remember { mutableStateOf(IntSize.Zero) }
     val configState by rememberUpdatedState(config)
@@ -122,6 +124,7 @@ fun DanmakuTrack(
                 textWidth: Int
             ): Int {
                 val layoutDirection = LocalLayoutDirection.current
+                val safeShift = 20
 
                 val windowWidth = trackSize.width
                 var offset by remember(layoutDirection) {
@@ -134,16 +137,23 @@ fun DanmakuTrack(
                 }
                 val offsetState = animateIntAsState(
                     offset,
+//                    animationSpec = linear(
+//                        pixelPerSec = density.run {
+//                            windowWidth.toFloat() / configState.durationMillis
+//                        }
+//                    )
+                    // velocity = windowWidth / durationMillis = actualWidth / t
+                    // t = durationMillis * actualWidth / windowWidth
                     animationSpec = tween(
-                        configState.durationMillis,
+                        durationMillis = (configState.durationMillis * abs(if (windowWidth == 0) 9999999.0 else (windowWidth + textWidth + safeShift).toDouble() / windowWidth)).roundToInt(),
                         easing = LinearEasing,
                     )
                 )
                 LaunchedEffect(textWidth, layoutDirection) {
                     if (textWidth != 0) {
                         offset = when (layoutDirection) {
-                            LayoutDirection.Ltr -> -textWidth - 20 // definitely out of screen
-                            LayoutDirection.Rtl -> windowWidth + textWidth + 20
+                            LayoutDirection.Ltr -> -(textWidth + safeShift)// definitely out of screen
+                            LayoutDirection.Rtl -> windowWidth + textWidth + safeShift
                         }
                     }
                 }

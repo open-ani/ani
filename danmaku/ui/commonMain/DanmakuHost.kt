@@ -19,6 +19,13 @@ import java.util.UUID
 interface DanmakuHostState {
     @Stable
     val tracks: List<DanmakuTrackState>
+
+    /**
+     * Sends the [danmaku] to the first track that is currently ready to receive it.
+     *
+     * @return `true` if the [danmaku] was sent to a track, `false` if all tracks are currently occupied.
+     */
+    fun trySend(danmaku: Danmaku): Boolean
 }
 
 /**
@@ -30,12 +37,10 @@ interface DanmakuHostState {
  */
 fun DanmakuHostState(
     danmakuFlow: Flow<Danmaku>,
-): DanmakuHostState = DanmakuHostStateImpl(
-    danmakuFlow,
-)
+): DanmakuHostState = DanmakuHostStateImpl(danmakuFlow)
 
 /**
- * 容纳[弹幕轨道][DanmakuTrack]的 [Column]. 自动将弹幕分配到轨道上.
+ * 容纳[弹幕轨道][DanmakuTrack]的 [Column].
  *
  * @see DanmakuHostState
  */
@@ -90,9 +95,13 @@ internal class DanmakuHostStateImpl(
         super.init()
         launchInBackground {
             danmakuFlow.collect { danmaku ->
-                tracks.firstOrNull { it.trySend(danmaku) }
+                trySend(danmaku)
             }
         }
+    }
+
+    override fun trySend(danmaku: Danmaku): Boolean {
+        return tracks.any { it.trySend(danmaku) }
     }
 }
 
