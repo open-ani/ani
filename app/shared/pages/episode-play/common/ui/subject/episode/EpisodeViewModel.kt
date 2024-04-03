@@ -39,6 +39,7 @@ import me.him188.ani.app.videoplayer.VideoSource
 import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuProvider
 import me.him188.ani.danmaku.ui.DanmakuConfig
+import me.him188.ani.danmaku.ui.DanmakuHostState
 import me.him188.ani.datasources.api.DownloadProvider
 import me.him188.ani.datasources.api.DownloadSearchQuery
 import me.him188.ani.datasources.api.PagedSource
@@ -59,7 +60,6 @@ import kotlin.time.Duration.Companion.seconds
 
 interface EpisodeViewModel : HasBackgroundScope {
     // Subject
-
     @Stable
     val subjectId: StateFlow<Int>
     fun setSubjectId(subjectId: Int)
@@ -142,7 +142,7 @@ interface EpisodeViewModel : HasBackgroundScope {
     // Danmaku
 
     @Stable
-    val danmakuFlow: Flow<Danmaku>
+    val danmakuHostState: DanmakuHostState
 
     @Stable
     val danmakuEnabled: Flow<Boolean>
@@ -372,7 +372,7 @@ private class EpisodeViewModelImpl(
         }
     }
 
-    override val danmakuFlow: Flow<Danmaku> = combine(
+    private val danmakuFlow: Flow<Danmaku> = combine(
         playSourceSelector.targetPlaySourceCandidate.filterNotNull(),
         playerController.videoProperties
     ) { playSourceCandidate, video ->
@@ -385,6 +385,23 @@ private class EpisodeViewModelImpl(
     }.filterNotNull()
         .closeOnReplacement()
         .flatMapLatest { it.at(playerController.playedDuration) }
+
+    override val danmakuHostState: DanmakuHostState = DanmakuHostState(
+        danmakuFlow,
+    )
+
+    override fun init() {
+        super.init()
+        launchInBackground {
+            playerController.state.collect {
+                if (it.isPlaying) {
+                    danmakuHostState.resume()
+                } else {
+                    danmakuHostState.pause()
+                }
+            }
+        }
+    }
 
     override val danmakuEnabled: Flow<Boolean> = preferencesRepository.danmakuEnabled.flow
 

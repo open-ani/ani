@@ -1,9 +1,6 @@
 package me.him188.ani.danmaku.ui
 
 import androidx.annotation.UiThread
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.animateIntAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.offset
@@ -24,45 +21,54 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.withFrameMillis
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.LayoutDirection
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
-import me.him188.ani.app.platform.currentAniBuildConfig
+import kotlinx.coroutines.launch
 import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuLocation
 import java.util.UUID
 import kotlin.math.abs
 import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.seconds
 
 class DanmakuState internal constructor(
     @Stable
     val danmaku: Danmaku,
     private val properties: DanmakuProperties = DanmakuProperties.Default,
 ) {
-    // Whether the rhs edge is fully visible on the screen (in LTR, RTL vice versa)
-    private var fullyVisible by mutableStateOf(false)
-
     /**
      * Layout width of the view in px, late-init by [onPlaced].
+     *
+     * Can be `-1` if not yet initialized.
      */
-    private var textWidth by mutableIntStateOf(-1)
-    private var targetOffset by mutableIntStateOf(0)
-    private var animationDurationMillis by mutableIntStateOf(Int.MAX_VALUE)
+    internal var textWidth by mutableIntStateOf(-1)
+
+    /**
+     * Whether the animation has ever started, i.e. [animateMove] has been called at least once.
+     * It will not be reset to `false` if it has started.
+     */
+    internal var animationStarted by mutableStateOf(false)
 
     /**
      * Whether [textWidth] has been measured.
      *
-     * [textWidth] is measured when the Danmaku view is placed on the compose tree, calling [onPlaced].
+     * [textWidth] is measured when the Danmaku view is placed on the compose tree,
+     * calling [onPlaced].
      */
     internal val hasMeasured by derivedStateOf {
         textWidth != -1
@@ -70,83 +76,69 @@ class DanmakuState internal constructor(
 
     /**
      * Animated offset of the danmaku.
+     *
+     * Default value is `0` when [animateMove] is never called.
+     * Note that value `0` may not always indicate an invalid value,
+     * because the danmaku will need to move to a negative offset to be fully out of the screen.
      */
-    val offset: State<Int>
-        @Composable
-        get() {
-            val offsetState = animateIntAsState(
-                this.targetOffset,
-                animationSpec = tween(
-                    durationMillis = this.animationDurationMillis,
-                    easing = LinearEasing,
-                ),
-                label = if (currentAniBuildConfig.isDebug) "Danmaku offset for '${this.danmaku.text}'" else "Danmaku offset",
-            )
-            return offsetState
-        }
+    var offset: Int by mutableIntStateOf(0)
+        private set
 
     /**
      * Called when the danmaku is placed on the screen.
-     * @param safeSeparation See [DanmakuConfig.safeSeparation]
      */
     internal fun onPlaced(
-        track: DanmakuTrackState,
         layoutCoordinates: LayoutCoordinates,
-        safeSeparation: Float,
     ) {
         textWidth = layoutCoordinates.size.width
-
-        val pos = layoutCoordinates.positionInParent() // in the DanmakuTrack
-        if (pos.x + textWidth <= 0) {
-            // out of screen
-            track.visibleDanmaku.remove(this)
-        }
-
-        if (!fullyVisible &&
-            pos.x + textWidth + safeSeparation < track.trackSize.width
-        ) {
-            fullyVisible = true
-            // in screen
-            track.startingDanmaku.remove(danmaku)
-        }
     }
 
     /**
-     * Animate the danmaku to move from the end of the screen to the start.
+     * Animate the danmaku from the end of the screen to the start.
+     *
+     * This function can be safely cancelled,
+     * because it remembers the last [offset] of the danmaku.
+     * However it does NOT re-animate it if it has already moved out of the screen.
+     *
+     * Returns when the animation has ended,
+     * which means the danmaku has moved out of the screen (to the start).
      */
     suspend fun animateMove(
         screenWidth: Int,
         durationMillis: Int,
-//        layoutDirection: LayoutDirection,
     ) {
         require(screenWidth != 0) { "screenWidth must not be 0" }
+        require(textWidth != -1) { "textWidth must be measured" }
         val safeWidth = textWidth + properties.safeShift
 
         // To achieve constant speed:
         // speed = screenWidth / durationMillis = actualWidth / t
         // t = durationMillis * actualWidth / screenWidth
-        animationDurationMillis =
+        val animationDurationMillis =
             (durationMillis * abs((screenWidth + safeWidth).toDouble() / screenWidth)).roundToInt()
 
-        if (targetOffset == 0) {
-            targetOffset = screenWidth
-//            targetOffset = when (layoutDirection) {
-//                LayoutDirection.Ltr -> screenWidth
-//                LayoutDirection.Rtl -> 0
-//            }
+        @Suppress("UnnecessaryVariable", "RedundantSuppression") // We'd better rename it for clearer logic
+        val totalStartOffset = screenWidth
+        val totalTargetOffset = -safeWidth
+
+        val startTime = withFrameNanos { it }
+        val duration = animationDurationMillis * 1_000_000L
+        val speed = (totalTargetOffset - totalStartOffset) / duration.toFloat()
+
+        if (!animationStarted) {
+            offset = totalStartOffset
+            animationStarted = true
         }
 
-        withFrameMillis { it }
-        withFrameMillis { }
+        val startOffset = offset
 
-        targetOffset = -safeWidth// definitely out of screen
-
-//        targetOffset = when (layoutDirection) {
-//            LayoutDirection.Ltr -> -(textWidth + properties.safeShift)// definitely out of screen
-//            LayoutDirection.Rtl -> screenWidth + textWidth + properties.safeShift
-//        }
-
-        delay(animationDurationMillis.toLong())
+        while (offset > totalTargetOffset) {
+            // Update offset on every frame
+            withFrameNanos {
+                val elapsed = it - startTime
+                offset = (startOffset + speed * elapsed).toInt()
+            }
+        }
     }
 
 }
@@ -172,6 +164,7 @@ class DanmakuProperties(
 }
 
 class DanmakuTrackState(
+    isPaused: State<Boolean>,
     private val maxCount: Int,
     private val danmakuProperties: DanmakuProperties = DanmakuProperties.Default,
 ) {
@@ -182,22 +175,7 @@ class DanmakuTrackState(
      */
     fun trySend(danmaku: Danmaku): Boolean = channel.trySend(danmaku).isSuccess
 
-    internal var isPaused by mutableStateOf(false)
-
-    /**
-     * Pauses the movement of danmaku.
-     */
-    fun pause() {
-        isPaused = true
-    }
-
-    /**
-     * Resumes the movement of danmaku. Danmaku will continue to move from where it was paused.
-     */
-    fun resume() {
-        isPaused = false
-    }
-
+    internal val isPaused by isPaused
 
     /**
      * Layout size of the track placed.
@@ -212,7 +190,7 @@ class DanmakuTrackState(
      * 刚发送的还在屏幕右边边缘的弹幕
      */
     @Stable
-    internal val startingDanmaku: MutableList<Danmaku> = SnapshotStateList() // actually contains only one element
+    internal val startingDanmaku: MutableList<DanmakuState> = SnapshotStateList() // actually contains only one element
 
     /**
      * Called on every frame to update the state.
@@ -227,8 +205,9 @@ class DanmakuTrackState(
         }
 
         val danmaku = channel.tryReceive().getOrNull() ?: return
-        startingDanmaku.add(danmaku)
-        visibleDanmaku.add(DanmakuState(danmaku, danmakuProperties))
+        val state = DanmakuState(danmaku, danmakuProperties)
+        startingDanmaku.add(state)
+        visibleDanmaku.add(state)
     }
 }
 
@@ -279,6 +258,11 @@ fun DanmakuTrack(
                 style: DanmakuStyle,
                 modifier: Modifier
             ) {
+                val layoutDirection by rememberUpdatedState(LocalLayoutDirection.current)
+
+                // Late-init by [onPlaced]
+                var positionInParent by remember { mutableStateOf(Offset.Zero) }
+
                 // Automatically (re-)start animation also on configuration change
                 LaunchedEffect(
                     danmaku.hasMeasured,
@@ -287,21 +271,69 @@ fun DanmakuTrack(
                     if (!danmaku.hasMeasured || trackState.trackSize == IntSize.Zero) {
                         return@LaunchedEffect // Not yet measured, i.e. 
                     }
+                    if (trackState.isPaused) {
+                        return@LaunchedEffect
+                    }
+
+                    // Below are two tasks to ensure the queueing of danmaku.
+                    // We need the delays to calculate gently, because we need to ensure that the updating of offsets gets completed in every frame.
+                    // Danmaku is moving on every frame, so [onPlace] is also called very frequently.
+                    // If you do these tasks during [onPlace], you will read states and get it very slow. 
+                    val delay = 0.1.seconds
+
+                    // Remove the danmaku from the track when it is out of screen, 
+                    // so that Track view will remove the Danmaku view from the layout.
+                    launch {
+                        while (isActive) {
+                            val pos = positionInParent // in the DanmakuTrack
+                            if (pos.x + danmaku.textWidth <= 0) {
+                                // out of screen
+                                trackState.visibleDanmaku.remove(danmaku)
+                                return@launch
+                            }
+                            delay(delay)
+                        }
+                    }
+
+                    // Remove the danmaku from [startingDanmaku] if it is fully visible on the screen (with [safeSeparation]),
+                    // so that the track will receive the next danmaku and display it.
+                    launch {
+                        while (isActive) {
+                            val pos = positionInParent // in the DanmakuTrack
+                            if (positionInParent == Offset.Zero) {
+                                // not yet placed
+                                delay(delay)
+                                continue
+                            }
+                            val isFullyVisible = if (layoutDirection == LayoutDirection.Ltr) {
+                                pos.x + danmaku.textWidth + safeSeparation < trackState.trackSize.width
+                            } else {
+                                pos.x - safeSeparation > 0
+                            }
+
+                            if (isFullyVisible) {
+                                trackState.startingDanmaku.remove(danmaku)
+                                return@launch
+                            }
+                            delay(delay)
+                        }
+                    }
+
                     danmaku.animateMove(
                         trackState.trackSize.width,
                         configState.durationMillis
                     )
                 }
 
-                val danmakuOffset by danmaku.offset
-
                 Box(
                     modifier
+                        .alpha(if (danmaku.animationStarted) 1f else 0f) // Don't use `danmaku.offset == 0`, see danmaku.offset comments.
                         .offset {
-                            IntOffset(x = danmakuOffset, y = 0)
+                            IntOffset(x = danmaku.offset, y = 0)
                         }
                         .onPlaced { layoutCoordinates ->
-                            danmaku.onPlaced(trackState, layoutCoordinates, safeSeparation)
+                            danmaku.onPlaced(layoutCoordinates)
+                            positionInParent = layoutCoordinates.positionInParent()
                         }
                         .wrapContentSize()
                 ) {

@@ -5,7 +5,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
@@ -24,6 +27,18 @@ interface DanmakuHostState {
      * @return `true` if the [danmaku] was sent to a track, `false` if all tracks are currently occupied.
      */
     fun trySend(danmaku: Danmaku): Boolean
+
+    val isPaused: Boolean
+
+    /**
+     * Pauses the movement of danmaku.
+     */
+    fun pause()
+
+    /**
+     * Resumes the movement of danmaku. Danmaku will continue to move from where it was paused.
+     */
+    fun resume()
 }
 
 /**
@@ -70,12 +85,14 @@ internal class DanmakuHostStateImpl(
     private val danmakuFlow: Flow<Danmaku>,
     danmakuProperties: DanmakuProperties,
 ) : DanmakuHostState, AbstractViewModel() {
+    private val _isPaused = mutableStateOf(false)
+
     override val tracks: List<DanmakuTrackState> = listOf(
-        DanmakuTrackState(10, danmakuProperties),
-        DanmakuTrackState(10, danmakuProperties),
-        DanmakuTrackState(10, danmakuProperties),
-        DanmakuTrackState(10, danmakuProperties),
-        DanmakuTrackState(10, danmakuProperties)
+        DanmakuTrackState(_isPaused, 10, danmakuProperties),
+        DanmakuTrackState(_isPaused, 10, danmakuProperties),
+        DanmakuTrackState(_isPaused, 10, danmakuProperties),
+        DanmakuTrackState(_isPaused, 10, danmakuProperties),
+        DanmakuTrackState(_isPaused, 10, danmakuProperties)
     )
 
     override fun init() {
@@ -89,6 +106,16 @@ internal class DanmakuHostStateImpl(
 
     override fun trySend(danmaku: Danmaku): Boolean {
         return tracks.any { it.trySend(danmaku) }
+    }
+
+    override var isPaused: Boolean by _isPaused
+
+    override fun pause() {
+        isPaused = true
+    }
+
+    override fun resume() {
+        isPaused = false
     }
 }
 
