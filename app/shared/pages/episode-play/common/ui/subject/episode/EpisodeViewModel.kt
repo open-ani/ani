@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.EpisodeRepository
+import me.him188.ani.app.data.PreferencesRepository
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.Context
 import me.him188.ani.app.torrent.TorrentDownloaderManager
@@ -37,6 +38,7 @@ import me.him188.ani.app.videoplayer.TorrentVideoSource
 import me.him188.ani.app.videoplayer.VideoSource
 import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuProvider
+import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.datasources.api.DownloadProvider
 import me.him188.ani.datasources.api.DownloadSearchQuery
 import me.him188.ani.datasources.api.PagedSource
@@ -141,6 +143,14 @@ interface EpisodeViewModel : HasBackgroundScope {
 
     @Stable
     val danmakuFlow: Flow<Danmaku>
+
+    @Stable
+    val danmakuEnabled: Flow<Boolean>
+
+    fun setDanmakuEnabled(enabled: Boolean)
+
+    @Stable
+    val danmakuConfig: Flow<DanmakuConfig>
 }
 
 fun EpisodeViewModel(
@@ -164,6 +174,7 @@ private class EpisodeViewModelImpl(
     private val playerControllerFactory: PlayerControllerFactory by inject()
     private val episodeRepository: EpisodeRepository by inject()
     private val danmakuProvider: DanmakuProvider by inject()
+    private val preferencesRepository by inject<PreferencesRepository>()
 
     override val episodeId: MutableStateFlow<Int> = MutableStateFlow(initialEpisodeId)
 
@@ -374,6 +385,16 @@ private class EpisodeViewModelImpl(
     }.filterNotNull()
         .closeOnReplacement()
         .flatMapLatest { it.at(playerController.playedDuration) }
+
+    override val danmakuEnabled: Flow<Boolean> = preferencesRepository.danmakuEnabled.flow
+
+    override fun setDanmakuEnabled(enabled: Boolean) {
+        launchInBackground {
+            preferencesRepository.danmakuEnabled.set(enabled)
+        }
+    }
+
+    override val danmakuConfig: Flow<DanmakuConfig> = preferencesRepository.danmakuConfig.flow
 
     private suspend fun requestPlaySourceCandidate(): PlaySourceCandidate? {
         val candidate = playSourceSelector.targetPlaySourceCandidate.value

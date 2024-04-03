@@ -34,6 +34,28 @@ class DanmakuConfig(
      */
     val safeSeparation: Dp = 32.dp,
 ) {
+    fun copy(
+        style: DanmakuStyle = this.style,
+        durationMillis: Int = this.durationMillis,
+        safeSeparation: Dp = this.safeSeparation,
+    ): DanmakuConfig {
+        if (style == this.style &&
+            durationMillis == this.durationMillis &&
+            safeSeparation == this.safeSeparation
+        ) {
+            return this
+        }
+        return DanmakuConfig(
+            style = style,
+            durationMillis = durationMillis,
+            safeSeparation = safeSeparation,
+        )
+    }
+
+    override fun toString(): String {
+        return "DanmakuConfig(style=$style, durationMillis=$durationMillis, safeSeparation=$safeSeparation)"
+    }
+
     companion object {
         val Default = DanmakuConfig()
     }
@@ -41,21 +63,21 @@ class DanmakuConfig(
 
 @Immutable
 class DanmakuStyle(
-    private val fontSize: TextUnit = 18.sp,
+    val fontSize: TextUnit = 18.sp,
     val alpha: Float = 0.7f,
-    private val strokeColor: Color = Color.Black,
-    private val stroke: Stroke? = Stroke(
-        miter = 1.5f,
-        width = 6f,
-        join = StrokeJoin.Round,
-    ),
-    private val shadow: Shadow? = null,
+    val strokeColor: Color = Color.Black,
+    val strokeWidth: Float = 4f,
+    val shadow: Shadow? = null,
 ) {
     @Stable
     fun styleForBorder(): TextStyle = TextStyle(
         fontSize = fontSize,
         color = strokeColor,
-        drawStyle = stroke,
+        drawStyle = Stroke(
+            miter = 3f,
+            width = strokeWidth,
+            join = StrokeJoin.Round,
+        ),
         textMotion = TextMotion.Animated,
         shadow = shadow,
     )
@@ -67,6 +89,34 @@ class DanmakuStyle(
         color = Color.White,
         textMotion = TextMotion.Animated,
     )
+
+    fun copy(
+        fontSize: TextUnit = this.fontSize,
+        alpha: Float = this.alpha,
+        strokeColor: Color = this.strokeColor,
+        strokeMidth: Float = this.strokeWidth,
+        shadow: Shadow? = this.shadow,
+    ): DanmakuStyle {
+        if (fontSize == this.fontSize &&
+            alpha == this.alpha &&
+            strokeColor == this.strokeColor &&
+            strokeMidth == this.strokeWidth &&
+            shadow == this.shadow
+        ) {
+            return this
+        }
+        return DanmakuStyle(
+            fontSize = fontSize,
+            alpha = alpha,
+            strokeColor = strokeColor,
+            strokeWidth = strokeMidth,
+            shadow = shadow,
+        )
+    }
+
+    override fun toString(): String {
+        return "DanmakuStyle(fontSize=$fontSize, alpha=$alpha, strokeColor=$strokeColor, strokeMiter=$strokeWidth, shadow=$shadow)"
+    }
 
     companion object {
         val Default = DanmakuStyle()

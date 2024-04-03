@@ -25,6 +25,8 @@ import me.him188.ani.app.data.EpisodeRepository
 import me.him188.ani.app.data.EpisodeRepositoryImpl
 import me.him188.ani.app.data.EpisodeRevisionRepository
 import me.him188.ani.app.data.EpisodeRevisionRepositoryImpl
+import me.him188.ani.app.data.PreferencesRepository
+import me.him188.ani.app.data.PreferencesRepositoryImpl
 import me.him188.ani.app.data.PreferredAllianceRepository
 import me.him188.ani.app.data.PreferredAllianceRepositoryImpl
 import me.him188.ani.app.data.ProfileRepository
@@ -34,6 +36,7 @@ import me.him188.ani.app.data.TokenRepository
 import me.him188.ani.app.data.TokenRepositoryImpl
 import me.him188.ani.app.data.UserRepository
 import me.him188.ani.app.data.UserRepositoryImpl
+import me.him188.ani.app.persistent.preferencesStore
 import me.him188.ani.app.persistent.preferredAllianceStore
 import me.him188.ani.app.persistent.tokenStore
 import me.him188.ani.app.session.SessionManager
@@ -82,6 +85,7 @@ fun getCommonKoinModule(getContext: () -> Context, coroutineScope: CoroutineScop
             }
         })
     }
+    single<PreferencesRepository> { PreferencesRepositoryImpl(getContext().preferencesStore) }
 }
 
 @Stable

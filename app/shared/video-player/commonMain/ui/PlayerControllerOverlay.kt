@@ -93,6 +93,8 @@ internal fun PreviewPlayerControllerOverlayImpl() {
                         controller = controller,
                         isFullscreen = true,
                         onClickFullscreen = {},
+                        danmakuEnabled = false,
+                        setDanmakuEnabled = {},
                         Modifier
                             .fillMaxWidth()
                             .height(48.dp)

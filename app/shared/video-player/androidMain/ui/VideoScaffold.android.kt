@@ -2,6 +2,7 @@ package me.him188.ani.app.videoplayer.ui
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -13,11 +14,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.preview.PHONE_LANDSCAPE
 import me.him188.ani.app.ui.subject.episode.details.EpisodePlayerTitle
+import me.him188.ani.app.ui.subject.episode.video.topbar.EpisodeVideoTopBar
 import me.him188.ani.app.videoplayer.DummyPlayerController
 import me.him188.ani.app.videoplayer.ui.guesture.GestureLock
 import me.him188.ani.app.videoplayer.ui.guesture.LockableVideoGestureHost
 import me.him188.ani.app.videoplayer.ui.guesture.rememberSwipeSeekerState
-import me.him188.ani.app.videoplayer.ui.top.PlayerTopBar
 
 @Preview(device = PHONE_LANDSCAPE)
 @Composable
@@ -32,19 +33,18 @@ private fun PreviewVideoScaffoldFullscreen() = ProvideCompositionLocalsForPrevie
     var isLocked by remember { mutableStateOf(false) }
 
     VideoScaffold(
+        modifier = Modifier,
         controllersVisible = controllerVisible,
         gestureLocked = isLocked,
         topBar = {
-            PlayerTopBar(
+            EpisodeVideoTopBar(
                 title = {
                     EpisodePlayerTitle(
                         ep = "28",
                         episodeTitle = "因为下次再见的时候会很难为情",
                         subjectTitle = "葬送的芙莉莲"
                     )
-                },
-                actions = {
-                },
+                }
             )
         },
         video = {
@@ -78,9 +78,15 @@ private fun PreviewVideoScaffoldFullscreen() = ProvideCompositionLocalsForPrevie
                 controller = controller,
                 isFullscreen = true,
                 onClickFullscreen = {},
+                danmakuEnabled = true,
+                setDanmakuEnabled = {}
             )
         },
-        modifier = Modifier,
         isFullscreen = true,
     )
+}
+
+
+fun main() {
+    Icons.Rounded
 }

@@ -23,6 +23,6 @@ import androidx.datastore.preferences.core.Preferences
 import me.him188.ani.app.platform.Context
 
 
-expect val Context.settingStore: DataStore<Preferences>
+expect val Context.preferencesStore: DataStore<Preferences>
 
 expect val Context.tokenStore: DataStore<Preferences>

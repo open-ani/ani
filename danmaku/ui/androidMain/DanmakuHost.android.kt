@@ -81,7 +81,7 @@ private fun PreviewDanmakuText() {
                         )
                     }
                 },
-                DanmakuStyle()
+                style = DanmakuStyle()
             )
         }
     }

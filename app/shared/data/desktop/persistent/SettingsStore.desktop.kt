@@ -23,7 +23,7 @@ import androidx.datastore.preferences.core.Preferences
 import me.him188.ani.app.platform.Context
 import me.him188.ani.app.platform.DesktopContext
 
-actual val Context.settingStore: DataStore<Preferences>
+actual val Context.preferencesStore: DataStore<Preferences>
     get() {
         this as DesktopContext
         return settingStore

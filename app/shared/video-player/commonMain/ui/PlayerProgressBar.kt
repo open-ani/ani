@@ -3,11 +3,14 @@ package me.him188.ani.app.videoplayer.ui
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.Chat
 import androidx.compose.material.icons.rounded.Fullscreen
 import androidx.compose.material.icons.rounded.FullscreenExit
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.SpeakerNotesOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -18,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -34,6 +38,8 @@ fun PlayerProgressController(
     controller: PlayerController,
     isFullscreen: Boolean,
     onClickFullscreen: () -> Unit,
+    danmakuEnabled: Boolean,
+    setDanmakuEnabled: (enabled: Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -41,7 +47,8 @@ fun PlayerProgressController(
     ) {
         // 播放 / 暂停按钮
         val state by controller.state.collectAsStateWithLifecycle(null)
-        Box(Modifier.padding(horizontal = 8.dp)) {
+        Row(Modifier.padding(horizontal = 8.dp)) {
+            // Play / Pause
             IconButton(
                 onClick = {
                     if (state?.isPlaying == true) {
@@ -52,13 +59,24 @@ fun PlayerProgressController(
                 },
             ) {
                 if (state?.isPlaying == true) {
-                    Icon(Icons.Rounded.Pause, contentDescription = "Pause")
+                    Icon(Icons.Rounded.Pause, contentDescription = "Pause", Modifier.size(36.dp))
                 } else {
-                    Icon(Icons.Rounded.PlayArrow, contentDescription = "Play")
+                    Icon(Icons.Rounded.PlayArrow, contentDescription = "Play", Modifier.size(36.dp))
+                }
+            }
+
+            // Enable / Disable Danmaku
+            val danmakuEnabledState by rememberUpdatedState(setDanmakuEnabled)
+            IconButton(
+                onClick = { danmakuEnabledState(!danmakuEnabled) },
+            ) {
+                if (danmakuEnabled) {
+                    Icon(Icons.AutoMirrored.Rounded.Chat, contentDescription = "Disable Danmaku")
+                } else {
+                    Icon(Icons.Rounded.SpeakerNotesOff, contentDescription = "Enable Danmaku")
                 }
             }
         }
-
         val videoProperties by controller.videoProperties.collectAsStateWithLifecycle(null)
         val playedDuration by controller.playedDuration.collectAsStateWithLifecycle()
         val sliderPosition by controller.previewingOrPlayingProgress.collectAsStateWithLifecycle(0f)
@@ -113,9 +131,9 @@ fun PlayerProgressController(
                 onClick = onClickFullscreen,
             ) {
                 if (isFullscreen) {
-                    Icon(Icons.Rounded.FullscreenExit, contentDescription = "Exit Fullscreen")
+                    Icon(Icons.Rounded.FullscreenExit, contentDescription = "Exit Fullscreen", Modifier.size(32.dp))
                 } else {
-                    Icon(Icons.Rounded.Fullscreen, contentDescription = "Enter Fullscreen")
+                    Icon(Icons.Rounded.Fullscreen, contentDescription = "Enter Fullscreen", Modifier.size(32.dp))
                 }
             }
         }

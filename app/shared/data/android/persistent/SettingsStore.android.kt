@@ -23,6 +23,6 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import me.him188.ani.app.platform.Context
 
-actual val Context.settingStore: DataStore<Preferences> by preferencesDataStore("settings")
+actual val Context.preferencesStore: DataStore<Preferences> by preferencesDataStore("preferences")
 
 actual val Context.tokenStore: DataStore<Preferences> by preferencesDataStore("tokens")

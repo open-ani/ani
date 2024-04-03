@@ -27,6 +27,7 @@ import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
@@ -188,7 +189,7 @@ fun DanmakuTrack(
                         }
                         .wrapContentSize()
                 ) {
-                    DanmakuText(danmaku, style)
+                    DanmakuText(danmaku, style = style)
                 }
             }
         }
@@ -217,8 +218,9 @@ fun DanmakuTrack(
 @Composable
 fun DanmakuText(
     danmaku: DanmakuState,
+    modifier: Modifier = Modifier,
     style: DanmakuStyle = DanmakuStyle.Default,
-    modifier: Modifier = Modifier
+    baseStyle: TextStyle = MaterialTheme.typography.bodyMedium,
 ) {
     Box(modifier.alpha(style.alpha)) {
         // Black text with stronger stroke
@@ -228,7 +230,7 @@ fun DanmakuText(
             overflow = TextOverflow.Visible,
             maxLines = 1,
             softWrap = false,
-            style = MaterialTheme.typography.bodyMedium.merge(style.styleForBorder()),
+            style = baseStyle.merge(style.styleForBorder()),
         )
         // Covered by a white, smaller text.
         // So the resulting look is a white text with black border.
@@ -238,7 +240,7 @@ fun DanmakuText(
             overflow = TextOverflow.Visible,
             maxLines = 1,
             softWrap = false,
-            style = MaterialTheme.typography.bodyMedium.merge(style.styleForText()),
+            style = baseStyle.merge(style.styleForText()),
         )
     }
 }

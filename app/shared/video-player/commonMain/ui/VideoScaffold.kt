@@ -46,6 +46,7 @@ import me.him188.ani.app.videoplayer.ui.top.PlayerTopBar
  * - 手势: [gestureHost]
  * - 弹幕: [danmakuHost]
  * - 视频: [video]
+ * - 右侧侧边栏: [rhsSideSheet]
  *
  * @param controllersVisible 是否展示 [topBar], [rhsBar] 和 [bottomBar]
  * @param topBar [PlayerTopBar]
@@ -59,6 +60,7 @@ import me.him188.ani.app.videoplayer.ui.top.PlayerTopBar
  */
 @Composable
 fun VideoScaffold(
+    modifier: Modifier = Modifier,
     controllersVisible: Boolean = true,
     gestureLocked: Boolean = false,
     topBar: @Composable RowScope.() -> Unit = {},
@@ -74,7 +76,7 @@ fun VideoScaffold(
      * @see PlayerProgressController
      */
     bottomBar: @Composable RowScope.() -> Unit = {},
-    modifier: Modifier = Modifier,
+    rhsSideSheet: @Composable () -> Unit = {},
     isFullscreen: Boolean = isInLandscapeMode(),
 ) {
     BoxWithConstraints(
@@ -201,6 +203,11 @@ fun VideoScaffold(
                         floatingMessage()
                     }
                 }
+            }
+
+            // 右侧 sheet
+            Box(Modifier.matchParentSize()) {
+                rhsSideSheet()
             }
         }
     }
