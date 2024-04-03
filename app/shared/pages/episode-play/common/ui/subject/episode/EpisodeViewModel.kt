@@ -374,7 +374,7 @@ private class EpisodeViewModelImpl(
 
     private val danmakuFlow: Flow<Danmaku> = combine(
         playSourceSelector.targetPlaySourceCandidate.filterNotNull(),
-        playerController.videoProperties
+        playerController.videoProperties.filterNotNull()
     ) { playSourceCandidate, video ->
         danmakuProvider.startSession(
             playSourceCandidate.playSource.originalTitle,

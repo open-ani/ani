@@ -27,7 +27,7 @@ interface PlayerController {
     val videoSource: StateFlow<VideoSource<*>?>
 
     @Stable
-    val videoProperties: Flow<VideoProperties>
+    val videoProperties: StateFlow<VideoProperties?>
 
     /**
      * 是否正在 buffer (暂停视频中)
@@ -179,7 +179,7 @@ fun interface PlayerControllerFactory {
 class DummyPlayerController : AbstractPlayerController() {
     override val state: StateFlow<PlayerState> = MutableStateFlow(PlayerState.PAUSED_BUFFERING)
     override val videoSource: StateFlow<VideoSource<*>?> = MutableStateFlow(null)
-    override val videoProperties: Flow<VideoProperties> = MutableStateFlow(
+    override val videoProperties: MutableStateFlow<VideoProperties> = MutableStateFlow(
         VideoProperties(
             title = "Test Video",
             heightPx = 1080,
