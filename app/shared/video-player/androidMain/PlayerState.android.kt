@@ -58,7 +58,7 @@ internal class ExoPlayerState @UiThread constructor(
 
     private class OpenedVideoSource(
         val videoSource: VideoSource<*>,
-        val closeable: AutoCloseable,
+        val releaseResource: () -> Unit,
         val mediaSourceFactory: ProgressiveMediaSource.Factory,
     )
 
@@ -86,7 +86,7 @@ internal class ExoPlayerState @UiThread constructor(
         }
 
         openResource.value = null
-        previousResource?.closeable?.close()
+        previousResource?.releaseResource?.invoke()
 
         val opened = openSource(source)
 
@@ -100,7 +100,7 @@ internal class ExoPlayerState @UiThread constructor(
             }
             logger.info { "Player initialized" }
         } catch (e: Throwable) {
-            opened.closeable.close()
+            opened.releaseResource()
             throw e
         }
 
@@ -114,7 +114,9 @@ internal class ExoPlayerState @UiThread constructor(
                 ProgressiveMediaSource.Factory { TorrentDataSource(session) }
                 return OpenedVideoSource(
                     source,
-                    closeable = session,
+                    releaseResource = {
+                        session.close()
+                    },
                     mediaSourceFactory = ProgressiveMediaSource.Factory { TorrentDataSource(session) }
                 )
             }
@@ -219,7 +221,7 @@ internal class ExoPlayerState @UiThread constructor(
         closed = true
         player.stop()
         player.release()
-        openResource.value?.closeable?.close()
+        openResource.value?.releaseResource?.invoke()
         backgroundScope.cancel()
     }
 

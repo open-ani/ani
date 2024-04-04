@@ -33,8 +33,8 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.time.Duration.Companion.seconds
 
 internal class TorrentDownloadSessionImpl(
-    private val removeListener: (listener: AlertListener) -> Unit,
-    private val closeHandle: (handle: TorrentHandle) -> Unit,
+    private val removeListener: suspend (listener: AlertListener) -> Unit,
+    private val closeHandle: suspend (handle: TorrentHandle) -> Unit,
     private val torrentInfo: TorrentInfo,
     /**
      * The directory where the torrent is saved.
@@ -302,9 +302,13 @@ internal class TorrentDownloadSessionImpl(
 
     override fun close() {
         logger.info { "Closing torrent" }
-        removeListener(listener)
-        torrentHandle?.let(closeHandle)
-        onClose()
+        LockedSessionManager.launch {
+            removeListener(listener)
+            torrentHandle?.let {
+                closeHandle(it)
+            }
+            onClose()
+        }
     }
 
     private fun createPiecePriorities(): PiecePriorities {

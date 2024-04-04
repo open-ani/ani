@@ -19,6 +19,8 @@ public interface TorrentDownloadSession : DownloadStats, AutoCloseable {
      * Opens the downloaded file as a [SeekableInput].
      */
     public suspend fun createInput(): SeekableInput
+
+    public override fun close()
 }
 
 public sealed class TorrentDownloadState {

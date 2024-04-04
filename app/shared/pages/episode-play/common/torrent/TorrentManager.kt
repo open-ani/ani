@@ -8,10 +8,10 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.job
 import me.him188.ani.utils.coroutines.runUntilSuccess
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
-import org.koin.core.component.KoinComponent
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -31,7 +31,7 @@ class DefaultTorrentManager(
     parentCoroutineContext: CoroutineContext,
     private val downloaderFactory: TorrentDownloaderFactory,
     downloaderStart: CoroutineStart = CoroutineStart.DEFAULT
-) : TorrentManager, KoinComponent {
+) : TorrentManager {
     private val scope = CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
 
     override val lastError: MutableStateFlow<TorrentDownloaderManagerError?> = MutableStateFlow(null)
@@ -44,6 +44,10 @@ class DefaultTorrentManager(
             }
         ) {
             downloaderFactory.create()
+        }.also { downloader ->
+            scope.coroutineContext.job.invokeOnCompletion {
+                downloader.close()
+            }
         }
     }
 

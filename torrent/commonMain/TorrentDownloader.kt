@@ -1,5 +1,12 @@
 package me.him188.ani.app.torrent
 
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import me.him188.ani.app.torrent.model.EncodedTorrentData
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
@@ -14,7 +21,8 @@ import org.libtorrent4j.alerts.Alert
 import org.libtorrent4j.alerts.AlertType
 import org.libtorrent4j.swig.settings_pack
 import java.io.File
-import java.io.IOException
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.Executors
 
 
 /**
@@ -36,16 +44,16 @@ public interface TorrentDownloader : AutoCloseable {
      *
      * @throws MagnetTimeoutException if timeout has been reached.
      */
-    @Throws(IOException::class)
-    public fun fetchMagnet(magnet: String, timeoutSeconds: Int = 60): EncodedTorrentData
+    public suspend fun fetchMagnet(magnet: String, timeoutSeconds: Int = 60): EncodedTorrentData
 
     /**
      * Starts download of a torrent using the torrent data.
      *
      * This function may involve I/O operation e.g. to compare with local caches.
      */
-    @Throws(IOException::class)
-    public fun startDownload(data: EncodedTorrentData): TorrentDownloadSession
+    public suspend fun startDownload(data: EncodedTorrentData): TorrentDownloadSession
+
+    public override fun close()
 }
 
 public class MagnetTimeoutException(
@@ -61,6 +69,38 @@ public fun interface TorrentDownloaderFactory {
 }
 
 private val logger = logger(TorrentDownloader::class)
+
+internal class LockedSessionManager(
+    private val sessionManager: SessionManager,
+) {
+    suspend inline fun <R> use(
+        crossinline block: SessionManager.() -> R
+    ) = withContext(dispatcher) {
+        block(sessionManager)
+    }
+
+    companion object {
+        /**
+         * Shared dispatcher for all [LockedSessionManager] instances.
+         *
+         * Libtorrent crashes (the entire VM) if it is called from multiple threads.
+         */ // unfortunately, we have to keep this dispatcher live for the entire app lifecycle.
+        val dispatcher = Executors.newSingleThreadExecutor()
+            .asCoroutineDispatcher()
+
+        private val logger = logger(LockedSessionManager::class)
+
+        private val scope = CoroutineScope(dispatcher + CoroutineExceptionHandler { _, throwable ->
+            logger.warn(throwable) { "An exception occurred in LockedSessionManager" }
+        })
+
+        fun launch(block: suspend () -> Unit) {
+            scope.launch {
+                block()
+            }
+        }
+    }
+}
 
 /**
  * Creates a new [TorrentDownloader] instance.
@@ -127,13 +167,13 @@ public fun TorrentDownloader(
 
     return TorrentDownloaderImpl(
         cacheDirectory,
-        sessionManager,
+        LockedSessionManager(sessionManager),
     )
 }
 
 internal class TorrentDownloaderImpl(
     cacheDirectory: File,
-    private val sessionManager: SessionManager,
+    private val sessionManager: LockedSessionManager,
 ) : TorrentDownloader {
     private val logger = logger(this::class)
     override val vendor: TorrentLibInfo = TorrentLibInfo(
@@ -141,10 +181,12 @@ internal class TorrentDownloaderImpl(
         version = org.libtorrent4j.LibTorrent.version(),
     )
 
-    override fun fetchMagnet(magnet: String, timeoutSeconds: Int): EncodedTorrentData {
+    override suspend fun fetchMagnet(magnet: String, timeoutSeconds: Int): EncodedTorrentData {
         logger.info { "Fetching magnet: $magnet" }
         val data: ByteArray = try {
-            sessionManager.fetchMagnet(magnet, timeoutSeconds, magnetCacheDir)
+            sessionManager.use {
+                fetchMagnet(magnet, timeoutSeconds, magnetCacheDir)
+            }
         } catch (e: InterruptedException) {
             throw MagnetTimeoutException(cause = e)
         }
@@ -160,10 +202,11 @@ internal class TorrentDownloaderImpl(
         mkdirs()
     }
 
-    private val dataToSession = mutableMapOf<Sha1Hash, TorrentDownloadSession>()
+    private val dataToSession = ConcurrentHashMap<Sha1Hash, TorrentDownloadSession>()
 
-    @Synchronized
-    override fun startDownload(data: EncodedTorrentData): TorrentDownloadSession {
+    private val lock = Mutex()
+
+    override suspend fun startDownload(data: EncodedTorrentData): TorrentDownloadSession = lock.withLock {
         logger.info { "Starting torrent download session" }
 
         logger.info { "Decoding torrent info, input length=${data.data.size}" }
@@ -178,8 +221,8 @@ internal class TorrentDownloaderImpl(
         }
         val session =
             TorrentDownloadSessionImpl(
-                removeListener = { sessionManager.removeListener(it) },
-                closeHandle = { sessionManager.remove(it) },
+                removeListener = { sessionManager.use { removeListener(it) } },
+                closeHandle = { sessionManager.use { remove(it) } },
                 torrentInfo = ti,
                 saveDirectory = saveDirectory,
                 onClose = {
@@ -187,40 +230,42 @@ internal class TorrentDownloaderImpl(
                 }
             )
         dataToSession[hash] = session
-        sessionManager.settings().run {
-            //  https://libtorrent.org/reference-Settings.html#settings_pack
+        sessionManager.use {
+            settings().run {
+                //  https://libtorrent.org/reference-Settings.html#settings_pack
 //            setInteger(settings_pack.int_types.piece_timeout.swigValue(), 3)
-            setInteger(settings_pack.int_types.request_timeout.swigValue(), 3)
-            setInteger(settings_pack.int_types.peer_timeout.swigValue(), 3)
-        }
-        sessionManager.addListener(session.listener)
+                setInteger(settings_pack.int_types.request_timeout.swigValue(), 3)
+                setInteger(settings_pack.int_types.peer_timeout.swigValue(), 3)
+            }
+            addListener(session.listener)
 
-        val priorities = Priority.array(Priority.IGNORE, ti.numFiles())
-        logger.info { "File name: ${ti.files().fileName(0)}" }
-        priorities[0] = Priority.TOP_PRIORITY
+            val priorities = Priority.array(Priority.IGNORE, ti.numFiles())
+            logger.info { "File name: ${ti.files().fileName(0)}" }
+            priorities[0] = Priority.TOP_PRIORITY
 
-        try {
-            logger.info { "Starting torrent download" }
-            sessionManager.download(
-                ti,
-                saveDirectory,
-                null,
-                priorities,
-                null,
-                TorrentFlags.UPDATE_SUBSCRIBE,
+            try {
+                logger.info { "Starting torrent download" }
+                download(
+                    ti,
+                    saveDirectory,
+                    null,
+                    priorities,
+                    null,
+                    TorrentFlags.UPDATE_SUBSCRIBE,
 //                TorrentFlags.SEQUENTIAL_DOWNLOAD,//.or_(TorrentFlags.NEED_SAVE_RESUME)
-            )
-            logger.info { "Torrent download started." }
-        } catch (e: Throwable) {
-            sessionManager.removeListener(session.listener)
-            throw e
+                )
+                logger.info { "Torrent download started." }
+            } catch (e: Throwable) {
+                removeListener(session.listener)
+                throw e
+            }
         }
 
         return session
     }
 
     override fun close() {
-        sessionManager.stop()
+        LockedSessionManager.launch { sessionManager.use { stop() } }
     }
 }
 
