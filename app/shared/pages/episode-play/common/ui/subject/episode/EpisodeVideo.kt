@@ -27,7 +27,7 @@ import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsV
 import me.him188.ani.app.ui.subject.episode.video.settings.VideoSettingsButton
 import me.him188.ani.app.ui.subject.episode.video.topbar.EpisodeVideoTopBar
 import me.him188.ani.app.videoplayer.PlayerController
-import me.him188.ani.app.videoplayer.VideoPlayerView
+import me.him188.ani.app.videoplayer.VideoPlayer
 import me.him188.ani.app.videoplayer.togglePause
 import me.him188.ani.app.videoplayer.ui.PlayerProgressController
 import me.him188.ani.app.videoplayer.ui.VideoLoadingIndicator
@@ -84,7 +84,7 @@ internal fun EpisodeVideo(
             if (LocalIsPreviewing.current) {
                 Text("预览模式")
             } else {
-                VideoPlayerView(playerController, Modifier.matchParentSize())
+                VideoPlayer(playerController, Modifier.matchParentSize())
             }
         },
         danmakuHost = {
@@ -99,7 +99,7 @@ internal fun EpisodeVideo(
         gestureHost = {
             LockableVideoGestureHost(
                 rememberSwipeSeekerState(constraints.maxWidth) {
-                    playerController.seekTo(playerController.playedDuration.value + it.seconds)
+                    playerController.seekTo(playerController.currentPosition.value + it.seconds)
                 },
                 controllerVisible = controllerVisible,
                 locked = isLocked,

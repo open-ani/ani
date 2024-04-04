@@ -27,11 +27,10 @@ import me.him188.ani.app.data.EpisodeRepository
 import me.him188.ani.app.data.PreferencesRepository
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.Context
-import me.him188.ani.app.torrent.TorrentDownloaderManager
+import me.him188.ani.app.torrent.TorrentManager
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
-import me.him188.ani.app.ui.foundation.runUntilSuccess
 import me.him188.ani.app.videoplayer.PlayerController
 import me.him188.ani.app.videoplayer.PlayerControllerFactory
 import me.him188.ani.app.videoplayer.TorrentVideoSource
@@ -51,6 +50,8 @@ import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.datasources.bangumi.processing.nameCNOrName
 import me.him188.ani.datasources.bangumi.processing.renderEpisodeSp
 import me.him188.ani.utils.coroutines.closeOnReplacement
+import me.him188.ani.utils.coroutines.runUntilSuccess
+import me.him188.ani.utils.logging.info
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.openapitools.client.models.EpisodeCollectionType
@@ -170,7 +171,7 @@ private class EpisodeViewModelImpl(
     private val bangumiClient by inject<BangumiClient>()
     private val downloadProvider by inject<DownloadProvider>()
     private val browserNavigator: BrowserNavigator by inject()
-    private val torrentDownloaderManager: TorrentDownloaderManager by inject()
+    private val torrentManager: TorrentManager by inject()
     private val playerControllerFactory: PlayerControllerFactory by inject()
     private val episodeRepository: EpisodeRepository by inject()
     private val danmakuProvider: DanmakuProvider by inject()
@@ -304,25 +305,24 @@ private class EpisodeViewModelImpl(
     private val videoSource: SharedFlow<VideoSource<*>?> = playSourceSelector.targetPlaySourceCandidate
         .debounce(1.seconds)
         .distinctUntilChanged()
-        .combine(torrentDownloaderManager.torrentDownloader) { video, torrentDownloader ->
-            video to torrentDownloader
-        }
-        .transformLatest { (playSource, torrentDownloader) ->
+        .transformLatest { playSource ->
             emit(null)
             playSource?.let {
                 try {
-                    emit(TorrentVideoSource(torrentDownloader.fetchMagnet(it.playSource.magnetLink)))
+                    emit(TorrentVideoSource(torrentManager.downloader.await().fetchMagnet(it.playSource.magnetLink)))
                 } catch (e: Exception) {
                     emit(null)
                 }
             }
         }.shareInBackground()
 
+
     @Stable
     override val isVideoReady: Flow<Boolean> = videoSource.map { it != null }
 
     @Stable
-    override val playerController: PlayerController = playerControllerFactory.create(context, videoSource)
+    override val playerController: PlayerController =
+        playerControllerFactory.create(context, backgroundScope.coroutineContext)
 
     override val isShowPlaySourceSheet = MutableStateFlow(false)
     override fun setShowPlaySourceSheet(show: Boolean) {
@@ -384,7 +384,7 @@ private class EpisodeViewModelImpl(
         )
     }.filterNotNull()
         .closeOnReplacement()
-        .flatMapLatest { it.at(playerController.playedDuration) }
+        .flatMapLatest { it.at(playerController.currentPosition) }
 
     override val danmakuHostState: DanmakuHostState = DanmakuHostState()
 
@@ -403,6 +403,13 @@ private class EpisodeViewModelImpl(
         launchInBackground {
             danmakuFlow.collect { danmaku ->
                 danmakuHostState.trySend(danmaku)
+            }
+        }
+
+        launchInBackground {
+            videoSource.collect {
+                logger.info { "Got new video source, updating" }
+                playerController.setVideoSource(it)
             }
         }
     }

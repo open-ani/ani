@@ -20,7 +20,6 @@ import me.him188.ani.app.tools.caching.value
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
-import me.him188.ani.app.ui.foundation.runUntilSuccess
 import me.him188.ani.datasources.api.UnifiedCollectionType
 import me.him188.ani.datasources.api.map
 import me.him188.ani.datasources.bangumi.processing.airSeason
@@ -28,6 +27,7 @@ import me.him188.ani.datasources.bangumi.processing.isOnAir
 import me.him188.ani.datasources.bangumi.processing.nameCNOrName
 import me.him188.ani.datasources.bangumi.processing.toCollectionType
 import me.him188.ani.datasources.bangumi.processing.toSubjectCollectionType
+import me.him188.ani.utils.coroutines.runUntilSuccess
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.openapitools.client.models.EpType

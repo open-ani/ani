@@ -1,6 +1,6 @@
 package me.him188.ani.app.videoplayer
 
-import androidx.annotation.CallSuper
+import androidx.annotation.UiThread
 import androidx.compose.runtime.Stable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -11,77 +11,114 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.platform.Context
-import me.him188.ani.app.ui.foundation.AbstractViewModel
-import me.him188.ani.app.ui.foundation.launchInBackground
+import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 /**
- * 播放器控制器. 控制暂停, 播放速度等.
+ * A controller for the [VideoPlayer].
  */
+@Stable
 interface PlayerController {
-    @Stable
+    /**
+     * Current state of the player.
+     *
+     * State can be changed internally e.g. buffer exhausted or externally by e.g. [pause], [resume].
+     */
     val state: StateFlow<PlayerState>
 
-    @Stable
+    /**
+     * The video source that is currently being played.
+     */
     val videoSource: StateFlow<VideoSource<*>?>
 
-    @Stable
+    /**
+     * Sets the video source to play, by [opening][VideoSource.open] the [source],
+     * updating [videoSource], and resetting the progress to 0.
+     *
+     * Suspends until the new source has been updated.
+     *
+     * If this function failed to [start video streaming][VideoSource.open], it will throw an exception.
+     *
+     * This function must not be called on the main thread as it will call [VideoSource.open].
+     *
+     * @param source the video source to play. `null` to stop playing.
+     * @throws UnsupportedVideoSourceException if the video source is not supported by this player.
+     */
+    suspend fun setVideoSource(source: VideoSource<*>?)
+
+    /**
+     * Properties of the video being played.
+     *
+     * Note that it may not be available immediately after [setVideoSource] returns,
+     * since the properties may be callback from the underlying player implementation.
+     */
     val videoProperties: StateFlow<VideoProperties?>
 
     /**
      * 是否正在 buffer (暂停视频中)
      */
-    @Stable
     val isBuffering: Flow<Boolean>
 
     /**
-     * 当前播放进度
+     * Current position of the video being played.
+     *
+     * `0` if no video is being played.
      */
-    @Stable
-    val playedDuration: StateFlow<Duration>
+    val currentPosition: StateFlow<Duration>
 
-    @Stable
-    val bufferProgress: StateFlow<Float>
+    /**
+     * `0..100`
+     */
+    val bufferedPercentage: StateFlow<Int>
 
     /**
      * 当前播放进度比例 `0..1`
      */
-    @Stable
     val playProgress: Flow<Float>
 
     /**
      * 暂停播放, 直到 [pause]
      */
+    @UiThread
     fun pause()
 
     /**
      * 恢复播放
      */
+    @UiThread
     fun resume()
-
-    fun setSpeed(speed: Float)
 
 
     /**
      * 播放进度条的拖动位置 `0..1`. `null` 表示没有拖动.
      */
-    @Stable
+    @Deprecated("To be moved out")
     val previewingProgress: StateFlow<Float?>
 
+    @Deprecated("To be moved out")
     fun setPreviewingProgress(progress: Float)
 
     /**
-     * 如果当前正在拖动, 则为 [previewingProgress], 否则为 [playedDuration].
+     * 如果当前正在拖动, 则为 [previewingProgress], 否则为 [currentPosition].
      */
-    @Stable
     val previewingOrPlayingProgress: Flow<Float>
+
+
+    @UiThread
+    fun setSpeed(speed: Float)
 
     /**
      * 跳转到指定位置
      */
+    @UiThread
     fun seekTo(duration: Duration)
 }
+
+class UnsupportedVideoSourceException(
+    val source: VideoSource<*>,
+    player: PlayerController,
+) : RuntimeException("Video source is not supported by player '${player}': $source")
 
 fun PlayerController.togglePause() {
     if (state.value.isPlaying) {
@@ -91,7 +128,7 @@ fun PlayerController.togglePause() {
     }
 }
 
-abstract class AbstractPlayerController : PlayerController, AbstractViewModel() {
+abstract class AbstractPlayerController : PlayerController {
     override val isBuffering: Flow<Boolean> by lazy {
         state.map { it == PlayerState.PAUSED_BUFFERING }
     }
@@ -124,24 +161,6 @@ abstract class AbstractPlayerController : PlayerController, AbstractViewModel() 
             }
         }
     }
-
-    private val seekToDebouncer: MutableStateFlow<Duration> = MutableStateFlow(0.seconds)
-
-    init {
-        launchInBackground {
-            seekToDebouncer.debounce(0.1.seconds).collect {
-                isPreviewing.tryEmit(false)
-                onSeekTo(it)
-            }
-        }
-    }
-
-    abstract suspend fun onSeekTo(duration: Duration)
-
-    @CallSuper
-    final override fun seekTo(duration: Duration) {
-        seekToDebouncer.value = duration
-    }
 }
 
 
@@ -170,7 +189,7 @@ enum class PlayerState(
 }
 
 fun interface PlayerControllerFactory {
-    fun create(context: Context, videoSource: Flow<VideoSource<*>?>): PlayerController
+    fun create(context: Context, parentCoroutineContext: CoroutineContext): PlayerController
 }
 
 /**
@@ -178,7 +197,11 @@ fun interface PlayerControllerFactory {
  */
 class DummyPlayerController : AbstractPlayerController() {
     override val state: StateFlow<PlayerState> = MutableStateFlow(PlayerState.PAUSED_BUFFERING)
-    override val videoSource: StateFlow<VideoSource<*>?> = MutableStateFlow(null)
+    override val videoSource: MutableStateFlow<VideoSource<*>?> = MutableStateFlow(null)
+    override suspend fun setVideoSource(source: VideoSource<*>?) {
+        videoSource.value = source
+    }
+
     override val videoProperties: MutableStateFlow<VideoProperties> = MutableStateFlow(
         VideoProperties(
             title = "Test Video",
@@ -191,9 +214,9 @@ class DummyPlayerController : AbstractPlayerController() {
         )
     )
     override val isBuffering: Flow<Boolean> = MutableStateFlow(true)
-    override val playedDuration: MutableStateFlow<Duration> = MutableStateFlow(10.seconds)
-    override val bufferProgress: StateFlow<Float> = MutableStateFlow(0.5f)
-    override val playProgress: Flow<Float> = playedDuration.combine(videoProperties) { played, video ->
+    override val currentPosition: MutableStateFlow<Duration> = MutableStateFlow(10.seconds)
+    override val bufferedPercentage: StateFlow<Int> = MutableStateFlow(50)
+    override val playProgress: Flow<Float> = currentPosition.combine(videoProperties) { played, video ->
         (played / video.duration).toFloat()
     }
 
@@ -206,7 +229,7 @@ class DummyPlayerController : AbstractPlayerController() {
     override fun setSpeed(speed: Float) {
     }
 
-    override suspend fun onSeekTo(duration: Duration) {
-        this.playedDuration.value = duration
+    override fun seekTo(duration: Duration) {
+        this.currentPosition.value = duration
     }
 }

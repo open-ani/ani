@@ -88,7 +88,7 @@ fun PlayerProgressController(
             }
         }
         val videoProperties by controller.videoProperties.collectAsStateWithLifecycle(null)
-        val playedDuration by controller.playedDuration.collectAsStateWithLifecycle()
+        val playedDuration by controller.currentPosition.collectAsStateWithLifecycle()
         val sliderPosition by controller.previewingOrPlayingProgress.collectAsStateWithLifecycle(0f)
 
         val playedDurationSeconds = remember(playedDuration) { playedDuration.inWholeSeconds }

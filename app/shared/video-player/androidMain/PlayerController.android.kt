@@ -1,5 +1,6 @@
 package me.him188.ani.app.videoplayer
 
+import androidx.annotation.OptIn
 import androidx.annotation.UiThread
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
@@ -8,86 +9,122 @@ import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.job
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.platform.Context
-import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.videoplayer.media.TorrentDataSource
 import me.him188.ani.utils.logging.info
-import org.koin.core.component.KoinComponent
+import me.him188.ani.utils.logging.logger
+import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 
 class ExoPlayerControllerFactory : PlayerControllerFactory {
-    @UnstableApi
-    override fun create(context: Context, videoSource: Flow<VideoSource<*>?>): PlayerController {
-        return ExoPlayerController(videoSource, context)
-    }
+    @OptIn(UnstableApi::class)
+    override fun create(context: Context, parentCoroutineContext: CoroutineContext): PlayerController =
+        ExoPlayerController(context, parentCoroutineContext)
 }
 
 
 /**
  * Must be remembered
  */
-@UnstableApi
+@OptIn(UnstableApi::class)
 internal class ExoPlayerController @UiThread constructor(
-    videoFlow: Flow<VideoSource<*>?>,
     context: Context,
+    parentCoroutineContext: CoroutineContext
 ) : AbstractPlayerController(),
-    AutoCloseable,
-    KoinComponent {
+    AutoCloseable {
+    private val backgroundScope = CoroutineScope(
+        parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job])
+    ).apply {
+        coroutineContext.job.invokeOnCompletion {
+            close()
+        }
+    }
 
-    override val videoSource: StateFlow<VideoSource<*>?> = videoFlow.stateInBackground()
+    override val videoSource: MutableStateFlow<VideoSource<*>?> = MutableStateFlow(null)
 
-    private var playingResource: AutoCloseable? = null
-    private val mediaSourceFactory = videoSource
-        .filterNotNull()
-        .flatMapLatest { video ->
-            when (video) {
-                is TorrentVideoSource -> video.startStreaming().map {
-                    playingResource = it
-                    ProgressiveMediaSource.Factory { TorrentDataSource(it) }
-                }
+    private class OpenedVideoSource(
+        val videoSource: VideoSource<*>,
+        val closeable: AutoCloseable,
+        val mediaSourceFactory: ProgressiveMediaSource.Factory,
+    )
 
-                else -> error("Unsupported video type: ${video::class}")
+    /**
+     * Currently playing resource that should be closed when the controller is closed.
+     * @see setVideoSource
+     */
+    private val openResource = MutableStateFlow<OpenedVideoSource?>(null)
+
+    override suspend fun setVideoSource(source: VideoSource<*>?) {
+        if (source == null) {
+            logger.info { "setVideoSource: Cleaning up player since source is null" }
+            withContext(Dispatchers.Main.immediate) {
+                player.stop()
+                player.clearMediaItems()
             }
+            this.videoSource.value = null
+            this.openResource.value = null
+            return
         }
 
-    init {
-        logger.info { "ExoPlayerController created" }
+        if (source == this.openResource.value?.videoSource) {
+            return
+        }
 
-        videoSource.combine(mediaSourceFactory) { source, factory ->
-            if (source == null) {
-                logger.info { "Cleaning up player since source is null" }
-                withContext(Dispatchers.Main.immediate) {
-                    player.stop()
-                    player.clearMediaItems()
-                }
-                return@combine
-            }
+        val opened = openSource(source)
+
+        try {
             logger.info { "Initializing player with VideoSource: $source" }
-            val item = factory.createMediaSource(MediaItem.fromUri(source.uri))
+            val item = opened.mediaSourceFactory.createMediaSource(MediaItem.fromUri(source.uri))
             withContext(Dispatchers.Main.immediate) {
                 player.setMediaSource(item)
                 player.prepare()
                 player.play()
             }
             logger.info { "Player initialized" }
-        }.launchIn(backgroundScope)
+        } catch (e: Throwable) {
+            opened.closeable.close()
+            throw e
+        }
+
+        this.openResource.value = opened
     }
 
-    val player = run {
+    private suspend fun openSource(source: VideoSource<*>): OpenedVideoSource {
+        when (source) {
+            is TorrentVideoSource -> {
+                val session = source.open()
+                ProgressiveMediaSource.Factory { TorrentDataSource(session) }
+                return OpenedVideoSource(
+                    source,
+                    closeable = session,
+                    mediaSourceFactory = ProgressiveMediaSource.Factory { TorrentDataSource(session) }
+                )
+            }
+
+            else -> throw UnsupportedOperationException("Unsupported video type: ${source::class}")
+        }
+    }
+
+    val player = kotlin.run {
         ExoPlayer.Builder(context).apply {}.build().apply {
             playWhenReady = true
             addListener(object : Player.Listener {
@@ -97,19 +134,7 @@ internal class ExoPlayerController @UiThread constructor(
 
                 override fun onVideoSizeChanged(videoSize: VideoSize) {
                     super.onVideoSizeChanged(videoSize)
-                    updateVideoPropertiesOrLaunch()
-                }
-
-                private fun updateVideoPropertiesOrLaunch() {
-                    if (updateVideoProperties()) {
-                        return
-                    }
-                    launchInBackground {
-                        delay(1.seconds)
-                        withContext(Dispatchers.Main) {
-                            updateVideoPropertiesOrLaunch()
-                        }
-                    }
+                    updateVideoProperties()
                 }
 
                 private fun updateVideoProperties(): Boolean {
@@ -128,6 +153,7 @@ internal class ExoPlayerController @UiThread constructor(
                 }
 
                 override fun onPlaybackStateChanged(playbackState: Int) {
+                    updateVideoProperties()
                     when (playbackState) {
                         Player.STATE_BUFFERING -> state.value = PlayerState.PAUSED_BUFFERING
                         Player.STATE_ENDED -> state.value = PlayerState.FINISHED
@@ -148,34 +174,29 @@ internal class ExoPlayerController @UiThread constructor(
     }
 
     override val state: MutableStateFlow<PlayerState> = MutableStateFlow(PlayerState.PAUSED_BUFFERING)
+
     override val videoProperties = MutableStateFlow<VideoProperties?>(null)
-    override val bufferProgress: MutableStateFlow<Float> = MutableStateFlow(0f)
-    override val isBuffering: Flow<Boolean> by lazy {
-        state.map { it == PlayerState.PAUSED_BUFFERING }
+    override val bufferedPercentage = MutableStateFlow(0)
+    override val isBuffering: Flow<Boolean> = state.map { it == PlayerState.PAUSED_BUFFERING }
+
+    override fun seekTo(duration: Duration) {
+        player.seekTo(duration.inWholeMilliseconds)
     }
 
-    override suspend fun onSeekTo(duration: Duration) {
-        withContext(Dispatchers.Main) {
-            player.seekTo(duration.inWholeMilliseconds)
-        }
-    }
-
-    override val playedDuration: MutableStateFlow<Duration> = MutableStateFlow(0.milliseconds)
-    override val playProgress: StateFlow<Float> =
-        combine(videoProperties.filterNotNull(), playedDuration) { properties, duration ->
+    override val currentPosition: MutableStateFlow<Duration> = MutableStateFlow(0.milliseconds)
+    override val playProgress: Flow<Float> =
+        combine(videoProperties.filterNotNull(), currentPosition) { properties, duration ->
             if (properties.duration == 0.milliseconds) {
                 return@combine 0f
             }
             (duration / properties.duration).toFloat().coerceIn(0f, 1f)
-        }.stateInBackground(0f)
+        }
 
     init {
-        launchInBackground {
-            while (true) {
-                withContext(Dispatchers.Main) {
-                    playedDuration.value = player.currentPosition.milliseconds
-                    bufferProgress.value = player.bufferedPercentage.toFloat()
-                }
+        backgroundScope.launch(Dispatchers.Main) {
+            while (currentCoroutineContext().isActive) {
+                currentPosition.value = player.currentPosition.milliseconds
+                bufferedPercentage.value = player.bufferedPercentage
                 delay(1.seconds)
             }
         }
@@ -189,24 +210,25 @@ internal class ExoPlayerController @UiThread constructor(
         player.play()
     }
 
-    override fun onAbandoned() {
-        super.onAbandoned()
-        close()
-    }
 
-    override fun onForgotten() {
-        super.onForgotten()
-        close()
-    }
+    @Volatile
+    private var closed = false
 
+    @Synchronized
     override fun close() {
-        super.close()
+        if (closed) return
+        closed = true
         player.stop()
         player.release()
-        playingResource?.close()
+        openResource.value?.closeable?.close()
+        backgroundScope.cancel()
     }
 
     override fun setSpeed(speed: Float) {
         player.setPlaybackSpeed(speed)
+    }
+
+    private companion object {
+        val logger = logger(ExoPlayerController::class)
     }
 }

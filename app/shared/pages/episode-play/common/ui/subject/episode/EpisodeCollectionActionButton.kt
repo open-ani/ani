@@ -49,28 +49,6 @@ fun EpisodeCollectionActionButton(
     onClick: (target: EpisodeCollectionType) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-//    BasicSubjectCollectionActionButton(
-//        when (collectionType) {
-//            EpisodeCollectionType.WATCHED -> SubjectCollectionActions.Done
-//            EpisodeCollectionType.WATCHLIST -> SubjectCollectionActions.Wish
-//            EpisodeCollectionType.DISCARDED -> SubjectCollectionActions.Dropped
-//            else -> null
-//        },
-//        onClick = {},
-//        colors = if (collectionType == EpisodeCollectionType.WATCHED || collectionType == EpisodeCollectionType.DISCARDED) {
-//            ButtonDefaults.buttonColors(
-//                containerColor = MaterialTheme.colorScheme.outlineVariant,
-//                contentColor = MaterialTheme.colorScheme.outline
-//            )
-//        } else {
-//            ButtonDefaults.buttonColors(
-//                containerColor = MaterialTheme.colorScheme.secondaryContainer,
-//                contentColor = MaterialTheme.colorScheme.secondary
-//            )
-//        },
-//        modifier = Modifier.placeholder(collectionType == null),
-//    )
-
     var showDropdown by rememberSaveable { mutableStateOf(false) }
 
     FilledTonalButton(

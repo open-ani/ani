@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.dp
 import me.him188.ani.app.platform.isInLandscapeMode
 import me.him188.ani.app.ui.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.theme.slightlyWeaken
-import me.him188.ani.app.videoplayer.VideoPlayerView
+import me.him188.ani.app.videoplayer.VideoPlayer
 import me.him188.ani.app.videoplayer.ui.guesture.VideoGestureHost
 import me.him188.ani.app.videoplayer.ui.top.PlayerTopBar
 
@@ -50,7 +50,7 @@ import me.him188.ani.app.videoplayer.ui.top.PlayerTopBar
  *
  * @param controllersVisible 是否展示 [topBar], [rhsBar] 和 [bottomBar]
  * @param topBar [PlayerTopBar]
- * @param video [VideoPlayerView]. video 不会接受到点击事件.
+ * @param video [VideoPlayer]. video 不会接受到点击事件.
  * @param danmakuHost 为 `DanmakuHost` 留的区域
  * @param gestureHost 手势区域, 例如快进/快退, 音量调节等. See [VideoGestureHost]
  * @param floatingMessage 悬浮消息, 例如正在缓冲. 将会对齐到中央
@@ -65,7 +65,7 @@ fun VideoScaffold(
     gestureLocked: Boolean = false,
     topBar: @Composable RowScope.() -> Unit = {},
     /**
-     * @see VideoPlayerView
+     * @see VideoPlayer
      */
     video: @Composable BoxScope.() -> Unit = {},
     danmakuHost: @Composable BoxScope.() -> Unit = {},

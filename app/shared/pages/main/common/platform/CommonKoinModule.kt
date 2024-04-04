@@ -41,8 +41,6 @@ import me.him188.ani.app.persistent.preferredAllianceStore
 import me.him188.ani.app.persistent.tokenStore
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.session.SessionManagerImpl
-import me.him188.ani.app.torrent.TorrentDownloaderManager
-import me.him188.ani.app.torrent.TorrentDownloaderManagerImpl
 import me.him188.ani.danmaku.api.DanmakuProvider
 import me.him188.ani.danmaku.dandanplay.DandanplayClient
 import me.him188.ani.danmaku.dandanplay.DandanplayDanmakuProvider
@@ -77,7 +75,6 @@ fun getCommonKoinModule(getContext: () -> Context, coroutineScope: CoroutineScop
     single<EpisodeRevisionRepository> { EpisodeRevisionRepositoryImpl() }
     single<EpisodeRepository> { EpisodeRepositoryImpl() }
     single<ProfileRepository> { ProfileRepository() }
-    single<TorrentDownloaderManager> { TorrentDownloaderManagerImpl(coroutineScope.coroutineContext) }
     single<DanmakuProvider> {
         DandanplayDanmakuProvider(dandanplayClient = DandanplayClient {
             install(UserAgent) {

@@ -51,8 +51,9 @@ import me.him188.ani.app.platform.DesktopContext
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.getCommonKoinModule
 import me.him188.ani.app.session.SessionManager
+import me.him188.ani.app.torrent.DefaultTorrentManager
 import me.him188.ani.app.torrent.TorrentDownloader
-import me.him188.ani.app.torrent.TorrentDownloaderFactory
+import me.him188.ani.app.torrent.TorrentManager
 import me.him188.ani.app.ui.foundation.AniApp
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.main.MainScreen
@@ -92,12 +93,15 @@ object AniDesktop {
 //                single<SubjectNavigator> { AndroidSubjectNavigator() }
 //                single<AuthorizationNavigator> { AndroidAuthorizationNavigator() }
 //                single<BrowserNavigator> { AndroidBrowserNavigator() }
-                single<TorrentDownloaderFactory> {
-                    TorrentDownloaderFactory {
-                        TorrentDownloader(
-                            cacheDirectory = File(projectDirectories.cacheDir).resolve("torrent"),
-                        )
-                    }
+                single<TorrentManager> {
+                    DefaultTorrentManager(
+                        coroutineScope.coroutineContext,
+                        downloaderFactory = {
+                            TorrentDownloader(
+                                cacheDirectory = File(projectDirectories.cacheDir).resolve("torrent"),
+                            )
+                        }
+                    )
                 }
                 single<PlayerControllerFactory> {
                     PlayerControllerFactory { _, _ ->

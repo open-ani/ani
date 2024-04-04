@@ -16,7 +16,7 @@ import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @Composable
-actual fun VideoPlayerView(
+actual fun VideoPlayer(
     playerController: PlayerController,
     modifier: Modifier
 ) {

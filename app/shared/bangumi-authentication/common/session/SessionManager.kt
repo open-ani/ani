@@ -41,8 +41,8 @@ import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
-import me.him188.ani.app.ui.foundation.runUntilSuccess
 import me.him188.ani.datasources.bangumi.BangumiClient
+import me.him188.ani.utils.coroutines.runUntilSuccess
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger

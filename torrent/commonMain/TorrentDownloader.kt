@@ -1,7 +1,5 @@
 package me.him188.ani.app.torrent
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import me.him188.ani.app.torrent.model.EncodedTorrentData
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
@@ -16,20 +14,44 @@ import org.libtorrent4j.alerts.Alert
 import org.libtorrent4j.alerts.AlertType
 import org.libtorrent4j.swig.settings_pack
 import java.io.File
+import java.io.IOException
 
 
 /**
- * A torrent downloader which holds connection to the DHT network and peers.
+ * A torrent downloader.
  *
- * It must be closed when it is no longer needed.
+ * It is stateful:
+ * - it may hold connection to the DHT network and peers.
+ *
+ * Hence it must be closed when it is no longer needed.
  */
 public interface TorrentDownloader : AutoCloseable {
+    /**
+     * Details about the underlying torrent library.
+     */
     public val vendor: TorrentLibInfo
 
-    public suspend fun fetchMagnet(magnet: String, timeoutSeconds: Int = 60): EncodedTorrentData
+    /**
+     * Fetches a magnet link.
+     *
+     * @throws MagnetTimeoutException if timeout has been reached.
+     */
+    @Throws(IOException::class)
+    public fun fetchMagnet(magnet: String, timeoutSeconds: Int = 60): EncodedTorrentData
 
+    /**
+     * Starts download of a torrent using the torrent data.
+     *
+     * This function may involve I/O operation e.g. to compare with local caches.
+     */
+    @Throws(IOException::class)
     public fun startDownload(data: EncodedTorrentData): TorrentDownloadSession
 }
+
+public class MagnetTimeoutException(
+    override val message: String? = "Magnet fetch timeout",
+    override val cause: Throwable? = null
+) : Exception()
 
 /**
  * A factory for creating [TorrentDownloader] instances without any argument.
@@ -119,9 +141,13 @@ internal class TorrentDownloaderImpl(
         version = org.libtorrent4j.LibTorrent.version(),
     )
 
-    override suspend fun fetchMagnet(magnet: String, timeoutSeconds: Int): EncodedTorrentData {
+    override fun fetchMagnet(magnet: String, timeoutSeconds: Int): EncodedTorrentData {
         logger.info { "Fetching magnet: $magnet" }
-        val data = withContext(Dispatchers.IO) { sessionManager.fetchMagnet(magnet, timeoutSeconds, magnetCacheDir) }
+        val data: ByteArray = try {
+            sessionManager.fetchMagnet(magnet, timeoutSeconds, magnetCacheDir)
+        } catch (e: InterruptedException) {
+            throw MagnetTimeoutException(cause = e)
+        }
         logger.info { "Fetched magnet: size=${data.size}" }
         return EncodedTorrentData(data)
     }

@@ -3,7 +3,6 @@ package me.him188.ani.app.ui.foundation
 import androidx.annotation.UiThread
 import androidx.annotation.WorkerThread
 import androidx.compose.runtime.MutableState
-import io.ktor.util.logging.error
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
@@ -11,8 +10,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,16 +21,10 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
-import kotlinx.coroutines.yield
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.coroutines.cancellation.CancellationException
-import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 /**
@@ -338,40 +329,5 @@ fun <V : HasBackgroundScope> V.launchInMain(
 ): Job {
     return backgroundScope.launch(context + Dispatchers.Main, start) {
         block()
-    }
-}
-
-/**
- * Runs the block multiple times, returns when it succeeds the first time. with a delay between each attempt.
- */
-suspend inline fun <R, V : HasBackgroundScope> V.runUntilSuccess(
-    block: V.() -> R
-): R {
-    contract { callsInPlace(block, InvocationKind.AT_LEAST_ONCE) }
-    var failed = 0
-    while (currentCoroutineContext().isActive) {
-        try {
-            return block()
-        } catch (e: Exception) {
-            if (this is AbstractViewModel) {
-                logger.error(e)
-            } else {
-                e.printStackTrace()
-            }
-            failed++
-            delay(backoffDelay(failed))
-        }
-    }
-    yield() // throws CancellationException()
-    throw CancellationException() // should not reach, defensive
-}
-
-@PublishedApi
-internal fun backoffDelay(failureCount: Int): Duration {
-    return when (failureCount) {
-        0, 1 -> 1.seconds
-        2 -> 2.seconds
-        3 -> 4.seconds
-        else -> 8.seconds
     }
 }
