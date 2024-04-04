@@ -82,16 +82,15 @@ Ani 支持 Android 和桌面端 (macOS、Linux、Windows)。
 
 <img width="300" src=".readme/images/episode/episode-dark.jpg" alt="episode-dark"/> <img width="300" src=".readme/images/episode/episode-playsource-dark.jpg" alt="episode-light"/>
 
+- 从 [弹弹play][ddplay] 获取弹幕
+- 支持自定义弹幕样式与速度
+
 视频手势:
 
 - 双击屏幕切换播放/暂停
 - 左右滑动屏幕快进/快退
 - 在屏幕右边上下滑动调整音量
-
 - *倍速播放等其他辅助功能将在之后的里程碑实现*
-
-- 从 [弹弹play][ddplay] 获取弹幕
-- 支持自定义弹幕样式与速度
 
 <img width="300" src=".readme/images/episode/episode-player-loading.jpg" alt="episode-player-loading"/> 
 
