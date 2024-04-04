@@ -1,6 +1,7 @@
 package me.him188.ani.app.torrent
 
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -8,6 +9,8 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.getAndUpdate
+import kotlinx.coroutines.runInterruptible
+import kotlinx.coroutines.withContext
 import me.him188.ani.app.torrent.download.PiecePriorities
 import me.him188.ani.app.torrent.download.TorrentDownloadController
 import me.him188.ani.app.torrent.file.SeekableInput
@@ -53,7 +56,7 @@ internal class TorrentDownloadSessionImpl(
 
     override val state: MutableStateFlow<TorrentDownloadState> = MutableStateFlow(TorrentDownloadState.Starting)
 
-    override val totalBytes: Flow<Long> = MutableStateFlow(torrentInfo.sizeOnDisk())
+    override val totalBytes: MutableStateFlow<Long> = MutableStateFlow(torrentInfo.sizeOnDisk())
 
     private val _downloadedBytes = MutableSharedFlow<Long>(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     override val downloadedBytes: Flow<Long> = _downloadedBytes.distinctUntilChanged()
@@ -101,20 +104,7 @@ internal class TorrentDownloadSessionImpl(
 
     override suspend fun createInput(): SeekableInput {
         logger.info { "createInput: finding cache file" }
-        val file = run {
-            while (true) {
-                val file = saveDirectory.walk().singleOrNull { it.isFile }
-                if (file != null) {
-                    logger.info { "Get file: ${file.absolutePath}" }
-                    return@run RandomAccessFile(file, "r").asSeekableInput()
-                }
-                logger.info { "Still waiting to get file... saveDirectory: $saveDirectory" }
-
-                delay(1.seconds)
-            }
-            @Suppress("UNREACHABLE_CODE") // compiler bug
-            error("")
-        }
+        val file = withContext(Dispatchers.IO) { getFile().asSeekableInput() }
         logger.info { "createInput: got cache file, awaiting handle" }
         return TorrentInput(
             file,
@@ -136,6 +126,35 @@ internal class TorrentDownloadSessionImpl(
             }
         )
     }
+
+    private suspend fun getFile(): RandomAccessFile {
+        while (true) {
+            val file = runInterruptible(Dispatchers.IO) {
+                saveDirectory.walk().singleOrNull { it.isFile }
+            }
+            if (file != null) {
+                logger.info { "Get file: ${file.absolutePath}" }
+                return runInterruptible(Dispatchers.IO) {
+                    RandomAccessFile(file, "r")
+                }
+            }
+            logger.info { "Still waiting to get file... saveDirectory: $saveDirectory" }
+            delay(1.seconds)
+        }
+        @Suppress("UNREACHABLE_CODE") // compiler bug
+        error("")
+    }
+
+    override val fileLength: Long get() = totalBytes.value
+
+    override val fileHash: String?
+        get() {
+            if (state.value != TorrentDownloadState.Finished) {
+                return null
+            }
+            val file = saveDirectory.walk().singleOrNull { it.isFile } ?: return null
+            return hashFileMd5(file)
+        }
 
     override val isFinished: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
@@ -332,6 +351,23 @@ internal class TorrentDownloadSessionImpl(
                 lastPrioritizedIndexes = pieceIndexes.toList()
             }
         }
+    }
+}
+
+@OptIn(ExperimentalStdlibApi::class)
+private fun hashFileMd5(input: File): String {
+    val md = java.security.MessageDigest.getInstance("MD5")
+    val buffer = ByteArray(8192)
+    input.inputStream().use { inputStream ->
+        while (true) {
+            val read = inputStream.read(buffer)
+            if (read == -1) {
+                break
+            }
+            md.update(buffer, 0, read)
+        }
+        val bytes = md.digest()
+        return bytes.toHexString()
     }
 }
 

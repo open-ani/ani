@@ -15,6 +15,10 @@ public interface TorrentDownloadSession : DownloadStats, AutoCloseable {
 
     public val state: Flow<TorrentDownloadState>
 
+    public val fileLength: Long
+
+    public val fileHash: String?
+
     /**
      * Opens the downloaded file as a [SeekableInput].
      */

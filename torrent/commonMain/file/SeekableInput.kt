@@ -69,6 +69,7 @@ public interface SeekableInput : AutoCloseable {
  * Conversely, by closing this [RandomAccessFile], you also close the returned [SeekableInput],
  * though it is not recommended to close the [RandomAccessFile] directly.
  */
+@Throws(IOException::class)
 public fun RandomAccessFile.asSeekableInput(): SeekableInput = object : SeekableInput {
     override val offset: Long = this@asSeekableInput.filePointer
     override val bytesRemaining: Long = this@asSeekableInput.length() - offset

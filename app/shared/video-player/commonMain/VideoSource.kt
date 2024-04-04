@@ -5,6 +5,7 @@ import kotlinx.coroutines.withContext
 import me.him188.ani.app.torrent.TorrentDownloadSession
 import me.him188.ani.app.torrent.TorrentManager
 import me.him188.ani.app.torrent.model.EncodedTorrentData
+import me.him188.ani.app.videoplayer.torrent.TorrentVideoData
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -17,7 +18,7 @@ import org.koin.core.component.inject
  *
  * @param S the type of the stream. For example, a torrent video source would be [TorrentDownloadSession].
  */
-sealed interface VideoSource<S : AutoCloseable> {
+sealed interface VideoSource<S : VideoData> {
     val uri: String
 
     /**
@@ -30,7 +31,7 @@ sealed interface VideoSource<S : AutoCloseable> {
     suspend fun open(): S
 }
 
-interface TorrentVideoSource : VideoSource<TorrentDownloadSession>
+interface TorrentVideoSource : VideoSource<TorrentVideoData>
 
 fun TorrentVideoSource(encodedTorrentData: EncodedTorrentData): TorrentVideoSource =
     TorrentVideoSourceImpl(encodedTorrentData)
@@ -45,10 +46,10 @@ private class TorrentVideoSourceImpl(
         "torrent://${encodedTorrentData.data.toHexString()}"
     }
 
-    override suspend fun open(): TorrentDownloadSession {
-        return withContext(Dispatchers.IO) {
+    override suspend fun open(): TorrentVideoData {
+        return TorrentVideoData(withContext(Dispatchers.IO) {
             manager.downloader.await().startDownload(encodedTorrentData)
-        }
+        })
     }
 
     override fun toString(): String = "TorrentVideoSource(uri=$uri)"

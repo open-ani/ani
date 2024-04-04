@@ -169,6 +169,7 @@ class DummyPlayerState : AbstractPlayerState() {
             audioBitrate = 100,
             frameRate = 30f,
             durationMillis = 100_000,
+            fileLengthBytes = 100_000_000
         )
     )
     override val isBuffering: Flow<Boolean> = MutableStateFlow(true)

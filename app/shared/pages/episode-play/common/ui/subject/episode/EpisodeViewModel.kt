@@ -333,8 +333,8 @@ private class EpisodeViewModelImpl(
     ) { playSourceCandidate, video ->
         danmakuProvider.startSession(
             playSourceCandidate.playSource.originalTitle,
-            "aa".repeat(16),
-            1L, // TODO: 提供 file size 给 danmaku, 获得更准确的结果
+            video.fileHash ?: "aa".repeat(16),
+            video.fileLengthBytes, // TODO: 提供 file size 给 danmaku, 获得更准确的结果
             video.durationMillis.milliseconds
         )
     }.filterNotNull()

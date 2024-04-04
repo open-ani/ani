@@ -58,6 +58,7 @@ internal class ExoPlayerState @UiThread constructor(
 
     private class OpenedVideoSource(
         val videoSource: VideoSource<*>,
+        val data: VideoData,
         val releaseResource: () -> Unit,
         val mediaSourceFactory: ProgressiveMediaSource.Factory,
     )
@@ -110,14 +111,14 @@ internal class ExoPlayerState @UiThread constructor(
     private suspend fun openSource(source: VideoSource<*>): OpenedVideoSource {
         when (source) {
             is TorrentVideoSource -> {
-                val session = source.open()
-                ProgressiveMediaSource.Factory { TorrentDataSource(session) }
+                val data = source.open()
                 return OpenedVideoSource(
                     source,
+                    data,
                     releaseResource = {
-                        session.close()
+                        data.close()
                     },
-                    mediaSourceFactory = ProgressiveMediaSource.Factory { TorrentDataSource(session) }
+                    mediaSourceFactory = ProgressiveMediaSource.Factory { TorrentDataSource(data.session) }
                 )
             }
 
@@ -149,6 +150,8 @@ internal class ExoPlayerState @UiThread constructor(
                         audioBitrate = audio.bitrate,
                         frameRate = video.frameRate,
                         durationMillis = duration,
+                        fileLengthBytes = openResource.value?.data?.fileLength ?: 0L,
+                        fileHash = openResource.value?.data?.hash
                     )
                     return true
                 }
