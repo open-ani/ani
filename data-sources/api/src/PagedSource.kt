@@ -71,8 +71,10 @@ suspend inline fun PagedSource<*>.awaitFinished() {
 inline fun <T, R> PagedSource<T>.map(crossinline transform: suspend (T) -> R): PagedSource<R> {
     val self = this
     return object : PagedSource<R> {
-        override val results: Flow<R> = self.results.map {
-            transform(it)
+        override val results: Flow<R> by lazy {
+            self.results.map {
+                transform(it)
+            }
         }
         override val finished: StateFlow<Boolean> get() = self.finished
         override val currentPage: StateFlow<Int> get() = self.currentPage
