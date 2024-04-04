@@ -52,8 +52,7 @@ private class EpisodeVideoSettingsViewModelImpl : EpisodeVideoSettingsViewModel,
     private val danmakuConfigUpdate: MutableStateFlow<DanmakuConfig?> = MutableStateFlow(null)
     override val danmakuConfig = merge(danmakuConfigPersistent, danmakuConfigUpdate).filterNotNull()
 
-    override fun init() {
-        super.init()
+    init {
         launchInBackground {
             danmakuConfigUpdate.debounce(0.1.seconds).filterNotNull().collect {
                 logger.info { "Saving DanmakuConfig: $it" }

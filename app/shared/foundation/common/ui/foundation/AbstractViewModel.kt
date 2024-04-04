@@ -26,7 +26,6 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.isActive
 import me.him188.ani.app.session.AuthorizationCancelledException
 import me.him188.ani.utils.logging.debug
 import me.him188.ani.utils.logging.error
@@ -37,7 +36,6 @@ import moe.tlaster.precompose.stateholder.LocalStateHolder
 import moe.tlaster.precompose.stateholder.SavedStateHolder
 import moe.tlaster.precompose.stateholder.StateHolder
 import moe.tlaster.precompose.viewmodel.ViewModel
-import java.util.concurrent.atomic.AtomicIntegerFieldUpdater
 import kotlin.reflect.KClass
 
 /**
@@ -49,14 +47,6 @@ import kotlin.reflect.KClass
 abstract class AbstractViewModel : RememberObserver, ViewModel(), HasBackgroundScope {
     val logger by lazy { logger(this::class) }
 
-    /**
-     * @see CLOSED
-     */
-    @Volatile
-    private var closed: Int = 0
-
-    private val isClosed get() = closed == 1
-
     private var _backgroundScope = createBackgroundScope()
     override val backgroundScope: CoroutineScope
         get() {
@@ -64,46 +54,29 @@ abstract class AbstractViewModel : RememberObserver, ViewModel(), HasBackgroundS
         }
 
 
+    private var referenceCount = 0
+
     @CallSuper
     override fun onAbandoned() {
-        logger.trace { "${this::class.simpleName} onAbandoned" }
-        dispose()
+        referenceCount--
     }
-
-    fun dispose() {
-        if (!CLOSED.compareAndSet(this, 0, 1)) {
-            return
-        }
-//        if (_backgroundScope.isInitialized()) {
-        backgroundScope.cancel()
-//        }
-    }
-
-    private var referenceCount = 0
 
     @CallSuper
     override fun onForgotten() {
         referenceCount--
-        logger.trace { "${this::class.simpleName} onForgotten, remaining refCount=$referenceCount" }
-        if (referenceCount == 0) {
-            dispose()
-        }
     }
 
     @CallSuper
     override fun onRemembered() {
         referenceCount++
         logger.trace { "${this::class.simpleName} onRemembered, refCount=$referenceCount" }
-        if (!_backgroundScope.isActive) {
-            _backgroundScope = createBackgroundScope()
-        }
         if (referenceCount == 1) {
             this.init() // first remember
         }
     }
 
     private fun createBackgroundScope(): CoroutineScope {
-        return CoroutineScope(CoroutineExceptionHandler { coroutineContext, throwable ->
+        return CoroutineScope(CoroutineExceptionHandler { _, throwable ->
             if (throwable is AuthorizationCancelledException) {
                 logger.debug { "Authorization canceled" }
             } else {
@@ -113,7 +86,7 @@ abstract class AbstractViewModel : RememberObserver, ViewModel(), HasBackgroundS
     }
 
     /**
-     * Called when the view model is remembered.
+     * Called when the view model is remembered the first time.
      */
     protected open fun init() {
     }
@@ -123,10 +96,9 @@ abstract class AbstractViewModel : RememberObserver, ViewModel(), HasBackgroundS
         super.close()
     }
 
-    private companion object {
-        @JvmStatic
-        val CLOSED: AtomicIntegerFieldUpdater<AbstractViewModel> =
-            AtomicIntegerFieldUpdater.newUpdater(AbstractViewModel::class.java, "closed")
+    override fun onCleared() {
+        backgroundScope.cancel()
+        super.onCleared()
     }
 }
 

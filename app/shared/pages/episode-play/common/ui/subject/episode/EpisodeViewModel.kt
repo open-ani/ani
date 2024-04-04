@@ -391,8 +391,7 @@ private class EpisodeViewModelImpl(
 
     override val danmakuHostState: DanmakuHostState = DanmakuHostState()
 
-    override fun init() {
-        super.init()
+    init {
         launchInBackground {
             playerState.state.collect {
                 if (it.isPlaying) {

@@ -48,7 +48,7 @@ class SearchViewModel(
             _result.value = null
             return
         }
-        _result.value?.dispose()
+        _result.value?.close()
         _result.value =
             SubjectListViewModel(
                 subjectProvider.startSearch(SubjectSearchQuery(keywords.trim()))
