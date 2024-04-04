@@ -37,6 +37,7 @@ import me.him188.ani.app.videoplayer.PlayerStateFactory
 import me.him188.ani.app.videoplayer.TorrentVideoSource
 import me.him188.ani.app.videoplayer.VideoSource
 import me.him188.ani.danmaku.api.Danmaku
+import me.him188.ani.danmaku.api.DanmakuMatchers
 import me.him188.ani.danmaku.api.DanmakuProvider
 import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.danmaku.ui.DanmakuHostState
@@ -331,11 +332,13 @@ private class EpisodeViewModelImpl(
         playSourceSelector.targetPlaySourceCandidate.filterNotNull(),
         playerState.videoProperties.filterNotNull()
     ) { playSourceCandidate, video ->
+        val ep = episode.first()
         danmakuProvider.startSession(
             playSourceCandidate.playSource.originalTitle,
             video.fileHash ?: "aa".repeat(16),
-            video.fileLengthBytes, // TODO: 提供 file size 给 danmaku, 获得更准确的结果
-            video.durationMillis.milliseconds
+            video.fileLengthBytes,
+            video.durationMillis.milliseconds,
+            DanmakuMatchers.mostRelevant(subjectTitle.first(), "第${ep.ep ?: "1"}话 " + episodeTitle.first()),
         )
     }.filterNotNull()
         .closeOnReplacement()
