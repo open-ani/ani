@@ -84,7 +84,7 @@ fun EpisodePageContent(
     // 处理当用户点击返回键时, 如果是全屏, 则退出全屏
     val navigator = LocalNavigator.current
     BackHandler {
-        viewModel.playerController.pause()
+        viewModel.playerState.pause()
         navigator.navigator.goBack()
     }
 
@@ -101,16 +101,16 @@ fun EpisodePageContent(
     OnLifecycleEvent {
         if (isPreviewing) return@OnLifecycleEvent
         if (it == Lifecycle.State.InActive || it == Lifecycle.State.Destroyed) {
-            if (viewModel.playerController.state.value.isPlaying) {
+            if (viewModel.playerState.state.value.isPlaying) {
                 pausedVideo = true
-                viewModel.playerController.pause() // 正在播放时, 切到后台自动暂停
+                viewModel.playerState.pause() // 正在播放时, 切到后台自动暂停
             } else {
                 // 如果不是正在播放, 则不操作暂停, 当下次切回前台时, 也不要恢复播放
                 pausedVideo = false
             }
         } else if (it == Lifecycle.State.Active && pausedVideo) {
             viewModel.launchInMain {
-                viewModel.playerController.resume() // 切回前台自动恢复, 当且仅当之前是自动暂停的
+                viewModel.playerState.resume() // 切回前台自动恢复, 当且仅当之前是自动暂停的
             }
             pausedVideo = false
         } else {
@@ -136,7 +136,7 @@ fun EpisodePageContent(
                     val ep by viewModel.episodeEp.collectAsStateWithLifecycle(null)
                     EpisodePlayerTitle(ep, epTitle, subjectTitle)
                 },
-                viewModel.playerController,
+                viewModel.playerState,
                 danmakuConfig = danmakuConfig,
                 danmakuHostState = remember(viewModel) { viewModel.danmakuHostState },
                 onClickFullScreen = {

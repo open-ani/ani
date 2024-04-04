@@ -59,8 +59,8 @@ import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.main.MainScreen
 import me.him188.ani.app.ui.theme.AppTheme
 import me.him188.ani.app.ui.theme.aniColorScheme
-import me.him188.ani.app.videoplayer.DummyPlayerController
-import me.him188.ani.app.videoplayer.PlayerControllerFactory
+import me.him188.ani.app.videoplayer.DummyPlayerState
+import me.him188.ani.app.videoplayer.PlayerStateFactory
 import me.him188.ani.utils.logging.logger
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
@@ -103,9 +103,9 @@ object AniDesktop {
                         }
                     )
                 }
-                single<PlayerControllerFactory> {
-                    PlayerControllerFactory { _, _ ->
-                        DummyPlayerController()
+                single<PlayerStateFactory> {
+                    PlayerStateFactory { _, _ ->
+                        DummyPlayerState()
                     }
                 }
                 single<BrowserNavigator> { DesktopBrowserNavigator() }

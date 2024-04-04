@@ -5,7 +5,7 @@ import androidx.compose.ui.Modifier
 
 @Composable
 actual fun VideoPlayer(
-    playerController: PlayerController,
+    playerState: PlayerState,
     modifier: Modifier,
 ) {
 }

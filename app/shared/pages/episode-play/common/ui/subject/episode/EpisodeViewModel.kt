@@ -31,8 +31,8 @@ import me.him188.ani.app.torrent.TorrentManager
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
-import me.him188.ani.app.videoplayer.PlayerController
-import me.him188.ani.app.videoplayer.PlayerControllerFactory
+import me.him188.ani.app.videoplayer.PlayerState
+import me.him188.ani.app.videoplayer.PlayerStateFactory
 import me.him188.ani.app.videoplayer.TorrentVideoSource
 import me.him188.ani.app.videoplayer.VideoSource
 import me.him188.ani.danmaku.api.Danmaku
@@ -123,7 +123,7 @@ interface EpisodeViewModel : HasBackgroundScope {
      * Play controller for video view. This can be saved even when window configuration changes (i.e. everything recomposes).
      */
     @Stable
-    val playerController: PlayerController
+    val playerState: PlayerState
 
     /**
      * `true` if the bottom sheet for choosing play source should be shown.
@@ -172,7 +172,7 @@ private class EpisodeViewModelImpl(
     private val downloadProvider by inject<DownloadProvider>()
     private val browserNavigator: BrowserNavigator by inject()
     private val torrentManager: TorrentManager by inject()
-    private val playerControllerFactory: PlayerControllerFactory by inject()
+    private val playerStateFactory: PlayerStateFactory by inject()
     private val episodeRepository: EpisodeRepository by inject()
     private val danmakuProvider: DanmakuProvider by inject()
     private val preferencesRepository by inject<PreferencesRepository>()
@@ -321,8 +321,8 @@ private class EpisodeViewModelImpl(
     override val isVideoReady: Flow<Boolean> = videoSource.map { it != null }
 
     @Stable
-    override val playerController: PlayerController =
-        playerControllerFactory.create(context, backgroundScope.coroutineContext)
+    val playerState: PlayerState =
+        playerStateFactory.create(context, backgroundScope.coroutineContext)
 
     override val isShowPlaySourceSheet = MutableStateFlow(false)
     override fun setShowPlaySourceSheet(show: Boolean) {
@@ -374,7 +374,7 @@ private class EpisodeViewModelImpl(
 
     private val danmakuFlow: Flow<Danmaku> = combine(
         playSourceSelector.targetPlaySourceCandidate.filterNotNull(),
-        playerController.videoProperties.filterNotNull()
+        playerState.videoProperties.filterNotNull()
     ) { playSourceCandidate, video ->
         danmakuProvider.startSession(
             playSourceCandidate.playSource.originalTitle,
@@ -384,14 +384,14 @@ private class EpisodeViewModelImpl(
         )
     }.filterNotNull()
         .closeOnReplacement()
-        .flatMapLatest { it.at(playerController.currentPosition) }
+        .flatMapLatest { it.at(playerState.currentPosition) }
 
     override val danmakuHostState: DanmakuHostState = DanmakuHostState()
 
     override fun init() {
         super.init()
         launchInBackground {
-            playerController.state.collect {
+            playerState.state.collect {
                 if (it.isPlaying) {
                     danmakuHostState.resume()
                 } else {
@@ -409,7 +409,7 @@ private class EpisodeViewModelImpl(
         launchInBackground {
             videoSource.collect {
                 logger.info { "Got new video source, updating" }
-                playerController.setVideoSource(it)
+                playerState.setVideoSource(it)
             }
         }
     }

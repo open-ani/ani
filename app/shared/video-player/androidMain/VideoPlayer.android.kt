@@ -17,7 +17,7 @@ import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 @androidx.annotation.OptIn(UnstableApi::class)
 @Composable
 actual fun VideoPlayer(
-    playerController: PlayerController,
+    playerState: PlayerState,
     modifier: Modifier
 ) {
     val isPreviewing by rememberUpdatedState(LocalIsPreviewing.current)
@@ -44,7 +44,7 @@ actual fun VideoPlayer(
                         )
                     )
                 }
-                (playerController as? ExoPlayerController)?.let {
+                (playerState as? ExoPlayerState)?.let {
                     player = it.player
                     setControllerVisibilityListener(ControllerVisibilityListener { visibility ->
                         if (visibility == View.VISIBLE) {
@@ -58,7 +58,7 @@ actual fun VideoPlayer(
         onRelease = {
         },
         update = { view ->
-            (playerController as? ExoPlayerController)?.let {
+            (playerState as? ExoPlayerState)?.let {
                 view.player = it.player
             }
         },

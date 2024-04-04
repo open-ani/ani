@@ -35,8 +35,8 @@ import me.him188.ani.app.session.TestSessionManagers
 import me.him188.ani.app.torrent.TorrentDownloader
 import me.him188.ani.app.torrent.TorrentDownloaderFactory
 import me.him188.ani.app.ui.theme.aniColorScheme
-import me.him188.ani.app.videoplayer.DummyPlayerController
-import me.him188.ani.app.videoplayer.PlayerControllerFactory
+import me.him188.ani.app.videoplayer.DummyPlayerState
+import me.him188.ani.app.videoplayer.PlayerStateFactory
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.core.module.Module
@@ -51,8 +51,8 @@ val LocalIsPreviewing = compositionLocalOf {
 @Composable
 fun ProvideCompositionLocalsForPreview(
     isDark: Boolean = isSystemInDarkTheme(),
-    playerControllerFactory: PlayerControllerFactory = PlayerControllerFactory { _, _ ->
-        DummyPlayerController()
+    playerStateFactory: PlayerStateFactory = PlayerStateFactory { _, _ ->
+        DummyPlayerState()
     },
     module: Module.() -> Unit = {},
     content: @Composable () -> Unit,
@@ -71,8 +71,8 @@ fun ProvideCompositionLocalsForPreview(
                             )
                         }
                     }
-                    single<PlayerControllerFactory> {
-                        playerControllerFactory
+                    single<PlayerStateFactory> {
+                        playerStateFactory
                     }
                     single<SessionManager> { TestSessionManagers.Online }
                     module()

@@ -35,10 +35,10 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 
-class ExoPlayerControllerFactory : PlayerControllerFactory {
+class ExoPlayerStateFactory : PlayerStateFactory {
     @OptIn(UnstableApi::class)
-    override fun create(context: Context, parentCoroutineContext: CoroutineContext): PlayerController =
-        ExoPlayerController(context, parentCoroutineContext)
+    override fun create(context: Context, parentCoroutineContext: CoroutineContext): PlayerState =
+        ExoPlayerState(context, parentCoroutineContext)
 }
 
 
@@ -46,10 +46,10 @@ class ExoPlayerControllerFactory : PlayerControllerFactory {
  * Must be remembered
  */
 @OptIn(UnstableApi::class)
-internal class ExoPlayerController @UiThread constructor(
+internal class ExoPlayerState @UiThread constructor(
     context: Context,
     parentCoroutineContext: CoroutineContext
-) : AbstractPlayerController(),
+) : AbstractPlayerState(),
     AutoCloseable {
     private val backgroundScope = CoroutineScope(
         parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job])
@@ -155,29 +155,29 @@ internal class ExoPlayerController @UiThread constructor(
                 override fun onPlaybackStateChanged(playbackState: Int) {
                     updateVideoProperties()
                     when (playbackState) {
-                        Player.STATE_BUFFERING -> state.value = PlayerState.PAUSED_BUFFERING
-                        Player.STATE_ENDED -> state.value = PlayerState.FINISHED
-                        Player.STATE_IDLE -> state.value = PlayerState.READY
-                        Player.STATE_READY -> state.value = PlayerState.READY
+                        Player.STATE_BUFFERING -> state.value = PlaybackState.PAUSED_BUFFERING
+                        Player.STATE_ENDED -> state.value = PlaybackState.FINISHED
+                        Player.STATE_IDLE -> state.value = PlaybackState.READY
+                        Player.STATE_READY -> state.value = PlaybackState.READY
                     }
                 }
 
                 override fun onIsPlayingChanged(isPlaying: Boolean) {
                     if (isPlaying) {
-                        state.value = PlayerState.PLAYING
+                        state.value = PlaybackState.PLAYING
                     } else {
-                        state.value = PlayerState.PAUSED
+                        state.value = PlaybackState.PAUSED
                     }
                 }
             })
         }
     }
 
-    override val state: MutableStateFlow<PlayerState> = MutableStateFlow(PlayerState.PAUSED_BUFFERING)
+    override val state: MutableStateFlow<PlaybackState> = MutableStateFlow(PlaybackState.PAUSED_BUFFERING)
 
     override val videoProperties = MutableStateFlow<VideoProperties?>(null)
     override val bufferedPercentage = MutableStateFlow(0)
-    override val isBuffering: Flow<Boolean> = state.map { it == PlayerState.PAUSED_BUFFERING }
+    override val isBuffering: Flow<Boolean> = state.map { it == PlaybackState.PAUSED_BUFFERING }
 
     override fun seekTo(duration: Duration) {
         player.seekTo(duration.inWholeMilliseconds)
@@ -229,6 +229,6 @@ internal class ExoPlayerController @UiThread constructor(
     }
 
     private companion object {
-        val logger = logger(ExoPlayerController::class)
+        val logger = logger(ExoPlayerState::class)
     }
 }

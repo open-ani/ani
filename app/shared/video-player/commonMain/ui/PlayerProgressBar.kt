@@ -31,14 +31,14 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.theme.aniDarkColorTheme
-import me.him188.ani.app.videoplayer.PlayerController
+import me.him188.ani.app.videoplayer.PlayerState
 import me.him188.ani.datasources.bangumi.processing.fixToString
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun PlayerProgressController(
-    controller: PlayerController,
+    controller: PlayerState,
     isFullscreen: Boolean,
     onClickFullscreen: () -> Unit,
     danmakuEnabled: Boolean,

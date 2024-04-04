@@ -19,13 +19,13 @@ import kotlin.time.Duration.Companion.seconds
  * A controller for the [VideoPlayer].
  */
 @Stable
-interface PlayerController {
+interface PlayerState {
     /**
      * Current state of the player.
      *
      * State can be changed internally e.g. buffer exhausted or externally by e.g. [pause], [resume].
      */
-    val state: StateFlow<PlayerState>
+    val state: StateFlow<PlaybackState>
 
     /**
      * The video source that is currently being played.
@@ -117,10 +117,10 @@ interface PlayerController {
 
 class UnsupportedVideoSourceException(
     val source: VideoSource<*>,
-    player: PlayerController,
+    player: PlayerState,
 ) : RuntimeException("Video source is not supported by player '${player}': $source")
 
-fun PlayerController.togglePause() {
+fun PlayerState.togglePause() {
     if (state.value.isPlaying) {
         pause()
     } else {
@@ -128,9 +128,9 @@ fun PlayerController.togglePause() {
     }
 }
 
-abstract class AbstractPlayerController : PlayerController {
+abstract class AbstractPlayerState : PlayerState {
     override val isBuffering: Flow<Boolean> by lazy {
-        state.map { it == PlayerState.PAUSED_BUFFERING }
+        state.map { it == PlaybackState.PAUSED_BUFFERING }
     }
 
     final override val previewingProgress: MutableStateFlow<Float?> = MutableStateFlow(null)
@@ -164,7 +164,7 @@ abstract class AbstractPlayerController : PlayerController {
 }
 
 
-enum class PlayerState(
+enum class PlaybackState(
     val isPlaying: Boolean,
 ) {
     /**
@@ -188,15 +188,15 @@ enum class PlayerState(
     ;
 }
 
-fun interface PlayerControllerFactory {
-    fun create(context: Context, parentCoroutineContext: CoroutineContext): PlayerController
+fun interface PlayerStateFactory {
+    fun create(context: Context, parentCoroutineContext: CoroutineContext): PlayerState
 }
 
 /**
  * For previewing
  */
-class DummyPlayerController : AbstractPlayerController() {
-    override val state: StateFlow<PlayerState> = MutableStateFlow(PlayerState.PAUSED_BUFFERING)
+class DummyPlayerState : AbstractPlayerState() {
+    override val state: StateFlow<PlaybackState> = MutableStateFlow(PlaybackState.PAUSED_BUFFERING)
     override val videoSource: MutableStateFlow<VideoSource<*>?> = MutableStateFlow(null)
     override suspend fun setVideoSource(source: VideoSource<*>?) {
         videoSource.value = source

@@ -12,6 +12,6 @@ import androidx.compose.ui.Modifier
  */
 @Composable
 expect fun VideoPlayer(
-    playerController: PlayerController,
+    playerState: PlayerState,
     modifier: Modifier,
 )

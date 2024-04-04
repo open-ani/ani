@@ -6,8 +6,8 @@ import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.torrent.DefaultTorrentManager
 import me.him188.ani.app.torrent.TorrentDownloader
 import me.him188.ani.app.torrent.TorrentManager
-import me.him188.ani.app.videoplayer.ExoPlayerControllerFactory
-import me.him188.ani.app.videoplayer.PlayerControllerFactory
+import me.him188.ani.app.videoplayer.ExoPlayerStateFactory
+import me.him188.ani.app.videoplayer.PlayerStateFactory
 import org.koin.dsl.module
 import java.io.File
 
@@ -26,5 +26,5 @@ fun getAndroidModules(
             }
         )
     }
-    single<PlayerControllerFactory> { ExoPlayerControllerFactory() }
+    single<PlayerStateFactory> { ExoPlayerStateFactory() }
 }

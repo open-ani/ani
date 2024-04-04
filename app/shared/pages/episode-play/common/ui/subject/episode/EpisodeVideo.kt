@@ -26,7 +26,7 @@ import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsS
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsViewModel
 import me.him188.ani.app.ui.subject.episode.video.settings.VideoSettingsButton
 import me.him188.ani.app.ui.subject.episode.video.topbar.EpisodeVideoTopBar
-import me.him188.ani.app.videoplayer.PlayerController
+import me.him188.ani.app.videoplayer.PlayerState
 import me.him188.ani.app.videoplayer.VideoPlayer
 import me.him188.ani.app.videoplayer.togglePause
 import me.him188.ani.app.videoplayer.ui.PlayerProgressController
@@ -51,7 +51,7 @@ internal fun EpisodeVideo(
     videoSourceSelected: Boolean,
     videoReady: Boolean,
     title: @Composable () -> Unit,
-    playerController: PlayerController,
+    playerState: PlayerState,
     danmakuConfig: DanmakuConfig,
     danmakuHostState: DanmakuHostState,
     onClickFullScreen: () -> Unit,
@@ -84,7 +84,7 @@ internal fun EpisodeVideo(
             if (LocalIsPreviewing.current) {
                 Text("预览模式")
             } else {
-                VideoPlayer(playerController, Modifier.matchParentSize())
+                VideoPlayer(playerState, Modifier.matchParentSize())
             }
         },
         danmakuHost = {
@@ -99,19 +99,19 @@ internal fun EpisodeVideo(
         gestureHost = {
             LockableVideoGestureHost(
                 rememberSwipeSeekerState(constraints.maxWidth) {
-                    playerController.seekTo(playerController.currentPosition.value + it.seconds)
+                    playerState.seekTo(playerState.currentPosition.value + it.seconds)
                 },
                 controllerVisible = controllerVisible,
                 locked = isLocked,
                 setControllerVisible = { controllerVisible = it },
-                onDoubleClickScreen = { playerController.togglePause() },
+                onDoubleClickScreen = { playerState.togglePause() },
             )
         },
         floatingMessage = {
             Column {
-                EpisodeVideoLoadingIndicator(playerController, videoSourceSelected, videoReady)
+                EpisodeVideoLoadingIndicator(playerState, videoSourceSelected, videoReady)
                 if (AniBuildConfig.current().isDebug) {
-                    playerController.videoSource.collectAsStateWithLifecycle().value?.let {
+                    playerState.videoSource.collectAsStateWithLifecycle().value?.let {
                         EpisodeVideoDebugInfo(
                             it,
                             Modifier.padding(8.dp)
@@ -127,7 +127,7 @@ internal fun EpisodeVideo(
         },
         bottomBar = {
             PlayerProgressController(
-                controller = playerController,
+                controller = playerState,
                 isFullscreen = isFullscreen,
                 onClickFullscreen = onClickFullScreen,
                 danmakuEnabled, setDanmakuEnabled
@@ -151,12 +151,12 @@ internal fun EpisodeVideo(
 
 @Composable
 private fun EpisodeVideoLoadingIndicator(
-    playerController: PlayerController,
+    playerState: PlayerState,
     videoSourceSelected: Boolean,
     videoReady: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    val isBuffering by playerController.isBuffering.collectAsStateWithLifecycle(true)
+    val isBuffering by playerState.isBuffering.collectAsStateWithLifecycle(true)
     if (isBuffering) {
         var loadedTooLong by rememberSaveable { mutableStateOf(false) }
         VideoLoadingIndicator(
