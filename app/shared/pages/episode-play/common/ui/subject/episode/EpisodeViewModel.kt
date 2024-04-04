@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
@@ -60,31 +61,22 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
+@Stable
 interface EpisodeViewModel : HasBackgroundScope {
     // Subject
-    @Stable
-    val subjectId: StateFlow<Int>
-    fun setSubjectId(subjectId: Int)
+    val subjectId: Int
 
-    @Stable
-    val subjectTitle: SharedFlow<String>
+    val subjectTitle: Flow<String>
 
     // Episode
 
-    @Stable
-    val episodeId: StateFlow<Int>
-    fun setEpisodeId(episodeId: Int)
+    val episodeId: Int
 
-    @Stable
     val episode: SharedFlow<EpisodeDetail>
 
-    @Stable
     val episodeTitle: Flow<String>
-
-    @Stable
     val episodeEp: Flow<String>
 
-    @Stable
     val isFullscreen: StateFlow<Boolean>
 
     fun setFullscreen(fullscreen: Boolean)
@@ -99,16 +91,13 @@ interface EpisodeViewModel : HasBackgroundScope {
     /**
      * `true` if a play source is selected by user (or automatically)
      */
-    @Stable
     val playSourceSelected: Flow<Boolean>
 
     /**
      * `true` if the list of play sources are still downloading (e.g. from dmhy).
      */
-    @Stable
     val isPlaySourcesLoading: StateFlow<Boolean>
 
-    @Stable
     val playSourceSelector: PlaySourceSelector
 
     /**
@@ -117,13 +106,11 @@ interface EpisodeViewModel : HasBackgroundScope {
      * This does not guarantee that there is enough buffer to play the video.
      * For torrent videos, `true` means the magnet link is resolved and we can start downloading.
      */
-    @Stable
     val isVideoReady: Flow<Boolean>
 
     /**
      * Play controller for video view. This can be saved even when window configuration changes (i.e. everything recomposes).
      */
-    @Stable
     val playerState: PlayerState
 
     /**
@@ -143,15 +130,12 @@ interface EpisodeViewModel : HasBackgroundScope {
 
     // Danmaku
 
-    @Stable
     val danmakuHostState: DanmakuHostState
 
-    @Stable
     val danmakuEnabled: Flow<Boolean>
 
     fun setDanmakuEnabled(enabled: Boolean)
 
-    @Stable
     val danmakuConfig: Flow<DanmakuConfig>
 }
 
@@ -164,8 +148,8 @@ fun EpisodeViewModel(
 
 
 private class EpisodeViewModelImpl(
-    initialSubjectId: Int,
-    initialEpisodeId: Int,
+    override val subjectId: Int,
+    override val episodeId: Int,
     initialIsFullscreen: Boolean = false,
     context: Context,
 ) : AbstractViewModel(), KoinComponent, EpisodeViewModel {
@@ -178,52 +162,30 @@ private class EpisodeViewModelImpl(
     private val danmakuProvider: DanmakuProvider by inject()
     private val preferencesRepository by inject<PreferencesRepository>()
 
-    override val episodeId: MutableStateFlow<Int> = MutableStateFlow(initialEpisodeId)
-
-    override val subjectId: MutableStateFlow<Int> = MutableStateFlow(initialSubjectId)
-
-    private val subjectDetails = subjectId.mapLatest {
-        runUntilSuccess { withContext(Dispatchers.IO) { bangumiClient.api.getSubjectById(initialSubjectId) } }// TODO: replace with data layer 
+    private val subjectDetails = flowOf(subjectId).mapLatest { subjectId ->
+        runUntilSuccess { withContext(Dispatchers.IO) { bangumiClient.api.getSubjectById(subjectId) } }
+        // TODO: replace with data layer 
     }.shareInBackground()
 
     @Stable
-    override val episode: SharedFlow<EpisodeDetail> = episodeId.mapLatest { episodeId ->
+    override val episode: SharedFlow<EpisodeDetail> = flowOf(episodeId).mapLatest { episodeId ->
         runUntilSuccess { withContext(Dispatchers.IO) { bangumiClient.api.getEpisodeById(episodeId) } }
     }.shareInBackground()
 
     @Stable
-    override val subjectTitle: SharedFlow<String> = subjectDetails.filterNotNull().mapLatest { subject ->
+    override val subjectTitle: Flow<String> = subjectDetails.filterNotNull().mapLatest { subject ->
         subject.nameCNOrName()
-    }.shareInBackground()
+    }
 
     @Stable
     override val episodeEp = episode.filterNotNull().mapLatest { episode ->
         episode.renderEpisodeSp()
-    }.shareInBackground()
+    }
 
     @Stable
     override val episodeTitle = episode.filterNotNull().mapLatest { episode ->
         episode.nameCNOrName()
-    }.shareInBackground()
-
-
-//    private val remoteEpisodeWatched = episode.filterNotNull().map {
-//        bangumiClient.api.getUserEpisodeCollection(it.id).type == EpisodeCollectionType.WATCHED
-//    }
-//    private val localEpisodeWatched = MutableStateFlow(false)
-//    val episodeWatched = merge(remoteEpisodeWatched, localEpisodeWatched).stateInBackground(false)
-
-//    fun setEpisodeWatched(
-//        collectionType: EpisodeCollectionType,
-//    ) {
-//        episode.value?.let {
-//            bangumiClient.api.putUserEpisodeCollection(
-//                it.id, PutUserEpisodeCollectionRequest(type = collectionType)
-//            )
-//        }
-//        localEpisodeWatched.value = watched
-//    }
-
+    }
 
     // 动漫花园等数据源搜搜结果
     private val _isPlaySourcesLoading = MutableStateFlow(true)
@@ -337,21 +299,13 @@ private class EpisodeViewModelImpl(
         isFullscreen.value = fullscreen
     }
 
-    override val episodeCollectionType: MutableSharedFlow<EpisodeCollectionType> = episodeId.mapNotNull {
+    override val episodeCollectionType: MutableSharedFlow<EpisodeCollectionType> = flowOf(episodeId).mapNotNull {
         episodeRepository.getEpisodeCollection(it)?.type
     }.localCachedSharedFlow()
 
     override suspend fun setEpisodeCollectionType(type: EpisodeCollectionType) {
         episodeCollectionType.tryEmit(type)
-        episodeRepository.setEpisodeCollection(subjectId.value, listOf(episodeId.value), type)
-    }
-
-    override fun setSubjectId(subjectId: Int) {
-        this.subjectId.value = subjectId
-    }
-
-    override fun setEpisodeId(episodeId: Int) {
-        this.episodeId.value = episodeId
+        episodeRepository.setEpisodeCollection(subjectId, listOf(episodeId), type)
     }
 
     override suspend fun copyDownloadLink(clipboardManager: ClipboardManager, snackbar: SnackbarHostState) {

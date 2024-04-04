@@ -64,20 +64,15 @@ fun MainScreen(aniNavigator: AniNavigator) {
                 }
                 val initialIsFullscreen = backStackEntry.query<Boolean>("fullscreen") ?: false
                 val context = LocalContext.current
-                val vm = rememberViewModel<EpisodeViewModel> {
+                val vm = rememberViewModel<EpisodeViewModel>(
+                    listOf(subjectId, episodeId)
+                ) {
                     EpisodeViewModel(
                         initialSubjectId = subjectId,
                         initialEpisodeId = episodeId,
                         initialIsFullscreen = initialIsFullscreen,
                         context,
                     )
-                }
-                // TODO: 当切换到全屏时, 会整个 recompose, 导致这里会重新 evaluate, 但是 path 里 fullscreen 参数没有变, 
-                //  如果 vm.setFullscreen(initialIsFullscreen), 就会覆盖掉用户的操作, 导致全屏状态时 vm.isFullscreen 为 false
-                //            vm.setFullscreen(initialIsFullscreen)
-                SideEffect {
-                    vm.setSubjectId(subjectId)
-                    vm.setEpisodeId(episodeId)
                 }
                 EpisodeScene(vm)
             }
