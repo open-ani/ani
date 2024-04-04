@@ -10,7 +10,11 @@ class Danmaku(
     val location: DanmakuLocation,
     val text: String,
     val color: Int, // RGB
-)
+) {
+    override fun toString(): String {
+        return "Danmaku(id='$id', time=$time, senderId='$senderId', location=$location, text='$text', color=$color)"
+    }
+}
 
 enum class DanmakuLocation {
     TOP,
