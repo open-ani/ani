@@ -54,6 +54,12 @@ interface PagedSource<out T> {
 
     /**
      * 主动查询下一页. 当已经没有下一页时返回 `null`. 注意, 若有使用 [results], 主动操作 [nextPageOrNull] 将导致 [results] 会跳过该页.
+     *
+     * ### Coroutine Cancellation
+     *
+     * This function supports coroutine cancellation, and will **always** check for cancellation.
+     *
+     * When this coroutine is cancelled, [currentPage] is guaranteed to be left intact, i.e. not incremented.
      */
     suspend fun nextPageOrNull(): List<T>?
 
@@ -151,14 +157,13 @@ fun <T> PageBasedPagedSource(
     }
 }
 
-abstract class AbstractPageBasedPagedSource<T> : PagedSource<T> {
-    @Suppress("LeakingThis")
+abstract class AbstractPageBasedPagedSource<T>(
+    initialPage: Int = 0,
+) : PagedSource<T> {
     override val currentPage: MutableStateFlow<Int> = MutableStateFlow(initialPage)
 
     private val lock = Mutex()
     override val finished = MutableStateFlow(false)
-
-    protected open val initialPage: Int get() = 0
 
     final override suspend fun nextPageOrNull(): List<T>? = lock.withLock {
         if (finished.value) {
@@ -166,11 +171,16 @@ abstract class AbstractPageBasedPagedSource<T> : PagedSource<T> {
             return null
         }
         val result = nextPageImpl(currentPage.value)
+        // Impl note: after [nextPageImpl] there must not be any suspension points, 
+        // otherwise we risk breaking the coroutine cancellation contract.
+        // See comments of [nextPageOrNull] for details.
+
         if (result == null) {
             noMorePages()
             return null
         }
         if (!finished.value) {
+            // CAS loop to increment page
             while (!currentPage.compareAndSet(currentPage.value, currentPage.value + 1)) {
                 @Suppress("ControlFlowWithEmptyBody")
                 for (i in 0..4) {
