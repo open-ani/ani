@@ -40,9 +40,6 @@ class ExoPlayerStateFactory : PlayerStateFactory {
 }
 
 
-/**
- * Must be remembered
- */
 @OptIn(UnstableApi::class)
 internal class ExoPlayerState @UiThread constructor(
     context: Context,
@@ -83,9 +80,13 @@ internal class ExoPlayerState @UiThread constructor(
             return
         }
 
-        if (source == this.openResource.value?.videoSource) {
+        val previousResource = openResource.value
+        if (source == previousResource?.videoSource) {
             return
         }
+
+        openResource.value = null
+        previousResource?.closeable?.close()
 
         val opened = openSource(source)
 
