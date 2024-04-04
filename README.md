@@ -37,13 +37,13 @@ Ani 支持 Android 和桌面端 (macOS、Linux、Windows)。
 请关注 [releases](https://github.com/Him188/ani/releases/latest)
 以下载最新正式版本。(注意: 2.0 与 3.0 完全不同, 不建议使用 2.0 (*它大概率已经不能用了*))
 
-测试版本有*非常多*问题, ~*目前请不要抱有太大期望*~. 欢迎测试并在 issue 反馈问题.
+测试版本有*很多*问题, ~*目前请不要抱有太大期望, 但我是每天都用的*~. 欢迎测试并在 issue 反馈问题.
 
 ## 功能截图
 
 快速开发中, 我每隔几天会更一下截图. 实际样式请以最新版本为准.
 
-主要采用 Material 3 风格, 支持同步系统的浅色和深色主题.
+采用 Material 3 风格, 支持同步系统的浅色和深色主题.
 
 因为使用的是安卓原生 Compose, 应用可全程保持屏幕刷新率运行.
 
@@ -90,15 +90,16 @@ Ani 支持 Android 和桌面端 (macOS、Linux、Windows)。
 
 - *倍速播放等其他辅助功能将在之后的里程碑实现*
 
-<img width="300" src=".readme/images/episode/episode-player-loading.jpg" alt="episode-player-loading"/> <img width="300" src=".readme/images/episode/episode-player-playing.jpg" alt="episode-player-playing"/>
-
-### 视频弹幕
-
 - 从 [弹弹play][ddplay] 获取弹幕
+- 支持自定义弹幕样式与速度
+
+<img width="300" src=".readme/images/episode/episode-player-loading.jpg" alt="episode-player-loading"/> 
 
 <img width="600" src=".readme/images/episode/episode-player-fullscreen.jpg" alt="episode-player-fullscreen"/>
 
-<img width="600" src=".readme/images/episode/episode-player-fullscreen-controller.jpg" alt="episode-player-fullscreen"/>
+<img width="600" src=".readme/images/episode/episode-player-fullscreen-controller.jpg" alt="episode-player-fullscreen-controller"/>
+
+<img width="600" src=".readme/images/episode/episode-player-settings.jpg" alt="episode-player-settings"/>
 
 ### 评论
 
@@ -112,7 +113,7 @@ UI 写好了, 但是 Bangumi 目前没提供评论的 API, 在考虑怎么解决
 
 除了 (目前) 不支持视频播放以外, 与 Android 端功能一致. 可使用 "下载" 功能跳转到外部下载器下载视频.
 
-桌面端视频播放功能未来可能会用外置播放器, 配合悬浮窗弹幕引擎? 如有更好方案欢迎指点.
+桌面端视频播放功能计划使用内嵌 Web 播放器实现, 如有更好方案欢迎指点.
 
 ## 提示
 
