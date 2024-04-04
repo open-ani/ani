@@ -1,5 +1,6 @@
 package me.him188.ani.danmaku.ui
 
+import androidx.annotation.UiThread
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,11 +31,13 @@ interface DanmakuHostState {
     /**
      * Pauses the movement of danmaku.
      */
+    @UiThread
     fun pause()
 
     /**
      * Resumes the movement of danmaku. Danmaku will continue to move from where it was paused.
      */
+    @UiThread
     fun resume()
 }
 

@@ -32,6 +32,7 @@ import me.him188.ani.app.torrent.TorrentManager
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
+import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.app.videoplayer.PlayerState
 import me.him188.ani.app.videoplayer.PlayerStateFactory
 import me.him188.ani.app.videoplayer.TorrentVideoSource
@@ -349,7 +350,7 @@ private class EpisodeViewModelImpl(
     override val danmakuHostState: DanmakuHostState = DanmakuHostState()
 
     init {
-        launchInBackground {
+        launchInMain { // state changes must be in main thread
             playerState.state.collect {
                 if (it.isPlaying) {
                     danmakuHostState.resume()

@@ -157,13 +157,13 @@ internal class ExoPlayerState @UiThread constructor(
                 }
 
                 override fun onPlaybackStateChanged(playbackState: Int) {
-                    updateVideoProperties()
                     when (playbackState) {
                         Player.STATE_BUFFERING -> state.value = PlaybackState.PAUSED_BUFFERING
                         Player.STATE_ENDED -> state.value = PlaybackState.FINISHED
                         Player.STATE_IDLE -> state.value = PlaybackState.READY
                         Player.STATE_READY -> state.value = PlaybackState.READY
                     }
+                    updateVideoProperties()
                 }
 
                 override fun onIsPlayingChanged(isPlaying: Boolean) {
