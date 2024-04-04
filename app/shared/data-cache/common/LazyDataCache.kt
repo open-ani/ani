@@ -34,19 +34,18 @@ import me.him188.ani.utils.logging.warn
  *
  * The data is loaded lazily, i.e. only if [requestMore] is called.
  */
+@Stable
 interface LazyDataCache<T> : AutoCloseable {
     /**
      * Whether the current remote flow has been exhausted.
      *
      * Note that when [isCompleted] is seen as `true`, it can still become `false` later if the remote source has restarted (in which case [data] will be cleared).
      */
-    @Stable
     val isCompleted: Flow<Boolean>
 
     /**
      * Current cache of the data. It can change if [requestMore].
      */
-    @Stable
     val data: StateFlow<List<T>>
 
     /**
@@ -54,10 +53,8 @@ interface LazyDataCache<T> : AutoCloseable {
      *
      * It can be `null` if not known.
      */
-    @Stable
     val totalSize: Flow<Int?>
 
-    @Stable
     val lock: Mutex
 
     /**
