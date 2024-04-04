@@ -17,6 +17,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.map
 import me.him188.ani.app.platform.AniBuildConfig
 import me.him188.ani.app.platform.isInLandscapeMode
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
@@ -29,12 +30,14 @@ import me.him188.ani.app.ui.subject.episode.video.topbar.EpisodeVideoTopBar
 import me.him188.ani.app.videoplayer.PlayerState
 import me.him188.ani.app.videoplayer.VideoPlayer
 import me.him188.ani.app.videoplayer.togglePause
-import me.him188.ani.app.videoplayer.ui.PlayerProgressController
 import me.him188.ani.app.videoplayer.ui.VideoLoadingIndicator
 import me.him188.ani.app.videoplayer.ui.VideoScaffold
 import me.him188.ani.app.videoplayer.ui.guesture.GestureLock
 import me.him188.ani.app.videoplayer.ui.guesture.LockableVideoGestureHost
 import me.him188.ani.app.videoplayer.ui.guesture.rememberSwipeSeekerState
+import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerBar
+import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
+import me.him188.ani.app.videoplayer.ui.progress.ProgressSlider
 import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.danmaku.ui.DanmakuHost
 import me.him188.ani.danmaku.ui.DanmakuHostState
@@ -99,7 +102,7 @@ internal fun EpisodeVideo(
         gestureHost = {
             LockableVideoGestureHost(
                 rememberSwipeSeekerState(constraints.maxWidth) {
-                    playerState.seekTo(playerState.currentPosition.value + it.seconds)
+                    playerState.seekTo(playerState.currentPositionMillis.value + it * 1000)
                 },
                 controllerVisible = controllerVisible,
                 locked = isLocked,
@@ -126,11 +129,30 @@ internal fun EpisodeVideo(
             }
         },
         bottomBar = {
-            PlayerProgressController(
-                controller = playerState,
-                isFullscreen = isFullscreen,
-                onClickFullscreen = onClickFullScreen,
-                danmakuEnabled, setDanmakuEnabled
+            PlayerControllerBar(
+                startActions = {
+                    val isPlaying by remember(playerState) { playerState.state.map { it.isPlaying } }
+                        .collectAsStateWithLifecycle(false)
+                    PlayerControllerDefaults.PlaybackIcon(
+                        isPlaying = { isPlaying },
+                        onClick = { playerState.togglePause() }
+                    )
+
+                    PlayerControllerDefaults.DanmakuIcon(
+                        danmakuEnabled,
+                        onClick = { setDanmakuEnabled(!danmakuEnabled) }
+                    )
+                },
+                progressSlider = {
+                    ProgressSlider(playerState)
+                },
+                endActions = {
+                    PlayerControllerDefaults.FullscreenIcon(
+                        isFullscreen,
+                        onClickFullscreen = onClickFullScreen,
+                    )
+                },
+                expanded = isFullscreen
             )
         },
         rhsSideSheet = {

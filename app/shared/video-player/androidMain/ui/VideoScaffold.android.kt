@@ -2,7 +2,6 @@ package me.him188.ani.app.videoplayer.ui
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -19,6 +18,9 @@ import me.him188.ani.app.videoplayer.DummyPlayerState
 import me.him188.ani.app.videoplayer.ui.guesture.GestureLock
 import me.him188.ani.app.videoplayer.ui.guesture.LockableVideoGestureHost
 import me.him188.ani.app.videoplayer.ui.guesture.rememberSwipeSeekerState
+import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerBar
+import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
+import me.him188.ani.app.videoplayer.ui.progress.ProgressSlider
 
 @Preview(device = PHONE_LANDSCAPE)
 @Composable
@@ -32,6 +34,7 @@ private fun PreviewVideoScaffoldFullscreen() = ProvideCompositionLocalsForPrevie
     }
     var isLocked by remember { mutableStateOf(false) }
 
+    val isFullscreen = true
     VideoScaffold(
         modifier = Modifier,
         controllersVisible = controllerVisible,
@@ -74,19 +77,30 @@ private fun PreviewVideoScaffoldFullscreen() = ProvideCompositionLocalsForPrevie
             GestureLock(isLocked = isLocked, onClick = { isLocked = !isLocked })
         },
         bottomBar = {
-            PlayerProgressController(
-                controller = controller,
-                isFullscreen = true,
-                onClickFullscreen = {},
-                danmakuEnabled = true,
-                setDanmakuEnabled = {}
+            PlayerControllerBar(
+                startActions = {
+                    PlayerControllerDefaults.PlaybackIcon(
+                        isPlaying = { false },
+                        onClick = { }
+                    )
+
+                    PlayerControllerDefaults.DanmakuIcon(
+                        true,
+                        onClick = { }
+                    )
+                },
+                progressSlider = {
+                    ProgressSlider(controller)
+                },
+                endActions = {
+                    PlayerControllerDefaults.FullscreenIcon(
+                        isFullscreen,
+                        onClickFullscreen = {},
+                    )
+                },
+                expanded = isFullscreen
             )
         },
         isFullscreen = true,
     )
-}
-
-
-fun main() {
-    Icons.Rounded
 }

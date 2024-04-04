@@ -57,6 +57,7 @@ import org.koin.core.component.inject
 import org.openapitools.client.models.EpisodeCollectionType
 import org.openapitools.client.models.EpisodeDetail
 import java.util.concurrent.ConcurrentLinkedQueue
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 interface EpisodeViewModel : HasBackgroundScope {
@@ -321,7 +322,7 @@ private class EpisodeViewModelImpl(
     override val isVideoReady: Flow<Boolean> = videoSource.map { it != null }
 
     @Stable
-    val playerState: PlayerState =
+    override val playerState: PlayerState =
         playerStateFactory.create(context, backgroundScope.coroutineContext)
 
     override val isShowPlaySourceSheet = MutableStateFlow(false)
@@ -380,11 +381,13 @@ private class EpisodeViewModelImpl(
             playSourceCandidate.playSource.originalTitle,
             "aa".repeat(16),
             1L, // TODO: 提供 file size 给 danmaku, 获得更准确的结果
-            video.duration
+            video.durationMillis.milliseconds
         )
     }.filterNotNull()
         .closeOnReplacement()
-        .flatMapLatest { it.at(playerState.currentPosition) }
+        .flatMapLatest { session ->
+            session.at(playerState.currentPositionMillis.map { it.milliseconds })
+        }
 
     override val danmakuHostState: DanmakuHostState = DanmakuHostState()
 

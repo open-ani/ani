@@ -2,18 +2,14 @@ package me.him188.ani.app.videoplayer
 
 import androidx.annotation.UiThread
 import androidx.compose.runtime.Stable
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.platform.Context
 import kotlin.coroutines.CoroutineContext
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.seconds
 
 /**
  * A controller for the [VideoPlayer].
@@ -65,7 +61,7 @@ interface PlayerState {
      *
      * `0` if no video is being played.
      */
-    val currentPosition: StateFlow<Duration>
+    val currentPositionMillis: StateFlow<Long>
 
     /**
      * `0..100`
@@ -89,22 +85,6 @@ interface PlayerState {
     @UiThread
     fun resume()
 
-
-    /**
-     * 播放进度条的拖动位置 `0..1`. `null` 表示没有拖动.
-     */
-    @Deprecated("To be moved out")
-    val previewingProgress: StateFlow<Float?>
-
-    @Deprecated("To be moved out")
-    fun setPreviewingProgress(progress: Float)
-
-    /**
-     * 如果当前正在拖动, 则为 [previewingProgress], 否则为 [currentPosition].
-     */
-    val previewingOrPlayingProgress: Flow<Float>
-
-
     @UiThread
     fun setSpeed(speed: Float)
 
@@ -112,7 +92,7 @@ interface PlayerState {
      * 跳转到指定位置
      */
     @UiThread
-    fun seekTo(duration: Duration)
+    fun seekTo(positionMillis: Long)
 }
 
 class UnsupportedVideoSourceException(
@@ -131,35 +111,6 @@ fun PlayerState.togglePause() {
 abstract class AbstractPlayerState : PlayerState {
     override val isBuffering: Flow<Boolean> by lazy {
         state.map { it == PlaybackState.PAUSED_BUFFERING }
-    }
-
-    final override val previewingProgress: MutableStateFlow<Float?> = MutableStateFlow(null)
-
-    final override fun setPreviewingProgress(progress: Float) {
-        previewingProgress.value = progress
-        isPreviewing.tryEmit(true)
-    }
-
-    private val isPreviewing: MutableSharedFlow<Boolean> = MutableSharedFlow(replay = 1, extraBufferCapacity = 1)
-
-    final override val previewingOrPlayingProgress: Flow<Float> by lazy {
-        combine(
-            previewingProgress.filterNotNull(),
-            playProgress,
-            isPreviewing.debounce {
-                if (it) {
-                    0.seconds
-                } else {
-                    2.seconds
-                }
-            },
-        ) { previewingProgress, playingProgress, isPreviewing ->
-            if (isPreviewing) {
-                previewingProgress
-            } else {
-                playingProgress
-            }
-        }
     }
 }
 
@@ -189,6 +140,13 @@ enum class PlaybackState(
 }
 
 fun interface PlayerStateFactory {
+    /**
+     * Creates a new [PlayerState]
+     * [parentCoroutineContext] must have a [Job] so that the player state is bound to the parent coroutine context scope.
+     *
+     * @param context the platform context to create the underlying player implementation.
+     * It is only used by the constructor and not stored.
+     */
     fun create(context: Context, parentCoroutineContext: CoroutineContext): PlayerState
 }
 
@@ -210,14 +168,14 @@ class DummyPlayerState : AbstractPlayerState() {
             videoBitrate = 100,
             audioBitrate = 100,
             frameRate = 30f,
-            duration = 100.seconds,
+            durationMillis = 100_000,
         )
     )
     override val isBuffering: Flow<Boolean> = MutableStateFlow(true)
-    override val currentPosition: MutableStateFlow<Duration> = MutableStateFlow(10.seconds)
+    override val currentPositionMillis = MutableStateFlow(10_000L)
     override val bufferedPercentage: StateFlow<Int> = MutableStateFlow(50)
-    override val playProgress: Flow<Float> = currentPosition.combine(videoProperties) { played, video ->
-        (played / video.duration).toFloat()
+    override val playProgress: Flow<Float> = currentPositionMillis.combine(videoProperties) { played, video ->
+        (played / video.durationMillis).toFloat()
     }
 
     override fun pause() {
@@ -229,7 +187,7 @@ class DummyPlayerState : AbstractPlayerState() {
     override fun setSpeed(speed: Float) {
     }
 
-    override fun seekTo(duration: Duration) {
-        this.currentPosition.value = duration
+    override fun seekTo(positionMillis: Long) {
+        this.currentPositionMillis.value = positionMillis
     }
 }

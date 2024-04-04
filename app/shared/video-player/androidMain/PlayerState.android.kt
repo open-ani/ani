@@ -30,8 +30,6 @@ import me.him188.ani.app.videoplayer.media.TorrentDataSource
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import kotlin.coroutines.CoroutineContext
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 
@@ -147,7 +145,7 @@ internal class ExoPlayerState @UiThread constructor(
                         videoBitrate = video.bitrate,
                         audioBitrate = audio.bitrate,
                         frameRate = video.frameRate,
-                        duration = duration.milliseconds,
+                        durationMillis = duration,
                     )
                     return true
                 }
@@ -179,23 +177,23 @@ internal class ExoPlayerState @UiThread constructor(
     override val bufferedPercentage = MutableStateFlow(0)
     override val isBuffering: Flow<Boolean> = state.map { it == PlaybackState.PAUSED_BUFFERING }
 
-    override fun seekTo(duration: Duration) {
-        player.seekTo(duration.inWholeMilliseconds)
+    override fun seekTo(positionMillis: Long) {
+        player.seekTo(positionMillis)
     }
 
-    override val currentPosition: MutableStateFlow<Duration> = MutableStateFlow(0.milliseconds)
+    override val currentPositionMillis: MutableStateFlow<Long> = MutableStateFlow(0)
     override val playProgress: Flow<Float> =
-        combine(videoProperties.filterNotNull(), currentPosition) { properties, duration ->
-            if (properties.duration == 0.milliseconds) {
+        combine(videoProperties.filterNotNull(), currentPositionMillis) { properties, duration ->
+            if (properties.durationMillis == 0L) {
                 return@combine 0f
             }
-            (duration / properties.duration).toFloat().coerceIn(0f, 1f)
+            (duration / properties.durationMillis).toFloat().coerceIn(0f, 1f)
         }
 
     init {
         backgroundScope.launch(Dispatchers.Main) {
             while (currentCoroutineContext().isActive) {
-                currentPosition.value = player.currentPosition.milliseconds
+                currentPositionMillis.value = player.currentPosition
                 bufferedPercentage.value = player.bufferedPercentage
                 delay(1.seconds)
             }
