@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -91,11 +92,13 @@ private fun NowPlayingLabel(viewModel: EpisodeViewModel, modifier: Modifier = Mo
                         )
                     }
 
-                    Text(
-                        remember(playing) { playing?.playSource?.originalTitle ?: "" },
-                        Modifier.padding(top = 8.dp),
-                        color = LocalContentColor.current.slightlyWeaken(),
-                    )
+                    SelectionContainer {
+                        Text(
+                            remember(playing) { playing?.playSource?.originalTitle ?: "" },
+                            Modifier.padding(top = 8.dp),
+                            color = LocalContentColor.current.slightlyWeaken(),
+                        )
+                    }
                 }
             } else {
                 Text("请选择数据源")
