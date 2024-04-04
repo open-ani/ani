@@ -2,9 +2,11 @@ package me.him188.ani.danmaku.api
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.transformLatest
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 interface DanmakuSession : AutoCloseable {
     /**
@@ -33,15 +35,17 @@ class TimeBasedDanmakuSession private constructor(
     /**
      * List of danmaku. Must be sorted by [Danmaku.time], and must not change after construction.
      */
-    private val list: List<Danmaku>
+    private val list: List<Danmaku>,
+    private val shiftMillis: Long = 0,
 ) : DanmakuSession {
     companion object {
         fun create(
             sequence: Sequence<Danmaku>,
+            shiftMillis: Long = 0,
         ): DanmakuSession {
             val list = sequence.toCollection(ArrayList())
             list.sortBy { it.time }
-            return TimeBasedDanmakuSession(list)
+            return TimeBasedDanmakuSession(list, shiftMillis)
         }
     }
 
@@ -52,7 +56,7 @@ class TimeBasedDanmakuSession private constructor(
 
         var lastTime: Duration = Duration.ZERO
         var lastIndex = -1// last index at which we accessed [list]
-        return progress.transformLatest { curTime ->
+        return progress.map { it - shiftMillis.milliseconds }.transformLatest { curTime ->
             if (curTime < lastTime) {
                 // Went back, reset position so we restart from the beginning
                 lastIndex = -1

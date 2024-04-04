@@ -70,13 +70,14 @@ class DandanplayDanmakuListResponse(
     val comments: List<DandanplayDanmaku>
 )
 
+// https://api.dandanplay.net/swagger/ui/index#/Match
 @Serializable
 data class DandanplayEpisode(
     val animeId: Long,
     val animeTitle: String,
     val episodeId: Long,
     val episodeTitle: String,
-    val shift: Double,
+    val shift: Double,// 弹幕偏移时间（弹幕应延迟多少秒出现）。此数字为负数时表示弹幕应提前多少秒出现。
     val type: String,
     val typeDescription: String
 )

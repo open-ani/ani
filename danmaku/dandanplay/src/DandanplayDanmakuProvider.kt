@@ -14,17 +14,21 @@ class DandanplayDanmakuProvider(
         fileSize: Long,
         videoDuration: Duration
     ): DanmakuSession? {
-        val match = dandanplayClient.matchVideo(
+        val resp = dandanplayClient.matchVideo(
             filename = filename,
             fileHash = fileHash,
             fileSize = fileSize,
             videoDuration = videoDuration
         )
-        if (match.matches.isEmpty()) {
+        if (resp.matches.isEmpty()) {
             return null
         }
-        val episodeId = match.matches.first().episodeId
+        val match = resp.matches.first()
+        val episodeId = match.episodeId
         val list = dandanplayClient.getDanmakuList(episodeId = episodeId)
-        return TimeBasedDanmakuSession.create(list.asSequence().mapNotNull { it.toDanmakuOrNull() })
+        return TimeBasedDanmakuSession.create(
+            list.asSequence().mapNotNull { it.toDanmakuOrNull() },
+            shiftMillis = (match.shift * 1000L).toLong(),
+        )
     }
 }
