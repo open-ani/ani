@@ -3,16 +3,14 @@ package me.him188.ani.app.tools.caching
 import androidx.compose.runtime.Stable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onCompletion
@@ -20,7 +18,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -33,9 +30,11 @@ import me.him188.ani.utils.logging.warn
  * A data collection, where the data is loaded from a remote source.
  *
  * The data is loaded lazily, i.e. only if [requestMore] is called.
+ *
+ * See the constructor-like factory function for more details.
  */
 @Stable
-interface LazyDataCache<T> : AutoCloseable {
+interface LazyDataCache<T> {
     /**
      * Whether the current remote flow has been exhausted.
      *
@@ -85,12 +84,17 @@ inline val <T> LazyDataCache<T>.value get() = data.value
  * If [nextPageOrNull] returns `null`, it is considered to be end of the data. [LazyDataCache] will release the reference to [nextPageOrNull].
  *
  * `nextPageOrNull` must not throw any exceptions, if it does, it is considered to be end of the data.
+ *
+ * Completion of [LazyDataCache] relies on the completion of the [nextPageOrNull] flow.
  */
 fun <T> LazyDataCache(
     nextPageOrNull: Flow<PagedSource<T>>,
     debugName: String? = null,
 ): LazyDataCache<T> = LazyDataCacheImpl(nextPageOrNull, debugName)
 
+/**
+ * @see LazyDataCache
+ */
 fun <T> LazyDataCache(
     nextPageOrNull: PagedSource<T>,
     debugName: String? = null,
@@ -146,24 +150,20 @@ class LazyDataCacheImpl<T>(
         }
 
         withContext(Dispatchers.IO) {
-            val nextScope = this
-            val daemon = launch {
-                sourceCompleted.filter { it }.first()
-                logger.warn { "sourceCompleted, stopping requestMore" }
-                nextScope.cancel() // stop when the source is completed
-            }
-            try {
-                requestInProgress.value = true
-                val source = currentSource.filterNotNull().first()
-                val resp = source.nextPageOrNull()
-                if (resp != null) {
-                    lock.withLock {
+            val source = currentSource.filterNotNull().firstOrNull() // this call must be out of lock
+                ?: return@withContext // source is empty
+
+            // Get exclusive access before fetching the next page, because we cannot re-fetch the page
+            lock.withLock {
+                try {
+                    requestInProgress.value = true
+                    val resp = source.nextPageOrNull()
+                    if (resp != null) {
                         data.value += resp
                     }
+                } finally {
+                    requestInProgress.value = false
                 }
-            } finally {
-                requestInProgress.value = false
-                daemon.cancel()
             }
         }
     }
@@ -178,10 +178,6 @@ class LazyDataCacheImpl<T>(
         combine(requestInProgress, sourceCompleted, currentSource) { requestInProgress, sourceCompleted, source ->
             source?.finished ?: flowOf(sourceCompleted && !requestInProgress)
         }.flatMapLatest { it }
-
-    override fun close() {
-        scope.cancel()
-    }
 
     private companion object {
         val logger = logger(LazyDataCacheImpl::class)
