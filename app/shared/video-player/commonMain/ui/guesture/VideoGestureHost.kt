@@ -140,7 +140,7 @@ fun VideoGestureHost(
                     audioController?.let {
                         Modifier.swipeLevelControl(
                             it,
-                            ((maxHeight - 100.dp) / 20).coerceAtLeast(4.dp),
+                            ((maxHeight - 100.dp) / 40).coerceAtLeast(2.dp),
                             Orientation.Vertical
                         )
                     } ?: Modifier
