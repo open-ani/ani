@@ -25,6 +25,7 @@ import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuLocation
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
+import java.util.Locale
 import kotlin.time.Duration
 
 
@@ -141,10 +142,30 @@ class DandanplayClient(
     suspend fun getDanmakuList(
         episodeId: Long,
     ): List<DandanplayDanmaku> {
+        val chConvert = when (getSystemChineseVariant()) {
+            ChineseVariant.SIMPLIFIED -> 1
+            ChineseVariant.TRADITIONAL -> 2
+            null -> 0
+        }
         val response =
-            client.get("https://api.dandanplay.net/api/v2/comment/${episodeId}?chConvert=0&withRelated=true") {
-            accept(ContentType.Application.Json)
-        }.body<DandanplayDanmakuListResponse>()
+            client.get("https://api.dandanplay.net/api/v2/comment/${episodeId}?chConvert=$chConvert&withRelated=true") {
+                accept(ContentType.Application.Json)
+            }.body<DandanplayDanmakuListResponse>()
         return response.comments
+    }
+
+    enum class ChineseVariant {
+        SIMPLIFIED,
+        TRADITIONAL
+    }
+
+    private fun getSystemChineseVariant(): ChineseVariant? {
+        val locale = Locale.getDefault()
+        if (locale.language != "zh") return null
+        return when (locale.country) {
+            "CN" -> ChineseVariant.SIMPLIFIED
+            "TW", "HK", "MO" -> ChineseVariant.TRADITIONAL
+            else -> null
+        }
     }
 }
