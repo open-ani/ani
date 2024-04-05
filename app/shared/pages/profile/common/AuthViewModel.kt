@@ -24,6 +24,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
+import me.him188.ani.app.session.ExternalOAuthRequest
 import me.him188.ani.app.session.OAuthResult
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.ui.feedback.ErrorMessage
@@ -54,25 +55,24 @@ class AuthViewModel : AbstractViewModel(), KoinComponent {
     /**
      * 展示登录失败的错误
      */
-    val authError: MutableStateFlow<ErrorMessage?> = MutableStateFlow(null)
+    val authError: MutableStateFlow<ErrorMessage?> = sessionManager.processingRequest.map { request ->
+        (request?.state?.value as? ExternalOAuthRequest.State.Failed)?.throwable?.let {
+            ErrorMessage.simple("登录失败, 请重试", it)
+        }
+    }.localCachedStateFlow(null)
 
+    /**
+     * Set callback code. Only used by Desktop platform. For Android, see `MainActivity.onNewIntent`
+     */
     fun setCode(code: String, callbackUrl: String) {
-        runCatching {
-            sessionManager.processingRequest.value?.onCallback(
-                Result.success(
-                    OAuthResult(
-                        code,
-                        callbackUrl
-                    )
+        sessionManager.processingRequest.value?.onCallback(
+            Result.success(
+                OAuthResult(
+                    code,
+                    callbackUrl
                 )
             )
-        }.onFailure {
-            onAuthFailed(it)
-        }
-    }
-
-    fun onAuthFailed(throwable: Throwable) {
-        authError.value = ErrorMessage.simple("登录失败, 请重试", throwable)
+        )
     }
 
     @UiThread

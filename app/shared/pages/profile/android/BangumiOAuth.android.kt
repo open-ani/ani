@@ -28,7 +28,6 @@ private enum class LaunchChromeStatus {
 @Composable
 actual fun BangumiOAuthRequest(
     vm: AuthViewModel,
-    onFailed: (Throwable) -> Unit,
     modifier: Modifier,
 ) {
     var launchChromeStatus: LaunchChromeStatus by remember {

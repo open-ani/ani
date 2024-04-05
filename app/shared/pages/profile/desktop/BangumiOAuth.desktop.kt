@@ -20,7 +20,7 @@ import java.awt.Desktop
 import java.net.URI
 
 @Composable
-actual fun BangumiOAuthRequest(vm: AuthViewModel, onFailed: (Throwable) -> Unit, modifier: Modifier) {
+actual fun BangumiOAuthRequest(vm: AuthViewModel, modifier: Modifier) {
 
     val server = remember {
         BangumiOAuthCallbackServer {

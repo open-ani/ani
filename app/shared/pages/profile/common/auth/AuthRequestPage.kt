@@ -68,9 +68,6 @@ fun AuthRequestPage(
                 key(vm.retryCount.value) {
                     BangumiOAuthRequest(
                         vm,
-                        onFailed = {
-                            vm.onAuthFailed(it)
-                        },
                         Modifier.fillMaxSize()
                     )
                 }
