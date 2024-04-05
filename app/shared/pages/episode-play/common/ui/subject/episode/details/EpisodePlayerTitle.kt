@@ -4,12 +4,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
+import me.him188.ani.app.ui.foundation.TextWithBorder
 
 @Composable
 fun EpisodePlayerTitle(
@@ -21,8 +21,9 @@ fun EpisodePlayerTitle(
     Column(modifier, horizontalAlignment = Alignment.Start) {
         ProvideTextStyle(MaterialTheme.typography.titleMedium) {
             Row {
-                Text(
+                TextWithBorder(
                     subjectTitle,
+                    2f,
                     softWrap = false, maxLines = 1, overflow = TextOverflow.Ellipsis,
                 )
             }
@@ -30,8 +31,9 @@ fun EpisodePlayerTitle(
         ProvideTextStyle(MaterialTheme.typography.titleSmall) {
             Row(Modifier, verticalAlignment = Alignment.CenterVertically) {
                 // 过长时隐藏标题, 保留序号
-                Text(
+                TextWithBorder(
                     remember(ep, episodeTitle) { (ep ?: "01") + "  " + episodeTitle },
+                    1.6f,
                     softWrap = false, maxLines = 1, overflow = TextOverflow.Ellipsis,
                 )
             }
