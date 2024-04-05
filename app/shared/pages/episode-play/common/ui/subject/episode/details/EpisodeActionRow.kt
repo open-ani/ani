@@ -13,10 +13,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowOutward
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.DisplaySettings
-import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.rounded.ArrowOutward
+import androidx.compose.material.icons.rounded.ContentCopy
+import androidx.compose.material.icons.rounded.DisplaySettings
+import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -65,7 +65,7 @@ fun EpisodeActionRow(
                     copyDownloadLink(clipboard, snackbar)
                 }
             },
-            icon = { Icon(Icons.Default.ContentCopy, null) },
+            icon = { Icon(Icons.Rounded.ContentCopy, null) },
             text = { Text("复制磁力") },
             modifier,
         )
@@ -77,7 +77,7 @@ fun EpisodeActionRow(
                     browseDownload(context, snackbar)
                 }
             },
-            icon = { Icon(Icons.Default.Download, null) },
+            icon = { Icon(Icons.Rounded.Download, null) },
             text = { Text("下载") },
             modifier,
         )
@@ -88,7 +88,7 @@ fun EpisodeActionRow(
                     browsePlaySource(context, snackbar)
                 }
             },
-            icon = { Icon(Icons.Default.ArrowOutward, null) },
+            icon = { Icon(Icons.Rounded.ArrowOutward, null) },
             text = { Text("原始页面") },
             modifier,
         )
@@ -115,7 +115,7 @@ private fun PlaySourceSelectionAction(
         onClick = {
             viewModel.setShowPlaySourceSheet(true)
         },
-        icon = { Icon(Icons.Default.DisplaySettings, null) },
+        icon = { Icon(Icons.Rounded.DisplaySettings, null) },
         text = { Text("数据源") },
         modifier,
         isPlaySourcesLoading

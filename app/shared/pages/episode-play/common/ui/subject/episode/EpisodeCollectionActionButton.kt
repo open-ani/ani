@@ -9,8 +9,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccessTime
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.rounded.AccessTime
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -36,7 +36,7 @@ import org.openapitools.client.models.EpisodeCollectionType
 private val ACTIONS = listOf(
     SubjectCollectionAction(
         { Text("取消看过") },
-        { Icon(Icons.Default.AccessTime, null) },
+        { Icon(Icons.Rounded.AccessTime, null) },
         UnifiedCollectionType.WISH
     ),
     SubjectCollectionActions.Done,
@@ -88,7 +88,7 @@ fun EpisodeCollectionActionButton(
 
             else -> {
                 Box(Modifier.size(16.dp)) {
-                    Icon(Icons.Default.Add, null)
+                    Icon(Icons.Rounded.Add, null)
                 }
                 Text("看过", Modifier.padding(start = 8.dp))
             }

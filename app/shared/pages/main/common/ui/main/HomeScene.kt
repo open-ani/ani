@@ -7,9 +7,9 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -57,7 +57,7 @@ fun HomeScene() {
                                 }
                                 closeSearch()
                             },
-                            icon = { Icon(Icons.Default.Home, null) },
+                            icon = { Icon(Icons.Rounded.Home, null) },
                             label = { Text(text = "首页") }
                         )
                         NavigationBarItem(
@@ -68,7 +68,7 @@ fun HomeScene() {
                                 }
                                 closeSearch()
                             },
-                            icon = { Icon(Icons.Default.Star, null) },
+                            icon = { Icon(Icons.Rounded.Star, null) },
                             label = { Text(text = "追番") }
                         )
                         NavigationBarItem(
@@ -79,7 +79,7 @@ fun HomeScene() {
                                 }
                                 closeSearch()
                             },
-                            icon = { Icon(Icons.Default.Person, null) },
+                            icon = { Icon(Icons.Rounded.Person, null) },
                             label = { Text(text = "我的") }
                         )
                     }

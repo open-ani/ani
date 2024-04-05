@@ -1,7 +1,7 @@
 package me.him188.ani.app.ui.foundation.avatar
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.rounded.Person
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,7 +24,7 @@ fun AvatarImage(
         model = if (filePath != null) File(filePath) else url,
         contentDescription = "Avatar",
         modifier = modifier,
-        error = rememberVectorPainter(Icons.Default.Person),
+        error = rememberVectorPainter(Icons.Rounded.Person),
         alignment = alignment,
         contentScale = contentScale,
         colorFilter = colorFilter,

@@ -1,18 +1,20 @@
 package me.him188.ani.app.ui.collection
 
+import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ListAlt
-import androidx.compose.material.icons.filled.AccessTime
-import androidx.compose.material.icons.filled.DeleteOutline
-import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.PlayCircleOutline
-import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.automirrored.rounded.ListAlt
+import androidx.compose.material.icons.rounded.AccessTime
+import androidx.compose.material.icons.rounded.DeleteOutline
+import androidx.compose.material.icons.rounded.Done
+import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.Remove
+import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
@@ -41,43 +43,44 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.external.placeholder.placeholder
+import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.datasources.api.UnifiedCollectionType
 
 @Immutable
 object SubjectCollectionActions {
     val Wish = SubjectCollectionAction(
         { Text("想看") },
-        { Icon(Icons.AutoMirrored.Filled.ListAlt, null) },
+        { Icon(Icons.AutoMirrored.Rounded.ListAlt, null) },
         UnifiedCollectionType.WISH
     )
     val Doing = SubjectCollectionAction(
         { Text("在看") },
-        { Icon(Icons.Default.PlayCircleOutline, null) },
+        { Icon(Icons.Rounded.PlayArrow, null) },
         UnifiedCollectionType.DOING
     )
     val Done = SubjectCollectionAction(
         { Text("看过") },
-        { Icon(Icons.Default.Done, null) },
+        { Icon(Icons.Rounded.Done, null) },
         UnifiedCollectionType.DONE
     )
     val OnHold = SubjectCollectionAction(
         { Text("搁置") },
-        { Icon(Icons.Default.AccessTime, null) },
+        { Icon(Icons.Rounded.AccessTime, null) },
         UnifiedCollectionType.ON_HOLD
     )
     val Dropped = SubjectCollectionAction(
         { Text("抛弃") },
-        { Icon(Icons.Default.Remove, null) },
+        { Icon(Icons.Rounded.Remove, null) },
         UnifiedCollectionType.DROPPED
     )
     val DeleteCollection = SubjectCollectionAction(
         { Text("取消追番", color = MaterialTheme.colorScheme.error) },
-        { Icon(Icons.Default.DeleteOutline, null) },
+        { Icon(Icons.Rounded.DeleteOutline, null) },
         type = UnifiedCollectionType.NOT_COLLECTED,
     )
     val Collect = SubjectCollectionAction(
         { Text("追番") },
-        { Icon(Icons.Default.Star, null) },
+        { Icon(Icons.Rounded.Star, null) },
         type = UnifiedCollectionType.NOT_COLLECTED,
     )
 }
@@ -253,6 +256,35 @@ fun CollectionActionButton(
                 onEdit(it.type)
             },
         )
+    }
+}
+
+@Composable
+@Preview
+fun PreviewCollectionActionButton() = ProvideCompositionLocalsForPreview {
+    Row {
+        Column {
+            for (entry in UnifiedCollectionType.entries) {
+                CollectionActionButton(
+                    collected = true,
+                    type = entry,
+                    onCollect = {},
+                    onEdit = {},
+                    onSetAllEpisodesDone = {},
+                )
+            }
+        }
+        Column {
+            for (entry in UnifiedCollectionType.entries) {
+                CollectionActionButton(
+                    collected = false,
+                    type = entry,
+                    onCollect = {},
+                    onEdit = {},
+                    onSetAllEpisodesDone = {},
+                )
+            }
+        }
     }
 }
 
