@@ -14,6 +14,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -25,6 +26,7 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.layout.positionInParent
@@ -32,7 +34,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import kotlinx.coroutines.channels.Channel
@@ -79,7 +80,7 @@ class DanmakuState internal constructor(
      * Note that value `0` may not always indicate an invalid value,
      * because the danmaku will need to move to a negative offset to be fully out of the screen.
      */
-    var offset: Int by mutableIntStateOf(0)
+    var offset: Float by mutableFloatStateOf(0f)
         private set
 
     /**
@@ -115,7 +116,7 @@ class DanmakuState internal constructor(
         val speed = -baseSpeed / 1_000_000_000f // px/ns
 
         if (!animationStarted) {
-            offset = screenWidth
+            offset = screenWidth.toFloat()
             animationStarted = true
         }
 
@@ -125,7 +126,7 @@ class DanmakuState internal constructor(
             // Update offset on every frame
             withFrameNanos {
                 val elapsed = it - startTime
-                offset = (startOffset + speed * elapsed).toInt()
+                offset = startOffset + speed * elapsed
             }
         }
     }
@@ -320,8 +321,8 @@ fun DanmakuTrack(
                 Box(
                     modifier
                         .alpha(if (danmaku.animationStarted) 1f else 0f) // Don't use `danmaku.offset == 0`, see danmaku.offset comments.
-                        .offset {
-                            IntOffset(x = danmaku.offset, y = 0)
+                        .graphicsLayer {
+                            translationX = danmaku.offset
                         }
                         .onPlaced { layoutCoordinates ->
                             danmaku.onPlaced(layoutCoordinates)
