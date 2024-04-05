@@ -46,64 +46,6 @@ jobs:
           distribution: temurin
           java-version: 17
       
-      #      - name: Get current branch name and short SHA
-      #        uses: satackey/action-js-inline@v0.0.2
-      #        id: versionName # ${{ steps.versionName.outputs.versionName }}
-      #        with:
-      #          script: |
-      #            const core = require('@actions/core')
-      #
-      #            // Get branch name
-      #            const ref = process.env.GITHUB_REF // e.g., refs/heads/master
-      #            const branch = ref.split('/').pop() // e.g., master
-      #            core.setOutput('branch', branch)
-      #
-      #            // Get short commit SHA
-      #            const shortSHA = process.env.GITHUB_SHA.substring(0, 8)
-      #            core.setOutput('shortSHA', shortSHA)
-      #            
-      #            const fs = require('fs');
-      #            const path = require('path');
-      #            
-      #            // Path to your gradle.properties file
-      #            const gradlePropertiesPath = path.join(__dirname, 'gradle.properties');
-      #            
-      #            // Function to read the file and extract the version name synchronously
-      #            function extractVersionNameSync(filePath) {
-      #              try {
-      #                // Read file contents synchronously
-      #                const data = fs.readFileSync(filePath, 'utf8');
-      #            
-      #                // Regular expression to match the version name
-      #                const regex = /version.name=(.+)-dev/;
-      #                const match = data.match(regex);
-      #            
-      #                if (match && match[1]) {
-      #                  return match[1];
-      #                } else {
-      #                  console.log('No version name found or does not match the pattern.');
-      #                }
-      #              } catch (err) {
-      #                console.error('Error reading the file:', err);
-      #              }
-      #            }
-      #            
-      #            // Extract the version name from the gradle.properties file
-      #            const version = extractVersionNameSync(gradlePropertiesPath);
-      #
-      #            core.setOutput('versionName', version + branch + shortSHA)
-      #
-      #      - name: Output current commit ref
-      #        run: echo "The current commit ref is ${{ steps.versionName.outputs.versionName }}"
-      
-      #      - name: Set version
-      #        uses: jacobtomlinson/gha-find-replace@v3
-      #        with:
-      #          find: "version.name=(.+)-dev"
-      #          replace: "version.name=${{ steps.versionName.outputs.versionName }}"
-      #          regex: true
-      #          include: "gradle.properties"
-
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
 
@@ -138,7 +80,7 @@ jobs:
         run: ./gradlew clean ${{ env.gradleArgs }}
 
       - name: Update version name
-        run: ./gradlew updateVersionNameFromGit ${{ env.gradleArgs }}
+        run: ./gradlew updateDevVersionNameFromGit ${{ env.gradleArgs }}
 
 
       - if: ${{ env.isMac == 'true' }}

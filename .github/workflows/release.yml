@@ -140,18 +140,12 @@ jobs:
       - if: ${{ env.isUnix == 'true' }}
         run: chmod -R 777 *
 
-
-      - name: Set version
-        uses: jacobtomlinson/gha-find-replace@v3
-        with:
-          find: "version.name=(.+)-dev"
-          replace: "version.name=${{ steps.tag-version.outputs.substring }}"
-          regex: true
-          include: "gradle.properties"
-
       - name: Clean and download dependencies
         run: ./gradlew clean ${{ env.gradleArgs }}
-      
+
+      - name: Update version name
+        run: ./gradlew updateReleaseVersionNameFromGit ${{ env.gradleArgs }}
+
       - if: ${{ env.isMac == 'true' }}
         name: Prepare Android Signing Key
         id: android_signing_key

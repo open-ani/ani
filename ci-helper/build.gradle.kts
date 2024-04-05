@@ -307,6 +307,8 @@ open class ReleaseEnvironment {
     ): String {
         return "$base-${branch}-${shaShort}"
     }
+
+    fun generateReleaseVersionName(): String = tag
 }
 
 fun ReleaseEnvironment.uploadDesktopDistributions() {
@@ -361,17 +363,31 @@ fun ReleaseEnvironment.uploadDesktopDistributions() {
     }
 }
 
-// ./gradlew updateVersionNameFromGit -DGITHUB_REF=refs/heads/master -DGITHUB_SHA=123456789 --no-configuration-cache
-tasks.register("updateVersionNameFromGit") {
+// ./gradlew updateDevVersionNameFromGit -DGITHUB_REF=refs/heads/master -DGITHUB_SHA=123456789 --no-configuration-cache
+tasks.register("updateDevVersionNameFromGit") {
     doLast {
         val gradlePropertiesFile = rootProject.file("gradle.properties")
         val properties = file(gradlePropertiesFile).readText()
         val baseVersion =
-            (Regex("version.name=(.+)-").find(properties)
-                ?: error("Failed to find base version. Check version.name in gradle.properties")).groupValues[1]
+            (Regex("version.name=(.+)").find(properties)
+                ?: error("Failed to find base version. Check version.name in gradle.properties"))
+                .groupValues[1]
+                .substringBefore("-")
         val new = ReleaseEnvironment().generateDevVersionName(base = baseVersion)
         file(gradlePropertiesFile).writeText(
-            properties.replaceFirst(Regex("version.name=(.+)-dev"), "version.name=$new")
+            properties.replaceFirst(Regex("version.name=(.+)"), "version.name=$new")
+        )
+    }
+}
+
+// ./gradlew updateReleaseVersionNameFromGit -DGITHUB_REF=refs/heads/master -DGITHUB_SHA=123456789 --no-configuration-cache
+tasks.register("updateReleaseVersionNameFromGit") {
+    doLast {
+        val gradlePropertiesFile = rootProject.file("gradle.properties")
+        val properties = file(gradlePropertiesFile).readText()
+        val new = ReleaseEnvironment().generateReleaseVersionName()
+        file(gradlePropertiesFile).writeText(
+            properties.replaceFirst(Regex("version.name=(.+)"), "version.name=$new")
         )
     }
 }
