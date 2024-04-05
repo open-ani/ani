@@ -229,6 +229,12 @@ open class ReleaseEnvironment {
     private val tag by lazy {
         getProperty("CI_TAG").also { println("tag = $it") }
     }
+    private val branch by lazy {
+        getProperty("GITHUB_REF").substringAfterLast("/").also { println("branch = $it") }
+    }
+    private val shaShort by lazy {
+        getProperty("GITHUB_SHA").take(8).also { println("shaShort = $it") }
+    }
     open val fullVersion by lazy {
         namer.getFullVersionFromTag(tag).also { println("fullVersion = $it") }
     }
@@ -295,6 +301,12 @@ open class ReleaseEnvironment {
             }
         }
     }
+
+    fun generateDevVersionName(
+        base: String,
+    ): String {
+        return "$base-${branch}-${shaShort}"
+    }
 }
 
 fun ReleaseEnvironment.uploadDesktopDistributions() {
@@ -346,5 +358,18 @@ fun ReleaseEnvironment.uploadDesktopDistributions() {
             uploadBinary("deb", osName = "debian")
             uploadBinary("rpm", osName = "redhat")
         }
+    }
+}
+
+tasks.register("updateVersionNameFromGit") {
+    doLast {
+        val properties = rootProject.file("gradle.properties").readText()
+        val baseVersion = Regex("version.name=(.+)-dev").find(properties)!!.groupValues[1]
+        val new = ReleaseEnvironment().generateDevVersionName(
+            base = baseVersion
+        )
+        rootProject.file("gradle.properties").writeText(
+            properties.replaceFirst(Regex("version.name=(.+)-dev"), "version.name=$new")
+        )
     }
 }
