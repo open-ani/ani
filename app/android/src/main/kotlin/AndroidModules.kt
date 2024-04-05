@@ -1,8 +1,18 @@
 package me.him188.ani.android
 
+import io.ktor.client.HttpClient
+import io.ktor.client.plugins.UserAgent
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.get
+import io.ktor.client.statement.bodyAsChannel
+import io.ktor.http.isSuccess
+import io.ktor.serialization.kotlinx.json.json
+import io.ktor.utils.io.core.readBytes
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.serialization.json.Json
 import me.him188.ani.android.navigation.AndroidBrowserNavigator
 import me.him188.ani.app.navigation.BrowserNavigator
+import me.him188.ani.app.platform.getAniUserAgent
 import me.him188.ani.app.torrent.DefaultTorrentManager
 import me.him188.ani.app.torrent.TorrentDownloader
 import me.him188.ani.app.torrent.TorrentManager
@@ -17,11 +27,31 @@ fun getAndroidModules(
 ) = module {
     single<BrowserNavigator> { AndroidBrowserNavigator() }
     single<TorrentManager> {
+        val client = HttpClient {
+            followRedirects = true
+            install(UserAgent) {
+                agent = getAniUserAgent()
+            }
+            install(ContentNegotiation) {
+                json(Json {
+                    ignoreUnknownKeys = true
+                })
+            }
+        }
         DefaultTorrentManager(
             coroutineScope.coroutineContext,
             downloaderFactory = {
                 TorrentDownloader(
                     cacheDirectory = torrentCacheDir,
+                    downloadFile = { url ->
+                        client.get(url).apply {
+                            check(status.isSuccess()) {
+                                "Failed to download torrent file, resp=${
+                                    bodyAsChannel().readRemaining().readBytes()
+                                }"
+                            }
+                        }.bodyAsChannel().readRemaining().readBytes()
+                    }
                 )
             }
         )

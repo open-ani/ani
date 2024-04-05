@@ -12,7 +12,14 @@ data class PlaySource(
     val resolution: Resolution,
     val dataSource: String, // dmhy
     val originalUrl: String,
-    val magnetLink: String,
+    val download: ResourceLocation,
     val originalTitle: String,
     val size: FileSize,
 )
+
+sealed class ResourceLocation {
+    abstract val uri: String
+
+    class MagnetLink(override val uri: String) : ResourceLocation()
+    class TorrentFile(override val uri: String) : ResourceLocation()
+}

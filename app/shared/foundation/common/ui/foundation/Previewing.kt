@@ -68,6 +68,7 @@ fun ProvideCompositionLocalsForPreview(
                         TorrentDownloaderFactory {
                             TorrentDownloader(
                                 cacheDirectory = createTempDirectory("ani-temp").toFile(),
+                                downloadFile = { _ -> byteArrayOf() },
                             )
                         }
                     }

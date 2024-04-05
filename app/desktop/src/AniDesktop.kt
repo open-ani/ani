@@ -39,9 +39,18 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import dev.dirs.ProjectDirectories
+import io.ktor.client.HttpClient
+import io.ktor.client.plugins.UserAgent
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.get
+import io.ktor.client.statement.bodyAsChannel
+import io.ktor.http.isSuccess
+import io.ktor.serialization.kotlinx.json.json
+import io.ktor.utils.io.core.readBytes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 import me.him188.ani.app.interaction.PlatformImplementations
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.BrowserNavigator
@@ -49,6 +58,7 @@ import me.him188.ani.app.navigation.DesktopBrowserNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.DesktopContext
 import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.platform.getAniUserAgent
 import me.him188.ani.app.platform.getCommonKoinModule
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.torrent.DefaultTorrentManager
@@ -87,6 +97,18 @@ object AniDesktop {
 
         val coroutineScope = CoroutineScope(SupervisorJob())
 
+        val client = HttpClient {
+            followRedirects = true
+            install(UserAgent) {
+                agent = getAniUserAgent()
+            }
+            install(ContentNegotiation) {
+                json(Json {
+                    ignoreUnknownKeys = true
+                })
+            }
+        }
+
         val koin = startKoin {
             modules(getCommonKoinModule({ context }, coroutineScope))
             modules(module {
@@ -99,6 +121,15 @@ object AniDesktop {
                         downloaderFactory = {
                             TorrentDownloader(
                                 cacheDirectory = File(projectDirectories.cacheDir).resolve("torrent"),
+                                downloadFile = { url ->
+                                    client.get(url).apply {
+                                        check(status.isSuccess()) {
+                                            "Failed to download torrent file, resp=${
+                                                bodyAsChannel().readRemaining().readBytes()
+                                            }"
+                                        }
+                                    }.bodyAsChannel().readRemaining().readBytes()
+                                }
                             )
                         }
                     )

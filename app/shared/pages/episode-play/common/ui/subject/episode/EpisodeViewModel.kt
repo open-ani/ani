@@ -231,7 +231,7 @@ private class EpisodeViewModelImpl(
                 resolution = details.resolution ?: Resolution.R1080P, // 默认 1080P, 因为目前大概都是 1080P
                 dataSource = "TODO",
                 originalUrl = it.link,
-                magnetLink = it.magnetLink,
+                download = ResourceLocation.MagnetLink(it.magnetLink),
                 originalTitle = it.rawTitle,
                 size = it.size,
             )
@@ -265,7 +265,12 @@ private class EpisodeViewModelImpl(
             emit(null)
             playSource?.let {
                 try {
-                    emit(TorrentVideoSource(torrentManager.downloader.await().fetchMagnet(it.playSource.magnetLink)))
+                    emit(
+                        TorrentVideoSource(
+                            torrentManager.downloader.await()
+                                .fetchTorrent(it.playSource.download.uri)
+                        )
+                    )
                 } catch (e: Exception) {
                     emit(null)
                 }
@@ -303,7 +308,7 @@ private class EpisodeViewModelImpl(
 
     override suspend fun copyDownloadLink(clipboardManager: ClipboardManager, snackbar: SnackbarHostState) {
         requestPlaySourceCandidate()?.let {
-            clipboardManager.setText(AnnotatedString(it.playSource.magnetLink))
+            clipboardManager.setText(AnnotatedString(it.playSource.download.uri))
             snackbar.showSnackbar("已复制下载链接")
         }
     }
@@ -316,7 +321,7 @@ private class EpisodeViewModelImpl(
 
     override suspend fun browseDownload(context: Context, snackbar: SnackbarHostState) {
         requestPlaySourceCandidate()?.let {
-            browserNavigator.openMagnetLink(context, it.playSource.magnetLink)
+            browserNavigator.openMagnetLink(context, it.playSource.download.uri)
         }
     }
 

@@ -42,9 +42,11 @@ public interface TorrentDownloader : AutoCloseable {
     /**
      * Fetches a magnet link.
      *
+     * @param uri supports magnet link or http link for the torrent file
+     *
      * @throws MagnetTimeoutException if timeout has been reached.
      */
-    public suspend fun fetchMagnet(magnet: String, timeoutSeconds: Int = 60): EncodedTorrentData
+    public suspend fun fetchTorrent(uri: String, timeoutSeconds: Int = 60): EncodedTorrentData
 
     /**
      * Starts download of a torrent using the torrent data.
@@ -102,6 +104,8 @@ internal class LockedSessionManager(
     }
 }
 
+public typealias TorrentFileDownloader = suspend (url: String) -> ByteArray
+
 /**
  * Creates a new [TorrentDownloader] instance.
  *
@@ -110,7 +114,8 @@ internal class LockedSessionManager(
  * @see TorrentDownloader
  */
 public fun TorrentDownloader(
-    cacheDirectory: File
+    cacheDirectory: File,
+    downloadFile: TorrentFileDownloader,
 ): TorrentDownloader {
     val sessionManager = SessionManager()
 
@@ -168,12 +173,14 @@ public fun TorrentDownloader(
     return TorrentDownloaderImpl(
         cacheDirectory,
         LockedSessionManager(sessionManager),
+        downloadFile
     )
 }
 
 internal class TorrentDownloaderImpl(
     cacheDirectory: File,
     private val sessionManager: LockedSessionManager,
+    private val downloadFile: TorrentFileDownloader,
 ) : TorrentDownloader {
     private val logger = logger(this::class)
     override val vendor: TorrentLibInfo = TorrentLibInfo(
@@ -181,11 +188,19 @@ internal class TorrentDownloaderImpl(
         version = org.libtorrent4j.LibTorrent.version(),
     )
 
-    override suspend fun fetchMagnet(magnet: String, timeoutSeconds: Int): EncodedTorrentData {
-        logger.info { "Fetching magnet: $magnet" }
+    override suspend fun fetchTorrent(uri: String, timeoutSeconds: Int): EncodedTorrentData {
+        if (uri.startsWith("http", ignoreCase = true)) {
+            logger.info { "Fetching http url: $uri" }
+            val data = downloadFile(uri)
+            logger.info { "Fetching http url success, file length = ${data.size}" }
+            logger.info { "File downloaded" }
+            return EncodedTorrentData(data)
+        }
+
+        logger.info { "Fetching magnet: $uri" }
         val data: ByteArray = try {
             sessionManager.use {
-                fetchMagnet(magnet, timeoutSeconds, magnetCacheDir)
+                fetchMagnet(uri, timeoutSeconds, magnetCacheDir)
             }
         } catch (e: InterruptedException) {
             throw MagnetTimeoutException(cause = e)
