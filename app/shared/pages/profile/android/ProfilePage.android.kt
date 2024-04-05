@@ -22,7 +22,7 @@ internal actual fun ColumnScope.PlatformDebugInfoItems(viewModel: AccountViewMod
             snackbar.showSnackbar("Cache cleared")
         }
     }) {
-        Text("Clear cache")
+        Text("清除全部下载缓存")
     }
 }
 
