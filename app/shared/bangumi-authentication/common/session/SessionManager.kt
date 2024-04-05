@@ -46,6 +46,7 @@ import me.him188.ani.utils.coroutines.runUntilSuccess
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
+import me.him188.ani.utils.logging.trace
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.openapitools.client.infrastructure.ApiClient
@@ -184,14 +185,20 @@ internal class SessionManagerImpl(
     override val processingRequest: MutableStateFlow<ExternalOAuthRequest?> = MutableStateFlow(null)
 
     private suspend fun tryRefreshSessionByRefreshToken(): Boolean {
-        val session = session.first() ?: return false
+        logger.trace { "tryRefreshSessionByRefreshToken: start" }
+        val session = session.first() ?: return false.also {
+            logger.trace { "tryRefreshSessionByRefreshToken: failed because session is empty" }
+        }
         if (session.expiresAt > System.currentTimeMillis()) {
+            logger.trace { "tryRefreshSessionByRefreshToken: success because session is already valid" }
             // session is valid
             return true
         }
 
         // session is invalid, refresh it
-        val refreshToken = refreshToken.first() ?: return false
+        val refreshToken = refreshToken.first() ?: return false.also {
+            logger.trace { "tryRefreshSessionByRefreshToken: failed because refresh token is null" }
+        }
         val newAccessToken = runCatching {
             withContext(Dispatchers.IO) {
                 client.refreshAccessToken(
@@ -201,7 +208,7 @@ internal class SessionManagerImpl(
             }
         }.getOrNull()
         if (newAccessToken == null) {
-            logger.info { "Bangumi session refresh failed, refreshToken=$refreshToken" }
+            logger.trace { "tryRefreshSessionByRefreshToken: failed because new token is null, refreshToken=$refreshToken" }
             return false
         }
         // success
@@ -211,10 +218,13 @@ internal class SessionManagerImpl(
             System.currentTimeMillis() + newAccessToken.expiresIn,
             newAccessToken.refreshToken
         )
+        logger.trace { "tryRefreshSessionByRefreshToken: success" }
         return true
     }
 
     override suspend fun requireOnline(navigator: AniNavigator) {
+        logger.trace { "requireOnline" }
+        
         // fast path, already online
         if (isSessionValid.first() == true) return
 
