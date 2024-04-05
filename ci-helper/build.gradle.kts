@@ -361,14 +361,16 @@ fun ReleaseEnvironment.uploadDesktopDistributions() {
     }
 }
 
+// ./gradlew updateVersionNameFromGit -DGITHUB_REF=refs/heads/master -DGITHUB_SHA=123456789 --no-configuration-cache
 tasks.register("updateVersionNameFromGit") {
     doLast {
-        val properties = rootProject.file("gradle.properties").readText()
-        val baseVersion = Regex("version.name=(.+)-dev").find(properties)!!.groupValues[1]
-        val new = ReleaseEnvironment().generateDevVersionName(
-            base = baseVersion
-        )
-        rootProject.file("gradle.properties").writeText(
+        val gradlePropertiesFile = rootProject.file("gradle.properties")
+        val properties = file(gradlePropertiesFile).readText()
+        val baseVersion =
+            (Regex("version.name=(.+)-").find(properties)
+                ?: error("Failed to find base version. Check version.name in gradle.properties")).groupValues[1]
+        val new = ReleaseEnvironment().generateDevVersionName(base = baseVersion)
+        file(gradlePropertiesFile).writeText(
             properties.replaceFirst(Regex("version.name=(.+)-dev"), "version.name=$new")
         )
     }
