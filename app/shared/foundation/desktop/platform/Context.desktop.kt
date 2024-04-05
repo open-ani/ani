@@ -39,6 +39,10 @@ class DesktopContext(
     val settingStore: DataStore<Preferences> = PreferenceDataStoreFactory.create {
         dataStoreDir.resolve("settings.preferences_pb")
     }
+
+    val preferredAllianceStore = PreferenceDataStoreFactory.create {
+        dataStoreDir.resolve("preferredAllianceStore.preferences_pb")
+    }
 }
 
 actual val LocalContext: ProvidableCompositionLocal<Context> = compositionLocalOf {
