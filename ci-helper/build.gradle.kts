@@ -308,7 +308,7 @@ open class ReleaseEnvironment {
         return "$base-${branch}-${shaShort}"
     }
 
-    fun generateReleaseVersionName(): String = tag
+    fun generateReleaseVersionName(): String = tag.removePrefix("v")
 }
 
 fun ReleaseEnvironment.uploadDesktopDistributions() {
