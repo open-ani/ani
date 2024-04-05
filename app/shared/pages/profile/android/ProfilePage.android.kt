@@ -1,7 +1,7 @@
 package me.him188.ani.app.ui.profile
 
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.material3.Button
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -16,7 +16,7 @@ import org.openapitools.client.models.UserGroup
 @Composable
 internal actual fun ColumnScope.PlatformDebugInfoItems(viewModel: AccountViewModel, snackbar: SnackbarHostState) {
     val context = LocalContext.current
-    Button({
+    FilledTonalButton({
         context.applicationContext.cacheDir.resolve("torrent-caches").deleteRecursively()
         viewModel.launchInBackground {
             snackbar.showSnackbar("Cache cleared")
