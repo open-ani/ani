@@ -46,6 +46,33 @@ jobs:
           distribution: temurin
           java-version: 17
 
+      # To run scripts
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '14'
+
+      - name: Get the current branch and commit SHA
+        run: |
+          const fs = require('fs');
+          const branchName = process.env.GITHUB_REF_NAME;
+          const shortSHA = process.env.GITHUB_SHA.substring(0, 8);
+          const commitRef = `${branchName}-${shortSHA}`;
+          console.log(`COMMIT_REF=${commitRef}`);
+          fs.writeFileSync(process.env.GITHUB_ENV, `COMMIT_REF=${commitRef}\n`, { flag: 'a' });
+        shell: node
+
+      - name: Output current commit ref
+        run: echo "The current commit ref is ${{ env.COMMIT_REF }}"
+
+      - name: Set version
+        uses: jacobtomlinson/gha-find-replace@v3
+        with:
+          find: "version.name=(.+)-dev"
+          replace: "version.name=${{ env.COMMIT_REF }}"
+          regex: true
+          include: "gradle.properties"
+
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
 
