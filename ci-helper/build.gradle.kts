@@ -229,6 +229,12 @@ open class ReleaseEnvironment {
     private val tag by lazy {
         getProperty("CI_TAG").also { println("tag = $it") }
     }
+    private val branch by lazy {
+        getProperty("GITHUB_REF").substringAfterLast("/").also { println("branch = $it") }
+    }
+    private val shaShort by lazy {
+        getProperty("GITHUB_SHA").take(8).also { println("shaShort = $it") }
+    }
     open val fullVersion by lazy {
         namer.getFullVersionFromTag(tag).also { println("fullVersion = $it") }
     }
@@ -295,6 +301,14 @@ open class ReleaseEnvironment {
             }
         }
     }
+
+    fun generateDevVersionName(
+        base: String,
+    ): String {
+        return "$base-${branch}-${shaShort}"
+    }
+
+    fun generateReleaseVersionName(): String = tag.removePrefix("v")
 }
 
 fun ReleaseEnvironment.uploadDesktopDistributions() {
@@ -346,5 +360,36 @@ fun ReleaseEnvironment.uploadDesktopDistributions() {
             uploadBinary("deb", osName = "debian")
             uploadBinary("rpm", osName = "redhat")
         }
+    }
+}
+
+// ./gradlew updateDevVersionNameFromGit -DGITHUB_REF=refs/heads/master -DGITHUB_SHA=123456789 --no-configuration-cache
+tasks.register("updateDevVersionNameFromGit") {
+    doLast {
+        val gradlePropertiesFile = rootProject.file("gradle.properties")
+        val properties = file(gradlePropertiesFile).readText()
+        val baseVersion =
+            (Regex("version.name=(.+)").find(properties)
+                ?: error("Failed to find base version. Check version.name in gradle.properties"))
+                .groupValues[1]
+                .substringBefore("-")
+        val new = ReleaseEnvironment().generateDevVersionName(base = baseVersion)
+        println("New version name: $new")
+        file(gradlePropertiesFile).writeText(
+            properties.replaceFirst(Regex("version.name=(.+)"), "version.name=$new")
+        )
+    }
+}
+
+// ./gradlew updateReleaseVersionNameFromGit -DGITHUB_REF=refs/heads/master -DGITHUB_SHA=123456789 --no-configuration-cache
+tasks.register("updateReleaseVersionNameFromGit") {
+    doLast {
+        val gradlePropertiesFile = rootProject.file("gradle.properties")
+        val properties = file(gradlePropertiesFile).readText()
+        val new = ReleaseEnvironment().generateReleaseVersionName()
+        println("New version name: $new")
+        file(gradlePropertiesFile).writeText(
+            properties.replaceFirst(Regex("version.name=(.+)"), "version.name=$new")
+        )
     }
 }

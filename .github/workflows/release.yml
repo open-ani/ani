@@ -140,10 +140,18 @@ jobs:
       - if: ${{ env.isUnix == 'true' }}
         run: chmod -R 777 *
 
-
       - name: Clean and download dependencies
         run: ./gradlew clean ${{ env.gradleArgs }}
-      
+
+      - name: Update version name
+        run: ./gradlew updateReleaseVersionNameFromGit ${{ env.gradleArgs }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
+          GITHUB_REPOSITORY: ${{ secrets.GITHUB_REPOSITORY  }}
+          CI_RELEASE_ID: ${{ needs.create-release.outputs.id }}
+          CI_TAG: ${{ steps.tag.outputs.tag }}
+
+
       - if: ${{ env.isMac == 'true' }}
         name: Prepare Android Signing Key
         id: android_signing_key

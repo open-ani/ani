@@ -45,7 +45,7 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-
+      
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
 
@@ -78,6 +78,9 @@ jobs:
 
       - name: Clean and download dependencies
         run: ./gradlew clean ${{ env.gradleArgs }}
+
+      - name: Update version name
+        run: ./gradlew updateDevVersionNameFromGit ${{ env.gradleArgs }}
 
 
       - if: ${{ env.isMac == 'true' }}
