@@ -30,7 +30,7 @@ class DanmakuConfig(
      *
      * Unit: dp/s
      */
-    val speed: Float = 38f,
+    val speed: Float = 46f,
     /**
      * The minimum distance between two [Danmaku]s so that they don't overlap.
      */
