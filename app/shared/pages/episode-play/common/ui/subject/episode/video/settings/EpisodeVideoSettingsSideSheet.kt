@@ -3,6 +3,7 @@ package me.him188.ani.app.ui.subject.episode.video.settings
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -48,10 +49,11 @@ fun EpisodeVideoSettingsSideSheet(
                         indication = null,
                     )
                     .fillMaxHeight()
-                    .width((maxWidth * 0.28f).coerceAtLeast(300.dp))
-                    .padding(contentPadding)
+                    .width((maxWidth * 0.28f).coerceAtLeast(300.dp)),
             ) {
-                content()
+                Column(Modifier.padding(contentPadding)) {
+                    content()
+                }
             }
         }
     }

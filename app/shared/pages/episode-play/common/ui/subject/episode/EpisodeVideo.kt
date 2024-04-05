@@ -182,7 +182,7 @@ internal fun EpisodeVideo(
                 expanded = isFullscreen,
             )
         },
-        rhsSideSheet = {
+        rhsSheet = {
             if (showSettings) {
                 EpisodeVideoSettingsSideSheet(
                     onDismissRequest = { showSettings = false }

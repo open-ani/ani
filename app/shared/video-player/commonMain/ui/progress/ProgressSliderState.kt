@@ -4,7 +4,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
@@ -29,7 +28,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.ui.theme.aniDarkColorTheme
-import me.him188.ani.app.ui.theme.stronglyWeaken
+import me.him188.ani.app.ui.theme.weaken
 import me.him188.ani.app.videoplayer.PlayerState
 import me.him188.ani.datasources.bangumi.processing.fixToString
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
@@ -107,7 +106,7 @@ fun ProgressIndicator(
             renderSecondsReserve(state.totalDurationMillis / 1000)
         }
     }
-    Box(modifier.padding(end = 8.dp), contentAlignment = Alignment.Center) {
+    Box(modifier, contentAlignment = Alignment.Center) {
         Text(reserve, Modifier.alpha(0f)) // fix width
         Text(
             text = text, style = LocalTextStyle.current.copy(
@@ -154,7 +153,7 @@ fun ProgressSlider(
                     SliderDefaults.Track(
                         it,
                         colors = SliderDefaults.colors(
-                            inactiveTrackColor = MaterialTheme.colorScheme.background.stronglyWeaken(),
+                            inactiveTrackColor = MaterialTheme.colorScheme.background.weaken(),
                         )
                     )
                 },

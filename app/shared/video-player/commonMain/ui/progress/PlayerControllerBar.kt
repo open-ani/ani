@@ -269,14 +269,14 @@ fun PlayerControllerBar(
     ) {
         if (expanded) {
             Column {
-                Row(Modifier.padding(start = 8.dp)) {
-                    progressIndicator()
-                }
-                Row(
-                    Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    ProvideTextStyle(MaterialTheme.typography.labelLarge) {
+                ProvideTextStyle(MaterialTheme.typography.labelMedium) {
+                    Row(Modifier.padding(start = 8.dp).padding(vertical = 4.dp)) {
+                        progressIndicator()
+                    }
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         progressSlider()
                     }
                 }
@@ -288,11 +288,13 @@ fun PlayerControllerBar(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             // 播放 / 暂停按钮
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 startActions()
             }
 
-            ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
+            ProvideTextStyle(MaterialTheme.typography.labelSmall) {
                 if (expanded) {
                     Column(Modifier.weight(1f)) {
                         Row {
@@ -303,7 +305,7 @@ fun PlayerControllerBar(
                     Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
                         progressIndicator()
                         Row(
-                            Modifier.fillMaxWidth(),
+                            Modifier.padding(start = 8.dp).fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             ProvideTextStyle(MaterialTheme.typography.labelLarge) {
@@ -315,7 +317,9 @@ fun PlayerControllerBar(
             }
 
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 endActions()
             }
         }
