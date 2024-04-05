@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.ui.theme.aniDarkColorTheme
+import me.him188.ani.app.ui.theme.looming
 import me.him188.ani.app.ui.theme.weaken
 import me.him188.ani.app.videoplayer.PlayerState
 import me.him188.ani.datasources.bangumi.processing.fixToString
@@ -143,7 +144,7 @@ fun ProgressSlider(
                     SliderDefaults.Thumb(
                         interactionSource = interactionSource,
                         colors = SliderDefaults.colors(
-                            thumbColor = MaterialTheme.colorScheme.secondary,
+                            thumbColor = MaterialTheme.colorScheme.primary,
                         ),
                         enabled = true,
 //                            thumbSize = DpSize(16.dp, 16.dp)
@@ -154,6 +155,7 @@ fun ProgressSlider(
                         it,
                         colors = SliderDefaults.colors(
                             inactiveTrackColor = MaterialTheme.colorScheme.background.weaken(),
+                            activeTrackColor = MaterialTheme.colorScheme.onBackground.looming(),
                         )
                     )
                 },
