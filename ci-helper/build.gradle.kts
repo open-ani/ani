@@ -374,6 +374,7 @@ tasks.register("updateDevVersionNameFromGit") {
                 .groupValues[1]
                 .substringBefore("-")
         val new = ReleaseEnvironment().generateDevVersionName(base = baseVersion)
+        println("New version name: $new")
         file(gradlePropertiesFile).writeText(
             properties.replaceFirst(Regex("version.name=(.+)"), "version.name=$new")
         )
@@ -386,6 +387,7 @@ tasks.register("updateReleaseVersionNameFromGit") {
         val gradlePropertiesFile = rootProject.file("gradle.properties")
         val properties = file(gradlePropertiesFile).readText()
         val new = ReleaseEnvironment().generateReleaseVersionName()
+        println("New version name: $new")
         file(gradlePropertiesFile).writeText(
             properties.replaceFirst(Regex("version.name=(.+)"), "version.name=$new")
         )
