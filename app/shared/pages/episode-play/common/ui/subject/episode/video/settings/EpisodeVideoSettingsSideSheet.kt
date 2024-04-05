@@ -5,6 +5,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.BottomSheetDefaults
@@ -14,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.theme.aniDarkColorTheme
 
@@ -21,6 +23,7 @@ import me.him188.ani.app.ui.theme.aniDarkColorTheme
 fun EpisodeVideoSettingsSideSheet(
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
+    contentPadding: Dp = 8.dp,
     content: @Composable () -> Unit,
 ) {
     // Compose does not yet support side sheets, so we use a dropdown menu instead
@@ -44,7 +47,9 @@ fun EpisodeVideoSettingsSideSheet(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
                     )
-                    .fillMaxHeight().width((maxWidth * 0.28f).coerceAtLeast(300.dp))
+                    .fillMaxHeight()
+                    .width((maxWidth * 0.28f).coerceAtLeast(300.dp))
+                    .padding(contentPadding)
             ) {
                 content()
             }

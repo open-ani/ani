@@ -34,6 +34,7 @@ import me.him188.ani.app.ui.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.theme.slightlyWeaken
 import me.him188.ani.app.videoplayer.VideoPlayer
 import me.him188.ani.app.videoplayer.ui.guesture.VideoGestureHost
+import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerBar
 import me.him188.ani.app.videoplayer.ui.top.PlayerTopBar
 
 /**
@@ -55,7 +56,7 @@ import me.him188.ani.app.videoplayer.ui.top.PlayerTopBar
  * @param gestureHost 手势区域, 例如快进/快退, 音量调节等. See [VideoGestureHost]
  * @param floatingMessage 悬浮消息, 例如正在缓冲. 将会对齐到中央
  * @param rhsBar 右侧控制栏, 锁定手势等.
- * @param bottomBar [PlayerProgressController]
+ * @param bottomBar [PlayerControllerBar]
  * @param isFullscreen 当前是否处于全屏模式. 全屏时此框架会 [Modifier.fillMaxSize], 否则会限制为一个 16:9 的框.
  */
 @Composable
@@ -72,9 +73,6 @@ fun VideoScaffold(
     gestureHost: @Composable BoxWithConstraintsScope.() -> Unit = {},
     floatingMessage: @Composable BoxScope.() -> Unit = {},
     rhsBar: @Composable ColumnScope.() -> Unit = {},
-    /**
-     * @see PlayerProgressController
-     */
     bottomBar: @Composable RowScope.() -> Unit = {},
     rhsSideSheet: @Composable () -> Unit = {},
     isFullscreen: Boolean = isInLandscapeMode(),

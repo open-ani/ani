@@ -35,6 +35,7 @@ import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.effects.OnLifecycleEvent
 import me.him188.ani.app.ui.foundation.effects.ScreenOnEffect
+import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.subject.episode.details.EpisodeDetails
@@ -123,7 +124,7 @@ fun EpisodePageContent(
         // 视频
         val videoReady by viewModel.isVideoReady.collectAsStateWithLifecycle(false)
         val selected by viewModel.playSourceSelected.collectAsStateWithLifecycle(false)
-        val danmakuConfig = viewModel.danmakuConfig.collectAsStateWithLifecycle(DanmakuConfig.Default).value
+        val danmakuConfig = viewModel.danmaku.config.collectAsStateWithLifecycle(DanmakuConfig.Default).value
         Box(
             Modifier.fillMaxWidth().background(Color.Black)
                 .then(if (isFullscreen) Modifier.fillMaxSize() else Modifier.statusBarsPadding())
@@ -138,7 +139,7 @@ fun EpisodePageContent(
                 },
                 viewModel.playerState,
                 danmakuConfig = danmakuConfig,
-                danmakuHostState = remember(viewModel) { viewModel.danmakuHostState },
+                danmakuHostState = remember(viewModel) { viewModel.danmaku.danmakuHostState },
                 onClickFullScreen = {
                     if (isFullscreen) {
                         context.setRequestFullScreen(false)
@@ -148,8 +149,9 @@ fun EpisodePageContent(
                         context.setRequestFullScreen(true)
                     }
                 },
-                danmakuEnabled = viewModel.danmakuEnabled.collectAsStateWithLifecycle(false).value,
-                setDanmakuEnabled = { viewModel.setDanmakuEnabled(it) },
+                danmakuEnabled = viewModel.danmaku.enabled.collectAsStateWithLifecycle(false).value,
+                setDanmakuEnabled = { viewModel.launchInBackground { danmaku.setEnabled(it) } },
+                onSendDanmaku = {},
                 isFullscreen = isFullscreen,
             )
         }

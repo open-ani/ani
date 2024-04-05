@@ -37,7 +37,9 @@ import me.him188.ani.app.videoplayer.ui.guesture.LockableVideoGestureHost
 import me.him188.ani.app.videoplayer.ui.guesture.rememberSwipeSeekerState
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerBar
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
+import me.him188.ani.app.videoplayer.ui.progress.ProgressIndicator
 import me.him188.ani.app.videoplayer.ui.progress.ProgressSlider
+import me.him188.ani.app.videoplayer.ui.progress.rememberProgressSliderState
 import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.danmaku.ui.DanmakuHost
 import me.him188.ani.danmaku.ui.DanmakuHostState
@@ -60,6 +62,7 @@ internal fun EpisodeVideo(
     onClickFullScreen: () -> Unit,
     danmakuEnabled: Boolean,
     setDanmakuEnabled: (enabled: Boolean) -> Unit,
+    onSendDanmaku: (text: String) -> Unit,
     modifier: Modifier = Modifier,
     isFullscreen: Boolean = isInLandscapeMode(),
 ) {
@@ -129,6 +132,15 @@ internal fun EpisodeVideo(
             }
         },
         bottomBar = {
+            val progressSliderState = rememberProgressSliderState(
+                playerState,
+                onPreview = {
+                    // not yet supported
+                },
+                onPreviewFinished = {
+                    playerState.seekTo(it)
+                }
+            )
             PlayerControllerBar(
                 startActions = {
                     val isPlaying by remember(playerState) { playerState.state.map { it.isPlaying } }
@@ -143,8 +155,23 @@ internal fun EpisodeVideo(
                         onClick = { setDanmakuEnabled(!danmakuEnabled) }
                     )
                 },
+                progressIndicator = {
+                    ProgressIndicator(progressSliderState)
+                },
                 progressSlider = {
-                    ProgressSlider(playerState)
+                    ProgressSlider(progressSliderState)
+                },
+                danmakuEditor = {
+                    var text by rememberSaveable { mutableStateOf("") }
+                    PlayerControllerDefaults.DanmakuTextField(
+                        text,
+                        onValueChange = { text = it },
+                        onSend = {
+                            onSendDanmaku(text)
+                            text = ""
+                        },
+                        Modifier.weight(1f)
+                    )
                 },
                 endActions = {
                     PlayerControllerDefaults.FullscreenIcon(
@@ -152,7 +179,7 @@ internal fun EpisodeVideo(
                         onClickFullscreen = onClickFullScreen,
                     )
                 },
-                expanded = isFullscreen
+                expanded = isFullscreen,
             )
         },
         rhsSideSheet = {
@@ -162,7 +189,6 @@ internal fun EpisodeVideo(
                 ) {
                     EpisodeVideoSettings(
                         rememberViewModel { EpisodeVideoSettingsViewModel() },
-                        Modifier.padding(8.dp)
                     )
                 }
             }

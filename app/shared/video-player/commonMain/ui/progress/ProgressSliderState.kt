@@ -1,8 +1,12 @@
 package me.him188.ani.app.videoplayer.ui.progress
 
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
@@ -13,15 +17,19 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.ui.theme.aniDarkColorTheme
+import me.him188.ani.app.ui.theme.stronglyWeaken
 import me.him188.ani.app.videoplayer.PlayerState
 import me.him188.ani.datasources.bangumi.processing.fixToString
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
@@ -84,6 +92,37 @@ class ProgressSliderState(
     }
 }
 
+@Composable
+fun ProgressIndicator(
+    state: ProgressSliderState,
+    modifier: Modifier = Modifier
+) {
+    val text by remember {
+        derivedStateOf {
+            renderSeconds(state.currentPositionMillis / 1000, state.totalDurationMillis / 1000)
+        }
+    }
+    val reserve by remember {
+        derivedStateOf {
+            renderSecondsReserve(state.totalDurationMillis / 1000)
+        }
+    }
+    Box(modifier.padding(end = 8.dp), contentAlignment = Alignment.Center) {
+        Text(reserve, Modifier.alpha(0f)) // fix width
+        Text(
+            text = text, style = LocalTextStyle.current.copy(
+                color = Color.DarkGray,
+                drawStyle = Stroke(
+                    miter = 3f,
+                    width = 2f,
+                    join = StrokeJoin.Round,
+                ),
+            )
+        ) // border
+        Text(text = text)
+    }
+}
+
 /**
  * The slider to control the progress of a video, with a preview feature.
  */
@@ -94,65 +133,62 @@ fun ProgressSlider(
     modifier: Modifier = Modifier
 ) {
     Row(modifier, verticalAlignment = Alignment.CenterVertically) {
-        val text by remember {
-            derivedStateOf {
-                renderSeconds(state.currentPositionMillis / 1000, state.totalDurationMillis / 1000)
-            }
-        }
-        val reserve by remember {
-            derivedStateOf {
-                renderSecondsReserve(state.totalDurationMillis / 1000)
-            }
-        }
-        Box(Modifier.padding(end = 8.dp), contentAlignment = Alignment.Center) {
-            Text(reserve, Modifier.alpha(0f)) // fix width
-            Text(text = text)
-        }
-
-        Slider(
-            value = state.displayPositionRatio,
-            valueRange = 0f..1f,
-            onValueChange = { state.previewPositionRatio(it) },
-            track = {
-                SliderDefaults.Track(
-                    it,
-                    colors = SliderDefaults.colors(
-                        activeTrackColor = aniDarkColorTheme().secondary,
-                        inactiveTrackColor = Color.DarkGray,
+        val interactionSource = remember { MutableInteractionSource() }
+        MaterialTheme(aniDarkColorTheme()) {
+            Slider(
+                value = state.displayPositionRatio,
+                valueRange = 0f..1f,
+                onValueChange = { state.previewPositionRatio(it) },
+                interactionSource = interactionSource,
+                thumb = {
+                    SliderDefaults.Thumb(
+                        interactionSource = interactionSource,
+                        colors = SliderDefaults.colors(
+                            thumbColor = MaterialTheme.colorScheme.secondary,
+                        ),
+                        enabled = true,
+//                            thumbSize = DpSize(16.dp, 16.dp)
                     )
-                )
-            },
-            onValueChangeFinished = {
-                state.finishPreview()
-            },
-            modifier = Modifier.alpha(0.8f),
-        )
+                },
+                track = {
+                    SliderDefaults.Track(
+                        it,
+                        colors = SliderDefaults.colors(
+                            inactiveTrackColor = MaterialTheme.colorScheme.background.stronglyWeaken(),
+                        )
+                    )
+                },
+                onValueChangeFinished = {
+                    state.finishPreview()
+                },
+                modifier = Modifier.height(24.dp),
+            )
+        }
     }
 }
 
 @Composable
-fun ProgressSlider(
+fun rememberProgressSliderState(
     playerState: PlayerState,
-    modifier: Modifier = Modifier,
-) {
+    onPreview: (positionMillis: Long) -> Unit,
+    onPreviewFinished: (positionMillis: Long) -> Unit,
+): ProgressSliderState {
     val currentPosition = playerState.currentPositionMillis.collectAsStateWithLifecycle()
     val totalDuration = remember(playerState) {
         playerState.videoProperties.filterNotNull().map { it.durationMillis }
     }.collectAsStateWithLifecycle(0L)
 
-    ProgressSlider(
-        remember {
-            ProgressSliderState(
-                currentPosition,
-                totalDuration,
-                onPreview = {},
-                onPreviewFinished = { playerState.seekTo(it) },
-            )
-        },
-        modifier
-    )
+    val onPreviewUpdated by rememberUpdatedState(onPreview)
+    val onPreviewFinishedUpdated by rememberUpdatedState(onPreviewFinished)
+    return remember(currentPosition, totalDuration) {
+        ProgressSliderState(
+            currentPosition,
+            totalDuration,
+            onPreviewUpdated,
+            onPreviewFinishedUpdated,
+        )
+    }
 }
-
 
 /**
  * Returns the most wide text that [renderSeconds] may return for that [totalSecs]. This can be used to reserve space for the text.

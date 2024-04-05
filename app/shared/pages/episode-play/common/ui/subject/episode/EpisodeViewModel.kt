@@ -25,7 +25,6 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.EpisodeRepository
-import me.him188.ani.app.data.PreferencesRepository
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.Context
 import me.him188.ani.app.torrent.TorrentManager
@@ -33,6 +32,7 @@ import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.launchInMain
+import me.him188.ani.app.ui.subject.episode.danmaku.PlayerDanmakuViewModel
 import me.him188.ani.app.videoplayer.PlayerState
 import me.him188.ani.app.videoplayer.PlayerStateFactory
 import me.him188.ani.app.videoplayer.TorrentVideoSource
@@ -40,8 +40,6 @@ import me.him188.ani.app.videoplayer.VideoSource
 import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuMatchers
 import me.him188.ani.danmaku.api.DanmakuProvider
-import me.him188.ani.danmaku.ui.DanmakuConfig
-import me.him188.ani.danmaku.ui.DanmakuHostState
 import me.him188.ani.datasources.api.DownloadProvider
 import me.him188.ani.datasources.api.DownloadSearchQuery
 import me.him188.ani.datasources.api.PagedSource
@@ -132,13 +130,7 @@ interface EpisodeViewModel : HasBackgroundScope {
 
     // Danmaku
 
-    val danmakuHostState: DanmakuHostState
-
-    val danmakuEnabled: Flow<Boolean>
-
-    fun setDanmakuEnabled(enabled: Boolean)
-
-    val danmakuConfig: Flow<DanmakuConfig>
+    val danmaku: PlayerDanmakuViewModel
 }
 
 fun EpisodeViewModel(
@@ -162,7 +154,6 @@ private class EpisodeViewModelImpl(
     private val playerStateFactory: PlayerStateFactory by inject()
     private val episodeRepository: EpisodeRepository by inject()
     private val danmakuProvider: DanmakuProvider by inject()
-    private val preferencesRepository by inject<PreferencesRepository>()
 
     private val subjectDetails = flowOf(subjectId).mapLatest { subjectId ->
         runUntilSuccess { withContext(Dispatchers.IO) { bangumiClient.api.getSubjectById(subjectId) } }
@@ -329,6 +320,8 @@ private class EpisodeViewModelImpl(
         }
     }
 
+    override val danmaku: PlayerDanmakuViewModel = PlayerDanmakuViewModel()
+
     private val danmakuFlow: Flow<Danmaku> = combine(
         playSourceSelector.targetPlaySourceCandidate.filterNotNull(),
         playerState.videoProperties.filterNotNull()
@@ -347,22 +340,20 @@ private class EpisodeViewModelImpl(
             session.at(playerState.currentPositionMillis.map { it.milliseconds })
         }
 
-    override val danmakuHostState: DanmakuHostState = DanmakuHostState()
-
     init {
         launchInMain { // state changes must be in main thread
             playerState.state.collect {
                 if (it.isPlaying) {
-                    danmakuHostState.resume()
+                    danmaku.danmakuHostState.resume()
                 } else {
-                    danmakuHostState.pause()
+                    danmaku.danmakuHostState.pause()
                 }
             }
         }
 
         launchInBackground {
             danmakuFlow.collect { danmaku ->
-                danmakuHostState.trySend(danmaku)
+                this.danmaku.danmakuHostState.trySend(danmaku)
             }
         }
 
@@ -373,16 +364,6 @@ private class EpisodeViewModelImpl(
             }
         }
     }
-
-    override val danmakuEnabled: Flow<Boolean> = preferencesRepository.danmakuEnabled.flow
-
-    override fun setDanmakuEnabled(enabled: Boolean) {
-        launchInBackground {
-            preferencesRepository.danmakuEnabled.set(enabled)
-        }
-    }
-
-    override val danmakuConfig: Flow<DanmakuConfig> = preferencesRepository.danmakuConfig.flow
 
     private suspend fun requestPlaySourceCandidate(): PlaySourceCandidate? {
         val candidate = playSourceSelector.targetPlaySourceCandidate.value
