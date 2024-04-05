@@ -49,6 +49,9 @@ import me.him188.ani.app.ui.theme.stronglyWeaken
 
 @Stable
 object PlayerControllerDefaults {
+    /**
+     * To pause/play
+     */
     @Composable
     fun PlaybackIcon(
         isPlaying: () -> Boolean,
@@ -67,6 +70,9 @@ object PlayerControllerDefaults {
         }
     }
 
+    /**
+     * To turn danmaku on/off
+     */
     @Composable
     fun DanmakuIcon(
         danmakuEnabled: Boolean,
@@ -105,6 +111,9 @@ object PlayerControllerDefaults {
         "心念成形",
     )
 
+    /**
+     * To send danmaku
+     */
     @Composable
     fun DanmakuSendButton(
         onClick: () -> Unit,
@@ -116,6 +125,9 @@ object PlayerControllerDefaults {
         }
     }
 
+    /**
+     * To edit danmaku and send it by [trailingIcon]
+     */
     @Composable
     fun DanmakuTextField(
         value: String,
@@ -201,6 +213,9 @@ object PlayerControllerDefaults {
         }
     }
 
+    /**
+     * To enter/exit fullscreen
+     */
     @Composable
     fun FullscreenIcon(
         isFullscreen: Boolean,
@@ -221,8 +236,18 @@ object PlayerControllerDefaults {
 }
 
 /**
- * @see PlayerControllerDefaults
- * @param progressSlider see [ProgressSlider]
+ * The controller bar of a video player. Usually at the bottom of the screen (the video player).
+ *
+ * See [PlayerControllerDefaults] for components.
+ *
+ * @param startActions [PlayerControllerDefaults.PlaybackIcon], [PlayerControllerDefaults.DanmakuIcon]
+ * @param progressIndicator [ProgressIndicator]
+ * @param progressSlider [ProgressSlider]
+ * @param danmakuEditor [PlayerControllerDefaults.DanmakuTextField]
+ * @param endActions [PlayerControllerDefaults.FullscreenIcon]
+ * @param expanded Whether the controller bar is expanded.
+ * If `true`, the [progressIndicator] and [progressSlider] will be shown on a separate row above. The bottom row will contain a [danmakuEditor].
+ * If `false`, the entire bar will be only one row. [danmakuEditor] will be ignored.
  */
 @Composable
 fun PlayerControllerBar(
