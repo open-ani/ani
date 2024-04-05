@@ -149,7 +149,7 @@ object PlayerControllerDefaults {
                 )
 
                 Text(
-                    "发送弹幕仍努力开发中, 仅供预览界面", Modifier.padding(start = 8.dp),
+                    "发送弹幕仍在努力开发中, 仅供预览界面", Modifier.padding(start = 8.dp),
                     maxLines = 1,
                     style = MaterialTheme.typography.labelMedium
                 )
