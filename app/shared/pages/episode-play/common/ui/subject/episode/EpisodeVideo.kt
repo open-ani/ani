@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -28,6 +29,7 @@ import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsS
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsViewModel
 import me.him188.ani.app.ui.subject.episode.video.settings.VideoSettingsButton
 import me.him188.ani.app.ui.subject.episode.video.topbar.EpisodeVideoTopBar
+import me.him188.ani.app.ui.theme.aniDarkColorTheme
 import me.him188.ani.app.videoplayer.PlayerState
 import me.him188.ani.app.videoplayer.VideoPlayer
 import me.him188.ani.app.videoplayer.togglePause
@@ -181,16 +183,18 @@ internal fun EpisodeVideo(
                     ProgressSlider(progressSliderState)
                 },
                 danmakuEditor = {
-                    var text by rememberSaveable { mutableStateOf("") }
-                    PlayerControllerDefaults.DanmakuTextField(
-                        text,
-                        onValueChange = { text = it },
-                        onSend = {
-                            onSendDanmaku(text)
-                            text = ""
-                        },
-                        Modifier.weight(1f)
-                    )
+                    MaterialTheme(aniDarkColorTheme()) {
+                        var text by rememberSaveable { mutableStateOf("") }
+                        PlayerControllerDefaults.DanmakuTextField(
+                            text,
+                            onValueChange = { text = it },
+                            onSend = {
+                                onSendDanmaku(text)
+                                text = ""
+                            },
+                            Modifier.weight(1f)
+                        )
+                    }
                 },
                 endActions = {
                     val speed by playerState.playbackSpeed.collectAsStateWithLifecycle()
