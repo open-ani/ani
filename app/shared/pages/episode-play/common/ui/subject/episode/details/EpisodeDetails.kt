@@ -87,7 +87,7 @@ private fun NowPlayingLabel(viewModel: EpisodeViewModel, modifier: Modifier = Mo
                             color = MaterialTheme.colorScheme.primary,
                         )
                         Text(
-                            playing?.render() ?: "",
+                            remember(playing) { playing?.render() ?: "" },
                             color = MaterialTheme.colorScheme.secondary,
                         )
                     }
