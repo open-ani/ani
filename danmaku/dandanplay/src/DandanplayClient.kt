@@ -142,11 +142,13 @@ class DandanplayClient(
     suspend fun getDanmakuList(
         episodeId: Long,
     ): List<DandanplayDanmaku> {
-        val chConvert = when (getSystemChineseVariant()) {
-            ChineseVariant.SIMPLIFIED -> 1
-            ChineseVariant.TRADITIONAL -> 2
-            null -> 0
-        }
+        // See #122
+//        val chConvert = when (getSystemChineseVariant()) {
+//            ChineseVariant.SIMPLIFIED -> 1
+//            ChineseVariant.TRADITIONAL -> 2
+//            null -> 0
+//        }
+        val chConvert = 0 
         val response =
             client.get("https://api.dandanplay.net/api/v2/comment/${episodeId}?chConvert=$chConvert&withRelated=true") {
                 accept(ContentType.Application.Json)
