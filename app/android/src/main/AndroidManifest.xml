@@ -26,7 +26,7 @@
             android:allowBackup="true"
             android:icon="@mipmap/a"
             android:label="@string/app_name"
-            android:roundIcon="@mipmap/a"
+            android:roundIcon="@mipmap/a_round"
             android:supportsRtl="true"
             android:usesCleartextTraffic="true"
             android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
