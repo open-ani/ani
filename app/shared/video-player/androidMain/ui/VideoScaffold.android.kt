@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import me.him188.ani.app.tools.rememberMonoTasker
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.preview.PHONE_LANDSCAPE
 import me.him188.ani.app.ui.subject.episode.details.EpisodePlayerTitle
@@ -27,6 +28,7 @@ import me.him188.ani.app.videoplayer.DummyPlayerState
 import me.him188.ani.app.videoplayer.togglePause
 import me.him188.ani.app.videoplayer.ui.guesture.GestureLock
 import me.him188.ani.app.videoplayer.ui.guesture.LockableVideoGestureHost
+import me.him188.ani.app.videoplayer.ui.guesture.rememberGestureIndicatorState
 import me.him188.ani.app.videoplayer.ui.guesture.rememberSwipeSeekerState
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerBar
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
@@ -106,13 +108,27 @@ private fun PreviewVideoScaffoldImpl(
             val swipeSeekerState = rememberSwipeSeekerState(constraints.maxWidth) {
                 playerState.seekTo(playerState.currentPositionMillis.value + it * 1000)
             }
+            val indicatorState = rememberGestureIndicatorState()
+            val tasker = rememberMonoTasker()
             LockableVideoGestureHost(
                 swipeSeekerState,
+                indicatorState,
                 controllerVisible = controllerVisible,
                 locked = isLocked,
                 setControllerVisible = { controllerVisible = it },
                 Modifier.padding(top = 100.dp),
-                onDoubleClickScreen = { playerState.togglePause() },
+                onDoubleClickScreen = {
+                    if (playerState.state.value.isPlaying) {
+                        tasker.launch {
+                            indicatorState.showPausedLong()
+                        }
+                    } else {
+                        tasker.launch {
+                            indicatorState.showResumedLong()
+                        }
+                    }
+                    playerState.togglePause()
+                },
             )
         },
         floatingMessage = {
@@ -129,8 +145,9 @@ private fun PreviewVideoScaffoldImpl(
                 rememberProgressSliderState(playerState = playerState, onPreview = {}, onPreviewFinished = {})
             PlayerControllerBar(
                 startActions = {
+                    val playing = playerState.state.collectAsStateWithLifecycle()
                     PlayerControllerDefaults.PlaybackIcon(
-                        isPlaying = { false },
+                        isPlaying = { playing.value.isPlaying },
                         onClick = { }
                     )
 

@@ -156,7 +156,7 @@ fun interface PlayerStateFactory {
  * For previewing
  */
 class DummyPlayerState : AbstractPlayerState() {
-    override val state: StateFlow<PlaybackState> = MutableStateFlow(PlaybackState.PAUSED_BUFFERING)
+    override val state: MutableStateFlow<PlaybackState> = MutableStateFlow(PlaybackState.PAUSED_BUFFERING)
     override val videoSource: MutableStateFlow<VideoSource<*>?> = MutableStateFlow(null)
     override suspend fun setVideoSource(source: VideoSource<*>?) {
         videoSource.value = source
@@ -182,9 +182,11 @@ class DummyPlayerState : AbstractPlayerState() {
     }
 
     override fun pause() {
+        state.value = PlaybackState.PAUSED
     }
 
     override fun resume() {
+        state.value = PlaybackState.PLAYING
     }
 
     override val playbackSpeed: MutableStateFlow<Float> = MutableStateFlow(1.0f)

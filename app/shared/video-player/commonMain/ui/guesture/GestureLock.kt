@@ -117,6 +117,7 @@ fun LockedScreenGestureHost(
 @Composable
 fun LockableVideoGestureHost(
     seekerState: SwipeSeekerState,
+    indicatorState: GestureIndicatorState,
     controllerVisible: Boolean,
     locked: Boolean,
     setControllerVisible: (visible: Boolean) -> Unit,
@@ -128,11 +129,12 @@ fun LockableVideoGestureHost(
     } else {
         VideoGestureHost(
             seekerState,
+            indicatorState,
             modifier,
             onClickScreen = {
                 setControllerVisible(!controllerVisible)
             },
-            onDoubleClickScreen,
+            onDoubleClickScreen = onDoubleClickScreen,
         )
     }
 }

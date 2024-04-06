@@ -78,7 +78,7 @@ private class AndroidAudioManager(
             streamType.android,
             (levelPercentage * max).toInt()
                 .coerceIn(minimumValue = 0, maximumValue = max),
-            SystemAudioManager.FLAG_SHOW_UI
+            0,
         )
     }
 }

@@ -20,6 +20,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.platform.AniBuildConfig
 import me.him188.ani.app.platform.isInLandscapeMode
+import me.him188.ani.app.tools.rememberMonoTasker
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettings
@@ -34,6 +35,7 @@ import me.him188.ani.app.videoplayer.ui.VideoLoadingIndicator
 import me.him188.ani.app.videoplayer.ui.VideoScaffold
 import me.him188.ani.app.videoplayer.ui.guesture.GestureLock
 import me.him188.ani.app.videoplayer.ui.guesture.LockableVideoGestureHost
+import me.him188.ani.app.videoplayer.ui.guesture.rememberGestureIndicatorState
 import me.him188.ani.app.videoplayer.ui.guesture.rememberSwipeSeekerState
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerBar
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
@@ -107,13 +109,27 @@ internal fun EpisodeVideo(
             val swipeSeekerState = rememberSwipeSeekerState(constraints.maxWidth) {
                 playerState.seekTo(playerState.currentPositionMillis.value + it * 1000)
             }
+            val indicatorTasker = rememberMonoTasker()
+            val indicatorState = rememberGestureIndicatorState()
             LockableVideoGestureHost(
                 swipeSeekerState,
+                indicatorState,
                 controllerVisible = controllerVisible,
                 locked = isLocked,
                 setControllerVisible = { controllerVisible = it },
                 Modifier.padding(top = 100.dp),
-                onDoubleClickScreen = { playerState.togglePause() },
+                onDoubleClickScreen = {
+                    if (playerState.state.value.isPlaying) {
+                        indicatorTasker.launch {
+                            indicatorState.showPausedLong()
+                        }
+                    } else {
+                        indicatorTasker.launch {
+                            indicatorState.showResumedLong()
+                        }
+                    }
+                    playerState.togglePause()
+                },
             )
         },
         floatingMessage = {

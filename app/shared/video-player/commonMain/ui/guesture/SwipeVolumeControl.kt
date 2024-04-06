@@ -11,6 +11,8 @@ import me.him188.ani.app.platform.BrightnessManager
 import me.him188.ani.app.platform.StreamType
 
 interface LevelController {
+    val level: Float
+    
     @MainThread
     fun increaseLevel()
 
@@ -21,6 +23,9 @@ interface LevelController {
 fun AudioManager.asLevelController(
     streamType: StreamType,
 ): LevelController = object : LevelController {
+    override val level: Float
+        get() = getVolume(streamType)
+
     override fun increaseLevel() {
         val current = getVolume(streamType)
         setVolume(streamType, (current + 0.05f).coerceAtMost(1f))
@@ -33,6 +38,9 @@ fun AudioManager.asLevelController(
 }
 
 fun BrightnessManager.asLevelController(): LevelController = object : LevelController {
+    override val level: Float
+        get() = getBrightness()
+
     override fun increaseLevel() {
         val current = getBrightness()
         setBrightness((current + 0.01f).coerceAtMost(1f))
@@ -48,6 +56,7 @@ fun Modifier.swipeLevelControl(
     controller: LevelController,
     stepSize: Dp,
     orientation: Orientation,
+    afterStep: (StepDirection) -> Unit = {},
 ): Modifier = composed(
     inspectorInfo = debugInspectorInfo {
         name = "swipeLevelControl"
@@ -64,6 +73,7 @@ fun Modifier.swipeLevelControl(
                     StepDirection.FORWARD -> controller.increaseLevel()
                     StepDirection.BACKWARD -> controller.decreaseLevel()
                 }
+                afterStep(direction)
             },
         ),
         orientation = orientation,
