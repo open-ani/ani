@@ -7,6 +7,7 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.platform.debugInspectorInfo
 import androidx.compose.ui.unit.Dp
 import me.him188.ani.app.platform.AudioManager
+import me.him188.ani.app.platform.BrightnessManager
 import me.him188.ani.app.platform.StreamType
 
 interface LevelController {
@@ -28,6 +29,18 @@ fun AudioManager.asLevelController(
     override fun decreaseLevel() {
         val current = getVolume(streamType)
         setVolume(streamType, (current - 0.05f).coerceAtLeast(0f))
+    }
+}
+
+fun BrightnessManager.asLevelController(): LevelController = object : LevelController {
+    override fun increaseLevel() {
+        val current = getBrightness()
+        setBrightness((current + 0.01f).coerceAtMost(1f))
+    }
+
+    override fun decreaseLevel() {
+        val current = getBrightness()
+        setBrightness((current - 0.01f).coerceAtLeast(0f))
     }
 }
 

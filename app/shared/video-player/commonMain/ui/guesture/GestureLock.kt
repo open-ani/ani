@@ -128,11 +128,11 @@ fun LockableVideoGestureHost(
     } else {
         VideoGestureHost(
             seekerState,
+            modifier,
             onClickScreen = {
                 setControllerVisible(!controllerVisible)
             },
             onDoubleClickScreen,
-            modifier
         )
     }
 }

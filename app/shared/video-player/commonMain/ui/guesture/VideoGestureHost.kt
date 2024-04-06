@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -103,9 +104,9 @@ fun SeekPositionIndicator(
 @Composable
 fun VideoGestureHost(
     seekerState: SwipeSeekerState,
+    modifier: Modifier = Modifier,
     onClickScreen: () -> Unit = {},
     onDoubleClickScreen: () -> Unit = {},
-    modifier: Modifier = Modifier,
 ) {
     BoxWithConstraints {
         Row(Modifier.align(Alignment.TopCenter).padding(top = 80.dp)) {
@@ -127,6 +128,14 @@ fun VideoGestureHost(
                 getComponentAccessors(context = context).audioManager?.asLevelController(StreamType.MUSIC)
             }
         }
+        val brightnessLevelController by remember {
+            derivedStateOf {
+                getComponentAccessors(context = context).brightnessManager?.asLevelController()
+            }
+        }
+
+
+//        ScreenBrightness(brightnessController.value)
 
         Box(
             modifier
@@ -136,7 +145,26 @@ fun VideoGestureHost(
                     onClick = onClickScreen,
                     onDoubleClick = onDoubleClickScreen,
                 )
-                .then(
+                .swipeToSeek(seekerState, Orientation.Horizontal)
+                .fillMaxSize()
+        ) {
+            Row(Modifier.matchParentSize()) {
+
+                Box(
+                    Modifier.then(
+                        brightnessLevelController?.let {
+                            Modifier.swipeLevelControl(
+                                it,
+                                ((maxHeight - 100.dp) / 40).coerceAtLeast(2.dp),
+                                Orientation.Vertical
+                            )
+                        } ?: Modifier,
+                    ).weight(1f).fillMaxHeight()
+                )
+
+                Box(Modifier.weight(1f).fillMaxHeight())
+
+                Box(Modifier.then(
                     audioController?.let {
                         Modifier.swipeLevelControl(
                             it,
@@ -144,10 +172,9 @@ fun VideoGestureHost(
                             Orientation.Vertical
                         )
                     } ?: Modifier
-                )
-                .swipeToSeek(seekerState, Orientation.Horizontal)
-                .fillMaxSize()
-        )
+                ).weight(1f).fillMaxHeight())
+            }
+        }
     }
 }
 
