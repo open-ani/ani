@@ -37,6 +37,7 @@ import me.him188.ani.app.videoplayer.ui.guesture.LockableVideoGestureHost
 import me.him188.ani.app.videoplayer.ui.guesture.rememberSwipeSeekerState
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerBar
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
+import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults.SpeedSwitcher
 import me.him188.ani.app.videoplayer.ui.progress.ProgressIndicator
 import me.him188.ani.app.videoplayer.ui.progress.ProgressSlider
 import me.him188.ani.app.videoplayer.ui.progress.rememberProgressSliderState
@@ -176,6 +177,11 @@ internal fun EpisodeVideo(
                     )
                 },
                 endActions = {
+                    val speed by playerState.playbackSpeed.collectAsStateWithLifecycle()
+                    SpeedSwitcher(
+                        speed,
+                        { playerState.setPlaybackSpeed(it) },
+                    )
                     PlayerControllerDefaults.FullscreenIcon(
                         isFullscreen,
                         onClickFullscreen = onClickFullScreen,

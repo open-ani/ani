@@ -4,6 +4,7 @@ import androidx.annotation.OptIn
 import androidx.annotation.UiThread
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
+import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
@@ -173,6 +174,11 @@ internal class ExoPlayerState @UiThread constructor(
                         state.value = PlaybackState.PAUSED
                     }
                 }
+
+                override fun onPlaybackParametersChanged(playbackParameters: PlaybackParameters) {
+                    super.onPlaybackParametersChanged(playbackParameters)
+                    playbackSpeed.value = playbackParameters.speed
+                }
             })
         }
     }
@@ -214,6 +220,7 @@ internal class ExoPlayerState @UiThread constructor(
         player.play()
     }
 
+    override val playbackSpeed: MutableStateFlow<Float> = MutableStateFlow(1f)
 
     @Volatile
     private var closed = false
@@ -228,7 +235,7 @@ internal class ExoPlayerState @UiThread constructor(
         backgroundScope.cancel()
     }
 
-    override fun setSpeed(speed: Float) {
+    override fun setPlaybackSpeed(speed: Float) {
         player.setPlaybackSpeed(speed)
     }
 

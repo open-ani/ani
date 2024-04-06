@@ -85,8 +85,10 @@ interface PlayerState {
     @UiThread
     fun resume()
 
+    val playbackSpeed: StateFlow<Float>
+
     @UiThread
-    fun setSpeed(speed: Float)
+    fun setPlaybackSpeed(speed: Float)
 
     /**
      * 跳转到指定位置
@@ -185,7 +187,10 @@ class DummyPlayerState : AbstractPlayerState() {
     override fun resume() {
     }
 
-    override fun setSpeed(speed: Float) {
+    override val playbackSpeed: MutableStateFlow<Float> = MutableStateFlow(1.0f)
+
+    override fun setPlaybackSpeed(speed: Float) {
+        playbackSpeed.value = speed
     }
 
     override fun seekTo(positionMillis: Long) {

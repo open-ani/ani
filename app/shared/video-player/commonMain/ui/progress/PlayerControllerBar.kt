@@ -3,6 +3,7 @@ package me.him188.ani.app.videoplayer.ui.progress
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -20,17 +21,27 @@ import androidx.compose.material.icons.rounded.FullscreenExit
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.SpeakerNotesOff
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -42,6 +53,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.foundation.effects.onKey
+import me.him188.ani.app.ui.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.theme.aniLightColorTheme
 import me.him188.ani.app.ui.theme.slightlyWeaken
 import me.him188.ani.app.ui.theme.stronglyWeaken
@@ -94,7 +106,7 @@ object PlayerControllerDefaults {
     // TODO: DANMAKU_PLACEHOLDERS i18n
     // See #120
     @Stable
-    
+
     private val DANMAKU_PLACEHOLDERS = listOf(
         "来发一条弹幕吧~",
         "小心，我要发射弹幕啦！",
@@ -240,6 +252,58 @@ object PlayerControllerDefaults {
             }
         }
     }
+
+    /**
+     * Set 1x, 2x playback speed.
+     * @param optionsProvider The options to choose from. Note that when the value changes, it will not reflect in the UI.
+     */
+    @Composable
+    fun SpeedSwitcher(
+        value: Float,
+        onValueChange: (Float) -> Unit,
+        modifier: Modifier = Modifier,
+        style: TextStyle = LocalTextStyle.current,
+        optionsProvider: () -> List<Float> = { listOf(0.5f, 0.75f, 1f, 1.25f, 1.5f, 1.75f, 2f, 3f) },
+    ) {
+        Box(modifier, contentAlignment = Alignment.Center) {
+            var expanded by rememberSaveable { mutableStateOf(false) }
+            TextButton(
+                { expanded = true },
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = LocalContentColor.current
+                )
+            ) {
+                Text(remember(value) { if (value == 1.0f) "倍速" else """${value}x""" }, style = style)
+            }
+
+            // TODO: Replace SpeedSwitcher dropdown with a side sheet in the future 
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+            ) {
+                val options = remember(optionsProvider) { optionsProvider() }
+                for (option in options) {
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                remember(option) { "${option}x" },
+                                color =
+                                if (value == option) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    LocalContentColor.current
+                                }
+                            )
+                        },
+                        onClick = {
+                            expanded = false
+                            onValueChange(option)
+                        },
+                    )
+                }
+            }
+        }
+    }
 }
 
 /**
@@ -327,7 +391,9 @@ fun PlayerControllerBar(
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                endActions()
+                MaterialTheme(aniDarkColorTheme()) {
+                    endActions()
+                }
             }
         }
     }

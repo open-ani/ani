@@ -30,10 +30,12 @@ import me.him188.ani.app.videoplayer.ui.guesture.LockableVideoGestureHost
 import me.him188.ani.app.videoplayer.ui.guesture.rememberSwipeSeekerState
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerBar
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
+import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults.SpeedSwitcher
 import me.him188.ani.app.videoplayer.ui.progress.ProgressIndicator
 import me.him188.ani.app.videoplayer.ui.progress.ProgressSlider
 import me.him188.ani.app.videoplayer.ui.progress.rememberProgressSliderState
 import me.him188.ani.danmaku.ui.DanmakuConfig
+import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
 @Preview("Landscape Fullscreen - Light", device = PHONE_LANDSCAPE, uiMode = UI_MODE_NIGHT_NO)
 @Preview("Landscape Fullscreen - Dark", device = PHONE_LANDSCAPE, uiMode = UI_MODE_NIGHT_YES or UI_MODE_TYPE_NORMAL)
@@ -156,6 +158,11 @@ private fun PreviewVideoScaffoldImpl(
                     )
                 },
                 endActions = {
+                    val speed by playerState.playbackSpeed.collectAsStateWithLifecycle()
+                    SpeedSwitcher(
+                        speed,
+                        { playerState.setPlaybackSpeed(it) },
+                    )
                     PlayerControllerDefaults.FullscreenIcon(
                         isFullscreen,
                         onClickFullscreen = {},
