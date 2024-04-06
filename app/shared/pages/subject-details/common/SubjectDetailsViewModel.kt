@@ -17,8 +17,8 @@ import me.him188.ani.app.data.SubjectRepository
 import me.him188.ani.app.data.setSubjectCollectionTypeOrDelete
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.ui.foundation.AbstractViewModel
-import me.him188.ani.datasources.api.PageBasedPagedSource
-import me.him188.ani.datasources.api.UnifiedCollectionType
+import me.him188.ani.datasources.api.paging.PageBasedPagedSource
+import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.datasources.bangumi.Rating
 import me.him188.ani.datasources.bangumi.client.BangumiEpType

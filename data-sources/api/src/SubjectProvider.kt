@@ -24,6 +24,7 @@ import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import me.him188.ani.datasources.api.paging.PagedSource
 
 /**
  * 提供番剧名称索引的数据源. 支持使用关键字搜索正式名称.

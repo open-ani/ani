@@ -1,4 +1,4 @@
-package me.him188.ani.datasources.api
+package me.him188.ani.datasources.api.paging
 
 
 data class Paged<T>(

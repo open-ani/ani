@@ -21,7 +21,7 @@ package me.him188.ani.datasources.dmhy
 import io.ktor.client.HttpClientConfig
 import me.him188.ani.datasources.api.DownloadProvider
 import me.him188.ani.datasources.api.DownloadSearchQuery
-import me.him188.ani.datasources.api.PagedSource
+import me.him188.ani.datasources.api.paging.PagedSource
 import me.him188.ani.datasources.api.topic.Topic
 import me.him188.ani.datasources.dmhy.impl.DmhyClientImpl
 

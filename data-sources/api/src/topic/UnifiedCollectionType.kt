@@ -1,4 +1,4 @@
-package me.him188.ani.datasources.api
+package me.him188.ani.datasources.api.topic
 
 /**
  * Unified type for all collection types, also added representation for [NOT_COLLECTED].

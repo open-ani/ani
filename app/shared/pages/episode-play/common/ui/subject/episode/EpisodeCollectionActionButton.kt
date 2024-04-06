@@ -27,7 +27,7 @@ import me.him188.ani.app.ui.collection.EditCollectionTypeDropDown
 import me.him188.ani.app.ui.collection.SubjectCollectionAction
 import me.him188.ani.app.ui.collection.SubjectCollectionActions
 import me.him188.ani.app.ui.external.placeholder.placeholder
-import me.him188.ani.datasources.api.UnifiedCollectionType
+import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.datasources.bangumi.processing.toCollectionType
 import me.him188.ani.datasources.bangumi.processing.toEpisodeCollectionType
 import org.openapitools.client.models.EpisodeCollectionType

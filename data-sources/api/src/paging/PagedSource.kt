@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.ani.datasources.api
+package me.him188.ani.datasources.api.paging
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow

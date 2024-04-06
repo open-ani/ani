@@ -19,9 +19,9 @@
 package me.him188.ani.datasources.dmhy.impl
 
 import kotlinx.coroutines.flow.MutableStateFlow
-import me.him188.ani.datasources.api.AbstractPageBasedPagedSource
 import me.him188.ani.datasources.api.DownloadSearchQuery
-import me.him188.ani.datasources.api.PagedSource
+import me.him188.ani.datasources.api.paging.AbstractPageBasedPagedSource
+import me.him188.ani.datasources.api.paging.PagedSource
 import me.him188.ani.datasources.api.titles.toTopicDetails
 import me.him188.ani.datasources.api.topic.Topic
 import me.him188.ani.datasources.api.topic.TopicCategory

@@ -54,7 +54,7 @@ import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.isLoggedIn
 import me.him188.ani.app.ui.profile.UnauthorizedTips
-import me.him188.ani.datasources.api.UnifiedCollectionType
+import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.openapitools.client.models.EpisodeCollectionType
 

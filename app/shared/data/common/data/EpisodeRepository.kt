@@ -1,8 +1,8 @@
 package me.him188.ani.app.data
 
 import kotlinx.coroutines.flow.Flow
-import me.him188.ani.datasources.api.PageBasedPagedSource
-import me.him188.ani.datasources.api.Paged
+import me.him188.ani.datasources.api.paging.PageBasedPagedSource
+import me.him188.ani.datasources.api.paging.Paged
 import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.utils.logging.logger
 import org.koin.core.component.KoinComponent

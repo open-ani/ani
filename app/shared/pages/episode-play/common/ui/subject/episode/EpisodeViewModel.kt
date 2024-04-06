@@ -42,8 +42,8 @@ import me.him188.ani.danmaku.api.DanmakuMatchers
 import me.him188.ani.danmaku.api.DanmakuProvider
 import me.him188.ani.datasources.api.DownloadProvider
 import me.him188.ani.datasources.api.DownloadSearchQuery
-import me.him188.ani.datasources.api.PagedSource
-import me.him188.ani.datasources.api.awaitFinished
+import me.him188.ani.datasources.api.paging.PagedSource
+import me.him188.ani.datasources.api.paging.awaitFinished
 import me.him188.ani.datasources.api.topic.Resolution
 import me.him188.ani.datasources.api.topic.Topic
 import me.him188.ani.datasources.api.topic.TopicCategory

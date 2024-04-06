@@ -43,9 +43,9 @@ import io.ktor.utils.io.streams.asInput
 import kotlinx.serialization.json.Json
 import me.him188.ani.datasources.api.DownloadProvider
 import me.him188.ani.datasources.api.DownloadSearchQuery
-import me.him188.ani.datasources.api.PageBasedPagedSource
-import me.him188.ani.datasources.api.Paged
-import me.him188.ani.datasources.api.PagedSource
+import me.him188.ani.datasources.api.paging.PageBasedPagedSource
+import me.him188.ani.datasources.api.paging.Paged
+import me.him188.ani.datasources.api.paging.PagedSource
 import me.him188.ani.datasources.api.titles.RawTitleParser
 import me.him188.ani.datasources.api.titles.parse
 import me.him188.ani.datasources.api.titles.toTopicDetails

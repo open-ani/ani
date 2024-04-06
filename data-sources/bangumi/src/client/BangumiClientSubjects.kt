@@ -1,6 +1,6 @@
 package me.him188.ani.datasources.bangumi.client
 
-import me.him188.ani.datasources.api.Paged
+import me.him188.ani.datasources.api.paging.Paged
 import me.him188.ani.datasources.bangumi.models.search.BangumiSort
 import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubject
 import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectDetails

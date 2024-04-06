@@ -58,7 +58,7 @@ import me.him188.ani.app.ui.foundation.AsyncImage
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.subject.details.COVER_WIDTH_TO_HEIGHT_RATIO
 import me.him188.ani.app.ui.subject.details.Tag
-import me.him188.ani.datasources.api.UnifiedCollectionType
+import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import org.openapitools.client.models.UserEpisodeCollection
 import kotlin.time.Duration.Companion.seconds
 

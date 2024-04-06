@@ -20,8 +20,8 @@ import me.him188.ani.app.tools.caching.value
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
-import me.him188.ani.datasources.api.UnifiedCollectionType
-import me.him188.ani.datasources.api.map
+import me.him188.ani.datasources.api.paging.map
+import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.datasources.bangumi.processing.airSeason
 import me.him188.ani.datasources.bangumi.processing.isOnAir
 import me.him188.ani.datasources.bangumi.processing.nameCNOrName

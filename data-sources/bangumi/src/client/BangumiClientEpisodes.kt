@@ -7,7 +7,7 @@ import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import me.him188.ani.datasources.api.Paged
+import me.him188.ani.datasources.api.paging.Paged
 
 interface BangumiClientEpisodes {
     suspend fun getEpisodes(

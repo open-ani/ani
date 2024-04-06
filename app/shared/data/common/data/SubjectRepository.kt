@@ -3,10 +3,10 @@ package me.him188.ani.app.data
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
-import me.him188.ani.datasources.api.PageBasedPagedSource
-import me.him188.ani.datasources.api.Paged
-import me.him188.ani.datasources.api.PagedSource
-import me.him188.ani.datasources.api.processPagedResponse
+import me.him188.ani.datasources.api.paging.PageBasedPagedSource
+import me.him188.ani.datasources.api.paging.Paged
+import me.him188.ani.datasources.api.paging.PagedSource
+import me.him188.ani.datasources.api.paging.processPagedResponse
 import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.utils.logging.logger
 import org.koin.core.component.KoinComponent

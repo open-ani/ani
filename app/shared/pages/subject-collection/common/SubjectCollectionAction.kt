@@ -44,7 +44,7 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
-import me.him188.ani.datasources.api.UnifiedCollectionType
+import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 
 @Immutable
 object SubjectCollectionActions {

@@ -1,6 +1,6 @@
 package me.him188.ani.datasources.bangumi.processing
 
-import me.him188.ani.datasources.api.UnifiedCollectionType
+import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import org.openapitools.client.models.EpisodeCollectionType
 import org.openapitools.client.models.SubjectCollectionType
 
