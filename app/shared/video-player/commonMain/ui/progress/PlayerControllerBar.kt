@@ -92,6 +92,7 @@ object PlayerControllerDefaults {
     }
 
     // TODO: DANMAKU_PLACEHOLDERS i18n
+    // See #120
     @Stable
     private val DANMAKU_PLACEHOLDERS = listOf(
         "来发一条弹幕吧~",
