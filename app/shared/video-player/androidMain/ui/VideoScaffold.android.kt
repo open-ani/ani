@@ -4,8 +4,8 @@ import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.content.res.Configuration.UI_MODE_TYPE_NORMAL
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -16,6 +16,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.preview.PHONE_LANDSCAPE
 import me.him188.ani.app.ui.subject.episode.details.EpisodePlayerTitle
@@ -23,6 +24,7 @@ import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettings
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsSideSheet
 import me.him188.ani.app.ui.subject.episode.video.topbar.EpisodeVideoTopBar
 import me.him188.ani.app.videoplayer.DummyPlayerState
+import me.him188.ani.app.videoplayer.togglePause
 import me.him188.ani.app.videoplayer.ui.guesture.GestureLock
 import me.him188.ani.app.videoplayer.ui.guesture.LockableVideoGestureHost
 import me.him188.ani.app.videoplayer.ui.guesture.rememberSwipeSeekerState
@@ -51,7 +53,7 @@ private fun PreviewVideoScaffold() {
 private fun PreviewVideoScaffoldImpl(
     isFullscreen: Boolean,
 ) = ProvideCompositionLocalsForPreview {
-    val controller = remember {
+    val playerState = remember {
         DummyPlayerState()
     }
 
@@ -99,15 +101,16 @@ private fun PreviewVideoScaffoldImpl(
         danmakuHost = {
         },
         gestureHost = {
+            val swipeSeekerState = rememberSwipeSeekerState(constraints.maxWidth) {
+                playerState.seekTo(playerState.currentPositionMillis.value + it * 1000)
+            }
             LockableVideoGestureHost(
-                rememberSwipeSeekerState(constraints.maxWidth) {
-
-                },
+                swipeSeekerState,
                 controllerVisible = controllerVisible,
                 locked = isLocked,
                 setControllerVisible = { controllerVisible = it },
-                Modifier.fillMaxSize(),
-                onDoubleClickScreen = {}
+                Modifier.padding(top = 100.dp),
+                onDoubleClickScreen = { playerState.togglePause() },
             )
         },
         floatingMessage = {
@@ -121,7 +124,7 @@ private fun PreviewVideoScaffoldImpl(
         },
         bottomBar = {
             val progressSliderState =
-                rememberProgressSliderState(playerState = controller, onPreview = {}, onPreviewFinished = {})
+                rememberProgressSliderState(playerState = playerState, onPreview = {}, onPreviewFinished = {})
             PlayerControllerBar(
                 startActions = {
                     PlayerControllerDefaults.PlaybackIcon(

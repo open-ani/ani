@@ -103,13 +103,15 @@ internal fun EpisodeVideo(
             }
         },
         gestureHost = {
+            val swipeSeekerState = rememberSwipeSeekerState(constraints.maxWidth) {
+                playerState.seekTo(playerState.currentPositionMillis.value + it * 1000)
+            }
             LockableVideoGestureHost(
-                rememberSwipeSeekerState(constraints.maxWidth) {
-                    playerState.seekTo(playerState.currentPositionMillis.value + it * 1000)
-                },
+                swipeSeekerState,
                 controllerVisible = controllerVisible,
                 locked = isLocked,
                 setControllerVisible = { controllerVisible = it },
+                Modifier.padding(top = 100.dp),
                 onDoubleClickScreen = { playerState.togglePause() },
             )
         },
