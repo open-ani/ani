@@ -39,11 +39,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import me.him188.ani.app.interaction.VibrationStrength
+import me.him188.ani.app.interaction.vibrateIfSupported
 import me.him188.ani.app.navigation.LocalNavigator
+import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
@@ -134,6 +138,7 @@ private fun TabContent(
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
 ) {
+    val context by rememberUpdatedState(LocalContext.current)
     SubjectCollectionsColumn(
         cache,
         item = { item ->
@@ -147,6 +152,7 @@ private fun TabContent(
                     navigator.navigateEpisodeDetails(item.subjectId, it.episode.id)
                 },
                 onLongClickEpisode = { episode ->
+                    context.vibrateIfSupported(VibrationStrength.TICK)
                     vm.launchInBackground {
                         setEpisodeWatched(
                             item.subjectId,
