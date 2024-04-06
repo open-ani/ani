@@ -282,13 +282,7 @@ private fun SubjectCollectionItemContent(
             }
 
             val onPlay: () -> Unit = {
-                (item.lastWatchedEpIndex?.let {
-                    item.episodes.getOrNull(it + 1)
-                } ?: item.lastWatchedEpIndex?.let {
-                    item.episodes.getOrNull(it)
-                } ?: item.episodes.firstOrNull())?.let {
-                    onClickEpisode(it)
-                }
+                getEpisodeToPlay(item)?.let(onClickEpisode)
             }
             when (val status = item.continueWatchingStatus) {
                 is ContinueWatchingStatus.Continue -> {
@@ -321,6 +315,32 @@ private fun SubjectCollectionItemContent(
             }
         }
     }
+}
+
+private fun getEpisodeToPlay(
+    item: SubjectCollectionItem,
+): UserEpisodeCollection? {
+    if (item.continueWatchingStatus is ContinueWatchingStatus.Watched) {
+        return item.episodes[item.continueWatchingStatus.episodeIndex]
+    } else {
+        item.lastWatchedEpIndex?.let {
+            item.episodes.getOrNull(it + 1)
+        }?.let {
+            return it
+        }
+
+        item.lastWatchedEpIndex?.let {
+            item.episodes.getOrNull(it)
+        }?.let {
+            return it
+        }
+
+        item.episodes.firstOrNull()?.let {
+            return it
+        }
+    }
+
+    return null
 }
 
 
