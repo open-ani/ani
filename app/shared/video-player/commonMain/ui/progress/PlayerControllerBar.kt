@@ -91,6 +91,7 @@ object PlayerControllerDefaults {
         }
     }
 
+    // TODO: DANMAKU_PLACEHOLDERS i18n
     @Stable
     private val DANMAKU_PLACEHOLDERS = listOf(
         "来发一条弹幕吧~",
@@ -109,6 +110,10 @@ object PlayerControllerDefaults {
         "\uD83E\uDD14",
         "梦开始的地方",
         "心念成形",
+        "發個彈幕炒熱氣氛！",
+        "來個彈幕吧！",
+        "發個友善的彈幕吧！",
+        "是不是忍不住想發彈幕了呢？",
     )
 
     /**
