@@ -201,7 +201,7 @@ internal class ExoPlayerState @UiThread constructor(
             while (currentCoroutineContext().isActive) {
                 currentPositionMillis.value = player.currentPosition
                 bufferedPercentage.value = player.bufferedPercentage
-                delay(1.seconds)
+                delay(0.1.seconds) // 20 fps
             }
         }
     }
