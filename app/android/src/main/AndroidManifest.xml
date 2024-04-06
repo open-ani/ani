@@ -54,9 +54,5 @@
                 <data android:host="bangumi-oauth-callback" />
             </intent-filter>
         </activity>
-
-        <activity
-                android:name=".activity.AuthorizationCallbackActivity"
-                android:exported="true"></activity>
     </application>
 </manifest>
