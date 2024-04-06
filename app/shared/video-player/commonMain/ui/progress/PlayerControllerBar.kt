@@ -142,7 +142,7 @@ object PlayerControllerDefaults {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    DANMAKU_PLACEHOLDERS.random(),
+                    remember { DANMAKU_PLACEHOLDERS.random() }, // Refresh every time on configuration change (i.e. switching theme, entering fullscreen)
                     Modifier.weight(1f),
                     overflow = TextOverflow.Ellipsis,
                     maxLines = 1,
