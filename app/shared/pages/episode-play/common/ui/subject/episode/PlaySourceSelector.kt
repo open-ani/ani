@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import me.him188.ani.app.data.PreferredAllianceRepository
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
+import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.datasources.api.topic.Resolution
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -162,10 +163,10 @@ class PlaySourceCandidate(
 @Stable
 fun PlaySourceCandidate.render(): String {
     val playing = this
-    return listOf(
+    return listOfNotNull(
         playing.playSource.resolution,
         playing.playSource.subtitleLanguage,
-        playing.playSource.size,
+        playing.playSource.size.takeIf { it != 0.bytes },
         playing.allianceMangled,
     ).joinToString(" · ")
 }
