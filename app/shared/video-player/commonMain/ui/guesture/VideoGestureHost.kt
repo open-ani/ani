@@ -17,7 +17,9 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.VolumeUp
@@ -31,6 +33,7 @@ import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -46,7 +49,9 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
@@ -55,7 +60,6 @@ import me.him188.ani.app.platform.StreamType
 import me.him188.ani.app.platform.getComponentAccessors
 import me.him188.ani.app.tools.rememberMonoTasker
 import me.him188.ani.app.ui.theme.aniDarkColorTheme
-import me.him188.ani.app.ui.theme.slightlyWeaken
 import me.him188.ani.app.videoplayer.ui.guesture.SwipeSeekerState.Companion.swipeToSeek
 import me.him188.ani.datasources.bangumi.processing.fixToString
 import kotlin.math.absoluteValue
@@ -169,77 +173,96 @@ fun GestureIndicator(
         label = "SeekPositionIndicator"
     ) {
         Surface(
-            color = colors.surface.slightlyWeaken(),
+            Modifier.alpha(0.8f),
+            color = colors.surface,
             shape = shape,
             shadowElevation = 1.dp,
             contentColor = colors.onSurface,
         ) {
-            Row(
-                Modifier.background(Color.Transparent)
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-
-                when (state.state) {
-                    GestureIndicatorState.State.RESUMED_ONCE -> {
-                        Icon(Icons.Rounded.PlayArrow, null, Modifier.background(Color.Transparent))
+            val iconSize = 36.dp
+            ProvideTextStyle(MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold)) {
+                Row(
+                    Modifier.background(Color.Transparent)
+                        .padding(horizontal = 12.dp, vertical = 8.dp)
+                        .height(iconSize),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // Used by volume and brightness
+                    val progressIndicator: @Composable () -> Unit = remember(state, colors) {
+                        // This remember is needed because Compose does not remember lambdas 
+                        // and can cause performance problem in this fast-changing composable.
+                        {
+                            LinearProgressIndicator(
+                                progress = { state.progressValue },
+                                modifier = Modifier.width(80.dp),
+                                color = colors.primary,
+                                trackColor = colors.onSurface.copy(alpha = 0.5f),
+                            )
+                        }
                     }
 
-                    GestureIndicatorState.State.PAUSED_ONCE -> {
-                        Icon(Icons.Rounded.Pause, null)
-                    }
-
-                    GestureIndicatorState.State.SEEKING -> {
-                        val deltaDuration = state.deltaSeconds
-                        // 记忆变为 0 之前的 delta, 这样在快进/快退结束后, 会显示上一次的 delta, 而不是显示 0
-                        val duration = if (deltaDuration == 0) {
-                            lastDelta
-                        } else {
-                            deltaDuration.also {
-                                lastDelta = deltaDuration
-                            }
+                    when (state.state) {
+                        GestureIndicatorState.State.RESUMED_ONCE -> {
+                            Icon(
+                                Icons.Rounded.PlayArrow, null,
+                                Modifier.size(iconSize).background(Color.Transparent)
+                            )
                         }
 
-                        Icon(
-                            if (duration > 0) {
-                                Icons.Rounded.FastForward
+                        GestureIndicatorState.State.PAUSED_ONCE -> {
+                            Icon(Icons.Rounded.Pause, null, Modifier.size(iconSize))
+                        }
+
+                        GestureIndicatorState.State.SEEKING -> {
+                            val deltaDuration = state.deltaSeconds
+                            // 记忆变为 0 之前的 delta, 这样在快进/快退结束后, 会显示上一次的 delta, 而不是显示 0
+                            val duration = if (deltaDuration == 0) {
+                                lastDelta
                             } else {
-                                Icons.Rounded.FastRewind
-                            },
-                            null,
-                        )
-                        val text = renderTime(duration.absoluteValue)
-                        Text(
-                            text,
-                            style = MaterialTheme.typography.labelMedium,
-                            maxLines = 1,
-                        )
-                    }
+                                deltaDuration.also {
+                                    lastDelta = deltaDuration
+                                }
+                            }
 
-                    GestureIndicatorState.State.VOLUME -> {
-                        Icon(Icons.AutoMirrored.Rounded.VolumeUp, null)
-                        LinearProgressIndicator(
-                            progress = { state.progressValue },
-                            modifier = Modifier.width(64.dp),
-                        )
-                    }
+                            Icon(
+                                if (duration > 0) {
+                                    Icons.Rounded.FastForward
+                                } else {
+                                    Icons.Rounded.FastRewind
+                                },
+                                null,
+                                Modifier.size(iconSize)
+                            )
+                            val text = renderTime(duration.absoluteValue)
+                            Text(
+                                text,
+                                maxLines = 1,
+                            )
+                        }
 
-                    GestureIndicatorState.State.BRIGHTNESS -> {
-                        Icon(
-                            when (state.progressValue) {
-                                in 0.67..1.0 -> Icons.Rounded.BrightnessHigh
-                                in 0.33..0.67 -> Icons.Rounded.BrightnessMedium
-                                else -> Icons.Rounded.BrightnessLow
-                            }, null
-                        )
-                        LinearProgressIndicator(
-                            progress = { state.progressValue },
-                            modifier = Modifier.width(64.dp),
-                        )
-                    }
+                        GestureIndicatorState.State.VOLUME -> {
+                            Icon(
+                                Icons.AutoMirrored.Rounded.VolumeUp, null,
+                                Modifier.size(iconSize)
+                            )
+                            progressIndicator()
+                        }
 
-                    null -> {}
+                        GestureIndicatorState.State.BRIGHTNESS -> {
+                            Icon(
+                                when (state.progressValue) {
+                                    in 0.67..1.0 -> Icons.Rounded.BrightnessHigh
+                                    in 0.33..0.67 -> Icons.Rounded.BrightnessMedium
+                                    else -> Icons.Rounded.BrightnessLow
+                                }, null,
+                                Modifier.size(iconSize)
+                            )
+                            progressIndicator()
+                        }
+
+                        null -> {}
+                    }
                 }
             }
         }

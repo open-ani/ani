@@ -87,3 +87,15 @@ private fun PreviewPaused() {
         })
     }
 }
+
+@Preview
+@Composable
+private fun PreviewVolume() {
+    ProvideCompositionLocalsForPreview {
+        GestureIndicator(state = rememberGestureIndicatorState().apply {
+            LaunchedEffect(key1 = true) {
+                showVolumeRange(0.6f)
+            }
+        })
+    }
+}
