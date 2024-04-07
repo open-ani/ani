@@ -232,7 +232,10 @@ private class EpisodeViewModelImpl(
             launchInBackground {
                 // Save users' per-subject preferences when they click the filter chips
                 preferenceUpdates.preference.collect {
-                    episodePreferencesRepository.setMediaPreference(subjectId, it)
+                    episodePreferencesRepository.setMediaPreference(
+                        subjectId,
+                        defaultPreference.merge(it)
+                    )
                 }
             }
             launchInBackground {

@@ -14,4 +14,15 @@ data class MediaPreference(
     companion object {
         val Empty = MediaPreference()
     }
+
+    fun merge(other: MediaPreference): MediaPreference {
+        if (other == Empty) return this
+        if (this == Empty) return other
+        return MediaPreference(
+            alliance = other.alliance ?: alliance,
+            resolution = other.resolution ?: resolution,
+            subtitleLanguage = other.subtitleLanguage ?: subtitleLanguage,
+            mediaSourceId = other.mediaSourceId ?: mediaSourceId,
+        )
+    }
 }

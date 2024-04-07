@@ -115,6 +115,7 @@ interface MediaSelectorState {
 interface PreferenceUpdates {
     /**
      * [Flow] representing the stream of all user preference changes.
+     * Note that if the user has not explicitly set some properties, it will be null, even if the default has a value.
      */
     val preference: Flow<MediaPreference>
 
