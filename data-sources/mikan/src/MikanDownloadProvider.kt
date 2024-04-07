@@ -56,6 +56,8 @@ import me.him188.ani.datasources.api.topic.Topic
 import me.him188.ani.datasources.api.topic.TopicCategory
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -131,8 +133,12 @@ private fun parseDocument(document: Document): List<Topic> {
         Topic(
             id = element.getElementsByTag("guid").text().substringAfterLast("/"),
             publishedTimeMillis = element.getElementsByTag("pubDate").text().let {
-                // java.time.format.DateTimeParseException: Text 'Sun, 25 Feb 2024 08:32:16 -0800' could not be parsed at index 0
-                runCatching { ZonedDateTime.parse(it, FORMATTER).toEpochSecond() * 1000 }.getOrNull()
+                runCatching {
+                    ZonedDateTime.of(
+                        LocalDateTime.parse(it),
+                        ZoneId.of("UTC+8"),
+                    ).toEpochSecond() * 1000
+                }.getOrNull()
             },
             category = TopicCategory.ANIME,
             rawTitle = title,
