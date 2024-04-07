@@ -117,7 +117,7 @@ fun MediaSelector(
                             FilterChip(
                                 item == state.selectedMediaSource,
                                 onClick = { state.preferMediaSource(item) },
-                                label = { Text(item) },
+                                label = { Text(remember(item) { renderMediaSource(item) }) },
                             )
                         },
                         Modifier.heightIn(min = 32.dp)
@@ -277,7 +277,7 @@ private fun <T> MediaFilterFlowRow(
 ) {
     Row(modifier, verticalAlignment = Alignment.Top) {
         ProvideTextStyle(labelStyle) {
-            Box(Modifier.padding(top = 4.dp).widthIn(min = PLAY_SOURCE_LABEL_WIDTH)) {
+            Box(Modifier.padding(top = 12.dp).widthIn(min = PLAY_SOURCE_LABEL_WIDTH)) {
                 label()
             }
         }
