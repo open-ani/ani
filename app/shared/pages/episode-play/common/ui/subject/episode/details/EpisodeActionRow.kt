@@ -1,17 +1,14 @@
 package me.him188.ani.app.ui.subject.episode.details
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,9 +20,7 @@ import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -41,9 +36,40 @@ import androidx.compose.ui.unit.dp
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.app.ui.subject.episode.EpisodeViewModel
-import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelector
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
+
+@Composable
+fun EpisodeActionRow(
+    viewModel: EpisodeViewModel,
+    snackbar: SnackbarHostState,
+    modifier: Modifier = Modifier,
+) {
+    val isMediaLoaded by viewModel.mediaFetcherCompleted.collectAsStateWithLifecycle(false)
+
+    val clipboard by rememberUpdatedState(LocalClipboardManager.current)
+    val context by rememberUpdatedState(LocalContext.current)
+    EpisodeActionRow(
+        mediaFetcherCompleted = isMediaLoaded,
+        onClickMediaSelection = { viewModel.mediaSelectorVisible = true },
+        onClickCopyLink = {
+            viewModel.launchInMain {
+                copyDownloadLink(clipboard, snackbar)
+            }
+        },
+        onClickDownload = {
+            viewModel.launchInMain {
+                browseDownload(context, snackbar)
+            }
+        },
+        onClickOriginalPage = {
+            viewModel.launchInMain {
+                browseMedia(context, snackbar)
+            }
+        },
+        modifier = modifier,
+    )
+}
 
 /**
  * 一行功能按钮.
@@ -52,8 +78,11 @@ import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
  */
 @Composable
 fun EpisodeActionRow(
-    viewModel: EpisodeViewModel,
-    snackbar: SnackbarHostState,
+    mediaFetcherCompleted: Boolean,
+    onClickMediaSelection: () -> Unit,
+    onClickCopyLink: () -> Unit,
+    onClickDownload: () -> Unit,
+    onClickOriginalPage: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -62,80 +91,31 @@ fun EpisodeActionRow(
         verticalAlignment = Alignment.Top,
     ) {
         // 选择播放源
-        val isMediaLoaded by viewModel.mediaFetcherCompleted.collectAsStateWithLifecycle(false)
-
-        PlaySourceSelectionAction(
-            !isMediaLoaded,
-            onClick = { viewModel.mediaSelectorVisible = true },
-            modifier,
+        MediaSelectionAction(
+            !mediaFetcherCompleted,
+            onClick = onClickMediaSelection,
+            Modifier.weight(1f),
         )
-
-        val clipboard by rememberUpdatedState(LocalClipboardManager.current)
         ActionButton(
-            onClick = {
-                viewModel.launchInMain {
-                    copyDownloadLink(clipboard, snackbar)
-                }
-            },
+            onClick = onClickCopyLink,
             icon = { Icon(Icons.Rounded.ContentCopy, null) },
             text = { Text("复制磁力") },
-            modifier,
+            Modifier.weight(1f),
         )
 
-        val context = LocalContext.current
         ActionButton(
-            onClick = {
-                viewModel.launchInMain {
-                    browseDownload(context, snackbar)
-                }
-            },
+            onClick = onClickDownload,
             icon = { Icon(Icons.Rounded.Download, null) },
             text = { Text("下载") },
-            modifier,
+            Modifier.weight(1f),
         )
 
         ActionButton(
-            onClick = {
-                viewModel.launchInMain {
-                    browsePlaySource(context, snackbar)
-                }
-            },
+            onClick = onClickOriginalPage,
             icon = { Icon(Icons.Rounded.ArrowOutward, null) },
             text = { Text("原始页面") },
-            modifier,
+            Modifier.weight(1f),
         )
-    }
-
-    if (viewModel.mediaSelectorVisible) {
-        ModalBottomSheet(
-            onDismissRequest = { viewModel.mediaSelectorVisible = false },
-            Modifier
-        ) {
-            MediaSelector(
-                viewModel.mediaSelectorState,
-                onDismissRequest = { viewModel.mediaSelectorVisible = false },
-                Modifier.padding(vertical = 12.dp, horizontal = 16.dp)
-                    .fillMaxWidth(),
-                progress = kotlin.run {
-                    val completed by viewModel.mediaFetcherCompleted.collectAsStateWithLifecycle(false)
-                    if (!completed) {
-                        {
-                            val progress by viewModel.mediaFetcherProgress.collectAsStateWithLifecycle(null)
-                            if (progress == null || progress == 1f) {
-                                LinearProgressIndicator(Modifier.fillMaxWidth())
-                            } else {
-                                val progressAnimated by animateFloatAsState(
-                                    targetValue = progress ?: 0f
-                                )
-                                LinearProgressIndicator({ progressAnimated }, Modifier.fillMaxWidth())
-                            }
-                        }
-                    } else
-                        null
-                }
-            )
-            Spacer(Modifier.navigationBarsPadding())
-        }
     }
 }
 
@@ -144,7 +124,7 @@ fun EpisodeActionRow(
  * 选择播放源
  */
 @Composable
-private fun PlaySourceSelectionAction(
+private fun MediaSelectionAction(
     isLoading: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -177,7 +157,7 @@ private fun ActionButton(
                 indication = rememberRipple(bounded = false),
                 onClick = onClick
             )
-            .size(64.dp)
+            .height(64.dp)
             .padding(all = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceEvenly

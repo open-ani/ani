@@ -135,7 +135,7 @@ interface EpisodeViewModel : HasBackgroundScope {
     suspend fun copyDownloadLink(clipboardManager: ClipboardManager, snackbar: SnackbarHostState)
 
     @UiThread
-    suspend fun browsePlaySource(context: Context, snackbar: SnackbarHostState)
+    suspend fun browseMedia(context: Context, snackbar: SnackbarHostState)
 
     @UiThread
     suspend fun browseDownload(context: Context, snackbar: SnackbarHostState)
@@ -287,7 +287,7 @@ private class EpisodeViewModelImpl(
         }
     }
 
-    override suspend fun browsePlaySource(context: Context, snackbar: SnackbarHostState) {
+    override suspend fun browseMedia(context: Context, snackbar: SnackbarHostState) {
         requestMediaOrNull()?.let {
             browserNavigator.openBrowser(context, it.originalUrl)
         }
