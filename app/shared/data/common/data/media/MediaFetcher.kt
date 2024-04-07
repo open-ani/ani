@@ -273,6 +273,12 @@ class DownloadProviderMediaFetcher(
         override val progress: Flow<Float> = combine(resultsPerSource.values.map { it.progress }) { progresses ->
             var total = 0
             var current = 0
+            if (progresses.isEmpty()) {
+                return@combine 1f
+            }
+            if (progresses.all { it.total == null }) {
+                return@combine 1f
+            }
             for (progress in progresses) {
                 if (progress.total == null) {
                     continue
