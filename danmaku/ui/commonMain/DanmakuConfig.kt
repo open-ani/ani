@@ -30,11 +30,11 @@ class DanmakuConfig(
      *
      * Unit: dp/s
      */
-    val speed: Float = 46f,
+    val speed: Float = 88f,
     /**
      * The minimum distance between two [Danmaku]s so that they don't overlap.
      */
-    val safeSeparation: Dp = 32.dp,
+    val safeSeparation: Dp = 48.dp,
 ) {
     fun copy(
         style: DanmakuStyle = this.style,
