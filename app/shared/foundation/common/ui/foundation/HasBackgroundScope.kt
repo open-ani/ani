@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.WhileSubscribed
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.flow.shareIn
@@ -250,7 +251,8 @@ interface HasBackgroundScope {
     ): State<T> {
         val state = mutableStateOf(initialValue)
         launchInMain(coroutineContext) {
-            collect { state.value = it }
+            flowOn(Dispatchers.Default) // compute in background
+                .collect { state.value = it } // update state in main
         }
         return state
     }

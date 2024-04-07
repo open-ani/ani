@@ -10,11 +10,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
@@ -258,11 +256,15 @@ class DownloadProviderMediaFetcher(
             )
         }
 
-        override val cumulativeResults: Flow<List<Media>> = resultsPerSource.values.asFlow()
-            .flatMapMerge { it.results }
-            .map { list ->
-                list.fastDistinctBy { it.id }
-                    .fastDistinctBy { it.originalTitle }
+        override val cumulativeResults: Flow<List<Media>> =
+            combine(resultsPerSource.values.map { it.results }) { lists ->
+                // Merge into one single list
+                lists.fold(mutableListOf<Media>()) { acc, list ->
+                    acc.addAll(list.fastDistinctBy { it.originalTitle }) // distinct within this source's scope
+                    acc
+                }
+            }.map { list ->
+                list.fastDistinctBy { it.id } // distinct globally by id, just to be safe
             }
 
         override val hasCompleted = combine(resultsPerSource.values.map { it.state }) { states ->
