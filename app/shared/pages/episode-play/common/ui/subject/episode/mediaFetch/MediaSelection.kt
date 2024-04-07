@@ -67,7 +67,7 @@ fun MediaSelector(
         ) {
             item {
                 Column(
-                    modifier,
+                    Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     MediaFilterRow(
