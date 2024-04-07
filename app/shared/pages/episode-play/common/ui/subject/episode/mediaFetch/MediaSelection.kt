@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
@@ -68,7 +68,6 @@ fun MediaSelector(
             item {
                 Column(
                     Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     MediaFilterRow(
                         state.resolutions,
@@ -79,9 +78,9 @@ fun MediaSelector(
                                 item == state.selectedResolution,
                                 onClick = { state.preferResolution(item) },
                                 label = { Text(remember(item) { item }) },
-                                Modifier.height(32.dp)
                             )
                         },
+                        Modifier.heightIn(min = 32.dp)
                     )
 
                     MediaFilterRow(
@@ -93,9 +92,9 @@ fun MediaSelector(
                                 item == state.selectedSubtitleLanguage,
                                 onClick = { state.preferSubtitleLanguage(item) },
                                 label = { Text(item) },
-                                Modifier.height(32.dp)
                             )
                         },
+                        Modifier.heightIn(min = 32.dp)
                     )
 
                     MediaFilterFlowRow(
@@ -106,9 +105,9 @@ fun MediaSelector(
                                 item == state.selectedAlliance,
                                 onClick = { state.preferAlliance(item) },
                                 label = { Text(item) },
-                                Modifier.height(32.dp)
                             )
                         },
+                        Modifier.heightIn(min = 32.dp)
                     )
 
                     MediaFilterFlowRow(
@@ -119,9 +118,9 @@ fun MediaSelector(
                                 item == state.selectedMediaSource,
                                 onClick = { state.preferMediaSource(item) },
                                 label = { Text(item) },
-                                Modifier.height(32.dp)
                             )
                         },
+                        Modifier.heightIn(min = 32.dp)
                     )
 
                     Text(
@@ -193,7 +192,6 @@ private fun MediaItem(
                         false,
                         onClick = { state.preferResolution(media.properties.resolution) },
                         label = { Text(media.properties.resolution) },
-                        Modifier.height(32.dp),
                         enabled = state.selectedResolution != media.properties.resolution,
                     )
                     media.properties.subtitleLanguages.map {
@@ -201,7 +199,6 @@ private fun MediaItem(
                             false,
                             onClick = { state.preferSubtitleLanguage(it) },
                             label = { Text(it) },
-                            Modifier.height(32.dp),
                             enabled = state.selectedSubtitleLanguage != it,
                         )
                     }
@@ -224,20 +221,29 @@ private fun MediaItem(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Row {
-                        ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
-                            Text(remember(media.mediaSourceId) { renderMediaSource(media.mediaSourceId) })
+                        FlowRow(Modifier.weight(1f)) {
+                            ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
+                                Text(
+                                    remember(media.mediaSourceId) { renderMediaSource(media.mediaSourceId) },
+                                    maxLines = 1,
+                                    softWrap = false
+                                )
+                            }
+
+                            Spacer(Modifier.width(16.dp))
+
+                            ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
+                                Text(media.properties.alliance)
+                            }
                         }
 
-                        Spacer(Modifier.width(16.dp))
-
                         ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
-                            Text(media.properties.alliance)
-                        }
-
-                        Spacer(Modifier.weight(1f))
-
-                        ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
-                            Text(formatDateTime(media.publishedTime))
+                            Text(
+                                formatDateTime(media.publishedTime),
+                                Modifier.padding(start = 16.dp).align(Alignment.Bottom),
+                                maxLines = 1,
+                                softWrap = false
+                            )
                         }
                     }
                 }
@@ -284,12 +290,11 @@ private fun <T> MediaFilterFlowRow(
         }
 
         Box(
-            Modifier.padding(horizontal = 16.dp),
+            Modifier.padding(horizontal = 8.dp),
             contentAlignment = Alignment.Center
         ) {
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 for (item in items) {
                     eachItem(item)
@@ -321,12 +326,9 @@ private fun <T> MediaFilterRow(
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                item { }
                 items(items, key) { item ->
                     eachItem(item)
                 }
-                item { }
-                item { }
             }
         }
     }

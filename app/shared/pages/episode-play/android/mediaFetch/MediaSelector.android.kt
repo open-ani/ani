@@ -57,7 +57,7 @@ private val testMediaList = listOf(
         properties = MediaProperties(
             subtitleLanguages = listOf("CHT"),
             resolution = "1080P",
-            alliance = "北宇治字幕组",
+            alliance = "北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组",
         ),
     ),
     Media(
