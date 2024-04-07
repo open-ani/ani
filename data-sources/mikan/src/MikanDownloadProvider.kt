@@ -59,8 +59,6 @@ import org.jsoup.nodes.Document
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
-import java.util.Locale
 import kotlin.time.Duration.Companion.seconds
 
 
@@ -120,7 +118,7 @@ class MikanClientImpl(
 }
 
 // 2024-03-31T10:27:49.932
-private val FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS", Locale.ENGLISH)
+private val LINK_REGEX = Regex("https://mikanani.me/Home/Episode/(.+)")
 
 private fun parseDocument(document: Document): List<Topic> {
     val items = document.getElementsByTag("item")
@@ -148,7 +146,11 @@ private fun parseDocument(document: Document): List<Topic> {
             alliance = title.trim().split("]", "】").getOrNull(0).orEmpty().removePrefix("[").removePrefix("【").trim(),
             author = null,
             details = details.toTopicDetails(),
-            link = element.getElementsByTag("link").text(),
+            link = run {
+                element.getElementsByTag("link").text().takeIf { it.isNotBlank() }?.let { return@run it }
+                // Note: It looks like Jsoup failed to parse the xml. Debug and print `element` to see details.
+                LINK_REGEX.find(element.toString())?.value // This should work well
+            } ?: "",
         )
     }
 }
