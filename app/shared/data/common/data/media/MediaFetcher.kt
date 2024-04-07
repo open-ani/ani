@@ -5,6 +5,7 @@ import androidx.compose.ui.util.fastDistinctBy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -18,6 +19,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.take
@@ -183,6 +185,7 @@ class DownloadProviderMediaFetcher(
                 .onStart<Media> {
                     state.value = MediaSourceState.Working
                 }
+                .retry(2) { delay(2000);true }
                 .catch<Media> {
                     state.value = MediaSourceState.Failed(it)
                     throw it
@@ -263,11 +266,7 @@ class DownloadProviderMediaFetcher(
             }
 
         override val hasCompleted = combine(resultsPerSource.values.map { it.state }) { states ->
-            val th = this
             states.all { it is MediaSourceState.Completed }
-                .also {
-                    println(th)
-                }
         }
 
         override val progress: Flow<Float> = combine(resultsPerSource.values.map { it.progress }) { progresses ->
