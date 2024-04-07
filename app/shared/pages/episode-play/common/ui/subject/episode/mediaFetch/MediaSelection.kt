@@ -48,7 +48,7 @@ fun MediaSelector(
 ) {
     Column(
         modifier,
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
 //        Text(
 //            remember(state.candidates.size) { "选择资源" },
@@ -150,10 +150,7 @@ fun MediaSelector(
         HorizontalDivider()
 
         Row(Modifier.align(Alignment.End).padding(horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-            TextButton(
-                onDismissRequest,
-                Modifier.padding(start = 8.dp)
-            ) {
+            TextButton(onDismissRequest) {
                 Text("关闭")
             }
         }
@@ -173,7 +170,7 @@ private fun MediaItem(
         onClick,
         modifier.width(IntrinsicSize.Min),
         colors = CardDefaults.elevatedCardColors(
-            containerColor = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface
+            containerColor = if (selected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surface
         ),
         elevation = CardDefaults.elevatedCardElevation(
             defaultElevation = if (selected) 0.dp else 1.dp,
