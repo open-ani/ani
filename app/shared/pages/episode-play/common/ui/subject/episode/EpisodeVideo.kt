@@ -5,17 +5,22 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
@@ -95,7 +100,27 @@ internal fun EpisodeVideo(
             if (LocalIsPreviewing.current) {
                 Text("预览模式")
             } else {
-                VideoPlayer(playerState, Modifier.matchParentSize())
+                // Save the status bar height to offset the video player
+                var statusBarHeight by rememberSaveable { mutableStateOf(0) }
+                if (!isFullscreen) {
+                    val insets = WindowInsets.systemBars
+                    val density = LocalDensity.current
+                    SideEffect {
+                        statusBarHeight = insets.getTop(density)
+                    }
+                }
+
+                VideoPlayer(
+                    playerState,
+                    Modifier
+                        .offset(
+                            x = with(LocalDensity.current) {
+                                -statusBarHeight.toDp() / 2
+                            },
+                            y = 0.dp
+                        )
+                        .matchParentSize()
+                )
             }
         },
         danmakuHost = {
