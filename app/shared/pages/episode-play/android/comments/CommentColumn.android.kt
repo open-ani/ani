@@ -3,7 +3,7 @@ package me.him188.ani.app.ui.subject.episode.comments
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.Preview
-import me.him188.ani.app.data.Comment
+import me.him188.ani.app.data.repositories.Comment
 import me.him188.ani.app.ui.foundation.PreviewData
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import org.openapitools.client.models.Avatar

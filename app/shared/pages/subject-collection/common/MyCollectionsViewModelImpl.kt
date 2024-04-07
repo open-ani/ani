@@ -10,9 +10,9 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import me.him188.ani.app.ViewModelAuthSupport
-import me.him188.ani.app.data.EpisodeRepository
-import me.him188.ani.app.data.SubjectRepository
-import me.him188.ani.app.data.setSubjectCollectionTypeOrDelete
+import me.him188.ani.app.data.repositories.EpisodeRepository
+import me.him188.ani.app.data.repositories.SubjectRepository
+import me.him188.ani.app.data.repositories.setSubjectCollectionTypeOrDelete
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.tools.caching.cached

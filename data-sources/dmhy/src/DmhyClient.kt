@@ -39,7 +39,11 @@ interface DmhyClient {
 class DmhyDownloadProvider(
     private val client: DmhyClient = DmhyClient.create { },
 ) : DownloadProvider {
-    override val id: String get() = "dmhy"
+    companion object {
+        const val ID = "dmhy"
+    }
+
+    override val id: String get() = ID
 
     override suspend fun startSearch(query: DownloadSearchQuery): PagedSource<Topic> {
         return client.startSearchSession(query)

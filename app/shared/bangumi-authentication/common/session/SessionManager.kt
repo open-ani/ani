@@ -35,8 +35,8 @@ import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import me.him188.ani.app.data.ProfileRepository
-import me.him188.ani.app.data.TokenRepository
+import me.him188.ani.app.data.repositories.ProfileRepository
+import me.him188.ani.app.data.repositories.TokenRepository
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope

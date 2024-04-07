@@ -1,4 +1,4 @@
-package me.him188.ani.app.data
+package me.him188.ani.app.data.repositories
 
 /**
  * 数据层抛出的异常.

@@ -35,7 +35,7 @@ class Topic(
     /**
      * 发布时间戳
      */
-    val publishedTime: Long?,
+    val publishedTimeMillis: Long?,
 
     val category: TopicCategory,
 
@@ -55,14 +55,14 @@ class Topic(
     val link: String,
 ) {
     override fun toString(): String {
-        return "Topic(id='$id', publishedTime=$publishedTime, category=$category, rawTitle='$rawTitle', commentsCount=$commentsCount, magnetLink='$magnetLink', size=$size, alliance='$alliance', author=$author, details=$details, link='$link')"
+        return "Topic(id='$id', publishedTimeMillis=$publishedTimeMillis, category=$category, rawTitle='$rawTitle', commentsCount=$commentsCount, magnetLink='$magnetLink', size=$size, alliance='$alliance', author=$author, details=$details, link='$link')"
     }
 }
 
 private val DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm")
 
 fun Topic.publishedTimeString(): String? {
-    return publishedTime?.let {
+    return publishedTimeMillis?.let {
         LocalDateTime.ofInstant(
             Instant.ofEpochMilli(it),
             ZoneId.systemDefault(),

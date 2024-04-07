@@ -73,7 +73,11 @@ interface AcgRipClient {
 class AcgRipDownloadProvider(
     private val client: AcgRipClient = AcgRipClient.create { },
 ) : DownloadProvider {
-    override val id: String get() = "acg.rip"
+    companion object {
+        const val ID = "acg.rip"
+    }
+
+    override val id: String get() = ID
 
     override suspend fun startSearch(query: DownloadSearchQuery): PagedSource<Topic> {
         return client.startSearchSession(query)
@@ -85,14 +89,45 @@ class AcgRipClientImpl(
 ) : AcgRipClient {
     private val client = createHttpClient(engineConfig)
     override fun startSearchSession(filter: DownloadSearchQuery): PagedSource<Topic> {
+        fun DownloadSearchQuery.matches(topic: Topic): Boolean {
+            val details = topic.details ?: return true
+
+            this.episodeSort?.let { expected ->
+                val ep = details.episode
+                if (ep != null && ep.raw.removePrefix("0") != expected.removePrefix("0"))
+                    return false
+            }
+
+            return true
+        }
+
         return PageBasedPagedSource(initialPage = 1) { page ->
+            if (page == 1) {
+                try {
+                    val seekPages = client.get("https://acg.rip/$page.html") {
+                        parameter("term", filter.keywords)
+                    }
+                    Jsoup.parse(seekPages.bodyAsChannel().toInputStream(), "UTF-8", "https://acg.rip/.xml")
+                        .getElementsByClass("pagination")
+                        .firstOrNull()
+                        ?.getElementsByTag("a")
+                        ?.mapNotNull { it.text().toIntOrNull() }
+                        ?.maxOrNull()
+                        ?.let { setTotalSize(it) }
+                } catch (_: Throwable) {
+                    // best effort to get total size
+                }
+            }
+
             val resp = client.get("https://acg.rip/$page.xml") {
                 parameter("term", filter.keywords)
             }
             val document: Document = Jsoup.parse(resp.bodyAsChannel().toInputStream(), "UTF-8", "https://acg.rip/.xml")
-            parseDocument(document).run {
-                Paged(size, isNotEmpty(), this)
-            }
+            parseDocument(document)
+                .filter { filter.matches(it) }
+                .run {
+                    Paged(size, isNotEmpty(), this)
+                }
         }
     }
 }
@@ -109,9 +144,9 @@ private fun parseDocument(document: Document): List<Topic> {
 
         Topic(
             id = "acgrip-${element.getElementsByTag("guid").text().substringAfterLast("/")}",
-            publishedTime = element.getElementsByTag("pubDate").text().let {
+            publishedTimeMillis = element.getElementsByTag("pubDate").text().let {
                 // java.time.format.DateTimeParseException: Text 'Sun, 25 Feb 2024 08:32:16 -0800' could not be parsed at index 0
-                runCatching { ZonedDateTime.parse(it, FORMATTER).toEpochSecond() }.getOrNull()
+                runCatching { ZonedDateTime.parse(it, FORMATTER).toEpochSecond() * 1000 }.getOrNull()
             },
             category = TopicCategory.ANIME,
             rawTitle = title,

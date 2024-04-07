@@ -1,4 +1,4 @@
-package me.him188.ani.app.data
+package me.him188.ani.app.data.repositories
 
 import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.utils.logging.logger

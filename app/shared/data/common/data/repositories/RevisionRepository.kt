@@ -1,4 +1,4 @@
-package me.him188.ani.app.data
+package me.him188.ani.app.data.repositories
 
 import kotlinx.coroutines.flow.Flow
 import me.him188.ani.datasources.api.paging.PageBasedPagedSource

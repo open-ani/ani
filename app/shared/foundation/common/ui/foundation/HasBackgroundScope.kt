@@ -3,6 +3,8 @@ package me.him188.ani.app.ui.foundation
 import androidx.annotation.UiThread
 import androidx.annotation.WorkerThread
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
@@ -237,6 +239,28 @@ interface HasBackgroundScope {
             collect { localFlow.emit(it) }
         }
         return localFlow
+    }
+
+    fun <T> Flow<T>.produceState(
+        initialValue: T,
+        coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    ): State<T> {
+        val state = mutableStateOf(initialValue)
+        launchInMain(coroutineContext) {
+            collect { state.value = it }
+        }
+        return state
+    }
+
+    fun <T> StateFlow<T>.produceState(
+        initialValue: T = this.value,
+        coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    ): State<T> {
+        val state = mutableStateOf(initialValue)
+        launchInBackground(coroutineContext) {
+            collect { state.value = it }
+        }
+        return state
     }
 }
 

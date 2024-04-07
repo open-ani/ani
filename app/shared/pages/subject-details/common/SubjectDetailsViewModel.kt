@@ -12,9 +12,9 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runInterruptible
-import me.him188.ani.app.data.EpisodeRepository
-import me.him188.ani.app.data.SubjectRepository
-import me.him188.ani.app.data.setSubjectCollectionTypeOrDelete
+import me.him188.ani.app.data.repositories.EpisodeRepository
+import me.him188.ani.app.data.repositories.SubjectRepository
+import me.him188.ani.app.data.repositories.setSubjectCollectionTypeOrDelete
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.datasources.api.paging.PageBasedPagedSource

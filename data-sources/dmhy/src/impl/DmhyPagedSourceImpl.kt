@@ -33,18 +33,30 @@ internal class DmhyPagedSourceImpl(
 ) : PagedSource<Topic>, AbstractPageBasedPagedSource<Topic>() {
     override val currentPage: MutableStateFlow<Int> = MutableStateFlow(1)
 
+    private fun DownloadSearchQuery.matches(topic: Topic): Boolean {
+        val details = topic.details ?: return true
+
+        this.episodeSort?.let { expected ->
+            val ep = details.episode
+            if (ep != null && ep.raw.removePrefix("0") != expected.removePrefix("0"))
+                return false
+        }
+
+        return true
+    }
+
     override suspend fun nextPageImpl(page: Int): List<Topic> {
-        val (_, result) = network.list(
+        val (_, rawResults) = network.list(
             page = page,
             keyword = query.keywords,
             sortId = getCategoryId(),
             teamId = query.alliance?.id,
             orderId = query.ordering?.id
         )
-        return result.map { topic ->
+        val results = rawResults.map { topic ->
             Topic(
                 id = topic.id,
-                publishedTime = topic.publishedTime,
+                publishedTimeMillis = topic.publishedTime,
                 category = TopicCategory.ANIME,
                 rawTitle = topic.rawTitle,
                 commentsCount = topic.commentsCount,
@@ -55,7 +67,14 @@ internal class DmhyPagedSourceImpl(
                 details = topic.details?.toTopicDetails(),
                 link = topic.link,
             )
+        }.filter {
+            query.matches(it)
         }
+        if (results.none()) {
+            noMorePages()
+            return emptyList()
+        }
+        return results
     }
 
     private fun getCategoryId(): String? {

@@ -1,7 +1,9 @@
 package me.him188.ani.app.tools
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 
 
 /**
@@ -12,7 +14,7 @@ import androidx.compose.runtime.remember
 fun formatDateTime(
     timestamp: Long, // millis
 ): String {
-    val formatter = LocalTimeFormatter.current
+    val formatter by rememberUpdatedState(LocalTimeFormatter.current)
     return remember(timestamp) { formatter.format(timestamp) }
 //    val formatter = remember(format) { DateTimeFormatter.ofPattern(format) }
 //    return remember(timestamp) {

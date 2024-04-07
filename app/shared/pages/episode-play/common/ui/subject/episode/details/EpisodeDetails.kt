@@ -20,6 +20,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -28,13 +29,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import me.him188.ani.app.data.media.Media
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.subject.episode.EpisodeCollectionActionButton
 import me.him188.ani.app.ui.subject.episode.EpisodeViewModel
-import me.him188.ani.app.ui.subject.episode.components.EpisodeActionRow
-import me.him188.ani.app.ui.subject.episode.render
 import me.him188.ani.app.ui.theme.slightlyWeaken
+import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.openapitools.client.models.EpisodeCollectionType
 
@@ -70,6 +71,16 @@ fun EpisodeDetails(
     }
 }
 
+@Stable
+private fun Media.render(): String {
+    val playing = this
+    return listOfNotNull(
+        playing.properties.resolution,
+        playing.properties.subtitleLanguages.joinToString("/"),
+        playing.size.takeIf { it != 0.bytes },
+        playing.properties.alliance,
+    ).joinToString(" · ")
+}
 
 /**
  * 显示正在播放的那行字
@@ -77,8 +88,8 @@ fun EpisodeDetails(
 @Composable
 private fun NowPlayingLabel(viewModel: EpisodeViewModel, modifier: Modifier = Modifier) {
     Row(modifier) {
-        val playing by viewModel.playSourceSelector.targetPlaySourceCandidate.collectAsStateWithLifecycle()
         ProvideTextStyle(MaterialTheme.typography.labelMedium) {
+            val playing = viewModel.mediaSelectorState.selected
             if (playing != null) {
                 Column {
                     Row {
@@ -87,14 +98,14 @@ private fun NowPlayingLabel(viewModel: EpisodeViewModel, modifier: Modifier = Mo
                             color = MaterialTheme.colorScheme.primary,
                         )
                         Text(
-                            remember(playing) { playing?.render() ?: "" },
+                            remember(playing) { playing.render() },
                             color = MaterialTheme.colorScheme.secondary,
                         )
                     }
 
                     SelectionContainer {
                         Text(
-                            remember(playing) { playing?.playSource?.originalTitle ?: "" },
+                            remember(playing) { playing.originalTitle },
                             Modifier.padding(top = 8.dp),
                             color = LocalContentColor.current.slightlyWeaken(),
                         )

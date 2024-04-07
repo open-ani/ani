@@ -229,6 +229,9 @@ abstract class AbstractPageBasedPagedSource<T>(
                     return@flow
                 }
                 emitAll(result.asFlow())
+                if (finished.value) { // [noMorePages] called within [nextPageOrNull]
+                    return@flow
+                }
             }
         }
     }

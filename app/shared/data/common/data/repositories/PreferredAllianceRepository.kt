@@ -1,4 +1,4 @@
-package me.him188.ani.app.data
+package me.him188.ani.app.data.repositories
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences

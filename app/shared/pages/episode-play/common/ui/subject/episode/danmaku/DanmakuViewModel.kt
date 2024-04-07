@@ -2,7 +2,7 @@ package me.him188.ani.app.ui.subject.episode.danmaku
 
 import androidx.compose.runtime.Stable
 import kotlinx.coroutines.flow.Flow
-import me.him188.ani.app.data.PreferencesRepository
+import me.him188.ani.app.data.repositories.PreferencesRepository
 import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.danmaku.ui.DanmakuHostState
 import me.him188.ani.danmaku.ui.DanmakuProperties

@@ -21,21 +21,21 @@ package me.him188.ani.app.platform
 import androidx.compose.runtime.Stable
 import io.ktor.client.plugins.UserAgent
 import kotlinx.coroutines.CoroutineScope
-import me.him188.ani.app.data.EpisodeRepository
-import me.him188.ani.app.data.EpisodeRepositoryImpl
-import me.him188.ani.app.data.EpisodeRevisionRepository
-import me.him188.ani.app.data.EpisodeRevisionRepositoryImpl
-import me.him188.ani.app.data.PreferencesRepository
-import me.him188.ani.app.data.PreferencesRepositoryImpl
-import me.him188.ani.app.data.PreferredAllianceRepository
-import me.him188.ani.app.data.PreferredAllianceRepositoryImpl
-import me.him188.ani.app.data.ProfileRepository
-import me.him188.ani.app.data.SubjectRepository
-import me.him188.ani.app.data.SubjectRepositoryImpl
-import me.him188.ani.app.data.TokenRepository
-import me.him188.ani.app.data.TokenRepositoryImpl
-import me.him188.ani.app.data.UserRepository
-import me.him188.ani.app.data.UserRepositoryImpl
+import me.him188.ani.app.data.repositories.EpisodeRepository
+import me.him188.ani.app.data.repositories.EpisodeRepositoryImpl
+import me.him188.ani.app.data.repositories.EpisodeRevisionRepository
+import me.him188.ani.app.data.repositories.EpisodeRevisionRepositoryImpl
+import me.him188.ani.app.data.repositories.PreferencesRepository
+import me.him188.ani.app.data.repositories.PreferencesRepositoryImpl
+import me.him188.ani.app.data.repositories.PreferredAllianceRepository
+import me.him188.ani.app.data.repositories.PreferredAllianceRepositoryImpl
+import me.him188.ani.app.data.repositories.ProfileRepository
+import me.him188.ani.app.data.repositories.SubjectRepository
+import me.him188.ani.app.data.repositories.SubjectRepositoryImpl
+import me.him188.ani.app.data.repositories.TokenRepository
+import me.him188.ani.app.data.repositories.TokenRepositoryImpl
+import me.him188.ani.app.data.repositories.UserRepository
+import me.him188.ani.app.data.repositories.UserRepositoryImpl
 import me.him188.ani.app.persistent.preferencesStore
 import me.him188.ani.app.persistent.preferredAllianceStore
 import me.him188.ani.app.persistent.tokenStore
@@ -44,14 +44,10 @@ import me.him188.ani.app.session.SessionManagerImpl
 import me.him188.ani.danmaku.api.DanmakuProvider
 import me.him188.ani.danmaku.dandanplay.DandanplayClient
 import me.him188.ani.danmaku.dandanplay.DandanplayDanmakuProvider
-import me.him188.ani.datasources.acgrip.AcgRipDownloadProvider
-import me.him188.ani.datasources.api.CombinedDownloadProvider
-import me.him188.ani.datasources.api.DownloadProvider
 import me.him188.ani.datasources.api.SubjectProvider
 import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
 import me.him188.ani.datasources.dmhy.DmhyClient
-import me.him188.ani.datasources.dmhy.DmhyDownloadProvider
 import org.koin.dsl.module
 
 fun getCommonKoinModule(getContext: () -> Context, coroutineScope: CoroutineScope) = module {
@@ -67,9 +63,6 @@ fun getCommonKoinModule(getContext: () -> Context, coroutineScope: CoroutineScop
     }
     single<BangumiClient> { createBangumiClient() }
     single<SubjectProvider> { BangumiSubjectProvider(get<BangumiClient>()) }
-    single<DownloadProvider> {
-        CombinedDownloadProvider(DmhyDownloadProvider(), AcgRipDownloadProvider()) // TODO: replace with factory loaders
-    }
     single<SubjectRepository> { SubjectRepositoryImpl() }
     single<UserRepository> { UserRepositoryImpl() }
     single<EpisodeRevisionRepository> { EpisodeRevisionRepositoryImpl() }

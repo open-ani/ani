@@ -1,4 +1,4 @@
-package me.him188.ani.app.data
+package me.him188.ani.app.data.repositories
 
 /**
  * 每个 Repository 封装对相应数据的访问逻辑, 提供简单的接口, 让调用方无需关心数据的来源是网络还是本地存储.

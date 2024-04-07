@@ -44,6 +44,9 @@
 	*;
 }
 
+-keep class ** extends me.him188.ani.datasources.api.SubjectProvider {}
+-keep class ** extends me.him188.ani.datasources.api.DownloadProvider {}
+
 # Torrent4j
 -keep class org.libtorrent4j.swig.libtorrent_jni {*;}
 

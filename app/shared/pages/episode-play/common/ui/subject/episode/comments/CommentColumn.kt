@@ -20,9 +20,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flow
-import me.him188.ani.app.data.Comment
-import me.him188.ani.app.data.EpisodeRevisionRepository
-import me.him188.ani.app.data.UserRepository
+import me.him188.ani.app.data.repositories.Comment
+import me.him188.ani.app.data.repositories.EpisodeRevisionRepository
+import me.him188.ani.app.data.repositories.UserRepository
 import me.him188.ani.app.tools.formatDateTime
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.AbstractViewModel

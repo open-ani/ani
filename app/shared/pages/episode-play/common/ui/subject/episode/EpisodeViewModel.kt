@@ -3,6 +3,10 @@ package me.him188.ani.app.ui.subject.episode
 import androidx.annotation.UiThread
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import kotlinx.coroutines.Dispatchers
@@ -10,21 +14,28 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.withContext
-import me.him188.ani.app.data.EpisodeRepository
+import me.him188.ani.app.data.media.DownloadProviderMediaFetcher
+import me.him188.ani.app.data.media.Media
+import me.him188.ani.app.data.media.MediaFetchRequest
+import me.him188.ani.app.data.media.MediaFetchSession
+import me.him188.ani.app.data.media.MediaFetcher
+import me.him188.ani.app.data.media.MediaFetcherConfig
+import me.him188.ani.app.data.repositories.EpisodeRepository
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.Context
 import me.him188.ani.app.torrent.TorrentManager
@@ -33,6 +44,8 @@ import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.app.ui.subject.episode.danmaku.PlayerDanmakuViewModel
+import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
+import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorState
 import me.him188.ani.app.videoplayer.PlayerState
 import me.him188.ani.app.videoplayer.PlayerStateFactory
 import me.him188.ani.app.videoplayer.TorrentVideoSource
@@ -40,13 +53,6 @@ import me.him188.ani.app.videoplayer.VideoSource
 import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuMatchers
 import me.him188.ani.danmaku.api.DanmakuProvider
-import me.him188.ani.datasources.api.DownloadProvider
-import me.him188.ani.datasources.api.DownloadSearchQuery
-import me.him188.ani.datasources.api.paging.PagedSource
-import me.him188.ani.datasources.api.paging.awaitFinished
-import me.him188.ani.datasources.api.topic.Resolution
-import me.him188.ani.datasources.api.topic.Topic
-import me.him188.ani.datasources.api.topic.TopicCategory
 import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.datasources.bangumi.processing.nameCNOrName
 import me.him188.ani.datasources.bangumi.processing.renderEpisodeSp
@@ -57,7 +63,6 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.openapitools.client.models.EpisodeCollectionType
 import org.openapitools.client.models.EpisodeDetail
-import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
@@ -86,19 +91,32 @@ interface EpisodeViewModel : HasBackgroundScope {
     val episodeCollectionType: SharedFlow<EpisodeCollectionType>
     suspend fun setEpisodeCollectionType(type: EpisodeCollectionType)
 
+    // Media Fetching
+
+    /**
+     * Emits the progress of the [MediaFetcher] fetching media.
+     * Range is `0..1`
+     */
+    val mediaFetcherProgress: Flow<Float>
+
+    /**
+     * Emits `true` if the [MediaFetcher] has completed fetching media.
+     */
+    val mediaFetcherCompleted: Flow<Boolean>
+
+    // Media Selection
+
+    val mediaSelectorState: MediaSelectorState
+
+    var mediaSelectorVisible: Boolean
+
+
     // Video
 
     /**
      * `true` if a play source is selected by user (or automatically)
      */
-    val playSourceSelected: Flow<Boolean>
-
-    /**
-     * `true` if the list of play sources are still downloading (e.g. from dmhy).
-     */
-    val isPlaySourcesLoading: StateFlow<Boolean>
-
-    val playSourceSelector: PlaySourceSelector
+    val mediaSelected: Flow<Boolean>
 
     /**
      * `true` if the video is ready to play.
@@ -112,12 +130,6 @@ interface EpisodeViewModel : HasBackgroundScope {
      * Play controller for video view. This can be saved even when window configuration changes (i.e. everything recomposes).
      */
     val playerState: PlayerState
-
-    /**
-     * `true` if the bottom sheet for choosing play source should be shown.
-     */
-    val isShowPlaySourceSheet: StateFlow<Boolean>
-    fun setShowPlaySourceSheet(show: Boolean)
 
     @UiThread
     suspend fun copyDownloadLink(clipboardManager: ClipboardManager, snackbar: SnackbarHostState)
@@ -141,6 +153,7 @@ fun EpisodeViewModel(
 ): EpisodeViewModel = EpisodeViewModelImpl(initialSubjectId, initialEpisodeId, initialIsFullscreen, context)
 
 
+@Stable
 private class EpisodeViewModelImpl(
     override val subjectId: Int,
     override val episodeId: Int,
@@ -148,107 +161,78 @@ private class EpisodeViewModelImpl(
     context: Context,
 ) : AbstractViewModel(), KoinComponent, EpisodeViewModel {
     private val bangumiClient by inject<BangumiClient>()
-    private val downloadProvider by inject<DownloadProvider>()
     private val browserNavigator: BrowserNavigator by inject()
     private val torrentManager: TorrentManager by inject()
     private val playerStateFactory: PlayerStateFactory by inject()
     private val episodeRepository: EpisodeRepository by inject()
     private val danmakuProvider: DanmakuProvider by inject()
 
+
     private val subjectDetails = flowOf(subjectId).mapLatest { subjectId ->
         runUntilSuccess { withContext(Dispatchers.IO) { bangumiClient.api.getSubjectById(subjectId) } }
         // TODO: replace with data layer 
     }.shareInBackground()
 
-    @Stable
     override val episode: SharedFlow<EpisodeDetail> = flowOf(episodeId).mapLatest { episodeId ->
         runUntilSuccess { withContext(Dispatchers.IO) { bangumiClient.api.getEpisodeById(episodeId) } }
     }.shareInBackground()
 
-    @Stable
     override val subjectTitle: Flow<String> = subjectDetails.filterNotNull().mapLatest { subject ->
         subject.nameCNOrName()
     }
 
-    @Stable
     override val episodeEp = episode.filterNotNull().mapLatest { episode ->
         episode.renderEpisodeSp()
     }
 
-    @Stable
     override val episodeTitle = episode.filterNotNull().mapLatest { episode ->
         episode.nameCNOrName()
     }
 
-    // 动漫花园等数据源搜搜结果
-    private val _isPlaySourcesLoading = MutableStateFlow(true)
 
-    @Stable
-    override val isPlaySourcesLoading: StateFlow<Boolean> get() = _isPlaySourcesLoading
+    // Media Fetching
 
-    @Stable
-    private val playSources: SharedFlow<Collection<PlaySource>?> =
-        combine(episode, subjectTitle) { episode, subjectTitle ->
-            episode to subjectTitle
-        }.mapNotNull { (episode, subjectTitle) ->
-
-            _isPlaySourcesLoading.emit(true)
-            val session = downloadProvider.startSearch(
-                DownloadSearchQuery(
-                    keywords = subjectTitle,
-                    category = TopicCategory.ANIME,
-                )
-            )
-            // 等完成时将 _isPlaySourcesLoading 设置为 false
-            launchInBackground {
-                session.awaitFinished()
-                _isPlaySourcesLoading.emit(false)
-            }
-
-            processDmhyResults(session, episode)
-        }.transformLatest { flow ->
-            val list = ConcurrentLinkedQueue<PlaySource>()
-            flow.collect { source ->
-                list.add(source)
-                emit(list.distinctBy { it.originalTitle })
-            }
-        }.shareInBackground()
-
-    private fun processDmhyResults(
-        session: PagedSource<Topic>,
-        currentEpisode: EpisodeDetail
-    ) = session.results
-        .filter { it.details != null }
-        .filter {
-            it.details!!.episode?.toString()?.removePrefix("0") == currentEpisode.ep?.toString()?.removePrefix("0")
-        }
-        .map {
-            val details = it.details!!
-            PlaySource(
-                id = it.id,
-                alliance = it.alliance,
-                subtitleLanguage = details.subtitleLanguages.firstOrNull()?.toString() ?: "生肉",
-                resolution = details.resolution ?: Resolution.R1080P, // 默认 1080P, 因为目前大概都是 1080P
-                dataSource = "TODO",
-                originalUrl = it.link,
-                download = ResourceLocation.MagnetLink(it.magnetLink),
-                originalTitle = it.rawTitle,
-                size = it.size,
-            )
-        }
-
-    @Stable
-    override val playSourceSelector = PlaySourceSelector(
-        subjectDetails.map { it.id },
-        listOf(),
-        playSources.filterNotNull(),
-        backgroundScope
+    private val mediaFetcher = DownloadProviderMediaFetcher(
+        configProvider = { MediaFetcherConfig.Default },
+        parentCoroutineContext = backgroundScope.coroutineContext,
     )
 
-    @Stable
-    override val playSourceSelected: Flow<Boolean> =
-        playSourceSelector.targetPlaySourceCandidate.map { it != null }
+    /**
+     * A lazy [MediaFetchSession] that is created when [subjectDetails] and [episode] are available.
+     */
+    val mediaFetchSession = combine(subjectDetails, episode) { subject, episode ->
+        mediaFetcher.fetch(
+            MediaFetchRequest(
+                subjectName = subject.nameCNOrName(),
+                episodeName = episode.nameCNOrName(),
+                episodeSort = episode.sort.toString(),
+            )
+        )
+    }.shareInBackground(started = SharingStarted.Eagerly)
 
+    override val mediaFetcherProgress: Flow<Float> = mediaFetchSession.flatMapLatest { it.progress }
+
+    override val mediaFetcherCompleted: Flow<Boolean> = mediaFetchSession.flatMapLatest { it.hasCompleted }
+
+    // Media Selection
+
+    override var mediaSelectorVisible: Boolean by mutableStateOf(false)
+
+    override val mediaSelectorState = kotlin.run {
+        val state by mediaFetchSession.flatMapLatest { it.cumulativeResults }
+            .produceState(emptyList())
+        MediaSelectorState(
+            mediaListProvider = { state },
+            defaultPreferenceProvider = { MediaPreference.Empty }
+        )
+    }
+
+    private val selectedMedia = snapshotFlow { mediaSelectorState.selected }
+        .flowOn(Dispatchers.Main) // access states in Main
+        .debounce(1.seconds)
+        .flowOn(Dispatchers.Default)
+
+    override val mediaSelected: Flow<Boolean> = selectedMedia.map { it != null }
 
     /**
      * The [VideoSource] selected to play.
@@ -257,18 +241,16 @@ private class EpisodeViewModelImpl(
      * - List of video sources are still downloading so user has nothing to select.
      * - The sources are available but user has not yet selected one.
      */
-    @Stable
-    private val videoSource: SharedFlow<VideoSource<*>?> = playSourceSelector.targetPlaySourceCandidate
+    private val videoSource: SharedFlow<VideoSource<*>?> = selectedMedia
         .debounce(1.seconds)
         .distinctUntilChanged()
         .transformLatest { playSource ->
             emit(null)
-            playSource?.let {
+            playSource?.let { media ->
                 try {
                     emit(
                         TorrentVideoSource(
-                            torrentManager.downloader.await()
-                                .fetchTorrent(it.playSource.download.uri)
+                            torrentManager.downloader.await().fetchTorrent(media.download.uri)
                         )
                     )
                 } catch (e: Exception) {
@@ -278,19 +260,11 @@ private class EpisodeViewModelImpl(
         }.shareInBackground()
 
 
-    @Stable
     override val isVideoReady: Flow<Boolean> = videoSource.map { it != null }
 
-    @Stable
     override val playerState: PlayerState =
         playerStateFactory.create(context, backgroundScope.coroutineContext)
 
-    override val isShowPlaySourceSheet = MutableStateFlow(false)
-    override fun setShowPlaySourceSheet(show: Boolean) {
-        isShowPlaySourceSheet.value = show
-    }
-
-    @Stable
     override val isFullscreen: MutableStateFlow<Boolean> = MutableStateFlow(initialIsFullscreen)
 
     override fun setFullscreen(fullscreen: Boolean) {
@@ -307,33 +281,33 @@ private class EpisodeViewModelImpl(
     }
 
     override suspend fun copyDownloadLink(clipboardManager: ClipboardManager, snackbar: SnackbarHostState) {
-        requestPlaySourceCandidate()?.let {
-            clipboardManager.setText(AnnotatedString(it.playSource.download.uri))
+        requestMediaOrNull()?.let {
+            clipboardManager.setText(AnnotatedString(it.download.uri))
             snackbar.showSnackbar("已复制下载链接")
         }
     }
 
     override suspend fun browsePlaySource(context: Context, snackbar: SnackbarHostState) {
-        requestPlaySourceCandidate()?.let {
-            browserNavigator.openBrowser(context, it.playSource.originalUrl)
+        requestMediaOrNull()?.let {
+            browserNavigator.openBrowser(context, it.originalUrl)
         }
     }
 
     override suspend fun browseDownload(context: Context, snackbar: SnackbarHostState) {
-        requestPlaySourceCandidate()?.let {
-            browserNavigator.openMagnetLink(context, it.playSource.download.uri)
+        requestMediaOrNull()?.let {
+            browserNavigator.openMagnetLink(context, it.download.uri)
         }
     }
 
     override val danmaku: PlayerDanmakuViewModel = PlayerDanmakuViewModel()
 
     private val danmakuFlow: Flow<Danmaku> = combine(
-        playSourceSelector.targetPlaySourceCandidate.filterNotNull(),
+        selectedMedia.filterNotNull(),
         playerState.videoProperties.filterNotNull()
-    ) { playSourceCandidate, video ->
+    ) { media, video ->
         val ep = episode.first()
         danmakuProvider.startSession(
-            playSourceCandidate.playSource.originalTitle,
+            media.originalTitle,
             video.fileHash ?: "aa".repeat(16),
             video.fileLengthBytes,
             video.durationMillis.milliseconds,
@@ -370,13 +344,17 @@ private class EpisodeViewModelImpl(
         }
     }
 
-    private suspend fun requestPlaySourceCandidate(): PlaySourceCandidate? {
-        val candidate = playSourceSelector.targetPlaySourceCandidate.value
-        if (candidate != null) {
-            return candidate
+    /**
+     * Requests the user to select a media if not already.
+     * Returns null if the user cancels the selection.
+     */
+    private suspend fun requestMediaOrNull(): Media? {
+        mediaSelectorState.selected?.let {
+            return it // already selected
         }
-        setShowPlaySourceSheet(true)
-        isShowPlaySourceSheet.first { !it } // await closed
-        return playSourceSelector.targetPlaySourceCandidate.value
+
+        mediaSelectorVisible = true
+        snapshotFlow { mediaSelectorVisible }.first { !it } // await closed
+        return mediaSelectorState.selected
     }
 }

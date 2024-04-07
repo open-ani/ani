@@ -2,7 +2,7 @@ package me.him188.ani.datasources.api.paging
 
 
 data class Paged<T>(
-    val total: Int,
+    val total: Int?,
     val hasMore: Boolean,
     val page: List<T>,
 ) {
@@ -19,10 +19,10 @@ inline fun <T, R> Paged<T>.map(block: (T) -> R): Paged<R> {
 
 fun <T> Paged.Companion.processPagedResponse(total: Int?, pageSize: Int, data: List<T>?) =
     if (data == null) {
-        Paged(total ?: 0, false, emptyList())
+        Paged(total, false, emptyList())
     } else {
         Paged(
-            total ?: data.size,
+            total,
             data.isNotEmpty() && data.size >= pageSize,
             data
         )
