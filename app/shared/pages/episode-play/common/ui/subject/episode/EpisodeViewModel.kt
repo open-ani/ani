@@ -209,7 +209,10 @@ private class EpisodeViewModelImpl(
     val mediaFetchSession = combine(subjectDetails, episode) { subject, episode ->
         mediaFetcher.fetch(
             MediaFetchRequest(
-                subjectName = subject.nameCNOrName(),
+                subjectNames = listOfNotNull(
+                    subject.name,
+                    subject.nameCn
+                ),
                 episodeName = episode.nameCNOrName(),
                 episodeSort = episode.sort.toString(),
             )

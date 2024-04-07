@@ -10,10 +10,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
@@ -49,7 +50,7 @@ class MediaFetchRequest(
     /**
      * E.g. "关于我转生变成史莱姆这档事 第三季"
      */
-    val subjectName: String,
+    val subjectNames: List<String>,
     /**
      * E.g. "49", "01"
      */
@@ -175,23 +176,23 @@ class DownloadProviderMediaFetcher(
     private inner class MediaSourceResultImpl(
         private val dataSourceId: String,
         private val config: MediaFetcherConfig,
-        pagedSource: Flow<PagedSource<Topic>>, // single element flow like a Deferred
+        pagedSources: Flow<PagedSource<Topic>>,
     ) : MediaSourceResult {
         override val state: MutableStateFlow<MediaSourceState> = MutableStateFlow(MediaSourceState.Idle)
 
         override val results: Flow<List<Media>> by lazy {
-            pagedSource.flatMapLatest<PagedSource<Topic>, Topic> { it.results }
-                .map<Topic, Media> { it.toMedia() }
-                .onStart<Media> {
+            pagedSources.flatMapMerge { it.results }
+                .map { it.toMedia() }
+                .onStart {
                     state.value = MediaSourceState.Working
                 }
                 .retry(2) { delay(2000);true }
-                .catch<Media> {
+                .catch {
                     state.value = MediaSourceState.Failed(it)
                     logger.error(it) { "Failed to fetch media from $dataSourceId because of upstream error" }
                     throw it
                 }
-                .onCompletion<Media> {
+                .onCompletion {
                     if (it == null) {
                         state.value = MediaSourceState.Succeed
                     } else {
@@ -206,8 +207,11 @@ class DownloadProviderMediaFetcher(
                         throw it
                     }
                 }
-                .runningFold<Media, List<Media>>(emptyList<Media>()) { acc, list ->
+                .runningFold(emptyList<Media>()) { acc, list ->
                     acc + list
+                }
+                .map { list ->
+                    list.fastDistinctBy { it.id }
                 }
                 .shareIn(
                     scope, replay = 1, started = SharingStarted.WhileSubscribed(5000)
@@ -215,7 +219,7 @@ class DownloadProviderMediaFetcher(
         }
 
         override val progress: Flow<Progress> by lazy {
-            combine(results, pagedSource.flatMapLatest { it.totalSize }) { res, total ->
+            combine(results, pagedSources.flatMapLatest { it.totalSize }) { res, total ->
                 Progress(
                     current = res.size,
                     total = total
@@ -258,11 +262,11 @@ class DownloadProviderMediaFetcher(
             MediaSourceResultImpl(
                 dataSourceId = id,
                 config,
-                pagedSource = flow {
-                    emit(provider.startSearch(request.createQuery()))
+                pagedSources = request.createQueries().asFlow().map {
+                    provider.startSearch(it)
                 }.shareIn(
                     scope, replay = 1, started = SharingStarted.Lazily,
-                ).take(1) // so that the flow can normally complete
+                ).take(2) // so that the flow can normally complete
             )
         }
 
@@ -317,9 +321,9 @@ class DownloadProviderMediaFetcher(
     }
 }
 
-private fun MediaFetchRequest.createQuery(): DownloadSearchQuery {
-    return DownloadSearchQuery(
-        keywords = subjectName,
+private fun MediaFetchRequest.createQueries(): List<DownloadSearchQuery> = subjectNames.map {
+    DownloadSearchQuery(
+        keywords = it,
         category = TopicCategory.ANIME,
         episodeSort = episodeSort,
         episodeName = episodeName,
