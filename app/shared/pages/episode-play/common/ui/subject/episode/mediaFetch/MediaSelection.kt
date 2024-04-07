@@ -36,7 +36,7 @@ import androidx.compose.ui.unit.dp
 import me.him188.ani.app.data.media.Media
 import me.him188.ani.app.tools.formatDateTime
 import me.him188.ani.datasources.acgrip.AcgRipDownloadProvider
-import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
+import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.dmhy.DmhyDownloadProvider
 
 @Composable
@@ -188,6 +188,13 @@ private fun MediaItem(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
+                    if (media.size != FileSize.Zero) {
+                        InputChip(
+                            false,
+                            onClick = {},
+                            label = { Text(media.size.toString()) },
+                        )
+                    }
                     InputChip(
                         false,
                         onClick = { state.preferResolution(media.properties.resolution) },
@@ -204,40 +211,26 @@ private fun MediaItem(
                     }
                 }
 
-                if (media.size != 0.bytes) {
+                ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
                     Row(
                         Modifier
                             .padding(top = 8.dp)
-                            .fillMaxWidth()
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(media.size.toString())
-                    }
-                }
-
-                Row(
-                    Modifier
-                        .padding(top = 8.dp)
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Row {
-                        FlowRow(Modifier.weight(1f)) {
-                            ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
+                        Row {
+                            FlowRow(Modifier.weight(1f)) {
                                 Text(
                                     remember(media.mediaSourceId) { renderMediaSource(media.mediaSourceId) },
                                     maxLines = 1,
                                     softWrap = false
                                 )
-                            }
 
-                            Spacer(Modifier.width(16.dp))
+                                Spacer(Modifier.width(16.dp))
 
-                            ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
                                 Text(media.properties.alliance)
                             }
-                        }
 
-                        ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
                             Text(
                                 formatDateTime(media.publishedTime),
                                 Modifier.padding(start = 16.dp).align(Alignment.Bottom),

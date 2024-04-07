@@ -67,6 +67,8 @@ value class FileSize(
         inline val Double.kiloBytes: FileSize get() = this * 1024.bytes
         inline val Double.megaBytes: FileSize get() = (this * 1024).kiloBytes
         inline val Double.gigaBytes: FileSize get() = (this * 1024).megaBytes
+
+        val Zero = 0.bytes
     }
 
     override fun toString(): String {
