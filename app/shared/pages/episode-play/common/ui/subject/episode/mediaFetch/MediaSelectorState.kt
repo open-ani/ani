@@ -5,7 +5,13 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.util.fastDistinctBy
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flowOn
 import me.him188.ani.app.data.media.Media
 
 /**
@@ -88,9 +94,34 @@ interface MediaSelectorState {
     /**
      * Selects a media from the [candidates] list. This will update [selected].
      *
+     * This will be considered as the user's selection, and will trigger [PreferenceUpdates.select].
+     * For default selections, use [makeDefaultSelection]
+     *
      * @param candidate must be one of [candidate]. Otherwise this function will have no effect.
      */
     fun select(candidate: Media)
+
+    /**
+     * Make a default selection based on current user preferences and the defaults.
+     */
+    fun makeDefaultSelection()
+
+    /**
+     * A event source receiving updates to the user's preferences.
+     */
+    val preferenceUpdates: PreferenceUpdates
+}
+
+interface PreferenceUpdates {
+    /**
+     * [Flow] representing the stream of all user preference changes.
+     */
+    val preference: Flow<MediaPreference>
+
+    /**
+     * [Flow] representing the stream of all user selections made by [MediaSelectorState.select].
+     */
+    val select: Flow<Media>
 }
 
 internal class MediaSelectorStateImpl(
@@ -98,6 +129,10 @@ internal class MediaSelectorStateImpl(
     defaultProvider: () -> MediaPreference,
 //    mediaListMangler: MediaListMangler = DefaultMediaListMangler(),
 ) : MediaSelectorState {
+    private companion object {
+        val defaultUserPreference get() = MediaPreference.Empty
+    }
+
     override val mediaList: List<Media> by derivedStateOf { mediaListProvider() }
 
 //    /**
@@ -108,7 +143,7 @@ internal class MediaSelectorStateImpl(
 
     override val default: MediaPreference by derivedStateOf { defaultProvider() }
 
-    override var preference: MediaPreference by mutableStateOf(MediaPreference.Empty)
+    override var preference: MediaPreference by mutableStateOf(defaultUserPreference)
     override fun preferAlliance(alliance: String) {
         preference = preference.copy(alliance = alliance)
     }
@@ -185,6 +220,21 @@ internal class MediaSelectorStateImpl(
 
     override fun select(candidate: Media) {
         _selected = candidate
+        (preferenceUpdates.select as MutableSharedFlow<Media>).tryEmit(candidate)
+    }
+
+    override fun makeDefaultSelection() {
+        if (candidates.isNotEmpty()) {
+            _selected = candidates.first()
+        }
+    }
+
+    override val preferenceUpdates = object : PreferenceUpdates {
+        override val preference: Flow<MediaPreference> = snapshotFlow {
+            this@MediaSelectorStateImpl.preference
+        }.flowOn(Dispatchers.Main)
+            .filter { it !== defaultUserPreference }
+        override val select: MutableSharedFlow<Media> = MutableSharedFlow()
     }
 }
 

@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import me.him188.ani.app.data.serializers.DanmakuConfigSerializer
+import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.danmaku.ui.DanmakuConfig
 
 interface PreferencesRepository {
@@ -17,6 +18,13 @@ interface PreferencesRepository {
     val danmakuConfig: Preference<DanmakuConfig>
 
 //    suspend fun setDanmakuEnabled(enabled: Boolean)
+
+    /**
+     * Returns the user's default media preference if they have not given a override preference for a subject.
+     *
+     * @see EpisodePreferencesRepository
+     */
+    val defaultMediaPreference: Preference<MediaPreference?>
 }
 
 interface Preference<T> {
@@ -43,7 +51,7 @@ class PreferencesRepositoryImpl(
 
     inner class SerializablePreference<T>(
         val name: String,
-        private val serializer: KSerializer<T>,
+        private val serializer: KSerializer<T & Any>,
         default: () -> T,
     ) : Preference<T> {
         private val key = stringPreferencesKey(name)
@@ -56,13 +64,24 @@ class PreferencesRepositoryImpl(
             }
 
         override suspend fun set(value: T) {
-            preferences.edit { it[key] = format.encodeToString(serializer, value) }
+            preferences.edit {
+                if (value == null) {
+                    it.remove(key)
+                } else {
+                    it[key] = format.encodeToString(serializer, value)
+                }
+            }
         }
     }
 
     override val danmakuEnabled: Preference<Boolean> = BooleanPreference("danmaku_enabled")
     override val danmakuConfig: Preference<DanmakuConfig> =
         SerializablePreference("danmaku_config", DanmakuConfigSerializer, default = { DanmakuConfig.Default })
+    override val defaultMediaPreference: Preference<MediaPreference?> =
+        SerializablePreference(
+            "defaultMediaPreference",
+            MediaPreference.serializer(),
+            default = { null })
 
 //    private companion object {
 //        val DANMAKU_ENABLED = booleanPreferencesKey("danmaku_enabled")

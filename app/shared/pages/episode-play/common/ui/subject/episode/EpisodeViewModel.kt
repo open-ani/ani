@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
@@ -35,6 +36,7 @@ import me.him188.ani.app.data.media.MediaFetchRequest
 import me.him188.ani.app.data.media.MediaFetchSession
 import me.him188.ani.app.data.media.MediaFetcher
 import me.him188.ani.app.data.media.MediaFetcherConfig
+import me.him188.ani.app.data.repositories.EpisodePreferencesRepository
 import me.him188.ani.app.data.repositories.EpisodeRepository
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.Context
@@ -166,7 +168,7 @@ private class EpisodeViewModelImpl(
     private val playerStateFactory: PlayerStateFactory by inject()
     private val episodeRepository: EpisodeRepository by inject()
     private val danmakuProvider: DanmakuProvider by inject()
-
+    private val episodePreferencesRepository: EpisodePreferencesRepository by inject()
 
     private val subjectDetails = flowOf(subjectId).mapLatest { subjectId ->
         runUntilSuccess { withContext(Dispatchers.IO) { bangumiClient.api.getSubjectById(subjectId) } }
@@ -221,10 +223,47 @@ private class EpisodeViewModelImpl(
     override val mediaSelectorState = kotlin.run {
         val state by mediaFetchSession.flatMapLatest { it.cumulativeResults }
             .produceState(emptyList())
+        val defaultPreference by episodePreferencesRepository.mediaPreferenceFlow(subjectId)
+            .produceState(MediaPreference.Empty)
         MediaSelectorState(
             mediaListProvider = { state },
-            defaultPreferenceProvider = { MediaPreference.Empty }
-        )
+            defaultPreferenceProvider = { defaultPreference },
+        ).apply {
+            launchInBackground {
+                // Save users' per-subject preferences when they click the filter chips
+                preferenceUpdates.preference.collect {
+                    episodePreferencesRepository.setMediaPreference(subjectId, it)
+                }
+            }
+            launchInBackground {
+                // Save users' per-subject preferences when they click cards
+                preferenceUpdates.select.collect { media ->
+                    episodePreferencesRepository.setMediaPreference(
+                        subjectId,
+                        MediaPreference(
+                            alliance = media.properties.alliance,
+                            resolution = media.properties.resolution,
+                            // Use the filter chip if any
+                            // because a media has multiple languages and user may choose the media because it includes their desired one
+                            subtitleLanguage = selectedSubtitleLanguage
+                                ?: media.properties.subtitleLanguages.firstOrNull(),
+                            mediaSourceId = media.mediaSourceId
+                        )
+                    )
+                }
+            }
+            launchInBackground {
+                // Automatically select a media when the list is ready
+                mediaFetchSession.flatMapLatest { it.hasCompleted }.filter { it }.collect {
+                    // on completion
+                    withContext(Dispatchers.Main) {
+                        if (selected == null) { // only if user has not selected
+                            makeDefaultSelection()
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private val selectedMedia = snapshotFlow { mediaSelectorState.selected }

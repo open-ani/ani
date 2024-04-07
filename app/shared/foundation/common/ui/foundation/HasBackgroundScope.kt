@@ -241,6 +241,9 @@ interface HasBackgroundScope {
         return localFlow
     }
 
+    /**
+     * Collects the flow on the main thread into a [State].
+     */
     fun <T> Flow<T>.produceState(
         initialValue: T,
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
@@ -252,6 +255,9 @@ interface HasBackgroundScope {
         return state
     }
 
+    /**
+     * Collects the flow on the main thread into a [State].
+     */
     fun <T> StateFlow<T>.produceState(
         initialValue: T = this.value,
         coroutineContext: CoroutineContext = EmptyCoroutineContext,

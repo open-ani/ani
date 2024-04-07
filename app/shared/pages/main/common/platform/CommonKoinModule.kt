@@ -21,14 +21,14 @@ package me.him188.ani.app.platform
 import androidx.compose.runtime.Stable
 import io.ktor.client.plugins.UserAgent
 import kotlinx.coroutines.CoroutineScope
+import me.him188.ani.app.data.repositories.EpisodePreferencesRepository
+import me.him188.ani.app.data.repositories.EpisodePreferencesRepositoryImpl
 import me.him188.ani.app.data.repositories.EpisodeRepository
 import me.him188.ani.app.data.repositories.EpisodeRepositoryImpl
 import me.him188.ani.app.data.repositories.EpisodeRevisionRepository
 import me.him188.ani.app.data.repositories.EpisodeRevisionRepositoryImpl
 import me.him188.ani.app.data.repositories.PreferencesRepository
 import me.him188.ani.app.data.repositories.PreferencesRepositoryImpl
-import me.him188.ani.app.data.repositories.PreferredAllianceRepository
-import me.him188.ani.app.data.repositories.PreferredAllianceRepositoryImpl
 import me.him188.ani.app.data.repositories.ProfileRepository
 import me.him188.ani.app.data.repositories.SubjectRepository
 import me.him188.ani.app.data.repositories.SubjectRepositoryImpl
@@ -52,7 +52,7 @@ import org.koin.dsl.module
 
 fun getCommonKoinModule(getContext: () -> Context, coroutineScope: CoroutineScope) = module {
     single<TokenRepository> { TokenRepositoryImpl(getContext().tokenStore) }
-    single<PreferredAllianceRepository> { PreferredAllianceRepositoryImpl(getContext().preferredAllianceStore) }
+    single<EpisodePreferencesRepository> { EpisodePreferencesRepositoryImpl(getContext().preferredAllianceStore) }
     single<SessionManager> { SessionManagerImpl() }
     single<DmhyClient> {
         DmhyClient.create {
