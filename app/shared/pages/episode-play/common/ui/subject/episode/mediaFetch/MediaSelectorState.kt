@@ -174,7 +174,18 @@ internal class MediaSelectorStateImpl(
     override val resolutions: List<String> by derivedStateOf {
         mediaList.map { it.properties.resolution }
             .fastDistinctBy { it }
-            .sortedDescending()
+            .sortedByDescending {
+                when (it.uppercase()) {
+                    "8K", "4320P" -> 6
+                    "4K", "2160P" -> 5
+                    "2K", "1440P" -> 4
+                    "1080P" -> 3
+                    "720P" -> 2
+                    "480P" -> 1
+                    "360P" -> 0
+                    else -> -1
+                }
+            }
     }
     override val subtitleLanguages: List<String> by derivedStateOf {
         mediaList.flatMap { it.properties.subtitleLanguages }
