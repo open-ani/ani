@@ -56,7 +56,7 @@ internal class DmhyPagedSourceImpl(
         val results = rawResults.map { topic ->
             Topic(
                 id = topic.id,
-                publishedTimeMillis = topic.publishedTime,
+                publishedTimeMillis = topic.publishedTimeMillis,
                 category = TopicCategory.ANIME,
                 rawTitle = topic.rawTitle,
                 commentsCount = topic.commentsCount,

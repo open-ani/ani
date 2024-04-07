@@ -32,7 +32,7 @@ class DmhyCategory(
 
 data class DmhyTopic(
     val id: String,
-    val publishedTime: Long,
+    val publishedTimeMillis: Long,
     val category: DmhyCategory,
     val alliance: Alliance?,
     val rawTitle: String,

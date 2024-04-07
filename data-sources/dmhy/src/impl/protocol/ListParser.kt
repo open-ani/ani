@@ -88,7 +88,7 @@ internal object ListParser {
             val allianceName = allianceName
             return DmhyTopic(
                 id = id,
-                publishedTime = LocalDateTime.parse(date, formatter).toEpochSecond(ZoneOffset.ofHours(+8)),
+                publishedTimeMillis = LocalDateTime.parse(date, formatter).toEpochSecond(ZoneOffset.ofHours(+8)) * 1000,
 //                category = TopicCategory.ANIME,
                 category = context.categories.getOrSet(categoryId) { DmhyCategory(categoryId, categoryName) },
                 alliance = if (allianceId != null && allianceName != null)
