@@ -55,6 +55,7 @@ import me.him188.ani.app.videoplayer.VideoSource
 import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuMatchers
 import me.him188.ani.danmaku.api.DanmakuProvider
+import me.him188.ani.datasources.api.DownloadProviderLoader
 import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.datasources.bangumi.processing.nameCNOrName
 import me.him188.ani.datasources.bangumi.processing.renderEpisodeSp
@@ -196,6 +197,9 @@ private class EpisodeViewModelImpl(
 
     private val mediaFetcher = DownloadProviderMediaFetcher(
         configProvider = { MediaFetcherConfig.Default },
+        downloadProviders = DownloadProviderLoader.loadDownloadProviders().also {
+            logger.info { "Loaded DownloadProvider: ${it.joinToString()}" }
+        },
         parentCoroutineContext = backgroundScope.coroutineContext,
     )
 

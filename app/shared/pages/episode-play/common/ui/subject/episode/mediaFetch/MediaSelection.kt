@@ -38,6 +38,7 @@ import me.him188.ani.app.tools.formatDateTime
 import me.him188.ani.datasources.acgrip.AcgRipDownloadProvider
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.dmhy.DmhyDownloadProvider
+import me.him188.ani.datasources.mikan.MikanDownloadProvider
 
 @Composable
 fun MediaSelector(
@@ -262,6 +263,7 @@ private fun renderMediaSource(
 ): String = when (id) {
     DmhyDownloadProvider.ID -> "动漫花园"
     AcgRipDownloadProvider.ID -> "acg.rip"
+    MikanDownloadProvider.ID -> "Mikan"
     else -> id
 }
 

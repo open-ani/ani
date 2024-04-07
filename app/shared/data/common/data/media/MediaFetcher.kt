@@ -28,6 +28,8 @@ import me.him188.ani.datasources.api.paging.PagedSource
 import me.him188.ani.datasources.api.topic.Resolution
 import me.him188.ani.datasources.api.topic.Topic
 import me.him188.ani.datasources.api.topic.TopicCategory
+import me.him188.ani.utils.logging.error
+import me.him188.ani.utils.logging.logger
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -186,6 +188,7 @@ class DownloadProviderMediaFetcher(
                 .retry(2) { delay(2000);true }
                 .catch<Media> {
                     state.value = MediaSourceState.Failed(it)
+                    logger.error(it) { "Failed to fetch media from $dataSourceId because of upstream error" }
                     throw it
                 }
                 .onCompletion<Media> {
@@ -199,6 +202,7 @@ class DownloadProviderMediaFetcher(
                         }
                         // downstream (collector) failure
                         state.value = MediaSourceState.Abandoned(it)
+                        logger.error(it) { "Failed to fetch media from $dataSourceId because of downstream error" }
                         throw it
                     }
                 }
@@ -225,7 +229,13 @@ class DownloadProviderMediaFetcher(
                 id = "$dataSourceId.$id",
                 mediaSourceId = dataSourceId,
                 originalUrl = link,
-                download = ResourceLocation.MagnetLink(magnetLink),
+                download = magnetLink.let {
+                    if (it.startsWith("magnet:")) {
+                        ResourceLocation.MagnetLink(it)
+                    } else {
+                        ResourceLocation.TorrentFile(it)
+                    }
+                },
                 originalTitle = rawTitle,
                 size = size,
                 publishedTime = publishedTimeMillis ?: 0,
@@ -300,6 +310,10 @@ class DownloadProviderMediaFetcher(
 
     override fun fetch(request: MediaFetchRequest): MediaFetchSession {
         return MediaFetchSessionImpl(request, configProvider())
+    }
+
+    private companion object {
+        val logger = logger<DownloadProviderMediaFetcher>()
     }
 }
 

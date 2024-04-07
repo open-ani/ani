@@ -70,6 +70,7 @@ kotlin {
         api(projects.dataSources.api)
         api(projects.dataSources.dmhy)
         api(projects.dataSources.acgRip)
+        api(projects.dataSources.mikan)
         api(projects.dataSources.bangumi)
 
         // Danmaku
