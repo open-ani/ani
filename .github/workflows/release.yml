@@ -151,6 +151,8 @@ jobs:
           CI_RELEASE_ID: ${{ needs.create-release.outputs.id }}
           CI_TAG: ${{ steps.tag.outputs.tag }}
 
+      - name: Explicitly generate Compose resources
+        run: ./gradlew generateComposeResClass ${{ env.gradleArgs }}
 
       - if: ${{ env.isMac == 'true' }}
         name: Prepare Android Signing Key
