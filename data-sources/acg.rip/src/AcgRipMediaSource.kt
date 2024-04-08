@@ -55,6 +55,7 @@ import me.him188.ani.datasources.api.titles.toTopicDetails
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.datasources.api.topic.Topic
 import me.him188.ani.datasources.api.topic.TopicCategory
+import me.him188.ani.datasources.api.topic.matches
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.logger
 import org.jsoup.Jsoup
@@ -96,17 +97,6 @@ class AcgRipMediaSource(
     }
 
     override suspend fun startSearch(query: DownloadSearchQuery): PagedSource<Topic> {
-        fun DownloadSearchQuery.matches(topic: Topic): Boolean {
-            val details = topic.details ?: return true
-
-            episodeSort?.let { expected ->
-                val ep = details.episode
-                if (ep != null && ep.raw.removePrefix("0") != expected.removePrefix("0"))
-                    return false
-            }
-
-            return true
-        }
         return PageBasedPagedSource(initialPage = 1) { page ->
             if (page == 1) {
                 try {

@@ -18,6 +18,7 @@
 
 package me.him188.ani.datasources.api.topic
 
+import me.him188.ani.datasources.api.DownloadSearchQuery
 import me.him188.ani.datasources.api.MediaSource
 import java.time.Instant
 import java.time.LocalDateTime
@@ -81,6 +82,17 @@ class TopicDetails(
     val mediaOrigin: MediaOrigin?,
     val subtitleLanguages: List<SubtitleLanguage>,
 )
+
+fun DownloadSearchQuery.matches(topic: Topic): Boolean {
+    val details = topic.details ?: return true
+    episodeSort?.let { expected ->
+        val ep = details.episode
+        if (ep != null && ep.raw.removePrefix("0").removeSuffix(".0") !=
+            expected.removePrefix("0").removeSuffix(".0")
+        ) return false
+    }
+    return true
+}
 
 enum class TopicCategory {
     ANIME,

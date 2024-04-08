@@ -25,6 +25,7 @@ import me.him188.ani.datasources.api.paging.PagedSource
 import me.him188.ani.datasources.api.titles.toTopicDetails
 import me.him188.ani.datasources.api.topic.Topic
 import me.him188.ani.datasources.api.topic.TopicCategory
+import me.him188.ani.datasources.api.topic.matches
 import me.him188.ani.datasources.dmhy.impl.protocol.Network
 
 internal class DmhyPagedSourceImpl(
@@ -32,18 +33,6 @@ internal class DmhyPagedSourceImpl(
     private val network: Network,
 ) : PagedSource<Topic>, AbstractPageBasedPagedSource<Topic>() {
     override val currentPage: MutableStateFlow<Int> = MutableStateFlow(1)
-
-    private fun DownloadSearchQuery.matches(topic: Topic): Boolean {
-        val details = topic.details ?: return true
-
-        this.episodeSort?.let { expected ->
-            val ep = details.episode
-            if (ep != null && ep.raw.removePrefix("0") != expected.removePrefix("0"))
-                return false
-        }
-
-        return true
-    }
 
     override suspend fun nextPageImpl(page: Int): List<Topic> {
         val (_, rawResults) = network.list(
