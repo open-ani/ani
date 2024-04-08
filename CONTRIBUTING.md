@@ -16,11 +16,12 @@
 4. 依赖管理: 依赖版本管理
 5. 构建打包: 如何编译, 如何打包 APK, 如何调试
 6. App 架构: 最主要的客户端模块的层级划分, 以及各层的职责
-7. 开发与调试: 源集结构, 预览 Compose UI, Navigation, 以及一些坑
+7. 开发与调试: 源集结构, 预览 Compose UI, Navigation, 问答, 以及一些坑
 
 ## 1. 开发工具
 
-因为项目使用 Kotlin MPP (多平台), 建议使用 Android Studio 的最新 Canary 测试版本以获得最佳体验.
+因为项目使用的技术全都非常新 (不过都是比较稳定的), 建议使用 Android Studio 的最新 Canary
+测试版本以获得最佳体验.
 
 使用 IntelliJ IDEA 则需要最低版本至少为 `2023.3`.
 
@@ -45,39 +46,48 @@
 
 ### 代码规范
 
-这是一个"玩具项目"
-，能跑的代码就是好代码，不过也请至少遵守遵循 [Kotlin 官方代码风格指南](https://kotlinlang.org/docs/coding-conventions.html).
+这是一个轻松的项目，能跑的代码就是好代码，不过也请至少遵守遵循 [Kotlin 官方代码风格指南](https://kotlinlang.org/docs/coding-conventions.html).
+在 PR 过程中尝试一些最佳实践不是更好吗?
 
 ## 3. 模块结构
+
+模块结构也对应目录结构.
 
 ```
 ani
 ├── buildSrc (Gradle 构建)
 ├── ci-helper (GitHub release 用)
+├── danmaku (独立弹幕引擎)
+├── torrent (独立 BitTorrent 下载支持库)
 ├── data-sources (数据源)
-│   ├── api (数据源抽象)
+│   ├── api (数据源抽象接口)
 │   ├── bangumi (Bangumi API)
-│   └── dmhy (动漫花园 API)
+│   ├── Mikan (对接 mikanani.me)
+│   ├── acg.rip (对接 acg.rip)
+│   └── dmhy (对接 dmhy.org)
 ├── app (客户端)
 │   ├── shared (桌面端与客户端共享代码)
-│   ├── desktop (桌面端独享代码)
-│   ├── torrent (BitTorrent 下载支持库)
+│   ├── desktop (桌面端入口点)
 │   ├── video-player (视频播放器支持库)
-│   └── android (Android 客户端独享代码)
-└── utils (模块共享工具库)
+│   └── android (Android 客户端入口点)
+└── utils (共享工具库)
 ```
 
-- 有关客户端模块化: 客户端绝大部分 UI, 数据层, 网络层以及多平台相关代码等全都位于 `app/shared` 中.
-  最佳实践是将功能拆分模块, 但由于 Kotlin 的 bug, 拆分模块会导致 Android Studio 无法正确解决多平台依赖的目标源集,
-  因此暂时不拆分.
-  Kotlin 2.0 正式版不久后就会发布, 这个问题会被修复, 届时可能再会考虑拆分模块.
+> 独立在 app 之外的库, 其实全都可以单独做成一个库发布.
 
-- 有关数据源独立: 数据源的实现独立于客户端逻辑. 它其实可以单独拆分作为一个库发布, 不过我比较懒.
+客户端架构细节请参考后文.
 
-> 可在 [settings.gradle.kts](settings.gradle.kts) 详细查看
+### 客户端入口点
 
-`common` 为 UI 通用代码，是 Kotlin MPP（Multiplatform Project，多平台项目），供桌面应用模块 `desktop` 和
-Android 应用模块 `android` 使用，实现最大化的组件共享。
+注意到 `:app` 模块下有 `:app:desktop` 与 `:app:android` 两个子模块. 它们都是客户端的入口点.
+它们内部只有微量代码用来启动来自 `:app:shared` 模块的 UI 等.
+绝大部分客户端代码都在共享模块 `:app:shared` 中.
+
+> 这样做的一个原因是各个平台的构建限制:
+>
+> - Android 方面是因为 Android Library 无法在 manifest 定义 Activity.
+> - Compose for Desktop 在多平台项目里面构建很难配置, 因此用单独的模块只用于打包.
+> - 将这些入口代码分开也能让系统架构更清晰一些.
 
 ## 4. 依赖管理
 
@@ -89,7 +99,7 @@ Ani 使用 Gradle Version Catalogs. 依赖位于 `gradle/libs.versions.toml`.
 
 要构建项目, 你需要首先进行几个简单配置:
 
-### 配置 Bangumi OAuth
+### 5.1. 配置 Bangumi OAuth
 
 1. 前往 <https://bangumi.tv/dev/app>
 2. 创建一个新应用
@@ -122,11 +132,11 @@ Ani 使用 Gradle Version Catalogs. 依赖位于 `gradle/libs.versions.toml`.
    > 桌面端也会自动有类似的 BuildConfig 文件生成 (`
    me.him188.ani.app.platform.AniBuildConfigDesktop). 它与 Android 端的是同步的.
 
-### 配置 Android 签名
+### 5.2. 配置 Android 签名
 
 在构建安卓目标时会自动弹出配置. 跟随 IDE 的指引即可.
 
-### 执行构建
+### 5.3. 执行构建
 
 执行 `./gradlew build` 即可编译并运行测试。需要正确的 Android SDK 配置才能完成编译。在没有配置时，编译将会出错并提示如何配置。
 
@@ -140,114 +150,170 @@ Ani 使用 Gradle Version Catalogs. 依赖位于 `gradle/libs.versions.toml`.
 
 ## 6. App 项目架构
 
-本节将介绍客户端模块 (`:app`) 的架构设计. 所提及目录均位于 `app/shared/commonMain` 下.
+本节将介绍客户端共享模块 (`:app:shared`) 的架构设计.
 
-与通常的 Android 应用开发一样, ani 从外到内有: UI 层, 数据层, 网络层/持久层.
+> 也就是对应目录 `app/shared` 里的内容.
 
-> 理论上使用数据源提供的数据还要设计一个兼容层, 但应该很长时间内都只会使用 Bangumi 源,
-> 就没有为条目等数据增加兼容层.
+在 `:app:shared` 中,
+参照 [Android 应用程序模块化指南](https://developer.android.com/topic/modularization),
+Ani 按照功能进行了一定程度的模块化.
 
-### UI 层
+`app/shared` 下有许多目录, 每个目录存放一个功能的所有相关代码:
 
-主要采用 MVVM 模式. MVVM 设计模式中的 Model 部分在 ani 中为各数据源提供的数据类.
-View 与 ViewModel 部分在 `ui` 目录中, 相关联的 View 和 ViewModel 放置在同一目录下.
+建议你打开 IDE 对照看.
+
+### `data`: 数据层
+
+包含所有对网络请求和本地持久化存储的高级封装. 后面介绍的 UI 层不会进行 HTTP 请求或是文件访问,
+而是调用这里的接口.
+
+数据仓库 `Repository` 的职责是将数据源提供的数据进行整合, 为 UI
+层提供统一的数据接口, 并且让 UI 层无需关心数据源的具体实现.
+
+data
+还提供了一个 [`MediaFetcher`](https://github.com/Him188/ani/tree/master/app/shared/data/common/data/media/MediaFetcher.kt#L42),
+封装了对番剧的下载链接获取逻辑.
+
+### `bangumi-authentication`: Bangumi 授权
+
+负责 Bangumi 授权的逻辑和 UI.
+
+提供 [`SessionManager`](https://github.com/Him188/ani/tree/master/app/shared/bangumi-authentication/common/session/SessionManager.kt#L58)
+接口, 允许其他模块使用 Bangumi 的用户 token.
+其他模块通过依赖注入 `SessionManager` 来获取 token 的 Flow.
+
+### `foundation`: 基础组件
+
+提供 i18n 支持, 通用的 UI 组件, 对平台交互的封装等.
+
+### `placeholder`
+
+来自 Google Accompanist 的 `Placeholders` 基础库. 由于 Google 已经停止维护, 这里就复制了一份.
+
+它提供 `Modifier.placeholder`, 可在数据还在加载中时, 在 Composable 之上覆盖一个特效表示正在加载.
+
+### `video-player`
+
+提供一个视频播放器 Composable: `VideoPlayer`, 对应地它的逻辑封装在 `PlayerState`.
+由于它依赖了一些 `foundation` 的组件, 所以没有放在项目顶层.
+
+### `pages`: 按 UI 页面分类的功能模块
+
+UI 设计采用 MVVM 模式. MVVM 设计模式中的 Model 部分在 Ani 中可以是各数据源 (`:data-sources`) 提供的数据类,
+例如 `:data-sources:bangumi` 将提供 `EpisodeDetails`.
+
+`pages` 目录中, 按照在 APP 实际运行时会展示的页面区分子目录. 相关联的 View (`@Composable`) 和
+ViewModel 放置在同一目录下.
+
+- `main`: 整个 APP UI 的入口点, 实现各个页面之间的跳转等
+- `home`: 首页
+- `subject-collection`: "我的收藏"页面
+- `subject-details`: 番剧详情页面 (可看声优列表等)
+- `episode-play`: 剧集详情以及播放页面
+- ...
+
+每个页面目录, 有 `common`, `android`, `desktop` 三个子目录.
+它们分别存放共享代码, Android 端代码, 桌面端代码. (Kotlin MPP 特性)
+
+若你不了解 Kotlin MPP, 简单来说:
+
+- `common` 内放置可同时在两个平台跑的代码, `android` 内放置只能在 Android 平台跑的代码, `desktop`
+  内放置只能在桌面 JVM 平台跑的代码.
+- 编译 `android` 时, Kotlin 会合并 `common` 与 `android` 的代码一起编译.
+- `android` 内, 可以访问 `common` 内的代码, 还可以访问 Android SDK 例如 `Activity`.
+- 在 `common` 内, 不能访问 Android SDK, 也不能使用 Java Swing 等 Android 上不支持的功能.
+- 在 `common` 内可以使用 `expect fun` 定义一个没有函数体的函数, 然后在 `android` 或 `desktop` 内使用
+  `actual fun` 实现它, 这样就可以在 common 内间接访问到平台相关的功能.
+- 详细参考 [Kotlin 官方文档](https://kotlinlang.org/docs/multiplatform-discover-project.html)
 
 #### UI 层组织方式
 
-- 一个 Activity 的内容为一个 Screen
-- 一个 Screen 为 navigation controller 容器, 支持在多个 scene (场景) 之间跳转.
-- 一个 Scene 的内容是 Page. Scene 将与 navigation 无关的 Page 对接到 navigation 系统上.
-    - 通常来说, 一个 Page 只会被一个 Scene 使用. 这样设计只是为了在预览 UI 的时候无需考虑 navigation
-      相关兼容问题.
-- Page 为实际包含 UI 控件 (`Column`, `Button` 等) 的容器.
+Ani 目前只有一个 `MainActivity`. `MainActivity` 使用 `AniAppContent`.
 
-在 Android, ani 主要有一个 `MainActivity`.
-`MainActivity` 使用 `main/MainScreen`.
-`MainScreen` 包含一个 navigation controller, 有如下几个 scene:
+`AniAppContent` 位于 `pages/main` 目录中, 它是 UI 的入口点.
+它引用了所有的页面并实现了页面之间的跳转.
 
-- `ui/home/HomeScene.kt`: 打开应用会进入的首页. 包含如下几个 page, 通过底部导航栏按钮切换 page.
-    - `HomePage`: 包含一个搜索条, 未来可能会做一些推荐之类的.
-    - `CollectionPage`: 自己的追番列表, 可以跳转详情或者直接播放.
-    - `ProfilePage`: 个人主页, 未来的设置也会加载这里面.
-- `ui/auth/AuthRequestScene.kt`: 请求登录场景. 当请求 Bangumi 登录时会跳转.
-- `ui/collection/CollectionPage`: 位于 `collection` 目录. 用于展示收藏的番剧.
-- `ui/subject/details/SubjectDetailsScene.kt`: 番剧详情场景. 当点击搜索结果或点击收藏的番剧时会跳转.
-  展示番剧的角色与声优, 制作人员等信息. 也可以跳转到对应剧集的播放.
-- `ui/subject/episode/EpisodeScene.kt`: 剧集详情场景. 有一个视频播放器, 可以剧集的评论等.
+每一个页面通常分别有一个 `Screen` 和 `Page`.
+`XXXScreen` 用于实现页面之间的跳转, `XXXPage` 用于实现页面的具体内容.
+`Screen` 会访问当前 navigation BackStackEntry, 获取该页面的参数并根据参数决定该如何展示 Page.
 
-#### ViewModel
+有的页面可以拥有多个 Page, 例如 `HomeScreen` 也就是进入 APP 后看到的页面, 它可以通过底部导航栏切换不同的
+Page (首页/我的收藏/个人中心).
 
-所有 ViewModel 继承 `AbstractViewModel`. 在构造示例后必须通过 Compose 的 `remember {}` 绑定生命周期到当前
-composable.
+> 这样的设计让 Page 不依赖 navigation, 就可以在开发时实时预览.
 
-### 数据层
+### Ani 的数据层
 
-数据层主要包含两个部分: 数据源 (data source) 与数据仓库 (repository).
+数据层主要包含两个部分: 单独的数据源 (`:data-sources`) 与放在 `app/shared/data`
+目录的数据仓库 (`Repository`).
 
 各数据源位于 app 模块之外的项目根目录的 `data-sources` 目录下. 数据源列表:
 
 - `data-sources/bangumi`: Bangumi 索引数据源, 提供番剧索引, 观看记录等.
+    - API 客户端使用其官方 OpenAPI 文档自动生成
 - `data-sources/api`: 下载数据源的抽象, 定义了数据源的接口以供接入多个下载数据源.
 - `data-sources/dmhy`: 动漫花园下载数据源, 只提供番剧下载链接.
-- ... 未来接入更多的下载数据源
-
-数据仓库位于 `app/shared/commonMain/data` 目录下. 数据仓库的职责是将数据源提供的数据进行整合, 为 UI
-层提供统一的数据接口, 并且让 UI 层无需关心数据源的具体实现. 仓库不仅对接上述数据源,
-还封装对本地数据库的操作 (例如保存的 token 和用户的字幕组偏好).
-
-可阅读 `app/shared/commonMain/data/Repository.kt` 了解实现细节.
-
-### 网络层/持久层
-
-网络请求在数据源中实现. 各个数据源会封装一套操作该数据源的 API 接口, 然后由各 Repository 调用.
-
-- `data-sources/bangumi` 的 API 客户端是根据其官方 OpenAPI 文档自动生成的.
-- `data-sources/dmhy` 的 API 客户端是手写的.
-
-对于本地保存的内容, 例如 token, 用户偏好等, ani 使用 Google DataStore 进行保存. 各个 store
-的定义在 `persistent` 目录下.
-
-你若只是写 ani 的 app 部分, 应该不需要太关心这些细节. 相关用法示例可以在对应的 Repository 找到.
-
-### app 其他内容
-
-- `platform`: 进行平台适配的专用内容. 例如 `CommonKoinModule`, `Context`, `currentPlatform`.
-- `navigation`: Navigation controller 封装.
-  > 因为使用的 PreCompose 库并不靠谱. 封装一下日后若有问题可以简单切换.
-- `session`: 管理 Bangumi OAuth 会话.
-- `ui/foundation`: 可复用的基本组件, 例如图像控件 `AniKamelImage`, `Tabs`, `AniTopAppBar` 等.
-- `ui/theme`: 自定义主题.
-- `ui/external`: 一些外部库的 fork, 例如 Google Accompanist 的 Placeholders.
-  > 它应当放在单独的模块, 但由于 Kotlin 的 bug, 目前只能先这样.
-- `videoplayer`: 视频播放器
-  > 它同样应当在单独的模块.
+- `data-sources/acg.rip`: acg.rip 下载数据源, 只提供番剧下载链接.
+- `data-sources/mikan`: mikanani.me 下载数据源, 只提供番剧下载链接.
+- ... 欢迎 PR 更多支持例如 SMB
 
 ## 7. 开发与调试
+
+### 获取帮助
+
+非常建议你遇到问题时在 GitHub [Discussions](https://github.com/him188/ani/discussions) 中提问.
+有很多坑我已经踩过了, 可以帮你节约宝贵的时间.
 
 ### 源集 (source set) 结构
 
 为了减少文件树层级, 项目使用了一些特殊的源集结构.
 
-在 `commonMain`, `androidMain` 等目录直接存放源码, 而不需要 `src/kotlin` 目录.
+在 `commonMain` 或 `common`, `androidMain` 或 `android` 目录直接存放 `.kt` 源码,
+而不需要 `src/kotlin` 目录.
 资源放置于 `commonResources`, `androidResources` 等目录下.
 
-若你不是很清楚 Gradle 这方面的功能, 只需模仿已有的源代码存放新文件.
+若你不是很清楚 Gradle 这方面的功能, 只需模仿已有的源代码存放新文件就行.
 
 ### 预览 Compose UI
 
-因为项目支持 Android 和桌面两个平台, 预览也就分两个平台.
-Compose 多平台项目的预览支持目前不是特别好. 不支持在 common 平台选择预览目标平台.
+因为项目支持 Android 和桌面两个平台, 预览也就分两个平台. 绝大部分 UI 代码在 Android 的桌面的效果是一模一样的,
+因此使用一个平台的预览即可.
 
-绝大部分 UI 代码写在 commonMain 中 (这样才能在两个平台共享代码). 在 commonMain 中, 使用 `@Preview`
-只能预览桌面端的 UI. 这通常来说与手机上的是一样的.
-但是桌面预览不支持可交互式预览 (Interactive Mode).
+在 common 中使用 `@Preview` 将进行桌面平台的预览, 但桌面预览不支持可交互式预览 (Interactive Mode),
+也不支持即时刷新, 不推荐.
 
-若要预览 Android 端的 UI, 需要在 `androidMain` 添加函数使用 `@Preview` 注解, 就像 Jetpack Compose
-那样. 你可以在 commonMain 中添加一个 `@Composable expect fun PreviewXXX`, 根据 IDE 的错误提示自动修复,
-为两个平台都添加对应的 `actual fun`. 然后为其添加 `@Preview` 注解.  
-这样就可以使用如下 IDE 分屏功能进行 Android 平台预览.
+在开发时, 通常建议在 android 中编写预览代码. 你可以通过 IDE 分屏功能将 android 预览放到一边.
 
-项目中的一个这样的示例为 `PreviewPlayerControllerOverlay`.
+#### 查找已有页面的预览
+
+用 IDE 查找想要预览的 Composable 的实现就能找到. 几乎所有的页面都有预览.
+
+#### 示例: 视频播放器的 Android 预览
+
+使用视频播放器作为示例, 视频播放器的入口点是 `VideoScaffold`, 它提供播放器的框架.
+调用方在该框架上通过参数传递 `topBar`, `video`, `danmakuHost` 等组件来组装一个视频播放器 UI.
+
+[`VideoScaffold`](https://github.com/Him188/ani/tree/master/app/shared/video-player/common/ui/VideoScaffold.kt#39)
+是通用的, 全部代码都位于 common 中:
+
+`app/shared/video-player/common/ui/VideoScaffold.kt`
+
+```kotlin
+@Composable
+fun VideoScaffold() {
+}
+```
+
+[`PreviewVideoScaffold`](https://github.com/Him188/ani/tree/master/app/shared/video-player/android/ui/VideoScaffold.android.kt#L47)
+位于 `app/shared/video-player/android/ui/VideoScaffold.android.kt`:
+
+```kotlin
+@Preview
+@Composable
+private fun PreviewVideoScaffold() {
+    VideoScaffold()
+}
+```
 
 <img width="600" src=".readme/images/contributing/previewing-compose-ui.png" alt="previewing-compose-ui"/>
 
@@ -256,6 +322,28 @@ Compose 多平台项目的预览支持目前不是特别好. 不支持在 common
 Navigation 使用了 [PreCompose](https://github.com/Tlaster/PreCompose). 它与 Jetpack NavHost 用法类似.
 *也有很多坑, 但我已经踩完了.*
 
-封装为了 `AniNavigator`, 在 composable 中可以使用 `LocalAniNavigator.current` 获取当前 navigator,
+跳转功能已经封装为了 `AniNavigator`, 在任意 Composable 中可以使用 `LocalAniNavigator.current` 获取当前
+navigator,
 然后使用
 `navigateXxx` 进行跳转.
+
+### 如何找到我想修改的页面/功能?
+
+从 UI 入手, 全局搜索页面上会显示的文字的字符串最简单.
+
+你也可以用遍历的方式:
+
+1. 所有 UI 页面都在 `app/shared/pages` 目录下.
+2. 进入每个目录看它们的 `XXXPage` 或 `XXXScreen` 文件.
+
+### 如何增加一个新页面
+
+1. 在 `app/shared/pages` 目录下创建一个新目录, 例如 `pages/person-details`
+2. 在 `app/shread/build.gradle.kts` 中仿照现有代码,
+   添加一行 `submodule("app/shared/pages/person-details")`
+3. 创建 `app/shared/pages/person-details/common`, `.../android`, `.../desktop`
+4. 在三个目录中分别创建 `package.kt`, 内容为 `package me.him188.ani.app.ui.person.details` (
+   根据你的页面名称修改)
+   > 这是为了设置改目录下的默认包名.
+5. 然后就可以在 `common` 里添加 `PersonDetailsPage`, `PersonDetailsViewModel` 等了. 可以参考
+   已有的类似的页面的实现. 例如对于实现人员详情页面, 可以参考 `SubjectDetailsPage`.
