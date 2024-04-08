@@ -83,9 +83,7 @@ Ani 支持 Android 和桌面端 (macOS、Linux、Windows)。
 - 自动解析资源, 可按清晰度, 字幕语言与字幕组选择视频源
 - 记忆上次选择, 下次直接播放
 
-<img width="300" src=".readme/images/episode/episode-player-loading.jpg" alt="episode-player-loading"/> 
-
-<img width="300" src=".readme/images/episode/episode-media.jpeg" alt="episode-media"/>  <img width="300" src=".readme/images/episode/episode-media-expanded.jpeg" alt="episode-media-expanded"/> 
+<img width="260" src=".readme/images/episode/episode-player-loading.jpg" alt="episode-player-loading"/> <img width="260" src=".readme/images/episode/episode-media.jpeg" alt="episode-media"/>  <img width="260" src=".readme/images/episode/episode-media-expanded.jpeg" alt="episode-media-expanded"/> 
 
 ### 视频弹幕
 
@@ -116,8 +114,8 @@ Ani 支持 Android 和桌面端 (macOS、Linux、Windows)。
 
 ### 完全免费无广告且开放源代码
 
-- 使用靠谱的 Bangumi 记录追番数据, 不怕网站跑路丢失数据
-- 视频播放使用 P2P 资源, 无服务器维护成本, ~即时我跑路了 Ani 也能用~
+- 使用靠谱的 [Bangumi][Bangumi] 记录追番数据, 不怕网站跑路丢失数据
+- 视频播放使用 P2P 资源, 无服务器维护成本, ~即使我跑路了 Ani 也能用~
 - 开放源代码, 公开自动构建, 无资料泄露风险
 - 可 PR 添加自己喜欢的功能 (只要不用于商用)
 
