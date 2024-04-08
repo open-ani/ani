@@ -119,6 +119,12 @@ Ani 支持 Android 和桌面端 (macOS、Linux、Windows)。
 - 开放源代码, 公开自动构建, 无资料泄露风险
 - 可 PR 添加自己喜欢的功能 (只要不用于商用)
 
+### 代理设置
+
+如果你*网络不给力*, 可以按需设置代理. 设置入口为"我的"的右上角.
+
+<img width="300" src=".readme/images/preferences/network.jpg" alt="preferences-network"/>
+
 ### 桌面端
 
 除了目前不支持视频播放以外, 桌面端其他功能与 Android 端功能一致. 桌面端可使用 "下载" 功能跳转到外部下载器下载视频.
