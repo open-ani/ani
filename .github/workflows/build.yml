@@ -82,6 +82,9 @@ jobs:
       - name: Update version name
         run: ./gradlew updateDevVersionNameFromGit ${{ env.gradleArgs }}
 
+      - name: Explicitly generate Compose resources
+        run: ./gradlew generateComposeResClass ${{ env.gradleArgs }}
+
 
       - if: ${{ env.isMac == 'true' }}
         name: Prepare signing key
