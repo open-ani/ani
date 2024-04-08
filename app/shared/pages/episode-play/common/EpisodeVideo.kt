@@ -114,9 +114,9 @@ internal fun EpisodeVideo(
                     playerState,
                     Modifier
                         .offset(
-                            x = with(LocalDensity.current) {
+                            x = if (isFullscreen) with(LocalDensity.current) {
                                 -statusBarHeight.toDp() / 2
-                            },
+                            } else 0.dp,
                             y = 0.dp
                         )
                         .matchParentSize()
