@@ -69,8 +69,8 @@ import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.main.AniAppContent
 import me.him188.ani.app.ui.theme.AppTheme
 import me.him188.ani.app.ui.theme.aniColorScheme
-import me.him188.ani.app.videoplayer.DummyPlayerState
-import me.him188.ani.app.videoplayer.PlayerStateFactory
+import me.him188.ani.app.videoplayer.ui.state.DummyPlayerState
+import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import me.him188.ani.utils.logging.logger
 import org.koin.core.context.startKoin
 import org.koin.dsl.module

@@ -35,10 +35,8 @@ import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsV
 import me.him188.ani.app.ui.subject.episode.video.settings.VideoSettingsButton
 import me.him188.ani.app.ui.subject.episode.video.topbar.EpisodeVideoTopBar
 import me.him188.ani.app.ui.theme.aniDarkColorTheme
-import me.him188.ani.app.videoplayer.PlayerState
-import me.him188.ani.app.videoplayer.VideoPlayer
-import me.him188.ani.app.videoplayer.togglePause
 import me.him188.ani.app.videoplayer.ui.VideoLoadingIndicator
+import me.him188.ani.app.videoplayer.ui.VideoPlayer
 import me.him188.ani.app.videoplayer.ui.VideoScaffold
 import me.him188.ani.app.videoplayer.ui.guesture.GestureLock
 import me.him188.ani.app.videoplayer.ui.guesture.LockableVideoGestureHost
@@ -50,6 +48,8 @@ import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults.SpeedS
 import me.him188.ani.app.videoplayer.ui.progress.ProgressIndicator
 import me.him188.ani.app.videoplayer.ui.progress.ProgressSlider
 import me.him188.ani.app.videoplayer.ui.progress.rememberProgressSliderState
+import me.him188.ani.app.videoplayer.ui.state.PlayerState
+import me.him188.ani.app.videoplayer.ui.state.togglePause
 import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.danmaku.ui.DanmakuHost
 import me.him188.ani.danmaku.ui.DanmakuHostState

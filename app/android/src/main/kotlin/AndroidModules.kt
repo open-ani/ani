@@ -17,7 +17,7 @@ import me.him188.ani.app.tools.torrent.DefaultTorrentManager
 import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.app.torrent.TorrentDownloader
 import me.him188.ani.app.videoplayer.ExoPlayerStateFactory
-import me.him188.ani.app.videoplayer.PlayerStateFactory
+import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import org.koin.dsl.module
 import java.io.File
 

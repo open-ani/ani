@@ -1,4 +1,4 @@
-package me.him188.ani.app.videoplayer
+package me.him188.ani.app.videoplayer.ui
 
 import android.graphics.Color
 import android.graphics.Typeface
@@ -13,6 +13,8 @@ import androidx.media3.ui.CaptionStyleCompat
 import androidx.media3.ui.PlayerView
 import androidx.media3.ui.PlayerView.ControllerVisibilityListener
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
+import me.him188.ani.app.videoplayer.ExoPlayerState
+import me.him188.ani.app.videoplayer.ui.state.PlayerState
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @Composable

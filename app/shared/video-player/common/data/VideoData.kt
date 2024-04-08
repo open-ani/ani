@@ -1,4 +1,4 @@
-package me.him188.ani.app.videoplayer
+package me.him188.ani.app.videoplayer.data
 
 /**
  * Represents a video data like an opened file or input stream.

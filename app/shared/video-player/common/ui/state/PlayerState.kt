@@ -1,4 +1,4 @@
-package me.him188.ani.app.videoplayer
+package me.him188.ani.app.videoplayer.ui.state
 
 import androidx.annotation.UiThread
 import androidx.compose.runtime.Stable
@@ -9,6 +9,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.platform.Context
+import me.him188.ani.app.videoplayer.data.VideoProperties
+import me.him188.ani.app.videoplayer.data.VideoSource
+import me.him188.ani.app.videoplayer.ui.VideoPlayer
 import kotlin.coroutines.CoroutineContext
 
 /**

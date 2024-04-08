@@ -3,8 +3,8 @@ package me.him188.ani.app.ui.subject.episode
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import me.him188.ani.app.videoplayer.TorrentVideoSource
-import me.him188.ani.app.videoplayer.VideoSource
+import me.him188.ani.app.videoplayer.data.TorrentVideoSource
+import me.him188.ani.app.videoplayer.data.VideoSource
 
 @Composable
 fun EpisodeVideoDebugInfo(

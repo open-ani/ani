@@ -48,10 +48,10 @@ import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.app.ui.subject.episode.danmaku.PlayerDanmakuViewModel
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorState
-import me.him188.ani.app.videoplayer.PlayerState
-import me.him188.ani.app.videoplayer.PlayerStateFactory
-import me.him188.ani.app.videoplayer.TorrentVideoSource
-import me.him188.ani.app.videoplayer.VideoSource
+import me.him188.ani.app.videoplayer.data.TorrentVideoSource
+import me.him188.ani.app.videoplayer.data.VideoSource
+import me.him188.ani.app.videoplayer.ui.state.PlayerState
+import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuMatchers
 import me.him188.ani.danmaku.api.DanmakuProvider

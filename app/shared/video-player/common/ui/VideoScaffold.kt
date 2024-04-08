@@ -32,7 +32,6 @@ import androidx.compose.ui.unit.dp
 import me.him188.ani.app.platform.isInLandscapeMode
 import me.him188.ani.app.ui.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.theme.slightlyWeaken
-import me.him188.ani.app.videoplayer.VideoPlayer
 import me.him188.ani.app.videoplayer.ui.guesture.VideoGestureHost
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerBar
 import me.him188.ani.app.videoplayer.ui.top.PlayerTopBar

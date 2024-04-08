@@ -1,4 +1,4 @@
-package me.him188.ani.app.videoplayer
+package me.him188.ani.app.videoplayer.data
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

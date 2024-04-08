@@ -35,8 +35,8 @@ import me.him188.ani.app.session.TestSessionManagers
 import me.him188.ani.app.torrent.TorrentDownloader
 import me.him188.ani.app.torrent.TorrentDownloaderFactory
 import me.him188.ani.app.ui.theme.aniColorScheme
-import me.him188.ani.app.videoplayer.DummyPlayerState
-import me.him188.ani.app.videoplayer.PlayerStateFactory
+import me.him188.ani.app.videoplayer.ui.state.DummyPlayerState
+import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.core.module.Module
