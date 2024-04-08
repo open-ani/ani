@@ -22,9 +22,8 @@ import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.take
-import me.him188.ani.datasources.api.DownloadProvider
-import me.him188.ani.datasources.api.DownloadProviderLoader
 import me.him188.ani.datasources.api.DownloadSearchQuery
+import me.him188.ani.datasources.api.MediaSource
 import me.him188.ani.datasources.api.paging.PagedSource
 import me.him188.ani.datasources.api.topic.Resolution
 import me.him188.ani.datasources.api.topic.Topic
@@ -37,7 +36,7 @@ import kotlin.coroutines.EmptyCoroutineContext
 /**
  * Fetches downloadable videos from the data-sources, i.e. dmhy, acg.rip, etc.
  *
- * @see DownloadProviderMediaFetcher
+ * @see MediaSourceMediaFetcher
  */
 interface MediaFetcher {
     /**
@@ -161,14 +160,14 @@ class MediaFetcherConfig {
 }
 
 /**
- * A [MediaFetcher] implementation that fetches media from various [DownloadProvider]s.
+ * A [MediaFetcher] implementation that fetches media from various [MediaSource]s (from the data-sources module).
  *
  * @param configProvider configures each [MediaFetchSession] from [MediaFetcher.fetch].
  * The provider is evaluated for each fetch so that it can be dynamic.
  */
-class DownloadProviderMediaFetcher(
+class MediaSourceMediaFetcher(
     private val configProvider: () -> MediaFetcherConfig,
-    private val downloadProviders: List<DownloadProvider> = DownloadProviderLoader.loadDownloadProviders(),
+    private val mediaSources: List<MediaSource>,
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
 ) : MediaFetcher {
     private val scope = CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
@@ -256,7 +255,7 @@ class DownloadProviderMediaFetcher(
         request: MediaFetchRequest,
         private val config: MediaFetcherConfig,
     ) : MediaFetchSession {
-        override val resultsPerSource: Map<String, MediaSourceResult> = downloadProviders.associateBy {
+        override val resultsPerSource: Map<String, MediaSourceResult> = mediaSources.associateBy {
             it.id
         }.mapValues { (id, provider) ->
             MediaSourceResultImpl(
@@ -317,7 +316,7 @@ class DownloadProviderMediaFetcher(
     }
 
     private companion object {
-        val logger = logger<DownloadProviderMediaFetcher>()
+        val logger = logger<MediaSourceMediaFetcher>()
     }
 }
 

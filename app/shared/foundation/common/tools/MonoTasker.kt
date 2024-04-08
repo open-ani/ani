@@ -18,6 +18,20 @@ interface MonoTasker {
     )
 }
 
+fun MonoTasker(
+    scope: CoroutineScope
+): MonoTasker = object : MonoTasker {
+    var job: Job? = null
+    override fun launch(
+        context: CoroutineContext,
+        start: CoroutineStart,
+        block: suspend CoroutineScope.() -> Unit
+    ) {
+        job?.cancel()
+        job = scope.launch(context, start, block)
+    }
+}
+
 @Composable
 fun rememberMonoTasker(): MonoTasker {
     val uiScope = rememberCoroutineScope()

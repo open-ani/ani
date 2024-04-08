@@ -30,12 +30,13 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.withContext
-import me.him188.ani.app.data.media.DownloadProviderMediaFetcher
 import me.him188.ani.app.data.media.Media
 import me.him188.ani.app.data.media.MediaFetchRequest
 import me.him188.ani.app.data.media.MediaFetchSession
 import me.him188.ani.app.data.media.MediaFetcher
 import me.him188.ani.app.data.media.MediaFetcherConfig
+import me.him188.ani.app.data.media.MediaSourceManager
+import me.him188.ani.app.data.media.MediaSourceMediaFetcher
 import me.him188.ani.app.data.repositories.EpisodePreferencesRepository
 import me.him188.ani.app.data.repositories.EpisodeRepository
 import me.him188.ani.app.navigation.BrowserNavigator
@@ -55,7 +56,6 @@ import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuMatchers
 import me.him188.ani.danmaku.api.DanmakuProvider
-import me.him188.ani.datasources.api.DownloadProviderLoader
 import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.datasources.bangumi.processing.nameCNOrName
 import me.him188.ani.datasources.bangumi.processing.renderEpisodeSp
@@ -170,6 +170,7 @@ private class EpisodeViewModelImpl(
     private val episodeRepository: EpisodeRepository by inject()
     private val danmakuProvider: DanmakuProvider by inject()
     private val episodePreferencesRepository: EpisodePreferencesRepository by inject()
+    private val mediaSourceManager: MediaSourceManager by inject()
 
     private val subjectDetails = flowOf(subjectId).mapLatest { subjectId ->
         runUntilSuccess { withContext(Dispatchers.IO) { bangumiClient.api.getSubjectById(subjectId) } }
@@ -195,19 +196,19 @@ private class EpisodeViewModelImpl(
 
     // Media Fetching
 
-    private val mediaFetcher = DownloadProviderMediaFetcher(
-        configProvider = { MediaFetcherConfig.Default },
-        downloadProviders = DownloadProviderLoader.loadDownloadProviders().also {
-            logger.info { "Loaded DownloadProvider: ${it.joinToString()}" }
-        },
-        parentCoroutineContext = backgroundScope.coroutineContext,
-    )
+    private val mediaFetcher = mediaSourceManager.sources.map { providers ->
+        MediaSourceMediaFetcher(
+            configProvider = { MediaFetcherConfig.Default },
+            mediaSources = providers,
+            parentCoroutineContext = backgroundScope.coroutineContext,
+        )
+    }.shareInBackground(started = SharingStarted.Lazily)
 
     /**
      * A lazy [MediaFetchSession] that is created when [subjectDetails] and [episode] are available.
      */
-    val mediaFetchSession = combine(subjectDetails, episode) { subject, episode ->
-        mediaFetcher.fetch(
+    val mediaFetchSession = combine(subjectDetails, episode, mediaFetcher) { subject, episode, fetcher ->
+        fetcher.fetch(
             MediaFetchRequest(
                 subjectNames = listOfNotNull(
                     subject.name,

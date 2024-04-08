@@ -21,6 +21,8 @@ package me.him188.ani.app.platform
 import androidx.compose.runtime.Stable
 import io.ktor.client.plugins.UserAgent
 import kotlinx.coroutines.CoroutineScope
+import me.him188.ani.app.data.media.MediaSourceManager
+import me.him188.ani.app.data.media.MediaSourceManagerImpl
 import me.him188.ani.app.data.repositories.EpisodePreferencesRepository
 import me.him188.ani.app.data.repositories.EpisodePreferencesRepositoryImpl
 import me.him188.ani.app.data.repositories.EpisodeRepository
@@ -47,20 +49,12 @@ import me.him188.ani.danmaku.dandanplay.DandanplayDanmakuProvider
 import me.him188.ani.datasources.api.SubjectProvider
 import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
-import me.him188.ani.datasources.dmhy.DmhyClient
 import org.koin.dsl.module
 
 fun getCommonKoinModule(getContext: () -> Context, coroutineScope: CoroutineScope) = module {
     single<TokenRepository> { TokenRepositoryImpl(getContext().tokenStore) }
     single<EpisodePreferencesRepository> { EpisodePreferencesRepositoryImpl(getContext().preferredAllianceStore) }
     single<SessionManager> { SessionManagerImpl() }
-    single<DmhyClient> {
-        DmhyClient.create {
-            install(UserAgent) {
-                agent = getAniUserAgent(currentAniBuildConfig.versionName)
-            }
-        }
-    }
     single<BangumiClient> { createBangumiClient() }
     single<SubjectProvider> { BangumiSubjectProvider(get<BangumiClient>()) }
     single<SubjectRepository> { SubjectRepositoryImpl() }
@@ -76,6 +70,7 @@ fun getCommonKoinModule(getContext: () -> Context, coroutineScope: CoroutineScop
         })
     }
     single<PreferencesRepository> { PreferencesRepositoryImpl(getContext().preferencesStore) }
+    single<MediaSourceManager> { MediaSourceManagerImpl() }
 }
 
 @Stable

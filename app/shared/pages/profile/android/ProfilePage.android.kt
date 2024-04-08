@@ -43,7 +43,18 @@ internal fun PreviewSelfInfo() {
                 sign = "Sign ".repeat(3),
                 userGroup = UserGroup.User,
             ),
-            true
+            true,
+            {},
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun PreviewProfilePage() {
+    ProvideCompositionLocalsForPreview {
+        ProfilePage(
+            onClickSettings = {}
         )
     }
 }

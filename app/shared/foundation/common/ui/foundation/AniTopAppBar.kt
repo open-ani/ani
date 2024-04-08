@@ -74,7 +74,6 @@ fun TopAppBarGoBackButton(goBack: () -> Unit) {
         Icon(
             Icons.AutoMirrored.Outlined.ArrowBack,
             null,
-            Modifier.size(24.dp)
         )
     }
 }

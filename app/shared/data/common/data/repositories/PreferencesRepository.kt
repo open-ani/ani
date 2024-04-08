@@ -1,5 +1,6 @@
 package me.him188.ani.app.data.repositories
 
+import androidx.compose.runtime.Stable
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -9,6 +10,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
+import me.him188.ani.app.data.models.ProxyPreferences
 import me.him188.ani.app.data.serializers.DanmakuConfigSerializer
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.danmaku.ui.DanmakuConfig
@@ -25,8 +27,13 @@ interface PreferencesRepository {
      * @see EpisodePreferencesRepository
      */
     val defaultMediaPreference: Preference<MediaPreference?>
+
+    // network
+
+    val proxyPreferences: Preference<ProxyPreferences>
 }
 
+@Stable
 interface Preference<T> {
     val flow: Flow<T>
     suspend fun set(value: T)
@@ -82,6 +89,11 @@ class PreferencesRepositoryImpl(
             "defaultMediaPreference",
             MediaPreference.serializer(),
             default = { null })
+    override val proxyPreferences: Preference<ProxyPreferences> = SerializablePreference(
+        "proxyPreferences",
+        ProxyPreferences.serializer(),
+        default = { ProxyPreferences.Default }
+    )
 
 //    private companion object {
 //        val DANMAKU_ENABLED = booleanPreferencesKey("danmaku_enabled")

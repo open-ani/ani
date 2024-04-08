@@ -18,13 +18,14 @@
 
 package me.him188.ani.datasources.api.topic
 
+import me.him188.ani.datasources.api.MediaSource
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 /**
- * 可供下载的搜索出来的一个条目
+ * An item search from a [MediaSource]
  */
 class Topic(
     /**

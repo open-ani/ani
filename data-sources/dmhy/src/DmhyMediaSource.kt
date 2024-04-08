@@ -16,12 +16,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.ani.datasources.dmhy.impl
+package me.him188.ani.datasources.dmhy
 
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.engine.cio.CIOEngineConfig
 import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -33,37 +31,64 @@ import io.ktor.serialization.ContentConverter
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.util.reflect.TypeInfo
 import io.ktor.utils.io.ByteReadChannel
-import io.ktor.utils.io.charsets.Charset
-import io.ktor.utils.io.charsets.Charsets
 import io.ktor.utils.io.charsets.decode
 import io.ktor.utils.io.jvm.javaio.toInputStream
 import io.ktor.utils.io.streams.asInput
 import kotlinx.serialization.json.Json
+import me.him188.ani.datasources.api.ConnectionStatus
 import me.him188.ani.datasources.api.DownloadSearchQuery
+import me.him188.ani.datasources.api.MediaSource
+import me.him188.ani.datasources.api.MediaSourceConfig
+import me.him188.ani.datasources.api.MediaSourceFactory
+import me.him188.ani.datasources.api.applyMediaSourceConfig
 import me.him188.ani.datasources.api.paging.PagedSource
 import me.him188.ani.datasources.api.topic.Topic
-import me.him188.ani.datasources.dmhy.DmhyClient
+import me.him188.ani.datasources.dmhy.impl.DmhyPagedSourceImpl
 import me.him188.ani.datasources.dmhy.impl.protocol.Network
+import me.him188.ani.utils.logging.error
+import me.him188.ani.utils.logging.logger
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+import java.nio.charset.Charset
 import kotlin.time.Duration.Companion.seconds
 
-internal class DmhyClientImpl(
-    engineConfig: HttpClientConfig<*>.() -> Unit,
-) : DmhyClient {
-    @Suppress("DEPRECATION")
-    private val network: Network = Network(createHttpClient(engineConfig))
+class DmhyMediaSource(
+    private val config: MediaSourceConfig,
+) : MediaSource {
+    class Factory : MediaSourceFactory {
+        override val id: String = ID
+        override fun create(config: MediaSourceConfig): MediaSource = DmhyMediaSource(config)
+    }
 
+    companion object {
+        const val ID = "dmhy"
+        private val logger = logger<DmhyMediaSource>()
+    }
 
-    override fun startSearchSession(filter: DownloadSearchQuery): PagedSource<Topic> {
-        return DmhyPagedSourceImpl(filter, network)
+    private val network: Network = Network(createHttpClient {
+        applyMediaSourceConfig(config)
+    })
+
+    override val id: String get() = ID
+
+    override suspend fun checkConnection(): ConnectionStatus {
+        return try {
+            network.list()
+            ConnectionStatus.SUCCESS
+        } catch (e: Exception) {
+            logger.error(e) { "Failed to check connection" }
+            ConnectionStatus.FAILED
+        }
+    }
+
+    override suspend fun startSearch(query: DownloadSearchQuery): PagedSource<Topic> {
+        return DmhyPagedSourceImpl(query, network)
     }
 }
 
-@Deprecated("")
-fun createHttpClient(
-    clientConfig: HttpClientConfig<CIOEngineConfig>.() -> Unit = {},
-) = HttpClient(CIO) {
+private fun createHttpClient(
+    clientConfig: HttpClientConfig<*>.() -> Unit = {},
+) = HttpClient {
     install(HttpRequestRetry) {
         maxRetries = 3
         delayMillis { 1000 }

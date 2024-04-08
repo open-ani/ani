@@ -47,6 +47,7 @@ fun includeProject(projectPath: String, dir: String? = null) {
 includeProject(":utils:slf4j-kt", "utils/slf4j-kt") // shared by client and server (targets JVM)
 includeProject(":utils:serialization", "utils/serialization")
 includeProject(":utils:coroutines", "utils/coroutines")
+includeProject(":utils:ktor-client", "utils/ktor-client")
 
 
 includeProject(":torrent", "torrent") // Torrent downloader

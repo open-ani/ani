@@ -13,6 +13,7 @@ import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.foundation.rememberViewModel
+import me.him188.ani.app.ui.preference.PreferencePage
 import me.him188.ani.app.ui.profile.AuthViewModel
 import me.him188.ani.app.ui.profile.auth.AuthRequestScene
 import me.him188.ani.app.ui.subject.details.SubjectDetailsScene
@@ -80,6 +81,9 @@ fun AniAppContent(aniNavigator: AniNavigator) {
                     )
                 }
                 EpisodeScene(vm)
+            }
+            scene("/preferences") {
+                PreferencePage(Modifier.fillMaxSize())
             }
         }
         SideEffect {

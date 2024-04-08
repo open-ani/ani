@@ -13,6 +13,10 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,6 +43,7 @@ import org.openapitools.client.models.UserGroup
 fun UserInfoRow(
     self: User?,
     onClickEditNickname: () -> Unit,
+    onClickSettings: () -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(16.dp),
 ) {
@@ -65,6 +70,7 @@ fun UserInfoRow(
 
         Column(
             Modifier
+                .weight(1f)
                 .padding(start = 16.dp)
                 .fillMaxHeight()
         ) {
@@ -114,9 +120,14 @@ fun UserInfoRow(
                 )
             }
         }
+
+        Column(Modifier.align(Alignment.Top)) {
+            IconButton(onClickSettings) {
+                Icon(Icons.Rounded.Settings, "设置")
+            }
+        }
     }
 }
-
 
 
 private val sampleUser = User(
@@ -138,7 +149,8 @@ private fun PreviewUserInfoRow() {
     ProvideCompositionLocalsForPreview {
         UserInfoRow(
             self = sampleUser,
-            onClickEditNickname = {}
+            onClickEditNickname = {},
+            onClickSettings = {}
         )
     }
 }

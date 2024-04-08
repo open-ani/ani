@@ -39,6 +39,10 @@ interface AniNavigator {
     fun navigateAuth() {
         navigator.navigate("/auth", NavOptions(launchSingleTop = true))
     }
+
+    fun navigatePreferences() {
+        navigator.navigate("/preferences")
+    }
 }
 
 fun AniNavigator(): AniNavigator = AniNavigatorImpl()

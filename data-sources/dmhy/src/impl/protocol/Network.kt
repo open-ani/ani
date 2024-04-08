@@ -52,11 +52,11 @@ internal class Network(
     // https://www.dmhy.org/topics/list?keyword=lyc&sort_id=2&team_id=823&order=date-asc
     // page starts from 1
     suspend fun list(
-        page: Int?,
-        keyword: String?,
-        sortId: String?,
-        teamId: String?,
-        orderId: String?,
+        page: Int? = null,
+        keyword: String? = null,
+        sortId: String? = null,
+        teamId: String? = null,
+        orderId: String? = null,
     ): ListResponse {
         require(page == null || page >= 1) { "page must be >= 1" }
         val resp = client.get {

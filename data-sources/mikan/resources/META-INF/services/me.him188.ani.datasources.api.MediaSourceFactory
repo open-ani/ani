@@ -16,4 +16,4 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-me.him188.ani.datasources.acgrip.AcgRipDownloadProvider
+me.him188.ani.datasources.mikan.MikanMediaSource$Factory

@@ -22,21 +22,30 @@ import me.him188.ani.datasources.api.paging.PagedSource
 import me.him188.ani.datasources.api.topic.Alliance
 import me.him188.ani.datasources.api.topic.Topic
 import me.him188.ani.datasources.api.topic.TopicCategory
-import java.util.ServiceLoader
 
 /**
- * 提供下载的数据源
+ * 提供视频资源的接口
  */
-interface DownloadProvider {
+interface MediaSource {
     /**
      * Unique ID.
      */
     val id: String
 
     /**
+     * Checks whether the provider is reachable.
+     */
+    suspend fun checkConnection(): ConnectionStatus
+
+    /**
      * Starts a search session.
      */
     suspend fun startSearch(query: DownloadSearchQuery): PagedSource<Topic>
+}
+
+enum class ConnectionStatus {
+    SUCCESS,
+    FAILED,
 }
 
 data class DownloadSearchQuery(
@@ -51,10 +60,4 @@ data class DownloadSearchQuery(
 interface SearchOrdering {
     val id: String
     val name: String
-}
-
-
-object DownloadProviderLoader {
-    fun loadDownloadProviders(): List<DownloadProvider> =
-        ServiceLoader.load(DownloadProvider::class.java).toList()
 }

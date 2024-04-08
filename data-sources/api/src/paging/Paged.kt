@@ -6,7 +6,9 @@ data class Paged<T>(
     val hasMore: Boolean,
     val page: List<T>,
 ) {
-    companion object
+    companion object {
+        fun <T> empty(): Paged<T> = Paged(null, false, emptyList())
+    }
 }
 
 inline fun <T, R> Paged<T>.map(block: (T) -> R): Paged<R> {

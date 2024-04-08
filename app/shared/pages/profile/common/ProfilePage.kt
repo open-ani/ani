@@ -18,7 +18,6 @@
 
 package me.him188.ani.app.ui.profile
 
-import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -65,7 +64,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.platform.LocalContext
-import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.isLoggedIn
 import me.him188.ani.app.ui.main.LocalContentPaddings
@@ -73,7 +71,10 @@ import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.openapitools.client.models.User
 
 @Composable
-fun ProfilePage(modifier: Modifier = Modifier) {
+fun ProfilePage(
+    onClickSettings: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     val viewModel = remember { AccountViewModel() }
     Column(
         modifier = modifier
@@ -87,7 +88,8 @@ fun ProfilePage(modifier: Modifier = Modifier) {
             SelfInfo(
                 selfInfo,
                 loggedIn,
-                Modifier.fillMaxWidth()
+                onClickSettings,
+                Modifier.fillMaxWidth(),
             )
 
             // debug
@@ -328,32 +330,24 @@ private fun DebugInfoView(viewModel: AccountViewModel, modifier: Modifier = Modi
 internal expect fun ColumnScope.PlatformDebugInfoItems(viewModel: AccountViewModel, snackbar: SnackbarHostState)
 
 @Composable
-internal fun SelfInfo(selfInfo: User?, isLoggedIn: Boolean?, modifier: Modifier = Modifier) {
+internal fun SelfInfo(
+    selfInfo: User?,
+    isLoggedIn: Boolean?,
+    onClickSettings: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Box {
-        UserInfoRow(selfInfo, {}, modifier)
+        UserInfoRow(
+            selfInfo,
+            onClickEditNickname = {},
+            onClickSettings = onClickSettings,
+            modifier
+        )
 
         if (isLoggedIn == false) {
             Surface(Modifier.matchParentSize()) {
                 UnauthorizedTips(Modifier.fillMaxSize())
             }
         }
-    }
-}
-
-
-@Preview
-@Composable
-private fun PreviewSelfInfoCommon() {
-    ProvideCompositionLocalsForPreview {
-        SelfInfo(null, false)
-    }
-}
-
-
-@Preview
-@Composable
-private fun PreviewProfilePage() {
-    ProvideCompositionLocalsForPreview {
-        ProfilePage()
     }
 }

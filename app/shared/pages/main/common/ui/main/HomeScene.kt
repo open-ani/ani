@@ -19,11 +19,14 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.ui.collection.CollectionPage
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.home.HomePage
@@ -122,12 +125,20 @@ fun HomeScene() {
         },
         contentWindowInsets = WindowInsets(0.dp)
     ) { contentPadding ->
+        val navigator by rememberUpdatedState(LocalNavigator.current)
+
         CompositionLocalProvider(LocalContentPaddings provides contentPadding) {
             HorizontalPager(pages, userScrollEnabled = false) {
                 when (it) {
                     0 -> HomePage(contentPadding)
                     1 -> CollectionPage(contentPadding)
-                    2 -> ProfilePage()
+                    2 -> {
+                        ProfilePage(
+                            onClickSettings = {
+                                navigator.navigatePreferences()
+                            }
+                        )
+                    }
                 }
             }
         }

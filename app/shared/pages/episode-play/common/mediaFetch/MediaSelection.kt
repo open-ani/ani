@@ -35,10 +35,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.data.media.Media
 import me.him188.ani.app.tools.formatDateTime
-import me.him188.ani.datasources.acgrip.AcgRipDownloadProvider
+import me.him188.ani.datasources.acgrip.AcgRipMediaSource
 import me.him188.ani.datasources.api.topic.FileSize
-import me.him188.ani.datasources.dmhy.DmhyDownloadProvider
-import me.him188.ani.datasources.mikan.MikanDownloadProvider
+import me.him188.ani.datasources.dmhy.DmhyMediaSource
+import me.him188.ani.datasources.mikan.MikanMediaSource
 
 @Composable
 fun MediaSelector(
@@ -258,12 +258,12 @@ private fun MediaItem(
     }
 }
 
-private fun renderMediaSource(
+fun renderMediaSource(
     id: String
 ): String = when (id) {
-    DmhyDownloadProvider.ID -> "动漫花园"
-    AcgRipDownloadProvider.ID -> "acg.rip"
-    MikanDownloadProvider.ID -> "Mikan"
+    DmhyMediaSource.ID -> "动漫花园"
+    AcgRipMediaSource.ID -> "acg.rip"
+    MikanMediaSource.ID -> "Mikan"
     else -> id
 }
 
