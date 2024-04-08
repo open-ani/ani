@@ -186,7 +186,6 @@ kotlin {
         submodule("app/shared/foundation")
         submodule("app/shared/placeholder")
 
-        submodule("app/shared/data-cache")
         submodule("app/shared/data")
 
         submodule("app/shared/bangumi-authentication")
