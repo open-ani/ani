@@ -29,16 +29,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import me.him188.ani.app.Res
+import me.him188.ani.app.acg_rip
+import me.him188.ani.app.bangumi
 import me.him188.ani.app.data.media.Media
+import me.him188.ani.app.dmhy
+import me.him188.ani.app.mikan
 import me.him188.ani.app.tools.formatDateTime
+import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.datasources.acgrip.AcgRipMediaSource
 import me.him188.ani.datasources.api.topic.FileSize
+import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
 import me.him188.ani.datasources.dmhy.DmhyMediaSource
 import me.him188.ani.datasources.mikan.MikanMediaSource
+import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun MediaSelector(
@@ -264,7 +273,24 @@ fun renderMediaSource(
     DmhyMediaSource.ID -> "动漫花园"
     AcgRipMediaSource.ID -> "acg.rip"
     MikanMediaSource.ID -> "Mikan"
+    BangumiSubjectProvider.ID -> "Bangumi"
     else -> id
+}
+
+@Composable
+fun getMediaSourceIcon(
+    id: String
+): Painter? {
+    if (LocalIsPreviewing.current) { // compose resources does not support preview
+        return null
+    }
+    return when (id) {
+        DmhyMediaSource.ID -> painterResource(Res.drawable.dmhy)
+        AcgRipMediaSource.ID -> painterResource(Res.drawable.acg_rip)
+        MikanMediaSource.ID -> painterResource(Res.drawable.mikan)
+        BangumiSubjectProvider.ID -> painterResource(Res.drawable.bangumi)
+        else -> null
+    }
 }
 
 private val PLAY_SOURCE_LABEL_WIDTH = 62.dp

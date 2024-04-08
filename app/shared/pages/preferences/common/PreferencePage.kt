@@ -2,16 +2,22 @@ package me.him188.ani.app.ui.preference
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Edit
@@ -35,18 +41,23 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import kotlinx.coroutines.launch
 import me.him188.ani.app.ui.foundation.TopAppBarGoBackButton
 import me.him188.ani.app.ui.foundation.effects.defaultFocus
+import me.him188.ani.app.ui.foundation.effects.onKey
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
 import me.him188.ani.app.ui.preference.tabs.NetworkPreferenceTab
@@ -161,11 +172,14 @@ abstract class PreferenceScope {
             Column(Modifier.padding(vertical = 16.dp)) {
                 // Group header
                 Column(
-                    Modifier.padding(horizontal = itemHorizontalPadding).padding(bottom = 8.dp).fillMaxWidth(),
+                    Modifier.padding(horizontal = itemHorizontalPadding)
+                        .padding(bottom = 8.dp)
+                        .fillMaxWidth()
+                        .heightIn(min = 48.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     ProvideTextStyleContentColor(
-                        MaterialTheme.typography.titleSmall,
+                        MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.primary,
                     ) {
                         Row { title() }
@@ -173,7 +187,7 @@ abstract class PreferenceScope {
 
                     description?.let {
                         ProvideTextStyleContentColor(
-                            MaterialTheme.typography.labelSmall,
+                            MaterialTheme.typography.labelMedium,
                             LocalContentColor.current.copy(LABEL_ALPHA),
                         ) {
                             Row(Modifier.padding()) { it() }
@@ -183,6 +197,28 @@ abstract class PreferenceScope {
 
                 // items
                 content()
+            }
+        }
+    }
+
+    @Composable
+    private fun ItemHeader(
+        title: @Composable () -> Unit,
+        description: @Composable (() -> Unit)?,
+        modifier: Modifier = Modifier,
+    ) {
+        Column(
+            modifier.padding(vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            ProvideTextStyle(MaterialTheme.typography.bodyLarge) {
+                Row { title() }
+            }
+            ProvideTextStyleContentColor(
+                MaterialTheme.typography.labelMedium,
+                LocalContentColor.current.copy(LABEL_ALPHA)
+            ) {
+                Row { description?.invoke() }
             }
         }
     }
@@ -199,21 +235,32 @@ abstract class PreferenceScope {
     @Composable
     fun Item(
         modifier: Modifier = Modifier,
+        icon: @Composable (() -> Unit)? = null,
         action: @Composable (() -> Unit)? = null,
         content: @Composable () -> Unit,
     ) {
         Row(
             modifier
                 .padding(horizontal = itemHorizontalPadding)
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .heightIn(min = 48.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            if (icon != null) {
+                Box(Modifier.padding(end = 16.dp).size(28.dp), contentAlignment = Alignment.Center) {
+                    icon()
+                }
+            }
+
             Row(Modifier.weight(1f)) {
                 content()
             }
 
             action?.let {
-                Row(Modifier.padding(start = 16.dp)) {
+                Box(
+                    Modifier.padding(start = 16.dp)
+                        .widthIn(min = 48.dp), contentAlignment = Alignment.Center
+                ) {
                     ProvideTextStyle(MaterialTheme.typography.labelMedium) {
                         it()
                     }
@@ -221,6 +268,19 @@ abstract class PreferenceScope {
             }
         }
     }
+
+    @PreferenceDsl
+    @Composable
+    fun HorizontalDividerItem(modifier: Modifier = Modifier) {
+        Row(
+            modifier
+                .padding(horizontal = itemHorizontalPadding)
+                .fillMaxWidth() // no min 48.dp height
+        ) {
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.stronglyWeaken())
+        }
+    }
+
 
     /**
      * A switch item that only the switch is interactable.
@@ -243,14 +303,6 @@ abstract class PreferenceScope {
 
     @PreferenceDsl
     @Composable
-    fun HorizontalDividerItem(modifier: Modifier = Modifier) {
-        Item(modifier) {
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.stronglyWeaken())
-        }
-    }
-
-    @PreferenceDsl
-    @Composable
     fun TextFieldItem(
         value: String,
         onValueChange: (String) -> Unit,
@@ -259,9 +311,10 @@ abstract class PreferenceScope {
         placeholder: @Composable (() -> Unit)? = null,
         onValueChangeCompleted: () -> Unit = {},
         inverseTitleDescription: Boolean = false,
+        isErrorProvider: () -> Boolean = { false }, // calculated in a derivedState
         modifier: Modifier = Modifier,
     ) {
-        var showDialog by remember { mutableStateOf(false) }
+        var showDialog by rememberSaveable { mutableStateOf(false) }
         Item(
             modifier.clickable(onClick = { showDialog = true })
         ) {
@@ -300,20 +353,43 @@ abstract class PreferenceScope {
                 }
 
                 if (showDialog) {
+                    val error by remember {
+                        derivedStateOf {
+                            isErrorProvider()
+                        }
+                    }
+                    val onConfirm = {
+                        onValueChangeCompleted()
+                        showDialog = false
+                    }
+
                     TextFieldDialog(
                         onDismissRequest = { showDialog = false },
-                        onConfirm = {
-                            onValueChangeCompleted()
-                            showDialog = false
-                        },
+                        onConfirm = onConfirm,
                         title = title,
+                        confirmEnabled = !error,
                         description = description,
                     ) {
                         OutlinedTextField(
                             value = value,
                             onValueChange = onValueChange,
                             shape = MaterialTheme.shapes.medium,
-                            modifier = Modifier.fillMaxWidth().defaultFocus()
+                            keyboardActions = KeyboardActions {
+                                if (!error) {
+                                    onConfirm()
+                                }
+                            },
+                            keyboardOptions = KeyboardOptions.Default.copy(
+                                imeAction = ImeAction.Done,
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                                .defaultFocus()
+                                .onKey(Key.Enter) {
+                                    if (!error) {
+                                        onConfirm()
+                                    }
+                                },
+                            isError = error,
                         )
                     }
                 }
@@ -322,38 +398,45 @@ abstract class PreferenceScope {
     }
 
 
+    @PreferenceDsl
     @Composable
-    private fun ItemHeader(
+    fun TextButtonItem(
+        onClick: () -> Unit,
         title: @Composable () -> Unit,
-        description: @Composable (() -> Unit)?,
         modifier: Modifier = Modifier,
     ) {
-        Column(modifier.padding(vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
-                Row { title() }
+        Item(
+            modifier.clickable(onClick = onClick),
+            action = {
+                TextButton(onClick) {
+                    title()
+                }
             }
-            ProvideTextStyleContentColor(
-                MaterialTheme.typography.labelSmall,
-                LocalContentColor.current.copy(LABEL_ALPHA)
-            ) {
-                Row { description?.invoke() }
-            }
+        ) {
+//            ItemHeader(
+//                {
+//                    CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.primary) {
+//                        title()
+//                    }
+//                },
+//                description
+//            )
         }
     }
 
     @PreferenceDsl
     @Composable
-    fun TextButtonItem(
+    fun RowButtonItem(
         onClick: () -> Unit,
         title: @Composable () -> Unit,
         description: @Composable (() -> Unit)? = null,
         modifier: Modifier = Modifier,
     ) {
         Item(
-            modifier.clickable(onClick = onClick)
+            modifier.clickable(onClick = onClick),
         ) {
             ItemHeader(
-                {
+                title = {
                     CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.primary) {
                         title()
                     }
@@ -369,9 +452,10 @@ abstract class PreferenceScope {
         title: @Composable () -> Unit,
         modifier: Modifier = Modifier,
         description: @Composable (() -> Unit)? = null,
+        icon: @Composable (() -> Unit)? = null,
         action: @Composable (() -> Unit)? = null,
     ) {
-        Item(modifier, action = action) {
+        Item(modifier, icon = icon, action = action) {
             ItemHeader(title, description, Modifier)
         }
     }
@@ -404,7 +488,7 @@ internal fun TextFieldDialog(
                 }
 
                 ProvideTextStyleContentColor(
-                    MaterialTheme.typography.labelSmall,
+                    MaterialTheme.typography.labelMedium,
                     LocalContentColor.current.copy(LABEL_ALPHA)
                 ) {
                     description?.let {

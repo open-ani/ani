@@ -36,6 +36,13 @@ object ClientProxyConfigValidator {
     } else {
         ProxyBuilder.http(url)
     }
+
+    fun isValidProxy(url: String): Boolean = try {
+        parseProxy(url)
+        true
+    } catch (e: Exception) {
+        false
+    }
 }
 
 fun HttpClientConfig<*>.userAgent(

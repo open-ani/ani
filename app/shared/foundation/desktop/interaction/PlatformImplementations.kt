@@ -75,7 +75,7 @@ sealed interface PlatformImplementations {
                         Item(
 //                            if (hostIsMacOs) LocalI18n.current.getString("menu.preferences")// on macOS there is unified design "Preference", on other platforms use "Settings" instead.
                             LocalI18n.current.getString("menu.settings"),
-                            icon = painterResource("drawable/cog.svg"),
+                            icon = painterResource("src/commonMain/composeResources/drawable/cog.svg"),
                             mnemonic = 'S',
                             shortcut = keyShortcuts.menuPreferences,
                             onClick = onClickPreferences

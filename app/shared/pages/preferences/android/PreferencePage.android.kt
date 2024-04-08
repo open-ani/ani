@@ -4,12 +4,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.datasource.LoremIpsum
 import kotlinx.coroutines.flow.MutableStateFlow
 import me.him188.ani.app.data.media.MediaSourceManager
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.preference.tabs.NetworkPreferenceTab
+import me.him188.ani.app.ui.preference.tabs.NetworkPreferenceViewModel
+import me.him188.ani.datasources.acgrip.AcgRipMediaSource
 import me.him188.ani.datasources.api.ConnectionStatus
 import me.him188.ani.datasources.api.DownloadSearchQuery
 import me.him188.ani.datasources.api.MediaSource
@@ -17,6 +21,8 @@ import me.him188.ani.datasources.api.paging.PageBasedPagedSource
 import me.him188.ani.datasources.api.paging.Paged
 import me.him188.ani.datasources.api.paging.PagedSource
 import me.him188.ani.datasources.api.topic.Topic
+import me.him188.ani.datasources.dmhy.DmhyMediaSource
+import me.him188.ani.datasources.mikan.MikanMediaSource
 import kotlin.random.Random
 
 @Composable
@@ -64,7 +70,9 @@ private fun PreviewNetworkPreferenceTab() {
                 object : MediaSourceManager {
                     override val sources: MutableStateFlow<List<MediaSource>> = MutableStateFlow(
                         listOf(
-                            TestMediaSource("test1"),
+                            TestMediaSource(AcgRipMediaSource.ID),
+                            TestMediaSource(DmhyMediaSource.ID),
+                            TestMediaSource(MikanMediaSource.ID),
                         )
                     )
                     override val ids: List<String> = sources.value.map { it.id }
@@ -72,6 +80,11 @@ private fun PreviewNetworkPreferenceTab() {
             }
         }
     ) {
+        val vm = rememberViewModel { NetworkPreferenceViewModel() }
+        SideEffect {
+            vm.mediaTesters.first().success = true
+            vm.mediaTesters.drop(1).first().success = false
+        }
         NetworkPreferenceTab()
     }
 }

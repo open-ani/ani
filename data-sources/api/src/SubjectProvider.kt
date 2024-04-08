@@ -35,6 +35,8 @@ interface SubjectProvider {
      */
     val id: String
 
+    suspend fun testConnection(): ConnectionStatus
+
     fun startSearch(query: SubjectSearchQuery): PagedSource<Subject>
 //
 //    suspend fun getSubjectDetails(id: String): SubjectDetails?

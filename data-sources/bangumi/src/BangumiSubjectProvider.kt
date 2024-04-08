@@ -18,6 +18,7 @@
 
 package me.him188.ani.datasources.bangumi
 
+import me.him188.ani.datasources.api.ConnectionStatus
 import me.him188.ani.datasources.api.Subject
 import me.him188.ani.datasources.api.SubjectProvider
 import me.him188.ani.datasources.api.SubjectSearchQuery
@@ -26,7 +27,14 @@ import me.him188.ani.datasources.api.paging.PagedSource
 class BangumiSubjectProvider(
     private val client: BangumiClient,
 ) : SubjectProvider {
-    override val id: String get() = "Bangumi"
+    companion object {
+        val ID = "Bangumi"
+    }
+
+    override val id: String get() = ID
+    override suspend fun testConnection(): ConnectionStatus {
+        return client.testConnection()
+    }
 
     override fun startSearch(query: SubjectSearchQuery): PagedSource<Subject> =
         BangumiPagedSource(client, query)

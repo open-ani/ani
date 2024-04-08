@@ -35,6 +35,7 @@ import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import io.ktor.serialization.kotlinx.json.json
@@ -46,6 +47,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import me.him188.ani.datasources.api.ConnectionStatus
 import me.him188.ani.datasources.api.paging.Paged
 import me.him188.ani.datasources.bangumi.client.BangumiClientEpisodes
 import me.him188.ani.datasources.bangumi.client.BangumiClientSubjects
@@ -121,6 +123,8 @@ interface BangumiClient : Closeable {
     suspend fun deleteSubjectCollection(
         subjectId: Int
     )
+
+    suspend fun testConnection(): ConnectionStatus
 
     val api: BangumiApi
 
@@ -245,6 +249,14 @@ internal class BangumiClientImpl(
 
     override suspend fun deleteSubjectCollection(subjectId: Int) {
         // not implemented
+    }
+
+    override suspend fun testConnection(): ConnectionStatus {
+        return httpClient.get(BANGUMI_API_HOST).run {
+            if (status.isSuccess() || status == HttpStatusCode.NotFound)
+                ConnectionStatus.SUCCESS
+            else ConnectionStatus.FAILED
+        }
     }
 
     override val api = BangumiApi(BANGUMI_API_HOST, OkHttpClient.Builder().apply {

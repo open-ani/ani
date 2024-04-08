@@ -9,6 +9,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.coroutines.cancellation.CancellationException
 
 interface MonoTasker {
     fun launch(
@@ -16,6 +17,8 @@ interface MonoTasker {
         start: CoroutineStart = CoroutineStart.DEFAULT,
         block: suspend CoroutineScope.() -> Unit
     )
+
+    fun cancel(cause: CancellationException? = null)
 }
 
 fun MonoTasker(
@@ -29,6 +32,10 @@ fun MonoTasker(
     ) {
         job?.cancel()
         job = scope.launch(context, start, block)
+    }
+
+    override fun cancel(cause: CancellationException?) {
+        job?.cancel(cause)
     }
 }
 
@@ -45,6 +52,10 @@ fun rememberMonoTasker(): MonoTasker {
             ) {
                 job?.cancel()
                 job = uiScope.launch(context, start, block)
+            }
+
+            override fun cancel(cause: CancellationException?) {
+                job?.cancel(cause)
             }
         }
     }
