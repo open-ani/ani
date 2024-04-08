@@ -32,8 +32,13 @@ val LocalContentPaddings: ProvidableCompositionLocal<PaddingValues> = androidx.c
     PaddingValues(0.dp)
 }
 
+/**
+ * UI entrypoint.
+ *
+ * It composes all screens together, and supports navigation between them.
+ */
 @Composable
-fun MainScreen(aniNavigator: AniNavigator) {
+fun AniAppContent(aniNavigator: AniNavigator) {
     val navigator = rememberNavigator()
     CompositionLocalProvider(LocalNavigator provides aniNavigator) {
         NavHost(navigator, initialRoute = "/home", modifier = Modifier.fillMaxSize()) {

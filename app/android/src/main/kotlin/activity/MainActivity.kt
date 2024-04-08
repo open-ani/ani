@@ -35,7 +35,7 @@ import me.him188.ani.app.session.BangumiAuthorizationConstants
 import me.him188.ani.app.session.OAuthResult
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.ui.foundation.AniApp
-import me.him188.ani.app.ui.main.MainScreen
+import me.him188.ani.app.ui.main.AniAppContent
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import org.koin.android.ext.android.inject
@@ -84,7 +84,7 @@ class MainActivity : AniComponentActivity() {
 
         setContent {
             AniApp(currentColorScheme) {
-                MainScreen(aniNavigator)
+                AniAppContent(aniNavigator)
             }
         }
 

@@ -66,7 +66,7 @@ import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.app.torrent.TorrentDownloader
 import me.him188.ani.app.ui.foundation.AniApp
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
-import me.him188.ani.app.ui.main.MainScreen
+import me.him188.ani.app.ui.main.AniAppContent
 import me.him188.ani.app.ui.theme.AppTheme
 import me.him188.ani.app.ui.theme.aniColorScheme
 import me.him188.ani.app.videoplayer.DummyPlayerState
@@ -224,7 +224,7 @@ private fun MainWindowContent(
 
                 CompositionLocalProvider(LocalNavigator provides aniNavigator) {
                     Box(Modifier.padding(all = paddingByWindowSize)) {
-                        MainScreen(aniNavigator)
+                        AniAppContent(aniNavigator)
                     }
                 }
             }

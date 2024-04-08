@@ -15,6 +15,6 @@ fun SubjectDetailsScene(
         Modifier
             .fillMaxSize()
     ) {
-        SubjectDetails(vm) { navigator.goBack() }
+        SubjectDetailsPage(vm) { navigator.goBack() }
     }
 }

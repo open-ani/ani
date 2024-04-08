@@ -6,6 +6,11 @@ import moe.tlaster.precompose.navigation.NavOptions
 import moe.tlaster.precompose.navigation.Navigator
 import org.koin.core.component.KoinComponent
 
+/**
+ * Supports navigation to any page in the app.
+ *
+ * @see LocalNavigator
+ */
 interface AniNavigator {
     fun setNavigator(
         navigator: Navigator,
@@ -38,8 +43,7 @@ interface AniNavigator {
 
 fun AniNavigator(): AniNavigator = AniNavigatorImpl()
 
-class AniNavigatorImpl(
-) : AniNavigator, KoinComponent {
+private class AniNavigatorImpl : AniNavigator, KoinComponent {
     private val _navigator: CompletableDeferred<Navigator> = CompletableDeferred()
 
     override val navigator: Navigator
@@ -50,6 +54,9 @@ class AniNavigatorImpl(
     }
 }
 
+/**
+ * It is always provided.
+ */
 val LocalNavigator = compositionLocalOf<AniNavigator> {
     error("Navigator not found")
 }

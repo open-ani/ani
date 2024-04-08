@@ -75,7 +75,7 @@ import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
  * 一部番的详情页
  */
 @Composable
-fun SubjectDetails(
+fun SubjectDetailsPage(
     viewModel: SubjectDetailsViewModel,
     goBack: () -> Unit,
 ) {
@@ -404,6 +404,6 @@ internal fun PreviewSubjectDetailsImpl() {
         val vm = remember {
             SubjectDetailsViewModel(PreviewData.SOSOU_NO_FURILEN_SUBJECT_ID)
         }
-        SubjectDetails(vm, goBack = {})
+        SubjectDetailsPage(vm, goBack = {})
     }
 }
