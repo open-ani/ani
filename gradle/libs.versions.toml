@@ -20,7 +20,7 @@ jetpack-compose = "1.6.4"
 jetpack-compose-compiler = "1.5.11-dev-k2.0.0-Beta5-b5a216d0ac6" # used by android
 # https://github.com/JetBrains/compose-multiplatform/releases
 # https://www.jetbrains.com/help/kotlin-multiplatform-dev/compose-compatibility-and-versioning.html#use-a-developer-version-of-compose-multiplatform-compiler
-compose-multiplatform = "1.6.10-dev1551"
+compose-multiplatform = "1.6.10-dev1561"
 # https://maven.pkg.jetbrains.space/public/p/compose/dev/org/jetbrains/compose/compiler/compiler/
 compose-multiplatform-compiler = "1.5.11-kt-2.0.0-Beta5"
 

@@ -52,6 +52,11 @@ kotlin {
 
 configureFlattenMppSourceSets()
 
+compose.resources {
+    packageOfResClass = "me.him188.ani.app"
+    generateResClass = always
+}
+
 kotlin {
     sourceSets.commonMain.dependencies {
         api(libs.kotlinx.coroutines.core)
@@ -65,6 +70,7 @@ kotlin {
         api(compose.material3)
         api(compose.materialIconsExtended)
         api(compose.runtime)
+        implementation(compose.components.resources)
 
         // Data sources
         api(projects.dataSources.api)
@@ -200,6 +206,16 @@ kotlin {
         submodule("app/shared/pages/main")
         submodule("app/shared/pages/preferences")
     }
+}
+
+
+val generatedResourcesDir = file("build/generated/compose/resourceGenerator/kotlin")
+
+kotlin.sourceSets.commonMain {
+    kotlin.srcDirs(generatedResourcesDir)
+}
+idea {
+    module.generatedSourceDirs.add(generatedResourcesDir)
 }
 
 kotlin.sourceSets {
