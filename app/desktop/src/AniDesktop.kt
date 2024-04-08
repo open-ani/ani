@@ -61,9 +61,9 @@ import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.getAniUserAgent
 import me.him188.ani.app.platform.getCommonKoinModule
 import me.him188.ani.app.session.SessionManager
-import me.him188.ani.app.torrent.DefaultTorrentManager
+import me.him188.ani.app.tools.torrent.DefaultTorrentManager
+import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.app.torrent.TorrentDownloader
-import me.him188.ani.app.torrent.TorrentManager
 import me.him188.ani.app.ui.foundation.AniApp
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.main.MainScreen

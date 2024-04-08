@@ -13,9 +13,9 @@ import kotlinx.serialization.json.Json
 import me.him188.ani.android.navigation.AndroidBrowserNavigator
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.getAniUserAgent
-import me.him188.ani.app.torrent.DefaultTorrentManager
+import me.him188.ani.app.tools.torrent.DefaultTorrentManager
+import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.app.torrent.TorrentDownloader
-import me.him188.ani.app.torrent.TorrentManager
 import me.him188.ani.app.videoplayer.ExoPlayerStateFactory
 import me.him188.ani.app.videoplayer.PlayerStateFactory
 import org.koin.dsl.module

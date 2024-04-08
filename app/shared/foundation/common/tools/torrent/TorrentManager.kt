@@ -1,4 +1,4 @@
-package me.him188.ani.app.torrent
+package me.him188.ani.app.tools.torrent
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
@@ -9,6 +9,8 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.job
+import me.him188.ani.app.torrent.TorrentDownloader
+import me.him188.ani.app.torrent.TorrentDownloaderFactory
 import me.him188.ani.utils.coroutines.runUntilSuccess
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn

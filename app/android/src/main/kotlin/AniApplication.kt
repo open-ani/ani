@@ -31,7 +31,7 @@ import kotlinx.coroutines.withContext
 import me.him188.ani.app.i18n.ResourceBundle
 import me.him188.ani.app.i18n.loadResourceBundle
 import me.him188.ani.app.platform.getCommonKoinModule
-import me.him188.ani.app.torrent.TorrentManager
+import me.him188.ani.app.tools.torrent.TorrentManager
 import org.koin.android.ext.android.getKoin
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin

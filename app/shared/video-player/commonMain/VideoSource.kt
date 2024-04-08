@@ -2,8 +2,8 @@ package me.him188.ani.app.videoplayer
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.app.torrent.TorrentDownloadSession
-import me.him188.ani.app.torrent.TorrentManager
 import me.him188.ani.app.torrent.model.EncodedTorrentData
 import me.him188.ani.app.videoplayer.torrent.TorrentVideoData
 import org.koin.core.component.KoinComponent
