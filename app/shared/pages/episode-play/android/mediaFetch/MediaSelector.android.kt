@@ -98,7 +98,11 @@ private fun PreviewMediaSelector() {
             state = remember {
                 MediaSelectorState(
                     mediaListProvider = { testMediaList },
-                    defaultPreferenceProvider = { MediaPreference.Empty },
+                    defaultPreferenceProvider = {
+                        MediaPreference(
+                            subtitleLanguage = "CHS"
+                        )
+                    },
                 )
             },
             onDismissRequest = {},

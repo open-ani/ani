@@ -45,11 +45,13 @@ interface MediaSelectorState {
 
     /**
      * Updates the user's preference.
+     *
+     * @param removeOnExist If true, and the user has already set the same preference for this property, it will be removed.
      */
-    fun preferAlliance(alliance: String)
-    fun preferResolution(resolution: String)
-    fun preferSubtitleLanguage(subtitleLanguage: String)
-    fun preferMediaSource(mediaSourceId: String)
+    fun preferAlliance(alliance: String, removeOnExist: Boolean = false)
+    fun preferResolution(resolution: String, removeOnExist: Boolean = false)
+    fun preferSubtitleLanguage(subtitleLanguage: String, removeOnExist: Boolean = false)
+    fun preferMediaSource(mediaSourceId: String, removeOnExist: Boolean = false)
 
     /**
      * Default preferences to use if [preference] does not specify a preference for a property.
@@ -145,19 +147,50 @@ internal class MediaSelectorStateImpl(
     override val default: MediaPreference by derivedStateOf { defaultProvider() }
 
     override var preference: MediaPreference by mutableStateOf(defaultUserPreference)
-    override fun preferAlliance(alliance: String) {
+
+    var explicitlyRemovedAlliance: Boolean by mutableStateOf(false)
+    var explicitlyRemovedResolution: Boolean by mutableStateOf(false)
+    var explicitlyRemovedSubtitleLanguage: Boolean by mutableStateOf(false)
+    var explicitlyRemovedMediaSource: Boolean by mutableStateOf(false)
+
+    override fun preferAlliance(alliance: String, removeOnExist: Boolean) {
+        if (removeOnExist && selectedAlliance == alliance) {
+            // was selected either by default or by user, then we remove it
+            preference = preference.copy(alliance = null)
+            explicitlyRemovedAlliance = true
+            return
+        }
+        explicitlyRemovedAlliance = false
         preference = preference.copy(alliance = alliance)
     }
 
-    override fun preferResolution(resolution: String) {
+    override fun preferResolution(resolution: String, removeOnExist: Boolean) {
+        if (removeOnExist && selectedResolution == resolution) {
+            // was selected either by default or by user, then we remove it
+            preference = preference.copy(resolution = null)
+            explicitlyRemovedResolution = true
+            return
+        }
         preference = preference.copy(resolution = resolution)
     }
 
-    override fun preferSubtitleLanguage(subtitleLanguage: String) {
+    override fun preferSubtitleLanguage(subtitleLanguage: String, removeOnExist: Boolean) {
+        if (removeOnExist && selectedSubtitleLanguage == subtitleLanguage) {
+            // was selected either by default or by user, then we remove it
+            preference = preference.copy(subtitleLanguage = null)
+            explicitlyRemovedSubtitleLanguage = true
+            return
+        }
         preference = preference.copy(subtitleLanguage = subtitleLanguage)
     }
 
-    override fun preferMediaSource(mediaSourceId: String) {
+    override fun preferMediaSource(mediaSourceId: String, removeOnExist: Boolean) {
+        if (removeOnExist && selectedMediaSource == mediaSourceId) {
+            // was selected either by default or by user, then we remove it
+            preference = preference.copy(mediaSourceId = null)
+            explicitlyRemovedMediaSource = true
+            return
+        }
         preference = preference.copy(mediaSourceId = mediaSourceId)
     }
 
@@ -199,18 +232,22 @@ internal class MediaSelectorStateImpl(
             .sorted()
     }
     override val selectedAlliance: String? by derivedStateOf {
+        if (explicitlyRemovedAlliance) return@derivedStateOf null
         (preference.alliance ?: default.alliance)
             ?.takeIf { it in alliances }
     }
     override val selectedResolution: String? by derivedStateOf {
+        if (explicitlyRemovedResolution) return@derivedStateOf null
         (preference.resolution ?: default.resolution)
             ?.takeIf { it in resolutions }
     }
     override val selectedSubtitleLanguage: String? by derivedStateOf {
+        if (explicitlyRemovedSubtitleLanguage) return@derivedStateOf null
         (preference.subtitleLanguage ?: default.subtitleLanguage)
             ?.takeIf { it in subtitleLanguages }
     }
     override val selectedMediaSource: String? by derivedStateOf {
+        if (explicitlyRemovedMediaSource) return@derivedStateOf null
         (preference.mediaSourceId ?: default.mediaSourceId)
             ?.takeIf { it in mediaSources }
     }

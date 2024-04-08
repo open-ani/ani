@@ -86,7 +86,7 @@ fun MediaSelector(
                         eachItem = { item ->
                             FilterChip(
                                 item == state.selectedResolution,
-                                onClick = { state.preferResolution(item) },
+                                onClick = { state.preferResolution(item, removeOnExist = true) },
                                 label = { Text(remember(item) { item }) },
                             )
                         },
@@ -100,7 +100,7 @@ fun MediaSelector(
                         eachItem = { item ->
                             FilterChip(
                                 item == state.selectedSubtitleLanguage,
-                                onClick = { state.preferSubtitleLanguage(item) },
+                                onClick = { state.preferSubtitleLanguage(item, removeOnExist = true) },
                                 label = { Text(item) },
                             )
                         },
@@ -113,7 +113,7 @@ fun MediaSelector(
                         eachItem = { item ->
                             FilterChip(
                                 item == state.selectedAlliance,
-                                onClick = { state.preferAlliance(item) },
+                                onClick = { state.preferAlliance(item, removeOnExist = true) },
                                 label = { Text(item) },
                             )
                         },
@@ -126,7 +126,7 @@ fun MediaSelector(
                         eachItem = { item ->
                             FilterChip(
                                 item == state.selectedMediaSource,
-                                onClick = { state.preferMediaSource(item) },
+                                onClick = { state.preferMediaSource(item, removeOnExist = true) },
                                 label = { Text(remember(item) { renderMediaSource(item) }) },
                             )
                         },
