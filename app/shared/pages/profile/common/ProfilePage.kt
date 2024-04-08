@@ -217,7 +217,7 @@ private fun DebugInfoView(viewModel: AccountViewModel, modifier: Modifier = Modi
 
         ClickableText(
             buildAnnotatedString {
-                append("Ani 永久免费无广告且开源, 源代码可在 ")
+                append("Ani 完全免费无广告且开源, 源代码可在 ")
                 pushStyle(
                     SpanStyle(
                         color = MaterialTheme.colorScheme.primary,

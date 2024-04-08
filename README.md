@@ -10,19 +10,25 @@
 
 [acg.rip]: https://acg.rip
 
-集找番、追番、弹幕看番的一站式追番平台。
+[Mikan]: https://mikanani.me/
 
-使用 [Bangumi][Bangumi] 的番剧索引以及观看记录功能，支持 [动漫花园][dmhy] 和 [acg.rip][acg.rip]
-数据源，接入[弹弹play][ddplay]平台实现在线弹幕播放.
+集找番、追番、看番的一站式弹幕追番平台。
 
-开发重点在于找番和追番的实际体验, 可能不会追求对 Bangumi 功能接入的完整性.
-项目来源于我和朋友的真实追番需求: 记录追番进度, 下载字幕组资源等.
+Ani 的目标是提供舒适的弹幕追番体验。
+
+支持云同步观看记录 ([Bangumi][Bangumi]), 多视频数据源, 弹幕播放, 以及更多功能。
 
 > 我不是专业客户端开发人员, 开发纯属兴趣, 不过有点讲究代码质量, 欢迎各位指点.
 
-## 3.0 开发进程
+## 3.0 新版开发中
 
-Ani 3.0 **正在**开发中. 跨平台架构. UI 框架使用 [Compose Multiplatform].
+Ani 3.0 **正在**开发中. 以下几点可以给你一个技术上的大概了解, 不感兴趣的可以直接看[截图](#功能截图).
+
+- Kotlin 跨平台架构: Android + 桌面 JVM
+- UI 100% [Compose][Compose Multiplatform]
+- 独立 Compose 弹幕引擎, 预留接入其他弹幕数据源的接口
+- 独立 Compose 视频播放器, Android 底层为 ExoPlayer
+- 独立的抽象数据源对接模块: SPI 方式加载 [动漫花园][dmhy], [acg.rip][acg.rip], [Mikan][Mikan]
 
 ### 参与开发
 
@@ -35,25 +41,21 @@ Ani 支持 Android 和桌面端 (macOS、Linux、Windows)。
 
 3.0 开发还在进行中, 我会每隔几个修改发布一个 beta 测试版本,
 请关注 [releases](https://github.com/Him188/ani/releases/latest)
-以下载最新正式版本。(注意: 2.0 与 3.0 完全不同, 不建议使用 2.0 (*它大概率已经不能用了*))
+以下载最新版本。
 
-测试版本有*很多*问题, ~*目前请不要抱有太大期望, 但我是每天都用的*~. 欢迎测试并在 issue 反馈问题.
+功能正逐渐完善, 欢迎测试并在 issue 反馈问题.
 
 ## 功能截图
 
 快速开发中, 我每隔几天会更一下截图. 实际样式请以最新版本为准.
 
-采用 Material 3 风格, 支持同步系统的浅色和深色主题.
-
-因为使用的是安卓原生 Compose, 应用可全程保持屏幕刷新率运行.
-
 ### 登录
 
-使用 Bangumi OAuth (浏览器) 登录, 即软件会跳转到 Bangumi 官网授权, 不要求在客户端内输入账号密码.
+使用 [Bangumi][Bangumi] OAuth (浏览器) 登录, 即软件会跳转到 Bangumi 官网授权, 不要求在客户端内输入账号密码.
 
 ### 管理追番
 
-- 同步 Bangumi 收藏
+- 同步 [Bangumi][Bangumi] 收藏
 - 快捷修改收藏状态
 - 按"在看/想看/看过"分类
 - 快速跳转到下一集
@@ -74,53 +76,53 @@ Ani 支持 Android 和桌面端 (macOS、Linux、Windows)。
 
 <img width="300" src=".readme/images/subject/subject-light.jpeg" alt="subject-light"/> <img width="300" src=".readme/images/subject/subject-dark.jpg" alt="subject-dark"/>
 
-### 在线视频播放
+### 多数据源在线视频播放
 
-- 从[动漫花园][dmhy]与[acg.rip](https://acg.rip)拉取字幕组资源
-- 支持按清晰度, 字幕语言与字幕组选择视频源
-- 手动修改字幕组后下次播放会自动选择
+多数据源适配, 总有一个源有你想看的番和喜欢的字幕组
 
-<img width="300" src=".readme/images/episode/episode-dark.jpg" alt="episode-dark"/> <img width="300" src=".readme/images/episode/episode-playsource-dark.jpg" alt="episode-light"/>
-
-- 从 [弹弹play][ddplay] 获取弹幕
-- 支持自定义弹幕样式与速度
-
-视频手势:
-
-- 双击屏幕切换播放/暂停
-- 左右滑动屏幕快进/快退
-- 在屏幕右边上下滑动调整音量
-- *倍速播放等其他辅助功能将在之后的里程碑实现*
+- 自动解析资源, 可按清晰度, 字幕语言与字幕组选择视频源
+- 记忆上次选择, 下次直接播放
 
 <img width="300" src=".readme/images/episode/episode-player-loading.jpg" alt="episode-player-loading"/> 
 
-<img width="600" src=".readme/images/episode/episode-player-fullscreen.jpg" alt="episode-player-fullscreen"/>
+<img width="300" src=".readme/images/episode/episode-media.jpeg" alt="episode-media"/>  <img width="300" src=".readme/images/episode/episode-media-expanded.jpeg" alt="episode-media-expanded"/> 
 
-<img width="600" src=".readme/images/episode/episode-player-fullscreen-controller.jpg" alt="episode-player-fullscreen-controller"/>
+### 视频弹幕
 
-<img width="600" src=".readme/images/episode/episode-player-settings.jpg" alt="episode-player-settings"/>
+- 从[弹弹play][ddplay]以及*其他弹幕网站*获取弹幕
+- 支持自定义弹幕样式与速度
 
-### 评论
+<img width="600" src=".readme/images/episode/player-controller.jpeg" alt="player-controller"/>
 
-UI 写好了, 但是 Bangumi 目前没提供评论的 API, 在考虑怎么解决.
+> 你可能注意到了, 图里的 "广告位招租" 其实是开玩笑,
+> 有其他有意思的弹幕广告词创意欢迎[提交](https://github.com/Him188/ani/discussions/120)
 
-### 以标题搜索
+<img width="600" src=".readme/images/episode/player-danmaku.jpeg" alt="player-danmaku"/>
 
-在首页, 目前支持使用标题关键词搜索. 其他搜索方式计划实现中.
+<img width="600" src=".readme/images/episode/player-settings.jpeg" alt="player-settings"/>
+
+### 视频手势
+
+你习惯的视频手势
+
+- 双击切换播放/暂停
+- 左右滑动快进/快退
+- 左侧上下滑动调整亮度
+- 右侧上下滑动调整音量
+- 倍速播放
+- 锁定手势
+
+<img width="600" src=".readme/images/episode/player-gesture.jpeg" alt="episode-gesture"/>
+
+### 完全免费无广告且开放源代码
+
+- 使用靠谱的 Bangumi 记录追番数据, 不怕网站跑路丢失数据
+- 视频播放使用 P2P 资源, 无服务器维护成本, ~即时我跑路了 Ani 也能用~
+- 开放源代码, 公开自动构建, 无资料泄露风险
+- 可 PR 添加自己喜欢的功能 (只要不用于商用)
 
 ### 桌面端
 
-除了 (目前) 不支持视频播放以外, 与 Android 端功能一致. 可使用 "下载" 功能跳转到外部下载器下载视频.
+除了目前不支持视频播放以外, 桌面端其他功能与 Android 端功能一致. 桌面端可使用 "下载" 功能跳转到外部下载器下载视频.
 
-桌面端视频播放功能计划使用内嵌 Web 播放器实现, 如有更好方案欢迎指点.
-
-## 提示
-
-#### 访问动漫花园
-
-动漫花园在中国大陆无法通过 IPv4 访问。你可能需要一些技术手段，或者在一个有 IPv6 的环境 (例如数据网络)
-，才能正常使用。
-
-在桌面端，可以在设置（Windows 在标题栏，macOS 在屏幕左上角点击"动漫花园"）中设置使用代理。代理是默认禁用的。初始的
-HTTP
-代理设置为连接本地 Clash 并使用 Clash 的默认端口。
+桌面端视频播放功能正在开发中 [#115](https://github.com/Him188/ani/issues/115)
