@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -56,16 +57,20 @@ internal fun SubjectDetailsHeader(
         Column(Modifier.padding(horizontal = 16.dp, vertical = 2.dp)) {
             val chineseName by viewModel.chineseName.collectAsStateWithLifecycle("")
             val officialName by viewModel.officialName.collectAsStateWithLifecycle("")
-            Text(
-                chineseName,
-                Modifier.offset(y = (-2).dp),
-                style = MaterialTheme.typography.titleLarge
-            )
-            Text(
-                officialName,
-                Modifier.padding(top = 4.dp),
-                style = MaterialTheme.typography.bodyMedium
-            )
+            SelectionContainer {
+                Text(
+                    chineseName,
+                    Modifier.offset(y = (-2).dp),
+                    style = MaterialTheme.typography.titleLarge
+                )
+            }
+            SelectionContainer {
+                Text(
+                    officialName,
+                    Modifier.padding(top = 4.dp),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
 
             val tags by viewModel.tags.collectAsStateWithLifecycle(listOf())
 

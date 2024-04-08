@@ -57,8 +57,6 @@ import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.ui.collection.CollectionActionButton
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.AniTopAppBar
-import me.him188.ani.app.ui.foundation.PreviewData
-import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.TopAppBarGoBackButton
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
 import me.him188.ani.app.ui.foundation.backgroundWithGradient
@@ -392,18 +390,5 @@ private fun SectionTitle(modifier: Modifier = Modifier, text: @Composable () -> 
                 text()
             }
         }
-    }
-}
-
-@Composable
-internal expect fun PreviewSubjectDetails()
-
-@Composable
-internal fun PreviewSubjectDetailsImpl() {
-    ProvideCompositionLocalsForPreview {
-        val vm = remember {
-            SubjectDetailsViewModel(PreviewData.SOSOU_NO_FURILEN_SUBJECT_ID)
-        }
-        SubjectDetailsPage(vm, goBack = {})
     }
 }
