@@ -83,7 +83,7 @@ Ani 支持 Android 和桌面端 (macOS、Linux、Windows)。
 - 自动解析资源, 可按清晰度, 字幕语言与字幕组选择视频源
 - 记忆上次选择, 下次直接播放
 
-<img width="260" src=".readme/images/episode/episode-player-loading.jpg" alt="episode-player-loading"/> <img width="260" src=".readme/images/episode/episode-media.jpeg" alt="episode-media"/>  <img width="260" src=".readme/images/episode/episode-media-expanded.jpeg" alt="episode-media-expanded"/> 
+<img width="270" src=".readme/images/episode/episode-player-loading.jpg" alt="episode-player-loading"/> <img width="270" src=".readme/images/episode/episode-media.jpeg" alt="episode-media"/>  <img width="270" src=".readme/images/episode/episode-media-expanded.jpeg" alt="episode-media-expanded"/> 
 
 ### 视频弹幕
 
