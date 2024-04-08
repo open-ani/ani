@@ -199,16 +199,20 @@ internal class MediaSelectorStateImpl(
             .sorted()
     }
     override val selectedAlliance: String? by derivedStateOf {
-        preference.alliance ?: default.alliance
+        (preference.alliance ?: default.alliance)
+            ?.takeIf { it in alliances }
     }
     override val selectedResolution: String? by derivedStateOf {
-        preference.resolution ?: default.resolution
+        (preference.resolution ?: default.resolution)
+            ?.takeIf { it in resolutions }
     }
     override val selectedSubtitleLanguage: String? by derivedStateOf {
-        preference.subtitleLanguage ?: default.subtitleLanguage
+        (preference.subtitleLanguage ?: default.subtitleLanguage)
+            ?.takeIf { it in subtitleLanguages }
     }
     override val selectedMediaSource: String? by derivedStateOf {
-        preference.mediaSourceId ?: default.mediaSourceId
+        (preference.mediaSourceId ?: default.mediaSourceId)
+            ?.takeIf { it in mediaSources }
     }
     override val candidates: List<Media> by derivedStateOf {
         infix fun <Pref : Any> Pref?.matches(prop: Pref): Boolean = this == null || this == prop
