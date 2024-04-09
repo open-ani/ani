@@ -1,7 +1,7 @@
 package me.him188.ani.app.torrent
 
 import kotlinx.coroutines.flow.Flow
-import me.him188.ani.app.torrent.file.SeekableInput
+import me.him188.ani.utils.io.SeekableInput
 
 /**
  * Represents a torrent download session.

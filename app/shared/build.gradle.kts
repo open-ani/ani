@@ -86,6 +86,7 @@ kotlin {
 
         api(projects.utils.slf4jKt)
         api(projects.utils.coroutines)
+        api(projects.utils.io)
         api(projects.torrent)
 
         // Ktor

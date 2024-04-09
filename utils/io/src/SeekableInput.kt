@@ -1,4 +1,4 @@
-package me.him188.ani.app.torrent.file
+package me.him188.ani.utils.io
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

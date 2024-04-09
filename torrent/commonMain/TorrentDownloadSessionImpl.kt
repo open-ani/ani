@@ -13,10 +13,10 @@ import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.torrent.download.PiecePriorities
 import me.him188.ani.app.torrent.download.TorrentDownloadController
-import me.him188.ani.app.torrent.file.SeekableInput
 import me.him188.ani.app.torrent.file.TorrentInput
-import me.him188.ani.app.torrent.file.asSeekableInput
 import me.him188.ani.app.torrent.model.Piece
+import me.him188.ani.utils.io.SeekableInput
+import me.him188.ani.utils.io.asSeekableInput
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import org.libtorrent4j.AlertListener

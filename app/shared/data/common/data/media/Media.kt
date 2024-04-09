@@ -2,6 +2,7 @@ package me.him188.ani.app.data.media
 
 import androidx.compose.runtime.Immutable
 import me.him188.ani.datasources.api.topic.FileSize
+import me.him188.ani.datasources.api.topic.ResourceLocation
 
 /**
  * Describes a media for a specific episode.
@@ -41,10 +42,3 @@ class MediaProperties(
      */
     val alliance: String,
 )
-
-sealed class ResourceLocation {
-    abstract val uri: String
-
-    class MagnetLink(override val uri: String) : ResourceLocation()
-    class TorrentFile(override val uri: String) : ResourceLocation()
-}

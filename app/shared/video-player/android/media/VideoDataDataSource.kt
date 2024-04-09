@@ -4,36 +4,28 @@ package me.him188.ani.app.videoplayer.media
 
 import android.net.Uri
 import androidx.media3.common.C
-import androidx.media3.common.PlaybackException
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.BaseDataSource
 import androidx.media3.datasource.DataSource
-import androidx.media3.datasource.DataSourceException
 import androidx.media3.datasource.DataSpec
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
-import me.him188.ani.app.torrent.TorrentDownloadSession
-import me.him188.ani.app.torrent.file.SeekableInput
+import me.him188.ani.app.videoplayer.data.VideoData
+import me.him188.ani.utils.io.SeekableInput
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 
-@UnstableApi
-class TorrentDataSourceException(
-    override val message: String? = null,
-    override val cause: Throwable? = null,
-    reason: Int = PlaybackException.ERROR_CODE_IO_UNSPECIFIED,
-) : DataSourceException(message, cause, reason)
-
 /**
- * Wrap of a [TorrentDownloadSession] into a [DataSource].
+ * Wrap of an Ani [VideoData] into a ExoPlayer [DataSource].
+ *
+ * This class will not close [videoData].
  */
 @androidx.annotation.OptIn(UnstableApi::class)
-class TorrentDataSource(
-    private val session: TorrentDownloadSession,
+class VideoDataDataSource(
+    private val videoData: VideoData,
 ) : BaseDataSource(true) {
     private companion object {
         @JvmStatic
-        private val logger = logger(TorrentDataSource::class)
+        private val logger = logger(VideoDataDataSource::class)
     }
 
     private var uri: Uri? = null
@@ -68,13 +60,13 @@ class TorrentDataSource(
             transferInitializing(dataSpec)
 
             logger.info { "Acquiring torrent DeferredFile" }
-            file = runBlocking { session.createInput() }
+            file = runBlocking { videoData.createInput() }
             opened = true
         }
 
         logger.info { "Waiting for totalBytes" }
 
-        val torrentLength = runBlocking { session.totalBytes.first() }
+        val torrentLength = runBlocking { videoData.fileLength }
 
         logger.info { "torrentLength = $torrentLength" }
 
@@ -96,7 +88,7 @@ class TorrentDataSource(
     override fun getUri(): Uri? = uri
 
     override fun close() {
-        logger.info { "Closing DataSource" }
+        logger.info { "Closing VideoDataDataSource" }
         uri = null
         if (opened) {
             file.close()

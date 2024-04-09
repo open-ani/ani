@@ -48,6 +48,7 @@ includeProject(":utils:slf4j-kt", "utils/slf4j-kt") // shared by client and serv
 includeProject(":utils:serialization", "utils/serialization")
 includeProject(":utils:coroutines", "utils/coroutines")
 includeProject(":utils:ktor-client", "utils/ktor-client")
+includeProject(":utils:io", "utils/io")
 
 
 includeProject(":torrent", "torrent") // Torrent downloader

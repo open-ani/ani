@@ -5,6 +5,7 @@ import me.him188.ani.app.torrent.model.Piece
 import me.him188.ani.app.torrent.model.awaitFinished
 import me.him188.ani.app.torrent.model.lastIndex
 import me.him188.ani.app.torrent.model.startIndex
+import me.him188.ani.utils.io.SeekableInput
 
 
 /**

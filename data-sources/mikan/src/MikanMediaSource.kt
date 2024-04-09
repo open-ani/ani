@@ -55,6 +55,7 @@ import me.him188.ani.datasources.api.titles.parse
 import me.him188.ani.datasources.api.titles.toTopicDetails
 import me.him188.ani.datasources.api.topic.FileSize.Companion.Zero
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
+import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.datasources.api.topic.Topic
 import me.him188.ani.datasources.api.topic.TopicCategory
 import me.him188.ani.datasources.api.topic.matches
@@ -138,12 +139,12 @@ private fun parseDocument(document: Document): List<Topic> {
             category = TopicCategory.ANIME,
             rawTitle = title,
             commentsCount = 0,
-            magnetLink = element.getElementsByTag("enclosure").attr("url"),
+            downloadLink = ResourceLocation.HttpTorrentFile(element.getElementsByTag("enclosure").attr("url")),
             size = element.getElementsByTag("contentLength").text().toLongOrNull()?.bytes ?: Zero,
             alliance = title.trim().split("]", "】").getOrNull(0).orEmpty().removePrefix("[").removePrefix("【").trim(),
             author = null,
             details = details.toTopicDetails(),
-            link = run {
+            originalLink = run {
                 element.getElementsByTag("link").text().takeIf { it.isNotBlank() }?.let { return@run it }
                 // Note: It looks like Jsoup failed to parse the xml. Debug and print `element` to see details.
                 LINK_REGEX.find(element.toString())?.value // This should work well

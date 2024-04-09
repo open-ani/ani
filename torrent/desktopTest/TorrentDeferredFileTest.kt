@@ -8,9 +8,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.yield
 import me.him188.ani.app.torrent.file.TorrentInput
-import me.him188.ani.app.torrent.file.asSeekableInput
-import me.him188.ani.app.torrent.file.readBytes
 import me.him188.ani.app.torrent.model.Piece
+import me.him188.ani.utils.io.asSeekableInput
+import me.him188.ani.utils.io.readBytes
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.io.TempDir
 import java.io.File

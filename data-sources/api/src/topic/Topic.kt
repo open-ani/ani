@@ -43,7 +43,7 @@ class Topic(
 
     val rawTitle: String,
     val commentsCount: Int,
-    val magnetLink: String,
+    val downloadLink: ResourceLocation,
     val size: FileSize,
 
     val alliance: String,
@@ -54,10 +54,10 @@ class Topic(
      */
     val details: TopicDetails?,
 
-    val link: String,
+    val originalLink: String,
 ) {
     override fun toString(): String {
-        return "Topic(id='$id', publishedTimeMillis=$publishedTimeMillis, category=$category, rawTitle='$rawTitle', commentsCount=$commentsCount, magnetLink='$magnetLink', size=$size, alliance='$alliance', author=$author, details=$details, link='$link')"
+        return "Topic(id='$id', publishedTimeMillis=$publishedTimeMillis, category=$category, rawTitle='$rawTitle', commentsCount=$commentsCount, downloadLink='$downloadLink', size=$size, alliance='$alliance', author=$author, details=$details, originalLink='$originalLink')"
     }
 }
 

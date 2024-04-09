@@ -5,11 +5,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.Preview
 import me.him188.ani.app.data.media.Media
 import me.him188.ani.app.data.media.MediaProperties
-import me.him188.ani.app.data.media.ResourceLocation
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.datasources.acgrip.AcgRipMediaSource
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
+import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.datasources.dmhy.DmhyMediaSource
 
 private const val SOURCE_DMHY = DmhyMediaSource.ID

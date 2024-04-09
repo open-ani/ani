@@ -23,6 +23,7 @@ import me.him188.ani.datasources.api.DownloadSearchQuery
 import me.him188.ani.datasources.api.paging.AbstractPageBasedPagedSource
 import me.him188.ani.datasources.api.paging.PagedSource
 import me.him188.ani.datasources.api.titles.toTopicDetails
+import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.datasources.api.topic.Topic
 import me.him188.ani.datasources.api.topic.TopicCategory
 import me.him188.ani.datasources.api.topic.matches
@@ -49,12 +50,12 @@ internal class DmhyPagedSourceImpl(
                 category = TopicCategory.ANIME,
                 rawTitle = topic.rawTitle,
                 commentsCount = topic.commentsCount,
-                magnetLink = topic.magnetLink,
+                downloadLink = ResourceLocation.MagnetLink(topic.magnetLink),
                 size = topic.size,
                 alliance = topic.alliance?.name ?: topic.rawTitle.substringBeforeLast(']').substringAfterLast('['),
                 author = topic.author,
                 details = topic.details?.toTopicDetails(),
-                link = topic.link,
+                originalLink = topic.link,
             )
         }.filter {
             query.matches(it)

@@ -231,14 +231,8 @@ class MediaSourceMediaFetcher(
             return Media(
                 id = "$dataSourceId.$id",
                 mediaSourceId = dataSourceId,
-                originalUrl = link,
-                download = magnetLink.let {
-                    if (it.startsWith("magnet:")) {
-                        ResourceLocation.MagnetLink(it)
-                    } else {
-                        ResourceLocation.TorrentFile(it)
-                    }
-                },
+                originalUrl = originalLink,
+                download = downloadLink,
                 originalTitle = rawTitle,
                 size = size,
                 publishedTime = publishedTimeMillis ?: 0,

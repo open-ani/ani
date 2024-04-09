@@ -27,11 +27,10 @@ import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.platform.Context
-import me.him188.ani.app.videoplayer.data.TorrentVideoSource
 import me.him188.ani.app.videoplayer.data.VideoData
 import me.him188.ani.app.videoplayer.data.VideoProperties
 import me.him188.ani.app.videoplayer.data.VideoSource
-import me.him188.ani.app.videoplayer.media.TorrentDataSource
+import me.him188.ani.app.videoplayer.media.VideoDataDataSource
 import me.him188.ani.app.videoplayer.ui.state.AbstractPlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlaybackState
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
@@ -118,21 +117,15 @@ internal class ExoPlayerState @UiThread constructor(
     }
 
     private suspend fun openSource(source: VideoSource<*>): OpenedVideoSource {
-        when (source) {
-            is TorrentVideoSource -> {
-                val data = source.open()
-                return OpenedVideoSource(
-                    source,
-                    data,
-                    releaseResource = {
-                        data.close()
-                    },
-                    mediaSourceFactory = ProgressiveMediaSource.Factory { TorrentDataSource(data.session) }
-                )
-            }
-
-            else -> throw UnsupportedOperationException("Unsupported video type: ${source::class}")
-        }
+        val data = source.open()
+        return OpenedVideoSource(
+            source,
+            data,
+            releaseResource = {
+                data.close()
+            },
+            mediaSourceFactory = ProgressiveMediaSource.Factory { VideoDataDataSource(data) }
+        )
     }
 
     val player = kotlin.run {

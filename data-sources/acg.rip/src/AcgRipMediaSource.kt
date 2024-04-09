@@ -53,6 +53,7 @@ import me.him188.ani.datasources.api.titles.RawTitleParser
 import me.him188.ani.datasources.api.titles.parse
 import me.him188.ani.datasources.api.titles.toTopicDetails
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
+import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.datasources.api.topic.Topic
 import me.him188.ani.datasources.api.topic.TopicCategory
 import me.him188.ani.datasources.api.topic.matches
@@ -148,12 +149,14 @@ private fun parseDocument(document: Document): List<Topic> {
             category = TopicCategory.ANIME,
             rawTitle = title,
             commentsCount = 0,
-            magnetLink = element.getElementsByTag("enclosure").attr("url"), // TODO: It's actually torrent
+            downloadLink = ResourceLocation.HttpTorrentFile(
+                element.getElementsByTag("enclosure").attr("url")
+            ),
             size = 0.bytes,
             alliance = title.trim().split("]", "】").getOrNull(0).orEmpty().removePrefix("[").removePrefix("【").trim(),
             author = null,
             details = details.toTopicDetails(),
-            link = element.getElementsByTag("link").text(),
+            originalLink = element.getElementsByTag("link").text(),
         )
     }
 }
