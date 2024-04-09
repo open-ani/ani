@@ -286,7 +286,10 @@ Page (首页/我的收藏/个人中心).
 
 #### 查找已有页面的预览
 
-用 IDE 查找想要预览的 Composable 的实现就能找到. 几乎所有的页面都有预览.
+用 IDE 查找想要预览的 Composable 的实现就能找到 (按住 Ctrl 点击函数名). 几乎所有的页面都有 Android
+的预览.
+
+<img width="400" src=".readme/images/contributing/find-existing-previews.png" alt="previewing-compose-ui"/>
 
 #### 示例: 视频播放器的 Android 预览
 
