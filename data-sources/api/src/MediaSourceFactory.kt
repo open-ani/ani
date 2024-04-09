@@ -7,7 +7,7 @@ import me.him188.ani.utils.ktor.userAgent
 
 interface MediaSourceFactory {
     /**
-     * @see MediaSource.id
+     * @see MediaSource.mediaSourceId
      */
     val id: String
 

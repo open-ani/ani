@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flowOn
-import me.him188.ani.app.data.media.Media
+import me.him188.ani.datasources.api.Media
 
 /**
  * Creates a [MediaSelectorState].

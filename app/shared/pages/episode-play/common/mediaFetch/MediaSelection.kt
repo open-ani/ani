@@ -37,12 +37,12 @@ import androidx.compose.ui.unit.dp
 import me.him188.ani.app.Res
 import me.him188.ani.app.acg_rip
 import me.him188.ani.app.bangumi
-import me.him188.ani.app.data.media.Media
 import me.him188.ani.app.dmhy
 import me.him188.ani.app.mikan
 import me.him188.ani.app.tools.formatDateTime
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.datasources.acgrip.AcgRipMediaSource
+import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
 import me.him188.ani.datasources.dmhy.DmhyMediaSource
@@ -140,7 +140,7 @@ fun MediaSelector(
                 }
             }
 
-            items(state.candidates, key = { it.id }) { item ->
+            items(state.candidates, key = { it.mediaId }) { item ->
                 MediaItem(
                     item,
                     state.selected == item,

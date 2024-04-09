@@ -32,7 +32,7 @@ class Topic(
     /**
      * 数据源内部的 ID.
      */
-    val id: String,
+    val topicId: String,
 
     /**
      * 发布时间戳
@@ -57,7 +57,7 @@ class Topic(
     val originalLink: String,
 ) {
     override fun toString(): String {
-        return "Topic(id='$id', publishedTimeMillis=$publishedTimeMillis, category=$category, rawTitle='$rawTitle', commentsCount=$commentsCount, downloadLink='$downloadLink', size=$size, alliance='$alliance', author=$author, details=$details, originalLink='$originalLink')"
+        return "Topic(id='$topicId', publishedTimeMillis=$publishedTimeMillis, category=$category, rawTitle='$rawTitle', commentsCount=$commentsCount, downloadLink='$downloadLink', size=$size, alliance='$alliance', author=$author, details=$details, originalLink='$originalLink')"
     }
 }
 

@@ -1,7 +1,6 @@
-package me.him188.ani.app.data.media
+package me.him188.ani.datasources.api.fetcher
 
 import androidx.compose.runtime.Stable
-import androidx.compose.ui.util.fastDistinctBy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -10,11 +9,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flatMapMerge
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
@@ -22,31 +21,30 @@ import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.take
-import me.him188.ani.datasources.api.DownloadSearchQuery
+import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaSource
-import me.him188.ani.datasources.api.paging.PagedSource
-import me.him188.ani.datasources.api.topic.Resolution
-import me.him188.ani.datasources.api.topic.Topic
-import me.him188.ani.datasources.api.topic.TopicCategory
+import me.him188.ani.datasources.api.paging.SizedSource
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.logger
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
 /**
- * Fetches downloadable videos from the data-sources, i.e. dmhy, acg.rip, etc.
+ * A fetcher that supports concurrent fetching of [Media]s from multiple [MediaSource]s.
  *
  * @see MediaSourceMediaFetcher
  */
 interface MediaFetcher {
     /**
-     * Starts a fetch
+     * Starts a concurrent fetch from all [MediaSource]s this [MediaFetcher] has.
      */
     fun fetch(request: MediaFetchRequest): MediaFetchSession
 }
 
 class MediaFetchRequest(
     /**
+     * Translated and original names of the subject.
+     *
      * E.g. "关于我转生变成史莱姆这档事 第三季"
      */
     val subjectNames: List<String>,
@@ -175,13 +173,12 @@ class MediaSourceMediaFetcher(
     private inner class MediaSourceResultImpl(
         private val dataSourceId: String,
         private val config: MediaFetcherConfig,
-        pagedSources: Flow<PagedSource<Topic>>,
+        pagedSources: Flow<SizedSource<Media>>,
     ) : MediaSourceResult {
         override val state: MutableStateFlow<MediaSourceState> = MutableStateFlow(MediaSourceState.Idle)
 
         override val results: Flow<List<Media>> by lazy {
             pagedSources.flatMapMerge { it.results }
-                .map { it.toMedia() }
                 .onStart {
                     state.value = MediaSourceState.Working
                 }
@@ -210,7 +207,7 @@ class MediaSourceMediaFetcher(
                     acc + list
                 }
                 .map { list ->
-                    list.fastDistinctBy { it.id }
+                    list.distinctBy { it.mediaId }
                 }
                 .shareIn(
                     scope, replay = 1, started = SharingStarted.WhileSubscribed(5000)
@@ -225,24 +222,6 @@ class MediaSourceMediaFetcher(
                 )
             }
         }
-
-        private fun Topic.toMedia(): Media {
-            val details = details
-            return Media(
-                id = "$dataSourceId.$id",
-                mediaSourceId = dataSourceId,
-                originalUrl = originalLink,
-                download = downloadLink,
-                originalTitle = rawTitle,
-                size = size,
-                publishedTime = publishedTimeMillis ?: 0,
-                properties = MediaProperties(
-                    subtitleLanguages = details?.subtitleLanguages?.map { it.toString() } ?: emptyList(),
-                    resolution = details?.resolution?.toString() ?: Resolution.R1080P.toString(),
-                    alliance = alliance,
-                ),
-            )
-        }
     }
 
     private inner class MediaFetchSessionImpl(
@@ -250,16 +229,17 @@ class MediaSourceMediaFetcher(
         private val config: MediaFetcherConfig,
     ) : MediaFetchSession {
         override val resultsPerSource: Map<String, MediaSourceResult> = mediaSources.associateBy {
-            it.id
+            it.mediaSourceId
         }.mapValues { (id, provider) ->
             MediaSourceResultImpl(
                 dataSourceId = id,
                 config,
-                pagedSources = request.createQueries().asFlow().map {
-                    provider.startSearch(it)
-                }.shareIn(
-                    scope, replay = 1, started = SharingStarted.Lazily,
-                ).take(2) // so that the flow can normally complete
+                pagedSources = flowOf(request)
+                    .map {
+                        provider.fetch(it)
+                    }.shareIn(
+                        scope, replay = 1, started = SharingStarted.Lazily,
+                    ).take(2) // so that the flow can normally complete
             )
         }
 
@@ -267,11 +247,11 @@ class MediaSourceMediaFetcher(
             combine(resultsPerSource.values.map { it.results }) { lists ->
                 // Merge into one single list
                 lists.fold(mutableListOf<Media>()) { acc, list ->
-                    acc.addAll(list.fastDistinctBy { it.originalTitle }) // distinct within this source's scope
+                    acc.addAll(list.distinctBy { it.originalTitle }) // distinct within this source's scope
                     acc
                 }
             }.map { list ->
-                list.fastDistinctBy { it.id } // distinct globally by id, just to be safe
+                list.distinctBy { it.mediaId } // distinct globally by id, just to be safe
             }
 
         override val hasCompleted = combine(resultsPerSource.values.map { it.state }) { states ->
@@ -312,13 +292,4 @@ class MediaSourceMediaFetcher(
     private companion object {
         val logger = logger<MediaSourceMediaFetcher>()
     }
-}
-
-private fun MediaFetchRequest.createQueries(): List<DownloadSearchQuery> = subjectNames.map {
-    DownloadSearchQuery(
-        keywords = it,
-        category = TopicCategory.ANIME,
-        episodeSort = episodeSort,
-        episodeName = episodeName,
-    )
 }

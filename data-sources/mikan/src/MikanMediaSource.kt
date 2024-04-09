@@ -46,6 +46,7 @@ import me.him188.ani.datasources.api.DownloadSearchQuery
 import me.him188.ani.datasources.api.MediaSource
 import me.him188.ani.datasources.api.MediaSourceConfig
 import me.him188.ani.datasources.api.MediaSourceFactory
+import me.him188.ani.datasources.api.TopicMediaSource
 import me.him188.ani.datasources.api.applyMediaSourceConfig
 import me.him188.ani.datasources.api.paging.PageBasedPagedSource
 import me.him188.ani.datasources.api.paging.Paged
@@ -71,7 +72,7 @@ import kotlin.time.Duration.Companion.seconds
 
 class MikanMediaSource(
     private val config: MediaSourceConfig,
-) : MediaSource {
+) : TopicMediaSource() {
     class Factory : MediaSourceFactory {
         override val id: String get() = ID
         override fun create(config: MediaSourceConfig): MediaSource = MikanMediaSource(config)
@@ -82,7 +83,7 @@ class MikanMediaSource(
         private val logger = logger<MikanMediaSource>()
     }
 
-    override val id: String get() = ID
+    override val mediaSourceId: String get() = ID
 
     override suspend fun checkConnection(): ConnectionStatus {
         return try {
@@ -127,7 +128,7 @@ private fun parseDocument(document: Document): List<Topic> {
         val details = RawTitleParser.getParserFor().parse(title, null)
 
         Topic(
-            id = element.getElementsByTag("guid").text().substringAfterLast("/"),
+            topicId = element.getElementsByTag("guid").text().substringAfterLast("/"),
             publishedTimeMillis = element.getElementsByTag("pubDate").text().let {
                 runCatching {
                     ZonedDateTime.of(

@@ -15,7 +15,7 @@ data class ProxyPreferences(
      */
     val default: MediaSourceProxyPreferences = MediaSourceProxyPreferences.Default,
     /**
-     * Per data source [MediaSource.id]
+     * Per data source [MediaSource.mediaSourceId]
      */
     val perSource: Map<String, MediaSourceProxyPreferences> = emptyMap(),
 ) {

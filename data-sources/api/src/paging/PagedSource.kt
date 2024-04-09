@@ -24,8 +24,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
@@ -33,24 +31,20 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 /**
- * 一个搜索请求.
- *
- * **Stateful.** [PagedSource] 会持有当前查询状态信息, 例如当前页码.
+ * A [SizedSource] that adds pagination support.
+ * @see SizedSource
  */
-interface PagedSource<out T> {
+interface PagedSource<out T> : SizedSource<T> {
     /**
      * 全部搜索结果, 以 [Flow] 形式提供, 惰性请求.
      */
-    val results: Flow<T>
+    override val results: Flow<T>
 
-    val finished: StateFlow<Boolean>
+    override val finished: StateFlow<Boolean>
 
     val currentPage: StateFlow<Int>
 
-    /**
-     * 总共的结果数量. 该数量不一定提供.
-     */
-    val totalSize: StateFlow<Int?>
+    override val totalSize: StateFlow<Int?>
 
     /**
      * 主动查询下一页. 当已经没有下一页时返回 `null`. 注意, 若有使用 [results], 主动操作 [nextPageOrNull] 将导致 [results] 会跳过该页.
@@ -68,10 +62,6 @@ interface PagedSource<out T> {
      * Do nothing if there isn't.
      */
     fun backToPrevious()
-}
-
-suspend inline fun PagedSource<*>.awaitFinished() {
-    this.finished.filter { it }.first()
 }
 
 inline fun <T, R> PagedSource<T>.map(crossinline transform: suspend (T) -> R): PagedSource<R> {

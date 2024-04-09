@@ -73,7 +73,7 @@ class NetworkPreferenceViewModel : AbstractViewModel(), KoinComponent {
         mediaSourceManager.ids
             .map { id ->
                 val source = sources.mapNotNull { sources ->
-                    sources.firstOrNull { it.id == id }
+                    sources.firstOrNull { it.mediaSourceId == id }
                 }
                 MediaSourceTester(
                     id = id,
@@ -119,7 +119,7 @@ class NetworkPreferenceViewModel : AbstractViewModel(), KoinComponent {
     }
 
     /**
-     * @param sourceId [MediaSource.id]
+     * @param sourceId [MediaSource.mediaSourceId]
      */
     fun preferencePerSource(sourceId: String): Flow<MediaSourceProxyPreferences?> {
         return proxyPreferencesFlow.map { it.perSource[sourceId] }

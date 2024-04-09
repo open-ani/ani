@@ -19,10 +19,19 @@
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
+
+    // for @Stable and @Immutable
+    // Note: we actually can avoid this, by using a `compose_compiler_config.conf`
+    // See https://developer.android.com/develop/ui/compose/performance/stability/fix#configuration-file
+    // But for simplicity, we just include compose here.
+    id("org.jetbrains.compose")
 }
 
 dependencies {
     implementation(libs.kotlinx.serialization.core)
     api(libs.kotlinx.coroutines.core)
     api(projects.utils.ktorClient)
+    implementation(projects.utils.slf4jKt)
+
+    implementation(compose.runtime) // required by the compose compiler
 }

@@ -17,6 +17,7 @@ import me.him188.ani.datasources.acgrip.AcgRipMediaSource
 import me.him188.ani.datasources.api.ConnectionStatus
 import me.him188.ani.datasources.api.DownloadSearchQuery
 import me.him188.ani.datasources.api.MediaSource
+import me.him188.ani.datasources.api.TopicMediaSource
 import me.him188.ani.datasources.api.paging.PageBasedPagedSource
 import me.him188.ani.datasources.api.paging.Paged
 import me.him188.ani.datasources.api.paging.PagedSource
@@ -45,8 +46,8 @@ private fun PreviewPreferencePage() {
 }
 
 private class TestMediaSource(
-    override val id: String,
-) : MediaSource {
+    override val mediaSourceId: String,
+) : TopicMediaSource() {
     override suspend fun checkConnection(): ConnectionStatus {
         return Random.nextBoolean().let {
             if (it) ConnectionStatus.SUCCESS else ConnectionStatus.FAILED
@@ -75,7 +76,7 @@ private fun PreviewNetworkPreferenceTab() {
                             TestMediaSource(MikanMediaSource.ID),
                         )
                     )
-                    override val ids: List<String> = sources.value.map { it.id }
+                    override val ids: List<String> = sources.value.map { it.mediaSourceId }
                 }
             }
         }

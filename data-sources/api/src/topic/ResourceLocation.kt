@@ -1,6 +1,9 @@
 package me.him188.ani.datasources.api.topic
 
+import kotlinx.serialization.Serializable
 
+
+@Serializable
 sealed class ResourceLocation {
     abstract val uri: String
 

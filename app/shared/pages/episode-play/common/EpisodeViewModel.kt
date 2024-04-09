@@ -30,13 +30,7 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.withContext
-import me.him188.ani.app.data.media.Media
-import me.him188.ani.app.data.media.MediaFetchRequest
-import me.him188.ani.app.data.media.MediaFetchSession
-import me.him188.ani.app.data.media.MediaFetcher
-import me.him188.ani.app.data.media.MediaFetcherConfig
 import me.him188.ani.app.data.media.MediaSourceManager
-import me.him188.ani.app.data.media.MediaSourceMediaFetcher
 import me.him188.ani.app.data.repositories.EpisodePreferencesRepository
 import me.him188.ani.app.data.repositories.EpisodeRepository
 import me.him188.ani.app.navigation.BrowserNavigator
@@ -56,6 +50,12 @@ import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuMatchers
 import me.him188.ani.danmaku.api.DanmakuProvider
+import me.him188.ani.datasources.api.Media
+import me.him188.ani.datasources.api.fetcher.MediaFetchRequest
+import me.him188.ani.datasources.api.fetcher.MediaFetchSession
+import me.him188.ani.datasources.api.fetcher.MediaFetcher
+import me.him188.ani.datasources.api.fetcher.MediaFetcherConfig
+import me.him188.ani.datasources.api.fetcher.MediaSourceMediaFetcher
 import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.datasources.bangumi.processing.nameCNOrName
 import me.him188.ani.datasources.bangumi.processing.renderEpisodeSp

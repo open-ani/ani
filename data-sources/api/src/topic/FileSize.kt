@@ -20,7 +20,10 @@
 
 package me.him188.ani.datasources.api.topic
 
+import kotlinx.serialization.Serializable
+
 @JvmInline
+@Serializable
 value class FileSize(
     val inBytes: Long,
 ) {

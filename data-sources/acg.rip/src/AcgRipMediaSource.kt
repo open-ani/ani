@@ -45,6 +45,7 @@ import me.him188.ani.datasources.api.DownloadSearchQuery
 import me.him188.ani.datasources.api.MediaSource
 import me.him188.ani.datasources.api.MediaSourceConfig
 import me.him188.ani.datasources.api.MediaSourceFactory
+import me.him188.ani.datasources.api.TopicMediaSource
 import me.him188.ani.datasources.api.applyMediaSourceConfig
 import me.him188.ani.datasources.api.paging.PageBasedPagedSource
 import me.him188.ani.datasources.api.paging.Paged
@@ -68,7 +69,7 @@ import kotlin.time.Duration.Companion.seconds
 
 class AcgRipMediaSource(
     private val config: MediaSourceConfig,
-) : MediaSource {
+) : TopicMediaSource() {
     class Factory : MediaSourceFactory {
         override val id: String get() = ID
         override fun create(config: MediaSourceConfig): MediaSource = AcgRipMediaSource(config)
@@ -79,7 +80,7 @@ class AcgRipMediaSource(
         private val logger = logger<AcgRipMediaSource>()
     }
 
-    override val id: String get() = ID
+    override val mediaSourceId: String get() = ID
 
     override suspend fun checkConnection(): ConnectionStatus {
         return try {
@@ -141,7 +142,7 @@ private fun parseDocument(document: Document): List<Topic> {
         val details = RawTitleParser.getParserFor().parse(title, null)
 
         Topic(
-            id = "acgrip-${element.getElementsByTag("guid").text().substringAfterLast("/")}",
+            topicId = "acgrip-${element.getElementsByTag("guid").text().substringAfterLast("/")}",
             publishedTimeMillis = element.getElementsByTag("pubDate").text().let {
                 // java.time.format.DateTimeParseException: Text 'Sun, 25 Feb 2024 08:32:16 -0800' could not be parsed at index 0
                 runCatching { ZonedDateTime.parse(it, FORMATTER).toEpochSecond() * 1000 }.getOrNull()

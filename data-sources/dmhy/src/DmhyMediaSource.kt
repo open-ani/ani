@@ -40,6 +40,7 @@ import me.him188.ani.datasources.api.DownloadSearchQuery
 import me.him188.ani.datasources.api.MediaSource
 import me.him188.ani.datasources.api.MediaSourceConfig
 import me.him188.ani.datasources.api.MediaSourceFactory
+import me.him188.ani.datasources.api.TopicMediaSource
 import me.him188.ani.datasources.api.applyMediaSourceConfig
 import me.him188.ani.datasources.api.paging.PagedSource
 import me.him188.ani.datasources.api.topic.Topic
@@ -54,7 +55,7 @@ import kotlin.time.Duration.Companion.seconds
 
 class DmhyMediaSource(
     private val config: MediaSourceConfig,
-) : MediaSource {
+) : TopicMediaSource() {
     class Factory : MediaSourceFactory {
         override val id: String = ID
         override fun create(config: MediaSourceConfig): MediaSource = DmhyMediaSource(config)
@@ -69,7 +70,7 @@ class DmhyMediaSource(
         applyMediaSourceConfig(config)
     })
 
-    override val id: String get() = ID
+    override val mediaSourceId: String get() = ID
 
     override suspend fun checkConnection(): ConnectionStatus {
         return try {
