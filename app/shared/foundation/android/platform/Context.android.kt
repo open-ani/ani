@@ -97,3 +97,10 @@ actual fun Context.setRequestFullScreen(fullscreen: Boolean) {
         resources.configuration.orientation = orientation
     }
 }
+
+
+internal actual val Context.filesImpl: ContextFiles
+    get() = object : ContextFiles {
+        override val cacheDir: java.io.File = this@filesImpl.cacheDir
+        override val dataDir: java.io.File = this@filesImpl.filesDir
+    }

@@ -18,8 +18,8 @@
 
 package me.him188.ani.datasources.api.topic
 
-import me.him188.ani.datasources.api.DownloadSearchQuery
-import me.him188.ani.datasources.api.MediaSource
+import me.him188.ani.datasources.api.source.DownloadSearchQuery
+import me.him188.ani.datasources.api.source.MediaSource
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId

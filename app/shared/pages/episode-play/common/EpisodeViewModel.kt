@@ -31,11 +31,12 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.media.MediaSourceManager
+import me.him188.ani.app.data.media.UnsupportedMediaException
+import me.him188.ani.app.data.media.VideoSourceResolver
 import me.him188.ani.app.data.repositories.EpisodePreferencesRepository
 import me.him188.ani.app.data.repositories.EpisodeRepository
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.Context
-import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
@@ -44,21 +45,19 @@ import me.him188.ani.app.ui.subject.episode.danmaku.PlayerDanmakuViewModel
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorState
 import me.him188.ani.app.videoplayer.data.VideoSource
-import me.him188.ani.app.videoplayer.torrent.TorrentVideoSource
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuMatchers
 import me.him188.ani.danmaku.api.DanmakuProvider
 import me.him188.ani.datasources.api.Media
-import me.him188.ani.datasources.api.fetcher.MediaFetchRequest
-import me.him188.ani.datasources.api.fetcher.MediaFetchSession
-import me.him188.ani.datasources.api.fetcher.MediaFetcher
-import me.him188.ani.datasources.api.fetcher.MediaFetcherConfig
-import me.him188.ani.datasources.api.fetcher.MediaSourceMediaFetcher
+import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.datasources.bangumi.processing.nameCNOrName
 import me.him188.ani.datasources.bangumi.processing.renderEpisodeSp
+import me.him188.ani.datasources.core.fetch.MediaFetchSession
+import me.him188.ani.datasources.core.fetch.MediaFetcherConfig
+import me.him188.ani.datasources.core.fetch.MediaSourceMediaFetcher
 import me.him188.ani.utils.coroutines.closeOnReplacement
 import me.him188.ani.utils.coroutines.runUntilSuccess
 import me.him188.ani.utils.logging.info
@@ -97,14 +96,11 @@ interface EpisodeViewModel : HasBackgroundScope {
     // Media Fetching
 
     /**
-     * Emits the progress of the [MediaFetcher] fetching media.
+     * Emits the progress of fetching media.
      * Range is `0..1`
      */
     val mediaFetcherProgress: Flow<Float>
 
-    /**
-     * Emits `true` if the [MediaFetcher] has completed fetching media.
-     */
     val mediaFetcherCompleted: Flow<Boolean>
 
     // Media Selection
@@ -165,12 +161,12 @@ private class EpisodeViewModelImpl(
 ) : AbstractViewModel(), KoinComponent, EpisodeViewModel {
     private val bangumiClient by inject<BangumiClient>()
     private val browserNavigator: BrowserNavigator by inject()
-    private val torrentManager: TorrentManager by inject()
     private val playerStateFactory: PlayerStateFactory by inject()
     private val episodeRepository: EpisodeRepository by inject()
     private val danmakuProvider: DanmakuProvider by inject()
     private val episodePreferencesRepository: EpisodePreferencesRepository by inject()
     private val mediaSourceManager: MediaSourceManager by inject()
+    private val videoSourceResolver: VideoSourceResolver by inject()
 
     private val subjectDetails = flowOf(subjectId).mapLatest { subjectId ->
         runUntilSuccess { withContext(Dispatchers.IO) { bangumiClient.api.getSubjectById(subjectId) } }
@@ -210,6 +206,7 @@ private class EpisodeViewModelImpl(
     val mediaFetchSession = combine(subjectDetails, episode, mediaFetcher) { subject, episode, fetcher ->
         fetcher.fetch(
             MediaFetchRequest(
+                episodeId = episode.id.toString(),
                 subjectNames = listOfNotNull(
                     subject.name,
                     subject.nameCn
@@ -298,11 +295,9 @@ private class EpisodeViewModelImpl(
             emit(null)
             playSource?.let { media ->
                 try {
-                    emit(
-                        TorrentVideoSource(
-                            torrentManager.downloader.await().fetchTorrent(media.download.uri)
-                        )
-                    )
+                    emit(videoSourceResolver.resolve(media))
+                } catch (e: UnsupportedMediaException) {
+                    emit(null)
                 } catch (e: Exception) {
                     emit(null)
                 }

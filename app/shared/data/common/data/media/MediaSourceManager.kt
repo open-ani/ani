@@ -10,9 +10,9 @@ import me.him188.ani.app.data.models.MediaSourceProxyPreferences
 import me.him188.ani.app.data.models.ProxyAuthorization
 import me.him188.ani.app.data.repositories.PreferencesRepository
 import me.him188.ani.app.platform.getAniUserAgent
-import me.him188.ani.datasources.api.MediaSource
-import me.him188.ani.datasources.api.MediaSourceConfig
-import me.him188.ani.datasources.api.MediaSourceFactory
+import me.him188.ani.datasources.api.source.MediaSource
+import me.him188.ani.datasources.api.source.MediaSourceConfig
+import me.him188.ani.datasources.api.source.MediaSourceFactory
 import me.him188.ani.utils.ktor.ClientProxyConfig
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.logger
@@ -29,7 +29,9 @@ interface MediaSourceManager { // available by inject
     val ids: List<String>
 }
 
-class MediaSourceManagerImpl : MediaSourceManager, KoinComponent {
+class MediaSourceManagerImpl(
+    additionalSources: () -> List<MediaSource>,
+) : MediaSourceManager, KoinComponent {
     private val preferencesRepository: PreferencesRepository by inject()
     private val config = preferencesRepository.proxyPreferences.flow
 
@@ -40,11 +42,12 @@ class MediaSourceManagerImpl : MediaSourceManager, KoinComponent {
     })
     private val factories = ServiceLoader.load(MediaSourceFactory::class.java).toList()
 
+    private val additionalSources by lazy { additionalSources() }
     override val sources = config.map { proxyPreferences ->
         factories
             .map { factory ->
                 factory.create(proxyPreferences.get(factory.id))
-            }
+            } + this.additionalSources
     }.shareIn(scope, replay = 1, started = SharingStarted.Lazily)
 
     override val ids: List<String> = factories

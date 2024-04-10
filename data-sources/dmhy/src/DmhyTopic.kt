@@ -18,12 +18,12 @@
 
 package me.him188.ani.datasources.dmhy
 
-import me.him188.ani.datasources.api.titles.ParsedTopicTitle
-import me.him188.ani.datasources.api.titles.RawTitleParser
-import me.him188.ani.datasources.api.titles.parse
 import me.him188.ani.datasources.api.topic.Alliance
 import me.him188.ani.datasources.api.topic.Author
 import me.him188.ani.datasources.api.topic.FileSize
+import me.him188.ani.datasources.api.topic.titles.ParsedTopicTitle
+import me.him188.ani.datasources.api.topic.titles.RawTitleParser
+import me.him188.ani.datasources.api.topic.titles.parse
 
 class DmhyCategory(
     val id: String,

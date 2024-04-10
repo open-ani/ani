@@ -19,12 +19,18 @@ public interface TorrentDownloadSession : DownloadStats, AutoCloseable {
 
     public val fileHash: String?
 
+    public suspend fun pause()
+
+    public suspend fun resume()
+
     /**
      * Opens the downloaded file as a [SeekableInput].
      */
     public suspend fun createInput(): SeekableInput
 
     public override fun close()
+
+    public suspend fun closeAndDelete()
 }
 
 public sealed class TorrentDownloadState {

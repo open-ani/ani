@@ -9,7 +9,9 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.getAndUpdate
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.runInterruptible
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.torrent.download.PiecePriorities
 import me.him188.ani.app.torrent.download.TorrentDownloadController
@@ -315,19 +317,52 @@ internal class TorrentDownloadSessionImpl(
         }
     }
 
+    override suspend fun pause() {
+        withHandle { it.pause() }
+    }
+
+    override suspend fun resume() {
+        withHandle { it.resume() }
+    }
+
+    private suspend fun <R> withHandle(action: (TorrentHandle) -> R): R {
+        return suspendCancellableCoroutine { cont ->
+            val job: (TorrentHandle) -> Unit = {
+                cont.resumeWith(kotlin.runCatching { action(it) })
+            }
+            jobsToDoInHandle.add(job)
+            cont.invokeOnCancellation {
+                jobsToDoInHandle.remove(job)
+            }
+        }
+    }
+
     override suspend fun awaitFinished() {
         onFinish.join()
     }
 
+    private suspend fun closeImpl() {
+        removeListener(listener)
+        torrentHandle?.let {
+            closeHandle(it)
+        }
+        onClose()
+    }
+
     override fun close() {
         logger.info { "Closing torrent" }
-        LockedSessionManager.launch {
-            removeListener(listener)
-            torrentHandle?.let {
-                closeHandle(it)
+        if (torrentHandle?.isValid == true) {
+            jobsToDoInHandle.add {
+                runBlocking {
+                    closeImpl()
+                }
             }
-            onClose()
         }
+    }
+
+    override suspend fun closeAndDelete() {
+        closeImpl()
+        withContext(Dispatchers.IO) { saveDirectory.deleteRecursively() }
     }
 
     private fun createPiecePriorities(): PiecePriorities {

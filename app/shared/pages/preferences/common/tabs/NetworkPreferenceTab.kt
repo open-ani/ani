@@ -45,9 +45,9 @@ import me.him188.ani.app.ui.preference.PreferenceTab
 import me.him188.ani.app.ui.preference.SwitchItem
 import me.him188.ani.app.ui.subject.episode.mediaFetch.getMediaSourceIcon
 import me.him188.ani.app.ui.subject.episode.mediaFetch.renderMediaSource
-import me.him188.ani.datasources.api.ConnectionStatus
-import me.him188.ani.datasources.api.MediaSource
-import me.him188.ani.datasources.api.SubjectProvider
+import me.him188.ani.datasources.api.source.ConnectionStatus
+import me.him188.ani.datasources.api.source.MediaSource
+import me.him188.ani.datasources.api.subject.SubjectProvider
 import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
 import me.him188.ani.utils.ktor.ClientProxyConfigValidator
 import me.him188.ani.utils.logging.info

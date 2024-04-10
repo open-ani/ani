@@ -20,10 +20,23 @@ package me.him188.ani.app.platform
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ProvidableCompositionLocal
+import java.io.File
 
 expect val LocalContext: ProvidableCompositionLocal<Context>
 
 expect abstract class Context
+
+val Context.files: ContextFiles get() = filesImpl
+internal expect val Context.filesImpl: ContextFiles
+
+interface ContextFiles {
+    val cacheDir: File
+
+    /**
+     * filesDir on Android.
+     */
+    val dataDir: File
+}
 
 /**
  * Returns `true` if the app is in landscape mode.

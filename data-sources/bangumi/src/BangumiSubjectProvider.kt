@@ -18,11 +18,11 @@
 
 package me.him188.ani.datasources.bangumi
 
-import me.him188.ani.datasources.api.ConnectionStatus
-import me.him188.ani.datasources.api.Subject
-import me.him188.ani.datasources.api.SubjectProvider
-import me.him188.ani.datasources.api.SubjectSearchQuery
 import me.him188.ani.datasources.api.paging.PagedSource
+import me.him188.ani.datasources.api.source.ConnectionStatus
+import me.him188.ani.datasources.api.subject.Subject
+import me.him188.ani.datasources.api.subject.SubjectProvider
+import me.him188.ani.datasources.api.subject.SubjectSearchQuery
 
 class BangumiSubjectProvider(
     private val client: BangumiClient,

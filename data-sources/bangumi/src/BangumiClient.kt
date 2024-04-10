@@ -47,8 +47,8 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
-import me.him188.ani.datasources.api.ConnectionStatus
 import me.him188.ani.datasources.api.paging.Paged
+import me.him188.ani.datasources.api.source.ConnectionStatus
 import me.him188.ani.datasources.bangumi.client.BangumiClientEpisodes
 import me.him188.ani.datasources.bangumi.client.BangumiClientSubjects
 import me.him188.ani.datasources.bangumi.client.BangumiEpType

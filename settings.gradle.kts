@@ -70,7 +70,8 @@ includeProject(":app:android", "app/android") // Android client
 //includeProject(":server:database-xodus", "server/database-xodus") // database implementation with Xodus
 
 // data sources
-includeProject(":data-sources:api", "data-sources/api") // data source interfaces
+includeProject(":data-sources:api", "data-sources/api") // data source interfaces: Media, MediaSource 
+includeProject(":data-sources:core", "data-sources/core") // data source managers: MediaFetcher, MediaCacheStorage
 includeProject(":data-sources:dmhy", "data-sources/dmhy") // data source from https://dmhy.org
 includeProject(":data-sources:acg-rip", "data-sources/acg.rip") // data source from https://acg.rip
 includeProject(":data-sources:mikan", "data-sources/mikan") // data source from https://mikanani.me/

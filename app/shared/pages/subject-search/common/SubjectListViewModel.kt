@@ -25,8 +25,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.yield
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.launchInBackground
-import me.him188.ani.datasources.api.Subject
 import me.him188.ani.datasources.api.paging.PagedSource
+import me.him188.ani.datasources.api.subject.Subject
 import me.him188.ani.utils.logging.info
 import org.koin.core.component.KoinComponent
 

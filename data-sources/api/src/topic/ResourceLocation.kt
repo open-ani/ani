@@ -29,14 +29,19 @@ sealed class ResourceLocation {
         }
     }
 
-//    /**
-//     * `*.mp4`, `*.mkv`, etc.
-//     */
-//    class HttpVideoFile(override val uri: String) : ResourceLocation() {
-//        init {
-//            require(uri.startsWith("https://") || uri.startsWith("http://")) {
-//                "HttpVideoFile uri must start with http:// or https://"
-//            }
-//        }
-//    }
+    /**
+     * `file://`
+     */
+    class LocalFile(
+        override val uri: String
+    ) : ResourceLocation() {
+        val filePath: String
+            get() = uri.removePrefix("file://")
+
+        init {
+            require(uri.startsWith("file://")) {
+                "LocalFile uri must start with file://"
+            }
+        }
+    }
 }

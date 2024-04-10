@@ -18,9 +18,9 @@
 
 package me.him188.ani.datasources.api
 
-import me.him188.ani.datasources.api.titles.ParsedTopicTitle
-import me.him188.ani.datasources.api.titles.PatternBasedRawTitleParser
-import me.him188.ani.datasources.api.titles.parse
+import me.him188.ani.datasources.api.topic.titles.ParsedTopicTitle
+import me.him188.ani.datasources.api.topic.titles.PatternBasedRawTitleParser
+import me.him188.ani.datasources.api.topic.titles.parse
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
 

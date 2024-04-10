@@ -1,8 +1,8 @@
 package me.him188.ani.datasources.bangumi.models.subjects
 
 import kotlinx.serialization.Serializable
-import me.him188.ani.datasources.api.Subject
-import me.him188.ani.datasources.api.SubjectImages
+import me.him188.ani.datasources.api.subject.Subject
+import me.him188.ani.datasources.api.subject.SubjectImages
 import me.him188.ani.datasources.bangumi.BangumiClientImpl
 
 @Serializable

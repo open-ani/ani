@@ -21,8 +21,14 @@ package me.him188.ani.app.platform
 import androidx.compose.runtime.Stable
 import io.ktor.client.plugins.UserAgent
 import kotlinx.coroutines.CoroutineScope
+import me.him188.ani.app.data.media.LocalFileVideoSourceResolver
+import me.him188.ani.app.data.media.MediaCacheManager
+import me.him188.ani.app.data.media.MediaCacheManagerImpl
 import me.him188.ani.app.data.media.MediaSourceManager
 import me.him188.ani.app.data.media.MediaSourceManagerImpl
+import me.him188.ani.app.data.media.TorrentMediaCacheEngine
+import me.him188.ani.app.data.media.TorrentVideoSourceResolver
+import me.him188.ani.app.data.media.VideoSourceResolver
 import me.him188.ani.app.data.repositories.EpisodePreferencesRepository
 import me.him188.ani.app.data.repositories.EpisodePreferencesRepositoryImpl
 import me.him188.ani.app.data.repositories.EpisodeRepository
@@ -43,15 +49,18 @@ import me.him188.ani.app.persistent.preferredAllianceStore
 import me.him188.ani.app.persistent.tokenStore
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.session.SessionManagerImpl
+import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.danmaku.api.DanmakuProvider
 import me.him188.ani.danmaku.dandanplay.DandanplayClient
 import me.him188.ani.danmaku.dandanplay.DandanplayDanmakuProvider
-import me.him188.ani.datasources.api.SubjectProvider
+import me.him188.ani.datasources.api.subject.SubjectProvider
 import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
+import me.him188.ani.datasources.core.cache.DirectoryMediaCacheStorage
 import org.koin.dsl.module
 
 fun getCommonKoinModule(getContext: () -> Context, coroutineScope: CoroutineScope) = module {
+    // Repositories
     single<TokenRepository> { TokenRepositoryImpl(getContext().tokenStore) }
     single<EpisodePreferencesRepository> { EpisodePreferencesRepositoryImpl(getContext().preferredAllianceStore) }
     single<SessionManager> { SessionManagerImpl() }
@@ -70,7 +79,36 @@ fun getCommonKoinModule(getContext: () -> Context, coroutineScope: CoroutineScop
         })
     }
     single<PreferencesRepository> { PreferencesRepositoryImpl(getContext().preferencesStore) }
-    single<MediaSourceManager> { MediaSourceManagerImpl() }
+
+    // Media
+    single<VideoSourceResolver> {
+        VideoSourceResolver.from(
+            TorrentVideoSourceResolver(get()),
+            LocalFileVideoSourceResolver(),
+        )
+    }
+    single<MediaCacheManager> {
+        MediaCacheManagerImpl(
+            listOf(
+                DirectoryMediaCacheStorage(
+                    "local-default",
+                    getContext().files.cacheDir.resolve("media").toPath(),
+                    TorrentMediaCacheEngine(
+                        "local-default",
+                        getTorrentDownloader = { get<TorrentManager>().downloader.await() },
+                    ),
+                    coroutineScope.coroutineContext
+                )
+            )
+        )
+    }
+    single<MediaSourceManager> {
+        MediaSourceManagerImpl(
+            additionalSources = {
+                get<MediaCacheManager>().storages.map { it.cacheMediaSource }
+            }
+        )
+    }
 }
 
 @Stable

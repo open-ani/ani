@@ -2,7 +2,7 @@ package me.him188.ani.app.data.models
 
 import androidx.compose.runtime.Immutable
 import kotlinx.serialization.Serializable
-import me.him188.ani.datasources.api.MediaSource
+import me.him188.ani.datasources.api.source.MediaSource
 
 /**
  * All proxy preferences

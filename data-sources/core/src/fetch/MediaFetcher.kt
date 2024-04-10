@@ -1,4 +1,4 @@
-package me.him188.ani.datasources.api.fetcher
+package me.him188.ani.datasources.core.fetch
 
 import androidx.compose.runtime.Stable
 import kotlinx.coroutines.CoroutineScope
@@ -22,8 +22,10 @@ import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.take
 import me.him188.ani.datasources.api.Media
-import me.him188.ani.datasources.api.MediaSource
 import me.him188.ani.datasources.api.paging.SizedSource
+import me.him188.ani.datasources.api.source.MediaFetchRequest
+import me.him188.ani.datasources.api.source.MediaMatch
+import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.logger
 import kotlin.coroutines.CoroutineContext
@@ -40,24 +42,6 @@ interface MediaFetcher {
      */
     fun fetch(request: MediaFetchRequest): MediaFetchSession
 }
-
-class MediaFetchRequest(
-    /**
-     * Translated and original names of the subject.
-     *
-     * E.g. "关于我转生变成史莱姆这档事 第三季"
-     */
-    val subjectNames: List<String>,
-    /**
-     * E.g. "49", "01"
-     */
-    val episodeSort: String,
-    /**
-     * E.g. "恶魔与阴谋"
-     */
-    val episodeName: String,
-)
-
 
 /**
  * A session describing the ongoing process of a fetch initiated from [MediaFetcher.fetch].
@@ -173,12 +157,15 @@ class MediaSourceMediaFetcher(
     private inner class MediaSourceResultImpl(
         private val dataSourceId: String,
         private val config: MediaFetcherConfig,
-        pagedSources: Flow<SizedSource<Media>>,
+        pagedSources: Flow<SizedSource<MediaMatch>>,
     ) : MediaSourceResult {
         override val state: MutableStateFlow<MediaSourceState> = MutableStateFlow(MediaSourceState.Idle)
 
         override val results: Flow<List<Media>> by lazy {
-            pagedSources.flatMapMerge { it.results }
+            pagedSources
+                .flatMapMerge { sources ->
+                    sources.results.map { it.media }
+                }
                 .onStart {
                     state.value = MediaSourceState.Working
                 }

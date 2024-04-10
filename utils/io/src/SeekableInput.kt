@@ -11,11 +11,15 @@ import java.io.RandomAccessFile
 public interface SeekableInput : AutoCloseable {
     /**
      * The current position in bytes from the start of the input source.
+     *
+     * Does not throw even if the input source is closed.
      */
     public val offset: Long
 
     /**
      * The number of bytes remaining from the current position to the end of the input source.
+     *
+     * Does not throw even if the input source is closed.
      */
     public val bytesRemaining: Long
 
@@ -27,6 +31,8 @@ public interface SeekableInput : AutoCloseable {
      * When this function returns, it moves [the current position][SeekableInput.offset] to [offset].
      *
      * @param offset absolute offset in bytes from the start of the input source.
+     *
+     * @throws IllegalStateException if the input source is closed.
      */
     public suspend fun seek(offset: Long)
 
@@ -52,11 +58,15 @@ public interface SeekableInput : AutoCloseable {
      * so this function read that available bytes and returns immediately without waiting for more bytes.
      *
      * @return the number of bytes read, or `-1` if the end of the input source has been reached.
+     *
+     * @throws IllegalStateException if the input source is closed.
      */
     public suspend fun read(buffer: ByteArray, offset: Int, length: Int): Int
 
     /**
      * Closes this [SeekableInput], and **also** closes the underlying source.
+     *
+     * Does nothing if this [SeekableInput] is already closed.
      */
     @Throws(IOException::class)
     public override fun close()

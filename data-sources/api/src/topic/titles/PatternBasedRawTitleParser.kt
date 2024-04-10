@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.ani.datasources.api.titles
+package me.him188.ani.datasources.api.topic.titles
 
 import me.him188.ani.datasources.api.topic.Episode
 import me.him188.ani.datasources.api.topic.FrameRate

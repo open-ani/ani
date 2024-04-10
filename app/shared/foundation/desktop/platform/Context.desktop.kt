@@ -30,8 +30,9 @@ actual abstract class Context
 
 class DesktopContext(
     val dataDir: File,
-    val dataStoreDir: File,
+    val cacheDir: File,
 ) : Context() {
+    private val dataStoreDir = dataDir.resolve("datastore")
     val tokenStore: DataStore<Preferences> = PreferenceDataStoreFactory.create {
         dataStoreDir.resolve("tokens.preferences_pb")
     }
@@ -55,3 +56,9 @@ actual fun isInLandscapeMode(): Boolean = false
 
 actual fun Context.setRequestFullScreen(fullscreen: Boolean) {
 }
+
+internal actual val Context.filesImpl: ContextFiles
+    get() = object : ContextFiles {
+        override val cacheDir: File = (this@filesImpl as DesktopContext).cacheDir
+        override val dataDir: File = (this@filesImpl as DesktopContext).dataDir
+    }

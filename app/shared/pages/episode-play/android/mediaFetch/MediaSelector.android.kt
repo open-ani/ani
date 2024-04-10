@@ -5,8 +5,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.Preview
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.datasources.acgrip.AcgRipMediaSource
+import me.him188.ani.datasources.api.DefaultMedia
 import me.him188.ani.datasources.api.MediaProperties
-import me.him188.ani.datasources.api.OnlineMedia
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.ResourceLocation
@@ -16,7 +16,7 @@ private const val SOURCE_DMHY = DmhyMediaSource.ID
 private const val SOURCE_ACG = AcgRipMediaSource.ID
 
 private val testMediaList = listOf(
-    OnlineMedia(
+    DefaultMedia(
         mediaId = "$SOURCE_DMHY.1",
         mediaSourceId = SOURCE_DMHY,
         originalTitle = "[桜都字幕组] 孤独摇滚 ABC ABC ABC ABC ABC ABC ABC ABC ABC ABC",
@@ -31,7 +31,7 @@ private val testMediaList = listOf(
         ),
     ),
     // exactly same properties as the first one, except for the ids.
-    OnlineMedia(
+    DefaultMedia(
         mediaId = "$SOURCE_ACG.1",
         mediaSourceId = SOURCE_ACG,
         originalTitle = "[桜都字幕组] 孤独摇滚 ABC ABC ABC ABC ABC ABC ABC ABC ABC ABC",
@@ -46,7 +46,7 @@ private val testMediaList = listOf(
         ),
     ),
 
-    OnlineMedia(
+    DefaultMedia(
         mediaId = "$SOURCE_DMHY.2",
         mediaSourceId = SOURCE_DMHY,
         originalTitle = "夜晚的水母不会游泳",
@@ -60,7 +60,7 @@ private val testMediaList = listOf(
             alliance = "北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组",
         ),
     ),
-    OnlineMedia(
+    DefaultMedia(
         mediaId = "$SOURCE_ACG.2",
         mediaSourceId = SOURCE_ACG,
         originalTitle = "葬送的芙莉莲",
@@ -74,7 +74,7 @@ private val testMediaList = listOf(
             alliance = "桜都字幕组",
         ),
     ),
-    OnlineMedia(
+    DefaultMedia(
         mediaId = "$SOURCE_ACG.3",
         mediaSourceId = SOURCE_ACG,
         originalTitle = "某个生肉",

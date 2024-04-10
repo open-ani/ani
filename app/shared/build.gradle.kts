@@ -74,6 +74,7 @@ kotlin {
 
         // Data sources
         api(projects.dataSources.api)
+        api(projects.dataSources.core)
         api(projects.dataSources.dmhy)
         api(projects.dataSources.acgRip)
         api(projects.dataSources.mikan)

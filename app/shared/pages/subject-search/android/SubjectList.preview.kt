@@ -28,8 +28,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
 import me.him188.ani.app.ui.foundation.PreviewData
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
-import me.him188.ani.datasources.api.Subject
 import me.him188.ani.datasources.api.paging.PagedSource
+import me.him188.ani.datasources.api.subject.Subject
 
 @Composable
 @Preview(apiLevel = 33)

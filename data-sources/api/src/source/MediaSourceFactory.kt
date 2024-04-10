@@ -1,4 +1,4 @@
-package me.him188.ani.datasources.api
+package me.him188.ani.datasources.api.source
 
 import io.ktor.client.HttpClientConfig
 import me.him188.ani.utils.ktor.ClientProxyConfig

@@ -14,13 +14,13 @@ import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.preference.tabs.NetworkPreferenceTab
 import me.him188.ani.app.ui.preference.tabs.NetworkPreferenceViewModel
 import me.him188.ani.datasources.acgrip.AcgRipMediaSource
-import me.him188.ani.datasources.api.ConnectionStatus
-import me.him188.ani.datasources.api.DownloadSearchQuery
-import me.him188.ani.datasources.api.MediaSource
-import me.him188.ani.datasources.api.TopicMediaSource
 import me.him188.ani.datasources.api.paging.PageBasedPagedSource
 import me.him188.ani.datasources.api.paging.Paged
 import me.him188.ani.datasources.api.paging.PagedSource
+import me.him188.ani.datasources.api.source.ConnectionStatus
+import me.him188.ani.datasources.api.source.DownloadSearchQuery
+import me.him188.ani.datasources.api.source.MediaSource
+import me.him188.ani.datasources.api.source.TopicMediaSource
 import me.him188.ani.datasources.api.topic.Topic
 import me.him188.ani.datasources.dmhy.DmhyMediaSource
 import me.him188.ani.datasources.mikan.MikanMediaSource

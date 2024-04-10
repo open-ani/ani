@@ -41,25 +41,25 @@ import io.ktor.utils.io.charsets.decode
 import io.ktor.utils.io.jvm.javaio.toInputStream
 import io.ktor.utils.io.streams.asInput
 import kotlinx.serialization.json.Json
-import me.him188.ani.datasources.api.ConnectionStatus
-import me.him188.ani.datasources.api.DownloadSearchQuery
-import me.him188.ani.datasources.api.MediaSource
-import me.him188.ani.datasources.api.MediaSourceConfig
-import me.him188.ani.datasources.api.MediaSourceFactory
-import me.him188.ani.datasources.api.TopicMediaSource
-import me.him188.ani.datasources.api.applyMediaSourceConfig
 import me.him188.ani.datasources.api.paging.PageBasedPagedSource
 import me.him188.ani.datasources.api.paging.Paged
 import me.him188.ani.datasources.api.paging.PagedSource
-import me.him188.ani.datasources.api.titles.RawTitleParser
-import me.him188.ani.datasources.api.titles.parse
-import me.him188.ani.datasources.api.titles.toTopicDetails
+import me.him188.ani.datasources.api.source.ConnectionStatus
+import me.him188.ani.datasources.api.source.DownloadSearchQuery
+import me.him188.ani.datasources.api.source.MediaSource
+import me.him188.ani.datasources.api.source.MediaSourceConfig
+import me.him188.ani.datasources.api.source.MediaSourceFactory
+import me.him188.ani.datasources.api.source.TopicMediaSource
+import me.him188.ani.datasources.api.source.applyMediaSourceConfig
 import me.him188.ani.datasources.api.topic.FileSize.Companion.Zero
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.datasources.api.topic.Topic
 import me.him188.ani.datasources.api.topic.TopicCategory
 import me.him188.ani.datasources.api.topic.matches
+import me.him188.ani.datasources.api.topic.titles.RawTitleParser
+import me.him188.ani.datasources.api.topic.titles.parse
+import me.him188.ani.datasources.api.topic.titles.toTopicDetails
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.logger
 import org.jsoup.Jsoup
@@ -104,7 +104,7 @@ class MikanMediaSource(
     override suspend fun startSearch(query: DownloadSearchQuery): PagedSource<Topic> {
         return PageBasedPagedSource(initialPage = 1) {
             val resp = client.get("https://mikanani.me/RSS/Search") {
-                parameter("searchstr", query.keywords)
+                parameter("searchstr", query.keywords?.take(10))
             }
             val document: Document = Jsoup.parse(resp.bodyAsChannel().toInputStream(), "UTF-8", "https://mikanani.me/")
             parseDocument(document)

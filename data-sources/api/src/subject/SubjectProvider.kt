@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.ani.datasources.api
+package me.him188.ani.datasources.api.subject
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -25,6 +25,7 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import me.him188.ani.datasources.api.paging.PagedSource
+import me.him188.ani.datasources.api.source.ConnectionStatus
 
 /**
  * 提供番剧名称索引的数据源. 支持使用关键字搜索正式名称.
