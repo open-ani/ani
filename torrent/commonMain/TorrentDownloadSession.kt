@@ -2,6 +2,7 @@ package me.him188.ani.app.torrent
 
 import kotlinx.coroutines.flow.Flow
 import me.him188.ani.utils.io.SeekableInput
+import java.nio.file.Path
 
 /**
  * Represents a torrent download session.
@@ -22,6 +23,8 @@ public interface TorrentDownloadSession : DownloadStats, AutoCloseable {
     public suspend fun pause()
 
     public suspend fun resume()
+
+    public suspend fun filePath(): Path
 
     /**
      * Opens the downloaded file as a [SeekableInput].

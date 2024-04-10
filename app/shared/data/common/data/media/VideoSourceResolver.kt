@@ -4,6 +4,7 @@ import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.app.videoplayer.data.VideoSource
 import me.him188.ani.app.videoplayer.torrent.FileVideoSource
 import me.him188.ani.app.videoplayer.torrent.TorrentVideoSource
+import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.topic.ResourceLocation
 import java.io.File
@@ -23,7 +24,7 @@ interface VideoSourceResolver {
      * @throws UnsupportedOperationException if the media cannot be resolved.
      * Use [supports] to check if the media can be resolved.
      */
-    suspend fun resolve(media: Media): VideoSource<*>
+    suspend fun resolve(media: Media, episode: EpisodeSort): VideoSource<*>
 
     companion object {
         fun from(vararg resolvers: VideoSourceResolver): VideoSourceResolver {
@@ -47,8 +48,8 @@ private class ChainedVideoSourceResolver(
         return resolvers.any { it.supports(media) }
     }
 
-    override suspend fun resolve(media: Media): VideoSource<*> {
-        return resolvers.firstOrNull { it.supports(media) }?.resolve(media)
+    override suspend fun resolve(media: Media, episode: EpisodeSort): VideoSource<*> {
+        return resolvers.firstOrNull { it.supports(media) }?.resolve(media, episode)
             ?: throw UnsupportedMediaException(media)
     }
 }
@@ -60,7 +61,7 @@ class TorrentVideoSourceResolver(
         return media.download is ResourceLocation.HttpTorrentFile || media.download is ResourceLocation.MagnetLink
     }
 
-    override suspend fun resolve(media: Media): VideoSource<*> {
+    override suspend fun resolve(media: Media, episode: EpisodeSort): VideoSource<*> {
         return when (val location = media.download) {
             is ResourceLocation.HttpTorrentFile,
             is ResourceLocation.MagnetLink -> {
@@ -80,7 +81,7 @@ class LocalFileVideoSourceResolver : VideoSourceResolver {
         return media.download is ResourceLocation.LocalFile
     }
 
-    override suspend fun resolve(media: Media): VideoSource<*> {
+    override suspend fun resolve(media: Media, episode: EpisodeSort): VideoSource<*> {
         when (media.download) {
             is ResourceLocation.LocalFile -> {
                 return FileVideoSource(

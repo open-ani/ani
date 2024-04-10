@@ -21,6 +21,8 @@ package me.him188.ani.app.platform
 import androidx.compose.runtime.Stable
 import io.ktor.client.plugins.UserAgent
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import me.him188.ani.app.data.media.LocalFileVideoSourceResolver
 import me.him188.ani.app.data.media.MediaCacheManager
 import me.him188.ani.app.data.media.MediaCacheManagerImpl
@@ -57,9 +59,10 @@ import me.him188.ani.datasources.api.subject.SubjectProvider
 import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
 import me.him188.ani.datasources.core.cache.DirectoryMediaCacheStorage
+import org.koin.core.KoinApplication
 import org.koin.dsl.module
 
-fun getCommonKoinModule(getContext: () -> Context, coroutineScope: CoroutineScope) = module {
+fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScope: CoroutineScope) = module {
     // Repositories
     single<TokenRepository> { TokenRepositoryImpl(getContext().tokenStore) }
     single<EpisodePreferencesRepository> { EpisodePreferencesRepositoryImpl(getContext().preferredAllianceStore) }
@@ -88,13 +91,14 @@ fun getCommonKoinModule(getContext: () -> Context, coroutineScope: CoroutineScop
         )
     }
     single<MediaCacheManager> {
+        val id = MediaCacheManager.LOCAL_FS_MEDIA_SOURCE_ID
         MediaCacheManagerImpl(
             listOf(
                 DirectoryMediaCacheStorage(
-                    "local-default",
+                    id,
                     getContext().files.cacheDir.resolve("media").toPath(),
                     TorrentMediaCacheEngine(
-                        "local-default",
+                        id,
                         getTorrentDownloader = { get<TorrentManager>().downloader.await() },
                     ),
                     coroutineScope.coroutineContext
@@ -108,6 +112,9 @@ fun getCommonKoinModule(getContext: () -> Context, coroutineScope: CoroutineScop
                 get<MediaCacheManager>().storages.map { it.cacheMediaSource }
             }
         )
+    }
+    coroutineScope.launch(Dispatchers.IO) {
+        koin.get<MediaCacheManager>().storages // initialize caches as the storage constructors needs to do IO 
     }
 }
 

@@ -17,6 +17,7 @@ import androidx.compose.material.icons.rounded.ArrowOutward
 import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material.icons.rounded.DisplaySettings
 import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.Forward
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -57,6 +58,9 @@ fun EpisodeActionRow(
                 copyDownloadLink(clipboard, snackbar)
             }
         },
+        onClickCache = {
+            viewModel.addCache()
+        },
         onClickDownload = {
             viewModel.launchInMain {
                 browseDownload(context, snackbar)
@@ -81,6 +85,7 @@ fun EpisodeActionRow(
     mediaFetcherCompleted: Boolean,
     onClickMediaSelection: () -> Unit,
     onClickCopyLink: () -> Unit,
+    onClickCache: () -> Unit,
     onClickDownload: () -> Unit,
     onClickOriginalPage: () -> Unit,
     modifier: Modifier = Modifier,
@@ -104,8 +109,15 @@ fun EpisodeActionRow(
         )
 
         ActionButton(
-            onClick = onClickDownload,
+            onClick = onClickCache,
             icon = { Icon(Icons.Rounded.Download, null) },
+            text = { Text("缓存") },
+            Modifier.weight(1f),
+        )
+
+        ActionButton(
+            onClick = onClickDownload,
+            icon = { Icon(Icons.Rounded.Forward, null) },
             text = { Text("下载") },
             Modifier.weight(1f),
         )

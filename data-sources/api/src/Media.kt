@@ -13,6 +13,7 @@ import me.him188.ani.datasources.api.topic.ResourceLocation
  *
  * Episodes can have different medias from different sources. For example, there are many subtitle alliances.
  */
+@Serializable
 @Immutable
 sealed interface Media {
     /**
@@ -24,11 +25,13 @@ sealed interface Media {
 
     /**
      * A [ResourceLocation] describing how to download the media.
-     *
-     * Implementation notes:
-     *
      */
     val download: ResourceLocation
+
+    /**
+     * List of episodes that can be downloaded via [download].
+     */
+    val episodes: List<EpisodeSort>
 
     val originalTitle: String
 
@@ -64,7 +67,8 @@ class DefaultMedia(
     override val size: FileSize,
     override val publishedTime: Long,
     override val properties: MediaProperties,
-    override val location: MediaSourceLocation = MediaSourceLocation.ONLINE
+    override val episodes: List<EpisodeSort>,
+    override val location: MediaSourceLocation = MediaSourceLocation.ONLINE,
 ) : Media
 
 /**
@@ -72,11 +76,11 @@ class DefaultMedia(
  */
 @Immutable
 class CachedMedia(
-    private val origin: Media,
+    val origin: Media,
     cacheMediaSourceId: String,
     override val download: ResourceLocation,
 ) : Media by origin {
-    override val mediaId: String = "${cacheMediaSourceId}-${origin.mediaId}"
+    override val mediaId: String = "${cacheMediaSourceId}:${origin.mediaId}"
     override val mediaSourceId: String = cacheMediaSourceId
     override val location: MediaSourceLocation get() = MediaSourceLocation.LOCAL
 }
@@ -112,11 +116,29 @@ class MediaCacheMetadata(
 //     */
 //    val cacheMediaSourceId: String, // e.g. "localfs" for the local file system
     /**
+     * @see MediaFetchRequest.subjectId
+     */
+    val subjectId: String?,
+    /**
      * @see MediaFetchRequest.episodeId
      */
     val episodeId: String?,
     val subjectNames: List<String>,
-    val episodeSort: String,
+    val episodeSort: EpisodeSort,
     val episodeName: String,
     val extra: Map<String, String> = emptyMap(),
 )
+
+fun MediaCacheMetadata(
+    request: MediaFetchRequest,
+    extra: Map<String, String> = emptyMap(),
+): MediaCacheMetadata {
+    return MediaCacheMetadata(
+        subjectId = request.subjectId,
+        episodeId = request.episodeId,
+        subjectNames = request.subjectNames,
+        episodeSort = request.episodeSort,
+        episodeName = request.episodeName,
+        extra = extra,
+    )
+}

@@ -131,7 +131,13 @@ fun HomeScene() {
             HorizontalPager(pages, userScrollEnabled = false) {
                 when (it) {
                     0 -> HomePage(contentPadding)
-                    1 -> CollectionPage(contentPadding)
+                    1 -> CollectionPage(
+                        onClickCaches = {
+                            navigator.navigateCaches()
+                        },
+                        contentPadding,
+                    )
+
                     2 -> {
                         ProfilePage(
                             onClickSettings = {

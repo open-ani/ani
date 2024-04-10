@@ -10,10 +10,13 @@ import org.koin.core.component.inject
 import org.openapitools.client.models.EpType
 import org.openapitools.client.models.Episode
 import org.openapitools.client.models.EpisodeCollectionType
+import org.openapitools.client.models.EpisodeDetail
 import org.openapitools.client.models.PatchUserSubjectEpisodeCollectionRequest
 import org.openapitools.client.models.UserEpisodeCollection
 
 interface EpisodeRepository : Repository {
+    suspend fun getEpisodeById(episodeId: Int): EpisodeDetail?
+
     /**
      * 获取条目下的所有剧集.
      */
@@ -38,6 +41,14 @@ interface EpisodeRepository : Repository {
 internal class EpisodeRepositoryImpl : EpisodeRepository, KoinComponent {
     private val client by inject<BangumiClient>()
     private val logger = logger(EpisodeRepositoryImpl::class)
+    override suspend fun getEpisodeById(episodeId: Int): EpisodeDetail? {
+        return try {
+            client.api.getEpisodeById(episodeId)
+        } catch (e: Exception) {
+            logger.warn("Exception in getEpisodeById", e)
+            null
+        }
+    }
 
     override suspend fun getEpisodesBySubjectId(subjectId: Int, type: EpType): Flow<Episode> {
         val episodes = PageBasedPagedSource { page ->

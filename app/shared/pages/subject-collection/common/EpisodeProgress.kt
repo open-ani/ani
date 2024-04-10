@@ -2,16 +2,20 @@ package me.him188.ani.app.ui.collection
 
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Lightbulb
+import androidx.compose.material.icons.rounded.DownloadDone
+import androidx.compose.material.icons.rounded.Downloading
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.FilledTonalButton
@@ -22,16 +26,16 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import me.him188.ani.app.data.media.EpisodeCacheStatus
 import me.him188.ani.app.ui.theme.stronglyWeaken
 import me.him188.ani.app.ui.theme.weaken
-import me.him188.ani.datasources.bangumi.processing.isOnAir
-import org.openapitools.client.models.EpisodeCollectionType
-import org.openapitools.client.models.UserEpisodeCollection
+import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 
 
 @Composable
@@ -82,11 +86,24 @@ fun EpisodeProgressDialog(
     }
 }
 
+/**
+ * Describes the progress of an episode (of a subject)
+ */
+@Stable
+class EpisodeProgressItem(
+    val episodeId: Int,
+    val episodeSort: String,
+    val watchStatus: UnifiedCollectionType,
+    val isOnAir: Boolean?,
+    val cacheStatus: EpisodeCacheStatus?
+)
+
+
 @Composable
 fun EpisodeProgressRow(
-    item: SubjectCollectionItem,
-    onClickEpisodeState: (episode: UserEpisodeCollection) -> Unit,
-    onLongClickEpisode: (episode: UserEpisodeCollection) -> Unit,
+    episodes: List<EpisodeProgressItem>,
+    onClickEpisodeState: (episode: EpisodeProgressItem) -> Unit,
+    onLongClickEpisode: (episode: EpisodeProgressItem) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     FlowRow(
@@ -94,11 +111,14 @@ fun EpisodeProgressRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        for (it in item.episodes) {
+        for (it in episodes) {
             SmallEpisodeButton(
-                it,
+                episodeSort = it.episodeSort,
+                watchStatus = it.watchStatus,
+                isOnAir = it.isOnAir,
                 onClick = { onClickEpisodeState(it) },
                 onLongClick = { onLongClickEpisode(it) },
+                cacheStatus = it.cacheStatus,
             )
         }
     }
@@ -123,33 +143,63 @@ fun EpisodeProgressRow(
 
 @Composable
 private fun SmallEpisodeButton(
-    it: UserEpisodeCollection,
+    episodeSort: String,
+    watchStatus: UnifiedCollectionType,
+    isOnAir: Boolean?, // null means unknown
     onClick: () -> Unit,
     onLongClick: () -> Unit,
     modifier: Modifier = Modifier,
+    cacheStatus: EpisodeCacheStatus? = null,
 ) {
-    me.him188.ani.app.ui.foundation.FilledTonalCombinedClickButton(
-        onClick = onClick,
-        onLongClick = onLongClick,
-        modifier = modifier.combinedClickable(onLongClick = onLongClick, onClick = onClick).size(48.dp),
-        shape = MaterialTheme.shapes.small,
-        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 2.dp),
-        colors = ButtonDefaults.elevatedButtonColors(
+    val hasBadge = cacheStatus == EpisodeCacheStatus.CACHED || cacheStatus == EpisodeCacheStatus.CACHING
+    Box(
+        modifier//.padding(end = if (hasBadge) 12.dp else 0.dp)
+    ) {
+        me.him188.ani.app.ui.foundation.FilledTonalCombinedClickButton(
+            onClick = onClick,
+            onLongClick = onLongClick,
+            modifier = Modifier.combinedClickable(onLongClick = onLongClick, onClick = onClick)
+                .heightIn(min = 48.dp)
+                .widthIn(min = 48.dp),
+            shape = MaterialTheme.shapes.small,
+            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 12.dp),
+            colors = ButtonDefaults.elevatedButtonColors(
 //            containerColor = MaterialTheme.colorScheme.onSurface.copy(0.12f),
 //            contentColor = MaterialTheme.colorScheme.onSurface.copy(0.38f),
-            containerColor = when {
-                it.type == EpisodeCollectionType.WATCHED || it.type == EpisodeCollectionType.DISCARDED ->
-                    MaterialTheme.colorScheme.primary.weaken()
+                containerColor = when {
+                    watchStatus == UnifiedCollectionType.DONE || watchStatus == UnifiedCollectionType.DROPPED ->
+                        MaterialTheme.colorScheme.primary.weaken()
 
-                it.episode.isOnAir() != false ->  // 未开播
-                    MaterialTheme.colorScheme.onSurface.stronglyWeaken()
+                    isOnAir != false ->  // 未开播
+                        MaterialTheme.colorScheme.onSurface.stronglyWeaken()
 
-                // 还没看
-                else -> MaterialTheme.colorScheme.primary
-            },
-            contentColor = MaterialTheme.colorScheme.onPrimary,
-        ),
-    ) {
-        Text(it.episode.sort.toString(), style = MaterialTheme.typography.bodyMedium)
+                    // 还没看
+                    else -> MaterialTheme.colorScheme.primary
+                },
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+            ),
+        ) {
+            Text(episodeSort, style = MaterialTheme.typography.bodyMedium)
+
+            if (hasBadge) {
+                Box(Modifier.padding(start = 8.dp)) {
+                    when (cacheStatus) {
+                        EpisodeCacheStatus.CACHED -> Icon(Icons.Rounded.DownloadDone, null)
+                        EpisodeCacheStatus.CACHING -> Icon(Icons.Rounded.Downloading, null)
+                        else -> {}
+                    }
+                }
+            }
+        }
+
+//        if (hasBadge) {
+//            Surface(
+//                Modifier.align(Alignment.BottomEnd),
+//                color = Color.Transparent,
+//                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+//            ) {
+//               
+//            }
+//        }
     }
 }

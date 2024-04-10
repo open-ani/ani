@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -16,10 +15,14 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.DownloadDone
+import androidx.compose.material.icons.rounded.Public
+import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
@@ -37,12 +40,14 @@ import androidx.compose.ui.unit.dp
 import me.him188.ani.app.Res
 import me.him188.ani.app.acg_rip
 import me.him188.ani.app.bangumi
+import me.him188.ani.app.data.media.MediaCacheManager.Companion.LOCAL_FS_MEDIA_SOURCE_ID
 import me.him188.ani.app.dmhy
 import me.him188.ani.app.mikan
 import me.him188.ani.app.tools.formatDateTime
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.datasources.acgrip.AcgRipMediaSource
 import me.him188.ani.datasources.api.Media
+import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
 import me.him188.ani.datasources.dmhy.DmhyMediaSource
@@ -175,15 +180,15 @@ private fun MediaItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    ElevatedCard(
+    Card(
         onClick,
         modifier.width(IntrinsicSize.Min),
         colors = CardDefaults.elevatedCardColors(
             containerColor = if (selected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surface
         ),
-        elevation = CardDefaults.elevatedCardElevation(
-            defaultElevation = if (selected) 0.dp else 1.dp,
-        )
+//        elevation = CardDefaults.elevatedCardElevation(
+//            defaultElevation = if (selected) 0.dp else 1.dp,
+//        )
     ) {
         Box {
             Column(Modifier.padding(all = 16.dp)) {
@@ -191,6 +196,7 @@ private fun MediaItem(
                     Text(media.originalTitle)
                 }
 
+                // Labels
                 FlowRow(
                     Modifier
                         .padding(top = 8.dp)
@@ -221,33 +227,63 @@ private fun MediaItem(
                     }
                 }
 
+                // Bottom row: source, alliance, published time
                 ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
                     Row(
                         Modifier
                             .padding(top = 8.dp)
                             .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Row {
-                            FlowRow(Modifier.weight(1f)) {
+                        // Layout note:
+                        // On overflow, only the alliance will be ellipsized.
+
+                        Row(
+                            Modifier.weight(1f),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                when (media.location) {
+                                    MediaSourceLocation.LOCAL -> {
+                                        Icon(
+                                            Icons.Rounded.DownloadDone, null,
+                                        )
+                                    }
+
+                                    MediaSourceLocation.ONLINE -> {
+                                        Icon(
+                                            Icons.Rounded.Public, null,
+                                        )
+                                    }
+                                }
+
                                 Text(
                                     remember(media.mediaSourceId) { renderMediaSource(media.mediaSourceId) },
                                     maxLines = 1,
-                                    softWrap = false
+                                    softWrap = false,
                                 )
-
-                                Spacer(Modifier.width(16.dp))
-
-                                Text(media.properties.alliance)
                             }
 
-                            Text(
-                                formatDateTime(media.publishedTime),
-                                Modifier.padding(start = 16.dp).align(Alignment.Bottom),
-                                maxLines = 1,
-                                softWrap = false
-                            )
+                            Box(Modifier.weight(1f, fill = false), contentAlignment = Alignment.Center) {
+                                Text(
+                                    media.properties.alliance,
+                                    maxLines = 1,
+                                    softWrap = false,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
                         }
+
+                        Text(
+                            formatDateTime(media.publishedTime),
+                            maxLines = 1,
+                            softWrap = false
+                        )
                     }
                 }
             }
@@ -274,6 +310,7 @@ fun renderMediaSource(
     AcgRipMediaSource.ID -> "acg.rip"
     MikanMediaSource.ID -> "Mikan"
     BangumiSubjectProvider.ID -> "Bangumi"
+    LOCAL_FS_MEDIA_SOURCE_ID -> "本地"
     else -> id
 }
 

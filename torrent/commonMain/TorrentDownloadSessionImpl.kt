@@ -2,6 +2,7 @@ package me.him188.ani.app.torrent
 
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -34,7 +35,10 @@ import org.libtorrent4j.alerts.PieceFinishedAlert
 import org.libtorrent4j.alerts.TorrentResumedAlert
 import java.io.File
 import java.io.RandomAccessFile
+import java.nio.file.Path
 import java.util.concurrent.ConcurrentLinkedQueue
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration.Companion.seconds
 
 internal class TorrentDownloadSessionImpl(
@@ -49,7 +53,13 @@ internal class TorrentDownloadSessionImpl(
      */
     private val saveDirectory: File,
     private val onClose: () -> Unit,
+    parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
 ) : TorrentDownloadSession {
+    private val coroutineCloseHandle =
+        parentCoroutineContext[Job]?.invokeOnCompletion {
+            close()
+        }
+
     private val logger = logger(this::class.simpleName + "@${this.hashCode()}")
 //    override val torrentDownloadController: Flow<TorrentDownloadController>
 //        get() = flow {
@@ -106,7 +116,9 @@ internal class TorrentDownloadSessionImpl(
 
     override suspend fun createInput(): SeekableInput {
         logger.info { "createInput: finding cache file" }
-        val file = withContext(Dispatchers.IO) { getFile().asSeekableInput() }
+        val file = withContext(Dispatchers.IO) {
+            RandomAccessFile(getFile(), "r").asSeekableInput()
+        }
         logger.info { "createInput: got cache file, awaiting handle" }
         return TorrentInput(
             file,
@@ -129,16 +141,14 @@ internal class TorrentDownloadSessionImpl(
         )
     }
 
-    private suspend fun getFile(): RandomAccessFile {
+    private suspend fun getFile(): File {
         while (true) {
             val file = runInterruptible(Dispatchers.IO) {
                 saveDirectory.walk().singleOrNull { it.isFile }
             }
             if (file != null) {
                 logger.info { "Get file: ${file.absolutePath}" }
-                return runInterruptible(Dispatchers.IO) {
-                    RandomAccessFile(file, "r")
-                }
+                return file
             }
             logger.info { "Still waiting to get file... saveDirectory: $saveDirectory" }
             delay(1.seconds)
@@ -325,6 +335,10 @@ internal class TorrentDownloadSessionImpl(
         withHandle { it.resume() }
     }
 
+    override suspend fun filePath(): Path {
+        return getFile().toPath()
+    }
+
     private suspend fun <R> withHandle(action: (TorrentHandle) -> R): R {
         return suspendCancellableCoroutine { cont ->
             val job: (TorrentHandle) -> Unit = {
@@ -347,12 +361,18 @@ internal class TorrentDownloadSessionImpl(
             closeHandle(it)
         }
         onClose()
+        coroutineCloseHandle?.dispose()
     }
 
+    private var closed = false
     override fun close() {
+        if (closed) {
+            return
+        }
+        closed = true
         logger.info { "Closing torrent" }
-        if (torrentHandle?.isValid == true) {
-            jobsToDoInHandle.add {
+        jobsToDoInHandle.add {
+            if (torrentHandle?.isValid == true) {
                 runBlocking {
                     closeImpl()
                 }

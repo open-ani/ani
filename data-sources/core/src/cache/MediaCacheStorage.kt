@@ -21,7 +21,7 @@ import me.him188.ani.datasources.core.fetch.MediaFetcher
  * By having a [MediaSource] with the same ID,
  * a [MediaCacheStorage] can participate in the [MediaFetcher.fetch] process (and usually it should).
  */
-interface MediaCacheStorage {
+interface MediaCacheStorage : AutoCloseable {
     /**
      * ID of this media source.
      */
@@ -44,8 +44,10 @@ interface MediaCacheStorage {
 
     /**
      * A flow that subscribes on all the caches in the storage.
+     *
+     * Note that to retrieve [Media] (more specifically, [CachedMedia]) from the cache storage, you might want to use [cacheMediaSource].
      */
-    val list: Flow<List<MediaCache>>
+    val listFlow: Flow<List<MediaCache>>
 
     /**
      * Returns the cache of the media if it exists, or `null` if it doesn't.
@@ -55,7 +57,7 @@ interface MediaCacheStorage {
     /**
      * Finds the existing cache for the media or adds the media to the cache (queue).
      *
-     * When this function returns, A new [MediaSource] can then be listed by [list].
+     * When this function returns, A new [MediaSource] can then be listed by [listFlow].
      *
      * Caching is made asynchronously. This function might only adds a job to the queue and does not guarantee when the cache will be done.
      *
@@ -76,7 +78,16 @@ interface MediaCacheStorage {
  * A media cached in the storage.
  */
 interface MediaCache {
-    val media: CachedMedia
+    /**
+     * Original media that is being cached.
+     */
+    val origin: Media
+
+    /**
+     * Returns the [CachedMedia] instance for this cache.
+     * The instance is cached so this function will immediately return the cached instance after the first successful call.
+     */
+    suspend fun getCachedMedia(): CachedMedia
 
     val metadata: MediaCacheMetadata
 
@@ -92,11 +103,13 @@ interface MediaCache {
 
     /**
      * Pauses download of this media.
+     * Attempts when the cache has already been deleted will be ignored.
      */
     suspend fun pause()
 
     /**
      * Continue downloading.
+     * Attempts when the cache has already been deleted will be ignored.
      */
     suspend fun resume()
 
@@ -115,7 +128,7 @@ interface MediaCache {
      * This function must close every using resources cleanup potential cache files,
      * and must not throw.
      */
-    fun delete()
+    suspend fun delete()
 }
 
 /**

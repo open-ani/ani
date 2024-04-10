@@ -28,6 +28,7 @@ import android.view.WindowManager
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.ui.platform.LocalConfiguration
+import java.io.File
 
 
 actual typealias Context = android.content.Context
@@ -101,6 +102,6 @@ actual fun Context.setRequestFullScreen(fullscreen: Boolean) {
 
 internal actual val Context.filesImpl: ContextFiles
     get() = object : ContextFiles {
-        override val cacheDir: java.io.File = this@filesImpl.cacheDir
-        override val dataDir: java.io.File = this@filesImpl.filesDir
+        override val cacheDir: File get() = this@filesImpl.cacheDir ?: File("") // can be null when previewing
+        override val dataDir: File get() = this@filesImpl.filesDir ?: File("") // can be null when previewing
     }

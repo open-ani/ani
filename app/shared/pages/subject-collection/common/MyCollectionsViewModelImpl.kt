@@ -4,12 +4,19 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import me.him188.ani.app.ViewModelAuthSupport
+import me.him188.ani.app.data.media.MediaCacheManager
 import me.him188.ani.app.data.repositories.EpisodeRepository
 import me.him188.ani.app.data.repositories.SubjectRepository
 import me.him188.ani.app.data.repositories.setSubjectCollectionTypeOrDelete
@@ -42,6 +49,12 @@ interface MyCollectionsViewModel : HasBackgroundScope, ViewModelAuthSupport {
     @Stable
     fun collectionsByType(type: UnifiedCollectionType): LazyDataCache<SubjectCollectionItem>
 
+    /**
+     * 返回用户观看该番剧的进度 [Flow].
+     */
+    @Stable
+    fun subjectProgress(item: SubjectCollectionItem): Flow<List<EpisodeProgressItem>>
+
     suspend fun setCollectionType(subjectId: Int, type: UnifiedCollectionType)
 
     suspend fun setAllEpisodesWatched(subjectId: Int)
@@ -55,6 +68,7 @@ class MyCollectionsViewModelImpl : AbstractViewModel(), KoinComponent, MyCollect
     private val sessionManager: SessionManager by inject()
     private val subjectRepository: SubjectRepository by inject()
     private val episodeRepository: EpisodeRepository by inject()
+    private val cacheManager: MediaCacheManager by inject()
 
     @Stable
     val collectionsByType = UnifiedCollectionType.entries.associateWith { type ->
@@ -71,6 +85,30 @@ class MyCollectionsViewModelImpl : AbstractViewModel(), KoinComponent, MyCollect
 
     @Stable
     override fun collectionsByType(type: UnifiedCollectionType) = collectionsByType[type]!!
+
+    override fun subjectProgress(item: SubjectCollectionItem): Flow<List<EpisodeProgressItem>> {
+        return snapshotFlow { item.episodes }
+            .flowOn(Dispatchers.Main)
+            .flatMapLatest { episodes ->
+                combine(episodes.map { episode ->
+                    cacheManager.cacheStatusForEpisode(
+                        subjectId = item.subjectId,
+                        episodeId = episode.episode.id,
+                    ).map { cacheStatus ->
+                        EpisodeProgressItem(
+                            episodeId = episode.episode.id,
+                            episodeSort = episode.episode.sort.toString(),
+                            watchStatus = episode.type.toCollectionType(),
+                            isOnAir = episode.episode.isOnAir(),
+                            cacheStatus = cacheStatus,
+                        )
+                    }
+                }) {
+                    it.toList()
+                }
+            }
+            .flowOn(Dispatchers.Default)
+    }
 
     override fun init() {
         // 获取第一页, 得到数量

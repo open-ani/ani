@@ -24,6 +24,8 @@ import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.cookies.HttpCookies
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.plugins.websocket.WebSockets
 import io.ktor.http.ContentType
 import io.ktor.http.content.OutgoingContent
@@ -47,6 +49,7 @@ import me.him188.ani.datasources.api.topic.Topic
 import me.him188.ani.datasources.dmhy.impl.DmhyPagedSourceImpl
 import me.him188.ani.datasources.dmhy.impl.protocol.Network
 import me.him188.ani.utils.logging.error
+import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
@@ -68,6 +71,14 @@ class DmhyMediaSource(
 
     private val network: Network = Network(createHttpClient {
         applyMediaSourceConfig(config)
+        Logging {
+            logger = object : io.ktor.client.plugins.logging.Logger {
+                override fun log(message: String) {
+                    Companion.logger.info { message }
+                }
+            }
+            level = LogLevel.INFO
+        }
     })
 
     override val mediaSourceId: String get() = ID

@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 
 /**
@@ -23,6 +24,14 @@ interface SizedSource<out T> {
     val totalSize: Flow<Int?>
 }
 
+inline fun <T, R> SizedSource<T>.map(crossinline transform: suspend (T) -> R): SizedSource<R> {
+    return object : SizedSource<R> {
+        override val results = this@map.results.map(transform)
+        override val finished = this@map.finished
+        override val totalSize = this@map.totalSize
+    }
+}
+
 /**
  * Merge multiple [SizedSource] into one.
  *
@@ -30,12 +39,12 @@ interface SizedSource<out T> {
  */
 fun <T> Iterable<SizedSource<T>>.merge(): SizedSource<T> {
     return object : SizedSource<T> {
-        override val results: Flow<T> = map { it.results }.merge()
-        override val finished: Flow<Boolean> = combine(map { it.finished }) { values ->
+        override val results: Flow<T> = this@merge.map { it.results }.merge()
+        override val finished: Flow<Boolean> = combine(this@merge.map { it.finished }) { values ->
             values.all { it }
         }
 
-        override val totalSize: Flow<Int?> = combine(map { it.totalSize }) { values ->
+        override val totalSize: Flow<Int?> = combine(this@merge.map { it.totalSize }) { values ->
             if (values.any { it == null }) {
                 return@combine null
             }

@@ -32,6 +32,7 @@ dependencies {
     api(projects.dataSources.api)
 
     implementation(libs.kotlinx.serialization.json)
+    testImplementation(libs.kotlinx.coroutines.test)
     api(projects.utils.ktorClient)
 //    api(libs.kotlinx.io.core)
     api(projects.utils.io)

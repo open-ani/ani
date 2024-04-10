@@ -10,7 +10,7 @@ private fun PreviewEpisodeActionRow() {
     ProvideCompositionLocalsForPreview {
         EpisodeActionRow(
             mediaFetcherCompleted = true,
-            {}, {}, {}, {},
+            {}, {}, {}, {}, {},
         )
     }
 }

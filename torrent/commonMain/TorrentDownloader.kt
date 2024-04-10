@@ -23,6 +23,8 @@ import org.libtorrent4j.swig.settings_pack
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 
 /**
@@ -53,7 +55,10 @@ public interface TorrentDownloader : AutoCloseable {
      *
      * This function may involve I/O operation e.g. to compare with local caches.
      */
-    public suspend fun startDownload(data: EncodedTorrentData): TorrentDownloadSession
+    public suspend fun startDownload(
+        data: EncodedTorrentData,
+        parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
+    ): TorrentDownloadSession
 
     public override fun close()
 }
@@ -221,7 +226,10 @@ internal class TorrentDownloaderImpl(
 
     private val lock = Mutex()
 
-    override suspend fun startDownload(data: EncodedTorrentData): TorrentDownloadSession = lock.withLock {
+    override suspend fun startDownload(
+        data: EncodedTorrentData,
+        parentCoroutineContext: CoroutineContext
+    ): TorrentDownloadSession = lock.withLock {
         logger.info { "Starting torrent download session" }
 
         logger.info { "Decoding torrent info, input length=${data.data.size}" }
@@ -242,7 +250,8 @@ internal class TorrentDownloaderImpl(
                 saveDirectory = saveDirectory,
                 onClose = {
                     dataToSession.remove(hash)
-                }
+                },
+                parentCoroutineContext,
             )
         dataToSession[hash] = session
         sessionManager.use {

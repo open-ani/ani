@@ -1,8 +1,8 @@
 package me.him188.ani.datasources.api.source
 
 import me.him188.ani.datasources.api.DefaultMedia
+import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.MediaProperties
-import me.him188.ani.datasources.api.paging.PagedSource
 import me.him188.ani.datasources.api.paging.SizedSource
 import me.him188.ani.datasources.api.paging.map
 import me.him188.ani.datasources.api.paging.merge
@@ -27,6 +27,7 @@ abstract class TopicMediaSource : MediaSource {
             originalTitle = rawTitle,
             size = size,
             publishedTime = publishedTimeMillis ?: 0,
+            episodes = details?.episode?.raw?.let { listOf(EpisodeSort(it)) } ?: emptyList(),
             properties = MediaProperties(
                 subtitleLanguages = details?.subtitleLanguages?.map { it.toString() } ?: emptyList(),
                 resolution = details?.resolution?.toString() ?: Resolution.R1080P.toString(),
@@ -36,7 +37,7 @@ abstract class TopicMediaSource : MediaSource {
     }
 
     // For backward compatibility
-    protected abstract suspend fun startSearch(query: DownloadSearchQuery): PagedSource<Topic>
+    protected abstract suspend fun startSearch(query: DownloadSearchQuery): SizedSource<Topic>
 
     final override suspend fun fetch(query: MediaFetchRequest): SizedSource<MediaMatch> {
         return query.subjectNames
@@ -45,7 +46,7 @@ abstract class TopicMediaSource : MediaSource {
                     DownloadSearchQuery(
                         keywords = name,
                         category = TopicCategory.ANIME,
-                        episodeSort = query.episodeSort,
+                        episodeSort = query.episodeSort.toString(),
                         episodeName = query.episodeName,
                     )
                 ).map {

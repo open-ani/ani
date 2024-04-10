@@ -25,6 +25,8 @@ import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.UserAgent
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.cookies.HttpCookies
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.plugins.websocket.WebSockets
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
@@ -61,6 +63,7 @@ import me.him188.ani.datasources.api.topic.titles.RawTitleParser
 import me.him188.ani.datasources.api.topic.titles.parse
 import me.him188.ani.datasources.api.topic.titles.toTopicDetails
 import me.him188.ani.utils.logging.error
+import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
@@ -99,6 +102,14 @@ class MikanMediaSource(
 
     private val client = createHttpClient {
         applyMediaSourceConfig(config)
+        Logging {
+            logger = object : io.ktor.client.plugins.logging.Logger {
+                override fun log(message: String) {
+                    Companion.logger.info { message }
+                }
+            }
+            level = LogLevel.INFO
+        }
     }
 
     override suspend fun startSearch(query: DownloadSearchQuery): PagedSource<Topic> {

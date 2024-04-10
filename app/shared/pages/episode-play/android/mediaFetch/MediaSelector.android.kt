@@ -3,9 +3,12 @@ package me.him188.ani.app.ui.subject.episode.mediaFetch
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.Preview
+import me.him188.ani.app.data.media.MediaCacheManager
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.datasources.acgrip.AcgRipMediaSource
+import me.him188.ani.datasources.api.CachedMedia
 import me.him188.ani.datasources.api.DefaultMedia
+import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.MediaProperties
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
@@ -15,7 +18,7 @@ import me.him188.ani.datasources.dmhy.DmhyMediaSource
 private const val SOURCE_DMHY = DmhyMediaSource.ID
 private const val SOURCE_ACG = AcgRipMediaSource.ID
 
-private val testMediaList = listOf(
+internal val testMediaList = listOf(
     DefaultMedia(
         mediaId = "$SOURCE_DMHY.1",
         mediaSourceId = SOURCE_DMHY,
@@ -24,6 +27,7 @@ private val testMediaList = listOf(
         originalUrl = "https://example.com/1",
         size = 122.megaBytes,
         publishedTime = System.currentTimeMillis(),
+        episodes = listOf(EpisodeSort(1)),
         properties = MediaProperties(
             subtitleLanguages = listOf("CHS", "CHT"),
             resolution = "1080P",
@@ -39,6 +43,7 @@ private val testMediaList = listOf(
         originalUrl = "https://example.com/1",
         size = 122.megaBytes,
         publishedTime = System.currentTimeMillis(),
+        episodes = listOf(EpisodeSort(1)),
         properties = MediaProperties(
             subtitleLanguages = listOf("CHS", "CHT"),
             resolution = "1080P",
@@ -54,6 +59,7 @@ private val testMediaList = listOf(
         originalUrl = "https://example.com/1",
         size = 233.megaBytes,
         publishedTime = System.currentTimeMillis(),
+        episodes = listOf(EpisodeSort(2)),
         properties = MediaProperties(
             subtitleLanguages = listOf("CHT"),
             resolution = "1080P",
@@ -68,6 +74,7 @@ private val testMediaList = listOf(
         originalUrl = "https://example.com/1",
         size = 0.bytes,
         publishedTime = System.currentTimeMillis(),
+        episodes = listOf(EpisodeSort(2)),
         properties = MediaProperties(
             subtitleLanguages = listOf("CHS"),
             resolution = "1080P",
@@ -82,6 +89,7 @@ private val testMediaList = listOf(
         originalUrl = "https://example.com/1",
         size = 702.megaBytes,
         publishedTime = System.currentTimeMillis(),
+        episodes = listOf(EpisodeSort(3)),
         properties = MediaProperties(
             subtitleLanguages = listOf(),
             resolution = "1080P",
@@ -97,7 +105,15 @@ private fun PreviewMediaSelector() {
         MediaSelector(
             state = remember {
                 MediaSelectorState(
-                    mediaListProvider = { testMediaList },
+                    mediaListProvider = {
+                        listOf(
+                            CachedMedia(
+                                origin = testMediaList[0],
+                                cacheMediaSourceId = MediaCacheManager.LOCAL_FS_MEDIA_SOURCE_ID,
+                                download = ResourceLocation.LocalFile("file://test.txt"),
+                            )
+                        ) + testMediaList
+                    },
                     defaultPreferenceProvider = {
                         MediaPreference(
                             subtitleLanguage = "CHS"

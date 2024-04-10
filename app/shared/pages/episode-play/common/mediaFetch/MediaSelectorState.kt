@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flowOn
 import me.him188.ani.datasources.api.Media
+import me.him188.ani.datasources.api.source.MediaSourceLocation
 
 /**
  * Creates a [MediaSelectorState].
@@ -26,7 +27,10 @@ import me.him188.ani.datasources.api.Media
 fun MediaSelectorState(
     mediaListProvider: () -> List<Media>,
     defaultPreferenceProvider: () -> MediaPreference,
-): MediaSelectorState = MediaSelectorStateImpl(mediaListProvider, defaultPreferenceProvider)
+): MediaSelectorState = MediaSelectorStateImpl(
+    mediaListProvider,
+    defaultPreferenceProvider
+)
 
 @Stable
 interface MediaSelectorState {
@@ -260,7 +264,11 @@ internal class MediaSelectorStateImpl(
                     selectedResolution matches it.properties.resolution &&
                     selectedSubtitleLanguage matches it.properties.subtitleLanguages &&
                     selectedMediaSource matches it.mediaSourceId
-        }.sortedByDescending { it.publishedTime }
+        }.sortedWith(
+            compareByDescending<Media> {
+                if (it.location == MediaSourceLocation.LOCAL) 1 else 0
+            }.thenByDescending { it.publishedTime }
+        )
     }
 
     // User input

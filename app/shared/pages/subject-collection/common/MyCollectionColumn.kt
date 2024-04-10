@@ -52,7 +52,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.debounce
-import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.ui.foundation.AsyncImage
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
@@ -156,7 +155,7 @@ fun SubjectCollectionItem(
     item: SubjectCollectionItem,
     onClick: () -> Unit,
     onClickEpisode: (episode: UserEpisodeCollection) -> Unit,
-    onLongClickEpisode: (episode: UserEpisodeCollection) -> Unit,
+    onClickSelectEpisode: () -> Unit,
     onSetAllEpisodesDone: () -> Unit,
     onSetCollectionType: (new: UnifiedCollectionType) -> Unit,
     modifier: Modifier = Modifier,
@@ -181,7 +180,7 @@ fun SubjectCollectionItem(
                 SubjectCollectionItemContent(
                     item,
                     onClickEpisode,
-                    onLongClickEpisode,
+                    onClickSelectEpisode,
                     onSetAllEpisodesDone,
                     onSetCollectionType,
                     Modifier.padding(start = 12.dp).fillMaxSize(),
@@ -199,7 +198,7 @@ fun SubjectCollectionItem(
 private fun SubjectCollectionItemContent(
     item: SubjectCollectionItem,
     onClickEpisode: (episode: UserEpisodeCollection) -> Unit,
-    onLongClickEpisode: (episode: UserEpisodeCollection) -> Unit,
+    onClickSelectEpisode: () -> Unit,
     onSetAllEpisodesDone: (() -> Unit)?,
     onSetCollectionType: (new: UnifiedCollectionType) -> Unit,
     modifier: Modifier = Modifier,
@@ -254,21 +253,6 @@ private fun SubjectCollectionItemContent(
 
         Spacer(Modifier.weight(1f))
 
-        var showEpisodeProgressDialog by rememberSaveable { mutableStateOf(false) }
-        if (showEpisodeProgressDialog) {
-            val navigator = LocalNavigator.current
-            EpisodeProgressDialog(
-                onDismissRequest = { showEpisodeProgressDialog = false },
-                onClickDetails = { navigator.navigateSubjectDetails(item.subjectId) },
-                title = { Text(text = item.displayName) },
-            ) {
-                EpisodeProgressRow(
-                    item = item,
-                    onClickEpisodeState = onClickEpisode,
-                    onLongClickEpisode = onLongClickEpisode
-                )
-            }
-        }
 
         Row(
             Modifier
@@ -277,7 +261,7 @@ private fun SubjectCollectionItemContent(
                 .align(Alignment.End),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            TextButton({ showEpisodeProgressDialog = true }) {
+            TextButton(onClickSelectEpisode) {
                 Text("选集")
             }
 

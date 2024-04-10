@@ -207,6 +207,7 @@ kotlin {
         submodule("app/shared/pages/home")
         submodule("app/shared/pages/main")
         submodule("app/shared/pages/preferences")
+        submodule("app/shared/pages/cache-manage")
     }
 }
 

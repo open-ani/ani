@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.withContext
+import me.him188.ani.app.data.media.MediaCacheManager
 import me.him188.ani.app.data.media.MediaSourceManager
 import me.him188.ani.app.data.media.UnsupportedMediaException
 import me.him188.ani.app.data.media.VideoSourceResolver
@@ -50,8 +51,10 @@ import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuMatchers
 import me.him188.ani.danmaku.api.DanmakuProvider
+import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.source.MediaFetchRequest
+import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.datasources.bangumi.processing.nameCNOrName
 import me.him188.ani.datasources.bangumi.processing.renderEpisodeSp
@@ -167,6 +170,7 @@ private class EpisodeViewModelImpl(
     private val episodePreferencesRepository: EpisodePreferencesRepository by inject()
     private val mediaSourceManager: MediaSourceManager by inject()
     private val videoSourceResolver: VideoSourceResolver by inject()
+    private val cacheManager: MediaCacheManager by inject()
 
     private val subjectDetails = flowOf(subjectId).mapLatest { subjectId ->
         runUntilSuccess { withContext(Dispatchers.IO) { bangumiClient.api.getSubjectById(subjectId) } }
@@ -206,13 +210,14 @@ private class EpisodeViewModelImpl(
     val mediaFetchSession = combine(subjectDetails, episode, mediaFetcher) { subject, episode, fetcher ->
         fetcher.fetch(
             MediaFetchRequest(
+                subjectId = subject.id.toString(),
                 episodeId = episode.id.toString(),
                 subjectNames = listOfNotNull(
                     subject.name,
                     subject.nameCn
                 ),
+                episodeSort = EpisodeSort(episode.sort.toString()),
                 episodeName = episode.nameCNOrName(),
-                episodeSort = episode.sort.toString(),
             )
         )
     }.shareInBackground(started = SharingStarted.Eagerly)
@@ -227,9 +232,26 @@ private class EpisodeViewModelImpl(
 
     override val mediaSelectorState = kotlin.run {
         val state by mediaFetchSession.flatMapLatest { it.cumulativeResults }
+            .mapLatest { list ->
+                list.sortedWith(
+                    compareByDescending<Media> {
+                        if (it.location == MediaSourceLocation.LOCAL) 1 else 0
+                    }.thenByDescending { it.size.inBytes }
+                )
+            }
             .produceState(emptyList())
         val defaultPreference by episodePreferencesRepository.mediaPreferenceFlow(subjectId)
             .produceState(MediaPreference.Empty)
+//        val cachedMediaList by combine(cacheManager.storages.map { storage ->
+//            storage.cachedMediaListFlow.debounce(0.1.seconds)
+//            // The flow might emit a single value everytime,
+//            // so we debounce to avoid updating too frequently
+//        }) {
+//            it.asSequence().flatten().toList()
+//        }
+//        
+//        val allMediaListState by combine.produceState(emptyList())
+
         MediaSelectorState(
             mediaListProvider = { state },
             defaultPreferenceProvider = { defaultPreference },
@@ -295,7 +317,7 @@ private class EpisodeViewModelImpl(
             emit(null)
             playSource?.let { media ->
                 try {
-                    emit(videoSourceResolver.resolve(media))
+                    emit(videoSourceResolver.resolve(media, EpisodeSort(episodeEp.first())))
                 } catch (e: UnsupportedMediaException) {
                     emit(null)
                 } catch (e: Exception) {

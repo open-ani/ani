@@ -43,6 +43,10 @@ interface AniNavigator {
     fun navigatePreferences() {
         navigator.navigate("/preferences")
     }
+
+    fun navigateCaches() {
+        navigator.navigate("/caches")
+    }
 }
 
 fun AniNavigator(): AniNavigator = AniNavigatorImpl()

@@ -226,7 +226,7 @@ class MediaSourceMediaFetcher(
                         provider.fetch(it)
                     }.shareIn(
                         scope, replay = 1, started = SharingStarted.Lazily,
-                    ).take(2) // so that the flow can normally complete
+                    ).take(1) // so that the flow can normally complete
             )
         }
 

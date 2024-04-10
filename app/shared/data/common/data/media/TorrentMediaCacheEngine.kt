@@ -1,7 +1,15 @@
 package me.him188.ani.app.data.media
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.shareIn
 import me.him188.ani.app.torrent.TorrentDownloadSession
 import me.him188.ani.app.torrent.TorrentDownloader
 import me.him188.ani.app.torrent.model.EncodedTorrentData
@@ -11,32 +19,59 @@ import me.him188.ani.datasources.api.MediaCacheMetadata
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
+import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.datasources.core.cache.MediaCache
 import me.him188.ani.datasources.core.cache.MediaCacheEngine
+import me.him188.ani.utils.coroutines.SuspendLazy
 import kotlin.coroutines.CoroutineContext
 
 class TorrentMediaCacheEngine(
     private val mediaSourceId: String,
     private val getTorrentDownloader: suspend () -> TorrentDownloader,
 ) : MediaCacheEngine {
-    private class TorrentMediaCache(
-        override val media: CachedMedia,
+    private inner class TorrentMediaCache(
+        override val origin: Media,
         override val metadata: MediaCacheMetadata,
-        private val download: TorrentDownloadSession,
+        private val session: SharedFlow<TorrentDownloadSession>,
     ) : MediaCache {
-        override val progress: Flow<Float> get() = download.progress
-        override val totalSize: Flow<FileSize> get() = download.totalBytes.map { it.bytes }
+
+        private val cachedMedia: SuspendLazy<CachedMedia> = SuspendLazy {
+            CachedMedia(
+                origin,
+                mediaSourceId,
+                download = ResourceLocation.LocalFile(session.first().filePath().toUri().toString())
+            )
+        }
+
+        override suspend fun getCachedMedia(): CachedMedia = cachedMedia.get()
+
+        override val progress: Flow<Float>
+            get() = session.flatMapLatest { it.progress }
+        override val totalSize: Flow<FileSize>
+            get() = session.flatMapLatest { session ->
+                session.totalBytes.map { it.bytes }
+            }
+
+        @Volatile
+        private var deleted = false
 
         override suspend fun pause() {
-            download.pause()
+            if (deleted) return
+            session.first().pause()
         }
 
         override suspend fun resume() {
-            download.resume()
+            if (deleted) return
+            session.first().resume()
         }
 
-        override fun delete() {
-            download.close()
+        override suspend fun delete() {
+            if (deleted) return
+            synchronized(this) {
+                if (deleted) return
+                deleted = true
+            }
+            session.first().closeAndDelete()
         }
     }
 
@@ -47,15 +82,29 @@ class TorrentMediaCacheEngine(
         parentContext: CoroutineContext
     ): MediaCache? {
         val data = metadata.extra["torrentData"]?.hexToByteArray() ?: return null
-        return TorrentMediaCache(
-            media = CachedMedia(
-                origin,
-                mediaSourceId,
-                download = origin.download,
-            ),
-            metadata = metadata,
-            download = getTorrentDownloader().startDownload(EncodedTorrentData(data))
+        val sessionFlow = getSessionFlow(
+            EncodedTorrentData(data),
+            parentContext
         )
+        return TorrentMediaCache(
+            origin = origin,
+            metadata = metadata,
+            session = sessionFlow,
+        )
+    }
+
+    private fun getSessionFlow(
+        encoded: EncodedTorrentData,
+        parentContext: CoroutineContext
+    ): SharedFlow<TorrentDownloadSession> {
+        val sessionFlow = flow {
+            emit(getTorrentDownloader().startDownload(encoded, parentContext))
+        }.shareIn(
+            CoroutineScope(parentContext + Job(parentContext[Job])),
+            started = SharingStarted.Lazily,
+            replay = 1,
+        )
+        return sessionFlow
     }
 
     @OptIn(ExperimentalStdlibApi::class)
@@ -66,23 +115,15 @@ class TorrentMediaCacheEngine(
     ): MediaCache {
         val data = getTorrentDownloader().fetchTorrent(origin.mediaId)
         val metadata = MediaCacheMetadata(
-//            cacheMediaSourceId = this.mediaSourceId,
-            episodeId = request.episodeId,
-            subjectNames = request.subjectNames,
-            episodeSort = request.episodeSort,
-            episodeName = request.episodeName,
+            request,
             extra = mapOf(
                 "torrentData" to data.data.toHexString()
             )
         )
         return TorrentMediaCache(
-            media = CachedMedia(
-                origin,
-                mediaSourceId,
-                download = origin.download,
-            ),
+            origin = origin,
             metadata = metadata,
-            download = getTorrentDownloader().startDownload(data)
+            session = getSessionFlow(data, parentContext),
         )
     }
 }

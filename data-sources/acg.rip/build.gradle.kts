@@ -31,6 +31,7 @@ dependencies {
     implementation(libs.ktor.client.content.negotiation)
     implementation(libs.ktor.serialization.kotlinx.json)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.ktor.client.logging)
     implementation(libs.jsoup)
     implementation(libs.slf4j.api)
     implementation(projects.utils.slf4jKt)

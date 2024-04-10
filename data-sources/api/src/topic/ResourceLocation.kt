@@ -10,6 +10,7 @@ sealed class ResourceLocation {
     /**
      * `magnet:?xt=urn:btih:...`
      */
+    @Serializable
     class MagnetLink(override val uri: String) : ResourceLocation() {
         init {
             require(uri.startsWith("magnet:")) {
@@ -21,6 +22,7 @@ sealed class ResourceLocation {
     /**
      * `*.torrent` form `http://`, `https://`.
      */
+    @Serializable
     class HttpTorrentFile(override val uri: String) : ResourceLocation() {
         init {
             require(uri.startsWith("https://") || uri.startsWith("http://")) {
@@ -32,6 +34,7 @@ sealed class ResourceLocation {
     /**
      * `file://`
      */
+    @Serializable
     class LocalFile(
         override val uri: String
     ) : ResourceLocation() {

@@ -4,6 +4,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asFlow
@@ -22,6 +23,7 @@ import me.him188.ani.datasources.api.MediaCacheMetadata
 import me.him188.ani.datasources.api.paging.SingleShotPagedSource
 import me.him188.ani.datasources.api.paging.SizedSource
 import me.him188.ani.datasources.api.source.ConnectionStatus
+import me.him188.ani.datasources.api.source.MatchKind
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.source.MediaMatch
 import me.him188.ani.datasources.api.source.MediaSource
@@ -75,7 +77,7 @@ class DirectoryMediaCacheStorage(
 
                     engine.restore(save.origin, save.metadata, scope.coroutineContext)?.let {
                         lock.withLock {
-                            list.value += it
+                            listFlow.value += it
                         }
                     }
                 }
@@ -83,11 +85,11 @@ class DirectoryMediaCacheStorage(
         }
     }
 
-    override val list: MutableStateFlow<List<MediaCache>> = MutableStateFlow(emptyList())
+    override val listFlow: MutableStateFlow<List<MediaCache>> = MutableStateFlow(emptyList())
 
     override suspend fun findCache(media: Media, resume: Boolean): MediaCache? {
         return lock.withLock {
-            list.first().firstOrNull { it.media.mediaId == media.mediaId }
+            listFlow.first().firstOrNull { it.origin.mediaId == media.mediaId }
         }?.also {
             if (resume) {
                 it.resume()
@@ -97,23 +99,23 @@ class DirectoryMediaCacheStorage(
 
     override val cacheMediaSource: MediaSource by lazy { MediaCacheStorageSource(this) }
 
-    override val count = list.map {
+    override val count = listFlow.map {
         it.size
     }
-    override val totalSize: Flow<FileSize> = list.flatMapLatest { caches ->
+    override val totalSize: Flow<FileSize> = listFlow.flatMapLatest { caches ->
         combine(caches.map { it.totalSize }) { sizes ->
             sizes.sumOf { it.inBytes }.bytes
         }
     }
 
     /**
-     * Locks accesses to [list]
+     * Locks accesses to [listFlow]
      */
     private val lock = Mutex()
 
     override suspend fun cache(media: Media, request: MediaFetchRequest, resume: Boolean): MediaCache {
         return lock.withLock {
-            list.first().firstOrNull { it.media.mediaId == media.mediaId }?.let { return@withLock it }
+            listFlow.first().firstOrNull { it.origin.mediaId == media.mediaId }?.let { return@withLock it }
 
             val cache = engine.createCache(
                 media, request,
@@ -127,7 +129,7 @@ class DirectoryMediaCacheStorage(
                     )
                 )
             }
-            list.value += cache
+            listFlow.value += cache
             cache
         }.also {
             if (resume) {
@@ -138,14 +140,18 @@ class DirectoryMediaCacheStorage(
 
     override suspend fun delete(media: Media): Boolean {
         lock.withLock {
-            val cache = list.first().firstOrNull { it.media.mediaId == media.mediaId } ?: return false
+            val cache = listFlow.first().firstOrNull { it.origin.mediaId == media.mediaId } ?: return false
             cache.delete()
             withContext(Dispatchers.IO) {
                 dir.resolve("${media.mediaId}.metadata").deleteIfExists()
             }
-            list.value -= cache
+            listFlow.value -= cache
             return true
         }
+    }
+
+    override fun close() {
+        scope.cancel()
     }
 }
 
@@ -159,8 +165,10 @@ private class MediaCacheStorageSource(
 
     override suspend fun fetch(query: MediaFetchRequest): SizedSource<MediaMatch> {
         return SingleShotPagedSource {
-            storage.list.first().map { cache ->
-                MediaMatch(cache.media, query.matches(cache.metadata))
+            storage.listFlow.first().mapNotNull { cache ->
+                val kind = query.matches(cache.metadata)
+                if (kind == MatchKind.NONE) null
+                else MediaMatch(cache.getCachedMedia(), kind)
             }.asFlow()
         }
     }

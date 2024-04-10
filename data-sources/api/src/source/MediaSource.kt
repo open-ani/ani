@@ -19,6 +19,7 @@
 package me.him188.ani.datasources.api.source
 
 import kotlinx.serialization.Serializable
+import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.paging.SizedSource
 
@@ -95,11 +96,12 @@ enum class MatchKind {
 @Serializable
 class MediaFetchRequest(
     /**
-     * Platform-specific Episode index id to help improve accuracy,
+     * Platform-specific index id to help improve accuracy,
      * especially when fetching from cache storages where the original [MediaFetchRequest] was saved when caching the media.
      *
      * This is designed to support multiple index providers like Bangumi.
      */
+    val subjectId: String? = null,
     val episodeId: String? = null,
     /**
      * Translated and original names of the subject.
@@ -110,7 +112,7 @@ class MediaFetchRequest(
     /**
      * E.g. "49", "01"
      */
-    val episodeSort: String,
+    val episodeSort: EpisodeSort,
     /**
      * E.g. "恶魔与阴谋"
      */

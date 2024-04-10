@@ -27,7 +27,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SecondaryScrollableTabRow
@@ -38,8 +42,12 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -56,7 +64,6 @@ import me.him188.ani.app.ui.isLoggedIn
 import me.him188.ani.app.ui.profile.UnauthorizedTips
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
-import org.openapitools.client.models.EpisodeCollectionType
 
 
 // 有顺序, https://github.com/Him188/ani/issues/73
@@ -73,15 +80,24 @@ val COLLECTION_TABS_SORTED = listOf(
  * My collections
  */
 @Composable
-fun CollectionPage(contentPadding: PaddingValues = PaddingValues(0.dp)) {
+fun CollectionPage(
+    onClickCaches: () -> Unit,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+) {
     val vm = rememberViewModel { MyCollectionsViewModel() }
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("我的追番") },
+                actions = {
+                    IconButton(onClickCaches) {
+                        Icon(Icons.Rounded.Download, "缓存管理")
+                    }
+                }
             )
-        }
-    ) { topBarPaddings ->
+        },
+
+        ) { topBarPaddings ->
         val isLoggedIn by isLoggedIn()
 
         val pagerState =
@@ -141,31 +157,54 @@ private fun TabContent(
     val context by rememberUpdatedState(LocalContext.current)
     SubjectCollectionsColumn(
         cache,
-        item = { item ->
+        item = { subjectCollection ->
+            var showEpisodeProgressDialog by rememberSaveable { mutableStateOf(false) }
+            if (showEpisodeProgressDialog) {
+                val navigator = LocalNavigator.current
+                EpisodeProgressDialog(
+                    onDismissRequest = { showEpisodeProgressDialog = false },
+                    onClickDetails = { navigator.navigateSubjectDetails(subjectCollection.subjectId) },
+                    title = { Text(text = subjectCollection.displayName) },
+                ) {
+                    val progress by remember(vm, subjectCollection) {
+                        vm.subjectProgress(subjectCollection)
+                    }.collectAsStateWithLifecycle(emptyList())
+                    EpisodeProgressRow(
+                        episodes = progress,
+                        onClickEpisodeState = {
+                            navigator.navigateEpisodeDetails(subjectCollection.subjectId, it.episodeId)
+                        },
+                        onLongClickEpisode = { progressItem ->
+                            context.vibrateIfSupported(VibrationStrength.TICK)
+                            vm.launchInBackground {
+                                setEpisodeWatched(
+                                    subjectCollection.subjectId,
+                                    progressItem.episodeId,
+                                    watched = progressItem.watchStatus != UnifiedCollectionType.DONE
+                                )
+                            }
+                        },
+                    )
+                }
+            }
+
             val navigator = LocalNavigator.current
             SubjectCollectionItem(
-                item,
+                subjectCollection,
                 onClick = {
-                    navigator.navigateSubjectDetails(item.subjectId)
+                    navigator.navigateSubjectDetails(subjectCollection.subjectId)
                 },
                 onClickEpisode = {
-                    navigator.navigateEpisodeDetails(item.subjectId, it.episode.id)
+                    navigator.navigateEpisodeDetails(subjectCollection.subjectId, it.episode.id)
                 },
-                onLongClickEpisode = { episode ->
-                    context.vibrateIfSupported(VibrationStrength.TICK)
-                    vm.launchInBackground {
-                        setEpisodeWatched(
-                            item.subjectId,
-                            episode.episode.id,
-                            watched = episode.type != EpisodeCollectionType.WATCHED
-                        )
-                    }
+                onClickSelectEpisode = {
+                    showEpisodeProgressDialog = true
                 },
                 onSetAllEpisodesDone = {
-                    vm.launchInBackground { setAllEpisodesWatched(item.subjectId) }
+                    vm.launchInBackground { setAllEpisodesWatched(subjectCollection.subjectId) }
                 },
                 onSetCollectionType = {
-                    vm.launchInBackground { setCollectionType(item.subjectId, it) }
+                    vm.launchInBackground { setCollectionType(subjectCollection.subjectId, it) }
                 },
                 doneButton = if (type == UnifiedCollectionType.DONE) {
                     null
@@ -174,7 +213,7 @@ private fun TabContent(
                         FilledTonalButton(
                             {
                                 vm.launchInBackground {
-                                    setCollectionType(item.subjectId, UnifiedCollectionType.DONE)
+                                    setCollectionType(subjectCollection.subjectId, UnifiedCollectionType.DONE)
                                 }
                             },
                         ) {

@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.LocalNavigator
+import me.him188.ani.app.pages.cache.manage.CacheManagementPage
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.preference.PreferencePage
@@ -84,6 +85,9 @@ fun AniAppContent(aniNavigator: AniNavigator) {
             }
             scene("/preferences") {
                 PreferencePage(Modifier.fillMaxSize())
+            }
+            scene("/caches") {
+                CacheManagementPage(Modifier.fillMaxSize())
             }
         }
         SideEffect {
