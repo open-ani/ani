@@ -17,6 +17,7 @@ dependencies {
     implementation(libs.ktor.server.status)
     implementation(libs.ktor.serialization.kotlinx.json)
     implementation(libs.ktor.server.call.logging)
-    
+    implementation(project(":danmaku:protocol"))
+
     runtimeOnly(libs.slf4j.simple)
 }
