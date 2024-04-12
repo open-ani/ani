@@ -15,23 +15,27 @@ import me.him188.ani.danmaku.server.EnvironmentVariables
 import me.him188.ani.danmaku.server.ktor.plugins.configureRouting
 import me.him188.ani.danmaku.server.ktor.plugins.configureSecurity
 import me.him188.ani.danmaku.server.ktor.plugins.configureSerialization
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+import org.koin.core.qualifier.named
 
 
-internal fun getServer(
-    env: EnvironmentVariables = EnvironmentVariables(),
-): NettyApplicationEngine {
-    return embeddedServer(
-        Netty,
-        port = env.port ?: 4392,
-        host = "0.0.0.0",
-        module = { module() },
-        configure = {
-            this.tcpKeepAlive = true
-            this.connectionGroupSize = 40
-            this.workerGroupSize = 40
-            this.callGroupSize = 40
-        }
-    )
+internal object KtorServer : KoinComponent {
+    private val env: EnvironmentVariables by inject(named("env"))
+    fun get(): NettyApplicationEngine {
+        return embeddedServer(
+            Netty,
+            port = env.port ?: 4394,
+            host = "0.0.0.0",
+            module = { module() },
+            configure = {
+                this.tcpKeepAlive = true
+                this.connectionGroupSize = 40
+                this.workerGroupSize = 40
+                this.callGroupSize = 40
+            }
+        )
+    }
 }
 
 private fun Application.module() {

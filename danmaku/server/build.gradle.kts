@@ -8,7 +8,8 @@ dependencies {
     
     api(libs.kotlinx.coroutines.core)
     api(libs.kotlinx.serialization.json)
-    
+
+    implementation(libs.koin.core)
     implementation(libs.ktor.server.auth)
     implementation(libs.ktor.server.netty)
     implementation(libs.ktor.server.core)

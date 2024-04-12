@@ -5,11 +5,13 @@ import io.ktor.server.application.call
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
+import me.him188.ani.danmaku.server.ktor.routing.danmakuRouting
 
-fun Application.configureRouting() {
+internal fun Application.configureRouting() {
     routing {
         get("/status") {
-            call.respondText("Server is running 2")
+            call.respondText("Server is running")
         }
     }
+    danmakuRouting()
 }
