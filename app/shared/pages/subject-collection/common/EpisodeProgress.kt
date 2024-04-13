@@ -2,6 +2,7 @@ package me.him188.ani.app.ui.collection
 
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
@@ -13,11 +14,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Lightbulb
+import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.ProvideTextStyle
@@ -45,43 +48,50 @@ fun EpisodeProgressDialog(
     onDismissRequest: () -> Unit,
     onClickDetails: () -> Unit,
     title: @Composable () -> Unit,
+    onClickCache: () -> Unit,
     properties: DialogProperties = DialogProperties(),
     content: @Composable () -> Unit,
 ) {
     Dialog(onDismissRequest, properties) {
         Card {
-            Column(Modifier.padding(16.dp)) {
-                Row {
-                    Text("选集播放", style = MaterialTheme.typography.titleLarge)
-                    Spacer(Modifier.weight(1f))
-                }
+            Box {
+                Column(Modifier.padding(16.dp)) {
+                    Row {
+                        Text("选集播放", style = MaterialTheme.typography.titleLarge)
+                        Spacer(Modifier.weight(1f))
+                    }
 
-                Row(Modifier.padding(top = 8.dp)) {
-                    ProvideTextStyle(MaterialTheme.typography.bodyLarge) {
-                        title()
+                    Row(Modifier.padding(top = 8.dp)) {
+                        ProvideTextStyle(MaterialTheme.typography.bodyLarge) {
+                            title()
+                        }
+                    }
+
+                    Row(Modifier.padding(top = 16.dp)) {
+                        content()
+                    }
+
+                    HorizontalDivider(Modifier.padding(vertical = 16.dp))
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Outlined.Lightbulb, null)
+
+                        Text("长按还可以标记为已看", Modifier.padding(start = 4.dp))
+                    }
+
+                    Row(Modifier.padding(top = 16.dp).align(Alignment.End)) {
+                        OutlinedButton(onClickDetails) {
+                            Text("条目详情")
+                        }
+
+                        FilledTonalButton(onDismissRequest, Modifier.padding(start = 8.dp)) {
+                            Text("取消")
+                        }
                     }
                 }
 
-                Row(Modifier.padding(top = 16.dp)) {
-                    content()
-                }
-
-                HorizontalDivider(Modifier.padding(vertical = 16.dp))
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Outlined.Lightbulb, null)
-
-                    Text("长按还可以标记为已看", Modifier.padding(start = 4.dp))
-                }
-
-                Row(Modifier.padding(top = 16.dp).align(Alignment.End)) {
-                    OutlinedButton(onClickDetails) {
-                        Text("条目详情")
-                    }
-
-                    FilledTonalButton(onDismissRequest, Modifier.padding(start = 8.dp)) {
-                        Text("取消")
-                    }
+                IconButton(onClickCache, Modifier.align(Alignment.TopEnd).padding(8.dp)) {
+                    Icon(Icons.Rounded.Download, "缓存")
                 }
             }
         }

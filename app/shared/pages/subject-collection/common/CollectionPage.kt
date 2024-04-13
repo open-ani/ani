@@ -165,6 +165,7 @@ private fun TabContent(
                     onDismissRequest = { showEpisodeProgressDialog = false },
                     onClickDetails = { navigator.navigateSubjectDetails(subjectCollection.subjectId) },
                     title = { Text(text = subjectCollection.displayName) },
+                    onClickCache = { },
                 ) {
                     val progress by remember(vm, subjectCollection) {
                         vm.subjectProgress(subjectCollection)
