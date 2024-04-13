@@ -17,7 +17,7 @@ import androidx.compose.material.icons.rounded.ArrowOutward
 import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material.icons.rounded.DisplaySettings
 import androidx.compose.material.icons.rounded.Download
-import androidx.compose.material.icons.rounded.Forward
+import androidx.compose.material.icons.rounded.Outbox
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -59,7 +59,6 @@ fun EpisodeActionRow(
             }
         },
         onClickCache = {
-            viewModel.addCache()
         },
         onClickDownload = {
             viewModel.launchInMain {
@@ -117,8 +116,8 @@ fun EpisodeActionRow(
 
         ActionButton(
             onClick = onClickDownload,
-            icon = { Icon(Icons.Rounded.Forward, null) },
-            text = { Text("下载") },
+            icon = { Icon(Icons.Rounded.Outbox, null) },
+            text = { Text("外部下载") },
             Modifier.weight(1f),
         )
 

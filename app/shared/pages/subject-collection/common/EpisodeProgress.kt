@@ -14,8 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Lightbulb
-import androidx.compose.material.icons.rounded.DownloadDone
-import androidx.compose.material.icons.rounded.Downloading
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.FilledTonalButton
@@ -29,10 +27,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import me.him188.ani.app.data.media.EpisodeCacheStatus
+import me.him188.ani.app.ui.theme.disabledWeaken
 import me.him188.ani.app.ui.theme.stronglyWeaken
 import me.him188.ani.app.ui.theme.weaken
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
@@ -151,55 +155,59 @@ private fun SmallEpisodeButton(
     modifier: Modifier = Modifier,
     cacheStatus: EpisodeCacheStatus? = null,
 ) {
-    val hasBadge = cacheStatus == EpisodeCacheStatus.CACHED || cacheStatus == EpisodeCacheStatus.CACHING
     Box(
         modifier//.padding(end = if (hasBadge) 12.dp else 0.dp)
     ) {
+        val isDoneOrDropped = watchStatus == UnifiedCollectionType.DONE || watchStatus == UnifiedCollectionType.DROPPED
+        val containerColor = when {
+            isDoneOrDropped ->
+                MaterialTheme.colorScheme.primary.weaken()
+
+            isOnAir != false ->  // 未开播
+                MaterialTheme.colorScheme.onSurface.stronglyWeaken()
+
+            // 还没看
+            else -> MaterialTheme.colorScheme.primary
+        }
         me.him188.ani.app.ui.foundation.FilledTonalCombinedClickButton(
             onClick = onClick,
             onLongClick = onLongClick,
-            modifier = Modifier.combinedClickable(onLongClick = onLongClick, onClick = onClick)
+            modifier =
+            Modifier
+                .combinedClickable(onLongClick = onLongClick, onClick = onClick)
                 .heightIn(min = 48.dp)
                 .widthIn(min = 48.dp),
             shape = MaterialTheme.shapes.small,
             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 12.dp),
             colors = ButtonDefaults.elevatedButtonColors(
-//            containerColor = MaterialTheme.colorScheme.onSurface.copy(0.12f),
-//            contentColor = MaterialTheme.colorScheme.onSurface.copy(0.38f),
-                containerColor = when {
-                    watchStatus == UnifiedCollectionType.DONE || watchStatus == UnifiedCollectionType.DROPPED ->
-                        MaterialTheme.colorScheme.primary.weaken()
-
-                    isOnAir != false ->  // 未开播
-                        MaterialTheme.colorScheme.onSurface.stronglyWeaken()
-
-                    // 还没看
-                    else -> MaterialTheme.colorScheme.primary
-                },
+                containerColor = containerColor,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
             ),
         ) {
             Text(episodeSort, style = MaterialTheme.typography.bodyMedium)
-
-            if (hasBadge) {
-                Box(Modifier.padding(start = 8.dp)) {
-                    when (cacheStatus) {
-                        EpisodeCacheStatus.CACHED -> Icon(Icons.Rounded.DownloadDone, null)
-                        EpisodeCacheStatus.CACHING -> Icon(Icons.Rounded.Downloading, null)
-                        else -> {}
-                    }
-                }
-            }
         }
 
-//        if (hasBadge) {
-//            Surface(
-//                Modifier.align(Alignment.BottomEnd),
-//                color = Color.Transparent,
-//                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-//            ) {
-//               
-//            }
-//        }
+        val indicatorColor = when (cacheStatus) {
+            EpisodeCacheStatus.CACHED -> (if (isDoneOrDropped) MaterialTheme.colorScheme.primary.disabledWeaken()
+            else MaterialTheme.colorScheme.primary.stronglyWeaken())
+                .compositeOver(Color.Green)
+
+            EpisodeCacheStatus.CACHING -> Color(0xDFe0ef51)
+
+            else -> Color.Transparent
+        }
+        Box(
+            Modifier
+                .clip(MaterialTheme.shapes.small)
+                .drawBehind {
+                    drawLine(
+                        indicatorColor,
+                        start = Offset(0f, size.height - 1.dp.toPx()),
+                        end = Offset(size.width, size.height - 1.dp.toPx()),
+                        strokeWidth = 12.dp.toPx()
+                    )
+                }
+                .matchParentSize()
+        )
     }
 }
