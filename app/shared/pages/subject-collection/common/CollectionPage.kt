@@ -191,6 +191,11 @@ private fun TabContent(
             val navigator = LocalNavigator.current
             SubjectCollectionItem(
                 subjectCollection,
+                episodeCacheStatus = { subjectId, episodeId ->
+                    remember(vm, subjectId, episodeId) {
+                        vm.cacheStatusForEpisode(subjectId, episodeId)
+                    }.collectAsStateWithLifecycle(null).value
+                },
                 onClick = {
                     navigator.navigateSubjectDetails(subjectCollection.subjectId)
                 },

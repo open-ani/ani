@@ -7,10 +7,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.runBlocking
 import me.him188.ani.app.data.media.EpisodeCacheStatus
+import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.rememberViewModel
+import me.him188.ani.datasources.api.paging.SingleShotPagedSource
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import org.openapitools.client.models.Episode
 import org.openapitools.client.models.EpisodeCollectionType
@@ -228,5 +231,34 @@ private fun PreviewEpisodeProgressDialog() {
                 onLongClickEpisode = {}
             )
         }
+    }
+}
+
+@Preview
+@Composable
+private fun PreviewSubjectCollectionsColumn() {
+    ProvideCompositionLocalsForPreview {
+        SubjectCollectionsColumn(
+            LazyDataCache(
+                SingleShotPagedSource {
+                    testCollections().asFlow()
+                },
+                "test"
+            ),
+            item = {
+                SubjectCollectionItem(
+                    item = it,
+                    episodeCacheStatus = { _, _ ->
+                        EpisodeCacheStatus.CACHED
+                    },
+                    onClick = { },
+                    onClickEpisode = {},
+                    onClickSelectEpisode = { },
+                    onSetAllEpisodesDone = { },
+                    onSetCollectionType = {}
+                )
+            },
+            onEmpty = {}
+        )
     }
 }

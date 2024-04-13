@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import me.him188.ani.app.ViewModelAuthSupport
+import me.him188.ani.app.data.media.EpisodeCacheStatus
 import me.him188.ani.app.data.media.MediaCacheManager
 import me.him188.ani.app.data.repositories.EpisodeRepository
 import me.him188.ani.app.data.repositories.SubjectRepository
@@ -54,6 +55,9 @@ interface MyCollectionsViewModel : HasBackgroundScope, ViewModelAuthSupport {
      */
     @Stable
     fun subjectProgress(item: SubjectCollectionItem): Flow<List<EpisodeProgressItem>>
+
+    @Stable
+    fun cacheStatusForEpisode(subjectId: Int, episodeId: Int): Flow<EpisodeCacheStatus>
 
     suspend fun setCollectionType(subjectId: Int, type: UnifiedCollectionType)
 
@@ -108,6 +112,13 @@ class MyCollectionsViewModelImpl : AbstractViewModel(), KoinComponent, MyCollect
                 }
             }
             .flowOn(Dispatchers.Default)
+    }
+
+    override fun cacheStatusForEpisode(subjectId: Int, episodeId: Int): Flow<EpisodeCacheStatus> {
+        return cacheManager.cacheStatusForEpisode(
+            subjectId = subjectId,
+            episodeId = episodeId,
+        )
     }
 
     override fun init() {

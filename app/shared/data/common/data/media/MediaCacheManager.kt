@@ -71,7 +71,14 @@ abstract class MediaCacheManager {
 }
 
 enum class EpisodeCacheStatus {
+    /**
+     * At least one cache is fully downloaded.
+     */
     CACHED,
+
+    /**
+     * No cache is fully downloaded, but at least one cache is downloading.
+     */
     CACHING,
     NOT_CACHED,
 }

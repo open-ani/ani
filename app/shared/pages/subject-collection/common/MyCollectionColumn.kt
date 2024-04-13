@@ -14,12 +14,14 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.MoreVert
@@ -52,9 +54,12 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.debounce
+import me.him188.ani.app.data.media.EpisodeCacheStatus
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.ui.foundation.AsyncImage
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
+import me.him188.ani.app.ui.foundation.indication.HorizontalIndicator
+import me.him188.ani.app.ui.foundation.indication.IndicatedBox
 import me.him188.ani.app.ui.subject.details.COVER_WIDTH_TO_HEIGHT_RATIO
 import me.him188.ani.app.ui.subject.details.Tag
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
@@ -153,6 +158,7 @@ fun SubjectCollectionsColumn(
 @Composable
 fun SubjectCollectionItem(
     item: SubjectCollectionItem,
+    episodeCacheStatus: @Composable (subjectId: Int, episodeId: Int) -> EpisodeCacheStatus?,
     onClick: () -> Unit,
     onClickEpisode: (episode: UserEpisodeCollection) -> Unit,
     onClickSelectEpisode: () -> Unit,
@@ -179,6 +185,7 @@ fun SubjectCollectionItem(
             Box(Modifier.weight(1f)) {
                 SubjectCollectionItemContent(
                     item,
+                    episodeCacheStatus,
                     onClickEpisode,
                     onClickSelectEpisode,
                     onSetAllEpisodesDone,
@@ -197,6 +204,7 @@ fun SubjectCollectionItem(
 @Composable
 private fun SubjectCollectionItemContent(
     item: SubjectCollectionItem,
+    cacheStatus: @Composable (subjectId: Int, episodeId: Int) -> EpisodeCacheStatus?,
     onClickEpisode: (episode: UserEpisodeCollection) -> Unit,
     onClickSelectEpisode: () -> Unit,
     onSetAllEpisodesDone: (() -> Unit)?,
@@ -268,32 +276,49 @@ private fun SubjectCollectionItemContent(
             val onPlay: () -> Unit = {
                 getEpisodeToPlay(item)?.let(onClickEpisode)
             }
-            when (val status = item.continueWatchingStatus) {
-                is ContinueWatchingStatus.Continue -> {
-                    Button(onClick = onPlay) {
-                        Text("继续观看 ${status.episodeSort}")
+            IndicatedBox(indicator = {
+                getEpisodeToPlay(item)?.episode?.id?.let { episodeId ->
+                    HorizontalIndicator(
+                        6.dp,
+                        CircleShape,
+                        cacheStatusIndicationColor(
+                            cacheStatus(
+                                item.subjectId,
+                                episodeId
+                            ),
+                            item.continueWatchingStatus is ContinueWatchingStatus.Watched
+                        ),
+                        Modifier.offset(y = (-2).dp)
+                    )
+                }
+            }) {
+                when (val status = item.continueWatchingStatus) {
+                    is ContinueWatchingStatus.Continue -> {
+                        Button(onClick = onPlay) {
+                            Text("继续观看 ${status.episodeSort}")
+                        }
                     }
-                }
 
-                ContinueWatchingStatus.Done -> {
-                    doneButton?.invoke()
-                }
-
-                ContinueWatchingStatus.NotOnAir -> {
-                    androidx.compose.material3.FilledTonalButton(onClick = onPlay) {
-                        Text("还未开播")
+                    ContinueWatchingStatus.Done -> {
+                        doneButton?.invoke()
                     }
-                }
 
-                ContinueWatchingStatus.Start -> {
-                    Button(onClick = onPlay) {
-                        Text("开始观看")
+                    ContinueWatchingStatus.NotOnAir -> {
+                        androidx.compose.material3.FilledTonalButton(onClick = onPlay) {
+                            Text("还未开播")
+                        }
                     }
-                }
 
-                is ContinueWatchingStatus.Watched -> {
-                    androidx.compose.material3.FilledTonalButton(onClick = onPlay) {
-                        Text("看到 ${status.episodeSort}")
+                    ContinueWatchingStatus.Start -> {
+                        Button(onClick = onPlay) {
+                            Text("开始观看")
+                        }
+                    }
+
+                    is ContinueWatchingStatus.Watched -> {
+                        androidx.compose.material3.FilledTonalButton(onClick = onPlay) {
+                            Text("看到 ${status.episodeSort}")
+                        }
                     }
                 }
             }

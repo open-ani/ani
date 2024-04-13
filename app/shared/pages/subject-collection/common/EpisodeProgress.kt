@@ -2,7 +2,6 @@ package me.him188.ani.app.ui.collection
 
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
@@ -27,15 +26,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import me.him188.ani.app.data.media.EpisodeCacheStatus
+import me.him188.ani.app.ui.foundation.indication.HorizontalIndicator
+import me.him188.ani.app.ui.foundation.indication.IndicatedBox
 import me.him188.ani.app.ui.theme.disabledWeaken
 import me.him188.ani.app.ui.theme.stronglyWeaken
 import me.him188.ani.app.ui.theme.weaken
@@ -155,10 +153,20 @@ private fun SmallEpisodeButton(
     modifier: Modifier = Modifier,
     cacheStatus: EpisodeCacheStatus? = null,
 ) {
-    Box(
+    val isDoneOrDropped = watchStatus == UnifiedCollectionType.DONE || watchStatus == UnifiedCollectionType.DROPPED
+    IndicatedBox(
+        {
+            HorizontalIndicator(
+                color = cacheStatusIndicationColor(
+                    cacheStatus,
+                    isDoneOrDropped
+                ),
+                shape = MaterialTheme.shapes.small,
+                height = 6.dp,
+            )
+        },
         modifier//.padding(end = if (hasBadge) 12.dp else 0.dp)
     ) {
-        val isDoneOrDropped = watchStatus == UnifiedCollectionType.DONE || watchStatus == UnifiedCollectionType.DROPPED
         val containerColor = when {
             isDoneOrDropped ->
                 MaterialTheme.colorScheme.primary.weaken()
@@ -186,28 +194,22 @@ private fun SmallEpisodeButton(
         ) {
             Text(episodeSort, style = MaterialTheme.typography.bodyMedium)
         }
-
-        val indicatorColor = when (cacheStatus) {
-            EpisodeCacheStatus.CACHED -> (if (isDoneOrDropped) MaterialTheme.colorScheme.primary.disabledWeaken()
-            else MaterialTheme.colorScheme.primary.stronglyWeaken())
-                .compositeOver(Color.Green)
-
-            EpisodeCacheStatus.CACHING -> Color(0xDFe0ef51)
-
-            else -> Color.Transparent
-        }
-        Box(
-            Modifier
-                .clip(MaterialTheme.shapes.small)
-                .drawBehind {
-                    drawLine(
-                        indicatorColor,
-                        start = Offset(0f, size.height - 1.dp.toPx()),
-                        end = Offset(size.width, size.height - 1.dp.toPx()),
-                        strokeWidth = 12.dp.toPx()
-                    )
-                }
-                .matchParentSize()
-        )
     }
+}
+
+/**
+ * 剧集按钮底部的指示条颜色, 用于表示缓存状态
+ */
+@Composable
+fun cacheStatusIndicationColor(
+    cacheStatus: EpisodeCacheStatus?,
+    isDoneOrDropped: Boolean
+): Color = when (cacheStatus) {
+    EpisodeCacheStatus.CACHED -> (if (isDoneOrDropped) MaterialTheme.colorScheme.primary.disabledWeaken()
+    else MaterialTheme.colorScheme.primary.stronglyWeaken())
+        .compositeOver(Color.Green)
+
+    EpisodeCacheStatus.CACHING -> Color(0xDFe0ef51)
+
+    else -> Color.Transparent
 }
