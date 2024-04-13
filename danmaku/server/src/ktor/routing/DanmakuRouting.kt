@@ -13,13 +13,11 @@ import me.him188.ani.danmaku.protocol.DanmakuGetResponse
 import me.him188.ani.danmaku.protocol.DanmakuPostRequest
 import me.him188.ani.danmaku.server.service.DanmakuService
 import me.him188.ani.danmaku.server.util.tryOrRespond
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
+import org.koin.ktor.ext.inject
 import java.util.UUID
 
 fun Application.danmakuRouting() {
-    val koin = object : KoinComponent {}
-    val service: DanmakuService by koin.inject()
+    val service: DanmakuService by inject()
 
     routing {
         post("/danmaku") {

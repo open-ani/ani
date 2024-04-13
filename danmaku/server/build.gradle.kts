@@ -10,6 +10,7 @@ dependencies {
     api(libs.kotlinx.serialization.json)
 
     implementation(libs.koin.core)
+    implementation(libs.koin.ktor)
     implementation(libs.ktor.server.auth)
     implementation(libs.ktor.server.netty)
     implementation(libs.ktor.server.core)
@@ -18,6 +19,9 @@ dependencies {
     implementation(libs.ktor.serialization.kotlinx.json)
     implementation(libs.ktor.server.call.logging)
     implementation(project(":danmaku:protocol"))
+    
+    testImplementation(libs.ktor.server.test.host)
+    testImplementation(libs.kotlinx.coroutines.test)
 
     runtimeOnly(libs.slf4j.simple)
 }

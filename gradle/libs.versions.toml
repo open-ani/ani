@@ -72,6 +72,8 @@ ktor-server-status = { module = "io.ktor:ktor-server-status-pages", version.ref 
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
 koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koin" }
+koin-test = { module = "io.insert-koin:koin-test", version.ref = "koin" }
+koin-ktor = { module = "io.insert-koin:koin-ktor", version.ref = "koin" }
 
 # Yamlkt
 directories = { module = "dev.dirs:directories", version = "26" }

@@ -12,33 +12,29 @@ import io.ktor.server.plugins.callloging.CallLogging
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.response.respond
 import me.him188.ani.danmaku.server.EnvironmentVariables
+import me.him188.ani.danmaku.server.getServerKoinModule
 import me.him188.ani.danmaku.server.ktor.plugins.configureRouting
 import me.him188.ani.danmaku.server.ktor.plugins.configureSecurity
 import me.him188.ani.danmaku.server.ktor.plugins.configureSerialization
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
-import org.koin.core.qualifier.named
+import org.koin.ktor.plugin.Koin
 
 
-internal object KtorServer : KoinComponent {
-    private val env: EnvironmentVariables by inject(named("env"))
-    fun get(): NettyApplicationEngine {
-        return embeddedServer(
-            Netty,
-            port = env.port ?: 4394,
-            host = "0.0.0.0",
-            module = { module() },
-            configure = {
-                this.tcpKeepAlive = true
-                this.connectionGroupSize = 40
-                this.workerGroupSize = 40
-                this.callGroupSize = 40
-            }
-        )
-    }
+fun getKtorServer(env: EnvironmentVariables = EnvironmentVariables()): NettyApplicationEngine {
+    return embeddedServer(
+        Netty,
+        port = env.port ?: 4394,
+        host = "0.0.0.0",
+        module = { module(env) },
+        configure = {
+            this.tcpKeepAlive = true
+            this.connectionGroupSize = 40
+            this.workerGroupSize = 40
+            this.callGroupSize = 40
+        }
+    )
 }
 
-private fun Application.module() {
+private fun Application.module(env: EnvironmentVariables) {
     install(CallLogging) {
         mdc("requestId") {
             it.request.queryParameters["requestId"]
@@ -50,6 +46,9 @@ private fun Application.module() {
             throwable.printStackTrace()
             call.respond(HttpStatusCode.InternalServerError, "Internal server error")
         }
+    }
+    install(Koin) {
+        modules(getServerKoinModule(env = env, topCoroutineScope = this@module))
     }
 
     configureSecurity()

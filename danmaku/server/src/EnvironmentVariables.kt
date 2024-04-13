@@ -15,7 +15,7 @@ class EnvironmentVariables(
      * If set to true, the server will use an in-memory database and avatar storage.
      * Otherwise, it will use the MongoDB database and AWS S3 for storage.
      */
-    val testing: Boolean = System.getenv("TESTING") == "true",
+    val testing: Boolean = System.getenv("TESTING") == "false",
 
     /**
      * The URL of the MongoDB database.
