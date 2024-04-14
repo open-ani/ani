@@ -261,25 +261,52 @@ internal class MediaSelectorStateImpl(
             .fastDistinctBy { it }
             .sorted()
     }
+
+    private val allianceRegexes by derivedStateOf {
+        (preference.alliancePatterns ?: emptyList()).map { it.toRegex() }
+    }
     override val selectedAlliance: String? by derivedStateOf {
         if (explicitlyRemovedAlliance) return@derivedStateOf null
-        (preference.alliance ?: default.alliance)
-            ?.takeIf { it in alliances }
+        preference.alliance?.takeIf { it in alliances }?.let { return@derivedStateOf it }
+        default.alliance?.takeIf { it in alliances }?.let { return@derivedStateOf it }
+
+        for (regex in allianceRegexes) {
+            for (alliance in alliances) {
+                if (regex.find(alliance) != null) return@derivedStateOf alliance
+            }
+        }
+
+        null
     }
     override val selectedResolution: String? by derivedStateOf {
         if (explicitlyRemovedResolution) return@derivedStateOf null
-        (preference.resolution ?: default.resolution)
-            ?.takeIf { it in resolutions }
+        preference.resolution?.takeIf { it in resolutions }?.let { return@derivedStateOf it }
+        default.resolution?.takeIf { it in resolutions }?.let { return@derivedStateOf it }
+
+        null
     }
     override val selectedSubtitleLanguage: String? by derivedStateOf {
         if (explicitlyRemovedSubtitleLanguage) return@derivedStateOf null
-        (preference.subtitleLanguageId ?: default.subtitleLanguageId)
-            ?.takeIf { it in subtitleLanguages }
+        preference.subtitleLanguageId?.takeIf { it in subtitleLanguages }?.let { return@derivedStateOf it }
+        default.subtitleLanguageId?.takeIf { it in subtitleLanguages }?.let { return@derivedStateOf it }
+
+        for (subtitleLanguage in default.fallbackSubtitleLanguageIds.orEmpty()) {
+            subtitleLanguages.find { it == subtitleLanguage }?.let { return@derivedStateOf it }
+        }
+
+        null
     }
     override val selectedMediaSource: String? by derivedStateOf {
         if (explicitlyRemovedMediaSource) return@derivedStateOf null
-        (preference.mediaSourceId ?: default.mediaSourceId)
-            ?.takeIf { it in mediaSources }
+        preference.mediaSourceId?.takeIf { it in mediaSources }?.let { return@derivedStateOf it }
+        default.mediaSourceId?.takeIf { it in mediaSources }?.let { return@derivedStateOf it }
+
+
+        for (mediaSourceId in default.fallbackMediaSourceIds.orEmpty()) {
+            mediaSources.find { it == mediaSourceId }?.let { return@derivedStateOf it }
+        }
+
+        null
     }
     override val candidates: List<Media> by derivedStateOf {
         infix fun <Pref : Any> Pref?.matches(prop: Pref): Boolean = this == null || this == prop
