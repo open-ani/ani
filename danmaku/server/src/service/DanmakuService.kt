@@ -16,9 +16,9 @@ interface DanmakuService : KoinComponent {
     suspend fun postDanmaku(episodeId: String, danmakuInfo: DanmakuInfo, userId: String)
     suspend fun getDanmaku(
         episodeId: String,
-        maxCount: Int = get<ServerConfig>().danmakuGetRequestMaxCountAllowed,
-        fromTime: Long = 0,
-        toTime: Long = -1
+        maxCount: Int? = null,
+        fromTime: Long? = null,
+        toTime: Long? = null,
     ): List<Danmaku>
 }
 
@@ -34,10 +34,14 @@ class DanmakuServiceImpl : DanmakuService, KoinComponent {
         }
     }
 
-    override suspend fun getDanmaku(episodeId: String, maxCount: Int, fromTime: Long, toTime: Long): List<Danmaku> {
-        if (maxCount > get<ServerConfig>().danmakuGetRequestMaxCountAllowed) {
+    override suspend fun getDanmaku(episodeId: String, maxCount: Int?, fromTime: Long?, toTime: Long?): List<Danmaku> {
+        if (maxCount != null && maxCount > get<ServerConfig>().danmakuGetRequestMaxCountAllowed) {
             throw AcquiringTooMuchDanmakusException()
         }
-        return danmakuRepository.selectByEpisodeAndTime(episodeId, fromTime, toTime, maxCount)
+        
+        val actualMaxCount = maxCount ?: get<ServerConfig>().danmakuGetRequestMaxCountAllowed
+        val actualFromTime = fromTime ?: 0
+        val actualToTime = if (toTime == null || toTime < 0) Long.MAX_VALUE else toTime
+        return danmakuRepository.selectByEpisodeAndTime(episodeId, actualFromTime, actualToTime, actualMaxCount)
     }
 }

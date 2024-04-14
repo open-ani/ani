@@ -8,7 +8,7 @@ import me.him188.ani.danmaku.protocol.DanmakuLocation
 import me.him188.ani.danmaku.server.service.DanmakuService
 import me.him188.ani.danmaku.server.util.exception.AcquiringTooMuchDanmakusException
 import me.him188.ani.danmaku.server.util.exception.EmptyDanmakuException
-import org.junit.jupiter.api.TestFactory
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.assertThrows
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
@@ -48,9 +48,13 @@ class DanmakuServiceTest {
             )
         }
         block()
+    }
+    
+    @AfterEach
+    fun tearDown() {
         stopKoin()
     }
-
+    
     @Test
     fun `test post and get danmaku`() = runTestWithKoin {
         val danmakuService = koin.get<DanmakuService>()

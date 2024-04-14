@@ -4,16 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class DanmakuPostRequest(
-    val episodeId: String,  // unique episode id
     val danmakuInfo: DanmakuInfo,
-)
-
-@Serializable
-data class DanmakuGetRequest(
-    val episodeId: String,  // unique episode id
-    val maxCount: Int = 8000, // max count of danmaku to get
-    val fromTime: Long = 0, // in milliseconds
-    val toTime: Long = -1, // in milliseconds, negative value means no limit
 )
 
 @Serializable

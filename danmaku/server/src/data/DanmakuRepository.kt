@@ -33,9 +33,8 @@ class InMemoryDanmakuRepositoryImpl : DanmakuRepository {
         toTime: Long,
         maxCount: Int
     ): List<Danmaku> {
-        val actualToTime = if (toTime < 0) Long.MAX_VALUE else toTime
         return danmakus.filter {
-            it.episodeId == episodeId && it.playTime in fromTime..actualToTime
+            it.episodeId == episodeId && it.playTime in fromTime..toTime
         }.take(maxCount).map {
             Danmaku(
                 id = it.id.toString(),
