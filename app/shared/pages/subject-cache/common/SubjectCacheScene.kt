@@ -11,6 +11,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
@@ -34,6 +35,7 @@ import me.him188.ani.app.ui.feedback.ErrorMessage
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.subject.episode.mediaFetch.EpisodeMediaFetchSession
+import me.him188.ani.app.ui.subject.episode.mediaFetch.FetcherMediaSelectorConfig
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaCacheMetadata
@@ -111,6 +113,8 @@ class SubjectCacheViewModel(
             )
             try {
                 storage.cache(media, MediaCacheMetadata(metadata()))
+                errorMessage.value = null
+            } catch (_: CancellationException) {
             } catch (e: Throwable) {
                 errorMessage.emit(ErrorMessage.simple("缓存失败", e))
             }
@@ -144,6 +148,9 @@ fun SubjectCacheScene(
                     vm.subjectId,
                     episodeCacheState.episodeId,
                     vm.backgroundScope.coroutineContext,
+                    FetcherMediaSelectorConfig(
+                        autoSelectOnFetchCompletion = false,
+                    )
                 )
             }
 

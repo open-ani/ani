@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -51,11 +50,10 @@ fun ConnectingDialog(
         onDismissRequest = { onDismissRequest?.invoke() },
         properties = properties
     ) {
-        val shape = RoundedCornerShape(12.dp)
         Column(
             Modifier
                 .width(IntrinsicSize.Min)
-                .clip(shape)
+                .clip(MaterialTheme.shapes.medium)
                 .shadow(4.dp)
                 .background(MaterialTheme.colorScheme.surface)
                 .padding(36.dp),
@@ -80,7 +78,7 @@ fun ConnectingDialog(
 
             if (confirmButton != null) {
                 Row(
-                    Modifier.fillMaxWidth(),
+                    Modifier.padding(top = 8.dp).fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.End
                 ) {
@@ -105,7 +103,7 @@ private fun PreviewConnectingDialogConfirm() {
     ProvideCompositionLocalsForPreview {
         ConnectingDialog(confirmButton = {
             TextButton(onClick = { }) {
-                Text("Cancel")
+                Text("取消")
             }
         })
     }

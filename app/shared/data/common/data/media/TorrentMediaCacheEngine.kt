@@ -24,6 +24,8 @@ import me.him188.ani.datasources.core.cache.MediaCacheEngine
 import me.him188.ani.utils.coroutines.SuspendLazy
 import kotlin.coroutines.CoroutineContext
 
+private const val EXTRA_TORRENT_DATA = "torrentData"
+
 class TorrentMediaCacheEngine(
     private val mediaSourceId: String,
     private val getTorrentDownloader: suspend () -> TorrentDownloader,
@@ -38,7 +40,7 @@ class TorrentMediaCacheEngine(
             CachedMedia(
                 origin,
                 mediaSourceId,
-                download = ResourceLocation.LocalFile(session.first().filePath().toUri().toString())
+                download = ResourceLocation.LocalFile(session.first().filePath().toString())
             )
         }
 
@@ -84,7 +86,7 @@ class TorrentMediaCacheEngine(
         metadata: MediaCacheMetadata,
         parentContext: CoroutineContext
     ): MediaCache? {
-        val data = metadata.extra["torrentData"]?.hexToByteArray() ?: return null
+        val data = metadata.extra[EXTRA_TORRENT_DATA]?.hexToByteArray() ?: return null
         val sessionFlow = getSessionFlow(
             EncodedTorrentData(data),
             parentContext
@@ -118,7 +120,7 @@ class TorrentMediaCacheEngine(
     ): MediaCache {
         val data = getTorrentDownloader().fetchTorrent(origin.download.uri)
         val metadata = request.withExtra(
-            mapOf("torrentData" to data.data.toHexString())
+            mapOf(EXTRA_TORRENT_DATA to data.data.toHexString())
         )
         return TorrentMediaCache(
             origin = origin,

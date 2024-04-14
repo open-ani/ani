@@ -82,10 +82,10 @@ class LocalFileVideoSourceResolver : VideoSourceResolver {
     }
 
     override suspend fun resolve(media: Media, episode: EpisodeSort): VideoSource<*> {
-        when (media.download) {
+        when (val download = media.download) {
             is ResourceLocation.LocalFile -> {
                 return FileVideoSource(
-                    File((media.download as ResourceLocation.LocalFile).filePath)
+                    File(download.filePath)
                 )
             }
 

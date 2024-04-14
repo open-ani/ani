@@ -9,6 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.text.AnnotatedString
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -56,6 +57,7 @@ import me.him188.ani.datasources.bangumi.processing.nameCNOrName
 import me.him188.ani.datasources.bangumi.processing.renderEpisodeSp
 import me.him188.ani.utils.coroutines.closeOnReplacement
 import me.him188.ani.utils.coroutines.runUntilSuccess
+import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -216,8 +218,11 @@ private class EpisodeViewModelImpl(
                 try {
                     emit(videoSourceResolver.resolve(media, EpisodeSort(episodeEp.first())))
                 } catch (e: UnsupportedMediaException) {
+                    logger.error(e) { "Failed to resolve video source" }
                     emit(null)
-                } catch (e: Exception) {
+                } catch (_: CancellationException) {
+                } catch (e: Throwable) {
+                    logger.error(e) { "Failed to resolve video source" }
                     emit(null)
                 }
             }
@@ -302,7 +307,7 @@ private class EpisodeViewModelImpl(
 
         launchInBackground {
             videoSource.collect {
-                logger.info { "Got new video source, updating" }
+                logger.info { "Got new video source: $it" }
                 playerState.setVideoSource(it)
             }
         }

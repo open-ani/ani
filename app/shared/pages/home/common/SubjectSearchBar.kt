@@ -58,7 +58,7 @@ fun SubjectSearchBar(
                     viewModel.editingQuery.value = ""
                     viewModel.searchActive.value = false
                 }) {
-                    Icon(Icons.Outlined.Close, "Cancel")
+                    Icon(Icons.Outlined.Close, "取消")
                 }
             }
         },

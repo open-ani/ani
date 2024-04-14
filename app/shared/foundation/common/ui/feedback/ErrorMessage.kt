@@ -152,7 +152,7 @@ fun ErrorDialogHost(
                         error?.onCancel?.invoke()
                         onClickCancel()
                     }) {
-                        Text("Cancel")
+                        Text("取消")
                     }
                 }
             },
@@ -160,31 +160,6 @@ fun ErrorDialogHost(
     }
 }
 
-/**
- * Composes a [ReconnectingDialogHost] that shows a "Connection lost, reconnecting..." message and a cancel button
- * when [ErrorDialogController.isVisible] is `true`.
- */
-@Composable
-fun ReconnectingDialogHost(
-    controller: ErrorDialogController,
-    onClickCancel: () -> Unit = {},
-) {
-    if (controller.isVisible) {
-        ConnectingDialog(
-            text = {
-                Text(text = "Connection lost, reconnecting...")
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    controller.hide()
-                    onClickCancel()
-                }) {
-                    Text("Cancel")
-                }
-            },
-        )
-    }
-}
 
 ///**
 // * Shows a [Toast] with the error message when [error] emits an error message.

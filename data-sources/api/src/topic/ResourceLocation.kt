@@ -1,6 +1,7 @@
 package me.him188.ani.datasources.api.topic
 
 import kotlinx.serialization.Serializable
+import java.nio.file.Paths
 
 
 @Serializable
@@ -11,7 +12,7 @@ sealed class ResourceLocation {
      * `magnet:?xt=urn:btih:...`
      */
     @Serializable
-    class MagnetLink(override val uri: String) : ResourceLocation() {
+    data class MagnetLink(override val uri: String) : ResourceLocation() {
         init {
             require(uri.startsWith("magnet:")) {
                 "MagnetLink uri must start with magnet:"
@@ -23,7 +24,7 @@ sealed class ResourceLocation {
      * `*.torrent` form `http://`, `https://`.
      */
     @Serializable
-    class HttpTorrentFile(override val uri: String) : ResourceLocation() {
+    data class HttpTorrentFile(override val uri: String) : ResourceLocation() {
         init {
             require(uri.startsWith("https://") || uri.startsWith("http://")) {
                 "HttpTorrentFile uri must start with http:// or https://"
@@ -35,16 +36,11 @@ sealed class ResourceLocation {
      * `file://`
      */
     @Serializable
-    class LocalFile(
-        override val uri: String
+    data class LocalFile(
+        val filePath: String, // absolute
     ) : ResourceLocation() {
-        val filePath: String
-            get() = uri.removePrefix("file://")
-
-        init {
-            require(uri.startsWith("file://")) {
-                "LocalFile uri must start with file://"
-            }
+        override val uri: String by lazy {
+            Paths.get(filePath).toUri().toString()
         }
     }
 }

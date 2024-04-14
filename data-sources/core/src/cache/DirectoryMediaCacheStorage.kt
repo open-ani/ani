@@ -30,15 +30,21 @@ import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
+import me.him188.ani.utils.logging.error
+import me.him188.ani.utils.logging.info
+import me.him188.ani.utils.logging.logger
 import java.nio.file.Path
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.io.path.createDirectories
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.exists
+import kotlin.io.path.extension
 import kotlin.io.path.readText
 import kotlin.io.path.useDirectoryEntries
 import kotlin.io.path.writeText
+
+private const val METADATA_FILE_EXTENSION = "metadata"
 
 /**
  * 本地目录缓存
@@ -53,6 +59,7 @@ class DirectoryMediaCacheStorage(
         private val json = Json {
             ignoreUnknownKeys = true
         }
+        private val logger = logger<DirectoryMediaCacheStorage>()
     }
 
     private val scope: CoroutineScope =
@@ -72,13 +79,19 @@ class DirectoryMediaCacheStorage(
         scope.launch {
             dir.useDirectoryEntries { files ->
                 files.forEach { file ->
-                    if (!file.fileName.endsWith(".metadata")) return@forEach
+                    if (file.extension != METADATA_FILE_EXTENSION) return@forEach
+
                     val save = json.decodeFromString(MediaCacheSave.serializer(), file.readText())
 
-                    engine.restore(save.origin, save.metadata, scope.coroutineContext)?.let {
-                        lock.withLock {
-                            listFlow.value += it
+                    try {
+                        val cache = engine.restore(save.origin, save.metadata, scope.coroutineContext)?.also {
+                            lock.withLock {
+                                listFlow.value += it
+                            }
                         }
+                        logger.info { "Cache restored: ${save.origin.mediaId}, result=${cache}" }
+                    } catch (e: Exception) {
+                        logger.error(e) { "Failed to restore cache for ${save.origin.mediaId}" }
                     }
                 }
             }
@@ -115,14 +128,14 @@ class DirectoryMediaCacheStorage(
 
     override suspend fun cache(media: Media, metadata: MediaCacheMetadata, resume: Boolean): MediaCache {
         return lock.withLock {
-            listFlow.first().firstOrNull { it.origin.mediaId == media.mediaId }?.let { return@withLock it }
+            listFlow.value.firstOrNull { it.origin.mediaId == media.mediaId }?.let { return@withLock it }
 
             val cache = engine.createCache(
                 media, metadata,
                 scope.coroutineContext
             )
             withContext(Dispatchers.IO) {
-                dir.resolve("${media.mediaId}.metadata").writeText(
+                dir.resolve("${media.mediaId.hashCode()}.${METADATA_FILE_EXTENSION}").writeText(
                     json.encodeToString(
                         MediaCacheSave.serializer(),
                         MediaCacheSave(media, cache.metadata)
@@ -140,10 +153,10 @@ class DirectoryMediaCacheStorage(
 
     override suspend fun delete(media: Media): Boolean {
         lock.withLock {
-            val cache = listFlow.first().firstOrNull { it.origin.mediaId == media.mediaId } ?: return false
+            val cache = listFlow.value.firstOrNull { it.origin.mediaId == media.mediaId } ?: return false
             cache.delete()
             withContext(Dispatchers.IO) {
-                dir.resolve("${media.mediaId}.metadata").deleteIfExists()
+                dir.resolve("${media.mediaId}.${METADATA_FILE_EXTENSION}").deleteIfExists()
             }
             listFlow.value -= cache
             return true
