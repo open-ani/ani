@@ -215,11 +215,17 @@ fun cacheStatusIndicationColor(
     cacheStatus: EpisodeCacheStatus?,
     isDoneOrDropped: Boolean
 ): Color = when (cacheStatus) {
-    is EpisodeCacheStatus.Cached -> (if (isDoneOrDropped) MaterialTheme.colorScheme.primary.disabledWeaken()
-    else MaterialTheme.colorScheme.primary.stronglyWeaken())
-        .compositeOver(Color.Green)
+    is EpisodeCacheStatus.Cached -> {
+        val primaryColor = if (isDoneOrDropped) {
+            MaterialTheme.colorScheme.primary.disabledWeaken()
+        } else {
+            MaterialTheme.colorScheme.primary.stronglyWeaken()
+        }
 
-    EpisodeCacheStatus.Caching -> Color(0xDFe0ef51)
+        primaryColor.compositeOver(Color.Green)
+    }
+
+    is EpisodeCacheStatus.Caching -> Color(0xDFe0ef51)
 
     else -> Color.Transparent
 }

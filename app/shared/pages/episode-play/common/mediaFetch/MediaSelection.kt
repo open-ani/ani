@@ -1,5 +1,8 @@
 package me.him188.ani.app.ui.subject.episode.mediaFetch
 
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,11 +27,13 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.InputChip
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,30 +59,52 @@ import me.him188.ani.datasources.dmhy.DmhyMediaSource
 import me.him188.ani.datasources.mikan.MikanMediaSource
 import org.jetbrains.compose.resources.painterResource
 
+
+@Stable
+private val verticalPadding = 8.dp
+
+// For search: "数据源"
+/**
+ * 通用的数据源选择器. See preview
+ *
+ * @param progressProvider `1f` to hide the progress bar. `null` to show a
+ * @param actions shown at the bottom
+ */
 @Composable
 fun MediaSelector(
     state: MediaSelectorState,
-    onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
-    progress: @Composable (RowScope.() -> Unit)? = null,
+    progressProvider: () -> Float? = { 1f },
+    onClickItem: ((Media) -> Unit)? = null,
+    actions: (@Composable RowScope.() -> Unit)? = null,
 ) {
     Column(
         modifier,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-//        Text(
-//            remember(state.candidates.size) { "选择资源" },
-//            style = MaterialTheme.typography.titleMedium,
-//        )
+        Row(Modifier.fillMaxWidth()) {
+            val progress = progressProvider() // recompose this row only as the progress might update frequently
+            if (progress == 1f) return@Row
 
-        if (progress != null) {
-            Row(Modifier.fillMaxWidth()) {
-                progress()
+            if (progress == null) {
+                LinearProgressIndicator(
+                    Modifier.padding(bottom = verticalPadding)
+                        .fillMaxWidth()
+                )
+            } else {
+                val progressAnimated by animateFloatAsState(
+                    targetValue = progress,
+                    spring(Spring.StiffnessHigh)
+                )
+                LinearProgressIndicator(
+                    { progressAnimated },
+                    Modifier.padding(bottom = verticalPadding)
+                        .fillMaxWidth()
+                )
             }
         }
 
         LazyColumn(
-            Modifier.weight(1f, fill = false),
+            Modifier.padding(bottom = verticalPadding).weight(1f, fill = false),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             item {
@@ -152,6 +179,7 @@ fun MediaSelector(
                     state,
                     onClick = {
                         state.select(item)
+                        onClickItem?.invoke(item)
                     },
                     Modifier
                         .animateItemPlacement()
@@ -161,14 +189,18 @@ fun MediaSelector(
             item { } // dummy spacer
         }
 
-        HorizontalDivider()
+        if (actions != null) {
+            HorizontalDivider(Modifier.padding(bottom = 8.dp))
 
-        Row(Modifier.align(Alignment.End).padding(horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-            TextButton(onDismissRequest) {
-                Text("关闭")
+            Row(
+                Modifier.align(Alignment.End).padding(bottom = 8.dp).padding(horizontal = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                ProvideTextStyle(MaterialTheme.typography.labelLarge) {
+                    actions()
+                }
             }
         }
-
     }
 }
 

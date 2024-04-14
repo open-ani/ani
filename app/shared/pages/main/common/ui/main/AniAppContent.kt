@@ -96,7 +96,8 @@ fun AniAppContent(aniNavigator: AniNavigator) {
                     navigator.goBack()
                     return@scene
                 }
-                val vm = rememberViewModel(listOf(subjectId)) { SubjectCacheViewModel(subjectId) }
+                // Don't use rememberViewModel to save memory
+                val vm = remember(subjectId) { SubjectCacheViewModel(subjectId) }
                 SubjectCachePage(
                     vm,
                     onClickGlobalCacheSettings = {

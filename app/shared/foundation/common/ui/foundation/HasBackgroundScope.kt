@@ -265,7 +265,8 @@ interface HasBackgroundScope {
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
     ): State<T> {
         val state = mutableStateOf(initialValue)
-        launchInBackground(coroutineContext) {
+        launchInMain(coroutineContext) {
+            // no need for flowOn as it's SharedFlow
             collect { state.value = it }
         }
         return state
@@ -278,21 +279,21 @@ interface HasBackgroundScope {
  * Note that this functions it not intended to be used in-place.
  * Doing `BackgroundScope().backgroundScope.launch { }` is an error - it effectively leaks the coroutine into an unmanaged scope.
  *
- * @param coroutineContext parent coroutine context to pass in the background scope.
+ * @param parentCoroutineContext parent coroutine context to pass in the background scope.
  * If the parent context has a [Job], the scope will use it as a parent job.
  *
  * @see HasBackgroundScope
  */
 @Suppress("FunctionName")
 fun BackgroundScope(
-    coroutineContext: CoroutineContext = EmptyCoroutineContext
-): HasBackgroundScope = SimpleBackgroundScope(coroutineContext)
+    parentCoroutineContext: CoroutineContext = EmptyCoroutineContext
+): HasBackgroundScope = SimpleBackgroundScope(parentCoroutineContext)
 
 private class SimpleBackgroundScope(
-    coroutineContext: CoroutineContext = EmptyCoroutineContext
+    parentCoroutineContext: CoroutineContext = EmptyCoroutineContext
 ) : HasBackgroundScope {
     override val backgroundScope: CoroutineScope =
-        CoroutineScope(coroutineContext + SupervisorJob(coroutineContext[Job]))
+        CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
 }
 
 fun <V : HasBackgroundScope> V.launchInBackgroundAnimated(
@@ -362,4 +363,41 @@ fun <V : HasBackgroundScope> V.launchInMain(
     return backgroundScope.launch(context + Dispatchers.Main, start) {
         block()
     }
+}
+
+/**
+ * Collects the flow on the main thread into a [State].
+ */
+fun <T> Flow<T>.produceState(
+    initialValue: T,
+    scope: CoroutineScope,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+): State<T> {
+    val state = mutableStateOf(initialValue)
+    scope.launch(coroutineContext + Dispatchers.Main) {
+        flowOn(Dispatchers.Default) // compute in background
+            .collect {
+                // update state in main
+                state.value = it
+            }
+    }
+    return state
+}
+
+/**
+ * Collects the flow on the main thread into a [State].
+ */
+fun <T> StateFlow<T>.produceState(
+    initialValue: T = this.value,
+    scope: CoroutineScope,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+): State<T> {
+    val state = mutableStateOf(initialValue)
+    scope.launch(coroutineContext + Dispatchers.Main) {
+        collect {
+            // update state in main
+            state.value = it
+        }
+    }
+    return state
 }

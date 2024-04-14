@@ -47,6 +47,10 @@ class TorrentMediaCacheEngine(
 
         override val progress: Flow<Float>
             get() = session.flatMapLatest { it.progress }
+
+        override val finished: Flow<Boolean>
+            get() = session.flatMapLatest { it.isFinished }
+
         override val totalSize: Flow<FileSize>
             get() = session.flatMapLatest { session ->
                 session.totalBytes.map { it.bytes }

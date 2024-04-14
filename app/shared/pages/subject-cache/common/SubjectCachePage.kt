@@ -27,6 +27,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -36,8 +37,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
 import me.him188.ani.app.data.media.EpisodeCacheStatus
 import me.him188.ani.app.ui.foundation.TopAppBarGoBackButton
 import me.him188.ani.app.ui.preference.PreferenceScope
@@ -46,16 +45,14 @@ import me.him188.ani.app.ui.preference.SwitchItem
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
-import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
-@Stable
+@Immutable
 class EpisodeCacheState(
     val id: Int,
     val sort: EpisodeSort,
     val title: String,
     val watchStatus: UnifiedCollectionType,
-    val cacheStatus: Flow<EpisodeCacheStatus?>,
-    val cacheProgress: Flow<Float> = emptyFlow(), // can be empty if not caching
+    val cacheStatus: EpisodeCacheStatus?,
 )
 
 @Stable
@@ -191,23 +188,22 @@ private fun PreferenceScope.EpisodeItem(
 ) {
     TextItem(
         action = {
-            val cacheStatus by episode.cacheStatus.collectAsStateWithLifecycle(null)
-            when (cacheStatus) {
+            when (val status = episode.cacheStatus) {
                 is EpisodeCacheStatus.Cached ->
                     IconButton(onClick) {
                         Icon(Icons.Rounded.DownloadDone, null)
                     }
 
-                EpisodeCacheStatus.Caching -> {
+                is EpisodeCacheStatus.Caching -> {
                     Box(Modifier.clickable(onClick = onClick)) {
-                        val progress by episode.cacheProgress.collectAsStateWithLifecycle(null)
+                        val progress = status.progress
                         if (progress == null) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(24.dp),
                             )
                         } else {
                             CircularProgressIndicator(
-                                progress = { progress ?: 0f },
+                                progress = { progress },
                                 modifier = Modifier.size(20.dp),
                                 strokeWidth = 2.dp,
                                 trackColor = MaterialTheme.colorScheme.outlineVariant,

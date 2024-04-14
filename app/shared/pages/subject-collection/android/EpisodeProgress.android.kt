@@ -4,7 +4,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.PreviewLightDark
-import kotlinx.coroutines.flow.flowOf
 import me.him188.ani.app.data.media.EpisodeCacheStatus
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
@@ -29,7 +28,7 @@ private fun PreviewEpisodeProgressDialog() {
                             episodeSort = "00",
                             watchStatus = UnifiedCollectionType.DONE,
                             isOnAir = false,
-                            cacheStatus = EpisodeCacheStatus.Caching,
+                            cacheStatus = EpisodeCacheStatus.Caching(0.3f, 300.megaBytes),
                         ),
                         EpisodeProgressItem(
                             episodeId = 1,
@@ -43,21 +42,21 @@ private fun PreviewEpisodeProgressDialog() {
                             episodeSort = "02",
                             watchStatus = UnifiedCollectionType.DONE,
                             isOnAir = false,
-                            cacheStatus = EpisodeCacheStatus.Cached(flowOf(300.megaBytes)),
+                            cacheStatus = EpisodeCacheStatus.Cached(300.megaBytes),
                         ),
                         EpisodeProgressItem(
                             episodeId = 3,
                             episodeSort = "03",
                             watchStatus = UnifiedCollectionType.WISH,
                             isOnAir = false,
-                            cacheStatus = EpisodeCacheStatus.Cached(flowOf(300.megaBytes)),
+                            cacheStatus = EpisodeCacheStatus.Cached(300.megaBytes),
                         ),
                         EpisodeProgressItem(
                             episodeId = 4,
                             episodeSort = "04",
                             watchStatus = UnifiedCollectionType.WISH,
                             isOnAir = false,
-                            cacheStatus = EpisodeCacheStatus.Caching,
+                            cacheStatus = EpisodeCacheStatus.Caching(0.7f, 300.megaBytes),
                         ),
                         EpisodeProgressItem(
                             episodeId = 5,
@@ -78,14 +77,14 @@ private fun PreviewEpisodeProgressDialog() {
                             episodeSort = "07",
                             watchStatus = UnifiedCollectionType.WISH,
                             isOnAir = true,
-                            cacheStatus = EpisodeCacheStatus.Cached(flowOf(300.megaBytes)),
+                            cacheStatus = EpisodeCacheStatus.Cached(300.megaBytes),
                         ),
                         EpisodeProgressItem(
                             episodeId = 8,
                             episodeSort = "08",
                             watchStatus = UnifiedCollectionType.WISH,
                             isOnAir = true,
-                            cacheStatus = EpisodeCacheStatus.Caching,
+                            cacheStatus = EpisodeCacheStatus.Caching(0.3f, 300.megaBytes),
                         ),
                     )
                 },

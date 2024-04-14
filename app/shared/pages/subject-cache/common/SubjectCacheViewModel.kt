@@ -6,7 +6,9 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
@@ -38,23 +40,38 @@ class SubjectCacheViewModel(
             .nameCNOrName()
     }
 
-    val state = flowOf(subjectId).mapLatest { subjectId ->
+    // All episodes
+    private val episodeCollections = flowOf(subjectId).mapLatest { subjectId ->
         runUntilSuccess { episodeRepository.getSubjectEpisodeCollection(subjectId, EpType.MainStory).toList() }
-    }.filterNotNull().map { episodes ->
-        DefaultSubjectCacheState(
-            episodes.map { episodeCollection ->
-                val episode = episodeCollection.episode
+    }.filterNotNull()
+
+    /**
+     * State of the subject cache page.
+     */
+    val state = episodeCollections.flatMapLatest { episodes ->
+        // 每个 episode 都为一个 flow, 然后合并
+        combine(episodes.map { episodeCollection ->
+            val episode = episodeCollection.episode
+
+            val cacheStatus = cacheRepository.cacheStatusForEpisode(subjectId, episode.id)
+
+            cacheStatus.map {
                 EpisodeCacheState(
                     id = episode.id,
                     sort = EpisodeSort(episode.sort),
                     title = episode.nameCn,
                     watchStatus = episodeCollection.type.toCollectionType(),
-                    cacheStatus = cacheRepository.cacheStatusForEpisode(subjectId, episode.id),
+                    cacheStatus = it,
                 )
             }
-        )
+        }) {
+            DefaultSubjectCacheState(it.toList())
+        }
     }
 }
+
+@Stable
+private val emptyDefaultSubjectCacheState = DefaultSubjectCacheState(emptyList())
 
 @Composable
 fun SubjectCachePage(
@@ -63,7 +80,7 @@ fun SubjectCachePage(
     onClickEpisode: (EpisodeCacheState) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val state by vm.state.collectAsStateWithLifecycle(DefaultSubjectCacheState(emptyList()))
+    val state by vm.state.collectAsStateWithLifecycle(emptyDefaultSubjectCacheState)
     return SubjectCachePage(
         state,
         title = {

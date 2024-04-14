@@ -28,6 +28,8 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.media.MediaCacheManager
@@ -54,7 +56,6 @@ import me.him188.ani.danmaku.api.DanmakuProvider
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.source.MediaFetchRequest
-import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.datasources.bangumi.processing.nameCNOrName
 import me.him188.ani.datasources.bangumi.processing.renderEpisodeSp
@@ -222,7 +223,10 @@ private class EpisodeViewModelImpl(
         )
     }.shareInBackground(started = SharingStarted.Eagerly)
 
-    override val mediaFetcherProgress: Flow<Float> = mediaFetchSession.flatMapLatest { it.progress }
+    override val mediaFetcherProgress: Flow<Float> = mediaFetchSession
+        .flatMapLatest { it.progress }
+        .sample(100)
+        .onCompletion { if (it == null) emit(1f) }
 
     override val mediaFetcherCompleted: Flow<Boolean> = mediaFetchSession.flatMapLatest { it.hasCompleted }
 
@@ -231,34 +235,17 @@ private class EpisodeViewModelImpl(
     override var mediaSelectorVisible: Boolean by mutableStateOf(false)
 
     override val mediaSelectorState = kotlin.run {
-        val state by mediaFetchSession.flatMapLatest { it.cumulativeResults }
-            .mapLatest { list ->
-                list.sortedWith(
-                    compareByDescending<Media> {
-                        if (it.location == MediaSourceLocation.LOCAL) 1 else 0
-                    }.thenByDescending { it.size.inBytes }
-                )
-            }
-            .produceState(emptyList())
-        val defaultPreference by episodePreferencesRepository.mediaPreferenceFlow(subjectId)
-            .produceState(MediaPreference.Empty)
-//        val cachedMediaList by combine(cacheManager.storages.map { storage ->
-//            storage.cachedMediaListFlow.debounce(0.1.seconds)
-//            // The flow might emit a single value everytime,
-//            // so we debounce to avoid updating too frequently
-//        }) {
-//            it.asSequence().flatten().toList()
-//        }
-//        
-//        val allMediaListState by combine.produceState(emptyList())
-
         MediaSelectorState(
-            mediaListProvider = { state },
-            defaultPreferenceProvider = { defaultPreference },
+            mediaFetchSession,
+            mediaPreferenceFlow = episodePreferencesRepository.mediaPreferenceFlow(subjectId),
+            backgroundScope,
         ).apply {
             launchInBackground {
                 // Save users' per-subject preferences when they click the filter chips
                 preferenceUpdates.preference.collect {
+                    val defaultPreference = withContext(Dispatchers.Main.immediate) {
+                        default
+                    }
                     episodePreferencesRepository.setMediaPreference(
                         subjectId,
                         defaultPreference.merge(it)
@@ -286,7 +273,7 @@ private class EpisodeViewModelImpl(
                 // Automatically select a media when the list is ready
                 mediaFetchSession.flatMapLatest { it.hasCompleted }.filter { it }.collect {
                     // on completion
-                    withContext(Dispatchers.Main) {
+                    withContext(Dispatchers.Main.immediate) {
                         if (selected == null) { // only if user has not selected
                             makeDefaultSelection()
                         }

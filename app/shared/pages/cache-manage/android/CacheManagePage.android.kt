@@ -52,6 +52,7 @@ private open class TestMediaCache(
 ) : MediaCache {
     override val origin: Media get() = media.origin
     override suspend fun getCachedMedia(): CachedMedia = media
+    override val finished: Flow<Boolean> by lazy { progress.map { it == 1f } }
 
     val resumeCalled = AtomicInteger(0)
 

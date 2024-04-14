@@ -1,6 +1,5 @@
 package me.him188.ani.app.ui.subject.episode.details
 
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,13 +8,11 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -37,7 +34,6 @@ import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.subject.episode.EpisodeCollectionActionButton
 import me.him188.ani.app.ui.subject.episode.EpisodeViewModel
-import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelector
 import me.him188.ani.app.ui.theme.slightlyWeaken
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
@@ -74,34 +70,22 @@ fun EpisodeDetails(
             )
 
             if (viewModel.mediaSelectorVisible) {
-                ModalBottomSheet(
-                    onDismissRequest = { viewModel.mediaSelectorVisible = false },
-                    Modifier
-                ) {
-                    MediaSelector(
+                val completed by viewModel.mediaFetcherCompleted.collectAsStateWithLifecycle(false)
+                val progress by viewModel.mediaFetcherProgress.collectAsStateWithLifecycle(null)
+
+                ModalBottomSheet(onDismissRequest = { viewModel.mediaSelectorVisible = false }) {
+                    EpisodePlayMediaSelector(
                         viewModel.mediaSelectorState,
                         onDismissRequest = { viewModel.mediaSelectorVisible = false },
-                        Modifier.padding(vertical = 12.dp, horizontal = 16.dp)
-                            .fillMaxWidth(),
-                        progress = kotlin.run {
-                            val completed by viewModel.mediaFetcherCompleted.collectAsStateWithLifecycle(false)
-                            if (!completed) {
-                                {
-                                    val progress by viewModel.mediaFetcherProgress.collectAsStateWithLifecycle(null)
-                                    if (progress == null || progress == 1f) {
-                                        LinearProgressIndicator(Modifier.fillMaxWidth())
-                                    } else {
-                                        val progressAnimated by animateFloatAsState(
-                                            targetValue = progress ?: 0f
-                                        )
-                                        LinearProgressIndicator({ progressAnimated }, Modifier.fillMaxWidth())
-                                    }
-                                }
-                            } else
-                                null
-                        }
+                        Modifier,
+                        progressProvider = {
+                            if (completed) {
+                                1f
+                            } else {
+                                progress
+                            }
+                        },
                     )
-                    Spacer(Modifier.navigationBarsPadding())
                 }
             }
         }

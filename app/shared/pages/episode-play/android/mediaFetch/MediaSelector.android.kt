@@ -121,7 +121,6 @@ private fun PreviewMediaSelector() {
                     },
                 )
             },
-            onDismissRequest = {},
         )
     }
 }

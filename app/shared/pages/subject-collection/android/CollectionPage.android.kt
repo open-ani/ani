@@ -5,7 +5,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import me.him188.ani.app.data.media.EpisodeCacheStatus
 import me.him188.ani.app.tools.caching.LazyDataCache
@@ -163,7 +162,7 @@ private fun PreviewSubjectCollectionsColumn() {
                 SubjectCollectionItem(
                     item = it,
                     episodeCacheStatus = { _, _ ->
-                        EpisodeCacheStatus.Cached(flowOf(300.megaBytes))
+                        EpisodeCacheStatus.Cached(300.megaBytes)
                     },
                     onClick = { },
                     onClickEpisode = {},

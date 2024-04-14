@@ -3,8 +3,11 @@ package me.him188.ani.app.data.media
 import androidx.compose.runtime.Stable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.flow.transform
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.core.cache.MediaCache
@@ -34,7 +37,7 @@ abstract class MediaCacheManager {
     }
 
     /**
-     * Returns the cache status for the episode, updated lively.
+     * Returns the cache status for the episode, updated lively and sampled for 1000ms.
      */
     @Stable
     fun cacheStatusForEpisode(
@@ -50,19 +53,45 @@ abstract class MediaCacheManager {
             for (mediaCache in list) {
                 if (mediaCache.metadata.subjectId == subjectIdString && mediaCache.metadata.episodeId == episodeIdString) {
                     hasAnyCached = mediaCache
-                    if (mediaCache.progress.firstOrNull() != 1f) {
+                    if (mediaCache.finished.firstOrNull() != true) {
                         hasAnyCaching = mediaCache
                     }
                 }
             }
 
-            emit(
-                when {
-                    hasAnyCaching != null -> EpisodeCacheStatus.Caching
-                    hasAnyCached != null -> EpisodeCacheStatus.Cached(hasAnyCached)
-                    else -> EpisodeCacheStatus.NotCached
+            when {
+                hasAnyCaching != null -> {
+                    emitAll(
+                        combine(
+                            hasAnyCaching.progress
+                                .sample(1000) // Sample might not emit the last value
+                                .onCompletion { if (it == null) emit(1f) }, // Always emit 1f on finish
+                            hasAnyCaching.totalSize
+                        ) { progress, totalSize ->
+                            if (progress == 1f) {
+                                EpisodeCacheStatus.Cached(totalSize)
+                            } else {
+                                EpisodeCacheStatus.Caching(
+                                    progress = progress,
+                                    totalSize = totalSize
+                                )
+                            }
+                        }
+                    )
                 }
-            )
+
+                hasAnyCached != null -> {
+                    emitAll(hasAnyCached.totalSize.map {
+                        EpisodeCacheStatus.Cached(
+                            totalSize = it
+                        )
+                    })
+                }
+
+                else -> {
+                    emit(EpisodeCacheStatus.NotCached)
+                }
+            }
         }
     }
 
@@ -78,16 +107,20 @@ sealed class EpisodeCacheStatus {
      */
     @Stable
     data class Cached(
-        val size: Flow<FileSize>
-    ) : EpisodeCacheStatus() {
-        constructor(cache: MediaCache) : this(cache.totalSize)
-    }
+        val totalSize: FileSize,
+    ) : EpisodeCacheStatus()
 
     /**
      * No cache is fully downloaded, but at least one cache is downloading.
      */
     @Stable
-    data object Caching : EpisodeCacheStatus()
+    data class Caching(
+        /**
+         * This will not be 1f (on which it will become [Cached]).
+         */
+        val progress: Float?, // null means still connecting
+        val totalSize: FileSize,
+    ) : EpisodeCacheStatus()
 
     @Stable
     data object NotCached : EpisodeCacheStatus()

@@ -96,6 +96,8 @@ interface MediaCache {
      */
     val progress: Flow<Float>
 
+    val finished: Flow<Boolean>
+
     /**
      * A flow listens on the total size of the media.
      */

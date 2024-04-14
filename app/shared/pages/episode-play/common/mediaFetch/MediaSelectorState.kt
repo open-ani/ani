@@ -7,13 +7,18 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.util.fastDistinctBy
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.mapLatest
+import me.him188.ani.app.ui.foundation.produceState
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.source.MediaSourceLocation
+import me.him188.ani.datasources.core.fetch.MediaFetchSession
 
 /**
  * Creates a [MediaSelectorState].
@@ -31,6 +36,24 @@ fun MediaSelectorState(
     mediaListProvider,
     defaultPreferenceProvider
 )
+
+fun MediaSelectorState(
+    mediaFetchSession: Flow<MediaFetchSession>,
+    mediaPreferenceFlow: Flow<MediaPreference>,
+    scope: CoroutineScope,
+): MediaSelectorState {
+    val state by mediaFetchSession.flatMapLatest { it.cumulativeResults }
+        .mapLatest { list ->
+            list.sortedWith(
+                compareByDescending<Media> {
+                    if (it.location == MediaSourceLocation.LOCAL) 1 else 0
+                }.thenByDescending { it.size.inBytes }
+            )
+        }
+        .produceState(emptyList(), scope)
+    val defaultPreference by mediaPreferenceFlow.produceState(MediaPreference.Empty, scope)
+    return MediaSelectorState({ state }, { defaultPreference })
+}
 
 @Stable
 interface MediaSelectorState {
