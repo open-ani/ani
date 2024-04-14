@@ -15,6 +15,7 @@ import me.him188.ani.app.pages.cache.manage.CacheManagementPage
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.preference.PreferencePage
+import me.him188.ani.app.ui.preference.PreferenceTab
 import me.him188.ani.app.ui.profile.AuthViewModel
 import me.him188.ani.app.ui.profile.auth.AuthRequestScene
 import me.him188.ani.app.ui.subject.cache.SubjectCacheScene
@@ -85,8 +86,14 @@ fun AniAppContent(aniNavigator: AniNavigator) {
                 }
                 EpisodeScene(vm)
             }
-            scene("/preferences") {
-                PreferencePage(Modifier.fillMaxSize())
+            scene("/preferences") { backStackEntry ->
+                val initialTab = backStackEntry.query<Int>("tab")
+                    ?.let { PreferenceTab.entries.getOrNull(it) }
+                    ?: PreferenceTab.MEDIA
+                PreferencePage(
+                    Modifier.fillMaxSize(),
+                    initialTab = initialTab,
+                )
             }
             scene("/caches") {
                 CacheManagementPage(Modifier.fillMaxSize())
@@ -101,7 +108,7 @@ fun AniAppContent(aniNavigator: AniNavigator) {
                 SubjectCacheScene(
                     vm,
                     onClickGlobalCacheSettings = {
-                        aniNavigator.navigateCaches()
+                        aniNavigator.navigatePreferences(PreferenceTab.MEDIA)
                     },
                 )
             }

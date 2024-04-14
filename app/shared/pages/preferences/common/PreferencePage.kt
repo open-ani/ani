@@ -90,12 +90,17 @@ import org.burnoutcrew.reorderable.reorderable
 enum class PreferenceTab {
     //    ABOUT,
     MEDIA,
-    NETWORK,
+    NETWORK, ;
+
+    companion object {
+        val Default = MEDIA
+    }
 }
 
 @Composable
 fun PreferencePage(
     modifier: Modifier = Modifier,
+    initialTab: PreferenceTab = PreferenceTab.Default,
     contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
     Scaffold(
@@ -110,7 +115,7 @@ fun PreferencePage(
         }
     ) { topBarPaddings ->
         val pagerState =
-            rememberPagerState(initialPage = 0) { PreferenceTab.entries.size }
+            rememberPagerState(initialPage = initialTab.ordinal) { PreferenceTab.entries.size }
         val scope = rememberCoroutineScope()
 
         // Pager with TabRow
