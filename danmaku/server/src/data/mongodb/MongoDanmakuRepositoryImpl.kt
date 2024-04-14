@@ -1,30 +1,28 @@
-package me.him188.ani.danmaku.server.data
+package me.him188.ani.danmaku.server.data.mongodb
 
+import kotlinx.coroutines.flow.toList
 import me.him188.ani.danmaku.protocol.Danmaku
 import me.him188.ani.danmaku.protocol.DanmakuInfo
+import me.him188.ani.danmaku.server.data.DanmakuRepository
 import me.him188.ani.danmaku.server.data.model.DanmakuModel
-import java.util.UUID
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
-interface DanmakuRepository {
-    suspend fun add(episodeId: String, danmakuInfo: DanmakuInfo, userId: String): Boolean
-    suspend fun selectByEpisodeAndTime(episodeId: String, fromTime: Double, toTime: Double, maxCount: Int): List<Danmaku>
-}
-
-class InMemoryDanmakuRepositoryImpl : DanmakuRepository {
-    private val danmakus = mutableListOf<DanmakuModel>()
+class MongoDanmakuRepositoryImpl : DanmakuRepository, KoinComponent {
+    private val mongoCollectionProvider: MongoCollectionProvider by inject()
+    private val danmakuTable = mongoCollectionProvider.danmakuTable
 
     override suspend fun add(episodeId: String, danmakuInfo: DanmakuInfo, userId: String): Boolean {
-        danmakus.add(
+        return danmakuTable.insertOne(
             DanmakuModel(
                 senderId = userId,
                 episodeId = episodeId,
                 playTime = danmakuInfo.playTime,
                 location = danmakuInfo.location,
                 text = danmakuInfo.text,
-                color = danmakuInfo.color
+                color = danmakuInfo.color,
             )
-        )
-        return true
+        ).wasAcknowledged()
     }
 
     override suspend fun selectByEpisodeAndTime(
@@ -33,10 +31,11 @@ class InMemoryDanmakuRepositoryImpl : DanmakuRepository {
         toTime: Double,
         maxCount: Int
     ): List<Danmaku> {
-        val actualToTime = if (toTime < 0) Double.MAX_VALUE else toTime
-        return danmakus.filter {
-            it.episodeId == episodeId && it.playTime in fromTime..actualToTime
-        }.take(maxCount).map {
+        return danmakuTable.find(
+            (Field("episodeId") eq episodeId) and
+                    (Field("playTime") gte fromTime) and
+                    (Field("playTime") lt toTime)
+        ).limit(maxCount).toList().map {
             Danmaku(
                 id = it.id.toString(),
                 senderId = it.senderId,
@@ -50,4 +49,3 @@ class InMemoryDanmakuRepositoryImpl : DanmakuRepository {
         }
     }
 }
-

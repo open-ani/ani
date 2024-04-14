@@ -6,7 +6,7 @@ import io.ktor.server.application.install
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import kotlinx.serialization.json.Json
 
-private val ServerJson = Json {
+internal val ServerJson = Json {
     ignoreUnknownKeys = true
 }
 

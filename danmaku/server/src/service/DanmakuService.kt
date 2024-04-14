@@ -12,14 +12,14 @@ import org.koin.core.component.inject
 import org.koin.core.qualifier.named
 
 interface DanmakuService {
-    fun postDanmaku(episodeId: String, danmakuInfo: DanmakuInfo, userId: String)
-    fun getDanmaku(episodeId: String, maxCount: Int, fromTime: Double, toTime: Double): List<Danmaku>
+    suspend fun postDanmaku(episodeId: String, danmakuInfo: DanmakuInfo, userId: String)
+    suspend fun getDanmaku(episodeId: String, maxCount: Int, fromTime: Double, toTime: Double): List<Danmaku>
 }
 
 class DanmakuServiceImpl : DanmakuService, KoinComponent {
     private val danmakuRepository: DanmakuRepository by inject()
     
-    override fun postDanmaku(episodeId: String, danmakuInfo: DanmakuInfo, userId: String) {
+    override suspend fun postDanmaku(episodeId: String, danmakuInfo: DanmakuInfo, userId: String) {
         if (danmakuInfo.text.isEmpty()) {
             throw EmptyDanmakuException()
         }
@@ -28,7 +28,7 @@ class DanmakuServiceImpl : DanmakuService, KoinComponent {
         }
     }
 
-    override fun getDanmaku(episodeId: String, maxCount: Int, fromTime: Double, toTime: Double): List<Danmaku> {
+    override suspend fun getDanmaku(episodeId: String, maxCount: Int, fromTime: Double, toTime: Double): List<Danmaku> {
         if (maxCount > get<Int>(named("danmakuGetRequestMaxCountAllowed"))) {
             throw AcquiringTooMuchDanmakusException()
         }

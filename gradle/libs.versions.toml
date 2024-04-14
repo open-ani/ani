@@ -14,6 +14,7 @@ accompanist = "0.33.2-alpha"
 datastore = "1.0.0"
 libtorrent4j = "2.1.0-31"
 coil = "3.0.0-alpha06"
+mongodb-driver-kotlin-coroutine = "4.10.1"
 
 # https://androidx.tech/artifacts/compose.material/material-android/
 jetpack-compose = "1.6.4"
@@ -152,3 +153,6 @@ androidx-compose-material = { module = "androidx.compose.material:material", ver
 androidx-compose-material3 = { module = "androidx.compose.material3:material3", version = "1.2.0-beta02" }
 androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "jetpack-compose" }
 # compose-runtime-livedata = { module = "androidx.compose.runtime:runtime-livedata", version.ref = "jetpackCompose" }
+
+# MongoDB
+mongodb-driver-kotlin-coroutine = { module = "org.mongodb:mongodb-driver-kotlin-coroutine", version.ref = "mongodb-driver-kotlin-coroutine" }

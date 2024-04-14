@@ -18,6 +18,7 @@ dependencies {
     implementation(libs.ktor.server.status)
     implementation(libs.ktor.serialization.kotlinx.json)
     implementation(libs.ktor.server.call.logging)
+    implementation(libs.mongodb.driver.kotlin.coroutine)
     implementation(project(":danmaku:protocol"))
     
     testImplementation(libs.ktor.server.test.host)
