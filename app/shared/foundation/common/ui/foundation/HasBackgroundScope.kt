@@ -2,8 +2,13 @@ package me.him188.ani.app.ui.foundation
 
 import androidx.annotation.UiThread
 import androidx.annotation.WorkerThread
+import androidx.compose.runtime.FloatState
+import androidx.compose.runtime.IntState
+import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -260,6 +265,36 @@ interface HasBackgroundScope {
     /**
      * Collects the flow on the main thread into a [State].
      */
+    fun Flow<Float>.produceState(
+        initialValue: Float,
+        coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    ): FloatState {
+        val state = mutableFloatStateOf(initialValue)
+        launchInMain(coroutineContext) {
+            flowOn(Dispatchers.Default) // compute in background
+                .collect { state.value = it } // update state in main
+        }
+        return state
+    }
+
+    /**
+     * Collects the flow on the main thread into a [State].
+     */
+    fun Flow<Int>.produceState(
+        initialValue: Int,
+        coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    ): MutableIntState {
+        val state = mutableIntStateOf(initialValue)
+        launchInMain(coroutineContext) {
+            flowOn(Dispatchers.Default) // compute in background
+                .collect { state.value = it } // update state in main
+        }
+        return state
+    }
+
+    /**
+     * Collects the flow on the main thread into a [State].
+     */
     fun <T> StateFlow<T>.produceState(
         initialValue: T = this.value,
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
@@ -374,6 +409,44 @@ fun <T> Flow<T>.produceState(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
 ): State<T> {
     val state = mutableStateOf(initialValue)
+    scope.launch(coroutineContext + Dispatchers.Main) {
+        flowOn(Dispatchers.Default) // compute in background
+            .collect {
+                // update state in main
+                state.value = it
+            }
+    }
+    return state
+}
+
+/**
+ * Collects the flow on the main thread into a [State].
+ */
+fun Flow<Float>.produceState(
+    initialValue: Float,
+    scope: CoroutineScope,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+): FloatState {
+    val state = mutableFloatStateOf(initialValue)
+    scope.launch(coroutineContext + Dispatchers.Main) {
+        flowOn(Dispatchers.Default) // compute in background
+            .collect {
+                // update state in main
+                state.value = it
+            }
+    }
+    return state
+}
+
+/**
+ * Collects the flow on the main thread into a [State].
+ */
+fun Flow<Int>.produceState(
+    initialValue: Int,
+    scope: CoroutineScope,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+): IntState {
+    val state = mutableIntStateOf(initialValue)
     scope.launch(coroutineContext + Dispatchers.Main) {
         flowOn(Dispatchers.Default) // compute in background
             .collect {

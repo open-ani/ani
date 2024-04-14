@@ -88,7 +88,7 @@ private class TestMediaCacheStorage() : MediaCacheStorage {
                     MediaFetchRequest(
                         subjectId = "123123",
                         episodeId = "1231231",
-                        subjectNames = emptyList(),
+                        subjectNames = emptySet(),
                         episodeSort = EpisodeSort("02"),
                         episodeName = "测试剧集",
                     ),
@@ -109,7 +109,7 @@ private class TestMediaCacheStorage() : MediaCacheStorage {
         return listFlow.first().firstOrNull { it.origin.mediaId == media.mediaId }
     }
 
-    override suspend fun cache(media: Media, request: MediaFetchRequest, resume: Boolean): MediaCache {
+    override suspend fun cache(media: Media, metadata: MediaCacheMetadata, resume: Boolean): MediaCache {
         throw UnsupportedOperationException()
     }
 
@@ -142,7 +142,7 @@ private fun PreviewStorageManagerView() {
                             MediaFetchRequest(
                                 subjectId = "123123",
                                 episodeId = "1231231",
-                                subjectNames = listOf("夜晚的水母不会游泳"),
+                                subjectNames = setOf("夜晚的水母不会游泳"),
                                 episodeSort = EpisodeSort("02"),
                                 episodeName = "测试剧集",
                             ),
@@ -163,7 +163,7 @@ private fun PreviewStorageManagerView() {
                             MediaFetchRequest(
                                 subjectId = "123123",
                                 episodeId = "1231231",
-                                subjectNames = listOf("夜晚的水母不会游泳"),
+                                subjectNames = setOf("夜晚的水母不会游泳"),
                                 episodeSort = EpisodeSort("03"),
                                 episodeName = "测试剧集2",
                             ),

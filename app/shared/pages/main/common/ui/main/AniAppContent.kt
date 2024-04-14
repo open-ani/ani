@@ -17,7 +17,7 @@ import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.preference.PreferencePage
 import me.him188.ani.app.ui.profile.AuthViewModel
 import me.him188.ani.app.ui.profile.auth.AuthRequestScene
-import me.him188.ani.app.ui.subject.cache.SubjectCachePage
+import me.him188.ani.app.ui.subject.cache.SubjectCacheScene
 import me.him188.ani.app.ui.subject.cache.SubjectCacheViewModel
 import me.him188.ani.app.ui.subject.details.SubjectDetailsScene
 import me.him188.ani.app.ui.subject.details.SubjectDetailsViewModel
@@ -98,15 +98,11 @@ fun AniAppContent(aniNavigator: AniNavigator) {
                 }
                 // Don't use rememberViewModel to save memory
                 val vm = remember(subjectId) { SubjectCacheViewModel(subjectId) }
-                SubjectCachePage(
+                SubjectCacheScene(
                     vm,
                     onClickGlobalCacheSettings = {
                         aniNavigator.navigateCaches()
                     },
-                    onClickEpisode = { episode ->
-                        // TODO: 添加缓存的页面 
-                        aniNavigator.navigateEpisodeDetails(subjectId, episode.id)
-                    }
                 )
             }
         }

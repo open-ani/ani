@@ -6,7 +6,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import me.him188.ani.app.ui.foundation.widgets.RichDialog
+import me.him188.ani.app.ui.foundation.widgets.RichDialogLayout
 import me.him188.ani.datasources.api.EpisodeSort
 
 @Composable
@@ -16,7 +16,7 @@ fun EditEpisodeCache(
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    RichDialog(
+    RichDialogLayout(
         title = { Text("编辑缓存") },
         subtitle = {
             Text(episodeSort.toString())
@@ -27,8 +27,7 @@ fun EditEpisodeCache(
                 Text("完成")
             }
         },
-        onDismissRequest = onDismissRequest,
-        modifier,
+        modifier = modifier,
     ) {
     }
 }

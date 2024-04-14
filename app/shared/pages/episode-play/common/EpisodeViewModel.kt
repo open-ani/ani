@@ -14,12 +14,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
@@ -28,8 +26,6 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.coroutines.flow.onCompletion
-import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.media.MediaCacheManager
@@ -45,7 +41,7 @@ import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.app.ui.subject.episode.danmaku.PlayerDanmakuViewModel
-import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
+import me.him188.ani.app.ui.subject.episode.mediaFetch.EpisodeMediaFetchSession
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorState
 import me.him188.ani.app.videoplayer.data.VideoSource
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
@@ -55,13 +51,9 @@ import me.him188.ani.danmaku.api.DanmakuMatchers
 import me.him188.ani.danmaku.api.DanmakuProvider
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
-import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.datasources.bangumi.processing.nameCNOrName
 import me.him188.ani.datasources.bangumi.processing.renderEpisodeSp
-import me.him188.ani.datasources.core.fetch.MediaFetchSession
-import me.him188.ani.datasources.core.fetch.MediaFetcherConfig
-import me.him188.ani.datasources.core.fetch.MediaSourceMediaFetcher
 import me.him188.ani.utils.coroutines.closeOnReplacement
 import me.him188.ani.utils.coroutines.runUntilSuccess
 import me.him188.ani.utils.logging.info
@@ -99,17 +91,11 @@ interface EpisodeViewModel : HasBackgroundScope {
 
     // Media Fetching
 
-    /**
-     * Emits the progress of fetching media.
-     * Range is `0..1`
-     */
-    val mediaFetcherProgress: Flow<Float>
-
-    val mediaFetcherCompleted: Flow<Boolean>
-
-    // Media Selection
+    val episodeMediaFetchSession: EpisodeMediaFetchSession
 
     val mediaSelectorState: MediaSelectorState
+
+    // Media Selection
 
     var mediaSelectorVisible: Boolean
 
@@ -195,93 +181,17 @@ private class EpisodeViewModelImpl(
     }
 
 
-    // Media Fetching
-
-    private val mediaFetcher = mediaSourceManager.sources.map { providers ->
-        MediaSourceMediaFetcher(
-            configProvider = { MediaFetcherConfig.Default },
-            mediaSources = providers,
-            parentCoroutineContext = backgroundScope.coroutineContext,
-        )
-    }.shareInBackground(started = SharingStarted.Lazily)
-
-    /**
-     * A lazy [MediaFetchSession] that is created when [subjectDetails] and [episode] are available.
-     */
-    val mediaFetchSession = combine(subjectDetails, episode, mediaFetcher) { subject, episode, fetcher ->
-        fetcher.fetch(
-            MediaFetchRequest(
-                subjectId = subject.id.toString(),
-                episodeId = episode.id.toString(),
-                subjectNames = listOfNotNull(
-                    subject.name,
-                    subject.nameCn
-                ),
-                episodeSort = EpisodeSort(episode.sort.toString()),
-                episodeName = episode.nameCNOrName(),
-            )
-        )
-    }.shareInBackground(started = SharingStarted.Eagerly)
-
-    override val mediaFetcherProgress: Flow<Float> = mediaFetchSession
-        .flatMapLatest { it.progress }
-        .sample(100)
-        .onCompletion { if (it == null) emit(1f) }
-
-    override val mediaFetcherCompleted: Flow<Boolean> = mediaFetchSession.flatMapLatest { it.hasCompleted }
-
     // Media Selection
 
-    override var mediaSelectorVisible: Boolean by mutableStateOf(false)
+    override val episodeMediaFetchSession = EpisodeMediaFetchSession(
+        subjectId,
+        episodeId,
+        backgroundScope.coroutineContext,
+    )
+    override val mediaSelectorState: MediaSelectorState get() = this.episodeMediaFetchSession.mediaSelectorState
 
-    override val mediaSelectorState = kotlin.run {
-        MediaSelectorState(
-            mediaFetchSession,
-            mediaPreferenceFlow = episodePreferencesRepository.mediaPreferenceFlow(subjectId),
-            backgroundScope,
-        ).apply {
-            launchInBackground {
-                // Save users' per-subject preferences when they click the filter chips
-                preferenceUpdates.preference.collect {
-                    val defaultPreference = withContext(Dispatchers.Main.immediate) {
-                        default
-                    }
-                    episodePreferencesRepository.setMediaPreference(
-                        subjectId,
-                        defaultPreference.merge(it)
-                    )
-                }
-            }
-            launchInBackground {
-                // Save users' per-subject preferences when they click cards
-                preferenceUpdates.select.collect { media ->
-                    episodePreferencesRepository.setMediaPreference(
-                        subjectId,
-                        MediaPreference(
-                            alliance = media.properties.alliance,
-                            resolution = media.properties.resolution,
-                            // Use the filter chip if any
-                            // because a media has multiple languages and user may choose the media because it includes their desired one
-                            subtitleLanguage = selectedSubtitleLanguage
-                                ?: media.properties.subtitleLanguages.firstOrNull(),
-                            mediaSourceId = media.mediaSourceId
-                        )
-                    )
-                }
-            }
-            launchInBackground {
-                // Automatically select a media when the list is ready
-                mediaFetchSession.flatMapLatest { it.hasCompleted }.filter { it }.collect {
-                    // on completion
-                    withContext(Dispatchers.Main.immediate) {
-                        if (selected == null) { // only if user has not selected
-                            makeDefaultSelection()
-                        }
-                    }
-                }
-            }
-        }
-    }
+
+    override var mediaSelectorVisible: Boolean by mutableStateOf(false)
 
     private val selectedMedia = snapshotFlow { mediaSelectorState.selected }
         .flowOn(Dispatchers.Main) // access states in Main

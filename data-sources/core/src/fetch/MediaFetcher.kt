@@ -52,14 +52,17 @@ interface MediaFetcher {
 @Stable
 interface MediaFetchSession {
     /**
+     * The request used to initiate this session.
+     */
+    val request: MediaFetchRequest
+
+    /**
      * Results from each source. The key is the source ID.
      */
     val resultsPerSource: Map<String, MediaSourceResult> // dev notes: see implementation of [DownloadProvider]s for the IDs.
 
     /**
      * Cumulative results from all sources.
-     *
-     * The flow is not shared. If there are multiple collectors, each collector will start a **new** fetch.
      *
      * ### Sanitization
      *
@@ -212,7 +215,7 @@ class MediaSourceMediaFetcher(
     }
 
     private inner class MediaFetchSessionImpl(
-        request: MediaFetchRequest,
+        override val request: MediaFetchRequest,
         private val config: MediaFetcherConfig,
     ) : MediaFetchSession {
         override val resultsPerSource: Map<String, MediaSourceResult> = mediaSources.associateBy {
@@ -239,7 +242,9 @@ class MediaSourceMediaFetcher(
                 }
             }.map { list ->
                 list.distinctBy { it.mediaId } // distinct globally by id, just to be safe
-            }
+            }.shareIn(
+                scope, replay = 1, started = SharingStarted.Lazily,
+            )
 
         override val hasCompleted = combine(resultsPerSource.values.map { it.state }) { states ->
             states.all { it is MediaSourceState.Completed }

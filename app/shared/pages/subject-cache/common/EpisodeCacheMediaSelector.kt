@@ -1,9 +1,8 @@
 package me.him188.ani.app.ui.subject.cache
 
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -12,6 +11,11 @@ import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelector
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorState
 import me.him188.ani.datasources.api.Media
 
+/**
+ * 选择数据源来缓存
+ * @param onSelect 当用户点击一个资源时调用
+ * @param onCancel 当用户点击"取消"时调用
+ */
 @Composable
 fun EpisodeCacheMediaSelector(
     state: MediaSelectorState,
@@ -23,11 +27,10 @@ fun EpisodeCacheMediaSelector(
     MediaSelector(
         state,
         modifier.padding(vertical = 12.dp, horizontal = 16.dp)
-            .fillMaxWidth()
-            .navigationBarsPadding(),
+            .fillMaxWidth(),
         progressProvider = progressProvider,
         actions = {
-            FilledTonalButton(onCancel) {
+            OutlinedButton(onCancel) {
                 Text("取消")
             }
         },

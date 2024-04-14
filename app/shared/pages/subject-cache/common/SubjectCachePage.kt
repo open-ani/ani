@@ -48,7 +48,7 @@ import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 
 @Immutable
 class EpisodeCacheState(
-    val id: Int,
+    val episodeId: Int,
     val sort: EpisodeSort,
     val title: String,
     val watchStatus: UnifiedCollectionType,
@@ -66,14 +66,16 @@ interface SubjectCacheState {
 class DefaultSubjectCacheState(override val episodes: List<EpisodeCacheState>) : SubjectCacheState
 
 /**
- * Cache settings for one subject.
+ * 一个番剧的缓存设置页面, 包括自动缓存设置和手动单集缓存管理.
+ *
+ * @param mediaSelector 当用户点击缓存按钮时, 显示的视频源选择器. See [EpisodeCacheMediaSelector]
  */
 @Composable
 fun SubjectCachePage(
     state: SubjectCacheState,
     title: @Composable () -> Unit,
     onClickGlobalCacheSettings: () -> Unit,
-    onClickEpisode: (EpisodeCacheState) -> Unit,
+    mediaSelector: @Composable ((EpisodeCacheState, dismiss: () -> Unit) -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -108,12 +110,18 @@ fun SubjectCachePage(
 //                    },
                 ) {
                     state.episodes.fastForEachIndexed { i, episodeCacheState ->
+                        var showSelector by remember { mutableStateOf<EpisodeCacheState?>(null) }
+                        val dismissSelector = remember { { showSelector = null } }
+
                         EpisodeItem(
                             episodeCacheState,
                             onClick = {
-                                onClickEpisode(episodeCacheState)
+                                showSelector = episodeCacheState
                             }
                         )
+                        showSelector?.let {
+                            mediaSelector?.invoke(it, dismissSelector)
+                        }
                         if (i != state.episodes.lastIndex) {
                             HorizontalDividerItem()
                         }

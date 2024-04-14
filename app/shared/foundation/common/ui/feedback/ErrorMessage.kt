@@ -1,5 +1,6 @@
 package me.him188.ani.app.ui.feedback
 
+import androidx.annotation.UiThread
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
@@ -139,6 +140,7 @@ fun ErrorDialogHost(
                 if (error?.isRecovering == false) {
                     TextButton(onClick = {
                         controller.hide()
+                        error.onConfirm?.invoke()
                         onConfirm()
                     }) {
                         Text("OK")
@@ -147,6 +149,7 @@ fun ErrorDialogHost(
                     // recovering
                     TextButton(onClick = {
                         controller.hide()
+                        error?.onCancel?.invoke()
                         onClickCancel()
                     }) {
                         Text("Cancel")
@@ -217,6 +220,9 @@ interface ErrorMessage {
 
     val isRecovering: Boolean
 
+    val onConfirm: (() -> Unit)?
+    val onCancel: (() -> Unit)?
+
     companion object Factory {
         /**
          * A network error that automatically recovering.
@@ -236,13 +242,26 @@ interface ErrorMessage {
         fun networkError(cause: Throwable? = null): ErrorMessage =
             SimpleErrorMessage("Network error, please check your connection and try again", cause)
 
-        fun simple(message: String?, cause: Throwable? = null): ErrorMessage =
-            SimpleErrorMessage(message, cause)
+        fun simple(
+            message: String?,
+            cause: Throwable? = null,
+            @UiThread onConfirm: (() -> Unit)? = null
+        ): ErrorMessage =
+            SimpleErrorMessage(message, cause, onConfirm = onConfirm)
+
+        fun processing(
+            message: String?,
+            cause: Throwable? = null,
+            @UiThread onCancel: (() -> Unit)? = null
+        ): ErrorMessage =
+            SimpleErrorMessage(message, cause, isRecovering = true, onCancel = onCancel)
     }
 
     private class SimpleErrorMessage(
         override val message: String?,
         override val cause: Throwable? = null,
         override val isRecovering: Boolean = false,
+        override val onConfirm: (() -> Unit)? = null,
+        override val onCancel: (() -> Unit)? = null,
     ) : ErrorMessage
 }

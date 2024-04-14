@@ -43,8 +43,8 @@ private fun PreviewSubjectCachePage() {
             title = {
                 Text(text = "葬送的芙莉莲")
             },
+            mediaSelector = null,
             onClickGlobalCacheSettings = {},
-            onClickEpisode = {},
         )
     }
 }

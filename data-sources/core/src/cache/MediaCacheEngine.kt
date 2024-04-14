@@ -2,7 +2,6 @@ package me.him188.ani.datasources.core.cache
 
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaCacheMetadata
-import me.him188.ani.datasources.api.source.MediaFetchRequest
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -27,7 +26,7 @@ interface MediaCacheEngine {
      */
     suspend fun createCache(
         origin: Media,
-        request: MediaFetchRequest,
+        request: MediaCacheMetadata,
         parentContext: CoroutineContext
     ): MediaCache
 }

@@ -70,21 +70,12 @@ fun EpisodeDetails(
             )
 
             if (viewModel.mediaSelectorVisible) {
-                val completed by viewModel.mediaFetcherCompleted.collectAsStateWithLifecycle(false)
-                val progress by viewModel.mediaFetcherProgress.collectAsStateWithLifecycle(null)
-
                 ModalBottomSheet(onDismissRequest = { viewModel.mediaSelectorVisible = false }) {
                     EpisodePlayMediaSelector(
                         viewModel.mediaSelectorState,
                         onDismissRequest = { viewModel.mediaSelectorVisible = false },
                         Modifier,
-                        progressProvider = {
-                            if (completed) {
-                                1f
-                            } else {
-                                progress
-                            }
-                        },
+                        progressProvider = { viewModel.episodeMediaFetchSession.mediaFetcherProgress },
                     )
                 }
             }

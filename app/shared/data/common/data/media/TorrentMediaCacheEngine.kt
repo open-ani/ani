@@ -16,7 +16,6 @@ import me.him188.ani.app.torrent.model.EncodedTorrentData
 import me.him188.ani.datasources.api.CachedMedia
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaCacheMetadata
-import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.datasources.api.topic.ResourceLocation
@@ -114,15 +113,12 @@ class TorrentMediaCacheEngine(
     @OptIn(ExperimentalStdlibApi::class)
     override suspend fun createCache(
         origin: Media,
-        request: MediaFetchRequest,
+        request: MediaCacheMetadata,
         parentContext: CoroutineContext
     ): MediaCache {
-        val data = getTorrentDownloader().fetchTorrent(origin.mediaId)
-        val metadata = MediaCacheMetadata(
-            request,
-            extra = mapOf(
-                "torrentData" to data.data.toHexString()
-            )
+        val data = getTorrentDownloader().fetchTorrent(origin.download.uri)
+        val metadata = request.withExtra(
+            mapOf("torrentData" to data.data.toHexString())
         )
         return TorrentMediaCache(
             origin = origin,

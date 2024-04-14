@@ -55,6 +55,9 @@ fun MediaSelectorState(
     return MediaSelectorState({ state }, { defaultPreference })
 }
 
+/**
+ * 数据源选择器 UI 的状态.
+ */
 @Stable
 interface MediaSelectorState {
     /**

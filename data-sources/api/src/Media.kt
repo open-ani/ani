@@ -1,6 +1,7 @@
 package me.him188.ani.datasources.api
 
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.source.MediaSource
@@ -118,16 +119,65 @@ class MediaCacheMetadata(
     /**
      * @see MediaFetchRequest.subjectId
      */
-    val subjectId: String?,
+    val subjectId: String? = null,
     /**
      * @see MediaFetchRequest.episodeId
      */
-    val episodeId: String?,
-    val subjectNames: List<String>,
+    val episodeId: String? = null,
+    val subjectNames: Set<String>,
     val episodeSort: EpisodeSort,
     val episodeName: String,
     val extra: Map<String, String> = emptyMap(),
-)
+) {
+    /**
+     * [other]'s null and empty properties are replaced by this instance's properties.
+     */
+    @Stable
+    fun merge(other: MediaCacheMetadata): MediaCacheMetadata {
+        return MediaCacheMetadata(
+            subjectId = other.subjectId ?: subjectId,
+            episodeId = other.episodeId ?: episodeId,
+            subjectNames = other.subjectNames + subjectNames,
+            episodeSort = other.episodeSort,
+            episodeName = other.episodeName,
+            extra = other.extra + extra,
+        )
+    }
+
+    /**
+     * Appends [other] to the existing [extra].
+     */
+    @Stable
+    fun withExtra(other: Map<String, String>): MediaCacheMetadata {
+        return MediaCacheMetadata(
+            subjectId = subjectId,
+            episodeId = episodeId,
+            subjectNames = subjectNames,
+            episodeSort = episodeSort,
+            episodeName = episodeName,
+            extra = extra + other,
+        )
+    }
+
+    @Stable
+    fun copy(
+        subjectId: String? = this.subjectId,
+        episodeId: String? = this.episodeId,
+        subjectNames: Set<String> = this.subjectNames,
+        episodeSort: EpisodeSort = this.episodeSort,
+        episodeName: String = this.episodeName,
+        extra: Map<String, String> = this.extra,
+    ): MediaCacheMetadata {
+        return MediaCacheMetadata(
+            subjectId = subjectId,
+            episodeId = episodeId,
+            subjectNames = subjectNames,
+            episodeSort = episodeSort,
+            episodeName = episodeName,
+            extra = extra,
+        )
+    }
+}
 
 fun MediaCacheMetadata(
     request: MediaFetchRequest,

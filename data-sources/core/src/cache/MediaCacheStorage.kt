@@ -63,9 +63,9 @@ interface MediaCacheStorage : AutoCloseable {
      *
      * This function returns only if the cache configuration is persisted.
      *
-     * @param request The request to fetch the media.
+     * @param metadata The request to fetch the media.
      */
-    suspend fun cache(media: Media, request: MediaFetchRequest, resume: Boolean = true): MediaCache
+    suspend fun cache(media: Media, metadata: MediaCacheMetadata, resume: Boolean = true): MediaCache
 
     /**
      * Delete the cache if it exists.

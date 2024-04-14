@@ -32,6 +32,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.sample
 import me.him188.ani.app.data.media.MediaCacheManager
 import me.him188.ani.app.data.repositories.EpisodeRepository
 import me.him188.ani.app.data.repositories.SubjectRepository
@@ -131,7 +133,8 @@ class CacheItem(
     val mediaSourceId = cache.origin.mediaId
     val episodeSort = cache.metadata.episodeSort
 
-    val progress = cache.progress
+    val progress = cache.progress.sample(100)
+        .onCompletion { if (it == null) emit(1f) }
     val totalSize = cache.totalSize
 }
 
@@ -251,6 +254,13 @@ fun StorageManagerView(
                                 Icon(
                                     Icons.Rounded.Downloading,
                                     null,
+                                    Modifier.padding(end = 8.dp)
+                                )
+
+                                Text(
+                                    remember(progress) {
+                                        "${String.format("%.1f", (progress ?: 0f) * 100)}%"
+                                    },
                                     Modifier.padding(end = 8.dp)
                                 )
                             }

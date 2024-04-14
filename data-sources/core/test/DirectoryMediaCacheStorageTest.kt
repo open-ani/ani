@@ -10,7 +10,6 @@ import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaCacheMetadata
 import me.him188.ani.datasources.api.MediaProperties
-import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
@@ -70,7 +69,7 @@ class DirectoryMediaCacheStorageTest {
 
         override suspend fun createCache(
             origin: Media,
-            request: MediaFetchRequest,
+            request: MediaCacheMetadata,
             parentContext: CoroutineContext
         ): MediaCache {
             return TestMediaCache(
@@ -79,10 +78,7 @@ class DirectoryMediaCacheStorageTest {
                     CACHE_MEDIA_SOURCE_ID,
                     download = origin.download,
                 ),
-                metadata = MediaCacheMetadata(
-                    request,
-                    mapOf("testExtra" to "1")
-                ),
+                metadata = request.withExtra(mapOf("testExtra" to "1")),
             )
         }
     }
@@ -109,9 +105,9 @@ class DirectoryMediaCacheStorageTest {
 
         val cache = storage.cache(
             media,
-            MediaFetchRequest(
+            MediaCacheMetadata(
                 episodeId = "1231231",
-                subjectNames = emptyList(),
+                subjectNames = emptySet(),
                 episodeSort = EpisodeSort("02"),
                 episodeName = "测试剧集",
             ),
@@ -137,9 +133,9 @@ class DirectoryMediaCacheStorageTest {
 
         val cache = storage.cache(
             media,
-            MediaFetchRequest(
+            MediaCacheMetadata(
                 episodeId = "1231231",
-                subjectNames = emptyList(),
+                subjectNames = emptySet(),
                 episodeSort = EpisodeSort("02"),
                 episodeName = "测试剧集",
             ),
@@ -165,9 +161,9 @@ class DirectoryMediaCacheStorageTest {
 
         val cache = storage.cache(
             media,
-            MediaFetchRequest(
+            MediaCacheMetadata(
                 episodeId = "1231231",
-                subjectNames = emptyList(),
+                subjectNames = emptySet(),
                 episodeSort = EpisodeSort("02"),
                 episodeName = "测试剧集",
             ),
@@ -191,9 +187,9 @@ class DirectoryMediaCacheStorageTest {
 
         val cache = storage.cache(
             media,
-            MediaFetchRequest(
+            MediaCacheMetadata(
                 episodeId = "1231231",
-                subjectNames = emptyList(),
+                subjectNames = emptySet(),
                 episodeSort = EpisodeSort("02"),
                 episodeName = "测试剧集",
             ),

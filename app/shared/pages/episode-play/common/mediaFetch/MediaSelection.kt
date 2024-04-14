@@ -21,8 +21,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.DownloadDone
 import androidx.compose.material.icons.rounded.Public
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -67,7 +67,7 @@ private val verticalPadding = 8.dp
 /**
  * 通用的数据源选择器. See preview
  *
- * @param progressProvider `1f` to hide the progress bar. `null` to show a
+ * @param progressProvider `1f` to hide the progress bar. `null` to show a endless progress bar.
  * @param actions shown at the bottom
  */
 @Composable
@@ -212,15 +212,13 @@ private fun MediaItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(
+    ElevatedCard(
         onClick,
         modifier.width(IntrinsicSize.Min),
         colors = CardDefaults.elevatedCardColors(
-            containerColor = if (selected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surface
+            containerColor = if (selected) MaterialTheme.colorScheme.secondaryContainer
+            else CardDefaults.elevatedCardColors().containerColor
         ),
-//        elevation = CardDefaults.elevatedCardElevation(
-//            defaultElevation = if (selected) 0.dp else 1.dp,
-//        )
     ) {
         Box {
             Column(Modifier.padding(all = 16.dp)) {

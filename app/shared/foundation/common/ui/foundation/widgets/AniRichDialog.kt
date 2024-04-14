@@ -14,52 +14,54 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 
+/**
+ * @param buttons aligned to the end
+ */
 @Composable
-fun RichDialog(
+fun RichDialogLayout(
     title: @Composable RowScope.() -> Unit,
-    subtitle: @Composable RowScope.() -> Unit,
     buttons: @Composable RowScope.() -> Unit,
-    onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
-    properties: DialogProperties = DialogProperties(),
+    subtitle: @Composable (RowScope.() -> Unit)? = null,
     topBarActions: @Composable RowScope.() -> Unit = {},
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    Dialog(onDismissRequest, properties) {
-        Card(modifier) {
-            Box {
-                Column(Modifier.padding(16.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        ProvideTextStyle(MaterialTheme.typography.titleLarge) {
-                            title()
-                        }
+    Card(modifier) {
+        Box {
+            Column(Modifier.padding(16.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    ProvideTextStyle(MaterialTheme.typography.titleLarge) {
+                        title()
                     }
+                }
 
-                    Row(Modifier.padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                subtitle?.let {
+                    Row(
+                        Modifier.padding(top = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         ProvideTextStyle(MaterialTheme.typography.bodyLarge) {
                             subtitle()
                         }
                     }
-
-                    Column(Modifier.padding(top = 16.dp)) {
-                        content()
-                    }
-
-                    Row(
-                        Modifier.padding(top = 16.dp).align(Alignment.End),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        buttons()
-                    }
                 }
 
-                Row(Modifier.align(Alignment.TopEnd).padding(8.dp)) {
-                    topBarActions()
+                Column(Modifier.padding(top = 16.dp)) {
+                    content()
                 }
+
+                Row(
+                    Modifier.padding(top = 16.dp).align(Alignment.End),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    buttons()
+                }
+            }
+
+            Row(Modifier.align(Alignment.TopEnd).padding(8.dp)) {
+                topBarActions()
             }
         }
     }

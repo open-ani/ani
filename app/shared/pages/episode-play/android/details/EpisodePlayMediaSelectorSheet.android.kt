@@ -1,7 +1,10 @@
 package me.him188.ani.app.ui.subject.episode.details
 
+import androidx.compose.foundation.background
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import me.him188.ani.app.data.media.MediaCacheManager
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
@@ -17,6 +20,7 @@ private fun PreviewEpisodePlayMediaSelectorSheet() = ProvideCompositionLocalsFor
     EpisodePlayMediaSelector(
         remember { createState() },
         onDismissRequest = {},
+        Modifier.background(MaterialTheme.colorScheme.surface),
         progressProvider = { null },
     )
 }
@@ -27,6 +31,7 @@ private fun PreviewEpisodePlayMediaSelectorSheet2() = ProvideCompositionLocalsFo
     EpisodePlayMediaSelector(
         remember { createState() },
         onDismissRequest = {},
+        Modifier.background(MaterialTheme.colorScheme.surface),
         progressProvider = { 0.7f },
     )
 }
@@ -37,6 +42,7 @@ private fun PreviewEpisodePlayMediaSelectorSheet3() = ProvideCompositionLocalsFo
     EpisodePlayMediaSelector(
         remember { createState() },
         onDismissRequest = {},
+        Modifier.background(MaterialTheme.colorScheme.surface),
         progressProvider = { 1f },
     )
 }

@@ -113,12 +113,12 @@ class DirectoryMediaCacheStorage(
      */
     private val lock = Mutex()
 
-    override suspend fun cache(media: Media, request: MediaFetchRequest, resume: Boolean): MediaCache {
+    override suspend fun cache(media: Media, metadata: MediaCacheMetadata, resume: Boolean): MediaCache {
         return lock.withLock {
             listFlow.first().firstOrNull { it.origin.mediaId == media.mediaId }?.let { return@withLock it }
 
             val cache = engine.createCache(
-                media, request,
+                media, metadata,
                 scope.coroutineContext
             )
             withContext(Dispatchers.IO) {

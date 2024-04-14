@@ -108,7 +108,7 @@ class MediaFetchRequest(
      *
      * E.g. "关于我转生变成史莱姆这档事 第三季"
      */
-    val subjectNames: List<String>,
+    val subjectNames: Set<String>,
     /**
      * E.g. "49", "01"
      */

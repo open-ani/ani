@@ -37,7 +37,6 @@ import androidx.compose.ui.unit.dp
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.app.ui.subject.episode.EpisodeViewModel
-import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
 
 @Composable
@@ -46,12 +45,10 @@ fun EpisodeActionRow(
     snackbar: SnackbarHostState,
     modifier: Modifier = Modifier,
 ) {
-    val isMediaLoaded by viewModel.mediaFetcherCompleted.collectAsStateWithLifecycle(false)
-
     val clipboard by rememberUpdatedState(LocalClipboardManager.current)
     val context by rememberUpdatedState(LocalContext.current)
     EpisodeActionRow(
-        mediaFetcherCompleted = isMediaLoaded,
+        mediaFetcherCompleted = viewModel.episodeMediaFetchSession.mediaFetcherCompleted,
         onClickMediaSelection = { viewModel.mediaSelectorVisible = true },
         onClickCopyLink = {
             viewModel.launchInMain {
