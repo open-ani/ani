@@ -244,6 +244,7 @@ internal class TorrentDownloaderImpl(
         }
         val session =
             TorrentDownloadSessionImpl(
+                torrentName = ti.name(),
                 removeListener = { sessionManager.use { removeListener(it) } },
                 closeHandle = { sessionManager.use { remove(it) } },
                 torrentInfo = ti,
@@ -251,7 +252,7 @@ internal class TorrentDownloaderImpl(
                 onClose = {
                     dataToSession.remove(hash)
                 },
-                parentCoroutineContext,
+                parentCoroutineContext = parentCoroutineContext,
             )
         dataToSession[hash] = session
         sessionManager.use {

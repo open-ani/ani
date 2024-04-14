@@ -32,6 +32,7 @@ import org.libtorrent4j.alerts.AlertType
 import org.libtorrent4j.alerts.BlockDownloadingAlert
 import org.libtorrent4j.alerts.BlockFinishedAlert
 import org.libtorrent4j.alerts.PieceFinishedAlert
+import org.libtorrent4j.alerts.TorrentAlert
 import org.libtorrent4j.alerts.TorrentResumedAlert
 import java.io.File
 import java.io.RandomAccessFile
@@ -44,6 +45,7 @@ import kotlin.time.Duration.Companion.seconds
 internal class TorrentDownloadSessionImpl(
     private val removeListener: suspend (listener: AlertListener) -> Unit,
     private val closeHandle: suspend (handle: TorrentHandle) -> Unit,
+    private val torrentName: String,
     private val torrentInfo: TorrentInfo,
     /**
      * The directory where the torrent is saved.
@@ -204,6 +206,9 @@ internal class TorrentDownloadSessionImpl(
 //        )
 
         override fun alert(alert: Alert<*>) {
+            if (alert !is TorrentAlert) return
+            if (alert.torrentName() != this@TorrentDownloadSessionImpl.torrentName) return // listener will receive alerts from other torrents
+            
             try {
                 val type = alert.type()
 
