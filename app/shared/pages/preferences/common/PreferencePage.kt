@@ -1,12 +1,15 @@
 package me.him188.ani.app.ui.preference
 
+import androidx.annotation.IntRange
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -31,6 +34,9 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SecondaryScrollableTabRow
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderColors
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Tab
@@ -166,7 +172,7 @@ abstract class PreferenceScope {
         title: @Composable () -> Unit,
         description: (@Composable () -> Unit)? = null,
         modifier: Modifier = Modifier,
-        content: @Composable () -> Unit,
+        content: @Composable ColumnScope.() -> Unit,
     ) {
         Surface(modifier = modifier.fillMaxWidth()) {
             Column(Modifier.padding(vertical = 16.dp)) {
@@ -175,7 +181,7 @@ abstract class PreferenceScope {
                     Modifier.padding(horizontal = itemHorizontalPadding)
                         .padding(bottom = 8.dp)
                         .fillMaxWidth()
-                        .heightIn(min = 48.dp),
+                        .heightIn(min = if (description != null) 48.dp else 24.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     ProvideTextStyleContentColor(
@@ -203,7 +209,7 @@ abstract class PreferenceScope {
 
     @Composable
     private fun ItemHeader(
-        title: @Composable () -> Unit,
+        title: @Composable RowScope.() -> Unit,
         description: @Composable (() -> Unit)?,
         modifier: Modifier = Modifier,
     ) {
@@ -212,13 +218,15 @@ abstract class PreferenceScope {
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             ProvideTextStyle(MaterialTheme.typography.bodyLarge) {
-                Row { title() }
+                Row(verticalAlignment = Alignment.CenterVertically) { title() }
             }
             ProvideTextStyleContentColor(
                 MaterialTheme.typography.labelMedium,
                 LocalContentColor.current.copy(LABEL_ALPHA)
             ) {
-                Row { description?.invoke() }
+                description?.let {
+                    Row(verticalAlignment = Alignment.CenterVertically) { it() }
+                }
             }
         }
     }
@@ -252,7 +260,7 @@ abstract class PreferenceScope {
                 }
             }
 
-            Row(Modifier.weight(1f)) {
+            Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
                 content()
             }
 
@@ -288,7 +296,7 @@ abstract class PreferenceScope {
     @PreferenceDsl
     @Composable
     fun SwitchItem(
-        title: @Composable () -> Unit,
+        title: @Composable RowScope.() -> Unit,
         modifier: Modifier = Modifier,
         description: @Composable (() -> Unit)? = null,
         switch: @Composable () -> Unit,
@@ -297,6 +305,38 @@ abstract class PreferenceScope {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 ItemHeader(title, description, Modifier.weight(1f).padding(end = 16.dp))
                 switch()
+            }
+        }
+    }
+
+
+    @PreferenceDsl
+    @Composable
+    fun SliderItem(
+        title: @Composable RowScope.() -> Unit,
+        modifier: Modifier = Modifier,
+        description: @Composable (() -> Unit)? = null,
+        valueLabel: @Composable (() -> Unit)? = null,
+        content: @Composable () -> Unit,
+    ) {
+        Item(modifier) {
+            Column {
+                Row(
+                    Modifier,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    ItemHeader(title, description, Modifier.weight(1f))
+
+                    valueLabel?.let {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            ProvideTextStyle(MaterialTheme.typography.labelMedium) {
+                                valueLabel()
+                            }
+                        }
+                    }
+                }
+                content()
             }
         }
     }
@@ -413,14 +453,6 @@ abstract class PreferenceScope {
                 }
             }
         ) {
-//            ItemHeader(
-//                {
-//                    CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.primary) {
-//                        title()
-//                    }
-//                },
-//                description
-//            )
         }
     }
 
@@ -446,17 +478,42 @@ abstract class PreferenceScope {
         }
     }
 
+    /**
+     * Can become a text button if [onClick] is not null.
+     */
     @PreferenceDsl
     @Composable
     fun TextItem(
-        title: @Composable () -> Unit,
+        title: @Composable RowScope.() -> Unit,
         modifier: Modifier = Modifier,
         description: @Composable (() -> Unit)? = null,
         icon: @Composable (() -> Unit)? = null,
         action: @Composable (() -> Unit)? = null,
+        onClick: (() -> Unit)? = null
     ) {
-        Item(modifier, icon = icon, action = action) {
-            ItemHeader(title, description, Modifier)
+        Item(
+            modifier
+                .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
+            icon = kotlin.run {
+                if (icon != null && onClick != null) {
+                    {
+                        CompositionLocalProvider(LocalContentColor providesDefault MaterialTheme.colorScheme.primary) {
+                            icon()
+                        }
+                    }
+                } else {
+                    icon
+                }
+            },
+            action = action
+        ) {
+            if (onClick != null) {
+                CompositionLocalProvider(LocalContentColor providesDefault MaterialTheme.colorScheme.primary) {
+                    ItemHeader(title, description, Modifier)
+                }
+            } else {
+                ItemHeader(title, description, Modifier)
+            }
         }
     }
 }
@@ -520,7 +577,7 @@ internal fun TextFieldDialog(
 @Composable
 fun PreferenceScope.SwitchItem(
     onClick: () -> Unit,
-    title: @Composable () -> Unit,
+    title: @Composable RowScope.() -> Unit,
     modifier: Modifier = Modifier,
     description: @Composable (() -> Unit)? = null,
     switch: @Composable () -> Unit,
@@ -538,9 +595,10 @@ fun PreferenceScope.SwitchItem(
 fun PreferenceScope.SwitchItem(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
-    title: @Composable () -> Unit,
+    title: @Composable RowScope.() -> Unit,
     modifier: Modifier = Modifier,
     description: @Composable (() -> Unit)? = null,
+    enabled: Boolean = true,
 ) {
     SwitchItem(
         { onCheckedChange(!checked) },
@@ -551,6 +609,42 @@ fun PreferenceScope.SwitchItem(
         Switch(
             checked,
             onCheckedChange = onCheckedChange,
+            enabled = enabled,
+        )
+    }
+}
+
+
+@PreferenceDsl
+@Composable
+fun PreferenceScope.SliderItem(
+    value: Float,
+    onValueChange: (Float) -> Unit,
+    title: @Composable RowScope.() -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    valueRange: ClosedFloatingPointRange<Float> = 0f..1f,
+    @IntRange(from = 0)
+    steps: Int = 0,
+    onValueChangeFinished: (() -> Unit)? = null,
+    colors: SliderColors = SliderDefaults.colors(),
+    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
+    valueLabel: @Composable (() -> Unit)? = {
+        Text(value.toString())
+    },
+    description: @Composable (() -> Unit)? = null,
+) {
+    SliderItem(title, modifier, description, valueLabel) {
+        Slider(
+            value,
+            onValueChange,
+            Modifier,
+            enabled,
+            valueRange,
+            steps,
+            onValueChangeFinished,
+            colors,
+            interactionSource
         )
     }
 }

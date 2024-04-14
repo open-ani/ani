@@ -4,8 +4,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.PreviewLightDark
+import kotlinx.coroutines.flow.flowOf
 import me.him188.ani.app.data.media.EpisodeCacheStatus
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
+import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 
 
@@ -27,63 +29,63 @@ private fun PreviewEpisodeProgressDialog() {
                             episodeSort = "00",
                             watchStatus = UnifiedCollectionType.DONE,
                             isOnAir = false,
-                            cacheStatus = EpisodeCacheStatus.CACHING,
+                            cacheStatus = EpisodeCacheStatus.Caching,
                         ),
                         EpisodeProgressItem(
                             episodeId = 1,
                             episodeSort = "01",
                             watchStatus = UnifiedCollectionType.DONE,
                             isOnAir = false,
-                            cacheStatus = EpisodeCacheStatus.NOT_CACHED,
+                            cacheStatus = EpisodeCacheStatus.NotCached,
                         ),
                         EpisodeProgressItem(
                             episodeId = 2,
                             episodeSort = "02",
                             watchStatus = UnifiedCollectionType.DONE,
                             isOnAir = false,
-                            cacheStatus = EpisodeCacheStatus.CACHED,
+                            cacheStatus = EpisodeCacheStatus.Cached(flowOf(300.megaBytes)),
                         ),
                         EpisodeProgressItem(
                             episodeId = 3,
                             episodeSort = "03",
                             watchStatus = UnifiedCollectionType.WISH,
                             isOnAir = false,
-                            cacheStatus = EpisodeCacheStatus.CACHED,
+                            cacheStatus = EpisodeCacheStatus.Cached(flowOf(300.megaBytes)),
                         ),
                         EpisodeProgressItem(
                             episodeId = 4,
                             episodeSort = "04",
                             watchStatus = UnifiedCollectionType.WISH,
                             isOnAir = false,
-                            cacheStatus = EpisodeCacheStatus.CACHING,
+                            cacheStatus = EpisodeCacheStatus.Caching,
                         ),
                         EpisodeProgressItem(
                             episodeId = 5,
                             episodeSort = "05",
                             watchStatus = UnifiedCollectionType.WISH,
                             isOnAir = false,
-                            cacheStatus = EpisodeCacheStatus.NOT_CACHED,
+                            cacheStatus = EpisodeCacheStatus.NotCached,
                         ),
                         EpisodeProgressItem(
                             episodeId = 6,
                             episodeSort = "06",
                             watchStatus = UnifiedCollectionType.WISH,
                             isOnAir = true,
-                            cacheStatus = EpisodeCacheStatus.NOT_CACHED,
+                            cacheStatus = EpisodeCacheStatus.NotCached,
                         ),
                         EpisodeProgressItem(
                             episodeId = 7,
                             episodeSort = "07",
                             watchStatus = UnifiedCollectionType.WISH,
                             isOnAir = true,
-                            cacheStatus = EpisodeCacheStatus.CACHED,
+                            cacheStatus = EpisodeCacheStatus.Cached(flowOf(300.megaBytes)),
                         ),
                         EpisodeProgressItem(
                             episodeId = 8,
                             episodeSort = "08",
                             watchStatus = UnifiedCollectionType.WISH,
                             isOnAir = true,
-                            cacheStatus = EpisodeCacheStatus.CACHING,
+                            cacheStatus = EpisodeCacheStatus.Caching,
                         ),
                     )
                 },

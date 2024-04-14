@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.transform
+import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.core.cache.MediaCache
 import me.him188.ani.datasources.core.cache.MediaCacheStorage
 
@@ -43,23 +44,23 @@ abstract class MediaCacheManager {
         val subjectIdString = subjectId.toString()
         val episodeIdString = episodeId.toString()
         return listFlow.transform { list ->
-            var hasAnyCached = false
-            var hasAnyCaching = false
+            var hasAnyCached: MediaCache? = null
+            var hasAnyCaching: MediaCache? = null
 
             for (mediaCache in list) {
                 if (mediaCache.metadata.subjectId == subjectIdString && mediaCache.metadata.episodeId == episodeIdString) {
-                    hasAnyCached = true
+                    hasAnyCached = mediaCache
                     if (mediaCache.progress.firstOrNull() != 1f) {
-                        hasAnyCaching = true
+                        hasAnyCaching = mediaCache
                     }
                 }
             }
 
             emit(
                 when {
-                    hasAnyCaching -> EpisodeCacheStatus.CACHING
-                    hasAnyCached -> EpisodeCacheStatus.CACHED
-                    else -> EpisodeCacheStatus.NOT_CACHED
+                    hasAnyCaching != null -> EpisodeCacheStatus.Caching
+                    hasAnyCached != null -> EpisodeCacheStatus.Cached(hasAnyCached)
+                    else -> EpisodeCacheStatus.NotCached
                 }
             )
         }
@@ -70,17 +71,26 @@ abstract class MediaCacheManager {
     }
 }
 
-enum class EpisodeCacheStatus {
+@Stable
+sealed class EpisodeCacheStatus {
     /**
      * At least one cache is fully downloaded.
      */
-    CACHED,
+    @Stable
+    data class Cached(
+        val size: Flow<FileSize>
+    ) : EpisodeCacheStatus() {
+        constructor(cache: MediaCache) : this(cache.totalSize)
+    }
 
     /**
      * No cache is fully downloaded, but at least one cache is downloading.
      */
-    CACHING,
-    NOT_CACHED,
+    @Stable
+    data object Caching : EpisodeCacheStatus()
+
+    @Stable
+    data object NotCached : EpisodeCacheStatus()
 }
 
 class MediaCacheManagerImpl(override val storages: List<MediaCacheStorage>) : MediaCacheManager()

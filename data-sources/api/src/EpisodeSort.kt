@@ -2,7 +2,16 @@ package me.him188.ani.datasources.api
 
 import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
+import me.him188.ani.datasources.api.EpisodeSort.Normal
+import me.him188.ani.datasources.api.EpisodeSort.Special
+import java.math.BigDecimal
 
+/**
+ * 剧集序号, 例如 "01", "24.5", "OVA".
+ *
+ * - [Normal] 代表普通正片剧集, 例如 "01", "24.5". 注意, 只有整数和 ".5" 的浮点数会被解析为 Normal 类型.
+ * - [Special] 代表任何其他剧集, 统称为特殊剧集, 例如 "OVA", "SP".
+ */
 @Serializable
 @Stable
 sealed class EpisodeSort : Comparable<EpisodeSort> {
@@ -84,16 +93,21 @@ sealed class EpisodeSort : Comparable<EpisodeSort> {
 }
 
 fun EpisodeSort(raw: String): EpisodeSort {
-    val float = raw.toFloatOrNull() ?: return EpisodeSort.Special(raw)
-    if (float < 0) return EpisodeSort.Special(raw)
+    val float = raw.toFloatOrNull() ?: return Special(raw)
+    if (float < 0) return Special(raw)
     return if (float.toInt().toFloat() == float || float % 0.5f == 0f) {
-        EpisodeSort.Normal(float)
+        Normal(float)
     } else {
-        EpisodeSort.Special(raw)
+        Special(raw)
     }
 }
 
 fun EpisodeSort(int: Int): EpisodeSort {
-    if (int < 0) return EpisodeSort.Special(int.toString())
-    return EpisodeSort.Normal(int.toFloat())
+    if (int < 0) return Special(int.toString())
+    return Normal(int.toFloat())
+}
+
+fun EpisodeSort(int: BigDecimal): EpisodeSort {
+    if (int < BigDecimal.ZERO) return Special(int.toString())
+    return EpisodeSort(int.toString())
 }

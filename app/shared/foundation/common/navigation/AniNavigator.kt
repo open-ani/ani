@@ -22,6 +22,10 @@ interface AniNavigator {
         navigator.navigate("/subjects/$subjectId")
     }
 
+    fun navigateSubjectCaches(subjectId: Int) {
+        navigator.navigate("/subjects/$subjectId/caches")
+    }
+
     fun navigateEpisodeDetails(subjectId: Int, episodeId: Int, fullscreen: Boolean = false) {
         navigator.navigate(
             "/subjects/$subjectId/episodes/$episodeId?fullscreen=$fullscreen",

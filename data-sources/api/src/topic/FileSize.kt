@@ -50,6 +50,11 @@ value class FileSize(
     inline operator fun plus(another: Double): FileSize = FileSize((this.inBytes + another).toLong())
     inline operator fun minus(another: Double): FileSize = FileSize((this.inBytes - another).toLong())
 
+    inline operator fun times(another: Float): FileSize = FileSize((this.inBytes * another).toLong())
+    inline operator fun div(another: Float): FileSize = FileSize((this.inBytes / another).toLong())
+    inline operator fun plus(another: Float): FileSize = FileSize((this.inBytes + another).toLong())
+    inline operator fun minus(another: Float): FileSize = FileSize((this.inBytes - another).toLong())
+
     inline operator fun times(another: Int): FileSize = FileSize(this.inBytes * another)
     inline operator fun div(another: Int): FileSize = FileSize(this.inBytes / another)
     inline operator fun plus(another: Int): FileSize = FileSize(this.inBytes + another)

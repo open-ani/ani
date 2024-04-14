@@ -5,12 +5,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import me.him188.ani.app.data.media.EpisodeCacheStatus
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.datasources.api.paging.SingleShotPagedSource
+import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import org.openapitools.client.models.Episode
 import org.openapitools.client.models.EpisodeCollectionType
 import org.openapitools.client.models.SubjectCollectionType
@@ -161,7 +163,7 @@ private fun PreviewSubjectCollectionsColumn() {
                 SubjectCollectionItem(
                     item = it,
                     episodeCacheStatus = { _, _ ->
-                        EpisodeCacheStatus.CACHED
+                        EpisodeCacheStatus.Cached(flowOf(300.megaBytes))
                     },
                     onClick = { },
                     onClickEpisode = {},
