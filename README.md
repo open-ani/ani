@@ -80,7 +80,7 @@ Ani 支持 Android 和桌面端 (macOS、Linux、Windows)。
 
 多数据源适配, 总有一个源有你想看的番和喜欢的字幕组
 
-- 自动解析资源, 可按清晰度, 字幕语言与字幕组选择视频源
+- 自动解析资源, 可按分辨率, 字幕语言与字幕组选择视频源
 - 记忆上次选择, 下次直接播放
 
 <img width="270" src=".readme/images/episode/episode-player-loading.jpg" alt="episode-player-loading"/> <img width="270" src=".readme/images/episode/episode-media.jpeg" alt="episode-media"/>  <img width="270" src=".readme/images/episode/episode-media-expanded.jpeg" alt="episode-media-expanded"/> 

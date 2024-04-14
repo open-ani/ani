@@ -113,7 +113,7 @@ fun MediaSelector(
                 ) {
                     MediaFilterRow(
                         state.resolutions,
-                        label = { Text("清晰度", overflow = TextOverflow.Visible) },
+                        label = { Text("分辨率", overflow = TextOverflow.Visible) },
                         key = { it },
                         eachItem = { item ->
                             FilterChip(
