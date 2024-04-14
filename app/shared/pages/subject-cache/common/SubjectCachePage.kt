@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -35,7 +36,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
 import me.him188.ani.app.data.media.EpisodeCacheStatus
@@ -107,7 +107,9 @@ fun SubjectCachePage(
                 }
             }
 
-            PreferenceTab(Modifier.padding(vertical = 16.dp)) {
+            PreferenceTab {
+                Spacer(Modifier.fillMaxWidth()) // tab has spacedBy arrangement
+
                 AutoCacheGroup(onClickGlobalCacheSettings)
 
                 Group(
@@ -134,6 +136,7 @@ fun SubjectCachePage(
                         }
                     }
                 }
+                Spacer(Modifier.fillMaxWidth()) // tab has spacedBy arrangement
             }
         }
     }
@@ -194,19 +197,21 @@ private fun PreferenceScope.EpisodeItem(
     episode: EpisodeCacheState,
     onClick: () -> Unit,
 ) {
-    val color = if (episode.watchStatus.isDoneOrDropped()) {
+    val colorByWatchStatus = if (episode.watchStatus.isDoneOrDropped() || !episode.hasPublished) {
         LocalContentColor.current.stronglyWeaken()
     } else {
-        Color.Unspecified
+        MaterialTheme.colorScheme.onSurface
     }
-    CompositionLocalProvider(LocalContentColor providesDefault color) {
-        TextItem(
-            action = {
-                if (!episode.hasPublished) {
+    TextItem(
+        action = {
+            if (!episode.hasPublished) {
+                CompositionLocalProvider(LocalContentColor provides colorByWatchStatus) {
                     Text("未开播")
-                    return@TextItem
                 }
+                return@TextItem
+            }
 
+            CompositionLocalProvider(LocalContentColor provides colorByWatchStatus) {
                 when (val status = episode.cacheStatus) {
                     is EpisodeCacheStatus.Cached ->
                         IconButton(onClick) {
@@ -232,20 +237,26 @@ private fun PreferenceScope.EpisodeItem(
                     }
 
                     EpisodeCacheStatus.NotCached -> {
-                        CompositionLocalProvider(LocalContentColor providesDefault MaterialTheme.colorScheme.primary) {
-                            IconButton(onClick) {
-                                Icon(Icons.Rounded.Download, "缓存")
+                        if (!episode.watchStatus.isDoneOrDropped()) {
+                            CompositionLocalProvider(LocalContentColor providesDefault MaterialTheme.colorScheme.primary) {
+                                IconButton(onClick) {
+                                    Icon(Icons.Rounded.Download, "缓存")
+                                }
                             }
                         }
                     }
 
                     null -> {}
                 }
-            },
-            icon = {
+            }
+        },
+        icon = {
+            CompositionLocalProvider(LocalContentColor provides colorByWatchStatus) {
                 Text(episode.sort.toString())
-            },
-            title = {
+            }
+        },
+        title = {
+            CompositionLocalProvider(LocalContentColor provides colorByWatchStatus) {
                 Text(episode.title)
 
                 when (episode.watchStatus) {
@@ -263,9 +274,9 @@ private fun PreferenceScope.EpisodeItem(
 
                     else -> {}
                 }
-            },
-        )
-    }
+            }
+        },
+    )
 }
 
 @Composable

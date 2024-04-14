@@ -236,8 +236,14 @@ abstract class PreferenceScope {
             modifier.padding(vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            ProvideTextStyle(MaterialTheme.typography.bodyLarge) {
-                Row(verticalAlignment = Alignment.CenterVertically) { title() }
+            CompositionLocalProvider(
+                LocalContentColor providesDefault MaterialTheme.colorScheme.onSurface
+            ) {
+                ProvideTextStyle(
+                    MaterialTheme.typography.bodyLarge,
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) { title() }
+                }
             }
             ProvideTextStyleContentColor(
                 MaterialTheme.typography.labelMedium,
@@ -275,7 +281,9 @@ abstract class PreferenceScope {
         ) {
             if (icon != null) {
                 Box(Modifier.padding(end = 8.dp).size(28.dp), contentAlignment = Alignment.Center) {
-                    icon()
+                    CompositionLocalProvider(LocalContentColor providesDefault MaterialTheme.colorScheme.onSurface) {
+                        icon()
+                    }
                 }
             }
 
@@ -532,9 +540,15 @@ abstract class PreferenceScope {
             action = action
         ) {
             if (onClick != null) {
-                CompositionLocalProvider(LocalContentColor providesDefault MaterialTheme.colorScheme.primary) {
-                    ItemHeader(title, description, Modifier)
-                }
+                ItemHeader(
+                    {
+                        CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.primary) {
+                            title()
+                        }
+                    },
+                    description,
+                    Modifier
+                )
             } else {
                 ItemHeader(title, description, Modifier)
             }
