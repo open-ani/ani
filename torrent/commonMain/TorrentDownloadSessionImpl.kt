@@ -14,6 +14,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import me.him188.ani.app.torrent.download.PiecePriorities
 import me.him188.ani.app.torrent.download.TorrentDownloadController
 import me.him188.ani.app.torrent.file.TorrentInput
@@ -338,14 +339,18 @@ internal class TorrentDownloadSessionImpl(
         if (state.value == TorrentDownloadState.Finished) {
             return
         }
-        withHandle { it.pause() }
+        withTimeoutOrNull(2000) {
+            withHandle { it.pause() }
+        }
     }
 
     override suspend fun resume() {
         if (state.value == TorrentDownloadState.Finished) {
             return
         }
-        withHandle { it.resume() }
+        withTimeoutOrNull(2000) {
+            withHandle { it.resume() }
+        }
     }
 
     override suspend fun filePath(): Path {
