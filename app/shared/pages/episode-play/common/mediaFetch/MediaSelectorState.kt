@@ -207,11 +207,11 @@ internal class MediaSelectorStateImpl(
     override fun preferSubtitleLanguage(subtitleLanguage: String, removeOnExist: Boolean) {
         if (removeOnExist && selectedSubtitleLanguage == subtitleLanguage) {
             // was selected either by default or by user, then we remove it
-            preference = preference.copy(subtitleLanguage = null)
+            preference = preference.copy(subtitleLanguageId = null)
             explicitlyRemovedSubtitleLanguage = true
             return
         }
-        preference = preference.copy(subtitleLanguage = subtitleLanguage)
+        preference = preference.copy(subtitleLanguageId = subtitleLanguage)
     }
 
     override fun preferMediaSource(mediaSourceId: String, removeOnExist: Boolean) {
@@ -273,7 +273,7 @@ internal class MediaSelectorStateImpl(
     }
     override val selectedSubtitleLanguage: String? by derivedStateOf {
         if (explicitlyRemovedSubtitleLanguage) return@derivedStateOf null
-        (preference.subtitleLanguage ?: default.subtitleLanguage)
+        (preference.subtitleLanguageId ?: default.subtitleLanguageId)
             ?.takeIf { it in subtitleLanguages }
     }
     override val selectedMediaSource: String? by derivedStateOf {

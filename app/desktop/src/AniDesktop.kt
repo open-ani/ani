@@ -60,6 +60,7 @@ import me.him188.ani.app.platform.DesktopContext
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.getAniUserAgent
 import me.him188.ani.app.platform.getCommonKoinModule
+import me.him188.ani.app.platform.startCommonKoinModule
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.tools.torrent.DefaultTorrentManager
 import me.him188.ani.app.tools.torrent.TorrentManager
@@ -141,7 +142,7 @@ object AniDesktop {
                 }
                 single<BrowserNavigator> { DesktopBrowserNavigator() }
             })
-        }
+        }.startCommonKoinModule(coroutineScope)
 
         val navigator = AniNavigator()
 

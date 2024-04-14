@@ -116,7 +116,7 @@ private fun PreviewMediaSelector() {
                     },
                     defaultPreferenceProvider = {
                         MediaPreference(
-                            subtitleLanguage = "CHS"
+                            subtitleLanguageId = "CHS"
                         )
                     },
                 )

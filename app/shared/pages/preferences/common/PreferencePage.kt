@@ -1,6 +1,8 @@
 package me.him188.ani.app.ui.preference
 
 import androidx.annotation.IntRange
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -16,6 +18,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -24,7 +28,12 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.Reorder
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -56,6 +65,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -66,12 +77,19 @@ import me.him188.ani.app.ui.foundation.effects.defaultFocus
 import me.him188.ani.app.ui.foundation.effects.onKey
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
+import me.him188.ani.app.ui.foundation.widgets.RichDialogLayout
+import me.him188.ani.app.ui.preference.tabs.MediaPreferenceTab
 import me.him188.ani.app.ui.preference.tabs.NetworkPreferenceTab
 import me.him188.ani.app.ui.theme.stronglyWeaken
+import org.burnoutcrew.reorderable.ReorderableItem
+import org.burnoutcrew.reorderable.detectReorder
+import org.burnoutcrew.reorderable.detectReorderAfterLongPress
+import org.burnoutcrew.reorderable.rememberReorderableLazyListState
+import org.burnoutcrew.reorderable.reorderable
 
 enum class PreferenceTab {
     //    ABOUT,
-//    GENERAL,
+    MEDIA,
     NETWORK,
 }
 
@@ -121,9 +139,8 @@ fun PreferencePage(
                 val type = PreferenceTab.entries[index]
                 Column(Modifier.fillMaxSize().padding(contentPadding)) {
                     when (type) {
-//                        PreferenceTab.ABOUT -> TODO()
-//                        PreferenceTab.GENERAL -> TODO()
-                        PreferenceTab.NETWORK -> NetworkPreferenceTab()
+                        PreferenceTab.MEDIA -> MediaPreferenceTab(modifier = Modifier.fillMaxSize())
+                        PreferenceTab.NETWORK -> NetworkPreferenceTab(modifier = Modifier.fillMaxSize())
                     }
                 }
             }
@@ -140,6 +157,7 @@ private fun renderPreferenceTab(
 //        PreferenceTab.ABOUT -> "关于"
 //        PreferenceTab.GENERAL -> "通用"
         PreferenceTab.NETWORK -> "网络"
+        PreferenceTab.MEDIA -> "资源"
     }
 }
 
@@ -164,7 +182,8 @@ private const val LABEL_ALPHA = 0.8f
 @PreferenceDsl
 abstract class PreferenceScope {
     @Stable
-    private val itemHorizontalPadding = 16.dp
+    @PublishedApi
+    internal val itemHorizontalPadding = 16.dp
 
     @PreferenceDsl
     @Composable
@@ -232,7 +251,7 @@ abstract class PreferenceScope {
     }
 
     @Composable
-    fun SubGroup(
+    inline fun SubGroup(
         content: () -> Unit,
     ) {
         Column(Modifier.padding(start = itemHorizontalPadding)) {
@@ -255,7 +274,7 @@ abstract class PreferenceScope {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (icon != null) {
-                Box(Modifier.padding(end = 16.dp).size(28.dp), contentAlignment = Alignment.Center) {
+                Box(Modifier.padding(end = 8.dp).size(28.dp), contentAlignment = Alignment.Center) {
                     icon()
                 }
             }
@@ -269,7 +288,10 @@ abstract class PreferenceScope {
                     Modifier.padding(start = 16.dp)
                         .widthIn(min = 48.dp), contentAlignment = Alignment.Center
                 ) {
-                    ProvideTextStyle(MaterialTheme.typography.labelMedium) {
+                    ProvideTextStyleContentColor(
+                        MaterialTheme.typography.labelLarge,
+                        MaterialTheme.colorScheme.primary
+                    ) {
                         it()
                     }
                 }
@@ -348,6 +370,7 @@ abstract class PreferenceScope {
         onValueChange: (String) -> Unit,
         title: @Composable () -> Unit,
         description: @Composable (() -> Unit)? = null,
+        icon: @Composable (() -> Unit)? = null,
         placeholder: @Composable (() -> Unit)? = null,
         onValueChangeCompleted: () -> Unit = {},
         inverseTitleDescription: Boolean = false,
@@ -356,7 +379,8 @@ abstract class PreferenceScope {
     ) {
         var showDialog by rememberSaveable { mutableStateOf(false) }
         Item(
-            modifier.clickable(onClick = { showDialog = true })
+            modifier.clickable(onClick = { showDialog = true }),
+            icon = icon,
         ) {
             Row(
                 Modifier,
@@ -516,7 +540,177 @@ abstract class PreferenceScope {
             }
         }
     }
+
+    @PreferenceDsl
+    @Composable
+    fun <T> DropdownItem(
+        selected: () -> T,
+        values: () -> List<T>,
+        itemText: @Composable (T) -> Unit,
+        onSelect: (T) -> Unit,
+        itemIcon: @Composable ((T) -> Unit)? = null,
+        modifier: Modifier = Modifier,
+        description: @Composable (() -> Unit)? = null,
+        icon: @Composable (() -> Unit)? = null,
+        title: @Composable (RowScope.() -> Unit),
+    ) {
+        var showDropdown by rememberSaveable { mutableStateOf(false) }
+
+        val selectedState by remember {
+            derivedStateOf { selected() }
+        }
+        TextItem(
+            title = title,
+            modifier = modifier,
+            description = description,
+            icon = icon,
+            action = {
+                TextButton(onClick = { showDropdown = true }) {
+                    itemText(selectedState)
+                }
+                DropdownMenu(
+                    expanded = showDropdown,
+                    onDismissRequest = { showDropdown = false },
+                ) {
+                    values().forEach { value ->
+                        val color = if (value == selectedState) {
+                            MaterialTheme.colorScheme.primary
+                        } else Color.Unspecified
+                        CompositionLocalProvider(LocalContentColor providesDefault color) {
+                            DropdownMenuItem(
+                                text = { itemText(value) },
+                                leadingIcon = if (itemIcon != null) {
+                                    {
+                                        itemIcon(value)
+                                    }
+                                } else null,
+                                onClick = {
+                                    onSelect(value)
+                                    showDropdown = false
+                                }
+                            )
+                        }
+                    }
+                }
+            },
+        )
+    }
+
+    /**
+     * 用户排序
+     *
+     * @param exposed 未展开时显示在项目右侧的标签, 来表示当前的排序
+     * @param key 用于区分每个项目的唯一键, 必须快速且稳定
+     */
+    @PreferenceDsl
+    @Composable
+    fun <T> SorterItem(
+        values: () -> List<SelectableItem<T>>,
+        onSort: (List<SelectableItem<T>>) -> Unit,
+        exposed: @Composable (List<SelectableItem<T>>) -> Unit,
+        item: @Composable (T) -> Unit,
+        key: (T) -> Any,
+        modifier: Modifier = Modifier,
+        description: @Composable (() -> Unit)? = null,
+        icon: @Composable (() -> Unit)? = null,
+        onConfirm: (() -> Unit)? = null,
+        title: @Composable (RowScope.() -> Unit),
+    ) {
+        var showDialog by rememberSaveable { mutableStateOf(false) }
+
+        TextItem(
+            title = title,
+            modifier = modifier,
+            description = description,
+            icon = icon,
+            action = {
+                val valuesState by remember {
+                    derivedStateOf { values() }
+                }
+                TextButton(onClick = { showDialog = true }, Modifier.widthIn(max = 128.dp)) {
+                    exposed(valuesState)
+                }
+
+                if (showDialog) {
+                    var sortingData by remember(valuesState) {
+                        mutableStateOf(valuesState)
+                    }
+                    val state = rememberReorderableLazyListState(
+                        onMove = { from, to ->
+                            sortingData = sortingData.toMutableList().apply {
+                                add(to.index, removeAt(from.index))
+                            }
+                        }
+                    )
+                    BasicAlertDialog(onDismissRequest = { showDialog = false }) {
+                        RichDialogLayout(
+                            title = { title() },
+                            description = description?.let { { it() } },
+                            buttons = {
+                                TextButton({ showDialog = false }) {
+                                    Text("取消")
+                                }
+                                Button({
+                                    showDialog = false
+                                    onConfirm?.invoke()
+                                    onSort(sortingData)
+                                }) {
+                                    Text("完成")
+                                }
+                            },
+                        ) {
+                            LazyColumn(
+                                state = state.listState,
+                                modifier = Modifier
+                                    .reorderable(state)
+                                    .detectReorderAfterLongPress(state)
+                            ) {
+                                itemsIndexed(sortingData, key = { _, it -> key(it.item) }) { index, item ->
+                                    ReorderableItem(state, key = key(item.item)) { isDragging ->
+                                        val elevation = animateDpAsState(if (isDragging) 16.dp else 0.dp)
+                                        Row(
+                                            modifier = Modifier
+                                                .shadow(elevation.value)
+                                                .background(MaterialTheme.colorScheme.surface)
+                                                .fillMaxWidth(),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Checkbox(
+                                                checked = item.selected,
+                                                onCheckedChange = {
+                                                    sortingData = sortingData.toMutableList().apply {
+                                                        set(index, SelectableItem(item.item, it))
+                                                    }
+                                                },
+                                                modifier = Modifier.padding(end = 4.dp)
+                                            )
+
+                                            Row(Modifier.weight(1f)) {
+                                                item(item.item)
+                                            }
+
+                                            Icon(
+                                                Icons.Rounded.Reorder,
+                                                "长按排序",
+                                                Modifier.detectReorder(state),
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+        )
+    }
 }
+
+@Stable
+class SelectableItem<T>(
+    val item: T,
+    val selected: Boolean
+)
 
 @Composable
 internal fun TextFieldDialog(

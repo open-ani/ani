@@ -62,6 +62,7 @@ import me.him188.ani.datasources.core.cache.DirectoryMediaCacheStorage
 import org.koin.core.KoinApplication
 import org.koin.dsl.module
 
+@Suppress("UnusedReceiverParameter") // bug
 fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScope: CoroutineScope) = module {
     // Repositories
     single<TokenRepository> { TokenRepositoryImpl(getContext().tokenStore) }
@@ -84,12 +85,6 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
     single<PreferencesRepository> { PreferencesRepositoryImpl(getContext().preferencesStore) }
 
     // Media
-    single<VideoSourceResolver> {
-        VideoSourceResolver.from(
-            TorrentVideoSourceResolver(get()),
-            LocalFileVideoSourceResolver(),
-        )
-    }
     single<MediaCacheManager> {
         val id = MediaCacheManager.LOCAL_FS_MEDIA_SOURCE_ID
         MediaCacheManagerImpl(
@@ -106,6 +101,14 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
             )
         )
     }
+
+
+    single<VideoSourceResolver> {
+        VideoSourceResolver.from(
+            TorrentVideoSourceResolver(get()),
+            LocalFileVideoSourceResolver(),
+        )
+    }
     single<MediaSourceManager> {
         MediaSourceManagerImpl(
             additionalSources = {
@@ -113,9 +116,17 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
             }
         )
     }
+}
+
+
+/**
+ * 会在非 preview 环境调用. 用来初始化一些模块
+ */
+fun KoinApplication.startCommonKoinModule(coroutineScope: CoroutineScope): KoinApplication {
     coroutineScope.launch(Dispatchers.IO) {
         koin.get<MediaCacheManager>().storages // initialize caches as the storage constructors needs to do IO 
     }
+    return this
 }
 
 @Stable

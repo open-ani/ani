@@ -1,6 +1,7 @@
 [versions]
 kotlin = "2.0.0-Beta5"
 coroutines = "1.8.0"
+reorderable = "0.9.6"
 serialization = "1.6.2"
 voyager = "1.0.0"
 atomicfu = "0.21.0"
@@ -115,6 +116,8 @@ precompose-viewmodel = { module = "moe.tlaster:precompose-viewmodel", version = 
 #voyager-kodein = { module = "cafe.adriel.voyager:voyager-kodein", version.ref = "voyager" }
 #voyager-rxjava = { module = "cafe.adriel.voyager:voyager-rxjava", version.ref = "voyager" }
 
+# Compose Multiplatform
+reorderable = { module = "org.burnoutcrew.composereorderable:reorderable", version.ref = "reorderable" }
 
 # Android-only libraries
 # Each library has its own version, so we don't use `Versions` here.

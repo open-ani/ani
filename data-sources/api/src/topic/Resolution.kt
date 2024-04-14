@@ -55,7 +55,7 @@ class Resolution private constructor(
         val R1440P = Resolution("1440P", 1440, "x1440", displayName = "2K")
         val R2160P = Resolution("2160P", 2160, "x2160", displayName = "4K")
 
-        private val entries = arrayOf(
+        val entries = listOf(
             R240P, R360P, R480P, R560P, R720P, R1080P, R1440P, R2160P,
         )
 

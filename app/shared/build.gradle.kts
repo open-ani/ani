@@ -110,6 +110,7 @@ kotlin {
         api(libs.precompose) // Navigator
         api(libs.precompose.koin) // Navigator
         api(libs.precompose.viewmodel) // Navigator
+        implementation(libs.reorderable)
 
         implementation(libs.slf4j.api)
     }

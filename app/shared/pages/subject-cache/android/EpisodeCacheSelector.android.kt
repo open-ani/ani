@@ -35,7 +35,7 @@ private fun createState() = MediaSelectorState(
     },
     defaultPreferenceProvider = {
         MediaPreference(
-            subtitleLanguage = "CHS"
+            subtitleLanguageId = "CHS"
         )
     },
 )

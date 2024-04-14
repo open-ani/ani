@@ -163,9 +163,6 @@ fun NetworkPreferenceTab(
                         "示例: http://127.0.0.1:7890 或 socks5://127.0.0.1:1080"
                     )
                 },
-                isErrorProvider = {
-                    !ClientProxyConfigValidator.isValidProxy(url)
-                },
                 onValueChangeCompleted = {
                     vm.updateProxyPreferences(
                         proxyPreferences.copy(
@@ -176,6 +173,9 @@ fun NetworkPreferenceTab(
                             )
                         )
                     )
+                },
+                isErrorProvider = {
+                    !ClientProxyConfigValidator.isValidProxy(url)
                 }
             )
 

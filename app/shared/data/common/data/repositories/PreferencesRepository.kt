@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
+import me.him188.ani.app.data.models.MediaCacheSettings
 import me.him188.ani.app.data.models.ProxyPreferences
 import me.him188.ani.app.data.serializers.DanmakuConfigSerializer
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
@@ -28,9 +29,8 @@ interface PreferencesRepository {
      */
     val defaultMediaPreference: Preference<MediaPreference?>
 
-    // network
-
     val proxyPreferences: Preference<ProxyPreferences>
+    val mediaCacheSettings: Preference<MediaCacheSettings>
 }
 
 @Stable
@@ -93,6 +93,11 @@ class PreferencesRepositoryImpl(
         "proxyPreferences",
         ProxyPreferences.serializer(),
         default = { ProxyPreferences.Default }
+    )
+    override val mediaCacheSettings: Preference<MediaCacheSettings> = SerializablePreference(
+        "cachePreferences",
+        MediaCacheSettings.serializer(),
+        default = { MediaCacheSettings.Default }
     )
 
 //    private companion object {

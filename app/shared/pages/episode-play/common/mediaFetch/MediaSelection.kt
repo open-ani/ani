@@ -346,7 +346,7 @@ fun renderMediaSource(
 
 @Composable
 fun getMediaSourceIcon(
-    id: String
+    id: String?
 ): Painter? {
     if (LocalIsPreviewing.current) { // compose resources does not support preview
         return null

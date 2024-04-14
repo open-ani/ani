@@ -43,9 +43,9 @@ import me.him188.ani.app.ui.foundation.TopAppBarGoBackButton
 import me.him188.ani.app.ui.preference.PreferenceScope
 import me.him188.ani.app.ui.preference.PreferenceTab
 import me.him188.ani.app.ui.preference.SwitchItem
+import me.him188.ani.app.ui.preference.tabs.autoCacheDescription
 import me.him188.ani.app.ui.theme.stronglyWeaken
 import me.him188.ani.datasources.api.EpisodeSort
-import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.datasources.api.topic.isDoneOrDropped
 
@@ -187,13 +187,6 @@ private fun PreferenceScope.AutoCacheGroup(onClickGlobalCacheSettings: () -> Uni
             }
         }
     }
-}
-
-private fun autoCacheDescription(sliderValue: Float) = when (sliderValue) {
-    0f -> "当前设置: 不自动缓存"
-    10f -> "当前设置: 自动缓存全部未观看剧集, "
-    else -> "当前设置: 自动缓存观看进度之后的 ${sliderValue.toInt()} 话, " +
-            "预计占用 ${600.megaBytes * sliderValue}"
 }
 
 @Composable

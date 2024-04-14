@@ -30,7 +30,7 @@ interface MediaSourceManager { // available by inject
 }
 
 class MediaSourceManagerImpl(
-    additionalSources: () -> List<MediaSource>,
+    additionalSources: () -> List<MediaSource>, // local sources
 ) : MediaSourceManager, KoinComponent {
     private val preferencesRepository: PreferencesRepository by inject()
     private val config = preferencesRepository.proxyPreferences.flow
@@ -44,10 +44,11 @@ class MediaSourceManagerImpl(
 
     private val additionalSources by lazy { additionalSources() }
     override val sources = config.map { proxyPreferences ->
-        factories
+        // 一定要 additionalSources 在前面, local sources 需要优先使用
+        this.additionalSources + factories
             .map { factory ->
                 factory.create(proxyPreferences.get(factory.id))
-            } + this.additionalSources
+            }
     }.shareIn(scope, replay = 1, started = SharingStarted.Lazily)
 
     override val ids: List<String> = factories

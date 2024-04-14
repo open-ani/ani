@@ -114,7 +114,15 @@ sealed class SubtitleLanguage(
 
 
     companion object {
-        val matchableEntries = arrayOf(ChineseCantonese, ChineseSimplified, ChineseTraditional, Japanese, English)
+        val matchableEntries by lazy {
+            listOf(
+                ChineseSimplified,
+                ChineseTraditional,
+                ChineseCantonese,
+                Japanese,
+                English
+            )
+        }
 
         fun tryParse(value: String): SubtitleLanguage? {
             for (entry in matchableEntries) {

@@ -24,6 +24,7 @@ fun RichDialogLayout(
     buttons: @Composable RowScope.() -> Unit,
     modifier: Modifier = Modifier,
     subtitle: @Composable (RowScope.() -> Unit)? = null,
+    description: @Composable (RowScope.() -> Unit)? = null,
     topBarActions: @Composable RowScope.() -> Unit = {},
     content: @Composable ColumnScope.() -> Unit,
 ) {
@@ -43,6 +44,17 @@ fun RichDialogLayout(
                     ) {
                         ProvideTextStyle(MaterialTheme.typography.bodyLarge) {
                             subtitle()
+                        }
+                    }
+                }
+
+                description?.let {
+                    Row(
+                        Modifier.padding(top = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
+                            description()
                         }
                     }
                 }

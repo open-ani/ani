@@ -61,8 +61,9 @@ fun ProvideCompositionLocalsForPreview(
         PlatformPreviewCompositionLocalProvider {
             val context = LocalContext.current
             runCatching { stopKoin() }
+            val scope = GlobalScope
             startKoin {
-                modules(getCommonKoinModule({ context }, GlobalScope))
+                modules(getCommonKoinModule({ context }, scope))
                 modules(module {
                     single<TorrentDownloaderFactory> {
                         TorrentDownloaderFactory {
