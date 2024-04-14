@@ -27,8 +27,8 @@ class MongoDanmakuRepositoryImpl : DanmakuRepository, KoinComponent {
 
     override suspend fun selectByEpisodeAndTime(
         episodeId: String,
-        fromTime: Double,
-        toTime: Double,
+        fromTime: Long,
+        toTime: Long,
         maxCount: Int
     ): List<Danmaku> {
         return danmakuTable.find(

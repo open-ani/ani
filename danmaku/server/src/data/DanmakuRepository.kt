@@ -7,7 +7,7 @@ import java.util.UUID
 
 interface DanmakuRepository {
     suspend fun add(episodeId: String, danmakuInfo: DanmakuInfo, userId: String): Boolean
-    suspend fun selectByEpisodeAndTime(episodeId: String, fromTime: Double, toTime: Double, maxCount: Int): List<Danmaku>
+    suspend fun selectByEpisodeAndTime(episodeId: String, fromTime: Long, toTime: Long, maxCount: Int): List<Danmaku>
 }
 
 class InMemoryDanmakuRepositoryImpl : DanmakuRepository {
@@ -29,11 +29,11 @@ class InMemoryDanmakuRepositoryImpl : DanmakuRepository {
 
     override suspend fun selectByEpisodeAndTime(
         episodeId: String,
-        fromTime: Double,
-        toTime: Double,
+        fromTime: Long,
+        toTime: Long,
         maxCount: Int
     ): List<Danmaku> {
-        val actualToTime = if (toTime < 0) Double.MAX_VALUE else toTime
+        val actualToTime = if (toTime < 0) Long.MAX_VALUE else toTime
         return danmakus.filter {
             it.episodeId == episodeId && it.playTime in fromTime..actualToTime
         }.take(maxCount).map {

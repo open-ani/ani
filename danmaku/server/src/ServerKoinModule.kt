@@ -15,21 +15,21 @@ fun getServerKoinModule(
     env: EnvironmentVariables,
     topCoroutineScope: CoroutineScope
 ) = module {
-    single(named("env")) { env }
     single(named("topCoroutineScope")) { topCoroutineScope }
-    single(named("danmakuGetRequestMaxCountAllowed")) { 8000 }
+    single {
+        ServerConfig(
+            testing = env.testing,
+            mongoDbConnectionString = env.mongoDbConnectionString,
+            danmakuGetRequestMaxCountAllowed = 8000,
+        )
+    }
 
     single<DanmakuService> { DanmakuServiceImpl() }
 
     if (!env.testing) {
-        single<MongoCollectionProvider> {
-            MongoCollectionProviderImpl(
-                env.mongoDbConnectionString 
-                    ?: throw IllegalStateException("MongoDB connection string is not set")
-            )
-        }
+        single<MongoCollectionProvider> { MongoCollectionProviderImpl() }
     }
-    
+
     single<DanmakuRepository> {
         if (env.testing) {
             InMemoryDanmakuRepositoryImpl()
@@ -38,3 +38,9 @@ fun getServerKoinModule(
         }
     }
 }
+
+data class ServerConfig(
+    val testing: Boolean,
+    val mongoDbConnectionString: String?,
+    val danmakuGetRequestMaxCountAllowed: Int,
+)

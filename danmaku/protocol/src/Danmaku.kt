@@ -12,8 +12,8 @@ data class DanmakuPostRequest(
 data class DanmakuGetRequest(
     val episodeId: String,  // unique episode id
     val maxCount: Int = 8000, // max count of danmaku to get
-    val fromTime: Double = 0.0, // in seconds
-    val toTime: Double = -1.0, // in seconds, negative value means no limit
+    val fromTime: Long = 0, // in milliseconds
+    val toTime: Long = -1, // in milliseconds, negative value means no limit
 )
 
 @Serializable
@@ -30,7 +30,7 @@ data class Danmaku(
 
 @Serializable
 data class DanmakuInfo(
-    val playTime: Double, // in seconds
+    val playTime: Long, // in milliseconds
     val color: Int, // RGB
     val text: String,
     val location: DanmakuLocation,

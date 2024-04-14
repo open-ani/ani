@@ -10,7 +10,7 @@ data class DanmakuModel(
     val id: UUID = UUID.randomUUID(),
     val senderId: String,
     val episodeId: String, // index
-    val playTime: Double,
+    val playTime: Long,
     val location: DanmakuLocation,
     val text: String,
     val color: Int
