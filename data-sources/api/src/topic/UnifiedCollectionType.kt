@@ -1,5 +1,8 @@
 package me.him188.ani.datasources.api.topic
 
+import androidx.compose.runtime.Stable
+import me.him188.ani.datasources.api.topic.UnifiedCollectionType.NOT_COLLECTED
+
 /**
  * Unified type for all collection types, also added representation for [NOT_COLLECTED].
  */
@@ -20,4 +23,9 @@ enum class UnifiedCollectionType {
      * e.g. to update the user's collection type.
      */
     NOT_COLLECTED,
+}
+
+@Stable
+fun UnifiedCollectionType.isDoneOrDropped(): Boolean {
+    return this == UnifiedCollectionType.DONE || this == UnifiedCollectionType.DROPPED
 }

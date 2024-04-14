@@ -35,6 +35,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
 import me.him188.ani.app.data.media.EpisodeCacheStatus
@@ -42,9 +43,11 @@ import me.him188.ani.app.ui.foundation.TopAppBarGoBackButton
 import me.him188.ani.app.ui.preference.PreferenceScope
 import me.him188.ani.app.ui.preference.PreferenceTab
 import me.him188.ani.app.ui.preference.SwitchItem
+import me.him188.ani.app.ui.theme.stronglyWeaken
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
+import me.him188.ani.datasources.api.topic.isDoneOrDropped
 
 @Immutable
 class EpisodeCacheState(
@@ -53,6 +56,10 @@ class EpisodeCacheState(
     val title: String,
     val watchStatus: UnifiedCollectionType,
     val cacheStatus: EpisodeCacheStatus?,
+    /**
+     * 是否已经上映了
+     */
+    val hasPublished: Boolean,
 )
 
 @Stable
@@ -73,7 +80,7 @@ class DefaultSubjectCacheState(override val episodes: List<EpisodeCacheState>) :
 @Composable
 fun SubjectCachePage(
     state: SubjectCacheState,
-    title: @Composable () -> Unit,
+    subjectTitle: @Composable () -> Unit,
     onClickGlobalCacheSettings: () -> Unit,
     mediaSelector: @Composable ((EpisodeCacheState, dismiss: () -> Unit) -> Unit)? = null,
     modifier: Modifier = Modifier,
@@ -83,7 +90,7 @@ fun SubjectCachePage(
         topBar = {
             TopAppBar(
                 title = {
-                    title()
+                    Text("缓存管理")
                 },
                 navigationIcon = {
                     TopAppBarGoBackButton()
@@ -95,7 +102,7 @@ fun SubjectCachePage(
             Surface(Modifier.fillMaxWidth()) {
                 Row(Modifier.padding(horizontal = 16.dp).padding(bottom = 16.dp)) {
                     ProvideTextStyle(MaterialTheme.typography.titleMedium) {
-                        Text("缓存设置")
+                        subjectTitle()
                     }
                 }
             }
@@ -194,66 +201,78 @@ private fun PreferenceScope.EpisodeItem(
     episode: EpisodeCacheState,
     onClick: () -> Unit,
 ) {
-    TextItem(
-        action = {
-            when (val status = episode.cacheStatus) {
-                is EpisodeCacheStatus.Cached ->
-                    IconButton(onClick) {
-                        Icon(Icons.Rounded.DownloadDone, null)
-                    }
-
-                is EpisodeCacheStatus.Caching -> {
-                    Box(Modifier.clickable(onClick = onClick)) {
-                        val progress = status.progress
-                        if (progress == null) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(24.dp),
-                            )
-                        } else {
-                            CircularProgressIndicator(
-                                progress = { progress },
-                                modifier = Modifier.size(20.dp),
-                                strokeWidth = 2.dp,
-                                trackColor = MaterialTheme.colorScheme.outlineVariant,
-                            )
-                        }
-                    }
+    val color = if (episode.watchStatus.isDoneOrDropped()) {
+        LocalContentColor.current.stronglyWeaken()
+    } else {
+        Color.Unspecified
+    }
+    CompositionLocalProvider(LocalContentColor providesDefault color) {
+        TextItem(
+            action = {
+                if (!episode.hasPublished) {
+                    Text("未开播")
+                    return@TextItem
                 }
 
-                EpisodeCacheStatus.NotCached -> {
-                    CompositionLocalProvider(LocalContentColor providesDefault MaterialTheme.colorScheme.primary) {
+                when (val status = episode.cacheStatus) {
+                    is EpisodeCacheStatus.Cached ->
                         IconButton(onClick) {
-                            Icon(Icons.Rounded.Download, "缓存")
+                            Icon(Icons.Rounded.DownloadDone, null)
+                        }
+
+                    is EpisodeCacheStatus.Caching -> {
+                        Box(Modifier.clickable(onClick = onClick)) {
+                            val progress = status.progress
+                            if (progress == null) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(24.dp),
+                                )
+                            } else {
+                                CircularProgressIndicator(
+                                    progress = { progress },
+                                    modifier = Modifier.size(20.dp),
+                                    strokeWidth = 2.dp,
+                                    trackColor = MaterialTheme.colorScheme.outlineVariant,
+                                )
+                            }
                         }
                     }
-                }
 
-                null -> {}
-            }
-        },
-        icon = {
-            Text(episode.sort.toString())
-        },
-        title = {
-            Text(episode.title)
-
-            when (episode.watchStatus) {
-                UnifiedCollectionType.DONE -> {
-                    Label(Modifier.padding(start = 8.dp)) {
-                        Text("看过")
+                    EpisodeCacheStatus.NotCached -> {
+                        CompositionLocalProvider(LocalContentColor providesDefault MaterialTheme.colorScheme.primary) {
+                            IconButton(onClick) {
+                                Icon(Icons.Rounded.Download, "缓存")
+                            }
+                        }
                     }
-                }
 
-                UnifiedCollectionType.DROPPED -> {
-                    Label(Modifier.padding(start = 8.dp)) {
-                        Text("抛弃")
+                    null -> {}
+                }
+            },
+            icon = {
+                Text(episode.sort.toString())
+            },
+            title = {
+                Text(episode.title)
+
+                when (episode.watchStatus) {
+                    UnifiedCollectionType.DONE -> {
+                        Label(Modifier.padding(start = 8.dp)) {
+                            Text("看过")
+                        }
                     }
-                }
 
-                else -> {}
-            }
-        },
-    )
+                    UnifiedCollectionType.DROPPED -> {
+                        Label(Modifier.padding(start = 8.dp)) {
+                            Text("抛弃")
+                        }
+                    }
+
+                    else -> {}
+                }
+            },
+        )
+    }
 }
 
 @Composable

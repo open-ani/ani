@@ -23,6 +23,7 @@ private fun PreviewSubjectCachePage() {
                             title = "第一集的标题",
                             watchStatus = UnifiedCollectionType.DONE,
                             cacheStatus = EpisodeCacheStatus.Cached(300.megaBytes),
+                            hasPublished = true,
                         ),
                         EpisodeCacheState(
                             2,
@@ -30,6 +31,7 @@ private fun PreviewSubjectCachePage() {
                             title = "第二集的标题",
                             watchStatus = UnifiedCollectionType.DONE,
                             EpisodeCacheStatus.Caching(progress = 0.3f, totalSize = 300.megaBytes),
+                            hasPublished = true,
                         ),
                         EpisodeCacheState(
                             3,
@@ -37,10 +39,19 @@ private fun PreviewSubjectCachePage() {
                             title = "第三集的标题",
                             watchStatus = UnifiedCollectionType.DOING,
                             cacheStatus = EpisodeCacheStatus.NotCached,
+                            hasPublished = true,
+                        ),
+                        EpisodeCacheState(
+                            4,
+                            sort = EpisodeSort(4),
+                            title = "第四集的标题",
+                            watchStatus = UnifiedCollectionType.DOING,
+                            cacheStatus = EpisodeCacheStatus.NotCached,
+                            hasPublished = false,
                         ),
                     )
             },
-            title = {
+            subjectTitle = {
                 Text(text = "葬送的芙莉莲")
             },
             mediaSelector = null,

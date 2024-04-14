@@ -38,6 +38,7 @@ import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaCacheMetadata
 import me.him188.ani.datasources.api.source.MediaFetchRequest
+import me.him188.ani.datasources.bangumi.processing.isOnAir
 import me.him188.ani.datasources.bangumi.processing.nameCNOrName
 import me.him188.ani.datasources.bangumi.processing.toCollectionType
 import me.him188.ani.datasources.core.cache.MediaCacheStorage
@@ -86,6 +87,7 @@ class SubjectCacheViewModel(
                     title = episode.nameCn,
                     watchStatus = episodeCollection.type.toCollectionType(),
                     cacheStatus = it,
+                    hasPublished = episode.isOnAir() != true,
                 )
             }
         }) {
@@ -131,7 +133,7 @@ fun SubjectCacheScene(
 
     return SubjectCachePage(
         state,
-        title = {
+        subjectTitle = {
             val title = vm.subjectTitle
             Text(title.orEmpty(), Modifier.placeholder(title == null))
         },
