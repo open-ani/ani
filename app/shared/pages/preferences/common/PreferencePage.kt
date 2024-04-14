@@ -110,7 +110,7 @@ fun PreferencePage(
         }
     ) { topBarPaddings ->
         val pagerState =
-            rememberPagerState(initialPage = 1) { PreferenceTab.entries.size }
+            rememberPagerState(initialPage = 0) { PreferenceTab.entries.size }
         val scope = rememberCoroutineScope()
 
         // Pager with TabRow
