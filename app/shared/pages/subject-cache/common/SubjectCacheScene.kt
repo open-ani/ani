@@ -150,6 +150,7 @@ fun SubjectCacheScene(
                     vm.backgroundScope.coroutineContext,
                     FetcherMediaSelectorConfig(
                         autoSelectOnFetchCompletion = false,
+                        autoSelectLocal = false,
                     )
                 )
             }

@@ -25,6 +25,7 @@ import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.source.MediaFetchRequest
+import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.datasources.bangumi.processing.nameCNOrName
 import me.him188.ani.datasources.core.fetch.MediaFetchSession
 import me.him188.ani.datasources.core.fetch.MediaFetcher
@@ -79,6 +80,10 @@ class FetcherMediaSelectorConfig(
      * Automatically select a media when the [MediaFetchSession] has completed.
      */
     val autoSelectOnFetchCompletion: Boolean = true,
+    /**
+     * Automatically select the local (cached) media when there is at least one such media.
+     */
+    val autoSelectLocal: Boolean = true,
 ) {
     companion object {
         val Default = FetcherMediaSelectorConfig()
@@ -217,6 +222,19 @@ internal class DefaultEpisodeMediaFetchSession(
                         withContext(Dispatchers.Main.immediate) {
                             if (selected == null) { // only if user has not selected
                                 makeDefaultSelection()
+                            }
+                        }
+                    }
+                }
+            }
+            if (config.autoSelectLocal) {
+                launchInBackground {
+                    mediaFetchSession.flatMapLatest { it.cumulativeResults }.collect { list ->
+                        if (list.any { it.location == MediaSourceLocation.LOCAL }) {
+                            withContext(Dispatchers.Main.immediate) {
+                                if (selected == null) { // only if user has not selected
+                                    makeDefaultSelection()
+                                }
                             }
                         }
                     }

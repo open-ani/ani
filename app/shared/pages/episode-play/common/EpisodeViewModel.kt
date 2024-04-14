@@ -17,7 +17,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
@@ -64,7 +63,6 @@ import org.koin.core.component.inject
 import org.openapitools.client.models.EpisodeCollectionType
 import org.openapitools.client.models.EpisodeDetail
 import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
 
 @Stable
 interface EpisodeViewModel : HasBackgroundScope {
@@ -196,9 +194,8 @@ private class EpisodeViewModelImpl(
     override var mediaSelectorVisible: Boolean by mutableStateOf(false)
 
     private val selectedMedia = snapshotFlow { mediaSelectorState.selected }
-        .flowOn(Dispatchers.Main) // access states in Main
-        .debounce(1.seconds)
-        .flowOn(Dispatchers.Default)
+        .distinctUntilChanged()
+        .flowOn(Dispatchers.Main.immediate) // access states in Main
 
     override val mediaSelected: Flow<Boolean> = selectedMedia.map { it != null }
 
@@ -210,7 +207,6 @@ private class EpisodeViewModelImpl(
      * - The sources are available but user has not yet selected one.
      */
     private val videoSource: SharedFlow<VideoSource<*>?> = selectedMedia
-        .debounce(1.seconds)
         .distinctUntilChanged()
         .transformLatest { playSource ->
             emit(null)
