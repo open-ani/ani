@@ -206,8 +206,8 @@ internal class DefaultEpisodeMediaFetchSession(
                                 resolution = media.properties.resolution,
                                 // Use the filter chip if any
                                 // because a media has multiple languages and user may choose the media because it includes their desired one
-                                subtitleLanguageId = selectedSubtitleLanguage
-                                    ?: media.properties.subtitleLanguages.firstOrNull(),
+                                subtitleLanguageId = selectedSubtitleLanguageId
+                                    ?: media.properties.subtitleLanguageIds.firstOrNull(),
                                 mediaSourceId = media.mediaSourceId
                             )
                         )

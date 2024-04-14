@@ -68,7 +68,7 @@ interface MediaSelectorState {
     /**
      * Preferences explicit set by the user in this session.
      *
-     * Use [selectedAlliance], [selectedResolution], [selectedSubtitleLanguage]
+     * Use [selectedAlliance], [selectedResolution], [selectedSubtitleLanguageId]
      * for selections made from both [preference] and [default].
      */
     val preference: MediaPreference
@@ -80,7 +80,7 @@ interface MediaSelectorState {
      */
     fun preferAlliance(alliance: String, removeOnExist: Boolean = false)
     fun preferResolution(resolution: String, removeOnExist: Boolean = false)
-    fun preferSubtitleLanguage(subtitleLanguage: String, removeOnExist: Boolean = false)
+    fun preferSubtitleLanguage(subtitleLanguageId: String, removeOnExist: Boolean = false)
     fun preferMediaSource(mediaSourceId: String, removeOnExist: Boolean = false)
 
     /**
@@ -97,7 +97,7 @@ interface MediaSelectorState {
      */
     val alliances: List<String>
     val resolutions: List<String>
-    val subtitleLanguages: List<String> // null element means no subtitle
+    val subtitleLanguageIds: List<String> // null element means no subtitle
     val mediaSources: List<String>
 
     /**
@@ -108,7 +108,7 @@ interface MediaSelectorState {
      */
     val selectedAlliance: String?
     val selectedResolution: String?
-    val selectedSubtitleLanguage: String?
+    val selectedSubtitleLanguageId: String?
     val selectedMediaSource: String?
 
     /**
@@ -204,14 +204,14 @@ internal class MediaSelectorStateImpl(
         preference = preference.copy(resolution = resolution)
     }
 
-    override fun preferSubtitleLanguage(subtitleLanguage: String, removeOnExist: Boolean) {
-        if (removeOnExist && selectedSubtitleLanguage == subtitleLanguage) {
+    override fun preferSubtitleLanguage(subtitleLanguageId: String, removeOnExist: Boolean) {
+        if (removeOnExist && selectedSubtitleLanguageId == subtitleLanguageId) {
             // was selected either by default or by user, then we remove it
             preference = preference.copy(subtitleLanguageId = null)
             explicitlyRemovedSubtitleLanguage = true
             return
         }
-        preference = preference.copy(subtitleLanguageId = subtitleLanguage)
+        preference = preference.copy(subtitleLanguageId = subtitleLanguageId)
     }
 
     override fun preferMediaSource(mediaSourceId: String, removeOnExist: Boolean) {
@@ -251,10 +251,10 @@ internal class MediaSelectorStateImpl(
                 }
             }
     }
-    override val subtitleLanguages: List<String> by derivedStateOf {
-        mediaList.flatMap { it.properties.subtitleLanguages }
+    override val subtitleLanguageIds: List<String> by derivedStateOf {
+        mediaList.flatMap { it.properties.subtitleLanguageIds }
             .fastDistinctBy { it }
-            .sortedWith(nullsLast(reverseOrder()))
+            .sorted()
     }
     override val mediaSources: List<String> by derivedStateOf {
         mediaList.map { it.mediaSourceId }
@@ -285,13 +285,15 @@ internal class MediaSelectorStateImpl(
 
         null
     }
-    override val selectedSubtitleLanguage: String? by derivedStateOf {
+    override val selectedSubtitleLanguageId: String? by derivedStateOf {
         if (explicitlyRemovedSubtitleLanguage) return@derivedStateOf null
-        preference.subtitleLanguageId?.takeIf { it in subtitleLanguages }?.let { return@derivedStateOf it }
-        default.subtitleLanguageId?.takeIf { it in subtitleLanguages }?.let { return@derivedStateOf it }
+        preference.subtitleLanguageId?.takeIf { it in subtitleLanguageIds }
+            ?.let { return@derivedStateOf it }
+        default.subtitleLanguageId?.takeIf { it in subtitleLanguageIds }
+            ?.let { return@derivedStateOf it }
 
         for (subtitleLanguage in default.fallbackSubtitleLanguageIds.orEmpty()) {
-            subtitleLanguages.find { it == subtitleLanguage }?.let { return@derivedStateOf it }
+            subtitleLanguageIds.find { it == subtitleLanguage }?.let { return@derivedStateOf it }
         }
 
         null
@@ -315,7 +317,7 @@ internal class MediaSelectorStateImpl(
         mediaList.filter {
             selectedAlliance matches it.properties.alliance &&
                     selectedResolution matches it.properties.resolution &&
-                    selectedSubtitleLanguage matches it.properties.subtitleLanguages &&
+                    selectedSubtitleLanguageId matches it.properties.subtitleLanguageIds &&
                     selectedMediaSource matches it.mediaSourceId
         }.sortedWith(
             compareByDescending<Media> {

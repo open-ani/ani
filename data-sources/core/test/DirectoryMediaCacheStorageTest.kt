@@ -93,7 +93,7 @@ class DirectoryMediaCacheStorageTest {
         publishedTime = System.currentTimeMillis(),
         episodes = listOf(EpisodeSort(2)),
         properties = MediaProperties(
-            subtitleLanguages = listOf("CHT"),
+            subtitleLanguageIds = listOf("CHT"),
             resolution = "1080P",
             alliance = "北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组",
         ),

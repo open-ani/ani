@@ -13,6 +13,8 @@ import me.him188.ani.datasources.api.MediaProperties
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.ResourceLocation
+import me.him188.ani.datasources.api.topic.SubtitleLanguage.ChineseSimplified
+import me.him188.ani.datasources.api.topic.SubtitleLanguage.ChineseTraditional
 import me.him188.ani.datasources.dmhy.DmhyMediaSource
 
 private const val SOURCE_DMHY = DmhyMediaSource.ID
@@ -29,7 +31,7 @@ internal val testMediaList = listOf(
         publishedTime = System.currentTimeMillis(),
         episodes = listOf(EpisodeSort(1)),
         properties = MediaProperties(
-            subtitleLanguages = listOf("CHS", "CHT"),
+            subtitleLanguageIds = listOf(ChineseSimplified, ChineseTraditional).map { it.id },
             resolution = "1080P",
             alliance = "桜都字幕组",
         ),
@@ -45,7 +47,7 @@ internal val testMediaList = listOf(
         publishedTime = System.currentTimeMillis(),
         episodes = listOf(EpisodeSort(1)),
         properties = MediaProperties(
-            subtitleLanguages = listOf("CHS", "CHT"),
+            subtitleLanguageIds = listOf(ChineseSimplified, ChineseTraditional).map { it.id },
             resolution = "1080P",
             alliance = "桜都字幕组",
         ),
@@ -61,7 +63,7 @@ internal val testMediaList = listOf(
         publishedTime = System.currentTimeMillis(),
         episodes = listOf(EpisodeSort(2)),
         properties = MediaProperties(
-            subtitleLanguages = listOf("CHT"),
+            subtitleLanguageIds = listOf(ChineseTraditional).map { it.id },
             resolution = "1080P",
             alliance = "北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组",
         ),
@@ -76,7 +78,7 @@ internal val testMediaList = listOf(
         publishedTime = System.currentTimeMillis(),
         episodes = listOf(EpisodeSort(2)),
         properties = MediaProperties(
-            subtitleLanguages = listOf("CHS"),
+            subtitleLanguageIds = listOf(ChineseSimplified).map { it.id },
             resolution = "1080P",
             alliance = "桜都字幕组",
         ),
@@ -91,7 +93,7 @@ internal val testMediaList = listOf(
         publishedTime = System.currentTimeMillis(),
         episodes = listOf(EpisodeSort(3)),
         properties = MediaProperties(
-            subtitleLanguages = listOf(),
+            subtitleLanguageIds = listOf(),
             resolution = "1080P",
             alliance = "Lilith-Raws",
         ),

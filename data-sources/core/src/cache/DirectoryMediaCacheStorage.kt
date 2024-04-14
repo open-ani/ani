@@ -40,6 +40,7 @@ import kotlin.io.path.createDirectories
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.exists
 import kotlin.io.path.extension
+import kotlin.io.path.name
 import kotlin.io.path.readText
 import kotlin.io.path.useDirectoryEntries
 import kotlin.io.path.writeText
@@ -81,7 +82,12 @@ class DirectoryMediaCacheStorage(
                 files.forEach { file ->
                     if (file.extension != METADATA_FILE_EXTENSION) return@forEach
 
-                    val save = json.decodeFromString(MediaCacheSave.serializer(), file.readText())
+                    val save = try {
+                        json.decodeFromString(MediaCacheSave.serializer(), file.readText())
+                    } catch (e: Exception) {
+                        logger.error(e) { "Failed to deserialize metadata file ${file.name}" }
+                        return@forEach
+                    }
 
                     try {
                         val cache = engine.restore(save.origin, save.metadata, scope.coroutineContext)?.also {
@@ -93,6 +99,7 @@ class DirectoryMediaCacheStorage(
                     } catch (e: Exception) {
                         logger.error(e) { "Failed to restore cache for ${save.origin.mediaId}" }
                     }
+
                 }
             }
         }

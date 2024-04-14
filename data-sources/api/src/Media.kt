@@ -95,7 +95,7 @@ class MediaProperties(
     /**
      * Empty list means no subtitles
      */
-    val subtitleLanguages: List<String>,
+    val subtitleLanguageIds: List<String>,
     /**
      * Resolution, e.g. "1080P", "4K"
      */

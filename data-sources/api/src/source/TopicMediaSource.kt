@@ -29,7 +29,7 @@ abstract class TopicMediaSource : MediaSource {
             publishedTime = publishedTimeMillis ?: 0,
             episodes = details?.episode?.raw?.let { listOf(EpisodeSort(it)) } ?: emptyList(),
             properties = MediaProperties(
-                subtitleLanguages = details?.subtitleLanguages?.map { it.toString() } ?: emptyList(),
+                subtitleLanguageIds = details?.subtitleLanguages?.map { it.id } ?: emptyList(),
                 resolution = details?.resolution?.toString() ?: Resolution.R1080P.toString(),
                 alliance = alliance,
             ),

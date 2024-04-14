@@ -126,7 +126,7 @@ sealed class SubtitleLanguage(
 
         fun tryParse(value: String): SubtitleLanguage? {
             for (entry in matchableEntries) {
-                if (entry.matches(value)) {
+                if (entry.id == value || entry.matches(value)) {
                     return entry
                 }
             }

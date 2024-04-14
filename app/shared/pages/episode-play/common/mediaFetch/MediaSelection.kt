@@ -54,6 +54,7 @@ import me.him188.ani.datasources.acgrip.AcgRipMediaSource
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.datasources.api.topic.FileSize
+import me.him188.ani.datasources.api.topic.SubtitleLanguage
 import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
 import me.him188.ani.datasources.dmhy.DmhyMediaSource
 import me.him188.ani.datasources.mikan.MikanMediaSource
@@ -126,14 +127,20 @@ fun MediaSelector(
                     )
 
                     MediaFilterRow(
-                        state.subtitleLanguages,
+                        state.subtitleLanguageIds,
                         label = { Text("字幕语言", overflow = TextOverflow.Visible) },
                         key = { it },
                         eachItem = { item ->
                             FilterChip(
-                                item == state.selectedSubtitleLanguage,
+                                item == state.selectedSubtitleLanguageId,
                                 onClick = { state.preferSubtitleLanguage(item, removeOnExist = true) },
-                                label = { Text(item) },
+                                label = {
+                                    Text(
+                                        remember(item) { // TODO: Subtitle Language i18n 
+                                            SubtitleLanguage.tryParse(item)?.toString() ?: item
+                                        }
+                                    )
+                                },
                             )
                         },
                         Modifier.heightIn(min = 32.dp)
@@ -247,12 +254,12 @@ private fun MediaItem(
                         label = { Text(media.properties.resolution) },
                         enabled = state.selectedResolution != media.properties.resolution,
                     )
-                    media.properties.subtitleLanguages.map {
+                    media.properties.subtitleLanguageIds.map {
                         InputChip(
                             false,
                             onClick = { state.preferSubtitleLanguage(it) },
-                            label = { Text(it) },
-                            enabled = state.selectedSubtitleLanguage != it,
+                            label = { Text(it.toString()) },
+                            enabled = state.selectedSubtitleLanguageId != it,
                         )
                     }
                 }

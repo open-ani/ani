@@ -88,7 +88,7 @@ private fun Media.render(): String {
     val playing = this
     return listOfNotNull(
         playing.properties.resolution,
-        playing.properties.subtitleLanguages.joinToString("/"),
+        playing.properties.subtitleLanguageIds.joinToString("/"),
         playing.size.takeIf { it != 0.bytes },
         playing.properties.alliance,
     ).joinToString(" · ")
