@@ -34,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.unit.dp
+import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.app.ui.subject.episode.EpisodeViewModel
@@ -47,6 +48,8 @@ fun EpisodeActionRow(
 ) {
     val clipboard by rememberUpdatedState(LocalClipboardManager.current)
     val context by rememberUpdatedState(LocalContext.current)
+
+    val navigator by rememberUpdatedState(LocalNavigator.current)
     EpisodeActionRow(
         mediaFetcherCompleted = viewModel.episodeMediaFetchSession.mediaFetcherCompleted,
         onClickMediaSelection = { viewModel.mediaSelectorVisible = true },
@@ -56,6 +59,7 @@ fun EpisodeActionRow(
             }
         },
         onClickCache = {
+            navigator.navigateSubjectCaches(viewModel.subjectId)
         },
         onClickDownload = {
             viewModel.launchInMain {
