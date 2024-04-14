@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -23,10 +24,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
@@ -133,6 +136,7 @@ class CacheItem(
     val mediaSourceId = cache.origin.mediaId
     val episodeSort = cache.metadata.episodeSort
 
+    val downloadSpeed = cache.downloadSpeed.sample(100)
     val progress = cache.progress.sample(100)
         .onCompletion { if (it == null) emit(1f) }
     val totalSize = cache.totalSize
@@ -233,7 +237,10 @@ fun StorageManagerView(
                     ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
                         // progress bar
                         val progress by item.progress.collectAsStateWithLifecycle(null)
-                        if (progress != null && progress != 1f) {
+                        val showProgress by derivedStateOf {
+                            progress != null && progress != 1f
+                        }
+                        if (showProgress) {
                             Row {
                                 LinearProgressIndicator(
                                     progress = { progress ?: 0f },
@@ -244,36 +251,56 @@ fun StorageManagerView(
                         }
 
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            if (progress == 1f) {
-                                Icon(
-                                    Icons.Rounded.DownloadDone,
-                                    null,
-                                    Modifier.padding(end = 8.dp)
-                                )
-                            } else {
-                                Icon(
-                                    Icons.Rounded.Downloading,
-                                    null,
-                                    Modifier.padding(end = 8.dp)
-                                )
+                            Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
+                                // 图标
+                                if (progress == 1f) {
+                                    Icon(
+                                        Icons.Rounded.DownloadDone,
+                                        null,
+                                        Modifier.padding(end = 8.dp)
+                                    )
+                                } else {
+                                    Icon(
+                                        Icons.Rounded.Downloading,
+                                        null,
+                                        Modifier.padding(end = 8.dp)
+                                    )
+                                }
 
+                                Text(renderMediaSource(mediaSourceId)) // "本地"
+
+                                val totalSize by item.totalSize.collectAsStateWithLifecycle(null)
                                 Text(
-                                    remember(progress) {
-                                        "${String.format("%.1f", (progress ?: 0f) * 100)}%"
+                                    remember(totalSize) {
+                                        totalSize?.toString().orEmpty()
                                     },
-                                    Modifier.padding(end = 8.dp)
+                                    Modifier.padding(start = 16.dp),
                                 )
                             }
 
-                            Text(renderMediaSource(mediaSourceId))
+                            // 百分比和速度
+                            if (showProgress) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    val speed by item.downloadSpeed.collectAsStateWithLifecycle(null)
+                                    speed?.let {
+                                        Text(
+                                            remember(speed) {
+                                                "${speed}/s"
+                                            },
+                                            Modifier.padding(end = 8.dp).widthIn(min = 48.dp), // max width is 100.0%
+                                            textAlign = TextAlign.Center
+                                        )
+                                    }
 
-                            val totalSize by item.totalSize.collectAsStateWithLifecycle(null)
-                            Text(
-                                remember(totalSize) {
-                                    totalSize?.toString().orEmpty()
-                                },
-                                Modifier.padding(start = 16.dp),
-                            )
+                                    Text(
+                                        remember(progress) {
+                                            "${String.format("%.1f", (progress ?: 0f) * 100)}%"
+                                        },
+                                        Modifier.padding(end = 8.dp).widthIn(min = 48.dp), // max width is 100.0%
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                            }
                         }
                     }
                 }

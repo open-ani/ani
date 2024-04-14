@@ -91,6 +91,8 @@ interface MediaCache {
 
     val metadata: MediaCacheMetadata
 
+    val downloadSpeed: Flow<FileSize>
+
     /**
      * A flow listens on the progress of the caching. Range is `0..1`
      */

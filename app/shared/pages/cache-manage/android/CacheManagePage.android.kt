@@ -52,6 +52,7 @@ private open class TestMediaCache(
 ) : MediaCache {
     override val origin: Media get() = media.origin
     override suspend fun getCachedMedia(): CachedMedia = media
+    override val downloadSpeed: Flow<FileSize> = MutableStateFlow(1.bytes)
     override val finished: Flow<Boolean> by lazy { progress.map { it == 1f } }
 
     val resumeCalled = AtomicInteger(0)
@@ -147,7 +148,7 @@ private fun PreviewStorageManagerView() {
                                 episodeName = "测试剧集",
                             ),
                         ),
-                        progress = MutableStateFlow(0.3f),
+                        progress = MutableStateFlow(0.9999f),
                         totalSize = MutableStateFlow(233.megaBytes)
                     ),
                     subject = null,
