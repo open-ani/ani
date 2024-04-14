@@ -77,6 +77,10 @@ internal class ExoPlayerState @UiThread constructor(
      */
     private val openResource = MutableStateFlow<OpenedVideoSource?>(null)
 
+    override val videoData: Flow<VideoData?> = openResource.map {
+        it?.data
+    }
+
     override suspend fun setVideoSource(source: VideoSource<*>?) {
         if (source == null) {
             logger.info { "setVideoSource: Cleaning up player since source is null" }
@@ -160,10 +164,25 @@ internal class ExoPlayerState @UiThread constructor(
 
                 override fun onPlaybackStateChanged(playbackState: Int) {
                     when (playbackState) {
-                        Player.STATE_BUFFERING -> state.value = PlaybackState.PAUSED_BUFFERING
-                        Player.STATE_ENDED -> state.value = PlaybackState.FINISHED
-                        Player.STATE_IDLE -> state.value = PlaybackState.READY
-                        Player.STATE_READY -> state.value = PlaybackState.READY
+                        Player.STATE_BUFFERING -> {
+                            state.value = PlaybackState.PAUSED_BUFFERING
+                            isBuffering.value = true
+                        }
+
+                        Player.STATE_ENDED -> {
+                            state.value = PlaybackState.FINISHED
+                            isBuffering.value = false
+                        }
+
+                        Player.STATE_IDLE -> {
+                            state.value = PlaybackState.READY
+                            isBuffering.value = false
+                        }
+
+                        Player.STATE_READY -> {
+                            state.value = PlaybackState.READY
+                            isBuffering.value = false
+                        }
                     }
                     updateVideoProperties()
                 }
@@ -171,6 +190,7 @@ internal class ExoPlayerState @UiThread constructor(
                 override fun onIsPlayingChanged(isPlaying: Boolean) {
                     if (isPlaying) {
                         state.value = PlaybackState.PLAYING
+                        isBuffering.value = false
                     } else {
                         state.value = PlaybackState.PAUSED
                     }
@@ -185,10 +205,10 @@ internal class ExoPlayerState @UiThread constructor(
     }
 
     override val state: MutableStateFlow<PlaybackState> = MutableStateFlow(PlaybackState.PAUSED_BUFFERING)
+    override val isBuffering: MutableStateFlow<Boolean> = MutableStateFlow(false) // 需要单独状态, 因为要用户可能会覆盖 [state] 
 
     override val videoProperties = MutableStateFlow<VideoProperties?>(null)
     override val bufferedPercentage = MutableStateFlow(0)
-    override val isBuffering: Flow<Boolean> = state.map { it == PlaybackState.PAUSED_BUFFERING }
 
     override fun seekTo(positionMillis: Long) {
         player.seekTo(positionMillis)
@@ -214,10 +234,12 @@ internal class ExoPlayerState @UiThread constructor(
     }
 
     override fun pause() {
+        player.playWhenReady = false
         player.pause()
     }
 
     override fun resume() {
+        player.playWhenReady = true
         player.play()
     }
 

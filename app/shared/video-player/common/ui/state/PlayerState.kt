@@ -7,8 +7,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.platform.Context
+import me.him188.ani.app.videoplayer.data.VideoData
 import me.him188.ani.app.videoplayer.data.VideoProperties
 import me.him188.ani.app.videoplayer.data.VideoSource
 import me.him188.ani.app.videoplayer.ui.VideoPlayer
@@ -30,6 +32,11 @@ interface PlayerState {
      * The video source that is currently being played.
      */
     val videoSource: StateFlow<VideoSource<*>?>
+
+    /**
+     * The video data of the currently playing video.
+     */
+    val videoData: Flow<VideoData?>
 
     /**
      * Sets the video source to play, by [opening][VideoSource.open] the [source],
@@ -88,6 +95,11 @@ interface PlayerState {
     @UiThread
     fun resume()
 
+    /**
+     * 视频播放速度 (倍速)
+     *
+     * 1.0 为原速度, 2.0 为两倍速度, 0.5 为一半速度, etc.
+     */
     val playbackSpeed: StateFlow<Float>
 
     @UiThread
@@ -161,6 +173,8 @@ fun interface PlayerStateFactory {
 class DummyPlayerState : AbstractPlayerState() {
     override val state: MutableStateFlow<PlaybackState> = MutableStateFlow(PlaybackState.PAUSED_BUFFERING)
     override val videoSource: MutableStateFlow<VideoSource<*>?> = MutableStateFlow(null)
+    override val videoData: Flow<VideoData?> get() = emptyFlow()
+
     override suspend fun setVideoSource(source: VideoSource<*>?) {
         videoSource.value = source
     }
@@ -177,7 +191,6 @@ class DummyPlayerState : AbstractPlayerState() {
             fileLengthBytes = 100_000_000
         )
     )
-    override val isBuffering: Flow<Boolean> = MutableStateFlow(true)
     override val currentPositionMillis = MutableStateFlow(10_000L)
     override val bufferedPercentage: StateFlow<Int> = MutableStateFlow(50)
     override val playProgress: Flow<Float> = currentPositionMillis.combine(videoProperties) { played, video ->

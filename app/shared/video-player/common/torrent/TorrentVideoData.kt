@@ -11,6 +11,8 @@ class TorrentVideoData(
 
     override val hash: String? get() = session.fileHash
 
+    override val downloadSpeed = session.downloadRate
+
     override suspend fun createInput(): SeekableInput = session.createInput()
 
     override fun close() {

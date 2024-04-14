@@ -122,7 +122,6 @@ fun EpisodePageContent(
 
     Column(modifier.then(if (isFullscreen) Modifier.fillMaxSize() else Modifier.navigationBarsPadding())) {
         // 视频
-        val videoReady by viewModel.isVideoReady.collectAsStateWithLifecycle(false)
         val selected by viewModel.mediaSelected.collectAsStateWithLifecycle(false)
         val danmakuConfig = viewModel.danmaku.config.collectAsStateWithLifecycle(DanmakuConfig.Default).value
         Box(
@@ -130,7 +129,7 @@ fun EpisodePageContent(
                 .then(if (isFullscreen) Modifier.fillMaxSize() else Modifier.statusBarsPadding())
         ) {
             EpisodeVideo(
-                selected, videoReady,
+                selected,
                 title = {
                     val epTitle by viewModel.episodeTitle.collectAsStateWithLifecycle("")
                     val subjectTitle by viewModel.subjectTitle.collectAsStateWithLifecycle("")

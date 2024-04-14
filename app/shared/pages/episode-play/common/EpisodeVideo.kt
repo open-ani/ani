@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -22,20 +21,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.platform.AniBuildConfig
 import me.him188.ani.app.platform.isInLandscapeMode
 import me.him188.ani.app.tools.rememberMonoTasker
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.rememberViewModel
+import me.him188.ani.app.ui.subject.episode.video.loading.EpisodeVideoLoadingIndicator
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettings
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsSideSheet
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsViewModel
 import me.him188.ani.app.ui.subject.episode.video.settings.VideoSettingsButton
 import me.him188.ani.app.ui.subject.episode.video.topbar.EpisodeVideoTopBar
 import me.him188.ani.app.ui.theme.aniDarkColorTheme
-import me.him188.ani.app.videoplayer.ui.VideoLoadingIndicator
 import me.him188.ani.app.videoplayer.ui.VideoPlayer
 import me.him188.ani.app.videoplayer.ui.VideoScaffold
 import me.him188.ani.app.videoplayer.ui.guesture.GestureLock
@@ -54,7 +52,6 @@ import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.danmaku.ui.DanmakuHost
 import me.him188.ani.danmaku.ui.DanmakuHostState
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
-import kotlin.time.Duration.Companion.seconds
 
 
 /**
@@ -64,7 +61,6 @@ import kotlin.time.Duration.Companion.seconds
 @Composable
 internal fun EpisodeVideo(
     videoSourceSelected: Boolean,
-    videoReady: Boolean,
     title: @Composable () -> Unit,
     playerState: PlayerState,
     danmakuConfig: DanmakuConfig,
@@ -161,7 +157,7 @@ internal fun EpisodeVideo(
         },
         floatingMessage = {
             Column {
-                EpisodeVideoLoadingIndicator(playerState, videoSourceSelected, videoReady)
+                EpisodeVideoLoadingIndicator(playerState, videoSourceSelected)
                 if (AniBuildConfig.current().isDebug) {
                     playerState.videoSource.collectAsStateWithLifecycle().value?.let {
                         EpisodeVideoDebugInfo(
@@ -248,45 +244,4 @@ internal fun EpisodeVideo(
         },
         isFullscreen = isFullscreen
     )
-}
-
-@Composable
-private fun EpisodeVideoLoadingIndicator(
-    playerState: PlayerState,
-    videoSourceSelected: Boolean,
-    videoReady: Boolean,
-    modifier: Modifier = Modifier,
-) {
-    val isBuffering by playerState.isBuffering.collectAsStateWithLifecycle(true)
-    if (isBuffering) {
-        var loadedTooLong by rememberSaveable { mutableStateOf(false) }
-        VideoLoadingIndicator(
-            showProgress = videoSourceSelected,
-            text = {
-                when {
-                    !videoSourceSelected -> {
-                        Text("请选择数据源")
-                    }
-
-                    !videoReady -> {
-                        Text("正在下载种子")
-                    }
-
-                    loadedTooLong -> {
-                        Text("资源较慢, 正在努力缓冲")
-                    }
-
-                    else -> {
-                        //                                val speed by video.downloadRate.collectAsStateWithLifecycle(null)
-                        Text("正在缓冲")
-                        LaunchedEffect(true) {
-                            delay(10.seconds)
-                            loadedTooLong = true
-                        }
-                    }
-                }
-            },
-            modifier,
-        )
-    }
 }

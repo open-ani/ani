@@ -108,14 +108,6 @@ interface EpisodeViewModel : HasBackgroundScope {
     val mediaSelected: Flow<Boolean>
 
     /**
-     * `true` if the video is ready to play.
-     *
-     * This does not guarantee that there is enough buffer to play the video.
-     * For torrent videos, `true` means the magnet link is resolved and we can start downloading.
-     */
-    val isVideoReady: Flow<Boolean>
-
-    /**
      * Play controller for video view. This can be saved even when window configuration changes (i.e. everything recomposes).
      */
     val playerState: PlayerState
@@ -224,8 +216,6 @@ private class EpisodeViewModelImpl(
             }
         }.shareInBackground()
 
-
-    override val isVideoReady: Flow<Boolean> = videoSource.map { it != null }
 
     override val playerState: PlayerState =
         playerStateFactory.create(context, backgroundScope.coroutineContext)

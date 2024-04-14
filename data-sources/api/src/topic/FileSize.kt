@@ -77,8 +77,10 @@ value class FileSize(
         inline val Double.gigaBytes: FileSize get() = (this * 1024).megaBytes
 
         val Zero = 0.bytes
+        val Unspecified = FileSize(-1L)
     }
 
+    @Suppress("DefaultLocale")
     override fun toString(): String {
         val gigaBytes = this.inGigaBytesDouble
         if (gigaBytes >= 1) {
