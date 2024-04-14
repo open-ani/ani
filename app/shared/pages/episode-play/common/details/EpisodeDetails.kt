@@ -37,6 +37,7 @@ import me.him188.ani.app.ui.subject.episode.EpisodeViewModel
 import me.him188.ani.app.ui.theme.slightlyWeaken
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
+import me.him188.ani.datasources.api.topic.SubtitleLanguage
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.openapitools.client.models.EpisodeCollectionType
 
@@ -88,10 +89,22 @@ private fun Media.render(): String {
     val playing = this
     return listOfNotNull(
         playing.properties.resolution,
-        playing.properties.subtitleLanguageIds.joinToString("/"),
+        playing.properties.subtitleLanguageIds.joinToString("/") { renderSubtitleLanguage(it) }
+            .takeIf { it.isNotBlank() },
         playing.size.takeIf { it != 0.bytes },
         playing.properties.alliance,
     ).joinToString(" · ")
+}
+
+fun renderSubtitleLanguage(id: String): String {
+    return when (id) {
+        SubtitleLanguage.ChineseCantonese.id -> "粤语"
+        SubtitleLanguage.ChineseSimplified.id -> "简中"
+        SubtitleLanguage.ChineseTraditional.id -> "繁中"
+        SubtitleLanguage.Japanese.id -> "日语"
+        SubtitleLanguage.English.id -> "英语"
+        else -> id
+    }
 }
 
 /**

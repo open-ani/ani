@@ -50,6 +50,7 @@ import me.him188.ani.app.dmhy
 import me.him188.ani.app.mikan
 import me.him188.ani.app.tools.formatDateTime
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
+import me.him188.ani.app.ui.subject.episode.details.renderSubtitleLanguage
 import me.him188.ani.datasources.acgrip.AcgRipMediaSource
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.source.MediaSourceLocation
@@ -258,7 +259,7 @@ private fun MediaItem(
                         InputChip(
                             false,
                             onClick = { state.preferSubtitleLanguage(it) },
-                            label = { Text(it.toString()) },
+                            label = { Text(renderSubtitleLanguage(it)) },
                             enabled = state.selectedSubtitleLanguageId != it,
                         )
                     }

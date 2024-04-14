@@ -28,7 +28,7 @@ import kotlinx.serialization.encoding.Encoder
 @Serializable(SubtitleLanguage.Serializer::class)
 sealed class SubtitleLanguage(
     val id: String,
-    private val displayName: String,
+    val displayName: String,
 ) {
     abstract fun matches(text: String): Boolean
     override fun toString(): String = displayName

@@ -42,6 +42,7 @@ import me.him188.ani.app.ui.preference.PreferenceScope
 import me.him188.ani.app.ui.preference.PreferenceTab
 import me.him188.ani.app.ui.preference.SelectableItem
 import me.him188.ani.app.ui.preference.SwitchItem
+import me.him188.ani.app.ui.subject.episode.details.renderSubtitleLanguage
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.app.ui.subject.episode.mediaFetch.renderMediaSource
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
@@ -349,17 +350,6 @@ private fun PreferenceScope.MediaDownloadGroup(vm: MediaPreferenceViewModel) {
                 )
             },
         )
-    }
-}
-
-private fun renderSubtitleLanguage(languageId: String): String {
-    return when (languageId) {
-        SubtitleLanguage.ChineseCantonese.id -> "粤语"
-        SubtitleLanguage.ChineseSimplified.id -> "简中"
-        SubtitleLanguage.ChineseTraditional.id -> "繁中"
-        SubtitleLanguage.Japanese.id -> "日语"
-        SubtitleLanguage.English.id -> "英语"
-        else -> ""
     }
 }
 
