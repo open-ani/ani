@@ -48,7 +48,7 @@ import me.him188.ani.app.torrent.model.lastIndex
 public class TorrentDownloadController(
     private val pieces: List<Piece>,
     private val priorities: PiecePriorities,
-    private val windowSize: Int = 32,
+    private val windowSize: Int = 8,
     private val headerSize: Long = 128 * 1024,
     private val footerSize: Long = 128 * 1024,
 ) {
@@ -157,7 +157,7 @@ internal sealed class State {
     class Sequential(
         val startIndex: Int,
         val lastIndex: Int,
-        val windowSize: Int = 32,
+        val windowSize: Int,
     ) : State() {
         init {
             require(windowSize > 0) { "windowSize must be greater than 0" }

@@ -129,7 +129,7 @@ internal class TorrentDownloadSessionImpl(
                 logger.info { "[TorrentDownloadControl] Set piece ${piece.pieceIndex} priority to TOP because it was requested " }
                 val pieces = handle.await().pieces
                 jobsToDoInHandle.add { handle ->
-                    handle.setPieceDeadline(piece.pieceIndex, System.currentTimeMillis().and(0x0FFF_FFFFL).toInt())
+                    handle.setPieceDeadline(piece.pieceIndex, 0)
                     for (i in (piece.pieceIndex + 1..piece.pieceIndex + 3)) {
                         if (i < pieces.size - 1) {
                             handle.setPieceDeadline(
@@ -208,7 +208,7 @@ internal class TorrentDownloadSessionImpl(
         override fun alert(alert: Alert<*>) {
             if (alert !is TorrentAlert) return
             if (alert.torrentName() != this@TorrentDownloadSessionImpl.torrentName) return // listener will receive alerts from other torrents
-            
+
             try {
                 val type = alert.type()
 
@@ -232,6 +232,8 @@ internal class TorrentDownloadSessionImpl(
                         if (pieces.isNotEmpty()) {
 //                            torrentHandle.piecePriority(0, Priority.TOP_PRIORITY)
                             torrentHandle.setPieceDeadline(0, 0)
+                            torrentHandle.setPieceDeadline(1, 0)
+                            torrentHandle.setPieceDeadline(2, 1)
 //                            torrentHandle.piecePriority(pieces.lastIndex, Priority.TOP_PRIORITY)
                             torrentHandle.setPieceDeadline(pieces.lastIndex, 0)
                         }
@@ -405,7 +407,7 @@ internal class TorrentDownloadSessionImpl(
                 logger.info { "[TorrentDownloadControl] Prioritizing pieces: $pieceIndexes" }
                 pieceIndexes.forEach { index ->
                     jobsToDoInHandle.add { handle ->
-//                        handle.piecePriority(index, Priority.TOP_PRIORITY)
+                        handle.setPieceDeadline(index, System.currentTimeMillis().and(0x0FFF_FFFFL).toInt())
                     }
                 }
                 lastPrioritizedIndexes = pieceIndexes.toList()
