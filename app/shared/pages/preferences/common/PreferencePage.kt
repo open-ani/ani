@@ -685,7 +685,7 @@ abstract class PreferenceScope {
                                         Row(
                                             modifier = Modifier
                                                 .shadow(elevation.value)
-                                                .background(MaterialTheme.colorScheme.surface)
+                                                .background(MaterialTheme.colorScheme.surfaceVariant) // match card background
                                                 .fillMaxWidth(),
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
