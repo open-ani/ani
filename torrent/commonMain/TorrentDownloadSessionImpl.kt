@@ -335,10 +335,16 @@ internal class TorrentDownloadSessionImpl(
     }
 
     override suspend fun pause() {
+        if (state.value == TorrentDownloadState.Finished) {
+            return
+        }
         withHandle { it.pause() }
     }
 
     override suspend fun resume() {
+        if (state.value == TorrentDownloadState.Finished) {
+            return
+        }
         withHandle { it.resume() }
     }
 
