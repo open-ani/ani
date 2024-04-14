@@ -184,7 +184,7 @@ internal class MediaSelectorStateImpl(
     var explicitlyRemovedMediaSource: Boolean by mutableStateOf(false)
 
     override fun preferAlliance(alliance: String, removeOnExist: Boolean) {
-        if (removeOnExist && selectedAlliance == alliance) {
+        if (removeOnExist && selectedAlliance == alliance && !explicitlyRemovedAlliance) {
             // was selected either by default or by user, then we remove it
             preference = preference.copy(alliance = null)
             explicitlyRemovedAlliance = true
@@ -195,32 +195,35 @@ internal class MediaSelectorStateImpl(
     }
 
     override fun preferResolution(resolution: String, removeOnExist: Boolean) {
-        if (removeOnExist && selectedResolution == resolution) {
+        if (removeOnExist && selectedResolution == resolution && !explicitlyRemovedResolution) {
             // was selected either by default or by user, then we remove it
             preference = preference.copy(resolution = null)
             explicitlyRemovedResolution = true
             return
         }
+        explicitlyRemovedResolution = false
         preference = preference.copy(resolution = resolution)
     }
 
     override fun preferSubtitleLanguage(subtitleLanguageId: String, removeOnExist: Boolean) {
-        if (removeOnExist && selectedSubtitleLanguageId == subtitleLanguageId) {
+        if (removeOnExist && selectedSubtitleLanguageId == subtitleLanguageId && !explicitlyRemovedSubtitleLanguage) {
             // was selected either by default or by user, then we remove it
             preference = preference.copy(subtitleLanguageId = null)
             explicitlyRemovedSubtitleLanguage = true
             return
         }
+        explicitlyRemovedSubtitleLanguage = false
         preference = preference.copy(subtitleLanguageId = subtitleLanguageId)
     }
 
     override fun preferMediaSource(mediaSourceId: String, removeOnExist: Boolean) {
-        if (removeOnExist && selectedMediaSource == mediaSourceId) {
+        if (removeOnExist && selectedMediaSource == mediaSourceId && !explicitlyRemovedMediaSource) {
             // was selected either by default or by user, then we remove it
             preference = preference.copy(mediaSourceId = null)
             explicitlyRemovedMediaSource = true
             return
         }
+        explicitlyRemovedMediaSource = false
         preference = preference.copy(mediaSourceId = mediaSourceId)
     }
 
