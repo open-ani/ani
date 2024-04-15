@@ -60,13 +60,13 @@ import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
  */
 @Composable
 internal fun EpisodeVideo(
-    videoSourceSelected: Boolean,
+    videoSourceSelected: () -> Boolean,
     title: @Composable () -> Unit,
     playerState: PlayerState,
-    danmakuConfig: DanmakuConfig,
+    danmakuConfig: () -> DanmakuConfig,
     danmakuHostState: DanmakuHostState,
     onClickFullScreen: () -> Unit,
-    danmakuEnabled: Boolean,
+    danmakuEnabled: () -> Boolean,
     setDanmakuEnabled: (enabled: Boolean) -> Unit,
     onSendDanmaku: (text: String) -> Unit,
     modifier: Modifier = Modifier,
@@ -121,11 +121,11 @@ internal fun EpisodeVideo(
         },
         danmakuHost = {
             AnimatedVisibility(
-                danmakuEnabled,
+                danmakuEnabled(),
                 enter = fadeIn(tween(200)),
                 exit = fadeOut(tween(200))
             ) {
-                DanmakuHost(danmakuHostState, Modifier.matchParentSize(), danmakuConfig)
+                DanmakuHost(danmakuHostState, Modifier.matchParentSize(), danmakuConfig())
             }
         },
         gestureHost = {
@@ -157,7 +157,7 @@ internal fun EpisodeVideo(
         },
         floatingMessage = {
             Column {
-                EpisodeVideoLoadingIndicator(playerState, videoSourceSelected)
+                EpisodeVideoLoadingIndicator(playerState, videoSourceSelected())
                 if (AniBuildConfig.current().isDebug) {
                     playerState.videoSource.collectAsStateWithLifecycle().value?.let {
                         EpisodeVideoDebugInfo(
@@ -193,8 +193,8 @@ internal fun EpisodeVideo(
                     )
 
                     PlayerControllerDefaults.DanmakuIcon(
-                        danmakuEnabled,
-                        onClick = { setDanmakuEnabled(!danmakuEnabled) }
+                        danmakuEnabled(),
+                        onClick = { setDanmakuEnabled(!danmakuEnabled()) }
                     )
                 },
                 progressIndicator = {

@@ -128,8 +128,9 @@ fun EpisodePageContent(
             Modifier.fillMaxWidth().background(Color.Black)
                 .then(if (isFullscreen) Modifier.fillMaxSize() else Modifier.statusBarsPadding())
         ) {
+            val danmakuEnabled by viewModel.danmaku.enabled.collectAsStateWithLifecycle(false)
             EpisodeVideo(
-                selected,
+                { selected },
                 title = {
                     val epTitle by viewModel.episodeTitle.collectAsStateWithLifecycle("")
                     val subjectTitle by viewModel.subjectTitle.collectAsStateWithLifecycle("")
@@ -137,7 +138,7 @@ fun EpisodePageContent(
                     EpisodePlayerTitle(ep, epTitle, subjectTitle)
                 },
                 viewModel.playerState,
-                danmakuConfig = danmakuConfig,
+                danmakuConfig = { danmakuConfig },
                 danmakuHostState = remember(viewModel) { viewModel.danmaku.danmakuHostState },
                 onClickFullScreen = {
                     if (isFullscreen) {
@@ -148,7 +149,7 @@ fun EpisodePageContent(
                         context.setRequestFullScreen(true)
                     }
                 },
-                danmakuEnabled = viewModel.danmaku.enabled.collectAsStateWithLifecycle(false).value,
+                danmakuEnabled = { danmakuEnabled },
                 setDanmakuEnabled = { viewModel.launchInBackground { danmaku.setEnabled(it) } },
                 onSendDanmaku = {},
                 isFullscreen = isFullscreen,
