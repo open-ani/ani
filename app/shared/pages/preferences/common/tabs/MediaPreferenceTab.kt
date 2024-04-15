@@ -154,7 +154,7 @@ private fun PreferenceScope.AutoCacheGroup(
             title = { Text("最大自动缓存话数") },
             description = {
                 Column {
-                    Text("手动缓存不受该设置限制，但当手动缓存数量超过该设置值后，将不会自动缓存")
+                    Text("若手动缓存数量超过该设置值，将不会自动缓存")
                     Row {
                         Text(remember(maxCount) { autoCacheDescription(maxCount) })
                         if (maxCount == 10f) {
@@ -184,14 +184,11 @@ private fun PreferenceScope.AutoCacheGroup(
                 vm.updateMediaCacheSettings(mediaCacheSettings.copy(mostRecentOnly = it))
             },
             title = { Text("仅缓存最近看过的番剧") },
-            description = {
-                Column {
-                    Text("当 \"在看\" 分类中有较多番剧时，可以忽略那些长期未看的番剧")
-                    if (mostRecentOnly) {
-                        Text("当前设置: 总是缓存 \"在看\" 分类中的全部番剧")
-                    }
-                }
-            },
+//            description = {
+//                if (!mostRecentOnly) {
+//                    Text("当前设置: 总是缓存 \"在看\" 分类中的全部番剧")
+//                }
+//            },
         )
 
         AnimatedVisibility(mostRecentOnly) {
@@ -357,5 +354,5 @@ fun autoCacheDescription(sliderValue: Float) = when (sliderValue) {
     0f -> "当前设置: 不自动缓存"
     10f -> "当前设置: 自动缓存全部未观看剧集, "
     else -> "当前设置: 自动缓存观看进度之后的 ${sliderValue.toInt()} 话, " +
-            "预计每个番剧占用 ${600.megaBytes * sliderValue}"
+            "预计占用空间 ${600.megaBytes * sliderValue}/番剧"
 }
