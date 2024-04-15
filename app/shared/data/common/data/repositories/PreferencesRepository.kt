@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
@@ -64,6 +65,7 @@ class PreferencesRepositoryImpl(
         private val key = stringPreferencesKey(name)
         override val flow: Flow<T> = preferences.data
             .map { it[key] }
+            .distinctUntilChanged()
             .map { string ->
                 if (string == null) {
                     default()
