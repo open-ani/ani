@@ -38,6 +38,7 @@ class DirectoryMediaCacheStorageTest {
     ) : MediaCache {
         override val origin: Media get() = media.origin
         override suspend fun getCachedMedia(): CachedMedia = media
+        override val downloadSpeed: Flow<FileSize> = MutableStateFlow(0.bytes)
         override val finished: Flow<Boolean> by lazy {
             progress.map { it == 1f }
         }
