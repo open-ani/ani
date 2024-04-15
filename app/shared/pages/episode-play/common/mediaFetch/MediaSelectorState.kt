@@ -321,7 +321,7 @@ internal class MediaSelectorStateImpl(
             selectedAlliance matches it.properties.alliance &&
                     selectedResolution matches it.properties.resolution &&
                     selectedSubtitleLanguageId matches it.properties.subtitleLanguageIds &&
-                    selectedMediaSource matches it.mediaSourceId
+                    (selectedMediaSource matches it.mediaSourceId || it.location == MediaSourceLocation.LOCAL) // always show local, so that [makeDefaultSelection] will select a local one
         }.sortedWith(
             compareByDescending<Media> {
                 if (it.location == MediaSourceLocation.LOCAL) 1 else 0
