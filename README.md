@@ -28,7 +28,8 @@ Ani 3.0 **正在**开发中. 以下几点可以给你一个技术上的大概了
 - UI 100% [Compose][Compose Multiplatform]
 - 独立 Compose 弹幕引擎, 预留接入其他弹幕数据源的接口
 - 独立 Compose 视频播放器, Android 底层为 ExoPlayer
-- 独立的抽象数据源对接模块: SPI 方式加载 [动漫花园][dmhy], [acg.rip][acg.rip], [Mikan][Mikan]
+- 独立的抽象数据源对接模块: SPI 方式加载 [动漫花园][dmhy], [acg.rip][acg.rip], [Mikan][Mikan],
+  支持扩展私有数据源, 局域网缓存服务器等
 
 ### 参与开发
 
@@ -51,7 +52,7 @@ Ani 支持 Android 和桌面端 (macOS、Linux、Windows)。
 
 ### 登录
 
-使用 [Bangumi][Bangumi] OAuth (浏览器) 登录, 即软件会跳转到 Bangumi 官网授权, 不要求在客户端内输入账号密码.
+使用 [Bangumi][Bangumi] OAuth (浏览器) 登录, 不要求在客户端内输入账号密码.
 
 ### 管理追番
 
@@ -62,17 +63,7 @@ Ani 支持 Android 和桌面端 (macOS、Linux、Windows)。
 
 <img width="300" src=".readme/images/collection/collection-light.jpeg" alt="collection-light"/> <img width="300" src=".readme/images/collection/collection-dark.jpg" alt="collection-dark"/>
 
-### 条目详情
-
-根据一般人找番时会关注的如下几点设计:
-
-- 开播时间
-- 声优
-- 制作公司, 监督
-- 海报第一印象
-- 角色第一印象
-- 追番人数
-- 评分 *(计划实现)*
+- 根据找番时会关注的声优, 制作公司, 监督等几点设计
 
 <img width="300" src=".readme/images/subject/subject-light.jpeg" alt="subject-light"/> <img width="300" src=".readme/images/subject/subject-dark.jpg" alt="subject-dark"/>
 
@@ -111,6 +102,22 @@ Ani 支持 Android 和桌面端 (macOS、Linux、Windows)。
 - 锁定手势
 
 <img width="600" src=".readme/images/episode/player-gesture.jpeg" alt="episode-gesture"/>
+
+### 资源偏好设置
+
+- 设置全局优先选择的字幕组, 字幕语言等设置
+- 支持按设置的优先级选择
+- 在观看时修改过滤自动记忆并应用到下次播放和自动缓存
+
+<img width="300" src=".readme/images/preferences/subtitle-language.jpg"  alt="subtitle-language.jpg"/> <img width="300" src=".readme/images/preferences/media-source.jpg"  alt="media-source.jpg"/> 
+
+### 视频缓存
+
+- 自动根据资源偏好设置缓存观看进度的下一集 *(正在开发, 计划 beta11)*
+- 管理缓存的所有视频
+- 按番剧分类管理
+
+<img width="300" src=".readme/images/preferences/cache.jpg"  alt="cache.jpg"/> <img width="300" src=".readme/images/subject/subject-cache.jpg"  alt="subject-cache.jpg"/> 
 
 ### 完全免费无广告且开放源代码
 
