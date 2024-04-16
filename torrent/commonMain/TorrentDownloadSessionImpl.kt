@@ -24,12 +24,10 @@ import me.him188.ani.utils.io.asSeekableInput
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.trace
-import org.libtorrent4j.AlertListener
 import org.libtorrent4j.AnnounceEntry
 import org.libtorrent4j.TorrentHandle
 import org.libtorrent4j.TorrentInfo
 import org.libtorrent4j.alerts.AddTorrentAlert
-import org.libtorrent4j.alerts.Alert
 import org.libtorrent4j.alerts.AlertType
 import org.libtorrent4j.alerts.BlockDownloadingAlert
 import org.libtorrent4j.alerts.BlockFinishedAlert
@@ -45,7 +43,6 @@ import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration.Companion.seconds
 
 internal class TorrentDownloadSessionImpl(
-    private val removeListener: suspend (listener: AlertListener) -> Unit,
     private val closeHandle: suspend (handle: TorrentHandle) -> Unit,
     private val torrentName: String,
     private val torrentInfo: TorrentInfo,
@@ -56,7 +53,7 @@ internal class TorrentDownloadSessionImpl(
      * The files are not guaranteed to be present at the moment when this function returns.
      */
     private val saveDirectory: File,
-    private val onClose: () -> Unit,
+    private val onClose: (TorrentDownloadSessionImpl) -> Unit,
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
 ) : TorrentDownloadSession {
     private val coroutineCloseHandle =
@@ -177,7 +174,7 @@ internal class TorrentDownloadSessionImpl(
     private val onFinish = CompletableDeferred(Unit)
     private var torrentHandle: TorrentHandle? = null
 
-    internal val listener = object : AlertListener {
+    internal val listener = object : TorrentAlertListener {
         // Typical event sequence:
         /*
         Alert: LISTEN_SUCCEEDED
@@ -196,7 +193,7 @@ internal class TorrentDownloadSessionImpl(
         Alert: BLOCK_DOWNLOADING
         Alert: BLOCK_FINISHED
          */
-        override fun types(): IntArray? = null
+//        override fun types(): IntArray? = null
 //        override fun types(): IntArray = intArrayOf(
 //            AlertType.ADD_TORRENT.swig(),
 //            AlertType.PEER_CONNECT.swig(),
@@ -207,8 +204,7 @@ internal class TorrentDownloadSessionImpl(
 //            AlertType.TORRENT_FINISHED.swig(),
 //        )
 
-        override fun alert(alert: Alert<*>) {
-            if (alert !is TorrentAlert) return
+        override fun onAlert(alert: TorrentAlert<*>) {
             if (alert.torrentName() != this@TorrentDownloadSessionImpl.torrentName) return // listener will receive alerts from other torrents
 
             try {
@@ -373,12 +369,16 @@ internal class TorrentDownloadSessionImpl(
     }
 
     private suspend fun closeImpl() {
-        removeListener(listener)
-        torrentHandle?.let {
-            closeHandle(it)
+        withContext(LockedSessionManager.dispatcher) {
+            logger.info { "Close torrent $torrentName: closeHandle $torrentHandle" }
+            torrentHandle?.let {
+                closeHandle(it)
+            }
+            logger.info { "Close torrent $torrentName: onClose" }
+            onClose(this@TorrentDownloadSessionImpl)
+            logger.info { "Close torrent $torrentName: dispose handle" }
+            coroutineCloseHandle?.dispose()
         }
-        onClose()
-        coroutineCloseHandle?.dispose()
     }
 
     private var closed = false

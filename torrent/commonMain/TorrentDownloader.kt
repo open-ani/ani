@@ -8,6 +8,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.torrent.model.EncodedTorrentData
+import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
@@ -19,9 +20,11 @@ import org.libtorrent4j.TorrentFlags
 import org.libtorrent4j.TorrentInfo
 import org.libtorrent4j.alerts.Alert
 import org.libtorrent4j.alerts.AlertType
+import org.libtorrent4j.alerts.TorrentAlert
 import org.libtorrent4j.swig.settings_pack
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.Executors
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -80,6 +83,32 @@ private val logger = logger(TorrentDownloader::class)
 internal class LockedSessionManager(
     private val sessionManager: SessionManager,
 ) {
+    private val listeners = CopyOnWriteArraySet<TorrentAlertListener>()
+
+    init {
+        sessionManager.addListener(object : AlertListener {
+            override fun types(): IntArray? = null
+            override fun alert(alert: Alert<*>) {
+                if (alert !is TorrentAlert<*>) return
+                listeners.forEach {
+                    try {
+                        it.onAlert(alert)
+                    } catch (e: Throwable) {
+                        logger.error(e) { "An exception occurred in AlertListener" }
+                    }
+                }
+            }
+        })
+    }
+
+    fun addListener(listener: TorrentAlertListener) {
+        listeners.add(listener)
+    }
+
+    fun removeListener(listener: TorrentAlertListener) {
+        listeners.remove(listener)
+    }
+
     suspend inline fun <R> use(
         crossinline block: SessionManager.() -> R
     ) = withContext(dispatcher) {
@@ -245,11 +274,11 @@ internal class TorrentDownloaderImpl(
         val session =
             TorrentDownloadSessionImpl(
                 torrentName = ti.name(),
-                removeListener = { sessionManager.use { removeListener(it) } },
                 closeHandle = { sessionManager.use { remove(it) } },
                 torrentInfo = ti,
                 saveDirectory = saveDirectory,
                 onClose = {
+                    sessionManager.removeListener(it.listener)
                     dataToSession.remove(hash)
                 },
                 parentCoroutineContext = parentCoroutineContext,
@@ -262,7 +291,7 @@ internal class TorrentDownloaderImpl(
                 setInteger(settings_pack.int_types.request_timeout.swigValue(), 3)
                 setInteger(settings_pack.int_types.peer_timeout.swigValue(), 3)
             }
-            addListener(session.listener)
+            sessionManager.addListener(session.listener)
 
             val priorities = Priority.array(Priority.IGNORE, ti.numFiles())
             logger.info { "File name: ${ti.files().fileName(0)}" }
@@ -281,7 +310,7 @@ internal class TorrentDownloaderImpl(
                 )
                 logger.info { "Torrent download started." }
             } catch (e: Throwable) {
-                removeListener(session.listener)
+                sessionManager.removeListener(session.listener)
                 throw e
             }
         }
