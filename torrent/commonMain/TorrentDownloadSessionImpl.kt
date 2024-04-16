@@ -23,6 +23,7 @@ import me.him188.ani.utils.io.SeekableInput
 import me.him188.ani.utils.io.asSeekableInput
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
+import me.him188.ani.utils.logging.trace
 import org.libtorrent4j.AlertListener
 import org.libtorrent4j.AnnounceEntry
 import org.libtorrent4j.TorrentHandle
@@ -95,7 +96,7 @@ internal class TorrentDownloadSessionImpl(
         @Synchronized
         fun onPieceDownloaded(index: Int) {
             pieces[index].state.value = PieceState.FINISHED
-            logger.info { "[TorrentDownloadControl] Piece downloaded: $index. " } // Was downloading ${controller.getDebugInfo().downloadingPieces}
+            logger.trace { "[TorrentDownloadControl] Piece downloaded: $index. " } // Was downloading ${controller.getDebugInfo().downloadingPieces}
             controller.onPieceDownloaded(index)
         }
 
@@ -127,7 +128,7 @@ internal class TorrentDownloadSessionImpl(
             file,
             handle.await().pieces,
             onSeek = { piece ->
-                logger.info { "[TorrentDownloadControl] Set piece ${piece.pieceIndex} priority to TOP because it was requested " }
+                logger.info { "[TorrentDownloadControl] $torrentName: Set piece ${piece.pieceIndex} priority to TOP because it was requested " }
                 val pieces = handle.await().pieces
                 jobsToDoInHandle.add { handle ->
                     handle.setPieceDeadline(piece.pieceIndex, 0)
@@ -150,10 +151,10 @@ internal class TorrentDownloadSessionImpl(
                 saveDirectory.walk().singleOrNull { it.isFile }
             }
             if (file != null) {
-                logger.info { "Get file: ${file.absolutePath}" }
+                logger.info { "$torrentName: Get file: ${file.absolutePath}" }
                 return file
             }
-            logger.info { "Still waiting to get file... saveDirectory: $saveDirectory" }
+            logger.info { "$torrentName: Still waiting to get file... saveDirectory: $saveDirectory" }
             delay(1.seconds)
         }
         @Suppress("UNREACHABLE_CODE") // compiler bug
@@ -215,7 +216,7 @@ internal class TorrentDownloadSessionImpl(
 
                 when (type) {
                     AlertType.ADD_TORRENT -> {
-                        logger.info { "Torrent added" }
+                        logger.info { "$torrentName: Torrent added" }
                         val torrentHandle = (alert as AddTorrentAlert).handle()
                         this@TorrentDownloadSessionImpl.torrentHandle = torrentHandle
 
@@ -251,9 +252,8 @@ internal class TorrentDownloadSessionImpl(
                             handleOrNull()?.torrentHandle = torrentHandle
                             return
                         }
-                        logger.info { "TORRENT_RESUMED" }
                         val pieceAvailability = torrentHandle.pieceAvailability()
-                        logger.info { "Total ${pieceAvailability.size} pieces" }
+                        logger.info { "$torrentName: Total ${pieceAvailability.size} pieces" }
 
 
 //                        torrentHandle.prioritizePieces(pieces.indices.map { Priority.LOW }.toTypedArray())
@@ -266,7 +266,6 @@ internal class TorrentDownloadSessionImpl(
 //                            piecePriorities[i] = Priority.SIX
 //                        }
 //                        torrentHandle.prioritizePieces(piecePriorities)
-                        logger.info { "Priorities set" }
 
                         state.value = TorrentDownloadState.FetchingMetadata
                         _downloadedBytes.tryEmit(0)
@@ -317,7 +316,7 @@ internal class TorrentDownloadSessionImpl(
                     }
 
                     AlertType.TORRENT_FINISHED -> {
-                        logger.info { "Torrent finished" }
+                        logger.info { "$torrentName: Torrent finished" }
                         handleOrNull()?.onFinished()
                             ?: error("Torrent handle should not be null")
                         downloadRate.tryEmit(0)
@@ -330,7 +329,7 @@ internal class TorrentDownloadSessionImpl(
                     }
                 }
             } catch (e: Throwable) {
-                logger.info(e) { "Error in alert listener" }
+                logger.info(e) { "$torrentName: Error in alert listener" }
             }
         }
     }
@@ -415,7 +414,7 @@ internal class TorrentDownloadSessionImpl(
                 if (lastPrioritizedIndexes == pieceIndexes) {
                     return
                 }
-                logger.info { "[TorrentDownloadControl] Prioritizing pieces: $pieceIndexes" }
+                logger.trace { "[TorrentDownloadControl] Prioritizing pieces: $pieceIndexes" }
                 pieceIndexes.forEach { index ->
                     jobsToDoInHandle.add { handle ->
                         handle.setPieceDeadline(index, System.currentTimeMillis().and(0x0FFF_FFFFL).toInt())
