@@ -113,6 +113,19 @@ fun MediaSelector(
                 Column(
                     Modifier.fillMaxWidth(),
                 ) {
+                    MediaFilterFlowRow(
+                        state.mediaSources,
+                        label = { Text("来源", overflow = TextOverflow.Visible) },
+                        eachItem = { item ->
+                            FilterChip(
+                                item == state.selectedMediaSource,
+                                onClick = { state.preferMediaSource(item, removeOnExist = true) },
+                                label = { Text(remember(item) { renderMediaSource(item) }) },
+                            )
+                        },
+                        Modifier.heightIn(min = 32.dp)
+                    )
+
                     MediaFilterRow(
                         state.resolutions,
                         label = { Text("分辨率", overflow = TextOverflow.Visible) },
@@ -155,19 +168,6 @@ fun MediaSelector(
                                 item == state.selectedAlliance,
                                 onClick = { state.preferAlliance(item, removeOnExist = true) },
                                 label = { Text(item) },
-                            )
-                        },
-                        Modifier.heightIn(min = 32.dp)
-                    )
-
-                    MediaFilterFlowRow(
-                        state.mediaSources,
-                        label = { Text("来源", overflow = TextOverflow.Visible) },
-                        eachItem = { item ->
-                            FilterChip(
-                                item == state.selectedMediaSource,
-                                onClick = { state.preferMediaSource(item, removeOnExist = true) },
-                                label = { Text(remember(item) { renderMediaSource(item) }) },
                             )
                         },
                         Modifier.heightIn(min = 32.dp)
