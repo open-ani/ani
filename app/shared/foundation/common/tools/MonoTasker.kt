@@ -1,6 +1,7 @@
 package me.him188.ani.app.tools
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisallowComposableCalls
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.CoroutineScope
@@ -39,9 +40,12 @@ fun MonoTasker(
     }
 }
 
+// ui (composition) scope
 @Composable
-fun rememberMonoTasker(): MonoTasker {
-    val uiScope = rememberCoroutineScope()
+inline fun rememberMonoTasker(
+    crossinline getContext: @DisallowComposableCalls () -> CoroutineContext = { EmptyCoroutineContext }
+): MonoTasker {
+    val uiScope = rememberCoroutineScope(getContext)
     val tasker = remember {
         object : MonoTasker {
             var job: Job? = null

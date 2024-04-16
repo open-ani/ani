@@ -31,12 +31,12 @@ import androidx.compose.ui.unit.dp
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.setRequestFullScreen
+import me.him188.ani.app.tools.rememberMonoTasker
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.effects.OnLifecycleEvent
 import me.him188.ani.app.ui.foundation.effects.ScreenOnEffect
 import me.him188.ani.app.ui.foundation.launchInBackground
-import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.subject.episode.details.EpisodeDetails
 import me.him188.ani.app.ui.subject.episode.details.EpisodePlayerTitle
@@ -99,18 +99,24 @@ fun EpisodePageContent(
     // 切后台自动暂停
     var pausedVideo by rememberSaveable { mutableStateOf(true) } // live after configuration change
     val isPreviewing by rememberUpdatedState(LocalIsPreviewing.current)
+
+    val autoPauseTasker = rememberMonoTasker()
     OnLifecycleEvent {
         if (isPreviewing) return@OnLifecycleEvent
         if (it == Lifecycle.State.InActive || it == Lifecycle.State.Destroyed) {
             if (viewModel.playerState.state.value.isPlaying) {
                 pausedVideo = true
-                viewModel.playerState.pause() // 正在播放时, 切到后台自动暂停
+                autoPauseTasker.launch {
+                    // #160, 切换全屏时视频会暂停半秒
+                    // > 这其实是之前写切后台自动暂停导致的，检测了 lifecycle 事件，切全屏和切后台是一样的事件。延迟一下就可以了
+                    viewModel.playerState.pause() // 正在播放时, 切到后台自动暂停
+                }
             } else {
                 // 如果不是正在播放, 则不操作暂停, 当下次切回前台时, 也不要恢复播放
                 pausedVideo = false
             }
         } else if (it == Lifecycle.State.Active && pausedVideo) {
-            viewModel.launchInMain {
+            autoPauseTasker.launch {
                 viewModel.playerState.resume() // 切回前台自动恢复, 当且仅当之前是自动暂停的
             }
             pausedVideo = false
