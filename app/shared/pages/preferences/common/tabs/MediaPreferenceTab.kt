@@ -36,6 +36,7 @@ import me.him188.ani.app.data.repositories.PreferencesRepository
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.tools.MonoTasker
+import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.preference.PreferenceScope
@@ -57,10 +58,16 @@ class MediaPreferenceViewModel : AbstractViewModel(), KoinComponent {
     private val preferencesRepository: PreferencesRepository by inject()
     private val mediaSourceManager: MediaSourceManager by inject()
 
+    private val placeholderMediaPreference = MediaPreference() // don't use .Empty, we need identity check
+
     val defaultMediaPreference by preferencesRepository.defaultMediaPreference.flow
         .map {
-            it ?: MediaPreference.Empty
-        }.produceState(MediaPreference.Empty)
+            it ?: placeholderMediaPreference
+        }.produceState(placeholderMediaPreference)
+
+    val defaultMediaPreferenceLoaded by derivedStateOf {
+        defaultMediaPreference === placeholderMediaPreference // pointer identity
+    }
 
 
     val allMediaSources by mediaSourceManager.sources.map { list ->
@@ -125,6 +132,9 @@ fun MediaPreferenceTab(
     }
 }
 
+@Stable
+private val defaultMediaCacheSettings = MediaCacheSettings()
+
 @Composable
 private fun PreferenceScope.AutoCacheGroup(
     vm: MediaPreferenceViewModel,
@@ -134,7 +144,7 @@ private fun PreferenceScope.AutoCacheGroup(
         title = { Text("自动缓存") },
         description = { Text("自动缓存 \"在看\" 分类中未观看的剧集") },
     ) {
-        val mediaCacheSettings by vm.mediaCacheSettings.collectAsStateWithLifecycle(MediaCacheSettings.Default)
+        val mediaCacheSettings by vm.mediaCacheSettings.collectAsStateWithLifecycle(defaultMediaCacheSettings)
         SwitchItem(
             title = { Text("启用自动缓存") },
             description = { Text("启用后下面的设置才有效") },
@@ -143,7 +153,8 @@ private fun PreferenceScope.AutoCacheGroup(
                 checked = mediaCacheSettings.enabled,
                 onCheckedChange = {
                     vm.updateMediaCacheSettings(mediaCacheSettings.copy(enabled = it))
-                }
+                },
+                Modifier.placeholder(mediaCacheSettings === defaultMediaCacheSettings)
             )
         }
 
@@ -167,6 +178,7 @@ private fun PreferenceScope.AutoCacheGroup(
             Slider(
                 value = maxCount,
                 onValueChange = { maxCount = it },
+                Modifier.placeholder(mediaCacheSettings === defaultMediaCacheSettings),
                 valueRange = 0f..10f,
                 steps = 9,
             )
@@ -184,6 +196,7 @@ private fun PreferenceScope.AutoCacheGroup(
                 vm.updateMediaCacheSettings(mediaCacheSettings.copy(mostRecentOnly = it))
             },
             title = { Text("仅缓存最近看过的番剧") },
+            Modifier.placeholder(mediaCacheSettings === defaultMediaCacheSettings),
 //            description = {
 //                if (!mostRecentOnly) {
 //                    Text("当前设置: 总是缓存 \"在看\" 分类中的全部番剧")
@@ -203,6 +216,7 @@ private fun PreferenceScope.AutoCacheGroup(
                     Slider(
                         value = mostRecentCount,
                         onValueChange = { mostRecentCount = it },
+                        Modifier.placeholder(mediaCacheSettings === defaultMediaCacheSettings),
                         onValueChangeFinished = {
                             vm.updateMediaCacheSettings(mediaCacheSettings.copy(mostRecentCount = mostRecentCount.roundToInt()))
                         },
@@ -266,6 +280,7 @@ private fun PreferenceScope.MediaDownloadGroup(vm: MediaPreferenceViewModel) {
             title = { Text("数据源") },
             description = { Text("优先选择较为靠前的数据源") },
             icon = { Icon(Icons.Rounded.DisplaySettings, null) },
+            modifier = Modifier.placeholder(vm.defaultMediaPreferenceLoaded),
         )
 
         HorizontalDividerItem()
@@ -296,6 +311,7 @@ private fun PreferenceScope.MediaDownloadGroup(vm: MediaPreferenceViewModel) {
             item = { Text(renderSubtitleLanguage(it)) },
             description = { Text("优先选择较为靠前的字幕语言") },
             key = { it },
+            modifier = Modifier.placeholder(vm.defaultMediaPreferenceLoaded),
             icon = { Icon(Icons.Rounded.Language, null) },
             title = { Text("字幕语言") },
         )
@@ -324,6 +340,7 @@ private fun PreferenceScope.MediaDownloadGroup(vm: MediaPreferenceViewModel) {
             title = { Text("分辨率") },
             description = { Text("暂不支持修改") },
             icon = { Icon(Icons.Rounded.Hd, null) },
+            modifier = Modifier.placeholder(vm.defaultMediaPreferenceLoaded),
         )
 
         HorizontalDividerItem()
@@ -333,13 +350,14 @@ private fun PreferenceScope.MediaDownloadGroup(vm: MediaPreferenceViewModel) {
         }
         TextFieldItem(
             value = allianceRegexes,
+            onValueChange = { allianceRegexes = it.replace("，", ",") },
             title = { Text("字幕组") },
-            placeholder = { Text(textAny) },
             description = {
                 Text("支持使用正则表达式，使用逗号分隔。越靠前的表达式的优先级越高\n\n示例: 桜都, 喵萌, 北宇治\n将优先采用桜都字幕组资源，否则采用喵萌，以此类推")
             },
             icon = { Icon(Icons.Rounded.Subtitles, null) },
-            onValueChange = { allianceRegexes = it.replace("，", ",") },
+            placeholder = { Text(textAny) },
+            modifier = Modifier.placeholder(vm.defaultMediaPreferenceLoaded),
             onValueChangeCompleted = {
                 vm.updateDefaultMediaPreference(
                     vm.defaultMediaPreference.copy(

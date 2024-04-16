@@ -382,13 +382,13 @@ abstract class PreferenceScope {
         value: String,
         onValueChange: (String) -> Unit,
         title: @Composable () -> Unit,
+        modifier: Modifier = Modifier,
         description: @Composable (() -> Unit)? = null,
         icon: @Composable (() -> Unit)? = null,
         placeholder: @Composable (() -> Unit)? = null,
         onValueChangeCompleted: () -> Unit = {},
         inverseTitleDescription: Boolean = false,
         isErrorProvider: () -> Boolean = { false }, // calculated in a derivedState
-        modifier: Modifier = Modifier,
     ) {
         var showDialog by rememberSaveable { mutableStateOf(false) }
         Item(
