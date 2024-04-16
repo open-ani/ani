@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class MediaCacheSettings(
     val enabled: Boolean = false,
-    val maxCount: Int = 1,
+    val maxCountPerSubject: Int = 1,
 
     val mostRecentOnly: Boolean = false,
     val mostRecentCount: Int = 8,

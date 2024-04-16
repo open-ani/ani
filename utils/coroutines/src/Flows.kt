@@ -1,8 +1,15 @@
 package me.him188.ani.utils.coroutines
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
+import java.util.concurrent.CancellationException
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
+import kotlin.coroutines.CoroutineContext
 
 fun combineOr(vararg flows: Flow<Boolean>): Flow<Boolean> = combine(*flows) { flows -> flows.any { it } }
 
@@ -56,4 +63,56 @@ inline fun <T, R : AutoCloseable> Flow<T>.mapNotNullAutoClose(
         }
         last = new
     }
+}
+
+/**
+ * A [coroutineScope] that can be [cancelled][CancellableCoroutineScope.cancel]
+ * without causing the [coroutineScope] to throw a [CancellationException].
+ */
+suspend inline fun <R> cancellableCoroutineScope(
+    onCancel: () -> R,
+    crossinline block: suspend CancellableCoroutineScope.() -> R
+): R {
+    contract { callsInPlace(block, InvocationKind.AT_MOST_ONCE) }
+    val owner = Any()
+    return try {
+        coroutineScope {
+            val self = this
+            block(object : CancellableCoroutineScope {
+                override fun cancel() {
+                    self.cancel(OwnedCancellationException(owner))
+                }
+
+                override val coroutineContext: CoroutineContext = self.coroutineContext
+            })
+        }
+    } catch (e: OwnedCancellationException) {
+        e.checkOwner(owner)
+        onCancel()
+    }
+}
+
+/**
+ * A [coroutineScope] that can be [cancelled][CancellableCoroutineScope.cancel]
+ * without causing the [coroutineScope] to throw a [CancellationException].
+ */
+suspend inline fun <R> cancellableCoroutineScope(
+    crossinline block: suspend CancellableCoroutineScope.() -> R
+): R? {
+    contract { callsInPlace(block, InvocationKind.AT_MOST_ONCE) }
+    return cancellableCoroutineScope(
+        onCancel = { null },
+        block = block
+    )
+}
+
+interface CancellableCoroutineScope : CoroutineScope {
+    fun cancel()
+}
+
+
+class OwnedCancellationException(val owner: Any) : CancellationException("Aborted by $owner")
+
+fun OwnedCancellationException.checkOwner(owner: Any) {
+    if (this.owner !== owner) throw this
 }

@@ -5,10 +5,11 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -46,7 +47,7 @@ interface EpisodeMediaFetchSession {
     /**
      * A lazy [MediaFetchSession] that is created on demand and then shared.
      */
-    val mediaFetchSession: Flow<MediaFetchSession>
+    val mediaFetchSession: SharedFlow<MediaFetchSession>
 
     /**
      * Range is `0f..1f`. `null` means progress is not yet known.
@@ -64,6 +65,10 @@ interface EpisodeMediaFetchSession {
      * A [MediaSelectorState] associated with the fetched medias.
      */
     val mediaSelectorState: MediaSelectorState
+}
+
+suspend fun EpisodeMediaFetchSession.awaitCompletion() {
+    mediaFetchSession.flatMapLatest { it.hasCompleted }.filter { it }.first()
 }
 
 @Immutable
@@ -87,6 +92,14 @@ class FetcherMediaSelectorConfig(
 ) {
     companion object {
         val Default = FetcherMediaSelectorConfig()
+        val NoAutoSelect = FetcherMediaSelectorConfig(
+            autoSelectOnFetchCompletion = false,
+            autoSelectLocal = false,
+        )
+        val NoSave = FetcherMediaSelectorConfig(
+            savePreferencesOnFilter = false,
+            savePreferencesOnSelect = false
+        )
     }
 }
 

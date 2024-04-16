@@ -16,7 +16,7 @@ import me.him188.ani.datasources.core.cache.MediaCacheStorage
 abstract class MediaCacheManager {
     abstract val storages: List<MediaCacheStorage>
 
-    val listFlow: Flow<List<MediaCache>> by lazy {
+    private val listFlow: Flow<List<MediaCache>> by lazy {
         combine(storages.map { it.listFlow }) {
             it.asSequence().flatten().toList()
         }

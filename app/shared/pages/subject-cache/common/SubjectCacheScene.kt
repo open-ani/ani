@@ -148,10 +148,7 @@ fun SubjectCacheScene(
                     vm.subjectId,
                     episodeCacheState.episodeId,
                     vm.backgroundScope.coroutineContext,
-                    FetcherMediaSelectorConfig(
-                        autoSelectOnFetchCompletion = false,
-                        autoSelectLocal = false,
-                    )
+                    FetcherMediaSelectorConfig.NoAutoSelect
                 )
             }
 

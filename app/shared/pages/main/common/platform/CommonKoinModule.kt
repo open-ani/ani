@@ -23,7 +23,9 @@ import io.ktor.client.plugins.UserAgent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import me.him188.ani.app.data.media.DefaultMediaAutoCacheService
 import me.him188.ani.app.data.media.LocalFileVideoSourceResolver
+import me.him188.ani.app.data.media.MediaAutoCacheService
 import me.him188.ani.app.data.media.MediaCacheManager
 import me.him188.ani.app.data.media.MediaCacheManagerImpl
 import me.him188.ani.app.data.media.MediaSourceManager
@@ -116,6 +118,12 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
             }
         )
     }
+
+    // Caching
+
+    single<MediaAutoCacheService> {
+        DefaultMediaAutoCacheService()
+    }
 }
 
 
@@ -126,6 +134,7 @@ fun KoinApplication.startCommonKoinModule(coroutineScope: CoroutineScope): KoinA
     coroutineScope.launch(Dispatchers.IO) {
         koin.get<MediaCacheManager>().storages // initialize caches as the storage constructors needs to do IO 
     }
+    koin.get<MediaAutoCacheService>().startRegularCheck(coroutineScope)
     return this
 }
 

@@ -149,7 +149,7 @@ private fun PreferenceScope.AutoCacheGroup(
 
         HorizontalDividerItem()
 
-        var maxCount by remember(mediaCacheSettings) { mutableFloatStateOf(mediaCacheSettings.maxCount.toFloat()) }
+        var maxCount by remember(mediaCacheSettings) { mutableFloatStateOf(mediaCacheSettings.maxCountPerSubject.toFloat()) }
         SliderItem(
             title = { Text("最大自动缓存话数") },
             description = {

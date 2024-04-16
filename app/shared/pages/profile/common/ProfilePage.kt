@@ -63,11 +63,13 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import me.him188.ani.app.data.media.MediaAutoCacheService
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.isLoggedIn
 import me.him188.ani.app.ui.main.LocalContentPaddings
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
+import org.koin.core.context.GlobalContext
 import org.openapitools.client.models.User
 
 @Composable
@@ -307,6 +309,14 @@ private fun DebugInfoView(viewModel: AccountViewModel, modifier: Modifier = Modi
 
         FilledTonalButton({ viewModel.logout() }, enabled = viewModel.logoutEnabled) {
             Text("Log out")
+        }
+
+        FilledTonalButton({
+            GlobalScope.launch {
+                GlobalContext.get().get<MediaAutoCacheService>().checkCache()
+            }
+        }) {
+            Text("执行自动缓存")
         }
 
         PlatformDebugInfoItems(viewModel, snackbar)
