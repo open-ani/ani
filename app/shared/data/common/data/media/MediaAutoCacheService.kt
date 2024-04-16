@@ -30,6 +30,7 @@ import me.him188.ani.datasources.core.cache.MediaCacheStorage
 import me.him188.ani.utils.coroutines.OwnedCancellationException
 import me.him188.ani.utils.coroutines.cancellableCoroutineScope
 import me.him188.ani.utils.coroutines.checkOwner
+import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import org.koin.core.Koin
@@ -147,7 +148,11 @@ class DefaultMediaAutoCacheService(
                     delay(1.hours)
                     continue
                 }
-                checkCache()
+                try {
+                    checkCache()
+                } catch (e: Throwable) {
+                    logger.error(e) { "Failed to do regular cache check" }
+                }
                 delay(1.hours)
             }
         }
