@@ -37,7 +37,6 @@ import androidx.compose.ui.window.DialogProperties
 import me.him188.ani.app.data.media.EpisodeCacheStatus
 import me.him188.ani.app.ui.foundation.indication.HorizontalIndicator
 import me.him188.ani.app.ui.foundation.indication.IndicatedBox
-import me.him188.ani.app.ui.theme.disabledWeaken
 import me.him188.ani.app.ui.theme.stronglyWeaken
 import me.him188.ani.app.ui.theme.weaken
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
@@ -214,18 +213,16 @@ private fun SmallEpisodeButton(
 fun cacheStatusIndicationColor(
     cacheStatus: EpisodeCacheStatus?,
     isDoneOrDropped: Boolean
-): Color = when (cacheStatus) {
-    is EpisodeCacheStatus.Cached -> {
-        val primaryColor = if (isDoneOrDropped) {
-            MaterialTheme.colorScheme.primary.disabledWeaken()
-        } else {
-            MaterialTheme.colorScheme.primary.stronglyWeaken()
+): Color {
+    if (isDoneOrDropped) return Color.Transparent
+    return when (cacheStatus) {
+        is EpisodeCacheStatus.Cached -> {
+            val primaryColor = MaterialTheme.colorScheme.primary.stronglyWeaken()
+            primaryColor.compositeOver(Color.Green)
         }
 
-        primaryColor.compositeOver(Color.Green)
+        is EpisodeCacheStatus.Caching -> Color(0xDFe0ef51)
+
+        else -> Color.Transparent
     }
-
-    is EpisodeCacheStatus.Caching -> Color(0xDFe0ef51)
-
-    else -> Color.Transparent
 }
