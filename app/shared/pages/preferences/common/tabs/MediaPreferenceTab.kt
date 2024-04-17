@@ -28,7 +28,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastAll
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.data.media.MediaSourceManager
 import me.him188.ani.app.data.models.MediaCacheSettings
@@ -108,8 +107,8 @@ class MediaPreferenceViewModel : AbstractViewModel(), KoinComponent {
     }
 
 
-    val mediaCacheSettings: Flow<MediaCacheSettings> =
-        preferencesRepository.mediaCacheSettings.flow.shareInBackground()
+    val mediaCacheSettings =
+        preferencesRepository.mediaCacheSettings.flow.stateInBackground(defaultMediaCacheSettings)
 
     private val mediaCacheSettingsTasker = MonoTasker(this.backgroundScope)
     fun updateMediaCacheSettings(copy: MediaCacheSettings) {
@@ -144,7 +143,7 @@ private fun PreferenceScope.AutoCacheGroup(
         title = { Text("自动缓存") },
         description = { Text("自动缓存 \"在看\" 分类中未观看的剧集") },
     ) {
-        val mediaCacheSettings by vm.mediaCacheSettings.collectAsStateWithLifecycle(defaultMediaCacheSettings)
+        val mediaCacheSettings by vm.mediaCacheSettings.collectAsStateWithLifecycle()
         SwitchItem(
             title = { Text("启用自动缓存") },
             description = { Text("启用后下面的设置才有效") },
