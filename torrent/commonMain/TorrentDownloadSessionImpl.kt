@@ -236,6 +236,7 @@ internal class TorrentDownloadSessionImpl(
 
         override fun onAlert(alert: TorrentAlert<*>) {
             if (alert.torrentName() != this@TorrentDownloadSessionImpl.torrentName) return // listener will receive alerts from other torrents
+            torrentHandle = alert.handle()
 
             try {
                 when (alert) {
@@ -430,7 +431,8 @@ internal class TorrentDownloadSessionImpl(
     }
 
     override suspend fun closeAndDelete() {
-        closeImpl()
+        close()
+        delay(1000)
         withContext(Dispatchers.IO) { saveDirectory.deleteRecursively() }
     }
 
