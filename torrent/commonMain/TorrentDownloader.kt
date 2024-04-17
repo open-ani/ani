@@ -15,6 +15,7 @@ import me.him188.ani.utils.logging.warn
 import org.libtorrent4j.AlertListener
 import org.libtorrent4j.Priority
 import org.libtorrent4j.SessionManager
+import org.libtorrent4j.SettingsPack
 import org.libtorrent4j.Sha1Hash
 import org.libtorrent4j.TorrentFlags
 import org.libtorrent4j.TorrentInfo
@@ -22,7 +23,9 @@ import org.libtorrent4j.alerts.Alert
 import org.libtorrent4j.alerts.AlertType
 import org.libtorrent4j.alerts.TorrentAlert
 import org.libtorrent4j.swig.settings_pack
+import org.libtorrent4j.swig.settings_pack.string_types
 import java.io.File
+import java.nio.charset.Charset
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.Executors
@@ -140,6 +143,16 @@ internal class LockedSessionManager(
 
 public typealias TorrentFileDownloader = suspend (url: String) -> ByteArray
 
+public class TorrentDownloaderConfig(
+    public val peerFingerprint: String = "-aniLT3000-",
+    public val userAgent: String = "ani_libtorrent/3.0.0", // "libtorrent/2.1.0.0", "ani_libtorrent/3.0.0"
+    public val clientHandshakeVersion: String? = "3.0.0",
+) {
+    public companion object {
+        public val Default: TorrentDownloaderConfig = TorrentDownloaderConfig()
+    }
+}
+
 /**
  * Creates a new [TorrentDownloader] instance.
  *
@@ -150,6 +163,7 @@ public typealias TorrentFileDownloader = suspend (url: String) -> ByteArray
 public fun TorrentDownloader(
     cacheDirectory: File,
     downloadFile: TorrentFileDownloader,
+    config: TorrentDownloaderConfig = TorrentDownloaderConfig.Default,
 ): TorrentDownloader {
     val sessionManager = SessionManager()
 
@@ -177,10 +191,15 @@ public fun TorrentDownloader(
     sessionManager.start()
     sessionManager.applySettings(sessionManager.settings().apply {
         isEnableDht = true
+        isEnableLsd = true
         activeDhtLimit(300)
+        activeTrackerLimit(50)
+        activeSeeds(8)
+        activeDownloads(8)
+        connectionsLimit(500) // default was 200
+        seedingOutgoingConnections(true) // default was true, just to make sure
         uploadRateLimit(0)
         downloadRateLimit(0)
-        connectionsLimit(200)
         maxPeerlistSize(1000)
         dhtBootstrapNodes = setOf(
             dhtBootstrapNodes.split(",") + listOf(
@@ -190,6 +209,19 @@ public fun TorrentDownloader(
                 "router.bitcomet.com:6881",
             )
         ).joinToString(",")
+
+        logger.info { "peerFingerprint was: $peerFingerprintString" }
+        logger.info { "user_agent was: $userAgentString" }
+        logger.info { "handshake_client_version was: $handshakeClientVersionString" }
+
+        peerFingerprintString = config.peerFingerprint
+        userAgentString = config.userAgent
+        config.clientHandshakeVersion?.let {
+            handshakeClientVersionString = it
+        }
+        logger.info { "peerFingerprint set: $peerFingerprintString" }
+        logger.info { "user_agent set: $userAgentString" }
+        logger.info { "handshake_client_version set: $handshakeClientVersionString" }
     })
     logger.info { "postDhtStats" }
     sessionManager.postDhtStats()
@@ -306,7 +338,7 @@ internal class TorrentDownloaderImpl(
                     null,
                     priorities,
                     null,
-                    TorrentFlags.UPDATE_SUBSCRIBE,
+                    TorrentFlags.AUTO_MANAGED,
 //                TorrentFlags.SEQUENTIAL_DOWNLOAD,//.or_(TorrentFlags.NEED_SAVE_RESUME)
                 )
                 logger.info { "Torrent download started." }
@@ -323,4 +355,22 @@ internal class TorrentDownloaderImpl(
         LockedSessionManager.launch { sessionManager.use { stop() } }
     }
 }
+
+public var SettingsPack.peerFingerprintString: String
+    get() = getBytes(string_types.peer_fingerprint.swigValue()).toString(Charset.forName("UTF-8"))
+    set(value) {
+        setBytes(string_types.peer_fingerprint.swigValue(), value.toByteArray(Charset.forName("UTF-8")))
+    }
+
+public var SettingsPack.userAgentString: String
+    get() = getBytes(string_types.user_agent.swigValue()).toString(Charset.forName("UTF-8"))
+    set(value) {
+        setBytes(string_types.user_agent.swigValue(), value.toByteArray(Charset.forName("UTF-8")))
+    }
+
+public var SettingsPack.handshakeClientVersionString: String
+    get() = getBytes(string_types.handshake_client_version.swigValue()).toString(Charset.forName("UTF-8"))
+    set(value) {
+        setBytes(string_types.handshake_client_version.swigValue(), value.toByteArray(Charset.forName("UTF-8")))
+    }
 

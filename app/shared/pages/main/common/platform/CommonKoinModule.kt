@@ -151,6 +151,31 @@ interface AniBuildConfig {
     }
 }
 
+/**
+ * E.g. `30000` for `3.0.0`, `30102` for `3.1.2`
+ */
+val AniBuildConfig.versionCode: String
+    get() = buildString {
+        val split = versionName.substringBefore("-").split(".")
+        if (split.size == 3) {
+            split[0].toIntOrNull()?.let {
+                append(it.toString())
+            }
+            split[1].toIntOrNull()?.let {
+                append(it.toString().padStart(2, '0'))
+            }
+            split[2].toIntOrNull()?.let {
+                append(it.toString().padStart(2, '0'))
+            }
+        } else {
+            for (section in split) {
+                section.toIntOrNull()?.let {
+                    append(it.toString().padStart(2, '0'))
+                }
+            }
+        }
+    }
+
 @Stable
 expect val currentAniBuildConfig: AniBuildConfig
 

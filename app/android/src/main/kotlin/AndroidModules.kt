@@ -15,7 +15,10 @@ import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.getAniUserAgent
 import me.him188.ani.app.tools.torrent.DefaultTorrentManager
 import me.him188.ani.app.tools.torrent.TorrentManager
+import me.him188.ani.app.tools.torrent.computeTorrentFingerprint
+import me.him188.ani.app.tools.torrent.computeTorrentUserAgent
 import me.him188.ani.app.torrent.TorrentDownloader
+import me.him188.ani.app.torrent.TorrentDownloaderConfig
 import me.him188.ani.app.videoplayer.ExoPlayerStateFactory
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import org.koin.dsl.module
@@ -51,7 +54,11 @@ fun getAndroidModules(
                                 }"
                             }
                         }.bodyAsChannel().readRemaining().readBytes()
-                    }
+                    },
+                    config = TorrentDownloaderConfig(
+                        peerFingerprint = computeTorrentFingerprint(),
+                        userAgent = computeTorrentUserAgent(),
+                    )
                 )
             }
         )

@@ -9,6 +9,8 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.job
+import me.him188.ani.app.platform.currentAniBuildConfig
+import me.him188.ani.app.platform.versionCode
 import me.him188.ani.app.torrent.TorrentDownloader
 import me.him188.ani.app.torrent.TorrentDownloaderFactory
 import me.him188.ani.utils.coroutines.runUntilSuccess
@@ -24,6 +26,14 @@ interface TorrentManager {
 
     val downloader: Deferred<TorrentDownloader>
 }
+
+fun computeTorrentFingerprint(
+    versionCode: String = currentAniBuildConfig.versionCode,
+): String = "-aniLT${versionCode}-"
+
+fun computeTorrentUserAgent(
+    versionCode: String = currentAniBuildConfig.versionCode,
+): String = "ani_libtorrent/${versionCode}"
 
 class TorrentDownloaderManagerError(
     val exception: Throwable,

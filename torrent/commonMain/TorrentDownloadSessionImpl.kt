@@ -3,12 +3,9 @@ package me.him188.ani.app.torrent
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.runInterruptible
@@ -24,15 +21,20 @@ import me.him188.ani.utils.io.asSeekableInput
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.trace
+import me.him188.ani.utils.logging.warn
 import org.libtorrent4j.AnnounceEntry
 import org.libtorrent4j.TorrentHandle
 import org.libtorrent4j.TorrentInfo
 import org.libtorrent4j.alerts.AddTorrentAlert
-import org.libtorrent4j.alerts.AlertType
 import org.libtorrent4j.alerts.BlockDownloadingAlert
 import org.libtorrent4j.alerts.BlockFinishedAlert
+import org.libtorrent4j.alerts.FileErrorAlert
+import org.libtorrent4j.alerts.MetadataFailedAlert
+import org.libtorrent4j.alerts.PeerConnectAlert
+import org.libtorrent4j.alerts.PeerDisconnectedAlert
 import org.libtorrent4j.alerts.PieceFinishedAlert
 import org.libtorrent4j.alerts.TorrentAlert
+import org.libtorrent4j.alerts.TorrentFinishedAlert
 import org.libtorrent4j.alerts.TorrentResumedAlert
 import java.io.File
 import java.io.RandomAccessFile
@@ -71,13 +73,14 @@ internal class TorrentDownloadSessionImpl(
 
     override val totalBytes: MutableStateFlow<Long> = MutableStateFlow(torrentInfo.sizeOnDisk())
 
-    private val _downloadedBytes = MutableSharedFlow<Long>(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-    override val downloadedBytes: Flow<Long> = _downloadedBytes.distinctUntilChanged()
+    private val _downloadedBytes = MutableStateFlow(0L)
+    override val downloadedBytes: Flow<Long> = _downloadedBytes
 
-    override val downloadRate: MutableSharedFlow<Long> =
-        MutableSharedFlow(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-    override val progress: MutableSharedFlow<Float> =
-        MutableSharedFlow(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    override val downloadRate = MutableStateFlow<Long?>(null)
+
+    override val uploadRate = MutableStateFlow<Long?>(null)
+
+    override val progress = MutableStateFlow(0f)
 
     override val peerCount: MutableStateFlow<Int> = MutableStateFlow(0)
 
@@ -208,12 +211,10 @@ internal class TorrentDownloadSessionImpl(
             if (alert.torrentName() != this@TorrentDownloadSessionImpl.torrentName) return // listener will receive alerts from other torrents
 
             try {
-                val type = alert.type()
-
-                when (type) {
-                    AlertType.ADD_TORRENT -> {
+                when (alert) {
+                    is AddTorrentAlert -> {
                         logger.info { "$torrentName: Torrent added" }
-                        val torrentHandle = (alert as AddTorrentAlert).handle()
+                        val torrentHandle = alert.handle()
                         this@TorrentDownloadSessionImpl.torrentHandle = torrentHandle
 
                         // Add trackers
@@ -242,8 +243,8 @@ internal class TorrentDownloadSessionImpl(
                     }
 
                     // This alert is posted when a torrent completes checking. i.e. when it transitions out of the checking files state into a state where it is ready to start downloading
-                    AlertType.TORRENT_RESUMED -> {
-                        val torrentHandle = (alert as TorrentResumedAlert).handle()
+                    is TorrentResumedAlert -> {
+                        val torrentHandle = alert.handle()
                         if (handle.isCompleted) {
                             handleOrNull()?.torrentHandle = torrentHandle
                             return
@@ -268,61 +269,65 @@ internal class TorrentDownloadSessionImpl(
                         progress.tryEmit(0f)
                     }
 
-                    AlertType.PEER_CONNECT -> {
+                    is PeerConnectAlert -> {
                         peerCount.getAndUpdate { it + 1 }
                     }
 
-                    AlertType.PEER_DISCONNECTED -> {
+                    is PeerDisconnectedAlert -> {
                         peerCount.getAndUpdate { it - 1 }
                     }
-                    //
-                    //                AlertType.BLOCK_TIMEOUT -> {
-                    //                    val a = alert as BlockTimeoutAlert
-                    //                }
 
-                    AlertType.BLOCK_DOWNLOADING -> {
-                        val a = alert as BlockDownloadingAlert
-                        val pieceIndex = a.pieceIndex()
+                    is BlockDownloadingAlert -> {
+                        val pieceIndex = alert.pieceIndex()
                         handleOrNull()?.onBlockDownloading(pieceIndex)
                     }
 
-                    AlertType.PIECE_FINISHED -> {
-                        val a = alert as PieceFinishedAlert
-                        val pieceIndex = a.pieceIndex()
+                    is PieceFinishedAlert -> {
+                        val pieceIndex = alert.pieceIndex()
                         handleOrNull()?.onPieceDownloaded(pieceIndex)
                     }
 
-                    AlertType.BLOCK_FINISHED -> {
-                        val a = alert as BlockFinishedAlert
-
+                    is BlockFinishedAlert -> {
                         val handle = alert.handle()
                         torrentHandle = handle
                         handleOrNull()?.torrentHandle = handle
 
-                        while (jobsToDoInHandle.isNotEmpty()) {
-                            val job = jobsToDoInHandle.poll()
-                            job(handle)
-                        }
-
-                        val totalWanted = a.handle().status().totalWanted()
-                        val totalDone = a.handle().status().totalDone()
-                        _downloadedBytes.tryEmit(totalDone)
-                        downloadRate.tryEmit(a.handle().status().downloadRate().toUInt().toLong())
-                        progress.tryEmit(totalDone.toFloat() / totalWanted.toFloat())
+                        val totalWanted = alert.handle().status().totalWanted()
+                        val totalDone = alert.handle().status().totalDone()
+                        _downloadedBytes.value = totalDone
+                        downloadRate.value = alert.handle().status().downloadRate().toUInt().toLong()
+                        uploadRate.value = alert.handle().status().uploadRate().toUInt().toLong()
+                        progress.value = totalDone.toFloat() / totalWanted.toFloat()
                     }
 
-                    AlertType.TORRENT_FINISHED -> {
+                    is TorrentFinishedAlert -> {
+                        // https://libtorrent.org/reference-Alerts.html#:~:text=report%20issue%5D-,torrent_finished_alert,-Declared%20in%20%22
                         logger.info { "$torrentName: Torrent finished" }
                         handleOrNull()?.onFinished()
                             ?: error("Torrent handle should not be null")
-                        downloadRate.tryEmit(0)
-                        progress.tryEmit(1f)
+                        downloadRate.value = 0
+                        progress.value = 1f
                         state.value = TorrentDownloadState.Finished
                         isFinished.value = true
                     }
 
+                    is FileErrorAlert -> {
+                        logger.warn { "[libtorrent] $torrentName: File error: ${alert.operation()} ${alert.error()}" }
+                    }
+
+                    is MetadataFailedAlert -> {
+                        logger.warn { "[libtorrent] $torrentName: Metadata failed: ${alert.error.message}" }
+                    }
+
                     else -> {
                     }
+                }
+
+                uploadRate.value = alert.handle().status().uploadRate().toUInt().toLong()
+
+                while (jobsToDoInHandle.isNotEmpty()) {
+                    val job = jobsToDoInHandle.poll()
+                    job(alert.handle())
                 }
             } catch (e: Throwable) {
                 logger.info(e) { "$torrentName: Error in alert listener" }
@@ -444,24 +449,42 @@ private fun hashFileMd5(input: File): String {
 }
 
 private val trackers = """
-                            udp://tracker.opentrackr.org:1337/announce
-                            udp://opentracker.i2p.rocks:6969/announce
-                            udp://open.demonii.com:1337/announce
-                            http://tracker.openbittorrent.com:80/announce
-                            udp://tracker.openbittorrent.com:6969/announce
-                            udp://open.stealth.si:80/announce
-                            udp://tracker.torrent.eu.org:451/announce
-                            udp://exodus.desync.com:6969/announce
-                            udp://tracker.auctor.tv:6969/announce
-                            udp://explodie.org:6969/announce
-                            udp://tracker1.bt.moack.co.kr:80/announce
-                            udp://uploads.gamecoast.net:6969/announce
-                            udp://tracker.tiny-vps.com:6969/announce
-                            udp://tracker.therarbg.com:6969/announce
-                            udp://tracker.theoks.net:6969/announce
-                            udp://tracker.skyts.net:6969/announce
-                            udp://tracker.moeking.me:6969/announce
-                            udp://thinking.duckdns.org:6969/announce
-                            udp://tamas3.ynh.fr:6969/announce
-                            udp://retracker01-msk-virt.corbina.net:80/announce
-                        """.trimIndent()
+udp://tracker1.itzmx.com:8080/announce
+udp://moonburrow.club:6969/announce
+udp://new-line.net:6969/announce
+udp://opentracker.io:6969/announce
+udp://tamas3.ynh.fr:6969/announce
+udp://tracker.bittor.pw:1337/announce
+udp://tracker.dump.cl:6969/announce
+udp://tracker1.myporn.club:9337/announce
+udp://tracker2.dler.org:80/announce
+https://tracker.tamersunion.org:443/announce
+udp://open.demonii.com:1337/announce
+udp://open.stealth.si:80/announce
+udp://tracker.torrent.eu.org:451/announce
+udp://exodus.desync.com:6969/announce
+udp://tracker.moeking.me:6969/announce
+udp://explodie.org:6969/announce
+udp://tracker1.bt.moack.co.kr:80/announce
+udp://tracker.tiny-vps.com:6969/announce
+udp://retracker01-msk-virt.corbina.net:80/announce
+udp://bt1.archive.org:6969/announce
+
+udp://tracker2.itzmx.com:6961/announce
+
+udp://tracker3.itzmx.com:6961/announce
+
+udp://tracker4.itzmx.com:2710/announce
+
+http://tracker1.itzmx.com:8080/announce
+
+http://tracker2.itzmx.com:6961/announce
+
+http://tracker3.itzmx.com:6961/announce
+
+http://tracker4.itzmx.com:2710/announce
+
+udp://tracker.opentrackr.org:1337/announce
+
+http://tracker.opentrackr.org:1337/announce
+                        """.trimIndent().lineSequence().filter { it.isNotBlank() }.joinToString()
