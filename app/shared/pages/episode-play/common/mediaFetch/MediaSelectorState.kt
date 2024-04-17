@@ -164,10 +164,10 @@ internal class MediaSelectorStateImpl(
         default.merge(preference)
     }
 
-    var explicitlyRemovedAlliance: Boolean by mutableStateOf(false)
-    var explicitlyRemovedResolution: Boolean by mutableStateOf(false)
-    var explicitlyRemovedSubtitleLanguage: Boolean by mutableStateOf(false)
-    var explicitlyRemovedMediaSource: Boolean by mutableStateOf(false)
+    private var explicitlyRemovedAlliance: Boolean by mutableStateOf(false)
+    private var explicitlyRemovedResolution: Boolean by mutableStateOf(false)
+    private var explicitlyRemovedSubtitleLanguage: Boolean by mutableStateOf(false)
+    private var explicitlyRemovedMediaSource: Boolean by mutableStateOf(false)
 
     override fun preferAlliance(alliance: String, removeOnExist: Boolean) {
         if (removeOnExist && selectedAlliance == alliance && !explicitlyRemovedAlliance) {
@@ -252,52 +252,42 @@ internal class MediaSelectorStateImpl(
     }
 
     private val allianceRegexes by derivedStateOf {
-        (preference.alliancePatterns ?: emptyList()).map { it.toRegex() }
+        (mergedPreference.alliancePatterns ?: emptyList()).map { it.toRegex() }
     }
+
+    /**
+     * Made by [makeDefaultSelection]
+     */
+    private var allianceByDefaultSelection by mutableStateOf<String?>(null)
     override val selectedAlliance: String? by derivedStateOf {
         if (explicitlyRemovedAlliance) return@derivedStateOf null
         mergedPreference.alliance?.takeIf { it in alliances }?.let { return@derivedStateOf it }
-
-        for (regex in allianceRegexes) {
-            for (alliance in alliances) {
-                if (regex.find(alliance) != null) return@derivedStateOf alliance
-            }
-        }
-
-        null
+        allianceByDefaultSelection
     }
+
+    private var resolutionByDefaultSelection by mutableStateOf<String?>(null)
     override val selectedResolution: String? by derivedStateOf {
         if (explicitlyRemovedResolution) return@derivedStateOf null
         mergedPreference.resolution?.takeIf { it in resolutions }?.let { return@derivedStateOf it }
-
-        for (resolution in default.fallbackResolutions.orEmpty()) {
-            resolutions.find { it == resolution }?.let { return@derivedStateOf it }
-        }
-
-        null
+        resolutionByDefaultSelection
     }
+
+    private var subtitleLanguageIdByDefaultSelection by mutableStateOf<String?>(null)
     override val selectedSubtitleLanguageId: String? by derivedStateOf {
         if (explicitlyRemovedSubtitleLanguage) return@derivedStateOf null
         mergedPreference.subtitleLanguageId?.takeIf { it in subtitleLanguageIds }
             ?.let { return@derivedStateOf it }
 
-        for (subtitleLanguage in default.fallbackSubtitleLanguageIds.orEmpty()) {
-            subtitleLanguageIds.find { it == subtitleLanguage }?.let { return@derivedStateOf it }
-        }
-
-        null
+        subtitleLanguageIdByDefaultSelection
     }
+
+    private var mediaSourceByDefaultSelection by mutableStateOf<String?>(null)
     override val selectedMediaSource: String? by derivedStateOf {
         if (explicitlyRemovedMediaSource) return@derivedStateOf null
         mergedPreference.mediaSourceId?.takeIf { it in mediaSources }?.let { return@derivedStateOf it }
-
-
-        for (mediaSourceId in default.fallbackMediaSourceIds.orEmpty()) {
-            mediaSources.find { it == mediaSourceId }?.let { return@derivedStateOf it }
-        }
-
-        null
+        mediaSourceByDefaultSelection
     }
+
     override val candidates: List<Media> by derivedStateOf {
         infix fun <Pref : Any> Pref?.matches(prop: Pref): Boolean = this == null || this == prop
         infix fun <Pref : Any> Pref?.matches(prop: List<Pref>): Boolean = this == null || this in prop
@@ -327,10 +317,105 @@ internal class MediaSelectorStateImpl(
         (preferenceUpdates.select as MutableSharedFlow<Media>).tryEmit(candidate)
     }
 
+    private fun selectDefault(
+        media: Media,
+        languageId: String?,
+    ) {
+        this.allianceByDefaultSelection = media.properties.alliance
+        this.resolutionByDefaultSelection = media.properties.resolution
+        this.subtitleLanguageIdByDefaultSelection = languageId ?: media.properties.subtitleLanguageIds.firstOrNull()
+        this.mediaSourceByDefaultSelection = media.mediaSourceId
+        this._selected = media
+    }
+
     override fun makeDefaultSelection() {
-        if (candidates.isNotEmpty()) {
-            _selected = candidates.first()
+        if (candidates.isEmpty()) return
+
+        val languageIds = sequence {
+            selectedSubtitleLanguageId?.let {
+                yield(it)
+                return@sequence
+            }
+            yieldAll(mergedPreference.fallbackSubtitleLanguageIds.orEmpty())
         }
+        val resolutions = sequence {
+            selectedResolution?.let {
+                yield(it)
+                return@sequence
+            }
+            yieldAll(mergedPreference.fallbackResolutions.orEmpty())
+        }
+        val alliances = sequence {
+            selectedAlliance?.let {
+                yield(it)
+                return@sequence
+            }
+            for (regex in allianceRegexes) {
+                for (alliance in alliances) {
+                    // lazy 匹配, 但没有 cache, 若 `alliances` 反复访问则会进行多次匹配
+                    if (regex.find(alliance) != null) yield(alliance)
+                }
+            }
+        }
+        val mediaSources = sequence {
+            selectedMediaSource?.let {
+                yield(it)
+                return@sequence
+            }
+            yieldAll(mergedPreference.fallbackMediaSourceIds.orEmpty())
+        }
+
+        // For rules discussion, see #174
+
+        // 选择顺序
+        // 1. 分辨率
+        // 2. 字幕语言
+        // 3. 字幕组
+        // 4. 数据源
+
+        // 规则: 
+        // - 分辨率最高优先: 1080P >> 720P, 但不能为了要 4K 而选择不想要的字幕语言
+        // - 不要为了选择偏好字幕组而放弃其他字幕组的更好的语言
+
+        // 注意, 这个函数会跑在主线程
+        // 实际上这些 loop 都只需要跑一次, 除了分辨率. 而这也只需要多遍历两次 list 而已.
+        // 例如: 4K (无匹配) -> 2K (无匹配) -> 1080P -> 简中 -> 桜都 -> Mikan
+
+        for (resolution in resolutions) { // DFS 尽可能匹配第一个分辨率
+            val filteredByResolution = candidates.filter { resolution == it.properties.resolution }
+            if (filteredByResolution.isEmpty()) continue
+
+            for (languageId in languageIds) {
+                val filteredByLanguage = filteredByResolution.filter { languageId in it.properties.subtitleLanguageIds }
+                if (filteredByLanguage.isEmpty()) continue
+
+                for (alliance in alliances) { // 能匹配第一个最好
+                    // 这里是消耗最大的地方, 因为有正则匹配
+                    val filteredByAlliance = filteredByLanguage.filter { alliance == it.properties.alliance }
+                    if (filteredByAlliance.isEmpty()) continue
+
+                    for (mediaSource in mediaSources) {
+                        val filteredByMediaSource = filteredByAlliance.filter { mediaSource == it.mediaSourceId }
+                        if (filteredByMediaSource.isEmpty()) continue
+                        selectDefault(filteredByMediaSource.first(), languageId)
+                        return
+                    }
+                }
+
+                // 字幕组没匹配到, 但最好不要换更差语言
+
+                for (mediaSource in mediaSources) {
+                    val filteredByMediaSource = filteredByResolution.filter { mediaSource == it.mediaSourceId }
+                    if (filteredByMediaSource.isEmpty()) continue
+                    selectDefault(filteredByMediaSource.first(), languageId)
+                    return
+                }
+            }
+
+            // 该分辨率下无字幕语言, 换下一个分辨率
+        }
+
+        selectDefault(candidates.first(), null)
     }
 
     override val preferenceUpdates = object : PreferenceUpdates {
@@ -338,7 +423,7 @@ internal class MediaSelectorStateImpl(
             this@MediaSelectorStateImpl.preference
         }.flowOn(Dispatchers.Main)
             .filter { it !== initialUserPreference }
-        override val select: MutableSharedFlow<Media> = MutableSharedFlow()
+        override val select: MutableSharedFlow<Media> = MutableSharedFlow() // see usage before you change it
     }
 }
 

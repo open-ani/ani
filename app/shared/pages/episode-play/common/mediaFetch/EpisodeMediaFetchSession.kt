@@ -7,6 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
@@ -202,8 +203,10 @@ internal class DefaultEpisodeMediaFetchSession(
 
         val placeholderDefaultPreference = MediaPreference.Empty.copy() // don't remove .copy, we need identity
         val defaultPreferencesFlow = episodePreferencesRepository.mediaPreferenceFlow(subjectId)
-            .shareInBackground()
-        val defaultPreferencesFetched = defaultPreferencesFlow.map { it !== placeholderDefaultPreference }
+            .stateInBackground(placeholderDefaultPreference, started = SharingStarted.Eagerly)
+        val defaultPreferencesFetched = defaultPreferencesFlow.map {
+            it !== placeholderDefaultPreference
+        }
         val defaultPreference by defaultPreferencesFlow.produceState(placeholderDefaultPreference)
 
         MediaSelectorState(
@@ -255,7 +258,7 @@ internal class DefaultEpisodeMediaFetchSession(
                                 makeDefaultSelection()
                             }
                         }
-                    }
+                    }.collect()
                 }
             }
             if (config.autoSelectLocal) {
@@ -273,7 +276,7 @@ internal class DefaultEpisodeMediaFetchSession(
                                 }
                             }
                         }
-                    }
+                    }.collect()
                 }
             }
         }

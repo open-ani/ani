@@ -41,6 +41,7 @@ internal class EpisodePreferencesRepositoryImpl(
             it[stringPreferencesKey(subjectId.toString())]
         }.map {
             if (it.isNullOrBlank()) {
+                logger.info { "Loaded user MediaPreference for subject $subjectId: null, use default" }
                 return@map defaultMediaPreference.first()
             }
             val res = kotlin.runCatching {
