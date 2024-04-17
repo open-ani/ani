@@ -2,6 +2,7 @@ package me.him188.ani.app.ui.subject.episode.mediaFetch
 
 import androidx.compose.runtime.Immutable
 import kotlinx.serialization.Serializable
+import me.him188.ani.datasources.api.topic.Resolution
 import me.him188.ani.datasources.api.topic.SubtitleLanguage
 import me.him188.ani.datasources.mikan.MikanMediaSource
 
@@ -18,6 +19,12 @@ data class MediaPreference(
     val alliancePatterns: List<String>? = null,
 
     val resolution: String? = null,
+    val fallbackResolutions: List<String>? = listOf(
+        Resolution.R2160P,
+        Resolution.R1440P,
+        Resolution.R1080P,
+        Resolution.R720P,
+    ).map { it.id },
 
     /**
      * 优先使用的字幕语言
@@ -37,14 +44,30 @@ data class MediaPreference(
     /**
      * 优先使用的媒体源
      */
-    val mediaSourceId: String? = MikanMediaSource.ID,
+    val mediaSourceId: String? = null,
     /**
      * @see fallbackSubtitleLanguageIds
      */
-    val fallbackMediaSourceIds: List<String>? = null,
+    val fallbackMediaSourceIds: List<String>? = listOf(
+        MikanMediaSource.ID,
+    ),
 ) {
     companion object {
-        val Empty = MediaPreference()
+        /**
+         * With default values
+         * @see Empty
+         */
+        val Default = MediaPreference()
+
+        /**
+         * No preference
+         */
+        val Empty = MediaPreference(
+            mediaSourceId = null,
+            fallbackSubtitleLanguageIds = null,
+            fallbackMediaSourceIds = null,
+            fallbackResolutions = null,
+        )
     }
 
     fun merge(other: MediaPreference): MediaPreference {
@@ -52,9 +75,13 @@ data class MediaPreference(
         if (this == Empty) return other
         return MediaPreference(
             alliance = other.alliance ?: alliance,
+            alliancePatterns = other.alliancePatterns ?: alliancePatterns,
             resolution = other.resolution ?: resolution,
             subtitleLanguageId = other.subtitleLanguageId ?: subtitleLanguageId,
+            fallbackSubtitleLanguageIds = other.fallbackSubtitleLanguageIds ?: fallbackSubtitleLanguageIds,
             mediaSourceId = other.mediaSourceId ?: mediaSourceId,
+            fallbackMediaSourceIds = other.fallbackMediaSourceIds ?: fallbackMediaSourceIds,
+            fallbackResolutions = other.fallbackResolutions ?: fallbackResolutions,
         )
     }
 }

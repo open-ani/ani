@@ -25,6 +25,7 @@ import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.datasources.api.EpisodeSort
+import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.datasources.bangumi.processing.nameCNOrName
@@ -189,21 +190,33 @@ internal class DefaultEpisodeMediaFetchSession(
         .produceState(false)
 
     override val mediaSelectorState = kotlin.run {
+        val fetchResult by mediaFetchSession.flatMapLatest { it.cumulativeResults }
+            .mapLatest { list ->
+                list.sortedWith(
+                    compareByDescending<Media> {
+                        if (it.location == MediaSourceLocation.LOCAL) 1 else 0
+                    }.thenByDescending { it.size.inBytes }
+                )
+            }
+            .produceState(emptyList())
+
+        val placeholderDefaultPreference = MediaPreference.Empty.copy() // don't remove .copy, we need identity
+        val defaultPreferencesFlow = episodePreferencesRepository.mediaPreferenceFlow(subjectId)
+            .shareInBackground()
+        val defaultPreferencesFetched = defaultPreferencesFlow.map { it !== placeholderDefaultPreference }
+        val defaultPreference by defaultPreferencesFlow.produceState(placeholderDefaultPreference)
+
         MediaSelectorState(
-            mediaFetchSession,
-            mediaPreferenceFlow = episodePreferencesRepository.mediaPreferenceFlow(subjectId),
-            backgroundScope,
+            { fetchResult },
+            { defaultPreference },
         ).apply {
             if (config.savePreferencesOnFilter) {
                 launchInBackground {
                     // Save users' per-subject preferences when they click the filter chips
                     preferenceUpdates.preference.collect {
-                        val defaultPreference = withContext(Dispatchers.Main.immediate) {
-                            default
-                        }
                         episodePreferencesRepository.setMediaPreference(
                             subjectId,
-                            defaultPreference.merge(it)
+                            withContext(Dispatchers.Main) { defaultPreference }.merge(it)
                         )
                     }
                 }
@@ -230,7 +243,12 @@ internal class DefaultEpisodeMediaFetchSession(
             if (config.autoSelectOnFetchCompletion) {
                 launchInBackground {
                     // Automatically select a media when the list is ready
-                    mediaFetchSession.flatMapLatest { it.hasCompleted }.filter { it }.collect {
+                    combine(
+                        mediaFetchSession.flatMapLatest { it.hasCompleted }.filter { it },
+                        defaultPreferencesFetched
+                    ) { _, defaultPreferencesFetched ->
+                        if (!defaultPreferencesFetched) return@combine // wait for config load
+
                         // on completion
                         withContext(Dispatchers.Main.immediate) {
                             if (selected == null) { // only if user has not selected
@@ -242,7 +260,12 @@ internal class DefaultEpisodeMediaFetchSession(
             }
             if (config.autoSelectLocal) {
                 launchInBackground {
-                    mediaFetchSession.flatMapLatest { it.cumulativeResults }.collect { list ->
+                    combine(
+                        mediaFetchSession.flatMapLatest { it.cumulativeResults },
+                        defaultPreferencesFetched
+                    ) { list, defaultPreferencesFetched ->
+                        if (!defaultPreferencesFetched) return@combine // wait for config load
+
                         if (list.any { it.location == MediaSourceLocation.LOCAL }) {
                             withContext(Dispatchers.Main.immediate) {
                                 if (selected == null) { // only if user has not selected

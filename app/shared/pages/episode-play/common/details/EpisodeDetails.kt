@@ -37,6 +37,7 @@ import me.him188.ani.app.ui.subject.episode.EpisodeViewModel
 import me.him188.ani.app.ui.theme.slightlyWeaken
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
+import me.him188.ani.datasources.api.topic.Resolution
 import me.him188.ani.datasources.api.topic.SubtitleLanguage
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.openapitools.client.models.EpisodeCollectionType
@@ -105,6 +106,10 @@ fun renderSubtitleLanguage(id: String): String {
         SubtitleLanguage.English.id -> "英语"
         else -> id
     }
+}
+
+fun renderResolution(id: String): String {
+    return Resolution.tryParse(id)?.displayName ?: id
 }
 
 /**

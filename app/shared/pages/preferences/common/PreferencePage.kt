@@ -631,6 +631,7 @@ abstract class PreferenceScope {
         key: (T) -> Any,
         modifier: Modifier = Modifier,
         description: @Composable (() -> Unit)? = null,
+        textFieldDescription: @Composable (() -> Unit)? = description,
         icon: @Composable (() -> Unit)? = null,
         onConfirm: (() -> Unit)? = null,
         title: @Composable (RowScope.() -> Unit),
@@ -664,7 +665,7 @@ abstract class PreferenceScope {
                     BasicAlertDialog(onDismissRequest = { showDialog = false }) {
                         RichDialogLayout(
                             title = { title() },
-                            description = description?.let { { it() } },
+                            description = textFieldDescription?.let { { it() } },
                             buttons = {
                                 TextButton({ showDialog = false }) {
                                     Text("取消")

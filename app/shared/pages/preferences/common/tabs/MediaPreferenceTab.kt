@@ -3,7 +3,6 @@ package me.him188.ani.app.ui.preference.tabs
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowOutward
 import androidx.compose.material.icons.rounded.DisplaySettings
@@ -26,7 +25,6 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastAll
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.data.media.MediaSourceManager
@@ -42,10 +40,12 @@ import me.him188.ani.app.ui.preference.PreferenceScope
 import me.him188.ani.app.ui.preference.PreferenceTab
 import me.him188.ani.app.ui.preference.SelectableItem
 import me.him188.ani.app.ui.preference.SwitchItem
+import me.him188.ani.app.ui.subject.episode.details.renderResolution
 import me.him188.ani.app.ui.subject.episode.details.renderSubtitleLanguage
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.app.ui.subject.episode.mediaFetch.renderMediaSource
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
+import me.him188.ani.datasources.api.topic.Resolution
 import me.him188.ani.datasources.api.topic.SubtitleLanguage
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.koin.core.component.KoinComponent
@@ -57,15 +57,16 @@ class MediaPreferenceViewModel : AbstractViewModel(), KoinComponent {
     private val preferencesRepository: PreferencesRepository by inject()
     private val mediaSourceManager: MediaSourceManager by inject()
 
-    private val placeholderMediaPreference = MediaPreference() // don't use .Empty, we need identity check
+    @Stable
+    private val placeholderMediaPreference = MediaPreference.Empty.copy() // don't remove .copy, we need identity check
 
     val defaultMediaPreference by preferencesRepository.defaultMediaPreference.flow
         .map {
-            it ?: placeholderMediaPreference
+            it ?: MediaPreference.Empty
         }.produceState(placeholderMediaPreference)
 
-    val defaultMediaPreferenceLoaded by derivedStateOf {
-        defaultMediaPreference !== placeholderMediaPreference // pointer identity
+    val defaultMediaPreferenceLoading by derivedStateOf {
+        defaultMediaPreference === placeholderMediaPreference // pointer identity
     }
 
 
@@ -75,12 +76,18 @@ class MediaPreferenceViewModel : AbstractViewModel(), KoinComponent {
 
     val allSubtitleLanguageIds = SubtitleLanguage.matchableEntries.map { it.id }
 
+    val allResolutionIds = Resolution.entries.map { it.id }
+
     val sortedLanguages by derivedStateOf {
         defaultMediaPreference.fallbackSubtitleLanguageIds.extendTo(allSubtitleLanguageIds)
     }
 
     val sortedMediaSources by derivedStateOf {
         defaultMediaPreference.fallbackMediaSourceIds.extendTo(allMediaSources)
+    }
+
+    val sortedResolutions by derivedStateOf {
+        defaultMediaPreference.fallbackResolutions.extendTo(allResolutionIds)
     }
 
     /**
@@ -259,8 +266,6 @@ private fun PreferenceScope.MediaDownloadGroup(vm: MediaPreferenceViewModel) {
                     vm.defaultMediaPreference.copy(fallbackMediaSourceIds = list.filter { it.selected }.map { it.item })
                 )
             },
-            item = { Text(renderMediaSource(it)) },
-            key = { it },
             exposed = { list ->
                 Text(
                     remember(list) {
@@ -276,10 +281,12 @@ private fun PreferenceScope.MediaDownloadGroup(vm: MediaPreferenceViewModel) {
                     overflow = TextOverflow.Ellipsis
                 )
             },
-            title = { Text("数据源") },
-            description = { Text("优先选择较为靠前的数据源") },
+            item = { Text(renderMediaSource(it)) },
+            key = { it },
+            modifier = Modifier.placeholder(vm.defaultMediaPreferenceLoading),
+            textFieldDescription = { Text("长按排序, 优先选择顺序较高的项目") },
             icon = { Icon(Icons.Rounded.DisplaySettings, null) },
-            modifier = Modifier.placeholder(vm.defaultMediaPreferenceLoaded),
+            title = { Text("数据源") },
         )
 
         HorizontalDividerItem()
@@ -308,38 +315,44 @@ private fun PreferenceScope.MediaDownloadGroup(vm: MediaPreferenceViewModel) {
                 )
             },
             item = { Text(renderSubtitleLanguage(it)) },
-            description = { Text("优先选择较为靠前的字幕语言") },
             key = { it },
-            modifier = Modifier.placeholder(vm.defaultMediaPreferenceLoaded),
+            modifier = Modifier.placeholder(vm.defaultMediaPreferenceLoading),
+            textFieldDescription = { Text("长按排序, 优先选择顺序较高的项目") },
             icon = { Icon(Icons.Rounded.Language, null) },
             title = { Text("字幕语言") },
         )
 
         HorizontalDividerItem()
 
-        TextItem(
-//                selected = { mediaPreference.resolution },
-//                values = { vm.resolutions },
-//                itemText = {
-//                    if (it == null) {
-//                        Text("无偏好")
-//                    } else {
-//                        Text(it)
-//                    }
-//                },
-//                onSelect = {
-//                    vm.updateDefaultMediaPreference(mediaPreference.copy(resolution = it))
-//                },
-            action = {
-                Text(
-                    "尽可能高",
-                    Modifier.padding(end = 12.dp),
+        SorterItem(
+            values = { vm.sortedResolutions },
+            onSort = { list ->
+                vm.updateDefaultMediaPreference(
+                    vm.defaultMediaPreference.copy(fallbackResolutions = list.filter { it.selected }
+                        .map { it.item })
                 )
             },
-            title = { Text("分辨率") },
-            description = { Text("暂不支持修改") },
+            exposed = { list ->
+                Text(
+                    remember(list) {
+                        if (list.fastAll { it.selected }) {
+                            textAny
+                        } else if (list.fastAll { !it.selected }) {
+                            textNone
+                        } else
+                            list.asSequence().filter { it.selected }
+                                .joinToString { renderResolution(it.item) }
+                    },
+                    softWrap = false,
+                    overflow = TextOverflow.Ellipsis
+                )
+            },
+            item = { Text(renderResolution(it)) },
+            key = { it },
+            modifier = Modifier.placeholder(vm.defaultMediaPreferenceLoading),
+            textFieldDescription = { Text("长按排序, 优先选择顺序较高的项目") },
             icon = { Icon(Icons.Rounded.Hd, null) },
-            modifier = Modifier.placeholder(vm.defaultMediaPreferenceLoaded),
+            title = { Text("分辨率") },
         )
 
         HorizontalDividerItem()
@@ -356,7 +369,7 @@ private fun PreferenceScope.MediaDownloadGroup(vm: MediaPreferenceViewModel) {
             },
             icon = { Icon(Icons.Rounded.Subtitles, null) },
             placeholder = { Text(textAny) },
-            modifier = Modifier.placeholder(vm.defaultMediaPreferenceLoaded),
+            modifier = Modifier.placeholder(vm.defaultMediaPreferenceLoading),
             onValueChangeCompleted = {
                 vm.updateDefaultMediaPreference(
                     vm.defaultMediaPreference.copy(

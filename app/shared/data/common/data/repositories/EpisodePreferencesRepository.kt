@@ -5,16 +5,18 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.json.Json
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
 interface EpisodePreferencesRepository : KoinComponent {
     /**
-     * Returns the user's saved media preference for the given subject.
+     * 获取用户对这个条目的设置, 当不存在时返回全局默认设置 [PreferencesRepository.defaultMediaPreference]
      * @see PreferencesRepository.defaultMediaPreference
      */
     fun mediaPreferenceFlow(subjectId: Int): Flow<MediaPreference>
@@ -23,7 +25,12 @@ interface EpisodePreferencesRepository : KoinComponent {
 
 internal class EpisodePreferencesRepositoryImpl(
     private val store: DataStore<Preferences>,
-) : EpisodePreferencesRepository {
+) : EpisodePreferencesRepository, KoinComponent {
+    private val preferences: PreferencesRepository by inject()
+
+    // 全局默认设置
+    private val defaultMediaPreference = preferences.defaultMediaPreference.flow
+
     private val logger = logger(this::class)
     private val json = Json {
         ignoreUnknownKeys = true
@@ -34,11 +41,11 @@ internal class EpisodePreferencesRepositoryImpl(
             it[stringPreferencesKey(subjectId.toString())]
         }.map {
             if (it.isNullOrBlank()) {
-                return@map MediaPreference.Empty
+                return@map defaultMediaPreference.first()
             }
             val res = kotlin.runCatching {
                 json.decodeFromString(MediaPreference.serializer(), it)
-            }.getOrNull() ?: MediaPreference.Empty
+            }.getOrNull() ?: defaultMediaPreference.first()
             logger.info { "Loaded user MediaPreference for subject $subjectId: $res" }
             res
         }

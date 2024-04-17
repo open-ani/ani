@@ -7,18 +7,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.util.fastDistinctBy
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.mapLatest
-import me.him188.ani.app.ui.foundation.produceState
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.source.MediaSourceLocation
-import me.him188.ani.datasources.core.fetch.MediaFetchSession
 
 /**
  * Creates a [MediaSelectorState].
@@ -36,24 +31,6 @@ fun MediaSelectorState(
     mediaListProvider,
     defaultPreferenceProvider
 )
-
-fun MediaSelectorState(
-    mediaFetchSession: Flow<MediaFetchSession>,
-    mediaPreferenceFlow: Flow<MediaPreference>,
-    scope: CoroutineScope,
-): MediaSelectorState {
-    val state by mediaFetchSession.flatMapLatest { it.cumulativeResults }
-        .mapLatest { list ->
-            list.sortedWith(
-                compareByDescending<Media> {
-                    if (it.location == MediaSourceLocation.LOCAL) 1 else 0
-                }.thenByDescending { it.size.inBytes }
-            )
-        }
-        .produceState(emptyList(), scope)
-    val defaultPreference by mediaPreferenceFlow.produceState(MediaPreference.Empty, scope)
-    return MediaSelectorState({ state }, { defaultPreference })
-}
 
 /**
  * 数据源选择器 UI 的状态.
@@ -163,7 +140,10 @@ internal class MediaSelectorStateImpl(
 //    mediaListMangler: MediaListMangler = DefaultMediaListMangler(),
 ) : MediaSelectorState {
     private companion object {
-        val defaultUserPreference get() = MediaPreference.Empty
+        /**
+         * Placeholder for [preference]
+         */
+        val initialUserPreference get() = MediaPreference.Empty
     }
 
     override val mediaList: List<Media> by derivedStateOf { mediaListProvider() }
@@ -174,9 +154,15 @@ internal class MediaSelectorStateImpl(
 //     */
 //    val mangledMediaList: List<MangledMedia> by derivedStateOf { mediaListMangler.mangle(mediaList) }
 
+    /**
+     * User-set default
+     */
     override val default: MediaPreference by derivedStateOf { defaultProvider() }
 
-    override var preference: MediaPreference by mutableStateOf(defaultUserPreference)
+    override var preference: MediaPreference by mutableStateOf(initialUserPreference)
+    private val mergedPreference by derivedStateOf {
+        default.merge(preference)
+    }
 
     var explicitlyRemovedAlliance: Boolean by mutableStateOf(false)
     var explicitlyRemovedResolution: Boolean by mutableStateOf(false)
@@ -270,8 +256,7 @@ internal class MediaSelectorStateImpl(
     }
     override val selectedAlliance: String? by derivedStateOf {
         if (explicitlyRemovedAlliance) return@derivedStateOf null
-        preference.alliance?.takeIf { it in alliances }?.let { return@derivedStateOf it }
-        default.alliance?.takeIf { it in alliances }?.let { return@derivedStateOf it }
+        mergedPreference.alliance?.takeIf { it in alliances }?.let { return@derivedStateOf it }
 
         for (regex in allianceRegexes) {
             for (alliance in alliances) {
@@ -283,16 +268,17 @@ internal class MediaSelectorStateImpl(
     }
     override val selectedResolution: String? by derivedStateOf {
         if (explicitlyRemovedResolution) return@derivedStateOf null
-        preference.resolution?.takeIf { it in resolutions }?.let { return@derivedStateOf it }
-        default.resolution?.takeIf { it in resolutions }?.let { return@derivedStateOf it }
+        mergedPreference.resolution?.takeIf { it in resolutions }?.let { return@derivedStateOf it }
+
+        for (resolution in default.fallbackResolutions.orEmpty()) {
+            resolutions.find { it == resolution }?.let { return@derivedStateOf it }
+        }
 
         null
     }
     override val selectedSubtitleLanguageId: String? by derivedStateOf {
         if (explicitlyRemovedSubtitleLanguage) return@derivedStateOf null
-        preference.subtitleLanguageId?.takeIf { it in subtitleLanguageIds }
-            ?.let { return@derivedStateOf it }
-        default.subtitleLanguageId?.takeIf { it in subtitleLanguageIds }
+        mergedPreference.subtitleLanguageId?.takeIf { it in subtitleLanguageIds }
             ?.let { return@derivedStateOf it }
 
         for (subtitleLanguage in default.fallbackSubtitleLanguageIds.orEmpty()) {
@@ -303,8 +289,7 @@ internal class MediaSelectorStateImpl(
     }
     override val selectedMediaSource: String? by derivedStateOf {
         if (explicitlyRemovedMediaSource) return@derivedStateOf null
-        preference.mediaSourceId?.takeIf { it in mediaSources }?.let { return@derivedStateOf it }
-        default.mediaSourceId?.takeIf { it in mediaSources }?.let { return@derivedStateOf it }
+        mergedPreference.mediaSourceId?.takeIf { it in mediaSources }?.let { return@derivedStateOf it }
 
 
         for (mediaSourceId in default.fallbackMediaSourceIds.orEmpty()) {
@@ -352,7 +337,7 @@ internal class MediaSelectorStateImpl(
         override val preference: Flow<MediaPreference> = snapshotFlow {
             this@MediaSelectorStateImpl.preference
         }.flowOn(Dispatchers.Main)
-            .filter { it !== defaultUserPreference }
+            .filter { it !== initialUserPreference }
         override val select: MutableSharedFlow<Media> = MutableSharedFlow()
     }
 }

@@ -16,9 +16,9 @@ import me.him188.ani.app.data.models.ProxyPreferences
 import me.him188.ani.app.data.serializers.DanmakuConfigSerializer
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.danmaku.ui.DanmakuConfig
+import me.him188.ani.utils.logging.debug
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.logger
-import me.him188.ani.utils.logging.trace
 
 interface PreferencesRepository {
     val danmakuEnabled: Preference<Boolean>
@@ -27,11 +27,11 @@ interface PreferencesRepository {
 //    suspend fun setDanmakuEnabled(enabled: Boolean)
 
     /**
-     * Returns the user's default media preference if they have not given a override preference for a subject.
+     * 全局默认设置
      *
      * @see EpisodePreferencesRepository
      */
-    val defaultMediaPreference: Preference<MediaPreference?>
+    val defaultMediaPreference: Preference<MediaPreference>
 
     val proxyPreferences: Preference<ProxyPreferences>
     val mediaCacheSettings: Preference<MediaCacheSettings>
@@ -60,9 +60,9 @@ class PreferencesRepositoryImpl(
         }
     }
 
-    inner class SerializablePreference<T>(
+    inner class SerializablePreference<T : Any>(
         val name: String,
-        private val serializer: KSerializer<T & Any>,
+        private val serializer: KSerializer<T>,
         default: () -> T,
     ) : Preference<T> {
         private val key = stringPreferencesKey(name)
@@ -81,7 +81,7 @@ class PreferencesRepositoryImpl(
             }
 
         override suspend fun set(value: T) {
-            logger.trace { "Updating preference '$key' with: $value" }
+            logger.debug { "Updating preference '$key' with: $value" }
             preferences.edit {
                 if (value == null) {
                     it.remove(key)
@@ -95,11 +95,12 @@ class PreferencesRepositoryImpl(
     override val danmakuEnabled: Preference<Boolean> = BooleanPreference("danmaku_enabled")
     override val danmakuConfig: Preference<DanmakuConfig> =
         SerializablePreference("danmaku_config", DanmakuConfigSerializer, default = { DanmakuConfig.Default })
-    override val defaultMediaPreference: Preference<MediaPreference?> =
+    override val defaultMediaPreference: Preference<MediaPreference> =
         SerializablePreference(
             "defaultMediaPreference",
             MediaPreference.serializer(),
-            default = { null })
+            default = { MediaPreference.Default }
+        )
     override val proxyPreferences: Preference<ProxyPreferences> = SerializablePreference(
         "proxyPreferences",
         ProxyPreferences.serializer(),

@@ -30,7 +30,7 @@ class Resolution private constructor(
     val id: String,
     val size: Int, // for sorting
     private val otherNames: List<String>,
-    private val displayName: String = id,
+    val displayName: String = id,
 ) : Comparable<Resolution> {
     constructor(
         id: String,
