@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.DownloadDone
+import androidx.compose.material.icons.rounded.Downloading
 import androidx.compose.material.icons.rounded.Upload
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -133,6 +135,21 @@ fun CacheItemView(
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
+                        // 图标
+                        if (progress == 1f) {
+                            Icon(
+                                Icons.Rounded.DownloadDone,
+                                null,
+                                Modifier.padding(end = 8.dp)
+                            )
+                        } else {
+                            Icon(
+                                Icons.Rounded.Downloading,
+                                null,
+                                Modifier.padding(end = 8.dp)
+                            )
+                        }
+
                         Text(renderMediaSource(mediaSourceId())) // "本地"
 
                         val totalSize by item.totalSize.collectAsStateWithLifecycle(null)
