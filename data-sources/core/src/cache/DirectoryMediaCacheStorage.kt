@@ -164,7 +164,7 @@ class DirectoryMediaCacheStorage(
             val cache = listFlow.value.firstOrNull { it.origin.mediaId == media.mediaId } ?: return false
             cache.delete()
             withContext(Dispatchers.IO) {
-                dir.resolve("${media.mediaId}.${METADATA_FILE_EXTENSION}").deleteIfExists()
+                dir.resolve("${media.mediaId.hashCode()}.${METADATA_FILE_EXTENSION}").deleteIfExists()
             }
             listFlow.value -= cache
             return true
