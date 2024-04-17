@@ -186,6 +186,9 @@ private fun PreferenceScope.AutoCacheGroup(
                 onValueChange = { maxCount = it },
                 Modifier.placeholder(mediaCacheSettings === defaultMediaCacheSettings),
                 valueRange = 0f..10f,
+                onValueChangeFinished = {
+                    vm.updateMediaCacheSettings(mediaCacheSettings.copy(maxCountPerSubject = maxCount.roundToInt()))
+                },
                 steps = 9,
             )
         }
