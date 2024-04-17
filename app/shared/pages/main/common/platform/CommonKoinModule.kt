@@ -20,8 +20,10 @@ package me.him188.ani.app.platform
 
 import androidx.compose.runtime.Stable
 import io.ktor.client.plugins.UserAgent
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.media.DefaultMediaAutoCacheService
 import me.him188.ani.app.data.media.LocalFileVideoSourceResolver
@@ -61,6 +63,8 @@ import me.him188.ani.datasources.api.subject.SubjectProvider
 import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
 import me.him188.ani.datasources.core.cache.DirectoryMediaCacheStorage
+import me.him188.ani.utils.logging.logger
+import me.him188.ani.utils.logging.warn
 import org.koin.core.KoinApplication
 import org.koin.dsl.module
 
@@ -136,6 +140,18 @@ fun KoinApplication.startCommonKoinModule(coroutineScope: CoroutineScope): KoinA
     }
     koin.get<MediaAutoCacheService>().startRegularCheck(coroutineScope)
     return this
+}
+
+
+fun createAppRootCoroutineScope(): CoroutineScope {
+    val logger = logger("ani-root")
+    return CoroutineScope(
+        CoroutineExceptionHandler { coroutineContext, throwable ->
+            logger.warn(throwable) {
+                "Uncaught exception in coroutine $coroutineContext"
+            }
+        } + SupervisorJob() + Dispatchers.Default,
+    )
 }
 
 @Stable

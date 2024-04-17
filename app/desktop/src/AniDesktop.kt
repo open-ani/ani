@@ -47,8 +47,6 @@ import io.ktor.client.statement.bodyAsChannel
 import io.ktor.http.isSuccess
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.utils.io.core.readBytes
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import me.him188.ani.app.interaction.PlatformImplementations
@@ -58,6 +56,7 @@ import me.him188.ani.app.navigation.DesktopBrowserNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.DesktopContext
 import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.platform.createAppRootCoroutineScope
 import me.him188.ani.app.platform.getAniUserAgent
 import me.him188.ani.app.platform.getCommonKoinModule
 import me.him188.ani.app.platform.startCommonKoinModule
@@ -99,7 +98,7 @@ object AniDesktop {
             File(projectDirectories.dataDir)
         )
 
-        val coroutineScope = CoroutineScope(SupervisorJob())
+        val coroutineScope = createAppRootCoroutineScope()
 
         val client = HttpClient {
             followRedirects = true
