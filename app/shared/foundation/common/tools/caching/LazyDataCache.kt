@@ -19,6 +19,11 @@ import kotlinx.coroutines.withContext
 import me.him188.ani.datasources.api.paging.PagedSource
 import me.him188.ani.utils.coroutines.cancellableCoroutineScope
 
+@RequiresOptIn(
+    level = RequiresOptIn.Level.ERROR,
+)
+annotation class UnsafeLazyDataCacheApi
+
 /**
  * A data collection, where the data is loaded from a remote source.
  *
@@ -62,14 +67,11 @@ interface LazyDataCache<T> {
     /**
      * Lock for cross-data-cache operations. Only for internal use.
      */
+    @UnsafeLazyDataCacheApi
     val lock: Mutex
 
-    /**
-     * Changes the [cachedData] under the [lock].
-     *
-     * Note, you must not call [mutate] again within [action], as it will cause a deadlock.
-     */
-    suspend fun mutate(action: suspend List<T>.() -> List<T>)
+    @UnsafeLazyDataCacheApi
+    val mutator: LazyDataCacheMutator<T>
 
     /**
      * Attempts to load more data.
@@ -100,6 +102,43 @@ interface LazyDataCache<T> {
      * 清空所有本地缓存以及当前的 [PagedSource]. 注意, 本函数不会请求数据. 即当函数返回时, [cachedData] 为空.
      */
     suspend fun invalidate()
+}
+
+/**
+ * Changes the [LazyDataCache.cachedData] under a lock.
+ *
+ * Note, you must not call [mutate] again within [action], as it will cause a deadlock.
+ * @see LazyDataCacheMutator
+ */
+@OptIn(UnsafeLazyDataCacheApi::class)
+suspend inline fun <R, T> LazyDataCache<T>.mutate(action: LazyDataCacheMutator<T>.() -> R): R {
+    return lock.withLock {
+        action(mutator)
+    }
+}
+
+/**
+ * Mutates two or more [LazyDataCache]s atomically.
+ */
+@OptIn(UnsafeLazyDataCacheApi::class)
+suspend inline fun <T> dataTransaction(
+    vararg caches: LazyDataCache<T>,
+    crossinline action: suspend (data: List<LazyDataCacheMutator<T>>) -> Unit,
+) {
+    val lockedLocks = mutableListOf<Mutex>()
+    try {
+        caches.sortedBy { it.hashCode() } // prevent deadlocks
+            .forEach {
+                it.lock.lock(lockedLocks)
+                lockedLocks.add(it.lock)
+            }
+
+        action(caches.map { it.mutator })
+    } finally {
+        for (lockedLock in lockedLocks) {
+            lockedLock.unlock(lockedLocks)
+        }
+    }
 }
 
 inline val <T> LazyDataCache<T>.value get() = cachedData.value
@@ -157,7 +196,15 @@ class LazyDataCacheImpl<T>(
 
     private val requestInProgress = MutableStateFlow(false)
 
+    @OptIn(UnsafeLazyDataCacheApi::class)
     override val lock: Mutex = Mutex()
+
+    @OptIn(UnsafeLazyDataCacheApi::class)
+    override val mutator: LazyDataCacheMutator<T> = object : LazyDataCacheMutator<T>() {
+        override suspend fun update(map: (List<T>) -> List<T>) {
+            setData(map(cachedData.value))
+        }
+    }
 
     // Writes must be under lock
     private val currentSource: MutableStateFlow<PagedSource<T>?> = MutableStateFlow(null)
@@ -218,12 +265,6 @@ class LazyDataCacheImpl<T>(
                     requestInProgress.value = false
                 }
             }
-        }
-    }
-
-    override suspend fun mutate(action: suspend List<T>.() -> List<T>) {
-        lock.withLock {
-            setData(action(cachedData.value))
         }
     }
 

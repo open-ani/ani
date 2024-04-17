@@ -48,6 +48,7 @@ fun EpisodeCollectionActionButton(
     collectionType: EpisodeCollectionType?,
     onClick: (target: EpisodeCollectionType) -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
 ) {
     var showDropdown by rememberSaveable { mutableStateOf(false) }
 
@@ -75,7 +76,8 @@ fun EpisodeCollectionActionButton(
             )
         },
         shape = RoundedCornerShape(12.dp),
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+        enabled = enabled
     ) {
         when (collectionType) {
             EpisodeCollectionType.WATCHED -> {

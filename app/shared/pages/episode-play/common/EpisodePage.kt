@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.dp
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.setRequestFullScreen
-import me.him188.ani.app.tools.rememberMonoTasker
+import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.effects.OnLifecycleEvent
@@ -100,7 +100,7 @@ fun EpisodePageContent(
     var pausedVideo by rememberSaveable { mutableStateOf(true) } // live after configuration change
     val isPreviewing by rememberUpdatedState(LocalIsPreviewing.current)
 
-    val autoPauseTasker = rememberMonoTasker()
+    val autoPauseTasker = rememberUiMonoTasker()
     OnLifecycleEvent {
         if (isPreviewing) return@OnLifecycleEvent
         if (it == Lifecycle.State.InActive || it == Lifecycle.State.Destroyed) {

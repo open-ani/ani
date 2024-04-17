@@ -30,8 +30,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import me.him188.ani.app.tools.rememberBackgroundMonoTasker
 import me.him188.ani.app.ui.external.placeholder.placeholder
-import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.subject.episode.EpisodeCollectionActionButton
 import me.him188.ani.app.ui.subject.episode.EpisodeViewModel
 import me.him188.ani.app.ui.theme.slightlyWeaken
@@ -200,14 +200,16 @@ fun EpisodeTitle(
 
         val collectionType by viewModel.episodeCollectionType.collectAsStateWithLifecycle(EpisodeCollectionType.WATCHLIST)
 
+        val tasker = viewModel.rememberBackgroundMonoTasker()
         EpisodeCollectionActionButton(
             collectionType,
             onClick = { target ->
-                viewModel.launchInBackground {
-                    setEpisodeCollectionType(target)
+                tasker.launch {
+                    viewModel.setEpisodeCollectionType(target)
                 }
             },
-            Modifier.requiredWidth(IntrinsicSize.Max).align(Alignment.CenterVertically)
+            Modifier.requiredWidth(IntrinsicSize.Max).align(Alignment.CenterVertically),
+            enabled = !tasker.isRunning,
         )
     }
 }

@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.platform.AniBuildConfig
 import me.him188.ani.app.platform.isInLandscapeMode
-import me.him188.ani.app.tools.rememberMonoTasker
+import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.subject.episode.video.loading.EpisodeVideoLoadingIndicator
@@ -132,7 +132,7 @@ internal fun EpisodeVideo(
             val swipeSeekerState = rememberSwipeSeekerState(constraints.maxWidth) {
                 playerState.seekTo(playerState.currentPositionMillis.value + it * 1000)
             }
-            val indicatorTasker = rememberMonoTasker()
+            val indicatorTasker = rememberUiMonoTasker()
             val indicatorState = rememberGestureIndicatorState()
             LockableVideoGestureHost(
                 swipeSeekerState,

@@ -58,7 +58,7 @@ import kotlinx.coroutines.delay
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.StreamType
 import me.him188.ani.app.platform.getComponentAccessors
-import me.him188.ani.app.tools.rememberMonoTasker
+import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.theme.aniDarkColorTheme
 import me.him188.ani.app.videoplayer.ui.guesture.SwipeSeekerState.Companion.swipeToSeek
 import me.him188.ani.datasources.bangumi.processing.fixToString
@@ -304,7 +304,7 @@ fun VideoGestureHost(
             }
         }
 
-        val indicatorTasker = rememberMonoTasker()
+        val indicatorTasker = rememberUiMonoTasker()
 
         Box(
             modifier

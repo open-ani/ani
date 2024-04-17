@@ -28,12 +28,11 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.withContext
-import me.him188.ani.app.data.media.MediaCacheManager
-import me.him188.ani.app.data.media.MediaSourceManager
 import me.him188.ani.app.data.media.UnsupportedMediaException
 import me.him188.ani.app.data.media.VideoSourceResolver
-import me.him188.ani.app.data.repositories.EpisodePreferencesRepository
 import me.him188.ani.app.data.repositories.EpisodeRepository
+import me.him188.ani.app.data.repositories.SubjectRepository
+import me.him188.ani.app.data.subject.SubjectManager
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.Context
 import me.him188.ani.app.ui.foundation.AbstractViewModel
@@ -54,6 +53,7 @@ import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.datasources.bangumi.processing.nameCNOrName
 import me.him188.ani.datasources.bangumi.processing.renderEpisodeSp
+import me.him188.ani.datasources.bangumi.processing.toCollectionType
 import me.him188.ani.utils.coroutines.closeOnReplacement
 import me.him188.ani.utils.coroutines.runUntilSuccess
 import me.him188.ani.utils.logging.error
@@ -145,11 +145,10 @@ private class EpisodeViewModelImpl(
     private val browserNavigator: BrowserNavigator by inject()
     private val playerStateFactory: PlayerStateFactory by inject()
     private val episodeRepository: EpisodeRepository by inject()
+    private val subjectRepository: SubjectRepository by inject()
+    private val subjectManager: SubjectManager by inject()
     private val danmakuProvider: DanmakuProvider by inject()
-    private val episodePreferencesRepository: EpisodePreferencesRepository by inject()
-    private val mediaSourceManager: MediaSourceManager by inject()
     private val videoSourceResolver: VideoSourceResolver by inject()
-    private val cacheManager: MediaCacheManager by inject()
 
     private val subjectDetails = flowOf(subjectId).mapLatest { subjectId ->
         runUntilSuccess { withContext(Dispatchers.IO) { bangumiClient.api.getSubjectById(subjectId) } }
@@ -231,8 +230,8 @@ private class EpisodeViewModelImpl(
     }.localCachedSharedFlow()
 
     override suspend fun setEpisodeCollectionType(type: EpisodeCollectionType) {
+        subjectManager.setEpisodeCollectionType(subjectId, episodeId, type.toCollectionType())
         episodeCollectionType.tryEmit(type)
-        episodeRepository.setEpisodeCollection(subjectId, listOf(episodeId), type)
     }
 
     override suspend fun copyDownloadLink(clipboardManager: ClipboardManager, snackbar: SnackbarHostState) {

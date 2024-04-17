@@ -58,6 +58,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import me.him188.ani.app.data.subject.SubjectCollectionItem
 import me.him188.ani.app.interaction.VibrationStrength
 import me.him188.ani.app.interaction.vibrateIfSupported
 import me.him188.ani.app.navigation.LocalNavigator

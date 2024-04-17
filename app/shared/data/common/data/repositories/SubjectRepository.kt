@@ -3,6 +3,7 @@ package me.him188.ani.app.data.repositories
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
+import me.him188.ani.app.data.subject.SubjectManager
 import me.him188.ani.datasources.api.paging.PageBasedPagedSource
 import me.him188.ani.datasources.api.paging.Paged
 import me.him188.ani.datasources.api.paging.PagedSource
@@ -18,9 +19,11 @@ import org.openapitools.client.models.SubjectType
 import org.openapitools.client.models.UserSubjectCollection
 import org.openapitools.client.models.UserSubjectCollectionModifyPayload
 
+/**
+ * Use [SubjectManager] instead.
+ */
 interface SubjectRepository : Repository {
     suspend fun getSubject(id: Int): Subject?
-
 
     fun getSubjectCollections(
         username: String,
@@ -32,6 +35,7 @@ interface SubjectRepository : Repository {
     suspend fun deleteSubjectCollection(subjectId: Int)
 }
 
+
 suspend fun SubjectRepository.setSubjectCollectionTypeOrDelete(subjectId: Int, type: SubjectCollectionType?) {
     return if (type == null) {
         deleteSubjectCollection(subjectId)
@@ -41,6 +45,8 @@ suspend fun SubjectRepository.setSubjectCollectionTypeOrDelete(subjectId: Int, t
 }
 
 class SubjectRepositoryImpl : SubjectRepository, KoinComponent {
+    private val episodeRepository: EpisodeRepository by inject()
+
     private val client: BangumiClient by inject()
     private val logger = logger(this::class)
 

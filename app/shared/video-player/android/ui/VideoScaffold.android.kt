@@ -18,7 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import me.him188.ani.app.tools.rememberMonoTasker
+import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.preview.PHONE_LANDSCAPE
 import me.him188.ani.app.ui.subject.episode.details.EpisodePlayerTitle
@@ -111,7 +111,7 @@ private fun PreviewVideoScaffoldImpl(
                 playerState.seekTo(playerState.currentPositionMillis.value + it * 1000)
             }
             val indicatorState = rememberGestureIndicatorState()
-            val tasker = rememberMonoTasker()
+            val tasker = rememberUiMonoTasker()
             LockableVideoGestureHost(
                 swipeSeekerState,
                 indicatorState,

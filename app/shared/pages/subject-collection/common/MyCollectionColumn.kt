@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.debounce
 import me.him188.ani.app.data.media.EpisodeCacheStatus
+import me.him188.ani.app.data.subject.SubjectCollectionItem
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.ui.foundation.AsyncImage
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing

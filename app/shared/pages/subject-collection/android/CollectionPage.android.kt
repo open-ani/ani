@@ -7,7 +7,9 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.runBlocking
 import me.him188.ani.app.data.media.EpisodeCacheStatus
+import me.him188.ani.app.data.subject.SubjectCollectionItem
 import me.him188.ani.app.tools.caching.LazyDataCache
+import me.him188.ani.app.tools.caching.mutate
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.datasources.api.paging.SingleShotPagedSource
@@ -92,9 +94,6 @@ private fun testCollections(): List<SubjectCollectionItem> {
                 rate = null,
                 date = "2023 年 10 月",
                 totalEps = 2,
-                isOnAir = true,
-                latestEp = latestEp,
-                lastWatchedEpIndex = null,
                 episodes = eps,
                 collectionType = SubjectCollectionType.Doing
             )
@@ -107,9 +106,6 @@ private fun testCollections(): List<SubjectCollectionItem> {
                 rate = null,
                 date = "2023 年 10 月",
                 totalEps = 2,
-                isOnAir = true,
-                latestEp = latestEp,
-                lastWatchedEpIndex = 0,
                 episodes = eps,
                 collectionType = SubjectCollectionType.Doing
             )
@@ -122,9 +118,6 @@ private fun testCollections(): List<SubjectCollectionItem> {
                 rate = null,
                 date = "2023 年 10 月",
                 totalEps = 2,
-                isOnAir = true,
-                latestEp = latestEp,
-                lastWatchedEpIndex = 1,
                 episodes = eps,
                 collectionType = SubjectCollectionType.Doing
             )
@@ -137,9 +130,6 @@ private fun testCollections(): List<SubjectCollectionItem> {
                 rate = null,
                 date = "2023 年 10 月",
                 totalEps = 2,
-                isOnAir = true,
-                latestEp = latestEp,
-                lastWatchedEpIndex = 1,
                 episodes = eps,
                 collectionType = SubjectCollectionType.Wish
             )

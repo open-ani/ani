@@ -50,6 +50,8 @@ import me.him188.ani.app.data.repositories.TokenRepository
 import me.him188.ani.app.data.repositories.TokenRepositoryImpl
 import me.him188.ani.app.data.repositories.UserRepository
 import me.him188.ani.app.data.repositories.UserRepositoryImpl
+import me.him188.ani.app.data.subject.SubjectManager
+import me.him188.ani.app.data.subject.SubjectManagerImpl
 import me.him188.ani.app.persistent.preferencesStore
 import me.him188.ani.app.persistent.preferredAllianceStore
 import me.him188.ani.app.persistent.tokenStore
@@ -77,6 +79,7 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
     single<BangumiClient> { createBangumiClient() }
     single<SubjectProvider> { BangumiSubjectProvider(get<BangumiClient>()) }
     single<SubjectRepository> { SubjectRepositoryImpl() }
+    single<SubjectManager> { SubjectManagerImpl() }
     single<UserRepository> { UserRepositoryImpl() }
     single<EpisodeRevisionRepository> { EpisodeRevisionRepositoryImpl() }
     single<EpisodeRepository> { EpisodeRepositoryImpl() }

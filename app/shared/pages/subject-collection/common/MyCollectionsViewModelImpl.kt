@@ -1,52 +1,25 @@
 package me.him188.ani.app.ui.collection
 
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.toList
 import me.him188.ani.app.ViewModelAuthSupport
 import me.him188.ani.app.data.media.EpisodeCacheStatus
 import me.him188.ani.app.data.media.MediaCacheManager
-import me.him188.ani.app.data.repositories.EpisodeRepository
-import me.him188.ani.app.data.repositories.SubjectRepository
-import me.him188.ani.app.data.repositories.setSubjectCollectionTypeOrDelete
-import me.him188.ani.app.session.SessionManager
+import me.him188.ani.app.data.subject.SubjectCollectionItem
+import me.him188.ani.app.data.subject.SubjectManager
+import me.him188.ani.app.data.subject.setEpisodeWatched
 import me.him188.ani.app.tools.caching.LazyDataCache
-import me.him188.ani.app.tools.caching.value
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
-import me.him188.ani.datasources.api.paging.map
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
-import me.him188.ani.datasources.bangumi.processing.airSeason
-import me.him188.ani.datasources.bangumi.processing.isOnAir
-import me.him188.ani.datasources.bangumi.processing.nameCNOrName
-import me.him188.ani.datasources.bangumi.processing.toCollectionType
-import me.him188.ani.datasources.bangumi.processing.toSubjectCollectionType
-import me.him188.ani.utils.coroutines.runUntilSuccess
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.openapitools.client.models.EpType
-import org.openapitools.client.models.EpisodeCollectionType
-import org.openapitools.client.models.Subject
-import org.openapitools.client.models.SubjectCollectionType
-import org.openapitools.client.models.SubjectType
-import org.openapitools.client.models.UserEpisodeCollection
-import org.openapitools.client.models.UserSubjectCollection
 
+@Stable
 interface MyCollectionsViewModel : HasBackgroundScope, ViewModelAuthSupport {
+    val subjectManager: SubjectManager
+
     @Stable
     fun collectionsByType(type: UnifiedCollectionType): LazyDataCache<SubjectCollectionItem>
 
@@ -68,62 +41,35 @@ interface MyCollectionsViewModel : HasBackgroundScope, ViewModelAuthSupport {
 
 fun MyCollectionsViewModel(): MyCollectionsViewModel = MyCollectionsViewModelImpl()
 
+@Stable
 class MyCollectionsViewModelImpl : AbstractViewModel(), KoinComponent, MyCollectionsViewModel {
-    private val sessionManager: SessionManager by inject()
-    private val subjectRepository: SubjectRepository by inject()
-    private val episodeRepository: EpisodeRepository by inject()
+    override val subjectManager: SubjectManager by inject()
     private val cacheManager: MediaCacheManager by inject()
 
-    @Stable
-    val collectionsByType = UnifiedCollectionType.entries.associateWith { type ->
-        LazyDataCache(
-            {
-                val username = sessionManager.username.filterNotNull().first()
-                subjectRepository.getSubjectCollections(
-                    username,
-                    subjectType = SubjectType.Anime,
-                    subjectCollectionType = type.toSubjectCollectionType(),
-                ).map {
-                    it.convertToItem()
-                }
-            },
-            debugName = "collectionsByType-${type.name}"
-        )
-    }
+    val collectionsByType get() = subjectManager.collectionsByType
 
     @Stable
-    override fun collectionsByType(type: UnifiedCollectionType) = collectionsByType[type]!!
+    override fun collectionsByType(type: UnifiedCollectionType) =
+        subjectManager.collectionsByType[type]!!
 
-    override fun subjectProgress(item: SubjectCollectionItem): Flow<List<EpisodeProgressItem>> {
-        return snapshotFlow { item.episodes }
-            .flowOn(Dispatchers.Main)
-            .flatMapLatest { episodes ->
-                combine(episodes.map { episode ->
-                    cacheManager.cacheStatusForEpisode(
-                        subjectId = item.subjectId,
-                        episodeId = episode.episode.id,
-                    ).map { cacheStatus ->
-                        EpisodeProgressItem(
-                            episodeId = episode.episode.id,
-                            episodeSort = episode.episode.sort.toString(),
-                            watchStatus = episode.type.toCollectionType(),
-                            isOnAir = episode.episode.isOnAir(),
-                            cacheStatus = cacheStatus,
-                        )
-                    }
-                }) {
-                    it.toList()
-                }
-            }
-            .flowOn(Dispatchers.Default)
-    }
+    @Stable
+    override fun subjectProgress(item: SubjectCollectionItem): Flow<List<EpisodeProgressItem>> =
+        subjectManager.subjectProgressFlow(item)
 
-    override fun cacheStatusForEpisode(subjectId: Int, episodeId: Int): Flow<EpisodeCacheStatus> {
-        return cacheManager.cacheStatusForEpisode(
+    @Stable
+    override fun cacheStatusForEpisode(subjectId: Int, episodeId: Int): Flow<EpisodeCacheStatus> =
+        cacheManager.cacheStatusForEpisode(
             subjectId = subjectId,
             episodeId = episodeId,
         )
-    }
+
+    override suspend fun setCollectionType(subjectId: Int, type: UnifiedCollectionType) =
+        subjectManager.setSubjectCollectionType(subjectId, type)
+
+    override suspend fun setAllEpisodesWatched(subjectId: Int) = subjectManager.setAllEpisodesWatched(subjectId)
+
+    override suspend fun setEpisodeWatched(subjectId: Int, episodeId: Int, watched: Boolean) =
+        subjectManager.setEpisodeWatched(subjectId, episodeId, watched)
 
     override fun init() {
         // 获取第一页, 得到数量
@@ -145,85 +91,6 @@ class MyCollectionsViewModelImpl : AbstractViewModel(), KoinComponent, MyCollect
             }
         }
     }
-
-    private suspend fun UserSubjectCollection.convertToItem() = coroutineScope {
-        val subject = async {
-            runUntilSuccess { subjectRepository.getSubject(subjectId) }
-        }
-        val eps = runUntilSuccess {
-            episodeRepository.getSubjectEpisodeCollection(subjectId, EpType.MainStory)
-        }.toList()
-        val isOnAir = async {
-            eps.firstOrNull { it.episode.isOnAir() == true } != null
-        }
-        val lastWatchedEp = async {
-            eps.indexOfLast {
-                it.type == EpisodeCollectionType.WATCHED || it.type == EpisodeCollectionType.DISCARDED
-            }.takeIf { it != -1 }
-        }
-        val latestEp = async {
-            eps.lastOrNull { it.episode.isOnAir() == false }
-                ?: eps.lastOrNull { it.episode.isOnAir() != true }
-        }
-
-        createItem(subject.await(), isOnAir.await(), latestEp.await(), lastWatchedEp.await(), eps)
-    }
-
-    override suspend fun setCollectionType(subjectId: Int, type: UnifiedCollectionType) {
-        val cache = findContainingCache(subjectId) ?: return // not found
-        cache.mutate {
-            map { item ->
-                if (item.subjectId == subjectId) {
-                    item.copy(collectionType = type.toSubjectCollectionType())
-                } else {
-                    item
-                }
-            }
-        }
-        subjectRepository.setSubjectCollectionTypeOrDelete(subjectId, type.toSubjectCollectionType())
-    }
-
-    override suspend fun setAllEpisodesWatched(subjectId: Int) {
-        val cache = findContainingCache(subjectId) ?: return
-        cache.value.find { it.subjectId == subjectId }?.let { collection ->
-            collection.episodes = collection.episodes.map { episode ->
-                episode.copy(type = EpisodeCollectionType.WATCHED)
-            }
-        }
-        val ids = episodeRepository.getEpisodesBySubjectId(subjectId, EpType.MainStory).map { it.id }.toList()
-        episodeRepository.setEpisodeCollection(
-            subjectId,
-            ids,
-            EpisodeCollectionType.WATCHED,
-        )
-    }
-
-    override suspend fun setEpisodeWatched(subjectId: Int, episodeId: Int, watched: Boolean) {
-        val cache = findContainingCache(subjectId) ?: return
-
-        val newType = if (watched) EpisodeCollectionType.WATCHED else EpisodeCollectionType.WATCHLIST
-        cache.value.find { it.subjectId == subjectId }?.let { collection ->
-            collection.episodes = collection.episodes.map { episode ->
-                if (episode.episode.id == episodeId) {
-                    episode.copy(type = newType)
-                } else {
-                    episode
-                }
-            }
-        }
-
-        episodeRepository.setEpisodeCollection(
-            subjectId,
-            listOf(episodeId),
-            newType,
-        )
-    }
-
-    /**
-     * Finds the cache that contains the subject.
-     */
-    private fun findContainingCache(subjectId: Int) =
-        collectionsByType.values.firstOrNull { list -> list.value.any { it.subjectId == subjectId } }
 }
 
 sealed class ContinueWatchingStatus {
@@ -253,148 +120,3 @@ sealed class ContinueWatchingStatus {
     data object Done : ContinueWatchingStatus()
 }
 
-@Stable
-class SubjectCollectionItem(
-    val subjectId: Int,
-    val displayName: String,
-    val image: String,
-    val rate: Int?,
-
-    val date: String?,
-    val totalEps: Int,
-    /**
-     * 是否正在播出, 或者在未来会播出
-     */
-    val isOnAir: Boolean,
-    /**
-     * 最新更新到
-     */
-    val latestEp: UserEpisodeCollection?,
-    val lastWatchedEpIndex: Int?,
-
-    episodes: List<UserEpisodeCollection>,
-    collectionType: SubjectCollectionType?,
-) {
-    /**
-     * 是否已经开播了第一集
-     */
-    val hasStarted = episodes.firstOrNull()?.episode?.isOnAir() == false
-
-    val collectionType: UnifiedCollectionType = collectionType.toCollectionType()
-    var episodes by mutableStateOf(episodes)
-
-    val latestEpIndex: Int? = episodes.indexOfFirst { it.episode.id == latestEp?.episode?.id }
-        .takeIf { it != -1 }
-        ?: episodes.lastIndex.takeIf { it != -1 }
-
-    val onAirDescription = if (isOnAir) {
-        if (latestEp == null) {
-            "连载中"
-        } else {
-            "连载至第 ${latestEp.episode.sort} 话"
-        }
-    } else {
-        "已完结"
-    }
-
-    val serialProgress = "全 $totalEps 话"
-
-    val continueWatchingStatus = run {
-        val item = this
-        when (item.lastWatchedEpIndex) {
-            // 还没看过
-            null -> {
-                if (item.hasStarted) {
-                    ContinueWatchingStatus.Start
-                } else {
-                    ContinueWatchingStatus.NotOnAir
-                }
-            }
-
-            // 看了第 n 集并且还有第 n+1 集
-            in 0..<item.totalEps - 1 -> {
-                if (item.latestEpIndex != null && item.lastWatchedEpIndex < item.latestEpIndex) {
-                    // 更新了 n+1 集
-                    ContinueWatchingStatus.Continue(
-                        item.lastWatchedEpIndex + 1,
-                        episodes.getOrNull(item.lastWatchedEpIndex + 1)?.episode?.sort?.toString() ?: ""
-                    )
-                } else {
-                    // 还没更新
-                    ContinueWatchingStatus.Watched(
-                        item.lastWatchedEpIndex,
-                        episodes.getOrNull(item.lastWatchedEpIndex)?.episode?.sort?.toString() ?: ""
-                    )
-                }
-            }
-
-            else -> {
-                ContinueWatchingStatus.Done
-            }
-        }
-    }
-
-    fun copy(
-        subjectId: Int = this.subjectId,
-        displayName: String = this.displayName,
-        image: String = this.image,
-        rate: Int? = this.rate,
-        date: String? = this.date,
-        totalEps: Int = this.totalEps,
-        isOnAir: Boolean = this.isOnAir,
-        latestEp: UserEpisodeCollection? = this.latestEp,
-        lastWatchedEpIndex: Int? = this.lastWatchedEpIndex,
-        episodes: List<UserEpisodeCollection> = this.episodes,
-        collectionType: SubjectCollectionType? = this.collectionType.toSubjectCollectionType(),
-    ) = SubjectCollectionItem(
-        subjectId = subjectId,
-        displayName = displayName,
-        image = image,
-        rate = rate,
-        date = date,
-        totalEps = totalEps,
-        isOnAir = isOnAir,
-        latestEp = latestEp,
-        lastWatchedEpIndex = lastWatchedEpIndex,
-        episodes = episodes,
-        collectionType = collectionType,
-    )
-}
-
-private fun UserSubjectCollection.createItem(
-    subject: Subject?,
-    isOnAir: Boolean,
-    latestEp: UserEpisodeCollection?,
-    lastWatchedEpIndex: Int?,
-    episodes: List<UserEpisodeCollection>,
-): SubjectCollectionItem {
-    if (subject == null || subject.type != SubjectType.Anime) {
-        return SubjectCollectionItem(
-            subjectId = subjectId,
-            displayName = this.subject?.nameCNOrName() ?: "",
-            image = "",
-            rate = this.rate,
-            date = this.subject?.airSeason,
-            totalEps = episodes.size,
-            isOnAir = isOnAir,
-            latestEp = latestEp,
-            lastWatchedEpIndex = null,
-            episodes = episodes,
-            collectionType = type,
-        )
-    }
-
-    return SubjectCollectionItem(
-        subjectId = subjectId,
-        displayName = this.subject?.nameCNOrName() ?: "",
-        image = this.subject?.images?.common ?: "",
-        rate = this.rate,
-        date = subject.airSeason ?: "",
-        totalEps = episodes.size,
-        isOnAir = isOnAir,
-        latestEp = latestEp,
-        lastWatchedEpIndex = lastWatchedEpIndex,
-        episodes = episodes,
-        collectionType = type,
-    )
-}
