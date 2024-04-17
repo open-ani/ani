@@ -16,6 +16,8 @@ import me.him188.ani.app.data.models.ProxyPreferences
 import me.him188.ani.app.data.serializers.DanmakuConfigSerializer
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.danmaku.ui.DanmakuConfig
+import me.him188.ani.utils.logging.error
+import me.him188.ani.utils.logging.logger
 
 interface PreferencesRepository {
     val danmakuEnabled: Preference<Boolean>
@@ -69,7 +71,12 @@ class PreferencesRepositoryImpl(
             .map { string ->
                 if (string == null) {
                     default()
-                } else format.decodeFromString(serializer, string)
+                } else try {
+                    format.decodeFromString(serializer, string)
+                } catch (e: Exception) {
+                    logger.error(e) { "Failed to decode preference '$name'. Using default. Failed json: $string" }
+                    default()
+                }
             }
 
         override suspend fun set(value: T) {
@@ -102,15 +109,7 @@ class PreferencesRepositoryImpl(
         default = { MediaCacheSettings.Default }
     )
 
-//    private companion object {
-//        val DANMAKU_ENABLED = booleanPreferencesKey("danmaku_enabled")
-//    }
-//
-//    override val danmakuEnabled: Flow<Boolean>
-//        get() = preferences.data.map { it[DANMAKU_ENABLED] ?: true }
-//
-//    override suspend fun setDanmakuEnabled(enabled: Boolean) {
-//        preferences.edit { it[DANMAKU_ENABLED] = enabled }
-//    }
-
+    private companion object {
+        private val logger = logger<PreferencesRepository>()
+    }
 }
