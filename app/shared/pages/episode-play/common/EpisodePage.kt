@@ -2,7 +2,6 @@ package me.him188.ani.app.ui.subject.episode
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -75,7 +74,7 @@ fun EpisodePage(
 
 @Composable
 fun EpisodePageContent(
-    viewModel: EpisodeViewModel,
+    vm: EpisodeViewModel,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -83,61 +82,59 @@ fun EpisodePageContent(
     // 处理当用户点击返回键时, 如果是全屏, 则退出全屏
     val navigator = LocalNavigator.current
     BackHandler {
-        viewModel.playerState.pause()
+        vm.playerState.pause()
         navigator.navigator.goBack()
     }
 
-    BackHandler(enabled = viewModel.isFullscreen) {
+    BackHandler(enabled = vm.isFullscreen) {
         context.setRequestFullScreen(false)
-        viewModel.isFullscreen = false
+        vm.isFullscreen = false
     }
 
     ScreenOnEffect()
 
-    AutoPauseEffect(viewModel)
+    AutoPauseEffect(vm)
 
 
-    Column(modifier.then(if (viewModel.isFullscreen) Modifier.fillMaxSize() else Modifier.navigationBarsPadding())) {
+    Column(modifier.then(if (vm.isFullscreen) Modifier.fillMaxSize() else Modifier.navigationBarsPadding())) {
         // 视频
-        val selected by viewModel.mediaSelected.collectAsStateWithLifecycle(false)
-        val danmakuConfig = viewModel.danmaku.config.collectAsStateWithLifecycle(DanmakuConfig.Default).value
-        Box(
-            Modifier.fillMaxWidth().background(Color.Black)
-                .then(if (viewModel.isFullscreen) Modifier.fillMaxSize() else Modifier.statusBarsPadding())
-        ) {
-            val danmakuEnabled by viewModel.danmaku.enabled.collectAsStateWithLifecycle(false)
-            EpisodeVideo(
-                { selected },
-                title = {
-                    val episode = viewModel.episodePresentation
-                    val subject = viewModel.subjectPresentation
-                    EpisodePlayerTitle(
-                        episode.sort,
-                        episode.title,
-                        subject.title,
-                        modifier.placeholder(episode.isPlaceholder || subject.isPlaceholder)
-                    )
-                },
-                viewModel.playerState,
-                danmakuConfig = { danmakuConfig },
-                danmakuHostState = remember(viewModel) { viewModel.danmaku.danmakuHostState },
-                onClickFullScreen = {
-                    if (viewModel.isFullscreen) {
-                        context.setRequestFullScreen(false)
-                        viewModel.isFullscreen = false
-                    } else {
-                        viewModel.isFullscreen = true
-                        context.setRequestFullScreen(true)
-                    }
-                },
-                danmakuEnabled = { danmakuEnabled },
-                setDanmakuEnabled = { viewModel.launchInBackground { danmaku.setEnabled(it) } },
-                onSendDanmaku = {},
-                isFullscreen = viewModel.isFullscreen,
-            )
-        }
+        val selected by vm.mediaSelected.collectAsStateWithLifecycle(false)
+        val danmakuConfig by vm.danmaku.config.collectAsStateWithLifecycle(DanmakuConfig.Default)
 
-        if (viewModel.isFullscreen) {
+        val danmakuEnabled by vm.danmaku.enabled.collectAsStateWithLifecycle(false)
+        EpisodeVideo(
+            vm.playerState,
+            expanded = vm.isFullscreen,
+            title = {
+                val episode = vm.episodePresentation
+                val subject = vm.subjectPresentation
+                EpisodePlayerTitle(
+                    episode.sort,
+                    episode.title,
+                    subject.title,
+                    modifier.placeholder(episode.isPlaceholder || subject.isPlaceholder)
+                )
+            },
+            danmakuHostState = vm.danmaku.danmakuHostState,
+            videoSourceSelected = { selected },
+            danmakuConfig = { danmakuConfig },
+            onClickFullScreen = {
+                if (vm.isFullscreen) {
+                    context.setRequestFullScreen(false)
+                    vm.isFullscreen = false
+                } else {
+                    vm.isFullscreen = true
+                    context.setRequestFullScreen(true)
+                }
+            },
+            danmakuEnabled = { danmakuEnabled },
+            setDanmakuEnabled = { vm.launchInBackground { danmaku.setEnabled(it) } },
+            onSendDanmaku = {},
+            modifier = Modifier.fillMaxWidth().background(Color.Black)
+                .then(if (vm.isFullscreen) Modifier.fillMaxSize() else Modifier.statusBarsPadding())
+        )
+
+        if (vm.isFullscreen) {
             return@Column
         }
 
@@ -172,7 +169,7 @@ fun EpisodePageContent(
             HorizontalPager(state = pagerState, Modifier.fillMaxSize()) { index ->
 
                 when (index) {
-                    0 -> EpisodeDetails(viewModel, LocalSnackbar.current, Modifier.fillMaxSize())
+                    0 -> EpisodeDetails(vm, LocalSnackbar.current, Modifier.fillMaxSize())
 //                    1 -> {
 //                        CommentColumn(commentViewModel, Modifier.fillMaxSize())
 //                    }

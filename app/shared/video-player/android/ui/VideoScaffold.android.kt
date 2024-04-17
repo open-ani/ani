@@ -69,9 +69,10 @@ private fun PreviewVideoScaffoldImpl(
     var isLocked by remember { mutableStateOf(false) }
 
     VideoScaffold(
+        expanded = true,
         modifier = Modifier,
-        controllersVisible = controllerVisible,
-        gestureLocked = isLocked,
+        controllersVisible = { controllerVisible },
+        gestureLocked = { isLocked },
         topBar = {
             EpisodeVideoTopBar(
                 title = {
@@ -193,6 +194,5 @@ private fun PreviewVideoScaffoldImpl(
                 Modifier.fillMaxWidth(),
             )
         },
-        isFullscreen = true,
     )
 }

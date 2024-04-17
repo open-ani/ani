@@ -24,12 +24,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import me.him188.ani.app.platform.isInLandscapeMode
 import me.him188.ani.app.ui.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.theme.slightlyWeaken
 import me.him188.ani.app.videoplayer.ui.guesture.VideoGestureHost
@@ -56,13 +57,14 @@ import me.him188.ani.app.videoplayer.ui.top.PlayerTopBar
  * @param floatingMessage 悬浮消息, 例如正在缓冲. 将会对齐到中央
  * @param rhsBar 右侧控制栏, 锁定手势等.
  * @param bottomBar [PlayerControllerBar]
- * @param isFullscreen 当前是否处于全屏模式. 全屏时此框架会 [Modifier.fillMaxSize], 否则会限制为一个 16:9 的框.
+ * @param expanded 当前是否处于全屏模式. 全屏时此框架会 [Modifier.fillMaxSize], 否则会限制为一个 16:9 的框.
  */
 @Composable
 fun VideoScaffold(
+    expanded: Boolean,
     modifier: Modifier = Modifier,
-    controllersVisible: Boolean = true,
-    gestureLocked: Boolean = false,
+    controllersVisible: () -> Boolean = { true },
+    gestureLocked: () -> Boolean = { false },
     topBar: @Composable RowScope.() -> Unit = {},
     /**
      * @see VideoPlayer
@@ -74,16 +76,18 @@ fun VideoScaffold(
     rhsBar: @Composable ColumnScope.() -> Unit = {},
     bottomBar: @Composable RowScope.() -> Unit = {},
     rhsSheet: @Composable () -> Unit = {},
-    isFullscreen: Boolean = isInLandscapeMode(),
 ) {
+    val controllersVisibleState by derivedStateOf(controllersVisible)
+    val gestureLockedState by derivedStateOf(gestureLocked) // delayed access to minimize recomposition
+
     BoxWithConstraints(
-        modifier.then(if (isFullscreen) Modifier.fillMaxHeight() else Modifier.fillMaxWidth()),
+        modifier.then(if (expanded) Modifier.fillMaxHeight() else Modifier.fillMaxWidth()),
         contentAlignment = Alignment.Center
     ) { // 16:9 box
         Box(
             Modifier
                 .then(
-                    if (isFullscreen) {
+                    if (expanded) {
                         Modifier.fillMaxSize()
                     } else {
                         Modifier.fillMaxWidth().height(maxWidth * 9 / 16) // 16:9 box
@@ -114,7 +118,7 @@ fun VideoScaffold(
             Column(Modifier.fillMaxSize().background(Color.Transparent)) {
                 // 顶部控制栏: 返回键, 标题, 设置
                 AnimatedVisibility(
-                    visible = controllersVisible && !gestureLocked,
+                    visible = controllersVisibleState && !gestureLockedState,
                     enter = fadeIn(),
                     exit = fadeOut(),
                 ) {
@@ -150,7 +154,7 @@ fun VideoScaffold(
 
                 // 底部控制栏: 播放/暂停, 进度条, 切换全屏
                 AnimatedVisibility(
-                    visible = controllersVisible && !gestureLocked,
+                    visible = controllersVisibleState && !gestureLockedState,
                     enter = fadeIn(),
                     exit = fadeOut(),
                 ) {
@@ -183,7 +187,7 @@ fun VideoScaffold(
                 Box(Modifier.weight(1f, fill = true).fillMaxWidth()) {
                     Column(Modifier.padding(end = 16.dp).align(Alignment.CenterEnd)) {
                         AnimatedVisibility(
-                            visible = controllersVisible,
+                            visible = controllersVisibleState,
                             enter = fadeIn(),
                             exit = fadeOut(),
                         ) {

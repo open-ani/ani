@@ -23,7 +23,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.platform.AniBuildConfig
-import me.him188.ani.app.platform.isInLandscapeMode
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.rememberViewModel
@@ -60,17 +59,17 @@ import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
  */
 @Composable
 internal fun EpisodeVideo(
-    videoSourceSelected: () -> Boolean,
-    title: @Composable () -> Unit,
     playerState: PlayerState,
-    danmakuConfig: () -> DanmakuConfig,
+    expanded: Boolean,
+    title: @Composable () -> Unit,
     danmakuHostState: DanmakuHostState,
+    videoSourceSelected: () -> Boolean,
+    danmakuConfig: () -> DanmakuConfig,
     onClickFullScreen: () -> Unit,
     danmakuEnabled: () -> Boolean,
     setDanmakuEnabled: (enabled: Boolean) -> Unit,
     onSendDanmaku: (text: String) -> Unit,
     modifier: Modifier = Modifier,
-    isFullscreen: Boolean = isInLandscapeMode(),
 ) {
     // Don't rememberSavable. 刻意让每次切换都是隐藏的
     var controllerVisible by remember { mutableStateOf(false) }
@@ -78,12 +77,13 @@ internal fun EpisodeVideo(
     var showSettings by remember { mutableStateOf(false) }
 
     VideoScaffold(
+        expanded = expanded,
         modifier = modifier,
-        controllersVisible = controllerVisible,
-        gestureLocked = isLocked,
+        controllersVisible = { controllerVisible },
+        gestureLocked = { isLocked },
         topBar = {
             EpisodeVideoTopBar(
-                title = if (isFullscreen) {
+                title = if (expanded) {
                     { title() }
                 } else {
                     null
@@ -98,7 +98,7 @@ internal fun EpisodeVideo(
             } else {
                 // Save the status bar height to offset the video player
                 var statusBarHeight by rememberSaveable { mutableStateOf(0) }
-                if (!isFullscreen) {
+                if (!expanded) {
                     val insets = WindowInsets.systemBars
                     val density = LocalDensity.current
                     SideEffect {
@@ -110,7 +110,7 @@ internal fun EpisodeVideo(
                     playerState,
                     Modifier
                         .offset(
-                            x = if (isFullscreen) with(LocalDensity.current) {
+                            x = if (expanded) with(LocalDensity.current) {
                                 -statusBarHeight.toDp() / 2
                             } else 0.dp,
                             y = 0.dp
@@ -169,7 +169,7 @@ internal fun EpisodeVideo(
             }
         },
         rhsBar = {
-            if (isFullscreen) {
+            if (expanded) {
                 GestureLock(isLocked = isLocked, onClick = { isLocked = !isLocked })
             }
         },
@@ -224,11 +224,11 @@ internal fun EpisodeVideo(
                         { playerState.setPlaybackSpeed(it) },
                     )
                     PlayerControllerDefaults.FullscreenIcon(
-                        isFullscreen,
+                        expanded,
                         onClickFullscreen = onClickFullScreen,
                     )
                 },
-                expanded = isFullscreen,
+                expanded = expanded,
             )
         },
         rhsSheet = {
@@ -241,7 +241,6 @@ internal fun EpisodeVideo(
                     )
                 }
             }
-        },
-        isFullscreen = isFullscreen
+        }
     )
 }
