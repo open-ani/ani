@@ -18,8 +18,11 @@
 
 package me.him188.ani.app.platform
 
+import androidx.compose.foundation.layout.BoxWithConstraintsScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ProvidableCompositionLocal
+import androidx.compose.runtime.Stable
+import androidx.compose.ui.unit.dp
 import java.io.File
 
 expect val LocalContext: ProvidableCompositionLocal<Context>
@@ -43,6 +46,15 @@ interface ContextFiles {
  */
 @Composable
 expect fun isInLandscapeMode(): Boolean
+
+@Stable
+fun BoxWithConstraintsScope.showTabletUI(): Boolean {
+    // https://android-developers.googleblog.com/2023/06/detecting-if-device-is-foldable-tablet.html
+    // 99.96% of phones have a built-in screen with a width smaller than 600dp when in portrait, 
+    // but that same screen size could be the result of a freeform/split-screen window on a tablet or desktop device.
+
+    return maxWidth >= 600.dp && maxHeight >= 600.dp
+}
 
 /**
  * Request to set the fullscreen, landscape mode, hiding status bars and navigation bars.

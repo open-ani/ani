@@ -51,6 +51,12 @@ fun EpisodeDetails(
     viewModel: EpisodeViewModel,
     snackbar: SnackbarHostState,
     modifier: Modifier = Modifier,
+    actionRow: @Composable () -> Unit = {
+        EpisodeActionRow(
+            viewModel,
+            snackbar = snackbar,
+        )
+    },
 ) {
     Column(modifier) {
         // 标题
@@ -63,11 +69,9 @@ fun EpisodeDetails(
         Column(Modifier.padding(vertical = 16.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             NowPlayingLabel(viewModel, Modifier.padding(horizontal = PAGE_HORIZONTAL_PADDING).fillMaxWidth())
 
-            EpisodeActionRow(
-                viewModel,
-                snackbar = snackbar,
-                Modifier.padding(horizontal = PAGE_HORIZONTAL_PADDING),
-            )
+            Row(Modifier.padding(horizontal = PAGE_HORIZONTAL_PADDING)) {
+                actionRow()
+            }
 
             if (viewModel.mediaSelectorVisible) {
                 ModalBottomSheet(onDismissRequest = { viewModel.mediaSelectorVisible = false }) {

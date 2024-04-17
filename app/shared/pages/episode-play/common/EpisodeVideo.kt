@@ -70,14 +70,17 @@ internal fun EpisodeVideo(
     setDanmakuEnabled: (enabled: Boolean) -> Unit,
     onSendDanmaku: (text: String) -> Unit,
     modifier: Modifier = Modifier,
+    maintainAspectRatio: Boolean = !expanded,
+    initialControllerVisible: Boolean = false,
 ) {
     // Don't rememberSavable. 刻意让每次切换都是隐藏的
-    var controllerVisible by remember { mutableStateOf(false) }
+    var controllerVisible by remember { mutableStateOf(initialControllerVisible) }
     var isLocked by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
 
     VideoScaffold(
         expanded = expanded,
+        maintainAspectRatio = maintainAspectRatio,
         modifier = modifier,
         controllersVisible = { controllerVisible },
         gestureLocked = { isLocked },

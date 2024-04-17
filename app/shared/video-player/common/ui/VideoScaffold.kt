@@ -63,6 +63,7 @@ import me.him188.ani.app.videoplayer.ui.top.PlayerTopBar
 fun VideoScaffold(
     expanded: Boolean,
     modifier: Modifier = Modifier,
+    maintainAspectRatio: Boolean = !expanded,
     controllersVisible: () -> Boolean = { true },
     gestureLocked: () -> Boolean = { false },
     topBar: @Composable RowScope.() -> Unit = {},
@@ -87,7 +88,7 @@ fun VideoScaffold(
         Box(
             Modifier
                 .then(
-                    if (expanded) {
+                    if (!maintainAspectRatio) {
                         Modifier.fillMaxSize()
                     } else {
                         Modifier.fillMaxWidth().height(maxWidth * 9 / 16) // 16:9 box

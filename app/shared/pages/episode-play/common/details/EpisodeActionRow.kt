@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -91,7 +90,7 @@ fun EpisodeActionRow(
     modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier.fillMaxWidth(),
+        modifier,
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.Top,
     ) {
@@ -104,28 +103,28 @@ fun EpisodeActionRow(
         ActionButton(
             onClick = onClickCopyLink,
             icon = { Icon(Icons.Rounded.ContentCopy, null) },
-            text = { Text("复制磁力") },
+            text = { Text("复制磁力", maxLines = 1, softWrap = false) },
             Modifier.weight(1f),
         )
 
         ActionButton(
             onClick = onClickCache,
             icon = { Icon(Icons.Rounded.Download, null) },
-            text = { Text("缓存") },
+            text = { Text("缓存", maxLines = 1, softWrap = false) },
             Modifier.weight(1f),
         )
 
         ActionButton(
             onClick = onClickDownload,
             icon = { Icon(Icons.Rounded.Outbox, null) },
-            text = { Text("外部下载") },
+            text = { Text("外部下载", maxLines = 1, softWrap = false) },
             Modifier.weight(1f),
         )
 
         ActionButton(
             onClick = onClickOriginalPage,
             icon = { Icon(Icons.Rounded.ArrowOutward, null) },
-            text = { Text("原始页面") },
+            text = { Text("原始页面", maxLines = 1, softWrap = false) },
             Modifier.weight(1f),
         )
     }
@@ -144,7 +143,7 @@ private fun MediaSelectionAction(
     ActionButton(
         onClick = { onClick() },
         icon = { Icon(Icons.Rounded.DisplaySettings, null) },
-        text = { Text("数据源") },
+        text = { Text("数据源", maxLines = 1, softWrap = false) },
         modifier,
         isLoading
     )
