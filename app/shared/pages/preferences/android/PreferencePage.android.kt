@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import me.him188.ani.app.data.media.MediaSourceManager
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.rememberViewModel
+import me.him188.ani.app.ui.preference.tabs.MediaTestResult
 import me.him188.ani.app.ui.preference.tabs.NetworkPreferenceTab
 import me.him188.ani.app.ui.preference.tabs.NetworkPreferenceViewModel
 import me.him188.ani.datasources.acgrip.AcgRipMediaSource
@@ -74,6 +75,7 @@ private fun PreviewNetworkPreferenceTab() {
                             TestMediaSource(AcgRipMediaSource.ID),
                             TestMediaSource(DmhyMediaSource.ID),
                             TestMediaSource(MikanMediaSource.ID),
+                            TestMediaSource("local"),
                         )
                     )
                     override val allIds: List<String> = enabledSources.value.map { it.mediaSourceId }
@@ -83,8 +85,9 @@ private fun PreviewNetworkPreferenceTab() {
     ) {
         val vm = rememberViewModel { NetworkPreferenceViewModel() }
         SideEffect {
-            vm.mediaTesters.first().success = true
-            vm.mediaTesters.drop(1).first().success = false
+            vm.mediaTesters.first().result = MediaTestResult.SUCCESS
+            vm.mediaTesters.drop(1).first().result = MediaTestResult.FAILED
+            vm.mediaTesters.drop(2).first().result = MediaTestResult.NOT_ENABLED
         }
         NetworkPreferenceTab()
     }

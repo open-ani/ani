@@ -20,6 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
@@ -29,7 +30,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
@@ -62,7 +62,6 @@ class NetworkPreferenceViewModel : AbstractViewModel(), KoinComponent {
 
     private val proxyPreferences = preferencesRepository.proxyPreferences
     private val updater = MonoTasker(backgroundScope)
-    private val sources = mediaSourceManager.enabledSources
 
     ///////////////////////////////////////////////////////////////////////////
     // Media Testing
@@ -72,12 +71,18 @@ class NetworkPreferenceViewModel : AbstractViewModel(), KoinComponent {
     val mediaTesters =
         mediaSourceManager.allIds
             .map { id ->
-                val source = sources.mapNotNull { sources ->
+                val source = mediaSourceManager.enabledSources.map { sources ->
                     sources.firstOrNull { it.mediaSourceId == id }
                 }
                 MediaSourceTester(
                     id = id,
-                ) { source.first().checkConnection() == ConnectionStatus.SUCCESS }.apply {
+                ) {
+                    when (source.first()?.checkConnection()) {
+                        ConnectionStatus.SUCCESS -> MediaTestResult.SUCCESS
+                        ConnectionStatus.FAILED -> MediaTestResult.FAILED
+                        null -> MediaTestResult.NOT_ENABLED
+                    }
+                }.apply {
                     launchInMain {
                         source.collect {
                             this@apply.reset()
@@ -87,8 +92,13 @@ class NetworkPreferenceViewModel : AbstractViewModel(), KoinComponent {
             }.sortedBy { it.id.lowercase() }
             .plus(MediaSourceTester(
                 id = BangumiSubjectProvider.ID, // Bangumi 顺便也测一下
-            ) { bangumiSubjectProvider.testConnection() == ConnectionStatus.SUCCESS }
-            )
+            ) {
+                if (bangumiSubjectProvider.testConnection() == ConnectionStatus.SUCCESS) {
+                    MediaTestResult.SUCCESS
+                } else {
+                    MediaTestResult.FAILED
+                }
+            })
 
     fun testSources() {
         mediaTestScope.launch {
@@ -243,13 +253,15 @@ fun NetworkPreferenceTab(
                 TextItem(
                     title = { Text(remember(tester.id) { renderMediaSource(tester.id) }) },
                     icon = {
+                        val icon = getMediaSourceIcon(tester.id)
                         Image(
-                            getMediaSourceIcon(tester.id)
+                            icon
                                 ?: rememberVectorPainter(Icons.Rounded.DisplaySettings),
                             null,
                             Modifier.clip(MaterialTheme.shapes.extraSmall).size(48.dp),
                             contentScale = ContentScale.Fit,
                             alignment = Alignment.Center,
+                            colorFilter = if (icon == null) ColorFilter.tint(MaterialTheme.colorScheme.onSurface) else null,
                         )
                     },
                     description =
@@ -257,23 +269,27 @@ fun NetworkPreferenceTab(
                         { Text("无需代理, 目前不支持使用代理") }
                     } else null,
                     action = {
-                        when {
-                            tester.isTesting -> {
-                                CircularProgressIndicator(
-                                    Modifier.size(24.dp),
-                                    strokeWidth = 2.dp,
-                                )
-                            }
-
-                            tester.success == null -> {
-                                Text("等待测试")
-                            }
-
-                            else -> {
-                                if (tester.success == true) {
+                        if (tester.isTesting) {
+                            CircularProgressIndicator(
+                                Modifier.size(24.dp),
+                                strokeWidth = 2.dp,
+                            )
+                        } else {
+                            when (tester.result) {
+                                MediaTestResult.SUCCESS -> {
                                     Icon(Icons.Rounded.Check, null, tint = MaterialTheme.colorScheme.primary)
-                                } else {
+                                }
+
+                                MediaTestResult.FAILED -> {
                                     Icon(Icons.Rounded.Cancel, null, tint = MaterialTheme.colorScheme.error)
+                                }
+
+                                MediaTestResult.NOT_ENABLED -> {
+                                    Text("未启用")
+                                }
+
+                                null -> {
+                                    Text("等待测试")
                                 }
                             }
                         }
@@ -301,17 +317,23 @@ fun NetworkPreferenceTab(
     }
 }
 
+enum class MediaTestResult {
+    SUCCESS,
+    FAILED,
+    NOT_ENABLED
+}
+
 @Stable
 class MediaSourceTester(
     val id: String,
-    private val testConnection: suspend () -> Boolean,
+    private val testConnection: suspend () -> MediaTestResult,
 ) {
     var isTesting by mutableStateOf(false)
-    var success: Boolean? by mutableStateOf(null)
+    var result: MediaTestResult? by mutableStateOf(null)
 
     fun reset() {
         isTesting = false
-        success = null
+        result = null
     }
 
     suspend fun test() {
@@ -321,11 +343,11 @@ class MediaSourceTester(
         try {
             val res = testConnection()
             withContext(Dispatchers.Main) {
-                success = res
+                result = res
             }
         } catch (e: Throwable) {
             withContext(Dispatchers.Main) {
-                success = false
+                result = MediaTestResult.FAILED
             }
             throw e
         } finally {
