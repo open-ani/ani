@@ -8,7 +8,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.DownloadDone
@@ -26,6 +28,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
@@ -132,8 +135,13 @@ fun CacheManagementPage(
         }
     ) { paddingValues ->
         Column(Modifier.padding(paddingValues)) {
+            val state = rememberLazyListState()
             for (storage in vm.storages) {
-                StorageOverallStats(storage.stats, Modifier.fillMaxWidth())
+                StorageOverallStats(
+                    storage.stats,
+                    Modifier.fillMaxWidth()
+                        .then(if (state.canScrollBackward) Modifier.shadow(2.dp, clip = false) else Modifier)
+                )
             }
 
             val storages = vm.storages
@@ -156,7 +164,8 @@ fun CacheManagementPage(
                         onDelete = {
                             storage.delete(it)
                         },
-                        Modifier.padding(horizontal = 16.dp).fillMaxWidth(),
+                        Modifier.padding(horizontal = 16.dp).padding(top = 2.dp).fillMaxWidth(),
+                        state = state,
                     )
                 }
             }
@@ -255,9 +264,14 @@ fun StorageManagerView(
     list: List<CacheItem>,
     mediaSourceId: String,
     onDelete: (CacheItem) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    state: LazyListState = rememberLazyListState(),
 ) {
-    LazyColumn(modifier, verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    LazyColumn(
+        modifier,
+        state = state,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
         item { }
 
         items(list, key = { it.origin.mediaId }) { item ->

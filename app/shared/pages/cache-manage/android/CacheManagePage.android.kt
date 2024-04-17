@@ -46,6 +46,24 @@ fun PreviewCacheManagementPage() {
     }
 }
 
+// TIPS: use interactive preview
+@Preview(heightDp = 200)
+@Composable
+fun PreviewCacheManagementPageScroll() {
+    ProvideCompositionLocalsForPreview {
+        CacheManagementPage(
+
+            vm = remember {
+                object : CacheManagementPageViewModel {
+                    override val storages: List<MediaCacheStorageState> = listOf(
+                        MediaCacheStorageState(TestMediaCacheStorage())
+                    )
+                }
+            }
+        )
+    }
+}
+
 open class TestMediaCache(
     val media: CachedMedia,
     override val metadata: MediaCacheMetadata,
