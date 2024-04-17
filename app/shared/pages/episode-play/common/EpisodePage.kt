@@ -16,12 +16,10 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -32,6 +30,7 @@ import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.setRequestFullScreen
 import me.him188.ani.app.tools.rememberUiMonoTasker
+import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.effects.OnLifecycleEvent
@@ -80,7 +79,6 @@ fun EpisodePageContent(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
-    val isFullscreen by viewModel.isFullscreen.collectAsState()
 
     // 处理当用户点击返回键时, 如果是全屏, 则退出全屏
     val navigator = LocalNavigator.current
@@ -89,118 +87,61 @@ fun EpisodePageContent(
         navigator.navigator.goBack()
     }
 
-    BackHandler(enabled = isFullscreen) {
+    BackHandler(enabled = viewModel.isFullscreen) {
         context.setRequestFullScreen(false)
-        viewModel.setFullscreen(false)
+        viewModel.isFullscreen = false
     }
 
     ScreenOnEffect()
 
-    // 切后台自动暂停
-    var pausedVideo by rememberSaveable { mutableStateOf(true) } // live after configuration change
-    val isPreviewing by rememberUpdatedState(LocalIsPreviewing.current)
-
-    val autoPauseTasker = rememberUiMonoTasker()
-    OnLifecycleEvent {
-        if (isPreviewing) return@OnLifecycleEvent
-        if (it == Lifecycle.State.InActive || it == Lifecycle.State.Destroyed) {
-            if (viewModel.playerState.state.value.isPlaying) {
-                pausedVideo = true
-                autoPauseTasker.launch {
-                    // #160, 切换全屏时视频会暂停半秒
-                    // > 这其实是之前写切后台自动暂停导致的，检测了 lifecycle 事件，切全屏和切后台是一样的事件。延迟一下就可以了
-                    viewModel.playerState.pause() // 正在播放时, 切到后台自动暂停
-                }
-            } else {
-                // 如果不是正在播放, 则不操作暂停, 当下次切回前台时, 也不要恢复播放
-                pausedVideo = false
-            }
-        } else if (it == Lifecycle.State.Active && pausedVideo) {
-            autoPauseTasker.launch {
-                viewModel.playerState.resume() // 切回前台自动恢复, 当且仅当之前是自动暂停的
-            }
-            pausedVideo = false
-        } else {
-            pausedVideo = false
-        }
-    }
+    AutoPauseEffect(viewModel)
 
 
-    Column(modifier.then(if (isFullscreen) Modifier.fillMaxSize() else Modifier.navigationBarsPadding())) {
+    Column(modifier.then(if (viewModel.isFullscreen) Modifier.fillMaxSize() else Modifier.navigationBarsPadding())) {
         // 视频
         val selected by viewModel.mediaSelected.collectAsStateWithLifecycle(false)
         val danmakuConfig = viewModel.danmaku.config.collectAsStateWithLifecycle(DanmakuConfig.Default).value
         Box(
             Modifier.fillMaxWidth().background(Color.Black)
-                .then(if (isFullscreen) Modifier.fillMaxSize() else Modifier.statusBarsPadding())
+                .then(if (viewModel.isFullscreen) Modifier.fillMaxSize() else Modifier.statusBarsPadding())
         ) {
             val danmakuEnabled by viewModel.danmaku.enabled.collectAsStateWithLifecycle(false)
             EpisodeVideo(
                 { selected },
                 title = {
-                    val epTitle by viewModel.episodeTitle.collectAsStateWithLifecycle("")
-                    val subjectTitle by viewModel.subjectTitle.collectAsStateWithLifecycle("")
-                    val ep by viewModel.episodeEp.collectAsStateWithLifecycle(null)
-                    EpisodePlayerTitle(ep, epTitle, subjectTitle)
+                    val episode = viewModel.episodePresentation
+                    val subject = viewModel.subjectPresentation
+                    EpisodePlayerTitle(
+                        episode.sort,
+                        episode.title,
+                        subject.title,
+                        modifier.placeholder(episode.isPlaceholder || subject.isPlaceholder)
+                    )
                 },
                 viewModel.playerState,
                 danmakuConfig = { danmakuConfig },
                 danmakuHostState = remember(viewModel) { viewModel.danmaku.danmakuHostState },
                 onClickFullScreen = {
-                    if (isFullscreen) {
+                    if (viewModel.isFullscreen) {
                         context.setRequestFullScreen(false)
-                        viewModel.setFullscreen(false)
+                        viewModel.isFullscreen = false
                     } else {
-                        viewModel.setFullscreen(true)
+                        viewModel.isFullscreen = true
                         context.setRequestFullScreen(true)
                     }
                 },
                 danmakuEnabled = { danmakuEnabled },
                 setDanmakuEnabled = { viewModel.launchInBackground { danmaku.setEnabled(it) } },
                 onSendDanmaku = {},
-                isFullscreen = isFullscreen,
+                isFullscreen = viewModel.isFullscreen,
             )
         }
 
-        if (isFullscreen) {
+        if (viewModel.isFullscreen) {
             return@Column
         }
 
-//        video?.let { vid ->
-//            Row(Modifier.border(1.dp, MaterialTheme.colorScheme.onBackground).padding(all = 16.dp)) {
-//                val arr by vid.torrentSource!!.pieces.collectAsStateWithLifecycle(mutableListOf())
-//                var refresh by remember { mutableIntStateOf(0) }
-//                LaunchedEffect(true) {
-//                    while (isActive) {
-//                        delay(3.seconds)
-//                        refresh++
-//                    }
-//                }
-//                key(refresh) {
-//                    (arr.asSequence().take(30) + arr.takeLast(30)).forEach {
-//                        Box(
-//                            Modifier.weight(1f)
-//                                .background(
-//                                    color = when (it) {
-//                                        PieceState.NOT_AVAILABLE -> Color.Magenta
-//                                        PieceState.READY -> Color.Blue
-//                                        PieceState.FAILED -> Color.Red
-//                                        PieceState.DOWNLOADING -> Color.Yellow
-//                                        PieceState.FINISHED -> Color.Green
-//                                        else -> Color.Red
-//                                    }
-//                                )
-//                        ) {
-//                            Spacer(Modifier.height(16.dp))
-//                        }
-//                    }
-//                }
-//            }
-//        }
-
-
         val pagerState = rememberPagerState(initialPage = 0) { 2 }
-        val scope = rememberCoroutineScope()
 
         Column(Modifier.fillMaxSize()) {
 //            TabRow(
@@ -237,6 +178,40 @@ fun EpisodePageContent(
 //                    }
                 }
             }
+        }
+    }
+}
+
+/**
+ * 切后台自动暂停
+ */
+@Composable
+private fun AutoPauseEffect(viewModel: EpisodeViewModel) {
+    var pausedVideo by rememberSaveable { mutableStateOf(true) } // live after configuration change
+    val isPreviewing by rememberUpdatedState(LocalIsPreviewing.current)
+
+    val autoPauseTasker = rememberUiMonoTasker()
+    OnLifecycleEvent {
+        if (isPreviewing) return@OnLifecycleEvent
+        if (it == Lifecycle.State.InActive || it == Lifecycle.State.Destroyed) {
+            if (viewModel.playerState.state.value.isPlaying) {
+                pausedVideo = true
+                autoPauseTasker.launch {
+                    // #160, 切换全屏时视频会暂停半秒
+                    // > 这其实是之前写切后台自动暂停导致的，检测了 lifecycle 事件，切全屏和切后台是一样的事件。延迟一下就可以了
+                    viewModel.playerState.pause() // 正在播放时, 切到后台自动暂停
+                }
+            } else {
+                // 如果不是正在播放, 则不操作暂停, 当下次切回前台时, 也不要恢复播放
+                pausedVideo = false
+            }
+        } else if (it == Lifecycle.State.Active && pausedVideo) {
+            autoPauseTasker.launch {
+                viewModel.playerState.resume() // 切回前台自动恢复, 当且仅当之前是自动暂停的
+            }
+            pausedVideo = false
+        } else {
+            pausedVideo = false
         }
     }
 }

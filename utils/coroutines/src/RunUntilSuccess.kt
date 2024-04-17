@@ -15,6 +15,7 @@ import kotlin.time.Duration.Companion.seconds
  * Runs the block multiple times, returns when it succeeds the first time. with a delay between each attempt.
  */
 suspend inline fun <R, V> V.runUntilSuccess(
+    maxAttempts: Int = 5,
     onFailure: (Exception) -> Unit = { it.printStackTrace() },
     block: V.() -> R,
 ): R {
@@ -26,6 +27,9 @@ suspend inline fun <R, V> V.runUntilSuccess(
         } catch (e: Exception) {
             onFailure(e)
             failed++
+            if (failed >= maxAttempts) {
+                throw IllegalStateException("Failed to run block after $maxAttempts attempts", e)
+            }
             delay(backoffDelay(failed))
         }
     }

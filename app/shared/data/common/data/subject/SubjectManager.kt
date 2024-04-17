@@ -6,13 +6,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.flow.transform
 import me.him188.ani.app.data.media.MediaCacheManager
 import me.him188.ani.app.data.repositories.EpisodeRepository
 import me.him188.ani.app.data.repositories.SubjectRepository
@@ -40,7 +43,9 @@ import me.him188.ani.utils.coroutines.runUntilSuccess
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.openapitools.client.models.EpType
+import org.openapitools.client.models.Episode
 import org.openapitools.client.models.EpisodeCollectionType
+import org.openapitools.client.models.EpisodeDetail
 import org.openapitools.client.models.Subject
 import org.openapitools.client.models.SubjectCollectionType
 import org.openapitools.client.models.SubjectType
@@ -55,6 +60,28 @@ interface SubjectManager {
 
     @Stable
     fun subjectProgressFlow(item: SubjectCollectionItem): Flow<List<EpisodeProgressItem>>
+
+    suspend fun getSubjectCollection(subjectId: Int): SubjectCollectionItem? {
+        return collectionsByType.values.asSequence().map { it.value }.flatten()
+            .firstOrNull { it.subjectId == subjectId }
+    }
+
+    fun subjectCollectionFlow(subjectId: Int): Flow<SubjectCollectionItem?> =
+        combine(collectionsByType.values.map { it.cachedData }) { collections ->
+            collections.asSequence().flatten().firstOrNull { it.subjectId == subjectId }
+        }
+
+    /**
+     * 从缓存中获取条目, 若没有则从网络获取.
+     */
+    suspend fun getSubject(subjectId: Int): Subject
+
+    /**
+     * 从缓存中获取剧集, 若没有则从网络获取.
+     */
+    suspend fun getEpisode(episodeId: Int): Episode
+
+    fun episodeCollectionFlow(subjectId: Int, episodeId: Int): Flow<UserEpisodeCollection>
 
     suspend fun setSubjectCollectionType(subjectId: Int, type: UnifiedCollectionType)
 
@@ -116,6 +143,40 @@ class SubjectManagerImpl : KoinComponent, SubjectManager {
                 }
             }
             .flowOn(Dispatchers.Default)
+    }
+
+    override suspend fun getSubject(subjectId: Int): Subject {
+        getSubjectCollection(subjectId)?.subject?.let { return it }
+        return runUntilSuccess { subjectRepository.getSubject(subjectId) ?: error("Failed to get subject") }
+    }
+
+    override suspend fun getEpisode(episodeId: Int): Episode {
+        collectionsByType.values.asSequence().map { it.value }.flatten()
+            .flatMap { it.episodes }
+            .map { it.episode }
+            .firstOrNull { it.id == episodeId }
+            ?.let { return it }
+
+        return runUntilSuccess {
+            episodeRepository.getEpisodeById(episodeId)?.toEpisode() ?: error("Failed to get episode")
+        }
+    }
+
+    override fun episodeCollectionFlow(subjectId: Int, episodeId: Int): Flow<UserEpisodeCollection> {
+        return subjectCollectionFlow(subjectId)
+            .transform { subject ->
+                if (subject == null) {
+                    emit(me.him188.ani.utils.coroutines.runUntilSuccess {
+                        episodeRepository.getEpisodeCollection(
+                            episodeId
+                        ) ?: error("Failed to get episode collection")
+                    })
+                } else {
+                    emitAll(
+                        subject.episodes.filter { it.episode.id == episodeId }.asFlow()
+                    )
+                }
+            }
     }
 
     override suspend fun setSubjectCollectionType(subjectId: Int, type: UnifiedCollectionType) {
@@ -180,7 +241,7 @@ class SubjectManagerImpl : KoinComponent, SubjectManager {
 
     private suspend fun UserSubjectCollection.convertToItem() = coroutineScope {
         val subject = async {
-            runUntilSuccess { subjectRepository.getSubject(subjectId) }
+            runUntilSuccess { subjectRepository.getSubject(subjectId) ?: error("Failed to get subject") }
         }
         val eps = runUntilSuccess {
             episodeRepository.getSubjectEpisodeCollection(subjectId, EpType.MainStory)
@@ -190,12 +251,13 @@ class SubjectManagerImpl : KoinComponent, SubjectManager {
     }
 
     private fun UserSubjectCollection.createItem(
-        subject: Subject?,
+        subject: Subject,
         episodes: List<UserEpisodeCollection>,
     ): SubjectCollectionItem {
-        if (subject == null || subject.type != SubjectType.Anime) {
+        if (subject.type != SubjectType.Anime) {
             return SubjectCollectionItem(
                 subjectId = subjectId,
+                subject = subject,
                 displayName = this.subject?.nameCNOrName() ?: "",
                 image = "",
                 rate = this.rate,
@@ -208,8 +270,9 @@ class SubjectManagerImpl : KoinComponent, SubjectManager {
 
         return SubjectCollectionItem(
             subjectId = subjectId,
-            displayName = this.subject?.nameCNOrName() ?: "",
-            image = this.subject?.images?.common ?: "",
+            subject = subject,
+            displayName = subject.nameCNOrName(),
+            image = subject.images.common,
             rate = this.rate,
             date = subject.airSeason ?: "",
             totalEps = episodes.size,
@@ -225,6 +288,7 @@ class SubjectManagerImpl : KoinComponent, SubjectManager {
 @Stable
 class SubjectCollectionItem(
     val subjectId: Int,
+    val subject: Subject,
     val displayName: String,
     val image: String,
     val rate: Int?,
@@ -309,6 +373,7 @@ class SubjectCollectionItem(
 
     fun copy(
         subjectId: Int = this.subjectId,
+        subject: Subject = this.subject,
         displayName: String = this.displayName,
         image: String = this.image,
         rate: Int? = this.rate,
@@ -318,6 +383,7 @@ class SubjectCollectionItem(
         collectionType: SubjectCollectionType? = this.collectionType.toSubjectCollectionType(),
     ) = SubjectCollectionItem(
         subjectId = subjectId,
+        subject = subject,
         displayName = displayName,
         image = image,
         rate = rate,
@@ -325,5 +391,22 @@ class SubjectCollectionItem(
         totalEps = totalEps,
         episodes = episodes,
         collectionType = collectionType,
+    )
+}
+
+
+private fun EpisodeDetail.toEpisode(): Episode {
+    return Episode(
+        id = id,
+        type = type,
+        name = name,
+        nameCn = nameCn,
+        sort = sort,
+        airdate = airdate,
+        comment = comment,
+        duration = duration,
+        desc = desc,
+        disc = disc,
+        ep = ep,
     )
 }

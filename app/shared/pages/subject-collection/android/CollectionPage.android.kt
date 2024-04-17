@@ -14,9 +14,15 @@ import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.datasources.api.paging.SingleShotPagedSource
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
+import org.openapitools.client.models.Collection
+import org.openapitools.client.models.Count
 import org.openapitools.client.models.Episode
 import org.openapitools.client.models.EpisodeCollectionType
+import org.openapitools.client.models.Images
+import org.openapitools.client.models.Rating
+import org.openapitools.client.models.Subject
 import org.openapitools.client.models.SubjectCollectionType
+import org.openapitools.client.models.SubjectType
 import org.openapitools.client.models.UserEpisodeCollection
 import java.math.BigDecimal
 
@@ -44,7 +50,6 @@ internal actual fun PreviewCollectionPage() {
     }
 }
 
-@Suppress("UNUSED_CHANGED_VALUE")
 private fun testCollections(): List<SubjectCollectionItem> {
     return buildList {
         var id = 0
@@ -88,7 +93,8 @@ private fun testCollections(): List<SubjectCollectionItem> {
         val latestEp = eps[1]
         add(
             SubjectCollectionItem(
-                subjectId = id++,
+                subjectId = ++id,
+                subject = testSubject(id),
                 displayName = "葬送的芙莉莲",
                 image = "",
                 rate = null,
@@ -101,6 +107,7 @@ private fun testCollections(): List<SubjectCollectionItem> {
         add(
             SubjectCollectionItem(
                 subjectId = id++,
+                subject = testSubject(id),
                 displayName = "葬送的芙莉莲 2",
                 image = "",
                 rate = null,
@@ -113,6 +120,7 @@ private fun testCollections(): List<SubjectCollectionItem> {
         add(
             SubjectCollectionItem(
                 subjectId = id++,
+                subject = testSubject(id),
                 displayName = "葬送的芙莉莲 3",
                 image = "",
                 rate = null,
@@ -125,6 +133,7 @@ private fun testCollections(): List<SubjectCollectionItem> {
         add(
             SubjectCollectionItem(
                 subjectId = id++,
+                subject = testSubject(id),
                 displayName = "葬送的芙莉莲 4",
                 image = "",
                 rate = null,
@@ -166,4 +175,54 @@ private fun PreviewSubjectCollectionsColumn() {
             onEmpty = {}
         )
     }
+}
+
+fun testSubject(
+    id: Int = 0,
+): Subject {
+    return Subject(
+        id = id,
+        type = SubjectType.Music,
+        name = "Doreen Vaughn",
+        nameCn = "Lena Cortez",
+        summary = "feugiat",
+        nsfw = false,
+        locked = false,
+        platform = "himenaeos",
+        images = Images(
+            large = "donec",
+            common = "mandamus",
+            medium = "pellentesque",
+            small = "ferri",
+            grid = "natoque"
+        ),
+        volumes = 8709,
+        eps = 8315,
+        totalEpisodes = 2238,
+        rating = Rating(
+            rank = 5821, total = 4784, count = Count(
+                _1 = null,
+                _2 = null,
+                _3 = null,
+                _4 = null,
+                _5 = null,
+                _6 = null,
+                _7 = null,
+                _8 = null,
+                _9 = null,
+                _10 = null
+            ),
+            score = BigDecimal.ZERO
+        ),
+        collection = Collection(
+            wish = 6848,
+            collect = 6029,
+            doing = 4929,
+            onHold = 2523,
+            dropped = 3158
+        ),
+        tags = listOf(),
+        date = null,
+        infobox = listOf()
+    )
 }

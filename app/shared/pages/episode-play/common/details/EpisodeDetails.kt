@@ -22,7 +22,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,13 +33,12 @@ import me.him188.ani.app.tools.rememberBackgroundMonoTasker
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.subject.episode.EpisodeCollectionActionButton
 import me.him188.ani.app.ui.subject.episode.EpisodeViewModel
+import me.him188.ani.app.ui.subject.episode.mediaSelectorState
 import me.him188.ani.app.ui.theme.slightlyWeaken
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.datasources.api.topic.Resolution
 import me.him188.ani.datasources.api.topic.SubtitleLanguage
-import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
-import org.openapitools.client.models.EpisodeCollectionType
 
 private val PAGE_HORIZONTAL_PADDING = 16.dp
 
@@ -158,10 +156,9 @@ fun EpisodeTitle(
 ) {
     Row(modifier) {
         Column {
-            val subjectTitle by viewModel.subjectTitle.collectAsStateWithLifecycle(null)
-            Row(Modifier.placeholder(subjectTitle == null)) {
+            Row(Modifier.placeholder(viewModel.subjectPresentation.isPlaceholder)) {
                 Text(
-                    subjectTitle ?: "placeholder",
+                    viewModel.subjectPresentation.title,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     overflow = TextOverflow.Ellipsis,
@@ -169,17 +166,16 @@ fun EpisodeTitle(
             }
 
             Row(Modifier.padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                val episodeTitle by viewModel.episodeTitle.collectAsStateWithLifecycle(null)
-                val episodeEp by viewModel.episodeEp.collectAsStateWithLifecycle(null)
+                val ep = viewModel.episodePresentation
                 val shape = RoundedCornerShape(8.dp)
                 Box(
                     Modifier.border(1.dp, MaterialTheme.colorScheme.outlineVariant, shape = shape)
-                        .placeholder(episodeEp == null)
+                        .placeholder(ep.isPlaceholder)
                         .clip(shape)
                         .padding(horizontal = 4.dp, vertical = 2.dp)
                 ) {
                     Text(
-                        episodeEp ?: "01",
+                        ep.sort,
                         style = MaterialTheme.typography.labelMedium,
                         color = LocalContentColor.current.slightlyWeaken(),
                         softWrap = false, maxLines = 1
@@ -187,8 +183,8 @@ fun EpisodeTitle(
                 }
 
                 Text(
-                    episodeTitle ?: "placeholder",
-                    Modifier.padding(start = 8.dp).placeholder(episodeEp == null),
+                    ep.title,
+                    Modifier.padding(start = 8.dp).placeholder(ep.isPlaceholder),
                     style = MaterialTheme.typography.titleSmall,
                     softWrap = false, maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -198,11 +194,9 @@ fun EpisodeTitle(
 
         Spacer(Modifier.weight(1f))
 
-        val collectionType by viewModel.episodeCollectionType.collectAsStateWithLifecycle(EpisodeCollectionType.WATCHLIST)
-
         val tasker = viewModel.rememberBackgroundMonoTasker()
         EpisodeCollectionActionButton(
-            collectionType,
+            viewModel.episodePresentation.collectionType,
             onClick = { target ->
                 tasker.launch {
                     viewModel.setEpisodeCollectionType(target)

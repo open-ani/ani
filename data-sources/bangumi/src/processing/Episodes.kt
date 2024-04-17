@@ -7,7 +7,7 @@ import org.openapitools.client.models.Subject
 import java.time.LocalDate
 import java.time.ZoneOffset
 
-fun EpisodeDetail.renderEpisodeSp() = when (type) {
+fun Episode.renderEpisodeEp() = when (type) {
     0 -> { // 本篇
         (ep ?: sort).toInt().fixToString(2)
     } // "01", "12", "26", "120"
@@ -23,6 +23,9 @@ fun EpisodeDetail.renderEpisodeSp() = when (type) {
 
 
 fun EpisodeDetail.nameCNOrName() =
+    nameCn.takeIf { it.isNotBlank() } ?: name
+
+fun Episode.nameCNOrName() =
     nameCn.takeIf { it.isNotBlank() } ?: name
 
 

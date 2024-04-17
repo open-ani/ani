@@ -2,6 +2,7 @@ package me.him188.ani.app.ui.subject.episode
 
 import androidx.annotation.UiThread
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -12,10 +13,7 @@ import androidx.compose.ui.text.AnnotatedString
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
@@ -25,13 +23,9 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.transformLatest
-import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.media.UnsupportedMediaException
 import me.him188.ani.app.data.media.VideoSourceResolver
-import me.him188.ani.app.data.repositories.EpisodeRepository
-import me.him188.ani.app.data.repositories.SubjectRepository
 import me.him188.ani.app.data.subject.SubjectManager
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.Context
@@ -50,53 +44,83 @@ import me.him188.ani.danmaku.api.DanmakuMatchers
 import me.him188.ani.danmaku.api.DanmakuProvider
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
-import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.datasources.bangumi.processing.nameCNOrName
-import me.him188.ani.datasources.bangumi.processing.renderEpisodeSp
+import me.him188.ani.datasources.bangumi.processing.renderEpisodeEp
 import me.him188.ani.datasources.bangumi.processing.toCollectionType
 import me.him188.ani.utils.coroutines.closeOnReplacement
-import me.him188.ani.utils.coroutines.runUntilSuccess
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import org.openapitools.client.models.Episode
 import org.openapitools.client.models.EpisodeCollectionType
-import org.openapitools.client.models.EpisodeDetail
 import kotlin.time.Duration.Companion.milliseconds
+
+@Immutable
+class SubjectPresentation(
+    val title: String,
+    val isPlaceholder: Boolean = false,
+) {
+    companion object {
+        @Stable
+        val Placeholder = SubjectPresentation(
+            title = "placeholder",
+            isPlaceholder = true,
+        )
+    }
+}
+
+/**
+ * 展示在 UI 的状态
+ */
+@Immutable
+class EpisodePresentation(
+    /**
+     * 剧集标题
+     * @see Episode.nameCNOrName
+     */
+    val title: String,
+    /**
+     * @see renderEpisodeEp
+     */
+    val sort: String,
+    val collectionType: EpisodeCollectionType,
+    val isPlaceholder: Boolean = false,
+) {
+    companion object {
+        @Stable
+        val Placeholder = EpisodePresentation(
+            title = "placeholder",
+            sort = "placeholder",
+            collectionType = EpisodeCollectionType.WATCHLIST,
+            isPlaceholder = true,
+        )
+    }
+}
 
 @Stable
 interface EpisodeViewModel : HasBackgroundScope {
-    // Subject
     val subjectId: Int
 
-    val subjectTitle: Flow<String>
+    val subjectPresentation: SubjectPresentation // by state
+    val episodePresentation: EpisodePresentation // by state
 
-    // Episode
+    var isFullscreen: Boolean
 
-    val episodeId: Int
-
-    val episode: SharedFlow<EpisodeDetail>
-
-    val episodeTitle: Flow<String>
-    val episodeEp: Flow<String>
-
-    val isFullscreen: StateFlow<Boolean>
-
-    fun setFullscreen(fullscreen: Boolean)
-
-    // Collection
-
-    val episodeCollectionType: SharedFlow<EpisodeCollectionType>
     suspend fun setEpisodeCollectionType(type: EpisodeCollectionType)
 
     // Media Fetching
 
+    /**
+     * 查询剧集数据源资源的会话
+     */
     val episodeMediaFetchSession: EpisodeMediaFetchSession
-
-    val mediaSelectorState: MediaSelectorState
 
     // Media Selection
 
+    /**
+     * 是否显示数据源选择器
+     */
     var mediaSelectorVisible: Boolean
 
 
@@ -126,6 +150,10 @@ interface EpisodeViewModel : HasBackgroundScope {
     val danmaku: PlayerDanmakuViewModel
 }
 
+@Stable
+val EpisodeViewModel.mediaSelectorState: MediaSelectorState
+    get() = episodeMediaFetchSession.mediaSelectorState
+
 fun EpisodeViewModel(
     initialSubjectId: Int,
     initialEpisodeId: Int,
@@ -137,40 +165,19 @@ fun EpisodeViewModel(
 @Stable
 private class EpisodeViewModelImpl(
     override val subjectId: Int,
-    override val episodeId: Int,
+    val episodeId: Int,
     initialIsFullscreen: Boolean = false,
     context: Context,
 ) : AbstractViewModel(), KoinComponent, EpisodeViewModel {
-    private val bangumiClient by inject<BangumiClient>()
     private val browserNavigator: BrowserNavigator by inject()
     private val playerStateFactory: PlayerStateFactory by inject()
-    private val episodeRepository: EpisodeRepository by inject()
-    private val subjectRepository: SubjectRepository by inject()
     private val subjectManager: SubjectManager by inject()
     private val danmakuProvider: DanmakuProvider by inject()
     private val videoSourceResolver: VideoSourceResolver by inject()
 
-    private val subjectDetails = flowOf(subjectId).mapLatest { subjectId ->
-        runUntilSuccess { withContext(Dispatchers.IO) { bangumiClient.api.getSubjectById(subjectId) } }
-        // TODO: replace with data layer 
+    private val subject = flowOf(subjectId).mapLatest { subjectId ->
+        subjectManager.getSubject(subjectId)
     }.shareInBackground()
-
-    override val episode: SharedFlow<EpisodeDetail> = flowOf(episodeId).mapLatest { episodeId ->
-        runUntilSuccess { withContext(Dispatchers.IO) { bangumiClient.api.getEpisodeById(episodeId) } }
-    }.shareInBackground()
-
-    override val subjectTitle: Flow<String> = subjectDetails.filterNotNull().mapLatest { subject ->
-        subject.nameCNOrName()
-    }
-
-    override val episodeEp = episode.filterNotNull().mapLatest { episode ->
-        episode.renderEpisodeSp()
-    }
-
-    override val episodeTitle = episode.filterNotNull().mapLatest { episode ->
-        episode.nameCNOrName()
-    }
-
 
     // Media Selection
 
@@ -179,8 +186,6 @@ private class EpisodeViewModelImpl(
         episodeId,
         backgroundScope.coroutineContext,
     )
-    override val mediaSelectorState: MediaSelectorState get() = this.episodeMediaFetchSession.mediaSelectorState
-
 
     override var mediaSelectorVisible: Boolean by mutableStateOf(false)
 
@@ -203,7 +208,7 @@ private class EpisodeViewModelImpl(
             emit(null)
             playSource?.let { media ->
                 try {
-                    emit(videoSourceResolver.resolve(media, EpisodeSort(episodeEp.first())))
+                    emit(videoSourceResolver.resolve(media, EpisodeSort(episodePresentation.sort)))
                 } catch (e: UnsupportedMediaException) {
                     logger.error(e) { "Failed to resolve video source" }
                     emit(null)
@@ -219,19 +224,27 @@ private class EpisodeViewModelImpl(
     override val playerState: PlayerState =
         playerStateFactory.create(context, backgroundScope.coroutineContext)
 
-    override val isFullscreen: MutableStateFlow<Boolean> = MutableStateFlow(initialIsFullscreen)
+    override val subjectPresentation: SubjectPresentation by subject
+        .map {
+            SubjectPresentation(
+                title = it.nameCNOrName()
+            )
+        }
+        .produceState(SubjectPresentation.Placeholder)
 
-    override fun setFullscreen(fullscreen: Boolean) {
-        isFullscreen.value = fullscreen
-    }
+    override val episodePresentation: EpisodePresentation by subjectManager.episodeCollectionFlow(subjectId, episodeId)
+        .map {
+            EpisodePresentation(
+                title = it.episode.nameCNOrName(),
+                sort = it.episode.renderEpisodeEp(),
+                collectionType = it.type,
+            )
+        }.produceState(EpisodePresentation.Placeholder)
 
-    override val episodeCollectionType: MutableSharedFlow<EpisodeCollectionType> = flowOf(episodeId).mapNotNull {
-        episodeRepository.getEpisodeCollection(it)?.type
-    }.localCachedSharedFlow()
+    override var isFullscreen: Boolean by mutableStateOf(initialIsFullscreen)
 
     override suspend fun setEpisodeCollectionType(type: EpisodeCollectionType) {
         subjectManager.setEpisodeCollectionType(subjectId, episodeId, type.toCollectionType())
-        episodeCollectionType.tryEmit(type)
     }
 
     override suspend fun copyDownloadLink(clipboardManager: ClipboardManager, snackbar: SnackbarHostState) {
@@ -259,13 +272,15 @@ private class EpisodeViewModelImpl(
         selectedMedia.filterNotNull(),
         playerState.videoProperties.filterNotNull()
     ) { media, video ->
-        val ep = episode.first()
         danmakuProvider.startSession(
             media.originalTitle,
             video.fileHash ?: "aa".repeat(16),
             video.fileLengthBytes,
             video.durationMillis.milliseconds,
-            DanmakuMatchers.mostRelevant(subjectTitle.first(), "第${ep.ep ?: "1"}话 " + episodeTitle.first()),
+            DanmakuMatchers.mostRelevant(
+                subjectPresentation.title,
+                "第${episodePresentation.sort.removePrefix("0")}话 " + episodePresentation.title
+            ),
         )
     }.filterNotNull()
         .closeOnReplacement()
@@ -302,6 +317,7 @@ private class EpisodeViewModelImpl(
      * Requests the user to select a media if not already.
      * Returns null if the user cancels the selection.
      */
+    @UiThread
     private suspend fun requestMediaOrNull(): Media? {
         mediaSelectorState.selected?.let {
             return it // already selected
