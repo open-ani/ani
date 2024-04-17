@@ -69,14 +69,14 @@ private fun PreviewNetworkPreferenceTab() {
         module = {
             single<MediaSourceManager> {
                 object : MediaSourceManager {
-                    override val sources: MutableStateFlow<List<MediaSource>> = MutableStateFlow(
+                    override val enabledSources: MutableStateFlow<List<MediaSource>> = MutableStateFlow(
                         listOf(
                             TestMediaSource(AcgRipMediaSource.ID),
                             TestMediaSource(DmhyMediaSource.ID),
                             TestMediaSource(MikanMediaSource.ID),
                         )
                     )
-                    override val ids: List<String> = sources.value.map { it.mediaSourceId }
+                    override val allIds: List<String> = enabledSources.value.map { it.mediaSourceId }
                 }
             }
         }

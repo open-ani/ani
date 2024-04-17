@@ -60,7 +60,7 @@ class DmhyMediaSource(
     private val config: MediaSourceConfig,
 ) : TopicMediaSource() {
     class Factory : MediaSourceFactory {
-        override val id: String = ID
+        override val mediaSourceId: String = ID
         override fun create(config: MediaSourceConfig): MediaSource = DmhyMediaSource(config)
     }
 

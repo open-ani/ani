@@ -62,7 +62,7 @@ class NetworkPreferenceViewModel : AbstractViewModel(), KoinComponent {
 
     private val proxyPreferences = preferencesRepository.proxyPreferences
     private val updater = MonoTasker(backgroundScope)
-    private val sources = mediaSourceManager.sources
+    private val sources = mediaSourceManager.enabledSources
 
     ///////////////////////////////////////////////////////////////////////////
     // Media Testing
@@ -70,7 +70,7 @@ class NetworkPreferenceViewModel : AbstractViewModel(), KoinComponent {
 
     private val mediaTestScope = MonoTasker(backgroundScope)
     val mediaTesters =
-        mediaSourceManager.ids
+        mediaSourceManager.allIds
             .map { id ->
                 val source = sources.mapNotNull { sources ->
                     sources.firstOrNull { it.mediaSourceId == id }

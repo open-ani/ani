@@ -9,7 +9,7 @@ interface MediaSourceFactory {
     /**
      * @see MediaSource.mediaSourceId
      */
-    val id: String
+    val mediaSourceId: String
 
     fun create(
         config: MediaSourceConfig,

@@ -77,7 +77,7 @@ class MikanMediaSource(
     private val config: MediaSourceConfig,
 ) : TopicMediaSource() {
     class Factory : MediaSourceFactory {
-        override val id: String get() = ID
+        override val mediaSourceId: String get() = ID
         override fun create(config: MediaSourceConfig): MediaSource = MikanMediaSource(config)
     }
 

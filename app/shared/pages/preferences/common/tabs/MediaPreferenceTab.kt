@@ -70,7 +70,7 @@ class MediaPreferenceViewModel : AbstractViewModel(), KoinComponent {
     }
 
 
-    val allMediaSources by mediaSourceManager.sources.map { list ->
+    val allMediaSources by mediaSourceManager.enabledSources.map { list ->
         list.map { it.mediaSourceId }
     }.produceState(emptyList())
 

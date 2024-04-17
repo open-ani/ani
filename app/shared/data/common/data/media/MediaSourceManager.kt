@@ -4,7 +4,7 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.shareIn
 import me.him188.ani.app.data.models.MediaSourceProxyPreferences
 import me.him188.ani.app.data.models.ProxyAuthorization
@@ -22,18 +22,23 @@ import java.util.ServiceLoader
 
 interface MediaSourceManager { // available by inject
     /**
-     * List of download providers configured using user preferences.
-     * Automatically reloaded when preferences change.
+     * 跟随设置更新的 [MediaSource] 列表. 已考虑代理和开关.
      */
-    val sources: SharedFlow<List<MediaSource>>
-    val ids: List<String>
+    val enabledSources: SharedFlow<List<MediaSource>>
+
+    /**
+     * 全部的 [MediaSource], 包括那些设置里关闭的, 包括本地的.
+     */
+    val allIds: List<String>
 }
 
 class MediaSourceManagerImpl(
     additionalSources: () -> List<MediaSource>, // local sources
 ) : MediaSourceManager, KoinComponent {
     private val preferencesRepository: PreferencesRepository by inject()
-    private val config = preferencesRepository.proxyPreferences.flow
+
+    private val defaultMediaPreference = preferencesRepository.defaultMediaPreference.flow
+    private val proxyConfig = preferencesRepository.proxyPreferences.flow
 
 
     private val scope = CoroutineScope(CoroutineExceptionHandler { _, throwable ->
@@ -43,17 +48,26 @@ class MediaSourceManagerImpl(
     private val factories = ServiceLoader.load(MediaSourceFactory::class.java).toList()
 
     private val additionalSources by lazy { additionalSources() }
-    override val sources = config.map { proxyPreferences ->
-        // 一定要 additionalSources 在前面, local sources 需要优先使用
-        this.additionalSources + factories
-            .map { factory ->
-                factory.create(proxyPreferences.get(factory.id))
-            }
-    }.shareIn(scope, replay = 1, started = SharingStarted.Lazily)
+    override val enabledSources =
+        combine(proxyConfig, defaultMediaPreference) { proxyPreferences, defaultMediaPreference ->
+            // 一定要 additionalSources 在前面, local sources 需要优先使用
+            val enabledSources = defaultMediaPreference.fallbackMediaSourceIds
+            this.additionalSources
+                .filter { enabledSources == null || it.mediaSourceId in enabledSources }
+                .plus(
+                    factories
+                        .filter { enabledSources == null || it.mediaSourceId in enabledSources }
+                        .map { factory ->
+                            factory.create(proxyPreferences.get(factory.mediaSourceId))
+                        }
+                )
+        }.shareIn(scope, replay = 1, started = SharingStarted.Lazily)
 
-    override val ids: List<String> = factories
-        .map { it.id }
-        .toList()
+    override val allIds: List<String> by lazy {
+        factories
+            .map { it.mediaSourceId }
+            .plus(this.additionalSources.map { it.mediaSourceId })
+    }
 
     private fun MediaSourceFactory.create(pref: MediaSourceProxyPreferences): MediaSource {
         return create(
