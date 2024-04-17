@@ -144,7 +144,8 @@ class DefaultMediaAutoCacheService(
     override fun startRegularCheck(scope: CoroutineScope) {
         scope.launch(CoroutineName("MediaAutoCacheService.startRegularCheck")) {
             while (true) {
-                if (!config.first().enabled) {
+                val config = config.first()
+                if (!config.enabled) {
                     delay(1.hours)
                     continue
                 }

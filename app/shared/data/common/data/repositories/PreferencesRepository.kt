@@ -18,6 +18,7 @@ import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.logger
+import me.him188.ani.utils.logging.trace
 
 interface PreferencesRepository {
     val danmakuEnabled: Preference<Boolean>
@@ -80,6 +81,7 @@ class PreferencesRepositoryImpl(
             }
 
         override suspend fun set(value: T) {
+            logger.trace { "Updating preference '$key' with: $value" }
             preferences.edit {
                 if (value == null) {
                     it.remove(key)
