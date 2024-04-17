@@ -238,7 +238,7 @@ private fun Stat(
         ) {
             ProvideTextStyle(MaterialTheme.typography.labelMedium.copy(textAlign = TextAlign.Center)) {
                 Row(
-                    Modifier.widthIn(min = 80.dp),
+                    Modifier.widthIn(min = 100.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
@@ -246,7 +246,7 @@ private fun Stat(
                     speedText()
                 }
                 Row(
-                    Modifier.widthIn(min = 80.dp),
+                    Modifier.widthIn(min = 100.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
