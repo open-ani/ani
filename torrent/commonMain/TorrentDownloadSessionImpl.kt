@@ -3,10 +3,15 @@ package me.him188.ani.app.torrent
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.getAndUpdate
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -78,7 +83,29 @@ internal class TorrentDownloadSessionImpl(
 
     override val downloadRate = MutableStateFlow<Long?>(null)
 
-    override val uploadRate = MutableStateFlow<Long?>(null)
+    private val _uploadRate = MutableStateFlow<Long?>(null)
+    override val uploadRate
+        get() = channelFlow {
+            coroutineScope {
+                val time = object {
+                    @Volatile
+                    var value: Long = 0L
+                }
+                launch {
+                    while (isActive) {
+                        delay(1000)
+                        val now = System.currentTimeMillis()
+                        if (now - time.value >= 1000) {
+                            send(0L)
+                        }
+                    }
+                }
+                _uploadRate.collect {
+                    time.value = System.currentTimeMillis()
+                    send(it)
+                }
+            }
+        }.distinctUntilChanged()
 
     override val progress = MutableStateFlow(0f)
 
@@ -296,7 +323,7 @@ internal class TorrentDownloadSessionImpl(
                         val totalDone = alert.handle().status().totalDone()
                         _downloadedBytes.value = totalDone
                         downloadRate.value = alert.handle().status().downloadRate().toUInt().toLong()
-                        uploadRate.value = alert.handle().status().uploadRate().toUInt().toLong()
+                        _uploadRate.value = alert.handle().status().uploadRate().toUInt().toLong()
                         progress.value = totalDone.toFloat() / totalWanted.toFloat()
                     }
 
@@ -323,7 +350,7 @@ internal class TorrentDownloadSessionImpl(
                     }
                 }
 
-                uploadRate.value = alert.handle().status().uploadRate().toUInt().toLong()
+                _uploadRate.value = alert.handle().status().uploadRate().toUInt().toLong()
 
                 while (jobsToDoInHandle.isNotEmpty()) {
                     val job = jobsToDoInHandle.poll()

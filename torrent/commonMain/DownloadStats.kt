@@ -15,7 +15,7 @@ public interface DownloadStats {
      * Bytes per second. `null` if not available, i.e. just started
      */
     public val downloadRate: StateFlow<Long?>
-    public val uploadRate: StateFlow<Long?>
+    public val uploadRate: Flow<Long?>
 
     /**
      * Range: `0..1`
