@@ -153,10 +153,12 @@ private fun PreviewSubjectCollectionsColumn() {
     ProvideCompositionLocalsForPreview {
         SubjectCollectionsColumn(
             LazyDataCache(
-                SingleShotPagedSource {
-                    testCollections().asFlow()
+                {
+                    SingleShotPagedSource {
+                        testCollections().asFlow()
+                    }
                 },
-                "test"
+                debugName = "test"
             ),
             item = {
                 SubjectCollectionItem(

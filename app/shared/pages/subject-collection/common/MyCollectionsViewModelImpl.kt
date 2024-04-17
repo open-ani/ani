@@ -11,6 +11,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -23,7 +24,6 @@ import me.him188.ani.app.data.repositories.SubjectRepository
 import me.him188.ani.app.data.repositories.setSubjectCollectionTypeOrDelete
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.tools.caching.LazyDataCache
-import me.him188.ani.app.tools.caching.cached
 import me.him188.ani.app.tools.caching.value
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
@@ -76,15 +76,19 @@ class MyCollectionsViewModelImpl : AbstractViewModel(), KoinComponent, MyCollect
 
     @Stable
     val collectionsByType = UnifiedCollectionType.entries.associateWith { type ->
-        sessionManager.username.filterNotNull().map { username ->
-            subjectRepository.getSubjectCollections(
-                username,
-                subjectType = SubjectType.Anime,
-                subjectCollectionType = type.toSubjectCollectionType(),
-            ).map {
-                it.convertToItem()
-            }
-        }.cached(debugName = "collectionsByType-${type.name}")
+        LazyDataCache(
+            {
+                val username = sessionManager.username.filterNotNull().first()
+                subjectRepository.getSubjectCollections(
+                    username,
+                    subjectType = SubjectType.Anime,
+                    subjectCollectionType = type.toSubjectCollectionType(),
+                ).map {
+                    it.convertToItem()
+                }
+            },
+            debugName = "collectionsByType-${type.name}"
+        )
     }
 
     @Stable
@@ -134,7 +138,7 @@ class MyCollectionsViewModelImpl : AbstractViewModel(), KoinComponent, MyCollect
                 UnifiedCollectionType.DROPPED,
             ).forEach { type ->
                 collectionsByType[type]?.let { cache ->
-                    if (cache.data.value.isEmpty()) {
+                    if (cache.cachedData.value.isEmpty()) {
                         cache.requestMore()
                     }
                 }

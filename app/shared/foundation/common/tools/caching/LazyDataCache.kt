@@ -1,30 +1,23 @@
 package me.him188.ani.app.tools.caching
 
 import androidx.compose.runtime.Stable
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.onCompletion
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import me.him188.ani.datasources.api.paging.PagedSource
-import me.him188.ani.utils.logging.info
-import me.him188.ani.utils.logging.logger
-import me.him188.ani.utils.logging.warn
+import me.him188.ani.utils.coroutines.cancellableCoroutineScope
 
 /**
  * A data collection, where the data is loaded from a remote source.
@@ -36,16 +29,28 @@ import me.him188.ani.utils.logging.warn
 @Stable
 interface LazyDataCache<T> {
     /**
-     * Whether the current remote flow has been exhausted.
-     *
-     * Note that when [isCompleted] is seen as `true`, it can still become `false` later if the remote source has restarted (in which case [data] will be cleared).
+     * 当前缓存的数据, 它可能是不完整的.
      */
-    val isCompleted: Flow<Boolean>
+    val cachedData: StateFlow<List<T>>
 
     /**
-     * Current cache of the data. It can change if [requestMore].
+     * 完整的数据 flow. 在 collect 这个 flow 时将会自动调用 [requestMore] 加载更多数据.
+     * 这个 flow 会在每加载完成一页时返回累计的数据.
+     *
+     * 该 flow 会在加载完成所有数据后完结, 且一定会至少 emit 一次.
+     *
+     * 如要获取所有数据, 可使用 `allData.last()`.
+     *
+     * 若在 [allData] collect 的过程中有 [invalidate], 那么 [allData] 将会重新开始.
      */
-    val data: StateFlow<List<T>>
+    val allData: Flow<List<T>>
+
+    /**
+     * Whether the current remote flow has been exhausted.
+     *
+     * Note that when [isCompleted] is seen as `true`, it can still become `false` later if the remote source has restarted (in which case [cachedData] will be cleared).
+     */
+    val isCompleted: Flow<Boolean>
 
     /**
      * Total size of the data. It can change if [requestMore].
@@ -54,10 +59,13 @@ interface LazyDataCache<T> {
      */
     val totalSize: Flow<Int?>
 
+    /**
+     * Lock for cross-data-cache operations. Only for internal use.
+     */
     val lock: Mutex
 
     /**
-     * Changes the [data] under the [lock].
+     * Changes the [cachedData] under the [lock].
      *
      * Note, you must not call [mutate] again within [action], as it will cause a deadlock.
      */
@@ -65,73 +73,96 @@ interface LazyDataCache<T> {
 
     /**
      * Attempts to load more data.
-     * Returns immediately if the remote flow has already been exhausted (completed).
-     * Returns when the next page is loaded.
+     * Returns `false` if the remote flow has already been exhausted, i.e. all data has successfully loaded.
+     * Returns `true` when the next page is loaded.
      *
      * The will only be one data loading operation at a time.
      *
      * This function performs calculations on the [Dispatchers.Default] dispatcher.
+     *
+     * 此函数可以在 UI 或者其他线程调用.
      */
-    suspend fun requestMore()
+    suspend fun requestMore(): Boolean
+
+    /**
+     * 重新从头开始加载数据, 当加载成功时替换掉当前缓存. 当加载失败时不修改当前缓存.
+     *
+     * 注意, [refresh] 与先 [invalidate] 再 [requestMore] 不同:
+     * [refresh] 只会在加载成功后替换当前缓存, 而 [invalidate] 总是会清空当前缓存.
+     *
+     * This function supports coroutine cancellation.
+     *
+     * 此函数可以在 UI 或者其他线程调用.
+     */
+    suspend fun refresh()
+
+    /**
+     * 清空所有本地缓存以及当前的 [PagedSource]. 注意, 本函数不会请求数据. 即当函数返回时, [cachedData] 为空.
+     */
+    suspend fun invalidate()
 }
 
-inline val <T> LazyDataCache<T>.value get() = data.value
+inline val <T> LazyDataCache<T>.value get() = cachedData.value
 
 /**
  * Creates a [LazyDataCache].
  *
- * On [LazyDataCache.requestMore], the [nextPageOrNull] will be called to load more data.
- * If [nextPageOrNull] returns `null`, it is considered to be end of the data. [LazyDataCache] will release the reference to [nextPageOrNull].
+ * [createSource] will be called on demand to create a flow of pages.
+ *
+ * On [LazyDataCache.requestMore], the [PagedSource.nextPageOrNull] will be called to load more data.
+ * If [PagedSource.nextPageOrNull] returns `null`, it is considered to be end of the data.
  *
  * `nextPageOrNull` must not throw any exceptions, if it does, it is considered to be end of the data.
  *
- * Completion of [LazyDataCache] relies on the completion of the [nextPageOrNull] flow.
+ * Completion of [LazyDataCache] relies on the completion of the [createSource] flow.
  */
+@OverloadResolutionByLambdaReturnType
 fun <T> LazyDataCache(
-    nextPageOrNull: Flow<PagedSource<T>>,
+    createSource: suspend LazyDataCacheContext.() -> PagedSource<T>,
+    sanitize: (suspend (List<T>) -> List<T>)? = null,
     debugName: String? = null,
-): LazyDataCache<T> = LazyDataCacheImpl(nextPageOrNull, debugName)
+): LazyDataCache<T> = LazyDataCacheImpl(createSource, sanitize, debugName)
 
-/**
- * @see LazyDataCache
- */
-fun <T> LazyDataCache(
-    nextPageOrNull: PagedSource<T>,
-    debugName: String? = null,
-): LazyDataCache<T> = LazyDataCacheImpl(flowOf(nextPageOrNull), debugName)
-
-fun <T> Flow<PagedSource<T>>.cached(
-    debugName: String? = null,
-): LazyDataCache<T> = LazyDataCache(this, debugName)
-
-fun <T> PagedSource<T>.cached(
-    debugName: String? = null,
-): LazyDataCache<T> = LazyDataCache(this, debugName)
-
+interface LazyDataCacheContext {
+    /**
+     * 清空所有本地缓存以及当前的 [PagedSource].
+     */
+    suspend fun invalidate()
+}
 
 class LazyDataCacheImpl<T>(
-    source: Flow<PagedSource<T>>,
+    private val createSource: suspend LazyDataCacheContext.() -> PagedSource<T>,
+    private val sanitize: (suspend (List<T>) -> List<T>)? = null,
     private val debugName: String? = null,
-) : LazyDataCache<T> {
-    override val data: MutableStateFlow<List<T>> = MutableStateFlow(emptyList())
+) : LazyDataCache<T>, LazyDataCacheContext {
+    override val cachedData: MutableStateFlow<List<T>> = MutableStateFlow(emptyList())
 
-    private val scope =
-        CoroutineScope(Dispatchers.Default) // Note that a job is not needed as we rely on the [source]'s completion to complete our [currentSource].
+    // Writes must be under lock
+    private suspend inline fun setData(data: List<T>) {
+        cachedData.value = sanitize?.invoke(data) ?: data
+    }
 
-    private val sourceCompleted = MutableStateFlow(false)
+    override val allData: Flow<List<T>> = flow {
+        cancellableCoroutineScope {
+            currentSource.collectLatest { // 当有新 source 时 flow 会重新开始
+                emit(cachedData.value)
+                while (!sourceCompleted.first()) {
+                    requestMore()
+                    emit(cachedData.value)
+                }
+                cancel() // 仅收集一个 source
+            }
+        }
+    }
+
     private val requestInProgress = MutableStateFlow(false)
 
     override val lock: Mutex = Mutex()
 
-    private val currentSource: StateFlow<PagedSource<T>?> =
-        source.onEach {
-            lock.withLock {
-                logger.info { "LazyDataCacheImpl($debugName): source changed, clearing all cached data (previous size = ${data.value.size})" }
-                data.value = emptyList()
-            }
-        }.onCompletion {
-            sourceCompleted.value = true
-        }.stateIn(scope, SharingStarted.Eagerly, null)
+    // Writes must be under lock
+    private val currentSource: MutableStateFlow<PagedSource<T>?> = MutableStateFlow(null)
+    private val sourceCompleted = currentSource.flatMapLatest { it?.finished ?: flowOf() }
+
     override val totalSize: Flow<Int?> = currentSource.transformLatest { source ->
         if (source == null) {
             emit(null)
@@ -140,27 +171,49 @@ class LazyDataCacheImpl<T>(
         emitAll(source.totalSize)
     }
 
-    override suspend fun requestMore() {
-        if (!scope.isActive) {
-            if (logger.isWarnEnabled) {
-                logger.warn(IllegalStateException()) {
-                    "requestMore called after the cache is closed"
+    override suspend fun requestMore(): Boolean {
+        // impl notes:
+        // 这函数必须支持 cancellation, 因为它会在 composition 线程调用
+
+        return withContext(Dispatchers.IO) {
+            lock.withLock {
+                val source = getSourceOrCreate()
+
+                try {
+                    requestInProgress.value = true
+                    val resp = source.nextPageOrNull() // cancellation-supported
+                    return@withContext if (resp != null) {
+                        setData(cachedData.value + resp)
+                        true
+                    } else {
+                        false
+                    }
+                } finally {
+                    requestInProgress.value = false
                 }
             }
         }
+    }
 
-        withContext(Dispatchers.IO) {
-            val source = currentSource.filterNotNull().firstOrNull() // this call must be out of lock
-                ?: return@withContext // source is empty
+    // Unsafe, must be used under lock.
+    private suspend fun LazyDataCacheImpl<T>.getSourceOrCreate(): PagedSource<T> {
+        currentSource.value?.let { return it }
+        return createSource().also {
+            currentSource.value = it
+        }
+    }
 
-            // Get exclusive access before fetching the next page, because we cannot re-fetch the page
-            lock.withLock {
+    override suspend fun refresh() {
+        lock.withLock {
+            withContext(Dispatchers.IO) {
+                val source = createSource() // note: always create a new source
                 try {
                     requestInProgress.value = true
-                    val resp = source.nextPageOrNull()
-                    if (resp != null) {
-                        data.value += resp
-                    }
+                    val resp = source.nextPageOrNull() // cancellation-supported
+
+                    // Update source only if the request was successful, as per documentation on [refresh]
+                    currentSource.value = source
+                    cachedData.value = resp.orEmpty()
                 } finally {
                     requestInProgress.value = false
                 }
@@ -170,7 +223,7 @@ class LazyDataCacheImpl<T>(
 
     override suspend fun mutate(action: suspend List<T>.() -> List<T>) {
         lock.withLock {
-            data.value = action(data.value)
+            setData(action(cachedData.value))
         }
     }
 
@@ -179,7 +232,10 @@ class LazyDataCacheImpl<T>(
             source?.finished ?: flowOf(sourceCompleted && !requestInProgress)
         }.flatMapLatest { it }
 
-    private companion object {
-        val logger = logger(LazyDataCacheImpl::class)
+    override suspend fun invalidate() {
+        lock.withLock {
+            currentSource.value = null
+            cachedData.value = emptyList()
+        }
     }
 }
