@@ -10,6 +10,11 @@ class BadRequestException: HttpRequestException() {
     override val statusMessage: String = "Bad Request"
 }
 
+class UnauthorizedException: HttpRequestException() {
+    override val statusCode: Int = 401
+    override val statusMessage: String = "Unauthorized"
+}
+
 class NotFoundException: HttpRequestException() {
     override val statusCode: Int = 404
     override val statusMessage: String = "Not Found"

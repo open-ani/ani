@@ -6,6 +6,7 @@ import com.mongodb.kotlin.client.coroutine.MongoClient
 import com.mongodb.kotlin.client.coroutine.MongoCollection
 import me.him188.ani.danmaku.server.ServerConfig
 import me.him188.ani.danmaku.server.data.model.DanmakuModel
+import me.him188.ani.danmaku.server.data.model.UserModel
 import me.him188.ani.danmaku.server.ktor.plugins.ServerJson
 import org.bson.UuidRepresentation
 import org.bson.codecs.configuration.CodecRegistries
@@ -15,6 +16,7 @@ import org.koin.core.component.get
 
 interface MongoCollectionProvider {
     val danmakuTable: MongoCollection<DanmakuModel>
+    val userTable: MongoCollection<UserModel>
 }
 
 class MongoCollectionProviderImpl : MongoCollectionProvider, KoinComponent {
@@ -34,4 +36,5 @@ class MongoCollectionProviderImpl : MongoCollectionProvider, KoinComponent {
 
     private val db = client.getDatabase("ani-production")
     override val danmakuTable = db.getCollection<DanmakuModel>("danmaku")
+    override val userTable = db.getCollection<UserModel>("user")
 }

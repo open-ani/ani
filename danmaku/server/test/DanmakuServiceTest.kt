@@ -44,17 +44,23 @@ class DanmakuServiceTest {
         val coroutineScope = CoroutineScope(SupervisorJob())
         startKoin {
             modules(
-                getServerKoinModule(EnvironmentVariables(testing = true), coroutineScope)
+                getServerKoinModule(
+                    EnvironmentVariables(
+                        testing = true,
+                        jwtIssuer = "test_issuer",
+                        jwtAudience = "test_audience",
+                    ), coroutineScope
+                )
             )
         }
         block()
     }
-    
+
     @AfterEach
     fun tearDown() {
         stopKoin()
     }
-    
+
     @Test
     fun `test post and get danmaku`() = runTestWithKoin {
         val danmakuService = koin.get<DanmakuService>()

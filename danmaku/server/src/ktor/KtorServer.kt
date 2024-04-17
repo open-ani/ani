@@ -51,7 +51,7 @@ private fun Application.module(env: EnvironmentVariables) {
         modules(getServerKoinModule(env = env, topCoroutineScope = this@module))
     }
 
-    configureSecurity()
     configureSerialization()
+    configureSecurity()
     configureRouting()
 }
