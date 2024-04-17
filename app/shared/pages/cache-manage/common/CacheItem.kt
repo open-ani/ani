@@ -61,7 +61,7 @@ class CacheItem(
     val episodeSort = cache.metadata.episodeSort
 
     val downloadSpeed = cache.downloadSpeed.sample(100)
-    val uploadSpeed = cache.downloadSpeed.sample(100)
+    val uploadSpeed = cache.uploadSpeed.sample(100)
     val progress = cache.progress.sample(100)
         .onCompletion { if (it == null) emit(1f) }
     val totalSize = cache.totalSize
