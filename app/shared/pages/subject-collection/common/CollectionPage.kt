@@ -18,6 +18,7 @@
 
 package me.him188.ani.app.ui.collection
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -39,7 +40,10 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -50,6 +54,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import me.him188.ani.app.interaction.VibrationStrength
@@ -136,7 +142,30 @@ fun CollectionPage(
             HorizontalPager(state = pagerState, Modifier.fillMaxSize()) { index ->
                 val type = COLLECTION_TABS_SORTED[index]
                 val cache = vm.collectionsByType(type)
-                TabContent(cache, vm, type, isLoggedIn, contentPadding, Modifier.fillMaxSize())
+
+                val pullToRefreshState = rememberPullToRefreshState()
+                if (pullToRefreshState.isRefreshing) {
+                    LaunchedEffect(true) {
+                        try {
+                            cache.refresh()
+                        } finally {
+                            pullToRefreshState.endRefresh()
+                        }
+                    }
+                }
+
+                Box(Modifier.clipToBounds()) {
+                    TabContent(
+                        cache, vm, type, isLoggedIn, contentPadding,
+                        Modifier
+                            .nestedScroll(pullToRefreshState.nestedScrollConnection)
+                            .fillMaxSize()
+                    )
+                    PullToRefreshContainer(
+                        pullToRefreshState,
+                        Modifier.align(Alignment.TopCenter)
+                    )
+                }
             }
         }
     }
