@@ -2,6 +2,7 @@ package me.him188.ani.app.torrent
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 /**
  * @see TorrentDownloader
@@ -9,12 +10,17 @@ import kotlinx.coroutines.flow.Flow
 public interface DownloadStats {
     public val totalBytes: Flow<Long>
     public val downloadedBytes: Flow<Long>
-    public val downloadRate: Flow<Long> // bytes per second
+
+    /**
+     * Bytes per second. `null` if not available, i.e. just started
+     */
+    public val downloadRate: StateFlow<Long?>
+    public val uploadRate: StateFlow<Long?>
 
     /**
      * Range: `0..1`
      */
-    public val progress: Flow<Float>
+    public val progress: StateFlow<Float>
 
     public val isFinished: Flow<Boolean>
 

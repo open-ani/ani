@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.map
 import me.him188.ani.app.videoplayer.ui.VideoLoadingIndicator
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.datasources.api.topic.FileSize
-import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
 @Composable // see preview
@@ -30,18 +29,12 @@ fun EpisodeVideoLoadingIndicator(
 
     val speed by remember(playerState) {
         playerState.videoData.filterNotNull().flatMapLatest { it.downloadSpeed }
-    }.collectAsStateWithLifecycle(-1L)
+    }.collectAsStateWithLifecycle(FileSize.Unspecified)
 
     if (isBuffering) {
         EpisodeVideoLoadingIndicator(
             EpisodeVideoLoadingState.deduceFrom(mediaSelected, videoDataReady),
-            {
-                if (speed == -1L) {
-                    FileSize.Unspecified
-                } else {
-                    speed.bytes
-                }
-            },
+            speedProvider = { speed },
             modifier,
         )
     }

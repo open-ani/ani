@@ -2,6 +2,7 @@ package me.him188.ani.app.videoplayer.data
 
 import androidx.compose.runtime.Stable
 import kotlinx.coroutines.flow.Flow
+import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.utils.io.SeekableInput
 
 /**
@@ -23,9 +24,17 @@ interface VideoData : AutoCloseable {
      * The download speed in bytes per second.
      *
      * If this video data is not being downloaded, i.e. it is a local file,
-     * the flow will emits no value.
+     * the flow emits [FileSize.Unspecified].
      */
-    val downloadSpeed: Flow<Long>
+    val downloadSpeed: Flow<FileSize>
+
+    /**
+     * The upload speed in bytes per second.
+     *
+     * If this video data is not being uploaded, i.e. it is a local file,
+     * the flow emits [FileSize.Unspecified].
+     */
+    val uploadRate: Flow<FileSize>
 
     /**
      * Opens a new input stream to the video file.

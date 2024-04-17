@@ -91,7 +91,15 @@ interface MediaCache {
 
     val metadata: MediaCacheMetadata
 
+    /**
+     * Emits [FileSize.Unspecified] if the speed is not available.
+     */
     val downloadSpeed: Flow<FileSize>
+
+    /**
+     * Emits [FileSize.Unspecified] if the speed is not available.
+     */
+    val uploadSpeed: Flow<FileSize>
 
     /**
      * A flow listens on the progress of the caching. Range is `0..1`

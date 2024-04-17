@@ -47,7 +47,10 @@ class TorrentMediaCacheEngine(
         override suspend fun getCachedMedia(): CachedMedia = cachedMedia.get()
 
         override val downloadSpeed: Flow<FileSize>
-            get() = session.flatMapLatest { session -> session.downloadRate.map { it.bytes } }
+            get() = session.flatMapLatest { session -> session.downloadRate.map { it?.bytes ?: FileSize.Unspecified } }
+
+        override val uploadSpeed: Flow<FileSize>
+            get() = session.flatMapLatest { session -> session.uploadRate.map { it?.bytes ?: FileSize.Unspecified } }
 
         override val progress: Flow<Float>
             get() = session.flatMapLatest { it.progress }

@@ -2,10 +2,12 @@ package me.him188.ani.app.videoplayer.torrent
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.videoplayer.data.VideoData
 import me.him188.ani.app.videoplayer.data.VideoSource
+import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.utils.io.SeekableInput
 import me.him188.ani.utils.io.asSeekableInput
 import java.io.File
@@ -16,7 +18,9 @@ class FileVideoData(
 ) : VideoData {
     override val fileLength: Long by lazy { file.length() }
     override val hash: String by lazy { md5Hash(file) }
-    override val downloadSpeed: Flow<Long> = emptyFlow()
+    override val downloadSpeed: StateFlow<FileSize> = MutableStateFlow(FileSize.Unspecified)
+    override val uploadRate: Flow<FileSize> = MutableStateFlow(FileSize.Unspecified)
+
     override suspend fun createInput(): SeekableInput = withContext(Dispatchers.IO) {
         RandomAccessFile(file, "r").asSeekableInput()
     }

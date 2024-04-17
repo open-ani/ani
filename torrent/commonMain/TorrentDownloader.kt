@@ -178,6 +178,7 @@ public fun TorrentDownloader(
     sessionManager.applySettings(sessionManager.settings().apply {
         isEnableDht = true
         activeDhtLimit(300)
+        uploadRateLimit(0)
         downloadRateLimit(0)
         connectionsLimit(200)
         maxPeerlistSize(1000)
