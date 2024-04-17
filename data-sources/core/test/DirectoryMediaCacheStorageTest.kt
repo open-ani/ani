@@ -61,6 +61,8 @@ class DirectoryMediaCacheStorageTest {
     }
 
     private val engine = object : MediaCacheEngine {
+        override val stats: MediaStats = emptyMediaStats()
+
         override suspend fun restore(
             origin: Media,
             metadata: MediaCacheMetadata,
