@@ -70,10 +70,6 @@ class MediaPreferenceViewModel : AbstractViewModel(), KoinComponent {
     }
 
 
-    val allMediaSources by mediaSourceManager.enabledSources.map { list ->
-        list.map { it.mediaSourceId }
-    }.produceState(emptyList())
-
     val allSubtitleLanguageIds = SubtitleLanguage.matchableEntries.map { it.id }
 
     val allResolutionIds = Resolution.entries.map { it.id }
@@ -83,7 +79,7 @@ class MediaPreferenceViewModel : AbstractViewModel(), KoinComponent {
     }
 
     val sortedMediaSources by derivedStateOf {
-        defaultMediaPreference.fallbackMediaSourceIds.extendTo(allMediaSources)
+        defaultMediaPreference.fallbackMediaSourceIds.extendTo(mediaSourceManager.allIds)
     }
 
     val sortedResolutions by derivedStateOf {
