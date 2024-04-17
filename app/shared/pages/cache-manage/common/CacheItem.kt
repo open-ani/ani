@@ -5,13 +5,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.DownloadDone
 import androidx.compose.material.icons.rounded.Downloading
-import androidx.compose.material.icons.rounded.Upload
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -199,9 +197,6 @@ fun CacheProgressLabel(
 
         // max width is 100.0%
         Row(Modifier.padding(end = 8.dp).widthIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
-            if (progress == 1f) {
-                Icon(Icons.Rounded.Upload, null, Modifier.padding(end = 8.dp).size(24.dp))
-            }
             Text(progressText)
         }
 
