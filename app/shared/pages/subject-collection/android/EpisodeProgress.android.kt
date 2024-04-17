@@ -94,3 +94,36 @@ private fun PreviewEpisodeProgressDialog() {
         }
     }
 }
+
+// 特别长需要限制高度并且滚动, #182
+@PreviewLightDark
+@Composable
+private fun PreviewEpisodeProgressDialogVeryLong() {
+    ProvideCompositionLocalsForPreview {
+        EpisodeProgressDialog(
+            onDismissRequest = {},
+            onClickDetails = {},
+            title = { Text(text = "银魂") },
+            onClickCache = {},
+        ) {
+            EpisodeProgressRow(
+                episodes = remember {
+                    // 数字太大 preview 会很卡
+                    (0..70).map {
+                        item(it)
+                    }
+                },
+                onClickEpisodeState = {},
+                onLongClickEpisode = {}
+            )
+        }
+    }
+}
+
+private fun item(id: Int) = EpisodeProgressItem(
+    episodeId = id,
+    episodeSort = id.toString(),
+    watchStatus = UnifiedCollectionType.WISH,
+    isOnAir = true,
+    cacheStatus = EpisodeCacheStatus.Caching(0.3f, 300.megaBytes),
+)
