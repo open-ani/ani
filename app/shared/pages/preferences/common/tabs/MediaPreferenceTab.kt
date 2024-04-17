@@ -65,7 +65,7 @@ class MediaPreferenceViewModel : AbstractViewModel(), KoinComponent {
         }.produceState(placeholderMediaPreference)
 
     val defaultMediaPreferenceLoaded by derivedStateOf {
-        defaultMediaPreference === placeholderMediaPreference // pointer identity
+        defaultMediaPreference !== placeholderMediaPreference // pointer identity
     }
 
 
