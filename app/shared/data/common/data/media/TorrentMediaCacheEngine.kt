@@ -21,6 +21,7 @@ import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.datasources.core.cache.MediaCache
 import me.him188.ani.datasources.core.cache.MediaCacheEngine
+import me.him188.ani.datasources.core.cache.MediaStats
 import me.him188.ani.utils.coroutines.SuspendLazy
 import kotlin.coroutines.CoroutineContext
 
@@ -28,8 +29,12 @@ private const val EXTRA_TORRENT_DATA = "torrentData"
 
 class TorrentMediaCacheEngine(
     private val mediaSourceId: String,
-    private val getTorrentDownloader: suspend () -> TorrentDownloader,
+    getTorrentDownloader: suspend () -> TorrentDownloader,
 ) : MediaCacheEngine {
+    private val downloader = SuspendLazy {
+        getTorrentDownloader()
+    }
+
     private inner class TorrentMediaCache(
         override val origin: Media,
         override val metadata: MediaCacheMetadata,
@@ -86,6 +91,26 @@ class TorrentMediaCacheEngine(
         }
     }
 
+    override val stats: MediaStats = object : MediaStats {
+        override val uploaded: Flow<FileSize> =
+            flow { emit(downloader.get()) }
+                .flatMapLatest { it.totalUploaded }
+                .map { it.bytes }
+        override val downloaded: Flow<FileSize> =
+            flow { emit(downloader.get()) }
+                .flatMapLatest { it.totalDownloaded }
+                .map { it.bytes }
+
+        override val uploadRate: Flow<FileSize> =
+            flow { emit(downloader.get()) }
+                .flatMapLatest { it.totalUploadRate }
+                .map { it.bytes }
+        override val downloadRate: Flow<FileSize> =
+            flow { emit(downloader.get()) }
+                .flatMapLatest { it.totalDownloadRate }
+                .map { it.bytes }
+    }
+
     @OptIn(ExperimentalStdlibApi::class)
     override suspend fun restore(
         origin: Media,
@@ -109,7 +134,7 @@ class TorrentMediaCacheEngine(
         parentContext: CoroutineContext
     ): SharedFlow<TorrentDownloadSession> {
         val sessionFlow = flow {
-            emit(getTorrentDownloader().startDownload(encoded, parentContext))
+            emit(downloader.get().startDownload(encoded, parentContext))
         }.shareIn(
             CoroutineScope(parentContext + Job(parentContext[Job])),
             started = SharingStarted.Lazily,
@@ -124,7 +149,7 @@ class TorrentMediaCacheEngine(
         request: MediaCacheMetadata,
         parentContext: CoroutineContext
     ): MediaCache {
-        val data = getTorrentDownloader().fetchTorrent(origin.download.uri)
+        val data = downloader.get().fetchTorrent(origin.download.uri)
         val metadata = request.withExtra(
             mapOf(EXTRA_TORRENT_DATA to data.data.toHexString())
         )

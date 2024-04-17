@@ -217,7 +217,16 @@ fun CacheProgressLabel(
     }
 }
 
-private fun renderSpeed(speed: FileSize): String {
+@Stable
+fun renderFileSize(size: FileSize): String {
+    if (size == FileSize.Unspecified) {
+        return ""
+    }
+    return "$size"
+}
+
+@Stable
+fun renderSpeed(speed: FileSize): String {
     if (speed == FileSize.Unspecified) {
         return ""
     }

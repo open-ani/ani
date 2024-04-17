@@ -3,12 +3,22 @@ package me.him188.ani.app.pages.cache.manage
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.DownloadDone
+import androidx.compose.material.icons.rounded.Speed
+import androidx.compose.material.icons.rounded.Upload
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -16,6 +26,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
@@ -28,8 +39,10 @@ import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.TopAppBarGoBackButton
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.rememberViewModel
+import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.core.cache.MediaCache
 import me.him188.ani.datasources.core.cache.MediaCacheStorage
+import me.him188.ani.datasources.core.cache.MediaStats
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -63,6 +76,8 @@ class MediaCacheStorageState(
     private val items = mutableMapOf<String, CacheItem>()
 
     val mediaSourceId = storage.mediaSourceId
+
+    val stats get() = storage.stats
 
     /**
      * A flow that subscribes on all the caches in the storage.
@@ -117,6 +132,10 @@ fun CacheManagementPage(
         }
     ) { paddingValues ->
         Column(Modifier.padding(paddingValues)) {
+            for (storage in vm.storages) {
+                StorageOverallStats(storage.stats, Modifier.fillMaxWidth())
+            }
+
             val storages = vm.storages
 
             if (storages.isEmpty()) {
@@ -139,6 +158,91 @@ fun CacheManagementPage(
                         },
                         Modifier.padding(horizontal = 16.dp).fillMaxWidth(),
                     )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun StorageOverallStats(
+    stats: MediaStats,
+    modifier: Modifier = Modifier,
+) {
+    Surface(modifier) {
+        Column(
+            Modifier.padding(horizontal = 16.dp).padding(bottom = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Stat(
+                title = {
+                    Icon(Icons.Rounded.Upload, null)
+                    Text("总上传", style = MaterialTheme.typography.titleMedium)
+                },
+                speedText = {
+                    val speed by stats.uploadRate.collectAsStateWithLifecycle(FileSize.Unspecified)
+                    Text(renderSpeed(speed))
+                },
+                totalText = {
+                    val speed by stats.uploaded.collectAsStateWithLifecycle(FileSize.Unspecified)
+                    Text(renderFileSize(speed))
+                }
+            )
+
+            Stat(
+                title = {
+                    Icon(Icons.Rounded.Download, null)
+                    Text("总下载", style = MaterialTheme.typography.titleMedium)
+                },
+                speedText = {
+                    val speed by stats.downloadRate.collectAsStateWithLifecycle(FileSize.Unspecified)
+                    Text(renderSpeed(speed))
+                },
+                totalText = {
+                    val speed by stats.downloaded.collectAsStateWithLifecycle(FileSize.Unspecified)
+                    Text(renderFileSize(speed))
+                },
+            )
+        }
+    }
+}
+
+@Composable
+private fun Stat(
+    title: @Composable () -> Unit,
+    speedText: @Composable () -> Unit,
+    totalText: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(modifier.padding(top = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            title()
+        }
+
+        Row(
+            Modifier.weight(1f).padding(start = 16.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            ProvideTextStyle(MaterialTheme.typography.labelMedium.copy(textAlign = TextAlign.Center)) {
+                Row(
+                    Modifier.widthIn(min = 80.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(Icons.Rounded.Speed, null)
+                    speedText()
+                }
+                Row(
+                    Modifier.widthIn(min = 80.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(Icons.Rounded.DownloadDone, null)
+                    totalText()
                 }
             }
         }

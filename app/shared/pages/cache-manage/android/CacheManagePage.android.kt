@@ -24,6 +24,8 @@ import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.datasources.core.cache.MediaCache
 import me.him188.ani.datasources.core.cache.MediaCacheStorage
+import me.him188.ani.datasources.core.cache.MediaStats
+import me.him188.ani.datasources.core.cache.emptyMediaStats
 import java.util.concurrent.atomic.AtomicInteger
 
 // TIPS: use interactive preview
@@ -106,7 +108,7 @@ private class TestMediaCacheStorage() : MediaCacheStorage {
             sizes.sumOf { it.inBytes }.bytes
         }
     }
-
+    override val stats: MediaStats = emptyMediaStats()
     override suspend fun findCache(media: Media, resume: Boolean): MediaCache? {
         return listFlow.first().firstOrNull { it.origin.mediaId == media.mediaId }
     }

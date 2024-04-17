@@ -2,7 +2,13 @@ package me.him188.ani.app.torrent
 
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -42,6 +48,21 @@ import kotlin.coroutines.EmptyCoroutineContext
  * Hence it must be closed when it is no longer needed.
  */
 public interface TorrentDownloader : AutoCloseable {
+    /**
+     * Total amount of bytes uploaded
+     */
+    public val totalUploaded: Flow<Long>
+    public val totalDownloaded: Flow<Long>
+
+    public val totalUploadRate: Flow<Long>
+    public val totalDownloadRate: Flow<Long>
+
+    /**
+     * Total file size occupied on the disk.
+     */
+    public val dhtNodes: Flow<Long>
+
+
     /**
      * Details about the underlying torrent library.
      */
@@ -249,7 +270,31 @@ internal class TorrentDownloaderImpl(
     private val sessionManager: LockedSessionManager,
     private val downloadFile: TorrentFileDownloader,
 ) : TorrentDownloader {
+    private val scope = CoroutineScope(SupervisorJob())
+
     private val logger = logger(this::class)
+
+    override val totalUploaded: MutableStateFlow<Long> = MutableStateFlow(0L)
+    override val totalDownloaded: MutableStateFlow<Long> = MutableStateFlow(0L)
+    override val totalUploadRate: MutableStateFlow<Long> = MutableStateFlow(0L)
+    override val totalDownloadRate: MutableStateFlow<Long> = MutableStateFlow(0L)
+
+    override val dhtNodes: MutableStateFlow<Long> = MutableStateFlow(0L)
+
+    init {
+        scope.launch {
+            while (currentCoroutineContext().isActive) {
+                val stats = sessionManager.use { stats() }
+                totalUploaded.value = stats.totalUpload()
+                totalDownloaded.value = stats.totalDownload()
+                totalUploadRate.value = stats.uploadRate()
+                totalDownloadRate.value = stats.downloadRate()
+                dhtNodes.value = stats.dhtNodes()
+                kotlinx.coroutines.delay(1000)
+            }
+        }
+    }
+
     override val vendor: TorrentLibInfo = TorrentLibInfo(
         vendor = "libtorrent",
         version = org.libtorrent4j.LibTorrent.version(),
@@ -352,6 +397,7 @@ internal class TorrentDownloaderImpl(
     }
 
     override fun close() {
+        scope.cancel()
         LockedSessionManager.launch { sessionManager.use { stop() } }
     }
 }

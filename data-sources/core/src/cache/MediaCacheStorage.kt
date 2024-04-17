@@ -43,6 +43,11 @@ interface MediaCacheStorage : AutoCloseable {
     val totalSize: Flow<FileSize>
 
     /**
+     * 此存储的总体统计
+     */
+    val stats: MediaStats
+
+    /**
      * A flow that subscribes on all the caches in the storage.
      *
      * Note that to retrieve [Media] (more specifically, [CachedMedia]) from the cache storage, you might want to use [cacheMediaSource].

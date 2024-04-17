@@ -48,7 +48,7 @@ import kotlin.io.path.writeText
 private const val METADATA_FILE_EXTENSION = "metadata"
 
 /**
- * 本地目录缓存
+ * 本地目录缓存, 管理本地目录以及元数据的存储, 调用 [engine] 进行缓存的实际创建
  */
 class DirectoryMediaCacheStorage(
     override val mediaSourceId: String,
@@ -127,6 +127,7 @@ class DirectoryMediaCacheStorage(
             sizes.sumOf { it.inBytes }.bytes
         }
     }
+    override val stats: MediaStats get() = engine.stats
 
     /**
      * Locks accesses to [listFlow]
