@@ -26,6 +26,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.util.fastAll
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.data.media.MediaSourceManager
 import me.him188.ani.app.data.models.MediaCacheSettings
@@ -111,7 +112,10 @@ class MediaPreferenceViewModel : AbstractViewModel(), KoinComponent {
 
 
     val mediaCacheSettings =
-        preferencesRepository.mediaCacheSettings.flow.stateInBackground(defaultMediaCacheSettings)
+        preferencesRepository.mediaCacheSettings.flow.stateInBackground(
+            defaultMediaCacheSettings,
+            started = SharingStarted.Eagerly
+        )
 
     private val mediaCacheSettingsTasker = MonoTasker(this.backgroundScope)
     fun updateMediaCacheSettings(copy: MediaCacheSettings) {
@@ -135,7 +139,9 @@ fun MediaPreferenceTab(
 }
 
 @Stable
-private val defaultMediaCacheSettings = MediaCacheSettings()
+private val defaultMediaCacheSettings = MediaCacheSettings(
+    mostRecentCount = -1,
+)
 
 @Composable
 private fun PreferenceScope.AutoCacheGroup(
