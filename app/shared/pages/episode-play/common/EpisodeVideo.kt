@@ -22,7 +22,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.map
-import me.him188.ani.app.platform.AniBuildConfig
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.rememberViewModel
@@ -161,14 +160,6 @@ internal fun EpisodeVideo(
         floatingMessage = {
             Column {
                 EpisodeVideoLoadingIndicator(playerState, videoSourceSelected())
-                if (AniBuildConfig.current().isDebug) {
-                    playerState.videoSource.collectAsStateWithLifecycle().value?.let {
-                        EpisodeVideoDebugInfo(
-                            it,
-                            Modifier.padding(8.dp)
-                        )
-                    }
-                }
             }
         },
         rhsBar = {

@@ -24,8 +24,8 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.transformLatest
-import me.him188.ani.app.data.media.UnsupportedMediaException
-import me.him188.ani.app.data.media.VideoSourceResolver
+import me.him188.ani.app.data.media.resolver.UnsupportedMediaException
+import me.him188.ani.app.data.media.resolver.VideoSourceResolver
 import me.him188.ani.app.data.subject.SubjectManager
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.Context

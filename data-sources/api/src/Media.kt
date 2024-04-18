@@ -10,42 +10,65 @@ import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.ResourceLocation
 
 /**
- * Describes properties of a media (video) for a specific episode.
+ * 表示从数据源获取到的一个资源, 即一个字幕组发布的资源.
  *
- * Episodes can have different medias from different sources. For example, there are many subtitle alliances.
+ * 一个资源可能对应一个剧集, 新番资源资源大部分都是这样.
+ * 一个资源也可能对应多个剧集, 尤其是老番的季度全集资源.
  */
 @Serializable
 @Immutable
 sealed interface Media {
     /**
-     * Globally unique id which includes the source, like "dmhy.1"
+     * 该资源的全局唯一 id, 通常需要包含 [mediaSourceId], 例如 "dmhy.1", 以防多数据源查询到同一个资源会容易 crash UI.
      */
     val mediaId: String
+
+    /**
+     * 查询出这个资源的数据源的全局唯一 id.
+     *
+     * @see MediaSource.mediaSourceId
+     */
     val mediaSourceId: String // e.g. "dmhy"
+
+    /**
+     * 在数据源上的原始链接, 一般是 HTTP URL
+     */
     val originalUrl: String
 
     /**
-     * A [ResourceLocation] describing how to download the media.
+     * 描述如何下载这个资源
      */
-    val download: ResourceLocation
+    val download: ResourceLocation // 有关具体下载过程, 参考 app `VideoSourceResolver`, 以及 `MediaCacheEngine`
 
     /**
-     * List of episodes that can be downloaded via [download].
+     * 该资源包含的剧集列表.
+     *
+     * - 如果是单集资源, 该列表可能包含 1 个元素.
+     * - 如果是季度全集资源, 该列表可能包含多个元素, 典型值为 12 个.
+     *
+     * 注意, 当解析剧集列表失败时, 该列表为空.
      */
     val episodes: List<EpisodeSort>
 
+    /**
+     * 字幕组发布的原标题
+     */
     val originalTitle: String
 
     /**
      * Size of the media file. Can be [FileSize.Zero] if not available.
      */
     val size: FileSize
+
+    /**
+     * 该资源发布时间, 毫秒时间戳
+     */
     val publishedTime: Long
+
     val properties: MediaProperties
 
     /**
-     * Location of the media.
-     * @see MediaSourceLocation
+     * 查看 [MediaSourceLocation.LOCAL] 和 [MediaSourceLocation.ONLINE].
      */
     val location: MediaSourceLocation
 }
