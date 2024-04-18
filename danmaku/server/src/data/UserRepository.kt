@@ -11,6 +11,12 @@ interface UserRepository {
         mediumAvatar: String,
         largeAvatar: String
     ): String?
+
+    suspend fun getBangumiId(userId: String): Int?
+    suspend fun getNickname(userId: String): String?
+    suspend fun getSmallAvatar(userId: String): String?
+    suspend fun getMediumAvatar(userId: String): String?
+    suspend fun getLargeAvatar(userId: String): String?
 }
 
 class InMemoryUserRepositoryImpl : UserRepository {
@@ -37,5 +43,29 @@ class InMemoryUserRepositoryImpl : UserRepository {
         )
         users.add(user)
         return user.id.toString()
+    }
+
+    override suspend fun getBangumiId(userId: String): Int? {
+        return getUserById(userId)?.bangumiUserId
+    }
+
+    override suspend fun getNickname(userId: String): String? {
+        return getUserById(userId)?.nickname
+    }
+
+    override suspend fun getSmallAvatar(userId: String): String? {
+        return getUserById(userId)?.smallAvatar
+    }
+
+    override suspend fun getMediumAvatar(userId: String): String? {
+        return getUserById(userId)?.mediumAvatar
+    }
+
+    override suspend fun getLargeAvatar(userId: String): String? {
+        return getUserById(userId)?.largeAvatar
+    }
+    
+    private fun getUserById(userId: String): UserModel? {
+        return users.find { it.id.toString() == userId }
     }
 }

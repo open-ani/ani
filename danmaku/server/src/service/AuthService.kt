@@ -13,14 +13,13 @@ interface AuthService {
 class AuthServiceImpl : AuthService, KoinComponent {
     private val bangumiLoginHelper: BangumiLoginHelper by inject()
     private val userRepository: UserRepository by inject()
-    private val jwtTokenManager: JwtTokenManager by inject()
 
     override suspend fun loginBangumi(bangumiToken: String): String {
         val bangumiUser = bangumiLoginHelper.login(bangumiToken) ?: throw UnauthorizedException()
         val userId = userRepository.getUserIdOrNull(bangumiUser.id) ?: run {
             registerAndGetId(bangumiUser)
         }
-        return jwtTokenManager.createToken(userId)
+        return userId
     }
 
     private suspend fun registerAndGetId(user: BangumiUser): String {

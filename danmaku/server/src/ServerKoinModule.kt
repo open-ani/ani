@@ -18,6 +18,8 @@ import me.him188.ani.danmaku.server.service.DanmakuServiceImpl
 import me.him188.ani.danmaku.server.service.JwtTokenManager
 import me.him188.ani.danmaku.server.service.JwtTokenManagerImpl
 import me.him188.ani.danmaku.server.service.TestBangumiLoginHelperImpl
+import me.him188.ani.danmaku.server.service.UserService
+import me.him188.ani.danmaku.server.service.UserServiceImpl
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import java.security.SecureRandom
@@ -44,6 +46,7 @@ fun getServerKoinModule(
 
     single<DanmakuService> { DanmakuServiceImpl() }
     single<AuthService> { AuthServiceImpl() }
+    single<UserService> { UserServiceImpl() }
     single<JwtTokenManager> { JwtTokenManagerImpl() }
 
     if (env.testing) {

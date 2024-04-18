@@ -7,6 +7,7 @@ import me.him188.ani.danmaku.server.service.AuthService
 import me.him188.ani.danmaku.server.service.JwtTokenManager
 import me.him188.ani.danmaku.server.util.exception.UnauthorizedException
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
@@ -42,11 +43,8 @@ class AuthServiceTest {
     @Test
     fun `test login bangumi succeed`() = runTestWithKoin {
         val authService = koin.get<AuthService>()
-        val tokenManager = koin.get<JwtTokenManager>()
 
-        val token = authService.loginBangumi("test_token_1")
-        val userId = tokenManager.getTokenVerifier().verify(token).claims["userId"]?.asString()
-        assertTrue(userId != null)
+        assertDoesNotThrow { authService.loginBangumi("test_token_1") }
     }
 
     @Test
