@@ -21,6 +21,7 @@ import me.him188.ani.danmaku.protocol.DanmakuPostRequest
 import me.him188.ani.danmaku.server.ktor.getKtorServer
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
+import org.koin.core.context.stopKoin
 import java.awt.Color
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -96,6 +97,7 @@ class E2eTest {
         @AfterAll
         fun teardown() {
             server.stop(1000, 1000)
+            stopKoin()
         }
     }
 }
