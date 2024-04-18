@@ -32,10 +32,17 @@ class E2eTest {
             json(Json { ignoreUnknownKeys = true })
         }
     }
-    private val serverEndpoint = "http://localhost:4394/api"
+    private val serverEndpoint = "http://localhost:4394"
 
     @Test
     fun `test login, get username, post danmaku and get danmaku`() = runTest {
+        val danmaku = DanmakuInfo(
+            playTime = 1000,
+            color = Color.BLACK.rgb,
+            text = "This is a danmaku",
+            location = DanmakuLocation.NORMAL
+        )
+        
         val response = client.post("$serverEndpoint/login/bangumi") {
             contentType(ContentType.Application.Json)
             setBody("test_token_1")
@@ -43,19 +50,12 @@ class E2eTest {
         assertEquals(HttpStatusCode.OK, response.status)
         val token = response.body<String>()
 
-        val danmaku = DanmakuInfo(
-            playTime = 1000,
-            color = Color.BLACK.rgb,
-            text = "This is a danmaku",
-            location = DanmakuLocation.NORMAL
-        )
-
 //        val response2 = client.post("$serverEndpoint/danmaku/1") {
-//            bearerAuth(token)
 //            contentType(ContentType.Application.Json)
 //            setBody<DanmakuPostRequest>(
 //                DanmakuPostRequest(danmaku)
 //            )
+//            bearerAuth(token)
 //        }
 //        assertEquals(HttpStatusCode.OK, response2.status)
 
@@ -76,27 +76,26 @@ class E2eTest {
         assertTrue(danmakuList2.isEmpty())
     }
 
-//    companion object {
-//        private val server = getKtorServer(
-//            EnvironmentVariables(
-//                port = 4394,
-//                testing = true,
-//                jwtAudience = "test-audience",
-//                jwtIssuer = "test-issuer",
-//            )
-//        )
-//
-//        @JvmStatic
-//        @BeforeAll
-//        fun setup() {
-//            server.start(wait = false)
-//        }
-//
-//        @JvmStatic
-//        @AfterAll
-//        fun teardown() {
-//            server.stop(1000, 1000)
-//        }
-//    }
+    companion object {
+        private val server = getKtorServer(
+            EnvironmentVariables(
+                port = 4394,
+                testing = true,
+                jwtAudience = "test-audience",
+                jwtIssuer = "test-issuer",
+            )
+        )
 
+        @JvmStatic
+        @BeforeAll
+        fun setup() {
+            server.start(wait = false)
+        }
+
+        @JvmStatic
+        @AfterAll
+        fun teardown() {
+            server.stop(1000, 1000)
+        }
+    }
 }

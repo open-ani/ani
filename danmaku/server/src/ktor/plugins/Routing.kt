@@ -14,10 +14,8 @@ internal fun Application.configureRouting() {
         get("/status") {
             call.respondText("Server is running")
         }
-        
-        route("/api") {
-            danmakuRouting()
-            authRouting()
-        }
+
+        danmakuRouting()
+        authRouting()
     }
 }

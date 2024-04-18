@@ -1,6 +1,7 @@
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
+    application
 }
 
 dependencies {
@@ -28,4 +29,8 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
 
     runtimeOnly(libs.slf4j.simple)
+}
+
+application {
+    mainClass.set("me.him188.ani.danmaku.server.ApplicationKt")
 }
