@@ -13,11 +13,15 @@ import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.response.respond
 import me.him188.ani.danmaku.server.EnvironmentVariables
 import me.him188.ani.danmaku.server.getServerKoinModule
+import me.him188.ani.danmaku.server.ktor.plugins.configureCallLogging
+import me.him188.ani.danmaku.server.ktor.plugins.configureKoin
 import me.him188.ani.danmaku.server.ktor.plugins.configureRouting
 import me.him188.ani.danmaku.server.ktor.plugins.configureSecurity
 import me.him188.ani.danmaku.server.ktor.plugins.configureSerialization
+import me.him188.ani.danmaku.server.ktor.plugins.configureStatuePages
 import me.him188.ani.danmaku.server.util.exception.HttpRequestException
 import org.koin.ktor.plugin.Koin
+import org.slf4j.event.Level
 
 
 fun getKtorServer(env: EnvironmentVariables = EnvironmentVariables()): NettyApplicationEngine {
@@ -36,26 +40,9 @@ fun getKtorServer(env: EnvironmentVariables = EnvironmentVariables()): NettyAppl
 }
 
 internal fun Application.serverModule(env: EnvironmentVariables) {
-    install(CallLogging) {
-        mdc("requestId") {
-            it.request.queryParameters["requestId"]
-        }
-        level = org.slf4j.event.Level.INFO
-    }
-    install(StatusPages) {
-        exception<Throwable> { call, throwable ->
-            when (throwable) {
-                is HttpRequestException -> call.respond(HttpStatusCode(throwable.statusCode, throwable.statusMessage))
-                else -> {
-                    throwable.printStackTrace()
-                    call.respond(HttpStatusCode.InternalServerError, "Internal server error")                }
-            }
-        }
-    }
-    install(Koin) {
-        modules(getServerKoinModule(env = env, topCoroutineScope = this@serverModule))
-    }
-
+    configureKoin(env)
+    configureCallLogging()
+    configureStatuePages()
     configureSerialization()
     configureSecurity()
     configureRouting()
