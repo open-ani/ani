@@ -24,7 +24,7 @@ fun getKtorServer(env: EnvironmentVariables = EnvironmentVariables()): NettyAppl
         Netty,
         port = env.port ?: 4394,
         host = "0.0.0.0",
-        module = { module(env) },
+        module = { serverModule(env) },
         configure = {
             this.tcpKeepAlive = true
             this.connectionGroupSize = 40
@@ -34,7 +34,7 @@ fun getKtorServer(env: EnvironmentVariables = EnvironmentVariables()): NettyAppl
     )
 }
 
-private fun Application.module(env: EnvironmentVariables) {
+internal fun Application.serverModule(env: EnvironmentVariables) {
     install(CallLogging) {
         mdc("requestId") {
             it.request.queryParameters["requestId"]
@@ -48,7 +48,7 @@ private fun Application.module(env: EnvironmentVariables) {
         }
     }
     install(Koin) {
-        modules(getServerKoinModule(env = env, topCoroutineScope = this@module))
+        modules(getServerKoinModule(env = env, topCoroutineScope = this@serverModule))
     }
 
     configureSerialization()

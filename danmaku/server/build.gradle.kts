@@ -11,6 +11,9 @@ dependencies {
 
     implementation(libs.koin.core)
     implementation(libs.koin.ktor)
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.cio)
+    implementation(libs.ktor.client.content.negotiation)
     implementation(libs.ktor.server.auth)
     implementation(libs.ktor.server.auth.jwt)
     implementation(libs.ktor.server.netty)
@@ -22,7 +25,6 @@ dependencies {
     implementation(libs.mongodb.driver.kotlin.coroutine)
     implementation(project(":danmaku:protocol"))
     
-    testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.kotlinx.coroutines.test)
 
     runtimeOnly(libs.slf4j.simple)

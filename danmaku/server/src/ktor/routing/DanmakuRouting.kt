@@ -8,6 +8,7 @@ import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.principal
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
+import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 import io.ktor.util.pipeline.PipelineContext
@@ -20,29 +21,27 @@ import me.him188.ani.danmaku.server.util.postAuthenticated
 import me.him188.ani.danmaku.server.util.tryOrRespond
 import org.koin.ktor.ext.inject
 
-fun Application.danmakuRouting() {
+fun Route.danmakuRouting() {
     val service: DanmakuService by inject()
 
-    routing {
-        postAuthenticated("/danmaku/{episodeId}") {
-            val userId = getUserIdOrRespond() ?: return@postAuthenticated
-            val request = call.receive<DanmakuPostRequest>()
-            tryOrRespond {
-                val episodeId = call.parameters["episodeId"] ?: throw BadRequestException()
-                service.postDanmaku(episodeId, request.danmakuInfo, userId)
-                call.respond(HttpStatusCode.OK)
-            }
+    postAuthenticated("/danmaku/{episodeId}") {
+        val userId = getUserIdOrRespond() ?: return@postAuthenticated
+        val request = call.receive<DanmakuPostRequest>()
+        tryOrRespond {
+            val episodeId = call.parameters["episodeId"] ?: throw BadRequestException()
+            service.postDanmaku(episodeId, request.danmakuInfo, userId)
+            call.respond(HttpStatusCode.OK)
         }
+    }
 
-        get("/danmaku/{episodeId}") {
-            val maxCount = call.request.queryParameters["maxCount"]?.toIntOrNull()
-            val fromTime = call.request.queryParameters["fromTime"]?.toLongOrNull()
-            val toTime = call.request.queryParameters["toTime"]?.toLongOrNull()
-            tryOrRespond {
-                val episodeId = call.parameters["episodeId"] ?: throw BadRequestException()
-                val result = service.getDanmaku(episodeId, maxCount, fromTime, toTime)
-                call.respond(DanmakuGetResponse(result))
-            }
+    get("/danmaku/{episodeId}") {
+        val maxCount = call.request.queryParameters["maxCount"]?.toIntOrNull()
+        val fromTime = call.request.queryParameters["fromTime"]?.toLongOrNull()
+        val toTime = call.request.queryParameters["toTime"]?.toLongOrNull()
+        tryOrRespond {
+            val episodeId = call.parameters["episodeId"] ?: throw BadRequestException()
+            val result = service.getDanmaku(episodeId, maxCount, fromTime, toTime)
+            call.respond(DanmakuGetResponse(result))
         }
     }
 }
