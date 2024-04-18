@@ -16,6 +16,7 @@ import me.him188.ani.danmaku.server.getServerKoinModule
 import me.him188.ani.danmaku.server.ktor.plugins.configureRouting
 import me.him188.ani.danmaku.server.ktor.plugins.configureSecurity
 import me.him188.ani.danmaku.server.ktor.plugins.configureSerialization
+import me.him188.ani.danmaku.server.util.exception.HttpRequestException
 import org.koin.ktor.plugin.Koin
 
 
@@ -43,8 +44,12 @@ internal fun Application.serverModule(env: EnvironmentVariables) {
     }
     install(StatusPages) {
         exception<Throwable> { call, throwable ->
-            throwable.printStackTrace()
-            call.respond(HttpStatusCode.InternalServerError, "Internal server error")
+            when (throwable) {
+                is HttpRequestException -> call.respond(HttpStatusCode(throwable.statusCode, throwable.statusMessage))
+                else -> {
+                    throwable.printStackTrace()
+                    call.respond(HttpStatusCode.InternalServerError, "Internal server error")                }
+            }
         }
     }
     install(Koin) {
