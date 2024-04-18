@@ -1,5 +1,7 @@
 package me.him188.ani.danmaku.server.data
 
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import me.him188.ani.danmaku.server.data.model.UserModel
 
 interface UserRepository {
@@ -21,9 +23,12 @@ interface UserRepository {
 
 class InMemoryUserRepositoryImpl : UserRepository {
     private val users = mutableListOf<UserModel>()
+    private val mutex = Mutex()
 
     override suspend fun getUserIdOrNull(bangumiId: Int): String? {
-        return users.find { it.bangumiUserId == bangumiId }?.id?.toString()
+        mutex.withLock {
+            return users.find { it.bangumiUserId == bangumiId }?.id?.toString()
+        }
     }
 
     override suspend fun addAndGetId(
@@ -33,16 +38,18 @@ class InMemoryUserRepositoryImpl : UserRepository {
         mediumAvatar: String,
         largeAvatar: String
     ): String? {
-        if (users.any { it.bangumiUserId == bangumiId }) return null
-        val user = UserModel(
-            bangumiUserId = bangumiId,
-            nickname = nickname,
-            smallAvatar = smallAvatar,
-            mediumAvatar = mediumAvatar,
-            largeAvatar = largeAvatar
-        )
-        users.add(user)
-        return user.id.toString()
+        mutex.withLock {
+            if (users.any { it.bangumiUserId == bangumiId }) return null
+            val user = UserModel(
+                bangumiUserId = bangumiId,
+                nickname = nickname,
+                smallAvatar = smallAvatar,
+                mediumAvatar = mediumAvatar,
+                largeAvatar = largeAvatar
+            )
+            users.add(user)
+            return user.id.toString()
+        }
     }
 
     override suspend fun getBangumiId(userId: String): Int? {
@@ -64,8 +71,10 @@ class InMemoryUserRepositoryImpl : UserRepository {
     override suspend fun getLargeAvatar(userId: String): String? {
         return getUserById(userId)?.largeAvatar
     }
-    
-    private fun getUserById(userId: String): UserModel? {
-        return users.find { it.id.toString() == userId }
+
+    private suspend fun getUserById(userId: String): UserModel? {
+        mutex.withLock {
+            return users.find { it.id.toString() == userId }
+        }
     }
 }
