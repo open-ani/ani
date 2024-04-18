@@ -4,7 +4,6 @@ import androidx.compose.runtime.Immutable
 import kotlinx.serialization.Serializable
 import me.him188.ani.datasources.api.topic.Resolution
 import me.him188.ani.datasources.api.topic.SubtitleLanguage
-import me.him188.ani.datasources.mikan.MikanMediaSource
 
 @Immutable
 @Serializable
@@ -48,9 +47,7 @@ data class MediaPreference(
     /**
      * @see fallbackSubtitleLanguageIds
      */
-    val fallbackMediaSourceIds: List<String>? = listOf(
-        MikanMediaSource.ID,
-    ),
+    val fallbackMediaSourceIds: List<String>? = null,
 ) {
     companion object {
         /**

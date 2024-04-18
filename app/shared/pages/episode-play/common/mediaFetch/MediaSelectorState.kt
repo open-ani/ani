@@ -362,7 +362,12 @@ internal class MediaSelectorStateImpl(
                 yield(it)
                 return@sequence
             }
-            yieldAll(mergedPreference.fallbackMediaSourceIds.orEmpty())
+            val fallback = mergedPreference.fallbackMediaSourceIds
+            if (fallback == null) {
+                yield(null)
+            } else {
+                yieldAll(fallback)
+            }
         }
 
         // For rules discussion, see #174
@@ -395,7 +400,9 @@ internal class MediaSelectorStateImpl(
                     if (filteredByAlliance.isEmpty()) continue
 
                     for (mediaSource in mediaSources) {
-                        val filteredByMediaSource = filteredByAlliance.filter { mediaSource == it.mediaSourceId }
+                        val filteredByMediaSource = filteredByAlliance.filter {
+                            mediaSource == null || mediaSource == it.mediaSourceId
+                        }
                         if (filteredByMediaSource.isEmpty()) continue
                         selectDefault(filteredByMediaSource.first(), languageId)
                         return
@@ -405,7 +412,9 @@ internal class MediaSelectorStateImpl(
                 // 字幕组没匹配到, 但最好不要换更差语言
 
                 for (mediaSource in mediaSources) {
-                    val filteredByMediaSource = filteredByResolution.filter { mediaSource == it.mediaSourceId }
+                    val filteredByMediaSource = filteredByResolution.filter {
+                        mediaSource == null || mediaSource == it.mediaSourceId
+                    }
                     if (filteredByMediaSource.isEmpty()) continue
                     selectDefault(filteredByMediaSource.first(), languageId)
                     return
