@@ -50,29 +50,29 @@ class E2eTest {
         assertEquals(HttpStatusCode.OK, response.status)
         val token = response.body<String>()
 
-//        val response2 = client.post("$serverEndpoint/danmaku/1") {
-//            contentType(ContentType.Application.Json)
-//            setBody<DanmakuPostRequest>(
-//                DanmakuPostRequest(danmaku)
-//            )
-//            bearerAuth(token)
-//        }
-//        assertEquals(HttpStatusCode.OK, response2.status)
+        val response2 = client.post("$serverEndpoint/danmaku/1") {
+            contentType(ContentType.Application.Json)
+            setBody<DanmakuPostRequest>(
+                DanmakuPostRequest(danmaku)
+            )
+            bearerAuth(token)
+        }
+        assertEquals(HttpStatusCode.OK, response2.status)
 
         val response3 = client.get("$serverEndpoint/danmaku/1") {
             bearerAuth(token)
         }
         assertEquals(HttpStatusCode.OK, response3.status)
         val danmakuList = response3.body<DanmakuGetResponse>().danmakuList
-//        assertEquals(1, danmakuList.size)
-//        assertEquals(danmaku, danmakuList[0].danmakuInfo)
+        assertEquals(1, danmakuList.size)
+        assertEquals(danmaku, danmakuList[0].danmakuInfo)
 
         val response4 = client.get("$serverEndpoint/danmaku/1") {
             parameter("fromTime", 2000)
             bearerAuth(token)
         }
         assertEquals(HttpStatusCode.OK, response4.status)
-        val danmakuList2 = response3.body<DanmakuGetResponse>().danmakuList
+        val danmakuList2 = response4.body<DanmakuGetResponse>().danmakuList
         assertTrue(danmakuList2.isEmpty())
     }
 
