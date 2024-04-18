@@ -242,11 +242,11 @@ private fun MediaItem(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    if (media.size != FileSize.Zero) {
+                    if (media.properties.size != FileSize.Zero) {
                         InputChip(
                             false,
                             onClick = {},
-                            label = { Text(media.size.toString()) },
+                            label = { Text(media.properties.size.toString()) },
                         )
                     }
                     InputChip(

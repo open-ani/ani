@@ -27,13 +27,13 @@ internal val testMediaList = listOf(
         originalTitle = "[桜都字幕组] 孤独摇滚 ABC ABC ABC ABC ABC ABC ABC ABC ABC ABC",
         download = ResourceLocation.MagnetLink("magnet:?xt=urn:btih:1"),
         originalUrl = "https://example.com/1",
-        size = 122.megaBytes,
         publishedTime = System.currentTimeMillis(),
         episodes = listOf(EpisodeSort(1)),
         properties = MediaProperties(
             subtitleLanguageIds = listOf(ChineseSimplified, ChineseTraditional).map { it.id },
             resolution = "1080P",
             alliance = "桜都字幕组",
+            size = 122.megaBytes,
         ),
     ),
     // exactly same properties as the first one, except for the ids.
@@ -43,13 +43,13 @@ internal val testMediaList = listOf(
         originalTitle = "[桜都字幕组] 孤独摇滚 ABC ABC ABC ABC ABC ABC ABC ABC ABC ABC",
         download = ResourceLocation.MagnetLink("magnet:?xt=urn:btih:1"),
         originalUrl = "https://example.com/1",
-        size = 122.megaBytes,
         publishedTime = System.currentTimeMillis(),
         episodes = listOf(EpisodeSort(1)),
         properties = MediaProperties(
             subtitleLanguageIds = listOf(ChineseSimplified, ChineseTraditional).map { it.id },
             resolution = "1080P",
             alliance = "桜都字幕组",
+            size = 122.megaBytes,
         ),
     ),
 
@@ -59,13 +59,13 @@ internal val testMediaList = listOf(
         originalTitle = "夜晚的水母不会游泳",
         download = ResourceLocation.MagnetLink("magnet:?xt=urn:btih:1"),
         originalUrl = "https://example.com/1",
-        size = 233.megaBytes,
         publishedTime = System.currentTimeMillis(),
         episodes = listOf(EpisodeSort(2)),
         properties = MediaProperties(
             subtitleLanguageIds = listOf(ChineseTraditional).map { it.id },
             resolution = "1080P",
             alliance = "北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组",
+            size = 233.megaBytes,
         ),
     ),
     DefaultMedia(
@@ -74,13 +74,13 @@ internal val testMediaList = listOf(
         originalTitle = "葬送的芙莉莲",
         download = ResourceLocation.MagnetLink("magnet:?xt=urn:btih:1"),
         originalUrl = "https://example.com/1",
-        size = 0.bytes,
         publishedTime = System.currentTimeMillis(),
         episodes = listOf(EpisodeSort(2)),
         properties = MediaProperties(
             subtitleLanguageIds = listOf(ChineseSimplified).map { it.id },
             resolution = "1080P",
             alliance = "桜都字幕组",
+            size = 0.bytes,
         ),
     ),
     DefaultMedia(
@@ -89,13 +89,13 @@ internal val testMediaList = listOf(
         originalTitle = "某个生肉",
         download = ResourceLocation.MagnetLink("magnet:?xt=urn:btih:1"),
         originalUrl = "https://example.com/1",
-        size = 702.megaBytes,
         publishedTime = System.currentTimeMillis(),
         episodes = listOf(EpisodeSort(3)),
         properties = MediaProperties(
             subtitleLanguageIds = listOf(),
             resolution = "1080P",
             alliance = "Lilith-Raws",
+            size = 702.megaBytes,
         ),
     ),
 )

@@ -3,10 +3,12 @@ package me.him188.ani.datasources.api
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.datasources.api.topic.FileSize
+import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.datasources.api.topic.ResourceLocation
 
 /**
@@ -56,11 +58,6 @@ sealed interface Media {
     val originalTitle: String
 
     /**
-     * Size of the media file. Can be [FileSize.Zero] if not available.
-     */
-    val size: FileSize
-
-    /**
      * 该资源发布时间, 毫秒时间戳
      */
     val publishedTime: Long
@@ -88,7 +85,6 @@ class DefaultMedia(
     override val originalUrl: String,
     override val download: ResourceLocation,
     override val originalTitle: String,
-    override val size: FileSize,
     override val publishedTime: Long,
     override val properties: MediaProperties,
     override val episodes: List<EpisodeSort>,
@@ -114,7 +110,7 @@ class CachedMedia(
  */
 @Immutable
 @Serializable
-class MediaProperties(
+class MediaProperties private constructor(
     /**
      * Empty list means no subtitles
      */
@@ -127,7 +123,24 @@ class MediaProperties(
      * Subtitle group
      */
     val alliance: String,
-)
+    /**
+     * Size of the media file. Can be [FileSize.Zero] if not available.
+     */
+    val size: FileSize = 0.bytes, // note: only for compatibility
+    @Suppress("unused")
+    @Transient private val _primaryConstructorMarker: Unit = Unit,
+) {
+    constructor(
+        // so that caller still need to provide all properties despite we have default values for compatibility
+        subtitleLanguageIds: List<String>,
+        resolution: String,
+        alliance: String,
+        size: FileSize,
+    ) : this(
+        subtitleLanguageIds, resolution, alliance, size,
+        _primaryConstructorMarker = Unit
+    )
+}
 
 /**
  * Additional data stored when creating the cache to help matching caches with future [request][MediaFetchRequest]s.

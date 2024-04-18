@@ -93,13 +93,13 @@ class DirectoryMediaCacheStorageTest {
         originalTitle = "夜晚的水母不会游泳 02 测试剧集",
         download = ResourceLocation.MagnetLink("magnet:?xt=urn:btih:1"),
         originalUrl = "https://example.com/1",
-        size = 233.megaBytes,
         publishedTime = System.currentTimeMillis(),
         episodes = listOf(EpisodeSort(2)),
         properties = MediaProperties(
             subtitleLanguageIds = listOf("CHT"),
             resolution = "1080P",
             alliance = "北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组",
+            size = 233.megaBytes,
         ),
     )
 

@@ -196,7 +196,7 @@ internal class DefaultEpisodeMediaFetchSession(
                 list.sortedWith(
                     compareByDescending<Media> {
                         if (it.location == MediaSourceLocation.LOCAL) 1 else 0
-                    }.thenByDescending { it.size.inBytes }
+                    }.thenByDescending { it.properties.size.inBytes }
                 )
             }
             .produceState(emptyList())

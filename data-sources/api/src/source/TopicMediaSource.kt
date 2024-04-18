@@ -25,13 +25,13 @@ abstract class TopicMediaSource : MediaSource {
             originalUrl = originalLink,
             download = downloadLink,
             originalTitle = rawTitle,
-            size = size,
             publishedTime = publishedTimeMillis ?: 0,
             episodes = details?.episode?.raw?.let { listOf(EpisodeSort(it)) } ?: emptyList(),
             properties = MediaProperties(
                 subtitleLanguageIds = details?.subtitleLanguages?.map { it.id } ?: emptyList(),
                 resolution = details?.resolution?.toString() ?: Resolution.R1080P.toString(),
                 alliance = alliance,
+                size = size,
             ),
         )
     }

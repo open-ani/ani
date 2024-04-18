@@ -89,13 +89,13 @@ fun EpisodeDetails(
 
 @Stable
 private fun Media.render(): String {
-    val playing = this
+    val properties = this.properties
     return listOfNotNull(
-        playing.properties.resolution,
-        playing.properties.subtitleLanguageIds.joinToString("/") { renderSubtitleLanguage(it) }
+        properties.resolution,
+        properties.subtitleLanguageIds.joinToString("/") { renderSubtitleLanguage(it) }
             .takeIf { it.isNotBlank() },
-        playing.size.takeIf { it != 0.bytes },
-        playing.properties.alliance,
+        properties.size.takeIf { it != 0.bytes },
+        properties.alliance,
     ).joinToString(" · ")
 }
 
