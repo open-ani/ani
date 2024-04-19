@@ -14,7 +14,7 @@ import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import kotlin.test.Test
 
-class UserServiceTest {
+class AniUserServiceTest {
     private val koin = object : KoinComponent {}
 
     private fun runTestWithKoin(block: suspend () -> Unit) = runTest {

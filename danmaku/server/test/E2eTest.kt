@@ -14,6 +14,7 @@ import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
+import me.him188.ani.danmaku.protocol.AniUser
 import me.him188.ani.danmaku.protocol.DanmakuGetResponse
 import me.him188.ani.danmaku.protocol.DanmakuInfo
 import me.him188.ani.danmaku.protocol.DanmakuLocation
@@ -59,6 +60,12 @@ class E2eTest {
             bearerAuth(token)
         }
         assertEquals(HttpStatusCode.OK, response2.status)
+        
+        val response5 = client.get("$serverEndpoint/me") {
+            bearerAuth(token)
+        }
+        assertEquals(HttpStatusCode.OK, response5.status)
+        val me = response5.body<AniUser>()
 
         val response3 = client.get("$serverEndpoint/danmaku/1") {
             bearerAuth(token)
@@ -67,6 +74,7 @@ class E2eTest {
         val danmakuList = response3.body<DanmakuGetResponse>().danmakuList
         assertEquals(1, danmakuList.size)
         assertEquals(danmaku, danmakuList[0].danmakuInfo)
+        assertEquals(me.id, danmakuList[0].senderId)
 
         val response4 = client.get("$serverEndpoint/danmaku/1") {
             parameter("fromTime", 2000)
