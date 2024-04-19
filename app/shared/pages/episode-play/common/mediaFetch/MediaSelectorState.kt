@@ -433,8 +433,9 @@ internal class MediaSelectorStateImpl(
     }
 
     class PreferenceUpdatesImpl : PreferenceUpdates {
-        override val preference: MutableSharedFlow<MediaPreference> = MutableSharedFlow()
-        override val select: MutableSharedFlow<Media> = MutableSharedFlow() // see usage before you change it
+        override val preference: MutableSharedFlow<MediaPreference> = MutableSharedFlow(extraBufferCapacity = 1)
+        override val select: MutableSharedFlow<Media> =
+            MutableSharedFlow(extraBufferCapacity = 1) // see usage before you change it
     }
 
     override val preferenceUpdates = PreferenceUpdatesImpl()
