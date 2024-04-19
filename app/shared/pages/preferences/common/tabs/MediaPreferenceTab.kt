@@ -28,6 +28,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.util.fastAll
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
+import me.him188.ani.app.data.media.MediaCacheManager
 import me.him188.ani.app.data.media.MediaSourceManager
 import me.him188.ani.app.data.models.MediaCacheSettings
 import me.him188.ani.app.data.repositories.PreferencesRepository
@@ -81,7 +82,9 @@ class MediaPreferenceViewModel : AbstractViewModel(), KoinComponent {
     }
 
     val sortedMediaSources by derivedStateOf {
-        defaultMediaPreference.fallbackMediaSourceIds.extendTo(mediaSourceManager.allIds)
+        defaultMediaPreference.fallbackMediaSourceIds
+            ?.filter { !mediaSourceManager.isLocal(it) }
+            .extendTo(mediaSourceManager.allIdsExceptLocal)
     }
 
     val sortedResolutions by derivedStateOf {
@@ -269,7 +272,11 @@ private fun PreferenceScope.MediaDownloadGroup(vm: MediaPreferenceViewModel) {
             values = { vm.sortedMediaSources },
             onSort = { list ->
                 vm.updateDefaultMediaPreference(
-                    vm.defaultMediaPreference.copy(fallbackMediaSourceIds = list.filter { it.selected }.map { it.item })
+                    // 总是启用本地并且在最高优先级
+                    vm.defaultMediaPreference.copy(
+                        fallbackMediaSourceIds = listOf(MediaCacheManager.LOCAL_FS_MEDIA_SOURCE_ID) + list.filter { it.selected }
+                            .map { it.item }
+                    )
                 )
             },
             exposed = { list ->

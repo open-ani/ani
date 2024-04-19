@@ -33,7 +33,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
-import me.him188.ani.app.data.media.MediaCacheManager
 import me.him188.ani.app.data.media.MediaSourceManager
 import me.him188.ani.app.data.models.MediaSourceProxyPreferences
 import me.him188.ani.app.data.models.ProxyPreferences
@@ -73,8 +72,7 @@ class NetworkPreferenceViewModel : AbstractViewModel(), KoinComponent {
     private val mediaTestScope = MonoTasker(backgroundScope)
 
 
-    val mediaSourceTesters = mediaSourceManager.allIds
-        .filterNot { it == MediaCacheManager.LOCAL_FS_MEDIA_SOURCE_ID }
+    val mediaSourceTesters = mediaSourceManager.allIdsExceptLocal
         .map { id -> createMediaSourceTester(id) }
         .sortedBy { it.id.lowercase() }
 

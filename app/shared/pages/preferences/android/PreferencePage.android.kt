@@ -78,6 +78,8 @@ private fun PreviewNetworkPreferenceTab() {
                         )
                     )
                     override val allIds: List<String> = enabledSources.value.map { it.mediaSourceId }
+                    override val allIdsExceptLocal: List<String>
+                        get() = allIds.filter { !isLocal(it) }
                 }
             }
         }

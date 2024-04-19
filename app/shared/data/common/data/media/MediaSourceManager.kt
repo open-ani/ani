@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.shareIn
+import me.him188.ani.app.data.media.MediaCacheManager.Companion.LOCAL_FS_MEDIA_SOURCE_ID
 import me.him188.ani.app.data.models.MediaSourceProxyPreferences
 import me.him188.ani.app.data.models.ProxyAuthorization
 import me.him188.ani.app.data.repositories.PreferencesRepository
@@ -30,6 +31,15 @@ interface MediaSourceManager { // available by inject
      * 全部的 [MediaSource], 包括那些设置里关闭的, 包括本地的.
      */
     val allIds: List<String>
+
+    /**
+     * 全部的 [MediaSource], 包括那些设置里关闭的, 但不包括本地的.
+     */
+    val allIdsExceptLocal: List<String>
+
+    fun isLocal(mediaSourceId: String): Boolean {
+        return mediaSourceId == LOCAL_FS_MEDIA_SOURCE_ID
+    }
 }
 
 class MediaSourceManagerImpl(
@@ -67,6 +77,9 @@ class MediaSourceManagerImpl(
         factories
             .map { it.mediaSourceId }
             .plus(this.additionalSources.map { it.mediaSourceId })
+    }
+    override val allIdsExceptLocal: List<String> by lazy {
+        allIds.filter { !isLocal(it) }
     }
 
     private fun MediaSourceFactory.create(pref: MediaSourceProxyPreferences): MediaSource {
