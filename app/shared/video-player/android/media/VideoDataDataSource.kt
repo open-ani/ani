@@ -59,14 +59,12 @@ class VideoDataDataSource(
             this.uri = uri
             transferInitializing(dataSpec)
 
-            logger.info { "Acquiring torrent DeferredFile" }
+            logger.info { "Acquiring SeekableInput (via videoData.createInput)" }
             file = runBlocking { videoData.createInput() }
             opened = true
         }
 
-        logger.info { "Waiting for totalBytes" }
-
-        val torrentLength = runBlocking { videoData.fileLength }
+        val torrentLength = videoData.fileLength
 
         logger.info { "torrentLength = $torrentLength" }
 

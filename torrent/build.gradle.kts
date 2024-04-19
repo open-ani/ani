@@ -46,6 +46,7 @@ kotlin {
         api(libs.kotlinx.coroutines.core)
         implementation(libs.libtorrent4j)
         implementation(projects.utils.slf4jKt)
+        implementation(projects.utils.coroutines)
         api(projects.utils.io)
     }
 

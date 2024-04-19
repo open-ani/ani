@@ -188,7 +188,9 @@ class DummyPlayerState : AbstractPlayerState() {
             audioBitrate = 100,
             frameRate = 30f,
             durationMillis = 100_000,
-            fileLengthBytes = 100_000_000
+            fileLengthBytes = 100_000_000,
+            fileHash = null,
+            filename = "test.mp4"
         )
     )
     override val currentPositionMillis = MutableStateFlow(10_000L)

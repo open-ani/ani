@@ -24,6 +24,8 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.transformLatest
+import kotlinx.coroutines.withContext
+import me.him188.ani.app.data.media.resolver.EpisodeMetadata
 import me.him188.ani.app.data.media.resolver.UnsupportedMediaException
 import me.him188.ani.app.data.media.resolver.VideoSourceResolver
 import me.him188.ani.app.data.subject.SubjectManager
@@ -208,7 +210,18 @@ private class EpisodeViewModelImpl(
             emit(null)
             playSource?.let { media ->
                 try {
-                    emit(videoSourceResolver.resolve(media, EpisodeSort(episodePresentation.sort)))
+                    val presentation = withContext(Dispatchers.Main) {
+                        episodePresentation
+                    }
+                    emit(
+                        videoSourceResolver.resolve(
+                            media,
+                            EpisodeMetadata(
+                                title = presentation.title,
+                                sort = EpisodeSort(presentation.sort)
+                            )
+                        )
+                    )
                 } catch (e: UnsupportedMediaException) {
                     logger.error(e) { "Failed to resolve video source" }
                     emit(null)
@@ -272,8 +285,13 @@ private class EpisodeViewModelImpl(
         selectedMedia.filterNotNull(),
         playerState.videoProperties.filterNotNull()
     ) { media, video ->
+        val filename = video.filename.takeIf { it.isNotBlank() }
+            ?: video.title
+            ?: media.originalTitle
+        logger.info { "Search for danmaku with filename='$filename', fileHash=${video.fileHash}, length=${video}" }
+
         danmakuProvider.startSession(
-            media.originalTitle,
+            filename,
             video.fileHash ?: "aa".repeat(16),
             video.fileLengthBytes,
             video.durationMillis.milliseconds,
@@ -307,7 +325,7 @@ private class EpisodeViewModelImpl(
 
         launchInBackground {
             videoSource.collect {
-                logger.info { "Got new video source: $it" }
+                logger.info { "EpisodeViewModel got new video source: $it, updating playerState" }
                 playerState.setVideoSource(it)
             }
         }

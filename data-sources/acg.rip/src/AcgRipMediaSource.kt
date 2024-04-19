@@ -148,7 +148,7 @@ private fun parseDocument(document: Document): List<Topic> {
     return items.map { element ->
         val title = element.getElementsByTag("title").text()
 
-        val details = RawTitleParser.getParserFor().parse(title, null)
+        val details = RawTitleParser.getDefault().parse(title, null)
 
         Topic(
             topicId = "acgrip-${element.getElementsByTag("guid").text().substringAfterLast("/")}",

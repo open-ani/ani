@@ -10,6 +10,8 @@ import me.him188.ani.utils.io.SeekableInput
  */
 @Stable
 interface VideoData : AutoCloseable {
+    val filename: String
+    
     /**
      * Returns the length of the video file in bytes.
      */
@@ -44,4 +46,6 @@ interface VideoData : AutoCloseable {
      * Otherwise, it is undefined behavior.
      */
     suspend fun createInput(): SeekableInput
+
+    override fun close()
 }

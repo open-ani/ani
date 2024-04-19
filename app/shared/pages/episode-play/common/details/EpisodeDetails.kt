@@ -22,6 +22,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,6 +40,7 @@ import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.datasources.api.topic.Resolution
 import me.him188.ani.datasources.api.topic.SubtitleLanguage
+import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
 private val PAGE_HORIZONTAL_PADDING = 16.dp
 
@@ -135,12 +137,16 @@ private fun NowPlayingLabel(viewModel: EpisodeViewModel, modifier: Modifier = Mo
                         )
                     }
 
-                    SelectionContainer {
-                        Text(
-                            remember(playing) { playing.originalTitle },
-                            Modifier.padding(top = 8.dp),
-                            color = LocalContentColor.current.slightlyWeaken(),
-                        )
+
+                    val data by viewModel.playerState.videoData.collectAsStateWithLifecycle(null)
+                    if (data != null) {
+                        SelectionContainer {
+                            Text(
+                                remember(data) { data?.filename ?: "" },
+                                Modifier.padding(top = 8.dp),
+                                color = LocalContentColor.current.slightlyWeaken(),
+                            )
+                        }
                     }
                 }
             } else {

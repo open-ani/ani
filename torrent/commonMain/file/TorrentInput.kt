@@ -13,6 +13,8 @@ import me.him188.ani.utils.io.SeekableInput
  *
  * It takes the advantage of the fact that the torrent save file is a concatenation of all pieces,
  * and awaits [Piece]s to be finished when they are sought and read.
+ *
+ * 即使 [pieces] 的起始不为 0, [SeekableInput.offset] 也是从 0 开始.
  */
 internal class TorrentInput(
     /**
@@ -25,9 +27,10 @@ internal class TorrentInput(
     private val pieces: List<Piece>,
     private val onSeek: suspend (Piece) -> Unit = { }
 ) : SeekableInput {
-    private val totalLength = pieces.maxOf { it.offset + it.size }
+    private val logicalStartOffset: Long = pieces.minOf { it.offset }
+    private val totalLength = pieces.maxOf { it.offset + it.size } - logicalStartOffset
 
-    override var offset: Long = 0
+    override var offset: Long = 0 // view
     override val bytesRemaining: Long get() = (totalLength - offset).coerceAtLeast(0)
 
     override suspend fun seek(offset: Long) {
@@ -49,11 +52,14 @@ internal class TorrentInput(
             piece.awaitFinished()
         }
         file.seek(offset)
-        val pieceOffset = offset - piece.offset
-        return piece.size - pieceOffset
+        val offsetInPiece = logicalStartOffset + offset - piece.offset
+        return piece.size - offsetInPiece
     }
 
-    internal fun findPiece(offset: Long) = pieces.indexOfFirst { it.startIndex <= offset && offset <= it.lastIndex }
+    internal fun findPiece(viewOffset: Long): Int {
+        val logicalOffset = logicalStartOffset + viewOffset
+        return pieces.indexOfFirst { it.startIndex <= logicalOffset && logicalOffset <= it.lastIndex }
+    }
 
     override suspend fun read(buffer: ByteArray, offset: Int, length: Int): Int {
         val pieceAvailableSize = seekImpl(this.offset)

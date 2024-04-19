@@ -21,7 +21,7 @@ interface VideoSourceResolver {
      * @throws UnsupportedOperationException if the media cannot be resolved.
      * Use [supports] to check if the media can be resolved.
      */
-    suspend fun resolve(media: Media, episode: EpisodeSort): VideoSource<*>
+    suspend fun resolve(media: Media, episode: EpisodeMetadata): VideoSource<*>
 
     companion object {
         fun from(vararg resolvers: VideoSourceResolver): VideoSourceResolver {
@@ -34,6 +34,11 @@ interface VideoSourceResolver {
     }
 }
 
+data class EpisodeMetadata(
+    val title: String,
+    val sort: EpisodeSort,
+)
+
 class UnsupportedMediaException(
     val media: Media,
 ) : UnsupportedOperationException("Media is not supported: $media")
@@ -45,7 +50,7 @@ private class ChainedVideoSourceResolver(
         return resolvers.any { it.supports(media) }
     }
 
-    override suspend fun resolve(media: Media, episode: EpisodeSort): VideoSource<*> {
+    override suspend fun resolve(media: Media, episode: EpisodeMetadata): VideoSource<*> {
         return resolvers.firstOrNull { it.supports(media) }?.resolve(media, episode)
             ?: throw UnsupportedMediaException(media)
     }

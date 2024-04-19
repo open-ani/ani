@@ -13,8 +13,12 @@ public class Piece(
     public val state: MutableStateFlow<PieceState> = MutableStateFlow(PieceState.READY)
 
     public companion object {
-        public fun buildPieces(numPieces: Int, getPieceSize: (index: Int) -> Long): List<Piece> = buildList(numPieces) {
-            var pieceOffset = 0L
+        public fun buildPieces(
+            numPieces: Int,
+            initial: Long = 0L,
+            getPieceSize: (index: Int) -> Long,
+        ): List<Piece> = buildList(numPieces) {
+            var pieceOffset = initial
             for (i in 0 until numPieces) {
                 val pieceSize = getPieceSize(i)
                 val piece = Piece(

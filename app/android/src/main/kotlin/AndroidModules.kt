@@ -12,6 +12,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.serialization.json.Json
 import me.him188.ani.android.navigation.AndroidBrowserNavigator
 import me.him188.ani.app.navigation.BrowserNavigator
+import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.platform.getAniUserAgent
 import me.him188.ani.app.tools.torrent.DefaultTorrentManager
 import me.him188.ani.app.tools.torrent.TorrentManager
@@ -58,6 +59,7 @@ fun getAndroidModules(
                     config = TorrentDownloaderConfig(
                         peerFingerprint = computeTorrentFingerprint(),
                         userAgent = computeTorrentUserAgent(),
+                        isDebug = currentAniBuildConfig.isDebug,
                     )
                 )
             }

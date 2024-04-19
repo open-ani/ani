@@ -44,7 +44,7 @@ data class DmhyTopic(
 ) {
     val details: ParsedTopicTitle? by lazy {
         ParsedTopicTitle.Builder().apply {
-            RawTitleParser.getParserFor().parse(rawTitle, alliance?.name, this)
+            RawTitleParser.getDefault().parse(rawTitle, alliance?.name, this)
         }.build()
     }
 }

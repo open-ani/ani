@@ -30,6 +30,21 @@ interface VideoSource<S : VideoData> {
      * Note that [S] should be closed by the caller.
      *
      * Repeat calls to this function may return different instances so it may be desirable to store the result.
+     *
+     * @throws VideoSourceOpenException 当打开失败时抛出, 包含原因
      */
+    @Throws(VideoSourceOpenException::class)
     suspend fun open(): S
 }
+
+enum class OpenFailures {
+    /**
+     * 未找到符合剧集描述的文件
+     */
+    NO_MATCHING_FILE,
+}
+
+class VideoSourceOpenException(
+    val reason: OpenFailures,
+    override val cause: Throwable? = null,
+) : Exception("Failed to open video source: $reason", cause)
