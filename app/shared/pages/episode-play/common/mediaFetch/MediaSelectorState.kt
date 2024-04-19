@@ -5,13 +5,9 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.util.fastDistinctBy
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.flowOn
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.source.MediaSourceLocation
 
@@ -160,6 +156,15 @@ internal class MediaSelectorStateImpl(
     override val default: MediaPreference by derivedStateOf { defaultProvider() }
 
     override var preference: MediaPreference by mutableStateOf(initialUserPreference)
+        @Deprecated("") set
+
+    @JvmName("setPreference1")
+    private fun setPreference(value: MediaPreference) {
+        @Suppress("DEPRECATION")
+        preference = value
+        preferenceUpdates.preference.tryEmit(value)
+    }
+
     private val mergedPreference by derivedStateOf {
         default.merge(preference)
     }
@@ -172,45 +177,45 @@ internal class MediaSelectorStateImpl(
     override fun preferAlliance(alliance: String, removeOnExist: Boolean) {
         if (removeOnExist && selectedAlliance == alliance && !explicitlyRemovedAlliance) {
             // was selected either by default or by user, then we remove it
-            preference = preference.copy(alliance = null)
+            setPreference(preference.copy(alliance = null))
             explicitlyRemovedAlliance = true
             return
         }
         explicitlyRemovedAlliance = false
-        preference = preference.copy(alliance = alliance)
+        setPreference(preference.copy(alliance = alliance))
     }
 
     override fun preferResolution(resolution: String, removeOnExist: Boolean) {
         if (removeOnExist && selectedResolution == resolution && !explicitlyRemovedResolution) {
             // was selected either by default or by user, then we remove it
-            preference = preference.copy(resolution = null)
+            setPreference(preference.copy(resolution = null))
             explicitlyRemovedResolution = true
             return
         }
         explicitlyRemovedResolution = false
-        preference = preference.copy(resolution = resolution)
+        setPreference(preference.copy(resolution = resolution))
     }
 
     override fun preferSubtitleLanguage(subtitleLanguageId: String, removeOnExist: Boolean) {
         if (removeOnExist && selectedSubtitleLanguageId == subtitleLanguageId && !explicitlyRemovedSubtitleLanguage) {
             // was selected either by default or by user, then we remove it
-            preference = preference.copy(subtitleLanguageId = null)
+            setPreference(preference.copy(subtitleLanguageId = null))
             explicitlyRemovedSubtitleLanguage = true
             return
         }
         explicitlyRemovedSubtitleLanguage = false
-        preference = preference.copy(subtitleLanguageId = subtitleLanguageId)
+        setPreference(preference.copy(subtitleLanguageId = subtitleLanguageId))
     }
 
     override fun preferMediaSource(mediaSourceId: String, removeOnExist: Boolean) {
         if (removeOnExist && selectedMediaSource == mediaSourceId && !explicitlyRemovedMediaSource) {
             // was selected either by default or by user, then we remove it
-            preference = preference.copy(mediaSourceId = null)
+            setPreference(preference.copy(mediaSourceId = null))
             explicitlyRemovedMediaSource = true
             return
         }
         explicitlyRemovedMediaSource = false
-        preference = preference.copy(mediaSourceId = mediaSourceId)
+        setPreference(preference.copy(mediaSourceId = mediaSourceId))
     }
 
     /*
@@ -314,7 +319,7 @@ internal class MediaSelectorStateImpl(
 
     override fun select(candidate: Media) {
         _selected = candidate
-        (preferenceUpdates.select as MutableSharedFlow<Media>).tryEmit(candidate)
+        preferenceUpdates.select.tryEmit(candidate)
     }
 
     private fun selectDefault(
@@ -427,13 +432,12 @@ internal class MediaSelectorStateImpl(
         selectDefault(candidates.first(), null)
     }
 
-    override val preferenceUpdates = object : PreferenceUpdates {
-        override val preference: Flow<MediaPreference> = snapshotFlow {
-            this@MediaSelectorStateImpl.preference
-        }.flowOn(Dispatchers.Main)
-            .filter { it !== initialUserPreference }
+    class PreferenceUpdatesImpl : PreferenceUpdates {
+        override val preference: MutableSharedFlow<MediaPreference> = MutableSharedFlow()
         override val select: MutableSharedFlow<Media> = MutableSharedFlow() // see usage before you change it
     }
+
+    override val preferenceUpdates = PreferenceUpdatesImpl()
 }
 
 //
