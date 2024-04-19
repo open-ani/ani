@@ -257,7 +257,7 @@ internal class MediaSelectorStateImpl(
     }
 
     private val allianceRegexes by derivedStateOf {
-        (mergedPreference.alliancePatterns ?: emptyList()).map { it.toRegex() }
+        mergedPreference.alliancePatterns?.map { it.toRegex() } ?: emptyList()
     }
 
     /**
@@ -355,10 +355,14 @@ internal class MediaSelectorStateImpl(
                 yield(it)
                 return@sequence
             }
-            for (regex in allianceRegexes) {
-                for (alliance in alliances) {
-                    // lazy 匹配, 但没有 cache, 若 `alliances` 反复访问则会进行多次匹配
-                    if (regex.find(alliance) != null) yield(alliance)
+            if (allianceRegexes.isEmpty()) {
+                yieldAll(alliances)
+            } else {
+                for (regex in allianceRegexes) {
+                    for (alliance in alliances) {
+                        // lazy 匹配, 但没有 cache, 若 `alliances` 反复访问则会进行多次匹配
+                        if (regex.find(alliance) != null) yield(alliance)
+                    }
                 }
             }
         }
@@ -417,7 +421,7 @@ internal class MediaSelectorStateImpl(
                 // 字幕组没匹配到, 但最好不要换更差语言
 
                 for (mediaSource in mediaSources) {
-                    val filteredByMediaSource = filteredByResolution.filter {
+                    val filteredByMediaSource = filteredByLanguage.filter {
                         mediaSource == null || mediaSource == it.mediaSourceId
                     }
                     if (filteredByMediaSource.isEmpty()) continue
