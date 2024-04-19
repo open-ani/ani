@@ -26,7 +26,6 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.cookies.HttpCookies
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
-import io.ktor.client.plugins.websocket.WebSockets
 import io.ktor.http.ContentType
 import io.ktor.http.content.OutgoingContent
 import io.ktor.serialization.ContentConverter
@@ -54,7 +53,6 @@ import me.him188.ani.utils.logging.logger
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import java.nio.charset.Charset
-import kotlin.time.Duration.Companion.seconds
 
 class DmhyMediaSource(
     private val config: MediaSourceConfig,
@@ -102,14 +100,13 @@ private fun createHttpClient(
     clientConfig: HttpClientConfig<*>.() -> Unit = {},
 ) = HttpClient {
     install(HttpRequestRetry) {
-        maxRetries = 3
+        maxRetries = 1
         delayMillis { 1000 }
     }
-    install(WebSockets) {
-        pingInterval = 20.seconds.inWholeMilliseconds
-    }
     install(HttpCookies)
-    install(HttpTimeout)
+    install(HttpTimeout) {
+        requestTimeoutMillis = 5000
+    }
     clientConfig()
     install(ContentNegotiation) {
         json(Json {

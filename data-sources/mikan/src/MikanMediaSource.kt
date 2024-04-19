@@ -27,7 +27,6 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.cookies.HttpCookies
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
-import io.ktor.client.plugins.websocket.WebSockets
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.client.statement.bodyAsChannel
@@ -70,7 +69,6 @@ import org.jsoup.nodes.Document
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
-import kotlin.time.Duration.Companion.seconds
 
 class MikanCNMediaSource(
     config: MediaSourceConfig,
@@ -190,14 +188,13 @@ private fun createHttpClient(
     clientConfig: HttpClientConfig<*>.() -> Unit = {},
 ) = HttpClient {
     install(HttpRequestRetry) {
-        maxRetries = 3
-        delayMillis { 3000 }
-    }
-    install(WebSockets) {
-        pingInterval = 20.seconds.inWholeMilliseconds
+        maxRetries = 1
+        delayMillis { 1000 }
     }
     install(HttpCookies)
-    install(HttpTimeout)
+    install(HttpTimeout) {
+        requestTimeoutMillis = 5000
+    }
     install(UserAgent) {
         agent = "him188/ani (https://github.com/Him188/ani)"
     }
