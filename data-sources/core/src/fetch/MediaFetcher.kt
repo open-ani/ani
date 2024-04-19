@@ -4,7 +4,6 @@ import androidx.compose.runtime.Stable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -17,7 +16,6 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.take
@@ -172,7 +170,6 @@ class MediaSourceMediaFetcher(
                 .onStart {
                     state.value = MediaSourceState.Working
                 }
-                .retry(2) { delay(2000);true }
                 .catch {
                     state.value = MediaSourceState.Failed(it)
                     logger.error(it) { "Failed to fetch media from $dataSourceId because of upstream error" }
