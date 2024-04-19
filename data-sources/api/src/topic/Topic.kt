@@ -87,7 +87,7 @@ fun DownloadSearchQuery.matches(topic: Topic): Boolean {
     val details = topic.details ?: return true
     episodeSort?.let { expected ->
         val ep = details.episodeRange
-        if (ep != null && expected in ep) return false
+        if (ep != null && expected !in ep) return false
     }
     return true
 }
