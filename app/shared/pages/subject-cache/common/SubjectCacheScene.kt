@@ -156,7 +156,7 @@ fun SubjectCacheScene(
 
             if (selectedMedia != null) {
                 MediaCacheStorageSelector(
-                    remember { MediaCacheStorageSelectorState(vm.cacheStorages) },
+                    remember(vm) { MediaCacheStorageSelectorState(vm.cacheStorages) },
                     onSelect = { storage ->
                         selectedMedia?.let { media ->
                             vm.launchInBackground {
