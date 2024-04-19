@@ -128,7 +128,7 @@ Ani 支持 Android 和桌面端 (macOS、Linux、Windows)。
 
 ### 代理设置
 
-如果你*网络不给力*, 可以按需设置代理. 设置入口为"我的"的右上角.
+自 3.0.0-beta15 起，Ani 增加了一个全球均可访问的数据源，无需设置代理。若你想要，也可以设置代理后使用所有数据源。代理设置入口为"我的"的右上角。
 
 <img width="300" src=".readme/images/preferences/network.jpg" alt="preferences-network"/>
 
