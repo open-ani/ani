@@ -631,7 +631,8 @@ abstract class PreferenceScope {
         key: (T) -> Any,
         modifier: Modifier = Modifier,
         description: @Composable (() -> Unit)? = null,
-        textFieldDescription: @Composable (() -> Unit)? = description,
+        dialogDescription: @Composable (() -> Unit)? = description,
+        dialogItemDescription: @Composable ((T) -> Unit)? = null,
         icon: @Composable (() -> Unit)? = null,
         onConfirm: (() -> Unit)? = null,
         title: @Composable (RowScope.() -> Unit),
@@ -665,7 +666,7 @@ abstract class PreferenceScope {
                     BasicAlertDialog(onDismissRequest = { showDialog = false }) {
                         RichDialogLayout(
                             title = { title() },
-                            description = textFieldDescription?.let { { it() } },
+                            description = dialogDescription?.let { { it() } },
                             buttons = {
                                 TextButton({ showDialog = false }) {
                                     Text("取消")
@@ -706,7 +707,12 @@ abstract class PreferenceScope {
                                             )
 
                                             Row(Modifier.weight(1f)) {
-                                                item(item.item)
+                                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                                    item(item.item)
+                                                    ProvideTextStyle(MaterialTheme.typography.labelMedium) {
+                                                        dialogItemDescription?.invoke(item.item)
+                                                    }
+                                                }
                                             }
 
                                             Icon(

@@ -60,7 +60,6 @@ private class TestMediaSource(
             Paged.empty()
         }
     }
-
 }
 
 @Preview
@@ -85,9 +84,9 @@ private fun PreviewNetworkPreferenceTab() {
     ) {
         val vm = rememberViewModel { NetworkPreferenceViewModel() }
         SideEffect {
-            vm.mediaTesters.first().result = MediaTestResult.SUCCESS
-            vm.mediaTesters.drop(1).first().result = MediaTestResult.FAILED
-            vm.mediaTesters.drop(2).first().result = MediaTestResult.NOT_ENABLED
+            vm.allMediaTesters.first().result = MediaTestResult.SUCCESS
+            vm.allMediaTesters.drop(1).first().result = MediaTestResult.FAILED
+            vm.allMediaTesters.drop(2).first().result = MediaTestResult.NOT_ENABLED
         }
         NetworkPreferenceTab()
     }

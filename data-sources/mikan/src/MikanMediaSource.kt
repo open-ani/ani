@@ -72,10 +72,23 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import kotlin.time.Duration.Companion.seconds
 
+class MikanCNMediaSource(
+    config: MediaSourceConfig,
+) : AbstractMikanMediaSource(ID, config, "https://mikanime.tv") {
+    class Factory : MediaSourceFactory {
+        override val mediaSourceId: String get() = ID
+        override fun create(config: MediaSourceConfig): MediaSource =
+            MikanCNMediaSource(config)
+    }
+
+    companion object {
+        const val ID = "mikan-mikanime-tv"
+    }
+}
 
 class MikanMediaSource(
-    private val config: MediaSourceConfig,
-) : TopicMediaSource() {
+    config: MediaSourceConfig,
+) : AbstractMikanMediaSource(ID, config, "https://mikanani.me") {
     class Factory : MediaSourceFactory {
         override val mediaSourceId: String get() = ID
         override fun create(config: MediaSourceConfig): MediaSource = MikanMediaSource(config)
@@ -83,19 +96,26 @@ class MikanMediaSource(
 
     companion object {
         const val ID = "mikan"
-        private val logger = logger<MikanMediaSource>()
     }
+}
 
-    override val mediaSourceId: String get() = ID
+abstract class AbstractMikanMediaSource(
+    override val mediaSourceId: String,
+    private val config: MediaSourceConfig,
+    baseUrl: String,
+) : TopicMediaSource() {
+    private val logger = logger(this::class)
+
+    private val baseUrl = baseUrl.removeSuffix("/")
 
     override suspend fun checkConnection(): ConnectionStatus {
         return try {
-            client.get("https://mikanani.me/").run {
+            client.get(baseUrl).run {
                 check(status.isSuccess()) { "Request failed: $this" }
             }
             ConnectionStatus.SUCCESS
         } catch (e: Exception) {
-            logger.error(e) { "Failed to connect to mikanani.me" }
+            logger.error(e) { "Failed to connect to $baseUrl" }
             ConnectionStatus.FAILED
         }
     }
@@ -105,7 +125,7 @@ class MikanMediaSource(
         Logging {
             logger = object : io.ktor.client.plugins.logging.Logger {
                 override fun log(message: String) {
-                    Companion.logger.info { message }
+                    this@AbstractMikanMediaSource.logger.info { message }
                 }
             }
             level = LogLevel.INFO
@@ -114,10 +134,10 @@ class MikanMediaSource(
 
     override suspend fun startSearch(query: DownloadSearchQuery): PagedSource<Topic> {
         return PageBasedPagedSource(initialPage = 1) {
-            val resp = client.get("https://mikanani.me/RSS/Search") {
+            val resp = client.get("$baseUrl/RSS/Search") {
                 parameter("searchstr", query.keywords?.take(10))
             }
-            val document: Document = Jsoup.parse(resp.bodyAsChannel().toInputStream(), "UTF-8", "https://mikanani.me/")
+            val document: Document = Jsoup.parse(resp.bodyAsChannel().toInputStream(), "UTF-8", baseUrl)
             parseDocument(document)
                 .filter { query.matches(it) }
                 .run {
@@ -125,43 +145,44 @@ class MikanMediaSource(
                 }
         }
     }
-}
 
-// 2024-03-31T10:27:49.932
-private val LINK_REGEX = Regex("https://mikanani.me/Home/Episode/(.+)")
+    // 2024-03-31T10:27:49.932
+    private val linkRegex = Regex("$baseUrl/Home/Episode/(.+)")
 
-private fun parseDocument(document: Document): List<Topic> {
-    val items = document.getElementsByTag("item")
+    private fun parseDocument(document: Document): List<Topic> {
+        val items = document.getElementsByTag("item")
 
-    return items.map { element ->
-        val title = element.getElementsByTag("title").text()
+        return items.map { element ->
+            val title = element.getElementsByTag("title").text()
 
-        val details = RawTitleParser.getParserFor().parse(title, null)
+            val details = RawTitleParser.getParserFor().parse(title, null)
 
-        Topic(
-            topicId = element.getElementsByTag("guid").text().substringAfterLast("/"),
-            publishedTimeMillis = element.getElementsByTag("pubDate").text().let {
-                runCatching {
-                    ZonedDateTime.of(
-                        LocalDateTime.parse(it),
-                        ZoneId.of("UTC+8"),
-                    ).toEpochSecond() * 1000
-                }.getOrNull()
-            },
-            category = TopicCategory.ANIME,
-            rawTitle = title,
-            commentsCount = 0,
-            downloadLink = ResourceLocation.HttpTorrentFile(element.getElementsByTag("enclosure").attr("url")),
-            size = element.getElementsByTag("contentLength").text().toLongOrNull()?.bytes ?: Zero,
-            alliance = title.trim().split("]", "】").getOrNull(0).orEmpty().removePrefix("[").removePrefix("【").trim(),
-            author = null,
-            details = details.toTopicDetails(),
-            originalLink = run {
-                element.getElementsByTag("link").text().takeIf { it.isNotBlank() }?.let { return@run it }
-                // Note: It looks like Jsoup failed to parse the xml. Debug and print `element` to see details.
-                LINK_REGEX.find(element.toString())?.value // This should work well
-            } ?: "",
-        )
+            Topic(
+                topicId = element.getElementsByTag("guid").text().substringAfterLast("/"),
+                publishedTimeMillis = element.getElementsByTag("pubDate").text().let {
+                    runCatching {
+                        ZonedDateTime.of(
+                            LocalDateTime.parse(it),
+                            ZoneId.of("UTC+8"),
+                        ).toEpochSecond() * 1000
+                    }.getOrNull()
+                },
+                category = TopicCategory.ANIME,
+                rawTitle = title,
+                commentsCount = 0,
+                downloadLink = ResourceLocation.HttpTorrentFile(element.getElementsByTag("enclosure").attr("url")),
+                size = element.getElementsByTag("contentLength").text().toLongOrNull()?.bytes ?: Zero,
+                alliance = title.trim().split("]", "】").getOrNull(0).orEmpty().removePrefix("[").removePrefix("【")
+                    .trim(),
+                author = null,
+                details = details.toTopicDetails(),
+                originalLink = run {
+                    element.getElementsByTag("link").text().takeIf { it.isNotBlank() }?.let { return@run it }
+                    // Note: It looks like Jsoup failed to parse the xml. Debug and print `element` to see details.
+                    linkRegex.find(element.toString())?.value // This should work well
+                } ?: "",
+            )
+        }
     }
 }
 

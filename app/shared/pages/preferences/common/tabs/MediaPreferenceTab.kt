@@ -45,6 +45,7 @@ import me.him188.ani.app.ui.subject.episode.details.renderResolution
 import me.him188.ani.app.ui.subject.episode.details.renderSubtitleLanguage
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.app.ui.subject.episode.mediaFetch.renderMediaSource
+import me.him188.ani.app.ui.subject.episode.mediaFetch.renderMediaSourceDescription
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.Resolution
 import me.him188.ani.datasources.api.topic.SubtitleLanguage
@@ -289,7 +290,10 @@ private fun PreferenceScope.MediaDownloadGroup(vm: MediaPreferenceViewModel) {
             item = { Text(renderMediaSource(it)) },
             key = { it },
             modifier = Modifier.placeholder(vm.defaultMediaPreferenceLoading),
-            textFieldDescription = { Text("长按排序, 优先选择顺序较高的项目") },
+            dialogItemDescription = { id ->
+                renderMediaSourceDescription(id)?.let { Text(it) }
+            },
+            dialogDescription = { Text("长按排序, 优先选择顺序较高的项目") },
             icon = { Icon(Icons.Rounded.DisplaySettings, null) },
             title = { Text("数据源") },
         )
@@ -322,7 +326,7 @@ private fun PreferenceScope.MediaDownloadGroup(vm: MediaPreferenceViewModel) {
             item = { Text(renderSubtitleLanguage(it)) },
             key = { it },
             modifier = Modifier.placeholder(vm.defaultMediaPreferenceLoading),
-            textFieldDescription = { Text("长按排序, 优先选择顺序较高的项目") },
+            dialogDescription = { Text("长按排序, 优先选择顺序较高的项目") },
             icon = { Icon(Icons.Rounded.Language, null) },
             title = { Text("字幕语言") },
         )
@@ -355,7 +359,7 @@ private fun PreferenceScope.MediaDownloadGroup(vm: MediaPreferenceViewModel) {
             item = { Text(renderResolution(it)) },
             key = { it },
             modifier = Modifier.placeholder(vm.defaultMediaPreferenceLoading),
-            textFieldDescription = { Text("长按排序, 优先选择顺序较高的项目") },
+            dialogDescription = { Text("长按排序, 优先选择顺序较高的项目") },
             icon = { Icon(Icons.Rounded.Hd, null) },
             title = { Text("分辨率") },
         )

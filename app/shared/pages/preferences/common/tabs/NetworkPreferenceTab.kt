@@ -33,6 +33,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
+import me.him188.ani.app.data.media.MediaCacheManager
 import me.him188.ani.app.data.media.MediaSourceManager
 import me.him188.ani.app.data.models.MediaSourceProxyPreferences
 import me.him188.ani.app.data.models.ProxyPreferences
@@ -41,10 +42,12 @@ import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.app.ui.foundation.rememberViewModel
+import me.him188.ani.app.ui.preference.PreferenceScope
 import me.him188.ani.app.ui.preference.PreferenceTab
 import me.him188.ani.app.ui.preference.SwitchItem
 import me.him188.ani.app.ui.subject.episode.mediaFetch.getMediaSourceIcon
 import me.him188.ani.app.ui.subject.episode.mediaFetch.renderMediaSource
+import me.him188.ani.app.ui.subject.episode.mediaFetch.renderMediaSourceDescription
 import me.him188.ani.datasources.api.source.ConnectionStatus
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.subject.SubjectProvider
@@ -68,42 +71,53 @@ class NetworkPreferenceViewModel : AbstractViewModel(), KoinComponent {
     ///////////////////////////////////////////////////////////////////////////
 
     private val mediaTestScope = MonoTasker(backgroundScope)
-    val mediaTesters =
-        mediaSourceManager.allIds
-            .map { id ->
-                val source = mediaSourceManager.enabledSources.map { sources ->
-                    sources.firstOrNull { it.mediaSourceId == id }
+
+
+    val mediaSourceTesters = mediaSourceManager.allIds
+        .filterNot { it == MediaCacheManager.LOCAL_FS_MEDIA_SOURCE_ID }
+        .map { id -> createMediaSourceTester(id) }
+        .sortedBy { it.id.lowercase() }
+
+    private fun createMediaSourceTester(id: String): MediaSourceTester {
+        val source = mediaSourceManager.enabledSources.map { sources ->
+            sources.firstOrNull { it.mediaSourceId == id }
+        }
+        return MediaSourceTester(
+            id = id,
+        ) {
+            when (source.first()?.checkConnection()) {
+                ConnectionStatus.SUCCESS -> MediaTestResult.SUCCESS
+                ConnectionStatus.FAILED -> MediaTestResult.FAILED
+                null -> MediaTestResult.NOT_ENABLED
+            }
+        }.apply {
+            launchInMain {
+                source.collect {
+                    this@apply.reset()
                 }
-                MediaSourceTester(
-                    id = id,
-                ) {
-                    when (source.first()?.checkConnection()) {
-                        ConnectionStatus.SUCCESS -> MediaTestResult.SUCCESS
-                        ConnectionStatus.FAILED -> MediaTestResult.FAILED
-                        null -> MediaTestResult.NOT_ENABLED
-                    }
-                }.apply {
-                    launchInMain {
-                        source.collect {
-                            this@apply.reset()
-                        }
-                    }
-                }
-            }.sortedBy { it.id.lowercase() }
-            .plus(MediaSourceTester(
-                id = BangumiSubjectProvider.ID, // Bangumi 顺便也测一下
-            ) {
-                if (bangumiSubjectProvider.testConnection() == ConnectionStatus.SUCCESS) {
-                    MediaTestResult.SUCCESS
-                } else {
-                    MediaTestResult.FAILED
-                }
-            })
+            }
+        }
+    }
+
+    val nonMediaSourceTesters = listOf(
+        MediaSourceTester(
+            id = BangumiSubjectProvider.ID, // Bangumi 顺便也测一下
+        ) {
+            if (bangumiSubjectProvider.testConnection() == ConnectionStatus.SUCCESS) {
+                MediaTestResult.SUCCESS
+            } else {
+                MediaTestResult.FAILED
+            }
+        }
+    )
+
+    val allMediaTesters =
+        mediaSourceTesters + nonMediaSourceTesters
 
     fun testSources() {
         mediaTestScope.launch {
             supervisorScope {
-                mediaTesters.forEach {
+                allMediaTesters.forEach {
                     this@launch.launch {
                         it.test()
                     }
@@ -147,7 +161,7 @@ fun NetworkPreferenceTab(
         Group(
             title = { Text("全局默认代理") },
             description = {
-                Text("如果数据源没有单独配置代理，则使用此代理。")
+                Text("如果数据源没有单独配置代理，则使用此代理设置")
             }
         ) {
             SwitchItem(
@@ -246,67 +260,28 @@ fun NetworkPreferenceTab(
 
         Group(
             title = { Text("数据源测试") },
-            description = { Text("测试是否能正常连接") }
+            description = { Text("测试是否能正常连接。除 Bangumi 外，有任一数据源测试成功即可正常观看和下载") }
         ) {
-            val sources = vm.mediaTesters
-            for (tester in sources) {
-                TextItem(
-                    title = { Text(remember(tester.id) { renderMediaSource(tester.id) }) },
-                    icon = {
-                        val icon = getMediaSourceIcon(tester.id)
-                        Image(
-                            icon
-                                ?: rememberVectorPainter(Icons.Rounded.DisplaySettings),
-                            null,
-                            Modifier.clip(MaterialTheme.shapes.extraSmall).size(48.dp),
-                            contentScale = ContentScale.Fit,
-                            alignment = Alignment.Center,
-                            colorFilter = if (icon == null) ColorFilter.tint(MaterialTheme.colorScheme.onSurface) else null,
-                        )
-                    },
-                    description =
-                    if (tester.id == BangumiSubjectProvider.ID) {
-                        { Text("无需代理, 目前不支持使用代理") }
-                    } else null,
-                    action = {
-                        if (tester.isTesting) {
-                            CircularProgressIndicator(
-                                Modifier.size(24.dp),
-                                strokeWidth = 2.dp,
-                            )
-                        } else {
-                            when (tester.result) {
-                                MediaTestResult.SUCCESS -> {
-                                    Icon(Icons.Rounded.Check, null, tint = MaterialTheme.colorScheme.primary)
-                                }
+            for (tester in vm.mediaSourceTesters) {
+                MediaSourceTesterView(tester)
+            }
 
-                                MediaTestResult.FAILED -> {
-                                    Icon(Icons.Rounded.Cancel, null, tint = MaterialTheme.colorScheme.error)
-                                }
+            HorizontalDividerItem()
 
-                                MediaTestResult.NOT_ENABLED -> {
-                                    Text("未启用")
-                                }
-
-                                null -> {
-                                    Text("等待测试")
-                                }
-                            }
-                        }
-                    }
-                )
+            for (tester in vm.nonMediaSourceTesters) {
+                MediaSourceTesterView(tester)
             }
 
             TextButtonItem(
                 onClick = {
-                    if (sources.any { it.isTesting }) {
+                    if (vm.allMediaTesters.any { it.isTesting }) {
                         vm.cancelTest()
                     } else {
                         vm.testSources()
                     }
                 },
                 title = {
-                    if (sources.any { it.isTesting }) {
+                    if (vm.allMediaTesters.any { it.isTesting }) {
                         Text("终止测试")
                     } else {
                         Text("开始测试")
@@ -315,6 +290,59 @@ fun NetworkPreferenceTab(
             )
         }
     }
+}
+
+@Composable
+private fun PreferenceScope.MediaSourceTesterView(tester: MediaSourceTester) {
+    TextItem(
+        title = { Text(remember(tester.id) { renderMediaSource(tester.id) }) },
+        icon = {
+            val icon = getMediaSourceIcon(tester.id)
+            Image(
+                icon
+                    ?: rememberVectorPainter(Icons.Rounded.DisplaySettings),
+                null,
+                Modifier.clip(MaterialTheme.shapes.extraSmall).size(48.dp),
+                contentScale = ContentScale.Fit,
+                alignment = Alignment.Center,
+                colorFilter = if (icon == null) ColorFilter.tint(MaterialTheme.colorScheme.onSurface) else null,
+            )
+        },
+        description =
+        if (tester.id == BangumiSubjectProvider.ID) {
+            { Text("提供观看记录数据，无需代理") }
+        } else {
+            renderMediaSourceDescription(tester.id)?.let {
+                { Text(it) }
+            }
+        },
+        action = {
+            if (tester.isTesting) {
+                CircularProgressIndicator(
+                    Modifier.size(24.dp),
+                    strokeWidth = 2.dp,
+                )
+            } else {
+                when (tester.result) {
+                    MediaTestResult.SUCCESS -> {
+                        Icon(Icons.Rounded.Check, null, tint = MaterialTheme.colorScheme.primary)
+                    }
+
+                    MediaTestResult.FAILED -> {
+                        Icon(Icons.Rounded.Cancel, null, tint = MaterialTheme.colorScheme.error)
+                    }
+
+                    MediaTestResult.NOT_ENABLED -> {
+                        Text("未启用")
+                    }
+
+                    null -> {
+                        Text("等待测试")
+                    }
+                }
+            }
+        }
+    )
 }
 
 enum class MediaTestResult {
