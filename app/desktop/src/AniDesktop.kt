@@ -57,6 +57,7 @@ import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.DesktopContext
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.createAppRootCoroutineScope
+import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.platform.getAniUserAgent
 import me.him188.ani.app.platform.getCommonKoinModule
 import me.him188.ani.app.platform.startCommonKoinModule
@@ -136,6 +137,7 @@ object AniDesktop {
                                 config = TorrentDownloaderConfig(
                                     peerFingerprint = computeTorrentFingerprint(),
                                     userAgent = computeTorrentUserAgent(),
+                                    isDebug = currentAniBuildConfig.isDebug,
                                 )
                             )
                         }

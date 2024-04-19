@@ -13,7 +13,8 @@ data class VideoProperties internal constructor(
     val frameRate: Float,
     val durationMillis: Long,
     val fileLengthBytes: Long,
-    val fileHash: String? = null, // 16 bytes
+    val fileHash: String?, // 16 bytes
+    val filename: String,
 ) {
     companion object {
         @Stable
@@ -25,7 +26,9 @@ data class VideoProperties internal constructor(
             audioBitrate = 0,
             frameRate = 0f,
             durationMillis = 0,
-            fileLengthBytes = 0
+            fileLengthBytes = 0,
+            fileHash = null,
+            filename = "",
         )
     }
 }

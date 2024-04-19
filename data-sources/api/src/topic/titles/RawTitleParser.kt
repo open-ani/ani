@@ -49,7 +49,7 @@ abstract class RawTitleParser {
 
 
     companion object {
-        fun getParserFor(): RawTitleParser {
+        fun getDefault(): RawTitleParser {
             return PatternBasedRawTitleParser()
 //            when (allianceName) {
 //                "LoliHouse",

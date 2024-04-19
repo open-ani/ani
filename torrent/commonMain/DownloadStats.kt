@@ -8,7 +8,11 @@ import kotlinx.coroutines.flow.StateFlow
  * @see TorrentDownloader
  */
 public interface DownloadStats {
+    /**
+     * 总大小. 注意这不是在硬盘上的大小. 在硬盘上可能会略有差别.
+     */
     public val totalBytes: Flow<Long>
+
     public val downloadedBytes: Flow<Long>
 
     /**
@@ -22,6 +26,11 @@ public interface DownloadStats {
      */
     public val progress: StateFlow<Float>
 
+    /**
+     * 该文件是否已经全部下载完成.
+     *
+     * 注意, 对于总统计, 该属性永远为 false.
+     */
     public val isFinished: Flow<Boolean>
 
     public val peerCount: Flow<Int>

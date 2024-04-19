@@ -16,6 +16,8 @@ import java.io.RandomAccessFile
 class FileVideoData(
     private val file: File,
 ) : VideoData {
+    override val filename: String
+        get() = file.name
     override val fileLength: Long by lazy { file.length() }
     override val hash: String by lazy { md5Hash(file) }
     override val downloadSpeed: StateFlow<FileSize> = MutableStateFlow(FileSize.Unspecified)

@@ -14,6 +14,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.torrent.model.EncodedTorrentData
+import me.him188.ani.utils.logging.debug
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
@@ -85,9 +86,17 @@ public interface TorrentDownloader : AutoCloseable {
     public suspend fun startDownload(
         data: EncodedTorrentData,
         parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
+//        fileFilter: (List<String>) -> List<String> = { listOfNotNull(it.firstOrNull()) },
+        priority: FilePriority = FilePriority.NORMAL,
     ): TorrentDownloadSession
 
     public override fun close()
+}
+
+public enum class FilePriority {
+    HIGH,
+    NORMAL,
+    LOW,
 }
 
 public class MagnetTimeoutException(
@@ -168,6 +177,7 @@ public class TorrentDownloaderConfig(
     public val peerFingerprint: String = "-aniLT3000-",
     public val userAgent: String = "ani_libtorrent/3.0.0", // "libtorrent/2.1.0.0", "ani_libtorrent/3.0.0"
     public val clientHandshakeVersion: String? = "3.0.0",
+    public val isDebug: Boolean = false,
 ) {
     public companion object {
         public val Default: TorrentDownloaderConfig = TorrentDownloaderConfig()
@@ -261,7 +271,8 @@ public fun TorrentDownloader(
     return TorrentDownloaderImpl(
         cacheDirectory,
         LockedSessionManager(sessionManager),
-        downloadFile
+        downloadFile,
+        isDebug = config.isDebug,
     )
 }
 
@@ -269,6 +280,7 @@ internal class TorrentDownloaderImpl(
     cacheDirectory: File,
     private val sessionManager: LockedSessionManager,
     private val downloadFile: TorrentFileDownloader,
+    private val isDebug: Boolean,
 ) : TorrentDownloader {
     private val scope = CoroutineScope(SupervisorJob())
 
@@ -305,7 +317,6 @@ internal class TorrentDownloaderImpl(
             logger.info { "Fetching http url: $uri" }
             val data = downloadFile(uri)
             logger.info { "Fetching http url success, file length = ${data.size}" }
-            logger.info { "File downloaded" }
             return EncodedTorrentData(data)
         }
 
@@ -329,36 +340,54 @@ internal class TorrentDownloaderImpl(
         mkdirs()
     }
 
-    private val dataToSession = ConcurrentHashMap<Sha1Hash, TorrentDownloadSession>()
+    private val dataToSession = ConcurrentHashMap<Sha1Hash, TorrentDownloadSessionImpl>()
 
     private val lock = Mutex()
 
     override suspend fun startDownload(
         data: EncodedTorrentData,
-        parentCoroutineContext: CoroutineContext
+        parentCoroutineContext: CoroutineContext,
+        priority: FilePriority,
     ): TorrentDownloadSession = lock.withLock {
-        logger.info { "Starting torrent download session" }
-
-        logger.info { "Decoding torrent info, input length=${data.data.size}" }
         val ti = TorrentInfo(data.data)
-        logger.info { "Decoded TorrentInfo: ${ti.infoHash()}" }
+        val torrentName = ti.name()
+
+        logger.info { "[$torrentName] TorrentDownloader.startDownload called" }
 
         val saveDirectory = downloadCacheDir.resolve(data.data.contentHashCode().toString()).apply { mkdirs() }
         val hash = ti.infoHash()
-        dataToSession[hash]?.let {
-            logger.warn { "Reopening a torrent session, returning existing" }
-            return it
+
+        val reopened = dataToSession[hash]?.let {
+            logger.info { "[$torrentName] Found existing session" }
+            true
+        } ?: kotlin.run {
+            logger.info { "[$torrentName] This is a new session" }
+            false
         }
+
+//        val files = List(ti.files().numFiles()) { ti.files().filePath(it) }
+//        val filteredFiles = fileFilter(files)
+
         val session =
-            TorrentDownloadSessionImpl(
-                torrentName = ti.name(),
-                closeHandle = { sessionManager.use { remove(it) } },
-                torrentInfo = ti,
+            dataToSession[hash] ?: TorrentDownloadSessionImpl(
+                torrentName = torrentName,
                 saveDirectory = saveDirectory,
-                onClose = {
-                    sessionManager.removeListener(it.listener)
+                onClose = { session ->
+                    logger.debug { "[$torrentName] Close: removeListener" }
+                    sessionManager.removeListener(session.listener)
                     dataToSession.remove(hash)
+                    logger.debug { "[$torrentName] Close: close handle" }
+                    sessionManager.use {
+                        find(hash)?.let { handle ->
+                            logger.debug { "[$torrentName] Close: remove from libtorrent SessionManager" }
+                            remove(handle)
+                            logger.debug { "[$torrentName] Close: removed" }
+                        } ?: run {
+                            logger.debug { "[$torrentName] Close: handle not found, ignoring" }
+                        }
+                    }
                 },
+                isDebug = isDebug,
                 parentCoroutineContext = parentCoroutineContext,
             )
         dataToSession[hash] = session
@@ -369,27 +398,48 @@ internal class TorrentDownloaderImpl(
                 setInteger(settings_pack.int_types.request_timeout.swigValue(), 3)
                 setInteger(settings_pack.int_types.peer_timeout.swigValue(), 3)
             }
-            sessionManager.addListener(session.listener)
 
-            val priorities = Priority.array(Priority.IGNORE, ti.numFiles())
-            logger.info { "File name: ${ti.files().fileName(0)}" }
-            priorities[0] = Priority.TOP_PRIORITY
+            if (reopened) {
+                logger.info { "[$torrentName] Torrent has already opened, modifying file priority" }
 
-            try {
-                logger.info { "Starting torrent download" }
-                download(
-                    ti,
-                    saveDirectory,
-                    null,
-                    priorities,
-                    null,
-                    TorrentFlags.AUTO_MANAGED,
+                // 资源之前已经打开过
+                // 增加优先级, 不修改以前的
+//                val handle = find(hash) ?: error("Torrent handle not found for a reopened session.")
+//                for (filteredFile in filteredFiles) {
+//                    val index = files.indexOf(filteredFile)
+//                    if (index == -1) continue
+//                    logger.info { "[$torrentName] Set priority $priority for: $filteredFile" }
+//                    handle.filePriority(index, priority.toLibtorrentPriority())
+//                }
+            } else {
+                sessionManager.addListener(session.listener)
+
+                // 第一次打开, 设置忽略所有文件, 除了我们需要的那些
+                val priorities = Priority.array(Priority.IGNORE, ti.numFiles())
+//                for (filteredFile in filteredFiles) {
+//                    val index = files.indexOf(filteredFile)
+//                    if (index == -1) continue
+//                    logger.info { "[$torrentName] Set priority $priority for: $filteredFile" }
+//                    priorities[index] = priority.toLibtorrentPriority()
+//                }
+
+                try {
+                    logger.info { "[$torrentName] Starting torrent download" }
+                    download(
+                        ti,
+                        saveDirectory,
+                        null,
+                        priorities,
+                        null,
+                        TorrentFlags.AUTO_MANAGED,
 //                TorrentFlags.SEQUENTIAL_DOWNLOAD,//.or_(TorrentFlags.NEED_SAVE_RESUME)
-                )
-                logger.info { "Torrent download started." }
-            } catch (e: Throwable) {
-                sessionManager.removeListener(session.listener)
-                throw e
+                    )
+                    logger.info { "[$torrentName] Torrent download started" }
+                } catch (e: Throwable) {
+                    sessionManager.removeListener(session.listener)
+                    logger.error(e) { "[$torrentName] Failed to start torrent download" }
+                    throw e
+                }
             }
         }
 
@@ -400,6 +450,12 @@ internal class TorrentDownloaderImpl(
         scope.cancel()
         LockedSessionManager.launch { sessionManager.use { stop() } }
     }
+}
+
+internal fun FilePriority.toLibtorrentPriority(): Priority = when (this) {
+    FilePriority.HIGH -> Priority.TOP_PRIORITY
+    FilePriority.NORMAL -> Priority.DEFAULT
+    FilePriority.LOW -> Priority.IGNORE
 }
 
 public var SettingsPack.peerFingerprintString: String

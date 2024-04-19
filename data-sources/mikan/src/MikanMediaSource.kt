@@ -153,7 +153,7 @@ abstract class AbstractMikanMediaSource(
         return items.map { element ->
             val title = element.getElementsByTag("title").text()
 
-            val details = RawTitleParser.getParserFor().parse(title, null)
+            val details = RawTitleParser.getDefault().parse(title, null)
 
             Topic(
                 topicId = element.getElementsByTag("guid").text().substringAfterLast("/"),

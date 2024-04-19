@@ -35,6 +35,7 @@ import me.him188.ani.app.videoplayer.ui.state.AbstractPlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlaybackState
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
+import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import kotlin.coroutines.CoroutineContext
@@ -111,8 +112,9 @@ internal class ExoPlayerState @UiThread constructor(
                 player.prepare()
                 player.play()
             }
-            logger.info { "Player initialized" }
+            logger.info { "ExoPlayer is now initialized with media and will play when ready" }
         } catch (e: Throwable) {
+            logger.error(e) { "ExoPlayer failed to initialize" }
             opened.releaseResource()
             throw e
         }
@@ -148,6 +150,7 @@ internal class ExoPlayerState @UiThread constructor(
                 private fun updateVideoProperties(): Boolean {
                     val video = videoFormat ?: return false
                     val audio = audioFormat ?: return false
+                    val data = openResource.value?.data ?: return false
                     videoProperties.value = VideoProperties(
                         title = mediaMetadata.title?.toString(),
                         heightPx = video.height,
@@ -156,8 +159,9 @@ internal class ExoPlayerState @UiThread constructor(
                         audioBitrate = audio.bitrate,
                         frameRate = video.frameRate,
                         durationMillis = duration,
-                        fileLengthBytes = openResource.value?.data?.fileLength ?: 0L,
-                        fileHash = openResource.value?.data?.hash
+                        fileLengthBytes = data.fileLength,
+                        fileHash = data.hash,
+                        filename = data.filename,
                     )
                     return true
                 }
