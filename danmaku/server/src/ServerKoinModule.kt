@@ -22,14 +22,18 @@ import me.him188.ani.danmaku.server.service.UserService
 import me.him188.ani.danmaku.server.service.UserServiceImpl
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
+import org.slf4j.Logger
+import org.slf4j.helpers.NOPLogger
 import java.security.SecureRandom
 import kotlin.time.Duration.Companion.days
 
 fun getServerKoinModule(
     env: EnvironmentVariables,
-    topCoroutineScope: CoroutineScope
+    topCoroutineScope: CoroutineScope,
+    logger: Logger = NOPLogger.NOP_LOGGER,
 ) = module {
     single(named("topCoroutineScope")) { topCoroutineScope }
+    single<Logger> { logger }
     single {
         ServerConfig(
             mongoDbConnectionString = env.mongoDbConnectionString,
