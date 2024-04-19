@@ -26,7 +26,7 @@ abstract class TopicMediaSource : MediaSource {
             download = downloadLink,
             originalTitle = rawTitle,
             publishedTime = publishedTimeMillis ?: 0,
-            episodes = details?.episode?.raw?.let { listOf(EpisodeSort(it)) } ?: emptyList(),
+            episodes = details?.episodeRange?.sorts?.toList() ?: emptyList(),
             properties = MediaProperties(
                 subtitleLanguageIds = details?.subtitleLanguages?.map { it.id } ?: emptyList(),
                 resolution = details?.resolution?.toString() ?: Resolution.R1080P.toString(),
@@ -46,7 +46,7 @@ abstract class TopicMediaSource : MediaSource {
                     DownloadSearchQuery(
                         keywords = name,
                         category = TopicCategory.ANIME,
-                        episodeSort = query.episodeSort.toString(),
+                        episodeSort = query.episodeSort,
                         episodeName = query.episodeName,
                     )
                 ).map {
@@ -62,6 +62,6 @@ data class DownloadSearchQuery(
     val category: TopicCategory? = null,
     val alliance: Alliance? = null,
     val ordering: SearchOrdering? = null,
-    val episodeSort: String? = null,
+    val episodeSort: EpisodeSort? = null,
     val episodeName: String? = null,
 )

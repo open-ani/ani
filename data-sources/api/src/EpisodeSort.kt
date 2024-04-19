@@ -38,6 +38,8 @@ sealed class EpisodeSort : Comparable<EpisodeSort> {
                 return number.toString()
             }
 
+        val isPartial: Boolean get() = number % 1f == 0.5f
+
         override fun toString(): String {
             if (number.toInt().toFloat() == number) {
                 if (number < 10) {

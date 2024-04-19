@@ -18,7 +18,8 @@
 
 package me.him188.ani.datasources.api.topic.titles
 
-import me.him188.ani.datasources.api.topic.Episode
+import me.him188.ani.datasources.api.EpisodeSort
+import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.datasources.api.topic.FrameRate
 import me.him188.ani.datasources.api.topic.MediaOrigin
 import me.him188.ani.datasources.api.topic.Resolution
@@ -39,7 +40,7 @@ class PatternBasedRawTitleParser : RawTitleParser() {
         collectTag: (title: String) -> Unit,
         collectChineseTitle: (String) -> Unit,
         collectOtherTitle: (String) -> Unit,
-        collectEpisode: (Episode) -> Unit,
+        collectEpisode: (EpisodeRange) -> Unit,
         collectResolution: (Resolution) -> Unit,
         collectFrameRate: (FrameRate) -> Unit,
         collectMediaOrigin: (MediaOrigin) -> Unit,
@@ -134,7 +135,7 @@ class PatternBasedRawTitleParser : RawTitleParser() {
                         )
                     }
                 } else {
-                    collectEpisode(Episode(maybeEpisode))
+                    collectEpisode(EpisodeRange.single(EpisodeSort(maybeEpisode)))
                 }
             }
 
@@ -305,7 +306,7 @@ class PatternBasedRawTitleParser : RawTitleParser() {
         collectResolution: (Resolution) -> Unit,
         collectFrameRate: (FrameRate) -> Unit,
         collectMediaOrigin: (MediaOrigin) -> Unit,
-        collectEpisode: (Episode) -> Unit,
+        collectEpisode: (EpisodeRange) -> Unit,
     ): Boolean {
         var anyMatched = false
         anyMatched = anyMatched or tag.parseSubtitleLanguages(collectSubtitleLanguage)
@@ -341,18 +342,32 @@ class PatternBasedRawTitleParser : RawTitleParser() {
         return MediaOrigin.tryParse(this)?.let(collect) != null
     }
 
-    private fun String.parseEpisode(collectEpisode: (Episode) -> Unit): Boolean {
+    private val collectionKeywords = listOf("全集", "合集", "Fin", "END")
+    private val collectionPattern = Regex("""(\d{2,4})\s?-\s?(\d{2,4})""")
+
+    private fun String.parseEpisode(collectEpisode: (EpisodeRange) -> Unit): Boolean {
         this.toFloatOrNull()?.let {
-            collectEpisode(Episode(this))
+            collectEpisode(EpisodeRange.single(this))
             return true
         }
         if (this.startsWith("第")) {
-            collectEpisode(Episode(this.removePrefix("第").removeSuffix("话").removeSuffix("話"))) // 千夏字幕組
+            collectEpisode(EpisodeRange.single(this.removePrefix("第").removeSuffix("话").removeSuffix("話"))) // 千夏字幕組
             return true
         }
         if (this.contains("SP", ignoreCase = true) || this.contains("小剧场")) {
-            collectEpisode(Episode(this))
+            collectEpisode(EpisodeRange.single(this))
             return true
+        }
+        if (collectionKeywords.any { this.contains(it, ignoreCase = true) }) {
+            // "01-12 合集"
+            collectionPattern.find(this)?.let {
+                if (it.groupValues.size != 3) {
+                    return@let
+                }
+                val (start, end) = it.destructured
+                collectEpisode(EpisodeRange.range(start, end))
+                return true
+            }
         }
         return false
     }

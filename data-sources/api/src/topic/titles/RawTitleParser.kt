@@ -18,7 +18,7 @@
 
 package me.him188.ani.datasources.api.topic.titles
 
-import me.him188.ani.datasources.api.topic.Episode
+import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.datasources.api.topic.FrameRate
 import me.him188.ani.datasources.api.topic.MediaOrigin
 import me.him188.ani.datasources.api.topic.Resolution
@@ -40,7 +40,7 @@ abstract class RawTitleParser {
         collectTag: (title: String) -> Unit,
         collectChineseTitle: (String) -> Unit,
         collectOtherTitle: (String) -> Unit,
-        collectEpisode: (Episode) -> Unit, // may be 12.5 or SP1
+        collectEpisode: (EpisodeRange) -> Unit, // may be 12.5 or SP1
         collectResolution: (Resolution) -> Unit,
         collectFrameRate: (FrameRate) -> Unit,
         collectMediaOrigin: (MediaOrigin) -> Unit, // WebRip BDRip Blu-ray
@@ -74,7 +74,7 @@ data class ParsedTopicTitle(
     val tags: List<String> = listOf(),
     val chineseTitle: String? = null,
     val otherTitles: List<String> = listOf(),
-    val episode: Episode? = null,
+    val episodeRange: EpisodeRange? = null,
     val resolution: Resolution? = null,
     val frameRate: FrameRate? = null,
     val mediaOrigin: MediaOrigin? = null,
@@ -84,7 +84,7 @@ data class ParsedTopicTitle(
         var tags = mutableSetOf<String>()
         var chineseTitle: String? = null
         var otherTitles = mutableSetOf<String>()
-        var episode: Episode? = null
+        var episodeRange: EpisodeRange? = null
         var resolution: Resolution? = null
         var frameRate: FrameRate? = null
         var mediaOrigin: MediaOrigin? = null
@@ -95,7 +95,7 @@ data class ParsedTopicTitle(
                 tags = tags.toList(),
                 chineseTitle = chineseTitle?.trim(),
                 otherTitles = otherTitles.mapNotNull { title -> title.trim().takeIf { it.isNotEmpty() } },
-                episode = episode,
+                episodeRange = episodeRange,
                 resolution = resolution,
                 frameRate = frameRate,
                 mediaOrigin = mediaOrigin,
@@ -111,7 +111,7 @@ fun RawTitleParser.parse(text: String, allianceName: String?, builder: ParsedTop
         collectTag = { builder.tags.add(it) },
         collectChineseTitle = { builder.chineseTitle = it },
         collectOtherTitle = { builder.otherTitles.add(it) },
-        collectEpisode = { builder.episode = it },
+        collectEpisode = { builder.episodeRange = it },
         collectResolution = { builder.resolution = it },
         collectFrameRate = { builder.frameRate = it },
         collectMediaOrigin = { builder.mediaOrigin = it },
@@ -131,7 +131,7 @@ fun ParsedTopicTitle.toTopicDetails(): TopicDetails {
         tags = tags,
         chineseTitle = chineseTitle,
         otherTitles = otherTitles,
-        episode = episode,
+        episodeRange = episodeRange,
         resolution = resolution,
         frameRate = frameRate,
         mediaOrigin = mediaOrigin,

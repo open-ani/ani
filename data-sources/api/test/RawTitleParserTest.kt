@@ -18,11 +18,13 @@
 
 package me.him188.ani.datasources.api
 
+import me.him188.ani.datasources.api.topic.EpisodeRange.Companion.range
 import me.him188.ani.datasources.api.topic.titles.ParsedTopicTitle
 import me.him188.ani.datasources.api.topic.titles.PatternBasedRawTitleParser
 import me.him188.ani.datasources.api.topic.titles.parse
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
+import kotlin.test.assertEquals
 
 internal class RawTitleParserTest {
     val data = mapOf(
@@ -31,7 +33,7 @@ internal class RawTitleParserTest {
         )
     )
 
-    val dataA = """
+    private val dataA = """
             Lilith-Raws [Lilith-Raws] Overlord IV - 05 [Baha][WEB-DL][1080p][AVC AAC][CHT][MP4]
             NC-Raws [NC-Raws] OVERLORD IV / Overlord S4 - 05 (B-Global 3840x2160 HEVC AAC MKV)
             桜都字幕组 [桜都字幕组] RWBY 冰雪帝国 / RWBY Hyousetsu Teikoku [05][1080p][简繁内封]
@@ -60,6 +62,35 @@ internal class RawTitleParserTest {
 //                    assertEquals("", chineseTitle)
                 }
             }
+        }
+    }
+
+    // https://www.dmhy.org/topics/list?keyword=&sort_id=31&team_id=0&order=date-desc
+    private val episodeRangeData = listOf(
+        range(1, 12)
+                to "[悠哈璃羽字幕社&LoliHouse] Overtake! [01-12 合集][WebRip 1080p HEVC-10bit AAC][简繁内封字幕][Fin]",
+        range(1, 77) to
+                "[DBD-Raws][偶像活动！ 第三季&第四季/Aikatsu! Akari Generation/アイカツ! あかり Generation][01-77TV全集+特典映像][1080P][BDRip][HEVC-10bit][简繁外挂][FLAC][MKV]",
+        range(1, 12) to
+                "【喵萌奶茶屋】★01月新番★[最弱驯魔师开始了捡垃圾之旅。 / Saijaku Tamer wa Gomi Hiroi no Tabi wo Hajimemashita][01-12END][1080p][简日双语][招募翻译]",
+        range(1, 12) to
+                " [百冬练习组&LoliHouse] 为了在异世界也能抚摸毛茸茸而努力。 / Isekai de Mofumofu Nadenade suru Tame ni Ganbattemasu [01-12 合集][WebRip 1080p HEVC-10bit AAC][简繁内封字幕][Fin]",
+    )
+
+    @TestFactory
+    fun testParseRange(): List<DynamicTest> {
+        val parser = PatternBasedRawTitleParser()
+        return buildList {
+            for ((expected, title) in episodeRangeData) {
+                add(
+                    DynamicTest.dynamicTest("$expected - $title") {
+                        assertEquals(
+                            expected, parser.parse(title, null).episodeRange
+                        )
+                    }
+                )
+            }
+
         }
     }
 }

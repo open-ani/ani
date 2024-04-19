@@ -76,7 +76,7 @@ class TopicDetails(
     val tags: List<String>,
     val chineseTitle: String?,
     val otherTitles: List<String>,
-    val episode: Episode?,
+    val episodeRange: EpisodeRange?,
     val resolution: Resolution?,
     val frameRate: FrameRate?,
     val mediaOrigin: MediaOrigin?,
@@ -86,10 +86,8 @@ class TopicDetails(
 fun DownloadSearchQuery.matches(topic: Topic): Boolean {
     val details = topic.details ?: return true
     episodeSort?.let { expected ->
-        val ep = details.episode
-        if (ep != null && ep.raw.removePrefix("0").removeSuffix(".0") !=
-            expected.removePrefix("0").removeSuffix(".0")
-        ) return false
+        val ep = details.episodeRange
+        if (ep != null && expected in ep) return false
     }
     return true
 }
