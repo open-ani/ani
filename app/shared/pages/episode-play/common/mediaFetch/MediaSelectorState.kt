@@ -80,7 +80,7 @@ interface MediaSelectorState {
      */
     val alliances: List<String>
     val resolutions: List<String>
-    val subtitleLanguageIds: List<String> // null element means no subtitle
+    val subtitleLanguageIds: List<String>
     val mediaSources: List<String>
 
     /**
@@ -240,7 +240,7 @@ internal class MediaSelectorStateImpl(
     override val alliances: List<String> by derivedStateOf {
         mediaList.map { it.properties.alliance }
             .fastDistinctBy { it }
-            .sorted()
+            .sortedBy { it.length }
     }
     override val resolutions: List<String> by derivedStateOf {
         mediaList.map { it.properties.resolution }

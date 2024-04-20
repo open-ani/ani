@@ -18,6 +18,9 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.staggeredgrid.LazyHorizontalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.DownloadDone
 import androidx.compose.material.icons.rounded.Public
@@ -110,7 +113,8 @@ fun MediaSelector(
                                 label = { Text(remember(item) { renderMediaSource(item) }) },
                             )
                         },
-                        Modifier.heightIn(min = 32.dp)
+                        maxItemsInEachColumn = 1,
+                        Modifier.heightIn(min = 32.dp),
                     )
 
                     MediaFilterRow(
@@ -154,9 +158,17 @@ fun MediaSelector(
                             FilterChip(
                                 item == state.selectedAlliance,
                                 onClick = { state.preferAlliance(item, removeOnExist = true) },
-                                label = { Text(item) },
+                                label = {
+                                    Text(
+                                        item,
+                                        maxLines = 1,
+                                        softWrap = false,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                },
                             )
                         },
+                        maxItemsInEachColumn = 3,
                         Modifier.heightIn(min = 32.dp)
                     )
 
@@ -335,6 +347,7 @@ private fun <T> MediaFilterFlowRow(
     items: List<T>,
     label: @Composable () -> Unit,
     eachItem: @Composable (item: T) -> Unit,
+    maxItemsInEachColumn: Int,
     modifier: Modifier = Modifier,
     labelStyle: TextStyle = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Medium),
 ) {
@@ -349,10 +362,25 @@ private fun <T> MediaFilterFlowRow(
             Modifier.padding(horizontal = 8.dp),
             contentAlignment = Alignment.Center
         ) {
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+//            FlowColumn(
+//                maxItemsInEachColumn = maxItemsInEachColumn,
+//                horizontalArrangement = Arrangement.spacedBy(8.dp)
+//            ) {
+//                for (item in items) {
+//                    Box(Modifier.height(40.dp)) {
+//                        eachItem(item)
+//                    }
+//                }
+//            }
+            LazyHorizontalStaggeredGrid(
+                StaggeredGridCells.FixedSize(32.dp),
+                Modifier.padding(vertical = 8.dp)
+                    .fillMaxWidth()
+                    .heightIn(max = 32.dp * maxItemsInEachColumn + 8.dp * (maxItemsInEachColumn - 1)),
+                horizontalItemSpacing = 8.dp,
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                for (item in items) {
+                items(items) { item ->
                     eachItem(item)
                 }
             }
