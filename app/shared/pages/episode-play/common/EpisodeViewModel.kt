@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
@@ -285,7 +286,7 @@ private class EpisodeViewModelImpl(
 
     private val danmakuFlow: Flow<Danmaku> = combine(
         selectedMedia.filterNotNull(),
-        playerState.videoProperties.filterNotNull()
+        playerState.videoProperties.distinctUntilChangedBy { it?.filename }.filterNotNull()
     ) { media, video ->
         val filename = video.filename.takeIf { it.isNotBlank() }
             ?: video.title
