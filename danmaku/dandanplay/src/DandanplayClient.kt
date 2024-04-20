@@ -41,7 +41,8 @@ class DandanplayClient(
             delayMillis { 2000 }
         }
         install(HttpTimeout) {
-            requestTimeoutMillis = 10_000 // 弹弹服务器请求比较慢
+            requestTimeoutMillis = 20_000 // 弹弹服务器请求比较慢
+            connectTimeoutMillis = 10_000 // 弹弹服务器请求比较慢
         }
         install(ContentNegotiation) {
             json(Json {
