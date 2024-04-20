@@ -1,5 +1,7 @@
 package me.him188.ani.utils.coroutines
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -15,6 +17,10 @@ interface SuspendLazy<T> {
      * When [get] is called the next time, the initializer is called again.
      */
     suspend fun get(): T
+}
+
+fun <T> SuspendLazy<T>.asFlow(): Flow<T> = flow {
+    emit(get())
 }
 
 fun <T> SuspendLazy(
