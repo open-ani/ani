@@ -319,12 +319,15 @@ internal class TorrentDownloaderImpl(
         }
 
         logger.info { "Fetching magnet: $uri" }
-        val data: ByteArray = try {
+        val data: ByteArray? = try {
             sessionManager.use {
                 fetchMagnet(uri, timeoutSeconds, magnetCacheDir)
             }
         } catch (e: InterruptedException) {
             throw MagnetTimeoutException(cause = e)
+        }
+        if (data == null) {
+            throw MagnetTimeoutException()
         }
         logger.info { "Fetched magnet: size=${data.size}" }
         return EncodedTorrentData(data)

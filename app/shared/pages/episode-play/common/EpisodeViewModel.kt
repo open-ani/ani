@@ -13,8 +13,10 @@ import androidx.compose.ui.text.AnnotatedString
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.distinctUntilChangedBy
@@ -33,6 +35,7 @@ import me.him188.ani.app.data.media.resolver.VideoSourceResolver
 import me.him188.ani.app.data.subject.SubjectManager
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.Context
+import me.him188.ani.app.torrent.MagnetTimeoutException
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
@@ -131,6 +134,8 @@ interface EpisodeViewModel : HasBackgroundScope {
 
     // Video
 
+    val videoSourceState: StateFlow<VideoSourceState>
+
     /**
      * `true` if a play source is selected by user (or automatically)
      */
@@ -200,6 +205,8 @@ private class EpisodeViewModelImpl(
 
     override val mediaSelected: Flow<Boolean> = selectedMedia.map { it != null }
 
+    override val videoSourceState: MutableStateFlow<VideoSourceState> = MutableStateFlow(VideoSourceState.Initial)
+
     /**
      * The [VideoSource] selected to play.
      *
@@ -216,6 +223,7 @@ private class EpisodeViewModelImpl(
                     val presentation = withContext(Dispatchers.Main) {
                         episodePresentation
                     }
+                    videoSourceState.value = VideoSourceState.Resolving
                     emit(
                         videoSourceResolver.resolve(
                             media,
@@ -225,12 +233,18 @@ private class EpisodeViewModelImpl(
                             )
                         )
                     )
+                    videoSourceState.value = VideoSourceState.Succeed
                 } catch (e: UnsupportedMediaException) {
                     logger.error(e) { "Failed to resolve video source" }
+                    videoSourceState.value = VideoSourceState.UnsupportedMedia
+                    emit(null)
+                } catch (e: MagnetTimeoutException) {
+                    videoSourceState.value = VideoSourceState.ResolutionTimedOut
                     emit(null)
                 } catch (_: CancellationException) {
                 } catch (e: Throwable) {
                     logger.error(e) { "Failed to resolve video source" }
+                    videoSourceState.value = VideoSourceState.UnknownError
                     emit(null)
                 }
             }
@@ -362,4 +376,16 @@ private class EpisodeViewModelImpl(
         snapshotFlow { mediaSelectorVisible }.first { !it } // await closed
         return mediaSelectorState.selected
     }
+}
+
+sealed class VideoSourceState {
+    data object Initial : VideoSourceState()
+    data object Resolving : VideoSourceState()
+
+    sealed class Failed : VideoSourceState()
+    data object ResolutionTimedOut : Failed()
+    data object UnsupportedMedia : Failed()
+    data object UnknownError : Failed()
+
+    data object Succeed : VideoSourceState()
 }

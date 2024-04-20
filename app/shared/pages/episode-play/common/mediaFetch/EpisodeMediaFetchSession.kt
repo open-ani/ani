@@ -253,7 +253,7 @@ internal class DefaultEpisodeMediaFetchSession(
                         if (!defaultPreferencesFetched) return@combine // wait for config load
 
                         // on completion
-                        withContext(Dispatchers.Main.immediate) {
+                        withContext(Dispatchers.Main) {
                             if (selected == null) { // only if user has not selected
                                 makeDefaultSelection()
                             }
