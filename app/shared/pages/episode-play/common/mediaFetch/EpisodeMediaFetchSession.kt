@@ -3,6 +3,9 @@ package me.him188.ani.app.ui.subject.episode.mediaFetch
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -16,6 +19,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.sample
+import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.media.MediaSourceManager
 import me.him188.ani.app.data.repositories.EpisodePreferencesRepository
 import me.him188.ani.app.data.repositories.EpisodeRepository
@@ -205,7 +209,10 @@ internal class DefaultEpisodeMediaFetchSession(
         val defaultPreferencesFetched = defaultPreferencesFlow.map {
             it !== placeholderDefaultPreference
         }
-        val defaultPreference by defaultPreferencesFlow.produceState(placeholderDefaultPreference)
+        var defaultPreference by mutableStateOf(placeholderDefaultPreference)
+        launchInMain {
+            defaultPreference = withContext(Dispatchers.Default) { defaultPreferencesFlow.first() }
+        } // 不要用 produceState, 会造成递归 (用户点击过滤 -> 保存默认 -> 默认更新 -> 筛选更新)
 
         MediaSelectorState(
             { fetchResult },
