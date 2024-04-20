@@ -36,8 +36,6 @@ import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.data.media.MediaCacheManager
-import me.him188.ani.app.data.repositories.EpisodeRepository
-import me.him188.ani.app.data.repositories.SubjectRepository
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.TopAppBarGoBackButton
 import me.him188.ani.app.ui.foundation.launchInBackground
@@ -73,10 +71,7 @@ class CacheManagementPageViewModelImpl : CacheManagementPageViewModel,
 class MediaCacheStorageState(
     private val storage: MediaCacheStorage
 ) : AbstractViewModel(), KoinComponent {
-    private val subjectRepository: SubjectRepository by inject()
-    private val episodeRepository: EpisodeRepository by inject()
-
-    private val items = mutableMapOf<String, CacheItem>()
+    private val items = mutableMapOf<MediaCache, CacheItem>()
 
     val mediaSourceId = storage.mediaSourceId
 
@@ -91,7 +86,7 @@ class MediaCacheStorageState(
 
     private fun mapCacheToItem(list: List<MediaCache>): Flow<List<CacheItem>> {
         return list.asFlow().map { cache ->
-            items.getOrPut(cache.origin.mediaId) {
+            items.getOrPut(cache) {
                 val metadata = cache.metadata
                 CacheItem(
                     cache,
@@ -105,15 +100,14 @@ class MediaCacheStorageState(
                 )
             }
         }.also {
-            val ids = list.map { it.origin.mediaId }
-            items.keys.removeAll { key -> key !in ids }
+            items.keys.removeAll { key -> key !in list }
         }.runningList()
     }
 
     fun delete(item: CacheItem) {
-        items.remove(item.origin.mediaId)
+        items.remove(item.cache)
         launchInBackground {
-            storage.delete(item.origin)
+            storage.delete(item.cache)
         }
     }
 }
@@ -274,7 +268,7 @@ fun StorageManagerView(
     ) {
         item { }
 
-        items(list, key = { it.origin.mediaId }) { item ->
+        items(list, key = { it.cache.cacheId }) { item ->
             CacheItemView(item, onDelete, { mediaSourceId })
         }
 

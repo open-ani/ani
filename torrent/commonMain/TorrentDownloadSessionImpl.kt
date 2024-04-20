@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.getAndUpdate
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -170,7 +169,7 @@ internal class TorrentDownloadSessionImpl(
         list
     }
 
-    private val openHandles = ConcurrentLinkedQueue<TorrentFileHandle>()
+    private val openHandles = ConcurrentLinkedQueue<TorrentFileEntryImpl.TorrentFileHandleImpl>()
 
     private inner class TorrentFileEntryImpl(
         val index: Int,
@@ -178,7 +177,7 @@ internal class TorrentDownloadSessionImpl(
         override val length: Long,
         val relativePath: String,
     ) : TorrentFileEntry {
-        private inner class TorrentFileHandleImpl : TorrentFileHandle {
+        inner class TorrentFileHandleImpl : TorrentFileHandle {
             @Volatile
             private var closed = false
             private var closeException: Throwable? = null
@@ -210,7 +209,7 @@ internal class TorrentDownloadSessionImpl(
                 )
             }
 
-            override val entry: TorrentFileEntry get() = this@TorrentFileEntryImpl
+            override val entry get() = this@TorrentFileEntryImpl
 
             override suspend fun resume(priority: FilePriority) {
                 checkClosed()
@@ -254,6 +253,8 @@ internal class TorrentDownloadSessionImpl(
             }
         }
 
+        val finishedOverride = MutableStateFlow(false)
+
         override val stats: DownloadStats = object : DownloadStats {
             override val totalBytes: Flow<Long> = flowOf(length)
             override val downloadedBytes: Flow<Long> = flow {
@@ -265,13 +266,14 @@ internal class TorrentDownloadSessionImpl(
             }
             override val downloadRate: Flow<Long?> get() = overallStats.downloadRate
             override val uploadRate: Flow<Long?> get() = overallStats.uploadRate
-            override val progress: Flow<Float> = downloadedBytes.map {
-                if (length == 0L) {
-                    0f
-                } else {
-                    it.toFloat() / length.toFloat()
+            override val progress: Flow<Float> =
+                combine(finishedOverride, downloadedBytes) { finished, downloadBytes ->
+                    when {
+                        finished -> 1f
+                        length == 0L -> 0f
+                        else -> (downloadBytes.toFloat() / length.toFloat()).coerceAtMost(1f)
+                    }
                 }
-            }
             override val isFinished: Flow<Boolean> = flow {
                 emit(pieces.get())
             }.flatMapLatest { list ->
@@ -489,6 +491,10 @@ internal class TorrentDownloadSessionImpl(
                     is TorrentFinishedAlert -> {
                         // https://libtorrent.org/reference-Alerts.html#:~:text=report%20issue%5D-,torrent_finished_alert,-Declared%20in%20%22
                         logger.info { "[$torrentName] Torrent finished" }
+                        for (openHandle in openHandles) {
+                            logger.info { "[$torrentName] Set entry's finishedOverride to true because torrent finished: ${openHandle.entry.filePath}" }
+                            openHandle.entry.finishedOverride.value = true
+                        }
                     }
 
                     is FileErrorAlert -> {

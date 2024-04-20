@@ -2,6 +2,7 @@ package me.him188.ani.datasources.core.cache
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.runTest
 import me.him188.ani.datasources.api.CachedMedia
@@ -121,12 +122,9 @@ class DirectoryMediaCacheStorageTest {
 
         assertSame(
             cache,
-            storage.findCache(
-                media,
-                resume = true,
-            )
+            storage.listFlow.first().single()
         )
-        assertEquals(2, cache.resumeCalled.get())
+        assertEquals(1, cache.resumeCalled.get())
 
         storage.close()
     }
@@ -149,10 +147,7 @@ class DirectoryMediaCacheStorageTest {
 
         assertSame(
             cache,
-            storage.findCache(
-                media,
-                resume = false,
-            )
+            storage.listFlow.first().single()
         )
         assertEquals(0, cache.resumeCalled.get())
 
@@ -176,9 +171,9 @@ class DirectoryMediaCacheStorageTest {
 
         assertEquals(0, cache.resumeCalled.get())
 
-        assertEquals(cache, storage.findCache(media, resume = false))
-        assertEquals(true, storage.delete(media))
-        assertEquals(null, storage.findCache(media, resume = false))
+        assertEquals(cache, storage.listFlow.first().single())
+        assertEquals(true, storage.delete(cache))
+        assertEquals(null, storage.listFlow.first().firstOrNull())
 
         assertEquals(0, cache.resumeCalled.get())
 

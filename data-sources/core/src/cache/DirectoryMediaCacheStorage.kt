@@ -33,6 +33,7 @@ import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
+import me.him188.ani.utils.logging.warn
 import java.nio.file.Path
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -40,6 +41,7 @@ import kotlin.io.path.createDirectories
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.exists
 import kotlin.io.path.extension
+import kotlin.io.path.moveTo
 import kotlin.io.path.name
 import kotlin.io.path.readText
 import kotlin.io.path.useDirectoryEntries
@@ -86,6 +88,7 @@ class DirectoryMediaCacheStorage(
                         json.decodeFromString(MediaCacheSave.serializer(), file.readText())
                     } catch (e: Exception) {
                         logger.error(e) { "Failed to deserialize metadata file ${file.name}" }
+                        file.deleteIfExists()
                         return@forEach
                     }
 
@@ -100,10 +103,24 @@ class DirectoryMediaCacheStorage(
                             cache.resume()
                             logger.info { "Cache resumed: $cache" }
                         }
+
+
+                        // try to migrate
+                        if (cache != null) {
+                            val newSaveName = getSaveFilename(cache)
+                            if (file.name != newSaveName) {
+                                logger.warn {
+                                    "Metadata file name mismatch, renaming: " +
+                                            "${file.name} -> $newSaveName"
+                                }
+                                file.moveTo(dir.resolve(newSaveName))
+                            }
+                        }
+
+
                     } catch (e: Exception) {
                         logger.error(e) { "Failed to restore cache for ${save.origin.mediaId}" }
                     }
-
                 }
             }
         }
@@ -111,15 +128,15 @@ class DirectoryMediaCacheStorage(
 
     override val listFlow: MutableStateFlow<List<MediaCache>> = MutableStateFlow(emptyList())
 
-    override suspend fun findCache(media: Media, resume: Boolean): MediaCache? {
-        return lock.withLock {
-            listFlow.first().firstOrNull { it.origin.mediaId == media.mediaId }
-        }?.also {
-            if (resume) {
-                it.resume()
-            }
-        }
-    }
+//    override suspend fun findCache(media: Media, metadata: MediaCacheMetadata, resume: Boolean): MediaCache? {
+//        return lock.withLock {
+//            listFlow.first().firstOrNull { cacheEquals(it, media, metadata) }
+//        }?.also {
+//            if (resume) {
+//                it.resume()
+//            }
+//        }
+//    }
 
     override val cacheMediaSource: MediaSource by lazy { MediaCacheStorageSource(this) }
 
@@ -140,14 +157,16 @@ class DirectoryMediaCacheStorage(
 
     override suspend fun cache(media: Media, metadata: MediaCacheMetadata, resume: Boolean): MediaCache {
         return lock.withLock {
-            listFlow.value.firstOrNull { it.origin.mediaId == media.mediaId }?.let { return@withLock it }
+            listFlow.value.firstOrNull {
+                cacheEquals(it, media, metadata)
+            }?.let { return@withLock it }
 
             val cache = engine.createCache(
                 media, metadata,
                 scope.coroutineContext
             )
             withContext(Dispatchers.IO) {
-                dir.resolve("${media.mediaId.hashCode()}.${METADATA_FILE_EXTENSION}").writeText(
+                dir.resolve(getSaveFilename(cache)).writeText(
                     json.encodeToString(
                         MediaCacheSave.serializer(),
                         MediaCacheSave(media, cache.metadata)
@@ -163,17 +182,26 @@ class DirectoryMediaCacheStorage(
         }
     }
 
-    override suspend fun delete(media: Media): Boolean {
+    private fun cacheEquals(
+        it: MediaCache,
+        media: Media,
+        metadata: MediaCacheMetadata = it.metadata
+    ) = it.origin.mediaId == media.mediaId && it.metadata.episodeSort == metadata.episodeSort
+
+    override suspend fun delete(cache: MediaCache): Boolean {
         lock.withLock {
-            val cache = listFlow.value.firstOrNull { it.origin.mediaId == media.mediaId } ?: return false
             cache.delete()
             withContext(Dispatchers.IO) {
-                dir.resolve("${media.mediaId.hashCode()}.${METADATA_FILE_EXTENSION}").deleteIfExists()
+                if (!dir.resolve(getSaveFilename(cache)).deleteIfExists()) {
+                    logger.warn { "Attempting to delete media cache '${cache.cacheId}' but its corresponding metadata file does not exist" }
+                }
             }
             listFlow.value -= cache
             return true
         }
     }
+
+    private fun getSaveFilename(cache: MediaCache) = "${cache.cacheId}.${METADATA_FILE_EXTENSION}"
 
     override fun close() {
         scope.cancel()
