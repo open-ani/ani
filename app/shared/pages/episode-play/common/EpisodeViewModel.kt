@@ -4,6 +4,7 @@ import androidx.annotation.UiThread
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -24,7 +25,6 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.transformLatest
@@ -139,7 +139,7 @@ interface EpisodeViewModel : HasBackgroundScope {
     /**
      * `true` if a play source is selected by user (or automatically)
      */
-    val mediaSelected: Flow<Boolean>
+    val mediaSelected: Boolean
 
     /**
      * Play controller for video view. This can be saved even when window configuration changes (i.e. everything recomposes).
@@ -199,11 +199,13 @@ private class EpisodeViewModelImpl(
 
     override var mediaSelectorVisible: Boolean by mutableStateOf(false)
 
-    private val selectedMedia = snapshotFlow { mediaSelectorState.selected }
+    private val selectedMedia = mediaSelectorState.selectedFlow
+        .filterNotNull()
         .distinctUntilChanged()
-        .flowOn(Dispatchers.Main.immediate) // access states in Main
 
-    override val mediaSelected: Flow<Boolean> = selectedMedia.map { it != null }
+    override val mediaSelected by derivedStateOf {
+        mediaSelectorState.selected != null
+    }
 
     override val videoSourceState: MutableStateFlow<VideoSourceState> = MutableStateFlow(VideoSourceState.Initial)
 
@@ -218,7 +220,7 @@ private class EpisodeViewModelImpl(
         .distinctUntilChanged()
         .transformLatest { playSource ->
             emit(null)
-            playSource?.let { media ->
+            playSource.let { media ->
                 try {
                     val presentation = withContext(Dispatchers.Main) {
                         episodePresentation

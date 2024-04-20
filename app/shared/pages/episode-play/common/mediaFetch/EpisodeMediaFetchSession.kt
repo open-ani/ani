@@ -3,7 +3,6 @@ package me.him188.ani.app.ui.subject.episode.mediaFetch
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -17,14 +16,13 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.sample
-import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.media.MediaSourceManager
 import me.him188.ani.app.data.repositories.EpisodePreferencesRepository
 import me.him188.ani.app.data.repositories.EpisodeRepository
 import me.him188.ani.app.data.repositories.SubjectRepository
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
-import me.him188.ani.app.ui.foundation.launchInBackground
+import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.source.MediaFetchRequest
@@ -214,18 +212,18 @@ internal class DefaultEpisodeMediaFetchSession(
             { defaultPreference },
         ).apply {
             if (config.savePreferencesOnFilter) {
-                launchInBackground {
+                launchInMain {
                     // Save users' per-subject preferences when they click the filter chips
                     preferenceUpdates.preference.collect {
                         episodePreferencesRepository.setMediaPreference(
                             subjectId,
-                            withContext(Dispatchers.Main) { defaultPreference }.merge(it)
+                            defaultPreference.merge(it)
                         )
                     }
                 }
             }
             if (config.savePreferencesOnSelect) {
-                launchInBackground {
+                launchInMain {
                     // Save users' per-subject preferences when they click cards
                     preferenceUpdates.select.collect { media ->
                         episodePreferencesRepository.setMediaPreference(
@@ -244,7 +242,7 @@ internal class DefaultEpisodeMediaFetchSession(
                 }
             }
             if (config.autoSelectOnFetchCompletion) {
-                launchInBackground {
+                launchInMain {
                     // Automatically select a media when the list is ready
                     combine(
                         mediaFetchSession.flatMapLatest { it.hasCompleted }.filter { it },
@@ -253,16 +251,14 @@ internal class DefaultEpisodeMediaFetchSession(
                         if (!defaultPreferencesFetched) return@combine // wait for config load
 
                         // on completion
-                        withContext(Dispatchers.Main) {
-                            if (selected == null) { // only if user has not selected
-                                makeDefaultSelection()
-                            }
+                        if (selected == null) { // only if user has not selected
+                            makeDefaultSelection()
                         }
                     }.collect()
                 }
             }
             if (config.autoSelectLocal) {
-                launchInBackground {
+                launchInMain {
                     combine(
                         mediaFetchSession.flatMapLatest { it.cumulativeResults },
                         defaultPreferencesFetched
@@ -270,10 +266,8 @@ internal class DefaultEpisodeMediaFetchSession(
                         if (!defaultPreferencesFetched) return@combine // wait for config load
 
                         if (list.any { it.location == MediaSourceLocation.LOCAL }) {
-                            withContext(Dispatchers.Main.immediate) {
-                                if (selected == null) { // only if user has not selected
-                                    makeDefaultSelection()
-                                }
+                            if (selected == null) { // only if user has not selected
+                                makeDefaultSelection()
                             }
                         }
                     }.collect()

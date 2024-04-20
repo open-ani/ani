@@ -243,7 +243,6 @@ private fun EpisodeVideo(
     val context by rememberUpdatedState(LocalContext.current)
 
     // 视频
-    val selected by vm.mediaSelected.collectAsStateWithLifecycle(false)
     val danmakuConfig by vm.danmaku.config.collectAsStateWithLifecycle(DanmakuConfig.Default)
 
     val danmakuEnabled by vm.danmaku.enabled.collectAsStateWithLifecycle(false)
@@ -263,7 +262,7 @@ private fun EpisodeVideo(
         },
         videoSourceState = { videoSourceState },
         danmakuHostState = vm.danmaku.danmakuHostState,
-        videoSourceSelected = { selected },
+        videoSourceSelected = { vm.mediaSelected },
         danmakuConfig = { danmakuConfig },
         onClickFullScreen = {
             if (vm.isFullscreen) {

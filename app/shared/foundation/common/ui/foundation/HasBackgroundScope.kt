@@ -31,6 +31,7 @@ import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
+import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration.Companion.seconds
@@ -255,9 +256,13 @@ interface HasBackgroundScope {
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
     ): State<T> {
         val state = mutableStateOf(initialValue)
-        launchInMain(coroutineContext) {
+        launchInBackground(coroutineContext) {
             flowOn(Dispatchers.Default) // compute in background
-                .collect { state.value = it } // update state in main
+                .collect {
+                    withContext(Dispatchers.Main) { // ensure a dispatch happens
+                        state.value = it
+                    }
+                } // update state in main
         }
         return state
     }
@@ -270,9 +275,13 @@ interface HasBackgroundScope {
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
     ): FloatState {
         val state = mutableFloatStateOf(initialValue)
-        launchInMain(coroutineContext) {
+        launchInBackground(coroutineContext) {
             flowOn(Dispatchers.Default) // compute in background
-                .collect { state.value = it } // update state in main
+                .collect {
+                    withContext(Dispatchers.Main) { // ensure a dispatch happens
+                        state.value = it
+                    }
+                } // update state in main
         }
         return state
     }
@@ -285,9 +294,13 @@ interface HasBackgroundScope {
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
     ): MutableIntState {
         val state = mutableIntStateOf(initialValue)
-        launchInMain(coroutineContext) {
+        launchInBackground(coroutineContext) {
             flowOn(Dispatchers.Default) // compute in background
-                .collect { state.value = it } // update state in main
+                .collect {
+                    withContext(Dispatchers.Main) { // ensure a dispatch happens
+                        state.value = it
+                    }
+                } // update state in main
         }
         return state
     }
@@ -300,9 +313,13 @@ interface HasBackgroundScope {
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
     ): State<T> {
         val state = mutableStateOf(initialValue)
-        launchInMain(coroutineContext) {
+        launchInBackground(coroutineContext) {
             // no need for flowOn as it's SharedFlow
-            collect { state.value = it }
+            collect {
+                withContext(Dispatchers.Main) {
+                    state.value = it
+                }
+            }
         }
         return state
     }
