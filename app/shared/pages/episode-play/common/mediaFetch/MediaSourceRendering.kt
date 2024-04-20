@@ -21,7 +21,7 @@ import org.jetbrains.compose.resources.painterResource
 fun renderMediaSource(
     id: String
 ): String = when (id) {
-    DmhyMediaSource.ID -> "動漫花園資源網"
+    DmhyMediaSource.ID -> "動漫花園"
     AcgRipMediaSource.ID -> "ACG.RIP"
     MikanMediaSource.ID -> "Mikan"
     MikanCNMediaSource.ID -> "Mikan (中国大陆)"
