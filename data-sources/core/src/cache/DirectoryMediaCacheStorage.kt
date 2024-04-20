@@ -96,6 +96,10 @@ class DirectoryMediaCacheStorage(
                             }
                         }
                         logger.info { "Cache restored: ${save.origin.mediaId}, result=${cache}" }
+                        if (cache != null) {
+                            cache.resume()
+                            logger.info { "Cache resumed: $cache" }
+                        }
                     } catch (e: Exception) {
                         logger.error(e) { "Failed to restore cache for ${save.origin.mediaId}" }
                     }

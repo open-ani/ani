@@ -63,6 +63,9 @@ public interface TorrentFileHandle : AutoCloseable {
 
     /**
      * 恢复下载并设置优先级
+     *
+     * 注意, 设置低于 [FilePriority.NORMAL] 可能会导致下载速度缓慢
+     *
      * @throws IllegalStateException 当已经 [close] 时抛出
      */
     public suspend fun resume(priority: FilePriority = FilePriority.NORMAL)
