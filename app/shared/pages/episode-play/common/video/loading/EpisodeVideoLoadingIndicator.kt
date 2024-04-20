@@ -2,11 +2,16 @@ package me.him188.ani.app.ui.subject.episode.video.loading
 
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
@@ -14,6 +19,7 @@ import me.him188.ani.app.videoplayer.ui.VideoLoadingIndicator
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.datasources.api.topic.FileSize
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
+import kotlin.time.Duration.Companion.seconds
 
 @Composable // see preview
 fun EpisodeVideoLoadingIndicator(
@@ -76,7 +82,16 @@ fun EpisodeVideoLoadingIndicator(
                 }
 
                 EpisodeVideoLoadingState.BUFFERING -> {
+                    var tooLong by rememberSaveable {
+                        mutableStateOf(false)
+                    }
                     val speed by remember { derivedStateOf(speedProvider) }
+                    if (speed == FileSize.Zero) {
+                        LaunchedEffect(true) {
+                            delay(5.seconds)
+                            tooLong = true
+                        }
+                    }
                     val text by remember(speed) {
                         derivedStateOf {
                             buildString {
@@ -85,6 +100,11 @@ fun EpisodeVideoLoadingIndicator(
                                     appendLine()
                                     append(speed.toString())
                                     append("/s")
+                                }
+
+                                if (tooLong) {
+                                    appendLine()
+                                    append("检测到连接异常, 如有使用代理请尝试关闭后重启应用")
                                 }
                             }
                         }
