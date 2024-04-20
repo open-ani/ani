@@ -1,5 +1,6 @@
 package me.him188.ani.app.ui.subject.episode.mediaFetch
 
+import androidx.annotation.MainThread
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -8,6 +9,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.util.fastDistinctBy
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.source.MediaSourceLocation
 
@@ -51,9 +54,16 @@ interface MediaSelectorState {
      *
      * @param removeOnExist If true, and the user has already set the same preference for this property, it will be removed.
      */
+    @MainThread
     fun preferAlliance(alliance: String, removeOnExist: Boolean = false)
+
+    @MainThread
     fun preferResolution(resolution: String, removeOnExist: Boolean = false)
+
+    @MainThread
     fun preferSubtitleLanguage(subtitleLanguageId: String, removeOnExist: Boolean = false)
+
+    @MainThread
     fun preferMediaSource(mediaSourceId: String, removeOnExist: Boolean = false)
 
     /**
@@ -95,6 +105,7 @@ interface MediaSelectorState {
      * The final media selected from the [candidates]. It is guaranteed that [selected] will be one of [candidates].
      */
     val selected: Media?
+    val selectedFlow: StateFlow<Media?>
 
     /**
      * Selects a media from the [candidates] list. This will update [selected].
@@ -104,11 +115,13 @@ interface MediaSelectorState {
      *
      * @param candidate must be one of [candidate]. Otherwise this function will have no effect.
      */
+    @MainThread
     fun select(candidate: Media)
 
     /**
      * Make a default selection based on current user preferences and the defaults.
      */
+    @MainThread
     fun makeDefaultSelection()
 
     /**
@@ -312,6 +325,7 @@ internal class MediaSelectorStateImpl(
     // User input
     private var _selected: Media? by mutableStateOf(null)
 
+    override val selectedFlow: MutableStateFlow<Media?> = MutableStateFlow(null)
     override val selected: Media? by derivedStateOf {
         if (_selected in candidates) _selected
         else null
@@ -319,6 +333,7 @@ internal class MediaSelectorStateImpl(
 
     override fun select(candidate: Media) {
         _selected = candidate
+        selectedFlow.value = candidate
         preferenceUpdates.select.tryEmit(candidate)
     }
 
@@ -331,6 +346,7 @@ internal class MediaSelectorStateImpl(
         this.subtitleLanguageIdByDefaultSelection = languageId ?: media.properties.subtitleLanguageIds.firstOrNull()
         this.mediaSourceByDefaultSelection = media.mediaSourceId
         this._selected = media
+        selectedFlow.value = media
     }
 
     override fun makeDefaultSelection() {
