@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.shareIn
 import me.him188.ani.app.data.media.resolver.TorrentVideoSourceResolver
+import me.him188.ani.app.torrent.FilePriority
 import me.him188.ani.app.torrent.TorrentDownloader
 import me.him188.ani.app.torrent.TorrentFileHandle
 import me.him188.ani.app.torrent.model.EncodedTorrentData
@@ -90,7 +91,7 @@ class TorrentMediaCacheEngine(
 
         override suspend fun resume() {
             if (deleted) return
-            file.first().resume()
+            file.first().resume(FilePriority.LOW)
         }
 
         override suspend fun delete() {
