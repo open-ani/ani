@@ -127,17 +127,17 @@ private class TestMediaCacheStorage() : MediaCacheStorage {
         }
     }
     override val stats: MediaStats = emptyMediaStats()
-    override suspend fun findCache(media: Media, resume: Boolean): MediaCache? {
-        return listFlow.first().firstOrNull { it.origin.mediaId == media.mediaId }
-    }
+//    override suspend fun findCache(media: Media, metadata: MediaCacheMetadata, resume: Boolean): MediaCache? {
+//        return listFlow.first().firstOrNull { it.origin.mediaId == media.mediaId }
+//    }
 
     override suspend fun cache(media: Media, metadata: MediaCacheMetadata, resume: Boolean): MediaCache {
         throw UnsupportedOperationException()
     }
 
-    override suspend fun delete(media: Media): Boolean {
-        if (listFlow.first().any { it.origin.mediaId == media.mediaId }) {
-            listFlow.value = listFlow.first().filter { it.origin.mediaId != media.mediaId }
+    override suspend fun delete(cache: MediaCache): Boolean {
+        if (listFlow.first().any { it == cache }) {
+            listFlow.value = listFlow.first().filter { it != cache }
             return true
         }
         return false

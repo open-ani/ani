@@ -29,6 +29,7 @@ import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import kotlin.coroutines.CoroutineContext
 import kotlin.io.path.deleteIfExists
+import kotlin.io.path.exists
 
 private const val EXTRA_TORRENT_DATA = "torrentData"
 
@@ -112,7 +113,12 @@ class TorrentMediaCacheEngine(
             val handle = file.first()
             val file = handle.entry.resolveFile()
             handle.close()
-            file.deleteIfExists()
+            if (file.exists()) {
+                logger.info { "Deleting torrent cache: $file" }
+                file.deleteIfExists()
+            } else {
+                logger.info { "Torrent cache does not exist, ignoring: $file" }
+            }
         }
     }
 

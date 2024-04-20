@@ -55,11 +55,6 @@ interface MediaCacheStorage : AutoCloseable {
     val listFlow: Flow<List<MediaCache>>
 
     /**
-     * Returns the cache of the media if it exists, or `null` if it doesn't.
-     */
-    suspend fun findCache(media: Media, resume: Boolean = true): MediaCache?
-
-    /**
      * Finds the existing cache for the media or adds the media to the cache (queue).
      *
      * When this function returns, A new [MediaSource] can then be listed by [listFlow].
@@ -76,13 +71,18 @@ interface MediaCacheStorage : AutoCloseable {
      * Delete the cache if it exists.
      * @return `true` if a cache was deleted, `false` if there wasn't such a cache.
      */
-    suspend fun delete(media: Media): Boolean
+    suspend fun delete(cache: MediaCache): Boolean
 }
 
 /**
  * A media cached in the storage.
  */
 interface MediaCache {
+    val cacheId: String
+        get() = (origin.hashCode() * 31
+                + metadata.subjectId.hashCode() * 31
+                + metadata.episodeId.hashCode()).toString()
+
     /**
      * Original media that is being cached.
      */
