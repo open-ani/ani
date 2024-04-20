@@ -44,6 +44,7 @@ import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuMatchers
 import me.him188.ani.danmaku.api.DanmakuProvider
+import me.him188.ani.danmaku.api.DanmakuSearchRequest
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.bangumi.processing.nameCNOrName
@@ -290,14 +291,27 @@ private class EpisodeViewModelImpl(
             ?: media.originalTitle
         logger.info { "Search for danmaku with filename='$filename', fileHash=${video.fileHash}, length=${video}" }
 
+        val subject: SubjectPresentation
+        val episode: EpisodePresentation
+        withContext(Dispatchers.Main.immediate) {
+            subject = subjectPresentation
+            episode = episodePresentation
+        }
         danmakuProvider.startSession(
-            filename,
-            video.fileHash ?: "aa".repeat(16),
-            video.fileLengthBytes,
-            video.durationMillis.milliseconds,
-            DanmakuMatchers.mostRelevant(
-                subjectPresentation.title,
-                "第${episodePresentation.sort.removePrefix("0")}话 " + episodePresentation.title
+            request = DanmakuSearchRequest(
+                subjectId = subjectId,
+                subjectName = subject.title,
+                episodeId = episodeId,
+                episodeSort = EpisodeSort(episode.sort),
+                episodeName = episode.title,
+                filename = filename,
+                fileHash = video.fileHash ?: "aa".repeat(16),
+                fileSize = video.fileLengthBytes,
+                videoDuration = video.durationMillis.milliseconds,
+            ),
+            matcher = DanmakuMatchers.mostRelevant(
+                subject.title,
+                "第${episode.sort.removePrefix("0")}话 " + episode.title
             ),
         )
     }.filterNotNull()
