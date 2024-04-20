@@ -203,11 +203,13 @@ internal class TorrentDownloadSessionImpl(
 //                            handle.piecePriority(0, Priority.TOP_PRIORITY)
 //                            handle.piecePriority(pieces.lastIndex, Priority.TOP_PRIORITY)
 
-                        handle.setPieceDeadline(0, 0)
-                        handle.setPieceDeadline(pieces.lastIndex, 1)
+                        val firstIndex = pieces.first().pieceIndex
+                        val lastIndex = pieces.last().pieceIndex
+                        handle.setPieceDeadline(firstIndex, 0)
+                        handle.setPieceDeadline(lastIndex, 1)
 
-                        handle.setPieceDeadline(1, 2)
-                        handle.setPieceDeadline(2, 3)
+                        handle.setPieceDeadline(firstIndex + 1, 2)
+                        handle.setPieceDeadline(firstIndex + 2, 3)
                     }
                 }
 
@@ -216,7 +218,7 @@ internal class TorrentDownloadSessionImpl(
         }
 
         /**
-         * 与这个文件有关的 pieces
+         * 与这个文件有关的 pieces, sorted naturally by pieceIndex
          */
         private val pieces: SuspendLazy<List<Piece>> = SuspendLazy {
             val allPieces = this@TorrentDownloadSessionImpl.actualInfo.await().pieces
