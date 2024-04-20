@@ -63,6 +63,7 @@ internal fun EpisodeVideo(
     title: @Composable () -> Unit,
     danmakuHostState: DanmakuHostState,
     videoSourceSelected: () -> Boolean,
+    videoSourceState: () -> VideoSourceState,
     danmakuConfig: () -> DanmakuConfig,
     onClickFullScreen: () -> Unit,
     danmakuEnabled: () -> Boolean,
@@ -159,7 +160,7 @@ internal fun EpisodeVideo(
         },
         floatingMessage = {
             Column {
-                EpisodeVideoLoadingIndicator(playerState, videoSourceSelected())
+                EpisodeVideoLoadingIndicator(playerState, videoSourceSelected(), videoSourceState)
             }
         },
         rhsBar = {

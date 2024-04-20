@@ -247,10 +247,10 @@ private fun EpisodeVideo(
     val danmakuConfig by vm.danmaku.config.collectAsStateWithLifecycle(DanmakuConfig.Default)
 
     val danmakuEnabled by vm.danmaku.enabled.collectAsStateWithLifecycle(false)
+    val videoSourceState by vm.videoSourceState.collectAsStateWithLifecycle(VideoSourceState.Initial)
     EpisodeVideo(
         vm.playerState,
         expanded = expanded,
-        maintainAspectRatio = maintainAspectRatio,
         title = {
             val episode = vm.episodePresentation
             val subject = vm.subjectPresentation
@@ -261,6 +261,7 @@ private fun EpisodeVideo(
                 modifier.placeholder(episode.isPlaceholder || subject.isPlaceholder)
             )
         },
+        videoSourceState = { videoSourceState },
         danmakuHostState = vm.danmaku.danmakuHostState,
         videoSourceSelected = { selected },
         danmakuConfig = { danmakuConfig },
@@ -276,9 +277,10 @@ private fun EpisodeVideo(
         danmakuEnabled = { danmakuEnabled },
         setDanmakuEnabled = { vm.launchInBackground { danmaku.setEnabled(it) } },
         onSendDanmaku = {},
-        initialControllerVisible = initialControllerVisible,
         modifier = Modifier.fillMaxWidth().background(Color.Black)
-            .then(if (expanded) Modifier.fillMaxSize() else Modifier.statusBarsPadding())
+            .then(if (expanded) Modifier.fillMaxSize() else Modifier.statusBarsPadding()),
+        maintainAspectRatio = maintainAspectRatio,
+        initialControllerVisible = initialControllerVisible
     )
 }
 
