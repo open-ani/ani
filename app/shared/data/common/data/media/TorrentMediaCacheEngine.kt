@@ -26,6 +26,7 @@ import me.him188.ani.datasources.core.cache.MediaCacheEngine
 import me.him188.ani.datasources.core.cache.MediaStats
 import me.him188.ani.utils.coroutines.SuspendLazy
 import kotlin.coroutines.CoroutineContext
+import kotlin.io.path.deleteIfExists
 
 private const val EXTRA_TORRENT_DATA = "torrentData"
 
@@ -100,7 +101,7 @@ class TorrentMediaCacheEngine(
                 if (deleted) return
                 deleted = true
             }
-            file.first().close() // TODO: 删除缓存文件 
+            file.first().entry.resolveFile().deleteIfExists()
         }
     }
 
