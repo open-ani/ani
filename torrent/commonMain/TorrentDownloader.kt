@@ -92,9 +92,9 @@ public interface TorrentDownloader : AutoCloseable {
 }
 
 public enum class FilePriority {
-    HIGH,
-    NORMAL,
     LOW,
+    NORMAL,
+    HIGH,
 }
 
 public class MagnetTimeoutException(
@@ -432,7 +432,7 @@ internal class TorrentDownloaderImpl(
 internal fun FilePriority.toLibtorrentPriority(): Priority = when (this) {
     FilePriority.HIGH -> Priority.TOP_PRIORITY
     FilePriority.NORMAL -> Priority.DEFAULT
-    FilePriority.LOW -> Priority.IGNORE
+    FilePriority.LOW -> Priority.LOW
 }
 
 public var SettingsPack.peerFingerprintString: String

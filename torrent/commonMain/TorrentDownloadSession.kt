@@ -20,7 +20,7 @@ public interface TorrentDownloadSession : AutoCloseable {
 
     public override fun close()
 
-    public suspend fun closeAndDelete() // TODO:  
+    public fun closeIfNotInUse()
 }
 
 public sealed class TorrentDownloadState {

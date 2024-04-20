@@ -14,6 +14,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
@@ -319,6 +320,7 @@ private class EpisodeViewModelImpl(
         .flatMapLatest { session ->
             session.at(playerState.currentPositionMillis.map { it.milliseconds })
         }
+        .shareInBackground(started = SharingStarted.Lazily)
 
     init {
         launchInMain { // state changes must be in main thread

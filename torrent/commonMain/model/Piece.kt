@@ -1,7 +1,9 @@
 package me.him188.ani.app.torrent.model
 
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.takeWhile
 import me.him188.ani.app.torrent.PieceState
 
@@ -11,6 +13,10 @@ public class Piece(
     public val offset: Long,
 ) {
     public val state: MutableStateFlow<PieceState> = MutableStateFlow(PieceState.READY)
+    public val downloadedBytes: Flow<Long>
+        get() = state.map {
+            if (it == PieceState.FINISHED) size else 0L
+        }
 
     public companion object {
         public fun buildPieces(

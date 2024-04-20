@@ -25,6 +25,8 @@ import me.him188.ani.datasources.core.cache.MediaCache
 import me.him188.ani.datasources.core.cache.MediaCacheEngine
 import me.him188.ani.datasources.core.cache.MediaStats
 import me.him188.ani.utils.coroutines.SuspendLazy
+import me.him188.ani.utils.logging.info
+import me.him188.ani.utils.logging.logger
 import kotlin.coroutines.CoroutineContext
 import kotlin.io.path.deleteIfExists
 
@@ -34,6 +36,10 @@ class TorrentMediaCacheEngine(
     private val mediaSourceId: String,
     getTorrentDownloader: suspend () -> TorrentDownloader,
 ) : MediaCacheEngine {
+    private companion object {
+        val logger = logger<TorrentMediaCacheEngine>()
+    }
+
     private val downloader = SuspendLazy {
         getTorrentDownloader()
     }
@@ -92,7 +98,9 @@ class TorrentMediaCacheEngine(
 
         override suspend fun resume() {
             if (deleted) return
-            file.first().resume(FilePriority.LOW)
+            val file = file.first()
+            logger.info { "Resuming file: $file" }
+            file.resume(FilePriority.NORMAL)
         }
 
         override suspend fun delete() {
@@ -101,7 +109,10 @@ class TorrentMediaCacheEngine(
                 if (deleted) return
                 deleted = true
             }
-            file.first().entry.resolveFile().deleteIfExists()
+            val handle = file.first()
+            val file = handle.entry.resolveFile()
+            handle.close()
+            file.deleteIfExists()
         }
     }
 
@@ -151,7 +162,10 @@ class TorrentMediaCacheEngine(
                 session.getFiles(),
                 listOf(metadata.episodeName),
                 metadata.episodeSort,
-            )?.createHandle()
+            )?.createHandle() ?: kotlin.run {
+                session.closeIfNotInUse()
+                null
+            }
         }.shareIn(
             CoroutineScope(parentContext + Job(parentContext[Job])),
             started = SharingStarted.Lazily,
