@@ -43,6 +43,7 @@ class SuspendLazyImpl<T>(
             if (initialized) return value as T
             val initializer = initializer ?: error("initializer should not be null")
             value = initializer()
+            this.initializer = null // avoid memory leak since the initializer might hold reference to a resource
             initialized = true
         }
         return value as T
