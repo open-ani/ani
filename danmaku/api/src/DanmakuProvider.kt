@@ -1,6 +1,7 @@
 package me.him188.ani.danmaku.api
 
 import kotlinx.serialization.Serializable
+import me.him188.ani.datasources.api.EpisodeSort
 import kotlin.time.Duration
 
 /**
@@ -15,13 +16,23 @@ interface DanmakuProvider {
      * The returned [DanmakuSession] should be closed when it is no longer needed.
      */
     suspend fun startSession(
-        filename: String,
-        fileHash: String?,
-        fileSize: Long,
-        videoDuration: Duration,
+        request: DanmakuSearchRequest,
         matcher: DanmakuMatcher,
     ): DanmakuSession?
 }
+
+class DanmakuSearchRequest(
+    val subjectId: Int,
+    val subjectName: String,
+    val episodeId: Int,
+    val episodeSort: EpisodeSort,
+    val episodeName: String,
+
+    val filename: String,
+    val fileHash: String?,
+    val fileSize: Long,
+    val videoDuration: Duration,
+)
 
 fun interface DanmakuMatcher {
     fun match(list: List<DanmakuEpisode>): DanmakuEpisode?
