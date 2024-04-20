@@ -86,8 +86,6 @@ public interface TorrentDownloader : AutoCloseable {
     public suspend fun startDownload(
         data: EncodedTorrentData,
         parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
-//        fileFilter: (List<String>) -> List<String> = { listOfNotNull(it.firstOrNull()) },
-        priority: FilePriority = FilePriority.NORMAL,
     ): TorrentDownloadSession
 
     public override fun close()
@@ -347,7 +345,6 @@ internal class TorrentDownloaderImpl(
     override suspend fun startDownload(
         data: EncodedTorrentData,
         parentCoroutineContext: CoroutineContext,
-        priority: FilePriority,
     ): TorrentDownloadSession = lock.withLock {
         val ti = TorrentInfo(data.data)
         val torrentName = ti.name()
@@ -364,9 +361,6 @@ internal class TorrentDownloaderImpl(
             logger.info { "[$torrentName] This is a new session" }
             false
         }
-
-//        val files = List(ti.files().numFiles()) { ti.files().filePath(it) }
-//        val filteredFiles = fileFilter(files)
 
         val session =
             dataToSession[hash] ?: TorrentDownloadSessionImpl(
@@ -400,29 +394,12 @@ internal class TorrentDownloaderImpl(
             }
 
             if (reopened) {
-                logger.info { "[$torrentName] Torrent has already opened, modifying file priority" }
-
-                // 资源之前已经打开过
-                // 增加优先级, 不修改以前的
-//                val handle = find(hash) ?: error("Torrent handle not found for a reopened session.")
-//                for (filteredFile in filteredFiles) {
-//                    val index = files.indexOf(filteredFile)
-//                    if (index == -1) continue
-//                    logger.info { "[$torrentName] Set priority $priority for: $filteredFile" }
-//                    handle.filePriority(index, priority.toLibtorrentPriority())
-//                }
+                logger.info { "[$torrentName] Torrent has already opened" }
             } else {
                 sessionManager.addListener(session.listener)
 
                 // 第一次打开, 设置忽略所有文件, 除了我们需要的那些
                 val priorities = Priority.array(Priority.IGNORE, ti.numFiles())
-//                for (filteredFile in filteredFiles) {
-//                    val index = files.indexOf(filteredFile)
-//                    if (index == -1) continue
-//                    logger.info { "[$torrentName] Set priority $priority for: $filteredFile" }
-//                    priorities[index] = priority.toLibtorrentPriority()
-//                }
-
                 try {
                     logger.info { "[$torrentName] Starting torrent download" }
                     download(
