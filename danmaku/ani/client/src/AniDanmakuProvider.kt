@@ -10,6 +10,7 @@ import me.him188.ani.danmaku.api.DanmakuSearchRequest
 import me.him188.ani.danmaku.api.DanmakuSession
 import me.him188.ani.danmaku.api.TimeBasedDanmakuSession
 import me.him188.ani.danmaku.protocol.DanmakuGetResponse
+import me.him188.ani.utils.logging.info
 import me.him188.ani.danmaku.api.Danmaku as ApiDanmaku
 import me.him188.ani.danmaku.api.DanmakuLocation as ApiDanmakuLocation
 import me.him188.ani.danmaku.protocol.DanmakuLocation as ProtocolDanmakuLocation
@@ -44,6 +45,7 @@ class AniDanmakuProvider(
     override suspend fun fetch(request: DanmakuSearchRequest): DanmakuSession {
         val resp = client.get("${getBaseUrl()}/v1/danmaku/${request.episodeId}")
         val list = resp.body<DanmakuGetResponse>().danmakuList
+        logger.info { "$ID Fetched danmaku list: ${list.size}" }
         return TimeBasedDanmakuSession.create(list.asSequence().map {
             ApiDanmaku(
                 id = it.id,

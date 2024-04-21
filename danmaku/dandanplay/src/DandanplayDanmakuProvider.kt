@@ -102,6 +102,7 @@ class DandanplayDanmakuProvider(
         shiftMillis: Long
     ): DanmakuSession {
         val list = dandanplayClient.getDanmakuList(episodeId = episodeId)
+        logger.info { "$ID Fetched danmaku list: ${list.size}" }
         return TimeBasedDanmakuSession.create(
             list.asSequence().mapNotNull { it.toDanmakuOrNull() },
             shiftMillis = shiftMillis,

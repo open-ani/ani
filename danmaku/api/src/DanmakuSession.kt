@@ -2,6 +2,7 @@ package me.him188.ani.danmaku.api
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.transformLatest
@@ -10,7 +11,7 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
 interface DanmakuSession {
-    val totalCount: Int? get() = null
+    val totalCount: Flow<Int?> get() = emptyFlow()
 
     /**
      * 创建一个随视频进度 [progress] 匹配到的弹幕数据流.
@@ -39,7 +40,7 @@ class TimeBasedDanmakuSession private constructor(
     private val list: List<Danmaku>,
     private val shiftMillis: Long = 0,
 ) : DanmakuSession {
-    override val totalCount: Int get() = list.size
+    override val totalCount: Flow<Int?> = flowOf(list.size)
 
     companion object {
         fun create(

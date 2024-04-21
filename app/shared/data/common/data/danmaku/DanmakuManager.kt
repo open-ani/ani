@@ -2,10 +2,14 @@ package me.him188.ani.app.data.danmaku
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.retry
 import me.him188.ani.app.data.repositories.PreferencesRepository
 import me.him188.ani.app.platform.getAniUserAgent
 import me.him188.ani.app.session.SessionManager
@@ -20,7 +24,6 @@ import me.him188.ani.danmaku.api.DanmakuProvider
 import me.him188.ani.danmaku.api.DanmakuProviderConfig
 import me.him188.ani.danmaku.api.DanmakuSearchRequest
 import me.him188.ani.danmaku.api.DanmakuSession
-import me.him188.ani.danmaku.api.emptyDanmakuSession
 import me.him188.ani.danmaku.dandanplay.DandanplayDanmakuProvider
 import me.him188.ani.danmaku.protocol.DanmakuInfo
 import me.him188.ani.utils.coroutines.mapAutoClose
@@ -102,11 +105,12 @@ class DanmakuManagerImpl(
     ): CombinedDanmakuSession {
         return CombinedDanmakuSession(
             providers.first().map { provider ->
-                runCatching {
-                    provider.fetch(request = request)
-                }.onFailure {
+                flow {
+                    provider.fetch(request = request)?.let { emit(it) }
+                }.retry(1) {
                     logger.error(it) { "Failed to fetch danmaku from provider '${provider.id}'" }
-                }.getOrNull() ?: emptyDanmakuSession()
+                    true
+                }.catch {} // 忽略错误, 否则一个源炸了会导致所有弹幕都不发射了
             }
         )
     }
@@ -117,13 +121,17 @@ class DanmakuManagerImpl(
 }
 
 class CombinedDanmakuSession(
-    private val sessions: List<DanmakuSession>,
+    private val sessions: List<Flow<DanmakuSession>>,
 ) : DanmakuSession {
-    override val totalCount: Int?
-        get() = if (sessions.all { it.totalCount == null }) null
-        else sessions.sumOf { it.totalCount ?: 0 }
+    override val totalCount: Flow<Int?>
+        get() = combine(sessions.map { list -> list.flatMapLatest { it.totalCount } }) { counts ->
+            if (counts.all { it == null }) null
+            else counts.sumOf { it ?: 0 }
+        }
 
     override fun at(progress: Flow<Duration>): Flow<Danmaku> {
-        return sessions.map { it.at(progress) }.merge()
+        return sessions.map { session ->
+            session.flatMapLatest { it.at(progress) }
+        }.merge()
     }
 }
