@@ -1,6 +1,7 @@
 package me.him188.ani.danmaku.ani.client
 
 import io.ktor.client.call.body
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.bearerAuth
@@ -75,6 +76,10 @@ class AniDanmakuSenderImpl(
             level = LogLevel.INFO
         }
         followRedirects = true
+        install(HttpTimeout) {
+            connectTimeoutMillis = 20_000
+            requestTimeoutMillis = 30_000
+        }
     }
 
     private suspend fun getUserInfo(token: String): AniUser {
