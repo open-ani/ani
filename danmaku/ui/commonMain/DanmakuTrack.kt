@@ -384,7 +384,6 @@ fun DanmakuText(
             maxLines = 1,
             softWrap = false,
             style = baseStyle.merge(style.styleForBorder()),
-            textDecoration = if (danmaku.danmaku.isSelf) TextDecoration.Underline else null,
         )
         // Covered by a white, smaller text.
         // So the resulting look is a white text with black border.
@@ -395,6 +394,7 @@ fun DanmakuText(
             maxLines = 1,
             softWrap = false,
             style = baseStyle.merge(style.styleForText()),
+            textDecoration = if (danmaku.danmaku.isSelf) TextDecoration.Underline else null,
         )
     }
 }
