@@ -11,6 +11,7 @@ import me.him188.ani.danmaku.server.ServerConfig
 import me.him188.ani.danmaku.server.ServerConfigBuilder
 import me.him188.ani.danmaku.server.ktor.plugins.configureCallLogging
 import me.him188.ani.danmaku.server.ktor.plugins.configureKoin
+import me.him188.ani.danmaku.server.ktor.plugins.configureNotarizedApplication
 import me.him188.ani.danmaku.server.ktor.plugins.configureRouting
 import me.him188.ani.danmaku.server.ktor.plugins.configureSecurity
 import me.him188.ani.danmaku.server.ktor.plugins.configureSerialization
@@ -49,5 +50,7 @@ internal fun Application.serverModule(config: ServerConfig) {
     configureStatuePages()
     configureSerialization()
     configureSecurity()
+    configureNotarizedApplication()
+    
     configureRouting()
 }

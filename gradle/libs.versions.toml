@@ -15,6 +15,7 @@ datastore = "1.0.0"
 libtorrent4j = "2.1.0-31"
 coil = "3.0.0-alpha06"
 mongodb-driver-kotlin-coroutine = "4.10.1"
+kompendium = "3.14.4"
 
 # https://androidx.tech/artifacts/compose.material/material-android/
 jetpack-compose = "1.6.4"
@@ -156,3 +157,6 @@ androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling
 
 # MongoDB
 mongodb-driver-kotlin-coroutine = { module = "org.mongodb:mongodb-driver-kotlin-coroutine", version.ref = "mongodb-driver-kotlin-coroutine" }
+
+# Kompendium
+kompendium-core = { module = "io.bkbn:kompendium-core", version.ref = "kompendium" }
