@@ -9,6 +9,7 @@ import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.core.fetch.MediaFetcher
+import kotlin.math.absoluteValue
 
 /**
  * A local storage for caching media.
@@ -79,9 +80,9 @@ interface MediaCacheStorage : AutoCloseable {
  */
 interface MediaCache {
     val cacheId: String
-        get() = (origin.hashCode() * 31
+        get() = (origin.mediaId.hashCode() * 31
                 + metadata.subjectId.hashCode() * 31
-                + metadata.episodeId.hashCode()).toString()
+                + metadata.episodeId.hashCode()).absoluteValue.toString()
 
     /**
      * Original media that is being cached.

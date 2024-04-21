@@ -193,7 +193,7 @@ class DirectoryMediaCacheStorage(
             cache.delete()
             withContext(Dispatchers.IO) {
                 if (!dir.resolve(getSaveFilename(cache)).deleteIfExists()) {
-                    logger.warn { "Attempting to delete media cache '${cache.cacheId}' but its corresponding metadata file does not exist" }
+                    logger.error { "Attempting to delete media cache '${cache.cacheId}' but its corresponding metadata file does not exist" }
                 }
             }
             listFlow.value -= cache
