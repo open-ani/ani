@@ -16,6 +16,7 @@ import me.him188.ani.danmaku.server.ktor.plugins.configureRouting
 import me.him188.ani.danmaku.server.ktor.plugins.configureSecurity
 import me.him188.ani.danmaku.server.ktor.plugins.configureSerialization
 import me.him188.ani.danmaku.server.ktor.plugins.configureStatuePages
+import me.him188.ani.danmaku.server.ktor.plugins.configureSwagger
 
 
 fun getKtorServer(
@@ -51,6 +52,7 @@ internal fun Application.serverModule(config: ServerConfig) {
     configureSerialization()
     configureSecurity()
     configureNotarizedApplication()
+    configureSwagger()
     
     configureRouting()
 }
