@@ -1,12 +1,9 @@
 package me.him188.ani.danmaku.server.ktor.plugins
 
-import com.auth0.jwt.JWT
-import com.auth0.jwt.algorithms.Algorithm
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.auth.Authentication
-import io.ktor.server.auth.authentication
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.jwt.jwt
 import io.ktor.server.response.respond
@@ -16,13 +13,13 @@ import org.koin.ktor.ext.inject
 
 internal fun Application.configureSecurity() {
     val jwtTokenManager: JwtTokenManager by inject()
-    val config : ServerConfig by inject()
+    val config: ServerConfig by inject()
 
     install(Authentication) {
         jwt("auth-jwt") {
             realm = config.jwt.realm
             verifier(jwtTokenManager.getTokenVerifier())
-            validate { 
+            validate {
                 val userId = it.payload.getClaim("userId").asString()
                 if (userId != null) {
                     JWTPrincipal(it.payload)
