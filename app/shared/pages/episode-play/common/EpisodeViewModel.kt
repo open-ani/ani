@@ -359,7 +359,7 @@ private class EpisodeViewModelImpl(
                     danmaku.danmakuHostState.trySend(
                         DanmakuPresentation(
                             data,
-                            isSelf = selfId.value == data.id
+                            isSelf = selfId.value == data.senderId
                         ),
                     )
                 }
