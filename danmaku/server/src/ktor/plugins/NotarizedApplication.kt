@@ -16,7 +16,7 @@ fun Application.configureNotarizedApplication() {
                 version = "1.0.0",
                 description = "Ani API"
             ),
-            servers = mutableListOf(Server(URI("https://https://danmaku.api.myani.org/"))),
+            servers = mutableListOf(Server(URI("https://danmaku.api.myani.org/"))),
         )
     }
 }

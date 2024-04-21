@@ -26,7 +26,8 @@ dependencies {
     implementation(libs.ktor.server.call.logging)
     implementation(libs.mongodb.driver.kotlin.coroutine)
     implementation(project(":danmaku:protocol"))
-    
+    implementation(project(":app:shared"))
+
     testImplementation(libs.kotlinx.coroutines.test)
 
     runtimeOnly(libs.slf4j.simple)

@@ -1,8 +1,14 @@
 package me.him188.ani.danmaku.server.util.exception
 
+import io.ktor.http.HttpStatusCode
+
 abstract class HttpRequestException: Exception() {
     abstract val statusCode: Int
     abstract val statusMessage: String
+}
+
+fun HttpStatusCode.Companion.fromException(exception: HttpRequestException): HttpStatusCode {
+    return HttpStatusCode(exception.statusCode, exception.statusMessage)
 }
 
 class BadRequestException: HttpRequestException() {
