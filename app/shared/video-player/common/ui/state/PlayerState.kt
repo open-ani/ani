@@ -73,6 +73,9 @@ interface PlayerState {
      */
     val currentPositionMillis: StateFlow<Long>
 
+    @UiThread
+    fun getExactCurrentPositionMillis(): Long
+
     /**
      * `0..100`
      */
@@ -194,6 +197,10 @@ class DummyPlayerState : AbstractPlayerState() {
         )
     )
     override val currentPositionMillis = MutableStateFlow(10_000L)
+    override fun getExactCurrentPositionMillis(): Long {
+        return currentPositionMillis.value
+    }
+
     override val bufferedPercentage: StateFlow<Int> = MutableStateFlow(50)
     override val playProgress: Flow<Float> = currentPositionMillis.combine(videoProperties) { played, video ->
         (played / video.durationMillis).toFloat()

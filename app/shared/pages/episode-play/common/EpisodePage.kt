@@ -34,8 +34,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.setRequestFullScreen
@@ -51,6 +54,10 @@ import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.subject.episode.details.EpisodeActionRow
 import me.him188.ani.app.ui.subject.episode.details.EpisodeDetails
 import me.him188.ani.app.ui.subject.episode.details.EpisodePlayerTitle
+import me.him188.ani.app.ui.theme.aniDarkColorTheme
+import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
+import me.him188.ani.danmaku.protocol.DanmakuInfo
+import me.him188.ani.danmaku.protocol.DanmakuLocation
 import me.him188.ani.danmaku.ui.DanmakuConfig
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.lifecycle.Lifecycle
@@ -247,9 +254,15 @@ private fun EpisodeVideo(
 
     val danmakuEnabled by vm.danmaku.enabled.collectAsStateWithLifecycle(false)
     val videoSourceState by vm.videoSourceState.collectAsStateWithLifecycle(VideoSourceState.Initial)
-    EpisodeVideo(
+
+    // Don't rememberSavable. 刻意让每次切换都是隐藏的
+    var controllerVisible by remember { mutableStateOf(initialControllerVisible) }
+
+    EpisodeVideoImpl(
         vm.playerState,
         expanded = expanded,
+        controllerVisible = controllerVisible,
+        setControllerVisible = { controllerVisible = it },
         title = {
             val episode = vm.episodePresentation
             val subject = vm.subjectPresentation
@@ -260,9 +273,9 @@ private fun EpisodeVideo(
                 modifier.placeholder(episode.isPlaceholder || subject.isPlaceholder)
             )
         },
-        videoSourceState = { videoSourceState },
         danmakuHostState = vm.danmaku.danmakuHostState,
         videoSourceSelected = { vm.mediaSelected },
+        videoSourceState = { videoSourceState },
         danmakuConfig = { danmakuConfig },
         onClickFullScreen = {
             if (vm.isFullscreen) {
@@ -275,12 +288,56 @@ private fun EpisodeVideo(
         },
         danmakuEnabled = { danmakuEnabled },
         setDanmakuEnabled = { vm.launchInBackground { danmaku.setEnabled(it) } },
-        onSendDanmaku = {},
+        danmakuEditor = {
+            DanmakuEditor(
+                vm,
+                { controllerVisible = false },
+                Modifier.weight(1f)
+            )
+        },
         modifier = Modifier.fillMaxWidth().background(Color.Black)
             .then(if (expanded) Modifier.fillMaxSize() else Modifier.statusBarsPadding()),
         maintainAspectRatio = maintainAspectRatio,
-        initialControllerVisible = initialControllerVisible
     )
+}
+
+@Composable
+private fun DanmakuEditor(
+    vm: EpisodeViewModel,
+    setControllerVisible: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    MaterialTheme(aniDarkColorTheme()) {
+        var text by rememberSaveable { mutableStateOf("") }
+        PlayerControllerDefaults.DanmakuTextField(
+            text,
+            onValueChange = { text = it },
+            isSending = vm.danmaku.isSending,
+            onSend = {
+                if (text.isEmpty()) return@DanmakuTextField
+                val textSnapshot = text
+                text = ""
+                val exactPosition = vm.playerState.getExactCurrentPositionMillis()
+                vm.launchInBackground {
+                    try {
+                        danmaku.send(
+                            DanmakuInfo(
+                                exactPosition,
+                                text = textSnapshot,
+                                color = Color.White.toArgb(),
+                                location = DanmakuLocation.NORMAL
+                            )
+                        )
+                        withContext(Dispatchers.Main) { setControllerVisible(false) }
+                    } catch (e: Throwable) {
+                        withContext(Dispatchers.Main) { text = textSnapshot }
+                        throw e
+                    }
+                }
+            },
+            modifier = modifier,
+        )
+    }
 }
 
 /**

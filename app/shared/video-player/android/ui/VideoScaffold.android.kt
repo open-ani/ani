@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -18,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.preview.PHONE_LANDSCAPE
@@ -40,6 +42,7 @@ import me.him188.ani.app.videoplayer.ui.state.DummyPlayerState
 import me.him188.ani.app.videoplayer.ui.state.togglePause
 import me.him188.ani.danmaku.ui.DanmakuConfig
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
+import kotlin.time.Duration.Companion.seconds
 
 @Preview("Landscape Fullscreen - Light", device = PHONE_LANDSCAPE, uiMode = UI_MODE_NIGHT_NO)
 @Preview("Landscape Fullscreen - Dark", device = PHONE_LANDSCAPE, uiMode = UI_MODE_NIGHT_YES or UI_MODE_TYPE_NORMAL)
@@ -169,13 +172,22 @@ private fun PreviewVideoScaffoldImpl(
                 danmakuEditor = {
                     MaterialTheme(aniDarkColorTheme()) {
                         var text by rememberSaveable { mutableStateOf("") }
+                        var sending by remember { mutableStateOf(false) }
+                        LaunchedEffect(key1 = sending) {
+                            if (sending) {
+                                delay(3.seconds)
+                                sending = false
+                            }
+                        }
                         PlayerControllerDefaults.DanmakuTextField(
                             text,
                             onValueChange = { text = it },
+                            isSending = sending,
                             onSend = {
+                                sending = true
                                 text = ""
                             },
-                            Modifier.weight(1f)
+                            modifier = Modifier.weight(1f)
                         )
                     }
                 },

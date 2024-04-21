@@ -297,7 +297,9 @@ private class EpisodeViewModelImpl(
         }
     }
 
-    override val danmaku: PlayerDanmakuViewModel = PlayerDanmakuViewModel()
+    override val danmaku: PlayerDanmakuViewModel = PlayerDanmakuViewModel().also {
+        addCloseable(it)
+    }
 
     private val danmakuSessionFlow: Flow<DanmakuSession> = combine(
         selectedMedia.filterNotNull(),

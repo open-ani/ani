@@ -22,6 +22,7 @@ import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.SpeakerNotesOff
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -151,6 +152,7 @@ object PlayerControllerDefaults {
         value: String,
         onValueChange: (String) -> Unit,
         onSend: () -> Unit = {},
+        isSending: Boolean = false,
         modifier: Modifier = Modifier,
         interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
         placeholder: @Composable () -> Unit = {
@@ -165,20 +167,22 @@ object PlayerControllerDefaults {
                     overflow = TextOverflow.Ellipsis,
                     maxLines = 1,
                 )
-
-                Text(
-                    "发送弹幕仍在努力开发中, 仅供预览界面", Modifier.padding(start = 8.dp),
-                    maxLines = 1,
-                    style = MaterialTheme.typography.labelMedium
-                )
             }
         },
         leadingIcon: @Composable (() -> Unit)? = null,
         trailingIcon: @Composable (() -> Unit)? = {
-            DanmakuSendButton(
-                onClick = { onSend() },
-                enabled = value.isNotBlank()
-            )
+            if (isSending) {
+                CircularProgressIndicator(
+                    Modifier.size(20.dp),
+//                    strokeWidth = 2.dp,
+                    color = MaterialTheme.colorScheme.surface
+                )
+            } else {
+                DanmakuSendButton(
+                    onClick = { onSend() },
+                    enabled = value.isNotBlank()
+                )
+            }
         },
         enabled: Boolean = true,
         singleLine: Boolean = true,

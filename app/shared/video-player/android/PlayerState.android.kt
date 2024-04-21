@@ -219,6 +219,8 @@ internal class ExoPlayerState @UiThread constructor(
     }
 
     override val currentPositionMillis: MutableStateFlow<Long> = MutableStateFlow(0)
+    override fun getExactCurrentPositionMillis(): Long = player.currentPosition
+
     override val playProgress: Flow<Float> =
         combine(videoProperties.filterNotNull(), currentPositionMillis) { properties, duration ->
             if (properties.durationMillis == 0L) {

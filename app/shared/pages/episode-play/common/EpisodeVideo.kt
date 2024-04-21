@@ -5,11 +5,11 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
@@ -31,7 +31,6 @@ import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsS
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsViewModel
 import me.him188.ani.app.ui.subject.episode.video.settings.VideoSettingsButton
 import me.him188.ani.app.ui.subject.episode.video.topbar.EpisodeVideoTopBar
-import me.him188.ani.app.ui.theme.aniDarkColorTheme
 import me.him188.ani.app.videoplayer.ui.VideoPlayer
 import me.him188.ani.app.videoplayer.ui.VideoScaffold
 import me.him188.ani.app.videoplayer.ui.guesture.GestureLock
@@ -57,9 +56,11 @@ import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
  * @param title 仅在全屏时显示的标题
  */
 @Composable
-internal fun EpisodeVideo(
+internal fun EpisodeVideoImpl(
     playerState: PlayerState,
     expanded: Boolean,
+    controllerVisible: Boolean,
+    setControllerVisible: (Boolean) -> Unit,
     title: @Composable () -> Unit,
     danmakuHostState: DanmakuHostState,
     videoSourceSelected: () -> Boolean,
@@ -68,13 +69,11 @@ internal fun EpisodeVideo(
     onClickFullScreen: () -> Unit,
     danmakuEnabled: () -> Boolean,
     setDanmakuEnabled: (enabled: Boolean) -> Unit,
-    onSendDanmaku: (text: String) -> Unit,
+    danmakuEditor: @Composable RowScope.() -> Unit,
     modifier: Modifier = Modifier,
     maintainAspectRatio: Boolean = !expanded,
-    initialControllerVisible: Boolean = false,
 ) {
     // Don't rememberSavable. 刻意让每次切换都是隐藏的
-    var controllerVisible by remember { mutableStateOf(initialControllerVisible) }
     var isLocked by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
 
@@ -142,7 +141,7 @@ internal fun EpisodeVideo(
                 indicatorState,
                 controllerVisible = controllerVisible,
                 locked = isLocked,
-                setControllerVisible = { controllerVisible = it },
+                setControllerVisible = { setControllerVisible(it) },
                 Modifier.padding(top = 100.dp),
                 onDoubleClickScreen = {
                     if (playerState.state.value.isPlaying) {
@@ -198,20 +197,7 @@ internal fun EpisodeVideo(
                 progressSlider = {
                     ProgressSlider(progressSliderState)
                 },
-                danmakuEditor = {
-                    MaterialTheme(aniDarkColorTheme()) {
-                        var text by rememberSaveable { mutableStateOf("") }
-                        PlayerControllerDefaults.DanmakuTextField(
-                            text,
-                            onValueChange = { text = it },
-                            onSend = {
-                                onSendDanmaku(text)
-                                text = ""
-                            },
-                            Modifier.weight(1f)
-                        )
-                    }
-                },
+                danmakuEditor = danmakuEditor,
                 endActions = {
                     val speed by playerState.playbackSpeed.collectAsStateWithLifecycle()
                     SpeedSwitcher(
