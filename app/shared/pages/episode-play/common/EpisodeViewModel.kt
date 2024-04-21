@@ -20,7 +20,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
@@ -307,12 +306,12 @@ private class EpisodeViewModelImpl(
 
     private val danmakuSessionFlow: Flow<DanmakuSession> = combine(
         selectedMedia.filterNotNull(),
-        playerState.videoProperties.distinctUntilChangedBy { it?.filename }.filterNotNull()
-    ) { media, video ->
-        val filename = video.filename.takeIf { it.isNotBlank() }
-            ?: video.title
+        playerState.videoData,
+//        playerState.videoProperties.distinctUntilChangedBy { it?.filename }.filterNotNull()
+    ) { media, data ->
+        val filename = data?.filename
             ?: media.originalTitle
-        logger.info { "Search for danmaku with filename='$filename', fileHash=${video.fileHash}, length=${video}" }
+        logger.info { "Search for danmaku with filename='$filename'" }
 
         val subject: SubjectPresentation
         val episode: EpisodePresentation
@@ -328,9 +327,12 @@ private class EpisodeViewModelImpl(
                 episodeSort = EpisodeSort(episode.sort),
                 episodeName = episode.title,
                 filename = filename,
-                fileHash = video.fileHash ?: "aa".repeat(16),
-                fileSize = video.fileLengthBytes,
-                videoDuration = video.durationMillis.milliseconds,
+                fileHash = "aa".repeat(16),
+                fileSize = data?.fileLength ?: 0,
+                videoDuration = 0.milliseconds,
+//                fileHash = video.fileHash ?: "aa".repeat(16),
+//                fileSize = video.fileLengthBytes,
+//                videoDuration = video.durationMillis.milliseconds,
             ),
         )
     }.shareInBackground(started = SharingStarted.Lazily)
