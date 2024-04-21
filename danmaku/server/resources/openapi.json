@@ -460,7 +460,10 @@
       }
     },
     "securitySchemes": {
-
+      "auth-jwt": {
+        "type": "http",
+        "scheme": "bearer"
+      }
     }
   },
   "security": [],
