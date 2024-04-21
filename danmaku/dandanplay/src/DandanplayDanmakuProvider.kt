@@ -13,6 +13,13 @@ import me.him188.ani.utils.logging.logger
 class DandanplayDanmakuProvider(
     private val dandanplayClient: DandanplayClient,
 ) : DanmakuProvider {
+    companion object {
+        const val ID = "弹弹play"
+        private val logger = logger<DandanplayDanmakuProvider>()
+    }
+
+    override val id: String get() = ID
+
     override suspend fun startSession(
         request: DanmakuSearchRequest,
         matcher: DanmakuMatcher,
@@ -71,9 +78,5 @@ class DandanplayDanmakuProvider(
             list.asSequence().mapNotNull { it.toDanmakuOrNull() },
             shiftMillis = shiftMillis,
         )
-    }
-
-    private companion object {
-        val logger = logger<DandanplayDanmakuProvider>()
     }
 }

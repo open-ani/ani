@@ -8,6 +8,8 @@ import kotlin.time.Duration
  * A [DanmakuProvider] provides a stream of danmaku for a specific episode.
  */
 interface DanmakuProvider {
+    val id: String
+
     /**
      * Matches a danmaku stream by the given filtering parameters.
      *
