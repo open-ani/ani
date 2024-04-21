@@ -43,15 +43,14 @@ class DanmakuServiceTest {
     private fun runTestWithKoin(block: suspend () -> Unit) = runTest {
         val coroutineScope = CoroutineScope(SupervisorJob())
         startKoin {
-            modules(
-                getServerKoinModule(
-                    EnvironmentVariables(
-                        testing = true,
-                        jwtIssuer = "test_issuer",
-                        jwtAudience = "test_audience",
-                    ), coroutineScope
-                )
-            )
+            val config = ServerConfigBuilder.create {
+                testing = true
+                jwt {
+                    issuer = "test_issuer"
+                    audience = "test_audience"
+                }
+            }.build()
+            modules(getServerKoinModule(config, coroutineScope))
         }
         block()
     }

@@ -2,34 +2,37 @@
 
 package me.him188.ani.danmaku.server.ktor
 
-import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
-import io.ktor.server.application.install
+import io.ktor.server.application.log
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.netty.NettyApplicationEngine
-import io.ktor.server.plugins.callloging.CallLogging
-import io.ktor.server.plugins.statuspages.StatusPages
-import io.ktor.server.response.respond
-import me.him188.ani.danmaku.server.EnvironmentVariables
-import me.him188.ani.danmaku.server.getServerKoinModule
+import me.him188.ani.danmaku.server.ServerConfig
+import me.him188.ani.danmaku.server.ServerConfigBuilder
 import me.him188.ani.danmaku.server.ktor.plugins.configureCallLogging
 import me.him188.ani.danmaku.server.ktor.plugins.configureKoin
 import me.him188.ani.danmaku.server.ktor.plugins.configureRouting
 import me.him188.ani.danmaku.server.ktor.plugins.configureSecurity
 import me.him188.ani.danmaku.server.ktor.plugins.configureSerialization
 import me.him188.ani.danmaku.server.ktor.plugins.configureStatuePages
-import me.him188.ani.danmaku.server.util.exception.HttpRequestException
-import org.koin.ktor.plugin.Koin
-import org.slf4j.event.Level
 
 
-fun getKtorServer(env: EnvironmentVariables = EnvironmentVariables()): NettyApplicationEngine {
+fun getKtorServer(
+    args: Array<String> = arrayOf(),
+    configs: ServerConfigBuilder.() -> Unit = {},
+): NettyApplicationEngine {
+    val config = ServerConfigBuilder.create(args, configs).build()
+    return getKtorServer(config)
+}
+
+fun getKtorServer(
+    config: ServerConfig,
+): NettyApplicationEngine {
     return embeddedServer(
         Netty,
-        port = env.port ?: 4394,
-        host = "0.0.0.0",
-        module = { serverModule(env) },
+        port = config.port,
+        host = config.host,
+        module = { serverModule(config) },
         configure = {
             this.tcpKeepAlive = true
             this.connectionGroupSize = 40
@@ -39,8 +42,9 @@ fun getKtorServer(env: EnvironmentVariables = EnvironmentVariables()): NettyAppl
     )
 }
 
-internal fun Application.serverModule(env: EnvironmentVariables) {
-    configureKoin(env)
+internal fun Application.serverModule(config: ServerConfig) {
+    log.info("Starting server in ${if (config.testing) "testing" else "deployment"} mode")
+    configureKoin(config)
     configureCallLogging()
     configureStatuePages()
     configureSerialization()

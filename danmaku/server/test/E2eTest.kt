@@ -44,7 +44,7 @@ class E2eTest {
             text = "This is a danmaku",
             location = DanmakuLocation.NORMAL
         )
-        
+
         val response = client.post("$serverEndpoint/login/bangumi") {
             contentType(ContentType.Application.Json)
             setBody("test_token_1")
@@ -60,7 +60,7 @@ class E2eTest {
             bearerAuth(token)
         }
         assertEquals(HttpStatusCode.OK, response2.status)
-        
+
         val response5 = client.get("$serverEndpoint/me") {
             bearerAuth(token)
         }
@@ -86,14 +86,14 @@ class E2eTest {
     }
 
     companion object {
-        private val server = getKtorServer(
-            EnvironmentVariables(
-                port = 4394,
-                testing = true,
-                jwtAudience = "test-audience",
-                jwtIssuer = "test-issuer",
-            )
-        )
+        private val server = getKtorServer {
+            port = 4394
+            testing = true
+            jwt {
+                issuer = "test-issuer"
+                audience = "test-audience"
+            }
+        }
 
         @JvmStatic
         @BeforeAll

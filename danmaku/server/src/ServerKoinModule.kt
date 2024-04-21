@@ -24,36 +24,22 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.slf4j.Logger
 import org.slf4j.helpers.NOPLogger
-import java.security.SecureRandom
-import kotlin.time.Duration.Companion.days
 
 fun getServerKoinModule(
-    env: EnvironmentVariables,
+    config: ServerConfig,
     topCoroutineScope: CoroutineScope,
     logger: Logger = NOPLogger.NOP_LOGGER,
 ) = module {
     single(named("topCoroutineScope")) { topCoroutineScope }
     single<Logger> { logger }
-    single {
-        ServerConfig(
-            mongoDbConnectionString = env.mongoDbConnectionString,
-            danmakuGetRequestMaxCountAllowed = 8000,
-            jwt = JwtConfig(
-                secret = env.jwtSecret?.toByteArray() ?: generateSecureRandomBytes(),
-                issuer = env.jwtIssuer ?: throw IllegalStateException("JWT issuer is not set"),
-                audience = env.jwtAudience ?: throw IllegalStateException("JWT audience is not set"),
-                expiration = env.jwtExpiration ?: 7.days.inWholeMilliseconds,
-                realm = env.jwtRealm ?: "Ani Danmaku"
-            )
-        )
-    }
+    single<ServerConfig> { config  }
 
     single<DanmakuService> { DanmakuServiceImpl() }
     single<AuthService> { AuthServiceImpl() }
     single<UserService> { UserServiceImpl() }
     single<JwtTokenManager> { JwtTokenManagerImpl() }
 
-    if (env.testing) {
+    if (config.testing) {
         single<DanmakuRepository> { InMemoryDanmakuRepositoryImpl() }
         single<UserRepository> { InMemoryUserRepositoryImpl() }
         single<BangumiLoginHelper> { TestBangumiLoginHelperImpl() }
@@ -64,26 +50,3 @@ fun getServerKoinModule(
         single<BangumiLoginHelper> { BangumiLoginHelperImpl() }
     }
 }
-
-/**
- * Function that generates a secure random 32-byte array to be used as a secret for the [JwtConfig].
- */
-private fun generateSecureRandomBytes(): ByteArray {
-    val bytes = ByteArray(32)
-    SecureRandom().nextBytes(bytes)
-    return bytes
-}
-
-class ServerConfig(
-    val mongoDbConnectionString: String?,
-    val danmakuGetRequestMaxCountAllowed: Int,
-    val jwt: JwtConfig,
-)
-
-class JwtConfig(
-    val secret: ByteArray,
-    val issuer: String,
-    val audience: String,
-    val expiration: Long,
-    val realm: String,
-)

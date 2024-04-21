@@ -8,6 +8,6 @@ import org.koin.core.context.GlobalContext.startKoin
 /**
  * Server entry point
  */
-fun main() {
-    getKtorServer().start(wait = true)
+fun main(args: Array<String>) {
+    getKtorServer(args).start(wait = true)
 }
