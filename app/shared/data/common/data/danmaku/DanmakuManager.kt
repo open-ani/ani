@@ -13,6 +13,8 @@ import me.him188.ani.danmaku.api.DanmakuSession
 import me.him188.ani.danmaku.api.emptyDanmakuSession
 import me.him188.ani.danmaku.dandanplay.DandanplayDanmakuProvider
 import me.him188.ani.danmaku.protocol.DanmakuInfo
+import me.him188.ani.utils.logging.error
+import me.him188.ani.utils.logging.logger
 import kotlin.time.Duration
 
 /**
@@ -52,15 +54,21 @@ class DanmakuManagerImpl(
     private val providers: List<DanmakuProvider>,
     private val sender: AniDanmakuSender,
 ) : DanmakuManager {
+    private companion object {
+        val logger = logger<DanmakuManagerImpl>()
+    }
+
     override val selfId: Flow<String?> = sender.selfId
 
     override suspend fun fetch(
         request: DanmakuSearchRequest,
     ): CombinedDanmakuSession {
         return CombinedDanmakuSession(
-            providers.map {
+            providers.map { provider ->
                 runCatching {
-                    it.fetch(request = request)
+                    provider.fetch(request = request)
+                }.onFailure {
+                    logger.error(it) { "Failed to fetch danmaku from provider '${provider.id}'" }
                 }.getOrNull() ?: emptyDanmakuSession()
             }
         )

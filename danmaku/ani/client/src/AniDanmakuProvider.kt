@@ -32,7 +32,7 @@ class AniDanmakuProvider(
     override val id: String get() = ID
 
     override suspend fun fetch(request: DanmakuSearchRequest): DanmakuSession {
-        val resp = client.get("https://danmaku.api.myani.org/v1/danmaku/${request.episodeId}/danmaku")
+        val resp = client.get("https://danmaku.api.myani.org/v1/danmaku/${request.episodeId}")
         val list = resp.body<DanmakuGetResponse>().danmakuList
         return TimeBasedDanmakuSession.create(list.asSequence().map {
             ApiDanmaku(
