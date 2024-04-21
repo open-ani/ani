@@ -6,7 +6,7 @@ plugins {
 dependencies {
     api(projects.danmaku.api)
     api(projects.utils.slf4jKt)
-    
+
     api(libs.kotlinx.coroutines.core)
     api(libs.kotlinx.serialization.json)
 

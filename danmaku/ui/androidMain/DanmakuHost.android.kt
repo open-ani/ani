@@ -53,7 +53,9 @@ internal actual fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
             var counter = 0
             fun danmaku() =
                 Danmaku(
-                    counter++.toString(), 0.0, "1",
+                    counter++.toString(),
+                    "dummy",
+                    0L, "1",
                     DanmakuLocation.NORMAL,
                     text = LoremIpsum(Random.nextInt(1..5)).values.first(),
                     0
@@ -124,7 +126,9 @@ private fun PreviewDanmakuText() {
                 remember {
                     DanmakuState(
                         Danmaku(
-                            "1", 0.0, "1",
+                            "1",
+                            "dummy",
+                            0L, "1",
                             DanmakuLocation.NORMAL,
                             text = "Hello, world!",
                             0

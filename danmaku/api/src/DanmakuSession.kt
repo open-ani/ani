@@ -5,10 +5,13 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.transformLatest
+import me.him188.ani.danmaku.protocol.DanmakuInfo
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
-interface DanmakuSession : AutoCloseable {
+interface DanmakuSession {
+    val totalCount: Int? get() = null
+
     /**
      * 创建一个随视频进度 [progress] 匹配到的弹幕数据流.
      *
@@ -26,25 +29,25 @@ interface DanmakuSession : AutoCloseable {
 fun emptyDanmakuSession(): DanmakuSession {
     return object : DanmakuSession {
         override fun at(progress: Flow<Duration>): Flow<Danmaku> = emptyFlow()
-        override fun close() {
-        }
     }
 }
 
 class TimeBasedDanmakuSession private constructor(
     /**
-     * List of danmaku. Must be sorted by [Danmaku.time], and must not change after construction.
+     * List of danmaku. Must be sorted by [DanmakuInfo.playTime], and must not change after construction.
      */
     private val list: List<Danmaku>,
     private val shiftMillis: Long = 0,
 ) : DanmakuSession {
+    override val totalCount: Int get() = list.size
+
     companion object {
         fun create(
             sequence: Sequence<Danmaku>,
             shiftMillis: Long = 0,
         ): DanmakuSession {
             val list = sequence.toCollection(ArrayList())
-            list.sortBy { it.time }
+            list.sortBy { it.playTimeMillis }
             return TimeBasedDanmakuSession(list, shiftMillis)
         }
     }
@@ -64,11 +67,11 @@ class TimeBasedDanmakuSession private constructor(
 
             lastTime = curTime
 
-            val curTimeSecs = curTime.inWholeMilliseconds / 1000.0
+            val curTimeSecs = curTime.inWholeMilliseconds
 
             for (i in (lastIndex + 1)..list.lastIndex) {
                 val item = list[i]
-                if (curTimeSecs >= item.time) {
+                if (curTimeSecs >= item.playTimeMillis) {
                     // 达到了弹幕发送的时间
                     lastIndex = i
                     emit(item) // Note: 可能会因为有新的 [curTime] 而 cancel
@@ -78,9 +81,5 @@ class TimeBasedDanmakuSession private constructor(
                 }
             }
         }
-    }
-
-    override fun close() {
-        // This class is actually stateless.
     }
 }

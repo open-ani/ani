@@ -184,6 +184,11 @@ private class TimeBasedDanmakuSessionTest {
         job.cancel()
     }
 
-    private fun dummyDanmaku(time: Double, text: String = "$time") =
-        Danmaku(text, time, text, DanmakuLocation.NORMAL, text, 0)
+    private fun dummyDanmaku(timeSecs: Double, text: String = "$timeSecs") =
+        dummyDanmaku((timeSecs * 1000).toLong(), text)
+
+    private fun dummyDanmaku(timeMillis: Long, text: String = "$timeMillis") =
+        Danmaku(text, "dummy", timeMillis, text, DanmakuLocation.NORMAL, text, 0)
+
+
 }

@@ -1,11 +1,19 @@
 package me.him188.ani.danmaku.api
 
+import io.ktor.client.HttpClientConfig
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logging
 import kotlinx.serialization.Serializable
 import me.him188.ani.datasources.api.EpisodeSort
+import me.him188.ani.utils.ktor.createDefaultHttpClient
+import me.him188.ani.utils.logging.info
+import me.him188.ani.utils.logging.logger
 import kotlin.time.Duration
 
 /**
  * A [DanmakuProvider] provides a stream of danmaku for a specific episode.
+ *
+ * @see DanmakuProviderFactory
  */
 interface DanmakuProvider {
     val id: String
@@ -17,9 +25,8 @@ interface DanmakuProvider {
      *
      * The returned [DanmakuSession] should be closed when it is no longer needed.
      */
-    suspend fun startSession(
+    suspend fun fetch(
         request: DanmakuSearchRequest,
-        matcher: DanmakuMatcher,
     ): DanmakuSession?
 }
 
@@ -88,4 +95,26 @@ object DanmakuMatchers {
 
         return cost[lhsLength]
     }
+}
+
+
+abstract class AbstractDanmakuProvider(
+    config: DanmakuProviderConfig,
+) : DanmakuProvider {
+    protected val logger = logger(this::class)
+
+    protected val client = createDefaultHttpClient {
+        applyDanmakuProviderConfig(config)
+        Logging {
+            logger = object : io.ktor.client.plugins.logging.Logger {
+                override fun log(message: String) {
+                    this@AbstractDanmakuProvider.logger.info { message }
+                }
+            }
+            level = LogLevel.INFO
+        }
+        configureClient()
+    }
+
+    protected open fun HttpClientConfig<*>.configureClient() {}
 }

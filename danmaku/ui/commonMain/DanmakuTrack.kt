@@ -135,7 +135,9 @@ class DanmakuState internal constructor(
 
 internal val DummyDanmakuState: DanmakuState = DanmakuState(
     Danmaku(
-        UUID.randomUUID().toString(), 0.0, "1",
+        UUID.randomUUID().toString(),
+        "dummy",
+        0L, "1",
         DanmakuLocation.NORMAL, "dummy", 0
     )
 )

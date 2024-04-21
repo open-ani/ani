@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.withContext
+import me.him188.ani.app.data.danmaku.DanmakuManager
 import me.him188.ani.app.data.media.resolver.EpisodeMetadata
 import me.him188.ani.app.data.media.resolver.UnsupportedMediaException
 import me.him188.ani.app.data.media.resolver.VideoSourceResolver
@@ -47,15 +48,13 @@ import me.him188.ani.app.videoplayer.data.VideoSource
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import me.him188.ani.danmaku.api.Danmaku
-import me.him188.ani.danmaku.api.DanmakuMatchers
-import me.him188.ani.danmaku.api.DanmakuProvider
 import me.him188.ani.danmaku.api.DanmakuSearchRequest
+import me.him188.ani.danmaku.api.DanmakuSession
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.bangumi.processing.nameCNOrName
 import me.him188.ani.datasources.bangumi.processing.renderEpisodeEp
 import me.him188.ani.datasources.bangumi.processing.toCollectionType
-import me.him188.ani.utils.coroutines.closeOnReplacement
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import org.koin.core.component.KoinComponent
@@ -182,7 +181,7 @@ private class EpisodeViewModelImpl(
     private val browserNavigator: BrowserNavigator by inject()
     private val playerStateFactory: PlayerStateFactory by inject()
     private val subjectManager: SubjectManager by inject()
-    private val danmakuProvider: DanmakuProvider by inject()
+    private val danmakuManager: DanmakuManager by inject()
     private val videoSourceResolver: VideoSourceResolver by inject()
 
     private val subject = flowOf(subjectId).mapLatest { subjectId ->
@@ -300,7 +299,7 @@ private class EpisodeViewModelImpl(
 
     override val danmaku: PlayerDanmakuViewModel = PlayerDanmakuViewModel()
 
-    private val danmakuFlow: Flow<Danmaku> = combine(
+    private val danmakuSessionFlow: Flow<DanmakuSession> = combine(
         selectedMedia.filterNotNull(),
         playerState.videoProperties.distinctUntilChangedBy { it?.filename }.filterNotNull()
     ) { media, video ->
@@ -315,7 +314,7 @@ private class EpisodeViewModelImpl(
             subject = subjectPresentation
             episode = episodePresentation
         }
-        danmakuProvider.startSession(
+        danmakuManager.fetch(
             request = DanmakuSearchRequest(
                 subjectId = subjectId,
                 subjectName = subject.title,
@@ -327,17 +326,12 @@ private class EpisodeViewModelImpl(
                 fileSize = video.fileLengthBytes,
                 videoDuration = video.durationMillis.milliseconds,
             ),
-            matcher = DanmakuMatchers.mostRelevant(
-                subject.title,
-                "第${episode.sort.removePrefix("0")}话 " + episode.title
-            ),
         )
-    }.filterNotNull()
-        .closeOnReplacement()
-        .flatMapLatest { session ->
-            session.at(playerState.currentPositionMillis.map { it.milliseconds })
-        }
-        .shareInBackground(started = SharingStarted.Lazily)
+    }.shareInBackground(started = SharingStarted.Lazily)
+
+    private val danmakuFlow: Flow<Danmaku> = danmakuSessionFlow.flatMapLatest { session ->
+        session.at(progress = playerState.currentPositionMillis.map { it.milliseconds })
+    }
 
     init {
         launchInMain { // state changes must be in main thread

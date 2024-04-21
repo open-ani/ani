@@ -59,13 +59,6 @@ includeProject(":app:shared", "app/shared") // shared by clients (targets JVM)
 includeProject(":app:desktop", "app/desktop") // desktop JVM client for macOS, Windows, and Linux
 includeProject(":app:android", "app/android") // Android client
 
-// danmaku
-//includeProject(":danmaku:api", "danmaku/api") // danmaku source interfaces
-//includeProject(":danmaku:ui", "danmaku/ui") // danmaku UI composable
-//includeProject(":danmaku:dandanplay", "danmaku/dandanplay")
-includeProject(":danmaku:server", "danmaku/server") // danmaku server
-includeProject(":danmaku:protocol", "danmaku/protocol") // danmaku server-client protocol
-
 // server
 //includeProject(":server:core", "server/core") // server core
 //includeProject(":server:database", "server/database") // server database interfaces
@@ -81,6 +74,14 @@ includeProject(
     ":data-sources:bangumi",
     "data-sources/bangumi"
 ) // data source from https://bangumi.tv
+
+// danmaku
+//includeProject(":danmaku:api", "danmaku/api") // danmaku source interfaces
+//includeProject(":danmaku:ui", "danmaku/ui") // danmaku UI composable
+//includeProject(":danmaku:dandanplay", "danmaku/dandanplay")
+//includeProject(":danmaku:ani:client", "danmaku/ani/client") // danmaku server
+includeProject(":danmaku:server", "danmaku/server") // danmaku server
+includeProject(":danmaku:protocol", "danmaku/protocol") // danmaku server-client protocol
 
 includeProject(
     ":data-sources:dmhy:dataset-tools",

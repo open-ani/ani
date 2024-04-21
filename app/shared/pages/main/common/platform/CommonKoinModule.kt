@@ -24,7 +24,11 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import me.him188.ani.app.data.danmaku.DanmakuManager
+import me.him188.ani.app.data.danmaku.DanmakuManagerImpl
+import me.him188.ani.app.data.danmaku.DanmakuProviderLoader
 import me.him188.ani.app.data.media.DefaultMediaAutoCacheService
 import me.him188.ani.app.data.media.MediaAutoCacheService
 import me.him188.ani.app.data.media.MediaCacheManager
@@ -58,9 +62,8 @@ import me.him188.ani.app.persistent.tokenStore
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.session.SessionManagerImpl
 import me.him188.ani.app.tools.torrent.TorrentManager
-import me.him188.ani.danmaku.api.DanmakuProvider
-import me.him188.ani.danmaku.dandanplay.DandanplayClient
-import me.him188.ani.danmaku.dandanplay.DandanplayDanmakuProvider
+import me.him188.ani.danmaku.ani.client.AniDanmakuSenderImpl
+import me.him188.ani.danmaku.api.DanmakuProviderConfig
 import me.him188.ani.datasources.api.subject.SubjectProvider
 import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
@@ -84,12 +87,21 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
     single<EpisodeRevisionRepository> { EpisodeRevisionRepositoryImpl() }
     single<EpisodeRepository> { EpisodeRepositoryImpl() }
     single<ProfileRepository> { ProfileRepository() }
-    single<DanmakuProvider> {
-        DandanplayDanmakuProvider(dandanplayClient = DandanplayClient {
-            install(UserAgent) {
-                agent = getAniUserAgent(currentAniBuildConfig.versionName)
-            }
-        })
+    single<DanmakuManager> {
+        val config = DanmakuProviderConfig(
+            userAgent = getAniUserAgent(),
+        )
+        DanmakuManagerImpl(
+            providers = DanmakuProviderLoader.load {
+                config
+            },
+            sender = AniDanmakuSenderImpl(
+                config,
+                getBangumiToken = {
+                    get<SessionManager>().session.first()?.accessToken
+                }
+            )
+        )
     }
     single<PreferencesRepository> { PreferencesRepositoryImpl(getContext().preferencesStore) }
 

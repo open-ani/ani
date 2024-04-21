@@ -3,6 +3,7 @@ package me.him188.ani.danmaku.dandanplay.data
 import kotlinx.serialization.Serializable
 import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuLocation
+import me.him188.ani.danmaku.dandanplay.DandanplayDanmakuProvider
 
 
 @Serializable
@@ -26,9 +27,12 @@ fun DandanplayDanmaku.toDanmakuOrNull(): Danmaku? {
         if (it.size < 4) return null else it
     }
 
+    val timeSecs = time.toDoubleOrNull() ?: return null
+
     return Danmaku(
         id = cid.toString(),
-        time = time.toDoubleOrNull() ?: return null,
+        providerId = DandanplayDanmakuProvider.ID,
+        playTimeMillis = (timeSecs * 1000).toLong(),
         senderId = userId,
         location = when (mode.toIntOrNull()) {
             1 -> DanmakuLocation.NORMAL

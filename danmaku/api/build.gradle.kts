@@ -1,17 +1,16 @@
 plugins {
     kotlin("jvm")
-//    `android-library`
+    kotlin("plugin.serialization")
 }
-
-//kotlin {
-//    androidTarget()
-//    jvm("desktop")
-//}
-
-//configureFlattenMppSourceSets()
-//configureAndroidLibrary("me.him188.ani.danmaku.api", libs.versions.jetpack.compose.compiler.get())
 
 dependencies {
     api(libs.kotlinx.coroutines.core)
+    api(libs.ktor.client.logging)
+    api(libs.kotlinx.serialization.core)
+
+    api(projects.utils.ktorClient)
+    api(projects.utils.slf4jKt)
+    api(projects.dataSources.api)
+
     testImplementation(libs.kotlinx.coroutines.test)
 }

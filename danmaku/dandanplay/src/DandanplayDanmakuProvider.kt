@@ -1,28 +1,50 @@
 package me.him188.ani.danmaku.dandanplay
 
+import io.ktor.client.HttpClientConfig
+import io.ktor.client.plugins.HttpRequestRetry
+import io.ktor.client.plugins.HttpTimeout
+import me.him188.ani.danmaku.api.AbstractDanmakuProvider
 import me.him188.ani.danmaku.api.DanmakuEpisode
-import me.him188.ani.danmaku.api.DanmakuMatcher
-import me.him188.ani.danmaku.api.DanmakuProvider
+import me.him188.ani.danmaku.api.DanmakuMatchers
+import me.him188.ani.danmaku.api.DanmakuProviderConfig
+import me.him188.ani.danmaku.api.DanmakuProviderFactory
 import me.him188.ani.danmaku.api.DanmakuSearchRequest
 import me.him188.ani.danmaku.api.DanmakuSession
 import me.him188.ani.danmaku.api.TimeBasedDanmakuSession
 import me.him188.ani.danmaku.dandanplay.data.toDanmakuOrNull
 import me.him188.ani.utils.logging.info
-import me.him188.ani.utils.logging.logger
 
 class DandanplayDanmakuProvider(
-    private val dandanplayClient: DandanplayClient,
-) : DanmakuProvider {
+    config: DanmakuProviderConfig,
+) : AbstractDanmakuProvider(config) {
     companion object {
         const val ID = "弹弹play"
-        private val logger = logger<DandanplayDanmakuProvider>()
+    }
+
+    class Factory : DanmakuProviderFactory {
+        override val id: String get() = ID
+
+        override fun create(config: DanmakuProviderConfig): DandanplayDanmakuProvider =
+            DandanplayDanmakuProvider(config)
     }
 
     override val id: String get() = ID
 
-    override suspend fun startSession(
+    private val dandanplayClient = DandanplayClient(client)
+
+    override fun HttpClientConfig<*>.configureClient() {
+        install(HttpRequestRetry) {
+            maxRetries = 1
+            delayMillis { 2000 }
+        }
+        install(HttpTimeout) {
+            requestTimeoutMillis = 30_000 // 弹弹服务器请求比较慢
+            connectTimeoutMillis = 10_000 // 弹弹服务器请求比较慢
+        }
+    }
+
+    override suspend fun fetch(
         request: DanmakuSearchRequest,
-        matcher: DanmakuMatcher,
     ): DanmakuSession? {
         val searchEpisodeResponse = dandanplayClient.searchEpisode(
             subjectName = request.subjectName,
@@ -39,6 +61,12 @@ class DandanplayDanmakuProvider(
                 )
             }
         }
+
+        val matcher = DanmakuMatchers.mostRelevant(
+            request.subjectName,
+            "第${request.episodeSort.toString().removePrefix("0")}话 " + request.episodeName
+        )
+
         if (episodes.isNotEmpty()) {
             matcher.match(episodes)?.let {
                 logger.info { "Matched episode by ep search: ${it.subjectName} - ${it.episodeName}" }

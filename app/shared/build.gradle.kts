@@ -89,6 +89,11 @@ kotlin {
         api(projects.utils.coroutines)
         api(projects.utils.io)
         api(projects.torrent)
+//        api(projects.danmaku.api)
+//        api(projects.danmaku.protocol)
+//        api(projects.danmaku.dandanplay)
+//        api(projects.danmaku.ani.client)
+        api(projects.utils.ktorClient)
 
         // Ktor
         api(libs.ktor.client.websockets)
@@ -164,6 +169,7 @@ kotlin {
                 kotlin.srcDirs(rootProject.projectDir.resolve("$dir/src/"))
                 kotlin.srcDirs(rootProject.projectDir.resolve("$dir/commonMain/"))
                 kotlin.srcDirs(rootProject.projectDir.resolve("$dir/common/"))
+                resources.srcDirs(rootProject.projectDir.resolve("$dir/resources/"))
             }
             commonTest {
                 kotlin.srcDirs(rootProject.projectDir.resolve("$dir/test/"))
@@ -188,7 +194,9 @@ kotlin {
             }
         }
 
+        submodule("danmaku/protocol")
         submodule("danmaku/api")
+        submodule("danmaku/ani/client")
         submodule("danmaku/dandanplay")
         submodule("danmaku/ui")
 
