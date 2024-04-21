@@ -21,6 +21,7 @@ import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaCacheMetadata
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
+import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.datasources.core.cache.MediaCache
 import me.him188.ani.datasources.core.cache.MediaCacheEngine
 import me.him188.ani.datasources.core.cache.MediaStats
@@ -50,17 +51,30 @@ class TorrentMediaCacheEngine(
         override val metadata: MediaCacheMetadata,
         private val file: Flow<TorrentFileHandle>,
     ) : MediaCache {
-
-        private val cachedMedia: SuspendLazy<CachedMedia> = SuspendLazy {
-            CachedMedia(
-                origin,
-                mediaSourceId,
-                download = origin.download, // TODO: We cannot yet use LocalFile here as we need a mechanism to distinguish episodes
+        override suspend fun getCachedMedia(): CachedMedia {
+            val file = file.first()
+            val finished = file.entry.stats.isFinished.first()
+            if (finished) {
+                val filePath = file.entry.resolveFile()
+                if (!filePath.exists()) {
+                    error("TorrentFileHandle has finished but file does not exist: $filePath")
+                }
+                logger.info { "getCachedMedia: Torrent has already finished, returning file $filePath" }
+                return CachedMedia(
+                    origin,
+                    mediaSourceId,
+                    download = ResourceLocation.LocalFile(filePath.toString())
+                )
+            } else {
+                logger.info { "getCachedMedia: Torrent has not yet finished, returning torrent" }
+                return CachedMedia(
+                    origin,
+                    mediaSourceId,
+                    download = origin.download,
 //                download = ResourceLocation.LocalFile(session.first().filePath().toString())
-            )
+                )
+            }
         }
-
-        override suspend fun getCachedMedia(): CachedMedia = cachedMedia.get()
 
         private val entry get() = file.map { it.entry }
 
