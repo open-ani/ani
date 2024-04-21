@@ -130,7 +130,7 @@ class DefaultMediaAutoCacheService(
                         logger.info { "Created cache ${media.mediaId} for ${subject.debugName()} ${firstUnwatched.episode.name}" }
                     }
                 }
-                cancel()
+                cancelScope()
             }
 
             logger.info { "Completed creating cache for ${subject.debugName()} ${firstUnwatched.episode.name}, delay 1 min" }

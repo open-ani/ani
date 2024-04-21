@@ -227,13 +227,17 @@ internal class TorrentDownloadSessionImpl(
 
                         val firstIndex = pieces.first().pieceIndex
                         val lastIndex = pieces.last().pieceIndex
+                        println("setPieceDeadline $firstIndex")
                         handle.setPieceDeadline(firstIndex, 0)
+                        println("setPieceDeadline $lastIndex")
                         handle.setPieceDeadline(lastIndex, 1)
 
+                        println("setPieceDeadline ${firstIndex + 1}")
                         handle.setPieceDeadline(firstIndex + 1, 2)
+                        println("setPieceDeadline ${firstIndex + 2}")
                         handle.setPieceDeadline(firstIndex + 2, 3)
+                        println("setPieceDeadline ok")
                     }
-                    handle.resume()
                 }
 
                 requestPriority(priority)
@@ -541,7 +545,7 @@ internal class TorrentDownloadSessionImpl(
                                 }
                                 launch {
                                     job(alert.handle())
-                                    cancel()
+                                    cancelScope()
                                 }
                             }
                         }

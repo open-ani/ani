@@ -363,7 +363,7 @@ private class EpisodeViewModelImpl(
                         ),
                     )
                 }
-                cancel()
+                cancelScope()
             }
         }
 

@@ -189,7 +189,7 @@ class LazyDataCacheImpl<T>(
                     requestMore()
                     emit(cachedData.value)
                 }
-                cancel() // 仅收集一个 source
+                cancelScope() // 仅收集一个 source
             }
         }
     }

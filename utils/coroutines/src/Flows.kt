@@ -81,7 +81,7 @@ inline fun <T, R : AutoCloseable> Flow<T>.mapNotNullAutoClose(
 }
 
 /**
- * A [coroutineScope] that can be [cancelled][CancellableCoroutineScope.cancel]
+ * A [coroutineScope] that can be [cancelled][CancellableCoroutineScope.cancelScope]
  * without causing the [coroutineScope] to throw a [CancellationException].
  */
 suspend inline fun <R> cancellableCoroutineScope(
@@ -94,7 +94,7 @@ suspend inline fun <R> cancellableCoroutineScope(
         coroutineScope {
             val self = this
             block(object : CancellableCoroutineScope {
-                override fun cancel() {
+                override fun cancelScope() {
                     self.cancel(OwnedCancellationException(owner))
                 }
 
@@ -108,7 +108,7 @@ suspend inline fun <R> cancellableCoroutineScope(
 }
 
 /**
- * A [coroutineScope] that can be [cancelled][CancellableCoroutineScope.cancel]
+ * A [coroutineScope] that can be [cancelled][CancellableCoroutineScope.cancelScope]
  * without causing the [coroutineScope] to throw a [CancellationException].
  */
 suspend inline fun <R> cancellableCoroutineScope(
@@ -122,7 +122,7 @@ suspend inline fun <R> cancellableCoroutineScope(
 }
 
 interface CancellableCoroutineScope : CoroutineScope {
-    fun cancel()
+    fun cancelScope()
 }
 
 
