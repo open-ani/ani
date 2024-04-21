@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
+import me.him188.ani.app.data.models.DanmakuSettings
 import me.him188.ani.app.data.models.MediaCacheSettings
 import me.him188.ani.app.data.models.ProxyPreferences
 import me.him188.ani.app.data.serializers.DanmakuConfigSerializer
@@ -35,6 +36,7 @@ interface PreferencesRepository {
 
     val proxyPreferences: Preference<ProxyPreferences>
     val mediaCacheSettings: Preference<MediaCacheSettings>
+    val danmakuSettings: Preference<DanmakuSettings>
 }
 
 @Stable
@@ -110,6 +112,11 @@ class PreferencesRepositoryImpl(
         "cachePreferences",
         MediaCacheSettings.serializer(),
         default = { MediaCacheSettings.Default }
+    )
+    override val danmakuSettings: Preference<DanmakuSettings> = SerializablePreference(
+        "danmakuSettings",
+        DanmakuSettings.serializer(),
+        default = { DanmakuSettings.Default }
     )
 
     private companion object {

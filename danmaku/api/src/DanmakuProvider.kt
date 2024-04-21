@@ -15,7 +15,7 @@ import kotlin.time.Duration
  *
  * @see DanmakuProviderFactory
  */
-interface DanmakuProvider {
+interface DanmakuProvider : AutoCloseable {
     val id: String
 
     /**
@@ -117,4 +117,8 @@ abstract class AbstractDanmakuProvider(
     }
 
     protected open fun HttpClientConfig<*>.configureClient() {}
+
+    override fun close() {
+        client.close()
+    }
 }

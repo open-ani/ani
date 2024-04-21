@@ -36,7 +36,7 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.random.Random
 
-interface AniDanmakuSender {
+interface AniDanmakuSender : AutoCloseable {
     val selfId: Flow<String?>
 
     @Throws(SendDanmakuException::class)
@@ -56,11 +56,12 @@ class RequestFailedException(
 class NetworkErrorException(override val cause: Throwable?) : SendDanmakuException()
 
 class AniDanmakuSenderImpl(
-    config: DanmakuProviderConfig,
-    private val baseUrl: String,
+    private val config: DanmakuProviderConfig,
     bangumiToken: Flow<String?>,
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
 ) : AniDanmakuSender, HasBackgroundScope by BackgroundScope(parentCoroutineContext) {
+    private fun getBaseUrl() = AniBangumiSeverBaseUrls.getBaseUrl(config.useGlobal)
+
     companion object {
         private val logger = logger(this::class)
     }
@@ -84,7 +85,7 @@ class AniDanmakuSenderImpl(
 
     private suspend fun getUserInfo(token: String): AniUser {
         return invokeRequest {
-            client.get("$baseUrl/v1/me") {
+            client.get("${getBaseUrl()}/v1/me") {
                 bearerAuth(token)
             }
         }.body<AniUser>()
@@ -111,7 +112,7 @@ class AniDanmakuSenderImpl(
         bangumiToken: String
     ): String {
         return invokeRequest {
-            client.post("$baseUrl/v1/login/bangumi") {
+            client.post("${getBaseUrl()}/v1/login/bangumi") {
                 contentType(ContentType.Application.Json)
                 setBody(BangumiLoginRequest(bangumiToken))
             }
@@ -127,7 +128,7 @@ class AniDanmakuSenderImpl(
         info: DanmakuInfo,
     ) {
         invokeRequest {
-            client.post("$baseUrl/v1/danmaku/$episodeId") {
+            client.post("${getBaseUrl()}/v1/danmaku/$episodeId") {
                 bearerAuth(requireToken())
                 contentType(ContentType.Application.Json)
                 setBody(DanmakuPostRequest(info))
@@ -172,5 +173,9 @@ class AniDanmakuSenderImpl(
             text = info.text,
             color = info.color,
         )
+    }
+
+    override fun close() {
+        client.close()
     }
 }

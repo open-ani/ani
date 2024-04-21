@@ -86,9 +86,10 @@ private fun PreviewNetworkPreferenceTab() {
     ) {
         val vm = rememberViewModel { NetworkPreferenceViewModel() }
         SideEffect {
-            vm.allMediaTesters.first().result = MediaTestResult.SUCCESS
-            vm.allMediaTesters.drop(1).first().result = MediaTestResult.FAILED
-            vm.allMediaTesters.drop(2).first().result = MediaTestResult.NOT_ENABLED
+            val testers = vm.allMediaTesters.testers
+            testers.first().result = MediaTestResult.SUCCESS
+            testers.drop(1).first().result = MediaTestResult.FAILED
+            testers.drop(2).first().result = MediaTestResult.NOT_ENABLED
         }
         NetworkPreferenceTab()
     }

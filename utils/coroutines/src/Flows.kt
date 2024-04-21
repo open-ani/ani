@@ -39,6 +39,21 @@ inline fun <T, R : AutoCloseable> Flow<T>.mapAutoClose(
     }
 }
 
+/**
+ * Maps each value to a [R] using the given [mapper] function, and closes the previous [R] if any.
+ */
+inline fun <T, R : AutoCloseable, C : Collection<R>> Flow<T>.mapAutoCloseCollection(
+    @BuilderInference crossinline mapper: suspend (T) -> C
+): Flow<C> = flow {
+    var last: C? = null
+    collect { value ->
+        last?.forEach { it.close() }
+        val new = mapper(value)
+        emit(new)
+        last = new
+    }
+}
+
 fun <T : AutoCloseable?> Flow<T>.closeOnReplacement(): Flow<T> = flow {
     var last: T? = null
     collect { value ->

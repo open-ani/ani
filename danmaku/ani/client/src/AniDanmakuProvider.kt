@@ -14,10 +14,20 @@ import me.him188.ani.danmaku.api.Danmaku as ApiDanmaku
 import me.him188.ani.danmaku.api.DanmakuLocation as ApiDanmakuLocation
 import me.him188.ani.danmaku.protocol.DanmakuLocation as ProtocolDanmakuLocation
 
+object AniBangumiSeverBaseUrls {
+    const val GLOBAL = "https://danmaku-global.myani.org"
+    const val CN = "https://danmaku-cn.myani.org"
+
+    val list = listOf(GLOBAL, CN)
+
+    fun getBaseUrl(useGlobal: Boolean) = if (useGlobal) GLOBAL else CN
+}
 
 class AniDanmakuProvider(
-    config: DanmakuProviderConfig,
+    private val config: DanmakuProviderConfig,
 ) : AbstractDanmakuProvider(config) {
+    private fun getBaseUrl() = AniBangumiSeverBaseUrls.getBaseUrl(config.useGlobal)
+
     companion object {
         const val ID = "ani"
     }
@@ -32,7 +42,7 @@ class AniDanmakuProvider(
     override val id: String get() = ID
 
     override suspend fun fetch(request: DanmakuSearchRequest): DanmakuSession {
-        val resp = client.get("https://danmaku.api.myani.org/v1/danmaku/${request.episodeId}")
+        val resp = client.get("${getBaseUrl()}/v1/danmaku/${request.episodeId}")
         val list = resp.body<DanmakuGetResponse>().danmakuList
         return TimeBasedDanmakuSession.create(list.asSequence().map {
             ApiDanmaku(

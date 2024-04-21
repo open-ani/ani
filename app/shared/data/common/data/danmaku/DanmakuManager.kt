@@ -1,9 +1,19 @@
 package me.him188.ani.app.data.danmaku
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
+import me.him188.ani.app.data.repositories.PreferencesRepository
+import me.him188.ani.app.platform.getAniUserAgent
+import me.him188.ani.app.session.SessionManager
+import me.him188.ani.app.ui.foundation.BackgroundScope
+import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.danmaku.ani.client.AniDanmakuProvider
 import me.him188.ani.danmaku.ani.client.AniDanmakuSender
+import me.him188.ani.danmaku.ani.client.AniDanmakuSenderImpl
 import me.him188.ani.danmaku.ani.client.SendDanmakuException
 import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuProvider
@@ -13,8 +23,14 @@ import me.him188.ani.danmaku.api.DanmakuSession
 import me.him188.ani.danmaku.api.emptyDanmakuSession
 import me.him188.ani.danmaku.dandanplay.DandanplayDanmakuProvider
 import me.him188.ani.danmaku.protocol.DanmakuInfo
+import me.him188.ani.utils.coroutines.mapAutoClose
+import me.him188.ani.utils.coroutines.mapAutoCloseCollection
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.logger
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration
 
 /**
@@ -48,23 +64,44 @@ object DanmakuProviderLoader {
 }
 
 class DanmakuManagerImpl(
+    parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
+) : DanmakuManager, KoinComponent, HasBackgroundScope by BackgroundScope(parentCoroutineContext) {
+    private val preferencesRepository: PreferencesRepository by inject()
+    private val sessionManager: SessionManager by inject()
+
+    private val config = preferencesRepository.danmakuSettings.flow.map { config ->
+        DanmakuProviderConfig(
+            userAgent = getAniUserAgent(),
+            useGlobal = config.useGlobal,
+        )
+    }
+
     /**
      * @see DanmakuProviderLoader
      */
-    private val providers: List<DanmakuProvider>,
-    private val sender: AniDanmakuSender,
-) : DanmakuManager {
+    private val providers: Flow<List<DanmakuProvider>> = config.mapAutoCloseCollection { config ->
+        DanmakuProviderLoader.load { config }
+    }.shareInBackground(started = SharingStarted.Lazily)
+
+    private val sender: Flow<AniDanmakuSender> = config.mapAutoClose { config ->
+        AniDanmakuSenderImpl(
+            config,
+            sessionManager.session.map { it?.accessToken },
+            backgroundScope.coroutineContext
+        )
+    }.shareInBackground(started = SharingStarted.Lazily)
+
     private companion object {
         val logger = logger<DanmakuManagerImpl>()
     }
 
-    override val selfId: Flow<String?> = sender.selfId
+    override val selfId: Flow<String?> = sender.flatMapLatest { it.selfId }
 
     override suspend fun fetch(
         request: DanmakuSearchRequest,
     ): CombinedDanmakuSession {
         return CombinedDanmakuSession(
-            providers.map { provider ->
+            providers.first().map { provider ->
                 runCatching {
                     provider.fetch(request = request)
                 }.onFailure {
@@ -75,7 +112,7 @@ class DanmakuManagerImpl(
     }
 
     override suspend fun post(episodeId: Int, danmaku: DanmakuInfo): Danmaku {
-        return sender.send(episodeId, danmaku)
+        return sender.first().send(episodeId, danmaku)
     }
 }
 

@@ -24,11 +24,9 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.danmaku.DanmakuManager
 import me.him188.ani.app.data.danmaku.DanmakuManagerImpl
-import me.him188.ani.app.data.danmaku.DanmakuProviderLoader
 import me.him188.ani.app.data.media.DefaultMediaAutoCacheService
 import me.him188.ani.app.data.media.MediaAutoCacheService
 import me.him188.ani.app.data.media.MediaCacheManager
@@ -62,8 +60,6 @@ import me.him188.ani.app.persistent.tokenStore
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.session.SessionManagerImpl
 import me.him188.ani.app.tools.torrent.TorrentManager
-import me.him188.ani.danmaku.ani.client.AniDanmakuSenderImpl
-import me.him188.ani.danmaku.api.DanmakuProviderConfig
 import me.him188.ani.datasources.api.subject.SubjectProvider
 import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
@@ -88,19 +84,8 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
     single<EpisodeRepository> { EpisodeRepositoryImpl() }
     single<ProfileRepository> { ProfileRepository() }
     single<DanmakuManager> {
-        val config = DanmakuProviderConfig(
-            userAgent = getAniUserAgent(),
-        )
         DanmakuManagerImpl(
-            providers = DanmakuProviderLoader.load {
-                config
-            },
-            sender = AniDanmakuSenderImpl(
-                config,
-                currentAniBuildConfig.aniDanmakuServerBaseUrl,
-                bangumiToken = get<SessionManager>().session.map { it?.accessToken },
-                parentCoroutineContext = coroutineScope.coroutineContext
-            )
+            parentCoroutineContext = coroutineScope.coroutineContext
         )
     }
     single<PreferencesRepository> { PreferencesRepositoryImpl(getContext().preferencesStore) }
@@ -174,7 +159,6 @@ interface AniBuildConfig {
     val versionName: String
     val bangumiOauthClientAppId: String
     val bangumiOauthClientSecret: String
-    val aniDanmakuServerBaseUrl: String
     val isDebug: Boolean
 
     companion object {

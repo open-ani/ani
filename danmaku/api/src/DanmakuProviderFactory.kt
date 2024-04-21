@@ -18,7 +18,8 @@ interface DanmakuProviderFactory { // SPI interface
 
 class DanmakuProviderConfig(
     val proxy: ClientProxyConfig? = null,
-    val userAgent: String? = null
+    val userAgent: String? = null,
+    val useGlobal: Boolean = false,
 )
 
 fun HttpClientConfig<*>.applyDanmakuProviderConfig(
