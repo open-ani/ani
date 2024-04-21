@@ -1,8 +1,12 @@
 package me.him188.ani.app.torrent
 
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -73,6 +77,7 @@ internal class TorrentDownloadSessionImpl(
     private val isDebug: Boolean,
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
 ) : TorrentDownloadSession {
+    private val scope = CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
     private val coroutineCloseHandle =
         parentCoroutineContext[Job]?.invokeOnCompletion {
             close()
@@ -320,14 +325,20 @@ internal class TorrentDownloadSessionImpl(
         }
 
         override suspend fun resolveFile(): Path = resolveDownloadingFile().toPath()
-        override suspend fun getFileHash(): String {
-            stats.awaitFinished()
-            return withContext(Dispatchers.IO) {
-                hashFileMd5(resolveDownloadingFile())
+
+        private val hashMd5 by lazy {
+            scope.async {
+                withContext(Dispatchers.IO) {
+                    hashFileMd5(resolveDownloadingFile())
+                }
             }
         }
 
-        override fun getFileHashOrNull(): String? = resolveFileOrNull()?.let { hashFileMd5(it) }
+        override suspend fun getFileHash(): String = hashMd5.await()
+
+        override fun getFileHashOrNull(): String? = if (hashMd5.isCompleted) {
+            hashMd5.getCompleted()
+        } else null
 
         private suspend fun resolveDownloadingFile(): File {
             while (true) {
@@ -561,6 +572,7 @@ internal class TorrentDownloadSessionImpl(
             openHandles
             onClose(this@TorrentDownloadSessionImpl)
             logger.info { "Close torrent $torrentName: dispose handle" }
+            scope.cancel()
             coroutineCloseHandle?.dispose()
         }
     }
@@ -621,6 +633,7 @@ internal class TorrentDownloadSessionImpl(
 }
 
 @OptIn(ExperimentalStdlibApi::class)
+@kotlin.jvm.Throws(IOException::class)
 private fun hashFileMd5(input: File): String {
     val md = java.security.MessageDigest.getInstance("MD5")
     val buffer = ByteArray(8192)
