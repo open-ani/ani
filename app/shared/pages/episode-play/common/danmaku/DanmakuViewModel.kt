@@ -62,6 +62,9 @@ internal class PlayerDanmakuStateImpl(
         episodeId: Int,
         info: DanmakuInfo
     ) {
+        withContext(Dispatchers.Main) {
+            isSending = true
+        }
         val danmaku = try {
             danmakuManager.post(episodeId, info)
         } finally {
