@@ -15,11 +15,14 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import me.him188.ani.danmaku.protocol.AniUser
+import me.him188.ani.danmaku.protocol.BangumiLoginRequest
+import me.him188.ani.danmaku.protocol.BangumiLoginResponse
 import me.him188.ani.danmaku.protocol.DanmakuGetResponse
 import me.him188.ani.danmaku.protocol.DanmakuInfo
 import me.him188.ani.danmaku.protocol.DanmakuLocation
 import me.him188.ani.danmaku.protocol.DanmakuPostRequest
 import me.him188.ani.danmaku.server.ktor.getKtorServer
+import me.him188.ani.danmaku.server.service.BangumiLoginHelper
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.koin.core.context.stopKoin
@@ -34,7 +37,7 @@ class E2eTest {
             json(Json { ignoreUnknownKeys = true })
         }
     }
-    private val serverEndpoint = "http://localhost:4394"
+    private val serverEndpoint = "http://localhost:4394/v1"
 
     @Test
     fun `test login, get username, post danmaku and get danmaku`() = runTest {
@@ -47,10 +50,10 @@ class E2eTest {
 
         val response = client.post("$serverEndpoint/login/bangumi") {
             contentType(ContentType.Application.Json)
-            setBody("test_token_1")
+            setBody(BangumiLoginRequest( "test_token_1"))
         }
         assertEquals(HttpStatusCode.OK, response.status)
-        val token = response.body<String>()
+        val token = response.body<BangumiLoginResponse>().token
 
         val response2 = client.post("$serverEndpoint/danmaku/1") {
             contentType(ContentType.Application.Json)
