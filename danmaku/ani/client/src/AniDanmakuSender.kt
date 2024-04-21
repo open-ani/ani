@@ -1,20 +1,48 @@
 package me.him188.ani.danmaku.ani.client
 
+import io.ktor.client.call.body
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
-import kotlinx.coroutines.flow.MutableStateFlow
+import io.ktor.client.request.bearerAuth
+import io.ktor.client.request.get
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.HttpResponse
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
+import io.ktor.http.isSuccess
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import me.him188.ani.app.ui.foundation.BackgroundScope
+import me.him188.ani.app.ui.foundation.HasBackgroundScope
+import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuProviderConfig
 import me.him188.ani.danmaku.api.applyDanmakuProviderConfig
+import me.him188.ani.danmaku.protocol.AniUser
+import me.him188.ani.danmaku.protocol.BangumiLoginRequest
+import me.him188.ani.danmaku.protocol.BangumiLoginResponse
 import me.him188.ani.danmaku.protocol.DanmakuInfo
+import me.him188.ani.danmaku.protocol.DanmakuPostRequest
 import me.him188.ani.utils.ktor.createDefaultHttpClient
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.random.Random
 
 interface AniDanmakuSender {
+    val selfId: Flow<String?>
+
     @Throws(SendDanmakuException::class)
-    suspend fun send(info: DanmakuInfo)
+    suspend fun send(
+        episodeId: Int,
+        info: DanmakuInfo
+    ): Danmaku
 }
 
 sealed class SendDanmakuException : Exception()
@@ -28,8 +56,10 @@ class NetworkErrorException(override val cause: Throwable?) : SendDanmakuExcepti
 
 class AniDanmakuSenderImpl(
     config: DanmakuProviderConfig,
-    getBangumiToken: suspend () -> String?,
-) : AniDanmakuSender {
+    private val baseUrl: String,
+    bangumiToken: Flow<String?>,
+    parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
+) : AniDanmakuSender, HasBackgroundScope by BackgroundScope(parentCoroutineContext) {
     companion object {
         private val logger = logger(this::class)
     }
@@ -44,34 +74,98 @@ class AniDanmakuSenderImpl(
             }
             level = LogLevel.INFO
         }
+        followRedirects = true
     }
 
-    private var token: MutableStateFlow<String?> = MutableStateFlow(null)
-
-    private suspend fun authByBangumiToken(): String {
-        try {
-            TODO()
-        } catch (e: Throwable) {
-            throw AuthorizationFailureException(e)
-        }
+    private suspend fun getUserInfo(token: String): AniUser {
+        return invokeRequest {
+            client.get("$baseUrl/v1/me") {
+                bearerAuth(token)
+            }
+        }.body<AniUser>()
     }
 
-    private suspend fun sendDanmaku(info: DanmakuInfo) {
+    private inline fun invokeRequest(
+        block: () -> HttpResponse
+    ): HttpResponse {
         val resp = try {
-            TODO()
+            block()
         } catch (e: Throwable) {
             throw NetworkErrorException(e)
         }
+        if (resp.status.value == 401) {
+            throw AuthorizationFailureException(null)
+        }
+        if (!resp.status.isSuccess()) {
+            throw RequestFailedException(resp.toString())
+        }
+        return resp
+    }
 
+    private suspend fun authByBangumiToken(
+        bangumiToken: String
+    ): String {
+        return invokeRequest {
+            client.post("$baseUrl/v1/login/bangumi") {
+                contentType(ContentType.Application.Json)
+                setBody(BangumiLoginRequest(bangumiToken))
+            }
+        }.body<BangumiLoginResponse>().token
+    }
+
+    private suspend inline fun requireToken(): String {
+        return danmakuToken.first() ?: throw AuthorizationFailureException(null)
+    }
+
+    private suspend fun sendDanmaku(
+        episodeId: Int,
+        info: DanmakuInfo,
+    ) {
+        invokeRequest {
+            client.post("$baseUrl/v1/danmaku/$episodeId") {
+                bearerAuth(requireToken())
+                contentType(ContentType.Application.Json)
+                setBody(DanmakuPostRequest(info))
+            }
+        }
     }
 
 
     private val sendLock = Mutex()
-    override suspend fun send(info: DanmakuInfo) = sendLock.withLock {
-        if (token.value == null) {
-            token.value = authByBangumiToken()
+
+    private val danmakuToken = bangumiToken.map {
+        if (it == null) {
+            null
+        } else {
+            authByBangumiToken(it)
         }
-        sendDanmaku(info)
-        TODO()
+    }.stateInBackground(started = SharingStarted.Eagerly)
+
+    private val selfInfo: StateFlow<AniUser?> = danmakuToken.map {
+        if (it == null) {
+            null
+        } else {
+            getUserInfo(it)
+//            getUserInfo(it)
+        }
+    }.stateInBackground(started = SharingStarted.Eagerly)
+
+    override val selfId = selfInfo.map { it?.id }
+
+    override suspend fun send(episodeId: Int, info: DanmakuInfo): Danmaku = sendLock.withLock {
+        val selfId = selfId.first()
+            ?: throw AuthorizationFailureException(null)
+
+        sendDanmaku(episodeId, info)
+
+        Danmaku(
+            id = "self" + Random.nextInt(),
+            providerId = AniDanmakuProvider.ID,
+            playTimeMillis = info.playTime,
+            senderId = selfId,
+            location = info.location.toApi(),
+            text = info.text,
+            color = info.color,
+        )
     }
 }

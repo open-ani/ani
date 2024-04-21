@@ -19,12 +19,14 @@ import kotlin.time.Duration
  * 管理多个弹幕源 [DanmakuProvider]
  */
 interface DanmakuManager {
+    val selfId: Flow<String?>
+
     suspend fun fetch(
         request: DanmakuSearchRequest,
     ): DanmakuSession
 
     @Throws(SendDanmakuException::class)
-    suspend fun post(danmaku: DanmakuInfo)
+    suspend fun post(episodeId: Int, danmaku: DanmakuInfo): Danmaku
 }
 
 object DanmakuProviderLoader {
@@ -50,20 +52,22 @@ class DanmakuManagerImpl(
     private val providers: List<DanmakuProvider>,
     private val sender: AniDanmakuSender,
 ) : DanmakuManager {
+    override val selfId: Flow<String?> = sender.selfId
+
     override suspend fun fetch(
         request: DanmakuSearchRequest,
     ): CombinedDanmakuSession {
         return CombinedDanmakuSession(
             providers.map {
-                it.fetch(
-                    request = request,
-                ) ?: emptyDanmakuSession()
+                runCatching {
+                    it.fetch(request = request)
+                }.getOrNull() ?: emptyDanmakuSession()
             }
         )
     }
 
-    override suspend fun post(danmaku: DanmakuInfo) {
-        sender.send(danmaku)
+    override suspend fun post(episodeId: Int, danmaku: DanmakuInfo): Danmaku {
+        return sender.send(episodeId, danmaku)
     }
 }
 

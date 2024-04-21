@@ -13,7 +13,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
-import me.him188.ani.danmaku.api.Danmaku
+import me.him188.ani.danmaku.api.DanmakuPresentation
 
 interface DanmakuHostState {
     @Stable
@@ -24,7 +24,13 @@ interface DanmakuHostState {
      *
      * @return `true` if the [danmaku] was sent to a track, `false` if all tracks are currently occupied.
      */
-    fun trySend(danmaku: Danmaku): Boolean
+    fun trySend(danmaku: DanmakuPresentation): Boolean
+
+    suspend fun send(danmaku: DanmakuPresentation) {
+        if (!trySend(danmaku)) {
+            tracks.randomOrNull()?.send(danmaku)
+        }
+    }
 
     val isPaused: Boolean
 
@@ -89,7 +95,7 @@ internal class DanmakuHostStateImpl(
         DanmakuTrackState(_isPaused, 10, danmakuProperties)
     )
 
-    override fun trySend(danmaku: Danmaku): Boolean {
+    override fun trySend(danmaku: DanmakuPresentation): Boolean {
         return tracks.any { it.trySend(danmaku) }
     }
 

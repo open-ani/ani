@@ -115,6 +115,9 @@ kotlin {
         api(libs.precompose) // Navigator
         api(libs.precompose.koin) // Navigator
         api(libs.precompose.viewmodel) // Navigator
+
+//        api(libs.okhttp)
+//        api(libs.okhttp.logging)
         implementation(libs.reorderable)
 
         implementation(libs.slf4j.api)
@@ -241,6 +244,9 @@ val bangumiClientAndroidSecret = getPropertyOrNull("bangumi.oauth.client.android
 val bangumiClientDesktopAppId = getPropertyOrNull("bangumi.oauth.client.desktop.appId")
 val bangumiClientDesktopSecret = getPropertyOrNull("bangumi.oauth.client.desktop.secret")
 
+val aniDanmakuServerBaseUrl = getPropertyOrNull("ani.danmaku.server.baseUrl")
+    ?: "https://danmaku.api.myani.org/"
+
 if (bangumiClientAndroidAppId == null || bangumiClientAndroidSecret == null) {
     logger.warn("bangumi.oauth.client.android.appId or bangumi.oauth.client.android.secret is not set. Bangumi authorization will not work. Get a token from https://bgm.tv/dev/app and set them in local.properties.")
 }
@@ -257,6 +263,7 @@ android {
         buildConfigField("String", "VERSION_NAME", "\"${getProperty("version.name")}\"")
         buildConfigField("String", "BANGUMI_OAUTH_CLIENT_APP_ID", "\"$bangumiClientAndroidAppId\"")
         buildConfigField("String", "BANGUMI_OAUTH_CLIENT_SECRET", "\"$bangumiClientAndroidSecret\"")
+        buildConfigField("String", "aniDanmakuServerBaseUrl", "\"$aniDanmakuServerBaseUrl\"")
     }
     buildTypes.getByName("release") {
         isMinifyEnabled = true
@@ -306,6 +313,7 @@ val generateAniBuildConfigDesktop = tasks.register("generateAniBuildConfigDeskto
     inputs.property("project.version", project.version)
     inputs.property("bangumiClientAppIdDesktop", bangumiClientDesktopAppId).optional(true)
     inputs.property("bangumiClientSecret", bangumiClientDesktopSecret).optional(true)
+    inputs.property("aniDanmakuServerBaseUrl", aniDanmakuServerBaseUrl).optional(true)
 
     outputs.file(file)
 
@@ -315,6 +323,7 @@ val generateAniBuildConfigDesktop = tasks.register("generateAniBuildConfigDeskto
                 override val versionName = "${project.version}"
                 override val bangumiOauthClientAppId = "$bangumiClientDesktopAppId"
                 override val bangumiOauthClientSecret = "$bangumiClientDesktopSecret"
+                override val aniDanmakuServerBaseUrl = "$aniDanmakuServerBaseUrl"
                 override val isDebug = true
             }
             """.trimIndent()

@@ -322,7 +322,9 @@ internal class TorrentDownloadSessionImpl(
         override suspend fun resolveFile(): Path = resolveDownloadingFile().toPath()
         override suspend fun getFileHash(): String {
             stats.awaitFinished()
-            return hashFileMd5(resolveDownloadingFile())
+            return withContext(Dispatchers.IO) {
+                hashFileMd5(resolveDownloadingFile())
+            }
         }
 
         override fun getFileHashOrNull(): String? = resolveFileOrNull()?.let { hashFileMd5(it) }

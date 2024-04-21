@@ -30,6 +30,7 @@ import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettings
 import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuLocation
+import me.him188.ani.danmaku.api.DanmakuPresentation
 import kotlin.random.Random
 import kotlin.random.nextInt
 import kotlin.time.Duration.Companion.milliseconds
@@ -76,7 +77,12 @@ internal actual fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
         DanmakuHostState().apply {
             GlobalScope.launch {
                 data.collect {
-                    trySend(it)
+                    trySend(
+                        DanmakuPresentation(
+                            it,
+                            isSelf = Random.nextBoolean()
+                        )
+                    )
                 }
             }
         }
@@ -123,18 +129,7 @@ private fun PreviewDanmakuText() {
     ProvideCompositionLocalsForPreview {
         Surface(color = Color.White) {
             DanmakuText(
-                remember {
-                    DanmakuState(
-                        Danmaku(
-                            "1",
-                            "dummy",
-                            0L, "1",
-                            DanmakuLocation.NORMAL,
-                            text = "Hello, world!",
-                            0
-                        )
-                    )
-                },
+                DummyDanmakuState,
                 style = DanmakuStyle()
             )
         }

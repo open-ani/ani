@@ -321,6 +321,7 @@ private fun DanmakuEditor(
                 vm.launchInBackground {
                     try {
                         danmaku.send(
+                            episodeId = vm.episodeId,
                             DanmakuInfo(
                                 exactPosition,
                                 text = textSnapshot,

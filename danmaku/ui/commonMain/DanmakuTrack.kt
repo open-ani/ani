@@ -33,6 +33,7 @@ import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
@@ -42,12 +43,13 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuLocation
+import me.him188.ani.danmaku.api.DanmakuPresentation
 import java.util.UUID
 import kotlin.time.Duration.Companion.seconds
 
+@Stable
 class DanmakuState internal constructor(
-    @Stable
-    val danmaku: Danmaku,
+    val danmaku: DanmakuPresentation,
     private val properties: DanmakuProperties = DanmakuProperties.Default,
 ) {
     /**
@@ -133,12 +135,16 @@ class DanmakuState internal constructor(
 
 }
 
+@Stable
 internal val DummyDanmakuState: DanmakuState = DanmakuState(
-    Danmaku(
-        UUID.randomUUID().toString(),
-        "dummy",
-        0L, "1",
-        DanmakuLocation.NORMAL, "dummy", 0
+    DanmakuPresentation(
+        Danmaku(
+            UUID.randomUUID().toString(),
+            "dummy",
+            0L, "1",
+            DanmakuLocation.NORMAL, "dummy", 0
+        ),
+        isSelf = false
     )
 )
 
@@ -160,12 +166,16 @@ class DanmakuTrackState(
     private val maxCount: Int,
     private val danmakuProperties: DanmakuProperties = DanmakuProperties.Default,
 ) {
-    private val channel = Channel<Danmaku>(1)
+    private val channel = Channel<DanmakuPresentation>(1)
 
     /**
      * 尝试发送一条弹幕到这个轨道. 当轨道已满时返回 `false`.
      */
-    fun trySend(danmaku: Danmaku): Boolean = channel.trySend(danmaku).isSuccess
+    fun trySend(danmaku: DanmakuPresentation): Boolean = channel.trySend(danmaku).isSuccess
+
+    suspend fun send(danmaku: DanmakuPresentation) {
+        channel.send(danmaku)
+    }
 
     internal val isPaused by isPaused
 
@@ -368,17 +378,18 @@ fun DanmakuText(
     Box(modifier.alpha(style.alpha)) {
         // Black text with stronger stroke
         Text(
-            danmaku.danmaku.text,
+            danmaku.danmaku.danmaku.text,
             Modifier,
             overflow = TextOverflow.Clip,
             maxLines = 1,
             softWrap = false,
             style = baseStyle.merge(style.styleForBorder()),
+            textDecoration = if (danmaku.danmaku.isSelf) TextDecoration.Underline else null,
         )
         // Covered by a white, smaller text.
         // So the resulting look is a white text with black border.
         Text(
-            danmaku.danmaku.text,
+            danmaku.danmaku.danmaku.text,
             Modifier,
             overflow = TextOverflow.Clip,
             maxLines = 1,

@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.danmaku.DanmakuManager
@@ -48,6 +49,7 @@ import me.him188.ani.app.videoplayer.data.VideoSource
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import me.him188.ani.danmaku.api.Danmaku
+import me.him188.ani.danmaku.api.DanmakuPresentation
 import me.him188.ani.danmaku.api.DanmakuSearchRequest
 import me.him188.ani.danmaku.api.DanmakuSession
 import me.him188.ani.datasources.api.EpisodeSort
@@ -55,6 +57,7 @@ import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.bangumi.processing.nameCNOrName
 import me.him188.ani.datasources.bangumi.processing.renderEpisodeEp
 import me.him188.ani.datasources.bangumi.processing.toCollectionType
+import me.him188.ani.utils.coroutines.cancellableCoroutineScope
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import org.koin.core.component.KoinComponent
@@ -108,6 +111,7 @@ class EpisodePresentation(
 @Stable
 interface EpisodeViewModel : HasBackgroundScope {
     val subjectId: Int
+    val episodeId: Int
 
     val subjectPresentation: SubjectPresentation // by state
     val episodePresentation: EpisodePresentation // by state
@@ -174,7 +178,7 @@ fun EpisodeViewModel(
 @Stable
 private class EpisodeViewModelImpl(
     override val subjectId: Int,
-    val episodeId: Int,
+    override val episodeId: Int,
     initialIsFullscreen: Boolean = false,
     context: Context,
 ) : AbstractViewModel(), KoinComponent, EpisodeViewModel {
@@ -335,6 +339,8 @@ private class EpisodeViewModelImpl(
         session.at(progress = playerState.currentPositionMillis.map { it.milliseconds })
     }
 
+    private val selfUserId = danmakuManager.selfId
+
     init {
         launchInMain { // state changes must be in main thread
             playerState.state.collect {
@@ -347,8 +353,17 @@ private class EpisodeViewModelImpl(
         }
 
         launchInBackground {
-            danmakuFlow.collect { danmaku ->
-                this.danmaku.danmakuHostState.trySend(danmaku)
+            cancellableCoroutineScope {
+                val selfId = selfUserId.stateIn(this, started = SharingStarted.Eagerly, initialValue = null)
+                danmakuFlow.collect { data ->
+                    danmaku.danmakuHostState.trySend(
+                        DanmakuPresentation(
+                            data,
+                            isSelf = selfId.value == data.id
+                        ),
+                    )
+                }
+                cancel()
             }
         }
 

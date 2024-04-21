@@ -24,7 +24,7 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.danmaku.DanmakuManager
 import me.him188.ani.app.data.danmaku.DanmakuManagerImpl
@@ -97,9 +97,9 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
             },
             sender = AniDanmakuSenderImpl(
                 config,
-                getBangumiToken = {
-                    get<SessionManager>().session.first()?.accessToken
-                }
+                currentAniBuildConfig.aniDanmakuServerBaseUrl,
+                bangumiToken = get<SessionManager>().session.map { it?.accessToken },
+                parentCoroutineContext = coroutineScope.coroutineContext
             )
         )
     }
@@ -174,6 +174,7 @@ interface AniBuildConfig {
     val versionName: String
     val bangumiOauthClientAppId: String
     val bangumiOauthClientSecret: String
+    val aniDanmakuServerBaseUrl: String
     val isDebug: Boolean
 
     companion object {
