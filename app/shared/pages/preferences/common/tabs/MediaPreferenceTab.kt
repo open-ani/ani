@@ -65,7 +65,7 @@ class MediaPreferenceViewModel : AbstractViewModel(), KoinComponent {
 
     val defaultMediaPreference by preferencesRepository.defaultMediaPreference.flow
         .map {
-            it ?: MediaPreference.Empty
+            it
         }.produceState(placeholderMediaPreference)
 
     val defaultMediaPreferenceLoading by derivedStateOf {
@@ -252,6 +252,9 @@ private fun PreferenceScope.AutoCacheGroup(
     }
 }
 
+private const val TIPS_LONG_CLICK_SORT = "长按排序，优先选择顺序较高的项目。\n" +
+        "选中数量越少，查询越快。"
+
 @Composable
 private fun PreferenceScope.MediaDownloadGroup(vm: MediaPreferenceViewModel) {
     Group(
@@ -300,7 +303,7 @@ private fun PreferenceScope.MediaDownloadGroup(vm: MediaPreferenceViewModel) {
             dialogItemDescription = { id ->
                 renderMediaSourceDescription(id)?.let { Text(it) }
             },
-            dialogDescription = { Text("长按排序, 优先选择顺序较高的项目") },
+            dialogDescription = { Text(TIPS_LONG_CLICK_SORT) },
             icon = { Icon(Icons.Rounded.DisplaySettings, null) },
             title = { Text("数据源") },
         )
@@ -333,7 +336,11 @@ private fun PreferenceScope.MediaDownloadGroup(vm: MediaPreferenceViewModel) {
             item = { Text(renderSubtitleLanguage(it)) },
             key = { it },
             modifier = Modifier.placeholder(vm.defaultMediaPreferenceLoading),
-            dialogDescription = { Text("长按排序, 优先选择顺序较高的项目") },
+            dialogDescription = {
+                Text(
+                    TIPS_LONG_CLICK_SORT
+                )
+            },
             icon = { Icon(Icons.Rounded.Language, null) },
             title = { Text("字幕语言") },
         )
@@ -366,7 +373,7 @@ private fun PreferenceScope.MediaDownloadGroup(vm: MediaPreferenceViewModel) {
             item = { Text(renderResolution(it)) },
             key = { it },
             modifier = Modifier.placeholder(vm.defaultMediaPreferenceLoading),
-            dialogDescription = { Text("长按排序, 优先选择顺序较高的项目") },
+            dialogDescription = { Text(TIPS_LONG_CLICK_SORT) },
             icon = { Icon(Icons.Rounded.Hd, null) },
             title = { Text("分辨率") },
         )
