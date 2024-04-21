@@ -69,6 +69,7 @@ import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.isLoggedIn
 import me.him188.ani.app.ui.profile.UnauthorizedTips
+import me.him188.ani.app.ui.update.UpdateCheckerHost
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
@@ -97,6 +98,8 @@ fun CollectionPage(
             TopAppBar(
                 title = { Text("我的追番") },
                 actions = {
+                    UpdateCheckerHost()
+
                     IconButton(onClickCaches) {
                         Icon(Icons.Rounded.Download, "缓存管理")
                     }

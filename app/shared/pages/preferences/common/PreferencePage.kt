@@ -78,6 +78,7 @@ import me.him188.ani.app.ui.foundation.effects.onKey
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
 import me.him188.ani.app.ui.foundation.widgets.RichDialogLayout
+import me.him188.ani.app.ui.preference.tabs.AboutTab
 import me.him188.ani.app.ui.preference.tabs.MediaPreferenceTab
 import me.him188.ani.app.ui.preference.tabs.NetworkPreferenceTab
 import me.him188.ani.app.ui.theme.stronglyWeaken
@@ -90,7 +91,9 @@ import org.burnoutcrew.reorderable.reorderable
 enum class PreferenceTab {
     //    ABOUT,
     MEDIA,
-    NETWORK, ;
+    NETWORK,
+    ABOUT,
+    ;
 
     companion object {
         val Default = MEDIA
@@ -146,6 +149,7 @@ fun PreferencePage(
                     when (type) {
                         PreferenceTab.MEDIA -> MediaPreferenceTab(modifier = Modifier.fillMaxSize())
                         PreferenceTab.NETWORK -> NetworkPreferenceTab(modifier = Modifier.fillMaxSize())
+                        PreferenceTab.ABOUT -> AboutTab(modifier = Modifier.fillMaxSize())
                     }
                 }
             }
@@ -159,10 +163,10 @@ private fun renderPreferenceTab(
     tab: PreferenceTab,
 ): String {
     return when (tab) {
-//        PreferenceTab.ABOUT -> "关于"
 //        PreferenceTab.GENERAL -> "通用"
         PreferenceTab.NETWORK -> "网络"
         PreferenceTab.MEDIA -> "资源"
+        PreferenceTab.ABOUT -> "关于"
     }
 }
 

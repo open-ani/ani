@@ -1,4 +1,4 @@
-package me.him188.ani.app.ui.preference
+package me.him188.ani.app.ui.preference.tabs
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -11,9 +11,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import me.him188.ani.app.data.media.MediaSourceManager
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.rememberViewModel
-import me.him188.ani.app.ui.preference.tabs.MediaTestResult
-import me.him188.ani.app.ui.preference.tabs.NetworkPreferenceTab
-import me.him188.ani.app.ui.preference.tabs.NetworkPreferenceViewModel
+import me.him188.ani.app.ui.preference.PreferencePage
+import me.him188.ani.app.ui.preference.PreferenceScope
+import me.him188.ani.app.ui.preference.PreferenceTab
+import me.him188.ani.app.ui.preference.SwitchItem
+import me.him188.ani.app.ui.preference.TextFieldDialog
 import me.him188.ani.datasources.acgrip.AcgRipMediaSource
 import me.him188.ani.datasources.api.paging.PageBasedPagedSource
 import me.him188.ani.datasources.api.paging.Paged
