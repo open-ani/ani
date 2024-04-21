@@ -29,13 +29,7 @@ fun Route.userRouting() {
             documentation()
             get {
                 val userId = getUserIdOrRespond() ?: return@get
-                val user = AniUser(
-                    userId,
-                    service.getNickname(userId),
-                    service.getAvatar(userId, AvatarSize.SMALL),
-                    service.getAvatar(userId, AvatarSize.MEDIUM),
-                    service.getAvatar(userId, AvatarSize.LARGE),
-                )
+                val user = service.getUser(userId)
                 call.respond(user)
             }
         }

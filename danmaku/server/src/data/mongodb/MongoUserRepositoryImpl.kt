@@ -58,7 +58,7 @@ class MongoUserRepositoryImpl : UserRepository, KoinComponent {
         return getUserById(userId)?.largeAvatar
     }
 
-    private suspend fun getUserById(userId: String): UserModel? {
+    override suspend fun getUserById(userId: String): UserModel? {
         return userTable.find(
             Field("_id") eq UUID.fromString(userId)
         ).firstOrNull()

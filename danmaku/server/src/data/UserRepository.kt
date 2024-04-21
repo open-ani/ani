@@ -19,6 +19,7 @@ interface UserRepository {
     suspend fun getSmallAvatar(userId: String): String?
     suspend fun getMediumAvatar(userId: String): String?
     suspend fun getLargeAvatar(userId: String): String?
+    suspend fun getUserById(userId: String): UserModel?
 }
 
 class InMemoryUserRepositoryImpl : UserRepository {
@@ -72,7 +73,7 @@ class InMemoryUserRepositoryImpl : UserRepository {
         return getUserById(userId)?.largeAvatar
     }
 
-    private suspend fun getUserById(userId: String): UserModel? {
+    override suspend fun getUserById(userId: String): UserModel? {
         mutex.withLock {
             return users.find { it.id.toString() == userId }
         }
