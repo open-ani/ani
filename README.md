@@ -40,11 +40,12 @@ Ani 3.0 **正在**开发中. 以下几点可以给你一个技术上的大概了
 
 Ani 支持 Android 和桌面端 (macOS、Linux、Windows)。
 
-3.0 开发还在进行中, 我会每隔几个修改发布一个 beta 测试版本,
-请关注 [releases](https://github.com/Him188/ani/releases/latest)
-以下载最新版本。
+3.0 功能正逐渐完善, 每隔几天会发布一个 beta 测试版本。
 
-功能正逐渐完善, 欢迎测试并在 issue 反馈问题.
+欢迎加入 QQ 群 927170241（[PC 一键加入](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=2EbZ0Qxe-fI_AHJLCMnSIOnqw-nfrFH5&authKey=L31zTMwfbMG0FhIgt8xNHGOFPHc531mSw2YzUVupHLRJ4L2f8xerAd%2ByNl4OigRK&noverify=0&group_code=927170241)）
+
+请关注 [releases](https://github.com/Him188/ani/releases/latest)
+以下载最新版本
 
 ## 功能截图
 
