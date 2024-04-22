@@ -13,5 +13,7 @@ data class DanmakuModel(
     val playTime: Long,
     val location: DanmakuLocation,
     val text: String,
-    val color: Int
+    val color: Int,
+    val sendTime: Long = System.currentTimeMillis(),
+    val complaintCount: Int = 0,
 )
