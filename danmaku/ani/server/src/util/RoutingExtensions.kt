@@ -3,7 +3,6 @@ package me.him188.ani.danmaku.server.util
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.call
-import io.ktor.server.auth.UserIdPrincipal
 import io.ktor.server.auth.authenticate
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.principal
@@ -16,7 +15,6 @@ import io.ktor.server.routing.post
 import io.ktor.server.routing.put
 import io.ktor.util.KtorDsl
 import io.ktor.util.pipeline.PipelineContext
-import java.util.UUID
 
 /**
  * Shortcut functions for `authenticate("auth-bearer") { <routingMethod>("path") { ... } }`.

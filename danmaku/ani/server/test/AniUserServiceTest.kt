@@ -5,7 +5,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.test.runTest
 import me.him188.ani.danmaku.server.service.AuthService
 import me.him188.ani.danmaku.server.service.AvatarSize
-import me.him188.ani.danmaku.server.service.JwtTokenManager
 import me.him188.ani.danmaku.server.service.UserService
 import org.junit.jupiter.api.AfterEach
 import org.koin.core.component.KoinComponent

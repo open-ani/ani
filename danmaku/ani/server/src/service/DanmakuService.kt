@@ -10,7 +10,6 @@ import me.him188.ani.danmaku.server.util.exception.OperationFailedException
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import org.koin.core.component.inject
-import org.koin.core.qualifier.named
 
 interface DanmakuService : KoinComponent {
     suspend fun postDanmaku(episodeId: String, danmakuInfo: DanmakuInfo, userId: String)

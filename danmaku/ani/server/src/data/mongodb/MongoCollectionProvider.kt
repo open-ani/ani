@@ -6,21 +6,14 @@ import com.mongodb.client.model.IndexOptions
 import com.mongodb.client.model.Indexes
 import com.mongodb.kotlin.client.coroutine.MongoClient
 import com.mongodb.kotlin.client.coroutine.MongoCollection
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.runBlocking
 import me.him188.ani.danmaku.server.ServerConfig
-import me.him188.ani.danmaku.server.ServerConfigBuilder
 import me.him188.ani.danmaku.server.data.model.DanmakuModel
 import me.him188.ani.danmaku.server.data.model.UserModel
-import me.him188.ani.danmaku.server.getServerKoinModule
 import me.him188.ani.danmaku.server.ktor.plugins.ServerJson
 import org.bson.UuidRepresentation
 import org.bson.codecs.configuration.CodecRegistries
-import org.bson.conversions.Bson
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
-import org.koin.core.context.startKoin
 
 
 interface MongoCollectionProvider {

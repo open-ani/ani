@@ -5,7 +5,6 @@ import kotlinx.coroutines.sync.withLock
 import me.him188.ani.danmaku.protocol.Danmaku
 import me.him188.ani.danmaku.protocol.DanmakuInfo
 import me.him188.ani.danmaku.server.data.model.DanmakuModel
-import java.util.UUID
 
 interface DanmakuRepository {
     suspend fun add(episodeId: String, danmakuInfo: DanmakuInfo, userId: String): Boolean

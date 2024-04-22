@@ -2,7 +2,6 @@ package me.him188.ani.danmaku.server.ktor.routing
 
 import io.bkbn.kompendium.core.metadata.PostInfo
 import io.bkbn.kompendium.core.plugin.NotarizedRoute
-import io.bkbn.kompendium.oas.payload.Parameter
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.call
 import io.ktor.server.application.install

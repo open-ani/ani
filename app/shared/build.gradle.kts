@@ -90,7 +90,7 @@ kotlin {
         api(projects.utils.io)
         api(projects.torrent)
 //        api(projects.danmaku.api)
-//        api(projects.danmaku.protocol)
+        api(projects.danmaku.ani.protocol)
 //        api(projects.danmaku.dandanplay)
 //        api(projects.danmaku.ani.client)
         api(projects.utils.ktorClient)
@@ -197,7 +197,6 @@ kotlin {
             }
         }
 
-        submodule("danmaku/protocol")
         submodule("danmaku/api")
         submodule("danmaku/ani/client")
         submodule("danmaku/dandanplay")

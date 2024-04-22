@@ -22,7 +22,6 @@ import me.him188.ani.danmaku.protocol.DanmakuInfo
 import me.him188.ani.danmaku.protocol.DanmakuLocation
 import me.him188.ani.danmaku.protocol.DanmakuPostRequest
 import me.him188.ani.danmaku.server.ktor.getKtorServer
-import me.him188.ani.danmaku.server.service.BangumiLoginHelper
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.koin.core.context.stopKoin

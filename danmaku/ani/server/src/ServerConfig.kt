@@ -4,7 +4,6 @@ import io.ktor.server.config.ApplicationConfig
 import io.ktor.util.KtorDsl
 import me.him188.ani.danmaku.server.util.CommandLineArgsParser
 import me.him188.ani.danmaku.server.util.generateSecureRandomBytes
-import java.security.SecureRandom
 import kotlin.time.Duration.Companion.days
 
 

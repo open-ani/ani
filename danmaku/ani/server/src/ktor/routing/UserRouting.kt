@@ -1,7 +1,6 @@
 package me.him188.ani.danmaku.server.ktor.routing
 
 import io.bkbn.kompendium.core.metadata.GetInfo
-import io.bkbn.kompendium.core.metadata.PostInfo
 import io.bkbn.kompendium.core.plugin.NotarizedRoute
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.call
@@ -12,14 +11,9 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 import me.him188.ani.danmaku.protocol.AniUser
-import me.him188.ani.danmaku.protocol.BangumiLoginRequest
-import me.him188.ani.danmaku.protocol.BangumiLoginResponse
-import me.him188.ani.danmaku.server.service.AvatarSize
 import me.him188.ani.danmaku.server.service.UserService
-import me.him188.ani.danmaku.server.util.getAuthenticated
 import me.him188.ani.danmaku.server.util.getUserIdOrRespond
 import org.koin.ktor.ext.inject
-import java.util.UUID
 
 fun Route.userRouting() {
     val service: UserService by inject()

@@ -27,7 +27,7 @@ dependencies {
     implementation(libs.ktor.server.call.logging)
     implementation(libs.ktor.server.swagger)
     implementation(libs.mongodb.driver.kotlin.coroutine)
-    implementation(project(":danmaku:protocol"))
+    implementation(projects.danmaku.ani.protocol)
     implementation(project(":app:shared"))
 
     testImplementation(libs.kotlinx.coroutines.test)
