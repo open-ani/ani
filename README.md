@@ -20,6 +20,9 @@ Ani 的目标是提供舒适的弹幕追番体验。
 
 > 我不是专业客户端开发人员, 开发纯属兴趣, 不过有点讲究代码质量, 欢迎各位指点.
 
+
+[![Stargazers over time](https://starchart.cc/open-ani/ani.svg?variant=adaptive)](https://starchart.cc/open-ani/ani)
+
 ## 3.0 新版开发中
 
 Ani 3.0 **正在**开发中. 以下几点可以给你一个技术上的大概了解, 不感兴趣的可以直接看[截图](#功能截图).
