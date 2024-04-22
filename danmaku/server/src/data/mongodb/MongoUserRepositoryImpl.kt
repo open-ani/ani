@@ -13,7 +13,7 @@ class MongoUserRepositoryImpl : UserRepository, KoinComponent {
 
     override suspend fun getUserIdOrNull(bangumiId: Int): String? {
         return userTable.find(
-            Field("bangumiId") eq bangumiId
+            Field("bangumiUserId") eq bangumiId
         ).firstOrNull()?.id?.toString()
     }
 
