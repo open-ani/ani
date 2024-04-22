@@ -103,7 +103,6 @@ internal class BangumiOAuthRequest(
 
             setSession(
                 Session(
-                    accessToken.userId,
                     accessToken.accessToken,
                     System.currentTimeMillis() + accessToken.expiresIn
                 ),

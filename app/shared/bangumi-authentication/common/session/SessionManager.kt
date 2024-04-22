@@ -71,7 +71,7 @@ interface SessionManager {
      * @see isSessionValid
      */
     @Stable
-    val username: StateFlow<String?>
+    val username: SharedFlow<String?>
 
     /**
      * 当前授权是否有效. `null` means not yet known, i.e. waiting for database query on start up.
@@ -106,6 +106,8 @@ interface SessionManager {
 
     fun requireOnlineAsync(navigator: AniNavigator)
 
+    suspend fun setSession(session: Session)
+
     suspend fun logout()
 }
 
@@ -113,7 +115,6 @@ object TestSessionManagers {
     val Online = object : SessionManager {
         override val session: MutableStateFlow<Session?> = MutableStateFlow(
             Session(
-                userId = 1,
                 accessToken = "testToken",
                 expiresAt = System.currentTimeMillis() + 1.days.inWholeMilliseconds,
             )
@@ -126,6 +127,10 @@ object TestSessionManagers {
         }
 
         override fun requireOnlineAsync(navigator: AniNavigator) {
+        }
+
+        override suspend fun setSession(session: Session) {
+            this.session.value = session
         }
 
         override suspend fun logout() {
@@ -159,7 +164,7 @@ internal class SessionManagerImpl(
             ApiClient.accessToken = it?.accessToken
         }.shareInBackground(SharingStarted.Eagerly)
 
-    override val username: StateFlow<String?> =
+    override val username: SharedFlow<String?> =
         session
             .map {
                 if (it == null || it.expiresAt <= System.currentTimeMillis()) {
@@ -168,7 +173,7 @@ internal class SessionManagerImpl(
                     runUntilSuccess { profileRepository.getSelfOrNull() }?.username
             }
             .distinctUntilChanged()
-            .stateInBackground(SharingStarted.Eagerly)
+            .shareInBackground(SharingStarted.Eagerly)
 
     override val isSessionValid: Flow<Boolean?> =
         username.map { it != null }
@@ -213,7 +218,7 @@ internal class SessionManagerImpl(
         }
         // success
         setSession(
-            session.userId,
+//            session.userId,
             newAccessToken.accessToken,
             System.currentTimeMillis() + newAccessToken.expiresIn,
             newAccessToken.refreshToken
@@ -224,7 +229,7 @@ internal class SessionManagerImpl(
 
     override suspend fun requireOnline(navigator: AniNavigator) {
         logger.trace { "requireOnline" }
-        
+
         // fast path, already online
         if (isSessionValid.first() == true) return
 
@@ -242,7 +247,7 @@ internal class SessionManagerImpl(
 
             // Launch external oauth (e.g. browser)
             val req = BangumiOAuthRequest(navigator) { session, refreshToken ->
-                setSession(session.userId, session.accessToken, session.expiresAt, refreshToken)
+                setSession(session.accessToken, session.expiresAt, refreshToken)
             }
             processingRequest.value = req
             try {
@@ -282,15 +287,19 @@ internal class SessionManagerImpl(
         }
     }
 
+    override suspend fun setSession(session: Session) {
+        tokenRepository.setSession(session)
+    }
+
     override suspend fun logout() {
         tokenRepository.clear()
     }
 
-    private suspend fun setSession(userId: Long, accessToken: String, expiresAt: Long, refreshToken: String) {
-        logger.info { "Bangumi session refreshed, userId=${userId}, new expiresAt=$expiresAt" }
+    private suspend fun setSession(accessToken: String, expiresAt: Long, refreshToken: String) {
+        logger.info { "Bangumi session refreshed, new expiresAt=$expiresAt" }
 
         tokenRepository.setRefreshToken(refreshToken)
-        tokenRepository.setSession(Session(userId, accessToken, expiresAt))
+        tokenRepository.setSession(Session(accessToken, expiresAt))
         // session updates automatically
     }
 }

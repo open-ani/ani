@@ -38,14 +38,12 @@ internal class TokenRepositoryImpl(
     }
 
     override val session: Flow<Session?> = tokenStore.data.map { preferences ->
-        val userId = preferences[USER_ID]
         val accessToken = preferences[ACCESS_TOKEN]
         val expireAt = preferences[ACCESS_TOKEN_EXPIRE_AT]
-        if (userId == null || accessToken == null || expireAt == null) {
+        if (accessToken == null || expireAt == null) {
             return@map null
         }
         Session(
-            userId = userId,
             accessToken = accessToken,
             expiresAt = expireAt,
         )
@@ -53,7 +51,6 @@ internal class TokenRepositoryImpl(
 
     override suspend fun setSession(session: Session) {
         tokenStore.edit {
-            it[USER_ID] = session.userId
             it[ACCESS_TOKEN] = session.accessToken
             it[ACCESS_TOKEN_EXPIRE_AT] = session.expiresAt
         }

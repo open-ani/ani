@@ -26,12 +26,14 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.session.ExternalOAuthRequest
 import me.him188.ani.app.session.OAuthResult
+import me.him188.ani.app.session.Session
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.ui.feedback.ErrorMessage
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.utils.logging.debug
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import kotlin.time.Duration.Companion.days
 
 @Stable
 class AuthViewModel : AbstractViewModel(), KoinComponent {
@@ -90,5 +92,9 @@ class AuthViewModel : AbstractViewModel(), KoinComponent {
 
     fun onCancel() {
         sessionManager.processingRequest.value?.cancel()
+    }
+
+    suspend fun authByToken(token: String) {
+        sessionManager.setSession(Session(token, System.currentTimeMillis() + 365.days.inWholeMilliseconds))
     }
 }

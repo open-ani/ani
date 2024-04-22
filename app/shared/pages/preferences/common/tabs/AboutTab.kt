@@ -176,6 +176,14 @@ fun AboutTab(
                     Text("执行自动缓存")
                 }
 
+                FilledTonalButton({
+                    GlobalScope.launch {
+                        GlobalContext.get().get<SessionManager>().logout()
+                    }
+                }) {
+                    Text("退出登录")
+                }
+
                 PlatformDebugInfoItems()
             }
         }
