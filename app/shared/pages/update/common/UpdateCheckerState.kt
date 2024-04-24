@@ -184,7 +184,7 @@ fun HasUpdateTag(
         onClick = onClick,
         modifier = modifier.background(MaterialTheme.colorScheme.tertiaryContainer, shape = CircleShape),
     ) {
-        Icon(Icons.Rounded.Update, null, tint = MaterialTheme.colorScheme.onTertiaryContainer)
+        Icon(Icons.Rounded.Update, "有新版本", tint = MaterialTheme.colorScheme.onTertiaryContainer)
     }
 }
 
