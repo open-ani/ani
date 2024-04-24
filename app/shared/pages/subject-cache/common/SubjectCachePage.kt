@@ -13,9 +13,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowOutward
+import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.DownloadDone
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
@@ -82,6 +85,7 @@ fun SubjectCachePage(
     state: SubjectCacheState,
     subjectTitle: @Composable () -> Unit,
     onClickGlobalCacheSettings: () -> Unit,
+    onDeleteCache: (EpisodeCacheState) -> Unit,
     mediaSelector: @Composable ((EpisodeCacheState, dismiss: () -> Unit) -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
@@ -122,10 +126,41 @@ fun SubjectCachePage(
                         var showSelector by remember { mutableStateOf<EpisodeCacheState?>(null) }
                         val dismissSelector = remember { { showSelector = null } }
 
+                        var showDropdown by remember { mutableStateOf(false) }
+
                         EpisodeItem(
                             episodeCacheState,
                             onClick = {
-                                showSelector = episodeCacheState
+                                if (episodeCacheState.cacheStatus is EpisodeCacheStatus.Caching ||
+                                    episodeCacheState.cacheStatus is EpisodeCacheStatus.Cached
+                                ) {
+                                    showDropdown = true
+                                } else {
+                                    showSelector = episodeCacheState
+                                }
+                            },
+                            action = {
+                                DropdownMenu(
+                                    showDropdown,
+                                    { showDropdown = false }
+                                ) {
+                                    DropdownMenuItem(
+                                        onClick = {
+                                            onDeleteCache(episodeCacheState)
+                                            showDropdown = false
+                                        },
+                                        text = {
+                                            Text("删除")
+                                        },
+                                        trailingIcon = {
+                                            Icon(
+                                                Icons.Rounded.Delete,
+                                                null,
+                                                tint = MaterialTheme.colorScheme.error
+                                            )
+                                        }
+                                    )
+                                }
                             }
                         )
                         showSelector?.let {
@@ -195,6 +230,7 @@ private fun PreferenceScope.AutoCacheGroup(onClickGlobalCacheSettings: () -> Uni
 @Composable
 private fun PreferenceScope.EpisodeItem(
     episode: EpisodeCacheState,
+    action: @Composable () -> Unit = {},
     onClick: () -> Unit,
 ) {
     val colorByWatchStatus = if (episode.watchStatus.isDoneOrDropped() || !episode.hasPublished) {
@@ -248,6 +284,7 @@ private fun PreferenceScope.EpisodeItem(
 
                     null -> {}
                 }
+                action()
             }
         },
         icon = {

@@ -55,6 +55,7 @@ private fun PreviewSubjectCachePage() {
                 Text(text = "葬送的芙莉莲")
             },
             mediaSelector = null,
+            onDeleteCache = {},
             onClickGlobalCacheSettings = {},
         )
     }

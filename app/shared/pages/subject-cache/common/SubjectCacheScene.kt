@@ -120,6 +120,19 @@ class SubjectCacheViewModel(
             }
         }
     }
+
+    fun deleteCache(episodeId: Int) {
+        launchInBackground {
+            val epString = episodeId.toString()
+            for (storage in cacheManager.storages) {
+                for (mediaCache in storage.listFlow.first()) {
+                    if (mediaCache.metadata.episodeId == epString) {
+                        storage.delete(mediaCache)
+                    }
+                }
+            }
+        }
+    }
 }
 
 @Stable
@@ -142,6 +155,9 @@ fun SubjectCacheScene(
             Text(title.orEmpty(), Modifier.placeholder(title == null))
         },
         onClickGlobalCacheSettings,
+        onDeleteCache = { episodeCacheState ->
+            vm.deleteCache(episodeCacheState.episodeId)
+        },
         mediaSelector = { episodeCacheState, dismissSelector ->
             val epFetch = remember(vm.subjectId, episodeCacheState.episodeId) {
                 EpisodeMediaFetchSession(
@@ -204,6 +220,7 @@ fun SubjectCacheScene(
                     progressProvider = { epFetch.mediaFetcherProgress }
                 )
             }
-        }, modifier
+        },
+        modifier,
     )
 }
