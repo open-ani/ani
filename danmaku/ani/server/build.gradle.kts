@@ -31,7 +31,7 @@ dependencies {
 
     testImplementation(libs.kotlinx.coroutines.test)
 
-    runtimeOnly(libs.slf4j.simple)
+    runtimeOnly(libs.logback.classic)
 }
 
 application {

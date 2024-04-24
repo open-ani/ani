@@ -5,6 +5,7 @@ build/
 !**/src/test/**/build/
 local.properties
 .kotlin/
+**/test-sandbox/
 
 # Local source files
 **/local.kt

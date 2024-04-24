@@ -17,6 +17,7 @@ libtorrent4j = "2.1.0-31"
 coil = "3.0.0-alpha06"
 mongodb-driver-kotlin-coroutine = "4.10.1"
 kompendium = "3.14.4"
+logback = "1.4.14"
 
 # https://androidx.tech/artifacts/compose.material/material-android/
 jetpack-compose = "1.6.4"
@@ -86,6 +87,9 @@ directories = { module = "dev.dirs:directories", version = "26" }
 # Slf4j
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
+
+# Logback
+logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 
 # OkHttp
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
