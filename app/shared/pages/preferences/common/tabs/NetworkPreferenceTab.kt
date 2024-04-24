@@ -206,7 +206,7 @@ class NetworkPreferenceViewModel : AbstractViewModel(), KoinComponent {
     val danmakuSettings = Settings(
         "danmaku settings",
         preferencesRepository.danmakuSettings,
-        DanmakuSettings.Default.copy()
+        placeholder = DanmakuSettings(_placeholder = -1)
     )
 
     private val danmakuTestScope = MonoTasker(backgroundScope)
