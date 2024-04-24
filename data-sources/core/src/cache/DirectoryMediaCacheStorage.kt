@@ -194,13 +194,13 @@ class DirectoryMediaCacheStorage(
 
     override suspend fun delete(cache: MediaCache): Boolean {
         lock.withLock {
+            listFlow.value -= cache
             cache.delete()
             withContext(Dispatchers.IO) {
                 if (!metadataDir.resolve(getSaveFilename(cache)).deleteIfExists()) {
                     logger.error { "Attempting to delete media cache '${cache.cacheId}' but its corresponding metadata file does not exist" }
                 }
             }
-            listFlow.value -= cache
             return true
         }
     }
