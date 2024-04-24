@@ -69,7 +69,7 @@ interface MediaCacheStorage : AutoCloseable {
     suspend fun cache(media: Media, metadata: MediaCacheMetadata, resume: Boolean = true): MediaCache
 
     /**
-     * Delete the cache if it exists.
+     * Delete the cache and its metadata if it exists.
      * @return `true` if a cache was deleted, `false` if there wasn't such a cache.
      */
     suspend fun delete(cache: MediaCache): Boolean
@@ -156,13 +156,21 @@ interface MediaCache {
 //    suspend fun open(): SeekableInput
 
     /**
-     * Deletes the cache.
+     * Deletes the data only.
      *
      * This function must close every using resources cleanup potential cache files,
      * and must not throw.
+     *
+     * ### Internal API
+     *
+     * You must use [MediaCacheStorage.delete] instead to safely delete this cache file and its metadata.
      */
-    suspend fun delete()
+    @InternalMediaCacheStorageApi
+    suspend fun deleteFiles()
 }
+
+@RequiresOptIn("This API is for internal use only", RequiresOptIn.Level.ERROR)
+annotation class InternalMediaCacheStorageApi
 
 /**
  * Returns `true` if the request matches the cache, either exactly or fuzzily.

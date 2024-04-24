@@ -28,6 +28,7 @@ import me.him188.ani.datasources.api.MediaCacheMetadata
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.datasources.api.topic.ResourceLocation
+import me.him188.ani.datasources.core.cache.InternalMediaCacheStorageApi
 import me.him188.ani.datasources.core.cache.MediaCache
 import me.him188.ani.datasources.core.cache.MediaCacheEngine
 import me.him188.ani.datasources.core.cache.MediaStats
@@ -154,7 +155,8 @@ class TorrentMediaCacheEngine(
             file?.resume(FilePriority.NORMAL)
         }
 
-        override suspend fun delete() {
+        @InternalMediaCacheStorageApi
+        override suspend fun deleteFiles() {
             if (deleted) return
             synchronized(this) {
                 if (deleted) return

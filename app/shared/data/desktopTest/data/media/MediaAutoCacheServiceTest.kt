@@ -38,7 +38,7 @@ class MediaAutoCacheServiceTest {
                     type = EpisodeCollectionType.WATCHED,
                 ),
             ),
-            hasAlreadyCached = {
+            hasCache = {
                 false
             }
         ).toList()
@@ -55,7 +55,7 @@ class MediaAutoCacheServiceTest {
                     type = EpisodeCollectionType.WATCHLIST,
                 ),
             ),
-            hasAlreadyCached = {
+            hasCache = {
                 true
             }
         ).toList()
@@ -72,7 +72,7 @@ class MediaAutoCacheServiceTest {
                     type = EpisodeCollectionType.WATCHLIST,
                 ),
             ),
-            hasAlreadyCached = {
+            hasCache = {
                 false
             }
         ).toList()
@@ -89,7 +89,7 @@ class MediaAutoCacheServiceTest {
                 UserEpisodeCollection(ep(id = 2), type = EpisodeCollectionType.WATCHLIST),
                 UserEpisodeCollection(ep(id = 3), type = EpisodeCollectionType.WATCHLIST),
             ),
-            hasAlreadyCached = {
+            hasCache = {
                 false
             }
         ).toList()
@@ -107,7 +107,7 @@ class MediaAutoCacheServiceTest {
                 UserEpisodeCollection(ep(id = 2), type = EpisodeCollectionType.WATCHLIST),
                 UserEpisodeCollection(ep(id = 3), type = EpisodeCollectionType.WATCHLIST),
             ),
-            hasAlreadyCached = {
+            hasCache = {
                 it.episode.id <= 0
             },
             maxCount = 1
@@ -125,7 +125,7 @@ class MediaAutoCacheServiceTest {
                 UserEpisodeCollection(ep(id = 2), type = EpisodeCollectionType.WATCHLIST),
                 UserEpisodeCollection(ep(id = 3), type = EpisodeCollectionType.WATCHLIST),
             ),
-            hasAlreadyCached = {
+            hasCache = {
                 it.episode.id <= 1
             },
             maxCount = 3
@@ -143,7 +143,7 @@ class MediaAutoCacheServiceTest {
                 UserEpisodeCollection(ep(id = 2), type = EpisodeCollectionType.WATCHLIST),
                 UserEpisodeCollection(ep(id = 3), type = EpisodeCollectionType.WATCHLIST),
             ),
-            hasAlreadyCached = {
+            hasCache = {
                 false
             },
             maxCount = 1

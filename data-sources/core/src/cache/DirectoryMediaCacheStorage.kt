@@ -192,9 +192,10 @@ class DirectoryMediaCacheStorage(
         metadata: MediaCacheMetadata = it.metadata
     ) = it.origin.mediaId == media.mediaId && it.metadata.episodeSort == metadata.episodeSort
 
+    @OptIn(InternalMediaCacheStorageApi::class)
     override suspend fun delete(cache: MediaCache): Boolean {
         lock.withLock {
-            cache.delete()
+            cache.deleteFiles()
             withContext(Dispatchers.IO) {
                 if (!metadataDir.resolve(getSaveFilename(cache)).deleteIfExists()) {
                     logger.error { "Attempting to delete media cache '${cache.cacheId}' but its corresponding metadata file does not exist" }

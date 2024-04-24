@@ -137,6 +137,7 @@ fun MediaPreferenceTab(
     val navigator by rememberUpdatedState(LocalNavigator.current)
     PreferenceTab(modifier) {
         AutoCacheGroup(vm, navigator)
+        AutoDeleteGroup(vm)
 
         MediaDownloadGroup(vm)
     }
@@ -162,9 +163,9 @@ private fun PreferenceScope.AutoCacheGroup(
             description = { Text("启用后下面的设置才有效") },
         ) {
             Switch(
-                checked = mediaCacheSettings.enabled,
+                checked = mediaCacheSettings.autoCache,
                 onCheckedChange = {
-                    vm.updateMediaCacheSettings(mediaCacheSettings.copy(enabled = it))
+                    vm.updateMediaCacheSettings(mediaCacheSettings.copy(autoCache = it))
                 },
                 Modifier.placeholder(mediaCacheSettings === defaultMediaCacheSettings)
             )
@@ -249,6 +250,30 @@ private fun PreferenceScope.AutoCacheGroup(
             icon = { Icon(Icons.Rounded.ArrowOutward, null) },
             onClick = { navigator.navigateCaches() },
         )
+    }
+}
+
+
+@Composable
+private fun PreferenceScope.AutoDeleteGroup(
+    vm: MediaPreferenceViewModel,
+) {
+    Group(
+        title = { Text("自动删除") },
+    ) {
+        val mediaCacheSettings by vm.mediaCacheSettings.collectAsStateWithLifecycle()
+        SwitchItem(
+            title = { Text("自动删除看过的视频") },
+            description = { Text("每小时和 APP 启动时检查") },
+        ) {
+            Switch(
+                checked = mediaCacheSettings.autoDelete,
+                onCheckedChange = {
+                    vm.updateMediaCacheSettings(mediaCacheSettings.copy(autoDelete = it))
+                },
+                Modifier.placeholder(mediaCacheSettings === defaultMediaCacheSettings)
+            )
+        }
     }
 }
 

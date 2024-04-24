@@ -22,6 +22,7 @@ import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.ResourceLocation
+import me.him188.ani.datasources.core.cache.InternalMediaCacheStorageApi
 import me.him188.ani.datasources.core.cache.MediaCache
 import me.him188.ani.datasources.core.cache.MediaCacheStorage
 import me.him188.ani.datasources.core.cache.MediaStats
@@ -89,7 +90,8 @@ open class TestMediaCache(
         println("resume")
     }
 
-    override suspend fun delete() {
+    @InternalMediaCacheStorageApi
+    override suspend fun deleteFiles() {
         println("delete called")
     }
 }

@@ -4,6 +4,7 @@ import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.dropWhile
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
@@ -42,6 +43,7 @@ import org.openapitools.client.models.UserEpisodeCollection
 import org.openapitools.client.models.UserSubjectCollection
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 interface MediaAutoCacheService {
     suspend fun checkCache()
@@ -94,6 +96,12 @@ class DefaultMediaAutoCacheService(
         logger.info { "DefaultMediaAutoCacheService.checkCache: start" }
 
         val config = config.first()
+
+        if (!config.autoCache && !config.autoDelete) {
+            logger.info { "DefaultMediaAutoCacheService.checkCache: skip because both auto cache and auto delete are disabled" }
+            return
+        }
+
         val collections = subjectCollections(config).run {
             if (config.mostRecentOnly) {
                 take(config.mostRecentCount)
@@ -104,51 +112,83 @@ class DefaultMediaAutoCacheService(
 
 
         for (subject in collections) {
+            val eps = episodeRepository.getSubjectEpisodeCollection(subject.subjectId, EpType.MainStory)
+                .toList()
+
+            val alreadyCached = mutableListOf<Int>()
             val firstUnwatched = firstEpisodeToCache(
-                eps = episodeRepository.getSubjectEpisodeCollection(subject.subjectId, EpType.MainStory),
-                hasAlreadyCached = {
-                    cacheManager.cacheStatusForEpisode(subject.subjectId, it.episode.id)
+                eps = eps.asFlow(),
+                hasCache = {
+                    val hasCache = cacheManager.cacheStatusForEpisode(subject.subjectId, it.episode.id)
                         .firstOrNull() != EpisodeCacheStatus.NotCached
+                    if (hasCache) {
+                        alreadyCached.add(it.episode.id)
+                    }
+                    hasCache
                 },
                 maxCount = config.maxCountPerSubject,
-            ).firstOrNull() ?: continue // 都看过了
+            ).firstOrNull()
 
-            logger.info { "Caching ${subject.debugName()} ${firstUnwatched.episode.name}" }
-
-            cancellableCoroutineScope {
-                EpisodeMediaFetchSession(
-                    subject.subjectId,
-                    firstUnwatched.episode.id,
-                    parentCoroutineContext = this.coroutineContext,
-                    config = FetcherMediaSelectorConfig.NoSave,
-                ).run {
-                    this.awaitCompletion()
-                    val request = this.mediaFetchSession.first().request
-                    this.mediaSelectorState.makeDefaultSelection()
-                    this.mediaSelectorState.selected?.let { media ->
-                        targetStorage.cache(media, MediaCacheMetadata(request))
-                        logger.info { "Created cache ${media.mediaId} for ${subject.debugName()} ${firstUnwatched.episode.name}" }
-                    }
-                }
-                cancelScope()
+            if (config.autoDelete) {
+                // 删掉已经看过了的缓存
+                doAutoDelete(alreadyCached, subject)
             }
 
-            logger.info { "Completed creating cache for ${subject.debugName()} ${firstUnwatched.episode.name}, delay 1 min" }
-
-            delay(1.minutes) // don't fetch too fast from sources
+            if (firstUnwatched != null && config.autoCache) {
+                doAutoCache(subject, firstUnwatched)
+            }
         }
 
         logger.info { "DefaultMediaAutoCacheService.checkCache: all ${collections.size} subjects checked" }
     }
 
+    private suspend fun doAutoCache(
+        subject: UserSubjectCollection,
+        firstUnwatched: UserEpisodeCollection
+    ) {
+        logger.info { "Caching ${subject.debugName()} ${firstUnwatched.episode.name}" }
+
+        cancellableCoroutineScope {
+            EpisodeMediaFetchSession(
+                subject.subjectId,
+                firstUnwatched.episode.id,
+                parentCoroutineContext = this.coroutineContext,
+                config = FetcherMediaSelectorConfig.NoSave,
+            ).run {
+                this.awaitCompletion()
+                val request = this.mediaFetchSession.first().request
+                this.mediaSelectorState.makeDefaultSelection()
+                this.mediaSelectorState.selected?.let { media ->
+                    targetStorage.cache(media, MediaCacheMetadata(request))
+                    logger.info { "Created cache ${media.mediaId} for ${subject.debugName()} ${firstUnwatched.episode.name}" }
+                }
+            }
+            cancelScope()
+        }
+
+        logger.info { "Completed creating cache for ${subject.debugName()} ${firstUnwatched.episode.name}, delay 1 min" }
+        delay(1.minutes) // don't fetch too fast from sources
+    }
+
+    private suspend fun doAutoDelete(
+        alreadyCached: MutableList<Int>,
+        subject: UserSubjectCollection
+    ) {
+        logger.info { "AutoDelete enabled, checking for ${subject.debugName()}" }
+        val cachedEpisodeIds = alreadyCached.map { it.toString() }
+        cacheManager.deleteAll { cache ->
+            (cache.metadata.episodeId in cachedEpisodeIds).also { deleted ->
+                if (deleted) {
+                    logger.info { "Deleted cache for episode because watched: ${subject.debugName()} ${cache.metadata.episodeSort}" }
+                }
+            }
+        }
+        delay(5.seconds) // 慢一点
+    }
+
     override fun startRegularCheck(scope: CoroutineScope) {
         scope.launch(CoroutineName("MediaAutoCacheService.startRegularCheck")) {
             while (true) {
-                val config = config.first()
-                if (!config.enabled) {
-                    delay(1.hours)
-                    continue
-                }
                 try {
                     checkCache()
                 } catch (e: Throwable) {
@@ -168,7 +208,7 @@ class DefaultMediaAutoCacheService(
         // public for testing
         fun firstEpisodeToCache(
             eps: Flow<UserEpisodeCollection>,
-            hasAlreadyCached: suspend (UserEpisodeCollection) -> Boolean,
+            hasCache: suspend (UserEpisodeCollection) -> Boolean,
             maxCount: Int = Int.MAX_VALUE,
         ): Flow<UserEpisodeCollection> {
             var cachedCount = 0
@@ -185,7 +225,7 @@ class DefaultMediaAutoCacheService(
                                     throw OwnedCancellationException(owner)
                                 }
 
-                                if (!hasAlreadyCached(it)) {
+                                if (!hasCache(it)) {
                                     emit(it)
                                 }
                                 cachedCount++

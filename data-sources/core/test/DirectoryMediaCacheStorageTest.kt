@@ -58,7 +58,8 @@ class DirectoryMediaCacheStorageTest {
             println("resume")
         }
 
-        override suspend fun delete() {
+        @InternalMediaCacheStorageApi
+        override suspend fun deleteFiles() {
             println("delete called")
         }
     }

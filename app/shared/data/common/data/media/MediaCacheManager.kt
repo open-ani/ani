@@ -4,6 +4,7 @@ import androidx.compose.runtime.Stable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
@@ -90,6 +91,28 @@ abstract class MediaCacheManager {
 
                 else -> {
                     emit(EpisodeCacheStatus.NotCached)
+                }
+            }
+        }
+    }
+
+    suspend fun deleteForSubject(subjectId: Int) {
+        return deleteAll { it.metadata.subjectId == subjectId.toString() }
+    }
+
+    suspend fun deleteForEpisode(episodeId: Int) {
+        return deleteAll { it.metadata.episodeId == episodeId.toString() }
+    }
+
+    suspend fun deleteAll(
+        predicate: (MediaCache) -> Boolean
+    ) {
+        for (storage in storages) {
+            storage.listFlow.first().let { list ->
+                for (mediaCache in list) {
+                    if (predicate(mediaCache)) {
+                        storage.delete(mediaCache)
+                    }
                 }
             }
         }
