@@ -72,6 +72,8 @@ open class TestMediaCache(
 ) : MediaCache {
     override val origin: Media get() = media.origin
     override suspend fun getCachedMedia(): CachedMedia = media
+    override fun isValid(): Boolean = true
+
     override val downloadSpeed: Flow<FileSize> = MutableStateFlow(1.bytes)
     override val uploadSpeed: Flow<FileSize> = MutableStateFlow(1.bytes)
     override val finished: Flow<Boolean> by lazy { progress.map { it == 1f } }

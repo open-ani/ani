@@ -2,6 +2,7 @@ package me.him188.ani.app.torrent
 
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.cancel
@@ -87,6 +88,15 @@ public interface TorrentDownloader : AutoCloseable {
         data: EncodedTorrentData,
         parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
     ): TorrentDownloadSession
+
+    public fun getSaveDir(
+        data: EncodedTorrentData,
+    ): File
+
+    /**
+     * 获取所有的种子保存目录列表
+     */
+    public fun listSaves(): List<File>
 
     public override fun close()
 }
@@ -337,7 +347,7 @@ internal class TorrentDownloaderImpl(
         mkdirs()
 
     }
-    private val downloadCacheDir = cacheDirectory.resolve("download").apply {
+    val downloadCacheDir = cacheDirectory.resolve("download").apply {
         mkdirs()
     }
 
@@ -349,81 +359,88 @@ internal class TorrentDownloaderImpl(
         data: EncodedTorrentData,
         parentCoroutineContext: CoroutineContext,
     ): TorrentDownloadSession = lock.withLock {
-        val ti = TorrentInfo(data.data)
-        val torrentName = ti.name()
+        withContext(Dispatchers.IO) {
+            val ti = TorrentInfo(data.data)
+            val torrentName = ti.name()
 
-        logger.info { "[$torrentName] TorrentDownloader.startDownload called" }
+            logger.info { "[$torrentName] TorrentDownloader.startDownload called" }
+            val saveDirectory = getSaveDir(data).apply { mkdirs() }
+            val hash = ti.infoHash()
 
-        val saveDirectory = downloadCacheDir.resolve(data.data.contentHashCode().toString()).apply { mkdirs() }
-        val hash = ti.infoHash()
-
-        val reopened = dataToSession[hash]?.let {
-            logger.info { "[$torrentName] Found existing session" }
-            true
-        } ?: kotlin.run {
-            logger.info { "[$torrentName] This is a new session" }
-            false
-        }
-
-        val session =
-            dataToSession[hash] ?: TorrentDownloadSessionImpl(
-                torrentName = torrentName,
-                saveDirectory = saveDirectory,
-                onClose = { session ->
-                    logger.debug { "[$torrentName] Close: removeListener" }
-                    sessionManager.removeListener(session.listener)
-                    dataToSession.remove(hash)
-                    logger.debug { "[$torrentName] Close: close handle" }
-                    sessionManager.use {
-                        find(hash)?.let { handle ->
-                            logger.debug { "[$torrentName] Close: remove from libtorrent SessionManager" }
-                            remove(handle)
-                            logger.debug { "[$torrentName] Close: removed" }
-                        } ?: run {
-                            logger.debug { "[$torrentName] Close: handle not found, ignoring" }
-                        }
-                    }
-                },
-                isDebug = isDebug,
-                parentCoroutineContext = parentCoroutineContext,
-            )
-        dataToSession[hash] = session
-        sessionManager.use {
-            settings().run {
-                //  https://libtorrent.org/reference-Settings.html#settings_pack
-//            setInteger(settings_pack.int_types.piece_timeout.swigValue(), 3)
-                setInteger(settings_pack.int_types.request_timeout.swigValue(), 3)
-                setInteger(settings_pack.int_types.peer_timeout.swigValue(), 3)
+            val reopened = dataToSession[hash]?.let {
+                logger.info { "[$torrentName] Found existing session" }
+                true
+            } ?: kotlin.run {
+                logger.info { "[$torrentName] This is a new session" }
+                false
             }
 
-            if (reopened) {
-                logger.info { "[$torrentName] Torrent has already opened" }
-            } else {
-                sessionManager.addListener(session.listener)
+            val session =
+                dataToSession[hash] ?: TorrentDownloadSessionImpl(
+                    torrentName = torrentName,
+                    saveDirectory = saveDirectory,
+                    onClose = { session ->
+                        logger.debug { "[$torrentName] Close: removeListener" }
+                        sessionManager.removeListener(session.listener)
+                        dataToSession.remove(hash)
+                        logger.debug { "[$torrentName] Close: close handle" }
+                        sessionManager.use {
+                            find(hash)?.let { handle ->
+                                logger.debug { "[$torrentName] Close: remove from libtorrent SessionManager" }
+                                remove(handle)
+                                logger.debug { "[$torrentName] Close: removed" }
+                            } ?: run {
+                                logger.debug { "[$torrentName] Close: handle not found, ignoring" }
+                            }
+                        }
+                    },
+                    isDebug = isDebug,
+                    parentCoroutineContext = parentCoroutineContext,
+                )
+            dataToSession[hash] = session
+            sessionManager.use {
+                settings().run {
+                    //  https://libtorrent.org/reference-Settings.html#settings_pack
+//            setInteger(settings_pack.int_types.piece_timeout.swigValue(), 3)
+                    setInteger(settings_pack.int_types.request_timeout.swigValue(), 3)
+                    setInteger(settings_pack.int_types.peer_timeout.swigValue(), 3)
+                }
 
-                // 第一次打开, 设置忽略所有文件, 除了我们需要的那些
-                val priorities = Priority.array(Priority.IGNORE, ti.numFiles())
-                try {
-                    logger.info { "[$torrentName] Starting torrent download" }
-                    download(
-                        ti,
-                        saveDirectory,
-                        null,
-                        priorities,
-                        null,
-                        TorrentFlags.AUTO_MANAGED,
+                if (reopened) {
+                    logger.info { "[$torrentName] Torrent has already opened" }
+                } else {
+                    sessionManager.addListener(session.listener)
+
+                    // 第一次打开, 设置忽略所有文件, 除了我们需要的那些
+                    val priorities = Priority.array(Priority.IGNORE, ti.numFiles())
+                    try {
+                        logger.info { "[$torrentName] Starting torrent download" }
+                        download(
+                            ti,
+                            saveDirectory,
+                            null,
+                            priorities,
+                            null,
+                            TorrentFlags.AUTO_MANAGED,
 //                TorrentFlags.SEQUENTIAL_DOWNLOAD,//.or_(TorrentFlags.NEED_SAVE_RESUME)
-                    )
-                    logger.info { "[$torrentName] Torrent download started" }
-                } catch (e: Throwable) {
-                    sessionManager.removeListener(session.listener)
-                    logger.error(e) { "[$torrentName] Failed to start torrent download" }
-                    throw e
+                        )
+                        logger.info { "[$torrentName] Torrent download started" }
+                    } catch (e: Throwable) {
+                        sessionManager.removeListener(session.listener)
+                        logger.error(e) { "[$torrentName] Failed to start torrent download" }
+                        throw e
+                    }
                 }
             }
+            return@withContext session
         }
+    }
 
-        return session
+    override fun getSaveDir(data: EncodedTorrentData): File =
+        downloadCacheDir.resolve(data.data.contentHashCode().toString())
+
+    override fun listSaves(): List<File> {
+        return downloadCacheDir.listFiles()?.toList() ?: emptyList()
     }
 
     override fun close() {

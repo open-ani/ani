@@ -79,10 +79,23 @@ interface MediaCacheStorage : AutoCloseable {
  * A media cached in the storage.
  */
 interface MediaCache {
+    /**
+     * 唯一缓存 id
+     */
     val cacheId: String
-        get() = (origin.mediaId.hashCode() * 31
-                + metadata.subjectId.hashCode() * 31
-                + metadata.episodeId.hashCode()).absoluteValue.toString()
+        get() {
+            val hash = (origin.mediaId.hashCode() * 31
+                    + metadata.subjectId.hashCode() * 31
+                    + metadata.episodeId.hashCode()).absoluteValue.toString()
+            val subjectName = metadata.subjectNames.firstOrNull() ?: metadata.subjectId
+            if (subjectName != null) {
+                fun removeSpecials(value: String): String {
+                    return value.replace(Regex("""[-\\|/.,;'\[\]{}()=_ ~!@#$%^&*]"""), "")
+                }
+                return "${removeSpecials(subjectName).take(8)}-$hash"
+            }
+            return hash
+        }
 
     /**
      * Original media that is being cached.
@@ -94,6 +107,8 @@ interface MediaCache {
      * The instance is cached so this function will immediately return the cached instance after the first successful call.
      */
     suspend fun getCachedMedia(): CachedMedia
+
+    fun isValid(): Boolean
 
     val metadata: MediaCacheMetadata
 

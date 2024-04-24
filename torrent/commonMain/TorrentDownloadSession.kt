@@ -1,6 +1,7 @@
 package me.him188.ani.app.torrent
 
 import kotlinx.coroutines.flow.StateFlow
+import java.io.File
 
 
 /**
@@ -12,6 +13,8 @@ public interface TorrentDownloadSession : AutoCloseable {
     public val state: StateFlow<TorrentDownloadState>
 
     public val overallStats: DownloadStats
+
+    public val saveDirectory: File
 
     /**
      * 获取该种子资源中的所有文件.

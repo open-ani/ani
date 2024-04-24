@@ -54,7 +54,7 @@ private const val METADATA_FILE_EXTENSION = "metadata"
  */
 class DirectoryMediaCacheStorage(
     override val mediaSourceId: String,
-    private val dir: Path,
+    private val metadataDir: Path,
     private val engine: MediaCacheEngine,
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
 ) : MediaCacheStorage {
@@ -75,12 +75,13 @@ class DirectoryMediaCacheStorage(
     )
 
     init {
-        if (!dir.exists()) {
-            dir.createDirectories()
+        if (!metadataDir.exists()) {
+            metadataDir.createDirectories()
         }
 
         scope.launch {
-            dir.useDirectoryEntries { files ->
+            metadataDir.useDirectoryEntries { files ->
+                val allRecovered = mutableListOf<MediaCache>()
                 files.forEach { file ->
                     if (file.extension != METADATA_FILE_EXTENSION) return@forEach
 
@@ -97,6 +98,7 @@ class DirectoryMediaCacheStorage(
                             lock.withLock {
                                 listFlow.value += it
                             }
+                            allRecovered.add(it)
                         }
                         logger.info { "Cache restored: ${save.origin.mediaId}, result=${cache}" }
                         if (cache != null) {
@@ -113,7 +115,7 @@ class DirectoryMediaCacheStorage(
                                     "Metadata file name mismatch, renaming: " +
                                             "${file.name} -> $newSaveName"
                                 }
-                                file.moveTo(dir.resolve(newSaveName))
+                                file.moveTo(metadataDir.resolve(newSaveName))
                             }
                         }
 
@@ -122,6 +124,8 @@ class DirectoryMediaCacheStorage(
                         logger.error(e) { "Failed to restore cache for ${save.origin.mediaId}" }
                     }
                 }
+
+                engine.deleteUnusedCaches(allRecovered)
             }
         }
     }
@@ -166,7 +170,7 @@ class DirectoryMediaCacheStorage(
                 scope.coroutineContext
             )
             withContext(Dispatchers.IO) {
-                dir.resolve(getSaveFilename(cache)).writeText(
+                metadataDir.resolve(getSaveFilename(cache)).writeText(
                     json.encodeToString(
                         MediaCacheSave.serializer(),
                         MediaCacheSave(media, cache.metadata)
@@ -192,7 +196,7 @@ class DirectoryMediaCacheStorage(
         lock.withLock {
             cache.delete()
             withContext(Dispatchers.IO) {
-                if (!dir.resolve(getSaveFilename(cache)).deleteIfExists()) {
+                if (!metadataDir.resolve(getSaveFilename(cache)).deleteIfExists()) {
                     logger.error { "Attempting to delete media cache '${cache.cacheId}' but its corresponding metadata file does not exist" }
                 }
             }

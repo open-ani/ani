@@ -65,4 +65,9 @@ interface MediaCacheEngine {
         request: MediaCacheMetadata,
         parentContext: CoroutineContext
     ): MediaCache
+
+    /**
+     * 在本地缓存中删除所有未在 [all] 中找到对应 [MediaCache] 的文件.
+     */
+    suspend fun deleteUnusedCaches(all: List<MediaCache>)
 }

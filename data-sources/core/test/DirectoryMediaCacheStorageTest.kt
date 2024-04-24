@@ -39,6 +39,8 @@ class DirectoryMediaCacheStorageTest {
     ) : MediaCache {
         override val origin: Media get() = media.origin
         override suspend fun getCachedMedia(): CachedMedia = media
+        override fun isValid(): Boolean = true
+
         override val downloadSpeed: Flow<FileSize> = MutableStateFlow(0.bytes)
         override val uploadSpeed: Flow<FileSize> = MutableStateFlow(0.bytes)
         override val finished: Flow<Boolean> by lazy {
@@ -85,6 +87,9 @@ class DirectoryMediaCacheStorageTest {
                 ),
                 metadata = request.withExtra(mapOf("testExtra" to "1")),
             )
+        }
+
+        override suspend fun deleteUnusedCaches(all: List<MediaCache>) {
         }
     }
 

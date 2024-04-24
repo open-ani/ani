@@ -90,6 +90,7 @@ fun CacheItemView(
                 AlertDialog(
                     onDismissRequest = { showDeleteDialog = false },
                     text = { Text("确认删除缓存吗? 该操作不可撤销") },
+                    // for Delete, see me.him188.ani.app.pages.cache.manage.MediaCacheStorageState.delete
                     confirmButton = { Button({ onDelete(item) }) { Text("删除") } },
                     dismissButton = { TextButton({ showDeleteDialog = false }) { Text("取消") } }
                 )
