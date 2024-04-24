@@ -72,7 +72,7 @@ internal class TorrentDownloadSessionImpl(
      * The directory may contain multiple files, or a single file.
      * The files are not guaranteed to be present at the moment when this function returns.
      */
-    private val saveDirectory: File,
+    override val saveDirectory: File,
     private val onClose: suspend (TorrentDownloadSessionImpl) -> Unit,
     private val isDebug: Boolean,
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
@@ -332,6 +332,7 @@ internal class TorrentDownloadSessionImpl(
 
         private val hashMd5 by lazy {
             scope.async {
+                stats.awaitFinished()
                 withContext(Dispatchers.IO) {
                     hashFileMd5(resolveDownloadingFile())
                 }

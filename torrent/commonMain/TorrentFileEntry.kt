@@ -40,7 +40,7 @@ public interface TorrentFileEntry {
     /**
      * Returns the hash if available, otherwise `null`
      */
-    public fun getFileHashOrNull(): String? // TODO: 这个函数会在文件还没下载完成时也返回 
+    public fun getFileHashOrNull(): String?
 
     /**
      * 绝对路径. 挂起直到文件路径可用 (即有任意一个 piece 下载完成时)
