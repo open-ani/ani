@@ -480,8 +480,13 @@ internal open class DefaultTorrentDownloadSession(
         if (closed) {
             return
         }
-        state.value = TorrentDownloadState.Closed
-        closed = true
+        synchronized(this) {
+            if (closed) {
+                return
+            }
+            state.value = TorrentDownloadState.Closed
+            closed = true
+        }
 
         for (openHandle in openHandles) {
             logger.info { "Closing torrent: close handle $openHandle" }
