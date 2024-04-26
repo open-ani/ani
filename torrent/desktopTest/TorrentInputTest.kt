@@ -12,7 +12,6 @@ import me.him188.ani.utils.io.readBytes
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
-import java.io.RandomAccessFile
 import kotlin.math.ceil
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -69,7 +68,7 @@ internal sealed class TorrentInputTest {
 
     protected val file: TorrentInput by lazy {
         TorrentInput(
-            RandomAccessFile(tempFile.absolutePath, "r").asSeekableInput(),
+            tempFile.asSeekableInput(),
             logicalPieces,
         )
     }

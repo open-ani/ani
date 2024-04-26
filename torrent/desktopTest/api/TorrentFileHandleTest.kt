@@ -7,6 +7,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
+@OptIn(TorrentThread::class)
 internal class TorrentFileHandleTest : TorrentSessionSupport() {
 
     @Test

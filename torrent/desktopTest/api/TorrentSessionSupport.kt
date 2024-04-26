@@ -6,6 +6,7 @@ import kotlinx.coroutines.job
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 
+@OptIn(TorrentThread::class)
 internal abstract class TorrentSessionSupport {
     @TempDir
     lateinit var tempDir: File

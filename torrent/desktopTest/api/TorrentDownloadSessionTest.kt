@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.fail
 
+@OptIn(TorrentThread::class)
 internal class TorrentDownloadSessionTest : TorrentSessionSupport() {
     ///////////////////////////////////////////////////////////////////////////
     // file pieces
@@ -91,6 +92,7 @@ open class TestAniTorrentHandle(
     val pieces = mutableListOf<TestPiece>()
     val files = mutableListOf<TorrentFile>()
 
+    @TorrentThread
     override val contents = object : TorrentContents {
         override fun createPieces(): List<Piece> = this@TestAniTorrentHandle.pieces.map { it.piece }
         override val files: List<TorrentFile> get() = this@TestAniTorrentHandle.files
@@ -143,8 +145,9 @@ class TestPiece(
 )
 
 
-class TestTorrentFile(
+class TestTorrentFile @OptIn(TorrentThread::class) constructor(
     override var path: String = "",
     override var size: Long = 0,
+    @property:TorrentThread
     override var priority: FilePriority = FilePriority.NORMAL
 ) : TorrentFile 
