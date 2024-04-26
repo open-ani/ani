@@ -18,9 +18,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.torrent.api.TorrentFilePieceMatcher.matchPiecesForFile
 import me.him188.ani.app.torrent.api.pieces.Piece
@@ -31,14 +29,12 @@ import me.him188.ani.app.torrent.api.pieces.startIndex
 import me.him188.ani.app.torrent.file.TorrentInput
 import me.him188.ani.app.torrent.torrent4j.LockedSessionManager
 import me.him188.ani.utils.coroutines.SuspendLazy
-import me.him188.ani.utils.coroutines.cancellableCoroutineScope
 import me.him188.ani.utils.coroutines.flows.resetStale
 import me.him188.ani.utils.io.SeekableInput
 import me.him188.ani.utils.io.asSeekableInput
 import me.him188.ani.utils.logging.debug
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
-import me.him188.ani.utils.logging.warn
 import java.io.File
 import java.io.IOException
 import java.io.RandomAccessFile
@@ -68,6 +64,13 @@ internal open class DefaultTorrentDownloadSession(
         }
 
     private val logger = logger(this::class.simpleName + "@${this.hashCode()}")
+
+    /**
+     * 在 BT 线程执行
+     */
+    private val torrentThreadTasks = TaskQueue<AniTorrentHandle>(
+        enableTimeoutWatchdog = isDebug,
+    )
 
     final override val state: MutableStateFlow<TorrentDownloadState> = MutableStateFlow(TorrentDownloadState.Starting)
 
@@ -209,7 +212,7 @@ internal open class DefaultTorrentDownloadSession(
                 checkClosed()
 
                 val pieces = pieces.get()
-                withHandle { handle ->
+                torrentThreadTasks.withHandle { handle ->
                     if (pieces.isNotEmpty()) {
                         val firstIndex = pieces.first().pieceIndex
                         val lastIndex = pieces.last().pieceIndex
@@ -302,7 +305,7 @@ internal open class DefaultTorrentDownloadSession(
 
         private fun updatePriority() {
             @OptIn(TorrentThread::class)
-            jobsToDoInHandle.add { handle ->
+            torrentThreadTasks.submit { handle ->
                 val highestPriority = priorityRequests.values.maxWithOrNull(nullsFirst(naturalOrder()))
                     ?: FilePriority.IGNORE
                 handle.contents.files[index].priority = highestPriority
@@ -366,7 +369,7 @@ internal open class DefaultTorrentDownloadSession(
                 pieces,
                 onSeek = { piece ->
                     logger.info { "[TorrentDownloadControl] $torrentName: Set piece ${piece.pieceIndex} deadline to 0 because it was requested " }
-                    jobsToDoInHandle.add { handle ->
+                    torrentThreadTasks.submit { handle ->
                         handle.setPieceDeadline(piece.pieceIndex, 0)
                         for (i in (piece.pieceIndex + 1..piece.pieceIndex + 3)) {
                             if (i < pieces.size - 1) {
@@ -391,44 +394,18 @@ internal open class DefaultTorrentDownloadSession(
      */
     private val actualInfo: CompletableDeferred<ActualTorrentInfo> = CompletableDeferred()
 
-
-    private val jobsToDoInHandle = ConcurrentLinkedQueue<JobToDoInHandle>()
-
-    fun interface JobToDoInHandle {
-        @TorrentThread
-        operator fun invoke(handle: AniTorrentHandle)
-    }
-
     private fun actualInfo(): ActualTorrentInfo = actualInfo.getCompleted()
 
     internal val listener = object : EventListener {
-        @OptIn(TorrentThread::class)
+        @TorrentThread
         override fun onUpdate(handle: AniTorrentHandle) {
-            while (jobsToDoInHandle.isNotEmpty()) {
-                val job = jobsToDoInHandle.poll()
-                if (isDebug) {
-                    runBlocking {
-                        cancellableCoroutineScope {
-                            launch {
-                                delay(5.seconds)
-                                logger.warn { "$torrentName: Job $job in handle took too long" }
-                            }
-                            launch {
-                                job(handle)
-                                cancelScope()
-                            }
-                        }
-                    }
-                } else {
-                    job(handle)
-                }
-            }
+            torrentThreadTasks.invokeAll(handle)
         }
 
         override val torrentName: String
             get() = this@DefaultTorrentDownloadSession.torrentName
 
-        @OptIn(TorrentThread::class)
+        @TorrentThread
         override fun onEvent(event: TorrentEvent) {
             when (event) {
                 is TorrentAddEvent -> {
@@ -496,17 +473,6 @@ internal open class DefaultTorrentDownloadSession(
         }
     }
 
-    private suspend fun <R> withHandle(action: HandleJob<R>): R {
-        return suspendCancellableCoroutine { cont ->
-            val job: (AniTorrentHandle) -> Unit = {
-                cont.resumeWith(kotlin.runCatching { action(it) })
-            }
-            jobsToDoInHandle.add(job)
-            cont.invokeOnCancellation {
-                jobsToDoInHandle.remove(job)
-            }
-        }
-    }
 
     private var closed = false
     override fun close() {
@@ -523,7 +489,7 @@ internal open class DefaultTorrentDownloadSession(
 
         logger.info { "Closing torrent" }
 
-        jobsToDoInHandle.add {
+        torrentThreadTasks.submit {
             runBlocking(LockedSessionManager.dispatcher) {
                 onClose(this@DefaultTorrentDownloadSession)
                 logger.info { "Close torrent $torrentName: dispose handle" }
@@ -556,7 +522,7 @@ internal open class DefaultTorrentDownloadSession(
                 }
                 logger.debug { "[TorrentDownloadControl] Prioritizing pieces: $pieceIndexes" }
                 pieceIndexes.forEach { index ->
-                    jobsToDoInHandle.add { handle ->
+                    torrentThreadTasks.submit { handle ->
                         handle.setPieceDeadline(index, System.currentTimeMillis().and(0x0FFF_FFFFL).toInt())
                     }
                 }
@@ -565,9 +531,6 @@ internal open class DefaultTorrentDownloadSession(
         }
     }
 }
-
-
-private typealias HandleJob<R> = (AniTorrentHandle) -> R
 
 @OptIn(ExperimentalStdlibApi::class)
 @kotlin.jvm.Throws(IOException::class)
