@@ -13,6 +13,9 @@ import me.him188.ani.app.videoplayer.data.VideoData
 import me.him188.ani.utils.io.SeekableInput
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
+import me.him188.ani.utils.logging.warn
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.measureTimedValue
 
 /**
  * Wrap of an Ani [VideoData] into a ExoPlayer [DataSource].
@@ -26,6 +29,7 @@ class VideoDataDataSource(
     private companion object {
         @JvmStatic
         private val logger = logger(VideoDataDataSource::class)
+        private const val ENABLE_READ_LOG = false
     }
 
     private var uri: Uri? = null
@@ -34,23 +38,34 @@ class VideoDataDataSource(
     private var opened = false
 
     override fun read(buffer: ByteArray, offset: Int, length: Int): Int {
-        if (length == 0) {
-            return 0
+        // 性能提示: 这个函数会被非常频繁调用 (一个 byte 一次), 速度会直接影响视频首帧延迟
+
+        if (length == 0) return 0
+
+        if (ENABLE_READ_LOG) { // const val, optimized out
+            logger.warn { "VideoDataDataSource read: offset=$offset, length=$length" }
         }
 
-        if (file.bytesRemaining <= 0L) {
+        val bytesRead = if (ENABLE_READ_LOG) {
+            val (value, time) = measureTimedValue {
+                file.read(buffer, offset, length)
+            }
+            if (time > 100.milliseconds) {
+                logger.warn { "VideoDataDataSource slow read: read $offset for length $length took $time" }
+            }
+            value
+        } else {
+            file.read(buffer, offset, length)
+        }
+        if (bytesRead == -1) {
             return C.RESULT_END_OF_INPUT
         }
-
-        return runBlocking {
-            file.read(buffer, offset, length)
-        }.also {
-            bytesTransferred(it)
-        }
+        bytesTransferred(bytesRead)
+        return bytesRead
     }
 
     override fun open(dataSpec: DataSpec): Long {
-        logger.info { "Opening dataSpec, offset=${dataSpec.position}, length=${dataSpec.length}" }
+        logger.info { "Opening dataSpec, offset=${dataSpec.position}, length=${dataSpec.length}, videoData=$videoData" }
 
         val uri = dataSpec.uri
         if (opened && dataSpec.uri == this.uri) {

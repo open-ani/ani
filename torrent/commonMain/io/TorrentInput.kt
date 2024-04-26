@@ -1,5 +1,6 @@
 package me.him188.ani.app.torrent.file
 
+import kotlinx.coroutines.runBlocking
 import me.him188.ani.app.torrent.api.PieceState
 import me.him188.ani.app.torrent.api.pieces.Piece
 import me.him188.ani.app.torrent.api.pieces.awaitFinished
@@ -33,14 +34,14 @@ internal class TorrentInput(
     override var offset: Long = 0 // view
     override val bytesRemaining: Long get() = (totalLength - offset).coerceAtLeast(0)
 
-    override suspend fun seek(offset: Long) {
+    override fun seek(offset: Long) {
         seekImpl(offset)
     }
 
     /**
      * Returns max bytes available for read without suspending to wait for more piece to be downloaded.
      */
-    private suspend fun seekImpl(offset: Long): Long {
+    private fun seekImpl(offset: Long): Long {
         this.offset = offset
         val index = findPiece(offset)
         if (index == -1) {
@@ -48,8 +49,10 @@ internal class TorrentInput(
         }
         val piece = pieces[index]
         if (piece.state.value != PieceState.FINISHED) {
-            onSeek(piece)
-            piece.awaitFinished()
+            runBlocking {
+                onSeek(piece)
+                piece.awaitFinished()
+            }
         }
         file.seek(offset)
         val offsetInPiece = logicalStartOffset + offset - piece.offset
@@ -61,7 +64,7 @@ internal class TorrentInput(
         return pieces.indexOfFirst { it.startIndex <= logicalOffset && logicalOffset <= it.lastIndex }
     }
 
-    override suspend fun read(buffer: ByteArray, offset: Int, length: Int): Int {
+    override fun read(buffer: ByteArray, offset: Int, length: Int): Int {
         val pieceAvailableSize = seekImpl(this.offset)
         val maxRead = length.toUInt().toLong().coerceAtMost(pieceAvailableSize)
         return file.read(buffer, offset, maxRead.toInt()).also {

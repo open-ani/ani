@@ -38,7 +38,6 @@ import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import java.io.File
 import java.io.IOException
-import java.io.RandomAccessFile
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.coroutines.CoroutineContext
@@ -363,9 +362,7 @@ internal open class DefaultTorrentDownloadSession(
 
         override suspend fun createInput(): SeekableInput {
             logger.info { "createInput: finding cache file" }
-            val file = withContext(Dispatchers.IO) {
-                RandomAccessFile(resolveDownloadingFile(), "r").asSeekableInput()
-            }
+            val file = resolveDownloadingFile().asSeekableInput()
             logger.info { "createInput: got cache file, awaiting pieces" }
             val pieces = pieces.get()
             logger.info { "createInput: ${pieces.size} pieces" }

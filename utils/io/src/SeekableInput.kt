@@ -1,12 +1,11 @@
 package me.him188.ani.utils.io
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import java.io.IOException
-import java.io.RandomAccessFile
 
 /**
  * A **asynchronous** source of bytes from which you can seek to a position and read sequentially.
+ *
+ * Note: this class is not thread-safe.
  */
 public interface SeekableInput : AutoCloseable {
     /**
@@ -34,7 +33,7 @@ public interface SeekableInput : AutoCloseable {
      *
      * @throws IllegalStateException if the input source is closed.
      */
-    public suspend fun seek(offset: Long)
+    public fun seek(offset: Long)
 
     /**
      * Reads up to [length] bytes from the input source into [buffer] starting at [offset].
@@ -61,7 +60,11 @@ public interface SeekableInput : AutoCloseable {
      *
      * @throws IllegalStateException if the input source is closed.
      */
-    public suspend fun read(buffer: ByteArray, offset: Int, length: Int): Int
+    public fun read(
+        buffer: ByteArray,
+        offset: Int,
+        length: Int
+    ): Int // This must not be suspend because it can be called very frequently
 
     /**
      * Closes this [SeekableInput], and **also** closes the underlying source.
@@ -70,35 +73,6 @@ public interface SeekableInput : AutoCloseable {
      */
     @Throws(IOException::class)
     public override fun close()
-}
-
-/**
- * Adapts this [RandomAccessFile] to a [SeekableInput].
- *
- * By closing the returned [SeekableInput], you also close this [RandomAccessFile].
- * Conversely, by closing this [RandomAccessFile], you also close the returned [SeekableInput],
- * though it is not recommended to close the [RandomAccessFile] directly.
- */
-@Throws(IOException::class)
-public fun RandomAccessFile.asSeekableInput(): SeekableInput = object : SeekableInput {
-    override val offset: Long = this@asSeekableInput.filePointer
-    override val bytesRemaining: Long = this@asSeekableInput.length() - offset
-
-    override suspend fun seek(offset: Long) {
-        withContext(Dispatchers.IO) { this@asSeekableInput.seek(offset) }
-    }
-
-    override suspend fun read(buffer: ByteArray, offset: Int, length: Int): Int {
-        return withContext(Dispatchers.IO) { this@asSeekableInput.read(buffer, offset, length) }
-    }
-
-    override fun close() {
-        this@asSeekableInput.close()
-    }
-
-    override fun toString(): String {
-        return "RandomAccessFileAsSeekableInput(${this@asSeekableInput})"
-    }
 }
 
 /**
@@ -111,6 +85,7 @@ public fun RandomAccessFile.asSeekableInput(): SeekableInput = object : Seekable
 public suspend fun SeekableInput.readBytes(maxLength: Int = 4096): ByteArray {
     val buffer = ByteArray(maxLength)
     val actualLength = read(buffer, 0, maxLength)
+    if (actualLength == -1) return ByteArray(0)
     return if (actualLength != buffer.size) {
         buffer.copyOf(newSize = actualLength)
     } else {
