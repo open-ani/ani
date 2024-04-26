@@ -450,10 +450,6 @@ internal open class DefaultTorrentDownloadSession(
                 is TorrentFinishedEvent -> {
                     // https://libtorrent.org/reference-Alerts.html#:~:text=report%20issue%5D-,torrent_finished_alert,-Declared%20in%20%22
                     logger.info { "[$torrentName] Torrent finished" }
-                    for (openHandle in openHandles) {
-                        logger.info { "[$torrentName] Set entry's finishedOverride to true because torrent finished: ${openHandle.entry.pathInTorrent}" }
-                        openHandle.entry.finishedOverride.value = true
-                    }
                 }
 
 //                is FileErrorAlert -> {
