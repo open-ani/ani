@@ -14,7 +14,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import me.him188.ani.app.torrent.api.EventListener
 import me.him188.ani.app.torrent.model.EncodedTorrentData
+import me.him188.ani.app.torrent.torrent4j.onAlert
 import me.him188.ani.utils.logging.debug
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
@@ -49,26 +51,26 @@ import kotlin.coroutines.EmptyCoroutineContext
  *
  * Hence it must be closed when it is no longer needed.
  */
-public interface TorrentDownloader : AutoCloseable {
+interface TorrentDownloader : AutoCloseable {
     /**
      * Total amount of bytes uploaded
      */
-    public val totalUploaded: Flow<Long>
-    public val totalDownloaded: Flow<Long>
+    val totalUploaded: Flow<Long>
+    val totalDownloaded: Flow<Long>
 
-    public val totalUploadRate: Flow<Long>
-    public val totalDownloadRate: Flow<Long>
+    val totalUploadRate: Flow<Long>
+    val totalDownloadRate: Flow<Long>
 
     /**
      * Total file size occupied on the disk.
      */
-    public val dhtNodes: Flow<Long>
+    val dhtNodes: Flow<Long>
 
 
     /**
      * Details about the underlying torrent library.
      */
-    public val vendor: TorrentLibInfo
+    val vendor: TorrentLibInfo
 
     /**
      * Fetches a magnet link.
@@ -77,37 +79,31 @@ public interface TorrentDownloader : AutoCloseable {
      *
      * @throws MagnetTimeoutException if timeout has been reached.
      */
-    public suspend fun fetchTorrent(uri: String, timeoutSeconds: Int = 60): EncodedTorrentData
+    suspend fun fetchTorrent(uri: String, timeoutSeconds: Int = 60): EncodedTorrentData
 
     /**
      * Starts download of a torrent using the torrent data.
      *
      * This function may involve I/O operation e.g. to compare with local caches.
      */
-    public suspend fun startDownload(
+    suspend fun startDownload(
         data: EncodedTorrentData,
         parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
     ): TorrentDownloadSession
 
-    public fun getSaveDir(
+    fun getSaveDir(
         data: EncodedTorrentData,
     ): File
 
     /**
      * 获取所有的种子保存目录列表
      */
-    public fun listSaves(): List<File>
+    fun listSaves(): List<File>
 
-    public override fun close()
+    override fun close()
 }
 
-public enum class FilePriority {
-    LOW,
-    NORMAL,
-    HIGH,
-}
-
-public class MagnetTimeoutException(
+class MagnetTimeoutException(
     override val message: String? = "Magnet fetch timeout",
     override val cause: Throwable? = null
 ) : Exception()
@@ -115,8 +111,8 @@ public class MagnetTimeoutException(
 /**
  * A factory for creating [TorrentDownloader] instances without any argument.
  */
-public fun interface TorrentDownloaderFactory {
-    public suspend fun create(): TorrentDownloader
+fun interface TorrentDownloaderFactory {
+    suspend fun create(): TorrentDownloader
 }
 
 private val logger = logger(TorrentDownloader::class)
@@ -124,29 +120,29 @@ private val logger = logger(TorrentDownloader::class)
 internal class LockedSessionManager(
     private val sessionManager: SessionManager,
 ) {
-    private val listeners = CopyOnWriteArraySet<TorrentAlertListener>()
+    private val listeners = CopyOnWriteArraySet<EventListener>()
 
     init {
         sessionManager.addListener(object : AlertListener {
             override fun types(): IntArray? = null
             override fun alert(alert: Alert<*>) {
                 if (alert !is TorrentAlert<*>) return
-                listeners.forEach {
+                listeners.forEach { listener ->
                     try {
-                        it.onAlert(alert)
+                        listener.onAlert(alert)
                     } catch (e: Throwable) {
-                        logger.error(e) { "An exception occurred in AlertListener" }
+                        logger.error(e) { "An exception occurred in EventListener" }
                     }
                 }
             }
         })
     }
 
-    fun addListener(listener: TorrentAlertListener) {
+    fun addListener(listener: EventListener) {
         listeners.add(listener)
     }
 
-    fun removeListener(listener: TorrentAlertListener) {
+    fun removeListener(listener: EventListener) {
         listeners.remove(listener)
     }
 
@@ -179,16 +175,16 @@ internal class LockedSessionManager(
     }
 }
 
-public typealias TorrentFileDownloader = suspend (url: String) -> ByteArray
+typealias TorrentFileDownloader = suspend (url: String) -> ByteArray
 
-public class TorrentDownloaderConfig(
-    public val peerFingerprint: String = "-aniLT3000-",
-    public val userAgent: String = "ani_libtorrent/3.0.0", // "libtorrent/2.1.0.0", "ani_libtorrent/3.0.0"
-    public val clientHandshakeVersion: String? = "3.0.0",
-    public val isDebug: Boolean = false,
+class TorrentDownloaderConfig(
+    val peerFingerprint: String = "-aniLT3000-",
+    val userAgent: String = "ani_libtorrent/3.0.0", // "libtorrent/2.1.0.0", "ani_libtorrent/3.0.0"
+    val clientHandshakeVersion: String? = "3.0.0",
+    val isDebug: Boolean = false,
 ) {
-    public companion object {
-        public val Default: TorrentDownloaderConfig = TorrentDownloaderConfig()
+    companion object {
+        val Default: TorrentDownloaderConfig = TorrentDownloaderConfig()
     }
 }
 
@@ -199,7 +195,7 @@ public class TorrentDownloaderConfig(
  *
  * @see TorrentDownloader
  */
-public fun TorrentDownloader(
+fun TorrentDownloader(
     cacheDirectory: File,
     downloadFile: TorrentFileDownloader,
     config: TorrentDownloaderConfig = TorrentDownloaderConfig.Default,
@@ -284,6 +280,10 @@ public fun TorrentDownloader(
     )
 }
 
+
+// TODO:  TorrentDownloaderImpl 去掉 libtorrent4j 依赖
+
+
 internal class TorrentDownloaderImpl(
     cacheDirectory: File,
     private val sessionManager: LockedSessionManager,
@@ -351,7 +351,7 @@ internal class TorrentDownloaderImpl(
         mkdirs()
     }
 
-    private val dataToSession = ConcurrentHashMap<Sha1Hash, TorrentDownloadSessionImpl>()
+    private val dataToSession = ConcurrentHashMap<Sha1Hash, DefaultTorrentDownloadSession>()
 
     private val lock = Mutex()
 
@@ -376,7 +376,7 @@ internal class TorrentDownloaderImpl(
             }
 
             val session =
-                dataToSession[hash] ?: TorrentDownloadSessionImpl(
+                dataToSession[hash] ?: DefaultTorrentDownloadSession(
                     torrentName = torrentName,
                     saveDirectory = saveDirectory,
                     onClose = { session ->
@@ -449,25 +449,19 @@ internal class TorrentDownloaderImpl(
     }
 }
 
-internal fun FilePriority.toLibtorrentPriority(): Priority = when (this) {
-    FilePriority.HIGH -> Priority.TOP_PRIORITY
-    FilePriority.NORMAL -> Priority.DEFAULT
-    FilePriority.LOW -> Priority.LOW
-}
-
-public var SettingsPack.peerFingerprintString: String
+var SettingsPack.peerFingerprintString: String
     get() = getBytes(string_types.peer_fingerprint.swigValue()).toString(Charset.forName("UTF-8"))
     set(value) {
         setBytes(string_types.peer_fingerprint.swigValue(), value.toByteArray(Charset.forName("UTF-8")))
     }
 
-public var SettingsPack.userAgentString: String
+var SettingsPack.userAgentString: String
     get() = getBytes(string_types.user_agent.swigValue()).toString(Charset.forName("UTF-8"))
     set(value) {
         setBytes(string_types.user_agent.swigValue(), value.toByteArray(Charset.forName("UTF-8")))
     }
 
-public var SettingsPack.handshakeClientVersionString: String
+var SettingsPack.handshakeClientVersionString: String
     get() = getBytes(string_types.handshake_client_version.swigValue()).toString(Charset.forName("UTF-8"))
     set(value) {
         setBytes(string_types.handshake_client_version.swigValue(), value.toByteArray(Charset.forName("UTF-8")))

@@ -9,44 +9,44 @@ import java.io.File
  *
  * @See TorrentDownloader
  */
-public interface TorrentDownloadSession : AutoCloseable {
-    public val state: StateFlow<TorrentDownloadState>
+interface TorrentDownloadSession : AutoCloseable {
+    val state: StateFlow<TorrentDownloadState>
 
-    public val overallStats: DownloadStats
+    val overallStats: DownloadStats
 
-    public val saveDirectory: File
+    val saveDirectory: File
 
     /**
      * 获取该种子资源中的所有文件.
      */
-    public suspend fun getFiles(): List<TorrentFileEntry>
+    suspend fun getFiles(): List<TorrentFileEntry>
 
-    public override fun close()
+    override fun close()
 
-    public fun closeIfNotInUse()
+    fun closeIfNotInUse()
 }
 
-public sealed class TorrentDownloadState {
+sealed class TorrentDownloadState {
     /**
      * The session is ready and awaiting for the torrent to be added.
      */
-    public data object Starting : TorrentDownloadState()
+    data object Starting : TorrentDownloadState()
 
     /**
      * The torrent is being fetched from the network.
      *
      * Piece information may not be available yet.
      */
-    public data object FetchingMetadata : TorrentDownloadState()
+    data object FetchingMetadata : TorrentDownloadState()
 
     /**
      * 当前可以下载文件. 注意, 可能有文件正在下载, 也可能没有.
      */
-    public data object Downloading : TorrentDownloadState()
+    data object Downloading : TorrentDownloadState()
 
     /**
      * All pieces have been downloaded successfully.
      */
-    public data object Closed : TorrentDownloadState()
+    data object Closed : TorrentDownloadState()
 }
 

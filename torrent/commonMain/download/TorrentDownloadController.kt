@@ -45,7 +45,7 @@ import me.him188.ani.app.torrent.model.lastIndex
  * @param headerSize 将文件首部多少字节作为 metadata, 在 metadata 阶段请求
  * @param footerSize 将文件尾部多少字节作为 metadata, 在 metadata 阶段请求
  */
-public class TorrentDownloadController(
+class TorrentDownloadController(
     private val pieces: List<Piece>,
     private val priorities: PiecePriorities,
     private val windowSize: Int = 8,
@@ -58,22 +58,22 @@ public class TorrentDownloadController(
         requestedPieces = (pieces.takeWhile { it.offset < headerSize } + pieces.dropWhile { it.lastIndex < totalSize - footerSize }).map { it.pieceIndex },
     )
 
-    public val downloadingPieces: List<Int> get() = state.downloadingPieces.toList()
+    val downloadingPieces: List<Int> get() = state.downloadingPieces.toList()
 
     @Synchronized
-    public fun onTorrentResumed() {
+    fun onTorrentResumed() {
         priorities.downloadOnly(state.downloadingPieces)
     }
 
     @Synchronized
-    public fun onAllRequestedPiecesDownloaded() {
+    fun onAllRequestedPiecesDownloaded() {
         for (downloadingPiece in state.downloadingPieces.toList()) { // avoid ConcurrentModificationException
             onPieceDownloaded(downloadingPiece)
         }
     }
 
     @Synchronized
-    public fun onPieceDownloaded(pieceIndex: Int) {
+    fun onPieceDownloaded(pieceIndex: Int) {
         when (val state = state) {
             is State.Metadata -> {
                 state.onPieceDownloaded(pieceIndex)
@@ -105,25 +105,25 @@ public class TorrentDownloadController(
 //    public val debugInfo: StateFlow<DebugInfo> get() = _debugInfo
 
     @Synchronized
-    public fun getDebugInfo(): DebugInfo {
+    fun getDebugInfo(): DebugInfo {
         return DebugInfo(
             state = state::class.toString(),
             downloadingPieces = state.downloadingPieces.toList()
         )
     }
 
-    public data class DebugInfo(
+    data class DebugInfo(
         val state: String,
         val downloadingPieces: List<Int>
     )
 }
 
 
-public interface PiecePriorities {
+interface PiecePriorities {
     /**
      * 设置仅下载指定的 pieces.
      */
-    public fun downloadOnly(pieceIndexes: Collection<Int>)
+    fun downloadOnly(pieceIndexes: Collection<Int>)
 }
 
 internal sealed class State {

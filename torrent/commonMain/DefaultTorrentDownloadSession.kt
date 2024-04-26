@@ -17,11 +17,19 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import me.him188.ani.app.torrent.api.BlockDownloadingEvent
+import me.him188.ani.app.torrent.api.EventListener
+import me.him188.ani.app.torrent.api.FilePriority
+import me.him188.ani.app.torrent.api.PieceFinishedEvent
+import me.him188.ani.app.torrent.api.StatsUpdateEvent
+import me.him188.ani.app.torrent.api.TorrentAddEvent
+import me.him188.ani.app.torrent.api.TorrentEvent
+import me.him188.ani.app.torrent.api.TorrentFinishedEvent
+import me.him188.ani.app.torrent.api.TorrentResumeEvent
 import me.him188.ani.app.torrent.download.PiecePriorities
 import me.him188.ani.app.torrent.download.TorrentDownloadController
 import me.him188.ani.app.torrent.file.TorrentInput
@@ -37,21 +45,6 @@ import me.him188.ani.utils.logging.debug
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
-import org.libtorrent4j.AnnounceEntry
-import org.libtorrent4j.Priority
-import org.libtorrent4j.TorrentHandle
-import org.libtorrent4j.TorrentInfo
-import org.libtorrent4j.alerts.AddTorrentAlert
-import org.libtorrent4j.alerts.BlockDownloadingAlert
-import org.libtorrent4j.alerts.BlockFinishedAlert
-import org.libtorrent4j.alerts.FileErrorAlert
-import org.libtorrent4j.alerts.MetadataFailedAlert
-import org.libtorrent4j.alerts.PeerConnectAlert
-import org.libtorrent4j.alerts.PeerDisconnectedAlert
-import org.libtorrent4j.alerts.PieceFinishedAlert
-import org.libtorrent4j.alerts.TorrentAlert
-import org.libtorrent4j.alerts.TorrentFinishedAlert
-import org.libtorrent4j.alerts.TorrentResumedAlert
 import java.io.File
 import java.io.IOException
 import java.io.RandomAccessFile
@@ -61,10 +54,9 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration.Companion.seconds
 
-/**
- * 封装对一个文件的下载
- */
-internal class TorrentDownloadSessionImpl(
+private typealias HandleJob<R> = (AniTorrentHandle) -> R
+
+internal open class DefaultTorrentDownloadSession(
     private val torrentName: String,
     /**
      * The directory where the torrent is saved.
@@ -72,8 +64,8 @@ internal class TorrentDownloadSessionImpl(
      * The directory may contain multiple files, or a single file.
      * The files are not guaranteed to be present at the moment when this function returns.
      */
-    override val saveDirectory: File,
-    private val onClose: suspend (TorrentDownloadSessionImpl) -> Unit,
+    final override val saveDirectory: File,
+    private val onClose: suspend (DefaultTorrentDownloadSession) -> Unit,
     private val isDebug: Boolean,
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
 ) : TorrentDownloadSession {
@@ -85,7 +77,7 @@ internal class TorrentDownloadSessionImpl(
 
     private val logger = logger(this::class.simpleName + "@${this.hashCode()}")
 
-    override val state: MutableStateFlow<TorrentDownloadState> = MutableStateFlow(TorrentDownloadState.Starting)
+    final override val state: MutableStateFlow<TorrentDownloadState> = MutableStateFlow(TorrentDownloadState.Starting)
 
     inner class OverallStatsImpl : DownloadStats {
         override val totalBytes: MutableStateFlow<Long> = MutableStateFlow(0L)
@@ -154,14 +146,15 @@ internal class TorrentDownloadSessionImpl(
     }
 
     private val entries = SuspendLazy {
-        val files = actualInfo.await().torrentInfo.files()
+        val files = actualInfo.await().torrentInfo.files
 
-        val numFiles = files.numFiles()
+        val numFiles = files.size
 
         var currentOffset = 0L
         val list = List(numFiles) { index ->
-            val size = files.fileSize(index)
-            val path = files.filePath(index)
+            val file = files[index]
+            val size = file.size
+            val path = file.path
             TorrentFileEntryImpl(
                 index = index,
                 offset = currentOffset,
@@ -199,7 +192,7 @@ internal class TorrentDownloadSessionImpl(
                 }
 
                 openHandles.remove(this)
-                this@TorrentDownloadSessionImpl.closeIfNotInUse()
+                this@DefaultTorrentDownloadSession.closeIfNotInUse()
             }
 
             override suspend fun pause() {
@@ -222,19 +215,12 @@ internal class TorrentDownloadSessionImpl(
                 val pieces = pieces.get()
                 withHandle { handle ->
                     if (pieces.isNotEmpty()) {
-//                            handle.piecePriority(0, Priority.TOP_PRIORITY)
-//                            handle.piecePriority(pieces.lastIndex, Priority.TOP_PRIORITY)
-
                         val firstIndex = pieces.first().pieceIndex
                         val lastIndex = pieces.last().pieceIndex
-                        println("setPieceDeadline $firstIndex")
                         handle.setPieceDeadline(firstIndex, 0)
-                        println("setPieceDeadline $lastIndex")
                         handle.setPieceDeadline(lastIndex, 1)
 
-                        println("setPieceDeadline ${firstIndex + 1}")
                         handle.setPieceDeadline(firstIndex + 1, 2)
-                        println("setPieceDeadline ${firstIndex + 2}")
                         handle.setPieceDeadline(firstIndex + 2, 3)
                         println("setPieceDeadline ok")
                     }
@@ -250,7 +236,7 @@ internal class TorrentDownloadSessionImpl(
          * 与这个文件有关的 pieces, sorted naturally by pieceIndex
          */
         private val pieces: SuspendLazy<List<Piece>> = SuspendLazy {
-            val allPieces = this@TorrentDownloadSessionImpl.actualInfo.await().pieces
+            val allPieces = this@DefaultTorrentDownloadSession.actualInfo.await().pieces
             allPieces.filter { piece ->
                 piece.offset >= offset && piece.offset < offset + length
             }.also {
@@ -317,7 +303,8 @@ internal class TorrentDownloadSessionImpl(
         private fun updatePriority() {
             jobsToDoInHandle.add { handle ->
                 val highestPriority = priorityRequests.values.maxWithOrNull(nullsFirst(naturalOrder()))
-                handle.filePriority(index, highestPriority?.toLibtorrentPriority() ?: Priority.IGNORE)
+                    ?: FilePriority.IGNORE
+                handle.info.files[index].priority = highestPriority
                 logger.info { "[$torrentName] Set file $filePath priority to $highestPriority" }
                 handle.resume()
             }
@@ -400,185 +387,116 @@ internal class TorrentDownloadSessionImpl(
      * 通过磁力链解析的初始的信息可能是不准确的
      */
     private val actualInfo: CompletableDeferred<ActualTorrentInfo> = CompletableDeferred()
-    private val jobsToDoInHandle = ConcurrentLinkedQueue<(TorrentHandle) -> Unit>()
+    private val jobsToDoInHandle = ConcurrentLinkedQueue<(AniTorrentHandle) -> Unit>()
 
     private fun actualInfo(): ActualTorrentInfo = actualInfo.getCompleted()
 
-    internal val listener = object : TorrentAlertListener {
-        // Typical event sequence:
-        /*
-        Alert: LISTEN_SUCCEEDED
-        Alert: LSD_ERROR
-        Alert: ADD_TORRENT
-        Alert: STATE_CHANGED
-        Alert: TORRENT_CHECKED
-        Alert: TORRENT_RESUMED
-        Alert: TRACKER_ANNOUNCE
-        Alert: TRACKER_ERROR
-        Alert: EXTERNAL_IP
-        Alert: PORTMAP
-        Alert: TRACKER_REPLY
-        Alert: PEER_CONNECT
-        Alert: DHT_GET_PEERS
-        Alert: BLOCK_DOWNLOADING
-        Alert: BLOCK_FINISHED
-         */
-//        override fun types(): IntArray? = null
-//        override fun types(): IntArray = intArrayOf(
-//            AlertType.ADD_TORRENT.swig(),
-//            AlertType.PEER_CONNECT.swig(),
-//            AlertType.PEER_DISCONNECTED.swig(),
-//            AlertType.BLOCK_DOWNLOADING.swig(),
-//            AlertType.PIECE_FINISHED.swig(),
-//            AlertType.BLOCK_FINISHED.swig(),
-//            AlertType.TORRENT_FINISHED.swig(),
-//        )
-
-        override fun onAlert(alert: TorrentAlert<*>) {
-            if (alert.torrentName() != this@TorrentDownloadSessionImpl.torrentName) return // listener will receive alerts from other torrents
-
-            try {
-                when (alert) {
-                    is AddTorrentAlert -> {
-                        logger.info { "[$torrentName] Received alert: Torrent added" }
-                        val torrentHandle = alert.handle()
-
-                        // Add trackers
-                        trackers.lines().map { it.trim() }.filter { it.isNotEmpty() }.forEach {
-                            torrentHandle.addTracker(AnnounceEntry(it))
-                        }
-
-                        // Initialize [pieces]
-                        // 注意, 必须在这里初始化获取 pieces, 通过磁力链解析的可能是不准确的
-                        val torrentInfo = torrentHandle.torrentFile()
-                        check(torrentInfo != null) {
-                            "$torrentName: Actual torrent info is null"
-                        }
-                        val numPieces = torrentInfo.numPieces()
-                        val pieces =
-                            Piece.buildPieces(numPieces) { torrentInfo.pieceSize(it).toUInt().toLong() }
-
-                        actualInfo.complete(ActualTorrentInfo(pieces, torrentInfo))
-                    }
-
-                    // This alert is posted when a torrent completes checking. i.e. when it transitions out of the checking files state into a state where it is ready to start downloading
-                    is TorrentResumedAlert -> {
-                        val torrentHandle = alert.handle()
-                        if (actualInfo.isCompleted) {
-                            return
-                        }
-                        val pieceAvailability = torrentHandle.pieceAvailability()
-                        logger.info { "$torrentName: Total ${pieceAvailability.size} pieces" }
-
-
-//                        torrentHandle.prioritizePieces(pieces.indices.map { Priority.LOW }.toTypedArray())
-//                        handleOrNull()?.controller?.onTorrentResumed()
-
-                        // Prioritize pieces
-//                        val piecePriorities = Array(numPieces) { Priority.LOW }
-//                        for (i in (0..2.coerceAtMost(piecePriorities.lastIndex))
-//                                + (numPieces - 1 - 2..<numPieces)) {
-//                            piecePriorities[i] = Priority.SIX
-//                        }
-//                        torrentHandle.prioritizePieces(piecePriorities)
-
-                        state.value = TorrentDownloadState.FetchingMetadata
-                    }
-
-                    is PeerConnectAlert -> {
-                        overallStats.peerCount.getAndUpdate { it + 1 }
-                    }
-
-                    is PeerDisconnectedAlert -> {
-                        overallStats.peerCount.getAndUpdate { it - 1 }
-                    }
-
-                    is BlockDownloadingAlert -> {
-                        val pieceIndex = alert.pieceIndex()
-                        actualInfo().onBlockDownloading(pieceIndex)
-                    }
-
-                    is PieceFinishedAlert -> {
-                        val pieceIndex = alert.pieceIndex()
-                        actualInfo().onPieceDownloaded(pieceIndex)
-                    }
-
-                    is BlockFinishedAlert -> {
-                    }
-
-                    is TorrentFinishedAlert -> {
-                        // https://libtorrent.org/reference-Alerts.html#:~:text=report%20issue%5D-,torrent_finished_alert,-Declared%20in%20%22
-                        logger.info { "[$torrentName] Torrent finished" }
-                        for (openHandle in openHandles) {
-                            logger.info { "[$torrentName] Set entry's finishedOverride to true because torrent finished: ${openHandle.entry.filePath}" }
-                            openHandle.entry.finishedOverride.value = true
-                        }
-                    }
-
-                    is FileErrorAlert -> {
-                        logger.warn { "[libtorrent] $torrentName: File error: ${alert.operation()} ${alert.error()}" }
-                    }
-
-                    is MetadataFailedAlert -> {
-                        logger.warn { "[libtorrent] $torrentName: Metadata failed: ${alert.error.message}" }
-                    }
-
-                    else -> {
-                    }
-                }
-
-                val max = alert.handle().status().totalDone()
-                val curr = alert.handle().status().totalWanted()
-                overallStats.totalBytes.value = max
-                overallStats.downloadedBytes.value = curr
-
-                overallStats.downloadRate0.value = alert.handle().status().downloadRate().toUInt().toLong()
-                overallStats.uploadRate0.value = alert.handle().status().uploadRate().toUInt().toLong()
-
-                while (jobsToDoInHandle.isNotEmpty()) {
-                    val job = jobsToDoInHandle.poll()
-                    if (isDebug) {
-                        runBlocking {
-                            cancellableCoroutineScope {
-                                launch {
-                                    delay(5.seconds)
-                                    logger.warn { "$torrentName: Job $job in handle took too long" }
-                                }
-                                launch {
-                                    job(alert.handle())
-                                    cancelScope()
-                                }
+    internal val listener = object : EventListener {
+        override fun onUpdate(handle: AniTorrentHandle) {
+            while (jobsToDoInHandle.isNotEmpty()) {
+                val job = jobsToDoInHandle.poll()
+                if (isDebug) {
+                    runBlocking {
+                        cancellableCoroutineScope {
+                            launch {
+                                delay(5.seconds)
+                                logger.warn { "$torrentName: Job $job in handle took too long" }
+                            }
+                            launch {
+                                job(handle)
+                                cancelScope()
                             }
                         }
-                    } else {
-                        job(alert.handle())
+                    }
+                } else {
+                    job(handle)
+                }
+            }
+        }
+
+        override val torrentName: String
+            get() = this@DefaultTorrentDownloadSession.torrentName
+
+        override fun onEvent(event: TorrentEvent) {
+            when (event) {
+                is TorrentAddEvent -> {
+                    logger.info { "[$torrentName] Received alert: Torrent added" }
+                    val torrentHandle = event.handle
+
+                    // Add trackers
+                    trackers.lines().map { it.trim() }.filter { it.isNotEmpty() }.forEach {
+                        torrentHandle.addTracker(it)
+                    }
+
+                    // Initialize [pieces]
+                    // 注意, 必须在这里初始化获取 pieces, 通过磁力链解析的可能是不准确的
+                    val torrentInfo = torrentHandle.info
+                    val numPieces = torrentInfo.pieceCount
+                    val pieces =
+                        Piece.buildPieces(numPieces) { torrentInfo.pieceSize(it).toUInt().toLong() }
+
+                    actualInfo.complete(ActualTorrentInfo(pieces, torrentInfo))
+                }
+
+                is TorrentResumeEvent -> {
+                    if (actualInfo.isCompleted) return
+                    state.value = TorrentDownloadState.FetchingMetadata
+                }
+
+                // TODO: torrent peer stats 
+//                is PeerConnectAlert -> {
+//                    overallStats.peerCount.getAndUpdate { it + 1 }
+//                }
+//
+//                is PeerDisconnectedAlert -> {
+//                    overallStats.peerCount.getAndUpdate { it - 1 }
+//                }
+
+                is BlockDownloadingEvent -> {
+                    val pieceIndex = event.pieceIndex
+                    actualInfo().onBlockDownloading(pieceIndex)
+                }
+
+                is PieceFinishedEvent -> {
+                    val pieceIndex = event.pieceIndex
+                    actualInfo().onPieceDownloaded(pieceIndex)
+                }
+
+                is TorrentFinishedEvent -> {
+                    // https://libtorrent.org/reference-Alerts.html#:~:text=report%20issue%5D-,torrent_finished_alert,-Declared%20in%20%22
+                    logger.info { "[$torrentName] Torrent finished" }
+                    for (openHandle in openHandles) {
+                        logger.info { "[$torrentName] Set entry's finishedOverride to true because torrent finished: ${openHandle.entry.filePath}" }
+                        openHandle.entry.finishedOverride.value = true
                     }
                 }
-            } catch (e: Throwable) {
-                logger.info(e) { "$torrentName: Error in alert listener" }
+
+//                is FileErrorAlert -> {
+//                    logger.warn { "[libtorrent] $torrentName: File error: ${alert.operation()} ${alert.error()}" }
+//                }
+//
+//                is MetadataFailedAlert -> {
+//                    logger.warn { "[libtorrent] $torrentName: Metadata failed: ${alert.error.message}" }
+//                }
+                is StatsUpdateEvent -> {
+                    overallStats.totalBytes.value = event.totalBytes
+                    overallStats.downloadedBytes.value = event.downloadedBytes
+                    overallStats.downloadRate0.value = event.downloadRate
+                    overallStats.uploadRate0.value = event.uploadRate
+                }
             }
         }
     }
 
-    private suspend fun <R> withHandle(action: (TorrentHandle) -> R): R {
+    private suspend fun <R> withHandle(action: HandleJob<R>): R {
         return suspendCancellableCoroutine { cont ->
-            val job: (TorrentHandle) -> Unit = {
+            val job: (AniTorrentHandle) -> Unit = {
                 cont.resumeWith(kotlin.runCatching { action(it) })
             }
             jobsToDoInHandle.add(job)
             cont.invokeOnCancellation {
                 jobsToDoInHandle.remove(job)
             }
-        }
-    }
-
-    private suspend fun closeImpl() {
-        withContext(LockedSessionManager.dispatcher) {
-            openHandles
-            onClose(this@TorrentDownloadSessionImpl)
-            logger.info { "Close torrent $torrentName: dispose handle" }
-            scope.cancel()
-            coroutineCloseHandle?.dispose()
         }
     }
 
@@ -598,8 +516,11 @@ internal class TorrentDownloadSessionImpl(
         logger.info { "Closing torrent" }
 
         jobsToDoInHandle.add {
-            runBlocking {
-                closeImpl()
+            runBlocking(LockedSessionManager.dispatcher) {
+                onClose(this@DefaultTorrentDownloadSession)
+                logger.info { "Close torrent $torrentName: dispose handle" }
+                scope.cancel()
+                coroutineCloseHandle?.dispose()
             }
         }
     }

@@ -1,6 +1,6 @@
 package me.him188.ani.app.torrent
 
-public class TorrentLibInfo(
-    public val vendor: String,//  "libtorrent"
-    public val version: String, // LibTorrent.version()
+class TorrentLibInfo(
+    val vendor: String,//  "libtorrent"
+    val version: String, // LibTorrent.version()
 )

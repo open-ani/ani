@@ -3,8 +3,8 @@ package me.him188.ani.app.data.media.resolver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.tools.torrent.TorrentManager
-import me.him188.ani.app.torrent.FilePriority
 import me.him188.ani.app.torrent.TorrentFileEntry
+import me.him188.ani.app.torrent.api.FilePriority
 import me.him188.ani.app.torrent.model.EncodedTorrentData
 import me.him188.ani.app.videoplayer.data.OpenFailures
 import me.him188.ani.app.videoplayer.data.VideoSource

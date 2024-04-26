@@ -7,19 +7,19 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.takeWhile
 import me.him188.ani.app.torrent.PieceState
 
-public class Piece(
-    public val pieceIndex: Int,
-    public val size: Long,
-    public val offset: Long,
+class Piece(
+    val pieceIndex: Int,
+    val size: Long,
+    val offset: Long,
 ) {
-    public val state: MutableStateFlow<PieceState> = MutableStateFlow(PieceState.READY)
-    public val downloadedBytes: Flow<Long>
+    val state: MutableStateFlow<PieceState> = MutableStateFlow(PieceState.READY)
+    val downloadedBytes: Flow<Long>
         get() = state.map {
             if (it == PieceState.FINISHED) size else 0L
         }
 
-    public companion object {
-        public fun buildPieces(
+    companion object {
+        fun buildPieces(
             numPieces: Int,
             initial: Long = 0L,
             getPieceSize: (index: Int) -> Long,
@@ -43,11 +43,11 @@ public class Piece(
     }
 }
 
-public val Piece.startIndex: Long get() = offset
-public val Piece.lastIndex: Long get() = offset + size - 1
-public inline val Piece.indexes: LongRange get() = startIndex..lastIndex
+val Piece.startIndex: Long get() = offset
+val Piece.lastIndex: Long get() = offset + size - 1
+inline val Piece.indexes: LongRange get() = startIndex..lastIndex
 
-public suspend inline fun Piece.awaitFinished() {
+suspend inline fun Piece.awaitFinished() {
     val piece = this
     if (piece.state.value != PieceState.FINISHED) {
         piece.state.takeWhile { it != PieceState.FINISHED }.collect()
