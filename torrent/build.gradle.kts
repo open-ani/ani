@@ -84,6 +84,11 @@ android {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+    buildTypes.getByName("debug") {
+        isMinifyEnabled = false
+        isShrinkResources = false
+        isDebuggable = true
+    }
     buildTypes.getByName("release") {
         isMinifyEnabled = true
         isShrinkResources = false
