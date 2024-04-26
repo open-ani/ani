@@ -1,7 +1,7 @@
 package me.him188.ani.app.videoplayer.torrent
 
 import kotlinx.coroutines.flow.map
-import me.him188.ani.app.torrent.TorrentFileHandle
+import me.him188.ani.app.torrent.api.TorrentFileHandle
 import me.him188.ani.app.videoplayer.data.VideoData
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
@@ -11,7 +11,7 @@ class TorrentVideoData(
     private val handle: TorrentFileHandle,
 ) : VideoData {
     private inline val entry get() = handle.entry
-    override val filename: String get() = entry.filePath
+    override val filename: String get() = entry.pathInTorrent
     override val fileLength: Long get() = entry.length
 
     override val hash: String? get() = entry.getFileHashOrNull()

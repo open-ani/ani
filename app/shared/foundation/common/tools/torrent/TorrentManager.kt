@@ -11,8 +11,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.job
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.platform.versionCode
-import me.him188.ani.app.torrent.TorrentDownloader
-import me.him188.ani.app.torrent.TorrentDownloaderFactory
+import me.him188.ani.app.torrent.api.TorrentDownloader
+import me.him188.ani.app.torrent.api.TorrentDownloaderFactory
 import me.him188.ani.utils.coroutines.runUntilSuccess
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn

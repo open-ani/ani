@@ -18,8 +18,8 @@ import me.him188.ani.app.tools.torrent.DefaultTorrentManager
 import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.app.tools.torrent.computeTorrentFingerprint
 import me.him188.ani.app.tools.torrent.computeTorrentUserAgent
-import me.him188.ani.app.torrent.TorrentDownloader
-import me.him188.ani.app.torrent.TorrentDownloaderConfig
+import me.him188.ani.app.torrent.api.TorrentDownloaderConfig
+import me.him188.ani.app.torrent.torrent4j.Libtorrent4jTorrentDownloader
 import me.him188.ani.app.videoplayer.ExoPlayerStateFactory
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import org.koin.dsl.module
@@ -45,7 +45,7 @@ fun getAndroidModules(
         DefaultTorrentManager(
             coroutineScope.coroutineContext,
             downloaderFactory = {
-                TorrentDownloader(
+                Libtorrent4jTorrentDownloader(
                     cacheDirectory = torrentCacheDir,
                     downloadFile = { url ->
                         client.get(url).apply {

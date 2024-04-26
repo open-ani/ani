@@ -1,7 +1,5 @@
 package me.him188.ani.app.torrent.api
 
-import me.him188.ani.app.torrent.AniTorrentHandle
-
 interface EventListener {
     val torrentName: String
 

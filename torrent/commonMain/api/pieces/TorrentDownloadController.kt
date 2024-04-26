@@ -1,7 +1,4 @@
-package me.him188.ani.app.torrent.download
-
-import me.him188.ani.app.torrent.model.Piece
-import me.him188.ani.app.torrent.model.lastIndex
+package me.him188.ani.app.torrent.api.pieces
 
 /**
  * Torrent 下载优先级控制器.

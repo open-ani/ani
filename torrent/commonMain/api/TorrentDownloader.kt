@@ -1,10 +1,8 @@
-package me.him188.ani.app.torrent
+package me.him188.ani.app.torrent.api
 
-import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.Flow
@@ -14,31 +12,18 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import me.him188.ani.app.torrent.api.EventListener
-import me.him188.ani.app.torrent.model.EncodedTorrentData
-import me.him188.ani.app.torrent.torrent4j.onAlert
+import me.him188.ani.app.torrent.torrent4j.LockedSessionManager
 import me.him188.ani.utils.logging.debug
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
-import me.him188.ani.utils.logging.warn
-import org.libtorrent4j.AlertListener
-import org.libtorrent4j.Priority
 import org.libtorrent4j.SessionManager
 import org.libtorrent4j.SettingsPack
-import org.libtorrent4j.Sha1Hash
-import org.libtorrent4j.TorrentFlags
-import org.libtorrent4j.TorrentInfo
-import org.libtorrent4j.alerts.Alert
-import org.libtorrent4j.alerts.AlertType
-import org.libtorrent4j.alerts.TorrentAlert
 import org.libtorrent4j.swig.settings_pack
 import org.libtorrent4j.swig.settings_pack.string_types
 import java.io.File
 import java.nio.charset.Charset
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.CopyOnWriteArraySet
-import java.util.concurrent.Executors
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -79,7 +64,7 @@ interface TorrentDownloader : AutoCloseable {
      *
      * @throws MagnetTimeoutException if timeout has been reached.
      */
-    suspend fun fetchTorrent(uri: String, timeoutSeconds: Int = 60): EncodedTorrentData
+    suspend fun fetchTorrent(uri: String, timeoutSeconds: Int = 60): EncodedTorrentInfo
 
     /**
      * Starts download of a torrent using the torrent data.
@@ -87,12 +72,12 @@ interface TorrentDownloader : AutoCloseable {
      * This function may involve I/O operation e.g. to compare with local caches.
      */
     suspend fun startDownload(
-        data: EncodedTorrentData,
+        data: EncodedTorrentInfo,
         parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
     ): TorrentDownloadSession
 
     fun getSaveDir(
-        data: EncodedTorrentData,
+        data: EncodedTorrentInfo,
     ): File
 
     /**
@@ -109,70 +94,10 @@ class MagnetTimeoutException(
 ) : Exception()
 
 /**
- * A factory for creating [TorrentDownloader] instances without any argument.
+ * A factory for creating [Libtorrent4jTorrentDownloader] instances without any argument.
  */
 fun interface TorrentDownloaderFactory {
     suspend fun create(): TorrentDownloader
-}
-
-private val logger = logger(TorrentDownloader::class)
-
-internal class LockedSessionManager(
-    private val sessionManager: SessionManager,
-) {
-    private val listeners = CopyOnWriteArraySet<EventListener>()
-
-    init {
-        sessionManager.addListener(object : AlertListener {
-            override fun types(): IntArray? = null
-            override fun alert(alert: Alert<*>) {
-                if (alert !is TorrentAlert<*>) return
-                listeners.forEach { listener ->
-                    try {
-                        listener.onAlert(alert)
-                    } catch (e: Throwable) {
-                        logger.error(e) { "An exception occurred in EventListener" }
-                    }
-                }
-            }
-        })
-    }
-
-    fun addListener(listener: EventListener) {
-        listeners.add(listener)
-    }
-
-    fun removeListener(listener: EventListener) {
-        listeners.remove(listener)
-    }
-
-    suspend inline fun <R> use(
-        crossinline block: SessionManager.() -> R
-    ) = withContext(dispatcher) {
-        block(sessionManager)
-    }
-
-    companion object {
-        /**
-         * Shared dispatcher for all [LockedSessionManager] instances.
-         *
-         * Libtorrent crashes (the entire VM) if it is called from multiple threads.
-         */ // unfortunately, we have to keep this dispatcher live for the entire app lifecycle.
-        val dispatcher = Executors.newSingleThreadExecutor()
-            .asCoroutineDispatcher()
-
-        private val logger = logger(LockedSessionManager::class)
-
-        private val scope = CoroutineScope(dispatcher + CoroutineExceptionHandler { _, throwable ->
-            logger.warn(throwable) { "An exception occurred in LockedSessionManager" }
-        })
-
-        fun launch(block: suspend () -> Unit) {
-            scope.launch {
-                block()
-            }
-        }
-    }
 }
 
 typealias TorrentFileDownloader = suspend (url: String) -> ByteArray
@@ -188,105 +113,9 @@ class TorrentDownloaderConfig(
     }
 }
 
-/**
- * Creates a new [TorrentDownloader] instance.
- *
- * The returned instance must be closed when it is no longer needed.
- *
- * @see TorrentDownloader
- */
-fun TorrentDownloader(
+internal abstract class AbstractLockedTorrentDownloader<Info : TorrentInfo>(
     cacheDirectory: File,
-    downloadFile: TorrentFileDownloader,
-    config: TorrentDownloaderConfig = TorrentDownloaderConfig.Default,
-): TorrentDownloader {
-    val sessionManager = SessionManager()
-
-    val listener = object : AlertListener {
-        override fun types(): IntArray {
-            return intArrayOf(AlertType.SESSION_STATS.swig(), AlertType.DHT_STATS.swig())
-        }
-
-        override fun alert(alert: Alert<*>) {
-            if (alert.type() == AlertType.SESSION_STATS) {
-                sessionManager.postDhtStats()
-            }
-
-//            if (alert.type() == AlertType.DHT_STATS) {
-//                val nodes: Long = sessionManager.stats().dhtNodes()
-//                // wait for at least 10 nodes in the DHT.
-//                if (nodes >= 10) {
-//                    dht.complete(Unit)
-//                }
-//            }
-        }
-    }
-    sessionManager.addListener(listener)
-    logger.info { "Starting SessionManager" }
-    sessionManager.start()
-    sessionManager.applySettings(sessionManager.settings().apply {
-        isEnableDht = true
-        isEnableLsd = true
-        activeDhtLimit(300)
-        activeTrackerLimit(50)
-        activeSeeds(8)
-        activeDownloads(8)
-        connectionsLimit(500) // default was 200
-        seedingOutgoingConnections(true) // default was true, just to make sure
-        uploadRateLimit(0)
-        downloadRateLimit(0)
-        maxPeerlistSize(1000)
-        dhtBootstrapNodes = setOf(
-            dhtBootstrapNodes.split(",") + listOf(
-                "router.utorrent.com:6881",
-                "router.bittorrent.com:6881",
-                "dht.transmissionbt.com:6881",
-                "router.bitcomet.com:6881",
-            )
-        ).joinToString(",")
-
-        logger.info { "peerFingerprint was: $peerFingerprintString" }
-        logger.info { "user_agent was: $userAgentString" }
-        logger.info { "handshake_client_version was: $handshakeClientVersionString" }
-
-        peerFingerprintString = config.peerFingerprint
-        userAgentString = config.userAgent
-        config.clientHandshakeVersion?.let {
-            handshakeClientVersionString = it
-        }
-        logger.info { "peerFingerprint set: $peerFingerprintString" }
-        logger.info { "user_agent set: $userAgentString" }
-        logger.info { "handshake_client_version set: $handshakeClientVersionString" }
-    })
-    logger.info { "postDhtStats" }
-    sessionManager.postDhtStats()
-    // No need to wait for DHT, some devices may not have access to the DHT network.
-
-//    logger.info { "Waiting for nodes in DHT" }
-//    val dhtResult = withTimeoutOrNull(30.seconds) {
-//        dht.await()
-//    }
-//    if (dhtResult == null) {
-//        logger.info { "DHT bootstrap failed" }
-//        error("DHT bootstrap failed")
-//    }
-    sessionManager.removeListener(listener)
-
-    return TorrentDownloaderImpl(
-        cacheDirectory,
-        LockedSessionManager(sessionManager),
-        downloadFile,
-        isDebug = config.isDebug,
-    )
-}
-
-
-// TODO:  TorrentDownloaderImpl 去掉 libtorrent4j 依赖
-
-
-internal class TorrentDownloaderImpl(
-    cacheDirectory: File,
-    private val sessionManager: LockedSessionManager,
+    val sessionManager: LockedSessionManager,
     private val downloadFile: TorrentFileDownloader,
     private val isDebug: Boolean,
 ) : TorrentDownloader {
@@ -315,17 +144,12 @@ internal class TorrentDownloaderImpl(
         }
     }
 
-    override val vendor: TorrentLibInfo = TorrentLibInfo(
-        vendor = "libtorrent",
-        version = org.libtorrent4j.LibTorrent.version(),
-    )
-
-    override suspend fun fetchTorrent(uri: String, timeoutSeconds: Int): EncodedTorrentData {
+    override suspend fun fetchTorrent(uri: String, timeoutSeconds: Int): EncodedTorrentInfo {
         if (uri.startsWith("http", ignoreCase = true)) {
             logger.info { "Fetching http url: $uri" }
             val data = downloadFile(uri)
             logger.info { "Fetching http url success, file length = ${data.size}" }
-            return EncodedTorrentData(data)
+            return EncodedTorrentInfo(data)
         }
 
         logger.info { "Fetching magnet: $uri" }
@@ -340,32 +164,41 @@ internal class TorrentDownloaderImpl(
             throw MagnetTimeoutException()
         }
         logger.info { "Fetched magnet: size=${data.size}" }
-        return EncodedTorrentData(data)
+        return EncodedTorrentInfo(data)
     }
 
     private val magnetCacheDir = cacheDirectory.resolve("magnet").apply {
         mkdirs()
 
     }
-    val downloadCacheDir = cacheDirectory.resolve("download").apply {
+    private val downloadCacheDir = cacheDirectory.resolve("api/pieces").apply {
         mkdirs()
     }
 
-    private val dataToSession = ConcurrentHashMap<Sha1Hash, DefaultTorrentDownloadSession>()
+    protected val dataToSession = ConcurrentHashMap<String, DefaultTorrentDownloadSession>()
 
     private val lock = Mutex()
 
+    protected abstract fun decodeTorrentInfo(data: EncodedTorrentInfo): Info
+
+    protected abstract fun SessionManager.startDownload(
+        ti: Info,
+        saveDirectory: File
+    )
+
+    protected abstract suspend fun closeSession(info: Info)
+
     override suspend fun startDownload(
-        data: EncodedTorrentData,
+        data: EncodedTorrentInfo,
         parentCoroutineContext: CoroutineContext,
     ): TorrentDownloadSession = lock.withLock {
         withContext(Dispatchers.IO) {
-            val ti = TorrentInfo(data.data)
-            val torrentName = ti.name()
+            val torrentInfo = decodeTorrentInfo(data)
+            val torrentName = torrentInfo.name
 
             logger.info { "[$torrentName] TorrentDownloader.startDownload called" }
             val saveDirectory = getSaveDir(data).apply { mkdirs() }
-            val hash = ti.infoHash()
+            val hash = torrentInfo.infoHashHex
 
             val reopened = dataToSession[hash]?.let {
                 logger.info { "[$torrentName] Found existing session" }
@@ -384,15 +217,7 @@ internal class TorrentDownloaderImpl(
                         sessionManager.removeListener(session.listener)
                         dataToSession.remove(hash)
                         logger.debug { "[$torrentName] Close: close handle" }
-                        sessionManager.use {
-                            find(hash)?.let { handle ->
-                                logger.debug { "[$torrentName] Close: remove from libtorrent SessionManager" }
-                                remove(handle)
-                                logger.debug { "[$torrentName] Close: removed" }
-                            } ?: run {
-                                logger.debug { "[$torrentName] Close: handle not found, ignoring" }
-                            }
-                        }
+                        closeSession(torrentInfo)
                     },
                     isDebug = isDebug,
                     parentCoroutineContext = parentCoroutineContext,
@@ -412,18 +237,9 @@ internal class TorrentDownloaderImpl(
                     sessionManager.addListener(session.listener)
 
                     // 第一次打开, 设置忽略所有文件, 除了我们需要的那些
-                    val priorities = Priority.array(Priority.IGNORE, ti.numFiles())
                     try {
                         logger.info { "[$torrentName] Starting torrent download" }
-                        download(
-                            ti,
-                            saveDirectory,
-                            null,
-                            priorities,
-                            null,
-                            TorrentFlags.AUTO_MANAGED,
-//                TorrentFlags.SEQUENTIAL_DOWNLOAD,//.or_(TorrentFlags.NEED_SAVE_RESUME)
-                        )
+                        startDownload(torrentInfo, saveDirectory)
                         logger.info { "[$torrentName] Torrent download started" }
                     } catch (e: Throwable) {
                         sessionManager.removeListener(session.listener)
@@ -436,7 +252,8 @@ internal class TorrentDownloaderImpl(
         }
     }
 
-    override fun getSaveDir(data: EncodedTorrentData): File =
+
+    override fun getSaveDir(data: EncodedTorrentInfo): File =
         downloadCacheDir.resolve(data.data.contentHashCode().toString())
 
     override fun listSaves(): List<File> {

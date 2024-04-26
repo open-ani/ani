@@ -1,4 +1,4 @@
-package me.him188.ani.app.torrent
+package me.him188.ani.app.torrent.api
 
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
@@ -21,21 +21,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
-import me.him188.ani.app.torrent.api.BlockDownloadingEvent
-import me.him188.ani.app.torrent.api.EventListener
-import me.him188.ani.app.torrent.api.FilePriority
-import me.him188.ani.app.torrent.api.PieceFinishedEvent
-import me.him188.ani.app.torrent.api.StatsUpdateEvent
-import me.him188.ani.app.torrent.api.TorrentAddEvent
-import me.him188.ani.app.torrent.api.TorrentEvent
-import me.him188.ani.app.torrent.api.TorrentFinishedEvent
-import me.him188.ani.app.torrent.api.TorrentResumeEvent
-import me.him188.ani.app.torrent.download.PiecePriorities
-import me.him188.ani.app.torrent.download.TorrentDownloadController
+import me.him188.ani.app.torrent.api.TorrentFilePieceMatcher.matchPiecesForFile
+import me.him188.ani.app.torrent.api.pieces.Piece
+import me.him188.ani.app.torrent.api.pieces.PiecePriorities
+import me.him188.ani.app.torrent.api.pieces.TorrentDownloadController
+import me.him188.ani.app.torrent.api.pieces.lastIndex
+import me.him188.ani.app.torrent.api.pieces.startIndex
 import me.him188.ani.app.torrent.file.TorrentInput
-import me.him188.ani.app.torrent.model.Piece
-import me.him188.ani.app.torrent.model.lastIndex
-import me.him188.ani.app.torrent.model.startIndex
+import me.him188.ani.app.torrent.torrent4j.LockedSessionManager
 import me.him188.ani.utils.coroutines.SuspendLazy
 import me.him188.ani.utils.coroutines.cancellableCoroutineScope
 import me.him188.ani.utils.coroutines.flows.resetStale
@@ -53,8 +46,6 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration.Companion.seconds
-
-private typealias HandleJob<R> = (AniTorrentHandle) -> R
 
 internal open class DefaultTorrentDownloadSession(
     private val torrentName: String,
@@ -118,7 +109,7 @@ internal open class DefaultTorrentDownloadSession(
 
     private inner class ActualTorrentInfo(
         val pieces: List<Piece>,
-        val torrentInfo: TorrentInfo,
+        val torrentContents: TorrentContents,
     ) {
         val controller: TorrentDownloadController = TorrentDownloadController(
             pieces,
@@ -146,7 +137,7 @@ internal open class DefaultTorrentDownloadSession(
     }
 
     private val entries = SuspendLazy {
-        val files = actualInfo.await().torrentInfo.files
+        val files = actualInfo.await().torrentContents.files
 
         val numFiles = files.size
 
@@ -167,9 +158,9 @@ internal open class DefaultTorrentDownloadSession(
         list
     }
 
-    private val openHandles = ConcurrentLinkedQueue<TorrentFileEntryImpl.TorrentFileHandleImpl>()
+    internal val openHandles = ConcurrentLinkedQueue<TorrentFileEntryImpl.TorrentFileHandleImpl>()
 
-    private inner class TorrentFileEntryImpl(
+    internal inner class TorrentFileEntryImpl(
         val index: Int,
         val offset: Long,
         override val length: Long,
@@ -184,7 +175,7 @@ internal open class DefaultTorrentDownloadSession(
                 if (closed) return
                 closed = true
 
-                logger.info { "[$torrentName] Close file $filePath, set file priority to ignore" }
+                logger.info { "[$torrentName] Close file $pathInTorrent, set file priority to ignore" }
                 removePriority()
 
                 if (isDebug) {
@@ -202,7 +193,7 @@ internal open class DefaultTorrentDownloadSession(
 
             private fun checkClosed() {
                 if (closed) throw IllegalStateException(
-                    "Attempting to pause but TorrentFile has already been closed: $filePath",
+                    "Attempting to pause but TorrentFile has already been closed: $pathInTorrent",
                     closeException
                 )
             }
@@ -229,24 +220,23 @@ internal open class DefaultTorrentDownloadSession(
                 requestPriority(priority)
             }
 
-            override fun toString(): String = "TorrentFileHandleImpl(index=$index, filePath='$filePath')"
+            override fun toString(): String = "TorrentFileHandleImpl(index=$index, filePath='$pathInTorrent')"
         }
 
         /**
-         * 与这个文件有关的 pieces, sorted naturally by pieceIndex
+         * 与这个文件有关的 pieces, sorted naturally by offset
          */
         private val pieces: SuspendLazy<List<Piece>> = SuspendLazy {
             val allPieces = this@DefaultTorrentDownloadSession.actualInfo.await().pieces
-            allPieces.filter { piece ->
-                piece.offset >= offset && piece.offset < offset + length
-            }.also {
+            matchPiecesForFile(allPieces, offset, length).also { pieces ->
                 logger.info {
-                    val start = it.minBy { it.startIndex }
-                    val end = it.maxBy { it.lastIndex }
-                    "[$torrentName] File '$filePath' piece initialized, ${it.size} pieces, offset range: $start..$end"
+                    val start = pieces.minByOrNull { it.startIndex }
+                    val end = pieces.maxByOrNull { it.lastIndex }
+                    "[$torrentName] File '$pathInTorrent' piece initialized, ${pieces.size} pieces, offset range: $start..$end"
                 }
             }
         }
+
 
         val finishedOverride = MutableStateFlow(false)
 
@@ -283,7 +273,7 @@ internal open class DefaultTorrentDownloadSession(
             }
         }
 
-        override val filePath: String get() = relativePath.substringAfter("/")
+        override val pathInTorrent: String get() = relativePath.substringAfter("/")
 
         private val priorityRequests: MutableMap<TorrentFileHandle, FilePriority?> = mutableMapOf()
 
@@ -304,11 +294,13 @@ internal open class DefaultTorrentDownloadSession(
             jobsToDoInHandle.add { handle ->
                 val highestPriority = priorityRequests.values.maxWithOrNull(nullsFirst(naturalOrder()))
                     ?: FilePriority.IGNORE
-                handle.info.files[index].priority = highestPriority
-                logger.info { "[$torrentName] Set file $filePath priority to $highestPriority" }
+                handle.contents.files[index].priority = highestPriority
+                logger.info { "[$torrentName] Set file $pathInTorrent priority to $highestPriority" }
                 handle.resume()
             }
         }
+
+        override suspend fun getPieces(): List<Piece> = pieces.get()
 
         override suspend fun createHandle(): TorrentFileHandle = TorrentFileHandleImpl().also {
             priorityRequests[it] = null
@@ -430,12 +422,8 @@ internal open class DefaultTorrentDownloadSession(
 
                     // Initialize [pieces]
                     // 注意, 必须在这里初始化获取 pieces, 通过磁力链解析的可能是不准确的
-                    val torrentInfo = torrentHandle.info
-                    val numPieces = torrentInfo.pieceCount
-                    val pieces =
-                        Piece.buildPieces(numPieces) { torrentInfo.pieceSize(it).toUInt().toLong() }
-
-                    actualInfo.complete(ActualTorrentInfo(pieces, torrentInfo))
+                    val torrentInfo = torrentHandle.contents
+                    actualInfo.complete(ActualTorrentInfo(torrentInfo.createPieces(), torrentInfo))
                 }
 
                 is TorrentResumeEvent -> {
@@ -466,7 +454,7 @@ internal open class DefaultTorrentDownloadSession(
                     // https://libtorrent.org/reference-Alerts.html#:~:text=report%20issue%5D-,torrent_finished_alert,-Declared%20in%20%22
                     logger.info { "[$torrentName] Torrent finished" }
                     for (openHandle in openHandles) {
-                        logger.info { "[$torrentName] Set entry's finishedOverride to true because torrent finished: ${openHandle.entry.filePath}" }
+                        logger.info { "[$torrentName] Set entry's finishedOverride to true because torrent finished: ${openHandle.entry.pathInTorrent}" }
                         openHandle.entry.finishedOverride.value = true
                     }
                 }
@@ -557,6 +545,9 @@ internal open class DefaultTorrentDownloadSession(
         }
     }
 }
+
+
+private typealias HandleJob<R> = (AniTorrentHandle) -> R
 
 @OptIn(ExperimentalStdlibApi::class)
 @kotlin.jvm.Throws(IOException::class)

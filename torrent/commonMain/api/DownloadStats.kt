@@ -1,10 +1,10 @@
-package me.him188.ani.app.torrent
+package me.him188.ani.app.torrent.api
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 
 /**
- * @see TorrentDownloader
+ * @see Libtorrent4jTorrentDownloader
  */
 interface DownloadStats {
     /**

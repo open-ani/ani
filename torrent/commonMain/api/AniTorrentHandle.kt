@@ -1,6 +1,6 @@
-package me.him188.ani.app.torrent
+package me.him188.ani.app.torrent.api
 
-import me.him188.ani.app.torrent.api.FilePriority
+import me.him188.ani.app.torrent.api.pieces.Piece
 import org.libtorrent4j.AnnounceEntry
 import org.libtorrent4j.FileStorage
 import org.libtorrent4j.Priority
@@ -11,7 +11,7 @@ interface AniTorrentHandle {
 
     fun addTracker(url: String)
 
-    val info: TorrentInfo
+    val contents: TorrentContents
 
     fun resume()
     fun pause()
@@ -19,16 +19,15 @@ interface AniTorrentHandle {
     fun setPieceDeadline(pieceIndex: Int, deadline: Int)
 }
 
-interface TorrentInfo {
-    val pieceCount: Int
-    fun pieceSize(index: Int): Int
+interface TorrentContents {
+    fun createPieces(): List<Piece>
 
     val files: List<TorrentFile>
 }
 
 interface TorrentFile {
-    val size: Long
     val path: String
+    val size: Long
     var priority: FilePriority
 }
 
@@ -44,7 +43,7 @@ internal class Torrent4jHandle(
         handle.addTracker(AnnounceEntry(url))
     }
 
-    override val info: TorrentInfo by lazy { Torrent4jInfo(handle) }
+    override val contents: TorrentContents by lazy { Torrent4JContents(handle) }
     override fun resume() {
         handle.resume()
     }
@@ -58,23 +57,30 @@ internal class Torrent4jHandle(
     }
 }
 
-class Torrent4jInfo(
+class Torrent4JContents(
     private val handle: TorrentHandle,
-) : TorrentInfo {
-    override val pieceCount: Int get() = torrentFile().numPieces()
-    override fun pieceSize(index: Int): Int = torrentFile().pieceSize(index)
+) : TorrentContents {
+    override fun createPieces(): List<Piece> {
+        val info = torrentInfo
+        val numPieces = info.numPieces()
+        val pieces =
+            Piece.buildPieces(numPieces) { info.pieceSize(it).toUInt().toLong() }
+        return pieces
+    }
+
     override val files: List<TorrentFile> by lazy {
-        val files: FileStorage = torrentFile().files()
+        val files: FileStorage = torrentInfo.files()
         List(files.numPieces()) { Torrent4jFile(handle, files, it) }
     }
 
-    private fun torrentFile(): org.libtorrent4j.TorrentInfo {
-        val torrentInfo: org.libtorrent4j.TorrentInfo? = handle.torrentFile()
-        check(torrentInfo != null) {
-            "${handle.name}: Actual torrent info is null"
+    private val torrentInfo: org.libtorrent4j.TorrentInfo
+        get() {
+            val torrentInfo: org.libtorrent4j.TorrentInfo? = handle.torrentFile()
+            check(torrentInfo != null) {
+                "${handle.name}: Actual torrent info is null"
+            }
+            return torrentInfo
         }
-        return torrentInfo
-    }
 }
 
 private class Torrent4jFile(

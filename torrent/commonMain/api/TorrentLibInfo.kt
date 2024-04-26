@@ -1,4 +1,4 @@
-package me.him188.ani.app.torrent
+package me.him188.ani.app.torrent.api
 
 class TorrentLibInfo(
     val vendor: String,//  "libtorrent"

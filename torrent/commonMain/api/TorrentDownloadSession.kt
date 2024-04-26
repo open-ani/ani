@@ -1,16 +1,16 @@
-package me.him188.ani.app.torrent
+package me.him188.ani.app.torrent.api
 
 import kotlinx.coroutines.flow.StateFlow
 import java.io.File
 
-
 /**
  * 表示一整个 BT 资源的下载任务.
  *
- * @See TorrentDownloader
+ * @See DefaultTorrentDownloadSession
  */
 interface TorrentDownloadSession : AutoCloseable {
-    val state: StateFlow<TorrentDownloadState>
+
+    val state: StateFlow<TorrentDownloadState> // not used, not tested
 
     val overallStats: DownloadStats
 

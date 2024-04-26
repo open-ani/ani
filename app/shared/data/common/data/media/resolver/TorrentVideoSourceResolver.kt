@@ -3,9 +3,9 @@ package me.him188.ani.app.data.media.resolver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.tools.torrent.TorrentManager
-import me.him188.ani.app.torrent.TorrentFileEntry
+import me.him188.ani.app.torrent.api.EncodedTorrentInfo
 import me.him188.ani.app.torrent.api.FilePriority
-import me.him188.ani.app.torrent.model.EncodedTorrentData
+import me.him188.ani.app.torrent.api.TorrentFileEntry
 import me.him188.ani.app.videoplayer.data.OpenFailures
 import me.him188.ani.app.videoplayer.data.VideoSource
 import me.him188.ani.app.videoplayer.data.VideoSourceOpenException
@@ -55,20 +55,20 @@ class TorrentVideoSourceResolver(
         ): TorrentFileEntry? {
             // Filter by file extension
             val videos = entries.filter {
-                videoExtensions.any { fileType -> it.filePath.endsWith(fileType, ignoreCase = true) }
+                videoExtensions.any { fileType -> it.pathInTorrent.endsWith(fileType, ignoreCase = true) }
             }
 
             // Find by name match
             for (episodeTitle in episodeTitles) {
                 val entry = videos.singleOrNull {
-                    it.filePath.contains(episodeTitle, ignoreCase = true)
+                    it.pathInTorrent.contains(episodeTitle, ignoreCase = true)
                 }
                 if (entry != null) return entry
             }
 
             // 解析标题匹配集数
             val parsedTitles = videos.associateWith {
-                RawTitleParser.getDefault().parse(it.filePath.substringBeforeLast("."), null).episodeRange
+                RawTitleParser.getDefault().parse(it.pathInTorrent.substringBeforeLast("."), null).episodeRange
             }
             if (parsedTitles.isNotEmpty()) {
                 parsedTitles.entries.firstOrNull {
@@ -78,7 +78,7 @@ class TorrentVideoSourceResolver(
 
             // 解析失败, 尽可能匹配一个
             episodeSort.toString().let { number ->
-                videos.firstOrNull { it.filePath.contains(number, ignoreCase = true) }
+                videos.firstOrNull { it.pathInTorrent.contains(number, ignoreCase = true) }
                     ?.let { return it }
             }
 
@@ -88,20 +88,20 @@ class TorrentVideoSourceResolver(
 }
 
 private class TorrentVideoSource(
-    private val encodedTorrentData: EncodedTorrentData,
+    private val encodedTorrentInfo: EncodedTorrentInfo,
     private val episodeMetadata: EpisodeMetadata,
 ) : VideoSource<TorrentVideoData>, KoinComponent {
     private val manager: TorrentManager by inject()
 
     @OptIn(ExperimentalStdlibApi::class)
     override val uri: String by lazy {
-        "torrent://${encodedTorrentData.data.toHexString()}"
+        "torrent://${encodedTorrentInfo.data.toHexString()}"
     }
 
     override suspend fun open(): TorrentVideoData {
         return TorrentVideoData(
             withContext(Dispatchers.IO) {
-                val files = manager.downloader.await().startDownload(encodedTorrentData)
+                val files = manager.downloader.await().startDownload(encodedTorrentInfo)
                     .getFiles()
 
                 logger.info {
@@ -114,7 +114,7 @@ private class TorrentVideoSource(
                     episodeMetadata.sort,
                 )?.also {
                     logger.info {
-                        "TorrentVideoSource selected file: ${it.filePath}"
+                        "TorrentVideoSource selected file: ${it.pathInTorrent}"
                     }
                 }?.createHandle()?.also {
                     it.resume(FilePriority.HIGH)

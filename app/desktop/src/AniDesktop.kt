@@ -66,8 +66,8 @@ import me.him188.ani.app.tools.torrent.DefaultTorrentManager
 import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.app.tools.torrent.computeTorrentFingerprint
 import me.him188.ani.app.tools.torrent.computeTorrentUserAgent
-import me.him188.ani.app.torrent.TorrentDownloader
-import me.him188.ani.app.torrent.TorrentDownloaderConfig
+import me.him188.ani.app.torrent.api.TorrentDownloaderConfig
+import me.him188.ani.app.torrent.torrent4j.Libtorrent4jTorrentDownloader
 import me.him188.ani.app.ui.foundation.AniApp
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.main.AniAppContent
@@ -123,7 +123,7 @@ object AniDesktop {
                     DefaultTorrentManager(
                         coroutineScope.coroutineContext,
                         downloaderFactory = {
-                            TorrentDownloader(
+                            Libtorrent4jTorrentDownloader(
                                 cacheDirectory = File(projectDirectories.cacheDir).resolve("torrent"),
                                 downloadFile = { url ->
                                     client.get(url).apply {

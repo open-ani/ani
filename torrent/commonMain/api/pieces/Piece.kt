@@ -1,15 +1,24 @@
-package me.him188.ani.app.torrent.model
+package me.him188.ani.app.torrent.api.pieces
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.takeWhile
-import me.him188.ani.app.torrent.PieceState
+import me.him188.ani.app.torrent.api.PieceState
 
 class Piece(
+    /**
+     * 是种子信息中的第几个
+     */
     val pieceIndex: Int,
+    /**
+     * 该 piece 的数据长度 bytes
+     */
     val size: Long,
+    /**
+     * 在种子所能下载的所有文件数据中的 offset bytes
+     */
     val offset: Long,
 ) {
     val state: MutableStateFlow<PieceState> = MutableStateFlow(PieceState.READY)

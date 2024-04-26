@@ -16,12 +16,12 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.media.resolver.TorrentVideoSourceResolver
-import me.him188.ani.app.torrent.TorrentDownloadSession
-import me.him188.ani.app.torrent.TorrentDownloader
-import me.him188.ani.app.torrent.TorrentFileEntry
-import me.him188.ani.app.torrent.TorrentFileHandle
+import me.him188.ani.app.torrent.api.EncodedTorrentInfo
 import me.him188.ani.app.torrent.api.FilePriority
-import me.him188.ani.app.torrent.model.EncodedTorrentData
+import me.him188.ani.app.torrent.api.TorrentDownloadSession
+import me.him188.ani.app.torrent.api.TorrentDownloader
+import me.him188.ani.app.torrent.api.TorrentFileEntry
+import me.him188.ani.app.torrent.api.TorrentFileHandle
 import me.him188.ani.datasources.api.CachedMedia
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaCacheMetadata
@@ -203,12 +203,12 @@ class TorrentMediaCacheEngine(
         return TorrentMediaCache(
             origin = origin,
             metadata = metadata,
-            lazyFileHandle = getLazyFileHandle(EncodedTorrentData(data), metadata, parentContext)
+            lazyFileHandle = getLazyFileHandle(EncodedTorrentInfo(data), metadata, parentContext)
         )
     }
 
     private fun getLazyFileHandle(
-        encoded: EncodedTorrentData,
+        encoded: EncodedTorrentInfo,
         metadata: MediaCacheMetadata,
         parentContext: CoroutineContext
     ): LazyFileHandle {

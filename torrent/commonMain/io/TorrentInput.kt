@@ -1,10 +1,10 @@
 package me.him188.ani.app.torrent.file
 
-import me.him188.ani.app.torrent.PieceState
-import me.him188.ani.app.torrent.model.Piece
-import me.him188.ani.app.torrent.model.awaitFinished
-import me.him188.ani.app.torrent.model.lastIndex
-import me.him188.ani.app.torrent.model.startIndex
+import me.him188.ani.app.torrent.api.PieceState
+import me.him188.ani.app.torrent.api.pieces.Piece
+import me.him188.ani.app.torrent.api.pieces.awaitFinished
+import me.him188.ani.app.torrent.api.pieces.lastIndex
+import me.him188.ani.app.torrent.api.pieces.startIndex
 import me.him188.ani.utils.io.SeekableInput
 
 
@@ -22,7 +22,7 @@ internal class TorrentInput(
      */
     private val file: SeekableInput,
     /**
-     * The corresponding pieces of the [file].
+     * The corresponding pieces of the [io].
      */
     private val pieces: List<Piece>,
     private val onSeek: suspend (Piece) -> Unit = { }

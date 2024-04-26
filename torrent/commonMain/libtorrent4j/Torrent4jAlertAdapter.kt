@@ -8,7 +8,7 @@ import me.him188.ani.app.torrent.api.TorrentAddEvent
 import me.him188.ani.app.torrent.api.TorrentEvent
 import me.him188.ani.app.torrent.api.TorrentFinishedEvent
 import me.him188.ani.app.torrent.api.TorrentResumeEvent
-import me.him188.ani.app.torrent.asAniTorrentHandle
+import me.him188.ani.app.torrent.api.asAniTorrentHandle
 import org.libtorrent4j.alerts.AddTorrentAlert
 import org.libtorrent4j.alerts.PieceFinishedAlert
 import org.libtorrent4j.alerts.TorrentAlert

@@ -1,6 +1,6 @@
 package me.him188.ani.app.videoplayer.data
 
-import me.him188.ani.app.torrent.TorrentDownloadSession
+import me.him188.ani.app.torrent.api.TorrentDownloadSession
 import me.him188.ani.utils.io.SeekableInput
 
 /**
