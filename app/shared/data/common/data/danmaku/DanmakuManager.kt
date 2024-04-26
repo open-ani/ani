@@ -32,6 +32,7 @@ import me.him188.ani.danmaku.protocol.DanmakuInfo
 import me.him188.ani.utils.coroutines.mapAutoClose
 import me.him188.ani.utils.coroutines.mapAutoCloseCollection
 import me.him188.ani.utils.logging.error
+import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -106,6 +107,7 @@ class DanmakuManagerImpl(
     override suspend fun fetch(
         request: DanmakuSearchRequest,
     ): CombinedDanmakuSession {
+        logger.info { "Search for danmaku with filename='${request.filename}'" }
         return CombinedDanmakuSession(
             providers.first().map { provider ->
                 flow {

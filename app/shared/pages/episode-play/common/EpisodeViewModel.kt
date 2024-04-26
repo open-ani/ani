@@ -311,7 +311,6 @@ private class EpisodeViewModelImpl(
     ) { media, data ->
         val filename = data?.filename
             ?: media.originalTitle
-        logger.info { "Search for danmaku with filename='$filename'" }
 
         val subject: SubjectPresentation
         val episode: EpisodePresentation
