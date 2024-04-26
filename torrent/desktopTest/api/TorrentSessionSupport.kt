@@ -29,11 +29,12 @@ internal abstract class TorrentSessionSupport {
     inline fun DefaultTorrentDownloadSession.setHandle(
         name: String = "test",
         builderAction: TestAniTorrentHandle.() -> Unit = {},
-    ) {
+    ): TestAniTorrentHandle {
         val handle = TestAniTorrentHandle(name)
         listener.onEvent(
             TorrentAddEvent(handle.apply(builderAction))
         )
+        return handle
     }
 
     inline fun DefaultTorrentDownloadSession.setHandle(

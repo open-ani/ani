@@ -4,7 +4,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 
 /**
- * @see Libtorrent4jTorrentDownloader
+ * @see TorrentDownloader
  */
 interface DownloadStats {
     /**
@@ -17,7 +17,7 @@ interface DownloadStats {
     /**
      * Bytes per second. `null` if not available, i.e. just started
      */
-    val downloadRate: Flow<Long?>
+    val downloadRate: Flow<Long?> // relies on events
     val uploadRate: Flow<Long?>
 
     /**
@@ -27,8 +27,6 @@ interface DownloadStats {
 
     /**
      * 该文件是否已经全部下载完成.
-     *
-     * 注意, 对于总统计, 该属性永远为 false.
      */
     val isFinished: Flow<Boolean>
 

@@ -94,7 +94,7 @@ class MagnetTimeoutException(
 ) : Exception()
 
 /**
- * A factory for creating [Libtorrent4jTorrentDownloader] instances without any argument.
+ * A factory for creating [TorrentDownloader] instances without any argument.
  */
 fun interface TorrentDownloaderFactory {
     suspend fun create(): TorrentDownloader

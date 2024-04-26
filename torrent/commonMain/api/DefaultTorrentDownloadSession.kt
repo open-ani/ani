@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
@@ -98,7 +99,11 @@ internal open class DefaultTorrentDownloadSession(
             }
         }.distinctUntilChanged()
         override val peerCount: MutableStateFlow<Int> = MutableStateFlow(0)
-        override val isFinished: MutableStateFlow<Boolean> = MutableStateFlow(false)
+        override val isFinished: Flow<Boolean> = flow {
+            emitAll(combine(getFiles().map { it.stats.isFinished }) { list ->
+                list.all { it }
+            })
+        }
         private val onFinish = CompletableDeferred(Unit)
 
         override suspend fun awaitFinished() = onFinish.await()
