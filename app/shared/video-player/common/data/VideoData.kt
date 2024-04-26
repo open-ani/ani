@@ -4,6 +4,7 @@ import androidx.compose.runtime.Stable
 import kotlinx.coroutines.flow.Flow
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.utils.io.SeekableInput
+import java.io.IOException
 
 /**
  * Holds information about a video file.
@@ -11,16 +12,11 @@ import me.him188.ani.utils.io.SeekableInput
 @Stable
 interface VideoData : AutoCloseable {
     val filename: String
-    
+
     /**
      * Returns the length of the video file in bytes.
      */
     val fileLength: Long
-
-    /**
-     * Optional hash of the video file. `null` if not available.
-     */
-    val hash: String?
 
     /**
      * The download speed in bytes per second.
@@ -37,6 +33,12 @@ interface VideoData : AutoCloseable {
      * the flow emits [FileSize.Unspecified].
      */
     val uploadRate: Flow<FileSize>
+
+    /**
+     * Optional hash of the video file. `null` if not available.
+     */
+    @Throws(IOException::class)
+    fun computeHash(): String?
 
     /**
      * Opens a new input stream to the video file.

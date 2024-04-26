@@ -48,12 +48,12 @@ interface TorrentFileEntry { // 实现提示, 无 test mock
     /**
      * Awaits until the hash is available
      */
-    suspend fun getFileHash(): String
+    suspend fun computeFileHash(): String
 
     /**
      * Returns the hash if available, otherwise `null`
      */
-    fun getFileHashOrNull(): String?
+    fun computeFileHashOrNull(): String?
 
     /**
      * 绝对路径. 挂起直到文件路径可用 (即有任意一个 piece 下载完成时)

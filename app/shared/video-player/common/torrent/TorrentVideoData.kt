@@ -14,7 +14,7 @@ class TorrentVideoData(
     override val filename: String get() = entry.pathInTorrent
     override val fileLength: Long get() = entry.length
 
-    override val hash: String? get() = entry.getFileHashOrNull()
+    override fun computeHash(): String? = entry.computeFileHashOrNull()
 
     override val downloadSpeed get() = entry.stats.downloadRate.map { it?.bytes ?: FileSize.Unspecified }
     override val uploadRate get() = entry.stats.uploadRate.map { it?.bytes ?: FileSize.Unspecified }

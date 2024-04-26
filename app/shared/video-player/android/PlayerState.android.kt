@@ -1,5 +1,6 @@
 package me.him188.ani.app.videoplayer
 
+import androidx.annotation.MainThread
 import androidx.annotation.OptIn
 import androidx.annotation.UiThread
 import androidx.media3.common.MediaItem
@@ -27,6 +28,7 @@ import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.platform.Context
+import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.videoplayer.data.VideoData
 import me.him188.ani.app.videoplayer.data.VideoProperties
 import me.him188.ani.app.videoplayer.data.VideoSource
@@ -134,6 +136,8 @@ internal class ExoPlayerState @UiThread constructor(
         )
     }
 
+    private val updateVideoPropertiesTasker = MonoTasker(backgroundScope)
+
     val player = kotlin.run {
         ExoPlayer.Builder(context).apply {}.build().apply {
             playWhenReady = true
@@ -147,22 +151,31 @@ internal class ExoPlayerState @UiThread constructor(
                     updateVideoProperties()
                 }
 
+                @MainThread
                 private fun updateVideoProperties(): Boolean {
                     val video = videoFormat ?: return false
                     val audio = audioFormat ?: return false
                     val data = openResource.value?.data ?: return false
-                    videoProperties.value = VideoProperties(
-                        title = mediaMetadata.title?.toString(),
-                        heightPx = video.height,
-                        widthPx = video.width,
-                        videoBitrate = video.bitrate,
-                        audioBitrate = audio.bitrate,
-                        frameRate = video.frameRate,
-                        durationMillis = duration,
-                        fileLengthBytes = data.fileLength,
-                        fileHash = data.hash,
-                        filename = data.filename,
-                    )
+                    val title = mediaMetadata.title
+                    val duration = duration
+
+                    // 注意, 要把所有 UI 属性全都读出来然后 captured 到 background -- ExoPlayer 所有属性都需要在主线程
+
+                    updateVideoPropertiesTasker.launch {
+                        // This is in background
+                        videoProperties.value = VideoProperties(
+                            title = title?.toString(),
+                            heightPx = video.height,
+                            widthPx = video.width,
+                            videoBitrate = video.bitrate,
+                            audioBitrate = audio.bitrate,
+                            frameRate = video.frameRate,
+                            durationMillis = duration,
+                            fileLengthBytes = data.fileLength,
+                            fileHash = data.computeHash(),
+                            filename = data.filename,
+                        )
+                    }
                     return true
                 }
 

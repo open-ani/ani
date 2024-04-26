@@ -8,7 +8,7 @@ internal object TorrentFileIO {
     @kotlin.jvm.Throws(IOException::class)
     fun hashFileMd5(input: File): String {
         val md = java.security.MessageDigest.getInstance("MD5")
-        val buffer = ByteArray(8192)
+        val buffer = ByteArray(81920)
         input.inputStream().use { inputStream ->
             while (true) {
                 val read = inputStream.read(buffer)

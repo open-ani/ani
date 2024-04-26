@@ -336,9 +336,9 @@ internal open class DefaultTorrentDownloadSession(
             }
         }
 
-        override suspend fun getFileHash(): String = hashMd5.await()
+        override suspend fun computeFileHash(): String = hashMd5.await()
 
-        override fun getFileHashOrNull(): String? = if (hashMd5.isCompleted) {
+        override fun computeFileHashOrNull(): String? = if (hashMd5.isCompleted) {
             hashMd5.getCompleted()
         } else null
 

@@ -9,6 +9,7 @@ import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.utils.io.SeekableInput
 import me.him188.ani.utils.io.asSeekableInput
 import java.io.File
+import java.io.IOException
 
 class FileVideoData(
     private val file: File,
@@ -16,7 +17,19 @@ class FileVideoData(
     override val filename: String
         get() = file.name
     override val fileLength: Long by lazy { file.length() }
-    override val hash: String by lazy { md5Hash(file) }
+
+    private var hashCache: String? = null
+
+    @Throws(IOException::class)
+    override fun computeHash(): String {
+        var hash = hashCache
+        if (hash == null) {
+            hash = md5Hash(file)
+            hashCache = hash
+        }
+        return hash
+    }
+
     override val downloadSpeed: StateFlow<FileSize> = MutableStateFlow(FileSize.Unspecified)
     override val uploadRate: Flow<FileSize> = MutableStateFlow(FileSize.Unspecified)
 
@@ -45,7 +58,7 @@ class FileVideoSource(
 private fun md5Hash(file: File): String {
     return file.inputStream().use {
         val digest = java.security.MessageDigest.getInstance("MD5")
-        val buffer = ByteArray(8192)
+        val buffer = ByteArray(81920)
         var read = it.read(buffer)
         while (read > 0) {
             digest.update(buffer, 0, read)
