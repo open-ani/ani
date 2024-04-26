@@ -38,7 +38,7 @@ interface TorrentFileEntry { // 实现提示, 无 test mock
      *
      * @throws IllegalStateException 当未匹配到正确大小的 pieces 时抛出
      */
-    suspend fun getPieces(): List<Piece>
+    val pieces: List<Piece>
 
     /**
      * 创建一个句柄, 以用于下载文件.

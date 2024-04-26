@@ -15,9 +15,9 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.torrent.api.TorrentFilePieceMatcher.matchPiecesForFile
@@ -127,6 +127,11 @@ internal open class DefaultTorrentDownloadSession(
         @Synchronized
         fun onPieceDownloaded(index: Int) {
             pieces[index].state.value = PieceState.FINISHED
+            for (openHandle in openHandles) {
+                if (openHandle.entry.pieces.any { it.pieceIndex == index }) {
+                    openHandle.entry.updatedDownloadedBytes.value += pieces[index].size
+                }
+            }
             logger.debug { "[TorrentDownloadControl] Piece downloaded: $index. " } // Was downloading ${controller.getDebugInfo().downloadingPieces}
             controller.onPieceDownloaded(index)
         }
@@ -142,6 +147,10 @@ internal open class DefaultTorrentDownloadSession(
                 it.state.value = PieceState.FINISHED
             }
         }
+
+        @Synchronized // 必须在这个锁里计算, 因为 [onPieceDownloaded] 会 +updatedDownloadedBytes
+        fun calculateTotalFinishedSize(pieces: List<Piece>): Long =
+            pieces.sumOf { if (it.state.value == PieceState.FINISHED) it.size else 0 }
     }
 
     private val entries = SuspendLazy {
@@ -168,6 +177,7 @@ internal open class DefaultTorrentDownloadSession(
 
     internal val openHandles = ConcurrentLinkedQueue<TorrentFileEntryImpl.TorrentFileHandleImpl>()
 
+    // 构造时, actualInfo must be available
     internal inner class TorrentFileEntryImpl(
         val index: Int,
         val offset: Long,
@@ -211,7 +221,7 @@ internal open class DefaultTorrentDownloadSession(
             override suspend fun resume(priority: FilePriority) {
                 checkClosed()
 
-                val pieces = pieces.get()
+                val pieces = pieces
                 torrentThreadTasks.withHandle { handle ->
                     if (pieces.isNotEmpty()) {
                         val firstIndex = pieces.first().pieceIndex
@@ -239,8 +249,8 @@ internal open class DefaultTorrentDownloadSession(
         /**
          * 与这个文件有关的 pieces, sorted naturally by offset
          */
-        private val pieces: SuspendLazy<List<Piece>> = SuspendLazy {
-            val allPieces = this@DefaultTorrentDownloadSession.actualInfo.await().pieces
+        override val pieces: List<Piece> by lazy {
+            val allPieces = actualInfo().pieces
             matchPiecesForFile(allPieces, offset, length).also { pieces ->
                 logger.info {
                     val start = pieces.minByOrNull { it.startIndex }
@@ -250,19 +260,16 @@ internal open class DefaultTorrentDownloadSession(
             }
         }
 
-
         val finishedOverride = MutableStateFlow(false)
 
+        val updatedDownloadedBytes = MutableStateFlow(0L)
         override val stats: DownloadStats = object : DownloadStats {
             override val totalBytes: Flow<Long> = flowOf(length)
-            override val downloadedBytes: Flow<Long> = flow {
-                emit(pieces.get())
-            }.flatMapLatest { list ->
-                combine(list.map { it.downloadedBytes }) {
-                    it.sum()
-                }
+            val initialDownloadedBytes = flow {
+                emit(actualInfo.await().calculateTotalFinishedSize(pieces))
             }
-            override val downloadRate: Flow<Long?> get() = overallStats.downloadRate
+            override val downloadedBytes = merge(initialDownloadedBytes, updatedDownloadedBytes)
+            override val downloadRate: Flow<Long?> get() = overallStats.downloadRate // TODO: separate download/upload rate for torrent file 
             override val uploadRate: Flow<Long?> get() = overallStats.uploadRate
             override val progress: Flow<Float> =
                 combine(finishedOverride, downloadedBytes) { finished, downloadBytes ->
@@ -272,17 +279,10 @@ internal open class DefaultTorrentDownloadSession(
                         else -> (downloadBytes.toFloat() / length.toFloat()).coerceAtMost(1f)
                     }
                 }
-            override val isFinished: Flow<Boolean> = flow {
-                emit(pieces.get())
-            }.flatMapLatest { list ->
-                if (list.all { it.state.value == PieceState.FINISHED }) {
-                    flowOf(true)
-                } else {
-                    combine(list.map { it.state }) { // TODO: 这会创建数万个协程, 会有性能问题 
-                        it.all { state -> state == PieceState.FINISHED }
-                    }
-                }
+            override val isFinished: Flow<Boolean> = combine(downloadedBytes, totalBytes) { downloaded, total ->
+                downloaded == total
             }
+
             override val peerCount: Flow<Int> get() = overallStats.peerCount
 
             override suspend fun awaitFinished() {
@@ -317,8 +317,6 @@ internal open class DefaultTorrentDownloadSession(
                 handle.resume()
             }
         }
-
-        override suspend fun getPieces(): List<Piece> = pieces.get()
 
         override suspend fun createHandle(): TorrentFileHandle = TorrentFileHandleImpl().also {
             priorityRequests[it] = null
@@ -364,7 +362,7 @@ internal open class DefaultTorrentDownloadSession(
             logger.info { "createInput: finding cache file" }
             val file = resolveDownloadingFile().asSeekableInput()
             logger.info { "createInput: got cache file, awaiting pieces" }
-            val pieces = pieces.get()
+            val pieces = pieces
             logger.info { "createInput: ${pieces.size} pieces" }
             return TorrentInput(
                 file,

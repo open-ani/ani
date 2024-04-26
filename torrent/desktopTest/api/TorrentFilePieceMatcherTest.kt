@@ -24,7 +24,7 @@ internal class TorrentFilePieceMatcherTest : TorrentSessionSupport() {
             }
             // 到目前为止都没有计算 piece range
             assertFails {
-                getFiles().first().getPieces()
+                getFiles().first().pieces
             }
         }
     }
@@ -42,7 +42,7 @@ internal class TorrentFilePieceMatcherTest : TorrentSessionSupport() {
             getFiles().run {
                 assertEquals(1, size)
                 assertEquals("1.mp4", first().pathInTorrent)
-                assertEquals(0L..<2000, first().getPieces().single().indexes)
+                assertEquals(0L..<2000, first().pieces.single().indexes)
             }
         }
     }
@@ -57,7 +57,7 @@ internal class TorrentFilePieceMatcherTest : TorrentSessionSupport() {
             getFiles().run {
                 assertEquals(1, size)
                 assertEquals("1.mp4", first().pathInTorrent)
-                assertEquals(0, first().getPieces().size)
+                assertEquals(0, first().pieces.size)
             }
         }
     }
@@ -77,11 +77,11 @@ internal class TorrentFilePieceMatcherTest : TorrentSessionSupport() {
             getFiles().run {
                 get(0).run {
                     assertEquals("1.mp4", pathInTorrent)
-                    assertEquals(0L..<2000, getPieces().single().indexes)
+                    assertEquals(0L..<2000, pieces.single().indexes)
                 }
                 get(1).run {
                     assertEquals("2.mp4", pathInTorrent)
-                    assertEquals(2000L..<5000, getPieces().single().indexes)
+                    assertEquals(2000L..<5000, pieces.single().indexes)
                 }
             }
         }
@@ -103,11 +103,11 @@ internal class TorrentFilePieceMatcherTest : TorrentSessionSupport() {
             getFiles().run {
                 get(0).run {
                     assertEquals("1.mp4", pathInTorrent)
-                    assertEquals(0L..<2000, getPieces().single().indexes)
+                    assertEquals(0L..<2000, pieces.single().indexes)
                 }
                 get(1).run {
                     assertEquals("2.mp4", pathInTorrent)
-                    assertEquals(2000L..<5000, getPieces().single().indexes)
+                    assertEquals(2000L..<5000, pieces.single().indexes)
                 }
             }
         }
@@ -128,8 +128,8 @@ internal class TorrentFilePieceMatcherTest : TorrentSessionSupport() {
             getFiles().run {
                 get(0).run {
                     assertEquals("1.mp4", pathInTorrent)
-                    assertEquals(0L..<2000, getPieces()[0].indexes)
-                    assertEquals(2000L..<5000, getPieces()[1].indexes)
+                    assertEquals(0L..<2000, pieces[0].indexes)
+                    assertEquals(2000L..<5000, pieces[1].indexes)
                 }
             }
         }
@@ -151,12 +151,12 @@ internal class TorrentFilePieceMatcherTest : TorrentSessionSupport() {
 
             getFiles().run {
                 get(0).run {
-                    assertEquals(0L..<1000, getPieces()[0].indexes)
-                    assertEquals(1000L..<2000, getPieces()[1].indexes)
+                    assertEquals(0L..<1000, pieces[0].indexes)
+                    assertEquals(1000L..<2000, pieces[1].indexes)
                 }
                 get(1).run {
-                    assertEquals(2000L..<4000, getPieces()[0].indexes)
-                    assertEquals(4000L..<5000, getPieces()[1].indexes)
+                    assertEquals(2000L..<4000, pieces[0].indexes)
+                    assertEquals(4000L..<5000, pieces[1].indexes)
                 }
             }
         }
@@ -179,13 +179,13 @@ internal class TorrentFilePieceMatcherTest : TorrentSessionSupport() {
 
             getFiles().run {
                 get(0).run {
-                    assertEquals(0L..<1000, getPieces()[0].indexes)
-                    assertEquals(1000L..<2500, getPieces()[1].indexes)
+                    assertEquals(0L..<1000, pieces[0].indexes)
+                    assertEquals(1000L..<2500, pieces[1].indexes)
                 }
                 get(1).run {
-                    assertEquals(1000L..<2500L, getPieces()[0].indexes)
-                    assertEquals(2500L..<4000L, getPieces()[1].indexes)
-                    assertEquals(4000L..<5000L, getPieces()[2].indexes)
+                    assertEquals(1000L..<2500L, pieces[0].indexes)
+                    assertEquals(2500L..<4000L, pieces[1].indexes)
+                    assertEquals(4000L..<5000L, pieces[2].indexes)
                 }
             }
         }
@@ -205,7 +205,7 @@ internal class TorrentFilePieceMatcherTest : TorrentSessionSupport() {
             getFiles().run {
                 get(0).run {
                     assertEquals("1.mp4", pathInTorrent)
-                    assertFails { getPieces() }
+                    assertFails { pieces }
                 }
             }
         }
@@ -226,7 +226,7 @@ internal class TorrentFilePieceMatcherTest : TorrentSessionSupport() {
 
             getFiles().run {
                 get(1).run {
-                    assertFails { getPieces() }
+                    assertFails { pieces }
                 }
             }
         }
