@@ -3,7 +3,7 @@ package me.him188.ani.app.data.media
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.job
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.media.resolver.TorrentVideoSourceResolver
 import me.him188.ani.app.torrent.api.EncodedTorrentInfo
@@ -163,13 +164,13 @@ class TorrentMediaCacheEngine(
             val handle = lazyFileHandle.handle.first() ?: return // did not even selected a file
             val file = handle.entry.resolveFile()
             handle.close()
+            lazyFileHandle.scope.coroutineContext.job.cancelAndJoin()
             if (file.exists()) {
                 logger.info { "Deleting torrent cache: $file" }
                 file.deleteIfExists()
             } else {
                 logger.info { "Torrent cache does not exist, ignoring: $file" }
             }
-            lazyFileHandle.scope.cancel()
         }
     }
 
