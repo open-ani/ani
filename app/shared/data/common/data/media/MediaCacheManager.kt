@@ -1,10 +1,12 @@
 package me.him188.ani.app.data.media
 
 import androidx.compose.runtime.Stable
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.transform
@@ -92,7 +94,7 @@ abstract class MediaCacheManager {
                     emit(EpisodeCacheStatus.NotCached)
                 }
             }
-        }
+        }.flowOn(Dispatchers.Default)
     }
 
     companion object {
