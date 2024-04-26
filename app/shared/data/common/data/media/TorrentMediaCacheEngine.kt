@@ -230,7 +230,7 @@ class TorrentMediaCacheEngine(
             }
             emit(LazyFileHandle.State(session, selectedFile, handle))
         }
-        return LazyFileHandle(scope, state.shareIn(scope, SharingStarted.WhileSubscribed(), replay = 1))
+        return LazyFileHandle(scope, state.shareIn(scope, SharingStarted.Lazily, replay = 1))
     }
 
     @OptIn(ExperimentalStdlibApi::class)
