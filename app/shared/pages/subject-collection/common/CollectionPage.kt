@@ -192,19 +192,22 @@ private fun TabContent(
         cache,
         item = { subjectCollection ->
             var showEpisodeProgressDialog by rememberSaveable { mutableStateOf(false) }
+
+            val progress by remember(vm, subjectCollection) {
+                vm.subjectProgress(subjectCollection)
+            }.collectAsStateWithLifecycle(emptyList()) // #155: 在 dialog 弹出之前就开始加载, 否则点击 "选集" 会需要等待 1 秒左右
+
             if (showEpisodeProgressDialog) {
                 val navigator = LocalNavigator.current
+
                 EpisodeProgressDialog(
                     onDismissRequest = { showEpisodeProgressDialog = false },
                     onClickDetails = { navigator.navigateSubjectDetails(subjectCollection.subjectId) },
                     title = { Text(text = subjectCollection.displayName) },
                     onClickCache = { navigator.navigateSubjectCaches(subjectCollection.subjectId) },
                 ) {
-                    val progress by remember(vm, subjectCollection) {
-                        vm.subjectProgress(subjectCollection)
-                    }.collectAsStateWithLifecycle(emptyList())
                     EpisodeProgressRow(
-                        episodes = progress,
+                        episodes = { progress },
                         onClickEpisodeState = {
                             navigator.navigateEpisodeDetails(subjectCollection.subjectId, it.episodeId)
                         },

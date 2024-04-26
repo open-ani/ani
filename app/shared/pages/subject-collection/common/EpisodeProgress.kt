@@ -120,7 +120,7 @@ class EpisodeProgressItem(
 
 @Composable
 fun EpisodeProgressRow(
-    episodes: List<EpisodeProgressItem>,
+    episodes: () -> List<EpisodeProgressItem>,
     onClickEpisodeState: (episode: EpisodeProgressItem) -> Unit,
     onLongClickEpisode: (episode: EpisodeProgressItem) -> Unit,
     modifier: Modifier = Modifier,
@@ -130,9 +130,9 @@ fun EpisodeProgressRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        for (it in episodes) {
+        for (it in episodes()) {
             SmallEpisodeButton(
-                episodeSort = it.episodeSort,
+                episodeSort = { it.episodeSort },
                 watchStatus = it.watchStatus,
                 isOnAir = it.isOnAir,
                 onClick = { onClickEpisodeState(it) },
@@ -162,7 +162,7 @@ fun EpisodeProgressRow(
 
 @Composable
 private fun SmallEpisodeButton(
-    episodeSort: String,
+    episodeSort: () -> String,
     watchStatus: UnifiedCollectionType,
     isOnAir: Boolean?, // null means unknown
     onClick: () -> Unit,
@@ -209,7 +209,7 @@ private fun SmallEpisodeButton(
                 contentColor = MaterialTheme.colorScheme.onPrimary,
             ),
         ) {
-            Text(episodeSort, style = MaterialTheme.typography.bodyMedium)
+            Text(episodeSort(), style = MaterialTheme.typography.bodyMedium)
         }
     }
 }

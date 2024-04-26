@@ -20,73 +20,76 @@ private fun PreviewEpisodeProgressDialog() {
             title = { Text(text = "葬送的芙莉莲") },
             onClickCache = {},
         ) {
+            val episodes = remember {
+                listOf(
+                    EpisodeProgressItem(
+                        episodeId = 0,
+                        episodeSort = "00",
+                        watchStatus = UnifiedCollectionType.DONE,
+                        isOnAir = false,
+                        cacheStatus = EpisodeCacheStatus.Caching(0.3f, 300.megaBytes),
+                    ),
+                    EpisodeProgressItem(
+                        episodeId = 1,
+                        episodeSort = "01",
+                        watchStatus = UnifiedCollectionType.DONE,
+                        isOnAir = false,
+                        cacheStatus = EpisodeCacheStatus.NotCached,
+                    ),
+                    EpisodeProgressItem(
+                        episodeId = 2,
+                        episodeSort = "02",
+                        watchStatus = UnifiedCollectionType.DONE,
+                        isOnAir = false,
+                        cacheStatus = EpisodeCacheStatus.Cached(300.megaBytes),
+                    ),
+                    EpisodeProgressItem(
+                        episodeId = 3,
+                        episodeSort = "03",
+                        watchStatus = UnifiedCollectionType.WISH,
+                        isOnAir = false,
+                        cacheStatus = EpisodeCacheStatus.Cached(300.megaBytes),
+                    ),
+                    EpisodeProgressItem(
+                        episodeId = 4,
+                        episodeSort = "04",
+                        watchStatus = UnifiedCollectionType.WISH,
+                        isOnAir = false,
+                        cacheStatus = EpisodeCacheStatus.Caching(0.7f, 300.megaBytes),
+                    ),
+                    EpisodeProgressItem(
+                        episodeId = 5,
+                        episodeSort = "05",
+                        watchStatus = UnifiedCollectionType.WISH,
+                        isOnAir = false,
+                        cacheStatus = EpisodeCacheStatus.NotCached,
+                    ),
+                    EpisodeProgressItem(
+                        episodeId = 6,
+                        episodeSort = "06",
+                        watchStatus = UnifiedCollectionType.WISH,
+                        isOnAir = true,
+                        cacheStatus = EpisodeCacheStatus.NotCached,
+                    ),
+                    EpisodeProgressItem(
+                        episodeId = 7,
+                        episodeSort = "07",
+                        watchStatus = UnifiedCollectionType.WISH,
+                        isOnAir = true,
+                        cacheStatus = EpisodeCacheStatus.Cached(300.megaBytes),
+                    ),
+                    EpisodeProgressItem(
+                        episodeId = 8,
+                        episodeSort = "08",
+                        watchStatus = UnifiedCollectionType.WISH,
+                        isOnAir = true,
+                        cacheStatus = EpisodeCacheStatus.Caching(0.3f, 300.megaBytes),
+                    ),
+                )
+            }
             EpisodeProgressRow(
-                episodes = remember {
-                    listOf(
-                        EpisodeProgressItem(
-                            episodeId = 0,
-                            episodeSort = "00",
-                            watchStatus = UnifiedCollectionType.DONE,
-                            isOnAir = false,
-                            cacheStatus = EpisodeCacheStatus.Caching(0.3f, 300.megaBytes),
-                        ),
-                        EpisodeProgressItem(
-                            episodeId = 1,
-                            episodeSort = "01",
-                            watchStatus = UnifiedCollectionType.DONE,
-                            isOnAir = false,
-                            cacheStatus = EpisodeCacheStatus.NotCached,
-                        ),
-                        EpisodeProgressItem(
-                            episodeId = 2,
-                            episodeSort = "02",
-                            watchStatus = UnifiedCollectionType.DONE,
-                            isOnAir = false,
-                            cacheStatus = EpisodeCacheStatus.Cached(300.megaBytes),
-                        ),
-                        EpisodeProgressItem(
-                            episodeId = 3,
-                            episodeSort = "03",
-                            watchStatus = UnifiedCollectionType.WISH,
-                            isOnAir = false,
-                            cacheStatus = EpisodeCacheStatus.Cached(300.megaBytes),
-                        ),
-                        EpisodeProgressItem(
-                            episodeId = 4,
-                            episodeSort = "04",
-                            watchStatus = UnifiedCollectionType.WISH,
-                            isOnAir = false,
-                            cacheStatus = EpisodeCacheStatus.Caching(0.7f, 300.megaBytes),
-                        ),
-                        EpisodeProgressItem(
-                            episodeId = 5,
-                            episodeSort = "05",
-                            watchStatus = UnifiedCollectionType.WISH,
-                            isOnAir = false,
-                            cacheStatus = EpisodeCacheStatus.NotCached,
-                        ),
-                        EpisodeProgressItem(
-                            episodeId = 6,
-                            episodeSort = "06",
-                            watchStatus = UnifiedCollectionType.WISH,
-                            isOnAir = true,
-                            cacheStatus = EpisodeCacheStatus.NotCached,
-                        ),
-                        EpisodeProgressItem(
-                            episodeId = 7,
-                            episodeSort = "07",
-                            watchStatus = UnifiedCollectionType.WISH,
-                            isOnAir = true,
-                            cacheStatus = EpisodeCacheStatus.Cached(300.megaBytes),
-                        ),
-                        EpisodeProgressItem(
-                            episodeId = 8,
-                            episodeSort = "08",
-                            watchStatus = UnifiedCollectionType.WISH,
-                            isOnAir = true,
-                            cacheStatus = EpisodeCacheStatus.Caching(0.3f, 300.megaBytes),
-                        ),
-                    )
+                episodes = {
+                    episodes
                 },
                 onClickEpisodeState = {},
                 onLongClickEpisode = {}
@@ -106,12 +109,13 @@ private fun PreviewEpisodeProgressDialogVeryLong() {
             title = { Text(text = "银魂") },
             onClickCache = {},
         ) {
+            val episodes = remember {
+                // 数字太大 preview 会很卡
+                (0..70).map { item(it) }
+            }
             EpisodeProgressRow(
-                episodes = remember {
-                    // 数字太大 preview 会很卡
-                    (0..70).map {
-                        item(it)
-                    }
+                episodes = {
+                    episodes
                 },
                 onClickEpisodeState = {},
                 onLongClickEpisode = {}

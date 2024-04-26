@@ -1,7 +1,6 @@
 package me.him188.ani.app.data.subject
 
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.snapshotFlow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -11,11 +10,12 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.flow.transform
+import me.him188.ani.app.data.media.EpisodeCacheStatus
 import me.him188.ani.app.data.media.MediaCacheManager
 import me.him188.ani.app.data.repositories.EpisodeRepository
 import me.him188.ani.app.data.repositories.SubjectRepository
@@ -122,27 +122,24 @@ class SubjectManagerImpl : KoinComponent, SubjectManager {
 
     @Stable
     override fun subjectProgressFlow(item: SubjectCollectionItem): Flow<List<EpisodeProgressItem>> {
-        return snapshotFlow { item.episodes }
-            .flowOn(Dispatchers.Main)
-            .flatMapLatest { episodes ->
-                combine(episodes.map { episode ->
-                    cacheManager.cacheStatusForEpisode(
-                        subjectId = item.subjectId,
-                        episodeId = episode.episode.id,
-                    ).map { cacheStatus ->
-                        EpisodeProgressItem(
-                            episodeId = episode.episode.id,
-                            episodeSort = episode.episode.sort.toString(),
-                            watchStatus = episode.type.toCollectionType(),
-                            isOnAir = episode.episode.isOnAir(),
-                            cacheStatus = cacheStatus,
-                        )
-                    }
-                }) {
-                    it.toList()
-                }
+        return combine(item.episodes.map { episode ->
+            cacheManager.cacheStatusForEpisode(
+                subjectId = item.subjectId,
+                episodeId = episode.episode.id,
+            ).onStart {
+                emit(EpisodeCacheStatus.NotCached)
+            }.map { cacheStatus ->
+                EpisodeProgressItem(
+                    episodeId = episode.episode.id,
+                    episodeSort = episode.episode.sort.toString(),
+                    watchStatus = episode.type.toCollectionType(),
+                    isOnAir = episode.episode.isOnAir(),
+                    cacheStatus = cacheStatus,
+                )
             }
-            .flowOn(Dispatchers.Default)
+        }) {
+            it.toList()
+        }.flowOn(Dispatchers.Default)
     }
 
     override suspend fun getSubject(subjectId: Int): Subject {

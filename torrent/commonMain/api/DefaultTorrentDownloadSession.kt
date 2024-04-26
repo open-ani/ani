@@ -276,8 +276,12 @@ internal open class DefaultTorrentDownloadSession(
             override val isFinished: Flow<Boolean> = flow {
                 emit(pieces.get())
             }.flatMapLatest { list ->
-                combine(list.map { it.state }) {
-                    it.all { state -> state == PieceState.FINISHED }
+                if (list.all { it.state.value == PieceState.FINISHED }) {
+                    flowOf(true)
+                } else {
+                    combine(list.map { it.state }) { // TODO: 这会创建数万个协程, 会有性能问题 
+                        it.all { state -> state == PieceState.FINISHED }
+                    }
                 }
             }
             override val peerCount: Flow<Int> get() = overallStats.peerCount
