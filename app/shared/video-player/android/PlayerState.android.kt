@@ -12,7 +12,9 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
@@ -270,11 +272,22 @@ internal class ExoPlayerState @UiThread constructor(
     @Synchronized
     override fun close() {
         if (closed) return
-        closed = true
-        player.stop()
-        player.release()
+        synchronized(this) {
+            if (closed) return
+            closed = true
+        }
         openResource.value?.releaseResource?.invoke()
         backgroundScope.cancel()
+        @kotlin.OptIn(DelicateCoroutinesApi::class)
+        GlobalScope.launch(Dispatchers.Main) {
+            try {
+                player.stop()
+                player.release()
+                logger.info("ExoPlayer $player released")
+            } catch (e: Throwable) {
+                logger.error(e) { "Failed to release ExoPlayer $player, ignoring" }
+            }
+        }
     }
 
     override fun setPlaybackSpeed(speed: Float) {
