@@ -18,7 +18,6 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onCompletion
-import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.media.MediaSourceManager
 import me.him188.ani.app.data.repositories.EpisodePreferencesRepository
@@ -37,6 +36,7 @@ import me.him188.ani.datasources.core.fetch.MediaFetcher
 import me.him188.ani.datasources.core.fetch.MediaFetcherConfig
 import me.him188.ani.datasources.core.fetch.MediaSourceMediaFetcher
 import me.him188.ani.utils.coroutines.runUntilSuccess
+import me.him188.ani.utils.coroutines.sampleWithInitial
 import org.koin.core.Koin
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -185,7 +185,7 @@ internal class DefaultEpisodeMediaFetchSession(
 
     override val mediaFetcherProgress by mediaFetchSession
         .flatMapLatest { it.progress }
-        .sample(100)
+        .sampleWithInitial(100)
         .onCompletion { if (it == null) emit(1f) }
         .produceState(null)
 

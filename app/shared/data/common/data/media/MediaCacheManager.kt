@@ -7,11 +7,11 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
-import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.flow.transform
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.core.cache.MediaCache
 import me.him188.ani.datasources.core.cache.MediaCacheStorage
+import me.him188.ani.utils.coroutines.sampleWithInitial
 
 abstract class MediaCacheManager {
     abstract val storages: List<MediaCacheStorage>
@@ -64,7 +64,7 @@ abstract class MediaCacheManager {
                     emitAll(
                         combine(
                             hasAnyCaching.progress
-                                .sample(1000) // Sample might not emit the last value
+                                .sampleWithInitial(1000) // Sample might not emit the last value
                                 .onCompletion { if (it == null) emit(1f) }, // Always emit 1f on finish
                             hasAnyCaching.totalSize
                         ) { progress, totalSize ->

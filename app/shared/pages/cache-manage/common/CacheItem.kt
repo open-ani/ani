@@ -32,12 +32,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.onCompletion
-import kotlinx.coroutines.flow.sample
 import me.him188.ani.app.ui.subject.episode.mediaFetch.renderMediaSource
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.bangumi.processing.nameCNOrName
 import me.him188.ani.datasources.core.cache.MediaCache
+import me.him188.ani.utils.coroutines.sampleWithInitial
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.openapitools.client.models.Subject
 
@@ -58,9 +58,9 @@ class CacheItem(
     val mediaSourceId = cache.origin.mediaId
     val episodeSort = cache.metadata.episodeSort
 
-    val downloadSpeed = cache.downloadSpeed.sample(1000)
-    val uploadSpeed = cache.uploadSpeed.sample(1000)
-    val progress = cache.progress.sample(1000)
+    val downloadSpeed = cache.downloadSpeed.sampleWithInitial(1000)
+    val uploadSpeed = cache.uploadSpeed.sampleWithInitial(1000)
+    val progress = cache.progress.sampleWithInitial(1000)
         .onCompletion { if (it == null) emit(1f) }
     val totalSize = cache.totalSize
 }
