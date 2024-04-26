@@ -1,14 +1,12 @@
 package me.him188.ani.app.torrent
 
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.yield
+import me.him188.ani.app.torrent.api.PieceState
+import me.him188.ani.app.torrent.api.pieces.Piece
 import me.him188.ani.app.torrent.file.TorrentInput
-import me.him188.ani.app.torrent.model.Piece
 import me.him188.ani.utils.io.asSeekableInput
 import me.him188.ani.utils.io.readBytes
 import org.junit.jupiter.api.AfterEach
@@ -180,39 +178,5 @@ internal sealed class TorrentInputTest {
             assertEquals(15, size)
             assertEquals("mply dummy text", String(this))
         }
-    }
-}
-
-private suspend inline fun assertCoroutineSuspends(crossinline block: suspend () -> Unit) {
-    var suspended = false
-    try {
-        coroutineScope {
-            val parent = this
-            launch(start = CoroutineStart.UNDISPATCHED) {
-                yield()
-                suspended = true
-                parent.cancel()
-            }
-
-            launch(start = CoroutineStart.UNDISPATCHED) {
-                block()
-            }
-        }
-    } catch (_: CancellationException) {
-    }
-    if (!suspended) {
-        throw AssertionError("Expected coroutine suspends, but it did not suspend")
-    }
-}
-
-private suspend inline fun assertCoroutineNotSuspend(crossinline block: suspend () -> Unit) {
-    coroutineScope {
-        val job = launch {
-            yield()
-            throw AssertionError("Expected coroutine does not suspend, but it did suspend")
-        }
-
-        block()
-        job.cancel()
     }
 }

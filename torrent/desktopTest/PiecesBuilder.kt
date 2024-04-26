@@ -1,6 +1,6 @@
 package me.him188.ani.app.torrent
 
-import me.him188.ani.app.torrent.model.Piece
+import me.him188.ani.app.torrent.api.pieces.Piece
 
 class PiecesBuilder {
 

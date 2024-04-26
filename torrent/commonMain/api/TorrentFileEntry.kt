@@ -95,6 +95,7 @@ interface TorrentFileHandle : AutoCloseable {
     override fun close()
 }
 
+// TorrentFilePieceMatcherTest
 object TorrentFilePieceMatcher {
     /**
      * @param allPieces all pieces in the torrent
@@ -105,6 +106,7 @@ object TorrentFilePieceMatcher {
     fun matchPiecesForFile(allPieces: List<Piece>, offset: Long, length: Long): List<Piece> {
         return allPieces.filter { piece ->
             piece.offset >= offset && piece.offset < offset + length
+                    || (piece.offset < offset && piece.lastIndex >= offset)
         }.sortedBy { it.offset }.also { pieces ->
             // 检验 pieces 的大小等于文件大小
             if (pieces.isEmpty()) {

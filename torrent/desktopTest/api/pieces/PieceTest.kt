@@ -1,4 +1,4 @@
-package me.him188.ani.app.torrent.model
+package me.him188.ani.app.torrent.api.pieces
 
 import kotlin.test.Test
 import kotlin.test.assertEquals

@@ -1,4 +1,4 @@
-package me.him188.ani.app.torrent.download
+package me.him188.ani.app.torrent.api.pieces
 
 import me.him188.ani.app.torrent.buildPieceList
 import org.junit.jupiter.api.Test
