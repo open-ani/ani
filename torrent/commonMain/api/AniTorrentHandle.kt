@@ -59,11 +59,13 @@ constructor(
 ) : AniTorrentHandle {
     override val name: String get() = handle.name
 
+    // Note: this initialization requires TorrentThread
+    private val pieceCount = handle.torrentFile().numPieces()
+
     override fun addTracker(url: String) {
         handle.addTracker(AnnounceEntry(url))
     }
 
-    @OptIn(TorrentThread::class)
     override val contents: TorrentContents = Torrent4JContents(handle)
     override fun resume() {
         handle.resume()
@@ -74,6 +76,9 @@ constructor(
     }
 
     override fun setPieceDeadline(pieceIndex: Int, deadline: Int) {
+        check(pieceIndex in 0 until pieceCount) {
+            "Piece index $pieceIndex out of range [0, ${pieceCount})"
+        }
         handle.setPieceDeadline(pieceIndex, deadline)
     }
 }
