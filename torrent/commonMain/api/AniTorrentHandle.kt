@@ -20,21 +20,41 @@ interface AniTorrentHandle {
 }
 
 interface TorrentContents {
+    @TorrentThread
     fun createPieces(): List<Piece>
 
+    @TorrentThread
     val files: List<TorrentFile>
 }
 
 interface TorrentFile {
     val path: String
     val size: Long
+
+    @TorrentThread
     var priority: FilePriority
 }
 
 
+/**
+ * 标记一个 API, 必须在 BT 线程中调用.
+ *
+ * 访问 libtorrent 的 API 必须在 BT 线程中调用, 否则会导致 native crash.
+ */
+@Target(
+    AnnotationTarget.PROPERTY, AnnotationTarget.FUNCTION,
+    AnnotationTarget.CLASS, AnnotationTarget.VALUE_PARAMETER, AnnotationTarget.CONSTRUCTOR
+)
+@RequiresOptIn(message = "This function must be accessed in torrent thread")
+annotation class TorrentThread
+
+
+@TorrentThread
 internal fun TorrentHandle.asAniTorrentHandle(): AniTorrentHandle = Torrent4jHandle(this)
 
-internal class Torrent4jHandle(
+internal class Torrent4jHandle
+@TorrentThread
+constructor(
     private val handle: TorrentHandle,
 ) : AniTorrentHandle {
     override val name: String get() = handle.name
@@ -43,7 +63,8 @@ internal class Torrent4jHandle(
         handle.addTracker(AnnounceEntry(url))
     }
 
-    override val contents: TorrentContents by lazy { Torrent4JContents(handle) }
+    @OptIn(TorrentThread::class)
+    override val contents: TorrentContents = Torrent4JContents(handle)
     override fun resume() {
         handle.resume()
     }
@@ -60,6 +81,7 @@ internal class Torrent4jHandle(
 class Torrent4JContents(
     private val handle: TorrentHandle,
 ) : TorrentContents {
+    @TorrentThread
     override fun createPieces(): List<Piece> {
         val info = torrentInfo
         val numPieces = info.numPieces()
@@ -68,11 +90,13 @@ class Torrent4JContents(
         return pieces
     }
 
+    @TorrentThread
     override val files: List<TorrentFile> by lazy {
         val files: FileStorage = torrentInfo.files()
-        List(files.numPieces()) { Torrent4jFile(handle, files, it) }
+        List(files.numFiles()) { Torrent4jFile(handle, files, it) }
     }
 
+    @TorrentThread
     private val torrentInfo: org.libtorrent4j.TorrentInfo
         get() {
             val torrentInfo: org.libtorrent4j.TorrentInfo? = handle.torrentFile()
@@ -83,15 +107,22 @@ class Torrent4JContents(
         }
 }
 
-private class Torrent4jFile(
+private class Torrent4jFile @TorrentThread constructor(
     private val handle: TorrentHandle,
-    private val files: FileStorage,
+    files: FileStorage,
     private val index: Int,
 ) : TorrentFile {
-    override val size: Long
-        get() = files.fileSize(index)
-    override val path: String
-        get() = files.filePath(index)
+    init {
+        val numFiles = files.numFiles()
+        check(index in 0 until numFiles) {
+            "Index $index out of range [0, $numFiles)"
+        }
+    }
+
+    override val size: Long = files.fileSize(index)
+    override val path: String = files.filePath(index)
+
+    @TorrentThread
     override var priority: FilePriority
         get() = handle.filePriority(index).toFilePriority()
         set(value) {

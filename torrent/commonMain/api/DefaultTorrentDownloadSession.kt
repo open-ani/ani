@@ -114,7 +114,7 @@ internal open class DefaultTorrentDownloadSession(
 
     private inner class ActualTorrentInfo(
         val pieces: List<Piece>,
-        val torrentContents: TorrentContents,
+        val files: List<TorrentFile>,
     ) {
         val controller: TorrentDownloadController = TorrentDownloadController(
             pieces,
@@ -142,7 +142,7 @@ internal open class DefaultTorrentDownloadSession(
     }
 
     private val entries = SuspendLazy {
-        val files = actualInfo.await().torrentContents.files
+        val files = actualInfo.await().files
 
         val numFiles = files.size
 
@@ -301,6 +301,7 @@ internal open class DefaultTorrentDownloadSession(
         }
 
         private fun updatePriority() {
+            @OptIn(TorrentThread::class)
             jobsToDoInHandle.add { handle ->
                 val highestPriority = priorityRequests.values.maxWithOrNull(nullsFirst(naturalOrder()))
                     ?: FilePriority.IGNORE
@@ -389,11 +390,19 @@ internal open class DefaultTorrentDownloadSession(
      * 通过磁力链解析的初始的信息可能是不准确的
      */
     private val actualInfo: CompletableDeferred<ActualTorrentInfo> = CompletableDeferred()
-    private val jobsToDoInHandle = ConcurrentLinkedQueue<(AniTorrentHandle) -> Unit>()
+
+
+    private val jobsToDoInHandle = ConcurrentLinkedQueue<JobToDoInHandle>()
+
+    fun interface JobToDoInHandle {
+        @TorrentThread
+        operator fun invoke(handle: AniTorrentHandle)
+    }
 
     private fun actualInfo(): ActualTorrentInfo = actualInfo.getCompleted()
 
     internal val listener = object : EventListener {
+        @OptIn(TorrentThread::class)
         override fun onUpdate(handle: AniTorrentHandle) {
             while (jobsToDoInHandle.isNotEmpty()) {
                 val job = jobsToDoInHandle.poll()
@@ -419,6 +428,7 @@ internal open class DefaultTorrentDownloadSession(
         override val torrentName: String
             get() = this@DefaultTorrentDownloadSession.torrentName
 
+        @OptIn(TorrentThread::class)
         override fun onEvent(event: TorrentEvent) {
             when (event) {
                 is TorrentAddEvent -> {
@@ -432,8 +442,8 @@ internal open class DefaultTorrentDownloadSession(
 
                     // Initialize [pieces]
                     // 注意, 必须在这里初始化获取 pieces, 通过磁力链解析的可能是不准确的
-                    val torrentInfo = torrentHandle.contents
-                    actualInfo.complete(ActualTorrentInfo(torrentInfo.createPieces(), torrentInfo))
+                    val contents = torrentHandle.contents
+                    actualInfo.complete(ActualTorrentInfo(contents.createPieces(), contents.files))
                 }
 
                 is TorrentResumeEvent -> {

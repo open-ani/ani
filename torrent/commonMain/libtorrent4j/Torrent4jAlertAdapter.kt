@@ -8,6 +8,7 @@ import me.him188.ani.app.torrent.api.TorrentAddEvent
 import me.him188.ani.app.torrent.api.TorrentEvent
 import me.him188.ani.app.torrent.api.TorrentFinishedEvent
 import me.him188.ani.app.torrent.api.TorrentResumeEvent
+import me.him188.ani.app.torrent.api.TorrentThread
 import me.him188.ani.app.torrent.api.asAniTorrentHandle
 import org.libtorrent4j.alerts.AddTorrentAlert
 import org.libtorrent4j.alerts.PieceFinishedAlert
@@ -44,6 +45,7 @@ Alert: BLOCK_FINISHED
 //            AlertType.TORRENT_FINISHED.swig(),
 //        )
 
+@TorrentThread
 internal fun EventListener.onAlert(
     alert: TorrentAlert<*>
 ) {
@@ -58,6 +60,7 @@ internal fun EventListener.onAlert(
     listener.onUpdate(alert.handle().asAniTorrentHandle())
 }
 
+@TorrentThread
 internal fun TorrentAlert<*>.toEventOrNull(): TorrentEvent? {
     return when (this) {
         is AddTorrentAlert -> TorrentAddEvent(handle().asAniTorrentHandle())

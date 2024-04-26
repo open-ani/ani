@@ -6,6 +6,7 @@ import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.torrent.api.EventListener
+import me.him188.ani.app.torrent.api.TorrentThread
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
@@ -24,6 +25,8 @@ internal class LockedSessionManager(
     init {
         sessionManager.addListener(object : AlertListener {
             override fun types(): IntArray? = null
+
+            @OptIn(TorrentThread::class)
             override fun alert(alert: Alert<*>) {
                 if (alert !is TorrentAlert<*>) return
                 listeners.forEach { listener ->
