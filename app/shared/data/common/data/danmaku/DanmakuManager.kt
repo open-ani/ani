@@ -1,5 +1,7 @@
 package me.him188.ani.app.data.danmaku
 
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
@@ -10,6 +12,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.retry
+import kotlinx.coroutines.isActive
 import me.him188.ani.app.data.repositories.PreferencesRepository
 import me.him188.ani.app.platform.getAniUserAgent
 import me.him188.ani.app.session.SessionManager
@@ -108,6 +111,10 @@ class DanmakuManagerImpl(
                 flow {
                     provider.fetch(request = request)?.let { emit(it) }
                 }.retry(1) {
+                    if (it is CancellationException && !currentCoroutineContext().isActive) {
+                        // collector was cancelled
+                        return@retry false
+                    }
                     logger.error(it) { "Failed to fetch danmaku from provider '${provider.id}'" }
                     true
                 }.catch {} // 忽略错误, 否则一个源炸了会导致所有弹幕都不发射了
