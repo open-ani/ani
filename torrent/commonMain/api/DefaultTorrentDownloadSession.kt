@@ -211,10 +211,15 @@ internal open class DefaultTorrentDownloadSession(
                         handle.setPieceDeadline(firstIndex, 0)
                         handle.setPieceDeadline(lastIndex, 1)
 
-                        handle.setPieceDeadline(firstIndex + 1, 2)
-                        handle.setPieceDeadline(firstIndex + 2, 3)
+                        if (firstIndex + 1 <= lastIndex) {
+                            handle.setPieceDeadline(firstIndex + 1, 2)
+                        }
+                        if (firstIndex + 2 <= lastIndex) {
+                            handle.setPieceDeadline(firstIndex + 2, 3)
+                        }
                         println("setPieceDeadline ok")
                     }
+                    handle.resume()
                 }
 
                 requestPriority(priority)

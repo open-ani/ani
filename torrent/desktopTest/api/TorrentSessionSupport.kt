@@ -11,15 +11,15 @@ internal abstract class TorrentSessionSupport {
     lateinit var tempDir: File
 
     inline fun CoroutineScope.withSession(
-        block: DefaultTorrentDownloadSession.() -> Unit
-    ) {
-        val session = DefaultTorrentDownloadSession(
+        session: DefaultTorrentDownloadSession = DefaultTorrentDownloadSession(
             "test",
             tempDir,
             {},
             true,
             SupervisorJob()
-        )
+        ),
+        block: DefaultTorrentDownloadSession.() -> Unit
+    ) {
         coroutineContext.job.invokeOnCompletion {
             session.close()
         }
@@ -34,5 +34,15 @@ internal abstract class TorrentSessionSupport {
         listener.onEvent(
             TorrentAddEvent(handle.apply(builderAction))
         )
+    }
+
+    inline fun DefaultTorrentDownloadSession.setHandle(
+        handle: TestAniTorrentHandle,
+        builderAction: TestAniTorrentHandle.() -> Unit = {},
+    ): TestAniTorrentHandle {
+        listener.onEvent(
+            TorrentAddEvent(handle.apply(builderAction))
+        )
+        return handle
     }
 }
