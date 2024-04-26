@@ -27,6 +27,7 @@ import me.him188.ani.app.torrent.api.pieces.TorrentDownloadController
 import me.him188.ani.app.torrent.api.pieces.lastIndex
 import me.him188.ani.app.torrent.api.pieces.startIndex
 import me.him188.ani.app.torrent.file.TorrentInput
+import me.him188.ani.app.torrent.io.TorrentFileIO
 import me.him188.ani.app.torrent.torrent4j.LockedSessionManager
 import me.him188.ani.utils.coroutines.SuspendLazy
 import me.him188.ani.utils.coroutines.flows.resetStale
@@ -327,7 +328,7 @@ internal open class DefaultTorrentDownloadSession(
             scope.async {
                 stats.awaitFinished()
                 withContext(Dispatchers.IO) {
-                    hashFileMd5(resolveDownloadingFile())
+                    TorrentFileIO.hashFileMd5(resolveDownloadingFile())
                 }
             }
         }
@@ -529,24 +530,6 @@ internal open class DefaultTorrentDownloadSession(
                 lastPrioritizedIndexes = pieceIndexes.toList()
             }
         }
-    }
-}
-
-@OptIn(ExperimentalStdlibApi::class)
-@kotlin.jvm.Throws(IOException::class)
-private fun hashFileMd5(input: File): String {
-    val md = java.security.MessageDigest.getInstance("MD5")
-    val buffer = ByteArray(8192)
-    input.inputStream().use { inputStream ->
-        while (true) {
-            val read = inputStream.read(buffer)
-            if (read == -1) {
-                break
-            }
-            md.update(buffer, 0, read)
-        }
-        val bytes = md.digest()
-        return bytes.toHexString()
     }
 }
 
