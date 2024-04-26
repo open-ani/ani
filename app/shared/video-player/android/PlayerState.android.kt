@@ -163,7 +163,7 @@ internal class ExoPlayerState @UiThread constructor(
 
                     // 注意, 要把所有 UI 属性全都读出来然后 captured 到 background -- ExoPlayer 所有属性都需要在主线程
 
-                    updateVideoPropertiesTasker.launch {
+                    updateVideoPropertiesTasker.launch(Dispatchers.IO) {
                         // This is in background
                         videoProperties.value = VideoProperties(
                             title = title?.toString(),
