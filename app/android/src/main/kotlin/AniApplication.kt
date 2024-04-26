@@ -38,6 +38,16 @@ import org.koin.core.context.startKoin
 
 class AniApplication : Application() {
     companion object {
+        init {
+            if (BuildConfig.DEBUG) {
+                System.setProperty("kotlinx.coroutines.debug", "on")
+                System.setProperty("kotlinx.coroutines.stacktrace.recovery", "true")
+            }
+//            @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+//            val v = kotlinx.coroutines.RECOVER_STACK_TRACES
+//            println(v)
+        }
+
         lateinit var instance: Instance
     }
 
