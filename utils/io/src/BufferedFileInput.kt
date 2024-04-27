@@ -1,10 +1,10 @@
 package me.him188.ani.utils.io
 
-import java.io.BufferedInputStream
+import org.jetbrains.annotations.TestOnly
 import java.io.File
-import java.io.FileInputStream
 import java.io.IOException
 import java.io.RandomAccessFile
+import kotlin.math.min
 
 
 /**
@@ -21,83 +21,159 @@ import java.io.RandomAccessFile
  * The file is not open until first read.
  */
 @Throws(IOException::class)
-public fun File.asSeekableInput(): SeekableInput = BufferedFileInput(this)
+public fun File.toSeekableInput(): SeekableInput = BufferedFileInput(RandomAccessFile(this, "r"))
+
+@JvmInline
+public value class OffsetRange private constructor(
+    private val packed: Long,
+) {
+    public constructor(start: Int, end: Int) : this(start.toLong() or (end.toLong() shl 32))
+
+    public val start: Int get() = packed.toInt()
+    public val end: Int get() = (packed ushr 32).toInt()
+}
 
 internal class BufferedFileInput(
-    private val file: File,
-) : SeekableInput {
-    private val fileLength = file.length()
-    private var _reader: BufferedInputStream? = null
-    internal var streamCounter: Int = 0
+    private val file: RandomAccessFile,
+) : BufferedInput() {
+    override val fileLength: Long get() = file.length()
 
-    @kotlin.jvm.Throws(IOException::class)
-    private fun createInputStream(maxBuffer: Long): BufferedInputStream {
-        ++streamCounter
-        return BufferedInputStream(  // TODO: 实际上自己写一个 BufferedInputStream, 在填充 buffer 时检查 piece 是否下载完成
-            FileInputStream(file),
-            (DEFAULT_BUFFER_SIZE * 16).coerceAtMost(maxBuffer.coerceToInt())
-        )
+    override fun fillBuffer() {
+        val buf = this.buf
+        val fileLength = this.fileLength
+        val pos = this.position
+
+        val readStart = (pos - BUFFER_PER_DIRECTION).coerceAtLeast(0)
+        val readEnd = (pos + BUFFER_PER_DIRECTION).coerceAtMost(fileLength)
+
+        val readLength = (readEnd - readStart).coerceToInt()
+
+        val file = this.file
+        file.seek(readStart)
+        file.readFully(buf, 0, readLength)
+
+        this.bufferedOffsetStart = readStart
+        this.bufferedOffsetEndExcl = readEnd
     }
 
-    private fun Long.coerceToInt(): Int {
-        if (this > Int.MAX_VALUE) return Int.MAX_VALUE
-        return this.toInt()
+    override fun toString(): String {
+        return "BufferedFileInput(file=$file, position=$position, bytesRemaining=$bytesRemaining)"
     }
+}
 
-    override var offset: Long = 0
-    override val bytesRemaining: Long
-        get() {
-            val reader = _reader
-            @Suppress("IfThenToElvis") // don't box ints
-            return if (reader != null) {
-                reader.available().toUInt().toLong()
-            } else {
-                file.length() - offset // this is much slower than reader.available()
-            }
+public abstract class BufferedInput : SeekableInput {
+    protected companion object {
+        public const val BUFFER_PER_DIRECTION: Int = 8192
+
+        public fun Long.coerceToInt(): Int {
+            if (this > Int.MAX_VALUE) return Int.MAX_VALUE
+            return this.toInt()
         }
 
-    private inline val self get() = this
-
-    private fun getReaderOrCreate(maxBuffer: Long) = _reader ?: createInputStream(maxBuffer).also {
-        _reader = it
+        public fun Long.checkToInt(): Int {
+            if (this > Int.MAX_VALUE) error("value is too large to fit in Int: $this")
+            return this.toInt()
+        }
     }
 
-    override fun seek(offset: Long, maxBuffer: Long) {
-        require(offset >= 0) { "offset must be non-negative, but was $offset" }
-        require(offset <= fileLength) { "offset must be less than or equal to file length, but was $offset > $fileLength" }
-        require(maxBuffer >= 1) { "maxBuffer must be >= 1, but was $maxBuffer" }
+    protected abstract val fileLength: Long
+
+    /**
+     * @see buf 包含的数据的起始位置
+     */
+    protected var bufferedOffsetStart: Long = -1L
+
+    /**
+     * @see buf 包含的数据的结束位置 (exclusive)
+     */
+    protected var bufferedOffsetEndExcl: Long = -1L
+
+    @get:TestOnly
+    public val bufferedOffsetRange: LongRange get() = bufferedOffsetStart..<bufferedOffsetEndExcl
+
+    protected var buf: ByteArray = ByteArray(BUFFER_PER_DIRECTION * 2)
+
+    /**
+     * 当前 user 读到的位置
+     */
+    final override var position: Long = 0
+
+    final override val bytesRemaining: Long get() = fileLength - position
+
+    final override fun seek(position: Long) {
+        require(position >= 0) { "offset must be non-negative, but was $position" }
 
         checkClosed()
-        val lastOffset = this.offset
-        if (offset == lastOffset) {
+
+        val lastPos = this.position
+        if (position == lastPos) {
+            // seek 到当前位置
             return
         }
-        if (offset < lastOffset) {
-            // Seeking back
-            _reader?.close()
-            _reader = createInputStream(maxBuffer).also {
-                it.skip(offset)
-            }
-        } else {
-            // Seeking forward
-            getReaderOrCreate(maxBuffer).skip(offset - lastOffset)
-        }
-        self.offset = offset
+
+        this.position = position
     }
 
-    override fun read(buffer: ByteArray, offset: Int, length: Int): Int {
+    /**
+     * 当此函数返回时, 至少 [position] 位置的数据已经在 [buf] 中
+     */
+    protected abstract fun fillBuffer()
+
+    final override fun read(buffer: ByteArray, offset: Int, length: Int): Int {
         require(offset >= 0) { "offset must be non-negative, but was $offset" }
         require(length >= 0) { "length must be non-negative, but was $length" }
         require(offset + length <= buffer.size) { "offset + length must be less than or equal to buffer size, but was ${offset + length} > ${buffer.size}" }
         checkClosed()
-        val reader = getReaderOrCreate(Long.MAX_VALUE)
-        return reader.read(buffer, offset, length).also {
-            self.offset += it
+
+        if (this.position >= fileLength) return -1
+
+        var read = readFromBuffer(length, buffer, offset)
+        if (read != -1) return read // 已经从 buffer 读了
+
+        fillBuffer()
+        read = readFromBuffer(length, buffer, offset)
+        check(read != -1) { "fillBuffer did not fill for $position" }
+
+        return read
+    }
+
+    /**
+     * Returns length read, or `-1` if does not fit in buffer
+     */
+    private fun readFromBuffer(length: Int, buffer: ByteArray, offset: Int): Int {
+        val bufStart = bufferedOffsetStart
+        val bufEnd = bufferedOffsetEndExcl
+        val pos = this.position
+
+        if (bufStart != -1L) {
+            check(bufEnd != -1L)
+            // 有 buffer
+
+            if (pos in bufStart..<bufEnd) {
+                // 在 buffer 范围内
+                val sizeToRead = min(length, (bufEnd - pos).coerceToInt())
+                    .coerceAtMost((fileLength - pos).coerceToInt())
+
+                val offsetInBuf = pos - bufStart
+                this.buf.copyInto(
+                    buffer,
+                    destinationOffset = offset,
+                    startIndex = offsetInBuf.checkToInt(),
+                    endIndex = (offsetInBuf + sizeToRead).checkToInt(),
+                )
+                this.position += sizeToRead
+                return sizeToRead
+            } else {
+                // 已经超出范围
+            }
+        } else {
+            // 无 buffer, 先填充 buffer
         }
+        return -1
     }
 
     @Volatile
-    private var closed = false
+    protected var closed: Boolean = false
     private fun checkClosed() {
         if (closed) throw IllegalStateException("This SeekableInput is closed")
     }
@@ -108,10 +184,9 @@ internal class BufferedFileInput(
             if (closed) return
             closed = true
         }
-        _reader?.close()
     }
 
     override fun toString(): String {
-        return "RandomAccessFileAsSeekableInput(${file}, offset=$offset)"
+        return "BufferedInput(position=$position, bytesRemaining=$bytesRemaining)"
     }
 }

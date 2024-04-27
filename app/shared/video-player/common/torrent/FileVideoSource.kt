@@ -7,7 +7,7 @@ import me.him188.ani.app.videoplayer.data.VideoData
 import me.him188.ani.app.videoplayer.data.VideoSource
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.utils.io.SeekableInput
-import me.him188.ani.utils.io.asSeekableInput
+import me.him188.ani.utils.io.toSeekableInput
 import java.io.File
 import java.io.IOException
 
@@ -34,7 +34,7 @@ class FileVideoData(
     override val uploadRate: Flow<FileSize> = MutableStateFlow(FileSize.Unspecified)
 
     @Throws(IOException::class)
-    override fun createInput(): SeekableInput = file.asSeekableInput()
+    override fun createInput(): SeekableInput = file.toSeekableInput()
     override fun close() {
         // no-op
     }

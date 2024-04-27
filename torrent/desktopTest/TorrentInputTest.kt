@@ -3,12 +3,12 @@ package me.him188.ani.app.torrent
 import kotlinx.coroutines.test.runTest
 import me.him188.ani.app.torrent.api.PieceState
 import me.him188.ani.app.torrent.api.pieces.Piece
-import me.him188.ani.app.torrent.file.TorrentInput
-import me.him188.ani.utils.io.asSeekableInput
+import me.him188.ani.app.torrent.io.TorrentInput
 import me.him188.ani.utils.io.readBytes
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import java.io.RandomAccessFile
 import kotlin.math.ceil
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -28,8 +28,8 @@ internal sealed class TorrentInputTest {
             logicalPieces.last().state.emit(PieceState.FINISHED)
             file.seek(logicalPieces.last().offset + 2)
             file.readBytes().run {
-                assertEquals(sampleTextByteArray.size % 16 - 2, size)
                 assertEquals("Lorem Ipsum.", String(this))
+                assertEquals(sampleTextByteArray.size % 16 - 2, size)
             }
         }
     }
@@ -65,7 +65,7 @@ internal sealed class TorrentInputTest {
 
     protected val file: TorrentInput by lazy {
         TorrentInput(
-            tempFile.asSeekableInput(),
+            RandomAccessFile(tempFile, "r"),
             logicalPieces,
         )
     }
@@ -92,7 +92,7 @@ internal sealed class TorrentInputTest {
             assertEquals(16, size)
             assertEquals("Lorem Ipsum is s", String(this))
         }
-        assertEquals(16L, file.offset)
+        assertEquals(16L, file.position)
     }
 
     // TODO: TorrentInputTest has been disabled because we changed `seek` from suspend to blocking to improve speed
@@ -114,7 +114,7 @@ internal sealed class TorrentInputTest {
     fun seekFirstNoSuspend() = runTest {
         logicalPieces.first().state.emit(PieceState.FINISHED)
         file.seek(1)
-        assertEquals(1L, file.offset)
+        assertEquals(1L, file.position)
     }
 
 //    @Test
@@ -153,9 +153,10 @@ internal sealed class TorrentInputTest {
     fun seekReadSecondPiece() = runTest {
         logicalPieces[1].state.emit(PieceState.FINISHED)
         file.seek(16)
-        assertEquals(16L, file.offset)
+        assertEquals(16L, file.position)
         file.readBytes().run {
             assertEquals(16, size)
+            assertEquals(16L..<32L, file.bufferedOffsetRange)
             assertEquals("imply dummy text", String(this))
         }
     }
@@ -164,26 +165,56 @@ internal sealed class TorrentInputTest {
     fun seekReadSecondPieceMiddle() = runTest {
         logicalPieces[1].state.emit(PieceState.FINISHED)
         file.seek(17)
-        assertEquals(17L, file.offset)
+        assertEquals(17L, file.position)
         file.readBytes().run {
-            assertEquals(15, size)
+            assertEquals(16L..<32L, file.bufferedOffsetRange)
             assertEquals("mply dummy text", String(this))
         }
     }
 
+    @Test
+    fun `seek buffer both direction`() = runTest {
+        logicalPieces[0].state.emit(PieceState.FINISHED)
+        logicalPieces[1].state.emit(PieceState.FINISHED)
+        file.seek(17)
+        assertEquals(17L, file.position)
+        file.readBytes().run {
+            assertEquals(0L..<32L, file.bufferedOffsetRange)
+            assertEquals("mply dummy text", String(this))
+        }
+    }
+
+    @Test
+    fun `seek buffer both direction then seek back`() = runTest {
+        logicalPieces[0].state.emit(PieceState.FINISHED)
+        logicalPieces[1].state.emit(PieceState.FINISHED)
+        file.seek(17)
+        assertEquals(17L, file.position)
+        file.readBytes().run {
+            assertEquals(0L..<32L, file.bufferedOffsetRange)
+            assertEquals("mply dummy text", String(this))
+        }
+        file.seek(0)
+        file.readBytes().run {
+            assertEquals(0L..<32L, file.bufferedOffsetRange)
+            assertEquals("Lorem Ipsum is simply dummy text", String(this))
+        }
+    }
 
     @Test
     fun `buffer single finished pieces, initial zero`() = runTest {
         logicalPieces[0].state.value = PieceState.FINISHED
         // other pieces not finished
-        assertEquals(logicalPieces[0].size, file.computeMaxBufferSize(0, 100000))
+        assertEquals(logicalPieces[0].size, file.computeMaxBufferSizeForward(0, 100000))
+        assertEquals(0, file.computeMaxBufferSizeBackward(0, 100000))
     }
 
     @Test
     fun `buffer single finished pieces, from intermediate`() = runTest {
         logicalPieces[0].state.value = PieceState.FINISHED
         // other pieces not finished
-        assertEquals(logicalPieces[0].size - 10, file.computeMaxBufferSize(10, 100000))
+        assertEquals(logicalPieces[0].size - 10, file.computeMaxBufferSizeForward(10, 100000))
+        assertEquals(10, file.computeMaxBufferSizeBackward(10, 100000))
     }
 
     @Test
@@ -191,21 +222,23 @@ internal sealed class TorrentInputTest {
         logicalPieces[0].state.value = PieceState.FINISHED
         logicalPieces[1].state.value = PieceState.FINISHED
         // other pieces not finished
-        assertEquals(logicalPieces[0].size - 0 + logicalPieces[0].size, file.computeMaxBufferSize(0, 100000))
-        assertEquals(logicalPieces[0].size - 10 + logicalPieces[0].size, file.computeMaxBufferSize(10, 100000))
+        assertEquals(logicalPieces[0].size - 0 + logicalPieces[0].size, file.computeMaxBufferSizeForward(0, 100000))
+        assertEquals(0, file.computeMaxBufferSizeBackward(0, 100000))
+        assertEquals(logicalPieces[0].size - 10 + logicalPieces[0].size, file.computeMaxBufferSizeForward(10, 100000))
+        assertEquals(10, file.computeMaxBufferSizeBackward(10, 100000))
     }
 
     @Test
     fun `buffer zero byte (corner case)`() = runTest {
         logicalPieces[0].state.value = PieceState.FINISHED
         // other pieces not finished
-        assertEquals(0, file.computeMaxBufferSize(logicalPieces[0].size, 100000))
+        assertEquals(0, file.computeMaxBufferSizeForward(logicalPieces[0].size, 100000))
     }
 
     @Test
     fun `computeMaxBufferSize starting from piece not finished`() = runTest {
         // all pieces not finished
-        assertEquals(0, file.computeMaxBufferSize(0, 100000))
+        assertEquals(0, file.computeMaxBufferSizeForward(0, 100000))
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -216,13 +249,6 @@ internal sealed class TorrentInputTest {
     fun `seek negative offset`() = runTest {
         assertFailsWith<IllegalArgumentException> {
             file.seek(-1)
-        }
-    }
-
-    @Test
-    fun `seek negative buffer`() = runTest {
-        assertFailsWith<IllegalArgumentException> {
-            file.seek(1, -1)
         }
     }
 
@@ -241,17 +267,16 @@ internal sealed class TorrentInputTest {
     }
 
     @Test
-    fun `seek over size`() = runTest {
-        assertFailsWith<IllegalArgumentException> {
-            file.seek(Long.MAX_VALUE)
-        }
+    fun `seek over size then read`() = runTest {
+        file.seek(Long.MAX_VALUE)
+        assertEquals(-1, file.read(ByteArray(10)))
     }
 
     @Test
     fun `read closed`() = runTest {
         file.close()
         assertFailsWith<IllegalStateException> {
-            file.read(ByteArray(1), 1, 1)
+            file.read(ByteArray(2))
         }
     }
 

@@ -25,18 +25,18 @@ import me.him188.ani.app.torrent.api.pieces.PiecePriorities
 import me.him188.ani.app.torrent.api.pieces.TorrentDownloadController
 import me.him188.ani.app.torrent.api.pieces.lastIndex
 import me.him188.ani.app.torrent.api.pieces.startIndex
-import me.him188.ani.app.torrent.file.TorrentInput
 import me.him188.ani.app.torrent.io.TorrentFileIO
+import me.him188.ani.app.torrent.io.TorrentInput
 import me.him188.ani.app.torrent.torrent4j.LockedSessionManager
 import me.him188.ani.utils.coroutines.SuspendLazy
 import me.him188.ani.utils.coroutines.flows.resetStale
 import me.him188.ani.utils.io.SeekableInput
-import me.him188.ani.utils.io.asSeekableInput
 import me.him188.ani.utils.logging.debug
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import java.io.File
 import java.io.IOException
+import java.io.RandomAccessFile
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -356,12 +356,12 @@ internal open class DefaultTorrentDownloadSession(
         override fun createInput(): SeekableInput {
 //            logger.info { "createInput: finding cache file" }
             val input =
-                (resolveFileOrNull() ?: runBlocking { resolveDownloadingFile() }).asSeekableInput()
+                (resolveFileOrNull() ?: runBlocking { resolveDownloadingFile() })
 //            logger.info { "createInput: got cache file, awaiting pieces" }
             val pieces = pieces
 //            logger.info { "createInput: ${pieces.size} pieces" }
             return TorrentInput(
-                input,
+                RandomAccessFile(input, "r"),
                 pieces,
                 onWait = { piece ->
                     logger.info { "[TorrentDownloadControl] $torrentName: Set piece ${piece.pieceIndex} deadline to 0 because it was requested " }

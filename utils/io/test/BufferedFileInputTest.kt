@@ -15,7 +15,7 @@ class BufferedFileInputTest {
     private lateinit var tempDir: File
 
     private lateinit var file: File
-    private val input: BufferedFileInput by lazy { file.asSeekableInput() as BufferedFileInput }
+    private val input: BufferedFileInput by lazy { file.toSeekableInput() as BufferedFileInput }
     private val expectedText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam nec nunc nec nunc."
 
     @BeforeEach
@@ -71,7 +71,7 @@ class BufferedFileInputTest {
     }
 
     @Test
-    fun `double seek forward then back`() = runTest {
+    fun `seek forward then back`() = runTest {
         assertEquals(expectedText.take(4), input.readBytes(maxLength = 4).decodeToString())
         input.seek(8)
         input.seek(4)
@@ -88,32 +88,6 @@ class BufferedFileInputTest {
     fun `seek over length, readBytes return empty`() = runTest {
         input.seek(999999)
         assertEquals(0, input.readBytes().size)
-    }
-
-
-    @Test
-    fun `stream not created on init`() = runTest {
-        assertEquals(0, input.streamCounter)
-    }
-
-    @Test
-    fun `stream lazily created`() = runTest {
-        input.readBytes()
-        assertEquals(1, input.streamCounter)
-    }
-
-    @Test
-    fun `stream created on seek back`() = runTest {
-        input.readBytes()
-        assertEquals(1, input.streamCounter)
-        input.seek(1)
-        assertEquals(2, input.streamCounter)
-    }
-
-    @Test
-    fun `stream created once if seek without read`() = runTest {
-        input.seek(1)
-        assertEquals(1, input.streamCounter)
     }
 
 
