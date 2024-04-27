@@ -1,9 +1,6 @@
 package me.him188.ani.app.torrent
 
-import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.yield
 import me.him188.ani.app.torrent.api.PieceState
 import me.him188.ani.app.torrent.api.pieces.Piece
 import me.him188.ani.app.torrent.file.TorrentInput
@@ -15,7 +12,6 @@ import java.io.File
 import kotlin.math.ceil
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.time.Duration.Companion.seconds
 
 private const val sampleText =
     "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."
@@ -98,25 +94,20 @@ internal sealed class TorrentInputTest {
         assertEquals(16L, file.offset)
     }
 
-    @Test
-    fun readFirstPieceSuspend() = runTest(timeout = 1.seconds) {
-        assertCoroutineSuspends {
-            file.readBytes()
-        }
-    }
+    // TODO: TorrentInputTest has been disabled because we changed `seek` from suspend to blocking to improve speed
 
-    @Test
-    fun readFirstPieceSuspendResume() = runTest {
-        launch(start = CoroutineStart.UNDISPATCHED) {
-            yield()
-            logicalPieces.first().state.emit(PieceState.FINISHED)
-        }
-        file.readBytes().run {
-            assertEquals(16, size)
-            assertEquals("Lorem Ipsum is s", String(this))
-        }
-        assertEquals(16L, file.offset)
-    }
+//    @Test
+//    fun readFirstPieceSuspendResume() = runTest {
+//        launch(start = CoroutineStart.UNDISPATCHED) {
+//            yield()
+//            logicalPieces.first().state.emit(PieceState.FINISHED)
+//        }
+//        file.readBytes().run {
+//            assertEquals(16, size)
+//            assertEquals("Lorem Ipsum is s", String(this))
+//        }
+//        assertEquals(16L, file.offset)
+//    }
 
     @Test
     fun seekFirstNoSuspend() = runTest {
@@ -125,37 +116,37 @@ internal sealed class TorrentInputTest {
         assertEquals(1L, file.offset)
     }
 
-    @Test
-    fun seekFirstSuspend() = runTest {
-        launch(start = CoroutineStart.UNDISPATCHED) {
-            yield()
-            logicalPieces.first().state.emit(PieceState.FINISHED)
-        }
-        assertCoroutineSuspends {
-            file.seek(1)
-        }
-        assertEquals(1L, file.offset)
-    }
+//    @Test
+//    fun seekFirstSuspend() = runTest {
+//        launch(start = CoroutineStart.UNDISPATCHED) {
+//            yield()
+//            logicalPieces.first().state.emit(PieceState.FINISHED)
+//        }
+//        assertCoroutineSuspends {
+//            file.seek(1)
+//        }
+//        assertEquals(1L, file.offset)
+//    }
 
-    @Test
-    fun `seek first complete only when get that piece`() = runTest {
-        logicalPieces[2].state.emit(PieceState.FINISHED)
-        assertCoroutineSuspends {
-            file.seek(1)
-        }
-        assertEquals(1L, file.offset)
-    }
+//    @Test
+//    fun `seek first complete only when get that piece`() = runTest {
+//        logicalPieces[2].state.emit(PieceState.FINISHED)
+//        assertCoroutineSuspends {
+//            file.seek(1)
+//        }
+//        assertEquals(1L, file.offset)
+//    }
 
-    @Test
-    fun seekToSecondPiece() = runTest {
-        launch(start = CoroutineStart.UNDISPATCHED) {
-            yield()
-            logicalPieces[1].state.emit(PieceState.FINISHED)
-            println("Piece finished")
-        }
-        file.seek(17)
-        assertEquals(17L, file.offset)
-    }
+//    @Test
+//    fun seekToSecondPiece() = runTest {
+//        launch(start = CoroutineStart.UNDISPATCHED) {
+//            yield()
+//            logicalPieces[1].state.emit(PieceState.FINISHED)
+//            println("Piece finished")
+//        }
+//        file.seek(17)
+//        assertEquals(17L, file.offset)
+//    }
 
     @Test
     fun seekReadSecondPiece() = runTest {

@@ -82,7 +82,7 @@ public interface SeekableInput : AutoCloseable {
  *
  * See [SeekableInput.read] for more details about the behaviour of asynchronous reading.
  */
-public suspend fun SeekableInput.readBytes(maxLength: Int = 4096): ByteArray {
+public fun SeekableInput.readBytes(maxLength: Int = 4096): ByteArray {
     val buffer = ByteArray(maxLength)
     val actualLength = read(buffer, 0, maxLength)
     if (actualLength == -1) return ByteArray(0)
