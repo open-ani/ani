@@ -26,7 +26,7 @@ internal class TorrentInput(
      * The corresponding pieces of the [io].
      */
     private val pieces: List<Piece>,
-    private val onSeek: suspend (Piece) -> Unit = { }
+    private val onWait: suspend (Piece) -> Unit = { }
 ) : SeekableInput {
     private val logicalStartOffset: Long = pieces.minOf { it.offset }
     private val totalLength = pieces.maxOf { it.offset + it.size } - logicalStartOffset
@@ -50,7 +50,7 @@ internal class TorrentInput(
         val piece = pieces[index]
         if (piece.state.value != PieceState.FINISHED) {
             runBlocking {
-                onSeek(piece)
+                onWait(piece)
                 piece.awaitFinished()
             }
         }

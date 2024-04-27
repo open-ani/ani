@@ -23,7 +23,7 @@ interface TorrentFileEntry { // 实现提示, 无 test mock
     /**
      * 文件数据长度. 注意, 这不是文件在硬盘上的大小. 在硬盘上可能会略有差别.
      */
-    val length: Long
+    val length: Long // get must be fast
 
     /**
      * 在种子资源中的相对目录. 例如 `01.mp4`, `TV/01.mp4`
@@ -65,7 +65,7 @@ interface TorrentFileEntry { // 实现提示, 无 test mock
     /**
      * Opens the downloaded file as a [SeekableInput].
      */
-    suspend fun createInput(): SeekableInput
+    fun createInput(): SeekableInput
 }
 
 /**

@@ -353,16 +353,17 @@ internal open class DefaultTorrentDownloadSession(
         override fun resolveFileOrNull(): File? =
             saveDirectory.resolve(relativePath).takeIf { it.isFile }
 
-        override suspend fun createInput(): SeekableInput {
-            logger.info { "createInput: finding cache file" }
-            val file = resolveDownloadingFile().asSeekableInput()
-            logger.info { "createInput: got cache file, awaiting pieces" }
+        override fun createInput(): SeekableInput {
+//            logger.info { "createInput: finding cache file" }
+            val input =
+                (resolveFileOrNull() ?: runBlocking { resolveDownloadingFile() }).asSeekableInput()
+//            logger.info { "createInput: got cache file, awaiting pieces" }
             val pieces = pieces
-            logger.info { "createInput: ${pieces.size} pieces" }
+//            logger.info { "createInput: ${pieces.size} pieces" }
             return TorrentInput(
-                file,
+                input,
                 pieces,
-                onSeek = { piece ->
+                onWait = { piece ->
                     logger.info { "[TorrentDownloadControl] $torrentName: Set piece ${piece.pieceIndex} deadline to 0 because it was requested " }
                     torrentThreadTasks.submit { handle ->
                         handle.setPieceDeadline(piece.pieceIndex, 0)

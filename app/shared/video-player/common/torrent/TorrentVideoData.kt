@@ -19,7 +19,7 @@ class TorrentVideoData(
     override val downloadSpeed get() = entry.stats.downloadRate.map { it?.bytes ?: FileSize.Unspecified }
     override val uploadRate get() = entry.stats.uploadRate.map { it?.bytes ?: FileSize.Unspecified }
 
-    override suspend fun createInput(): SeekableInput = entry.createInput()
+    override fun createInput(): SeekableInput = entry.createInput()
 
     override fun close() {
         handle.close()

@@ -33,7 +33,7 @@ class FileVideoData(
     override val downloadSpeed: StateFlow<FileSize> = MutableStateFlow(FileSize.Unspecified)
     override val uploadRate: Flow<FileSize> = MutableStateFlow(FileSize.Unspecified)
 
-    override suspend fun createInput(): SeekableInput = file.asSeekableInput()
+    override fun createInput(): SeekableInput = file.asSeekableInput()
     override fun close() {
         // no-op
     }

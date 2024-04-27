@@ -30,6 +30,7 @@ class VideoDataDataSource(
         @JvmStatic
         private val logger = logger(VideoDataDataSource::class)
         private const val ENABLE_READ_LOG = false
+        private const val ENABLE_TRACE_LOG = false
     }
 
     private var uri: Uri? = null
@@ -65,33 +66,33 @@ class VideoDataDataSource(
     }
 
     override fun open(dataSpec: DataSpec): Long {
-        logger.info { "Opening dataSpec, offset=${dataSpec.position}, length=${dataSpec.length}, videoData=$videoData" }
+        if (ENABLE_TRACE_LOG) logger.info { "Opening dataSpec, offset=${dataSpec.position}, length=${dataSpec.length}, videoData=$videoData" }
 
         val uri = dataSpec.uri
         if (opened && dataSpec.uri == this.uri) {
-            logger.info { "Double open, will not start download." }
+            if (ENABLE_TRACE_LOG) logger.info { "Double open, will not start download." }
         } else {
             this.uri = uri
             transferInitializing(dataSpec)
 
-            logger.info { "Acquiring SeekableInput (via videoData.createInput)" }
-            file = runBlocking { videoData.createInput() }
+            if (ENABLE_TRACE_LOG) logger.info { "Acquiring SeekableInput (via videoData.createInput)" }
+            file = videoData.createInput()
             opened = true
         }
 
         val torrentLength = videoData.fileLength
 
-        logger.info { "torrentLength = $torrentLength" }
+        if (ENABLE_TRACE_LOG) logger.info { "torrentLength = $torrentLength" }
 
         if (dataSpec.position >= torrentLength) {
-            logger.info { "dataSpec.position ${dataSpec.position} > torrentLength $torrentLength" }
+            if (ENABLE_TRACE_LOG) logger.info { "dataSpec.position ${dataSpec.position} > torrentLength $torrentLength" }
         } else {
             if (dataSpec.position != -1L && dataSpec.position != 0L) {
-                logger.info { "Seeking to ${dataSpec.position}" }
+                if (ENABLE_TRACE_LOG) logger.info { "Seeking to ${dataSpec.position}" }
                 runBlocking { file.seek(dataSpec.position) }
             }
 
-            logger.info { "Open done, bytesRemaining = ${file.bytesRemaining}" }
+            if (ENABLE_TRACE_LOG) logger.info { "Open done, bytesRemaining = ${file.bytesRemaining}" }
         }
 
         transferStarted(dataSpec)
@@ -101,7 +102,7 @@ class VideoDataDataSource(
     override fun getUri(): Uri? = uri
 
     override fun close() {
-        logger.info { "Closing VideoDataDataSource" }
+        if (ENABLE_TRACE_LOG) logger.info { "Closing VideoDataDataSource" }
         uri = null
         if (opened) {
             file.close()
