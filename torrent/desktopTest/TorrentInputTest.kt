@@ -12,6 +12,7 @@ import java.io.File
 import kotlin.math.ceil
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 private const val sampleText =
     "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."
@@ -76,12 +77,12 @@ internal sealed class TorrentInputTest {
 
     @Test
     fun findPiece() {
-        assertEquals(0, file.findPiece(0))
-        assertEquals(0, file.findPiece(2))
-        assertEquals(0, file.findPiece(15))
-        assertEquals(1, file.findPiece(16))
-        assertEquals(1, file.findPiece(20))
-        assertEquals(sampleTextByteArray.size / 16, file.findPiece(sampleTextByteArray.lastIndex.toLong()))
+        assertEquals(0, file.findPieceIndex(0))
+        assertEquals(0, file.findPieceIndex(2))
+        assertEquals(0, file.findPieceIndex(15))
+        assertEquals(1, file.findPieceIndex(16))
+        assertEquals(1, file.findPieceIndex(20))
+        assertEquals(sampleTextByteArray.size / 16, file.findPieceIndex(sampleTextByteArray.lastIndex.toLong()))
     }
 
     @Test
@@ -167,6 +168,98 @@ internal sealed class TorrentInputTest {
         file.readBytes().run {
             assertEquals(15, size)
             assertEquals("mply dummy text", String(this))
+        }
+    }
+
+
+    @Test
+    fun `buffer single finished pieces, initial zero`() = runTest {
+        logicalPieces[0].state.value = PieceState.FINISHED
+        // other pieces not finished
+        assertEquals(logicalPieces[0].size, file.computeMaxBufferSize(0, 100000))
+    }
+
+    @Test
+    fun `buffer single finished pieces, from intermediate`() = runTest {
+        logicalPieces[0].state.value = PieceState.FINISHED
+        // other pieces not finished
+        assertEquals(logicalPieces[0].size - 10, file.computeMaxBufferSize(10, 100000))
+    }
+
+    @Test
+    fun `buffer multiple finished pieces, from intermediate`() = runTest {
+        logicalPieces[0].state.value = PieceState.FINISHED
+        logicalPieces[1].state.value = PieceState.FINISHED
+        // other pieces not finished
+        assertEquals(logicalPieces[0].size - 0 + logicalPieces[0].size, file.computeMaxBufferSize(0, 100000))
+        assertEquals(logicalPieces[0].size - 10 + logicalPieces[0].size, file.computeMaxBufferSize(10, 100000))
+    }
+
+    @Test
+    fun `buffer zero byte (corner case)`() = runTest {
+        logicalPieces[0].state.value = PieceState.FINISHED
+        // other pieces not finished
+        assertEquals(0, file.computeMaxBufferSize(logicalPieces[0].size, 100000))
+    }
+
+    @Test
+    fun `computeMaxBufferSize starting from piece not finished`() = runTest {
+        // all pieces not finished
+        assertEquals(0, file.computeMaxBufferSize(0, 100000))
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Error cases
+    ///////////////////////////////////////////////////////////////////////////
+
+    @Test
+    fun `seek negative offset`() = runTest {
+        assertFailsWith<IllegalArgumentException> {
+            file.seek(-1)
+        }
+    }
+
+    @Test
+    fun `seek negative buffer`() = runTest {
+        assertFailsWith<IllegalArgumentException> {
+            file.seek(1, -1)
+        }
+    }
+
+    @Test
+    fun `read negative length`() = runTest {
+        assertFailsWith<IllegalArgumentException> {
+            file.read(ByteArray(1), 1, -1)
+        }
+    }
+
+    @Test
+    fun `read negative offset`() = runTest {
+        assertFailsWith<IllegalArgumentException> {
+            file.read(ByteArray(1), -1, 1)
+        }
+    }
+
+    @Test
+    fun `seek over size`() = runTest {
+        assertFailsWith<IllegalArgumentException> {
+            file.seek(Long.MAX_VALUE)
+        }
+    }
+
+    @Test
+    fun `read closed`() = runTest {
+        file.close()
+        assertFailsWith<IllegalStateException> {
+            file.read(ByteArray(1), 1, 1)
+        }
+    }
+
+    @Test
+    fun `seek closed`() = runTest {
+        file.close()
+        assertFailsWith<IllegalStateException> {
+            file.seek(10)
         }
     }
 }

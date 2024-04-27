@@ -1,5 +1,6 @@
 package me.him188.ani.utils.io
 
+import org.jetbrains.annotations.Range
 import java.io.IOException
 
 /**
@@ -13,14 +14,14 @@ public interface SeekableInput : AutoCloseable {
      *
      * Does not throw even if the input source is closed.
      */
-    public val offset: Long // get must be fast
+    public val offset: @Range(from = 0L, to = Long.MAX_VALUE) Long // get must be fast
 
     /**
      * The number of bytes remaining from the current position to the end of the input source.
      *
      * Does not throw even if the input source is closed.
      */
-    public val bytesRemaining: Long // get must be fast
+    public val bytesRemaining: @Range(from = 0L, to = Long.MAX_VALUE) Long // get must be fast
 
     /**
      * Seeks to the given offset in bytes from the start of the input source.
@@ -30,10 +31,18 @@ public interface SeekableInput : AutoCloseable {
      * When this function returns, it moves [the current position][SeekableInput.offset] to [offset].
      *
      * @param offset absolute offset in bytes from the start of the input source.
+     * @param maxBuffer the maximum number of bytes to buffer while seeking.
+     * Note that this is just a max value and it does not mean the implementation will endeavor buffer that many bytes.
+     * The implementation typically buffers up to only `8192 * 16` bytes.
      *
+     * @throws IllegalArgumentException if [offset] or [maxBuffer] is negative.
      * @throws IllegalStateException if the input source is closed.
      */
-    public fun seek(offset: Long)
+    @Throws(IOException::class)
+    public fun seek(
+        offset: @Range(from = 0L, to = Long.MAX_VALUE) Long,
+        maxBuffer: @Range(from = 1L, to = Long.MAX_VALUE) Long = Long.MAX_VALUE,
+    )
 
     /**
      * Reads up to [length] bytes from the input source into [buffer] starting at [offset].
@@ -60,6 +69,7 @@ public interface SeekableInput : AutoCloseable {
      *
      * @throws IllegalStateException if the input source is closed.
      */
+    @Throws(IOException::class)
     public fun read(
         buffer: ByteArray,
         offset: Int,

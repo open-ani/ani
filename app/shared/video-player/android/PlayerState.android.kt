@@ -133,13 +133,19 @@ internal class ExoPlayerState @UiThread constructor(
 
     private suspend fun openSource(source: VideoSource<*>): OpenedVideoSource {
         val data = source.open()
+        val file = data.createInput()
         return OpenedVideoSource(
             source,
             data,
             releaseResource = {
+                file.close()
                 data.close()
             },
-            mediaSourceFactory = ProgressiveMediaSource.Factory { VideoDataDataSource(data) }
+            mediaSourceFactory = ProgressiveMediaSource.Factory {
+                VideoDataDataSource(
+                    data, file
+                )
+            }
         )
     }
 

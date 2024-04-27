@@ -47,6 +47,7 @@ interface VideoData : AutoCloseable {
      * The returned [SeekableInput] must be closed before a new [createInput] can be made.
      * Otherwise, it is undefined behavior.
      */
+    @Throws(IOException::class)
     fun createInput(): SeekableInput
 
     override fun close()

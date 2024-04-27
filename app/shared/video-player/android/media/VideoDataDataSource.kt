@@ -14,6 +14,7 @@ import me.him188.ani.utils.io.SeekableInput
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
+import java.io.IOException
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.measureTimedValue
 
@@ -25,6 +26,7 @@ import kotlin.time.measureTimedValue
 @androidx.annotation.OptIn(UnstableApi::class)
 class VideoDataDataSource(
     private val videoData: VideoData,
+    private val file: SeekableInput,
 ) : BaseDataSource(true) {
     private companion object {
         @JvmStatic
@@ -35,7 +37,6 @@ class VideoDataDataSource(
 
     private var uri: Uri? = null
 
-    private lateinit var file: SeekableInput
     private var opened = false
 
     override fun read(buffer: ByteArray, offset: Int, length: Int): Int {
@@ -65,6 +66,7 @@ class VideoDataDataSource(
         return bytesRead
     }
 
+    @Throws(IOException::class)
     override fun open(dataSpec: DataSpec): Long {
         if (ENABLE_TRACE_LOG) logger.info { "Opening dataSpec, offset=${dataSpec.position}, length=${dataSpec.length}, videoData=$videoData" }
 
@@ -74,9 +76,6 @@ class VideoDataDataSource(
         } else {
             this.uri = uri
             transferInitializing(dataSpec)
-
-            if (ENABLE_TRACE_LOG) logger.info { "Acquiring SeekableInput (via videoData.createInput)" }
-            file = videoData.createInput()
             opened = true
         }
 
@@ -105,7 +104,6 @@ class VideoDataDataSource(
         if (ENABLE_TRACE_LOG) logger.info { "Closing VideoDataDataSource" }
         uri = null
         if (opened) {
-            file.close()
             transferEnded()
         }
     }
