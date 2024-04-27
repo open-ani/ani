@@ -63,13 +63,12 @@ internal fun EpisodeVideoImpl(
     setControllerVisible: (Boolean) -> Unit,
     title: @Composable () -> Unit,
     danmakuHostState: DanmakuHostState,
-    videoSourceSelected: () -> Boolean,
-    videoSourceState: () -> VideoSourceState,
+    videoLoadingState: () -> VideoLoadingState,
     danmakuConfig: () -> DanmakuConfig,
     onClickFullScreen: () -> Unit,
     danmakuEnabled: () -> Boolean,
     setDanmakuEnabled: (enabled: Boolean) -> Unit,
-    danmakuEditor: @Composable RowScope.() -> Unit,
+    danmakuEditor: @Composable (RowScope.() -> Unit),
     modifier: Modifier = Modifier,
     maintainAspectRatio: Boolean = !expanded,
 ) {
@@ -159,7 +158,7 @@ internal fun EpisodeVideoImpl(
         },
         floatingMessage = {
             Column {
-                EpisodeVideoLoadingIndicator(playerState, videoSourceSelected(), videoSourceState)
+                EpisodeVideoLoadingIndicator(playerState, videoLoadingState())
             }
         },
         rhsBar = {

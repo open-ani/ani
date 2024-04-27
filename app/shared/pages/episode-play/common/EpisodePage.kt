@@ -253,7 +253,7 @@ private fun EpisodeVideo(
     val danmakuConfig by vm.danmaku.config.collectAsStateWithLifecycle(DanmakuConfig.Default)
 
     val danmakuEnabled by vm.danmaku.enabled.collectAsStateWithLifecycle(false)
-    val videoSourceState by vm.videoSourceState.collectAsStateWithLifecycle(VideoSourceState.Initial)
+    val videoLoadingState by vm.videoLoadingState.collectAsStateWithLifecycle(VideoLoadingState.Initial)
 
     // Don't rememberSavable. 刻意让每次切换都是隐藏的
     var controllerVisible by remember { mutableStateOf(initialControllerVisible) }
@@ -274,8 +274,7 @@ private fun EpisodeVideo(
             )
         },
         danmakuHostState = vm.danmaku.danmakuHostState,
-        videoSourceSelected = { vm.mediaSelected },
-        videoSourceState = { videoSourceState },
+        videoLoadingState = { videoLoadingState },
         danmakuConfig = { danmakuConfig },
         onClickFullScreen = {
             if (vm.isFullscreen) {

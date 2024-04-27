@@ -44,9 +44,12 @@ import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.app.ui.subject.episode.danmaku.PlayerDanmakuViewModel
 import me.him188.ani.app.ui.subject.episode.mediaFetch.EpisodeMediaFetchSession
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorState
+import me.him188.ani.app.videoplayer.data.OpenFailures
 import me.him188.ani.app.videoplayer.data.VideoSource
+import me.him188.ani.app.videoplayer.data.VideoSourceOpenException
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
+import me.him188.ani.app.videoplayer.ui.state.UnsupportedVideoSourceException
 import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuPresentation
 import me.him188.ani.danmaku.api.DanmakuSearchRequest
@@ -136,7 +139,7 @@ interface EpisodeViewModel : HasBackgroundScope {
 
     // Video
 
-    val videoSourceState: StateFlow<VideoSourceState>
+    val videoLoadingState: StateFlow<VideoLoadingState>
 
     /**
      * `true` if a play source is selected by user (or automatically)
@@ -209,7 +212,7 @@ private class EpisodeViewModelImpl(
         mediaSelectorState.selected != null
     }
 
-    override val videoSourceState: MutableStateFlow<VideoSourceState> = MutableStateFlow(VideoSourceState.Initial)
+    override val videoLoadingState: MutableStateFlow<VideoLoadingState> = MutableStateFlow(VideoLoadingState.Initial)
 
     /**
      * The [VideoSource] selected to play.
@@ -227,7 +230,7 @@ private class EpisodeViewModelImpl(
                     val presentation = withContext(Dispatchers.Main) {
                         episodePresentation
                     }
-                    videoSourceState.value = VideoSourceState.Resolving
+                    videoLoadingState.value = VideoLoadingState.ResolvingSource
                     emit(
                         videoSourceResolver.resolve(
                             media,
@@ -237,18 +240,18 @@ private class EpisodeViewModelImpl(
                             )
                         )
                     )
-                    videoSourceState.value = VideoSourceState.Succeed
+                    videoLoadingState.compareAndSet(VideoLoadingState.ResolvingSource, VideoLoadingState.DecodingData)
                 } catch (e: UnsupportedMediaException) {
                     logger.error(e) { "Failed to resolve video source" }
-                    videoSourceState.value = VideoSourceState.UnsupportedMedia
+                    videoLoadingState.value = VideoLoadingState.UnsupportedMedia
                     emit(null)
                 } catch (e: MagnetTimeoutException) {
-                    videoSourceState.value = VideoSourceState.ResolutionTimedOut
+                    videoLoadingState.value = VideoLoadingState.ResolutionTimedOut
                     emit(null)
                 } catch (_: CancellationException) {
                 } catch (e: Throwable) {
                     logger.error(e) { "Failed to resolve video source" }
-                    videoSourceState.value = VideoSourceState.UnknownError
+                    videoLoadingState.value = VideoLoadingState.UnknownError
                     emit(null)
                 }
             }
@@ -371,7 +374,22 @@ private class EpisodeViewModelImpl(
         launchInBackground {
             videoSource.collect {
                 logger.info { "EpisodeViewModel got new video source: $it, updating playerState" }
-                playerState.setVideoSource(it)
+                try {
+                    playerState.setVideoSource(it)
+                } catch (e: VideoSourceOpenException) {
+                    videoLoadingState.value = when (e.reason) {
+                        OpenFailures.NO_MATCHING_FILE -> VideoLoadingState.NoMatchingFile
+                    }
+                } catch (e: UnsupportedVideoSourceException) {
+                    videoLoadingState.value = VideoLoadingState.UnsupportedMedia
+                } catch (_: CancellationException) {
+                    // ignore
+                    return@collect
+                } catch (e: Throwable) {
+                    logger.error(e) { "Failed to set video source" }
+                    videoLoadingState.value = VideoLoadingState.UnknownError
+                }
+                videoLoadingState.value = VideoLoadingState.Succeed
             }
         }
     }
@@ -392,14 +410,32 @@ private class EpisodeViewModelImpl(
     }
 }
 
-sealed class VideoSourceState {
-    data object Initial : VideoSourceState()
-    data object Resolving : VideoSourceState()
+sealed interface VideoLoadingState {
+    sealed interface Progressing : VideoLoadingState
 
-    sealed class Failed : VideoSourceState()
+    /**
+     * 等待选择 [Media]
+     */
+    data object Initial : VideoLoadingState
+
+    /**
+     * 在解析磁力链/寻找文件
+     */
+    data object ResolvingSource : VideoLoadingState, Progressing
+
+    /**
+     * 在寻找种子资源中的正确的文件, 并打开文件
+     */
+    data object DecodingData : VideoLoadingState, Progressing
+
+    /**
+     * 文件成功找到
+     */
+    data object Succeed : VideoLoadingState, Progressing
+
+    sealed class Failed : VideoLoadingState
     data object ResolutionTimedOut : Failed()
     data object UnsupportedMedia : Failed()
+    data object NoMatchingFile : Failed()
     data object UnknownError : Failed()
-
-    data object Succeed : VideoSourceState()
 }

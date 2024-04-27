@@ -3,6 +3,7 @@ package me.him188.ani.app.ui.subject.episode.video.loading
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.ui.subject.episode.VideoLoadingState
 import me.him188.ani.datasources.api.topic.FileSize.Companion.Unspecified
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 
@@ -11,24 +12,29 @@ import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 private fun PreviewEpisodeVideoLoadingIndicator() {
     ProvideCompositionLocalsForPreview {
         EpisodeVideoLoadingIndicator(
-            EpisodeVideoLoadingState.deduceFrom(
-                mediaSelected = false,
-                videoDataReady = false,
-            ),
+            VideoLoadingState.Initial,
             speedProvider = { 0.3.bytes },
         )
     }
 }
 
-@Preview(name = "Preparing")
+@Preview(name = "ResolvingSource")
 @Composable
 private fun PreviewEpisodeVideoLoadingIndicator2() {
     ProvideCompositionLocalsForPreview {
         EpisodeVideoLoadingIndicator(
-            EpisodeVideoLoadingState.deduceFrom(
-                mediaSelected = true,
-                videoDataReady = false,
-            ),
+            VideoLoadingState.ResolvingSource,
+            speedProvider = { 0.3.bytes },
+        )
+    }
+}
+
+@Preview(name = "ResolvingSource")
+@Composable
+private fun PreviewEpisodeVideoLoadingIndicator5() {
+    ProvideCompositionLocalsForPreview {
+        EpisodeVideoLoadingIndicator(
+            VideoLoadingState.DecodingData,
             speedProvider = { 0.3.bytes },
         )
     }
@@ -39,11 +45,19 @@ private fun PreviewEpisodeVideoLoadingIndicator2() {
 private fun PreviewEpisodeVideoLoadingIndicator3() {
     ProvideCompositionLocalsForPreview {
         EpisodeVideoLoadingIndicator(
-            EpisodeVideoLoadingState.deduceFrom(
-                mediaSelected = true,
-                videoDataReady = true,
-            ),
+            VideoLoadingState.Succeed,
             speedProvider = { 0.3.bytes },
+        )
+    }
+}
+
+@Preview(name = "Failed")
+@Composable
+private fun PreviewEpisodeVideoLoadingIndicator7() {
+    ProvideCompositionLocalsForPreview {
+        EpisodeVideoLoadingIndicator(
+            VideoLoadingState.ResolutionTimedOut,
+            speedProvider = { Unspecified },
         )
     }
 }
@@ -53,10 +67,7 @@ private fun PreviewEpisodeVideoLoadingIndicator3() {
 private fun PreviewEpisodeVideoLoadingIndicator4() {
     ProvideCompositionLocalsForPreview {
         EpisodeVideoLoadingIndicator(
-            EpisodeVideoLoadingState.deduceFrom(
-                mediaSelected = true,
-                videoDataReady = true,
-            ),
+            VideoLoadingState.Succeed,
             speedProvider = { Unspecified },
         )
     }

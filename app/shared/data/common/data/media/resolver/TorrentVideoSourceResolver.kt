@@ -98,6 +98,7 @@ private class TorrentVideoSource(
         "torrent://${encodedTorrentInfo.data.toHexString()}"
     }
 
+    @Throws(VideoSourceOpenException::class)
     override suspend fun open(): TorrentVideoData {
         return TorrentVideoData(
             withContext(Dispatchers.IO) {

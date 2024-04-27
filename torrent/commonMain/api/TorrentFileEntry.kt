@@ -43,7 +43,7 @@ interface TorrentFileEntry { // 实现提示, 无 test mock
     /**
      * 创建一个句柄, 以用于下载文件.
      */
-    suspend fun createHandle(): TorrentFileHandle
+    fun createHandle(): TorrentFileHandle
 
     /**
      * Awaits until the hash is available
@@ -83,13 +83,13 @@ interface TorrentFileHandle : AutoCloseable {
      *
      * @throws IllegalStateException 当已经 [close] 时抛出
      */
-    suspend fun resume(priority: FilePriority = FilePriority.NORMAL)
+    fun resume(priority: FilePriority = FilePriority.NORMAL)
 
     /**
      * 暂停下载
      * @throws IllegalStateException 当已经 [close] 时抛出
      */
-    suspend fun pause()
+    fun pause()
 
     /**
      * 停止下载并关闭此 [TorrentFileHandle]. 后续将不能再 [resume] 或 [pause] 等.

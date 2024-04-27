@@ -202,7 +202,7 @@ internal open class DefaultTorrentDownloadSession(
                 this@DefaultTorrentDownloadSession.closeIfNotInUse()
             }
 
-            override suspend fun pause() {
+            override fun pause() {
                 checkClosed()
                 requestPriority(null)
             }
@@ -216,11 +216,11 @@ internal open class DefaultTorrentDownloadSession(
 
             override val entry get() = this@TorrentFileEntryImpl
 
-            override suspend fun resume(priority: FilePriority) {
+            override fun resume(priority: FilePriority) {
                 checkClosed()
 
                 val pieces = pieces
-                torrentThreadTasks.withHandle { handle ->
+                torrentThreadTasks.submit { handle ->
                     if (pieces.isNotEmpty()) {
                         val firstIndex = pieces.first().pieceIndex
                         val lastIndex = pieces.last().pieceIndex
@@ -313,7 +313,7 @@ internal open class DefaultTorrentDownloadSession(
             }
         }
 
-        override suspend fun createHandle(): TorrentFileHandle = TorrentFileHandleImpl().also {
+        override fun createHandle(): TorrentFileHandle = TorrentFileHandleImpl().also {
             priorityRequests[it] = null
             openHandles.add(it)
         }

@@ -13,6 +13,7 @@ import me.him188.ani.app.platform.Context
 import me.him188.ani.app.videoplayer.data.VideoData
 import me.him188.ani.app.videoplayer.data.VideoProperties
 import me.him188.ani.app.videoplayer.data.VideoSource
+import me.him188.ani.app.videoplayer.data.VideoSourceOpenException
 import me.him188.ani.app.videoplayer.ui.VideoPlayer
 import kotlin.coroutines.CoroutineContext
 
@@ -50,7 +51,9 @@ interface PlayerState {
      *
      * @param source the video source to play. `null` to stop playing.
      * @throws UnsupportedVideoSourceException if the video source is not supported by this player.
+     * @throws VideoSourceOpenException 当打开失败时抛出, 包含原因
      */
+    @Throws(VideoSourceOpenException::class)
     suspend fun setVideoSource(source: VideoSource<*>?)
 
     /**

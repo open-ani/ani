@@ -106,7 +106,12 @@ internal class ExoPlayerState @UiThread constructor(
         openResource.value = null
         previousResource?.releaseResource?.invoke()
 
-        val opened = openSource(source)
+        val opened = try {
+            openSource(source)
+        } catch (e: Throwable) {
+            logger.error(e) { "Failed to open VideoSource: $source" }
+            throw e
+        }
 
         try {
             logger.info { "Initializing player with VideoSource: $source" }
