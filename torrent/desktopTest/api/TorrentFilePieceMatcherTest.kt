@@ -11,21 +11,14 @@ internal class TorrentFilePieceMatcherTest : TorrentSessionSupport() {
     // 直接在 session 里测试
 
     @Test
-    fun `file piece - calculation until requested`() = runTest {
+    fun `file piece - calculation in ctor`() = runTest {
         withSession {
             assertCoroutineSuspends { getFiles() }
             setHandle {
                 files.add(TestTorrentFile("1.mp4", 1024))
                 // 没有提供 piece
             }
-            getFiles().run {
-                assertEquals(1, size)
-                assertEquals("1.mp4", first().pathInTorrent)
-            }
-            // 到目前为止都没有计算 piece range
-            assertFails {
-                getFiles().first().pieces
-            }
+            assertFails { getFiles() }
         }
     }
 
@@ -202,12 +195,7 @@ internal class TorrentFilePieceMatcherTest : TorrentSessionSupport() {
                 }
             }
 
-            getFiles().run {
-                get(0).run {
-                    assertEquals("1.mp4", pathInTorrent)
-                    assertFails { pieces }
-                }
-            }
+            assertFails { getFiles() }
         }
     }
 
@@ -224,11 +212,7 @@ internal class TorrentFilePieceMatcherTest : TorrentSessionSupport() {
                 }
             }
 
-            getFiles().run {
-                get(1).run {
-                    assertFails { pieces }
-                }
-            }
+            assertFails { getFiles() }
         }
     }
 }
