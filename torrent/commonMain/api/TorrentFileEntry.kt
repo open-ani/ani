@@ -4,7 +4,7 @@ import me.him188.ani.app.torrent.api.pieces.Piece
 import me.him188.ani.app.torrent.api.pieces.lastIndex
 import me.him188.ani.app.torrent.api.pieces.startIndex
 import me.him188.ani.utils.io.SeekableInput
-import java.nio.file.Path
+import java.io.File
 
 /**
  * 表示 BT 资源中的一个文件.
@@ -58,7 +58,9 @@ interface TorrentFileEntry { // 实现提示, 无 test mock
     /**
      * 绝对路径. 挂起直到文件路径可用 (即有任意一个 piece 下载完成时)
      */
-    suspend fun resolveFile(): Path
+    suspend fun resolveFile(): File
+
+    fun resolveFileOrNull(): File?
 
     /**
      * Opens the downloaded file as a [SeekableInput].

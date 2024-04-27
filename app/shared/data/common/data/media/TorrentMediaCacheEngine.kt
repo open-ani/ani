@@ -38,7 +38,6 @@ import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
 import java.nio.file.Paths
 import kotlin.coroutines.CoroutineContext
-import kotlin.io.path.deleteIfExists
 import kotlin.io.path.exists
 
 private const val EXTRA_TORRENT_DATA = "torrentData"
@@ -60,10 +59,10 @@ class TorrentMediaCacheEngine(
 
     class LazyFileHandle(
         val scope: CoroutineScope,
-        val state: SharedFlow<State?>,
+        val state: SharedFlow<State?>, // suspend lazy
     ) {
-        val handle = state.map { it?.handle }
-        val entry = state.map { it?.entry }
+        val handle = state.map { it?.handle } // single emit
+        val entry = state.map { it?.entry } // single emit
 
         class State(
             val session: TorrentDownloadSession,
@@ -161,15 +160,23 @@ class TorrentMediaCacheEngine(
                 if (deleted) return
                 deleted = true
             }
-            val handle = lazyFileHandle.handle.first() ?: return // did not even selected a file
-            val file = handle.entry.resolveFile()
-            handle.close()
+            val handle = lazyFileHandle.handle.first() ?: kotlin.run {
+                // did not even selected a file
+                lazyFileHandle.scope.coroutineContext.job.cancelAndJoin()
+                return
+            }
+
             lazyFileHandle.scope.coroutineContext.job.cancelAndJoin()
-            if (file.exists()) {
-                logger.info { "Deleting torrent cache: $file" }
-                file.deleteIfExists()
-            } else {
-                logger.info { "Torrent cache does not exist, ignoring: $file" }
+            handle.close()
+
+            val file = handle.entry.resolveFileOrNull() ?: return
+            withContext(Dispatchers.IO) {
+                if (file.exists()) {
+                    logger.info { "Deleting torrent cache: $file" }
+                    file.delete()
+                } else {
+                    logger.info { "Torrent cache does not exist, ignoring: $file" }
+                }
             }
         }
     }

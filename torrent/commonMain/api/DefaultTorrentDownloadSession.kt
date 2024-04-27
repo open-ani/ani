@@ -17,7 +17,6 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.torrent.api.TorrentFilePieceMatcher.matchPiecesForFile
@@ -38,7 +37,6 @@ import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import java.io.File
 import java.io.IOException
-import java.nio.file.Path
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -129,7 +127,7 @@ internal open class DefaultTorrentDownloadSession(
             pieces[index].state.value = PieceState.FINISHED
             for (openHandle in openHandles) {
                 if (openHandle.entry.pieces.any { it.pieceIndex == index }) {
-                    openHandle.entry.updatedDownloadedBytes.value += pieces[index].size
+                    openHandle.entry.downloadedBytes.value += pieces[index].size
                 }
             }
             logger.debug { "[TorrentDownloadControl] Piece downloaded: $index. " } // Was downloading ${controller.getDebugInfo().downloadingPieces}
@@ -262,13 +260,10 @@ internal open class DefaultTorrentDownloadSession(
 
         val finishedOverride = MutableStateFlow(false)
 
-        val updatedDownloadedBytes = MutableStateFlow(0L)
+        val downloadedBytes = MutableStateFlow(actualInfo().calculateTotalFinishedSize(pieces))
         override val stats: DownloadStats = object : DownloadStats {
             override val totalBytes: Flow<Long> = flowOf(length)
-            val initialDownloadedBytes = flow {
-                emit(actualInfo.await().calculateTotalFinishedSize(pieces))
-            }
-            override val downloadedBytes = merge(initialDownloadedBytes, updatedDownloadedBytes)
+            override val downloadedBytes get() = this@TorrentFileEntryImpl.downloadedBytes
             override val downloadRate: Flow<Long?> get() = overallStats.downloadRate // TODO: separate download/upload rate for torrent file 
             override val uploadRate: Flow<Long?> get() = overallStats.uploadRate
             override val progress: Flow<Float> =
@@ -323,7 +318,7 @@ internal open class DefaultTorrentDownloadSession(
             openHandles.add(it)
         }
 
-        override suspend fun resolveFile(): Path = resolveDownloadingFile().toPath()
+        override suspend fun resolveFile(): File = resolveDownloadingFile()
 
         private val hashMd5 by lazy {
             scope.async {
@@ -355,7 +350,7 @@ internal open class DefaultTorrentDownloadSession(
         }
 
         @Throws(IOException::class)
-        private fun resolveFileOrNull(): File? =
+        override fun resolveFileOrNull(): File? =
             saveDirectory.resolve(relativePath).takeIf { it.isFile }
 
         override suspend fun createInput(): SeekableInput {
