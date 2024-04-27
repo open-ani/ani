@@ -64,7 +64,7 @@ public abstract class BufferedInput(
     bufferSize: Int,
 ) : SeekableInput {
     protected companion object {
-        public const val DEFAULT_BUFFER_PER_DIRECTION: Int = 8192
+        public const val DEFAULT_BUFFER_PER_DIRECTION: Int = 8192 * 16
 
         public fun Long.coerceToInt(): Int {
             if (this > Int.MAX_VALUE) return Int.MAX_VALUE
