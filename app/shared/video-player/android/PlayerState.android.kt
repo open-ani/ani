@@ -117,6 +117,7 @@ internal class ExoPlayerState @UiThread constructor(
             logger.info { "Initializing player with VideoSource: $source" }
             val item = opened.mediaSourceFactory.createMediaSource(MediaItem.fromUri(source.uri))
             withContext(Dispatchers.Main.immediate) {
+                state.value = PlaybackState.PAUSED_BUFFERING
                 player.setMediaSource(item)
                 player.prepare()
                 player.play()

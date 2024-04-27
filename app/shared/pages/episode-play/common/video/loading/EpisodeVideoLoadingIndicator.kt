@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import me.him188.ani.app.ui.subject.episode.VideoLoadingState
 import me.him188.ani.app.videoplayer.ui.VideoLoadingIndicator
+import me.him188.ani.app.videoplayer.ui.state.PlaybackState
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.datasources.api.topic.FileSize
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
@@ -29,12 +30,16 @@ fun EpisodeVideoLoadingIndicator(
     modifier: Modifier = Modifier,
 ) {
     val isBuffering by playerState.isBuffering.collectAsStateWithLifecycle(true)
+    val state by playerState.state.collectAsStateWithLifecycle()
 
     val speed by remember(playerState) {
         playerState.videoData.filterNotNull().flatMapLatest { it.downloadSpeed }
     }.collectAsStateWithLifecycle(FileSize.Unspecified)
 
-    if (isBuffering || videoLoadingState !is VideoLoadingState.Succeed) {
+    if (isBuffering ||
+        state == PlaybackState.PAUSED_BUFFERING || // 如果不加这个, 就会有一段时间资源名字还没显示出来, 也没显示缓冲中
+        videoLoadingState !is VideoLoadingState.Succeed
+    ) {
         EpisodeVideoLoadingIndicator(
             videoLoadingState,
             speedProvider = { speed },
