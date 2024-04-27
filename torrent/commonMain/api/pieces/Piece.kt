@@ -45,6 +45,19 @@ class Piece(
                 pieceOffset += pieceSize
             }
         }
+
+        fun buildPieces(
+            totalSize: Long,
+            pieceSize: Long,
+            initial: Long = 0L,
+        ) = buildPieces((totalSize / pieceSize).toInt(), initial) { pieceSize }
+            .let {
+                it + Piece(
+                    pieceIndex = it.size,
+                    size = totalSize % pieceSize,
+                    offset = totalSize - (totalSize % pieceSize) + initial
+                )
+            }
     }
 
     override fun toString(): String {

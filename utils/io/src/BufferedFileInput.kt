@@ -35,25 +35,24 @@ public value class OffsetRange private constructor(
 
 internal class BufferedFileInput(
     private val file: RandomAccessFile,
-) : BufferedInput() {
+    private val bufferSize: Int = DEFAULT_BUFFER_PER_DIRECTION,
+) : BufferedInput(bufferSize) {
     override val fileLength: Long get() = file.length()
 
     override fun fillBuffer() {
-        val buf = this.buf
         val fileLength = this.fileLength
         val pos = this.position
 
-        val readStart = (pos - BUFFER_PER_DIRECTION).coerceAtLeast(0)
-        val readEnd = (pos + BUFFER_PER_DIRECTION).coerceAtMost(fileLength)
+        val readStart = (pos - bufferSize).coerceAtLeast(0)
+        val readEnd = (pos + bufferSize).coerceAtMost(fileLength)
 
-        val readLength = (readEnd - readStart).coerceToInt()
+        fillBufferRange(readStart, readEnd)
+    }
 
+    override fun readFileToBuffer(fileOffset: Long, bufferOffset: Int, length: Int): Int {
         val file = this.file
-        file.seek(readStart)
-        file.readFully(buf, 0, readLength)
-
-        this.bufferedOffsetStart = readStart
-        this.bufferedOffsetEndExcl = readEnd
+        file.seek(fileOffset)
+        return file.read(buf, bufferOffset, length)
     }
 
     override fun toString(): String {
@@ -61,9 +60,11 @@ internal class BufferedFileInput(
     }
 }
 
-public abstract class BufferedInput : SeekableInput {
+public abstract class BufferedInput(
+    bufferSize: Int,
+) : SeekableInput {
     protected companion object {
-        public const val BUFFER_PER_DIRECTION: Int = 8192
+        public const val DEFAULT_BUFFER_PER_DIRECTION: Int = 8192
 
         public fun Long.coerceToInt(): Int {
             if (this > Int.MAX_VALUE) return Int.MAX_VALUE
@@ -86,12 +87,15 @@ public abstract class BufferedInput : SeekableInput {
     /**
      * @see buf 包含的数据的结束位置 (exclusive)
      */
-    protected var bufferedOffsetEndExcl: Long = -1L
+    protected var bufferedOffsetEndExcl: Long = 0L
 
     @get:TestOnly
     public val bufferedOffsetRange: LongRange get() = bufferedOffsetStart..<bufferedOffsetEndExcl
 
-    protected var buf: ByteArray = ByteArray(BUFFER_PER_DIRECTION * 2)
+    /**
+     * 双向缓冲区, 读取一次后, seek 回去也能很快
+     */
+    protected var buf: ByteArray = ByteArray(bufferSize * 2)
 
     /**
      * 当前 user 读到的位置
@@ -119,6 +123,80 @@ public abstract class BufferedInput : SeekableInput {
      */
     protected abstract fun fillBuffer()
 
+    protected fun fillBufferRange(readStart: Long, readEnd: Long) {
+        /**
+         * 本次读 buffer 需要的长度
+         */
+        val readLength = (readEnd - readStart).coerceToInt()
+
+        // 尽量先从旧的 buffer 里 "移动"
+        val bufferedStart = bufferedOffsetStart
+        val bufferedEnd = bufferedOffsetEndExcl
+        val read = if (bufferedStart != -1L) {
+            // 我们只考虑用旧 buffer 来填充新 buffer 的前面/后面一部分, 来少读取一些文件字节, 不考虑中间包含的情况. 
+            // 如果用旧的 buffer 填充新 buffer 的中间一部分, 那么还需要两次文件 IO 才能完成新 buffer, 这可能比一次文件 IO 更慢.
+            if (readStart in bufferedStart..<bufferedEnd) {
+                // 旧 buffer 的一部分可以用作前面
+                /*
+                 *                        can be reused
+                 *                      |---------------|
+                 * File: |--------------------------------------------------------|
+                 *          ^           ^               ^              ^
+                     bufferedStart   readStart     bufferedEnd        readEnd
+                 * 
+                 */
+                buf.copyInto(
+                    buf,
+                    destinationOffset = 0,// relative to readStart
+                    startIndex = (readStart - bufferedStart).checkToInt(),
+                    endIndex = (bufferedEnd - bufferedStart).checkToInt(),
+                )
+                // 用文件填充 buffer 的后面
+                readFileToBuffer(
+                    fileOffset = bufferedEnd,
+                    bufferOffset = (bufferedEnd - readStart).checkToInt(),
+                    length = (readEnd - bufferedEnd).coerceToInt()
+                )
+            } else if (readEnd in (bufferedStart + 1)..bufferedEnd) {
+                // 旧 buffer 的一部分可以用作后面
+                /*
+                 *                                        can be reused
+                 *                                      |--------------|
+                 * File: |--------------------------------------------------------------------|
+                 *                      ^               ^              ^            ^
+                 *                  readStart     bufferedStart     readEnd     bufferedEnd
+                 *  
+                 */
+                buf.copyInto(
+                    buf,
+                    destinationOffset = (bufferedStart - readStart).checkToInt(), // relative to readStart
+                    startIndex = 0,
+                    endIndex = (readEnd - bufferedStart).checkToInt(),
+                )
+                // 用文件填充 buffer 的前面
+                readFileToBuffer(
+                    fileOffset = readStart,
+                    bufferOffset = 0,
+                    length = (bufferedStart - readStart).coerceToInt()
+                )
+            } else {
+                // 旧 buffer 不能用
+                readFileToBuffer(readStart, 0, readLength)
+            }
+        } else {
+            readFileToBuffer(readStart, 0, readLength)
+        }
+        this.bufferedOffsetStart = readStart
+        this.bufferedOffsetEndExcl = readEnd
+    }
+
+    protected abstract fun readFileToBuffer(fileOffset: Long, bufferOffset: Int, length: Int): Int
+
+    override fun prepareBuffer() {
+        checkClosed()
+        fillBuffer()
+    }
+
     final override fun read(buffer: ByteArray, offset: Int, length: Int): Int {
         require(offset >= 0) { "offset must be non-negative, but was $offset" }
         require(length >= 0) { "length must be non-negative, but was $length" }
@@ -126,6 +204,7 @@ public abstract class BufferedInput : SeekableInput {
         checkClosed()
 
         if (this.position >= fileLength) return -1
+        if (length == 0) return 0
 
         var read = readFromBuffer(length, buffer, offset)
         if (read != -1) return read // 已经从 buffer 读了
@@ -146,7 +225,6 @@ public abstract class BufferedInput : SeekableInput {
         val pos = this.position
 
         if (bufStart != -1L) {
-            check(bufEnd != -1L)
             // 有 buffer
 
             if (pos in bufStart..<bufEnd) {

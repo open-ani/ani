@@ -40,6 +40,8 @@ public interface SeekableInput : AutoCloseable {
         position: @Range(from = 0L, to = Long.MAX_VALUE) Long,
     )
 
+    public fun prepareBuffer() {}
+
     /**
      * Reads up to [length] bytes from the input source into [buffer] starting at [offset].
      *
@@ -97,6 +99,18 @@ public fun SeekableInput.readBytes(maxLength: Int = 4096): ByteArray {
     } else {
         buffer
     }
+}
+
+public fun SeekableInput.readAllBytes(): ByteArray {
+    val buffer = ByteArray(bytesRemaining.toInt())
+    var offset = 0
+    while (true) {
+        val read = read(buffer, offset)
+        if (read == -1) break
+        offset += read
+    }
+    if (offset == buffer.size) return buffer
+    return buffer.copyOf(newSize = offset)
 }
 
 

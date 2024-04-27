@@ -29,13 +29,13 @@ internal class TorrentInput(
      * The corresponding pieces of the [io].
      */
     private val pieces: List<Piece>,
-    private val onWait: suspend (Piece) -> Unit = { }
-) : BufferedInput() {
+    private val onWait: suspend (Piece) -> Unit = { },
+    private val bufferSize: Int = DEFAULT_BUFFER_PER_DIRECTION,
+) : BufferedInput(bufferSize) {
     private val logicalStartOffset: Long = pieces.minOf { it.offset }
     override val fileLength: Long = pieces.maxOf { it.offset + it.size } - logicalStartOffset
 
     override fun fillBuffer() {
-        val buf = this.buf
         val fileLength = this.fileLength
         val pos = this.position
 
@@ -50,24 +50,19 @@ internal class TorrentInput(
             }
         }
 
-        val maxBackward = computeMaxBufferSizeBackward(pos, BUFFER_PER_DIRECTION.toLong(), piece = piece)
-        val maxForward = computeMaxBufferSizeForward(pos, BUFFER_PER_DIRECTION.toLong(), piece = piece)
+        val maxBackward = computeMaxBufferSizeBackward(pos, bufferSize.toLong(), piece = piece)
+        val maxForward = computeMaxBufferSizeForward(pos, bufferSize.toLong(), piece = piece)
 
         val readStart = (pos - maxBackward).coerceAtLeast(0)
         val readEnd = (pos + maxForward).coerceAtMost(fileLength)
 
-        val readLength = (readEnd - readStart).coerceToInt()
+        fillBufferRange(readStart, readEnd)
+    }
 
+    override fun readFileToBuffer(fileOffset: Long, bufferOffset: Int, length: Int): Int {
         val file = this.file
-        file.seek(readStart)
-        val actualRead = file.read(buf, 0, readLength)
-        if (actualRead == -1) {
-            this.bufferedOffsetStart = -1
-            this.bufferedOffsetEndExcl = -1
-        } else {
-            this.bufferedOffsetStart = readStart
-            this.bufferedOffsetEndExcl = readStart + actualRead
-        }
+        file.seek(fileOffset)
+        return file.read(buf, bufferOffset, length)
     }
 
     /**
