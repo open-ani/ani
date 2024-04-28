@@ -38,10 +38,9 @@ jobs:
             - `.zip` 是包含 JRE 的解压即用的绿色版本；
             - `.dmg`、`.deb`、`.rpm` 和 `.msi` 分别是 macOS、Debian、RedHat 和 Windows 平台的安装程序；
             - `.exe` 是包含 JRE 的 Windows 程序，可以直接运行。
-            - `.jar` 是不包含 JRE 的最小程序，需要配合 JRE 11 及以上使用；
-            - `.apk` 是 Android 应用，支持的最低 Android 版本为 8.0；
+            - `.jar` 是不包含 JRE 的最小程序，需要配合 JRE 17 及以上使用；
             
-            注意，桌面平台仅支持 64 位操作系统。在使用 macOS 的安装程序时可能提示文件损坏，这是因为此版本应用没有签名，可以忽略错误继续使用。
+            注意: 桌面端目前还不支持视频播放, 建议先使用 Android 版本体验 (关注 #115)
             
             也可扫描以下二维码下载 Android 版本：
             ![](https://github.com/Him188/ani/releases/download/${{ steps.tag.outputs.tag }}/ani-${{ steps.tag-version.outputs.substring }}.apk.qrcode.png)
