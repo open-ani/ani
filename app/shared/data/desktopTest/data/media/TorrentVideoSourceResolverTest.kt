@@ -1,0 +1,122 @@
+package me.him188.ani.app.data.media
+
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.json.Json
+import me.him188.ani.app.data.media.resolver.TorrentVideoSourceResolver
+import me.him188.ani.datasources.api.EpisodeSort
+import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+
+class SelectVideoFileEntryTest {
+    private val json = Json { ignoreUnknownKeys = true }
+
+    @Test
+    fun `can select single`() {
+        val selected = TorrentVideoSourceResolver.selectVideoFileEntry(
+            listOf("[Nekomoe kissaten&LoliHouse] Shuumatsu Train Doko e Iku - 04 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv"),
+            { this },
+            episodeTitles = listOf("终末列车去往何方?"),
+            episodeSort = EpisodeSort(4),
+            episodeEp = null,
+        )
+        assertNotNull(selected)
+    }
+
+    @Test
+    fun `can select from multiple by episodeSort`() {
+        val selected = TorrentVideoSourceResolver.selectVideoFileEntry(
+            json.decodeFromString(
+                ListSerializer(String.serializer()), """
+                [
+                    "[Nekomoe kissaten&LoliHouse] Shuumatsu Train Doko e Iku - 02 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv",
+                    "[Nekomoe kissaten&LoliHouse] Shuumatsu Train Doko e Iku - 03 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv",
+                    "[Nekomoe kissaten&LoliHouse] Shuumatsu Train Doko e Iku - 04 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv",
+                    "[Nekomoe kissaten&LoliHouse] Shuumatsu Train Doko e Iku - 05 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv"
+                ]
+            """.trimIndent()
+            ),
+            { this },
+            episodeTitles = listOf("终末列车去往何方?"),
+            episodeSort = EpisodeSort(4),
+            episodeEp = null,
+        )
+        assertEquals(
+            "[Nekomoe kissaten&LoliHouse] Shuumatsu Train Doko e Iku - 04 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv",
+            selected
+        )
+    }
+
+    @Test
+    fun `can select from multiple by episodeEp`() {
+        val selected = TorrentVideoSourceResolver.selectVideoFileEntry(
+            json.decodeFromString(
+                ListSerializer(String.serializer()), """
+                [
+                    "[Nekomoe kissaten&LoliHouse] Shuumatsu Train Doko e Iku - 02 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv",
+                    "[Nekomoe kissaten&LoliHouse] Shuumatsu Train Doko e Iku - 03 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv",
+                    "[Nekomoe kissaten&LoliHouse] Shuumatsu Train Doko e Iku - 04 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv",
+                    "[Nekomoe kissaten&LoliHouse] Shuumatsu Train Doko e Iku - 05 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv"
+                ]
+            """.trimIndent()
+            ),
+            { this },
+            episodeTitles = listOf("终末列车去往何方?"),
+            episodeSort = EpisodeSort(26),
+            episodeEp = EpisodeSort(4),
+        )
+        assertEquals(
+            "[Nekomoe kissaten&LoliHouse] Shuumatsu Train Doko e Iku - 04 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv",
+            selected
+        )
+    }
+
+    @Test
+    fun `select by sort than by ep`() {
+        val selected = TorrentVideoSourceResolver.selectVideoFileEntry(
+            json.decodeFromString(
+                ListSerializer(String.serializer()), """
+                [
+                    "[Nekomoe kissaten&LoliHouse] Shuumatsu Train Doko e Iku - 02 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv",
+                    "[Nekomoe kissaten&LoliHouse] Shuumatsu Train Doko e Iku - 03 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv",
+                    "[Nekomoe kissaten&LoliHouse] Shuumatsu Train Doko e Iku - 04 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv",
+                    "[Nekomoe kissaten&LoliHouse] Shuumatsu Train Doko e Iku - 05 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv"
+                ]
+            """.trimIndent()
+            ),
+            { this },
+            episodeTitles = listOf("终末列车去往何方?"),
+            episodeSort = EpisodeSort(4),
+            episodeEp = EpisodeSort(2),
+        )
+        assertEquals(
+            "[Nekomoe kissaten&LoliHouse] Shuumatsu Train Doko e Iku - 04 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv",
+            selected
+        )
+    }
+
+    @Test
+    fun `can select from multiple by single title match`() {
+        val selected = TorrentVideoSourceResolver.selectVideoFileEntry(
+            json.decodeFromString(
+                ListSerializer(String.serializer()), """
+                [
+                    "[Nekomoe kissaten&LoliHouse] Shuumatsu Train Doko e Iku - 02 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv",
+                    "[Nekomoe kissaten&LoliHouse] Shuumatsu Train Doko e Iku - 03 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv",
+                    "[Nekomoe kissaten&LoliHouse] Shuumatsu Train Doko e Iku - 04 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv",
+                    "[Nekomoe kissaten&LoliHouse] Shuumatsu Train Doko e Iku - 05 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv"
+                ]
+            """.trimIndent()
+            ),
+            { this },
+            episodeTitles = listOf("Shuumatsu Train Doko e Iku - 03"),
+            episodeSort = EpisodeSort(26),
+            episodeEp = EpisodeSort(4),
+        )
+        assertEquals(
+            "[Nekomoe kissaten&LoliHouse] Shuumatsu Train Doko e Iku - 03 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv",
+            selected
+        )
+    }
+}

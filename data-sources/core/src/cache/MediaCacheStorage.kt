@@ -186,7 +186,7 @@ infix fun MediaFetchRequest.matches(cache: MediaCacheMetadata): MatchKind {
     if (subjectNames.any { cache.subjectNames.contains(it) }) {
         // Any subject name matches
 
-        return if (episodeSort == cache.episodeSort) {
+        return if (episodeSort == cache.episodeSort || episodeEp == cache.episodeSort) {
             // Episode sort matches
             MatchKind.FUZZY
         } else {

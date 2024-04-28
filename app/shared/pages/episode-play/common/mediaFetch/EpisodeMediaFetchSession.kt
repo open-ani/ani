@@ -172,6 +172,7 @@ internal class DefaultEpisodeMediaFetchSession(
                 subject.name,
             ),
             episodeSort = EpisodeSort(episode.sort.toString()),
+            episodeEp = episode.ep?.let { EpisodeSort(it) },
             episodeName = episode.nameCNOrName(),
         )
     }

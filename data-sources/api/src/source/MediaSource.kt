@@ -117,6 +117,7 @@ class MediaFetchRequest(
      * E.g. "恶魔与阴谋"
      */
     val episodeName: String,
+    val episodeEp: EpisodeSort? = episodeSort,
 )
 
 

@@ -185,7 +185,7 @@ fun EpisodeTitle(
                         .padding(horizontal = 4.dp, vertical = 2.dp)
                 ) {
                     Text(
-                        ep.sort,
+                        ep.ep,
                         style = MaterialTheme.typography.labelMedium,
                         color = LocalContentColor.current.slightlyWeaken(),
                         softWrap = false, maxLines = 1

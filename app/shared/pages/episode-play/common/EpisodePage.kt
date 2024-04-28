@@ -267,7 +267,7 @@ private fun EpisodeVideo(
             val episode = vm.episodePresentation
             val subject = vm.subjectPresentation
             EpisodePlayerTitle(
-                episode.sort,
+                episode.ep,
                 episode.title,
                 subject.title,
                 modifier.placeholder(episode.isPlaceholder || subject.isPlaceholder)

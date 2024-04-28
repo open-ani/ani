@@ -93,6 +93,14 @@ class EpisodePresentation(
      */
     val title: String,
     /**
+     * 在当前季度中的集数, 例如第二季的第一集为 01
+     *
+     * @see renderEpisodeEp
+     */
+    val ep: String,
+    /**
+     * 在系列中的集数, 例如第二季的第一集为 26
+     *
      * @see renderEpisodeEp
      */
     val sort: String,
@@ -103,6 +111,7 @@ class EpisodePresentation(
         @Stable
         val Placeholder = EpisodePresentation(
             title = "placeholder",
+            ep = "placeholder",
             sort = "placeholder",
             collectionType = EpisodeCollectionType.WATCHLIST,
             isPlaceholder = true,
@@ -236,6 +245,7 @@ private class EpisodeViewModelImpl(
                             media,
                             EpisodeMetadata(
                                 title = presentation.title,
+                                ep = EpisodeSort(presentation.ep),
                                 sort = EpisodeSort(presentation.sort)
                             )
                         )
@@ -273,7 +283,8 @@ private class EpisodeViewModelImpl(
         .map {
             EpisodePresentation(
                 title = it.episode.nameCNOrName(),
-                sort = it.episode.renderEpisodeEp(),
+                ep = it.episode.renderEpisodeEp(),
+                sort = EpisodeSort(it.episode.sort).toString(),
                 collectionType = it.type,
             )
         }.produceState(EpisodePresentation.Placeholder)
@@ -326,7 +337,7 @@ private class EpisodeViewModelImpl(
                 subjectId = subjectId,
                 subjectName = subject.title,
                 episodeId = episodeId,
-                episodeSort = EpisodeSort(episode.sort),
+                episodeSort = EpisodeSort(episode.ep),
                 episodeName = episode.title,
                 filename = filename,
                 fileHash = "aa".repeat(16),

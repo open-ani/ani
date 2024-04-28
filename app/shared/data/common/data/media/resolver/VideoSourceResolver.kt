@@ -36,6 +36,7 @@ interface VideoSourceResolver {
 
 data class EpisodeMetadata(
     val title: String,
+    val ep: EpisodeSort,
     val sort: EpisodeSort,
 )
 

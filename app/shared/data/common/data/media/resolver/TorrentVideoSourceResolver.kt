@@ -5,7 +5,6 @@ import kotlinx.coroutines.withContext
 import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.app.torrent.api.EncodedTorrentInfo
 import me.him188.ani.app.torrent.api.FilePriority
-import me.him188.ani.app.torrent.api.TorrentFileEntry
 import me.him188.ani.app.videoplayer.data.OpenFailures
 import me.him188.ani.app.videoplayer.data.VideoSource
 import me.him188.ani.app.videoplayer.data.VideoSourceOpenException
@@ -47,38 +46,51 @@ class TorrentVideoSourceResolver(
         private val DEFAULT_VIDEO_EXTENSIONS =
             setOf("mp4", "mkv", "avi", "mpeg", "mov", "flv", "wmv", "webm", "rm", "rmvb")
 
-        fun selectVideoFileEntry(
-            entries: List<TorrentFileEntry>,
+        /**
+         * @param episodeSort 在系列中的集数, 例如第二季的第一集为 26
+         * @param episodeEp 在当前季度中的集数, 例如第二季的第一集为 01
+         */
+        fun <T> selectVideoFileEntry(
+            entries: List<T>,
+            getPath: T.() -> String,
             episodeTitles: List<String>,
             episodeSort: EpisodeSort,
+            episodeEp: EpisodeSort?,
             videoExtensions: Set<String> = DEFAULT_VIDEO_EXTENSIONS,
-        ): TorrentFileEntry? {
+        ): T? {
             // Filter by file extension
             val videos = entries.filter {
-                videoExtensions.any { fileType -> it.pathInTorrent.endsWith(fileType, ignoreCase = true) }
+                videoExtensions.any { fileType -> it.getPath().endsWith(fileType, ignoreCase = true) }
             }
 
             // Find by name match
             for (episodeTitle in episodeTitles) {
                 val entry = videos.singleOrNull {
-                    it.pathInTorrent.contains(episodeTitle, ignoreCase = true)
+                    it.getPath().contains(episodeTitle, ignoreCase = true)
                 }
                 if (entry != null) return entry
             }
 
             // 解析标题匹配集数
             val parsedTitles = videos.associateWith {
-                RawTitleParser.getDefault().parse(it.pathInTorrent.substringBeforeLast("."), null).episodeRange
+                RawTitleParser.getDefault().parse(it.getPath().substringBeforeLast("."), null).episodeRange
             }
+            // 优先按系列集数 sort 匹配 (数字较大)
             if (parsedTitles.isNotEmpty()) {
                 parsedTitles.entries.firstOrNull {
                     it.value?.contains(episodeSort) == true
                 }?.key?.let { return it }
             }
+            // 然后按季度集数 ep 匹配
+            if (episodeEp != null && parsedTitles.isNotEmpty()) {
+                parsedTitles.entries.firstOrNull {
+                    it.value?.contains(episodeEp) == true
+                }?.key?.let { return it }
+            }
 
             // 解析失败, 尽可能匹配一个
             episodeSort.toString().let { number ->
-                videos.firstOrNull { it.pathInTorrent.contains(number, ignoreCase = true) }
+                videos.firstOrNull { it.getPath().contains(number, ignoreCase = true) }
                     ?.let { return it }
             }
 
@@ -111,8 +123,10 @@ private class TorrentVideoSource(
 
                 TorrentVideoSourceResolver.selectVideoFileEntry(
                     files,
+                    { pathInTorrent },
                     listOf(episodeMetadata.title),
-                    episodeMetadata.sort,
+                    episodeSort = episodeMetadata.sort,
+                    episodeEp = episodeMetadata.ep,
                 )?.also {
                     logger.info {
                         "TorrentVideoSource selected file: ${it.pathInTorrent}"

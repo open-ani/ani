@@ -47,6 +47,7 @@ abstract class TopicMediaSource : MediaSource {
                         keywords = name,
                         category = TopicCategory.ANIME,
                         episodeSort = query.episodeSort,
+                        episodeEp = query.episodeEp,
                         episodeName = query.episodeName,
                     )
                 ).map {
@@ -63,5 +64,6 @@ data class DownloadSearchQuery(
     val alliance: Alliance? = null,
     val ordering: SearchOrdering? = null,
     val episodeSort: EpisodeSort? = null,
+    val episodeEp: EpisodeSort? = null,
     val episodeName: String? = null,
 )

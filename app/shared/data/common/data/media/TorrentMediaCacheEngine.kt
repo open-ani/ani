@@ -228,8 +228,10 @@ class TorrentMediaCacheEngine(
 
             val selectedFile = TorrentVideoSourceResolver.selectVideoFileEntry(
                 session.getFiles(),
+                { pathInTorrent },
                 listOf(metadata.episodeName),
-                metadata.episodeSort,
+                episodeSort = metadata.episodeSort,
+                episodeEp = metadata.episodeEp,
             )
 
             val handle = selectedFile?.createHandle()
