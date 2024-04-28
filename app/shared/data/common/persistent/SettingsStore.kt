@@ -19,10 +19,60 @@
 package me.him188.ani.app.persistent
 
 import androidx.datastore.core.DataStore
+import androidx.datastore.core.DataStoreFactory
+import androidx.datastore.core.Serializer
+import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import androidx.datastore.preferences.core.Preferences
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromStream
+import kotlinx.serialization.json.encodeToStream
+import me.him188.ani.app.data.repositories.MikanIndexes
 import me.him188.ani.app.platform.Context
+import java.io.File
+import java.io.InputStream
+import java.io.OutputStream
 
 
 expect val Context.preferencesStore: DataStore<Preferences>
 
 expect val Context.tokenStore: DataStore<Preferences>
+
+/**
+ * Must not be stored
+ */
+expect val Context.dataStoresImpl: PlatformDataStoreManager
+
+// workaround for compiler bug
+inline val Context.dataStores: PlatformDataStoreManager get() = dataStoresImpl
+
+abstract class PlatformDataStoreManager {
+    val mikanIndexStore: DataStore<MikanIndexes>
+        get() = DataStoreFactory.create(
+            serializer = MikanIndexes.serializer().asDataStoreSerializer(MikanIndexes.Empty),
+            produceFile = { resolveDataStoreFile("mikanIndexes") },
+            corruptionHandler = ReplaceFileCorruptionHandler {
+                MikanIndexes.Empty
+            },
+        )
+
+    abstract fun resolveDataStoreFile(name: String): File
+}
+
+fun <T> KSerializer<T>.asDataStoreSerializer(
+    defaultValue: T,
+    format: Json = Json {
+        ignoreUnknownKeys = true
+    },
+): Serializer<T> {
+    val serializer = this
+    return object : Serializer<T> {
+        override val defaultValue: T get() = defaultValue
+
+        override suspend fun readFrom(input: InputStream): T = format.decodeFromStream(serializer, input)
+
+        override suspend fun writeTo(t: T, output: OutputStream) {
+            format.encodeToStream(serializer, t, output)
+        }
+    }
+}

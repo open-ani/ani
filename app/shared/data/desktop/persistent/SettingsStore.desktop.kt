@@ -22,6 +22,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import me.him188.ani.app.platform.Context
 import me.him188.ani.app.platform.DesktopContext
+import java.io.File
 
 actual val Context.preferencesStore: DataStore<Preferences>
     get() {
@@ -35,3 +36,13 @@ actual val Context.tokenStore: DataStore<Preferences>
         this as DesktopContext
         return tokenStore
     }
+
+
+actual val Context.dataStoresImpl: PlatformDataStoreManager
+    get() = PlatformDataStoreManagerDesktop(this as DesktopContext)
+
+internal class PlatformDataStoreManagerDesktop(
+    private val context: DesktopContext,
+) : PlatformDataStoreManager() {
+    override fun resolveDataStoreFile(name: String): File = context.dataStoreDir.resolve(name)
+}

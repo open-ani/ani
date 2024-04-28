@@ -43,6 +43,8 @@ import me.him188.ani.app.data.repositories.EpisodeRepository
 import me.him188.ani.app.data.repositories.EpisodeRepositoryImpl
 import me.him188.ani.app.data.repositories.EpisodeRevisionRepository
 import me.him188.ani.app.data.repositories.EpisodeRevisionRepositoryImpl
+import me.him188.ani.app.data.repositories.MikanIndexCacheRepository
+import me.him188.ani.app.data.repositories.MikanIndexCacheRepositoryImpl
 import me.him188.ani.app.data.repositories.PreferencesRepository
 import me.him188.ani.app.data.repositories.PreferencesRepositoryImpl
 import me.him188.ani.app.data.repositories.ProfileRepository
@@ -54,6 +56,7 @@ import me.him188.ani.app.data.repositories.UserRepository
 import me.him188.ani.app.data.repositories.UserRepositoryImpl
 import me.him188.ani.app.data.subject.SubjectManager
 import me.him188.ani.app.data.subject.SubjectManagerImpl
+import me.him188.ani.app.persistent.dataStores
 import me.him188.ani.app.persistent.preferencesStore
 import me.him188.ani.app.persistent.preferredAllianceStore
 import me.him188.ani.app.persistent.tokenStore
@@ -89,6 +92,7 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
         )
     }
     single<PreferencesRepository> { PreferencesRepositoryImpl(getContext().preferencesStore) }
+    single<MikanIndexCacheRepository> { MikanIndexCacheRepositoryImpl(getContext().dataStores.mikanIndexStore) }
 
     // Media
     single<MediaCacheManager> {

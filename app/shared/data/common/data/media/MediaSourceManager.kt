@@ -9,11 +9,14 @@ import kotlinx.coroutines.flow.shareIn
 import me.him188.ani.app.data.media.MediaCacheManager.Companion.LOCAL_FS_MEDIA_SOURCE_ID
 import me.him188.ani.app.data.models.MediaSourceProxyPreferences
 import me.him188.ani.app.data.models.ProxyAuthorization
+import me.him188.ani.app.data.repositories.MikanIndexCacheRepository
 import me.him188.ani.app.data.repositories.PreferencesRepository
 import me.him188.ani.app.platform.getAniUserAgent
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.source.MediaSourceFactory
+import me.him188.ani.datasources.mikan.MikanCNMediaSource
+import me.him188.ani.datasources.mikan.MikanMediaSource
 import me.him188.ani.utils.ktor.ClientProxyConfig
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.logger
@@ -46,6 +49,7 @@ class MediaSourceManagerImpl(
     additionalSources: () -> List<MediaSource>, // local sources
 ) : MediaSourceManager, KoinComponent {
     private val preferencesRepository: PreferencesRepository by inject()
+    private val mikanIndexCacheRepository: MikanIndexCacheRepository by inject()
 
     private val defaultMediaPreference = preferencesRepository.defaultMediaPreference.flow
     private val proxyConfig = preferencesRepository.proxyPreferences.flow
@@ -83,12 +87,15 @@ class MediaSourceManagerImpl(
     }
 
     private fun MediaSourceFactory.create(pref: MediaSourceProxyPreferences): MediaSource {
-        return create(
-            MediaSourceConfig(
-                proxy = pref.toClientProxyConfig(),
-                userAgent = getAniUserAgent(),
-            )
+        val mediaSourceConfig = MediaSourceConfig(
+            proxy = pref.toClientProxyConfig(),
+            userAgent = getAniUserAgent(),
         )
+        return when (this) {
+            is MikanMediaSource.Factory -> create(mediaSourceConfig, mikanIndexCacheRepository)
+            is MikanCNMediaSource.Factory -> create(mediaSourceConfig, mikanIndexCacheRepository)
+            else -> create(mediaSourceConfig)
+        }
     }
 
     private companion object {

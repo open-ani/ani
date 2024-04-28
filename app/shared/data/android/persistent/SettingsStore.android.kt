@@ -19,10 +19,21 @@
 package me.him188.ani.app.persistent
 
 import androidx.datastore.core.DataStore
+import androidx.datastore.dataStoreFile
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import me.him188.ani.app.platform.Context
+import java.io.File
 
 actual val Context.preferencesStore: DataStore<Preferences> by preferencesDataStore("preferences")
-
 actual val Context.tokenStore: DataStore<Preferences> by preferencesDataStore("tokens")
+actual val Context.dataStoresImpl: PlatformDataStoreManager
+    get() = PlatformDataStoreManagerAndroid(this)
+
+internal class PlatformDataStoreManagerAndroid(
+    private val context: Context,
+) : PlatformDataStoreManager() {
+    override fun resolveDataStoreFile(name: String): File {
+        return context.applicationContext.dataStoreFile("mikanIndexes")
+    }
+}

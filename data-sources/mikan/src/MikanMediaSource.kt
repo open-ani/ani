@@ -77,11 +77,17 @@ import java.time.ZonedDateTime
 
 class MikanCNMediaSource(
     config: MediaSourceConfig,
-) : AbstractMikanMediaSource(ID, config, "https://mikanime.tv") {
+    indexCacheProvider: MikanIndexCacheProvider = MemoryMikanIndexCacheProvider(),
+) : AbstractMikanMediaSource(ID, config, "https://mikanime.tv", indexCacheProvider) {
     class Factory : MediaSourceFactory {
         override val mediaSourceId: String get() = ID
         override fun create(config: MediaSourceConfig): MediaSource =
             MikanCNMediaSource(config)
+
+        fun create(
+            config: MediaSourceConfig,
+            indexCacheProvider: MikanIndexCacheProvider = MemoryMikanIndexCacheProvider()
+        ): MediaSource = MikanCNMediaSource(config, indexCacheProvider)
     }
 
     companion object {
@@ -91,10 +97,16 @@ class MikanCNMediaSource(
 
 class MikanMediaSource(
     config: MediaSourceConfig,
-) : AbstractMikanMediaSource(ID, config, "https://mikanani.me") {
+    indexCacheProvider: MikanIndexCacheProvider = MemoryMikanIndexCacheProvider(),
+) : AbstractMikanMediaSource(ID, config, "https://mikanani.me", indexCacheProvider) {
     class Factory : MediaSourceFactory {
         override val mediaSourceId: String get() = ID
         override fun create(config: MediaSourceConfig): MediaSource = MikanMediaSource(config)
+
+        fun create(
+            config: MediaSourceConfig,
+            indexCacheProvider: MikanIndexCacheProvider = MemoryMikanIndexCacheProvider()
+        ): MediaSource = MikanMediaSource(config, indexCacheProvider)
     }
 
     companion object {
@@ -106,6 +118,7 @@ abstract class AbstractMikanMediaSource(
     override val mediaSourceId: String,
     private val config: MediaSourceConfig,
     baseUrl: String,
+    private val indexCacheProvider: MikanIndexCacheProvider,
 ) : MediaSource {
     private val logger = logger(this::class)
 
@@ -169,10 +182,16 @@ abstract class AbstractMikanMediaSource(
         // 长度限制:
         // "无职转生Ⅱ ～到了异世界就拿出真本事～" 19 chars, 可以搜索, 再长的就会直接没有结果
 
-        val nameCN = request.subjectNameCN ?: return null
+
         val bangumiSubjectId = request.subjectId ?: return null
-        val subjectId = findMikanSubjectIdByName(nameCN, bangumiSubjectId)
-            ?: return null
+
+        val nameCN = request.subjectNameCN ?: return null
+        val subjectId =
+            indexCacheProvider.getMikanSubjectId(bangumiSubjectId)
+                ?: findMikanSubjectIdByName(nameCN, bangumiSubjectId)?.also {
+                    indexCacheProvider.setMikanSubjectId(bangumiSubjectId, it)
+                }
+                ?: return null
 
         // https://mikanani.me/RSS/Bangumi?bangumiId=3060
         return client.get("$baseUrl/RSS/Bangumi?bangumiId=$subjectId").bodyAsChannel().toInputStream().use {
