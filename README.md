@@ -81,6 +81,7 @@ Ani 支持 Android 和桌面端 (macOS、Linux、Windows)。
 
 - 从[弹弹play][ddplay]以及*其他弹幕网站*获取弹幕
 - 支持自定义弹幕样式与速度
+- 发送弹幕到 Ani 服务器
 
 <img width="600" src=".readme/images/episode/player-controller.jpeg" alt="player-controller"/>
 
@@ -107,18 +108,17 @@ Ani 支持 Android 和桌面端 (macOS、Linux、Windows)。
 ### 资源偏好设置
 
 - 设置全局优先选择的字幕组, 字幕语言等设置
-- 支持按设置的优先级选择
-- 在观看时修改过滤自动记忆并应用到下次播放和自动缓存
+- 在观看时修改过滤可自动记忆并应用到下次播放和自动缓存
 
 <img width="300" src=".readme/images/preferences/subtitle-language.jpg"  alt="subtitle-language.jpg"/> <img width="300" src=".readme/images/preferences/media-source.jpg"  alt="media-source.jpg"/> 
 
 ### 视频缓存
 
-- 自动根据资源偏好设置缓存观看进度的下一集 *(正在开发, 计划 beta11)*
+- 自动根据资源偏好设置缓存观看进度的下一集
 - 管理缓存的所有视频
 - 按番剧分类管理
 
-<img width="300" src=".readme/images/preferences/cache.jpg"  alt="cache.jpg"/> <img width="300" src=".readme/images/subject/subject-cache.jpg"  alt="subject-cache.jpg"/> 
+<img width="300" src=".readme/images/preferences/cache.jpg"  alt="cache.jpg"/> <img width="300" src=".readme/images/subject/subject-cache.jpg"  alt="subject-cache.jpg"/> <img width="300" src=".readme/images/subject/global-cache.jpg"  alt="global-cache.jpg"/> 
 
 ### 完全免费无广告且开放源代码
 
