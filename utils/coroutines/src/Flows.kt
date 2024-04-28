@@ -7,8 +7,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import java.util.concurrent.CancellationException
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 
 fun combineOr(vararg flows: Flow<Boolean>): Flow<Boolean> = combine(*flows) { flows -> flows.any { it } }
@@ -88,7 +86,6 @@ suspend inline fun <R> cancellableCoroutineScope(
     onCancel: () -> R,
     crossinline block: suspend CancellableCoroutineScope.() -> R
 ): R {
-    contract { callsInPlace(block, InvocationKind.AT_MOST_ONCE) }
     val owner = Any()
     return try {
         coroutineScope {
@@ -114,7 +111,6 @@ suspend inline fun <R> cancellableCoroutineScope(
 suspend inline fun <R> cancellableCoroutineScope(
     crossinline block: suspend CancellableCoroutineScope.() -> R
 ): R? {
-    contract { callsInPlace(block, InvocationKind.AT_MOST_ONCE) }
     return cancellableCoroutineScope(
         onCancel = { null },
         block = block

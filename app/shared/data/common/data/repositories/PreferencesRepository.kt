@@ -85,11 +85,7 @@ class PreferencesRepositoryImpl(
         override suspend fun set(value: T) {
             logger.debug { "Updating preference '$key' with: $value" }
             preferences.edit {
-                if (value == null) {
-                    it.remove(key)
-                } else {
-                    it[key] = format.encodeToString(serializer, value)
-                }
+                it[key] = format.encodeToString(serializer, value)
             }
         }
     }

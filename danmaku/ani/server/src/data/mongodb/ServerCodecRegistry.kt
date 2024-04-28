@@ -37,7 +37,7 @@ class KotlinxSerializationCodecProvider(
             }
 
             override fun decode(reader: BsonReader, decoderContext: DecoderContext?): T {
-                val str =
+                @Suppress("UNCHECKED_CAST") val str =
                     reader.readString() ?: return serializer.descriptor.getElementDescriptor(0).getElementName(0) as T
                 val decoded = format.decodeFromString(serializer, str)
                 return clazz.cast(decoded)

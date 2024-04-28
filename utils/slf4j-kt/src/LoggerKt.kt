@@ -32,6 +32,7 @@ fun ILoggerFactory.getLogger(clazz: KClass<out Any>): Logger =
             it.startsWith("me.him188.ani.") -> {
                 it.removePrefix("me.him188.ani.")
             }
+
             else -> {
                 it
             }
@@ -51,6 +52,27 @@ fun logger(clazz: KClass<out Any>): Logger {
 @JvmName("logger1")
 inline fun <reified T : Any> logger(): Logger {
     return logger(T::class)
+}
+
+
+inline fun Logger.trace(message: () -> String) {
+    trace(message())
+}
+
+inline fun Logger.debug(message: () -> String) {
+    debug(message())
+}
+
+inline fun Logger.info(message: () -> String) {
+    info(message())
+}
+
+inline fun Logger.warn(message: () -> String) {
+    warn(message())
+}
+
+inline fun Logger.error(message: () -> String) {
+    error(message())
 }
 
 inline fun Logger.trace(marker: Marker? = null, message: () -> String) {
@@ -84,40 +106,30 @@ inline fun Logger.error(marker: Marker? = null, message: () -> String) {
 }
 
 
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-@kotlin.internal.LowPriorityInOverloadResolution
 inline fun Logger.trace(exception: Throwable? = null, message: () -> String) {
     if (isTraceEnabled) {
         trace(message(), exception)
     }
 }
 
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-@kotlin.internal.LowPriorityInOverloadResolution
 inline fun Logger.debug(exception: Throwable? = null, message: () -> String) {
     if (isDebugEnabled) {
         debug(message(), exception)
     }
 }
 
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-@kotlin.internal.LowPriorityInOverloadResolution
 inline fun Logger.info(exception: Throwable? = null, message: () -> String) {
     if (isInfoEnabled) {
         info(message(), exception)
     }
 }
 
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-@kotlin.internal.LowPriorityInOverloadResolution
 inline fun Logger.warn(exception: Throwable? = null, message: () -> String) {
     if (isWarnEnabled) {
         warn(message(), exception)
     }
 }
 
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-@kotlin.internal.LowPriorityInOverloadResolution
 inline fun Logger.error(exception: Throwable? = null, message: () -> String) {
     if (isErrorEnabled) {
         error(message(), exception)
