@@ -35,6 +35,7 @@ class DanmakuSearchRequest(
     val subjectName: String,
     val episodeId: Int,
     val episodeSort: EpisodeSort,
+    val episodeEp: EpisodeSort?,
     val episodeName: String,
 
     val filename: String,
