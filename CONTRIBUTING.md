@@ -136,9 +136,14 @@ Ani 使用 Gradle Version Catalogs. 依赖位于 `gradle/libs.versions.toml`.
 
 在构建安卓目标时会自动弹出配置. 跟随 IDE 的指引即可.
 
-### 5.3. 执行构建
+### 5.3. 生成 Compose Multiplatform 资源
 
-执行 `./gradlew build` 即可编译并运行测试。需要正确的 Android SDK 配置才能完成编译。在没有配置时，编译将会出错并提示如何配置。
+执行 `./gradlew generateComposeResClass` 即可生成一个 `Res` 类, 用于在 `:app:shared` 访问资源文件.
+
+### 5.4. 执行构建
+
+执行 `./gradlew build` 即可编译并运行测试 (前提是你已经配置了上面的几步)。需要正确的 Android SDK
+配置才能完成编译。在没有配置时，编译将会出错并提示如何配置。
 
 要构建桌面应用，请参考 [Compose for Desktop] 官方文档，或简单执行 `./gradlew package`
 。这将进行 `desktop` 模块的所有编译打包操作，结果保存在 `desktop/build/compose/binaries` 中。
