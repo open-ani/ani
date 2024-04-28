@@ -153,6 +153,11 @@ Ani 使用 Gradle Version Catalogs. 依赖位于 `gradle/libs.versions.toml`.
 要构建 Android 应用，请执行 `./gradlew assembleRelease` 或 `./gradlew assembleDebug`
 ，分别编译发布版或测试版。使用 `./gradlew installRelease` 或 `./gradlew installDebug` 还可以构建应用并安装到模拟器。
 
+### 5.5. 重复运行所有测试
+
+由于启用了 build cache, 如果代码没有修改, test 就不会执行.
+可使用 `./gradlew clean generateComposeResClass check` 清空测试的缓存并重新运行所有测试.
+
 ## 6. App 项目架构
 
 本节将介绍客户端共享模块 (`:app:shared`) 的架构设计.
