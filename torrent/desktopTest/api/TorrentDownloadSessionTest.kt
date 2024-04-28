@@ -1,8 +1,6 @@
 package me.him188.ani.app.torrent.api
 
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.yield
 import me.him188.ani.app.torrent.PiecesBuilder
 import me.him188.ani.app.torrent.api.pieces.Piece
 import me.him188.ani.app.torrent.api.pieces.lastIndex
@@ -10,6 +8,7 @@ import me.him188.ani.app.torrent.assertCoroutineSuspends
 import me.him188.ani.app.torrent.buildPieceList
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import kotlin.test.fail
 
 @OptIn(TorrentThread::class)
@@ -69,17 +68,12 @@ internal class TorrentDownloadSessionTest : TorrentSessionSupport() {
                 addFileAndPieces(TestTorrentFile("1.mp4", 1024))
             }
 
-            launch {
-                yield()
-                listener.onUpdate(handle)
-            }
-
             val file = getFiles().single()
             file.createHandle().use {
                 it.resume()
             }
-
-            assertEquals(1, resumeCalled)
+            listener.onUpdate(handle)
+            assertTrue { resumeCalled > 1 } // 不一定是 1, 因为更新 file priority 也会有 resume
         }
     }
 }
