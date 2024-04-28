@@ -119,6 +119,7 @@ class DirectoryMediaCacheStorageTest {
                 episodeId = "1231231",
                 subjectNames = emptySet(),
                 episodeSort = EpisodeSort("02"),
+                episodeEp = EpisodeSort("02"),
                 episodeName = "测试剧集",
             ),
             resume = true
@@ -144,6 +145,7 @@ class DirectoryMediaCacheStorageTest {
                 episodeId = "1231231",
                 subjectNames = emptySet(),
                 episodeSort = EpisodeSort("02"),
+                episodeEp = EpisodeSort("02"),
                 episodeName = "测试剧集",
             ),
             resume = false
@@ -169,6 +171,7 @@ class DirectoryMediaCacheStorageTest {
                 episodeId = "1231231",
                 subjectNames = emptySet(),
                 episodeSort = EpisodeSort("02"),
+                episodeEp = EpisodeSort("02"),
                 episodeName = "测试剧集",
             ),
             resume = false
@@ -195,6 +198,7 @@ class DirectoryMediaCacheStorageTest {
                 episodeId = "1231231",
                 subjectNames = emptySet(),
                 episodeSort = EpisodeSort("02"),
+                episodeEp = EpisodeSort("02"),
                 episodeName = "测试剧集",
             ),
             resume = false
