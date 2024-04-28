@@ -98,6 +98,9 @@ public abstract class BufferedInput(
      */
     protected var bufferedOffsetEndExcl: Long = 0L
 
+    /**
+     * view offsets
+     */
     @get:TestOnly
     public val bufferedOffsetRange: LongRange get() = bufferedOffsetStart..<bufferedOffsetEndExcl
 
@@ -132,6 +135,9 @@ public abstract class BufferedInput(
      */
     protected abstract fun fillBuffer()
 
+    /**
+     * @param readEnd exclusive
+     */
     protected fun fillBufferRange(readStart: Long, readEnd: Long) {
         /**
          * 本次读 buffer 需要的长度

@@ -1,10 +1,8 @@
-package me.him188.ani.app.torrent
+package me.him188.ani.app.torrent.io
 
 import kotlinx.coroutines.test.runTest
 import me.him188.ani.app.torrent.api.PieceState
 import me.him188.ani.app.torrent.api.pieces.Piece
-import me.him188.ani.app.torrent.api.pieces.lastIndex
-import me.him188.ani.app.torrent.io.TorrentInput
 import me.him188.ani.utils.io.readAllBytes
 import me.him188.ani.utils.io.readBytes
 import me.him188.ani.utils.io.readExactBytes
@@ -21,60 +19,20 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-private const val sampleText =
-    "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."
-private val sampleTextByteArray = sampleText.toByteArray()
-
-
-internal sealed class TorrentInputTest {
-    class NoShift : TorrentInputTest() {
-        override val logicalPieces = Piece.buildPieces(sampleTextByteArray.size.toLong(), 16)
-
-        @Test
-        fun seekReadLastPiece() = runTest {
-            logicalPieces.last().state.emit(PieceState.FINISHED)
-            input.seek(logicalPieces.last().offset + 2)
-            input.readBytes().decodeToString().run {
-                assertEquals("Lorem Ipsum.", this)
-                assertEquals(sampleTextByteArray.size % 16 - 2, length)
-            }
-        }
-    }
-
-    class WithShift : TorrentInputTest() {
-        override val logicalPieces = Piece.buildPieces(sampleTextByteArray.size.toLong(), 16, initial = 1000)
-
-        @Test
-        fun seekReadLastPiece() = runTest {
-            logicalPieces.last().state.emit(PieceState.FINISHED)
-            input.seek(logicalPieces.last().offset - 1000 + 2)
-            input.readBytes().run {
-                assertEquals("Lorem Ipsum.", String(this))
-                assertEquals(sampleTextByteArray.size % 16 - 2, size)
-            }
-        }
-    }
-
-    class LargerPieces : TorrentInputTest() {
-        override val logicalPieces = Piece.buildPieces(sampleTextByteArray.size.toLong(), 16, initial = 1000).let {
-            it + Piece(it.size, 16, it.last().lastIndex + 1)
-        }
-
-        @Test
-        fun seekReadLastPiece() = runTest {
-            logicalPieces.dropLast(1).last().state.emit(PieceState.FINISHED)
-            input.seek(logicalPieces.dropLast(1).last().offset - 1000 + 2)
-            input.readBytes().run {
-                assertEquals("Lorem Ipsum.", String(this))
-                assertEquals(sampleTextByteArray.size % 16 - 2, size)
-            }
-        }
-    }
-
+/**
+ * Piece 前后有垃圾
+ * @see TorrentInputTest
+ */
+internal class OffsetTorrentInputTest {
     @TempDir
     lateinit var tempDir: File
 
-    protected abstract val logicalPieces: List<Piece>
+    // 第一个 piece 前 8 bytes 和最后一个 piece 后 8 bytes 是垃圾
+    private val logicalPieces =
+        Piece.buildPieces(
+            sampleTextByteArray.size.toLong() + 16, // 576 + 16
+            16, initial = 1000
+        )
 
     private val tempFile by lazy {
         tempDir.resolve("test.txt").apply {
@@ -84,10 +42,12 @@ internal sealed class TorrentInputTest {
     }
 
     private val bufferSize = 20
-    protected val input: TorrentInput by lazy {
+
+    private val input: TorrentInput by lazy {
         TorrentInput(
-            RandomAccessFile(tempFile, "r"),
+            RandomAccessFile(tempFile, "r"), // 文件长度只有 576, 最后一个 piece 的最后 8 bytes 会是垃圾
             logicalPieces,
+            logicalStartOffset = 1008, // 跳过 8 垃圾
             bufferSize = bufferSize,
         )
     }
@@ -101,36 +61,23 @@ internal sealed class TorrentInputTest {
     fun findPiece() {
         assertEquals(0, input.findPieceIndex(0))
         assertEquals(0, input.findPieceIndex(2))
-        assertEquals(0, input.findPieceIndex(15))
-        assertEquals(1, input.findPieceIndex(16))
-        assertEquals(1, input.findPieceIndex(20))
-        assertEquals(sampleTextByteArray.size / 16, input.findPieceIndex(sampleTextByteArray.lastIndex.toLong()))
+        assertEquals(0, input.findPieceIndex(7))
+        assertEquals(1, input.findPieceIndex(8)) // 8+8=16
+        assertEquals(1, input.findPieceIndex(16)) // 16+8 = 24
+        assertEquals(1, input.findPieceIndex(20)) // 20+8 = 28 > 16
+        assertEquals(2, input.findPieceIndex(24)) // 24+8 = 32
+        assertEquals(sampleTextByteArray.size / 16 + 1, input.findPieceIndex(sampleTextByteArray.lastIndex.toLong()))
     }
 
     @Test
     fun readFirstPieceNoSuspend() = runTest {
         logicalPieces.first().state.emit(PieceState.FINISHED)
         input.readBytes().run {
-            assertEquals(16, size)
-            assertEquals("Lorem Ipsum is s", String(this))
+            assertEquals(8, size)
+            assertEquals("Lorem Ip", String(this))
         }
-        assertEquals(16L, input.position)
+        assertEquals(8L, input.position)
     }
-
-    // TODO: TorrentInputTest has been disabled because we changed `seek` from suspend to blocking to improve speed
-
-//    @Test
-//    fun readFirstPieceSuspendResume() = runTest {
-//        launch(start = CoroutineStart.UNDISPATCHED) {
-//            yield()
-//            logicalPieces.first().state.emit(PieceState.FINISHED)
-//        }
-//        file.readBytes().run {
-//            assertEquals(16, size)
-//            assertEquals("Lorem Ipsum is s", String(this))
-//        }
-//        assertEquals(16L, file.offset)
-//    }
 
     @Test
     fun seekFirstNoSuspend() = runTest {
@@ -139,47 +86,15 @@ internal sealed class TorrentInputTest {
         assertEquals(1L, input.position)
     }
 
-//    @Test
-//    fun seekFirstSuspend() = runTest {
-//        launch(start = CoroutineStart.UNDISPATCHED) {
-//            yield()
-//            logicalPieces.first().state.emit(PieceState.FINISHED)
-//        }
-//        assertCoroutineSuspends {
-//            file.seek(1)
-//        }
-//        assertEquals(1L, file.offset)
-//    }
-
-//    @Test
-//    fun `seek first complete only when get that piece`() = runTest {
-//        logicalPieces[2].state.emit(PieceState.FINISHED)
-//        assertCoroutineSuspends {
-//            file.seek(1)
-//        }
-//        assertEquals(1L, file.offset)
-//    }
-
-//    @Test
-//    fun seekToSecondPiece() = runTest {
-//        launch(start = CoroutineStart.UNDISPATCHED) {
-//            yield()
-//            logicalPieces[1].state.emit(PieceState.FINISHED)
-//            println("Piece finished")
-//        }
-//        file.seek(17)
-//        assertEquals(17L, file.offset)
-//    }
-
     @Test
     fun seekReadSecondPiece() = runTest {
-        logicalPieces[1].state.emit(PieceState.FINISHED)
+        logicalPieces[1].state.emit(PieceState.FINISHED) // logically 16..<32 is finished
         input.seek(16)
-        assertEquals(16L, input.position)
+        assertEquals(16L, input.position) // logically 24
         input.readBytes().run {
-            assertEquals(16, size)
-            assertEquals(16L..<32L, input.bufferedOffsetRange)
-            assertEquals("imply dummy text", String(this))
+            assertEquals(8, size)
+            assertEquals(8L..<24L, input.bufferedOffsetRange) // logically 16..<32
+            assertEquals("imply du", String(this))
         }
     }
 
@@ -189,8 +104,8 @@ internal sealed class TorrentInputTest {
         input.seek(17)
         assertEquals(17L, input.position)
         input.readBytes().run {
-            assertEquals(16L..<32L, input.bufferedOffsetRange)
-            assertEquals("mply dummy text", String(this))
+            assertEquals(8L..<24L, input.bufferedOffsetRange)
+            assertEquals("mply du", String(this))
         }
     }
 
@@ -198,11 +113,11 @@ internal sealed class TorrentInputTest {
     fun `seek buffer both direction`() = runTest {
         logicalPieces[0].state.emit(PieceState.FINISHED)
         logicalPieces[1].state.emit(PieceState.FINISHED)
-        input.seek(17)
+        input.seek(17) // 17 18 19 20 21 22 23
         assertEquals(17L, input.position)
         input.readBytes().run {
-            assertEquals(0L..<32L, input.bufferedOffsetRange)
-            assertEquals("mply dummy text", String(this))
+            assertEquals(0L..<24L, input.bufferedOffsetRange)
+            assertEquals("mply du", String(this))
         }
     }
 
@@ -213,13 +128,13 @@ internal sealed class TorrentInputTest {
         input.seek(17)
         assertEquals(17L, input.position)
         input.readBytes().run {
-            assertEquals(0L..<32L, input.bufferedOffsetRange)
-            assertEquals("mply dummy text", String(this))
+            assertEquals(0L..<24L, input.bufferedOffsetRange)
+            assertEquals("mply du", String(this))
         }
         input.seek(0)
         input.readBytes().run {
-            assertEquals(0L..<32L, input.bufferedOffsetRange)
-            assertEquals("Lorem Ipsum is simply dummy text", String(this))
+            assertEquals(0L..<24L, input.bufferedOffsetRange)
+            assertEquals("Lorem Ipsum is simply du", String(this))
         }
     }
 
@@ -227,7 +142,7 @@ internal sealed class TorrentInputTest {
     fun `buffer single finished pieces, initial zero`() = runTest {
         logicalPieces[0].state.value = PieceState.FINISHED
         // other pieces not finished
-        assertEquals(logicalPieces[0].size, input.computeMaxBufferSizeForward(0, 100000))
+        assertEquals(8, input.computeMaxBufferSizeForward(0, 100000))
         assertEquals(0, input.computeMaxBufferSizeBackward(0, 100000))
     }
 
@@ -235,8 +150,16 @@ internal sealed class TorrentInputTest {
     fun `buffer single finished pieces, from intermediate`() = runTest {
         logicalPieces[0].state.value = PieceState.FINISHED
         // other pieces not finished
-        assertEquals(logicalPieces[0].size - 10, input.computeMaxBufferSizeForward(10, 100000))
-        assertEquals(10, input.computeMaxBufferSizeBackward(10, 100000))
+        assertEquals(2, input.computeMaxBufferSizeForward(6, 100000))
+        assertEquals(6, input.computeMaxBufferSizeBackward(6, 100000))
+    }
+
+    @Test
+    fun `buffer single finished pieces, over buffer`() = runTest {
+        logicalPieces[0].state.value = PieceState.FINISHED
+        // other pieces not finished
+        assertEquals(0, input.computeMaxBufferSizeForward(8, 100000)) // 8+8=16, 超过了第一个 buffer
+        assertEquals(0, input.computeMaxBufferSizeBackward(8, 100000))
     }
 
     @Test
@@ -244,10 +167,18 @@ internal sealed class TorrentInputTest {
         logicalPieces[0].state.value = PieceState.FINISHED
         logicalPieces[1].state.value = PieceState.FINISHED
         // other pieces not finished
-        assertEquals(logicalPieces[0].size - 0 + logicalPieces[0].size, input.computeMaxBufferSizeForward(0, 100000))
+        assertEquals(8 + 16, input.computeMaxBufferSizeForward(0, 100000))
         assertEquals(0, input.computeMaxBufferSizeBackward(0, 100000))
-        assertEquals(logicalPieces[0].size - 10 + logicalPieces[0].size, input.computeMaxBufferSizeForward(10, 100000))
+        assertEquals(8 + 16 - 10, input.computeMaxBufferSizeForward(10, 100000))
         assertEquals(10, input.computeMaxBufferSizeBackward(10, 100000))
+    }
+
+
+    @Test
+    fun `compute forward ignore trailing garbage`() = runTest {
+        logicalPieces.last().state.value = PieceState.FINISHED
+        // other pieces not finished
+        assertEquals(1, input.computeMaxBufferSizeForward(sampleText.lastIndex.toLong(), 100000))
     }
 
     @Test
@@ -269,9 +200,17 @@ internal sealed class TorrentInputTest {
     }
 
     @Test
-    fun `compute backward when backward piece not ready`() = runTest {
+    fun `compute backward when just after first piece while first not ready`() = runTest {
         logicalPieces[1].state.value = PieceState.FINISHED
-        assertEquals(2, input.computeMaxBufferSizeBackward(18, 100000))
+        assertEquals(0, input.computeMaxBufferSizeBackward(7, 100000)) // piece 0
+        assertEquals(0, input.computeMaxBufferSizeBackward(8, 100000)) // piece 1 first byte
+        assertEquals(1, input.computeMaxBufferSizeBackward(9, 100000))
+    }
+
+    @Test
+    fun `compute backward when backward piece not ready`() = runTest {
+        logicalPieces[1].state.value = PieceState.FINISHED // 16..<32
+        assertEquals(26 - 16, input.computeMaxBufferSizeBackward(18, 100000)) // logically from 18+8=26
     }
 
 
@@ -411,14 +350,14 @@ internal sealed class TorrentInputTest {
 
         // buffer size is 20
 
-        input.seek(16)
+        input.seek(23) // logically 23+8=31, piece index 1
         input.prepareBuffer()
-        assertEquals(0..<32L, input.bufferedOffsetRange) // 这里不是 36, 因为 2 号 piece 还没好
-        // 16..<32
+        assertEquals(3..<24L, input.bufferedOffsetRange) // piece 2 (logically 32..<48) is not ready, so we cap at 24
+        // logically buffered ..<32 which is end of piece 1
 
         logicalPieces[2].state.value = PieceState.FINISHED // 现在 2 号 piece 好了
 
-        input.seek(32)
+        input.seek(32) // logically 32+8=40, piece index 2
         input.prepareBuffer()
         assertEquals(32L - bufferSize..<32L + bufferSize, input.bufferedOffsetRange)
 
@@ -507,4 +446,5 @@ internal sealed class TorrentInputTest {
             input.seek(10)
         }
     }
+
 }

@@ -103,7 +103,8 @@ object TorrentFilePieceMatcher {
      * @param allPieces all pieces in the torrent
      * @param offset of the file to match
      * @param length of the file to match
-     * @return minimum number of pieces that cover the file offset and length
+     * @return minimum number of pieces that cover the file offset and length,
+     * guaranteed to be continuous and sorted
      */
     fun matchPiecesForFile(allPieces: List<Piece>, offset: Long, length: Long): List<Piece> {
         return allPieces.filter { piece ->

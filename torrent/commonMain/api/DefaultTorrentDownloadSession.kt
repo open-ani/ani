@@ -258,15 +258,22 @@ internal open class DefaultTorrentDownloadSession(
 
         /**
          * 与这个文件有关的 pieces, sorted naturally by offset
+         *
+         * must support [RandomAccess]
          */
         override val pieces: List<Piece> by lazy {
             val allPieces = actualInfo().pieces
-            matchPiecesForFile(allPieces, offset, length).also { pieces ->
+            val list = matchPiecesForFile(allPieces, offset, length).also { pieces ->
                 logger.info {
                     val start = pieces.minByOrNull { it.startIndex }
                     val end = pieces.maxByOrNull { it.lastIndex }
                     "[$torrentName] File '$pathInTorrent' piece initialized, ${pieces.size} pieces, offset range: $start..$end"
                 }
+            }
+            if (list is RandomAccess) {
+                list
+            } else {
+                ArrayList(list)
             }
         }
 
@@ -375,6 +382,7 @@ internal open class DefaultTorrentDownloadSession(
             return TorrentInput(
                 RandomAccessFile(input, "r"),
                 pieces,
+                logicalStartOffset = offset,
                 onWait = { piece ->
                     logger.info { "[TorrentDownloadControl] $torrentName: Set piece ${piece.pieceIndex} deadline to 0 because it was requested " }
                     torrentThreadTasks.submit { handle ->

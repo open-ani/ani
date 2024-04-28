@@ -20,6 +20,7 @@ import java.io.RandomAccessFile
  *
  * 即使 [pieces] 的起始不为 0, [SeekableInput.position] 也是从 0 开始.
  */
+// tests: me.him188.ani.app.torrent.io.OffsetTorrentInputTest and me.him188.ani.app.torrent.io.TorrentInputTest
 internal class TorrentInput(
     /**
      * The torrent save file.
@@ -27,18 +28,38 @@ internal class TorrentInput(
     private val file: RandomAccessFile,
     /**
      * The corresponding pieces of the [file], must contain all bytes in the [file].
+     *
+     * 不需要排序.
      */
-    private val pieces: List<Piece>,
+    private val pieces: List<Piece>, // must support random access
+    /**
+     * 逻辑上的偏移量, 也就是当 [seek] `k` 时, 实际上是在 `logicalStartOffset + k` 处.
+     *
+     * 这里的 "逻辑上" 的第一个 piece 指的是包含文件的第一个 byte 的 piece.
+     */
+    private val logicalStartOffset: Long = pieces.minOf { it.offset }, // 默认为第一个 piece 开头
     private val onWait: suspend (Piece) -> Unit = { },
     private val bufferSize: Int = DEFAULT_BUFFER_PER_DIRECTION,
 ) : BufferedInput(bufferSize) {
-    private val logicalStartOffset: Long = pieces.minOf { it.offset }
     override val fileLength: Long = file.length()
 
+    // exclusive
+    private val logicalLastOffset = logicalStartOffset + fileLength - 1
+
     init {
+        require(pieces is RandomAccess) {
+            "pieces must support random access otherwise the performance will be bad"
+        }
+
         val pieceSum = pieces.maxOf { it.offset + it.size } - logicalStartOffset
         check(pieceSum >= fileLength) {
             "file length ${file.length()} is larger than pieces' range $pieceSum"
+        }
+        check(findPieceIndex(0) != -1) {
+            "logicalStartOffset $logicalStartOffset is not in any piece"
+        }
+        check(findPieceIndex(file.length() - 1) != -1) {
+            "last file pos is not in any piece, maybe because pieces range is too small than file length"
         }
     }
 
@@ -74,7 +95,8 @@ internal class TorrentInput(
     }
 
     /**
-     * 计算从 [viewOffset] 开始,
+     * 计算从 [viewOffset] 开始, 可以继续读取而不会读到未下载完成的 piece 的最大字节数, cap 到 [cap].
+     * 会包含 [viewOffset].
      */
     @Suppress("SameParameterValue")
     internal fun computeMaxBufferSizeForward(
@@ -90,19 +112,22 @@ internal class TorrentInput(
         var accSize = 0L
         while (true) {
             if (curr.state.value != PieceState.FINISHED) return accSize
-            val length = curr.lastIndex - currOffset + 1
+            // coerceAtMost(logicalLastOffset) is essential to skip garbage
+            val length = curr.lastIndex.coerceAtMost(logicalLastOffset) - currOffset + 1
             accSize += length
 
             if (accSize >= cap) return cap
 
             val next = pieces.getOrNull(curr.pieceIndex + 1) ?: return accSize
-            currOffset = curr.lastIndex + 1
+            currOffset = curr.lastIndex.coerceAtMost(logicalLastOffset) + 1
             curr = next
         }
     }
 
     /**
-     * 从 [viewOffset] 开始 (不包含)
+     * 从 [viewOffset] 开始, 可以往回读取而不会读到未下载完成的 piece 的最大字节数, cap 到 [cap].
+     *
+     * 不包含 [viewOffset] 自己.
      */
     @Suppress("SameParameterValue")
     internal fun computeMaxBufferSizeBackward(
@@ -113,18 +138,26 @@ internal class TorrentInput(
         require(cap > 0) { "cap must be positive, but was $cap" }
         require(viewOffset >= 0) { "viewOffset must be non-negative, but was $viewOffset" }
 
+        // view : 1000..2000
+        // pieces: 1000..1015, 1016..1031, 1032..1047
+        // logicalStartOffset: 1008
+
+        // viewOffset: 18
+        // logicalOffset: 1008 + 18 = 1026
+        // 1026 - 1016 = 10
+
         var curr = piece
         var currOffset = logicalStartOffset + viewOffset
         var accSize = 0L
         while (true) {
             if (curr.state.value != PieceState.FINISHED) return accSize
-            val length = currOffset - curr.startIndex
+            val length = currOffset - curr.startIndex.coerceAtLeast(logicalStartOffset)
             accSize += length
 
             if (accSize >= cap) return cap
 
             val next = pieces.getOrNull(curr.pieceIndex - 1) ?: return accSize
-            currOffset = curr.startIndex
+            currOffset = curr.startIndex.coerceAtLeast(logicalStartOffset)
             curr = next
         }
     }
