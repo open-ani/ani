@@ -175,10 +175,19 @@ internal class TorrentInput(
         }
     }
 
+    // 一般来说十几次比较就可以找到
     internal fun findPieceIndex(viewOffset: Long): @Range(from = -1L, to = Long.MAX_VALUE) Int {
         require(viewOffset >= 0) { "viewOffset must be non-negative, but was $viewOffset" }
+
         val logicalOffset = logicalStartOffset + viewOffset
-        return pieces.indexOfFirst { it.startIndex <= logicalOffset && logicalOffset <= it.lastIndex }
+
+        return pieces.binarySearch {
+            when {
+                it.startIndex > logicalOffset -> 1
+                it.lastIndex < logicalOffset -> -1
+                else -> 0
+            }
+        }
     }
 
     override fun close() {
