@@ -136,7 +136,7 @@ internal open class DefaultTorrentDownloadSession(
 
         @Synchronized
         fun onBlockDownloading(pieceIndex: Int) {
-            pieces[pieceIndex].state.value = PieceState.DOWNLOADING
+            pieces[pieceIndex].state.compareAndSet(PieceState.READY, PieceState.DOWNLOADING)
         }
 
         @Synchronized
