@@ -103,6 +103,7 @@ class MediaFetchRequest(
      */
     val subjectId: String? = null,
     val episodeId: String? = null,
+    val subjectNameCN: String? = null,
     /**
      * Translated and original names of the subject.
      *

@@ -167,13 +167,14 @@ internal class DefaultEpisodeMediaFetchSession(
         MediaFetchRequest(
             subjectId = subject.id.toString(),
             episodeId = episode.id.toString(),
+            subjectNameCN = subject.nameCn,
             subjectNames = setOfNotNull(
                 subject.nameCn,
                 subject.name,
             ),
             episodeSort = EpisodeSort(episode.sort.toString()),
-            episodeEp = episode.ep?.let { EpisodeSort(it) },
             episodeName = episode.nameCNOrName(),
+            episodeEp = episode.ep?.let { EpisodeSort(it) },
         )
     }
 

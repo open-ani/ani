@@ -17,25 +17,6 @@ import me.him188.ani.datasources.api.topic.TopicCategory
 abstract class TopicMediaSource : MediaSource {
     override val location: MediaSourceLocation get() = MediaSourceLocation.ONLINE
 
-    private fun Topic.toOnlineMedia(): DefaultMedia {
-        val details = details
-        return DefaultMedia(
-            mediaId = "$mediaSourceId.${topicId}",
-            mediaSourceId = mediaSourceId,
-            originalUrl = originalLink,
-            download = downloadLink,
-            originalTitle = rawTitle,
-            publishedTime = publishedTimeMillis ?: 0,
-            episodes = details?.episodeRange?.sorts?.toList() ?: emptyList(),
-            properties = MediaProperties(
-                subtitleLanguageIds = details?.subtitleLanguages?.map { it.id } ?: emptyList(),
-                resolution = details?.resolution?.toString() ?: Resolution.R1080P.toString(),
-                alliance = alliance,
-                size = size,
-            ),
-        )
-    }
-
     // For backward compatibility
     protected abstract suspend fun startSearch(query: DownloadSearchQuery): SizedSource<Topic>
 
@@ -51,7 +32,7 @@ abstract class TopicMediaSource : MediaSource {
                         episodeName = query.episodeName,
                     )
                 ).map {
-                    MediaMatch(it.toOnlineMedia(), MatchKind.FUZZY)
+                    MediaMatch(it.toOnlineMedia(mediaSourceId), MatchKind.FUZZY)
                 }
             }.merge()
     }
@@ -67,3 +48,23 @@ data class DownloadSearchQuery(
     val episodeEp: EpisodeSort? = null,
     val episodeName: String? = null,
 )
+
+
+fun Topic.toOnlineMedia(mediaSourceId: String): DefaultMedia {
+    val details = details
+    return DefaultMedia(
+        mediaId = "$mediaSourceId.${topicId}",
+        mediaSourceId = mediaSourceId,
+        originalUrl = originalLink,
+        download = downloadLink,
+        originalTitle = rawTitle,
+        publishedTime = publishedTimeMillis ?: 0,
+        episodes = details?.episodeRange?.sorts?.toList() ?: emptyList(),
+        properties = MediaProperties(
+            subtitleLanguageIds = details?.subtitleLanguages?.map { it.id } ?: emptyList(),
+            resolution = details?.resolution?.toString() ?: Resolution.R1080P.toString(),
+            alliance = alliance,
+            size = size,
+        ),
+    )
+}

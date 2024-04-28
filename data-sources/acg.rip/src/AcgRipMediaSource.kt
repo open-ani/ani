@@ -131,7 +131,7 @@ class AcgRipMediaSource(
             }
             val document: Document = Jsoup.parse(resp.bodyAsChannel().toInputStream(), "UTF-8", "https://acg.rip/.xml")
             parseDocument(document)
-                .filter { query.matches(it) }
+                .filter { query.matches(it, allowEpMatch = false) }
                 .run {
                     Paged(size, isNotEmpty(), this)
                 }

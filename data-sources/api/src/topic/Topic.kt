@@ -83,13 +83,11 @@ class TopicDetails(
     val subtitleLanguages: List<SubtitleLanguage>,
 )
 
-fun DownloadSearchQuery.matches(topic: Topic): Boolean {
-    val details = topic.details ?: return true
-    episodeSort?.let { expected ->
-        val ep = details.episodeRange
-        if (ep != null && expected !in ep) return false
-    }
-    return true
+fun DownloadSearchQuery.matches(topic: Topic, allowEpMatch: Boolean): Boolean {
+    return TopicCriteria(
+        episodeSort = episodeSort,
+        episodeEp = episodeEp,
+    ).matches(topic, allowEpMatch)
 }
 
 enum class TopicCategory {
