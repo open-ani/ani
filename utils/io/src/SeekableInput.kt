@@ -1,6 +1,7 @@
 package me.him188.ani.utils.io
 
 import org.jetbrains.annotations.Range
+import java.io.EOFException
 import java.io.IOException
 
 /**
@@ -45,6 +46,9 @@ public interface SeekableInput : AutoCloseable {
     /**
      * Reads up to [length] bytes from the input source into [buffer] starting at [offset].
      *
+     * It is guaranteed that this function returns very quickly if there is at least one byte buffered,
+     * and it tries to read at most buffer as possible.
+     *
      * This function suspends until at least one byte is available to read,
      * and attempts to return as soon as possible after completing one read.
      * Read below for detailed explanation.
@@ -66,6 +70,9 @@ public interface SeekableInput : AutoCloseable {
      * @return the number of bytes read, or `-1` if the end of the input source has been reached.
      *
      * @throws IllegalStateException if the input source is closed.
+     * @throws IllegalArgumentException if [offset] or [length] is negative.
+     * @throws IllegalArgumentException if `offset + length` is greater than the size of [buffer].
+     * @throws IOException if an I/O error occurs while reading from the input source.
      */
     @Throws(IOException::class)
     public fun read(
@@ -101,6 +108,9 @@ public fun SeekableInput.readBytes(maxLength: Int = 4096): ByteArray {
     }
 }
 
+/**
+ * 读取所剩的所有字节. 如果文件已经关闭, 会抛出异常 [IllegalStateException]
+ */
 public fun SeekableInput.readAllBytes(): ByteArray {
     val buffer = ByteArray(bytesRemaining.toInt())
     var offset = 0
@@ -111,6 +121,27 @@ public fun SeekableInput.readAllBytes(): ByteArray {
     }
     if (offset == buffer.size) return buffer
     return buffer.copyOf(newSize = offset)
+}
+
+/**
+ * 读取 [n] 个字节.
+ *
+ * @throws EOFException when the file is shorter than [n] bytes.
+ * @throws IllegalStateException if the input source is closed.
+ */
+@Throws(EOFException::class)
+public fun SeekableInput.readExactBytes(
+    n: Int
+): ByteArray {
+    val buffer = ByteArray(n)
+    var offset = 0
+    while (offset != buffer.size) {
+        val read = read(buffer, offset)
+        if (read == -1) break
+        offset += read
+    }
+    if (offset == buffer.size) return buffer
+    throw EOFException("Expected $n bytes, but only read $offset bytes")
 }
 
 

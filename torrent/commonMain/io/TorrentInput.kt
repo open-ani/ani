@@ -26,14 +26,21 @@ internal class TorrentInput(
      */
     private val file: RandomAccessFile,
     /**
-     * The corresponding pieces of the [io].
+     * The corresponding pieces of the [file], must contain all bytes in the [file].
      */
     private val pieces: List<Piece>,
     private val onWait: suspend (Piece) -> Unit = { },
     private val bufferSize: Int = DEFAULT_BUFFER_PER_DIRECTION,
 ) : BufferedInput(bufferSize) {
     private val logicalStartOffset: Long = pieces.minOf { it.offset }
-    override val fileLength: Long = pieces.maxOf { it.offset + it.size } - logicalStartOffset
+    override val fileLength: Long = file.length()
+
+    init {
+        val pieceSum = pieces.maxOf { it.offset + it.size } - logicalStartOffset
+        check(pieceSum >= fileLength) {
+            "file length ${file.length()} is larger than pieces' range $pieceSum"
+        }
+    }
 
     override fun fillBuffer() {
         val fileLength = this.fileLength
@@ -62,7 +69,8 @@ internal class TorrentInput(
     override fun readFileToBuffer(fileOffset: Long, bufferOffset: Int, length: Int): Int {
         val file = this.file
         file.seek(fileOffset)
-        return file.read(buf, bufferOffset, length)
+        file.readFully(buf, bufferOffset, length)
+        return length
     }
 
     /**

@@ -3,12 +3,20 @@ package me.him188.ani.app.torrent
 import kotlinx.coroutines.test.runTest
 import me.him188.ani.app.torrent.api.PieceState
 import me.him188.ani.app.torrent.api.pieces.Piece
+import me.him188.ani.app.torrent.api.pieces.lastIndex
 import me.him188.ani.app.torrent.io.TorrentInput
+import me.him188.ani.utils.io.readAllBytes
 import me.him188.ani.utils.io.readBytes
+import me.him188.ani.utils.io.readExactBytes
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.DynamicTest
+import org.junit.jupiter.api.TestFactory
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.io.RandomAccessFile
+import kotlin.math.absoluteValue
+import kotlin.random.Random
+import kotlin.random.nextLong
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -40,6 +48,22 @@ internal sealed class TorrentInputTest {
         fun seekReadLastPiece() = runTest {
             logicalPieces.last().state.emit(PieceState.FINISHED)
             input.seek(logicalPieces.last().offset - 1000 + 2)
+            input.readBytes().run {
+                assertEquals("Lorem Ipsum.", String(this))
+                assertEquals(sampleTextByteArray.size % 16 - 2, size)
+            }
+        }
+    }
+
+    class LargerPieces : TorrentInputTest() {
+        override val logicalPieces = Piece.buildPieces(sampleTextByteArray.size.toLong(), 16, initial = 1000).let {
+            it + Piece(it.size, 16, it.last().lastIndex + 1)
+        }
+
+        @Test
+        fun seekReadLastPiece() = runTest {
+            logicalPieces.dropLast(1).last().state.emit(PieceState.FINISHED)
+            input.seek(logicalPieces.dropLast(1).last().offset - 1000 + 2)
             input.readBytes().run {
                 assertEquals("Lorem Ipsum.", String(this))
                 assertEquals(sampleTextByteArray.size % 16 - 2, size)
@@ -239,6 +263,17 @@ internal sealed class TorrentInputTest {
         assertEquals(0, input.computeMaxBufferSizeForward(0, 100000))
     }
 
+    @Test
+    fun `compute backward when curr piece not ready`() = runTest {
+        assertEquals(0, input.computeMaxBufferSizeBackward(100, 100000))
+    }
+
+    @Test
+    fun `compute backward when backward piece not ready`() = runTest {
+        logicalPieces[1].state.value = PieceState.FINISHED
+        assertEquals(2, input.computeMaxBufferSizeBackward(18, 100000))
+    }
+
 
     @Test
     fun `reuse zero byte`() = runTest {
@@ -255,6 +290,28 @@ internal sealed class TorrentInputTest {
     ///////////////////////////////////////////////////////////////////////////
     // Reuse buffer
     ///////////////////////////////////////////////////////////////////////////
+
+    @Test
+    fun `double prepareBuffer`() = runTest {
+        for (logicalPiece in logicalPieces) {
+            logicalPiece.state.value = PieceState.FINISHED
+        }
+
+        // buffer size is 20
+
+        input.seek(30)
+        assertEquals(1, input.read(ByteArray(1))) // fill buffer
+        assertEquals(30 - bufferSize..<30L + bufferSize, input.bufferedOffsetRange)
+        // 10..<50
+
+        input.seek(0) // 超出 buffer 范围
+        input.prepareBuffer()
+        input.prepareBuffer()
+        assertEquals(0L..<bufferSize, input.bufferedOffsetRange)
+        // 0..<20, last 10 was reused from previous buffer
+
+        assertEquals("Lorem Ipsum is simpl", input.readExactBytes(20).decodeToString())
+    }
 
     @Test
     fun `reuse buffer from previous start`() = runTest {
@@ -274,11 +331,102 @@ internal sealed class TorrentInputTest {
         assertEquals(0L..<bufferSize, input.bufferedOffsetRange)
         // 0..<20, last 10 was reused from previous buffer
 
-        assertEquals("Lorem Ipsum is simpl", input.readBytes(20).decodeToString())
+        assertEquals("Lorem Ipsum is simpl", input.readExactBytes(20).decodeToString())
     }
 
     @Test
-    fun `reuse buffer from previous end`() = runTest {
+    fun `new buffer includes entire previous as head`() = runTest {
+        for (logicalPiece in logicalPieces) {
+            logicalPiece.state.value = PieceState.FINISHED
+        }
+
+        // buffer size is 20
+
+        input.seek(0)
+        input.prepareBuffer()
+        assertEquals(0L..<bufferSize, input.bufferedOffsetRange)
+
+        input.seek(bufferSize.toLong()) // 超出 buffer 范围
+        input.prepareBuffer()
+        assertEquals(0L..<bufferSize * 2, input.bufferedOffsetRange)
+        // 0..<20, last 10 was reused from previous buffer
+
+        assertEquals(sampleText.drop(bufferSize).take(20), input.readExactBytes(20).decodeToString())
+        assertEquals(sampleText.drop(bufferSize + 20), input.readAllBytes().decodeToString())
+        assertEquals("", input.readAllBytes().decodeToString())
+    }
+
+    @Test
+    fun `new buffer includes entire previous as tail`() = runTest {
+        for (logicalPiece in logicalPieces) {
+            logicalPiece.state.value = PieceState.FINISHED
+        }
+
+        // buffer size is 20
+
+        input.seek(sampleText.lastIndex.toLong()) // 576
+        input.prepareBuffer()
+        assertEquals(sampleText.lastIndex.toLong() - bufferSize..<sampleText.length, input.bufferedOffsetRange)
+
+        input.seek(sampleText.lastIndex.toLong() - bufferSize - 1) // 超出 buffer 范围
+        assertEquals(
+            sampleText.substring(sampleText.lastIndex - bufferSize - 1),
+            input.readAllBytes().decodeToString()
+        )
+    }
+
+    @TestFactory
+    fun `reuse buffer from previous end`() = (20L..60L step 4).map { index ->
+        DynamicTest.dynamicTest("$index") {
+            for (logicalPiece in logicalPieces) {
+                logicalPiece.state.value = PieceState.FINISHED
+            }
+
+            // buffer size is 20
+
+            input.seek(30)
+            assertEquals(1, input.read(ByteArray(1))) // fill buffer
+            assertEquals(30 - bufferSize..<30L + bufferSize, input.bufferedOffsetRange)
+            // 10..<50
+
+            input.seek(index)
+            input.prepareBuffer()
+            assertEquals(index - bufferSize..<index + bufferSize, input.bufferedOffsetRange)
+            // 40..<80, first 10 was reused from previous buffer
+
+            assertEquals(sampleText.substring(index.toInt()).take(10), input.readExactBytes(10).decodeToString())
+            assertEquals(sampleText.substring(index.toInt() + 10), input.readAllBytes().decodeToString())
+
+            input.seek(0)
+            assertEquals(sampleText, input.readAllBytes().decodeToString())
+        }
+    }
+
+    @Test
+    fun `buffer when piece not ready, then ready and re-buffer`() = runTest {
+        for (logicalPiece in logicalPieces) {
+            logicalPiece.state.value = PieceState.FINISHED
+        }
+        logicalPieces[2].state.value = PieceState.DOWNLOADING // 48..<64
+
+        // buffer size is 20
+
+        input.seek(16)
+        input.prepareBuffer()
+        assertEquals(0..<32L, input.bufferedOffsetRange) // 这里不是 36, 因为 2 号 piece 还没好
+        // 16..<32
+
+        logicalPieces[2].state.value = PieceState.FINISHED // 现在 2 号 piece 好了
+
+        input.seek(32)
+        input.prepareBuffer()
+        assertEquals(32L - bufferSize..<32L + bufferSize, input.bufferedOffsetRange)
+
+        assertEquals(sampleText.substring(32), input.readAllBytes().decodeToString())
+    }
+
+    @Test
+    fun `seek no reuse`() = runTest {
         for (logicalPiece in logicalPieces) {
             logicalPiece.state.value = PieceState.FINISHED
         }
@@ -290,12 +438,27 @@ internal sealed class TorrentInputTest {
         assertEquals(30 - bufferSize..<30L + bufferSize, input.bufferedOffsetRange)
         // 10..<50
 
-        input.seek(60) // 超出 buffer 范围
+        input.seek(100) // 远超出 buffer 范围
         input.prepareBuffer()
-        assertEquals(60 - bufferSize..<60L + bufferSize, input.bufferedOffsetRange)
+        assertEquals(100L - bufferSize..<100L + bufferSize, input.bufferedOffsetRange)
         // 40..<80, first 10 was reused from previous buffer
 
-        assertEquals(sampleText.substring(60..<70), input.readBytes(10).decodeToString())
+        assertEquals(sampleText.substring(100..<110), input.readExactBytes(10).decodeToString())
+    }
+
+    @Test
+    fun `random seek and read`() {
+        for (logicalPiece in logicalPieces) {
+            logicalPiece.state.value = PieceState.FINISHED
+        }
+
+        val random = Random(2352151)
+        repeat(1000) {
+            val pos = random.nextLong(0L..<sampleText.length).absoluteValue
+            input.seek(pos)
+//                val length = Random.nextInt()
+            assertEquals(sampleText.substring(pos.toInt()), input.readAllBytes().decodeToString())
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////

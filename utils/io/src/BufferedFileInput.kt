@@ -21,7 +21,9 @@ import kotlin.math.min
  * The file is not open until first read.
  */
 @Throws(IOException::class)
-public fun File.toSeekableInput(): SeekableInput = BufferedFileInput(RandomAccessFile(this, "r"))
+public fun File.toSeekableInput(
+    bufferSize: Int = BufferedInput.DEFAULT_BUFFER_PER_DIRECTION,
+): SeekableInput = BufferedFileInput(RandomAccessFile(this, "r"), bufferSize)
 
 @JvmInline
 public value class OffsetRange private constructor(
@@ -52,7 +54,14 @@ internal class BufferedFileInput(
     override fun readFileToBuffer(fileOffset: Long, bufferOffset: Int, length: Int): Int {
         val file = this.file
         file.seek(fileOffset)
-        return file.read(buf, bufferOffset, length)
+        file.readFully(buf, bufferOffset, length)
+        return length
+
+//        var read = bufferOffset
+//        while (read <= bufferOffset + length) {
+//            read += file.read(buf, read, length - read)
+//        }
+//        return read
     }
 
     override fun toString(): String {
@@ -63,15 +72,15 @@ internal class BufferedFileInput(
 public abstract class BufferedInput(
     bufferSize: Int,
 ) : SeekableInput {
-    protected companion object {
+    public companion object {
         public const val DEFAULT_BUFFER_PER_DIRECTION: Int = 8192 * 16
 
-        public fun Long.coerceToInt(): Int {
+        protected fun Long.coerceToInt(): Int {
             if (this > Int.MAX_VALUE) return Int.MAX_VALUE
             return this.toInt()
         }
 
-        public fun Long.checkToInt(): Int {
+        protected fun Long.checkToInt(): Int {
             if (this > Int.MAX_VALUE) error("value is too large to fit in Int: $this")
             return this.toInt()
         }
@@ -102,7 +111,7 @@ public abstract class BufferedInput(
      */
     final override var position: Long = 0
 
-    final override val bytesRemaining: Long get() = fileLength - position
+    final override val bytesRemaining: Long get() = (fileLength - position).coerceAtLeast(0)
 
     final override fun seek(position: Long) {
         require(position >= 0) { "offset must be non-negative, but was $position" }
@@ -132,7 +141,7 @@ public abstract class BufferedInput(
         // 尽量先从旧的 buffer 里 "移动"
         val bufferedStart = bufferedOffsetStart
         val bufferedEnd = bufferedOffsetEndExcl
-        val read = if (bufferedStart != -1L) {
+        if (bufferedStart != -1L) {
             // 我们只考虑用旧 buffer 来填充新 buffer 的前面/后面一部分, 来少读取一些文件字节, 不考虑中间包含的情况. 
             // 如果用旧的 buffer 填充新 buffer 的中间一部分, 那么还需要两次文件 IO 才能完成新 buffer, 这可能比一次文件 IO 更慢.
             if (readStart in bufferedStart..<bufferedEnd) {
@@ -152,7 +161,7 @@ public abstract class BufferedInput(
                     endIndex = (bufferedEnd - bufferedStart).checkToInt(),
                 )
                 // 用文件填充 buffer 的后面
-                readFileToBuffer(
+                readFileToBufferChecked(
                     fileOffset = bufferedEnd,
                     bufferOffset = (bufferedEnd - readStart).checkToInt(),
                     length = (readEnd - bufferedEnd).coerceToInt()
@@ -174,23 +183,28 @@ public abstract class BufferedInput(
                     endIndex = (readEnd - bufferedStart).checkToInt(),
                 )
                 // 用文件填充 buffer 的前面
-                readFileToBuffer(
+                readFileToBufferChecked(
                     fileOffset = readStart,
                     bufferOffset = 0,
                     length = (bufferedStart - readStart).coerceToInt()
                 )
             } else {
                 // 旧 buffer 不能用
-                readFileToBuffer(readStart, 0, readLength)
+                readFileToBufferChecked(readStart, 0, readLength)
             }
         } else {
-            readFileToBuffer(readStart, 0, readLength)
+            readFileToBufferChecked(readStart, 0, readLength)
         }
         this.bufferedOffsetStart = readStart
         this.bufferedOffsetEndExcl = readEnd
     }
 
     protected abstract fun readFileToBuffer(fileOffset: Long, bufferOffset: Int, length: Int): Int
+
+    private fun readFileToBufferChecked(fileOffset: Long, bufferOffset: Int, length: Int) {
+        val read = readFileToBuffer(fileOffset, bufferOffset, length)
+        check(read == length) { "readFileToBufferExact: Expected to read $length bytes, but read $read bytes, fileOffset=$fileOffset" }
+    }
 
     override fun prepareBuffer() {
         checkClosed()
