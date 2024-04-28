@@ -119,7 +119,7 @@ Ani 支持 Android 和桌面端 (macOS、Linux、Windows)。现阶段对 Android
 - 管理缓存的所有视频
 - 按番剧分类管理
 
-<img width="300" src=".readme/images/preferences/cache.jpg"  alt="cache.jpg"/> <img width="300" src=".readme/images/subject/subject-cache.jpg"  alt="subject-cache.jpg"/> <img width="300" src=".readme/images/preferences/global-caches.jpg"  alt="global-caches.jpg"/> 
+<img width="270" src=".readme/images/preferences/cache.jpg"  alt="cache.jpg"/> <img width="270" src=".readme/images/subject/subject-cache.jpg"  alt="subject-cache.jpg"/> <img width="270" src=".readme/images/preferences/global-caches.jpg"  alt="global-caches.jpg"/> 
 
 ### 完全免费无广告且开放源代码
 
