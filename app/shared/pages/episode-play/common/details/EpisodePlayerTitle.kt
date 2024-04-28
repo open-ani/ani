@@ -23,7 +23,6 @@ fun EpisodePlayerTitle(
             Row {
                 TextWithBorder(
                     subjectTitle,
-                    2f,
                     softWrap = false, maxLines = 1, overflow = TextOverflow.Ellipsis,
                 )
             }
@@ -33,7 +32,6 @@ fun EpisodePlayerTitle(
                 // 过长时隐藏标题, 保留序号
                 TextWithBorder(
                     remember(ep, episodeTitle) { (ep ?: "01") + "  " + episodeTitle },
-                    1.6f,
                     softWrap = false, maxLines = 1, overflow = TextOverflow.Ellipsis,
                 )
             }

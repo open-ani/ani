@@ -1,7 +1,6 @@
 package me.him188.ani.app.ui.subject.episode.video.loading
 
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -15,6 +14,7 @@ import androidx.compose.ui.text.style.TextAlign
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
+import me.him188.ani.app.ui.foundation.TextWithBorder
 import me.him188.ani.app.ui.subject.episode.VideoLoadingState
 import me.him188.ani.app.videoplayer.ui.VideoLoadingIndicator
 import me.him188.ani.app.videoplayer.ui.state.PlaybackState
@@ -59,15 +59,15 @@ fun EpisodeVideoLoadingIndicator(
         text = {
             when (state) {
                 VideoLoadingState.Initial -> {
-                    Text("请选择数据源")
+                    TextWithBorder("请选择数据源")
                 }
 
                 VideoLoadingState.ResolvingSource -> {
-                    Text("正在解析资源链接")
+                    TextWithBorder("正在解析资源链接")
                 }
 
                 VideoLoadingState.DecodingData -> {
-                    Text("资源解析成功, 正在准备视频")
+                    TextWithBorder("资源解析成功, 正在准备视频")
                 }
 
                 VideoLoadingState.Succeed -> {
@@ -99,11 +99,14 @@ fun EpisodeVideoLoadingIndicator(
                         }
                     }
 
-                    Text(text, textAlign = TextAlign.Center)
+                    TextWithBorder(text, textAlign = TextAlign.Center)
                 }
 
                 is VideoLoadingState.Failed -> {
-                    Text("加载失败: ${renderCause(state)}", color = MaterialTheme.colorScheme.error)
+                    TextWithBorder(
+                        "加载失败: ${renderCause(state)}",
+                        color = MaterialTheme.colorScheme.error
+                    )
                 }
             }
         },

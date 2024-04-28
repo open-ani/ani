@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -23,7 +22,9 @@ import kotlinx.coroutines.delay
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.preview.PHONE_LANDSCAPE
+import me.him188.ani.app.ui.subject.episode.VideoLoadingState
 import me.him188.ani.app.ui.subject.episode.details.EpisodePlayerTitle
+import me.him188.ani.app.ui.subject.episode.video.loading.EpisodeVideoLoadingIndicator
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettings
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsSideSheet
 import me.him188.ani.app.ui.subject.episode.video.topbar.EpisodeVideoTopBar
@@ -41,6 +42,7 @@ import me.him188.ani.app.videoplayer.ui.progress.rememberProgressSliderState
 import me.him188.ani.app.videoplayer.ui.state.DummyPlayerState
 import me.him188.ani.app.videoplayer.ui.state.togglePause
 import me.him188.ani.danmaku.ui.DanmakuConfig
+import me.him188.ani.datasources.api.topic.FileSize.Companion.kiloBytes
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import kotlin.time.Duration.Companion.seconds
 
@@ -139,7 +141,7 @@ private fun PreviewVideoScaffoldImpl(
         },
         floatingMessage = {
             Column {
-                VideoLoadingIndicator(true, text = { Text(text = "正在缓冲") })
+                EpisodeVideoLoadingIndicator(VideoLoadingState.Succeed, speedProvider = { 233.kiloBytes })
             }
 
         },
