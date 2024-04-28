@@ -119,7 +119,7 @@ Ani 支持 Android 和桌面端 (macOS、Linux、Windows)。现阶段对 Android
 - 管理缓存的所有视频
 - 按番剧分类管理
 
-<img width="300" src=".readme/images/preferences/cache.jpg"  alt="cache.jpg"/> <img width="300" src=".readme/images/subject/subject-cache.jpg"  alt="subject-cache.jpg"/> <img width="300" src=".readme/images/subject/global-cache.jpg"  alt="global-cache.jpg"/> 
+<img width="300" src=".readme/images/preferences/cache.jpg"  alt="cache.jpg"/> <img width="300" src=".readme/images/subject/subject-cache.jpg"  alt="subject-cache.jpg"/> <img width="300" src=".readme/images/preferences/global-caches.jpg"  alt="global-caches.jpg"/> 
 
 ### 完全免费无广告且开放源代码
 
@@ -132,8 +132,7 @@ Ani 支持 Android 和桌面端 (macOS、Linux、Windows)。现阶段对 Android
 
 自 3.0.0-beta15 起，Ani 增加了一个全球均可访问的数据源，无需设置代理。若你想要，也可以设置代理后使用所有数据源。代理设置入口为"我的"的右上角。
 
-<img width="300" src=".readme/images/preferences/preferences-network-proxy.jpg" alt="preferences-network-proxy"/> 
-<img width="300" src=".readme/images/preferences/preferences-network-danmaku.jpg" alt="preferences-network-danmaku"/>
+<img width="300" src=".readme/images/preferences/preferences-network-proxy.jpg" alt="preferences-network-proxy"/><img width="300" src=".readme/images/preferences/preferences-network-danmaku.jpg" alt="preferences-network-danmaku"/>
 
 ### 桌面端
 
