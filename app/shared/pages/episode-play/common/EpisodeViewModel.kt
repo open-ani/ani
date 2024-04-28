@@ -18,7 +18,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
@@ -318,13 +317,9 @@ private class EpisodeViewModelImpl(
         addCloseable(it)
     }
 
-    private val danmakuSessionFlow: Flow<DanmakuSession> = combine(
-        selectedMedia.filterNotNull(),
-        playerState.videoData,
-//        playerState.videoProperties.distinctUntilChangedBy { it?.filename }.filterNotNull()
-    ) { media, data ->
-        val filename = data?.filename
-            ?: media.originalTitle
+    private val danmakuSessionFlow: Flow<DanmakuSession> = playerState.videoData.filterNotNull().mapLatest { data ->
+        val filename = data.filename
+//            ?: selectedMedia.first().originalTitle
 
         val subject: SubjectPresentation
         val episode: EpisodePresentation
@@ -342,7 +337,7 @@ private class EpisodeViewModelImpl(
                 episodeName = episode.title,
                 filename = filename,
                 fileHash = "aa".repeat(16),
-                fileSize = data?.fileLength ?: 0,
+                fileSize = data.fileLength,
                 videoDuration = 0.milliseconds,
 //                fileHash = video.fileHash ?: "aa".repeat(16),
 //                fileSize = video.fileLengthBytes,
