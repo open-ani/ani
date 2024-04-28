@@ -42,6 +42,11 @@ import io.ktor.utils.io.charsets.decode
 import io.ktor.utils.io.jvm.javaio.toInputStream
 import io.ktor.utils.io.streams.asInput
 import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flatMapMerge
+import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.json.Json
 import me.him188.ani.datasources.api.paging.SingleShotPagedSource
 import me.him188.ani.datasources.api.paging.SizedSource
@@ -221,18 +226,20 @@ abstract class AbstractMikanMediaSource(
 
         if (mikanIds.isEmpty()) return null
 
-        val mikanIdToBangumiId = mikanIds.associateWith { subjectId ->
-            val document = client.get("$baseUrl/Home/Bangumi/$subjectId").bodyAsChannel().toInputStream().use {
-                Jsoup.parse(it, "UTF-8", baseUrl)
+        // pick the fastest correct one
+        mikanIds.asFlow()
+            .flatMapMerge(4) { mikanId ->
+                flow {
+                    val document = client.get("$baseUrl/Home/Bangumi/$mikanId").bodyAsChannel().toInputStream().use {
+                        Jsoup.parse(it, "UTF-8", baseUrl)
+                    }
+                    emit(mikanId to parseBangumiSubjectIdFromMikanSubjectDetails(document))
+                }.catch { }
             }
-            parseBangumiSubjectIdFromMikanSubjectDetails(document)
-        }
+            .filter { it.second == bangumiSubjectId }
+            .firstOrNull()?.let { return it.first }
 
-        val target = mikanIdToBangumiId.entries.firstOrNull {
-            it.value == bangumiSubjectId
-        }?.key ?: return null
-
-        return target
+        return null
     }
 
     companion object {
