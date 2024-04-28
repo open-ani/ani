@@ -47,8 +47,10 @@ class DandanplayDanmakuProvider(
         request: DanmakuSearchRequest,
     ): DanmakuSession? {
         val searchEpisodeResponse = dandanplayClient.searchEpisode(
-            subjectName = request.subjectName,
-            episodeName = "第${request.episodeSort.toString().removePrefix("0")}话",
+            subjectName = request.subjectName.trim().substringBeforeLast(" "),
+            episodeName = null // 用我们的匹配算法
+//            episodeName = "第${(request.episodeEp ?: request.episodeSort).toString().removePrefix("0")}话",
+            // 弹弹的是 EP 顺序
             // 弹弹数据库有时候会只有 "第x话" 没有具体标题, 所以不带标题搜索就够了
         )
         logger.info { "Ep search result: ${searchEpisodeResponse}}" }
@@ -64,7 +66,7 @@ class DandanplayDanmakuProvider(
 
         val matcher = DanmakuMatchers.mostRelevant(
             request.subjectName,
-            "第${request.episodeSort.toString().removePrefix("0")}话 " + request.episodeName
+            "第${(request.episodeEp ?: request.episodeSort).toString().removePrefix("0")}话 " + request.episodeName
         )
 
         if (episodes.isNotEmpty()) {

@@ -23,7 +23,7 @@ internal class DandanplayClient(
 ) {
     suspend fun searchEpisode(
         subjectName: String,
-        episodeName: String,
+        episodeName: String?,
     ): DandanplaySearchEpisodeResponse {
         val response = client.get("https://api.dandanplay.net/api/v2/search/episodes") {
             accept(ContentType.Application.Json)
