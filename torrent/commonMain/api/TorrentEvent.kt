@@ -29,7 +29,11 @@ class PieceFinishedEvent(
 
 class TorrentFinishedEvent(
     override val torrentName: String,
-) : TorrentEvent
+    handle: Lazy<AniTorrentHandle>,
+) : TorrentEvent {
+    @property:TorrentThread
+    val handle: AniTorrentHandle by handle
+}
 
 class StatsUpdateEvent(
     override val torrentName: String,

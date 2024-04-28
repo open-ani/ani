@@ -67,7 +67,11 @@ internal fun TorrentAlert<*>.toEventOrNull(): TorrentEvent? {
         is TorrentResumedAlert -> TorrentResumeEvent(torrentName())
         is org.libtorrent4j.alerts.BlockDownloadingAlert -> BlockDownloadingEvent(torrentName(), pieceIndex())
         is PieceFinishedAlert -> PieceFinishedEvent(torrentName(), pieceIndex())
-        is org.libtorrent4j.alerts.TorrentFinishedAlert -> TorrentFinishedEvent(torrentName())
+        is org.libtorrent4j.alerts.TorrentFinishedAlert -> TorrentFinishedEvent(
+            torrentName(),
+            lazy { handle().asAniTorrentHandle() }
+        )
+
         else -> null
     }
 }

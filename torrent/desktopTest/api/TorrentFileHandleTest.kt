@@ -135,4 +135,114 @@ internal class TorrentFileHandleTest : TorrentSessionSupport() {
             fileHandle.close()
         }
     }
+
+    @Test
+    fun `TorrentFinishedEvent finishes ongoing tasks with all pieces not done`() = runTest {
+        withSession {
+            val handle = setHandle {
+                files.add(TestTorrentFile("1.mp4", 1000))
+                appendPieces {
+                    piece(500)
+                    piece(500)
+                }
+            }
+
+            handle.fileProgresses[0] = handle.fileProgresses[0].copy(second = 1000)
+
+            val file = getFiles().first()
+            val fileHandle = file.createHandle()
+
+            listener.onEvent(TorrentFinishedEvent(handle.name, lazyOf(handle)))
+
+            assertEquals(1000L, fileHandle.entry.stats.downloadedBytes.first())
+            assertTrue(fileHandle.entry.stats.isFinished.first())
+            assertEquals(1f, fileHandle.entry.stats.progress.first())
+            assertTrue(fileHandle.entry.pieces.all { it.state.value == PieceState.FINISHED })
+
+            fileHandle.close()
+        }
+    }
+
+    @Test
+    fun `TorrentFinishedEvent finishes ongoing tasks with some pieces already done`() = runTest {
+        withSession {
+            val handle = setHandle {
+                files.add(TestTorrentFile("1.mp4", 1000))
+                appendPieces {
+                    piece(500)
+                    piece(500)
+                }
+            }
+
+            handle.pieces[0].piece.state.value = PieceState.FINISHED
+            handle.fileProgresses[0] = handle.fileProgresses[0].copy(second = 1000)
+
+            val file = getFiles().first()
+            val fileHandle = file.createHandle()
+
+            listener.onEvent(TorrentFinishedEvent(handle.name, lazyOf(handle)))
+
+            assertEquals(1000L, fileHandle.entry.stats.downloadedBytes.first())
+            assertTrue(fileHandle.entry.stats.isFinished.first())
+            assertEquals(1f, fileHandle.entry.stats.progress.first())
+            assertTrue(fileHandle.entry.pieces.all { it.state.value == PieceState.FINISHED })
+
+            fileHandle.close()
+        }
+    }
+
+    @Test
+    fun `TorrentFinishedEvent finishes ongoing tasks with all pieces already done`() = runTest {
+        withSession {
+            val handle = setHandle {
+                files.add(TestTorrentFile("1.mp4", 1000))
+                appendPieces {
+                    piece(500)
+                    piece(500)
+                }
+            }
+
+            handle.pieces.forEach { it.piece.state.value = PieceState.FINISHED }
+            handle.fileProgresses[0] = handle.fileProgresses[0].copy(second = 1000)
+
+            val file = getFiles().first()
+            val fileHandle = file.createHandle()
+
+            listener.onEvent(TorrentFinishedEvent(handle.name, lazyOf(handle)))
+
+            assertEquals(1000L, fileHandle.entry.stats.downloadedBytes.first())
+            assertTrue(fileHandle.entry.stats.isFinished.first())
+            assertEquals(1f, fileHandle.entry.stats.progress.first())
+            assertTrue(fileHandle.entry.pieces.all { it.state.value == PieceState.FINISHED })
+
+            fileHandle.close()
+        }
+    }
+
+    @Test
+    fun `TorrentFinishedEvent does not finish task if file bytes not match`() = runTest {
+        withSession {
+            val handle = setHandle {
+                files.add(TestTorrentFile("1.mp4", 1000))
+                appendPieces {
+                    piece(500)
+                    piece(500)
+                }
+            }
+
+            handle.fileProgresses[0] = handle.fileProgresses[0].copy(second = 500)
+
+            val file = getFiles().first()
+            val fileHandle = file.createHandle()
+
+            listener.onEvent(TorrentFinishedEvent(handle.name, lazyOf(handle)))
+
+            assertEquals(0L, fileHandle.entry.stats.downloadedBytes.first())
+            assertFalse(fileHandle.entry.stats.isFinished.first())
+            assertEquals(0f, fileHandle.entry.stats.progress.first())
+            assertTrue(fileHandle.entry.pieces.all { it.state.value != PieceState.FINISHED })
+
+            fileHandle.close()
+        }
+    }
 }

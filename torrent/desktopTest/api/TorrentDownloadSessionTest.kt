@@ -86,10 +86,19 @@ open class TestAniTorrentHandle(
     val pieces = mutableListOf<TestPiece>()
     val files = mutableListOf<TorrentFile>()
 
+    val fileProgresses by lazy {
+        files.mapTo(mutableListOf()) {
+            it to 0L
+        }
+    }
+
     @TorrentThread
     override val contents = object : TorrentContents {
         override fun createPieces(): List<Piece> = this@TestAniTorrentHandle.pieces.map { it.piece }
         override val files: List<TorrentFile> get() = this@TestAniTorrentHandle.files
+
+        @TorrentThread
+        override fun getFileProgresses(): List<Pair<TorrentFile, Long>> = fileProgresses
     }
 
     override fun addTracker(url: String) {

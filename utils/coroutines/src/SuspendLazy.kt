@@ -17,6 +17,8 @@ interface SuspendLazy<T> {
      * When [get] is called the next time, the initializer is called again.
      */
     suspend fun get(): T
+
+    fun getCompletedOrNull(): T?
 }
 
 fun <T> SuspendLazy<T>.asFlow(): Flow<T> = flow {
@@ -54,4 +56,6 @@ class SuspendLazyImpl<T>(
         }
         return value as T
     }
+
+    override fun getCompletedOrNull(): T? = value
 }

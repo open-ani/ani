@@ -139,10 +139,22 @@ internal open class DefaultTorrentDownloadSession(
             pieces[pieceIndex].state.compareAndSet(PieceState.READY, PieceState.DOWNLOADING)
         }
 
+        @TorrentThread
         @Synchronized
-        fun onFinished() {
-            pieces.forEach {
-                it.state.value = PieceState.FINISHED
+        fun onFinished(contents: TorrentContents) {
+            val entries = entries.getCompletedOrNull() ?: return
+            for ((file, downloaded) in contents.getFileProgresses()) {
+                if (file.size == downloaded) {
+                    val entry = entries.firstOrNull { it.pathInTorrent == file.path } ?: continue
+                    logger.info { "[TorrentDownloadControl] Set file finished because torrent finished: ${file.path}" }
+                    entry.finishedOverride.value = true
+                    entry.pieces.forEach {
+                        if (it.state.value != PieceState.FINISHED) {
+                            entry.downloadedBytes.value += it.size
+                            it.state.value = PieceState.FINISHED
+                        }
+                    }
+                }
             }
         }
 
@@ -446,6 +458,7 @@ internal open class DefaultTorrentDownloadSession(
                 is TorrentFinishedEvent -> {
                     // https://libtorrent.org/reference-Alerts.html#:~:text=report%20issue%5D-,torrent_finished_alert,-Declared%20in%20%22
                     logger.info { "[$torrentName] Torrent finished" }
+                    actualInfo().onFinished(event.handle.contents)
                 }
 
 //                is FileErrorAlert -> {

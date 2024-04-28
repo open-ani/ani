@@ -5,6 +5,7 @@ import org.libtorrent4j.AnnounceEntry
 import org.libtorrent4j.FileStorage
 import org.libtorrent4j.Priority
 import org.libtorrent4j.TorrentHandle
+import org.libtorrent4j.swig.torrent_handle
 
 interface AniTorrentHandle {
     val name: String
@@ -25,6 +26,9 @@ interface TorrentContents {
 
     @TorrentThread
     val files: List<TorrentFile>
+
+    @TorrentThread
+    fun getFileProgresses(): List<Pair<TorrentFile, Long>>
 }
 
 interface TorrentFile {
@@ -99,6 +103,11 @@ class Torrent4JContents(
     override val files: List<TorrentFile> by lazy {
         val files: FileStorage = torrentInfo.files()
         List(files.numFiles()) { Torrent4jFile(handle, files, it) }
+    }
+
+    @TorrentThread
+    override fun getFileProgresses(): List<Pair<TorrentFile, Long>> {
+        return files.zip(handle.fileProgress(torrent_handle.piece_granularity).toList())
     }
 
     @TorrentThread
