@@ -157,6 +157,7 @@ internal class ExoPlayerState @UiThread constructor(
             playWhenReady = true
             addListener(object : Player.Listener {
                 override fun onPlayerError(error: PlaybackException) {
+                    state.value = PlaybackState.ERROR
                     logger.warn("ExoPlayer error: ${error.errorCodeName}")
                 }
 

@@ -38,12 +38,13 @@ fun EpisodeVideoLoadingIndicator(
 
     if (isBuffering ||
         state == PlaybackState.PAUSED_BUFFERING || // 如果不加这个, 就会有一段时间资源名字还没显示出来, 也没显示缓冲中
+        state == PlaybackState.ERROR ||
         videoLoadingState !is VideoLoadingState.Succeed
     ) {
         EpisodeVideoLoadingIndicator(
             videoLoadingState,
             speedProvider = { speed },
-            modifier,
+            modifier = modifier,
         )
     }
 }
@@ -52,11 +53,16 @@ fun EpisodeVideoLoadingIndicator(
 fun EpisodeVideoLoadingIndicator(
     state: VideoLoadingState,
     speedProvider: () -> FileSize,
+    playerError: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     VideoLoadingIndicator(
         showProgress = state is VideoLoadingState.Progressing,
         text = {
+            if (playerError) {
+                TextWithBorder("播放失败, 请尝试重新进入页面", color = MaterialTheme.colorScheme.error)
+                return@VideoLoadingIndicator
+            }
             when (state) {
                 VideoLoadingState.Initial -> {
                     TextWithBorder("请选择数据源")

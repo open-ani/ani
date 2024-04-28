@@ -159,6 +159,8 @@ enum class PlaybackState(
     PAUSED_BUFFERING(isPlaying = false),
 
     FINISHED(isPlaying = false),
+
+    ERROR(isPlaying = false),
     ;
 }
 
