@@ -119,7 +119,8 @@ internal open class DefaultTorrentDownloadSession(
     ) {
         val controller: TorrentDownloadController = TorrentDownloadController(
             pieces,
-            createPiecePriorities()
+            createPiecePriorities(),
+            windowSize = 32
         )
 
         @Synchronized
@@ -386,12 +387,12 @@ internal open class DefaultTorrentDownloadSession(
                 onWait = { piece ->
                     logger.info { "[TorrentDownloadControl] $torrentName: Set piece ${piece.pieceIndex} deadline to 0 because it was requested " }
                     torrentThreadTasks.submit { handle ->
-                        handle.setPieceDeadline(piece.pieceIndex, 0)
+                        handle.setPieceDeadline(piece.pieceIndex, 0) // 最高优先级
                         for (i in (piece.pieceIndex + 1..piece.pieceIndex + 3)) {
                             if (i < pieces.size - 1) {
-                                handle.setPieceDeadline(
+                                handle.setPieceDeadline( // 按请求时间的优先
                                     i,
-                                    System.currentTimeMillis().and(0x0FFF_FFFFL).toInt() + i
+                                    calculatePieceDeadlineByTime(i)
                                 )
                             }
                         }
@@ -539,15 +540,21 @@ internal open class DefaultTorrentDownloadSession(
                     return
                 }
                 logger.debug { "[TorrentDownloadControl] Prioritizing pieces: $pieceIndexes" }
-                pieceIndexes.forEach { index ->
+                pieceIndexes.forEachIndexed { index, it ->
                     torrentThreadTasks.submit { handle ->
-                        handle.setPieceDeadline(index, System.currentTimeMillis().and(0x0FFF_FFFFL).toInt())
+                        handle.setPieceDeadline(it, calculatePieceDeadlineByTime(index))
                     }
                 }
                 lastPrioritizedIndexes = pieceIndexes.toList()
             }
         }
     }
+}
+
+private fun calculatePieceDeadlineByTime(
+    shift: Int
+): Int {
+    return (System.currentTimeMillis().and(0x0FFF_FFFFL).toInt() % 1000_000_000) * 100 + shift
 }
 
 private val trackers = """
