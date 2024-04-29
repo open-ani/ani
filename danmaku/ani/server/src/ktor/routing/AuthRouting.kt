@@ -14,6 +14,8 @@ import me.him188.ani.danmaku.protocol.BangumiLoginRequest
 import me.him188.ani.danmaku.protocol.BangumiLoginResponse
 import me.him188.ani.danmaku.server.service.AuthService
 import me.him188.ani.danmaku.server.service.JwtTokenManager
+import me.him188.ani.danmaku.server.util.exception.InvalidClientVersionException
+import me.him188.ani.danmaku.server.util.exception.fromException
 import org.koin.ktor.ext.inject
 
 fun Route.authRouting() {
@@ -51,6 +53,11 @@ private fun Route.documentation() {
                 responseCode(HttpStatusCode.Unauthorized)
                 responseType<Any>()
                 description("Bangumi token无效")
+            }
+            canRespond {
+                responseCode(HttpStatusCode.fromException(InvalidClientVersionException()))
+                responseType<Any>()
+                description("请求体中客户端版本无效")
             }
         }
     }

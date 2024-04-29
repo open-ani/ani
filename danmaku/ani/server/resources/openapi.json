@@ -255,6 +255,16 @@
                 }
               }
             }
+          },
+          "461": {
+            "description": "请求体中客户端版本无效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Any"
+                }
+              }
+            }
           }
         },
         "deprecated": false
@@ -282,7 +292,9 @@
                       "nickname": "Him188",
                       "smallAvatar": "https://example.com/avatarSmall.jpg",
                       "mediumAvatar": "https://example.com/avatarMedium.jpg",
-                      "largeAvatar": "https://example.com/avatarLarge.jpg"
+                      "largeAvatar": "https://example.com/avatarLarge.jpg",
+                      "lastLoginTime": 1714404248957,
+                      "clientVersion": "3.0.0-beta22"
                     }
                   }
                 }
@@ -425,6 +437,16 @@
         "properties": {
           "bangumiToken": {
             "type": "string"
+          },
+          "clientVersion": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "string"
+              }
+            ]
           }
         },
         "required": [
@@ -434,11 +456,25 @@
       "AniUser": {
         "type": "object",
         "properties": {
+          "clientVersion": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
           "id": {
             "type": "string"
           },
           "largeAvatar": {
             "type": "string"
+          },
+          "lastLoginTime": {
+            "type": "number",
+            "format": "int64"
           },
           "mediumAvatar": {
             "type": "string"
@@ -453,6 +489,7 @@
         "required": [
           "id",
           "largeAvatar",
+          "lastLoginTime",
           "mediumAvatar",
           "nickname",
           "smallAvatar"
