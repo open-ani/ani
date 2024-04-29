@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import me.him188.ani.danmaku.protocol.AniUser
 import me.him188.ani.danmaku.server.data.UserRepository
 import me.him188.ani.danmaku.server.data.model.UserModel
+import me.him188.ani.danmaku.server.util.exception.OperationFailedException
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.util.UUID
@@ -67,7 +68,9 @@ class MongoUserRepositoryImpl : UserRepository, KoinComponent {
             Field.Id eq UUID.fromString(userId)
         ).firstOrNull() ?: return null
         val lastLoginTime = user.lastLoginTime ?: System.currentTimeMillis().also {
-            setLastLoginTime(userId, it)
+            if (!setLastLoginTime(userId, it)) {
+                throw OperationFailedException()
+            }
         }
         return AniUser(
             user.id.toString(),
