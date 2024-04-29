@@ -25,6 +25,7 @@ plugins {
     // See https://developer.android.com/develop/ui/compose/performance/stability/fix#configuration-file
     // But for simplicity, we just include compose here.
     id("org.jetbrains.compose")
+    `flatten-source-sets`
 }
 
 dependencies {

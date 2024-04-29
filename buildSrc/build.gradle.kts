@@ -27,21 +27,10 @@ repositories {
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev") // Compose Multiplatform pre-release versions
 }
 
-kotlin.sourceSets.all {
-    languageSettings {
-        enableLanguageFeature("ContextReceivers")
-    }
-}
-
 kotlin {
     compilerOptions {
         optIn.add("org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi")
     }
-}
-
-sourceSets.main {
-    kotlin.srcDir("src")
-    resources.srcDir("resources")
 }
 
 dependencies {
@@ -64,4 +53,5 @@ dependencies {
     api(libs.android.application.gradle.plugin)
     api(libs.android.library.gradle.plugin)
     api(libs.compose.multiplatfrom.gradle.plugin)
+    implementation(kotlin("script-runtime"))
 }

@@ -18,6 +18,7 @@
 
 plugins {
     kotlin("jvm")
+    `flatten-source-sets`
 }
 
 dependencies {

@@ -20,6 +20,7 @@ plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
     idea
+    `flatten-source-sets`
 }
 
 sourceSets.main {

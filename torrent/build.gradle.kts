@@ -23,6 +23,7 @@ import Os.Windows
 plugins {
     kotlin("multiplatform")
     id("com.android.library")
+    `flatten-source-sets`
 }
 
 kotlin {
@@ -30,8 +31,6 @@ kotlin {
 
     androidTarget()
     jvm("desktop")
-
-    configureFlattenMppSourceSets()
 
     sourceSets {
         // Workaround for MPP compose bug, don't change

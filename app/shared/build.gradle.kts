@@ -28,6 +28,7 @@ plugins {
     id("com.android.library")
     id("org.jetbrains.compose")
     // 注意! 前几个插件顺序非常重要, 调整后可能导致 compose multiplatform resources 生成错误
+    `flatten-source-sets`
 
     kotlin("plugin.serialization")
     id("kotlinx-atomicfu")
@@ -52,8 +53,6 @@ kotlin {
         removeIf { it.name == "androidTestFixturesRelease" }
     }
 }
-
-configureFlattenMppSourceSets()
 
 compose.resources {
     packageOfResClass = "me.him188.ani.app"

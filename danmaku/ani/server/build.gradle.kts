@@ -2,6 +2,7 @@ plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
     application
+    `flatten-source-sets`
 }
 
 dependencies {

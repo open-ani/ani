@@ -20,15 +20,28 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
 plugins {
     kotlin("jvm")
-    kotlin("plugin.serialization")
-    id("kotlinx-atomicfu")
     id("org.jetbrains.compose")
+    kotlin("plugin.serialization")
+    `flatten-source-sets`
+    id("kotlinx-atomicfu")
 }
 
 dependencies {
     implementation(projects.app.shared)
     implementation(libs.libtorrent4j.macos)
+    implementation(compose.components.resources)
 }
+
+//
+//sourceSets {
+//    main {
+//        resources.srcDirs(
+//            project(":app:shared").layout.buildDirectory
+////                .file("generated/compose/resourceGenerator/preparedResources/commonMain")
+//                .file("processedResources/desktop/main/composeResources")
+//        )
+//    }
+//}
 
 extra.set("ani.jvm.target", 17)
 
