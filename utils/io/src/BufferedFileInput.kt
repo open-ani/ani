@@ -67,6 +67,11 @@ internal class BufferedFileInput(
     override fun toString(): String {
         return "BufferedFileInput(file=$file, position=$position, bytesRemaining=$bytesRemaining)"
     }
+
+    override fun close() {
+        super.close()
+        file.close()
+    }
 }
 
 public abstract class BufferedInput(
