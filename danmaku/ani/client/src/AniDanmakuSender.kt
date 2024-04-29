@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.danmaku.api.Danmaku
@@ -114,7 +115,12 @@ class AniDanmakuSenderImpl(
         return invokeRequest {
             client.post("${getBaseUrl()}/v1/login/bangumi") {
                 contentType(ContentType.Application.Json)
-                setBody(BangumiLoginRequest(bangumiToken))
+                setBody(
+                    BangumiLoginRequest(
+                        bangumiToken,
+                        clientVersion = currentAniBuildConfig.versionName
+                    )
+                )
             }
         }.body<BangumiLoginResponse>().token
     }
