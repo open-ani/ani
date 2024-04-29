@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -162,10 +163,12 @@ object AniDesktop {
             CompositionLocalProvider(LocalContext provides context) {
                 content(navigator)
             }
-        }
 
-        coroutineScope.launch {
-            sessionManager.requireOnline(navigator)
+            LaunchedEffect(true) {
+                coroutineScope.launch {
+                    sessionManager.requireOnline(navigator)
+                }
+            }
         }
     }
 
