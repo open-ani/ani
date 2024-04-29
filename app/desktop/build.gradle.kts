@@ -32,16 +32,20 @@ dependencies {
     implementation(compose.components.resources)
 }
 
-//
-//sourceSets {
-//    main {
-//        resources.srcDirs(
-//            project(":app:shared").layout.buildDirectory
-////                .file("generated/compose/resourceGenerator/preparedResources/commonMain")
-//                .file("processedResources/desktop/main/composeResources")
-//        )
-//    }
-//}
+// workaround for compose limitation
+tasks.named("processResources") {
+    dependsOn(":app:shared:desktopProcessResources")
+}
+
+sourceSets {
+    main {
+        resources.srcDirs(
+            project(":app:shared").layout.buildDirectory
+//                .file("generated/compose/resourceGenerator/preparedResources/commonMain")
+                .file("processedResources/desktop/main")
+        )
+    }
+}
 
 extra.set("ani.jvm.target", 17)
 
