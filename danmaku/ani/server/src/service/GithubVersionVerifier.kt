@@ -15,7 +15,7 @@ class GithubVersionVerifierImpl : GithubVersionVerifier {
     private val httpClient by lazy {
         HttpClient()
     }
-    private val githubReleasesUrl = " https://api.github.com/repos/open-ani/ani/releases/tags"
+    private val githubReleasesUrl = "https://api.github.com/repos/open-ani/ani/releases/tags"
     
     override suspend fun verify(clientVersion: String): Boolean {
         if (!bufferDeferred.isCompleted) {
