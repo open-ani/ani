@@ -2,7 +2,7 @@ package me.him188.ani.app.ui.subject.episode.mediaFetch
 
 /*
  * !! 提示: 如果你的 Res 没有找到, 在项目根目录执行以下命令即可: 
- *     ./gradlew generateComposeResClass
+ *     ./gradlew generateComposeResClass prepareAppResources
  */
 
 import androidx.compose.runtime.Composable

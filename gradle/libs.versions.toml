@@ -1,33 +1,35 @@
 [versions]
-kotlin = "2.0.0-Beta5"
+kotlin = "2.0.0-RC1"
 coroutines = "1.8.0"
 okhttp = "4.12.0"
 reorderable = "0.9.6"
-serialization = "1.6.2"
-voyager = "1.0.0"
-atomicfu = "0.21.0"
+serialization = "1.6.3"
+atomicfu = "0.23.2"
 ktor = "2.3.7"
 koin = "3.5.3"
 slf4j = "2.0.12"
 jsoup = "1.15.4"
 android-gradle-plugin = "8.2.2"
 accompanist = "0.33.2-alpha"
-datastore = "1.0.0"
+datastore = "1.1.0"
 libtorrent4j = "2.1.0-31"
 coil = "3.0.0-alpha06"
 mongodb-driver-kotlin-coroutine = "4.10.1"
 kompendium = "3.14.4"
 logback = "1.4.14"
 
+
+compose-material3 = "1.2.1"
+
 # https://androidx.tech/artifacts/compose.material/material-android/
-jetpack-compose = "1.6.4"
+jetpack-compose = "1.6.6"
 # https://androidx.dev/storage/compose-compiler/repository
-jetpack-compose-compiler = "1.5.11-dev-k2.0.0-Beta5-b5a216d0ac6" # used by android
+jetpack-compose-compiler = "1.5.13-dev-k2.0.0-RC1-50f08dfa4b4" # used by android
 # https://github.com/JetBrains/compose-multiplatform/releases
 # https://www.jetbrains.com/help/kotlin-multiplatform-dev/compose-compatibility-and-versioning.html#use-a-developer-version-of-compose-multiplatform-compiler
-compose-multiplatform = "1.6.10-dev1561"
+compose-multiplatform = "1.6.10-beta02"
 # https://maven.pkg.jetbrains.space/public/p/compose/dev/org/jetbrains/compose/compiler/compiler/
-compose-multiplatform-compiler = "1.5.11-kt-2.0.0-Beta5"
+compose-multiplatform-compiler = "1.5.11-kt-2.0.0-RC1" # used by buildscript, don't remove
 
 [libraries]
 # Build
@@ -145,25 +147,25 @@ reorderable = { module = "org.burnoutcrew.composereorderable:reorderable", versi
 
 # Android-only libraries
 # Each library has its own version, so we don't use `Versions` here.
-androidx-core-ktx = { module = "androidx.core:core-ktx", version = "1.12.0" }
-androidx-activity-compose = { module = "androidx.activity:activity-compose", version = "1.8.2" }
+androidx-core-ktx = { module = "androidx.core:core-ktx", version = "1.13.0" }
+androidx-activity-compose = { module = "androidx.activity:activity-compose", version = "1.9.0" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version = "1.6.1" }
 androidx-swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version = "1.1.0" }
 androidx-material = { module = "com.google.android.material:material", version = "1.11.0" }
-androidx-material3-window-size-class0 = { module = "androidx.compose.material3:material3-window-size-class", version = "1.1.2" }
-androidx-browser = { module = "androidx.browser:browser", version = "1.7.0" }
+androidx-material3-window-size-class0 = { module = "androidx.compose.material3:material3-window-size-class", version = "1.2.1" }
+androidx-browser = { module = "androidx.browser:browser", version = "1.8.0" }
 #androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version = "2.7.6" }
 slf4j-android = { module = "uk.uuid.slf4j:slf4j-android", version = "2.0.7-0" }
 
-androidx-media3-ui = { module = "androidx.media3:media3-ui", version = "1.2.0" }
-androidx-media3-exoplayer = { module = "androidx.media3:media3-exoplayer", version = "1.2.0" }
+androidx-media3-ui = { module = "androidx.media3:media3-ui", version = "1.3.1" }
+androidx-media3-exoplayer = { module = "androidx.media3:media3-exoplayer", version = "1.3.1" }
 
 androidx-compose-ui = { module = "androidx.compose.ui:ui", version.ref = "jetpack-compose" }
 androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "jetpack-compose" }
 androidx-compose-ui-viewbinding = { module = "androidx.compose.ui:ui-viewbinding", version.ref = "jetpack-compose" }
 androidx-compose-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "jetpack-compose" }
 androidx-compose-material = { module = "androidx.compose.material:material", version.ref = "jetpack-compose" }
-androidx-compose-material3 = { module = "androidx.compose.material3:material3", version = "1.2.0-beta02" }
+androidx-compose-material3 = { module = "androidx.compose.material3:material3", version.ref = "compose-material3" }
 androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "jetpack-compose" }
 # compose-runtime-livedata = { module = "androidx.compose.runtime:runtime-livedata", version.ref = "jetpackCompose" }
 

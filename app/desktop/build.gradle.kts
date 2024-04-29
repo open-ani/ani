@@ -27,6 +27,7 @@ plugins {
 
 dependencies {
     implementation(projects.app.shared)
+    implementation(libs.libtorrent4j.macos)
 }
 
 extra.set("ani.jvm.target", 17)

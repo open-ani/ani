@@ -36,24 +36,6 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 import java.io.File
 
-/*
- * Ani
- * Copyright (C) 2022-2024 Him188
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 /**
  * 扁平化源集目录结构, 减少文件树层级 by 2
  *
@@ -104,12 +86,12 @@ fun Project.configureFlattenMppSourceSets() {
             targetName: String,
         ) {
             findByName("${targetName}Main")?.apply {
-                resources.setSrcDirs(listOf(projectDir.resolve("${targetName}Resources")))
-                kotlin.setSrcDirs(listOf(projectDir.resolve("${targetName}Main"), projectDir.resolve(targetName)))
+                resources.srcDirs(listOf(projectDir.resolve("${targetName}Resources")))
+                kotlin.srcDirs(listOf(projectDir.resolve("${targetName}Main"), projectDir.resolve(targetName)))
             }
             findByName("${targetName}Test")?.apply {
-                resources.setSrcDirs(listOf(projectDir.resolve("${targetName}TestResources")))
-                kotlin.setSrcDirs(listOf(projectDir.resolve("${targetName}Test")))
+                resources.srcDirs(listOf(projectDir.resolve("${targetName}TestResources")))
+                kotlin.srcDirs(listOf(projectDir.resolve("${targetName}Test")))
             }
         }
 

@@ -20,12 +20,15 @@
 @file:OptIn(ExperimentalKotlinGradlePluginApi::class)
 
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
 
 plugins {
     kotlin("multiplatform")
-    id("org.jetbrains.compose")
     id("com.android.library")
+    id("org.jetbrains.compose")
+    // 注意! 前几个插件顺序非常重要, 调整后可能导致 compose multiplatform resources 生成错误
+
     kotlin("plugin.serialization")
     id("kotlinx-atomicfu")
     idea
@@ -224,19 +227,34 @@ kotlin {
     }
 }
 
+// RESOURCES
 
-val generatedResourcesDir = file("build/generated/compose/resourceGenerator/kotlin")
 
-kotlin.sourceSets.commonMain {
-    kotlin.srcDirs(generatedResourcesDir)
-}
+//kotlin.sourceSets.commonMain {
+//    kotlin.srcDirs(generatedResourcesDir)
+//}
 idea {
-    module.generatedSourceDirs.add(generatedResourcesDir)
+    val generatedResourcesDir = file("build/generated/compose/resourceGenerator/kotlin")
+    module {
+        generatedSourceDirs.add(generatedResourcesDir.resolve("commonMainResourceAccessors"))
+        generatedSourceDirs.add(generatedResourcesDir.resolve("commonResClass"))
+    }
+}
+// compose bug
+tasks.named("generateComposeResClass") {
+    dependsOn("generateResourceAccessorsForAndroidUnitTest")
+}
+tasks.withType(KotlinCompilationTask::class) {
+    dependsOn("generateComposeResClass")
+    dependsOn("generateResourceAccessorsForAndroidRelease")
+    dependsOn("generateResourceAccessorsForAndroidUnitTest")
+    dependsOn("generateResourceAccessorsForAndroidUnitTestRelease")
+    dependsOn("generateResourceAccessorsForAndroidUnitTestDebug")
+    dependsOn("generateResourceAccessorsForAndroidDebug")
 }
 
-kotlin.sourceSets {
-    getByName("desktopMain").resources.srcDirs("androidRes/raw")
-}
+
+// BUILD CONFIG
 
 val bangumiClientAndroidAppId = getPropertyOrNull("bangumi.oauth.client.android.appId")
 val bangumiClientAndroidSecret = getPropertyOrNull("bangumi.oauth.client.android.secret")
