@@ -15,5 +15,5 @@ private object AniBuildConfigAndroid : AniBuildConfig {
 }
 
 @Stable
-actual val currentAniBuildConfig: AniBuildConfig
+actual val currentAniBuildConfigImpl: AniBuildConfig
     get() = AniBuildConfigAndroid

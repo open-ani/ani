@@ -197,7 +197,8 @@ val AniBuildConfig.versionCode: String
     }
 
 @Stable
-expect val currentAniBuildConfig: AniBuildConfig
+expect val currentAniBuildConfigImpl: AniBuildConfig
+val currentAniBuildConfig: AniBuildConfig get() = currentAniBuildConfigImpl
 
 fun getAniUserAgent(
     version: String = currentAniBuildConfig.versionName,
