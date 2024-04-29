@@ -11,4 +11,5 @@ data class UserModel(
     val smallAvatar: String,
     val mediumAvatar: String,
     val largeAvatar: String,
+    val lastLoginTime: Long? = null,
 )

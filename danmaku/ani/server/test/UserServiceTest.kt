@@ -13,7 +13,7 @@ import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import kotlin.test.Test
 
-class AniUserServiceTest {
+class UserServiceTest {
     private val koin = object : KoinComponent {}
 
     private fun runTestWithKoin(block: suspend () -> Unit) = runTest {
@@ -76,5 +76,20 @@ class AniUserServiceTest {
         assert(smallAvatar == "small3")
         assert(mediumAvatar == "medium3")
         assert(largeAvatar == "large3")
+    }
+    
+    @Test
+    fun `test get user`() = runTestWithKoin {
+        val userService = koin.get<UserService>()
+        val authService = koin.get<AuthService>()
+        
+        val userId = authService.loginBangumi("test_token_3")
+        val user = userService.getUser(userId)
+        assert(user.id == userId)
+        assert(user.nickname == "test3")
+        assert(user.smallAvatar == "small3")
+        assert(user.mediumAvatar == "medium3")
+        assert(user.largeAvatar == "large3")
+        assert(user.lastLoginTime > 0)
     }
 }

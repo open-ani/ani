@@ -8,5 +8,6 @@ data class AniUser(
     val nickname: String,
     val smallAvatar: String,
     val mediumAvatar: String,
-    val largeAvatar: String
+    val largeAvatar: String,
+    val lastLoginTime: Long,
 )

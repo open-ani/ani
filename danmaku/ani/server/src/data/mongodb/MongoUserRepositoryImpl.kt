@@ -1,6 +1,7 @@
 package me.him188.ani.danmaku.server.data.mongodb
 
 import kotlinx.coroutines.flow.firstOrNull
+import me.him188.ani.danmaku.protocol.AniUser
 import me.him188.ani.danmaku.server.data.UserRepository
 import me.him188.ani.danmaku.server.data.model.UserModel
 import org.koin.core.component.KoinComponent
@@ -29,7 +30,8 @@ class MongoUserRepositoryImpl : UserRepository, KoinComponent {
             nickname = nickname,
             smallAvatar = smallAvatar,
             mediumAvatar = mediumAvatar,
-            largeAvatar = largeAvatar
+            largeAvatar = largeAvatar,
+            lastLoginTime = System.currentTimeMillis(),
         )
         return if (userTable.insertOne(user).wasAcknowledged()) {
             user.id.toString()
@@ -39,7 +41,9 @@ class MongoUserRepositoryImpl : UserRepository, KoinComponent {
     }
 
     override suspend fun getBangumiId(userId: String): Int? {
-        return getUserById(userId)?.bangumiUserId
+        return userTable.find(
+            Field.Id eq UUID.fromString(userId)
+        ).firstOrNull()?.bangumiUserId
     }
 
     override suspend fun getNickname(userId: String): String? {
@@ -58,9 +62,27 @@ class MongoUserRepositoryImpl : UserRepository, KoinComponent {
         return getUserById(userId)?.largeAvatar
     }
 
-    override suspend fun getUserById(userId: String): UserModel? {
-        return userTable.find(
-            Field("_id") eq UUID.fromString(userId)
-        ).firstOrNull()
+    override suspend fun getUserById(userId: String): AniUser? {
+        val user = userTable.find(
+            Field.Id eq UUID.fromString(userId)
+        ).firstOrNull() ?: return null
+        val lastLoginTime = user.lastLoginTime ?: System.currentTimeMillis().also {
+            setLastLoginTime(userId, it)
+        }
+        return AniUser(
+            user.id.toString(),
+            user.nickname,
+            user.smallAvatar,
+            user.mediumAvatar,
+            user.largeAvatar,
+            lastLoginTime,
+        )
+    }
+
+    override suspend fun setLastLoginTime(userId: String, time: Long): Boolean {
+        return userTable.updateOne(
+            Field.Id eq UUID.fromString(userId),
+            Field(UserModel::lastLoginTime) setTo time
+        ).wasAcknowledged()
     }
 }

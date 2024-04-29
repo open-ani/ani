@@ -45,7 +45,8 @@ private fun Route.documentation() {
                         nickname = "Him188",
                         smallAvatar = "https://example.com/avatarSmall.jpg",
                         mediumAvatar = "https://example.com/avatarMedium.jpg",
-                        largeAvatar = "https://example.com/avatarLarge.jpg"
+                        largeAvatar = "https://example.com/avatarLarge.jpg",
+                        lastLoginTime = 1714404248957,
                     )
                 )
             }

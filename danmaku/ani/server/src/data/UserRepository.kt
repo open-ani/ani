@@ -2,6 +2,7 @@ package me.him188.ani.danmaku.server.data
 
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import me.him188.ani.danmaku.protocol.AniUser
 import me.him188.ani.danmaku.server.data.model.UserModel
 
 interface UserRepository {
@@ -19,7 +20,8 @@ interface UserRepository {
     suspend fun getSmallAvatar(userId: String): String?
     suspend fun getMediumAvatar(userId: String): String?
     suspend fun getLargeAvatar(userId: String): String?
-    suspend fun getUserById(userId: String): UserModel?
+    suspend fun getUserById(userId: String): AniUser?
+    suspend fun setLastLoginTime(userId: String, time: Long): Boolean
 }
 
 class InMemoryUserRepositoryImpl : UserRepository {
@@ -46,7 +48,8 @@ class InMemoryUserRepositoryImpl : UserRepository {
                 nickname = nickname,
                 smallAvatar = smallAvatar,
                 mediumAvatar = mediumAvatar,
-                largeAvatar = largeAvatar
+                largeAvatar = largeAvatar,
+                lastLoginTime = System.currentTimeMillis(),
             )
             users.add(user)
             return user.id.toString()
@@ -54,7 +57,9 @@ class InMemoryUserRepositoryImpl : UserRepository {
     }
 
     override suspend fun getBangumiId(userId: String): Int? {
-        return getUserById(userId)?.bangumiUserId
+        mutex.withLock { 
+            return users.find { it.id.toString() == userId }?.bangumiUserId
+        }
     }
 
     override suspend fun getNickname(userId: String): String? {
@@ -73,9 +78,29 @@ class InMemoryUserRepositoryImpl : UserRepository {
         return getUserById(userId)?.largeAvatar
     }
 
-    override suspend fun getUserById(userId: String): UserModel? {
+    override suspend fun getUserById(userId: String): AniUser? {
         mutex.withLock {
-            return users.find { it.id.toString() == userId }
+            val user = users.find { it.id.toString() == userId } ?: return null
+            val lastLoginTime = user.lastLoginTime ?: System.currentTimeMillis().also {
+                setLastLoginTime(userId, it)
+            }
+            return AniUser(
+                user.id.toString(),
+                user.nickname,
+                user.smallAvatar,
+                user.mediumAvatar,
+                user.largeAvatar,
+                lastLoginTime,
+            )
+        }
+    }
+
+    override suspend fun setLastLoginTime(userId: String, time: Long): Boolean {
+        mutex.withLock {
+            val user = users.find { it.id.toString() == userId } ?: return false
+            users.remove(user)
+            users.add(user.copy(lastLoginTime = time))
+            return true
         }
     }
 }

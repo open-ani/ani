@@ -19,6 +19,9 @@ class AuthServiceImpl : AuthService, KoinComponent {
         val userId = userRepository.getUserIdOrNull(bangumiUser.id) ?: run {
             registerAndGetId(bangumiUser)
         }
+        if (!userRepository.setLastLoginTime(userId, System.currentTimeMillis())) {
+            throw OperationFailedException()
+        }
         return userId
     }
 

@@ -34,13 +34,7 @@ class UserServiceImpl : UserService, KoinComponent {
     
     override suspend fun getUser(userId: String): AniUser {
         val user = userRepository.getUserById(userId) ?: throw NotFoundException()
-        return AniUser(
-            user.id.toString(),
-            user.nickname,
-            user.smallAvatar,
-            user.mediumAvatar,
-            user.largeAvatar
-        )
+        return user
     }
 }
 
