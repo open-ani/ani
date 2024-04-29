@@ -69,7 +69,7 @@ internal class TaskQueue<Receiver>(
 
     fun invokeAll(handle: Receiver) {
         while (tasks.isNotEmpty()) {
-            val job = tasks.poll()
+            val job = tasks.poll() ?: break
             if (enableTimeoutWatchdog) {
                 runBlocking {
                     cancellableCoroutineScope {
