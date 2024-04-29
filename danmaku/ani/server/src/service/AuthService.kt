@@ -19,7 +19,7 @@ class AuthServiceImpl : AuthService, KoinComponent {
     override suspend fun loginBangumi(bangumiToken: String, clientVersion: String?): String {
         val bangumiUser = bangumiLoginHelper.login(bangumiToken) ?: throw UnauthorizedException()
         if (clientVersion != null) {
-            if (!githubVersionVerifier.verify(clientVersion)) {
+            if (!githubVersionVerifier.verify(clientVersion.trim())) {
                 throw InvalidClientVersionException()
             }
         }
@@ -30,7 +30,7 @@ class AuthServiceImpl : AuthService, KoinComponent {
             throw OperationFailedException()
         }
         if (clientVersion != null) {
-            userRepository.setClientVersion(userId, clientVersion)
+            userRepository.setClientVersion(userId, clientVersion.trim())
         }
         return userId
     }

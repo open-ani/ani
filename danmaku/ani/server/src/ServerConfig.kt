@@ -4,6 +4,7 @@ import io.ktor.server.config.ApplicationConfig
 import io.ktor.util.KtorDsl
 import me.him188.ani.danmaku.server.util.CommandLineArgsParser
 import me.him188.ani.danmaku.server.util.generateSecureRandomBytes
+import java.io.File
 import kotlin.time.Duration.Companion.days
 
 
@@ -23,6 +24,7 @@ class ServerConfig(
     val port: Int,
     val host: String,
     val testing: Boolean,
+    val rootDir: File,
     val mongoDbConnectionString: String?,
     val danmakuGetRequestMaxCountAllowed: Int,
     val jwt: JwtConfig,
@@ -43,6 +45,7 @@ class ServerConfigBuilder private constructor(
     var port: Int? = null
     var host: String? = null
     var testing: Boolean? = null
+    var rootDir: File? = null
     var mongoDbConnectionString: String? = null
     var danmakuGetRequestMaxCountAllowed: Int? = null
     private var jwt: JwtConfigBuilder = JwtConfigBuilder()
@@ -69,6 +72,7 @@ class ServerConfigBuilder private constructor(
             port = port ?: throw IllegalStateException("Port is not set"),
             host = host ?: throw IllegalStateException("Host is not set"),
             testing = testing ?: throw IllegalStateException("Config testing is not set"),
+            rootDir = rootDir ?: throw IllegalStateException("Config rootDir is not set"),
             mongoDbConnectionString = mongoDbConnectionString,
             danmakuGetRequestMaxCountAllowed = danmakuGetRequestMaxCountAllowed
                 ?: throw IllegalStateException("Config danmakuGetRequestMaxCountAllowed is not set"),
@@ -87,6 +91,7 @@ class ServerConfigBuilder private constructor(
         port = port ?: parser["port"]?.toIntOrNull()
         host = host ?: parser["host"]
         testing = testing ?: parser["testing"]?.toBoolean()
+        rootDir = rootDir ?: parser["rootDir"]?.let { File(it) }
         mongoDbConnectionString = mongoDbConnectionString ?: parser["mongoDbConnectionString"]
         danmakuGetRequestMaxCountAllowed =
             danmakuGetRequestMaxCountAllowed ?: parser["danmakuGetRequestMaxCountAllowed"]?.toIntOrNull()
@@ -102,6 +107,7 @@ class ServerConfigBuilder private constructor(
         port = port ?: config.propertyOrNull("ktor.deployment.port")?.getString()?.toIntOrNull()
         host = host ?: config.propertyOrNull("ktor.deployment.host")?.getString()
         testing = testing ?: config.propertyOrNull("server.testing")?.getString()?.toBoolean()
+        rootDir = rootDir ?: config.propertyOrNull("server.rootDir")?.getString()?.let { File(it) }
         danmakuGetRequestMaxCountAllowed =
             danmakuGetRequestMaxCountAllowed ?: config.propertyOrNull("server.danmakuGetRequestMaxCountAllowed")
                 ?.getString()?.toIntOrNull()
@@ -115,6 +121,7 @@ class ServerConfigBuilder private constructor(
         port = port ?: System.getenv("KTOR_PORT")?.toIntOrNull()
         host = host ?: System.getenv("KTOR_HOST")
         testing = testing ?: (System.getenv("SERVER_TESTING")?.toBoolean())
+        rootDir = rootDir ?: System.getenv("SERVER_ROOT_DIR")?.let { File(it) }
         mongoDbConnectionString = mongoDbConnectionString ?: System.getenv("MONGODB_CONNECTION_STRING")
         danmakuGetRequestMaxCountAllowed =
             danmakuGetRequestMaxCountAllowed ?: System.getenv("DANMAKU_GET_REQUEST_MAX_COUNT_ALLOWED")?.toIntOrNull()
@@ -129,6 +136,7 @@ class ServerConfigBuilder private constructor(
         port = port ?: 4394
         host = host ?: "0.0.0.0"
         testing = testing ?: false
+        rootDir = rootDir ?: File(".")
         danmakuGetRequestMaxCountAllowed = danmakuGetRequestMaxCountAllowed ?: 8000
         jwt.secret = jwt.secret ?: generateSecureRandomBytes()
         jwt.expiration = jwt.expiration ?: 7.days.inWholeMilliseconds
