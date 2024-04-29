@@ -192,8 +192,6 @@ internal class TorrentInput(
 
     override fun close() {
         super.close()
-        if (!closed) {
-            file.close()
-        }
+        file.close()
     }
 }
