@@ -24,7 +24,8 @@ class MongoUserRepositoryImpl : UserRepository, KoinComponent {
         nickname: String,
         smallAvatar: String,
         mediumAvatar: String,
-        largeAvatar: String
+        largeAvatar: String,
+        clientVersion: String?,
     ): String? {
         val user = UserModel(
             bangumiUserId = bangumiId,
@@ -33,6 +34,7 @@ class MongoUserRepositoryImpl : UserRepository, KoinComponent {
             mediumAvatar = mediumAvatar,
             largeAvatar = largeAvatar,
             lastLoginTime = System.currentTimeMillis(),
+            clientVersion = clientVersion,
         )
         return if (userTable.insertOne(user).wasAcknowledged()) {
             user.id.toString()
@@ -73,12 +75,13 @@ class MongoUserRepositoryImpl : UserRepository, KoinComponent {
             }
         }
         return AniUser(
-            user.id.toString(),
-            user.nickname,
-            user.smallAvatar,
-            user.mediumAvatar,
-            user.largeAvatar,
-            lastLoginTime,
+            id = user.id.toString(),
+            nickname = user.nickname,
+            smallAvatar = user.smallAvatar,
+            mediumAvatar = user.mediumAvatar,
+            largeAvatar = user.largeAvatar,
+            lastLoginTime = lastLoginTime,
+            clientVersion = user.clientVersion
         )
     }
 
@@ -87,5 +90,12 @@ class MongoUserRepositoryImpl : UserRepository, KoinComponent {
             Field.Id eq UUID.fromString(userId),
             Field(UserModel::lastLoginTime) setTo time
         ).wasAcknowledged()
+    }
+
+    override suspend fun setClientVersion(userId: String, clientVersion: String) {
+        userTable.updateOne(
+            Field.Id eq UUID.fromString(userId),
+            Field(UserModel::clientVersion) setTo clientVersion
+        )
     }
 }

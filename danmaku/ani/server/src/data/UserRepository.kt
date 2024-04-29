@@ -12,7 +12,8 @@ interface UserRepository {
         nickname: String,
         smallAvatar: String,
         mediumAvatar: String,
-        largeAvatar: String
+        largeAvatar: String,
+        clientVersion: String? = null,
     ): String?
 
     suspend fun getBangumiId(userId: String): Int?
@@ -22,6 +23,7 @@ interface UserRepository {
     suspend fun getLargeAvatar(userId: String): String?
     suspend fun getUserById(userId: String): AniUser?
     suspend fun setLastLoginTime(userId: String, time: Long): Boolean
+    suspend fun setClientVersion(userId: String, clientVersion: String)
 }
 
 class InMemoryUserRepositoryImpl : UserRepository {
@@ -39,7 +41,8 @@ class InMemoryUserRepositoryImpl : UserRepository {
         nickname: String,
         smallAvatar: String,
         mediumAvatar: String,
-        largeAvatar: String
+        largeAvatar: String,
+        clientVersion: String?,
     ): String? {
         mutex.withLock {
             if (users.any { it.bangumiUserId == bangumiId }) return null
@@ -50,6 +53,7 @@ class InMemoryUserRepositoryImpl : UserRepository {
                 mediumAvatar = mediumAvatar,
                 largeAvatar = largeAvatar,
                 lastLoginTime = System.currentTimeMillis(),
+                clientVersion = clientVersion,
             )
             users.add(user)
             return user.id.toString()
@@ -85,12 +89,13 @@ class InMemoryUserRepositoryImpl : UserRepository {
                 setLastLoginTime(userId, it)
             }
             return AniUser(
-                user.id.toString(),
-                user.nickname,
-                user.smallAvatar,
-                user.mediumAvatar,
-                user.largeAvatar,
-                lastLoginTime,
+                id = user.id.toString(),
+                nickname = user.nickname,
+                smallAvatar = user.smallAvatar,
+                mediumAvatar = user.mediumAvatar,
+                largeAvatar = user.largeAvatar,
+                lastLoginTime = lastLoginTime,
+                clientVersion = user.clientVersion,
             )
         }
     }
@@ -101,6 +106,14 @@ class InMemoryUserRepositoryImpl : UserRepository {
             users.remove(user)
             users.add(user.copy(lastLoginTime = time))
             return true
+        }
+    }
+
+    override suspend fun setClientVersion(userId: String, clientVersion: String) {
+        mutex.withLock {
+            val user = users.find { it.id.toString() == userId } ?: return
+            users.remove(user)
+            users.add(user.copy(clientVersion = clientVersion))
         }
     }
 }

@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class BangumiLoginRequest(
     val bangumiToken: String,
+    val clientVersion: String? = null,
 )
 
 @Serializable

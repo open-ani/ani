@@ -10,4 +10,5 @@ data class AniUser(
     val mediumAvatar: String,
     val largeAvatar: String,
     val lastLoginTime: Long,
+    val clientVersion: String?,
 )

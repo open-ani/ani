@@ -4,6 +4,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.test.runTest
 import me.him188.ani.danmaku.server.service.AuthService
+import me.him188.ani.danmaku.server.util.exception.InvalidClientVersionException
 import me.him188.ani.danmaku.server.util.exception.UnauthorizedException
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.assertDoesNotThrow
@@ -49,5 +50,13 @@ class AuthServiceTest {
         val authService = koin.get<AuthService>()
 
         assertThrows<UnauthorizedException> { authService.loginBangumi("invalid_token") }
+    }
+
+    @Test
+    fun `test login bangumi with client version`() = runTestWithKoin {
+        val authService = koin.get<AuthService>()
+
+        assertDoesNotThrow { authService.loginBangumi("test_token_1", "3.0.0-beta21") }
+        assertThrows<InvalidClientVersionException> { authService.loginBangumi("test_token_1", "bad_version") }
     }
 }

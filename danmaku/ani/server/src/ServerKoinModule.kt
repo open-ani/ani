@@ -15,6 +15,8 @@ import me.him188.ani.danmaku.server.service.BangumiLoginHelper
 import me.him188.ani.danmaku.server.service.BangumiLoginHelperImpl
 import me.him188.ani.danmaku.server.service.DanmakuService
 import me.him188.ani.danmaku.server.service.DanmakuServiceImpl
+import me.him188.ani.danmaku.server.service.GithubVersionVerifier
+import me.him188.ani.danmaku.server.service.GithubVersionVerifierImpl
 import me.him188.ani.danmaku.server.service.JwtTokenManager
 import me.him188.ani.danmaku.server.service.JwtTokenManagerImpl
 import me.him188.ani.danmaku.server.service.TestBangumiLoginHelperImpl
@@ -38,6 +40,7 @@ fun getServerKoinModule(
     single<AuthService> { AuthServiceImpl() }
     single<UserService> { UserServiceImpl() }
     single<JwtTokenManager> { JwtTokenManagerImpl() }
+    single<GithubVersionVerifier> { GithubVersionVerifierImpl() }
 
     if (config.testing) {
         single<DanmakuRepository> { InMemoryDanmakuRepositoryImpl() }

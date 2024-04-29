@@ -23,8 +23,8 @@ fun Route.authRouting() {
     route("/login/bangumi") {
         documentation()
         post {
-            val bangumiToken = call.receive<BangumiLoginRequest>().bangumiToken
-            val userId = service.loginBangumi(bangumiToken)
+            val request = call.receive<BangumiLoginRequest>()
+            val userId = service.loginBangumi(request.bangumiToken, request.clientVersion)
             val userToken = jwtTokenManager.createToken(userId)
             call.respond(BangumiLoginResponse(userToken))
         }

@@ -47,6 +47,7 @@ private fun Route.documentation() {
                         mediumAvatar = "https://example.com/avatarMedium.jpg",
                         largeAvatar = "https://example.com/avatarLarge.jpg",
                         lastLoginTime = 1714404248957,
+                        clientVersion = "3.0.0-beta22"
                     )
                 )
             }

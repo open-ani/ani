@@ -41,6 +41,11 @@ class AcquiringTooMuchDanmakusException: HttpRequestException() {
     override val statusMessage: String = "Acquiring Too Much Danmakus"
 }
 
+class InvalidClientVersionException: HttpRequestException() {
+    override val statusCode: Int = 461
+    override val statusMessage: String = "Invalid Client Version"
+}
+
 class InternalServerErrorException: HttpRequestException() {
     override val statusCode: Int = 500
     override val statusMessage: String = "Internal Server Error"
