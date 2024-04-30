@@ -46,13 +46,15 @@ class InMemoryUserRepositoryImpl : UserRepository {
     ): String? {
         mutex.withLock {
             if (users.any { it.bangumiUserId == bangumiId }) return null
+            val now = System.currentTimeMillis()
             val user = UserModel(
                 bangumiUserId = bangumiId,
                 nickname = nickname,
                 smallAvatar = smallAvatar,
                 mediumAvatar = mediumAvatar,
                 largeAvatar = largeAvatar,
-                lastLoginTime = System.currentTimeMillis(),
+                registerTime = now,
+                lastLoginTime = now,
                 clientVersion = clientVersion,
             )
             users.add(user)
@@ -94,6 +96,7 @@ class InMemoryUserRepositoryImpl : UserRepository {
                 smallAvatar = user.smallAvatar,
                 mediumAvatar = user.mediumAvatar,
                 largeAvatar = user.largeAvatar,
+                registerTime = user.registerTime,
                 lastLoginTime = lastLoginTime,
                 clientVersion = user.clientVersion,
             )

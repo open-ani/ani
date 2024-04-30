@@ -27,13 +27,15 @@ class MongoUserRepositoryImpl : UserRepository, KoinComponent {
         largeAvatar: String,
         clientVersion: String?,
     ): String? {
+        val now = System.currentTimeMillis()
         val user = UserModel(
             bangumiUserId = bangumiId,
             nickname = nickname,
             smallAvatar = smallAvatar,
             mediumAvatar = mediumAvatar,
             largeAvatar = largeAvatar,
-            lastLoginTime = System.currentTimeMillis(),
+            registerTime = now,
+            lastLoginTime = now,
             clientVersion = clientVersion,
         )
         return if (userTable.insertOne(user).wasAcknowledged()) {
@@ -80,6 +82,7 @@ class MongoUserRepositoryImpl : UserRepository, KoinComponent {
             smallAvatar = user.smallAvatar,
             mediumAvatar = user.mediumAvatar,
             largeAvatar = user.largeAvatar,
+            registerTime = user.registerTime,
             lastLoginTime = lastLoginTime,
             clientVersion = user.clientVersion
         )
