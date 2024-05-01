@@ -156,6 +156,37 @@ kotlin {
         api(compose.material3)
         api(projects.utils.slf4jKt)
         api(libs.kotlinx.coroutines.swing)
+        implementation(libs.vlcj)
+        implementation(libs.jna) // required and don't change version, otherwise vlcj might crash the VM 
+//        implementation(libs.vlcj.javafx)
+//        implementation(libs.javafx.controls)
+//        implementation(libs.javafx.graphics)
+
+        // https://repo1.maven.org/maven2/org/openjfx/javafx-graphics/17.0.11/
+        val os = getOs()
+        val classifier = when (os) {
+            Os.MacOS -> {
+                // check aarch
+                if (System.getProperty("os.arch").contains("aarch")) {
+                    "mac-aarch64"
+                } else {
+                    "mac"
+                }
+            }
+
+            Os.Windows -> "win"
+            Os.Linux -> "linux"
+            else -> {
+                null
+            }
+        }
+
+//        implementation("org.openjfx:javafx-base:17.0.11:$classifier")
+//        implementation("org.openjfx:javafx-media:17.0.11:$classifier")
+//        implementation("org.openjfx:javafx-controls:17.0.11:$classifier")
+        api("org.openjfx:javafx-graphics:17.0.11:$classifier")
+        api("org.openjfx:javafx-swing:17.0.11:$classifier")
+
         runtimeOnly(libs.kotlinx.coroutines.debug)
 
         runtimeOnly(libs.slf4j.simple)

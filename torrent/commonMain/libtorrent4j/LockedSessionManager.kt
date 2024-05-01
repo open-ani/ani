@@ -1,6 +1,7 @@
 package me.him188.ani.app.torrent.torrent4j
 
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
@@ -60,8 +61,9 @@ internal class LockedSessionManager(
          *
          * Libtorrent crashes (the entire VM) if it is called from multiple threads.
          */ // unfortunately, we have to keep this dispatcher live for the entire app lifecycle.
-        val dispatcher = Executors.newSingleThreadExecutor()
-            .asCoroutineDispatcher()
+        val dispatcher = Executors.newSingleThreadExecutor {
+            Thread(it, "LockedSessionManager.dispatcher")
+        }.asCoroutineDispatcher()
 
         private val logger = logger(LockedSessionManager::class)
 
@@ -70,7 +72,7 @@ internal class LockedSessionManager(
         })
 
         fun launch(block: suspend () -> Unit) {
-            scope.launch {
+            scope.launch(CoroutineName("LockedSessionManager.launch")) {
                 block()
             }
         }

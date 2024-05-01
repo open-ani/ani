@@ -1,6 +1,7 @@
 package me.him188.ani.app.tools.caching
 
 import androidx.compose.runtime.Stable
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -230,7 +231,13 @@ class LazyDataCacheImpl<T>(
                     requestInProgress.value = true
                     val resp = source.nextPageOrNull() // cancellation-supported
                     return@withContext if (resp != null) {
-                        setData(cachedData.value + resp)
+                        try {
+                            setData(cachedData.value + resp)
+                        } catch (e: CancellationException) {
+                            // Data is not updated, we should not progress the source page
+                            source.backToPrevious()
+                            throw e
+                        }
                         true
                     } else {
                         false

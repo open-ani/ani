@@ -7,6 +7,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -18,11 +19,8 @@ import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import org.libtorrent4j.SessionManager
-import org.libtorrent4j.SettingsPack
 import org.libtorrent4j.swig.settings_pack
-import org.libtorrent4j.swig.settings_pack.string_types
 import java.io.File
-import java.nio.charset.Charset
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -266,21 +264,35 @@ internal abstract class AbstractLockedTorrentDownloader<Info : TorrentInfo>(
     }
 }
 
-var SettingsPack.peerFingerprintString: String
-    get() = getBytes(string_types.peer_fingerprint.swigValue()).toString(Charset.forName("UTF-8"))
-    set(value) {
-        setBytes(string_types.peer_fingerprint.swigValue(), value.toByteArray(Charset.forName("UTF-8")))
+class TestTorrentDownloader : TorrentDownloader {
+    override val totalUploaded: Flow<Long> = flowOf(0)
+    override val totalDownloaded: Flow<Long> = flowOf(0)
+    override val totalUploadRate: Flow<Long> = flowOf(0)
+    override val totalDownloadRate: Flow<Long> = flowOf(0)
+    override val dhtNodes: Flow<Long> = flowOf(0)
+    override val vendor: TorrentLibInfo = TorrentLibInfo("test", "1.0")
+
+    override suspend fun fetchTorrent(uri: String, timeoutSeconds: Int): EncodedTorrentInfo {
+        return EncodedTorrentInfo(byteArrayOf())
     }
 
-var SettingsPack.userAgentString: String
-    get() = getBytes(string_types.user_agent.swigValue()).toString(Charset.forName("UTF-8"))
-    set(value) {
-        setBytes(string_types.user_agent.swigValue(), value.toByteArray(Charset.forName("UTF-8")))
+    override suspend fun startDownload(
+        data: EncodedTorrentInfo,
+        parentCoroutineContext: CoroutineContext
+    ): TorrentDownloadSession = DefaultTorrentDownloadSession(
+        torrentName = "test",
+        saveDirectory = File("test"),
+        onClose = {},
+        isDebug = false,
+        parentCoroutineContext = parentCoroutineContext,
+    )
+
+    override fun getSaveDir(data: EncodedTorrentInfo): File {
+        return File("test")
     }
 
-var SettingsPack.handshakeClientVersionString: String
-    get() = getBytes(string_types.handshake_client_version.swigValue()).toString(Charset.forName("UTF-8"))
-    set(value) {
-        setBytes(string_types.handshake_client_version.swigValue(), value.toByteArray(Charset.forName("UTF-8")))
-    }
+    override fun listSaves(): List<File> = emptyList()
 
+    override fun close() {
+    }
+}
