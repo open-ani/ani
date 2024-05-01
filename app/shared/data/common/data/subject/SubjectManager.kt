@@ -1,6 +1,7 @@
 package me.him188.ani.app.data.subject
 
 import androidx.compose.runtime.Stable
+import androidx.compose.ui.util.fastDistinctBy
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -114,6 +115,9 @@ class SubjectManagerImpl : KoinComponent, SubjectManager {
                     ).map {
                         it.convertToItem()
                     }
+                },
+                sanitize = { list ->
+                    list.fastDistinctBy { it.subjectId }
                 },
                 debugName = "collectionsByType-${type.name}"
             )
