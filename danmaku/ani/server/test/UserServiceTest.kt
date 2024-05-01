@@ -91,7 +91,7 @@ class UserServiceTest {
         assert(user.mediumAvatar == "medium3")
         assert(user.largeAvatar == "large3")
         val registerTime = user.registerTime
-        assert(registerTime != null && registerTime > 0)
+        assert(registerTime > 0)
         assert(user.lastLoginTime > 0)
     }
 }

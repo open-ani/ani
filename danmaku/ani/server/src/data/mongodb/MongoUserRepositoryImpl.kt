@@ -1,10 +1,12 @@
 package me.him188.ani.danmaku.server.data.mongodb
 
+import com.mongodb.client.model.Updates
 import kotlinx.coroutines.flow.firstOrNull
 import me.him188.ani.danmaku.protocol.AniUser
 import me.him188.ani.danmaku.server.data.UserRepository
 import me.him188.ani.danmaku.server.data.model.UserModel
 import me.him188.ani.danmaku.server.util.exception.OperationFailedException
+import org.bson.conversions.Bson
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.util.UUID
@@ -71,18 +73,27 @@ class MongoUserRepositoryImpl : UserRepository, KoinComponent {
         val user = userTable.find(
             Field.Id eq UUID.fromString(userId)
         ).firstOrNull() ?: return null
+
+        var updates: Bson? = null
+        val registerTime = user.registerTime ?: AniUser.MAGIC_REGISTER_TIME.also {
+            updates = updates then (Field.of(UserModel::registerTime) setTo it)
+        }
         val lastLoginTime = user.lastLoginTime ?: System.currentTimeMillis().also {
-            if (!setLastLoginTime(userId, it)) {
+            updates = updates then (Field.of(UserModel::lastLoginTime) setTo it)
+        }
+        updates?.let {
+            if (!userTable.updateOne(Field.Id eq UUID.fromString(userId), it).wasAcknowledged()) {
                 throw OperationFailedException()
             }
         }
+
         return AniUser(
             id = user.id.toString(),
             nickname = user.nickname,
             smallAvatar = user.smallAvatar,
             mediumAvatar = user.mediumAvatar,
             largeAvatar = user.largeAvatar,
-            registerTime = user.registerTime,
+            registerTime = registerTime,
             lastLoginTime = lastLoginTime,
             clientVersion = user.clientVersion
         )
@@ -91,14 +102,14 @@ class MongoUserRepositoryImpl : UserRepository, KoinComponent {
     override suspend fun setLastLoginTime(userId: String, time: Long): Boolean {
         return userTable.updateOne(
             Field.Id eq UUID.fromString(userId),
-            Field(UserModel::lastLoginTime) setTo time
+            Field.of(UserModel::lastLoginTime) setTo time
         ).wasAcknowledged()
     }
 
     override suspend fun setClientVersion(userId: String, clientVersion: String) {
         userTable.updateOne(
             Field.Id eq UUID.fromString(userId),
-            Field(UserModel::clientVersion) setTo clientVersion
+            Field.of(UserModel::clientVersion) setTo clientVersion
         )
     }
 }

@@ -2,6 +2,7 @@ package me.him188.ani.danmaku.server.data.mongodb
 
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Updates
+import org.bson.codecs.pojo.annotations.BsonId
 import org.bson.conversions.Bson
 import kotlin.reflect.KProperty
 
@@ -13,9 +14,11 @@ infix fun Bson.or(other: Bson): Bson {
     return Filters.or(this, other)
 }
 
+infix fun Bson?.then(other: Bson): Bson {
+    return if (this == null) other else Updates.combine(this, other)
+}
+
 data class Field(val name: String) {
-    constructor(property: KProperty<*>) : this(property.name)
-    
     infix fun <TItem> eq(value: TItem): Bson {
         return Filters.eq(name, value)
     }
@@ -42,5 +45,13 @@ data class Field(val name: String) {
 
     companion object {
         val Id = Field("_id")
+
+        fun of(property: KProperty<*>): Field {
+            return if (property.annotations.any { it is BsonId }) {
+                Id
+            } else {
+                Field(property.name)
+            }
+        }
     }
 }

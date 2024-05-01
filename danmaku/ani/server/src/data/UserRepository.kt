@@ -87,6 +87,10 @@ class InMemoryUserRepositoryImpl : UserRepository {
     override suspend fun getUserById(userId: String): AniUser? {
         mutex.withLock {
             val user = users.find { it.id.toString() == userId } ?: return null
+            val registerTime = user.registerTime ?: AniUser.MAGIC_REGISTER_TIME.also { 
+                users.remove(user)
+                users.add(user.copy(registerTime = it))
+            }
             val lastLoginTime = user.lastLoginTime ?: System.currentTimeMillis().also {
                 setLastLoginTime(userId, it)
             }
@@ -96,7 +100,7 @@ class InMemoryUserRepositoryImpl : UserRepository {
                 smallAvatar = user.smallAvatar,
                 mediumAvatar = user.mediumAvatar,
                 largeAvatar = user.largeAvatar,
-                registerTime = user.registerTime,
+                registerTime = registerTime,
                 lastLoginTime = lastLoginTime,
                 clientVersion = user.clientVersion,
             )
