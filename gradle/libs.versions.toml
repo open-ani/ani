@@ -1,4 +1,5 @@
 [versions]
+jna = "5.12.1"
 kotlin = "2.0.0-RC1"
 coroutines = "1.8.0"
 okhttp = "4.12.0"
@@ -30,6 +31,7 @@ jetpack-compose-compiler = "1.5.13-dev-k2.0.0-RC1-50f08dfa4b4" # used by android
 compose-multiplatform = "1.6.10-beta02"
 # https://maven.pkg.jetbrains.space/public/p/compose/dev/org/jetbrains/compose/compiler/compiler/
 compose-multiplatform-compiler = "1.5.11-kt-2.0.0-RC1" # used by buildscript, don't remove
+vlcj = "4.8.2" # don't change version, otherwise it might crash the vm
 
 [libraries]
 # Build
@@ -174,3 +176,13 @@ mongodb-driver-kotlin-coroutine = { module = "org.mongodb:mongodb-driver-kotlin-
 
 # Kompendium
 kompendium-core = { module = "io.bkbn:kompendium-core", version.ref = "kompendium" }
+
+#javafx-controls = { module = "org.openjfx:javafx-controls", version = "17.0.11", classifier = "mac" }
+#javafx-graphics = { module = "org.openjfx:javafx-graphics", version = "17.0.11", classifier = "mac" }
+
+# VLC
+# NOTE: YOU WILL NEVER WANT TO CHANGE VLCJ AND JNA VERSIONS.
+# ONLY VLC 3.0.18 IS SUPPORTED.
+vlcj = { module = "uk.co.caprica:vlcj", version.ref = "vlcj" }
+vlcj-javafx = { module = "uk.co.caprica:vlcj-javafx", version = "1.2.0" }
+jna = { module = "net.java.dev.jna:jna", version.ref = "jna" }

@@ -7,9 +7,6 @@ import me.him188.ani.app.torrent.api.TorrentDownloader
 import me.him188.ani.app.torrent.api.TorrentDownloaderConfig
 import me.him188.ani.app.torrent.api.TorrentFileDownloader
 import me.him188.ani.app.torrent.api.TorrentLibInfo
-import me.him188.ani.app.torrent.api.handshakeClientVersionString
-import me.him188.ani.app.torrent.api.peerFingerprintString
-import me.him188.ani.app.torrent.api.userAgentString
 import me.him188.ani.utils.logging.debug
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
@@ -17,11 +14,14 @@ import org.libtorrent4j.AlertListener
 import org.libtorrent4j.LibTorrent
 import org.libtorrent4j.Priority
 import org.libtorrent4j.SessionManager
+import org.libtorrent4j.SettingsPack
 import org.libtorrent4j.Sha1Hash
 import org.libtorrent4j.TorrentFlags
 import org.libtorrent4j.alerts.Alert
 import org.libtorrent4j.alerts.AlertType
+import org.libtorrent4j.swig.settings_pack.string_types
 import java.io.File
+import java.nio.charset.Charset
 
 internal class Libtorrent4jTorrentDownloader(
     cacheDirectory: File,
@@ -160,3 +160,22 @@ fun Libtorrent4jTorrentDownloader(
         isDebug = config.isDebug,
     )
 }
+
+var SettingsPack.peerFingerprintString: String
+    get() = getBytes(string_types.peer_fingerprint.swigValue()).toString(Charset.forName("UTF-8"))
+    set(value) {
+        setBytes(string_types.peer_fingerprint.swigValue(), value.toByteArray(Charset.forName("UTF-8")))
+    }
+
+var SettingsPack.userAgentString: String
+    get() = getBytes(string_types.user_agent.swigValue()).toString(Charset.forName("UTF-8"))
+    set(value) {
+        setBytes(string_types.user_agent.swigValue(), value.toByteArray(Charset.forName("UTF-8")))
+    }
+
+var SettingsPack.handshakeClientVersionString: String
+    get() = getBytes(string_types.handshake_client_version.swigValue()).toString(Charset.forName("UTF-8"))
+    set(value) {
+        setBytes(string_types.handshake_client_version.swigValue(), value.toByteArray(Charset.forName("UTF-8")))
+    }
+
