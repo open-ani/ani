@@ -2,6 +2,7 @@
 jna = "5.12.1"
 kotlin = "2.0.0-RC1"
 coroutines = "1.8.0"
+log4j-core = "2.20.0"
 okhttp = "4.12.0"
 reorderable = "0.9.6"
 serialization = "1.6.3"
@@ -89,6 +90,8 @@ koin-ktor = { module = "io.insert-koin:koin-ktor", version.ref = "koin" }
 directories = { module = "dev.dirs:directories", version = "26" }
 
 # Slf4j
+log4j-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j-core" }
+log4j2-slf4j-impl = { module = "org.apache.logging.log4j:log4j-slf4j2-impl", version.ref = "log4j-core" }
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 

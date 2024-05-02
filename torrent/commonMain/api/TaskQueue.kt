@@ -1,10 +1,12 @@
 package me.him188.ani.app.torrent.api
 
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
 import me.him188.ani.utils.coroutines.cancellableCoroutineScope
+import me.him188.ani.utils.logging.debug
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
@@ -23,7 +25,9 @@ internal class TaskQueue<Receiver>(
     ) {
         operator fun invoke(handle: Receiver) {
             try {
+                logger.debug { "Invoking task: $task" }
                 task(handle)
+                logger.debug { "Invoked task: $task" }
             } catch (e: Throwable) {
                 if (creationStacktrace != null) {
                     e.addSuppressed(creationStacktrace)
@@ -77,7 +81,7 @@ internal class TaskQueue<Receiver>(
                             delay(5.seconds)
                             logger.warn { "Job $job in handle took too long" }
                         }
-                        launch {
+                        launch(start = CoroutineStart.UNDISPATCHED) {
                             job(handle)
                             cancelScope()
                         }
