@@ -118,6 +118,7 @@ fun LockedScreenGestureHost(
 fun LockableVideoGestureHost(
     seekerState: SwipeSeekerState,
     indicatorState: GestureIndicatorState,
+    fastSkipState: FastSkipState,
     controllerVisible: Boolean,
     locked: Boolean,
     setControllerVisible: (visible: Boolean) -> Unit,
@@ -130,6 +131,7 @@ fun LockableVideoGestureHost(
         VideoGestureHost(
             seekerState,
             indicatorState,
+            fastSkipState,
             modifier,
             onClickScreen = {
                 setControllerVisible(!controllerVisible)

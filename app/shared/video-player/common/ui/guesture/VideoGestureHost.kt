@@ -60,6 +60,13 @@ import me.him188.ani.app.platform.StreamType
 import me.him188.ani.app.platform.getComponentAccessors
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.theme.aniDarkColorTheme
+import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.BRIGHTNESS
+import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.FAST_BACKWARD
+import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.FAST_FORWARD
+import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.PAUSED_ONCE
+import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.RESUMED_ONCE
+import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.SEEKING
+import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.VOLUME
 import me.him188.ani.app.videoplayer.ui.guesture.SwipeSeekerState.Companion.swipeToSeek
 import me.him188.ani.datasources.bangumi.processing.fixToString
 import kotlin.math.absoluteValue
@@ -80,6 +87,8 @@ class GestureIndicatorState {
         VOLUME,
         BRIGHTNESS,
         SEEKING,
+        FAST_FORWARD,
+        FAST_BACKWARD,
     }
 
     internal var visible: Boolean by mutableStateOf(false)
@@ -87,6 +96,17 @@ class GestureIndicatorState {
     internal var progressValue: Float by mutableFloatStateOf(0f)
     internal var deltaSeconds: Int by mutableIntStateOf(0)
     private var counter: Int = 0
+
+    private inline fun startShow(
+        state: State,
+        setup: () -> Unit = {},
+    ): Int {
+        val ticket = ++counter
+        setup()
+        this.state = state
+        visible = true
+        return ticket
+    }
 
     private inline fun show(
         state: State,
@@ -115,28 +135,28 @@ class GestureIndicatorState {
 
     @UiThread
     suspend fun showPausedLong() {
-        show(State.PAUSED_ONCE) {
+        show(PAUSED_ONCE) {
             delay(LONG)
         }
     }
 
     @UiThread
     suspend fun showResumedLong() {
-        show(State.RESUMED_ONCE) {
+        show(RESUMED_ONCE) {
             delay(LONG)
         }
     }
 
     @UiThread
     suspend fun showVolumeRange(currentRatio: Float) {
-        show(State.VOLUME, setup = { progressValue = currentRatio }) {
+        show(VOLUME, setup = { progressValue = currentRatio }) {
             delay(SHORT)
         }
     }
 
     @UiThread
     suspend fun showBrightnessRange(currentRatio: Float) {
-        show(State.BRIGHTNESS, setup = { progressValue = currentRatio }) {
+        show(BRIGHTNESS, setup = { progressValue = currentRatio }) {
             delay(SHORT)
         }
     }
@@ -145,8 +165,36 @@ class GestureIndicatorState {
     suspend fun showSeeking(
         deltaSeconds: Int,
     ) {
-        show(State.SEEKING, setup = { this.deltaSeconds = deltaSeconds }) {
+        show(SEEKING, setup = { this.deltaSeconds = deltaSeconds }) {
             delay(SHORT)
+        }
+    }
+
+    @UiThread
+    fun startFastForward(): Int {
+        startShow(FAST_FORWARD, setup = { })
+        return counter
+    }
+
+    @UiThread
+    fun stopFastForward(ticket: Int) {
+        stopShow(ticket)
+    }
+
+    @UiThread
+    fun startFastBackward(): Int {
+        startShow(FAST_BACKWARD, setup = { })
+        return counter
+    }
+
+    @UiThread
+    fun stopFastBackward(ticket: Int) {
+        stopShow(ticket)
+    }
+
+    private fun stopShow(ticket: Int) {
+        if (ticket == this.counter) {
+            visible = false
         }
     }
 }
@@ -203,18 +251,18 @@ fun GestureIndicator(
                     }
 
                     when (state.state) {
-                        GestureIndicatorState.State.RESUMED_ONCE -> {
+                        RESUMED_ONCE -> {
                             Icon(
                                 Icons.Rounded.PlayArrow, null,
                                 Modifier.size(iconSize).background(Color.Transparent)
                             )
                         }
 
-                        GestureIndicatorState.State.PAUSED_ONCE -> {
+                        PAUSED_ONCE -> {
                             Icon(Icons.Rounded.Pause, null, Modifier.size(iconSize))
                         }
 
-                        GestureIndicatorState.State.SEEKING -> {
+                        SEEKING -> {
                             val deltaDuration = state.deltaSeconds
                             // 记忆变为 0 之前的 delta, 这样在快进/快退结束后, 会显示上一次的 delta, 而不是显示 0
                             val duration = if (deltaDuration == 0) {
@@ -241,7 +289,7 @@ fun GestureIndicator(
                             )
                         }
 
-                        GestureIndicatorState.State.VOLUME -> {
+                        VOLUME -> {
                             Icon(
                                 Icons.AutoMirrored.Rounded.VolumeUp, null,
                                 Modifier.size(iconSize)
@@ -249,7 +297,7 @@ fun GestureIndicator(
                             progressIndicator()
                         }
 
-                        GestureIndicatorState.State.BRIGHTNESS -> {
+                        BRIGHTNESS -> {
                             Icon(
                                 when (state.progressValue) {
                                     in 0.67..1.0 -> Icons.Rounded.BrightnessHigh
@@ -259,6 +307,14 @@ fun GestureIndicator(
                                 Modifier.size(iconSize)
                             )
                             progressIndicator()
+                        }
+
+                        FAST_FORWARD -> {
+                            Icon(Icons.Rounded.FastForward, null, Modifier.size(iconSize))
+                        }
+
+                        FAST_BACKWARD -> {
+                            Icon(Icons.Rounded.FastForward, null, Modifier.size(iconSize))
                         }
 
                         null -> {}
@@ -274,6 +330,7 @@ fun GestureIndicator(
 fun VideoGestureHost(
     seekerState: SwipeSeekerState,
     indicatorState: GestureIndicatorState,
+    fastSkipState: FastSkipState,
     modifier: Modifier = Modifier,
     onClickScreen: () -> Unit = {},
     onDoubleClickScreen: () -> Unit = {},
@@ -337,20 +394,22 @@ fun VideoGestureHost(
 
                 Box(Modifier.weight(1f).fillMaxHeight())
 
-                Box(Modifier.then(
-                    audioController?.let { controller ->
-                        Modifier.swipeLevelControl(
-                            controller,
-                            ((maxHeight - 100.dp) / 40).coerceAtLeast(2.dp),
-                            Orientation.Vertical,
-                            afterStep = {
-                                indicatorTasker.launch {
-                                    indicatorState.showVolumeRange(controller.level)
+                Box(Modifier
+                    .longPressFastSkip(fastSkipState, SkipDirection.FORWARD)
+                    .then(
+                        audioController?.let { controller ->
+                            Modifier.swipeLevelControl(
+                                controller,
+                                ((maxHeight - 100.dp) / 40).coerceAtLeast(2.dp),
+                                Orientation.Vertical,
+                                afterStep = {
+                                    indicatorTasker.launch {
+                                        indicatorState.showVolumeRange(controller.level)
+                                    }
                                 }
-                            }
-                        )
-                    } ?: Modifier
-                ).weight(1f).fillMaxHeight())
+                            )
+                        } ?: Modifier
+                    ).weight(1f).fillMaxHeight())
             }
         }
     }
