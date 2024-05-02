@@ -102,7 +102,7 @@ class DirectoryMediaCacheStorage(
                         }
                         logger.info { "Cache restored: ${save.origin.mediaId}, result=${cache}" }
                         if (cache != null) {
-//                            cache.resume()
+                            cache.resume()
                             logger.info { "Cache resumed: $cache" }
                         }
 
