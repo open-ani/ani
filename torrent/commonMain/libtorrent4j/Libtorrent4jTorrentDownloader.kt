@@ -1,12 +1,12 @@
 package me.him188.ani.app.torrent.torrent4j
 
 import me.him188.ani.app.torrent.api.AbstractLockedTorrentDownloader
-import me.him188.ani.app.torrent.api.EncodedTorrentInfo
-import me.him188.ani.app.torrent.api.Torrent4jTorrentInfo
 import me.him188.ani.app.torrent.api.TorrentDownloader
 import me.him188.ani.app.torrent.api.TorrentDownloaderConfig
 import me.him188.ani.app.torrent.api.TorrentFileDownloader
 import me.him188.ani.app.torrent.api.TorrentLibInfo
+import me.him188.ani.app.torrent.api.files.EncodedTorrentInfo
+import me.him188.ani.app.torrent.api.files.Torrent4jTorrentInfo
 import me.him188.ani.utils.logging.debug
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger

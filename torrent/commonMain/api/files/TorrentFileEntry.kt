@@ -1,4 +1,4 @@
-package me.him188.ani.app.torrent.api
+package me.him188.ani.app.torrent.api.files
 
 import me.him188.ani.app.torrent.api.pieces.Piece
 import me.him188.ani.app.torrent.api.pieces.lastIndex

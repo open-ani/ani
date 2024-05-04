@@ -6,8 +6,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import me.him188.ani.app.torrent.api.EventListener
-import me.him188.ani.app.torrent.api.TorrentThread
+import me.him188.ani.app.torrent.api.handle.EventListener
+import me.him188.ani.app.torrent.api.handle.TorrentThread
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn

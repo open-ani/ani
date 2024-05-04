@@ -1,5 +1,6 @@
-package me.him188.ani.app.torrent.api
+package me.him188.ani.app.torrent.api.handle
 
+import me.him188.ani.app.torrent.api.files.FilePriority
 import me.him188.ani.app.torrent.api.pieces.Piece
 import org.libtorrent4j.AnnounceEntry
 import org.libtorrent4j.FileStorage

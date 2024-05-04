@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.takeWhile
-import me.him188.ani.app.torrent.api.PieceState
+import me.him188.ani.app.torrent.api.files.PieceState
 
 class Piece(
     /**
