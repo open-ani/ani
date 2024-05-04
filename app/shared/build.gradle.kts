@@ -90,7 +90,8 @@ kotlin {
         api(projects.utils.slf4jKt)
         api(projects.utils.coroutines)
         api(projects.utils.io)
-        api(projects.torrent)
+//        api(projects.torrent.api)
+//        api(projects.torrent.impl.qbittorrent)
 //        api(projects.danmaku.api)
         api(projects.danmaku.ani.protocol)
 //        api(projects.danmaku.dandanplay)
@@ -138,6 +139,7 @@ kotlin {
         api(libs.koin.android)
         implementation(libs.androidx.browser)
         implementation(libs.slf4j.android)
+//        api(projects.torrent.impl.libtorrent4j)
 
         // Compose
         api(libs.androidx.compose.ui.tooling.preview)
@@ -237,6 +239,10 @@ kotlin {
         submodule("danmaku/dandanplay")
         submodule("danmaku/ui")
 
+        submodule("torrent/api")
+        submodule("torrent/impl/libtorrent4j")
+        submodule("torrent/impl/qbittorrent")
+
         submodule("app/shared/foundation")
         submodule("app/shared/placeholder")
 
@@ -257,6 +263,39 @@ kotlin {
         submodule("app/shared/pages/cache-manage")
         submodule("app/shared/pages/update")
     }
+
+
+    // 以下为 libtorrent4j 的依赖
+
+    sourceSets.commonMain.dependencies {
+//        api(projects.torrent.api)
+        implementation(libs.libtorrent4j)
+        implementation(projects.utils.slf4jKt)
+        implementation(projects.utils.coroutines)
+        api(projects.utils.io)
+    }
+
+    sourceSets.commonTest.dependencies {
+        implementation(libs.kotlinx.coroutines.test)
+        runtimeOnly(libs.slf4j.simple)
+    }
+
+    sourceSets.androidMain.dependencies {
+        implementation(libs.libtorrent4j.android.arm64)
+    }
+
+//    sourceSets.named("desktopMain").dependencies {
+//        implementation(
+//            when (getOs()) {
+//                Os.Windows -> libs.libtorrent4j.windows
+//                Os.MacOS -> libs.libtorrent4j.macos
+//                Os.Linux -> libs.libtorrent4j.linux
+//                else -> {
+//                    logger.warn("Unrecognized architecture, libtorrent4j will not be included")
+//                }
+//            }
+//        )
+//    }
 }
 
 // RESOURCES

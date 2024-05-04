@@ -1,18 +1,9 @@
-package me.him188.ani.app.torrent.api.files
+package me.him188.ani.app.torrent.libtorrent4j.files
 
+import me.him188.ani.app.torrent.api.files.EncodedTorrentInfo
+import me.him188.ani.app.torrent.api.files.TorrentInfo
 import me.him188.ani.app.torrent.api.handle.TorrentThread
 
-interface TorrentInfo {
-    val name: String
-    val infoHashHex: String
-
-    val fileCount: Int
-}
-
-@JvmInline
-value class EncodedTorrentInfo(
-    val data: ByteArray,
-)
 
 class Torrent4jTorrentInfo
 @TorrentThread

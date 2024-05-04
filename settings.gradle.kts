@@ -51,8 +51,10 @@ includeProject(":utils:ktor-client", "utils/ktor-client")
 includeProject(":utils:io", "utils/io")
 
 
-includeProject(":torrent", "torrent") // Torrent downloader
-
+// TODO: add torrent modules back when kotlin has fixed
+//includeProject(":torrent:api") // Torrent 系统 API
+//includeProject(":torrent:impl:libtorrent4j") // libtorrent4j 实现
+//includeProject(":torrent:impl:qbittorrent") // qBittorrent 实现
 
 // client
 includeProject(":app:shared", "app/shared") // shared by clients (targets JVM)

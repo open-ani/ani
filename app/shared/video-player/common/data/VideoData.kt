@@ -35,6 +35,11 @@ interface VideoData : AutoCloseable {
     val uploadRate: Flow<FileSize>
 
     /**
+     * 支持边下边播
+     */
+    val supportsStreaming: Boolean get() = false
+
+    /**
      * Optional hash of the video file. `null` if not available.
      */
     @Throws(IOException::class)

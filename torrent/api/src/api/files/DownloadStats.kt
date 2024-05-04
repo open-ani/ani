@@ -3,9 +3,6 @@ package me.him188.ani.app.torrent.api.files
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 
-/**
- * @see TorrentDownloader
- */
 interface DownloadStats {
     /**
      * 总请求大小. 注意这不是在硬盘上的大小. 在硬盘上可能会略有差别.
