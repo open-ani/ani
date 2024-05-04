@@ -45,7 +45,6 @@ import me.him188.ani.app.torrent.api.pieces.lastIndex
 import me.him188.ani.app.torrent.api.pieces.startIndex
 import me.him188.ani.app.torrent.io.TorrentFileIO
 import me.him188.ani.app.torrent.io.TorrentInput
-import me.him188.ani.app.torrent.libtorrent4j.LockedSessionManager
 import me.him188.ani.utils.coroutines.SuspendLazy
 import me.him188.ani.utils.coroutines.flows.resetStale
 import me.him188.ani.utils.io.SeekableInput
@@ -60,7 +59,7 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration.Companion.seconds
 
-internal open class DefaultTorrentDownloadSession(
+open class DefaultTorrentDownloadSession(
     private val torrentName: String,
     /**
      * The directory where the torrent is saved.
@@ -69,7 +68,7 @@ internal open class DefaultTorrentDownloadSession(
      * The files are not guaranteed to be present at the moment when this function returns.
      */
     final override val saveDirectory: File,
-    private val onClose: suspend (DefaultTorrentDownloadSession) -> Unit,
+    private val onClose: (DefaultTorrentDownloadSession) -> Unit,
     private val isDebug: Boolean,
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
 ) : TorrentDownloadSession {
@@ -296,6 +295,8 @@ internal open class DefaultTorrentDownloadSession(
             }
         }
 
+        override val supportsStreaming: Boolean get() = true
+
         val finishedOverride = MutableStateFlow(false)
 
         val downloadedBytes = MutableStateFlow(actualInfo().calculateTotalFinishedSize(pieces))
@@ -431,7 +432,7 @@ internal open class DefaultTorrentDownloadSession(
 
     private fun actualInfo(): ActualTorrentInfo = actualInfo.getCompleted()
 
-    internal val listener = object : EventListener {
+    val listener = object : EventListener {
         @TorrentThread
         override fun onUpdate(handle: AniTorrentHandle) {
             torrentThreadTasks.invokeAll(handle)
@@ -529,12 +530,10 @@ internal open class DefaultTorrentDownloadSession(
         logger.info { "Closing torrent" }
 
         torrentThreadTasks.submit {
-            runBlocking(LockedSessionManager.dispatcher) {
-                onClose(this@DefaultTorrentDownloadSession)
-                logger.info { "Close torrent $torrentName: dispose handle" }
-                scope.cancel()
-                coroutineCloseHandle?.dispose()
-            }
+            onClose(this@DefaultTorrentDownloadSession)
+            logger.info { "Close torrent $torrentName: dispose handle" }
+            scope.cancel()
+            coroutineCloseHandle?.dispose()
         }
     }
 

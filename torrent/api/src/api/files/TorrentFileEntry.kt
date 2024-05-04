@@ -11,8 +11,6 @@ import java.io.File
  *
  * 所有文件默认都没有开始下载, 需调用 [createHandle] 创建一个句柄, 并使用 [TorrentFileHandle.resume] 才会开始下载.
  * 当句柄被关闭后, 该文件的下载也会被停止.
- *
- * @see TorrentDownloadSession
  */
 interface TorrentFileEntry { // 实现提示, 无 test mock
     /**
@@ -39,6 +37,11 @@ interface TorrentFileEntry { // 实现提示, 无 test mock
      * @throws IllegalStateException 当未匹配到正确大小的 pieces 时抛出
      */
     val pieces: List<Piece>
+
+    /**
+     * 是否支持边下边播
+     */
+    val supportsStreaming: Boolean
 
     /**
      * 创建一个句柄, 以用于下载文件.

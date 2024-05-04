@@ -18,8 +18,9 @@ import org.libtorrent4j.alerts.TorrentAlert
 import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.Executors
 
-internal class LockedSessionManager(
-    private val sessionManager: SessionManager,
+class LockedSessionManager(
+    @PublishedApi
+    internal val sessionManager: SessionManager,
 ) {
     private val listeners = CopyOnWriteArraySet<EventListener>()
 

@@ -41,7 +41,7 @@ kotlin {
     }
 
     sourceSets.commonMain.dependencies {
-        api(libs.kotlinx.coroutines.core)
+//        api(projects.torrent.api)
         implementation(libs.libtorrent4j)
         implementation(projects.utils.slf4jKt)
         implementation(projects.utils.coroutines)
