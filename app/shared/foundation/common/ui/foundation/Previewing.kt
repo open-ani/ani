@@ -33,7 +33,7 @@ import me.him188.ani.app.platform.getCommonKoinModule
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.session.TestSessionManagers
 import me.him188.ani.app.torrent.api.TorrentDownloaderFactory
-import me.him188.ani.app.torrent.torrent4j.Libtorrent4jTorrentDownloader
+import me.him188.ani.app.torrent.libtorrent4j.Libtorrent4jTorrentDownloader
 import me.him188.ani.app.ui.theme.aniColorScheme
 import me.him188.ani.app.videoplayer.ui.state.DummyPlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory

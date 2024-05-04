@@ -1,17 +1,9 @@
 package me.him188.ani.app.torrent.api.handle
 
-import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
-import me.him188.ani.utils.coroutines.cancellableCoroutineScope
-import me.him188.ani.utils.logging.debug
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.logger
-import me.him188.ani.utils.logging.warn
 import java.util.concurrent.ConcurrentLinkedQueue
-import kotlin.time.Duration.Companion.seconds
 
 internal class TaskQueue<Receiver>(
     private val enableTimeoutWatchdog: Boolean,
@@ -25,9 +17,9 @@ internal class TaskQueue<Receiver>(
     ) {
         operator fun invoke(handle: Receiver) {
             try {
-                logger.debug { "Invoking task: $task" }
+//                logger.debug { "Invoking task: $task" }
                 task(handle)
-                logger.debug { "Invoked task: $task" }
+//                logger.debug { "Invoked task: $task" }
             } catch (e: Throwable) {
                 if (creationStacktrace != null) {
                     e.addSuppressed(creationStacktrace)
@@ -71,22 +63,27 @@ internal class TaskQueue<Receiver>(
         }
     }
 
+    @TorrentThread
     fun invokeAll(handle: Receiver) {
         while (tasks.isNotEmpty()) {
             val job = tasks.poll() ?: break
             if (enableTimeoutWatchdog) {
-                runBlocking {
-                    cancellableCoroutineScope {
-                        launch {
-                            delay(5.seconds)
-                            logger.warn { "Job $job in handle took too long" }
-                        }
-                        launch(start = CoroutineStart.UNDISPATCHED) {
-                            job(handle)
-                            cancelScope()
-                        }
-                    }
-                }
+                job(handle)
+
+                // 警告: 使用 runBlocking + launch 仍然会导致协程跑在 Default dispatcher, 然后会 crash vm
+
+//                runBlocking {
+//                    cancellableCoroutineScope {
+//                        launch {
+//                            delay(5.seconds)
+//                            logger.warn { "Job $job in handle took too long" }
+//                        }
+//                        launch(start = CoroutineStart.UNDISPATCHED) {
+//                            job(handle)
+//                            cancelScope()
+//                        }
+//                    }
+//                }
             } else {
                 job(handle)
             }

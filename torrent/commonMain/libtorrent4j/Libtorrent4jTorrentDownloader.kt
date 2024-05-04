@@ -1,4 +1,4 @@
-package me.him188.ani.app.torrent.torrent4j
+package me.him188.ani.app.torrent.libtorrent4j
 
 import me.him188.ani.app.torrent.api.AbstractLockedTorrentDownloader
 import me.him188.ani.app.torrent.api.TorrentDownloader
@@ -7,6 +7,8 @@ import me.him188.ani.app.torrent.api.TorrentFileDownloader
 import me.him188.ani.app.torrent.api.TorrentLibInfo
 import me.him188.ani.app.torrent.api.files.EncodedTorrentInfo
 import me.him188.ani.app.torrent.api.files.Torrent4jTorrentInfo
+import me.him188.ani.app.torrent.api.handle.TorrentThread
+import me.him188.ani.app.torrent.torrent4j.LockedSessionManager
 import me.him188.ani.utils.logging.debug
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
@@ -47,6 +49,7 @@ internal class Libtorrent4jTorrentDownloader(
         )
     }
 
+    @TorrentThread
     override fun decodeTorrentInfo(data: EncodedTorrentInfo): Torrent4jTorrentInfo =
         Torrent4jTorrentInfo.decodeFrom(data)
 

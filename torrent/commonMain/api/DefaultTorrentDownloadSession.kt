@@ -455,7 +455,9 @@ internal open class DefaultTorrentDownloadSession(
                     // Initialize [pieces]
                     // 注意, 必须在这里初始化获取 pieces, 通过磁力链解析的可能是不准确的
                     val contents = torrentHandle.contents
+                    logger.info { "[$torrentName] Torrent contents: ${contents.files.size} files" }
                     actualInfo.complete(ActualTorrentInfo(contents.createPieces(), contents.files))
+                    logger.info { "[$torrentName] ActualTorrentInfo computed" }
                 }
 
                 is TorrentResumeEvent -> {
@@ -558,8 +560,8 @@ internal open class DefaultTorrentDownloadSession(
                     return
                 }
                 logger.debug { "[TorrentDownloadControl] Prioritizing pieces: $pieceIndexes" }
-                pieceIndexes.forEachIndexed { index, it ->
-                    torrentThreadTasks.submit { handle ->
+                torrentThreadTasks.submit { handle ->
+                    pieceIndexes.forEachIndexed { index, it ->
                         handle.setPieceDeadline(it, calculatePieceDeadlineByTime(index))
                     }
                 }
