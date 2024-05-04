@@ -15,6 +15,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.torrent.api.files.EncodedTorrentInfo
 import me.him188.ani.app.torrent.api.files.TorrentInfo
+import me.him188.ani.app.torrent.api.handle.TorrentThread
 import me.him188.ani.app.torrent.torrent4j.LockedSessionManager
 import me.him188.ani.utils.logging.debug
 import me.him188.ani.utils.logging.error
@@ -176,6 +177,7 @@ internal abstract class AbstractLockedTorrentDownloader<Info : TorrentInfo>(
 
     private val lock = Mutex()
 
+    @TorrentThread
     protected abstract fun decodeTorrentInfo(data: EncodedTorrentInfo): Info
 
     protected abstract fun SessionManager.startDownload(
@@ -190,7 +192,10 @@ internal abstract class AbstractLockedTorrentDownloader<Info : TorrentInfo>(
         parentCoroutineContext: CoroutineContext,
     ): TorrentDownloadSession = lock.withLock {
         withContext(Dispatchers.IO) {
-            val torrentInfo = decodeTorrentInfo(data)
+            val torrentInfo = sessionManager.use {
+                @OptIn(TorrentThread::class)
+                decodeTorrentInfo(data)
+            }
             val torrentName = torrentInfo.name
 
             logger.info { "[$torrentName] TorrentDownloader.startDownload called" }

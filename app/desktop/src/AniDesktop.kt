@@ -68,7 +68,7 @@ import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.app.tools.torrent.computeTorrentFingerprint
 import me.him188.ani.app.tools.torrent.computeTorrentUserAgent
 import me.him188.ani.app.torrent.api.TorrentDownloaderConfig
-import me.him188.ani.app.torrent.torrent4j.Libtorrent4jTorrentDownloader
+import me.him188.ani.app.torrent.libtorrent4j.Libtorrent4jTorrentDownloader
 import me.him188.ani.app.ui.foundation.AniApp
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.main.AniAppContent
@@ -95,6 +95,8 @@ val projectDirectories: ProjectDirectories by lazy {
 object AniDesktop {
     @JvmStatic
     fun main(args: Array<String>) {
+        println("dataDir: ${projectDirectories.dataDir}")
+        println("cacheDir: ${projectDirectories.cacheDir}")
         val context = DesktopContext(
             File(projectDirectories.dataDir),
             File(projectDirectories.dataDir)
