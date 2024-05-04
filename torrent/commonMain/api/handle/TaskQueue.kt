@@ -1,4 +1,4 @@
-package me.him188.ani.app.torrent.api
+package me.him188.ani.app.torrent.api.handle
 
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.delay

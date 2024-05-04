@@ -13,6 +13,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import me.him188.ani.app.torrent.api.files.EncodedTorrentInfo
+import me.him188.ani.app.torrent.api.files.TorrentInfo
 import me.him188.ani.app.torrent.torrent4j.LockedSessionManager
 import me.him188.ani.utils.logging.debug
 import me.him188.ani.utils.logging.error
@@ -27,12 +29,9 @@ import kotlin.coroutines.EmptyCoroutineContext
 
 
 /**
- * A torrent downloader.
+ * 下载管理器, 支持根据磁力链解析[种子信息][EncodedTorrentInfo], 然后根据种子信息创建下载会话 [TorrentDownloadSession].
  *
- * It is stateful:
- * - it may hold connection to the DHT network and peers.
- *
- * Hence it must be closed when it is no longer needed.
+ * Must be closed when it is no longer needed.
  */
 interface TorrentDownloader : AutoCloseable {
     /**

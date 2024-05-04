@@ -1,4 +1,4 @@
-package me.him188.ani.app.torrent.api
+package me.him188.ani.app.torrent.api.files
 
 enum class FilePriority {
     IGNORE,

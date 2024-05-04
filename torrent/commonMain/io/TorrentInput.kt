@@ -1,7 +1,7 @@
 package me.him188.ani.app.torrent.io
 
 import kotlinx.coroutines.runBlocking
-import me.him188.ani.app.torrent.api.PieceState
+import me.him188.ani.app.torrent.api.files.PieceState
 import me.him188.ani.app.torrent.api.pieces.Piece
 import me.him188.ani.app.torrent.api.pieces.awaitFinished
 import me.him188.ani.app.torrent.api.pieces.lastIndex

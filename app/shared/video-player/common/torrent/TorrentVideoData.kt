@@ -1,7 +1,7 @@
 package me.him188.ani.app.videoplayer.torrent
 
 import kotlinx.coroutines.flow.map
-import me.him188.ani.app.torrent.api.TorrentFileHandle
+import me.him188.ani.app.torrent.api.files.TorrentFileHandle
 import me.him188.ani.app.videoplayer.data.VideoData
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes

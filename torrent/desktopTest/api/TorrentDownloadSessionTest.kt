@@ -2,6 +2,11 @@ package me.him188.ani.app.torrent.api
 
 import kotlinx.coroutines.test.runTest
 import me.him188.ani.app.torrent.PiecesBuilder
+import me.him188.ani.app.torrent.api.files.FilePriority
+import me.him188.ani.app.torrent.api.handle.AniTorrentHandle
+import me.him188.ani.app.torrent.api.handle.TorrentContents
+import me.him188.ani.app.torrent.api.handle.TorrentFile
+import me.him188.ani.app.torrent.api.handle.TorrentThread
 import me.him188.ani.app.torrent.api.pieces.Piece
 import me.him188.ani.app.torrent.api.pieces.lastIndex
 import me.him188.ani.app.torrent.assertCoroutineSuspends

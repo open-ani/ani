@@ -17,12 +17,12 @@ import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.job
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.media.resolver.TorrentVideoSourceResolver
-import me.him188.ani.app.torrent.api.EncodedTorrentInfo
-import me.him188.ani.app.torrent.api.FilePriority
 import me.him188.ani.app.torrent.api.TorrentDownloadSession
 import me.him188.ani.app.torrent.api.TorrentDownloader
-import me.him188.ani.app.torrent.api.TorrentFileEntry
-import me.him188.ani.app.torrent.api.TorrentFileHandle
+import me.him188.ani.app.torrent.api.files.EncodedTorrentInfo
+import me.him188.ani.app.torrent.api.files.FilePriority
+import me.him188.ani.app.torrent.api.files.TorrentFileEntry
+import me.him188.ani.app.torrent.api.files.TorrentFileHandle
 import me.him188.ani.datasources.api.CachedMedia
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaCacheMetadata

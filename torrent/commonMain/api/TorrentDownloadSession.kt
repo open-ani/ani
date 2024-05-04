@@ -1,6 +1,8 @@
 package me.him188.ani.app.torrent.api
 
 import kotlinx.coroutines.flow.StateFlow
+import me.him188.ani.app.torrent.api.files.DownloadStats
+import me.him188.ani.app.torrent.api.files.TorrentFileEntry
 import java.io.File
 
 /**
