@@ -1,4 +1,4 @@
-package me.him188.ani.app.torrent.torrent4j
+package me.him188.ani.app.torrent.libtorrent4j
 
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineName

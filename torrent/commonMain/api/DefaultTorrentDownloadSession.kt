@@ -45,7 +45,7 @@ import me.him188.ani.app.torrent.api.pieces.lastIndex
 import me.him188.ani.app.torrent.api.pieces.startIndex
 import me.him188.ani.app.torrent.io.TorrentFileIO
 import me.him188.ani.app.torrent.io.TorrentInput
-import me.him188.ani.app.torrent.torrent4j.LockedSessionManager
+import me.him188.ani.app.torrent.libtorrent4j.LockedSessionManager
 import me.him188.ani.utils.coroutines.SuspendLazy
 import me.him188.ani.utils.coroutines.flows.resetStale
 import me.him188.ani.utils.io.SeekableInput
