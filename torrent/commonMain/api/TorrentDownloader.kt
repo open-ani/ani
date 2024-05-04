@@ -16,7 +16,7 @@ import kotlinx.coroutines.withContext
 import me.him188.ani.app.torrent.api.files.EncodedTorrentInfo
 import me.him188.ani.app.torrent.api.files.TorrentInfo
 import me.him188.ani.app.torrent.api.handle.TorrentThread
-import me.him188.ani.app.torrent.torrent4j.LockedSessionManager
+import me.him188.ani.app.torrent.libtorrent4j.LockedSessionManager
 import me.him188.ani.utils.logging.debug
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
