@@ -23,7 +23,12 @@ import kotlin.math.min
 @Throws(IOException::class)
 public fun File.toSeekableInput(
     bufferSize: Int = BufferedInput.DEFAULT_BUFFER_PER_DIRECTION,
-): SeekableInput = BufferedFileInput(RandomAccessFile(this, "r"), bufferSize)
+    onFillBuffer: (() -> Unit)? = null,
+): SeekableInput = BufferedFileInput(
+    RandomAccessFile(this, "r"),
+    bufferSize,
+    onFillBuffer
+)
 
 @JvmInline
 public value class OffsetRange private constructor(
@@ -35,13 +40,16 @@ public value class OffsetRange private constructor(
     public val end: Int get() = (packed ushr 32).toInt()
 }
 
-internal class BufferedFileInput(
+internal open class BufferedFileInput(
     private val file: RandomAccessFile,
     private val bufferSize: Int = DEFAULT_BUFFER_PER_DIRECTION,
+    private val onFillBuffer: (() -> Unit)? = null,
 ) : BufferedInput(bufferSize) {
     override val fileLength: Long get() = file.length()
 
     override fun fillBuffer() {
+        onFillBuffer?.invoke()
+
         val fileLength = this.fileLength
         val pos = this.position
 

@@ -21,4 +21,11 @@ internal object TorrentFileIO {
             return bytes.toHexString()
         }
     }
+
+    @OptIn(ExperimentalStdlibApi::class)
+    fun hashSha1(data: ByteArray): String {
+        val md = java.security.MessageDigest.getInstance("SHA-1")
+        val bytes = md.digest(data)
+        return bytes.toHexString()
+    }
 }

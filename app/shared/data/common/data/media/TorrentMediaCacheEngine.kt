@@ -254,7 +254,7 @@ class TorrentMediaCacheEngine(
         val metadata = request.withExtra(
             mapOf(
                 EXTRA_TORRENT_DATA to data.data.toHexString(),
-                EXTRA_TORRENT_CACHE_DIR to downloader.getSaveDir(data).absolutePath,
+                EXTRA_TORRENT_CACHE_DIR to downloader.getSaveDirForTorrent(data).absolutePath,
             )
         )
 

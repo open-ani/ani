@@ -47,7 +47,7 @@ interface TorrentDownloader : AutoCloseable {
         parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
     ): TorrentDownloadSession
 
-    fun getSaveDir(
+    fun getSaveDirForTorrent(
         data: EncodedTorrentInfo,
     ): File
 
@@ -106,7 +106,7 @@ class TestTorrentDownloader : TorrentDownloader {
         parentCoroutineContext = parentCoroutineContext,
     )
 
-    override fun getSaveDir(data: EncodedTorrentInfo): File {
+    override fun getSaveDirForTorrent(data: EncodedTorrentInfo): File {
         return File("test")
     }
 

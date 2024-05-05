@@ -1,10 +1,23 @@
 package me.him188.ani.app.torrent.api.files
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import me.him188.ani.app.torrent.api.pieces.Piece
 import me.him188.ani.app.torrent.api.pieces.lastIndex
 import me.him188.ani.app.torrent.api.pieces.startIndex
+import me.him188.ani.app.torrent.io.TorrentFileIO
 import me.him188.ani.utils.io.SeekableInput
+import me.him188.ani.utils.logging.info
+import me.him188.ani.utils.logging.logger
 import java.io.File
+import java.io.IOException
+import kotlin.coroutines.CoroutineContext
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * 表示 BT 资源中的一个文件.
@@ -36,7 +49,7 @@ interface TorrentFileEntry { // 实现提示, 无 test mock
      *
      * @throws IllegalStateException 当未匹配到正确大小的 pieces 时抛出
      */
-    val pieces: List<Piece>
+    val pieces: List<Piece>?
 
     /**
      * 是否支持边下边播
@@ -136,5 +149,137 @@ object TorrentFilePieceMatcher {
                 "Pieces size is less than file size: ${pieces.last().lastIndex - pieces.first().startIndex + 1} < $length"
             }
         }
+    }
+}
+
+abstract class AbstractTorrentFileEntry(
+    val index: Int,
+    final override val length: Long,
+    private val saveDirectory: File,
+    val relativePath: String,
+    val torrentName: String,
+    val isDebug: Boolean,
+    parentCoroutineContext: CoroutineContext,
+) : TorrentFileEntry {
+    protected val scope = CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
+    protected val logger = logger<AbstractTorrentFileEntry>()
+
+    protected fun logPieces(pieces: List<Piece>) {
+        logger.info {
+            val start = pieces.minByOrNull { it.startIndex }
+            val end = pieces.maxByOrNull { it.lastIndex }
+            "[$torrentName] File '$pathInTorrent' piece initialized, ${pieces.size} pieces, offset range: $start..$end"
+        }
+    }
+
+    abstract inner class AbstractTorrentFileHandle : TorrentFileHandle {
+        @Volatile
+        private var closed = false
+        private var closeException: Throwable? = null
+
+        final override fun close(): Unit = synchronized(this) {
+            if (closed) return
+            closed = true
+
+            logger.info { "[$torrentName] Close file $pathInTorrent, set file priority to ignore" }
+            removePriority()
+
+            if (isDebug) {
+                closeException = Exception("Stacktrace for close()")
+            }
+
+            closeImpl()
+        }
+
+        protected abstract fun closeImpl()
+
+        final override fun pause() {
+            checkClosed()
+            requestPriority(null)
+        }
+
+        protected fun checkClosed() {
+            if (closed) throw IllegalStateException(
+                "Attempting to pause but TorrentFile has already been closed: $pathInTorrent",
+                closeException
+            )
+        }
+
+        override val entry get() = this@AbstractTorrentFileEntry
+
+        final override fun resume(priority: FilePriority) {
+            checkClosed()
+            resumeImpl(priority)
+            requestPriority(priority)
+        }
+
+        protected abstract fun resumeImpl(priority: FilePriority)
+
+        override fun toString(): String = "TorrentFileHandle(index=$index, filePath='$pathInTorrent')"
+    }
+
+    /**
+     * 与这个文件有关的 pieces, sorted naturally by offset
+     *
+     * must support [RandomAccess]
+     */
+    abstract override val pieces: List<Piece>?
+
+    final override val pathInTorrent: String get() = relativePath.substringAfter("/")
+
+    protected val priorityRequests: MutableMap<TorrentFileHandle, FilePriority?> = mutableMapOf()
+
+    /**
+     * `null` to ignore
+     */
+    private fun TorrentFileHandle.requestPriority(priority: FilePriority?) {
+        priorityRequests[this] = priority
+        updatePriority()
+    }
+
+    private fun TorrentFileHandle.removePriority() {
+        priorityRequests.remove(this)
+        updatePriority()
+    }
+
+    protected abstract fun updatePriority()
+
+    override suspend fun resolveFile(): File = resolveDownloadingFile()
+
+    private val hashMd5 by lazy {
+        scope.async {
+            stats.awaitFinished()
+            withContext(Dispatchers.IO) {
+                TorrentFileIO.hashFileMd5(resolveDownloadingFile())
+            }
+        }
+    }
+
+    override suspend fun computeFileHash(): String = hashMd5.await()
+
+    override fun computeFileHashOrNull(): String? = if (hashMd5.isCompleted) {
+        hashMd5.getCompleted()
+    } else null
+
+    protected suspend fun resolveDownloadingFile(): File {
+        while (true) {
+            val file = withContext(Dispatchers.IO) { resolveFileOrNull() }
+            if (file != null) {
+                logger.info { "$torrentName: Get file: ${file.absolutePath}" }
+                return file
+            }
+            logger.info { "$torrentName: Still waiting to get file... saveDirectory: $saveDirectory" }
+            delay(1.seconds)
+        }
+        @Suppress("UNREACHABLE_CODE") // compiler bug
+        error("")
+    }
+
+    @Throws(IOException::class)
+    override fun resolveFileOrNull(): File? =
+        saveDirectory.resolve(relativePath).takeIf { it.isFile }
+
+    override fun toString(): String {
+        return "TorrentFileEntryImpl(index=$index, length=$length, relativePath='$relativePath')"
     }
 }

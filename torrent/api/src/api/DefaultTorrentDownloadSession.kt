@@ -2,12 +2,9 @@ package me.him188.ani.app.torrent.api
 
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
@@ -18,7 +15,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
+import me.him188.ani.app.torrent.api.files.AbstractTorrentFileEntry
 import me.him188.ani.app.torrent.api.files.DownloadStats
 import me.him188.ani.app.torrent.api.files.FilePriority
 import me.him188.ani.app.torrent.api.files.PieceState
@@ -41,9 +38,6 @@ import me.him188.ani.app.torrent.api.handle.TorrentThread
 import me.him188.ani.app.torrent.api.pieces.Piece
 import me.him188.ani.app.torrent.api.pieces.PiecePriorities
 import me.him188.ani.app.torrent.api.pieces.TorrentDownloadController
-import me.him188.ani.app.torrent.api.pieces.lastIndex
-import me.him188.ani.app.torrent.api.pieces.startIndex
-import me.him188.ani.app.torrent.io.TorrentFileIO
 import me.him188.ani.app.torrent.io.TorrentInput
 import me.him188.ani.utils.coroutines.SuspendLazy
 import me.him188.ani.utils.coroutines.flows.resetStale
@@ -52,12 +46,10 @@ import me.him188.ani.utils.logging.debug
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import java.io.File
-import java.io.IOException
 import java.io.RandomAccessFile
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.time.Duration.Companion.seconds
 
 open class DefaultTorrentDownloadSession(
     private val torrentName: String,
@@ -72,7 +64,7 @@ open class DefaultTorrentDownloadSession(
     private val isDebug: Boolean,
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
 ) : TorrentDownloadSession {
-    private val scope = CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
+    private val sessionScope = CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
     private val coroutineCloseHandle =
         parentCoroutineContext[Job]?.invokeOnCompletion {
             close()
@@ -89,7 +81,7 @@ open class DefaultTorrentDownloadSession(
 
     final override val state: MutableStateFlow<TorrentDownloadState> = MutableStateFlow(TorrentDownloadState.Starting)
 
-    inner class OverallStatsImpl : DownloadStats {
+    inner class OverallStatsImpl : DownloadStats() {
         override val totalBytes: MutableStateFlow<Long> = MutableStateFlow(0L)
         override val downloadedBytes = MutableStateFlow(0L)
 
@@ -116,15 +108,15 @@ open class DefaultTorrentDownloadSession(
                 downloaded.toFloat() / total.toFloat()
             }
         }.distinctUntilChanged()
-        override val peerCount: MutableStateFlow<Int> = MutableStateFlow(0)
         override val isFinished: Flow<Boolean> = flow {
             emitAll(combine(getFiles().map { it.stats.isFinished }) { list ->
                 list.all { it }
             })
         }
-        private val onFinish = CompletableDeferred(Unit)
 
-        override suspend fun awaitFinished() = onFinish.await()
+        override suspend fun awaitFinished() {
+            isFinished.filter { it }.first()
+        }
     }
 
     override val overallStats = OverallStatsImpl()
@@ -196,6 +188,7 @@ open class DefaultTorrentDownloadSession(
                 offset = currentOffset,
                 length = size,
                 relativePath = path,
+                saveDirectory = saveDirectory,
             ).also {
                 currentOffset += size
             }
@@ -207,48 +200,29 @@ open class DefaultTorrentDownloadSession(
 
     // 构造时, actualInfo must be available
     internal inner class TorrentFileEntryImpl(
-        val index: Int,
+        index: Int,
         val offset: Long,
-        override val length: Long,
-        val relativePath: String,
-    ) : TorrentFileEntry {
-        inner class TorrentFileHandleImpl : TorrentFileHandle {
-            @Volatile
-            private var closed = false
-            private var closeException: Throwable? = null
+        length: Long,
+        relativePath: String,
+        saveDirectory: File
+    ) : AbstractTorrentFileEntry(
+        index,
+        length,
+        saveDirectory,
+        relativePath,
+        torrentName,
+        isDebug,
+        sessionScope.coroutineContext
+    ) {
+        inner class TorrentFileHandleImpl : AbstractTorrentFileHandle() {
+            override val entry get() = this@TorrentFileEntryImpl
 
-            override fun close(): Unit = synchronized(this) {
-                if (closed) return
-                closed = true
-
-                logger.info { "[$torrentName] Close file $pathInTorrent, set file priority to ignore" }
-                removePriority()
-
-                if (isDebug) {
-                    closeException = Exception("Stacktrace for close()")
-                }
-
+            override fun closeImpl() {
                 openHandles.remove(this)
                 this@DefaultTorrentDownloadSession.closeIfNotInUse()
             }
 
-            override fun pause() {
-                checkClosed()
-                requestPriority(null)
-            }
-
-            private fun checkClosed() {
-                if (closed) throw IllegalStateException(
-                    "Attempting to pause but TorrentFile has already been closed: $pathInTorrent",
-                    closeException
-                )
-            }
-
-            override val entry get() = this@TorrentFileEntryImpl
-
-            override fun resume(priority: FilePriority) {
-                checkClosed()
-
+            override fun resumeImpl(priority: FilePriority) {
                 val pieces = pieces
                 torrentThreadTasks.submit { handle ->
                     if (pieces.isNotEmpty()) {
@@ -267,8 +241,6 @@ open class DefaultTorrentDownloadSession(
                     }
                     handle.resume()
                 }
-
-                requestPriority(priority)
             }
 
             override fun toString(): String = "TorrentFileHandleImpl(index=$index, filePath='$pathInTorrent')"
@@ -282,11 +254,7 @@ open class DefaultTorrentDownloadSession(
         override val pieces: List<Piece> by lazy {
             val allPieces = actualInfo().pieces
             val list = matchPiecesForFile(allPieces, offset, length).also { pieces ->
-                logger.info {
-                    val start = pieces.minByOrNull { it.startIndex }
-                    val end = pieces.maxByOrNull { it.lastIndex }
-                    "[$torrentName] File '$pathInTorrent' piece initialized, ${pieces.size} pieces, offset range: $start..$end"
-                }
+                logPieces(pieces)
             }
             if (list is RandomAccess) {
                 list
@@ -300,7 +268,7 @@ open class DefaultTorrentDownloadSession(
         val finishedOverride = MutableStateFlow(false)
 
         val downloadedBytes = MutableStateFlow(actualInfo().calculateTotalFinishedSize(pieces))
-        override val stats: DownloadStats = object : DownloadStats {
+        override val stats: DownloadStats = object : DownloadStats() {
             override val totalBytes: Flow<Long> = flowOf(length)
             override val downloadedBytes get() = this@TorrentFileEntryImpl.downloadedBytes
             override val downloadRate: Flow<Long?> get() = overallStats.downloadRate // TODO: separate download/upload rate for torrent file 
@@ -317,31 +285,12 @@ open class DefaultTorrentDownloadSession(
                 downloaded == total
             }
 
-            override val peerCount: Flow<Int> get() = overallStats.peerCount
-
             override suspend fun awaitFinished() {
                 isFinished.filter { it }.first()
             }
         }
 
-        override val pathInTorrent: String get() = relativePath.substringAfter("/")
-
-        private val priorityRequests: MutableMap<TorrentFileHandle, FilePriority?> = mutableMapOf()
-
-        /**
-         * `null` to ignore
-         */
-        private fun TorrentFileHandle.requestPriority(priority: FilePriority?) {
-            priorityRequests[this] = priority
-            updatePriority()
-        }
-
-        private fun TorrentFileHandle.removePriority() {
-            priorityRequests.remove(this)
-            updatePriority()
-        }
-
-        private fun updatePriority() {
+        override fun updatePriority() {
             @OptIn(TorrentThread::class)
             torrentThreadTasks.submit { handle ->
                 val highestPriority = priorityRequests.values.maxWithOrNull(nullsFirst(naturalOrder()))
@@ -357,48 +306,9 @@ open class DefaultTorrentDownloadSession(
             openHandles.add(it)
         }
 
-        override suspend fun resolveFile(): File = resolveDownloadingFile()
-
-        private val hashMd5 by lazy {
-            scope.async {
-                stats.awaitFinished()
-                withContext(Dispatchers.IO) {
-                    TorrentFileIO.hashFileMd5(resolveDownloadingFile())
-                }
-            }
-        }
-
-        override suspend fun computeFileHash(): String = hashMd5.await()
-
-        override fun computeFileHashOrNull(): String? = if (hashMd5.isCompleted) {
-            hashMd5.getCompleted()
-        } else null
-
-        private suspend fun resolveDownloadingFile(): File {
-            while (true) {
-                val file = withContext(Dispatchers.IO) { resolveFileOrNull() }
-                if (file != null) {
-                    logger.info { "$torrentName: Get file: ${file.absolutePath}" }
-                    return file
-                }
-                logger.info { "$torrentName: Still waiting to get file... saveDirectory: $saveDirectory" }
-                delay(1.seconds)
-            }
-            @Suppress("UNREACHABLE_CODE") // compiler bug
-            error("")
-        }
-
-        @Throws(IOException::class)
-        override fun resolveFileOrNull(): File? =
-            saveDirectory.resolve(relativePath).takeIf { it.isFile }
-
         override fun createInput(): SeekableInput {
-//            logger.info { "createInput: finding cache file" }
-            val input =
-                (resolveFileOrNull() ?: runBlocking { resolveDownloadingFile() })
-//            logger.info { "createInput: got cache file, awaiting pieces" }
+            val input = (resolveFileOrNull() ?: runBlocking { resolveDownloadingFile() })
             val pieces = pieces
-//            logger.info { "createInput: ${pieces.size} pieces" }
             return TorrentInput(
                 RandomAccessFile(input, "r"),
                 pieces,
@@ -532,7 +442,7 @@ open class DefaultTorrentDownloadSession(
         torrentThreadTasks.submit {
             onClose(this@DefaultTorrentDownloadSession)
             logger.info { "Close torrent $torrentName: dispose handle" }
-            scope.cancel()
+            sessionScope.cancel()
             coroutineCloseHandle?.dispose()
         }
     }
