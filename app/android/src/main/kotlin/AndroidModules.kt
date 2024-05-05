@@ -60,9 +60,10 @@ fun getAndroidModules(
                         peerFingerprint = computeTorrentFingerprint(),
                         userAgent = computeTorrentUserAgent(),
                         isDebug = currentAniBuildConfig.isDebug,
-                    )
+                    ),
+                    parentCoroutineContext = coroutineScope.coroutineContext,
                 )
-            }
+            },
         )
     }
     single<PlayerStateFactory> { ExoPlayerStateFactory() }

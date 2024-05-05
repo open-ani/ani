@@ -43,11 +43,7 @@ import dev.dirs.ProjectDirectories
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.UserAgent
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.request.get
-import io.ktor.client.statement.bodyAsChannel
-import io.ktor.http.isSuccess
 import io.ktor.serialization.kotlinx.json.json
-import io.ktor.utils.io.core.readBytes
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import me.him188.ani.app.interaction.PlatformImplementations
@@ -58,17 +54,14 @@ import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.DesktopContext
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.createAppRootCoroutineScope
-import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.platform.getAniUserAgent
 import me.him188.ani.app.platform.getCommonKoinModule
 import me.him188.ani.app.platform.startCommonKoinModule
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.tools.torrent.DefaultTorrentManager
 import me.him188.ani.app.tools.torrent.TorrentManager
-import me.him188.ani.app.tools.torrent.computeTorrentFingerprint
-import me.him188.ani.app.tools.torrent.computeTorrentUserAgent
-import me.him188.ani.app.torrent.api.TorrentDownloaderConfig
-import me.him188.ani.app.torrent.libtorrent4j.Libtorrent4jTorrentDownloader
+import me.him188.ani.app.torrent.qbittorrent.QBittorrentClientConfig
+import me.him188.ani.app.torrent.qbittorrent.QBittorrentTorrentDownloader
 import me.him188.ani.app.ui.foundation.AniApp
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.main.AniAppContent
@@ -126,23 +119,32 @@ object AniDesktop {
                     DefaultTorrentManager(
                         coroutineScope.coroutineContext,
                         downloaderFactory = {
-                            Libtorrent4jTorrentDownloader(
-                                cacheDirectory = File(projectDirectories.cacheDir).resolve("torrent"),
-                                downloadFile = { url ->
-                                    client.get(url).apply {
-                                        check(status.isSuccess()) {
-                                            "Failed to download torrent file, resp=${
-                                                bodyAsChannel().readRemaining().readBytes()
-                                            }"
-                                        }
-                                    }.bodyAsChannel().readRemaining().readBytes()
-                                },
-                                config = TorrentDownloaderConfig(
-                                    peerFingerprint = computeTorrentFingerprint(),
-                                    userAgent = computeTorrentUserAgent(),
-                                    isDebug = currentAniBuildConfig.isDebug,
-                                )
+                            QBittorrentTorrentDownloader(
+                                QBittorrentClientConfig(
+                                    // TODO:
+                                    baseUrl = "http://127.0.0.1:7212"
+                                ),
+                                saveDir = File(projectDirectories.dataDir).resolve("torrent"),
+                                parentCoroutineContext = coroutineScope.coroutineContext,
                             )
+//                            Libtorrent4jTorrentDownloader(
+//                                cacheDirectory = File(projectDirectories.cacheDir).resolve("torrent"),
+//                                downloadFile = { url ->
+//                                    client.get(url).apply {
+//                                        check(status.isSuccess()) {
+//                                            "Failed to download torrent file, resp=${
+//                                                bodyAsChannel().readRemaining().readBytes()
+//                                            }"
+//                                        }
+//                                    }.bodyAsChannel().readRemaining().readBytes()
+//                                },
+//                                config = TorrentDownloaderConfig(
+//                                    peerFingerprint = computeTorrentFingerprint(),
+//                                    userAgent = computeTorrentUserAgent(),
+//                                    isDebug = currentAniBuildConfig.isDebug,
+//                                ),
+//                                parentCoroutineContext = coroutineScope.coroutineContext,
+//                            )
                         }
                     )
                 }

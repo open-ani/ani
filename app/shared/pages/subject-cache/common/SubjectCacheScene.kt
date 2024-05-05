@@ -11,6 +11,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import io.ktor.util.logging.error
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -116,6 +117,7 @@ class SubjectCacheViewModel(
                 errorMessage.value = null
             } catch (_: CancellationException) {
             } catch (e: Throwable) {
+                logger.error(IllegalStateException("Failed to create cache", e))
                 errorMessage.emit(ErrorMessage.simple("缓存失败", e))
             }
         }

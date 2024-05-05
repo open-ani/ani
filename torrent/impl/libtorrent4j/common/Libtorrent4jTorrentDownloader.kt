@@ -2,6 +2,7 @@ package me.him188.ani.app.torrent.libtorrent4j
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.currentCoroutineContext
@@ -48,8 +49,9 @@ abstract class AbstractLockedTorrentDownloader<Info : TorrentInfo>(
     val sessionManager: LockedSessionManager,
     private val downloadFile: TorrentFileDownloader,
     private val isDebug: Boolean,
+    parentCoroutineContext: CoroutineContext,
 ) : TorrentDownloader {
-    private val scope = CoroutineScope(SupervisorJob())
+    private val scope = CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
 
     private val logger = logger(this::class)
 
@@ -128,7 +130,7 @@ abstract class AbstractLockedTorrentDownloader<Info : TorrentInfo>(
             val torrentName = torrentInfo.name
 
             logger.info { "[$torrentName] TorrentDownloader.startDownload called" }
-            val saveDirectory = getSaveDir(data).apply { mkdirs() }
+            val saveDirectory = getSaveDirForTorrent(data).apply { mkdirs() }
             val hash = torrentInfo.infoHashHex
 
             val reopened = dataToSession[hash]?.let {
@@ -186,7 +188,7 @@ abstract class AbstractLockedTorrentDownloader<Info : TorrentInfo>(
     }
 
 
-    override fun getSaveDir(data: EncodedTorrentInfo): File =
+    override fun getSaveDirForTorrent(data: EncodedTorrentInfo): File =
         downloadCacheDir.resolve(data.data.contentHashCode().toString())
 
     override fun listSaves(): List<File> {
@@ -211,7 +213,11 @@ internal class Libtorrent4jTorrentDownloader(
     sessionManager: LockedSessionManager,
     downloadFile: TorrentFileDownloader,
     isDebug: Boolean,
-) : AbstractLockedTorrentDownloader<Torrent4jTorrentInfo>(cacheDirectory, sessionManager, downloadFile, isDebug) {
+    parentCoroutineContext: CoroutineContext,
+) : AbstractLockedTorrentDownloader<Torrent4jTorrentInfo>(
+    cacheDirectory, sessionManager, downloadFile, isDebug,
+    parentCoroutineContext
+) {
     companion object {
         const val VENDOR_NAME = "libtorrent"
     }
@@ -269,6 +275,7 @@ fun Libtorrent4jTorrentDownloader(
     cacheDirectory: File,
     downloadFile: TorrentFileDownloader,
     config: TorrentDownloaderConfig = TorrentDownloaderConfig.Default,
+    parentCoroutineContext: CoroutineContext,
 ): TorrentDownloader {
     val sessionManager = SessionManager()
 
@@ -347,6 +354,7 @@ fun Libtorrent4jTorrentDownloader(
         LockedSessionManager(sessionManager),
         downloadFile,
         isDebug = config.isDebug,
+        parentCoroutineContext = parentCoroutineContext
     )
 }
 

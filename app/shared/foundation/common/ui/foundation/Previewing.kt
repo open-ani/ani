@@ -70,6 +70,7 @@ fun ProvideCompositionLocalsForPreview(
                             Libtorrent4jTorrentDownloader(
                                 cacheDirectory = createTempDirectory("ani-temp").toFile(),
                                 downloadFile = { _ -> byteArrayOf() },
+                                parentCoroutineContext = scope.coroutineContext
                             )
                         }
                     }
