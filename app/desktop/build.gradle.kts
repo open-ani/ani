@@ -49,6 +49,10 @@ sourceSets {
 
 extra.set("ani.jvm.target", 17)
 
+kotlin {
+    jvmToolchain(17)
+}
+
 compose.desktop {
     application {
         mainClass = "me.him188.ani.desktop.AniDesktop"
@@ -86,6 +90,12 @@ compose.desktop {
             licenseFile.set(rootProject.rootDir.resolve("LICENSE"))
             packageVersion = properties["package.version"].toString()
         }
+
+        // TODO: Uncomment this to enable proguard for desktop, need some tweaks
+//        buildTypes.release.proguard {
+//            this.configurationFiles.from(project(":app:shared").file("proguard-rules.pro"))
+//            this.configurationFiles.from(file("proguard-desktop.pro"))
+//        }
     }
 }
 

@@ -183,12 +183,6 @@ kotlin {
             }
         }
 
-//        implementation("org.openjfx:javafx-base:17.0.11:$classifier")
-//        implementation("org.openjfx:javafx-media:17.0.11:$classifier")
-//        implementation("org.openjfx:javafx-controls:17.0.11:$classifier")
-        api("org.openjfx:javafx-graphics:17.0.11:$classifier")
-        api("org.openjfx:javafx-swing:17.0.11:$classifier")
-
         runtimeOnly(libs.kotlinx.coroutines.debug)
 
         implementation(libs.log4j.core)
