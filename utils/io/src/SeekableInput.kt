@@ -24,6 +24,8 @@ public interface SeekableInput : AutoCloseable {
      */
     public val bytesRemaining: @Range(from = 0L, to = Long.MAX_VALUE) Long // get must be fast
 
+    public val size: @Range(from = 0L, to = Long.MAX_VALUE) Long
+
     /**
      * Seeks to the given offset in bytes from the start of the input source.
      *

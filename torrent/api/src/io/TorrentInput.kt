@@ -21,7 +21,7 @@ import java.io.RandomAccessFile
  * 即使 [pieces] 的起始不为 0, [SeekableInput.position] 也是从 0 开始.
  */
 // tests: me.him188.ani.app.torrent.io.OffsetTorrentInputTest and me.him188.ani.app.torrent.io.TorrentInputTest
-internal class TorrentInput(
+class TorrentInput(
     /**
      * The torrent save file.
      */
@@ -40,11 +40,11 @@ internal class TorrentInput(
     private val logicalStartOffset: Long = pieces.minOf { it.offset }, // 默认为第一个 piece 开头
     private val onWait: suspend (Piece) -> Unit = { },
     private val bufferSize: Int = DEFAULT_BUFFER_PER_DIRECTION,
+    override val size: Long = file.length()
 ) : BufferedInput(bufferSize) {
-    override val fileLength: Long = file.length()
 
     // exclusive
-    private val logicalLastOffset = logicalStartOffset + fileLength - 1
+    private val logicalLastOffset = logicalStartOffset + size - 1
 
     init {
         require(pieces is RandomAccess) {
@@ -52,7 +52,7 @@ internal class TorrentInput(
         }
 
         val pieceSum = pieces.maxOf { it.offset + it.size } - logicalStartOffset
-        check(pieceSum >= fileLength) {
+        check(pieceSum >= size) {
             "file length ${file.length()} is larger than pieces' range $pieceSum"
         }
         check(findPieceIndex(0) != -1) {
@@ -64,7 +64,7 @@ internal class TorrentInput(
     }
 
     override fun fillBuffer() {
-        val fileLength = this.fileLength
+        val fileLength = this.size
         val pos = this.position
 
 

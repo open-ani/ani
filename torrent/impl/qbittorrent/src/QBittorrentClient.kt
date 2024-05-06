@@ -4,16 +4,12 @@ import io.ktor.client.call.body
 import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.ServerResponseException
 import io.ktor.client.plugins.defaultRequest
-import io.ktor.client.request.forms.formData
 import io.ktor.client.request.forms.submitForm
-import io.ktor.client.request.forms.submitFormWithBinaryData
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
-import io.ktor.http.Headers
-import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.parameters
 import io.ktor.http.setCookie
@@ -138,7 +134,7 @@ class QBittorrentClient(
 
     suspend fun getTorrentProperties(
         hash: String,
-    ): QBTorrent = autoLogin {
+    ): QBDetails = autoLogin {
         return client.get("v2/torrents/properties") {
             parameter("hash", hash)
         }.body()
@@ -161,7 +157,14 @@ class QBittorrentClient(
     ): List<QBPieceState> = autoLogin {
         return client.get("v2/torrents/pieceStates") {
             parameter("hash", hash)
-        }.body<List<Int>>().map { QBPieceState.entries[it] }
+        }.body<List<Int>>().map {
+            when (it) {
+                0 -> QBPieceState.NOT_DOWNLOADED
+                1 -> QBPieceState.DOWNLOADING
+                2 -> QBPieceState.DOWNLOADED
+                else -> error("Unknown piece state: $it")
+            }
+        }
     }
 
     suspend fun pauseTorrents(
@@ -199,10 +202,13 @@ class QBittorrentClient(
         )
     }
 
+    // https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1)#add-new-torrent
     suspend fun addTorrentFromUri(
         uri: String,
         savePath: String, // C:/Users/qBit/Downloads
         paused: Boolean,
+        sequentialDownload: Boolean = false,
+        firstLastPiecePrio: Boolean = false
     ) = autoLogin {
         client.submitForm(
             "v2/torrents/add",
@@ -212,29 +218,31 @@ class QBittorrentClient(
                 append("category", config.category)
                 append("root_folder", "true")
                 append("paused", paused.toString())
+                append("sequentialDownload", sequentialDownload.toString())
+                append("firstLastPiecePrio", firstLastPiecePrio.toString())
             }
         )
     }
 
-    suspend fun addTorrentFromData(
-        data: ByteArray,
-        filename: String,
-        savePath: String, // C:/Users/qBit/Downloads
-    ) = autoLogin {
-        client.submitFormWithBinaryData(
-            "v2/torrents/add",
-            formData = formData {
-                append("torrents", data, Headers.build {
-                    append(
-                        HttpHeaders.ContentDisposition,
-                        "form-data; name=\"torrents\"; filename=\"$filename.torrent\""
-                    )
-                })
-                append("savepath", savePath)
-                append("category", config.category)
-            },
-        )
-    }
+//    suspend fun addTorrentFromData(
+//        data: ByteArray,
+//        filename: String,
+//        savePath: String, // C:/Users/qBit/Downloads
+//    ) = autoLogin {
+//        client.submitFormWithBinaryData(
+//            "v2/torrents/add",
+//            formData = formData {
+//                append("torrents", data, Headers.build {
+//                    append(
+//                        HttpHeaders.ContentDisposition,
+//                        "form-data; name=\"torrents\"; filename=\"$filename.torrent\""
+//                    )
+//                })
+//                append("savepath", savePath)
+//                append("category", config.category)
+//            },
+//        )
+//    }
 
     suspend fun setFilePriority(
         hash: String,

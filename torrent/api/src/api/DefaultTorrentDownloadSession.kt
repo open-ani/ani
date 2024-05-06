@@ -326,7 +326,8 @@ open class DefaultTorrentDownloadSession(
                             }
                         }
                     }
-                }
+                },
+                size = length
             )
         }
 
