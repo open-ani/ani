@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.platform.Context
 import me.him188.ani.app.videoplayer.data.VideoData
@@ -15,6 +14,9 @@ import me.him188.ani.app.videoplayer.data.VideoProperties
 import me.him188.ani.app.videoplayer.data.VideoSource
 import me.him188.ani.app.videoplayer.data.VideoSourceOpenException
 import me.him188.ani.app.videoplayer.ui.VideoPlayer
+import me.him188.ani.utils.logging.error
+import me.him188.ani.utils.logging.info
+import me.him188.ani.utils.logging.logger
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -131,10 +133,81 @@ fun PlayerState.togglePause() {
     }
 }
 
-abstract class AbstractPlayerState : PlayerState {
+abstract class AbstractPlayerState<D : AbstractPlayerState.Data> : PlayerState {
+    protected val logger = logger(this::class)
+    override val videoSource: MutableStateFlow<VideoSource<*>?> = MutableStateFlow(null)
+
+    override val state: MutableStateFlow<PlaybackState> = MutableStateFlow(PlaybackState.PAUSED_BUFFERING)
+
+    /**
+     * Currently playing resource that should be closed when the controller is closed.
+     * @see setVideoSource
+     */
+    protected val openResource = MutableStateFlow<D?>(null)
+
+    open class Data(
+        open val videoSource: VideoSource<*>,
+        open val videoData: VideoData,
+        open val releaseResource: () -> Unit,
+    )
+
     override val isBuffering: Flow<Boolean> by lazy {
         state.map { it == PlaybackState.PAUSED_BUFFERING }
     }
+
+    final override val videoData: Flow<VideoData?> = openResource.map {
+        it?.videoData
+    }
+
+    final override suspend fun setVideoSource(source: VideoSource<*>?) {
+        if (source == null) {
+            logger.info { "setVideoSource: Cleaning up player since source is null" }
+            cleanupPlayer()
+            this.videoSource.value = null
+            this.openResource.value = null
+            return
+        }
+
+        val previousResource = openResource.value
+        if (source == previousResource?.videoSource) {
+            return
+        }
+
+        openResource.value = null
+        previousResource?.releaseResource?.invoke()
+
+        val opened = try {
+            openSource(source)
+        } catch (e: Throwable) {
+            logger.error(e) { "Failed to open VideoSource: $source" }
+            throw e
+        }
+
+        try {
+            logger.info { "Initializing player with VideoSource: $source" }
+            state.value = PlaybackState.PAUSED_BUFFERING
+            startPlayer(opened)
+            logger.info { "Player is now initialized with media and will play when ready" }
+        } catch (e: Throwable) {
+            logger.error(e) { "Player failed to initialize" }
+            opened.releaseResource()
+            throw e
+        }
+
+        this.openResource.value = opened
+    }
+
+    /**
+     * 开始播放
+     */
+    protected abstract suspend fun startPlayer(data: D)
+
+    /**
+     * 停止播放, 因为要释放资源了
+     */
+    protected abstract suspend fun cleanupPlayer()
+
+    protected abstract suspend fun openSource(source: VideoSource<*>): D
 }
 
 
@@ -178,14 +251,28 @@ fun interface PlayerStateFactory {
 /**
  * For previewing
  */
-class DummyPlayerState : AbstractPlayerState() {
+class DummyPlayerState : AbstractPlayerState<AbstractPlayerState.Data>() {
     override val state: MutableStateFlow<PlaybackState> = MutableStateFlow(PlaybackState.PAUSED_BUFFERING)
-    override val videoSource: MutableStateFlow<VideoSource<*>?> = MutableStateFlow(null)
-    override val videoData: Flow<VideoData?> get() = emptyFlow()
-
-    override suspend fun setVideoSource(source: VideoSource<*>?) {
-        videoSource.value = source
+    override suspend fun cleanupPlayer() {
+        // no-op
     }
+
+    override suspend fun openSource(source: VideoSource<*>): Data {
+        val data = source.open()
+        return Data(
+            source,
+            data,
+            releaseResource = {
+                data.close()
+            }
+        )
+    }
+
+    override suspend fun startPlayer(data: Data) {
+        // no-op
+    }
+
+    override val videoSource: MutableStateFlow<VideoSource<*>?> = MutableStateFlow(null)
 
     override val videoProperties: MutableStateFlow<VideoProperties> = MutableStateFlow(
         VideoProperties(

@@ -24,7 +24,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
@@ -40,8 +39,6 @@ import me.him188.ani.app.videoplayer.ui.state.PlaybackState
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import me.him188.ani.utils.logging.error
-import me.him188.ani.utils.logging.info
-import me.him188.ani.utils.logging.logger
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration.Companion.seconds
 
@@ -57,8 +54,15 @@ class ExoPlayerStateFactory : PlayerStateFactory {
 internal class ExoPlayerState @UiThread constructor(
     context: Context,
     parentCoroutineContext: CoroutineContext
-) : AbstractPlayerState(),
+) : AbstractPlayerState<ExoPlayerState.ExoPlayerData>(),
     AutoCloseable {
+    class ExoPlayerData(
+        videoSource: VideoSource<*>,
+        videoData: VideoData,
+        releaseResource: () -> Unit,
+        val factory: ProgressiveMediaSource.Factory,
+    ) : Data(videoSource, videoData, releaseResource)
+
     private val backgroundScope = CoroutineScope(
         parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job])
     ).apply {
@@ -67,82 +71,34 @@ internal class ExoPlayerState @UiThread constructor(
         }
     }
 
-    override val videoSource: MutableStateFlow<VideoSource<*>?> = MutableStateFlow(null)
-
-    private class OpenedVideoSource(
-        val videoSource: VideoSource<*>,
-        val data: VideoData,
-        val releaseResource: () -> Unit,
-        val mediaSourceFactory: ProgressiveMediaSource.Factory,
-    )
-
-    /**
-     * Currently playing resource that should be closed when the controller is closed.
-     * @see setVideoSource
-     */
-    private val openResource = MutableStateFlow<OpenedVideoSource?>(null)
-
-    override val videoData: Flow<VideoData?> = openResource.map {
-        it?.data
+    override suspend fun startPlayer(data: ExoPlayerData) {
+        val item =
+            data.factory.createMediaSource(MediaItem.fromUri(data.videoSource.uri))
+        withContext(Dispatchers.Main.immediate) {
+            player.setMediaSource(item)
+            player.prepare()
+            player.play()
+        }
     }
 
-    override suspend fun setVideoSource(source: VideoSource<*>?) {
-        if (source == null) {
-            logger.info { "setVideoSource: Cleaning up player since source is null" }
-            withContext(Dispatchers.Main.immediate) {
-                player.stop()
-                player.clearMediaItems()
-            }
-            this.videoSource.value = null
-            this.openResource.value = null
-            return
+    override suspend fun cleanupPlayer() {
+        withContext(Dispatchers.Main.immediate) {
+            player.stop()
+            player.clearMediaItems()
         }
-
-        val previousResource = openResource.value
-        if (source == previousResource?.videoSource) {
-            return
-        }
-
-        openResource.value = null
-        previousResource?.releaseResource?.invoke()
-
-        val opened = try {
-            openSource(source)
-        } catch (e: Throwable) {
-            logger.error(e) { "Failed to open VideoSource: $source" }
-            throw e
-        }
-
-        try {
-            logger.info { "Initializing player with VideoSource: $source" }
-            val item = opened.mediaSourceFactory.createMediaSource(MediaItem.fromUri(source.uri))
-            withContext(Dispatchers.Main.immediate) {
-                state.value = PlaybackState.PAUSED_BUFFERING
-                player.setMediaSource(item)
-                player.prepare()
-                player.play()
-            }
-            logger.info { "ExoPlayer is now initialized with media and will play when ready" }
-        } catch (e: Throwable) {
-            logger.error(e) { "ExoPlayer failed to initialize" }
-            opened.releaseResource()
-            throw e
-        }
-
-        this.openResource.value = opened
     }
 
-    private suspend fun openSource(source: VideoSource<*>): OpenedVideoSource {
+    override suspend fun openSource(source: VideoSource<*>): ExoPlayerData {
         val data = source.open()
         val file = data.createInput()
-        return OpenedVideoSource(
+        return ExoPlayerData(
             source,
             data,
             releaseResource = {
                 file.close()
                 data.close()
             },
-            mediaSourceFactory = ProgressiveMediaSource.Factory {
+            factory = ProgressiveMediaSource.Factory {
                 VideoDataDataSource(
                     data, file
                 )
@@ -170,7 +126,7 @@ internal class ExoPlayerState @UiThread constructor(
                 private fun updateVideoProperties(): Boolean {
                     val video = videoFormat ?: return false
                     val audio = audioFormat ?: return false
-                    val data = openResource.value?.data ?: return false
+                    val data = openResource.value?.videoData ?: return false
                     val title = mediaMetadata.title
                     val duration = duration
 
@@ -236,7 +192,6 @@ internal class ExoPlayerState @UiThread constructor(
         }
     }
 
-    override val state: MutableStateFlow<PlaybackState> = MutableStateFlow(PlaybackState.PAUSED_BUFFERING)
     override val isBuffering: MutableStateFlow<Boolean> = MutableStateFlow(false) // 需要单独状态, 因为要用户可能会覆盖 [state] 
 
     override val videoProperties = MutableStateFlow<VideoProperties?>(null)
@@ -305,9 +260,5 @@ internal class ExoPlayerState @UiThread constructor(
 
     override fun setPlaybackSpeed(speed: Float) {
         player.setPlaybackSpeed(speed)
-    }
-
-    private companion object {
-        val logger = logger(ExoPlayerState::class)
     }
 }
