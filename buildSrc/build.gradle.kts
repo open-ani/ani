@@ -28,6 +28,7 @@ repositories {
 }
 
 kotlin {
+    jvmToolchain(17)
     compilerOptions {
         optIn.add("org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi")
     }
