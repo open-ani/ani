@@ -67,7 +67,7 @@ import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.main.AniAppContent
 import me.him188.ani.app.ui.theme.AppTheme
 import me.him188.ani.app.ui.theme.aniColorScheme
-import me.him188.ani.app.videoplayer.ui.state.DummyPlayerState
+import me.him188.ani.app.videoplayer.ui.VlcjVideoPlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import me.him188.ani.utils.logging.logger
 import org.koin.core.context.startKoin
@@ -86,6 +86,13 @@ val projectDirectories: ProjectDirectories by lazy {
 }
 
 object AniDesktop {
+    init {
+        // 如果要在视频上面显示弹幕或者播放按钮需要在启动的时候设置 system's blending 并且使用1.6.1之后的 Compose 版本
+        // system's blending 在windows 上还是有问题，使用 EmbeddedMediaPlayerComponent 还是不会显示视频，但是在Windows 系统上使用 CallbackMediaPlayerComponent 就没问题。
+        // See https://github.com/open-ani/ani/issues/115#issuecomment-2092567727
+        System.setProperty("compose.interop.blending", "true")
+    }
+
     @JvmStatic
     fun main(args: Array<String>) {
         println("dataDir: ${projectDirectories.dataDir}")
@@ -150,7 +157,7 @@ object AniDesktop {
                 }
                 single<PlayerStateFactory> {
                     PlayerStateFactory { _, _ ->
-                        DummyPlayerState()
+                        VlcjVideoPlayerState()
                     }
                 }
                 single<BrowserNavigator> { DesktopBrowserNavigator() }
@@ -191,6 +198,7 @@ object AniDesktop {
             ),
             resizable = true,
         ) {
+            this.window
             // This actually runs only once since app is never changed.
             val windowImmersed = true
             if (windowImmersed) {

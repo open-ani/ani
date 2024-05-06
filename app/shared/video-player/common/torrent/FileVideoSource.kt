@@ -12,7 +12,7 @@ import java.io.File
 import java.io.IOException
 
 class FileVideoData(
-    private val file: File,
+    val file: File,
 ) : VideoData {
     override val filename: String
         get() = file.name

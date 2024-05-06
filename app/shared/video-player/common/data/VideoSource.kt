@@ -42,6 +42,7 @@ enum class OpenFailures {
      * 未找到符合剧集描述的文件
      */
     NO_MATCHING_FILE,
+    UNSUPPORTED_VIDEO_SOURCE
 }
 
 class VideoSourceOpenException(

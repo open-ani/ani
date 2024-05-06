@@ -386,6 +386,7 @@ private class EpisodeViewModelImpl(
                 } catch (e: VideoSourceOpenException) {
                     videoLoadingState.value = when (e.reason) {
                         OpenFailures.NO_MATCHING_FILE -> VideoLoadingState.NoMatchingFile
+                        OpenFailures.UNSUPPORTED_VIDEO_SOURCE -> VideoLoadingState.UnsupportedMedia
                     }
                 } catch (e: UnsupportedVideoSourceException) {
                     videoLoadingState.value = VideoLoadingState.UnsupportedMedia

@@ -1,59 +1,155 @@
 package me.him188.ani.app.videoplayer.ui
 
-import androidx.compose.foundation.focusable
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.Stable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.SwingPanel
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.Layout
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.round
-import javafx.embed.swing.JFXPanel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import me.him188.ani.app.videoplayer.data.OpenFailures
+import me.him188.ani.app.videoplayer.data.VideoProperties
+import me.him188.ani.app.videoplayer.data.VideoSource
+import me.him188.ani.app.videoplayer.data.VideoSourceOpenException
+import me.him188.ani.app.videoplayer.torrent.FileVideoData
+import me.him188.ani.app.videoplayer.torrent.FileVideoSource
+import me.him188.ani.app.videoplayer.ui.VlcjVideoPlayerState.VlcjData
+import me.him188.ani.app.videoplayer.ui.state.AbstractPlayerState
+import me.him188.ani.app.videoplayer.ui.state.PlaybackState
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import uk.co.caprica.vlcj.factory.discovery.NativeDiscovery
 import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter
 import uk.co.caprica.vlcj.player.component.CallbackMediaPlayerComponent
-import uk.co.caprica.vlcj.player.component.EmbeddedMediaPlayerComponent
 import uk.co.caprica.vlcj.player.embedded.EmbeddedMediaPlayer
-import java.awt.BorderLayout
-import java.awt.Component
-import java.awt.Container
+import java.awt.event.KeyAdapter
+import java.awt.event.KeyEvent
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
+import java.awt.event.MouseWheelEvent
 import java.util.Locale
-import javax.swing.JPanel
-import kotlin.math.roundToInt
 
+
+@Stable
+class VlcjVideoPlayerState : PlayerState, AbstractPlayerState<VlcjData>() {
+    val component = run {
+        NativeDiscovery().discover()
+        object : CallbackMediaPlayerComponent() {
+            override fun mouseClicked(e: MouseEvent?) {
+                super.mouseClicked(e)
+                parent.dispatchEvent(e)
+            }
+        }
+    }
+    val player = component.mediaPlayer()
+
+    override val state: MutableStateFlow<PlaybackState> = MutableStateFlow(PlaybackState.READY)
+
+    class VlcjData(
+        override val videoSource: FileVideoSource,
+        override val videoData: FileVideoData,
+        releaseResource: () -> Unit
+    ) : Data(videoSource, videoData, releaseResource)
+
+    override suspend fun openSource(source: VideoSource<*>): VlcjData {
+        if (source !is FileVideoSource) {
+            throw VideoSourceOpenException(
+                OpenFailures.UNSUPPORTED_VIDEO_SOURCE,
+                IllegalStateException("Unsupported video source: $source")
+            )
+        }
+
+        val data = source.open()
+
+        return VlcjData(
+            source,
+            data,
+            releaseResource = {
+                data.close()
+            },
+        )
+    }
+
+    override suspend fun startPlayer(data: VlcjData) {
+        player.media().play/*OR .start*/(data.videoData.file.absolutePath)
+    }
+
+    override suspend fun cleanupPlayer() {
+        player.controls().stop()
+    }
+
+    override val videoProperties: MutableStateFlow<VideoProperties?> = MutableStateFlow(null)
+    override val currentPositionMillis: MutableStateFlow<Long> = MutableStateFlow(0)
+
+    override fun getExactCurrentPositionMillis(): Long = player.status().time()
+
+    override val bufferedPercentage = MutableStateFlow(0)
+    override val playProgress: Flow<Float>
+        get() = TODO("Not yet implemented")
+
+    override fun pause() {
+        player.controls().pause()
+    }
+
+    override fun resume() {
+        player.controls().play()
+    }
+
+    override val playbackSpeed: MutableStateFlow<Float> = MutableStateFlow(1.0f)
+
+    init {
+        player.events().addMediaPlayerEventListener(object : MediaPlayerEventAdapter() {
+            override fun timeChanged(mediaPlayer: MediaPlayer, newTime: Long) {
+                currentPositionMillis.value = newTime
+            }
+
+            override fun lengthChanged(mediaPlayer: MediaPlayer, newLength: Long) {
+                videoProperties.value = videoProperties.value?.copy(
+                    durationMillis = newLength
+                )
+            }
+
+            override fun playing(mediaPlayer: MediaPlayer) {
+                state.value = PlaybackState.PLAYING
+            }
+
+            override fun paused(mediaPlayer: MediaPlayer) {
+                state.value = PlaybackState.PAUSED
+            }
+
+            override fun stopped(mediaPlayer: MediaPlayer) {
+                state.value = PlaybackState.FINISHED
+            }
+
+            override fun error(mediaPlayer: MediaPlayer) {
+                state.value = PlaybackState.ERROR
+            }
+        })
+    }
+
+    override fun setPlaybackSpeed(speed: Float) {
+        player.controls().setRate(speed)
+        playbackSpeed.value = speed
+    }
+
+    override fun seekTo(positionMillis: Long) {
+        player.controls().setTime(positionMillis)
+    }
+
+}
 
 @Composable
 actual fun VideoPlayer(
     playerState: PlayerState,
     modifier: Modifier,
 ) {
-    val mediaPlayerComponent = remember { initializeMediaPlayerComponent() }
-    val mediaPlayer = remember { mediaPlayerComponent.mediaPlayer() }
-//    mediaPlayer.emitProgressTo(progressState)
-//    mediaPlayer.setupVideoFinishHandler { }
+    check(playerState is VlcjVideoPlayerState)
 
-    val factory = remember { { mediaPlayerComponent } }
-    /* OR the following code and using SwingPanel(factory = { factory }, ...) */
-    // val factory by rememberUpdatedState(mediaPlayerComponent)
-//
-    val url = "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4"
+    val mediaPlayer = playerState.player
     val isFullscreen = false
-    LaunchedEffect(url) {
-        mediaPlayer.submit {
-            mediaPlayer.media().play/*OR .start*/(url)
-        }
-    }
-//    LaunchedEffect(seek) { mediaPlayer.controls().setPosition(seek) }
-//    LaunchedEffect(speed) { mediaPlayer.controls().setRate(speed) }
-//    LaunchedEffect(volume) { mediaPlayer.audio().setVolume(volume.toPercentage()) }
-//    LaunchedEffect(isResumed) { mediaPlayer.controls().setPause(!isResumed) }
     LaunchedEffect(isFullscreen) {
         if (mediaPlayer is EmbeddedMediaPlayer) {
             /*
@@ -70,180 +166,54 @@ actual fun VideoPlayer(
             mediaPlayer.fullScreen().toggle()
         }
     }
-    DisposableEffect(Unit) { onDispose(mediaPlayer::release) }
-    SwingPanel(
-        factory = factory,
-        background = Color.Transparent,
-        modifier = modifier.focusable(false)
-    )
-
-
-//    val view = remember {
-//        ImageView()
-//    }
-//    val mediaPlayer = remember { MediaPlayerFactory().mediaPlayers().newEmbeddedMediaPlayer() }
-////    mediaPlayer.emitProgressTo(progressState)
-//    mediaPlayer.setupVideoFinishHandler {}
-//
-//    mediaPlayer.videoSurface().set(ImageViewVideoSurface(view))
-//
-//    val factory = remember { { view } }
-//    /* OR the following code and using SwingPanel(factory = { factory }, ...) */
-//    // val factory by rememberUpdatedState(mediaPlayerComponent)
-//
-////    mediaPlayer.media().play()
-//    val url = "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-//    val isFullscreen = false
-//    LaunchedEffect(url) { mediaPlayer.media().play/*OR .start*/(url) }
-////    LaunchedEffect(seek) { mediaPlayer.controls().setPosition(seek) }
-////    LaunchedEffect(speed) { mediaPlayer.controls().setRate(speed) }
-////    LaunchedEffect(volume) { mediaPlayer.audio().setVolume(volume.toPercentage()) }
-////    LaunchedEffect(isResumed) { mediaPlayer.controls().setPause(!isResumed) }
-//    LaunchedEffect(isFullscreen) {
-//        if (mediaPlayer is EmbeddedMediaPlayer) {
-//            /*
-//             * To be able to access window in the commented code below,
-//             * extend the player composable function from WindowScope.
-//             * See https://github.com/JetBrains/compose-jb/issues/176#issuecomment-812514936
-//             * and its subsequent comments.
-//             *
-//             * We could also just fullscreen the whole window:
-//             * `window.placement = WindowPlacement.Fullscreen`
-//             * See https://github.com/JetBrains/compose-multiplatform/issues/1489
-//             */
-//            // mediaPlayer.fullScreen().strategy(ExclusiveModeFullScreenStrategy(window))
-//            mediaPlayer.fullScreen().toggle()
-//        }
-//    }
 //    DisposableEffect(Unit) { onDispose(mediaPlayer::release) }
-////
-////    val container = LocalAppWindow.current.window // ComposeWindow
-//
-//    SwingPanel(
-//        factory = { JFXPanel().apply {
-//            scene = javafx.scene.Scene(BoarderPane().apply {
-//                center = view
-//            })
-////            add(view)
-//        } },
-//        modifier = Modifier,
-//    )
-////    JavaFXPanel(
-////        root = container,
-////        panel = JFXPanel().apply {
-////            add(view)
-////        },
-////        onCreate = { view.scene = null }
-////    )
-}
 
-@Composable
-public fun JavaFXPanel(
-    root: Container,
-    panel: JFXPanel,
-    onCreate: () -> Unit
-) {
-    val container = remember { JPanel() }
-    val density = LocalDensity.current.density
-
-    Layout(
-        content = {},
-        modifier = Modifier.onGloballyPositioned { childCoordinates ->
-            val coordinates = childCoordinates.parentCoordinates!!
-            val location = coordinates.localToWindow(Offset.Zero).round()
-            val size = coordinates.size
-            container.setBounds(
-                (location.x / density).toInt(),
-                (location.y / density).toInt(),
-                (size.width / density).toInt(),
-                (size.height / density).toInt()
-            )
-            container.validate()
-            container.repaint()
+    SwingPanel(
+        factory = {
+            playerState.component
         },
-        measurePolicy = { _, _ ->
-            layout(0, 0) {}
-        }
+        background = Color.Transparent,
+        modifier = modifier.fillMaxSize()
     )
+    val surface = playerState.component.videoSurfaceComponent()
 
-    DisposableEffect(Unit) {
-        container.apply {
-            layout = BorderLayout(0, 0)
-            add(panel)
-        }
-        root.add(container)
-        onCreate.invoke()
-        onDispose {
-            root.remove(container)
-        }
-    }
-}
+    // 转发鼠标事件到 Compose
+    DisposableEffect(surface) {
+        val listener = object : MouseAdapter() {
+            override fun mouseClicked(e: MouseEvent) = dispatchToCompose(e)
+            override fun mousePressed(e: MouseEvent) = dispatchToCompose(e)
+            override fun mouseReleased(e: MouseEvent) = dispatchToCompose(e)
+            override fun mouseEntered(e: MouseEvent) = dispatchToCompose(e)
+            override fun mouseExited(e: MouseEvent) = dispatchToCompose(e)
+            override fun mouseDragged(e: MouseEvent) = dispatchToCompose(e)
+            override fun mouseMoved(e: MouseEvent) = dispatchToCompose(e)
+            override fun mouseWheelMoved(e: MouseWheelEvent) = dispatchToCompose(e)
 
-private fun Float.toPercentage(): Int = (this * 100).roundToInt()
-
-/**
- * See https://github.com/caprica/vlcj/issues/887#issuecomment-503288294
- * for why we're using CallbackMediaPlayerComponent for macOS.
- */
-private fun initializeMediaPlayerComponent(): Component {
-    NativeDiscovery().discover()
-    return CallbackMediaPlayerComponent()
-//    
-//    return if (isMacOS()) {
-//        CallbackMediaPlayerComponent()
-//    } else {
-//        EmbeddedMediaPlayerComponent()
-//    }
-}
-
-/**
- * We play the video again on finish (so the player is kind of idempotent),
- * unless the [onFinish] callback stops the playback.
- * Using `mediaPlayer.controls().repeat = true` did not work as expected.
- */
-@Composable
-private fun MediaPlayer.setupVideoFinishHandler(onFinish: (() -> Unit)?) {
-    DisposableEffect(onFinish) {
-        val listener = object : MediaPlayerEventAdapter() {
-            override fun finished(mediaPlayer: MediaPlayer) {
-                onFinish?.invoke()
-                mediaPlayer.submit { mediaPlayer.controls().play() }
+            fun dispatchToCompose(e: MouseEvent) {
+                playerState.component.parent.dispatchEvent(e)
             }
         }
-        events().addMediaPlayerEventListener(listener)
-        onDispose { events().removeMediaPlayerEventListener(listener) }
+        surface.addMouseListener(listener)
+        onDispose {
+            surface.removeMouseListener(listener)
+        }
     }
-}
 
-/**
- * Checks for and emits video progress every 50 milliseconds.
- * Note that it seems vlcj updates the progress only every 250 milliseconds or so.
- *
- * Instead of using `Unit` as the `key1` for [LaunchedEffect],
- * we could use `media().info()?.mrl()` if it's needed to re-launch
- * the effect (for whatever reason) when the url (aka video) changes.
-// */
-//@Composable
-//private fun MediaPlayer.emitProgressTo(state: MutableState<Progress>) {
-//    LaunchedEffect(key1 = Unit) {
-//        while (isActive) {
-//            val fraction = status().position()
-//            val time = status().time()
-//            state.value = Progress(fraction, time)
-//            delay(50)
-//        }
-//    }
-//}
-
-/**
- * Returns [MediaPlayer] from player components.
- * The method names are the same, but they don't share the same parent/interface.
- * That's why we need this method.
- */
-private fun Component.mediaPlayer() = when (this) {
-    is CallbackMediaPlayerComponent -> mediaPlayer()
-    is EmbeddedMediaPlayerComponent -> mediaPlayer()
-    else -> error("mediaPlayer() can only be called on vlcj player components")
+    // 转发键盘事件到 Compose
+    DisposableEffect(surface) {
+        val listener = object : KeyAdapter() {
+            override fun keyPressed(p0: KeyEvent) = dispatchToCompose(p0)
+            override fun keyReleased(p0: KeyEvent) = dispatchToCompose(p0)
+            override fun keyTyped(p0: KeyEvent) = dispatchToCompose(p0)
+            fun dispatchToCompose(e: KeyEvent) {
+                playerState.component.parent.dispatchEvent(e)
+            }
+        }
+        surface.addKeyListener(listener)
+        onDispose {
+            surface.removeKeyListener(listener)
+        }
+    }
 }
 
 private fun isMacOS(): Boolean {
