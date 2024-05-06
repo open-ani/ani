@@ -193,6 +193,143 @@ data class QBTorrent(
 )
 
 @Serializable
+data class QBDetails(
+    /**
+     * Torrent save path
+     */
+    @SerialName("save_path") val savePath: String,
+    /**
+     * Torrent creation date (Unix timestamp)
+     */
+    @SerialName("creation_date") val creationDate: Int,
+    /**
+     * Torrent piece size (bytes)
+     */
+    @SerialName("piece_size") val pieceSize: Long,
+    /**
+     * Torrent comment
+     */
+    @SerialName("comment") val comment: String,
+    /**
+     * Total data wasted for torrent (bytes)
+     */
+    @SerialName("total_wasted") val totalWasted: Int,
+    /**
+     * Total data uploaded for torrent (bytes)
+     */
+    @SerialName("total_uploaded") val totalUploaded: Int,
+    /**
+     * Total data uploaded this session (bytes)
+     */
+    @SerialName("total_uploaded_session") val totalUploadedSession: Int,
+    /**
+     * Total data downloaded for torrent (bytes)
+     */
+    @SerialName("total_downloaded") val totalDownloaded: Int,
+    /**
+     * Total data downloaded this session (bytes)
+     */
+    @SerialName("total_downloaded_session") val totalDownloadedSession: Int,
+    /**
+     * Torrent upload limit (bytes/s)
+     */
+    @SerialName("up_limit") val upLimit: Int,
+    /**
+     * Torrent download limit (bytes/s)
+     */
+    @SerialName("dl_limit") val dlLimit: Int,
+    /**
+     * Torrent elapsed time (seconds)
+     */
+    @SerialName("time_elapsed") val timeElapsed: Int,
+    /**
+     * Torrent elapsed time while complete (seconds)
+     */
+    @SerialName("seeding_time") val seedingTime: Int,
+    /**
+     * Torrent connection count
+     */
+    @SerialName("nb_connections") val nbConnections: Int,
+    /**
+     * Torrent connection count limit
+     */
+    @SerialName("nb_connections_limit") val nbConnectionsLimit: Int,
+    /**
+     * Torrent share ratio
+     */
+    @SerialName("share_ratio") val shareRatio: Float,
+    /**
+     * When this torrent was added (unix timestamp)
+     */
+    @SerialName("addition_date") val additionDate: Int,
+    /**
+     * Torrent completion date (unix timestamp)
+     */
+    @SerialName("completion_date") val completionDate: Int,
+    /**
+     * Torrent creator
+     */
+    @SerialName("created_by") val createdBy: String,
+    /**
+     * Torrent average download speed (bytes/second)
+     */
+    @SerialName("dl_speed_avg") val dlSpeedAvg: Int,
+    /**
+     * Torrent download speed (bytes/second)
+     */
+    @SerialName("dl_speed") val dlSpeed: Int,
+    /**
+     * Torrent ETA (seconds)
+     */
+    @SerialName("eta") val eta: Int,
+    /**
+     * Last seen complete date (unix timestamp)
+     */
+    @SerialName("last_seen") val lastSeen: Int,
+    /**
+     * Number of peers connected to
+     */
+    @SerialName("peers") val peers: Int,
+    /**
+     * Number of peers in the swarm
+     */
+    @SerialName("peers_total") val peersTotal: Int,
+    /**
+     * Number of pieces owned
+     */
+    @SerialName("pieces_have") val piecesHave: Int,
+    /**
+     * Number of pieces of the torrent
+     */
+    @SerialName("pieces_num") val piecesNum: Int,
+    /**
+     * Number of seconds until the next announce
+     */
+    @SerialName("reannounce") val reannounce: Int,
+    /**
+     * Number of seeds connected to
+     */
+    @SerialName("seeds") val seeds: Int,
+    /**
+     * Number of seeds in the swarm
+     */
+    @SerialName("seeds_total") val seedsTotal: Int,
+    /**
+     * Torrent total size (bytes)
+     */
+    @SerialName("total_size") val totalSize: Int,
+    /**
+     * Torrent average upload speed (bytes/second)
+     */
+    @SerialName("up_speed_avg") val upSpeedAvg: Int,
+    /**
+     * Torrent upload speed (bytes/second)
+     */
+    @SerialName("up_speed") val upSpeed: Int
+)
+
+
+@Serializable
 enum class TorrentState {
     @SerialName("error")
     ERROR,

@@ -1,5 +1,6 @@
 package me.him188.ani.app.torrent.qbittorrent
 
+import androidx.compose.ui.util.fastForEachIndexed
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -24,10 +25,13 @@ import me.him188.ani.app.torrent.api.files.AbstractTorrentFileEntry
 import me.him188.ani.app.torrent.api.files.DownloadStats
 import me.him188.ani.app.torrent.api.files.EncodedTorrentInfo
 import me.him188.ani.app.torrent.api.files.FilePriority
+import me.him188.ani.app.torrent.api.files.PieceState
 import me.him188.ani.app.torrent.api.files.TorrentFileEntry
 import me.him188.ani.app.torrent.api.files.TorrentFileHandle
+import me.him188.ani.app.torrent.api.files.TorrentFilePieceMatcher
 import me.him188.ani.app.torrent.api.pieces.Piece
 import me.him188.ani.app.torrent.io.TorrentFileIO
+import me.him188.ani.app.torrent.io.TorrentInput
 import me.him188.ani.utils.coroutines.SuspendLazy
 import me.him188.ani.utils.io.SeekableInput
 import me.him188.ani.utils.io.toSeekableInput
@@ -36,6 +40,7 @@ import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
 import java.io.File
+import java.io.RandomAccessFile
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.absoluteValue
@@ -85,6 +90,10 @@ class QBittorrentTorrentDownloader(
     override val vendor: TorrentLibInfo = TorrentLibInfo("qBittorrent", "4.3.6", supportsStreaming = false)
 
     override suspend fun fetchTorrent(uri: String, timeoutSeconds: Int): EncodedTorrentInfo {
+        client.getTorrentList().firstOrNull { it.magnetUri == uri }?.let {
+            return EncodedTorrentInfo(it.magnetUri.toByteArray()) // TODO: this does not support torrent files (HTTP)
+        }
+
         val tempDirection = saveDir.resolve(uri.hashCode().absoluteValue.toString()).apply {
             mkdirs()
         }
@@ -118,23 +127,23 @@ class QBittorrentTorrentDownloader(
     ): TorrentDownloadSession {
         // note: this hash is not equivalent to torrent info hash
         val dir = getSaveDirForTorrent(data).apply { mkdirs() }
-        client.getTorrentList().firstOrNull { it.savePath == dir.absolutePath }?.let {
-            return QBittorrentTorrentDownloadSession(
-                torrentInfo = it,
-                client = client,
-                saveDirectory = dir,
-                parentCoroutineContext = parentCoroutineContext
-            )
-        }
-        val uri = data.data.decodeToString()
-        check(uri.startsWith("magnet"))
-        client.addTorrentFromUri(
-            uri, // magnet
-            savePath = dir.absolutePath,
-            paused = false
-        )
+
+        val info = client.getTorrentList().firstOrNull { it.savePath == dir.absolutePath }
+            ?: run {
+                val uri = data.data.decodeToString()
+                check(uri.startsWith("magnet")) { "Only magnet uri is supported, but had $uri" }
+                client.addTorrentFromUri(
+                    uri, // magnet
+                    savePath = dir.absolutePath,
+                    paused = false,
+                    sequentialDownload = true,
+                    firstLastPiecePrio = true,
+                )
+                awaitTorrentData { it.savePath == dir.absolutePath }
+            }
+
         return QBittorrentTorrentDownloadSession(
-            torrentInfo = awaitTorrentData { it.savePath == dir.absolutePath },
+            torrentInfo = info,
             client = client,
             saveDirectory = dir,
             parentCoroutineContext = parentCoroutineContext
@@ -224,29 +233,55 @@ class QBittorrentTorrentDownloadSession(
         if (files.isEmpty()) {
             logger.warn { "No files found for torrent ${torrentInfo.name}" }
         }
-        files.map { entry ->
+
+        val torrentProperties = client.getTorrentProperties(torrentInfo.hash)
+        val allPieces = Piece.buildPieces(
+            totalSize = torrentInfo.totalSize,
+            pieceSize = torrentProperties.pieceSize
+        )
+
+        val numFiles = files.size
+
+        var currentOffset = 0L
+        val list = List(numFiles) { index ->
+            val file = files[index]
+            val size = file.size
             FileEntryImpl(
-                index = entry.index,
-                length = entry.size,
+                index = file.index,
+                offset = currentOffset,
+                length = file.size,
                 saveDirectory = saveDirectory,
-                relativePath = entry.name,
+                relativePath = file.name,
                 torrentName = torrentInfo.name,
                 isDebug = false,
-                parentCoroutineContext = parentCoroutineContext
-            )
+                parentCoroutineContext = parentCoroutineContext,
+                pieces = TorrentFilePieceMatcher.matchPiecesForFile(allPieces, currentOffset, file.size)
+//                pieces = Piece.buildPieces(
+//                    file.pieceRange.last - file.pieceRange.first + 1,
+//                    initial = currentOffset,
+//                    getPieceSize = { _ ->
+//                        torrentProperties.pieceSize
+//                    }
+//                )
+            ).also {
+                currentOffset += size
+            }
         }
+        list
     }
 
     private val openHandles = ConcurrentLinkedQueue<FileEntryImpl.FileHandleImpl>()
 
     private inner class FileEntryImpl(
         index: Int,
+        private val offset: Long,
         length: Long,
         saveDirectory: File,
         relativePath: String,
         torrentName: String,
         isDebug: Boolean,
         parentCoroutineContext: CoroutineContext,
+        override val pieces: List<Piece>?,
     ) : AbstractTorrentFileEntry(
         index, length,
         saveDirectory,
@@ -265,7 +300,6 @@ class QBittorrentTorrentDownloadSession(
             }
         }
 
-        override val pieces: List<Piece>? = null
         private val priorityTasker = MonoTasker(scope)
         override fun updatePriority() {
             val highestPriority = priorityRequests.values.maxWithOrNull(nullsFirst(naturalOrder()))
@@ -297,16 +331,31 @@ class QBittorrentTorrentDownloadSession(
                             _stats.updateFrom(it)
                         }
 
+                        if (pieces != null) {
+                            client.getPieceStates(torrentInfo.hash).fastForEachIndexed { i, qbPieceState ->
+                                val newState = when (qbPieceState) {
+                                    QBPieceState.NOT_DOWNLOADED -> PieceState.READY
+                                    QBPieceState.DOWNLOADING -> PieceState.DOWNLOADING
+                                    QBPieceState.DOWNLOADED -> PieceState.FINISHED
+                                }
+                                if (newState == PieceState.FINISHED && pieces[i].state.value != newState) {
+                                    logger.info { "[$torrentName] Piece ${pieces[i].pieceIndex} finished" }
+                                }
+                                pieces[i].state.value = newState
+                            }
+                        }
+
                         // 已经完成了, 就不需要更新了
                         if (_stats.progress.value == 1f) {
+                            logger.info { "[$torrentName] Torrent finished" }
+                            pieces?.forEach { it.state.value = PieceState.FINISHED }
                             return@launch
                         }
                     } catch (e: Throwable) {
                         logger.error(e) { "Failed to update qBittorrent stats for entry" }
                     }
-                    delay(300)
+                    delay(900)
                 }
-
             }
         }
 
@@ -321,7 +370,32 @@ class QBittorrentTorrentDownloadSession(
         }
 
         override fun createInput(): SeekableInput {
-            val file = (resolveFileOrNull() ?: runBlocking { resolveDownloadingFile() })
+            val file = resolveFileOrNull()
+                ?: runBlocking { resolveDownloadingFile() } // don't switch thread if we don't need to
+            if (pieces != null) {
+                logger.info { "Using TorrentInput since we have pieces. pieces=$pieces, file offset=${offset}, file length=$length," }
+                return TorrentInput(
+                    RandomAccessFile(file, "r"),
+                    pieces,
+                    logicalStartOffset = offset,
+                    onWait = { piece ->
+                        logger.info { "[TorrentDownloadControl] $torrentName: Set piece ${piece.pieceIndex} deadline to 0 because it was requested " }
+                        // TODO: QB 优先级
+//                        torrentThreadTasks.submit { handle ->
+//                            handle.setPieceDeadline(piece.pieceIndex, 0) // 最高优先级
+//                            for (i in (piece.pieceIndex + 1..piece.pieceIndex + 3)) {
+//                                if (i < pieces.size - 1) {
+//                                    handle.setPieceDeadline( // 按请求时间的优先
+//                                        i,
+//                                        calculatePieceDeadlineByTime(i)
+//                                    )
+//                                }
+//                            }
+//                        }
+                    },
+                    size = length
+                )
+            }
             return file.toSeekableInput(
                 onFillBuffer = {
                     // 不支持边下边播, 应等待下载完成

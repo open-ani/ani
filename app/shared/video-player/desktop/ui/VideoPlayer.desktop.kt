@@ -10,16 +10,16 @@ import androidx.compose.ui.awt.SwingPanel
 import androidx.compose.ui.graphics.Color
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import me.him188.ani.app.videoplayer.data.OpenFailures
+import me.him188.ani.app.videoplayer.data.VideoData
 import me.him188.ani.app.videoplayer.data.VideoProperties
 import me.him188.ani.app.videoplayer.data.VideoSource
-import me.him188.ani.app.videoplayer.data.VideoSourceOpenException
-import me.him188.ani.app.videoplayer.torrent.FileVideoData
-import me.him188.ani.app.videoplayer.torrent.FileVideoSource
+import me.him188.ani.app.videoplayer.io.SeekableInputCallbackMedia
 import me.him188.ani.app.videoplayer.ui.VlcjVideoPlayerState.VlcjData
 import me.him188.ani.app.videoplayer.ui.state.AbstractPlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlaybackState
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
+import me.him188.ani.utils.io.SeekableInput
+import me.him188.ani.utils.logging.error
 import uk.co.caprica.vlcj.factory.discovery.NativeDiscovery
 import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter
@@ -49,32 +49,41 @@ class VlcjVideoPlayerState : PlayerState, AbstractPlayerState<VlcjData>() {
     override val state: MutableStateFlow<PlaybackState> = MutableStateFlow(PlaybackState.READY)
 
     class VlcjData(
-        override val videoSource: FileVideoSource,
-        override val videoData: FileVideoData,
+        override val videoSource: VideoSource<*>,
+        override val videoData: VideoData,
+        val input: SeekableInput,
         releaseResource: () -> Unit
     ) : Data(videoSource, videoData, releaseResource)
 
     override suspend fun openSource(source: VideoSource<*>): VlcjData {
-        if (source !is FileVideoSource) {
-            throw VideoSourceOpenException(
-                OpenFailures.UNSUPPORTED_VIDEO_SOURCE,
-                IllegalStateException("Unsupported video source: $source")
-            )
-        }
+//        if (source !is FileVideoSource) {
+//            throw VideoSourceOpenException(
+//                OpenFailures.UNSUPPORTED_VIDEO_SOURCE,
+//                IllegalStateException("Unsupported video source: $source")
+//            )
+//        }
 
         val data = source.open()
+        val input = data.createInput()
 
         return VlcjData(
             source,
             data,
+            input,
             releaseResource = {
                 data.close()
+                input.close()
             },
         )
     }
 
+    private var lastMedia: SeekableInputCallbackMedia? = null // keep referenced so won't be gc'ed
+
     override suspend fun startPlayer(data: VlcjData) {
-        player.media().play/*OR .start*/(data.videoData.file.absolutePath)
+        val new = SeekableInputCallbackMedia(data.input)
+        player.media().play(new)
+        lastMedia = new
+//        player.media().play/*OR .start*/(data.videoData.file.absolutePath)
     }
 
     override suspend fun cleanupPlayer() {
@@ -125,6 +134,7 @@ class VlcjVideoPlayerState : PlayerState, AbstractPlayerState<VlcjData>() {
             }
 
             override fun error(mediaPlayer: MediaPlayer) {
+                logger.error { "vlcj player error" }
                 state.value = PlaybackState.ERROR
             }
         })

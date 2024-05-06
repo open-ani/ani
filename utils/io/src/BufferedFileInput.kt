@@ -45,12 +45,12 @@ internal open class BufferedFileInput(
     private val bufferSize: Int = DEFAULT_BUFFER_PER_DIRECTION,
     private val onFillBuffer: (() -> Unit)? = null,
 ) : BufferedInput(bufferSize) {
-    override val fileLength: Long get() = file.length()
+    override val size: Long get() = file.length()
 
     override fun fillBuffer() {
         onFillBuffer?.invoke()
 
-        val fileLength = this.fileLength
+        val fileLength = this.size
         val pos = this.position
 
         val readStart = (pos - bufferSize).coerceAtLeast(0)
@@ -99,8 +99,6 @@ public abstract class BufferedInput(
         }
     }
 
-    protected abstract val fileLength: Long
-
     /**
      * @see buf 包含的数据的起始位置
      */
@@ -127,7 +125,7 @@ public abstract class BufferedInput(
      */
     final override var position: Long = 0
 
-    final override val bytesRemaining: Long get() = (fileLength - position).coerceAtLeast(0)
+    final override val bytesRemaining: Long get() = (this.size - position).coerceAtLeast(0)
 
     final override fun seek(position: Long) {
         require(position >= 0) { "offset must be non-negative, but was $position" }
@@ -236,7 +234,7 @@ public abstract class BufferedInput(
         require(offset + length <= buffer.size) { "offset + length must be less than or equal to buffer size, but was ${offset + length} > ${buffer.size}" }
         checkClosed()
 
-        if (this.position >= fileLength) return -1
+        if (this.position >= this.size) return -1
         if (length == 0) return 0
 
         var read = readFromBuffer(length, buffer, offset)
@@ -263,7 +261,7 @@ public abstract class BufferedInput(
             if (pos in bufStart..<bufEnd) {
                 // 在 buffer 范围内
                 val sizeToRead = min(length, (bufEnd - pos).coerceToInt())
-                    .coerceAtMost((fileLength - pos).coerceToInt())
+                    .coerceAtMost((this.size - pos).coerceToInt())
 
                 val offsetInBuf = pos - bufStart
                 this.buf.copyInto(
