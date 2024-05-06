@@ -7,7 +7,7 @@ import me.him188.ani.datasources.api.topic.ResourceLocation
 import java.io.File
 
 class LocalFileVideoSourceResolver : VideoSourceResolver {
-    override fun supports(media: Media): Boolean {
+    override suspend fun supports(media: Media): Boolean {
         return media.download is ResourceLocation.LocalFile
     }
 

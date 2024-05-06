@@ -14,11 +14,11 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.torrent.api.DefaultTorrentDownloadSession
+import me.him188.ani.app.torrent.api.HttpFileDownloader
 import me.him188.ani.app.torrent.api.MagnetTimeoutException
 import me.him188.ani.app.torrent.api.TorrentDownloadSession
 import me.him188.ani.app.torrent.api.TorrentDownloader
 import me.him188.ani.app.torrent.api.TorrentDownloaderConfig
-import me.him188.ani.app.torrent.api.TorrentFileDownloader
 import me.him188.ani.app.torrent.api.TorrentLibInfo
 import me.him188.ani.app.torrent.api.files.EncodedTorrentInfo
 import me.him188.ani.app.torrent.api.files.TorrentInfo
@@ -47,7 +47,7 @@ import kotlin.coroutines.CoroutineContext
 abstract class AbstractLockedTorrentDownloader<Info : TorrentInfo>(
     cacheDirectory: File,
     val sessionManager: LockedSessionManager,
-    private val downloadFile: TorrentFileDownloader,
+    private val httpFileDownloader: HttpFileDownloader,
     private val isDebug: Boolean,
     parentCoroutineContext: CoroutineContext,
 ) : TorrentDownloader {
@@ -76,7 +76,7 @@ abstract class AbstractLockedTorrentDownloader<Info : TorrentInfo>(
     override suspend fun fetchTorrent(uri: String, timeoutSeconds: Int): EncodedTorrentInfo {
         if (uri.startsWith("http", ignoreCase = true)) {
             logger.info { "Fetching http url: $uri" }
-            val data = downloadFile(uri)
+            val data = httpFileDownloader.download(uri)
             logger.info { "Fetching http url success, file length = ${data.size}" }
             return EncodedTorrentInfo(data)
         }
@@ -197,6 +197,7 @@ abstract class AbstractLockedTorrentDownloader<Info : TorrentInfo>(
 
     override fun close() {
         scope.cancel()
+        httpFileDownloader.close()
         LockedSessionManager.launch { sessionManager.use { stop() } }
     }
 }
@@ -208,10 +209,10 @@ abstract class AbstractLockedTorrentDownloader<Info : TorrentInfo>(
  *
  * 该实现在安卓跑得不错, 但是在 PC 非常容易 crash VM, 很难调试. 在 PC 使用 `QBittorrentTorrentDownloader` 代替.
  */
-internal class Libtorrent4jTorrentDownloader(
+class Libtorrent4jTorrentDownloader(
     cacheDirectory: File,
     sessionManager: LockedSessionManager,
-    downloadFile: TorrentFileDownloader,
+    downloadFile: HttpFileDownloader,
     isDebug: Boolean,
     parentCoroutineContext: CoroutineContext,
 ) : AbstractLockedTorrentDownloader<Torrent4jTorrentInfo>(
@@ -268,15 +269,16 @@ private val logger = logger(TorrentDownloader::class)
  *
  * The returned instance must be closed when it is no longer needed.
  *
+ * @param downloadFile automatically closed when the returned instance is closed.
+ *
  * @see Libtorrent4jTorrentDownloader
  */
-@Suppress("FunctionName")
 fun Libtorrent4jTorrentDownloader(
     cacheDirectory: File,
-    downloadFile: TorrentFileDownloader,
+    downloadFile: HttpFileDownloader,
     config: TorrentDownloaderConfig = TorrentDownloaderConfig.Default,
     parentCoroutineContext: CoroutineContext,
-): TorrentDownloader {
+): Libtorrent4jTorrentDownloader {
     val sessionManager = SessionManager()
 
     val listener = object : AlertListener {

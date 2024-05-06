@@ -1,6 +1,7 @@
 package me.him188.ani.app.data.models
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 
 @Serializable
@@ -10,6 +11,8 @@ data class MediaCacheSettings(
 
     val mostRecentOnly: Boolean = false,
     val mostRecentCount: Int = 8,
+
+    @Transient val placeholder: Int = 0,
 ) {
     companion object {
         val Default = MediaCacheSettings()

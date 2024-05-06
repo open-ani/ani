@@ -314,11 +314,9 @@ internal class MediaSelectorStateImpl(
             selectedAlliance matches it.properties.alliance &&
                     selectedResolution matches it.properties.resolution &&
                     selectedSubtitleLanguageId matches it.properties.subtitleLanguageIds &&
-                    (selectedMediaSource matches it.mediaSourceId || it.location == MediaSourceLocation.LOCAL) // always show local, so that [makeDefaultSelection] will select a local one
+                    (selectedMediaSource matches it.mediaSourceId || it.location == MediaSourceLocation.Local) // always show local, so that [makeDefaultSelection] will select a local one
         }.sortedWith(
-            compareByDescending<Media> {
-                if (it.location == MediaSourceLocation.LOCAL) 1 else 0
-            }.thenByDescending { it.publishedTime }
+            compareBy<Media> { it.costForDownload }.thenByDescending { it.publishedTime }
         )
     }
 
@@ -524,3 +522,10 @@ internal class MediaSelectorStateImpl(
 //        }
 //    }
 //}
+
+val Media.costForDownload
+    get() = when (location) {
+        MediaSourceLocation.Local -> 0
+        MediaSourceLocation.Lan -> 1
+        else -> 2
+    }

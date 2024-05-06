@@ -19,7 +19,7 @@ import me.him188.ani.datasources.api.topic.ResourceLocation
 @Composable
 private fun PreviewCacheItemDownloading() = ProvideCompositionLocalsForPreview {
     val media = remember {
-        CacheItem(
+        MediaCachePresentation(
             testData(0.3f),
             null
         )
@@ -32,7 +32,7 @@ private fun PreviewCacheItemDownloading() = ProvideCompositionLocalsForPreview {
 @Composable
 private fun PreviewCacheItemUploading() = ProvideCompositionLocalsForPreview {
     val media = remember {
-        CacheItem(
+        MediaCachePresentation(
             testData(1f),
             null
         )

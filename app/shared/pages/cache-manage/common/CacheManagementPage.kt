@@ -31,26 +31,34 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import me.him188.ani.app.data.media.MediaCacheManager
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.TopAppBarGoBackButton
-import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.core.cache.MediaCache
 import me.him188.ani.datasources.core.cache.MediaCacheStorage
 import me.him188.ani.datasources.core.cache.MediaStats
+import me.him188.ani.datasources.core.cache.emptyMediaStats
+import me.him188.ani.datasources.core.cache.sum
+import me.him188.ani.utils.coroutines.runningList
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
 @Stable
 interface CacheManagementPageViewModel {
-    val storages: List<MediaCacheStorageState>
+    val overallStats: MediaStats
+    val storages: List<MediaCacheStorageState>?
+    val accumulatedList: List<MediaCachePresentation>?
 }
 
 @Stable
@@ -59,19 +67,44 @@ class CacheManagementPageViewModelImpl : CacheManagementPageViewModel,
     KoinComponent {
 
     private val cacheManager: MediaCacheManager by inject()
-
-    override val storages = cacheManager.storages.map { storage ->
-        MediaCacheStorageState(storage).also {
-            addCloseable(it)
+    private val storagesFlow = cacheManager.enabledStorages.map { list ->
+        list.map { storage ->
+            MediaCacheStorageState(storage, backgroundScope)
         }
+    }
+    override val overallStats: MediaStats by cacheManager.enabledStorages.map { list ->
+        list.map { it.stats }.sum()
+    }.produceState(emptyMediaStats())
+
+    override val storages by storagesFlow.produceState(emptyList())
+
+    override val accumulatedList: List<MediaCachePresentation>? by kotlin.run {
+        val mediaCacheListFromStorages = cacheManager.storages.map { storageFlow ->
+            storageFlow.flatMapLatest { storage ->
+                if (storage == null) {
+                    return@flatMapLatest emptyFlow()
+                }
+                storage.listFlow
+            }
+        }
+
+        combine(mediaCacheListFromStorages) { lists ->
+            lists.asSequence()
+                .flatten()
+                .map {
+                    MediaCachePresentation(it, null)
+                }
+                .toList()
+        }.produceState(null)
     }
 }
 
 @Stable
 class MediaCacheStorageState(
-    private val storage: MediaCacheStorage
-) : AbstractViewModel(), KoinComponent {
-    private val items = mutableMapOf<MediaCache, CacheItem>()
+    private val storage: MediaCacheStorage,
+    private val scope: CoroutineScope,
+) : KoinComponent {
+    private val items = mutableMapOf<MediaCache, MediaCachePresentation>()
 
     val mediaSourceId = storage.mediaSourceId
 
@@ -80,35 +113,28 @@ class MediaCacheStorageState(
     /**
      * A flow that subscribes on all the caches in the storage.
      */
-    val list: Flow<List<CacheItem>> = storage.listFlow.flatMapLatest { list ->
+    val list: Flow<List<MediaCachePresentation>> = storage.listFlow.flatMapLatest { list ->
         mapCacheToItem(list)
     }
 
-    private fun mapCacheToItem(list: List<MediaCache>): Flow<List<CacheItem>> {
+    private fun mapCacheToItem(list: List<MediaCache>): Flow<List<MediaCachePresentation>> {
         return list.asFlow().map { cache ->
             items.getOrPut(cache) {
-                val metadata = cache.metadata
-                CacheItem(
-                    cache,
-                    null,
-//                  subject =  metadata.subjectId?.toIntOrNull()?.let {
-//                        runCatching {
-//                            subjectRepository.getSubject(it)
-//                        }.getOrNull()
-//                    },
-//                   episode = metadata.episodeId?.toIntOrNull()?.let { episodeRepository.getEpisodeById(it) },
-                )
+                MediaCachePresentation(cache, null)
             }
         }.also {
             items.keys.removeAll { key -> key !in list }
         }.runningList()
     }
 
-    fun delete(item: CacheItem) {
-        items.remove(item.cache)
-        launchInBackground {
+    fun delete(item: MediaCachePresentation): Boolean {
+        if (items.remove(item.cache) == null) {
+            return false
+        }
+        scope.launch {
             storage.delete(item.cache)
         }
+        return true
     }
 }
 
@@ -130,38 +156,35 @@ fun CacheManagementPage(
     ) { paddingValues ->
         Column(Modifier.padding(paddingValues)) {
             val state = rememberLazyListState()
-            for (storage in vm.storages) {
-                StorageOverallStats(
-                    storage.stats,
-                    Modifier.fillMaxWidth()
-                        .then(if (state.canScrollBackward) Modifier.shadow(2.dp, clip = false) else Modifier)
-                )
-            }
+
+            StorageOverallStats(
+                vm.overallStats,
+                Modifier.fillMaxWidth()
+                    .then(if (state.canScrollBackward) Modifier.shadow(2.dp, clip = false) else Modifier)
+            )
 
             val storages = vm.storages
-
-            if (storages.isEmpty()) {
+            if (storages?.isEmpty() == true) {
                 Box(Modifier.padding(16.dp).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    Text("未添加任何缓存服务", style = MaterialTheme.typography.titleMedium)
+                    Text("未启用任何缓存服务, 请在设置中至少启用一个", style = MaterialTheme.typography.titleMedium)
                 }
             } else {
-                for (storage in storages) {
-                    val list by storage.list.collectAsStateWithLifecycle(null)
-                    if (list?.isEmpty() == true) {
-                        Box(Modifier.padding(16.dp).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                            Text("还未缓存任何内容", style = MaterialTheme.typography.titleMedium)
-                        }
+                val list = vm.accumulatedList
+                if (list?.isEmpty() == true) {
+                    Box(Modifier.padding(16.dp).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        Text("还未缓存任何内容", style = MaterialTheme.typography.titleMedium)
                     }
-                    StorageManagerView(
-                        list ?: emptyList(),
-                        storage.mediaSourceId,
-                        onDelete = {
-                            storage.delete(it)
-                        },
-                        Modifier.padding(horizontal = 16.dp).padding(top = 2.dp).fillMaxWidth(),
-                        state = state,
-                    )
                 }
+                StorageManagerView(
+                    list ?: emptyList(),
+                    onDelete = { item ->
+                        vm.storages?.firstOrNull {
+                            it.delete(item)
+                        }
+                    },
+                    Modifier.padding(horizontal = 16.dp).padding(top = 2.dp).fillMaxWidth(),
+                    state = state,
+                )
             }
         }
     }
@@ -255,9 +278,8 @@ private fun Stat(
 // Management for a single storage
 @Composable
 fun StorageManagerView(
-    list: List<CacheItem>,
-    mediaSourceId: String,
-    onDelete: (CacheItem) -> Unit,
+    list: List<MediaCachePresentation>,
+    onDelete: (MediaCachePresentation) -> Unit,
     modifier: Modifier = Modifier,
     state: LazyListState = rememberLazyListState(),
 ) {
@@ -269,7 +291,7 @@ fun StorageManagerView(
         item { }
 
         items(list, key = { it.cache.cacheId }) { item ->
-            CacheItemView(item, onDelete, { mediaSourceId })
+            CacheItemView(item, onDelete, { item.mediaSourceId })
         }
 
         item { }

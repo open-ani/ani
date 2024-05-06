@@ -6,6 +6,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -59,7 +60,13 @@ class SubjectCacheViewModel(
     private val episodeRepository: EpisodeRepository by inject()
     private val cacheManager: MediaCacheManager by inject()
 
-    val cacheStorages get() = cacheManager.storages
+    private val cacheStoragesPlaceholder = ArrayList<MediaCacheStorage>(0)
+
+    val cacheStorages by cacheManager.enabledStorages.produceState(cacheStoragesPlaceholder)
+    val cacheStoragesLoaded by derivedStateOf {
+        cacheStorages !== cacheStoragesPlaceholder
+    }
+
 
     val subjectTitle by flowOf(subjectId).mapLatest { subjectId ->
         runUntilSuccess { subjectRepository.getSubject(subjectId)!! }
@@ -126,7 +133,7 @@ class SubjectCacheViewModel(
     fun deleteCache(episodeId: Int) {
         launchInBackground {
             val epString = episodeId.toString()
-            for (storage in cacheManager.storages) {
+            for (storage in cacheManager.enabledStorages.first()) {
                 for (mediaCache in storage.listFlow.first()) {
                     if (mediaCache.metadata.episodeId == epString) {
                         storage.delete(mediaCache)
@@ -203,11 +210,12 @@ fun SubjectCacheScene(
                     epFetch.mediaSelectorState,
                     onSelect = { media ->
                         if (vm.cacheStorages.size == 1) {
+                            val storage = vm.cacheStorages.first()
                             vm.launchInBackground {
                                 addCache(
                                     media,
                                     metadata = { epFetch.mediaFetchSession.map { it.request }.first() },
-                                    vm.cacheStorages.single()
+                                    storage,
                                 )
                                 withContext(Dispatchers.Main) {
                                     dismissSelector()

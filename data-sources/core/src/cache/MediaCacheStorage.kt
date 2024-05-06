@@ -12,7 +12,7 @@ import me.him188.ani.datasources.core.fetch.MediaFetcher
 import kotlin.math.absoluteValue
 
 /**
- * A local storage for caching media.
+ * 表示一个媒体缓存的存储空间, 例如一个本地目录.
  *
  * ## Identity
  *
@@ -27,6 +27,8 @@ interface MediaCacheStorage : AutoCloseable {
      * ID of this media source.
      */
     val mediaSourceId: String
+
+    val isEnabled: Flow<Boolean>
 
     /**
      * The [MediaSource] implementation that queries the caches from this storage.
@@ -77,6 +79,9 @@ interface MediaCacheStorage : AutoCloseable {
 
 /**
  * A media cached in the storage.
+ *
+ * 可能有用的属性:
+ * - 该媒体的实际存储位置: [origin] 的 [Media.download]
  */
 interface MediaCache {
     /**

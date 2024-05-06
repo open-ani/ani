@@ -24,6 +24,7 @@ import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.DownloadDone
 import androidx.compose.material.icons.rounded.Public
+import androidx.compose.material.icons.rounded.Radar
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FilterChip
@@ -286,17 +287,9 @@ private fun MediaItem(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 when (media.location) {
-                                    MediaSourceLocation.LOCAL -> {
-                                        Icon(
-                                            Icons.Rounded.DownloadDone, null,
-                                        )
-                                    }
-
-                                    MediaSourceLocation.ONLINE -> {
-                                        Icon(
-                                            Icons.Rounded.Public, null,
-                                        )
-                                    }
+                                    MediaSourceLocation.Local -> Icon(Icons.Rounded.DownloadDone, null)
+                                    MediaSourceLocation.Lan -> Icon(Icons.Rounded.Radar, null)
+                                    MediaSourceLocation.Online -> Icon(Icons.Rounded.Public, null)
                                 }
 
                                 Text(

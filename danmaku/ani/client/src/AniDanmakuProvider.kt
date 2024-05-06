@@ -19,7 +19,7 @@ object AniBangumiSeverBaseUrls {
     const val GLOBAL = "https://danmaku-global.myani.org"
     const val CN = "https://danmaku-cn.myani.org"
 
-    val list = listOf(GLOBAL, CN)
+    val list = listOf(CN, GLOBAL)
 
     fun getBaseUrl(useGlobal: Boolean) = if (useGlobal) GLOBAL else CN
 }

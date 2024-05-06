@@ -46,7 +46,7 @@ import me.him188.ani.app.ui.foundation.TopAppBarGoBackButton
 import me.him188.ani.app.ui.preference.PreferenceScope
 import me.him188.ani.app.ui.preference.PreferenceTab
 import me.him188.ani.app.ui.preference.SwitchItem
-import me.him188.ani.app.ui.preference.tabs.autoCacheDescription
+import me.him188.ani.app.ui.preference.tabs.media.autoCacheDescription
 import me.him188.ani.app.ui.theme.stronglyWeaken
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType

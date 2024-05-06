@@ -29,7 +29,7 @@ import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.source.MediaFetchRequest
-import me.him188.ani.datasources.api.source.MediaSourceLocation
+import me.him188.ani.datasources.api.source.isLowEffort
 import me.him188.ani.datasources.bangumi.processing.nameCNOrName
 import me.him188.ani.datasources.core.fetch.MediaFetchSession
 import me.him188.ani.datasources.core.fetch.MediaFetcher
@@ -198,9 +198,7 @@ internal class DefaultEpisodeMediaFetchSession(
         val fetchResult by mediaFetchSession.flatMapLatest { it.cumulativeResults }
             .mapLatest { list ->
                 list.sortedWith(
-                    compareByDescending<Media> {
-                        if (it.location == MediaSourceLocation.LOCAL) 1 else 0
-                    }.thenByDescending { it.properties.size.inBytes }
+                    compareBy<Media> { it.costForDownload }.thenByDescending { it.properties.size.inBytes }
                 )
             }
             .produceState(emptyList())
@@ -274,7 +272,7 @@ internal class DefaultEpisodeMediaFetchSession(
                     ) { list, defaultPreferencesFetched ->
                         if (!defaultPreferencesFetched) return@combine // wait for config load
 
-                        if (list.any { it.location == MediaSourceLocation.LOCAL }) {
+                        if (list.any { it.location.isLowEffort() }) {
                             if (selected == null) { // only if user has not selected
                                 makeDefaultSelection()
                             }

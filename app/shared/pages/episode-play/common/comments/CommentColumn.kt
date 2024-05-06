@@ -28,6 +28,7 @@ import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
 import me.him188.ani.utils.coroutines.runUntilSuccess
+import me.him188.ani.utils.coroutines.runningList
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject

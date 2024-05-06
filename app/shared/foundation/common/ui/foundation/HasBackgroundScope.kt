@@ -26,7 +26,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.WhileSubscribed
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -197,12 +196,6 @@ interface HasBackgroundScope {
             collect { localFlow.value = it }
         }
         return localFlow
-    }
-
-    fun <T> Flow<T>.runningList(): Flow<List<T>> {
-        return runningFold(emptyList()) { acc, value ->
-            acc + value
-        }
     }
 
     fun <T> deferFlowInBackground(value: suspend () -> T): MutableStateFlow<T?> {

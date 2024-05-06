@@ -79,8 +79,8 @@ import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
 import me.him188.ani.app.ui.foundation.widgets.RichDialogLayout
 import me.him188.ani.app.ui.preference.tabs.AboutTab
-import me.him188.ani.app.ui.preference.tabs.MediaPreferenceTab
 import me.him188.ani.app.ui.preference.tabs.NetworkPreferenceTab
+import me.him188.ani.app.ui.preference.tabs.media.MediaPreferenceTab
 import me.him188.ani.app.ui.theme.stronglyWeaken
 import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorder
@@ -165,7 +165,7 @@ private fun renderPreferenceTab(
     return when (tab) {
 //        PreferenceTab.GENERAL -> "通用"
         PreferenceTab.NETWORK -> "网络"
-        PreferenceTab.MEDIA -> "资源"
+        PreferenceTab.MEDIA -> "播放与缓存"
         PreferenceTab.ABOUT -> "关于"
     }
 }
@@ -200,10 +200,11 @@ abstract class PreferenceScope {
         title: @Composable () -> Unit,
         description: (@Composable () -> Unit)? = null,
         modifier: Modifier = Modifier,
+        useThinHeader: Boolean = false,
         content: @Composable ColumnScope.() -> Unit,
     ) {
         Surface(modifier = modifier.fillMaxWidth()) {
-            Column(Modifier.padding(vertical = 16.dp)) {
+            Column(Modifier.padding(vertical = if (useThinHeader) 12.dp else 16.dp)) {
                 // Group header
                 Column(
                     Modifier.padding(horizontal = itemHorizontalPadding)
@@ -393,6 +394,7 @@ abstract class PreferenceScope {
         onValueChangeCompleted: () -> Unit = {},
         inverseTitleDescription: Boolean = false,
         isErrorProvider: () -> Boolean = { false }, // calculated in a derivedState
+        textFieldDescription: @Composable (() -> Unit)? = description,
     ) {
         var showDialog by rememberSaveable { mutableStateOf(false) }
         Item(
@@ -449,7 +451,7 @@ abstract class PreferenceScope {
                         onConfirm = onConfirm,
                         title = title,
                         confirmEnabled = !error,
-                        description = description,
+                        description = textFieldDescription,
                     ) {
                         OutlinedTextField(
                             value = value,

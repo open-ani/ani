@@ -9,10 +9,12 @@ import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.header
 import io.ktor.http.HttpHeaders
 import io.ktor.http.Url
+import kotlinx.serialization.Serializable
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
-class ClientProxyConfig(
+@Serializable
+data class ClientProxyConfig(
     /**
      * "http://sample-proxy-server:3128/"
      * or
@@ -37,11 +39,18 @@ object ClientProxyConfigValidator {
         ProxyBuilder.http(url)
     }
 
-    fun isValidProxy(url: String): Boolean = try {
-        parseProxy(url)
-        true
-    } catch (e: Exception) {
-        false
+    fun isValidProxy(url: String, allowSocks: Boolean = true): Boolean {
+        return try {
+            val proxy = parseProxy(url)
+            if (!allowSocks) {
+                if (proxy.type() == java.net.Proxy.Type.SOCKS) {
+                    return false
+                }
+            }
+            true
+        } catch (e: Exception) {
+            false
+        }
     }
 }
 

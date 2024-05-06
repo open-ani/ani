@@ -22,6 +22,8 @@ package me.him188.ani.datasources.api.topic
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.reduce
 import kotlinx.serialization.Serializable
 import me.him188.ani.datasources.api.topic.FileSize.Companion.Unspecified
 import me.him188.ani.datasources.api.topic.FileSize.Companion.Zero
@@ -146,3 +148,6 @@ inline operator fun Double.div(another: FileSize): FileSize = FileSize((this / a
 inline operator fun Double.plus(another: FileSize): FileSize = FileSize((this + another.inBytes).toLong())
 inline operator fun Double.minus(another: FileSize): FileSize = FileSize((this - another.inBytes).toLong())
 
+suspend inline fun Flow<FileSize>.sum() = reduce { acc, value -> acc + value }
+inline fun Iterable<FileSize>.sum() = reduce { acc, value -> acc + value }
+inline fun Array<FileSize>.sum() = reduce { acc, value -> acc + value }

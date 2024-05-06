@@ -3,6 +3,7 @@ package me.him188.ani.datasources.core.cache
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.runTest
 import me.him188.ani.datasources.api.CachedMedia
@@ -64,6 +65,7 @@ class DirectoryMediaCacheStorageTest {
     }
 
     private val engine = object : MediaCacheEngine {
+        override val isEnabled: Flow<Boolean> = flowOf(true)
         override val stats: MediaStats = emptyMediaStats()
 
         override suspend fun restore(

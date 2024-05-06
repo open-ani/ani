@@ -16,6 +16,7 @@ import me.him188.ani.app.ui.preference.PreferenceScope
 import me.him188.ani.app.ui.preference.PreferenceTab
 import me.him188.ani.app.ui.preference.SwitchItem
 import me.him188.ani.app.ui.preference.TextFieldDialog
+import me.him188.ani.app.ui.preference.framework.ConnectionTestResult
 import me.him188.ani.datasources.acgrip.AcgRipMediaSource
 import me.him188.ani.datasources.api.paging.PageBasedPagedSource
 import me.him188.ani.datasources.api.paging.Paged
@@ -89,9 +90,9 @@ private fun PreviewNetworkPreferenceTab() {
         val vm = rememberViewModel { NetworkPreferenceViewModel() }
         SideEffect {
             val testers = vm.allMediaTesters.testers
-            testers.first().result = MediaTestResult.SUCCESS
-            testers.drop(1).first().result = MediaTestResult.FAILED
-            testers.drop(2).first().result = MediaTestResult.NOT_ENABLED
+            testers.first().result = ConnectionTestResult.SUCCESS
+            testers.drop(1).first().result = ConnectionTestResult.FAILED
+            testers.drop(2).first().result = ConnectionTestResult.NOT_ENABLED
         }
         NetworkPreferenceTab()
     }

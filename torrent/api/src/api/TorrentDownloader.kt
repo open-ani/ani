@@ -64,14 +64,9 @@ class MagnetTimeoutException(
     override val cause: Throwable? = null
 ) : Exception()
 
-/**
- * A factory for creating [TorrentDownloader] instances without any argument.
- */
-fun interface TorrentDownloaderFactory {
-    suspend fun create(): TorrentDownloader
+interface HttpFileDownloader : AutoCloseable {
+    suspend fun download(url: String): ByteArray
 }
-
-typealias TorrentFileDownloader = suspend (url: String) -> ByteArray
 
 class TorrentDownloaderConfig(
     val peerFingerprint: String = "-aniLT3000-",
