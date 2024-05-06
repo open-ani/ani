@@ -52,7 +52,6 @@ interface PlayerState {
      * This function must not be called on the main thread as it will call [VideoSource.open].
      *
      * @param source the video source to play. `null` to stop playing.
-     * @throws UnsupportedVideoSourceException if the video source is not supported by this player.
      * @throws VideoSourceOpenException 当打开失败时抛出, 包含原因
      */
     @Throws(VideoSourceOpenException::class)
@@ -119,11 +118,6 @@ interface PlayerState {
     @UiThread
     fun seekTo(positionMillis: Long)
 }
-
-class UnsupportedVideoSourceException(
-    val source: VideoSource<*>,
-    player: PlayerState,
-) : RuntimeException("Video source is not supported by player '${player}': $source")
 
 fun PlayerState.togglePause() {
     if (state.value.isPlaying) {
@@ -207,6 +201,7 @@ abstract class AbstractPlayerState<D : AbstractPlayerState.Data> : PlayerState {
      */
     protected abstract suspend fun cleanupPlayer()
 
+    @Throws(VideoSourceOpenException::class)
     protected abstract suspend fun openSource(source: VideoSource<*>): D
 }
 

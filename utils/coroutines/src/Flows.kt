@@ -6,8 +6,16 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.runningFold
 import java.util.concurrent.CancellationException
 import kotlin.coroutines.CoroutineContext
+
+
+fun <T> Flow<T>.runningList(): Flow<List<T>> {
+    return runningFold(emptyList()) { acc, value ->
+        acc + value
+    }
+}
 
 fun combineOr(vararg flows: Flow<Boolean>): Flow<Boolean> = combine(*flows) { flows -> flows.any { it } }
 
@@ -56,6 +64,20 @@ fun <T : AutoCloseable?> Flow<T>.closeOnReplacement(): Flow<T> = flow {
     var last: T? = null
     collect { value ->
         last?.close()
+        emit(value)
+        last = value
+    }
+}
+
+/**
+ * 每当新值到来时, 调用 [onReplace] 上一个值.
+ */
+fun <T> Flow<T>.onReplacement(
+    onReplace: suspend (T) -> Unit
+): Flow<T> = flow {
+    var last: T? = null
+    collect { value ->
+        last?.let { onReplace(it) }
         emit(value)
         last = value
     }

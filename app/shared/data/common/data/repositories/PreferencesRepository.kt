@@ -15,6 +15,8 @@ import me.him188.ani.app.data.models.DanmakuSettings
 import me.him188.ani.app.data.models.MediaCacheSettings
 import me.him188.ani.app.data.models.ProxyPreferences
 import me.him188.ani.app.data.serializers.DanmakuConfigSerializer
+import me.him188.ani.app.tools.torrent.engines.Libtorrent4jConfig
+import me.him188.ani.app.tools.torrent.engines.QBittorrentConfig
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.utils.logging.debug
@@ -37,6 +39,9 @@ interface PreferencesRepository {
     val proxyPreferences: Preference<ProxyPreferences>
     val mediaCacheSettings: Preference<MediaCacheSettings>
     val danmakuSettings: Preference<DanmakuSettings>
+
+    val libtorrent4jConfig: Preference<Libtorrent4jConfig>
+    val qBittorrentConfig: Preference<QBittorrentConfig>
 }
 
 @Stable
@@ -113,6 +118,16 @@ class PreferencesRepositoryImpl(
         "danmakuSettings",
         DanmakuSettings.serializer(),
         default = { DanmakuSettings.Default }
+    )
+    override val libtorrent4jConfig: Preference<Libtorrent4jConfig> = SerializablePreference(
+        "libtorrent4jConfig",
+        Libtorrent4jConfig.serializer(),
+        default = { Libtorrent4jConfig.Default }
+    )
+    override val qBittorrentConfig: Preference<QBittorrentConfig> = SerializablePreference(
+        "qBittorrentConfig",
+        QBittorrentConfig.serializer(),
+        default = { QBittorrentConfig.Default }
     )
 
     private companion object {

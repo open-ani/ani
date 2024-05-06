@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.flow.toList
@@ -65,7 +66,7 @@ fun DefaultMediaAutoCacheService(
     config = koin.get<PreferencesRepository>().mediaCacheSettings.flow,
     episodeRepository = koin.get(),
     cacheManager = koin.get(),
-    targetStorage = koin.get<MediaCacheManager>().storages.first(),
+    targetStorage = koin.get<MediaCacheManager>().enabledStorages.mapNotNull { it.firstOrNull() },
 )
 
 class DefaultMediaAutoCacheService(
@@ -82,14 +83,8 @@ class DefaultMediaAutoCacheService(
     /**
      * Target storage to make caches to. It must be managed by the [MediaCacheManager].
      */
-    private val targetStorage: MediaCacheStorage,
+    private val targetStorage: Flow<MediaCacheStorage>,
 ) : MediaAutoCacheService {
-    init {
-        check(cacheManager.storages.any { it === targetStorage }) {
-            "Target storage must be managed by the MediaCacheManager"
-        }
-    }
-
     override suspend fun checkCache() {
         logger.info { "DefaultMediaAutoCacheService.checkCache: start" }
 
@@ -126,7 +121,7 @@ class DefaultMediaAutoCacheService(
                     val request = this.mediaFetchSession.first().request
                     this.mediaSelectorState.makeDefaultSelection()
                     this.mediaSelectorState.selected?.let { media ->
-                        targetStorage.cache(media, MediaCacheMetadata(request))
+                        targetStorage.first().cache(media, MediaCacheMetadata(request))
                         logger.info { "Created cache ${media.mediaId} for ${subject.debugName()} ${firstUnwatched.episode.name}" }
                     }
                 }

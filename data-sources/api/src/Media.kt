@@ -14,8 +14,10 @@ import me.him188.ani.datasources.api.topic.ResourceLocation
 /**
  * 表示从数据源获取到的一个资源, 即一个字幕组发布的资源.
  *
- * 一个资源可能对应一个剧集, 新番资源资源大部分都是这样.
- * 一个资源也可能对应多个剧集, 尤其是老番的季度全集资源.
+ * 一个资源可能对应一个剧集 [episodes], 新番资源资源大部分都是这样.
+ * 一个资源也可能对应多个剧集 [episodes], 尤其是老番的季度全集资源.
+ *
+ * [Media] 的使用方可自行
  */
 @Serializable
 @Immutable
@@ -65,7 +67,7 @@ sealed interface Media {
     val properties: MediaProperties
 
     /**
-     * 查看 [MediaSourceLocation.LOCAL] 和 [MediaSourceLocation.ONLINE].
+     * 查看 [MediaSourceLocation.Local] 和 [MediaSourceLocation.Online].
      */
     val location: MediaSourceLocation
 }
@@ -73,9 +75,9 @@ sealed interface Media {
 /**
  * The default implementation of [Media].
  *
- * [location] can be either [MediaSourceLocation.ONLINE] or [MediaSourceLocation.LOCAL].
- * A local [MediaSource] may support caching of other [MediaSourceLocation.ONLINE] media sources, however,
- * it may also produce [MediaSourceLocation.LOCAL] [DefaultMedia]s directly when you first search for that media.
+ * [location] can be either [MediaSourceLocation.Online] or [MediaSourceLocation.Local].
+ * A local [MediaSource] may support caching of other [MediaSourceLocation.Online] media sources, however,
+ * it may also produce [MediaSourceLocation.Local] [DefaultMedia]s directly when you first search for that media.
  */
 @Immutable
 @Serializable
@@ -88,21 +90,21 @@ class DefaultMedia(
     override val publishedTime: Long,
     override val properties: MediaProperties,
     override val episodes: List<EpisodeSort>,
-    override val location: MediaSourceLocation = MediaSourceLocation.ONLINE,
+    override val location: MediaSourceLocation = MediaSourceLocation.Online,
 ) : Media
 
 /**
- * A media that is already cached onto a easily accessible location, i.e. [MediaSourceLocation.LOCAL].
+ * A media that is already cached into an easily accessible location, i.e. [MediaSourceLocation.Local].
  */
 @Immutable
 class CachedMedia(
     val origin: Media,
     cacheMediaSourceId: String,
     override val download: ResourceLocation,
+    override val location: MediaSourceLocation = MediaSourceLocation.Local
 ) : Media by origin {
     override val mediaId: String = "${cacheMediaSourceId}:${origin.mediaId}"
     override val mediaSourceId: String = cacheMediaSourceId
-    override val location: MediaSourceLocation get() = MediaSourceLocation.LOCAL
 }
 
 /**

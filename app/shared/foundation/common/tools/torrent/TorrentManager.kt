@@ -1,39 +1,41 @@
 package me.him188.ani.app.tools.torrent
 
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.async
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.job
-import me.him188.ani.app.platform.currentAniBuildConfig
-import me.him188.ani.app.platform.versionCode
-import me.him188.ani.app.torrent.api.TorrentDownloader
-import me.him188.ani.app.torrent.api.TorrentDownloaderFactory
-import me.him188.ani.utils.coroutines.runUntilSuccess
-import me.him188.ani.utils.logging.logger
-import me.him188.ani.utils.logging.warn
+import me.him188.ani.app.data.repositories.PreferencesRepository
+import me.him188.ani.app.tools.torrent.engines.Libtorrent4jEngine
+import me.him188.ani.app.tools.torrent.engines.QBittorrentEngine
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+import java.io.File
 import kotlin.coroutines.CoroutineContext
 
 /**
- * Manages the downloads of torrents.
+ * 管理本地 BT 下载器的实现. 根据配置选择不同的下载器.
+ *
+ * 目前支持的下载实现:
+ * - libtorrent4j (内嵌)
+ * - qBittorrent (本机局域网).
  */
 interface TorrentManager {
-    val lastError: StateFlow<TorrentDownloaderManagerError?>
+    val libtorrent4j: Libtorrent4jEngine
+    val qBittorrent: QBittorrentEngine
 
-    val downloader: Deferred<TorrentDownloader>
+    val engines: List<TorrentEngine>
 }
 
-fun computeTorrentFingerprint(
-    versionCode: String = currentAniBuildConfig.versionCode,
-): String = "-aniLT${versionCode}-"
+enum class TorrentEngineType(
+    val id: String,
+) {
+    Libtorrent4j("libtorrent4j"),
+    QBittorrent("qbittorrent"),
+}
 
-fun computeTorrentUserAgent(
-    versionCode: String = currentAniBuildConfig.versionCode,
-): String = "ani_libtorrent/${versionCode}"
+class TorrentDownloaderInitializationException(
+    message: String? = null,
+    cause: Throwable? = null,
+) : Exception(message, cause)
 
 class TorrentDownloaderManagerError(
     val exception: Throwable,
@@ -41,29 +43,24 @@ class TorrentDownloaderManagerError(
 
 class DefaultTorrentManager(
     parentCoroutineContext: CoroutineContext,
-    private val downloaderFactory: TorrentDownloaderFactory,
-    downloaderStart: CoroutineStart = CoroutineStart.DEFAULT
-) : TorrentManager {
+    private val saveDir: (type: TorrentEngineType) -> File,
+) : TorrentManager, KoinComponent {
+    private val preferencesRepository: PreferencesRepository by inject()
+
+    private val libtorrent4jConfig get() = preferencesRepository.libtorrent4jConfig.flow
+    private val qbittorrentConfig get() = preferencesRepository.qBittorrentConfig.flow
+
     private val scope = CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
 
-    override val lastError: MutableStateFlow<TorrentDownloaderManagerError?> = MutableStateFlow(null)
-
-    override val downloader = scope.async(start = downloaderStart) {
-        runUntilSuccess(
-            onFailure = { e ->
-                lastError.value = TorrentDownloaderManagerError(e)
-                logger.warn(e) { "Failed to create TorrentDownloader, retrying later" }
-            }
-        ) {
-            downloaderFactory.create()
-        }.also { downloader ->
-            scope.coroutineContext.job.invokeOnCompletion {
-                downloader.close()
-            }
-        }
+    override val libtorrent4j: Libtorrent4jEngine by lazy {
+        Libtorrent4jEngine(scope, libtorrent4jConfig, saveDir(TorrentEngineType.Libtorrent4j))
     }
 
-    private companion object {
-        private val logger = logger(this::class)
+    override val qBittorrent: QBittorrentEngine by lazy {
+        QBittorrentEngine(scope, qbittorrentConfig, saveDir(TorrentEngineType.QBittorrent))
+    }
+
+    override val engines: List<TorrentEngine> by lazy(LazyThreadSafetyMode.NONE) {
+        listOf(libtorrent4j, qBittorrent)
     }
 }

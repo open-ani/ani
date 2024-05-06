@@ -16,10 +16,24 @@ import me.him188.ani.datasources.core.cache.MediaCacheStorage
 import me.him188.ani.utils.coroutines.sampleWithInitial
 
 abstract class MediaCacheManager {
-    abstract val storages: List<MediaCacheStorage>
+    abstract val storagesIncludingDisabled: List<MediaCacheStorage>
 
-    private val listFlow: Flow<List<MediaCache>> by lazy {
-        combine(storages.map { it.listFlow }) {
+    val enabledStorages: Flow<List<MediaCacheStorage>> by lazy {
+        combine(storagesIncludingDisabled.map { it.isEnabled.map { enabled -> if (enabled) it else null } }) {
+            it.filterNotNull()
+        }
+    }
+
+    val storages: List<Flow<MediaCacheStorage?>> by lazy {
+        storagesIncludingDisabled.map { storage ->
+            storage.isEnabled.map {
+                if (it) storage else null
+            }
+        }
+    }
+
+    private val cacheListFlow: Flow<List<MediaCache>> by lazy {
+        combine(storagesIncludingDisabled.map { it.listFlow }) {
             it.asSequence().flatten().toList()
         }
     }
@@ -31,7 +45,7 @@ abstract class MediaCacheManager {
     ): Flow<List<MediaCache>> {
         val subjectIdString = subjectId.toString()
         val episodeIdString = episodeId.toString()
-        return listFlow.map { list ->
+        return cacheListFlow.map { list ->
             list.filter { cache ->
                 cache.metadata.subjectId == subjectIdString && cache.metadata.episodeId == episodeIdString
             }
@@ -48,7 +62,7 @@ abstract class MediaCacheManager {
     ): Flow<EpisodeCacheStatus> {
         val subjectIdString = subjectId.toString()
         val episodeIdString = episodeId.toString()
-        return listFlow.transform { list ->
+        return cacheListFlow.transform { list ->
             var hasAnyCached: MediaCache? = null
             var hasAnyCaching: MediaCache? = null
 
@@ -128,4 +142,4 @@ sealed class EpisodeCacheStatus {
     data object NotCached : EpisodeCacheStatus()
 }
 
-class MediaCacheManagerImpl(override val storages: List<MediaCacheStorage>) : MediaCacheManager()
+class MediaCacheManagerImpl(override val storagesIncludingDisabled: List<MediaCacheStorage>) : MediaCacheManager()

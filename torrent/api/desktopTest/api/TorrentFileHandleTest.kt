@@ -161,7 +161,7 @@ internal class TorrentFileHandleTest : TorrentSessionSupport() {
             assertEquals(1000L, fileHandle.entry.stats.downloadedBytes.first())
             assertTrue(fileHandle.entry.stats.isFinished.first())
             assertEquals(1f, fileHandle.entry.stats.progress.first())
-            assertTrue(fileHandle.entry.pieces.all { it.state.value == PieceState.FINISHED })
+            assertTrue(fileHandle.entry.pieces!!.all { it.state.value == PieceState.FINISHED })
 
             fileHandle.close()
         }
@@ -189,7 +189,7 @@ internal class TorrentFileHandleTest : TorrentSessionSupport() {
             assertEquals(1000L, fileHandle.entry.stats.downloadedBytes.first())
             assertTrue(fileHandle.entry.stats.isFinished.first())
             assertEquals(1f, fileHandle.entry.stats.progress.first())
-            assertTrue(fileHandle.entry.pieces.all { it.state.value == PieceState.FINISHED })
+            assertTrue(fileHandle.entry.pieces!!.all { it.state.value == PieceState.FINISHED })
 
             fileHandle.close()
         }
@@ -217,7 +217,7 @@ internal class TorrentFileHandleTest : TorrentSessionSupport() {
             assertEquals(1000L, fileHandle.entry.stats.downloadedBytes.first())
             assertTrue(fileHandle.entry.stats.isFinished.first())
             assertEquals(1f, fileHandle.entry.stats.progress.first())
-            assertTrue(fileHandle.entry.pieces.all { it.state.value == PieceState.FINISHED })
+            assertTrue(fileHandle.entry.pieces!!.all { it.state.value == PieceState.FINISHED })
 
             fileHandle.close()
         }
@@ -244,7 +244,7 @@ internal class TorrentFileHandleTest : TorrentSessionSupport() {
             assertEquals(0L, fileHandle.entry.stats.downloadedBytes.first())
             assertFalse(fileHandle.entry.stats.isFinished.first())
             assertEquals(0f, fileHandle.entry.stats.progress.first())
-            assertTrue(fileHandle.entry.pieces.all { it.state.value != PieceState.FINISHED })
+            assertTrue(fileHandle.entry.pieces!!.all { it.state.value != PieceState.FINISHED })
 
             fileHandle.close()
         }

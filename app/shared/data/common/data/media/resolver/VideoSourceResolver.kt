@@ -5,20 +5,24 @@ import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
 
 /**
- * Resolves the video description [Media] into a [VideoSource] which can be opened to play.
+ * 根据 [EpisodeMetadata] 中的集数信息和 [Media.location] 中的下载方式,
+ * 解析一个 [Media] 为可以播放的 [VideoSource].
+ *
+ * 实际操作涉及创建种子下载任务, 寻找文件等.
  */
 interface VideoSourceResolver {
     /**
      * Checks if this resolver supports the given media's [Media.download].
      */
-    fun supports(media: Media): Boolean
+    suspend fun supports(media: Media): Boolean
 
     /**
-     * Resolves the given media into a [VideoSource] which can be opened to play.
+     * 根据 [EpisodeMetadata] 中的集数信息和 [Media.location] 中的下载方式,
+     * 解析一个 [Media] 为可以播放的 [VideoSource].
      *
      * @param episode Target episode to resolve, because a media can have multiple episodes.
      *
-     * @throws UnsupportedOperationException if the media cannot be resolved.
+     * @throws UnsupportedMediaException if the media cannot be resolved.
      * Use [supports] to check if the media can be resolved.
      */
     suspend fun resolve(media: Media, episode: EpisodeMetadata): VideoSource<*>
@@ -47,7 +51,7 @@ class UnsupportedMediaException(
 private class ChainedVideoSourceResolver(
     private val resolvers: List<VideoSourceResolver>
 ) : VideoSourceResolver {
-    override fun supports(media: Media): Boolean {
+    override suspend fun supports(media: Media): Boolean {
         return resolvers.any { it.supports(media) }
     }
 

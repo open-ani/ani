@@ -1,8 +1,9 @@
 package me.him188.ani.app.data.media.resolver
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
-import me.him188.ani.app.tools.torrent.TorrentManager
+import me.him188.ani.app.tools.torrent.TorrentEngine
 import me.him188.ani.app.torrent.api.files.EncodedTorrentInfo
 import me.him188.ani.app.torrent.api.files.FilePriority
 import me.him188.ani.app.videoplayer.data.OpenFailures
@@ -18,23 +19,25 @@ import me.him188.ani.datasources.api.topic.titles.parse
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 
 class TorrentVideoSourceResolver(
-    private val torrentManager: TorrentManager,
+    private val engine: TorrentEngine,
 ) : VideoSourceResolver {
-    override fun supports(media: Media): Boolean {
+    override suspend fun supports(media: Media): Boolean {
+        if (!engine.isEnabled.first()) return false
         return media.download is ResourceLocation.HttpTorrentFile || media.download is ResourceLocation.MagnetLink
     }
 
     override suspend fun resolve(media: Media, episode: EpisodeMetadata): VideoSource<*> {
+        val downloader = engine.getDownloader() ?: throw UnsupportedMediaException(media)
         return when (val location = media.download) {
             is ResourceLocation.HttpTorrentFile,
             is ResourceLocation.MagnetLink
             -> {
                 TorrentVideoSource(
-                    torrentManager.downloader.await().fetchTorrent(location.uri),
-                    episode,
+                    engine,
+                    encodedTorrentInfo = downloader.fetchTorrent(location.uri),
+                    episodeMetadata = episode,
                 )
             }
 
@@ -100,11 +103,10 @@ class TorrentVideoSourceResolver(
 }
 
 private class TorrentVideoSource(
+    private val engine: TorrentEngine,
     private val encodedTorrentInfo: EncodedTorrentInfo,
     private val episodeMetadata: EpisodeMetadata,
 ) : VideoSource<TorrentVideoData>, KoinComponent {
-    private val manager: TorrentManager by inject()
-
     @OptIn(ExperimentalStdlibApi::class)
     override val uri: String by lazy {
         "torrent://${encodedTorrentInfo.data.toHexString()}"
@@ -112,9 +114,10 @@ private class TorrentVideoSource(
 
     @Throws(VideoSourceOpenException::class)
     override suspend fun open(): TorrentVideoData {
+        val downloader = engine.getDownloader() ?: throw VideoSourceOpenException(OpenFailures.ENGINE_DISABLED)
         return TorrentVideoData(
             withContext(Dispatchers.IO) {
-                val files = manager.downloader.await().startDownload(encodedTorrentInfo)
+                val files = downloader.startDownload(encodedTorrentInfo)
                     .getFiles()
 
                 logger.info {

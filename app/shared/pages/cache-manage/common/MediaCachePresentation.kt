@@ -43,7 +43,7 @@ import org.openapitools.client.models.Subject
 
 
 @Stable
-class CacheItem(
+class MediaCachePresentation(
     val cache: MediaCache,
     subject: Subject?,
 //    private val episode: EpisodeDetail?,
@@ -67,8 +67,8 @@ class CacheItem(
 
 @Composable
 fun CacheItemView(
-    item: CacheItem,
-    onDelete: (CacheItem) -> Unit,
+    item: MediaCachePresentation,
+    onDelete: (MediaCachePresentation) -> Unit,
     mediaSourceId: () -> String,
     modifier: Modifier = Modifier,
 ) {

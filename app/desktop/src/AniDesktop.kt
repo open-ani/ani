@@ -54,8 +54,6 @@ import me.him188.ani.app.platform.startCommonKoinModule
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.tools.torrent.DefaultTorrentManager
 import me.him188.ani.app.tools.torrent.TorrentManager
-import me.him188.ani.app.torrent.qbittorrent.QBittorrentClientConfig
-import me.him188.ani.app.torrent.qbittorrent.QBittorrentTorrentDownloader
 import me.him188.ani.app.ui.foundation.AniApp
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.main.AniAppContent
@@ -107,34 +105,7 @@ object AniDesktop {
                 single<TorrentManager> {
                     DefaultTorrentManager(
                         coroutineScope.coroutineContext,
-                        downloaderFactory = {
-                            QBittorrentTorrentDownloader(
-                                QBittorrentClientConfig(
-                                    // TODO:
-                                    baseUrl = "http://127.0.0.1:7212"
-                                ),
-                                saveDir = File(projectDirectories.dataDir).resolve("torrent"),
-                                parentCoroutineContext = coroutineScope.coroutineContext,
-                            )
-//                            Libtorrent4jTorrentDownloader(
-//                                cacheDirectory = File(projectDirectories.cacheDir).resolve("torrent"),
-//                                downloadFile = { url ->
-//                                    client.get(url).apply {
-//                                        check(status.isSuccess()) {
-//                                            "Failed to download torrent file, resp=${
-//                                                bodyAsChannel().readRemaining().readBytes()
-//                                            }"
-//                                        }
-//                                    }.bodyAsChannel().readRemaining().readBytes()
-//                                },
-//                                config = TorrentDownloaderConfig(
-//                                    peerFingerprint = computeTorrentFingerprint(),
-//                                    userAgent = computeTorrentUserAgent(),
-//                                    isDebug = currentAniBuildConfig.isDebug,
-//                                ),
-//                                parentCoroutineContext = coroutineScope.coroutineContext,
-//                            )
-                        }
+                        saveDir = { File(projectDirectories.cacheDir).resolve("torrent") },
                     )
                 }
                 single<PlayerStateFactory> {

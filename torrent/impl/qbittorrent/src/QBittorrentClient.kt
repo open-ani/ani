@@ -18,6 +18,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.parameters
 import io.ktor.http.setCookie
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.serialization.Serializable
 import me.him188.ani.utils.ktor.ClientProxyConfig
 import me.him188.ani.utils.ktor.createDefaultHttpClient
 import me.him188.ani.utils.ktor.proxy
@@ -27,7 +28,8 @@ import me.him188.ani.utils.logging.logger
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
-class QBittorrentClientConfig(
+@Serializable
+data class QBittorrentClientConfig(
     val baseUrl: String = "http://127.0.0.1:8080",
     val username: String? = null,
     val password: String? = null,

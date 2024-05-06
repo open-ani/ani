@@ -12,10 +12,10 @@ import me.him188.ani.datasources.api.topic.Topic
 import me.him188.ani.datasources.api.topic.TopicCategory
 
 /**
- * A [remote][MediaSourceLocation.ONLINE] [MediaSource] that uses [Topic] internally.
+ * A [remote][MediaSourceLocation.Online] [MediaSource] that uses [Topic] internally.
  */
 abstract class TopicMediaSource : MediaSource {
-    override val location: MediaSourceLocation get() = MediaSourceLocation.ONLINE
+    override val location: MediaSourceLocation get() = MediaSourceLocation.Online
 
     // For backward compatibility
     protected abstract suspend fun startSearch(query: DownloadSearchQuery): SizedSource<Topic>

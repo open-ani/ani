@@ -18,10 +18,12 @@
 
 plugins {
     kotlin("jvm")
+    kotlin("plugin.serialization")
     `flatten-source-sets`
 }
 
 dependencies {
+    api(libs.kotlinx.serialization.core)
     api(libs.ktor.client.core)
     api(libs.ktor.client.content.negotiation)
     api(libs.ktor.serialization.kotlinx.json)

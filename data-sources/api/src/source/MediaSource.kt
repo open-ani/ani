@@ -18,10 +18,16 @@
 
 package me.him188.ani.datasources.api.source
 
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.paging.SizedSource
+import kotlin.contracts.contract
 
 /**
  * A place where [MediaMatch] can be fetched using [MediaFetchRequest].
@@ -47,7 +53,7 @@ interface MediaSource {
      * otherwise it may break its downstream usages, i.e. the media fetcher or the caching system.
      */
     val location: MediaSourceLocation
-        get() = MediaSourceLocation.ONLINE
+        get() = MediaSourceLocation.Online
 
     /**
      * Checks whether this source is reachable.
@@ -125,17 +131,60 @@ class MediaFetchRequest(
 /**
  * Location of a [MediaSource].
  */
-@Serializable
-enum class MediaSourceLocation {
+@Serializable(MediaSourceLocation.AsStringSerializer::class)
+sealed class MediaSourceLocation {
     /**
-     * The media source is very far a way from us, e.g. on the Internet or on other planet.
+     * The media source is very far a way from us, e.g. on the Internet or on another planet.
      */
-    ONLINE,
+    data object Online : MediaSourceLocation()
 
     /**
-     * The media source is very close to us, e.g. on the local storage, or on a file server on the LAN.
+     * The media source is fairly close to us, e.g. on a file server on the LAN.
      */
-    LOCAL,
+    data object Lan : MediaSourceLocation()
+
+    /**
+     * The media source is on our local file system.
+     */
+    data object Local : MediaSourceLocation()
+
+    companion object {
+        val entries = listOf(Online, Lan, Local)
+    }
+
+    internal object AsStringSerializer : KSerializer<MediaSourceLocation> {
+        override val descriptor = String.serializer().descriptor
+
+        override fun serialize(encoder: Encoder, value: MediaSourceLocation) {
+            encoder.encodeString(
+                getText(value)
+            )
+        }
+
+        private fun getText(value: MediaSourceLocation) = when (value) {
+            Online -> "ONLINE"
+            Lan -> "LAN"
+            Local -> "LOCAL"
+        }
+
+        override fun deserialize(decoder: Decoder): MediaSourceLocation {
+            val string = decoder.decodeString()
+            for (entry in entries) { // type safe
+                if (getText(entry) == string) {
+                    return entry
+                }
+            }
+            throw SerializationException("Unknown MediaSourceLocation: $string")
+        }
+    }
+}
+
+fun MediaSourceLocation.isLowEffort(): Boolean {
+    contract {
+        returns(false) implies (this@isLowEffort is MediaSourceLocation.Online)
+        returns(true) implies (this@isLowEffort is MediaSourceLocation.Lan || this@isLowEffort is MediaSourceLocation.Local)
+    }
+    return this is MediaSourceLocation.Lan || this is MediaSourceLocation.Local
 }
 
 enum class ConnectionStatus {

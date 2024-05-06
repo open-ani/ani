@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.torrent.api.TorrentDownloadSession
 import me.him188.ani.app.torrent.api.TorrentDownloadState
@@ -70,7 +71,7 @@ class QBittorrentTorrentDownloader(
                         totalDownloadRate.value = info.dlInfoSpeed
                     }
                 } catch (e: Throwable) {
-                    logger.error(e) { "Failed to update qBittorrent stats" }
+                    logger.error(e) { "Failed to update qBittorrent stats for global info" }
                 }
                 delay(1000)
             }
@@ -89,7 +90,9 @@ class QBittorrentTorrentDownloader(
         }
         try {
             client.addTorrentFromUri(uri, savePath = tempDirection.absolutePath, paused = true)
-            val actual = awaitTorrentData { it.savePath == tempDirection.absolutePath }
+            val actual = withTimeout(timeoutSeconds * 1000L) {
+                awaitTorrentData { it.savePath == tempDirection.absolutePath }
+            }
             client.deleteTorrents(listOf(actual.hash), false)
             return EncodedTorrentInfo(actual.magnetUri.toByteArray())
         } finally {
@@ -104,6 +107,7 @@ class QBittorrentTorrentDownloader(
             if (torrent != null) {
                 return torrent
             }
+            logger.info { "Waiting for torrent data..." }
             delay(1000)
         }
     }
@@ -151,6 +155,7 @@ class QBittorrentTorrentDownloader(
             isClosed = true
         }
 
+        scope.cancel()
         if (qBittorrentClientLazy.isInitialized()) {
             qBittorrentClientLazy.value.close()
         }
@@ -196,7 +201,7 @@ class QBittorrentTorrentDownloadSession(
                         overallStatsImpl.updateFrom(it)
                     }
                 } catch (e: Throwable) {
-                    logger.error(e) { "Failed to update qBittorrent stats" }
+                    logger.error(e) { "Failed to update qBittorrent stats for session info" }
                 }
                 delay(1000)
             }
@@ -297,7 +302,7 @@ class QBittorrentTorrentDownloadSession(
                             return@launch
                         }
                     } catch (e: Throwable) {
-                        logger.error(e) { "Failed to update qBittorrent stats" }
+                        logger.error(e) { "Failed to update qBittorrent stats for entry" }
                     }
                     delay(300)
                 }

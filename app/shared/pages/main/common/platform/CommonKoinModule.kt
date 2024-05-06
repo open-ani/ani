@@ -24,7 +24,6 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
 import me.him188.ani.app.data.danmaku.DanmakuManager
 import me.him188.ani.app.data.danmaku.DanmakuManagerImpl
 import me.him188.ani.app.data.media.DefaultMediaAutoCacheService
@@ -60,17 +59,21 @@ import me.him188.ani.app.persistent.dataStores
 import me.him188.ani.app.persistent.preferencesStore
 import me.him188.ani.app.persistent.preferredAllianceStore
 import me.him188.ani.app.persistent.tokenStore
+import me.him188.ani.app.platform.Platform.Companion.currentPlatform
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.session.SessionManagerImpl
+import me.him188.ani.app.tools.torrent.TorrentEngineType
 import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.datasources.api.subject.SubjectProvider
 import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
 import me.him188.ani.datasources.core.cache.DirectoryMediaCacheStorage
+import me.him188.ani.utils.coroutines.childScopeContext
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
 import org.koin.core.KoinApplication
 import org.koin.dsl.module
+import kotlin.io.path.createDirectories
 
 @Suppress("UnusedReceiverParameter") // bug
 fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScope: CoroutineScope) = module {
@@ -97,32 +100,49 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
     // Media
     single<MediaCacheManager> {
         val id = MediaCacheManager.LOCAL_FS_MEDIA_SOURCE_ID
-        MediaCacheManagerImpl(
-            listOf(
-                DirectoryMediaCacheStorage(
-                    id,
-                    getContext().files.cacheDir.resolve("media").toPath(),
-                    TorrentMediaCacheEngine(
-                        id,
-                        getTorrentDownloader = { get<TorrentManager>().downloader.await() },
-                    ),
-                    coroutineScope.coroutineContext
+
+        fun getMediaMetadataDir(engineId: String) = getContext().files.dataDir
+            .resolve("media-cache").resolve(engineId)
+
+        // migrate old files
+        getContext().files.cacheDir.resolve("media").let { oldDir ->
+            // 旧的都是 libtorrent4j
+            if (oldDir.exists()) {
+                oldDir.copyRecursively(
+                    getMediaMetadataDir(TorrentEngineType.Libtorrent4j.id), true
                 )
-            )
+                oldDir.deleteRecursively()
+            }
+        }
+
+        MediaCacheManagerImpl(
+            get<TorrentManager>().engines.map { engine ->
+                DirectoryMediaCacheStorage(
+                    mediaSourceId = id,
+                    metadataDir = getMediaMetadataDir(engine.type.id)
+                        .toPath().apply { createDirectories() },
+                    engine = TorrentMediaCacheEngine(
+                        mediaSourceId = id,
+                        torrentEngine = engine,
+                    ),
+                    coroutineScope.childScopeContext(),
+                )
+            }
         )
     }
 
 
     single<VideoSourceResolver> {
         VideoSourceResolver.from(
-            TorrentVideoSourceResolver(get()),
-            LocalFileVideoSourceResolver(),
+            get<TorrentManager>().engines
+                .map { TorrentVideoSourceResolver(it) }
+                .plus(LocalFileVideoSourceResolver())
         )
     }
     single<MediaSourceManager> {
         MediaSourceManagerImpl(
             additionalSources = {
-                get<MediaCacheManager>().storages.map { it.cacheMediaSource }
+                get<MediaCacheManager>().storagesIncludingDisabled.map { it.cacheMediaSource }
             }
         )
     }
@@ -139,9 +159,6 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
  * 会在非 preview 环境调用. 用来初始化一些模块
  */
 fun KoinApplication.startCommonKoinModule(coroutineScope: CoroutineScope): KoinApplication {
-    coroutineScope.launch(Dispatchers.IO) {
-        koin.get<MediaCacheManager>().storages // initialize caches as the storage constructors needs to do IO 
-    }
     koin.get<MediaAutoCacheService>().startRegularCheck(coroutineScope)
     return this
 }
@@ -200,12 +217,13 @@ val AniBuildConfig.versionCode: String
 expect val currentAniBuildConfigImpl: AniBuildConfig
 val currentAniBuildConfig: AniBuildConfig get() = currentAniBuildConfigImpl
 
+/**
+ * 满足各个数据源建议格式的 User-Agent, 所有 HTTP 请求都应该带此 UA.
+ */
 fun getAniUserAgent(
     version: String = currentAniBuildConfig.versionName,
-    platform: String = Platform.currentPlatform().name,
-): String {
-    return "him188/ani/$version ($platform) (https://github.com/Him188/ani)"
-}
+    platform: String = currentPlatform.nameAndArch,
+): String = "open-ani/ani/$version ($platform) (https://github.com/open-ani/ani)"
 
 fun createBangumiClient(): BangumiClient {
     return BangumiClient.create(
