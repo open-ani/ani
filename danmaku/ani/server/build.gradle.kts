@@ -31,6 +31,7 @@ dependencies {
     implementation(projects.danmaku.ani.protocol)
 
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(projects.utils.coroutines)
 
     runtimeOnly(libs.logback.classic)
 }
