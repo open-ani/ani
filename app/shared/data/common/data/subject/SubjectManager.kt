@@ -8,9 +8,11 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
@@ -22,9 +24,11 @@ import me.him188.ani.app.data.repositories.EpisodeRepository
 import me.him188.ani.app.data.repositories.SubjectRepository
 import me.him188.ani.app.data.repositories.setSubjectCollectionTypeOrDelete
 import me.him188.ani.app.session.SessionManager
+import me.him188.ani.app.tools.caching.ContentPolicy
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.tools.caching.MutationContext.replaceAll
 import me.him188.ani.app.tools.caching.addFirst
+import me.him188.ani.app.tools.caching.data
 import me.him188.ani.app.tools.caching.dataTransaction
 import me.him188.ani.app.tools.caching.mutate
 import me.him188.ani.app.tools.caching.removeFirstOrNull
@@ -57,20 +61,50 @@ import org.openapitools.client.models.UserSubjectCollection
  * 管理收藏条目以及它们的内存缓存.
  */
 interface SubjectManager {
+    /**
+     * 本地 subject 缓存
+     */
     val collectionsByType: Map<UnifiedCollectionType, LazyDataCache<SubjectCollectionItem>>
 
-    @Stable
-    fun subjectProgressFlow(item: SubjectCollectionItem): Flow<List<EpisodeProgressItem>>
+    /**
+     * 获取所有条目列表
+     */
+    fun subjectCollectionsFlow(contentPolicy: ContentPolicy): Flow<List<SubjectCollectionItem>> {
+        return combine(collectionsByType.values.map { it.data(contentPolicy) }) { collections ->
+            collections.asSequence().flatten().toList()
+        }
+    }
 
-    suspend fun getSubjectCollection(subjectId: Int): SubjectCollectionItem? {
+    /**
+     * 获取指定条目的观看进度 flow. 进度还会包含该剧集的缓存状态 [EpisodeProgressItem.cacheStatus].
+     */
+    @Stable
+    fun subjectProgressFlow(
+        subjectId: Int,
+        contentPolicy: ContentPolicy
+    ): Flow<List<EpisodeProgressItem>>
+
+    /**
+     * 获取即时更新的收藏条目 flow.
+     * @see subjectProgressFlow
+     */
+    // TODO: 如果 subjectId 没收藏, 这个函数的 flow 就会为空. 需要 (根据 policy) 实现为当未收藏时, 就向服务器请求单个 subjectId 的状态.
+    //  这目前不是问题, 但在修改番剧详情页时可能会有问题.
+    fun subjectCollectionFlow(
+        subjectId: Int,
+        contentPolicy: ContentPolicy
+    ): Flow<SubjectCollectionItem?> =
+        combine(collectionsByType.values.map { it.data(contentPolicy) }) { collections ->
+            collections.asSequence().flatten().firstOrNull { it.subjectId == subjectId }
+        }
+
+    /**
+     * 获取缓存的收藏条目. 注意, 这不会请求网络. 若缓存中不包含则返回 `null`.
+     */
+    suspend fun findCachedSubjectCollection(subjectId: Int): SubjectCollectionItem? {
         return collectionsByType.values.asSequence().map { it.value }.flatten()
             .firstOrNull { it.subjectId == subjectId }
     }
-
-    fun subjectCollectionFlow(subjectId: Int): Flow<SubjectCollectionItem?> =
-        combine(collectionsByType.values.map { it.cachedData }) { collections ->
-            collections.asSequence().flatten().firstOrNull { it.subjectId == subjectId }
-        }
 
     /**
      * 从缓存中获取条目, 若没有则从网络获取.
@@ -82,7 +116,7 @@ interface SubjectManager {
      */
     suspend fun getEpisode(episodeId: Int): Episode
 
-    fun episodeCollectionFlow(subjectId: Int, episodeId: Int): Flow<UserEpisodeCollection>
+    fun episodeCollectionFlow(subjectId: Int, episodeId: Int, contentPolicy: ContentPolicy): Flow<UserEpisodeCollection>
 
     suspend fun setSubjectCollectionType(subjectId: Int, type: UnifiedCollectionType)
 
@@ -123,31 +157,37 @@ class SubjectManagerImpl : KoinComponent, SubjectManager {
             )
         }
 
-
     @Stable
-    override fun subjectProgressFlow(item: SubjectCollectionItem): Flow<List<EpisodeProgressItem>> {
-        return combine(item.episodes.map { episode ->
-            cacheManager.cacheStatusForEpisode(
-                subjectId = item.subjectId,
-                episodeId = episode.episode.id,
-            ).onStart {
-                emit(EpisodeCacheStatus.NotCached)
-            }.map { cacheStatus ->
-                EpisodeProgressItem(
+    override fun subjectProgressFlow(
+        subjectId: Int,
+        contentPolicy: ContentPolicy
+    ): Flow<List<EpisodeProgressItem>> = subjectCollectionFlow(subjectId, contentPolicy)
+        .map { it?.episodes ?: emptyList() }
+        .distinctUntilChanged()
+        .flatMapLatest { episodes ->
+            combine(episodes.map { episode ->
+                cacheManager.cacheStatusForEpisode(
+                    subjectId = subjectId,
                     episodeId = episode.episode.id,
-                    episodeSort = episode.episode.sort.toString(),
-                    watchStatus = episode.type.toCollectionType(),
-                    isOnAir = episode.episode.isOnAir(),
-                    cacheStatus = cacheStatus,
-                )
+                ).onStart {
+                    emit(EpisodeCacheStatus.NotCached)
+                }.map { cacheStatus ->
+                    EpisodeProgressItem(
+                        episodeId = episode.episode.id,
+                        episodeSort = episode.episode.sort.toString(),
+                        watchStatus = episode.type.toCollectionType(),
+                        isOnAir = episode.episode.isOnAir(),
+                        cacheStatus = cacheStatus,
+                    )
+                }
+            }) {
+                it.toList()
             }
-        }) {
-            it.toList()
-        }.flowOn(Dispatchers.Default)
-    }
+        }
+        .flowOn(Dispatchers.Default)
 
     override suspend fun getSubject(subjectId: Int): Subject {
-        getSubjectCollection(subjectId)?.subject?.let { return it }
+        findCachedSubjectCollection(subjectId)?.subject?.let { return it }
         return runUntilSuccess { subjectRepository.getSubject(subjectId) ?: error("Failed to get subject") }
     }
 
@@ -163,8 +203,12 @@ class SubjectManagerImpl : KoinComponent, SubjectManager {
         }
     }
 
-    override fun episodeCollectionFlow(subjectId: Int, episodeId: Int): Flow<UserEpisodeCollection> {
-        return subjectCollectionFlow(subjectId)
+    override fun episodeCollectionFlow(
+        subjectId: Int,
+        episodeId: Int,
+        contentPolicy: ContentPolicy
+    ): Flow<UserEpisodeCollection> {
+        return subjectCollectionFlow(subjectId, contentPolicy)
             .transform { subject ->
                 if (subject == null) {
                     emit(me.him188.ani.utils.coroutines.runUntilSuccess {

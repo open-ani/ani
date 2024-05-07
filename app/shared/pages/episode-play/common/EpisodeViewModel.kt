@@ -35,6 +35,7 @@ import me.him188.ani.app.data.media.resolver.VideoSourceResolver
 import me.him188.ani.app.data.subject.SubjectManager
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.Context
+import me.him188.ani.app.tools.caching.ContentPolicy
 import me.him188.ani.app.torrent.api.MagnetTimeoutException
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
@@ -278,7 +279,8 @@ private class EpisodeViewModelImpl(
         }
         .produceState(SubjectPresentation.Placeholder)
 
-    override val episodePresentation: EpisodePresentation by subjectManager.episodeCollectionFlow(subjectId, episodeId)
+    override val episodePresentation: EpisodePresentation by
+    subjectManager.episodeCollectionFlow(subjectId, episodeId, ContentPolicy.CACHE_FIRST)
         .map {
             EpisodePresentation(
                 title = it.episode.nameCNOrName(),

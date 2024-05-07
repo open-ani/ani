@@ -5,20 +5,19 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.dropWhile
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.takeWhile
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.models.MediaCacheSettings
 import me.him188.ani.app.data.repositories.EpisodeRepository
 import me.him188.ani.app.data.repositories.PreferencesRepository
-import me.him188.ani.app.data.repositories.SubjectRepository
-import me.him188.ani.app.session.SessionManager
+import me.him188.ani.app.data.subject.SubjectCollectionItem
+import me.him188.ani.app.data.subject.SubjectManager
+import me.him188.ani.app.tools.caching.ContentPolicy
 import me.him188.ani.app.ui.subject.episode.mediaFetch.EpisodeMediaFetchSession
 import me.him188.ani.app.ui.subject.episode.mediaFetch.FetcherMediaSelectorConfig
 import me.him188.ani.app.ui.subject.episode.mediaFetch.awaitCompletion
@@ -37,10 +36,7 @@ import me.him188.ani.utils.logging.logger
 import org.koin.core.Koin
 import org.koin.core.context.GlobalContext
 import org.openapitools.client.models.EpType
-import org.openapitools.client.models.SubjectCollectionType
-import org.openapitools.client.models.SubjectType
 import org.openapitools.client.models.UserEpisodeCollection
-import org.openapitools.client.models.UserSubjectCollection
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 
@@ -53,15 +49,11 @@ interface MediaAutoCacheService {
 fun DefaultMediaAutoCacheService(
     koin: Koin = GlobalContext.get()
 ) = DefaultMediaAutoCacheService(
-    subjectCollections = {
-        // TODO: [media][caching] replace with subject cache 
-        val username = koin.get<SessionManager>().username.filterNotNull().first()
-        koin.get<SubjectRepository>()
-            .getSubjectCollections(username, SubjectType.Anime, SubjectCollectionType.Doing)
-            .results
-            .run {
-                if (it.mostRecentOnly) take(it.mostRecentCount) else this
-            }.toList()
+    subjectCollections = { settings ->
+        koin.get<SubjectManager>()
+            .subjectCollectionsFlow(ContentPolicy.CACHE_FIRST)
+            .map { it.take(settings.mostRecentCount) }
+            .first()
     },
     config = koin.get<PreferencesRepository>().mediaCacheSettings.flow,
     episodeRepository = koin.get(),
@@ -73,7 +65,7 @@ class DefaultMediaAutoCacheService(
     /**
      * Emits list of subjects to be considered caching. 通常是 "在看" 分类的. 只需要前几个 (根据配置 [MediaCacheSettings.mostRecentOnly]).
      */
-    private val subjectCollections: suspend (MediaCacheSettings) -> List<UserSubjectCollection>,
+    private val subjectCollections: suspend (MediaCacheSettings) -> List<SubjectCollectionItem>,
     private val config: Flow<MediaCacheSettings>,
     private val episodeRepository: EpisodeRepository,
     /**
@@ -154,8 +146,7 @@ class DefaultMediaAutoCacheService(
         }
     }
 
-    private fun UserSubjectCollection.debugName() =
-        subject?.nameCNOrName() ?: subjectId.toString()
+    private fun SubjectCollectionItem.debugName() = subject.nameCNOrName()
 
     internal companion object {
         val logger = logger(DefaultMediaAutoCacheService::class)

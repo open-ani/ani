@@ -36,6 +36,9 @@ annotation class UnsafeLazyDataCacheApi
 interface LazyDataCache<T> {
     /**
      * 当前缓存的数据, 它可能是不完整的.
+     *
+     * @see data
+     * @see ContentPolicy
      */
     val cachedData: StateFlow<List<T>>
 
@@ -48,6 +51,9 @@ interface LazyDataCache<T> {
      * 如要获取所有数据, 可使用 `allData.last()`.
      *
      * 若在 [allData] collect 的过程中有 [invalidate], 那么 [allData] 将会重新开始.
+     *
+     * @see data
+     * @see ContentPolicy
      */
     val allData: Flow<List<T>>
 

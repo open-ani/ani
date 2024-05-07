@@ -8,6 +8,7 @@ import me.him188.ani.app.data.media.MediaCacheManager
 import me.him188.ani.app.data.subject.SubjectCollectionItem
 import me.him188.ani.app.data.subject.SubjectManager
 import me.him188.ani.app.data.subject.setEpisodeWatched
+import me.him188.ani.app.tools.caching.ContentPolicy
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
@@ -25,9 +26,11 @@ interface MyCollectionsViewModel : HasBackgroundScope, ViewModelAuthSupport {
 
     /**
      * 返回用户观看该番剧的进度 [Flow].
+     *
+     * 该 flow 总是使用 [ContentPolicy.CACHE_ONLY]
      */
     @Stable
-    fun subjectProgress(item: SubjectCollectionItem): Flow<List<EpisodeProgressItem>>
+    fun subjectProgress(subjectId: Int): Flow<List<EpisodeProgressItem>>
 
     @Stable
     fun cacheStatusForEpisode(subjectId: Int, episodeId: Int): Flow<EpisodeCacheStatus>
@@ -53,8 +56,8 @@ class MyCollectionsViewModelImpl : AbstractViewModel(), KoinComponent, MyCollect
         subjectManager.collectionsByType[type]!!
 
     @Stable
-    override fun subjectProgress(item: SubjectCollectionItem): Flow<List<EpisodeProgressItem>> =
-        subjectManager.subjectProgressFlow(item)
+    override fun subjectProgress(subjectId: Int): Flow<List<EpisodeProgressItem>> =
+        subjectManager.subjectProgressFlow(subjectId, ContentPolicy.CACHE_ONLY)
 
     @Stable
     override fun cacheStatusForEpisode(subjectId: Int, episodeId: Int): Flow<EpisodeCacheStatus> =

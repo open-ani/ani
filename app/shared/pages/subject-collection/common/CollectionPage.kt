@@ -194,7 +194,7 @@ private fun TabContent(
             var showEpisodeProgressDialog by rememberSaveable { mutableStateOf(false) }
 
             val progress by remember(vm, subjectCollection) {
-                vm.subjectProgress(subjectCollection)
+                vm.subjectProgress(subjectCollection.subjectId)
             }.collectAsStateWithLifecycle(emptyList()) // #155: 在 dialog 弹出之前就开始加载, 否则点击 "选集" 会需要等待 1 秒左右
 
             if (showEpisodeProgressDialog) {
