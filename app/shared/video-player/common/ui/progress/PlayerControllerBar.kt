@@ -14,13 +14,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.Chat
 import androidx.compose.material.icons.automirrored.rounded.Send
 import androidx.compose.material.icons.rounded.Fullscreen
 import androidx.compose.material.icons.rounded.FullscreenExit
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
-import androidx.compose.material.icons.rounded.SpeakerNotesOff
+import androidx.compose.material.icons.rounded.Subtitles
+import androidx.compose.material.icons.rounded.SubtitlesOff
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -97,9 +97,9 @@ object PlayerControllerDefaults {
             modifier,
         ) {
             if (danmakuEnabled) {
-                Icon(Icons.AutoMirrored.Rounded.Chat, contentDescription = "Disable Danmaku")
+                Icon(Icons.Rounded.Subtitles, contentDescription = "禁用弹幕")
             } else {
-                Icon(Icons.Rounded.SpeakerNotesOff, contentDescription = "Enable Danmaku")
+                Icon(Icons.Rounded.SubtitlesOff, contentDescription = "启用弹幕")
             }
         }
     }
