@@ -43,7 +43,7 @@ fun getServerKoinModule(
     single<JwtTokenManager> { JwtTokenManagerImpl() }
     single<ClientVersionVerifier> {
         AniClientVersionVerifierImpl(
-            versionWhitelistRegex = listOf("3.[0-9]{1,2}.[0-9]{1,2}-dev")
+            versionWhitelistRegex = listOf("[3-9].[0-9]{1,2}.[0-9]{1,2}-dev")
         )
     }
 
