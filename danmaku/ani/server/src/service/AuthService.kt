@@ -14,12 +14,12 @@ interface AuthService {
 class AuthServiceImpl : AuthService, KoinComponent {
     private val bangumiLoginHelper: BangumiLoginHelper by inject()
     private val userRepository: UserRepository by inject()
-    private val githubVersionVerifier: GithubVersionVerifier by inject()
+    private val clientVersionVerifier: ClientVersionVerifier by inject()
 
     override suspend fun loginBangumi(bangumiToken: String, clientVersion: String?): String {
         val bangumiUser = bangumiLoginHelper.login(bangumiToken) ?: throw UnauthorizedException()
         if (clientVersion != null) {
-            if (!githubVersionVerifier.verify(clientVersion.trim())) {
+            if (!clientVersionVerifier.verify(clientVersion.trim())) {
                 throw InvalidClientVersionException()
             }
         }

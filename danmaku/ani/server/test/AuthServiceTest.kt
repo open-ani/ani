@@ -66,6 +66,9 @@ class AuthServiceTest {
     fun `test login bangumi with client version`() = runTestWithKoin {
         val authService = koin.get<AuthService>()
         runUntilSuccess(maxAttempts = 5) {
+            authService.loginBangumi("test_token_1", "3.0.0-dev")
+        }
+        runUntilSuccess(maxAttempts = 5) {
             authService.loginBangumi("test_token_1", "3.0.0-beta21")
         }
         runUntilSuccess(maxAttempts = 5) {

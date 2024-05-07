@@ -9,13 +9,14 @@ import me.him188.ani.danmaku.server.data.mongodb.MongoCollectionProvider
 import me.him188.ani.danmaku.server.data.mongodb.MongoCollectionProviderImpl
 import me.him188.ani.danmaku.server.data.mongodb.MongoDanmakuRepositoryImpl
 import me.him188.ani.danmaku.server.data.mongodb.MongoUserRepositoryImpl
+import me.him188.ani.danmaku.server.service.AniClientVersionVerifierImpl
 import me.him188.ani.danmaku.server.service.AuthService
 import me.him188.ani.danmaku.server.service.AuthServiceImpl
 import me.him188.ani.danmaku.server.service.BangumiLoginHelper
 import me.him188.ani.danmaku.server.service.BangumiLoginHelperImpl
 import me.him188.ani.danmaku.server.service.DanmakuService
 import me.him188.ani.danmaku.server.service.DanmakuServiceImpl
-import me.him188.ani.danmaku.server.service.GithubVersionVerifier
+import me.him188.ani.danmaku.server.service.ClientVersionVerifier
 import me.him188.ani.danmaku.server.service.GithubVersionVerifierImpl
 import me.him188.ani.danmaku.server.service.JwtTokenManager
 import me.him188.ani.danmaku.server.service.JwtTokenManagerImpl
@@ -34,13 +35,17 @@ fun getServerKoinModule(
 ) = module {
     single(named("topCoroutineScope")) { topCoroutineScope }
     single<Logger> { logger }
-    single<ServerConfig> { config  }
+    single<ServerConfig> { config }
 
     single<DanmakuService> { DanmakuServiceImpl() }
     single<AuthService> { AuthServiceImpl() }
     single<UserService> { UserServiceImpl() }
     single<JwtTokenManager> { JwtTokenManagerImpl() }
-    single<GithubVersionVerifier> { GithubVersionVerifierImpl() }
+    single<ClientVersionVerifier> {
+        AniClientVersionVerifierImpl(
+            versionWhitelistRegex = listOf("3.[0-9]{1,2}.[0-9]{1,2}-dev")
+        )
+    }
 
     if (config.testing) {
         single<DanmakuRepository> { InMemoryDanmakuRepositoryImpl() }
