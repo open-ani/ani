@@ -22,9 +22,9 @@ enum class ContentPolicy {
 }
 
 /**
- * 根据 [ContentPolicy], 选择仅使用已缓存数据 [LazyDataCache.cachedData] 还是使用允许网络请求的所有数据 [LazyDataCache.allData].
+ * 根据 [ContentPolicy], 选择仅使用已缓存数据 [LazyDataCache.cachedDataFlow] 还是使用允许网络请求的所有数据 [LazyDataCache.allDataFlow].
  */
 fun <T> LazyDataCache<T>.data(policy: ContentPolicy): Flow<List<T>> = when (policy) {
-    CACHE_ONLY -> cachedData
-    CACHE_FIRST -> allData
+    CACHE_ONLY -> cachedDataFlow
+    CACHE_FIRST -> allDataFlow
 }

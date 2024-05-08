@@ -71,7 +71,7 @@ import kotlin.time.Duration.Companion.seconds
  * Lazy column of [item]s, designed for My Collections.
  *
  * @param item composes each item. See [SubjectCollectionItem]
- * @param onEmpty content to be displayed when [LazyDataCache.cachedData] is empty.
+ * @param onEmpty content to be displayed when [LazyDataCache.cachedDataFlow] is empty.
  * @param contentPadding 要求该 column 的内容必须保持的 padding.
  * [SubjectCollectionsColumn] 将会允许元素渲染到这些区域, 但会在列表首尾添加 padding.
  * 这样可以让列表渲染到 bottom bar 的下面 (bottom bar 设置 alpha 0.97), 而用户又能正常地滑动到列表尾部并完整显示最后一个元素.
@@ -87,7 +87,7 @@ fun SubjectCollectionsColumn(
     val spacedBy = 16.dp
     val state = rememberLazyListState()
 
-    val data by cache.cachedData.collectAsState()
+    val data by cache.cachedDataFlow.collectAsState(emptyList())
 
     // 如果不 debounce, 会导致刚刚加载完成后会显示一小会 "空空如也"
     val isCompleted by remember(cache) { cache.isCompleted.debounce(1.seconds) }.collectAsState(false)
@@ -331,21 +331,21 @@ private fun getEpisodeToPlay(
     item: SubjectCollectionItem,
 ): UserEpisodeCollection? {
     if (item.continueWatchingStatus is ContinueWatchingStatus.Watched) {
-        return item.episodes[item.continueWatchingStatus.episodeIndex]
+        return item._episodes[item.continueWatchingStatus.episodeIndex]
     } else {
         item.lastWatchedEpIndex?.let {
-            item.episodes.getOrNull(it + 1)
+            item._episodes.getOrNull(it + 1)
         }?.let {
             return it
         }
 
         item.lastWatchedEpIndex?.let {
-            item.episodes.getOrNull(it)
+            item._episodes.getOrNull(it)
         }?.let {
             return it
         }
 
-        item.episodes.firstOrNull()?.let {
+        item._episodes.firstOrNull()?.let {
             return it
         }
     }

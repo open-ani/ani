@@ -1,11 +1,13 @@
 package me.him188.ani.datasources.api.topic
 
 import androidx.compose.runtime.Stable
+import kotlinx.serialization.Serializable
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType.NOT_COLLECTED
 
 /**
  * Unified type for all collection types, also added representation for [NOT_COLLECTED].
  */
+@Serializable
 enum class UnifiedCollectionType {
     WISH,
     DOING,

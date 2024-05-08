@@ -10,6 +10,7 @@ import me.him188.ani.app.data.subject.SubjectManager
 import me.him188.ani.app.data.subject.setEpisodeWatched
 import me.him188.ani.app.tools.caching.ContentPolicy
 import me.him188.ani.app.tools.caching.LazyDataCache
+import me.him188.ani.app.tools.caching.getCachedData
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
@@ -87,7 +88,7 @@ class MyCollectionsViewModelImpl : AbstractViewModel(), KoinComponent, MyCollect
                 UnifiedCollectionType.DROPPED,
             ).forEach { type ->
                 collectionsByType[type]?.let { cache ->
-                    if (cache.cachedData.value.isEmpty()) {
+                    if (cache.getCachedData().isEmpty()) {
                         cache.requestMore()
                     }
                 }

@@ -11,6 +11,10 @@ data class Paged<T>(
     }
 }
 
+fun <T> Paged(list: List<T>): Paged<T> {
+    return Paged(null, hasMore = list.isNotEmpty(), list)
+}
+
 inline fun <T, R> Paged<T>.map(block: (T) -> R): Paged<R> {
     return Paged(
         total = total,

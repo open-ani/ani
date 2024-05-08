@@ -108,6 +108,21 @@ abstract class AbstractPageBasedPagedSource<T>(
         finished.value = true
     }
 
+    override fun skipToPage(page: Int) {
+        if (finished.value) {
+            return
+        }
+        while (true) {
+            val value = currentPage.value
+            if (value >= page) {
+                return
+            }
+            if (currentPage.compareAndSet(value, page)) {
+                return
+            }
+        }
+    }
+
     final override fun backToPrevious() {
         // This is actually not thread-safe, but it's fine for now
 

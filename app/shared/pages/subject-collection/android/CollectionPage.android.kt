@@ -14,6 +14,7 @@ import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.datasources.api.paging.SinglePagePagedSource
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
+import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import org.openapitools.client.models.Collection
 import org.openapitools.client.models.Count
 import org.openapitools.client.models.Episode
@@ -21,7 +22,6 @@ import org.openapitools.client.models.EpisodeCollectionType
 import org.openapitools.client.models.Images
 import org.openapitools.client.models.Rating
 import org.openapitools.client.models.Subject
-import org.openapitools.client.models.SubjectCollectionType
 import org.openapitools.client.models.SubjectType
 import org.openapitools.client.models.UserEpisodeCollection
 import java.math.BigDecimal
@@ -94,53 +94,49 @@ private fun testCollections(): List<SubjectCollectionItem> {
         add(
             SubjectCollectionItem(
                 subjectId = ++id,
-                subject = testSubject(id),
                 displayName = "葬送的芙莉莲",
                 image = "",
                 rate = null,
                 date = "2023 年 10 月",
                 totalEps = 2,
-                episodes = eps,
-                collectionType = SubjectCollectionType.Doing
+                _episodes = eps,
+                collectionType = UnifiedCollectionType.DOING
             )
         )
         add(
             SubjectCollectionItem(
                 subjectId = id++,
-                subject = testSubject(id),
                 displayName = "葬送的芙莉莲 2",
                 image = "",
                 rate = null,
                 date = "2023 年 10 月",
                 totalEps = 2,
-                episodes = eps,
-                collectionType = SubjectCollectionType.Doing
+                _episodes = eps,
+                collectionType = UnifiedCollectionType.DOING
             )
         )
         add(
             SubjectCollectionItem(
                 subjectId = id++,
-                subject = testSubject(id),
                 displayName = "葬送的芙莉莲 3",
                 image = "",
                 rate = null,
                 date = "2023 年 10 月",
                 totalEps = 2,
-                episodes = eps,
-                collectionType = SubjectCollectionType.Doing
+                _episodes = eps,
+                collectionType = UnifiedCollectionType.DOING
             )
         )
         add(
             SubjectCollectionItem(
                 subjectId = id++,
-                subject = testSubject(id),
                 displayName = "葬送的芙莉莲 4",
                 image = "",
                 rate = null,
                 date = "2023 年 10 月",
                 totalEps = 2,
-                episodes = eps,
-                collectionType = SubjectCollectionType.Wish
+                _episodes = eps,
+                collectionType = UnifiedCollectionType.WISH
             )
         )
     }

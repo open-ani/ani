@@ -20,9 +20,7 @@ package me.him188.ani.datasources.api.paging
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.map
 
 /**
@@ -51,6 +49,8 @@ interface PagedSource<out T> : SizedSource<T> {
      * When this coroutine is cancelled, [currentPage] is guaranteed to be left intact, i.e. not incremented.
      */
     suspend fun nextPageOrNull(): List<T>?
+
+    fun skipToPage(page: Int)
 
     /**
      * Update the page counter to the previous page if there is one.
@@ -83,26 +83,12 @@ inline fun <T, R> PagedSource<T>.map(crossinline transform: suspend (T) -> R): P
             }
         }
 
+        override fun skipToPage(page: Int) {
+            self.skipToPage(page)
+        }
+
         override fun backToPrevious() {
             self.backToPrevious()
-        }
-    }
-}
-
-fun <T> Collection<T>.asSinglePageSource(): PagedSource<T> {
-    return object : PagedSource<T> {
-        override val results: Flow<T> = asFlow()
-        override val finished: StateFlow<Boolean> = MutableStateFlow(true)
-        override val currentPage: MutableStateFlow<Int> = MutableStateFlow(0)
-        override val totalSize: StateFlow<Int?> = MutableStateFlow(size)
-        override suspend fun nextPageOrNull(): List<T>? {
-            if (!currentPage.compareAndSet(0, 1)) return null
-            return this@asSinglePageSource.toList()
-        }
-
-        override fun backToPrevious() {
-            if (currentPage.value == 0) return
-            currentPage.compareAndSet(1, 0)
         }
     }
 }

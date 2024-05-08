@@ -25,7 +25,7 @@ object MutationContext {
 }
 
 /**
- * Changes one element of the [LazyDataCache.cachedData] matching [where].
+ * Changes one element of the [LazyDataCache.cachedDataFlow] matching [where].
  */
 suspend inline fun <T> LazyDataCacheMutator<T>.setEach(
     crossinline where: (T) -> Boolean,

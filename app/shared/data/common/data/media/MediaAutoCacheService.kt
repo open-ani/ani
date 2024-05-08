@@ -24,7 +24,6 @@ import me.him188.ani.app.ui.subject.episode.mediaFetch.awaitCompletion
 import me.him188.ani.datasources.api.MediaCacheMetadata
 import me.him188.ani.datasources.api.topic.isDoneOrDropped
 import me.him188.ani.datasources.bangumi.processing.isOnAir
-import me.him188.ani.datasources.bangumi.processing.nameCNOrName
 import me.him188.ani.datasources.bangumi.processing.toCollectionType
 import me.him188.ani.datasources.core.cache.MediaCacheStorage
 import me.him188.ani.utils.coroutines.OwnedCancellationException
@@ -146,7 +145,7 @@ class DefaultMediaAutoCacheService(
         }
     }
 
-    private fun SubjectCollectionItem.debugName() = subject.nameCNOrName()
+    private fun SubjectCollectionItem.debugName() = displayName
 
     internal companion object {
         val logger = logger(DefaultMediaAutoCacheService::class)

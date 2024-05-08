@@ -84,7 +84,7 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
     single<BangumiClient> { createBangumiClient() }
     single<SubjectProvider> { BangumiSubjectProvider(get<BangumiClient>()) }
     single<SubjectRepository> { SubjectRepositoryImpl() }
-    single<SubjectManager> { SubjectManagerImpl() }
+    single<SubjectManager> { SubjectManagerImpl(getContext()) }
     single<UserRepository> { UserRepositoryImpl() }
     single<EpisodeRevisionRepository> { EpisodeRevisionRepositoryImpl() }
     single<EpisodeRepository> { EpisodeRepositoryImpl() }

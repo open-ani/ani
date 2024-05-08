@@ -21,44 +21,17 @@ package me.him188.ani.app.ui.subject
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.Preview
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.flow
 import me.him188.ani.app.ui.foundation.PreviewData
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
-import me.him188.ani.datasources.api.paging.PagedSource
-import me.him188.ani.datasources.api.subject.Subject
+import me.him188.ani.datasources.api.paging.PageBasedPagedSource
+import me.him188.ani.datasources.api.paging.Paged
 
 @Composable
 @Preview(apiLevel = 33)
 private fun PreviewSubjectList() {
     val viewModel = remember {
-        SubjectListViewModel(object : PagedSource<Subject> {
-            override val results: Flow<Subject> = flow {
-                while (true) {
-                    emit(subject)
-                }
-            }
-            override val finished: StateFlow<Boolean> = MutableStateFlow(false)
-            override val currentPage = MutableStateFlow(0)
-            override val totalSize: StateFlow<Int?> = MutableStateFlow(null)
-
-            private val subject get() = PreviewData.SosouNoFurilen
-            private val maxCount = 15
-            override suspend fun nextPageOrNull(): List<Subject>? {
-                delay(500)
-                return if (currentPage.value >= maxCount) {
-                    null
-                } else {
-                    currentPage.value++
-                    listOf(subject)
-                }
-            }
-
-            override fun backToPrevious() {
-            }
+        SubjectListViewModel(PageBasedPagedSource {
+            Paged(listOf(PreviewData.SosouNoFurilen))
         })
     }
     ProvideCompositionLocalsForPreview {

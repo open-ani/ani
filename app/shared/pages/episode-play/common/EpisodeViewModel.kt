@@ -198,8 +198,8 @@ private class EpisodeViewModelImpl(
     private val danmakuManager: DanmakuManager by inject()
     private val videoSourceResolver: VideoSourceResolver by inject()
 
-    private val subject = flowOf(subjectId).mapLatest { subjectId ->
-        subjectManager.getSubject(subjectId)
+    private val subjectDisplayName = flowOf(subjectId).mapLatest { subjectId ->
+        subjectManager.getSubjectName(subjectId)
     }.shareInBackground()
 
     // Media Selection
@@ -271,11 +271,9 @@ private class EpisodeViewModelImpl(
     override val playerState: PlayerState =
         playerStateFactory.create(context, backgroundScope.coroutineContext)
 
-    override val subjectPresentation: SubjectPresentation by subject
+    override val subjectPresentation: SubjectPresentation by subjectDisplayName
         .map {
-            SubjectPresentation(
-                title = it.nameCNOrName()
-            )
+            SubjectPresentation(title = it)
         }
         .produceState(SubjectPresentation.Placeholder)
 

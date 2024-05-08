@@ -34,6 +34,6 @@ internal class PlatformDataStoreManagerAndroid(
     private val context: Context,
 ) : PlatformDataStoreManager() {
     override fun resolveDataStoreFile(name: String): File {
-        return context.applicationContext.dataStoreFile("mikanIndexes")
+        return context.applicationContext.dataStoreFile(name)
     }
 }
