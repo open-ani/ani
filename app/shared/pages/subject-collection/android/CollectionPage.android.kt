@@ -12,7 +12,7 @@ import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.tools.caching.mutate
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.rememberViewModel
-import me.him188.ani.datasources.api.paging.SingleShotPagedSource
+import me.him188.ani.datasources.api.paging.SinglePagePagedSource
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import org.openapitools.client.models.Collection
 import org.openapitools.client.models.Count
@@ -153,7 +153,7 @@ private fun PreviewSubjectCollectionsColumn() {
         SubjectCollectionsColumn(
             LazyDataCache(
                 {
-                    SingleShotPagedSource {
+                    SinglePagePagedSource {
                         testCollections().asFlow()
                     }
                 },

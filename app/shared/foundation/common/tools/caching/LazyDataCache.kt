@@ -3,22 +3,23 @@ package me.him188.ani.app.tools.caching
 import androidx.compose.runtime.Stable
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.transformLatest
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import me.him188.ani.datasources.api.paging.PagedSource
-import me.him188.ani.utils.coroutines.cancellableCoroutineScope
 
 @RequiresOptIn(
     level = RequiresOptIn.Level.ERROR,
@@ -44,11 +45,7 @@ interface LazyDataCache<T> {
 
     /**
      * 完整的数据 flow. 在 collect 这个 flow 时将会自动调用 [requestMore] 加载更多数据.
-     * 这个 flow 会在每加载完成一页时返回累计的数据.
-     *
-     * 该 flow 会在加载完成所有数据后完结, 且一定会至少 emit 一次.
-     *
-     * 如要获取所有数据, 可使用 `allData.last()`.
+     * 这个 flow 会在每加载完成一页时返回累计的数据. 不会完结.
      *
      * 若在 [allData] collect 的过程中有 [invalidate], 那么 [allData] 将会重新开始.
      *
@@ -188,17 +185,43 @@ class LazyDataCacheImpl<T>(
         cachedData.value = sanitize?.invoke(data) ?: data
     }
 
-    override val allData: Flow<List<T>> = flow {
-        cancellableCoroutineScope {
-            currentSource.collectLatest { // 当有新 source 时 flow 会重新开始
-                emit(cachedData.value)
-                while (!sourceCompleted.first()) {
-                    requestMore()
-                    emit(cachedData.value)
+    override val allData: Flow<List<T>> = channelFlow {
+        coroutineScope {
+            launch {
+                currentSource.filterNotNull().collectLatest {
+                    while (!it.finished.value) {
+                        requestMore()
+                    }
                 }
-                cancelScope() // 仅收集一个 source
+            }
+            cachedData.collectLatest {
+                send(it)
             }
         }
+
+//        cancellableCoroutineScope {
+//            val cached = cachedData.produceIn(this)
+//            val sourceRequest = launch {
+//                while (!sourceCompleted.first()) {
+//                    requestMore()
+//                }
+//                requestInProgress.filter { !it }.first() // wait for the last request to finish
+//            }
+//
+//            launch {
+//                while (isActive) {
+//                    select {
+//                        sourceRequest.onJoin { // check this first
+//                            emit(cachedData.value) // emit the latest value to ensure the last page is emitted
+//                            cancelScope()
+//                        }
+//                        cached.onReceive {
+//                            emit(it)
+//                        }
+//                    }
+//                }
+//            }
+//        }
     }
 
     private val requestInProgress = MutableStateFlow(false)

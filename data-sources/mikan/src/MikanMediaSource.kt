@@ -48,7 +48,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.json.Json
-import me.him188.ani.datasources.api.paging.SingleShotPagedSource
+import me.him188.ani.datasources.api.paging.SinglePagePagedSource
 import me.him188.ani.datasources.api.paging.SizedSource
 import me.him188.ani.datasources.api.source.ConnectionStatus
 import me.him188.ani.datasources.api.source.MatchKind
@@ -154,7 +154,7 @@ abstract class AbstractMikanMediaSource(
     }
 
     override suspend fun fetch(query: MediaFetchRequest): SizedSource<MediaMatch> =
-        SingleShotPagedSource {
+        SinglePagePagedSource {
             val list = try {
                 searchByIndexOrNull(query)
             } catch (e: Throwable) {

@@ -22,7 +22,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaCacheMetadata
-import me.him188.ani.datasources.api.paging.SingleShotPagedSource
+import me.him188.ani.datasources.api.paging.SinglePagePagedSource
 import me.him188.ani.datasources.api.paging.SizedSource
 import me.him188.ani.datasources.api.source.ConnectionStatus
 import me.him188.ani.datasources.api.source.MatchKind
@@ -241,7 +241,7 @@ private class MediaCacheStorageSource(
     override suspend fun checkConnection(): ConnectionStatus = ConnectionStatus.SUCCESS
 
     override suspend fun fetch(query: MediaFetchRequest): SizedSource<MediaMatch> {
-        return SingleShotPagedSource {
+        return SinglePagePagedSource {
             storage.listFlow.first().mapNotNull { cache ->
                 val kind = query.matches(cache.metadata)
                 if (kind == MatchKind.NONE) null

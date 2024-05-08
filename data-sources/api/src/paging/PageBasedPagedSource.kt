@@ -16,8 +16,8 @@ interface PagedSourceContext {
 
 
 @Suppress("FunctionName")
-fun <T> SingleShotPagedSource(getAll: suspend PagedSourceContext.() -> Flow<T>): PagedSource<T> {
-    return object : AbstractPageBasedPagedSource<T>() {
+fun <T> SinglePagePagedSource(getAll: suspend PagedSourceContext.() -> Flow<T>): PagedSource<T> {
+    return object : AbstractPageBasedPagedSource<T>(initialPage = 0) {
         private inline val self get() = this
         private val context = object : PagedSourceContext {
             override fun setTotalSize(size: Int) {
@@ -25,10 +25,11 @@ fun <T> SingleShotPagedSource(getAll: suspend PagedSourceContext.() -> Flow<T>):
             }
         }
 
-        override suspend fun nextPageImpl(page: Int): List<T> {
-            val paged = getAll(context)
-            noMorePages()
-            return paged.toList()
+        override suspend fun nextPageImpl(page: Int): List<T>? {
+            if (currentPage.value == 0) {
+                return getAll(context).toList()
+            }
+            return null
         }
     }
 }

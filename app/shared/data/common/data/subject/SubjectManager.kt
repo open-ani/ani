@@ -140,7 +140,7 @@ class SubjectManagerImpl : KoinComponent, SubjectManager {
     override val collectionsByType: Map<UnifiedCollectionType, LazyDataCache<SubjectCollectionItem>> =
         UnifiedCollectionType.entries.associateWith { type ->
             LazyDataCache(
-                {
+                createSource = {
                     val username = sessionManager.username.filterNotNull().first()
                     subjectRepository.getSubjectCollections(
                         username,
@@ -221,7 +221,7 @@ class SubjectManagerImpl : KoinComponent, SubjectManager {
                         subject.episodes.filter { it.episode.id == episodeId }.asFlow()
                     )
                 }
-            }
+            }.flowOn(Dispatchers.Default)
     }
 
     override suspend fun setSubjectCollectionType(subjectId: Int, type: UnifiedCollectionType) {
