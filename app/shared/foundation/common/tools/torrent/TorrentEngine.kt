@@ -86,7 +86,7 @@ abstract class AbstractTorrentEngine<Downloader : TorrentDownloader, Config : To
         .onReplacement {
             closeInstance(it)
         }
-        .shareIn(scope, SharingStarted.WhileSubscribed(5000), 1)
+        .shareIn(scope, SharingStarted.Lazily, 1)
 
     protected abstract suspend fun newInstance(config: Config): Downloader
 
