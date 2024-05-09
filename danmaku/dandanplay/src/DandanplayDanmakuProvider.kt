@@ -13,10 +13,13 @@ import me.him188.ani.danmaku.api.DanmakuSession
 import me.him188.ani.danmaku.api.TimeBasedDanmakuSession
 import me.him188.ani.danmaku.dandanplay.data.toDanmakuOrNull
 import me.him188.ani.utils.logging.info
+import kotlin.coroutines.CoroutineContext
 
 class DandanplayDanmakuProvider(
     config: DanmakuProviderConfig,
 ) : AbstractDanmakuProvider(config) {
+    private val sessionCoroutineContext: CoroutineContext = config.coroutineContext
+
     companion object {
         const val ID = "弹弹play"
     }
@@ -108,6 +111,7 @@ class DandanplayDanmakuProvider(
         return TimeBasedDanmakuSession.create(
             list.asSequence().mapNotNull { it.toDanmakuOrNull() },
             shiftMillis = shiftMillis,
+            coroutineContext = sessionCoroutineContext,
         )
     }
 }

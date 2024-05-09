@@ -1,9 +1,11 @@
 package me.him188.ani.danmaku.api
 
 import io.ktor.client.HttpClientConfig
+import kotlinx.coroutines.Dispatchers
 import me.him188.ani.utils.ktor.ClientProxyConfig
 import me.him188.ani.utils.ktor.proxy
 import me.him188.ani.utils.ktor.userAgent
+import kotlin.coroutines.CoroutineContext
 
 interface DanmakuProviderFactory { // SPI interface
     /**
@@ -20,6 +22,7 @@ class DanmakuProviderConfig(
     val proxy: ClientProxyConfig? = null,
     val userAgent: String? = null,
     val useGlobal: Boolean = false,
+    val coroutineContext: CoroutineContext = Dispatchers.Default,
 )
 
 fun HttpClientConfig<*>.applyDanmakuProviderConfig(
