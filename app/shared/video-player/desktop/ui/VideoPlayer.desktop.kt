@@ -8,8 +8,12 @@ import androidx.compose.runtime.Stable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.SwingPanel
 import androidx.compose.ui.graphics.Color
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import me.him188.ani.app.videoplayer.data.VideoData
 import me.him188.ani.app.videoplayer.data.VideoProperties
 import me.him188.ani.app.videoplayer.data.VideoSource
@@ -31,10 +35,13 @@ import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.awt.event.MouseWheelEvent
 import java.util.Locale
+import kotlin.coroutines.CoroutineContext
+import kotlin.time.Duration.Companion.seconds
 
 
 @Stable
-class VlcjVideoPlayerState : PlayerState, AbstractPlayerState<VlcjData>() {
+class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerState,
+    AbstractPlayerState<VlcjData>(parentCoroutineContext) {
     val component = run {
         NativeDiscovery().discover()
         object : CallbackMediaPlayerComponent() {
@@ -44,7 +51,7 @@ class VlcjVideoPlayerState : PlayerState, AbstractPlayerState<VlcjData>() {
             }
         }
     }
-    val player = component.mediaPlayer()
+    val player: EmbeddedMediaPlayer = component.mediaPlayer()
 
     override val state: MutableStateFlow<PlaybackState> = MutableStateFlow(PlaybackState.READY)
 
@@ -77,6 +84,11 @@ class VlcjVideoPlayerState : PlayerState, AbstractPlayerState<VlcjData>() {
         )
     }
 
+    override fun closeImpl() {
+        player.release()
+        lastMedia = null
+    }
+
     private var lastMedia: SeekableInputCallbackMedia? = null // keep referenced so won't be gc'ed
 
     override suspend fun startPlayer(data: VlcjData) {
@@ -96,8 +108,6 @@ class VlcjVideoPlayerState : PlayerState, AbstractPlayerState<VlcjData>() {
     override fun getExactCurrentPositionMillis(): Long = player.status().time()
 
     override val bufferedPercentage = MutableStateFlow(0)
-    override val playProgress: Flow<Float>
-        get() = TODO("Not yet implemented")
 
     override fun pause() {
         player.controls().pause()
@@ -111,9 +121,9 @@ class VlcjVideoPlayerState : PlayerState, AbstractPlayerState<VlcjData>() {
 
     init {
         player.events().addMediaPlayerEventListener(object : MediaPlayerEventAdapter() {
-            override fun timeChanged(mediaPlayer: MediaPlayer, newTime: Long) {
-                currentPositionMillis.value = newTime
-            }
+//            override fun timeChanged(mediaPlayer: MediaPlayer, newTime: Long) {
+//                currentPositionMillis.value = newTime
+//            }
 
             override fun lengthChanged(mediaPlayer: MediaPlayer, newLength: Long) {
                 videoProperties.value = videoProperties.value?.copy(
@@ -138,6 +148,21 @@ class VlcjVideoPlayerState : PlayerState, AbstractPlayerState<VlcjData>() {
                 state.value = PlaybackState.ERROR
             }
         })
+
+        backgroundScope.launch(Dispatchers.Main) {
+            while (currentCoroutineContext().isActive) {
+                player.media().info()?.let { info ->
+                    val duration = info.duration()
+                    if (duration != -1L && duration != 0L && duration != videoProperties.value?.durationMillis) {
+                        videoProperties.value = videoProperties.value?.copy(
+                            durationMillis = duration
+                        )
+                    }
+                }
+                currentPositionMillis.value = player.status().time()
+                delay(0.1.seconds) // 100 fps
+            }
+        }
     }
 
     override fun setPlaybackSpeed(speed: Float) {
@@ -161,20 +186,18 @@ actual fun VideoPlayer(
     val mediaPlayer = playerState.player
     val isFullscreen = false
     LaunchedEffect(isFullscreen) {
-        if (mediaPlayer is EmbeddedMediaPlayer) {
-            /*
-             * To be able to access window in the commented code below,
-             * extend the player composable function from WindowScope.
-             * See https://github.com/JetBrains/compose-jb/issues/176#issuecomment-812514936
-             * and its subsequent comments.
-             *
-             * We could also just fullscreen the whole window:
-             * `window.placement = WindowPlacement.Fullscreen`
-             * See https://github.com/JetBrains/compose-multiplatform/issues/1489
-             */
-            // mediaPlayer.fullScreen().strategy(ExclusiveModeFullScreenStrategy(window))
-            mediaPlayer.fullScreen().toggle()
-        }
+        /*
+         * To be able to access window in the commented code below,
+         * extend the player composable function from WindowScope.
+         * See https://github.com/JetBrains/compose-jb/issues/176#issuecomment-812514936
+         * and its subsequent comments.
+         *
+         * We could also just fullscreen the whole window:
+         * `window.placement = WindowPlacement.Fullscreen`
+         * See https://github.com/JetBrains/compose-multiplatform/issues/1489
+         */
+        // mediaPlayer.fullScreen().strategy(ExclusiveModeFullScreenStrategy(window))
+        mediaPlayer.fullScreen().toggle()
     }
 //    DisposableEffect(Unit) { onDispose(mediaPlayer::release) }
 

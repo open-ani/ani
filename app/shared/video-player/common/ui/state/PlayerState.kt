@@ -2,12 +2,17 @@ package me.him188.ani.app.videoplayer.ui.state
 
 import androidx.annotation.UiThread
 import androidx.compose.runtime.Stable
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.job
 import me.him188.ani.app.platform.Context
 import me.him188.ani.app.videoplayer.data.VideoData
 import me.him188.ani.app.videoplayer.data.VideoProperties
@@ -18,6 +23,7 @@ import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 /**
  * A controller for the [VideoPlayer].
@@ -127,7 +133,17 @@ fun PlayerState.togglePause() {
     }
 }
 
-abstract class AbstractPlayerState<D : AbstractPlayerState.Data> : PlayerState {
+abstract class AbstractPlayerState<D : AbstractPlayerState.Data>(
+    parentCoroutineContext: CoroutineContext,
+) : PlayerState {
+    protected val backgroundScope = CoroutineScope(
+        parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job])
+    ).apply {
+        coroutineContext.job.invokeOnCompletion {
+            close()
+        }
+    }
+
     protected val logger = logger(this::class)
     override val videoSource: MutableStateFlow<VideoSource<*>?> = MutableStateFlow(null)
 
@@ -151,6 +167,14 @@ abstract class AbstractPlayerState<D : AbstractPlayerState.Data> : PlayerState {
 
     final override val videoData: Flow<VideoData?> = openResource.map {
         it?.videoData
+    }
+    final override val playProgress: Flow<Float> by lazy {
+        combine(videoProperties.filterNotNull(), currentPositionMillis) { properties, duration ->
+            if (properties.durationMillis == 0L) {
+                return@combine 0f
+            }
+            (duration / properties.durationMillis).toFloat().coerceIn(0f, 1f)
+        }
     }
 
     final override suspend fun setVideoSource(source: VideoSource<*>?) {
@@ -203,6 +227,22 @@ abstract class AbstractPlayerState<D : AbstractPlayerState.Data> : PlayerState {
 
     @Throws(VideoSourceOpenException::class)
     protected abstract suspend fun openSource(source: VideoSource<*>): D
+
+    @Volatile
+    private var closed = false
+    fun close() {
+        if (closed) return
+        synchronized(this) {
+            if (closed) return
+            closed = true
+
+            openResource.value?.releaseResource?.invoke()
+            backgroundScope.cancel()
+            closeImpl()
+        }
+    }
+
+    protected abstract fun closeImpl()
 }
 
 
@@ -246,7 +286,7 @@ fun interface PlayerStateFactory {
 /**
  * For previewing
  */
-class DummyPlayerState : AbstractPlayerState<AbstractPlayerState.Data>() {
+class DummyPlayerState : AbstractPlayerState<AbstractPlayerState.Data>(EmptyCoroutineContext) {
     override val state: MutableStateFlow<PlaybackState> = MutableStateFlow(PlaybackState.PAUSED_BUFFERING)
     override suspend fun cleanupPlayer() {
         // no-op
@@ -261,6 +301,9 @@ class DummyPlayerState : AbstractPlayerState<AbstractPlayerState.Data>() {
                 data.close()
             }
         )
+    }
+
+    override fun closeImpl() {
     }
 
     override suspend fun startPlayer(data: Data) {
@@ -289,9 +332,6 @@ class DummyPlayerState : AbstractPlayerState<AbstractPlayerState.Data>() {
     }
 
     override val bufferedPercentage: StateFlow<Int> = MutableStateFlow(50)
-    override val playProgress: Flow<Float> = currentPositionMillis.combine(videoProperties) { played, video ->
-        (played / video.durationMillis).toFloat()
-    }
 
     override fun pause() {
         state.value = PlaybackState.PAUSED

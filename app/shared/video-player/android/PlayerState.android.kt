@@ -11,21 +11,13 @@ import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.isActive
-import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.platform.Context
@@ -54,7 +46,7 @@ class ExoPlayerStateFactory : PlayerStateFactory {
 internal class ExoPlayerState @UiThread constructor(
     context: Context,
     parentCoroutineContext: CoroutineContext
-) : AbstractPlayerState<ExoPlayerState.ExoPlayerData>(),
+) : AbstractPlayerState<ExoPlayerState.ExoPlayerData>(parentCoroutineContext),
     AutoCloseable {
     class ExoPlayerData(
         videoSource: VideoSource<*>,
@@ -62,14 +54,6 @@ internal class ExoPlayerState @UiThread constructor(
         releaseResource: () -> Unit,
         val factory: ProgressiveMediaSource.Factory,
     ) : Data(videoSource, videoData, releaseResource)
-
-    private val backgroundScope = CoroutineScope(
-        parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job])
-    ).apply {
-        coroutineContext.job.invokeOnCompletion {
-            close()
-        }
-    }
 
     override suspend fun startPlayer(data: ExoPlayerData) {
         val item =
@@ -204,20 +188,12 @@ internal class ExoPlayerState @UiThread constructor(
     override val currentPositionMillis: MutableStateFlow<Long> = MutableStateFlow(0)
     override fun getExactCurrentPositionMillis(): Long = player.currentPosition
 
-    override val playProgress: Flow<Float> =
-        combine(videoProperties.filterNotNull(), currentPositionMillis) { properties, duration ->
-            if (properties.durationMillis == 0L) {
-                return@combine 0f
-            }
-            (duration / properties.durationMillis).toFloat().coerceIn(0f, 1f)
-        }
-
     init {
         backgroundScope.launch(Dispatchers.Main) {
             while (currentCoroutineContext().isActive) {
                 currentPositionMillis.value = player.currentPosition
                 bufferedPercentage.value = player.bufferedPercentage
-                delay(0.1.seconds) // 20 fps
+                delay(0.1.seconds) // 100 fps
             }
         }
     }
@@ -234,18 +210,7 @@ internal class ExoPlayerState @UiThread constructor(
 
     override val playbackSpeed: MutableStateFlow<Float> = MutableStateFlow(1f)
 
-    @Volatile
-    private var closed = false
-
-    @Synchronized
-    override fun close() {
-        if (closed) return
-        synchronized(this) {
-            if (closed) return
-            closed = true
-        }
-        openResource.value?.releaseResource?.invoke()
-        backgroundScope.cancel()
+    override fun closeImpl() {
         @kotlin.OptIn(DelicateCoroutinesApi::class)
         GlobalScope.launch(Dispatchers.Main) {
             try {

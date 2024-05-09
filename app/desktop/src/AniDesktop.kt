@@ -109,8 +109,8 @@ object AniDesktop {
                     )
                 }
                 single<PlayerStateFactory> {
-                    PlayerStateFactory { _, _ ->
-                        VlcjVideoPlayerState()
+                    PlayerStateFactory { _, ctx ->
+                        VlcjVideoPlayerState(ctx)
                     }
                 }
                 single<BrowserNavigator> { DesktopBrowserNavigator() }
