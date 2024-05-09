@@ -79,6 +79,7 @@ import kotlin.time.Duration.Companion.seconds
 @Composable
 fun SubjectCollectionsColumn(
     cache: LazyDataCache<SubjectCollectionItem>,
+    onRequestMore: () -> Unit,
     item: @Composable (item: SubjectCollectionItem) -> Unit,
     onEmpty: @Composable () -> Unit,
     modifier: Modifier = Modifier,
@@ -139,7 +140,7 @@ fun SubjectCollectionsColumn(
                 }
 
                 LaunchedEffect(true) {
-                    cache.requestMore()
+                    onRequestMore()
                 }
             }
         }

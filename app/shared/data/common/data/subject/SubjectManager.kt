@@ -470,6 +470,10 @@ class SubjectCollectionItem(
         collectionType = collectionType,
     )
 
+    override fun toString(): String {
+        return "SubjectCollectionItem($displayName)"
+    }
+    
     object Serializer : KSerializer<SubjectCollectionItem> {
         @Serializable
         private class Delegate(

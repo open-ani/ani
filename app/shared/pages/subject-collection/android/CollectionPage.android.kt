@@ -155,6 +155,7 @@ private fun PreviewSubjectCollectionsColumn() {
                 },
                 debugName = "test"
             ),
+            onRequestMore = {},
             item = {
                 SubjectCollectionItem(
                     item = it,

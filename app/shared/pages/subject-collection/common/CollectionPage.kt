@@ -160,7 +160,9 @@ fun CollectionPage(
 
                 Box(Modifier.clipToBounds()) {
                     TabContent(
-                        cache, vm, type, isLoggedIn, contentPadding,
+                        cache,
+                        onRequestMore = { vm.requestMore(type) },
+                        vm, type, isLoggedIn, contentPadding,
                         Modifier
                             .nestedScroll(pullToRefreshState.nestedScrollConnection)
                             .fillMaxSize()
@@ -181,6 +183,7 @@ fun CollectionPage(
 @Composable
 private fun TabContent(
     cache: LazyDataCache<SubjectCollectionItem>,
+    onRequestMore: () -> Unit,
     vm: MyCollectionsViewModel,
     type: UnifiedCollectionType,
     isLoggedIn: Boolean?,
@@ -190,6 +193,7 @@ private fun TabContent(
     val context by rememberUpdatedState(LocalContext.current)
     SubjectCollectionsColumn(
         cache,
+        onRequestMore = onRequestMore,
         item = { subjectCollection ->
             var showEpisodeProgressDialog by rememberSaveable { mutableStateOf(false) }
 

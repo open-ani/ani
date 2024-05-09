@@ -8,6 +8,7 @@ import me.him188.ani.app.data.media.MediaCacheManager
 import me.him188.ani.app.data.subject.SubjectCollectionItem
 import me.him188.ani.app.data.subject.SubjectManager
 import me.him188.ani.app.data.subject.setEpisodeWatched
+import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.tools.caching.ContentPolicy
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.tools.caching.getCachedData
@@ -24,6 +25,8 @@ interface MyCollectionsViewModel : HasBackgroundScope, ViewModelAuthSupport {
 
     @Stable
     fun collectionsByType(type: UnifiedCollectionType): LazyDataCache<SubjectCollectionItem>
+
+    fun requestMore(type: UnifiedCollectionType)
 
     /**
      * 返回用户观看该番剧的进度 [Flow].
@@ -55,6 +58,20 @@ class MyCollectionsViewModelImpl : AbstractViewModel(), KoinComponent, MyCollect
     @Stable
     override fun collectionsByType(type: UnifiedCollectionType) =
         subjectManager.collectionsByType[type]!!
+
+
+    private val requestMoreTaskers = collectionsByType.keys.associateWith {
+        MonoTasker(backgroundScope)
+    }
+
+    override fun requestMore(type: UnifiedCollectionType) {
+        requestMoreTaskers[type]!!.run {
+            if (isRunning) return
+            launch {
+                collectionsByType[type]!!.requestMore()
+            }
+        }
+    }
 
     @Stable
     override fun subjectProgress(subjectId: Int): Flow<List<EpisodeProgressItem>> =

@@ -25,6 +25,8 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import me.him188.ani.datasources.api.paging.PagedSource
+import me.him188.ani.utils.logging.info
+import me.him188.ani.utils.logging.logger
 
 @RequiresOptIn(
     level = RequiresOptIn.Level.ERROR,
@@ -183,7 +185,7 @@ interface LazyDataCacheContext {
 }
 
 @Serializable
-class LazyDataCacheSave<T>(
+data class LazyDataCacheSave<T>(
     val list: List<T> = emptyList(),
     val page: Int? = null,
     val totalSize: Int? = null,
@@ -216,6 +218,8 @@ class LazyDataCacheImpl<T>(
     // don't call [dataStore.updateData], call [LazyDataCacheImpl.updateDataSanitized] instead
     private val persistentStore: DataStore<LazyDataCacheSave<T>> = defaultPersistentStore(),
 ) : LazyDataCache<T>, LazyDataCacheContext {
+    private val logger = logger(LazyDataCacheImpl::class)
+
     // Writes must be under lock
     private val currentSource: MutableStateFlow<PagedSource<T>?> = MutableStateFlow(null)
     private val sourceCompleted = currentSource.flatMapLatest { it?.finished ?: flowOf(false) }
@@ -314,6 +318,7 @@ class LazyDataCacheImpl<T>(
                 if (firstLoad) {
                     firstLoad = false
                     val save = persistentStore.data.first()
+                    logger.info { "Initialize LazyDataCache($debugName) with save $save" }
                     if (save.page != null && save.page != 0) {
                         // We have a page saved, we should restore it
                         val source = getSourceOrCreate()
@@ -326,6 +331,7 @@ class LazyDataCacheImpl<T>(
 
                 try {
                     requestInProgress.value = true
+                    logger.info { "Requesting more data from $source, page=${source.currentPage.value}" }
                     val resp = source.nextPageOrNull() // cancellation-supported
                     return@withContext if (resp != null) {
                         try {
