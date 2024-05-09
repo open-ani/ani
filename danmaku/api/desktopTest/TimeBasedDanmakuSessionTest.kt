@@ -8,20 +8,31 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.yield
 import org.junit.jupiter.api.Test
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.assertEquals
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 
 private class TimeBasedDanmakuSessionTest {
+    fun create(
+        sequence: Sequence<Danmaku>,
+        shiftMillis: Long = 0,
+    ): DanmakuSession = TimeBasedDanmakuSession.create(
+        sequence, shiftMillis,
+        samplePeriod = 0.milliseconds,
+        coroutineContext = EmptyCoroutineContext,
+    )
+
     @Test
     fun empty() {
-        TimeBasedDanmakuSession.create(emptySequence())
+        create(emptySequence())
     }
 
     @Test
     fun `before all`() = runTest {
-        val instance = TimeBasedDanmakuSession.create(
+        val instance = create(
             sequenceOf(
                 dummyDanmaku(1.0),
                 dummyDanmaku(2.0),
@@ -33,7 +44,7 @@ private class TimeBasedDanmakuSessionTest {
 
     @Test
     fun `match one`() = runTest {
-        val instance = TimeBasedDanmakuSession.create(
+        val instance = create(
             sequenceOf(
                 dummyDanmaku(1.0),
                 dummyDanmaku(2.0),
@@ -45,7 +56,7 @@ private class TimeBasedDanmakuSessionTest {
 
     @Test
     fun `match one equal`() = runTest {
-        val instance = TimeBasedDanmakuSession.create(
+        val instance = create(
             sequenceOf(
                 dummyDanmaku(1.0),
                 dummyDanmaku(2.0),
@@ -57,7 +68,7 @@ private class TimeBasedDanmakuSessionTest {
 
     @Test
     fun `match one again`() = runTest {
-        val instance = TimeBasedDanmakuSession.create(
+        val instance = create(
             sequenceOf(
                 dummyDanmaku(1.0),
                 dummyDanmaku(1.8),
@@ -94,7 +105,7 @@ private class TimeBasedDanmakuSessionTest {
 
     @Test
     fun `match two`() = runTest {
-        val instance = TimeBasedDanmakuSession.create(
+        val instance = create(
             sequenceOf(
                 dummyDanmaku(1.0),
                 dummyDanmaku(2.0),
@@ -106,7 +117,7 @@ private class TimeBasedDanmakuSessionTest {
 
     @Test
     fun `match continued`() = runTest {
-        val instance = TimeBasedDanmakuSession.create(
+        val instance = create(
             sequenceOf(
                 dummyDanmaku(1.0),
                 dummyDanmaku(1.8),
@@ -142,7 +153,7 @@ private class TimeBasedDanmakuSessionTest {
 
     @Test
     fun `match seek back`() = runTest {
-        val instance = TimeBasedDanmakuSession.create(
+        val instance = create(
             sequenceOf(
                 dummyDanmaku(1.0),
                 dummyDanmaku(1.8),

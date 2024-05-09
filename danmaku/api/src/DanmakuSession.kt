@@ -3,10 +3,14 @@ package me.him188.ani.danmaku.api
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.flow.transformLatest
 import me.him188.ani.danmaku.protocol.DanmakuInfo
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -39,6 +43,8 @@ class TimeBasedDanmakuSession private constructor(
      */
     private val list: List<Danmaku>,
     private val shiftMillis: Long = 0,
+    private val samplePeriod: Duration = 30.milliseconds,
+    private val coroutineContext: CoroutineContext = EmptyCoroutineContext,
 ) : DanmakuSession {
     override val totalCount: Flow<Int?> = flowOf(list.size)
 
@@ -46,10 +52,12 @@ class TimeBasedDanmakuSession private constructor(
         fun create(
             sequence: Sequence<Danmaku>,
             shiftMillis: Long = 0,
+            samplePeriod: Duration = 30.milliseconds,
+            coroutineContext: CoroutineContext = EmptyCoroutineContext,
         ): DanmakuSession {
             val list = sequence.toCollection(ArrayList())
             list.sortBy { it.playTimeMillis }
-            return TimeBasedDanmakuSession(list, shiftMillis)
+            return TimeBasedDanmakuSession(list, shiftMillis, samplePeriod, coroutineContext)
         }
     }
 
@@ -60,27 +68,35 @@ class TimeBasedDanmakuSession private constructor(
 
         var lastTime: Duration = Duration.ZERO
         var lastIndex = -1// last index at which we accessed [list]
-        return progress.map { it - shiftMillis.milliseconds }.transformLatest { curTime ->
-            if (curTime < lastTime) {
-                // Went back, reset position so we restart from the beginning
-                lastIndex = -1
+        return progress.map { it - shiftMillis.milliseconds }
+            .let {
+                if (samplePeriod == Duration.ZERO) it else it.sample(samplePeriod)
             }
+            .transformLatest { curTime ->
+                if (curTime < lastTime) {
+                    // Went back, reset position to the correct one
+                    lastIndex = list.indexOfFirst { it.playTimeMillis >= curTime.inWholeMilliseconds } - 1
+                    if (lastIndex == -2) {
+                        lastIndex = -1
+                    }
+                }
 
-            lastTime = curTime
+                lastTime = curTime
 
-            val curTimeSecs = curTime.inWholeMilliseconds
+                val curTimeSecs = curTime.inWholeMilliseconds
 
-            for (i in (lastIndex + 1)..list.lastIndex) {
-                val item = list[i]
-                if (curTimeSecs >= item.playTimeMillis) {
-                    // 达到了弹幕发送的时间
-                    lastIndex = i
-                    emit(item) // Note: 可能会因为有新的 [curTime] 而 cancel
-                } else {
-                    // not yet, 因为 list 是排序的, 这也说明后面的弹幕都还没到时间
-                    break
+                for (i in (lastIndex + 1)..list.lastIndex) {
+                    val item = list[i]
+                    if (curTimeSecs >= item.playTimeMillis) {
+                        // 达到了弹幕发送的时间
+                        lastIndex = i
+                        emit(item) // Note: 可能会因为有新的 [curTime] 而 cancel
+                    } else {
+                        // not yet, 因为 list 是排序的, 这也说明后面的弹幕都还没到时间
+                        break
+                    }
                 }
             }
-        }
+            .flowOn(coroutineContext)
     }
 }
