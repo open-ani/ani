@@ -119,6 +119,7 @@ class LazyDataCacheTest {
 
         assertEquals(false, requested)
         cache.allDataFlow.first()
+        cache.allDataFlow.first() // avoid fluctuation
         assertEquals(true, requested)
     }
 
