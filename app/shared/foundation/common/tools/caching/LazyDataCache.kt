@@ -331,7 +331,7 @@ class LazyDataCacheImpl<T>(
 
                 try {
                     requestInProgress.value = true
-                    logger.info { "Requesting more data from $source, page=${source.currentPage.value}" }
+//                    logger.info { "Requesting more data from $source, page=${source.currentPage.value}" }
                     val resp = source.nextPageOrNull() // cancellation-supported
                     return@withContext if (resp != null) {
                         try {
