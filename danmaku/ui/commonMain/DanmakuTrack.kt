@@ -3,6 +3,7 @@ package me.him188.ani.danmaku.ui
 import androidx.annotation.UiThread
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.MaterialTheme
@@ -12,7 +13,6 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -32,6 +32,7 @@ import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -50,7 +51,7 @@ import kotlin.time.Duration.Companion.seconds
 @Stable
 class DanmakuState internal constructor(
     val danmaku: DanmakuPresentation,
-    private val properties: DanmakuProperties = DanmakuProperties.Default,
+    val initialOffset: Float = 0f,
 ) {
     /**
      * Layout width of the view in px, late-init by [onPlaced].
@@ -60,32 +61,6 @@ class DanmakuState internal constructor(
     internal var textWidth by mutableIntStateOf(-1)
 
     /**
-     * Whether the animation has ever started, i.e. [animateMove] has been called at least once.
-     * It will not be reset to `false` if it has started.
-     */
-    internal var animationStarted by mutableStateOf(false)
-
-    /**
-     * Whether [textWidth] has been measured.
-     *
-     * [textWidth] is measured when the Danmaku view is placed on the compose tree,
-     * calling [onPlaced].
-     */
-    internal val hasMeasured by derivedStateOf {
-        textWidth != -1
-    }
-
-    /**
-     * Animated offset of the danmaku.
-     *
-     * Default value is `0` when [animateMove] is never called.
-     * Note that value `0` may not always indicate an invalid value,
-     * because the danmaku will need to move to a negative offset to be fully out of the screen.
-     */
-    var offset: Float by mutableFloatStateOf(0f)
-        private set
-
-    /**
      * Called when the danmaku is placed on the screen.
      */
     internal fun onPlaced(
@@ -93,46 +68,6 @@ class DanmakuState internal constructor(
     ) {
         textWidth = layoutCoordinates.size.width
     }
-
-    /**
-     * Animate the danmaku from the end of the screen to the start.
-     *
-     * This function can be safely cancelled,
-     * because it remembers the last [offset] of the danmaku.
-     * However it does NOT re-animate it if it has already moved out of the screen.
-     *
-     * Returns when the animation has ended,
-     * which means the danmaku has moved out of the screen (to the start).
-     *
-     * @param baseSpeed px/s
-     */
-    suspend fun animateMove(
-        screenWidth: Int,
-        baseSpeed: Float,
-    ) {
-        require(screenWidth != 0) { "screenWidth must not be 0" }
-        require(textWidth != -1) { "textWidth must be measured" }
-        val totalDistance = textWidth + properties.safeShift
-
-        val startTime = withFrameNanos { it }
-        val speed = -baseSpeed / 1_000_000_000f // px/ns
-
-        if (!animationStarted) {
-            offset = screenWidth.toFloat()
-            animationStarted = true
-        }
-
-        val startOffset = offset
-
-        while (offset > -totalDistance) {
-            // Update offset on every frame
-            withFrameNanos {
-                val elapsed = it - startTime
-                offset = startOffset + speed * elapsed
-            }
-        }
-    }
-
 }
 
 @Stable
@@ -207,10 +142,60 @@ class DanmakuTrackState(
         }
 
         val danmaku = channel.tryReceive().getOrNull() ?: return
-        val state = DanmakuState(danmaku, danmakuProperties)
+        val state = DanmakuState(danmaku, initialOffset = offset)
         startingDanmaku.add(state)
         visibleDanmaku.add(state)
     }
+
+    /**
+     * Whether the animation has ever started, i.e. [animateMove] has been called at least once.
+     * It will not be reset to `false` if it has started.
+     */
+    internal var animationStarted by mutableStateOf(false)
+
+    /**
+     * Animated offset of the danmaku track. Will be negative.
+     *
+     * Default value is `0` when [animateMove] is never called.
+     * Note that value `0` may not always indicate an invalid value,
+     * because the danmaku will need to move to a negative offset to be fully out of the screen.
+     */
+    var offset: Float by mutableFloatStateOf(0f)
+        private set
+
+    /**
+     * Animate the danmaku from the end of the screen to the start.
+     *
+     * This function can be safely cancelled,
+     * because it remembers the last [offset] of the danmaku.
+     * However it does NOT re-animate it if it has already moved out of the screen.
+     *
+     * Returns when the animation has ended,
+     * which means the danmaku has moved out of the screen (to the start).
+     *
+     * @param baseSpeed px/s
+     */
+    suspend fun animateMove(
+        baseSpeed: Float,
+    ) {
+        val startTime = withFrameNanos { it }
+        val speed = -baseSpeed / 1_000_000_000f // px/ns
+
+        if (!animationStarted) {
+            animationStarted = true
+        }
+
+        val startOffset = offset + trackSize.width
+
+        while (true) {
+            // Update offset on every frame
+            withFrameNanos {
+                val elapsed = it - startTime
+                offset = startOffset + speed * elapsed
+            }
+        }
+    }
+
 }
 
 abstract class DanmakuTrackScope {
@@ -273,7 +258,7 @@ fun DanmakuTrack(
                     configState.speed,
                     density
                 ) {
-                    if (!danmaku.hasMeasured || trackState.trackSize == IntSize.Zero) {
+                    if (trackState.trackSize == IntSize.Zero) {
                         return@LaunchedEffect // Not yet measured, i.e. 
                     }
                     if (trackState.isPaused) {
@@ -323,18 +308,13 @@ fun DanmakuTrack(
                             delay(delay)
                         }
                     }
-
-                    danmaku.animateMove(
-                        trackState.trackSize.width,
-                        configState.speed * density.density
-                    )
                 }
 
                 Box(
                     modifier
-                        .alpha(if (danmaku.animationStarted) 1f else 0f) // Don't use `danmaku.offset == 0`, see danmaku.offset comments.
+                        .alpha(if (trackState.animationStarted) 1f else 0f) // Don't use `danmaku.offset == 0`, see danmaku.offset comments.
                         .graphicsLayer {
-                            translationX = danmaku.offset
+                            translationX = -danmaku.initialOffset
                         }
                         .onPlaced { layoutCoordinates ->
                             danmaku.onPlaced(layoutCoordinates)
@@ -342,7 +322,10 @@ fun DanmakuTrack(
                         }
                         .wrapContentSize()
                 ) {
-                    DanmakuText(danmaku, style = style)
+                    DanmakuText(
+                        danmaku,
+                        style = style,
+                    )
                 }
             }
         }
@@ -356,10 +339,18 @@ fun DanmakuTrack(
         }
     }
 
+    LaunchedEffect(true, trackState.trackSize) {
+        trackState.animateMove(config.speed)
+    }
+
     BoxWithConstraints(modifier.onPlaced {
         trackState.trackSize = it.size
     }) {
-        scope.content()
+        Box(Modifier.fillMaxWidth().graphicsLayer {
+            translationX = trackState.offset
+        }) {
+            scope.content()
+        }
     }
 }
 
@@ -374,6 +365,7 @@ fun DanmakuText(
     modifier: Modifier = Modifier,
     style: DanmakuStyle = DanmakuStyle.Default,
     baseStyle: TextStyle = MaterialTheme.typography.bodyMedium,
+    onTextLayout: ((TextLayoutResult) -> Unit)? = null,
 ) {
     Box(modifier.alpha(style.alpha)) {
         // Black text with stronger stroke
@@ -384,6 +376,7 @@ fun DanmakuText(
             maxLines = 1,
             softWrap = false,
             style = baseStyle.merge(style.styleForBorder()),
+            onTextLayout = onTextLayout
         )
         // Covered by a white, smaller text.
         // So the resulting look is a white text with black border.
