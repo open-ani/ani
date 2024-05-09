@@ -1,6 +1,8 @@
 package me.him188.ani.app.data.repositories
 
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
 import me.him188.ani.datasources.api.paging.PageBasedPagedSource
 import me.him188.ani.datasources.api.paging.Paged
 import me.him188.ani.datasources.bangumi.BangumiClient
@@ -53,8 +55,10 @@ internal class EpisodeRepositoryImpl : EpisodeRepository, KoinComponent {
     override suspend fun getEpisodesBySubjectId(subjectId: Int, type: EpType): Flow<Episode> {
         val episodes = PageBasedPagedSource { page ->
             runCatching {
-                client.api.getEpisodes(subjectId, type, offset = page * 100, limit = 100).run {
-                    Paged(this.total ?: 0, !this.data.isNullOrEmpty(), this.data.orEmpty())
+                withContext(Dispatchers.IO) {
+                    client.api.getEpisodes(subjectId, type, offset = page * 100, limit = 100).run {
+                        Paged(this.total ?: 0, !this.data.isNullOrEmpty(), this.data.orEmpty())
+                    }
                 }
             }.getOrNull()
         }

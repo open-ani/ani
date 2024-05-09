@@ -76,7 +76,7 @@ class SubjectCacheViewModel(
     // All episodes
     private val episodeCollections = flowOf(subjectId).mapLatest { subjectId ->
         runUntilSuccess { episodeRepository.getSubjectEpisodeCollection(subjectId, EpType.MainStory).toList() }
-    }.filterNotNull()
+    }.filterNotNull().shareInBackground()
 
     val errorMessage: MutableStateFlow<ErrorMessage?> = MutableStateFlow(null)
 
@@ -103,7 +103,7 @@ class SubjectCacheViewModel(
         }) {
             DefaultSubjectCacheState(it.toList())
         }
-    }.flowOn(Dispatchers.Default)
+    }.flowOn(Dispatchers.Default).shareInBackground()
 
     suspend fun addCache(
         media: Media,
