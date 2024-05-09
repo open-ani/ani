@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -119,7 +120,7 @@ interface LazyDataCache<T> {
  * @see LazyDataCacheMutator
  */
 @OptIn(UnsafeLazyDataCacheApi::class)
-suspend inline fun <R, T> LazyDataCache<T>.mutate(action: LazyDataCacheMutator<T>.() -> R): R {
+suspend inline fun <T> LazyDataCache<T>.mutate(action: LazyDataCacheMutator<T>.() -> Unit) {
     return lock.withLock {
         action(mutator)
     }
@@ -217,7 +218,7 @@ class LazyDataCacheImpl<T>(
 ) : LazyDataCache<T>, LazyDataCacheContext {
     // Writes must be under lock
     private val currentSource: MutableStateFlow<PagedSource<T>?> = MutableStateFlow(null)
-    private val sourceCompleted = currentSource.flatMapLatest { it?.finished ?: flowOf() }
+    private val sourceCompleted = currentSource.flatMapLatest { it?.finished ?: flowOf(false) }
 
     override val cachedDataFlow: Flow<List<T>> = persistentStore.data.map {
         it.list
@@ -247,7 +248,13 @@ class LazyDataCacheImpl<T>(
     override val allDataFlow: Flow<List<T>> = channelFlow {
         coroutineScope {
             launch {
-                currentSource.filterNotNull().collectLatest {
+                currentSource.onEach {
+                    if (it == null) {
+                        lock.withLock {
+                            getSourceOrCreate()
+                        }
+                    }
+                }.filterNotNull().collectLatest {
                     while (!it.finished.value) {
                         requestMore()
                     }
@@ -290,7 +297,7 @@ class LazyDataCacheImpl<T>(
 
     @OptIn(UnsafeLazyDataCacheApi::class)
     override val mutator: LazyDataCacheMutator<T> = object : LazyDataCacheMutator<T>() {
-        override suspend fun update(map: (List<T>) -> List<T>) {
+        override suspend fun update(map: (List<T>) -> List<T>) { // under lock
             updateDataSanitized { map(it) }
         }
     }

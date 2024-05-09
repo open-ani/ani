@@ -27,7 +27,9 @@ fun <T> SinglePagePagedSource(getAll: suspend PagedSourceContext.() -> Flow<T>):
 
         override suspend fun nextPageImpl(page: Int): List<T>? {
             if (currentPage.value == 0) {
-                return getAll(context).toList()
+                return getAll(context).toList().also {
+                    setTotalSize(it.size)
+                }
             }
             return null
         }

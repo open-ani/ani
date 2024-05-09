@@ -33,6 +33,7 @@ dependencies {
     api(libs.kotlinx.coroutines.core)
     api(projects.utils.ktorClient)
     implementation(projects.utils.slf4jKt)
+    testImplementation(libs.kotlinx.coroutines.test)
 
     implementation(compose.runtime) // required by the compose compiler
 }
