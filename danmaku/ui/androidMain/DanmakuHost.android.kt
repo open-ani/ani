@@ -10,6 +10,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -20,11 +21,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.datasource.LoremIpsum
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.launch
 import me.him188.ani.app.platform.isInLandscapeMode
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettings
@@ -38,7 +36,6 @@ import kotlin.time.Duration.Companion.milliseconds
 /**
  * Note, use "Run Preview" to preview on your phone or the emulator if you only see the initial danmaku-s.
  */
-@OptIn(DelicateCoroutinesApi::class)
 @Composable
 @Preview(showBackground = true, device = Devices.TABLET)
 @Preview(showBackground = true)
@@ -72,19 +69,27 @@ internal actual fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
             }
         }
     }
-    Text("Emitted: $emitted")
     val state = remember {
-        DanmakuHostState().apply {
-            GlobalScope.launch {
-                data.collect {
-                    trySend(
-                        DanmakuPresentation(
-                            it,
-                            isSelf = Random.nextBoolean()
-                        )
-                    )
-                }
-            }
+        DanmakuHostState()
+    }
+    LaunchedEffect(true) {
+        data.collect {
+            state.trySend(
+                DanmakuPresentation(
+                    it,
+                    isSelf = Random.nextBoolean()
+                )
+            )
+        }
+    }
+    Column {
+        Text("Emitted: $emitted")
+        state.tracks.forEachIndexed { index, danmakuTrackState ->
+            Text(
+                "track$index: offset=${danmakuTrackState.trackOffset.toInt()}, " +
+                        "visible=${danmakuTrackState.visibleDanmaku.size}, " +
+                        "starting=${danmakuTrackState.startingDanmaku.size}"
+            )
         }
     }
 
