@@ -119,6 +119,9 @@ kotlin {
         api(libs.precompose.koin) // Navigator
         api(libs.precompose.viewmodel) // Navigator
 
+        // Torrent
+        implementation(libs.bencode)
+
 //        api(libs.okhttp)
 //        api(libs.okhttp.logging)
         implementation(libs.reorderable)

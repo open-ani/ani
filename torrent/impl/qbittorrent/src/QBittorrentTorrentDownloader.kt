@@ -1,6 +1,8 @@
 package me.him188.ani.app.torrent.qbittorrent
 
 import androidx.compose.ui.util.fastForEachIndexed
+import com.dampcake.bencode.Bencode
+import com.dampcake.bencode.Type
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -17,6 +19,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import me.him188.ani.app.tools.MonoTasker
+import me.him188.ani.app.torrent.api.HttpFileDownloader
 import me.him188.ani.app.torrent.api.TorrentDownloadSession
 import me.him188.ani.app.torrent.api.TorrentDownloadState
 import me.him188.ani.app.torrent.api.TorrentDownloader
@@ -45,12 +48,19 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.absoluteValue
 
+
 /**
  * 连接 qBittorrent API 的下载器.
+ *
+ * 下载依靠 QB 的分类 (category) 来区分.
+ *
+ * - 在解析磁力链 [fetchTorrent] 时, 使用 "Ani-temp" 分类, 添加种子拿到磁力链后立即删除.
+ * - 在下载时, 使用 "Ani" 分类.
  */
 class QBittorrentTorrentDownloader(
     config: QBittorrentClientConfig,
     private val saveDir: File,
+    private val httpFileDownloader: HttpFileDownloader,
     parentCoroutineContext: CoroutineContext,
 ) : TorrentDownloader {
     companion object {
@@ -89,29 +99,71 @@ class QBittorrentTorrentDownloader(
     override val totalDownloadRate: MutableStateFlow<Long> = MutableStateFlow(0)
     override val vendor: TorrentLibInfo = TorrentLibInfo("qBittorrent", "4.3.6", supportsStreaming = false)
 
+    private fun decodeTorrentInfoFromTorrentFile(
+        data: ByteArray,
+    ): Map<String, Any>? {
+        val bencode: Map<String, Any> = Bencode().run {
+            decode(data, Type.DICTIONARY)
+        }
+        val info = bencode["info"] ?: return null
+        @Suppress("UNCHECKED_CAST")
+        return info as? Map<*, *> as Map<String, Any>? ?: return null
+        // 经测试, 这边计算的 hash 总是和 qb 的不同, 就直接用名字匹配吧
+//        if (info is ) {
+//            return TorrentFileIO.hashSha1(Bencode().encode(info))
+//        }
+//        return null
+    }
+
     override suspend fun fetchTorrent(uri: String, timeoutSeconds: Int): EncodedTorrentInfo {
-        client.getTorrentList().firstOrNull { it.magnetUri == uri }?.let {
-            return EncodedTorrentInfo(it.magnetUri.toByteArray()) // TODO: this does not support torrent files (HTTP)
+        // 从下载分类 "Ani" 中找有没有正在下载的. 这只能匹配 magnet. QB 不会保存来源 HTTPS 种子文件信息.
+        val torrentList = client.getTorrentList()
+        if (uri.startsWith("https://") || uri.startsWith("http://")) {
+            val data = httpFileDownloader.download(uri)
+            val name = decodeTorrentInfoFromTorrentFile(data)?.get("name")?.toString()
+            if (name != null) {
+                torrentList.firstOrNull { it.name == name }?.let {
+                    logger.info { "Matched torrent using name '$name'. hash=${it.hash}" }
+                    return EncodedTorrentInfo(it.magnetUri.toByteArray())
+                }
+            }
         }
 
-        val tempDirection = saveDir.resolve(uri.hashCode().absoluteValue.toString()).apply {
+        // Find existing
+        torrentList.firstOrNull { it.magnetUri == uri }?.let {
+            logger.info { "Matched torrent using magnetUri. hash=${it.hash}" }
+            return EncodedTorrentInfo(it.magnetUri.toByteArray())
+        }
+
+        val tempDir = saveDir.resolve(uri.hashCode().absoluteValue.toString()).apply {
             mkdirs()
         }
+
+        logger.info { "Did not match existing, starting download" }
         try {
-            client.addTorrentFromUri(uri, savePath = tempDirection.absolutePath, paused = true)
+            client.addTorrentFromUri(
+                uri, savePath = tempDir.absolutePath, paused = true,
+            )
             val actual = withTimeout(timeoutSeconds * 1000L) {
-                awaitTorrentData { it.savePath == tempDirection.absolutePath }
+                awaitTorrentData { it.savePath == tempDir.absolutePath }
             }
             client.deleteTorrents(listOf(actual.hash), false)
             return EncodedTorrentInfo(actual.magnetUri.toByteArray())
         } finally {
-            tempDirection.deleteRecursively()
+            tempDir.deleteRecursively()
         }
     }
 
-    private suspend fun awaitTorrentData(predicate: (QBTorrent) -> Boolean): QBTorrent {
+    private suspend fun awaitTorrentData(
+        category: String? = null,
+        predicate: (QBTorrent) -> Boolean
+    ): QBTorrent {
         while (true) {
-            val list = client.getTorrentList()
+            val list = if (category == null) {
+                client.getTorrentList()
+            } else {
+                client.getTorrentList(category = category)
+            }
             val torrent = list.firstOrNull(predicate)
             if (torrent != null) {
                 return torrent

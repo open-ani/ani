@@ -1,5 +1,6 @@
 package me.him188.ani.app.tools.torrent.engines
 
+import io.ktor.client.plugins.UserAgent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -17,6 +18,7 @@ import me.him188.ani.app.torrent.qbittorrent.QBittorrentClient
 import me.him188.ani.app.torrent.qbittorrent.QBittorrentClientConfig
 import me.him188.ani.app.torrent.qbittorrent.QBittorrentTorrentDownloader
 import me.him188.ani.datasources.api.source.MediaSourceLocation
+import me.him188.ani.utils.ktor.createDefaultHttpClient
 import java.io.File
 
 @Serializable
@@ -57,9 +59,16 @@ class QBittorrentEngine(
     }
 
     override suspend fun newInstance(config: QBittorrentConfig): QBittorrentTorrentDownloader {
+        val client = createDefaultHttpClient {
+            install(UserAgent) {
+                agent = getAniUserAgent()
+            }
+            expectSuccess = true
+        }
         return QBittorrentTorrentDownloader(
             config = config.clientConfig,
             saveDir = saveDir,
+            client.asHttpFileDownloader(),
             parentCoroutineContext = scope.coroutineContext
         )
     }

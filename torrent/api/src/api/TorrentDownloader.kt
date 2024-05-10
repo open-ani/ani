@@ -64,6 +64,9 @@ class MagnetTimeoutException(
     override val cause: Throwable? = null
 ) : Exception()
 
+/**
+ * 用于下载 `https://xxx.torrent`
+ */
 interface HttpFileDownloader : AutoCloseable {
     suspend fun download(url: String): ByteArray
 }

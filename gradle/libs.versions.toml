@@ -1,4 +1,5 @@
 [versions]
+bencode = "1.4.1"
 jna = "5.12.1"
 kotlin = "2.0.0-RC1"
 coroutines = "1.8.1"
@@ -121,6 +122,8 @@ libtorrent4j-android-arm64 = { module = "org.libtorrent4j:libtorrent4j-android-a
 libtorrent4j-macos = { module = "org.libtorrent4j:libtorrent4j-macos", version.ref = "libtorrent4j" }
 libtorrent4j-windows = { module = "org.libtorrent4j:libtorrent4j-windows", version.ref = "libtorrent4j" }
 libtorrent4j-linux = { module = "org.libtorrent4j:libtorrent4j-linux", version.ref = "libtorrent4j" }
+
+bencode = { module = "com.dampcake:bencode", version.ref = "bencode" }
 
 # Android Datastore
 datastore = { module = "androidx.datastore:datastore", version.ref = "datastore" }

@@ -113,9 +113,10 @@ class QBittorrentClient(
 
     suspend fun getTorrentList(
         hashes: List<String>? = null,
+        category: String = this.config.category,
     ): List<QBTorrent> = autoLogin {
         return client.get("v2/torrents/info") {
-            parameter("category", config.category)
+            parameter("category", category)
             if (!hashes.isNullOrEmpty()) {
                 parameter("hashes", hashes.joinToString("|"))
             }
@@ -169,7 +170,7 @@ class QBittorrentClient(
 
     suspend fun pauseTorrents(
         hashes: List<String>,
-    ) = autoLogin {
+    ): Unit = autoLogin {
         client.submitForm(
             "v2/torrents/pause",
             formParameters = parameters {
@@ -180,7 +181,7 @@ class QBittorrentClient(
 
     suspend fun resumeTorrents(
         hashes: List<String>,
-    ) = autoLogin {
+    ): Unit = autoLogin {
         client.submitForm(
             "v2/torrents/resume",
             formParameters = parameters {
@@ -192,7 +193,7 @@ class QBittorrentClient(
     suspend fun deleteTorrents(
         hashes: List<String>,
         deleteFiles: Boolean,
-    ) = autoLogin {
+    ): Unit = autoLogin {
         client.submitForm(
             "v2/torrents/delete",
             formParameters = parameters {
@@ -208,14 +209,15 @@ class QBittorrentClient(
         savePath: String, // C:/Users/qBit/Downloads
         paused: Boolean,
         sequentialDownload: Boolean = false,
-        firstLastPiecePrio: Boolean = false
-    ) = autoLogin {
+        firstLastPiecePrio: Boolean = false,
+        category: String = config.category,
+    ): Unit = autoLogin {
         client.submitForm(
             "v2/torrents/add",
             formParameters = parameters {
                 append("urls", uri) // supports http, https, magnet, "bc://bt/".
                 append("savepath", savePath)
-                append("category", config.category)
+                append("category", category)
                 append("root_folder", "true")
                 append("paused", paused.toString())
                 append("sequentialDownload", sequentialDownload.toString())
@@ -244,11 +246,22 @@ class QBittorrentClient(
 //        )
 //    }
 
+    suspend fun removeCategory(
+        category: String,
+    ): Unit = autoLogin {
+        client.submitForm(
+            "v2/torrents/removeCategories",
+            formParameters = parameters {
+                append("categories", category)
+            }
+        )
+    }
+
     suspend fun setFilePriority(
         hash: String,
         index: Int,
         priority: QBFilePriority,
-    ) = autoLogin {
+    ): Unit = autoLogin {
         client.submitForm(
             "v2/torrents/filePrio",
             formParameters = parameters {
@@ -270,7 +283,7 @@ class QBittorrentClient(
 
     suspend fun setFirstLastPiecePriority(
         hashes: List<String>
-    ) = autoLogin {
+    ): Unit = autoLogin {
         client.submitForm(
             "v2/torrents/toggleFirstLastPiecePrio",
             formParameters = parameters {
