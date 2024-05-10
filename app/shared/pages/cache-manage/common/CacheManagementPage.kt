@@ -38,6 +38,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.media.MediaCacheManager
 import me.him188.ani.app.ui.foundation.AbstractViewModel
@@ -85,14 +86,14 @@ class CacheManagementPageViewModelImpl : CacheManagementPageViewModel,
                     return@flatMapLatest emptyFlow()
                 }
                 storage.listFlow
-            }
+            }.onStart { emit(emptyList()) }
         }
 
         combine(mediaCacheListFromStorages) { lists ->
             lists.asSequence()
                 .flatten()
                 .map {
-                    MediaCachePresentation(it, null)
+                    MediaCachePresentation(it)
                 }
                 .toList()
         }.produceState(null)
@@ -120,7 +121,7 @@ class MediaCacheStorageState(
     private fun mapCacheToItem(list: List<MediaCache>): Flow<List<MediaCachePresentation>> {
         return list.asFlow().map { cache ->
             items.getOrPut(cache) {
-                MediaCachePresentation(cache, null)
+                MediaCachePresentation(cache)
             }
         }.also {
             items.keys.removeAll { key -> key !in list }

@@ -20,8 +20,7 @@ import me.him188.ani.datasources.api.topic.ResourceLocation
 private fun PreviewCacheItemDownloading() = ProvideCompositionLocalsForPreview {
     val media = remember {
         MediaCachePresentation(
-            testData(0.3f),
-            null
+            testData(0.3f)
         )
     }
     CacheItemView(item = media, onDelete = {}, mediaSourceId = { "本地" })
@@ -33,8 +32,7 @@ private fun PreviewCacheItemDownloading() = ProvideCompositionLocalsForPreview {
 private fun PreviewCacheItemUploading() = ProvideCompositionLocalsForPreview {
     val media = remember {
         MediaCachePresentation(
-            testData(1f),
-            null
+            testData(1f)
         )
     }
     CacheItemView(item = media, onDelete = {}, mediaSourceId = { "本地" })

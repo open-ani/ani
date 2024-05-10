@@ -33,36 +33,27 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.onCompletion
 import me.him188.ani.app.ui.subject.episode.mediaFetch.renderMediaSource
-import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.topic.FileSize
-import me.him188.ani.datasources.bangumi.processing.nameCNOrName
 import me.him188.ani.datasources.core.cache.MediaCache
 import me.him188.ani.utils.coroutines.sampleWithInitial
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
-import org.openapitools.client.models.Subject
 
 
 @Stable
 class MediaCachePresentation(
     val cache: MediaCache,
-    subject: Subject?,
-//    private val episode: EpisodeDetail?,
-//    val episode: Flow<Episode>,
 ) {
-    val origin: Media get() = cache.origin
+    val subjectName get() = cache.metadata.subjectNames.firstOrNull() ?: "未知"
+    val episodeName get() = cache.metadata.episodeName
 
-    //    val subjectImage = subject?.images?.large
-    val subjectName = subject?.nameCNOrName() ?: cache.metadata.subjectNames.firstOrNull() ?: "未知"
-    val episodeName = cache.metadata.episodeName
-
-    val mediaSourceId = cache.origin.mediaId
-    val episodeSort = cache.metadata.episodeSort
+    val mediaSourceId get() = cache.origin.mediaSourceId
+    val episodeSort get() = cache.metadata.episodeSort
 
     val downloadSpeed = cache.downloadSpeed.sampleWithInitial(1000)
     val uploadSpeed = cache.uploadSpeed.sampleWithInitial(1000)
     val progress = cache.progress.sampleWithInitial(1000)
         .onCompletion { if (it == null) emit(1f) }
-    val totalSize = cache.totalSize
+    val totalSize get() = cache.totalSize
 }
 
 @Composable

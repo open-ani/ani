@@ -66,8 +66,8 @@ private fun createTestVM() = object : CacheManagementPageViewModel {
         MediaCacheStorageState(TestMediaCacheStorage(), GlobalScope)
     )
     override val accumulatedList: List<MediaCachePresentation> = listOf(
-        MediaCachePresentation(testMediaCache1, null),
-        MediaCachePresentation(testMediaCache2, null)
+        MediaCachePresentation(testMediaCache1),
+        MediaCachePresentation(testMediaCache2)
     )
 }
 
@@ -203,11 +203,9 @@ private fun PreviewStorageManagerView() {
             listOf(
                 MediaCachePresentation(
                     testMediaCache1,
-                    subject = null,
                 ),
                 MediaCachePresentation(
                     testMediaCache2,
-                    subject = null,
                 ),
             ),
             onDelete = {},
