@@ -51,8 +51,8 @@ interface DanmakuHostState {
  * Creates a [DanmakuHostState].
  */
 fun DanmakuHostState(
-    danmakuProperties: DanmakuProperties = DanmakuProperties.Default,
-): DanmakuHostState = DanmakuHostStateImpl(danmakuProperties)
+    danmakuTrackProperties: DanmakuTrackProperties = DanmakuTrackProperties.Default,
+): DanmakuHostState = DanmakuHostStateImpl(danmakuTrackProperties)
 
 /**
  * 容纳[弹幕轨道][DanmakuTrack]的 [Column].
@@ -83,16 +83,16 @@ fun DanmakuHost(
 }
 
 internal class DanmakuHostStateImpl(
-    danmakuProperties: DanmakuProperties,
+    danmakuTrackProperties: DanmakuTrackProperties,
 ) : DanmakuHostState {
     private val _isPaused = mutableStateOf(false)
 
     override val tracks: List<DanmakuTrackState> = listOf(
-        DanmakuTrackState(_isPaused, 10, danmakuProperties),
-        DanmakuTrackState(_isPaused, 10, danmakuProperties),
-        DanmakuTrackState(_isPaused, 10, danmakuProperties),
-        DanmakuTrackState(_isPaused, 10, danmakuProperties),
-        DanmakuTrackState(_isPaused, 10, danmakuProperties)
+        DanmakuTrackState(_isPaused, 10, danmakuTrackProperties),
+        DanmakuTrackState(_isPaused, 10, danmakuTrackProperties),
+        DanmakuTrackState(_isPaused, 10, danmakuTrackProperties),
+        DanmakuTrackState(_isPaused, 10, danmakuTrackProperties),
+        DanmakuTrackState(_isPaused, 10, danmakuTrackProperties)
     )
 
     override fun trySend(danmaku: DanmakuPresentation): Boolean {

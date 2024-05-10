@@ -14,7 +14,7 @@ import me.him188.ani.danmaku.api.DanmakuPresentation
 import me.him188.ani.danmaku.protocol.DanmakuInfo
 import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.danmaku.ui.DanmakuHostState
-import me.him188.ani.danmaku.ui.DanmakuProperties
+import me.him188.ani.danmaku.ui.DanmakuTrackProperties
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -42,10 +42,10 @@ interface PlayerDanmakuViewModel : AutoCloseable {
 fun PlayerDanmakuViewModel(): PlayerDanmakuViewModel = PlayerDanmakuStateImpl()
 
 internal class PlayerDanmakuStateImpl(
-    danmakuProperties: DanmakuProperties = DanmakuProperties.Default,
+    danmakuTrackProperties: DanmakuTrackProperties = DanmakuTrackProperties.Default,
 ) : PlayerDanmakuViewModel, AbstractViewModel(), KoinComponent {
     private val preferencesRepository: PreferencesRepository by inject()
-    override val danmakuHostState: DanmakuHostState = DanmakuHostState(danmakuProperties)
+    override val danmakuHostState: DanmakuHostState = DanmakuHostState(danmakuTrackProperties)
     private val danmakuManager: DanmakuManager by inject()
 
     override val enabled: Flow<Boolean> = preferencesRepository.danmakuEnabled.flow

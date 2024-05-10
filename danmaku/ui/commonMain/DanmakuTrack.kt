@@ -12,6 +12,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -35,9 +36,12 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.withContext
 import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuLocation
 import me.him188.ani.danmaku.api.DanmakuPresentation
@@ -81,30 +85,32 @@ internal val DummyDanmakuState: DanmakuState = DanmakuState(
 
 @Immutable
 @Stable
-class DanmakuProperties(
+class DanmakuTrackProperties(
     /**
      * Shift of the danmaku to be considered as fully out of the screen.
      */
-    val safeShift: Int = 20,
+    val visibilitySafeArea: Int = 0,
 ) {
     companion object {
-        val Default = DanmakuProperties()
+        val Default = DanmakuTrackProperties()
     }
 }
 
 class DanmakuTrackState(
     isPaused: State<Boolean>,
     private val maxCount: Int,
-    private val danmakuProperties: DanmakuProperties = DanmakuProperties.Default,
+    private val danmakuTrackProperties: DanmakuTrackProperties = DanmakuTrackProperties.Default,
 ) {
-    private val channel = Channel<DanmakuPresentation>(2)
+    @PublishedApi
+    internal val channel = Channel<DanmakuPresentation>(2)
 
     /**
      * 尝试发送一条弹幕到这个轨道. 当轨道已满时返回 `false`.
      */
     fun trySend(danmaku: DanmakuPresentation): Boolean = channel.trySend(danmaku).isSuccess
 
-    suspend fun send(danmaku: DanmakuPresentation) {
+    suspend inline fun send(danmaku: DanmakuPresentation) {
+        // inline to improve performance as this is called frequently
         channel.send(danmaku)
     }
 
@@ -116,14 +122,14 @@ class DanmakuTrackState(
     internal var trackSize: IntSize by mutableStateOf(IntSize.Zero)
 
     @Stable
-    internal val visibleDanmaku: MutableList<DanmakuState> = SnapshotStateList()
+    internal val visibleDanmaku: MutableList<DanmakuState> = SnapshotStateList() // Random Access is needed
 
 
     /**
      * 刚发送的还在屏幕右边边缘的弹幕
      */
     @Stable
-    internal val startingDanmaku: MutableList<DanmakuState> = SnapshotStateList() // actually contains only one element
+    internal val startingDanmaku: MutableList<DanmakuState> = ArrayList() // actually contains only one element
 
     /**
      * Called on every frame to update the state.
@@ -131,13 +137,9 @@ class DanmakuTrackState(
     @UiThread
     internal fun receiveNewDanmaku() {
         if (trackSize == IntSize.Zero) return
-        if (!animationStarted) return
-        if (visibleDanmaku.size >= maxCount) { // `>` is impossible, just to be defensive
-            return
-        }
-        if (startingDanmaku.isNotEmpty()) { // 有弹幕仍然在屏幕右边   
-            return
-        }
+        if (trackOffset.isNaN()) return // track 还未放置
+        if (visibleDanmaku.size >= maxCount) return // `>` is impossible, just to be defensive
+        if (startingDanmaku.isNotEmpty()) return // 有弹幕仍然在屏幕右边   
 
         val danmaku = channel.tryReceive().getOrNull() ?: return
         val state = DanmakuState(danmaku, offsetInsideTrack = trackOffset - trackSize.width)
@@ -145,62 +147,45 @@ class DanmakuTrackState(
         visibleDanmaku.add(state)
     }
 
+    @UiThread
     internal fun checkDanmakuVisibility(
         layoutDirection: LayoutDirection,
         safeSeparation: Float
     ) {
         // Remove the danmaku from the track when it is out of screen, 
         // so that Track view will remove the Danmaku view from the layout.
-        for (danmaku in visibleDanmaku) {
-            if (danmaku.textWidth == -1) continue // not yet placed
+        val trackOffset = trackOffset
+        if (trackOffset.isNaN()) return
+        visibleDanmaku.removeAll { danmaku -> // With RandomAccess, fast
+            if (danmaku.textWidth == -1) return@removeAll false // not yet placed
             val posInScreen = -danmaku.offsetInsideTrack + trackOffset
-//            val posInScreen = trackSize.width - (danmaku.offsetInsideTrack - trackOffset)
-            if (posInScreen + danmaku.textWidth <= 0) {
-                // out of screen
-                visibleDanmaku.remove(danmaku)
-                continue
-            }
+            posInScreen + danmaku.textWidth + danmakuTrackProperties.visibilitySafeArea <= 0  // out of screen
         }
 
         // Remove the danmaku from [startingDanmaku] if it is fully visible on the screen (with [safeSeparation]),
         // so that the track will receive the next danmaku and display it.
-        for (danmaku in startingDanmaku) {
+        startingDanmaku.removeAll { danmaku ->
             val posInScreen = -danmaku.offsetInsideTrack + trackOffset
-//            val posInScreen = trackSize.width - (danmaku.offsetInsideTrack - trackOffset)
             val isFullyVisible = if (layoutDirection == LayoutDirection.Ltr) {
-                posInScreen + danmaku.textWidth + safeSeparation < trackSize.width
+                posInScreen + danmaku.textWidth + safeSeparation + danmakuTrackProperties.visibilitySafeArea < trackSize.width
             } else {
                 posInScreen - safeSeparation > 0
             }
-
-            if (posInScreen < 0 || isFullyVisible) {
-                startingDanmaku.remove(danmaku)
-            }
+            posInScreen < 0 || isFullyVisible
         }
     }
 
     /**
-     * Whether the animation has ever started, i.e. [animateMove] has been called at least once.
-     * It will not be reset to `false` if it has started.
+     * 轨道位置偏移量, 会是负数. 轨道初始在屏幕右边缘.
      */
-    internal var animationStarted by mutableStateOf(false)
-
-    /**
-     * Animated offset of the danmaku track. Will be negative.
-     *
-     * Default value is `0` when [animateMove] is never called.
-     * Note that value `0` may not always indicate an invalid value,
-     * because the danmaku will need to move to a negative offset to be fully out of the screen.
-     */ // 轨道初始在屏幕右边缘
-    var trackOffset: Float by mutableFloatStateOf(0f)
+    var trackOffset: Float by mutableFloatStateOf(Float.NaN)
         private set
 
     /**
-     * Animate the danmaku from the end of the screen to the start.
+     * 匀速减少 [trackOffset].
      *
      * This function can be safely cancelled,
-     * because it remembers the last [trackOffset] of the danmaku.
-     * However it does NOT re-animate it if it has already moved out of the screen.
+     * because it remembers the last [trackOffset].
      *
      * Returns when the animation has ended,
      * which means the danmaku has moved out of the screen (to the start).
@@ -213,8 +198,7 @@ class DanmakuTrackState(
         val startTime = withFrameNanos { it }
         val speed = -baseSpeed / 1_000_000_000f // px/ns
 
-        if (!animationStarted) {
-            animationStarted = true
+        if (trackOffset.isNaN()) {
             trackOffset = trackSize.width.toFloat()
         }
 
@@ -263,11 +247,18 @@ fun DanmakuTrack(
     config: DanmakuConfig = DanmakuConfig.Default,
     content: @Composable DanmakuTrackScope.() -> Unit, // box scope
 ) {
+    val configUpdated by rememberUpdatedState(config)
     val safeSeparation by rememberUpdatedState(
         with(LocalDensity.current) {
-            config.safeSeparation.toPx()
+            configUpdated.safeSeparation.toPx()
         }
     )
+    val density by rememberUpdatedState(LocalDensity.current)
+    val speedPxPerSecond by derivedStateOf {
+        with(density) {
+            configUpdated.speed.dp.toPx()
+        }
+    }
     val layoutDirection by rememberUpdatedState(LocalLayoutDirection.current)
 
     val scope = remember(trackState) {
@@ -304,8 +295,10 @@ fun DanmakuTrack(
 
     LaunchedEffect(true) {
         while (isActive) {
-            trackState.receiveNewDanmaku()
-            trackState.checkDanmakuVisibility(layoutDirection, safeSeparation)
+            withContext(Dispatchers.Main.immediate) {
+                trackState.receiveNewDanmaku()
+                trackState.checkDanmakuVisibility(layoutDirection, safeSeparation)
+            }
             // We need this delay to calculate gently, because we need to ensure that the updating of offsets gets completed in every frame.
             delay(1000 / 120)
         }
@@ -313,12 +306,12 @@ fun DanmakuTrack(
 
     LaunchedEffect(
         trackState.trackSize,
-        config.speed,
+        speedPxPerSecond,
         trackState.isPaused,
     ) {
         if (trackState.trackSize == IntSize.Zero) return@LaunchedEffect
         if (trackState.isPaused) return@LaunchedEffect
-        trackState.animateMove(config.speed)
+        trackState.animateMove(speedPxPerSecond)
     }
 
     BoxWithConstraints(modifier.onPlaced {
@@ -328,7 +321,9 @@ fun DanmakuTrack(
             .clipToBounds()
             .fillMaxWidth()
             .graphicsLayer {
-                translationX = trackState.trackOffset
+                if (!trackState.trackOffset.isNaN()) {
+                    translationX = trackState.trackOffset
+                }
             }
         ) {
             scope.content()
