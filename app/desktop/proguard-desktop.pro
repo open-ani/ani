@@ -48,16 +48,14 @@
 -dontwarn org.graalvm.compiler.core.aarch64.AArch64NodeMatchRules_MatchStatementSet*
 
 -dontnote com.sun.javafx.**
--dontoptimize
 -dontnote **
 -dontwarn **
 
 -keep class io.ktor.serialization.** { *; }
 -keep class org.slf4j.** { *; }
 -keep class org.slf4j2.** { *; }
--keep class org.log4j.** { *; }
--keep class org.log4j2.** { *; }
 -keep class coil3.** { *; }
+-keep class org.apache.logging.log4j.** { *; } # class org.apache.logging.log4j.spi.StandardLevel not an enum
 
 -keep class kotlinx.coroutines.** { *; }
 -keep class sun.misc.Unsafe { *; }
@@ -66,4 +64,21 @@
 -keep class uk.co.caprica.vlcj.** { *; } # native binding
 -keep class com.sun.jna.** { *; } # native binding
 
+-keep class ** extends me.him188.ani.datasources.api.subject.SubjectProvider { *; }
+-keep class ** extends me.him188.ani.datasources.api.source.MediaSource { *; }
+-keep class ** extends me.him188.ani.datasources.api.source.MediaSourceFactory { *; }
+-keep class ** extends io.ktor.client.HttpClientEngineContainer { *; }
+
+# Service loaders
+
 -keep class me.him188.ani.datasources.** { *; } # has service config
+-keep class ** extends uk.co.caprica.vlcj.factory.discovery.provider.DiscoveryDirectoryProvider { *; }
+-keep class org.apache.logging.slf4j.SLF4JServiceProvider { *; }
+-keep class ** extends org.slf4j.spi.SLF4JServiceProvider { *; }
+
+# Ktor related
+
+-keep class me.him188.ani.danmaku.ani.client.AniDanmakuSenderImpl { *; } # Caused by: kotlinx.serialization.json.internal.JsonDecodingException: Expected class kotlinx.serialization.json.JsonObject as the serialized body of kotlinx.serialization.Polymorphic<List>, but had class kotlinx.serialization.json.JsonArray
+
+-keep class io.ktor.** { *; } 
+-keep class kotlin.reflect.jvm.internal.** { *; } 
