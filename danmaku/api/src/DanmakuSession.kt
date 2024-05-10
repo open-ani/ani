@@ -87,8 +87,9 @@ class TimeBasedDanmakuSession private constructor(
 
                 for (i in (lastIndex + 1)..list.lastIndex) {
                     val item = list[i]
-                    if (curTimeSecs >= item.playTimeMillis) {
-                        // 达到了弹幕发送的时间
+                    if (curTimeSecs >= item.playTimeMillis // 达到了弹幕发送的时间
+                        && curTimeSecs - item.playTimeMillis <= 3000 // 只发送三秒以内的, 否则会导致快进之后发送大量过期弹幕
+                    ) {
                         lastIndex = i
                         emit(item) // Note: 可能会因为有新的 [curTime] 而 cancel
                     } else {
