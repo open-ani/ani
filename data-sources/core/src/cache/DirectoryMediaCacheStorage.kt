@@ -211,6 +211,9 @@ class DirectoryMediaCacheStorage(
 
     override suspend fun delete(cache: MediaCache): Boolean {
         lock.withLock {
+            if (!listFlow.value.contains(cache)) {
+                return false
+            }
             listFlow.value -= cache
             cache.delete()
             withContext(Dispatchers.IO) {

@@ -3,8 +3,6 @@ package me.him188.ani.app.pages.cache.manage
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.Preview
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
@@ -59,16 +57,19 @@ fun PreviewCacheManagementPageScroll() {
     }
 }
 
-@OptIn(DelicateCoroutinesApi::class)
 private fun createTestVM() = object : CacheManagementPageViewModel {
     override val overallStats: MediaStats get() = emptyMediaStats()
     override val storages: List<MediaCacheStorageState> = listOf(
-        MediaCacheStorageState(TestMediaCacheStorage(), GlobalScope)
+        MediaCacheStorageState(TestMediaCacheStorage())
     )
     override val accumulatedList: List<MediaCachePresentation> = listOf(
         MediaCachePresentation(testMediaCache1),
         MediaCachePresentation(testMediaCache2)
     )
+
+    override fun delete(item: MediaCachePresentation): Boolean {
+        return true
+    }
 }
 
 open class TestMediaCache(

@@ -31,9 +31,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
@@ -50,7 +47,6 @@ import me.him188.ani.datasources.core.cache.MediaCacheStorage
 import me.him188.ani.datasources.core.cache.MediaStats
 import me.him188.ani.datasources.core.cache.emptyMediaStats
 import me.him188.ani.datasources.core.cache.sum
-import me.him188.ani.utils.coroutines.runningList
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -60,6 +56,7 @@ interface CacheManagementPageViewModel {
     val overallStats: MediaStats
     val storages: List<MediaCacheStorageState>?
     val accumulatedList: List<MediaCachePresentation>?
+    fun delete(item: MediaCachePresentation): Boolean
 }
 
 @Stable
@@ -70,7 +67,7 @@ class CacheManagementPageViewModelImpl : CacheManagementPageViewModel,
     private val cacheManager: MediaCacheManager by inject()
     private val storagesFlow = cacheManager.enabledStorages.map { list ->
         list.map { storage ->
-            MediaCacheStorageState(storage, backgroundScope)
+            MediaCacheStorageState(storage)
         }
     }
     override val overallStats: MediaStats by cacheManager.enabledStorages.map { list ->
@@ -78,6 +75,8 @@ class CacheManagementPageViewModelImpl : CacheManagementPageViewModel,
     }.produceState(emptyMediaStats())
 
     override val storages by storagesFlow.produceState(emptyList())
+
+    private val items = mutableMapOf<MediaCache, MediaCachePresentation>()
 
     override val accumulatedList: List<MediaCachePresentation>? by kotlin.run {
         val mediaCacheListFromStorages = cacheManager.storages.map { storageFlow ->
@@ -92,51 +91,41 @@ class CacheManagementPageViewModelImpl : CacheManagementPageViewModel,
         combine(mediaCacheListFromStorages) { lists ->
             lists.asSequence()
                 .flatten()
-                .map {
-                    MediaCachePresentation(it)
-                }
                 .toList()
+                .let {
+                    mapCacheToItem(it)
+                }
         }.produceState(null)
     }
-}
 
-@Stable
-class MediaCacheStorageState(
-    private val storage: MediaCacheStorage,
-    private val scope: CoroutineScope,
-) : KoinComponent {
-    private val items = mutableMapOf<MediaCache, MediaCachePresentation>()
-
-    val mediaSourceId = storage.mediaSourceId
-
-    val stats get() = storage.stats
-
-    /**
-     * A flow that subscribes on all the caches in the storage.
-     */
-    val list: Flow<List<MediaCachePresentation>> = storage.listFlow.flatMapLatest { list ->
-        mapCacheToItem(list)
-    }
-
-    private fun mapCacheToItem(list: List<MediaCache>): Flow<List<MediaCachePresentation>> {
-        return list.asFlow().map { cache ->
+    private fun mapCacheToItem(list: List<MediaCache>): List<MediaCachePresentation> {
+        return list.map { cache ->
             items.getOrPut(cache) {
                 MediaCachePresentation(cache)
             }
         }.also {
             items.keys.removeAll { key -> key !in list }
-        }.runningList()
+        }
     }
 
-    fun delete(item: MediaCachePresentation): Boolean {
+    override fun delete(item: MediaCachePresentation): Boolean {
         if (items.remove(item.cache) == null) {
             return false
         }
-        scope.launch {
-            storage.delete(item.cache)
+        backgroundScope.launch {
+            storages.forEach { storage ->
+                storage.storage.delete(item.cache)
+            }
         }
         return true
     }
+}
+
+@Stable
+class MediaCacheStorageState(
+    val storage: MediaCacheStorage,
+) : KoinComponent {
+    val mediaSourceId = storage.mediaSourceId
 }
 
 @Composable
@@ -179,9 +168,7 @@ fun CacheManagementPage(
                 StorageManagerView(
                     list ?: emptyList(),
                     onDelete = { item ->
-                        vm.storages?.firstOrNull {
-                            it.delete(item)
-                        }
+                        vm.delete(item)
                     },
                     Modifier.padding(horizontal = 16.dp).padding(top = 2.dp).fillMaxWidth(),
                     state = state,
