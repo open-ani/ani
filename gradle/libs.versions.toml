@@ -1,7 +1,7 @@
 [versions]
 jna = "5.12.1"
 kotlin = "2.0.0-RC1"
-coroutines = "1.8.0"
+coroutines = "1.8.1"
 log4j-core = "2.20.0"
 okhttp = "4.12.0"
 reorderable = "0.9.6"
