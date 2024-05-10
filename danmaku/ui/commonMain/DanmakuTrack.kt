@@ -23,6 +23,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onPlaced
@@ -324,6 +325,7 @@ fun DanmakuTrack(
         trackState.trackSize = it.size
     }) {
         Box(Modifier
+            .clipToBounds()
             .fillMaxWidth()
             .graphicsLayer {
                 translationX = trackState.trackOffset
