@@ -28,8 +28,8 @@ plugins {
 
 dependencies {
     implementation(projects.app.shared)
-    implementation(libs.libtorrent4j.macos)
     implementation(compose.components.resources)
+    implementation(libs.vlcj)
 }
 
 // workaround for compose limitation
@@ -58,6 +58,11 @@ compose.desktop {
         mainClass = "me.him188.ani.desktop.AniDesktop"
 //        jvmArgs("--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED")
         nativeDistributions {
+            modules(
+                "jdk.unsupported", // sun.misc.Unsafe used by androidx datastore
+                "java.management" // javax.management.MBeanRegistrationException
+            )
+            appResourcesRootDir.set(file("appResources"))
             targetFormats(*buildList {
                 add(TargetFormat.Deb)
                 add(TargetFormat.Rpm)
