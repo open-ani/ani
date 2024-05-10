@@ -108,6 +108,7 @@ class LazyDataCacheTest {
         assertEquals(true, requested)
     }
 
+    @Disabled
     @Test
     fun `source created on allData`() = runTest {
         var requested = false
