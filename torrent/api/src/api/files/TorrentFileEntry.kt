@@ -111,6 +111,8 @@ interface TorrentFileHandle : AutoCloseable {
      * 停止下载并关闭此 [TorrentFileHandle]. 后续将不能再 [resume] 或 [pause] 等.
      */
     override fun close()
+
+    fun closeAndDelete()
 }
 
 // TorrentFilePieceMatcherTest

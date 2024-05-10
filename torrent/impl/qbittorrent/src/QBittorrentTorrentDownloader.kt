@@ -4,6 +4,8 @@ import androidx.compose.ui.util.fastForEachIndexed
 import com.dampcake.bencode.Bencode
 import com.dampcake.bencode.Type
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
@@ -231,7 +233,7 @@ class QBittorrentTorrentDownloadSession(
     override val saveDirectory: File,
     parentCoroutineContext: CoroutineContext
 ) : TorrentDownloadSession {
-    private val scope = CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
+    private val sessionScope = CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
     private val logger = logger(this.toString())
 
 
@@ -256,7 +258,7 @@ class QBittorrentTorrentDownloadSession(
     override val overallStats get() = overallStatsImpl
 
     init {
-        scope.launch {
+        sessionScope.launch {
             while (isActive) {
                 try {
                     client.getTorrentList(hashes = listOf(torrentInfo.hash)).firstOrNull()?.let {
@@ -288,7 +290,18 @@ class QBittorrentTorrentDownloadSession(
             logger.warn { "No files found for torrent ${torrentInfo.name}" }
         }
 
-        val torrentProperties = client.getTorrentProperties(torrentInfo.hash)
+        val torrentProperties = flow {
+            val prop = client.getTorrentProperties(torrentInfo.hash)
+            if (prop.pieceSize == -1L) {
+                // java.lang.IllegalStateException: Pieces size is less than file size: -1 < 289247302
+                error("Pieces size is less than file size: ${prop.pieceSize} < ${torrentInfo.totalSize}")
+            }
+            emit(prop)
+        }.retry(10) {
+            delay(1000)
+            true
+        }.first()
+
         val allPieces = Piece.buildPieces(
             totalSize = torrentInfo.totalSize,
             pieceSize = torrentProperties.pieceSize
@@ -308,7 +321,7 @@ class QBittorrentTorrentDownloadSession(
                 relativePath = file.name,
                 torrentName = torrentInfo.name,
                 isDebug = false,
-                parentCoroutineContext = parentCoroutineContext,
+                parentCoroutineContext = sessionScope.coroutineContext,
                 pieces = TorrentFilePieceMatcher.matchPiecesForFile(allPieces, currentOffset, file.size)
 //                pieces = Piece.buildPieces(
 //                    file.pieceRange.last - file.pieceRange.first + 1,
@@ -345,12 +358,18 @@ class QBittorrentTorrentDownloadSession(
         inner class FileHandleImpl : AbstractTorrentFileHandle() {
             override fun closeImpl() {
                 openHandles.remove(this)
+                closeIfNotInUse()
             }
 
             override fun resumeImpl(priority: FilePriority) {
                 scope.launch {
                     client.setFilePriority(torrentInfo.hash, index, priority.toQBFilePriority())
                 }
+            }
+
+            override fun closeAndDelete() {
+                close() // will call [closeImpl]
+                deleteEntireTorrentIfNotInUse()
             }
         }
 
@@ -471,6 +490,22 @@ class QBittorrentTorrentDownloadSession(
         }
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
+    fun deleteEntireTorrentIfNotInUse() {
+        if (!isClosed) return
+        if (openHandles.isEmpty()) {
+            logger.info { "deleteEntireTorrentIfNotInUse: All handles are closed, deleting torrent from qB" }
+            // scope 已经被 cancel, 不能用了
+            GlobalScope.launch {
+                try {
+                    client.deleteTorrents(listOf(torrentInfo.hash), true)
+                } catch (e: Throwable) {
+                    logger.error(e) { "Failed to delete torrent ${torrentInfo.name}" }
+                }
+            }
+        }
+    }
+
     @Volatile
     private var isClosed = false
     override fun close() {
@@ -480,6 +515,6 @@ class QBittorrentTorrentDownloadSession(
             isClosed = true
         }
 
-        scope.cancel()
+        sessionScope.cancel()
     }
 }

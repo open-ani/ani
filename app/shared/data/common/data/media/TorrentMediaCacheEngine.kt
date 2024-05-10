@@ -168,7 +168,7 @@ class TorrentMediaCacheEngine(
             }
 
             lazyFileHandle.scope.coroutineContext.job.cancelAndJoin()
-            handle.close()
+            handle.closeAndDelete()
 
             val file = handle.entry.resolveFileOrNull() ?: return
             withContext(Dispatchers.IO) {

@@ -8,7 +8,10 @@ import androidx.compose.runtime.Stable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.SwingPanel
 import androidx.compose.ui.graphics.Color
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,6 +39,7 @@ import java.awt.event.MouseEvent
 import java.awt.event.MouseWheelEvent
 import java.util.Locale
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration.Companion.seconds
 
 
@@ -84,9 +88,16 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
         )
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     override fun closeImpl() {
-        player.release()
-        lastMedia = null
+        GlobalScope.launch(
+            (backgroundScope.coroutineContext[CoroutineExceptionHandler] ?: EmptyCoroutineContext)
+                    + Dispatchers.Main.immediate
+        ) {
+            // 经测试这玩意有时候会一直 block
+            player.release()
+            lastMedia = null
+        }
     }
 
     private var lastMedia: SeekableInputCallbackMedia? = null // keep referenced so won't be gc'ed

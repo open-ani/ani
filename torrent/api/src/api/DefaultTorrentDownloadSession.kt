@@ -244,6 +244,10 @@ open class DefaultTorrentDownloadSession(
             }
 
             override fun toString(): String = "TorrentFileHandleImpl(index=$index, filePath='$pathInTorrent')"
+            override fun closeAndDelete() {
+                close()
+                deleteEntireTorrentIfNotInUse()
+            }
         }
 
         /**
@@ -452,8 +456,14 @@ open class DefaultTorrentDownloadSession(
      * 注意, 目前其实种子的 saveDirectory 不会被删除. close TorrentHandle 时只会删除它们自己对应的文件.
      */
     override fun closeIfNotInUse() {
-        if (openHandles.isNotEmpty()) {
+        if (openHandles.isEmpty()) {
             close()
+        }
+    }
+
+    fun deleteEntireTorrentIfNotInUse() {
+        if (openHandles.isEmpty() && closed) {
+            saveDirectory.deleteRecursively()
         }
     }
 
