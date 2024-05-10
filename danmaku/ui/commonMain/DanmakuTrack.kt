@@ -77,7 +77,7 @@ internal val DummyDanmakuState: DanmakuState = DanmakuState(
             UUID.randomUUID().toString(),
             "dummy",
             0L, "1",
-            DanmakuLocation.NORMAL, "dummy", 0
+            DanmakuLocation.NORMAL, "dummy 占位 攟 の 😄", 0
         ),
         isSelf = false
     )

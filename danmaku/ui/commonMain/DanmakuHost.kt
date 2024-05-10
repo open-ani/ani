@@ -4,6 +4,7 @@ import androidx.annotation.UiThread
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
@@ -13,6 +14,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import me.him188.ani.danmaku.api.DanmakuPresentation
 
 interface DanmakuHostState {
@@ -70,7 +72,7 @@ fun DanmakuHost(
             DanmakuTrack(track, Modifier.fillMaxWidth(), config) {
                 // fix height even if there is no danmaku showing
                 // so that the second track will not move to the top of the screen when the first track is empty.
-                danmaku(DummyDanmakuState, Modifier.alpha(0f), style = config.style)
+                danmaku(DummyDanmakuState, Modifier.alpha(0f).padding(vertical = 1.dp), style = config.style)
 
                 for (danmaku in track.visibleDanmaku) {
                     key(danmaku.danmaku.id) {
