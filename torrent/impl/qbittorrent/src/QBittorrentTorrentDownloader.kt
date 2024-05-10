@@ -194,6 +194,8 @@ class QBittorrentTorrentDownloader(
                 awaitTorrentData { it.savePath == dir.absolutePath }
             }
 
+        client.recheckTorrents(listOf(info.hash))
+
         return QBittorrentTorrentDownloadSession(
             torrentInfo = info,
             client = client,

@@ -123,6 +123,17 @@ class QBittorrentClient(
         }.body()
     }
 
+    suspend fun recheckTorrents(
+        hashes: List<String>,
+    ): Unit = autoLogin {
+        client.submitForm(
+            "v2/torrents/recheck",
+            formParameters = parameters {
+                append("hashes", hashes.joinToString("|"))
+            }
+        )
+    }
+
 //    suspend fun addTorrent(
 //        urls: List<String>,
 //        savePath: String,
