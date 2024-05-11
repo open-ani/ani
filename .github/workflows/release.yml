@@ -198,6 +198,7 @@ jobs:
           GITHUB_REPOSITORY: ${{ secrets.GITHUB_REPOSITORY  }}
           CI_RELEASE_ID: ${{ needs.create-release.outputs.id }}
           CI_TAG: ${{ steps.tag.outputs.tag }}
+          UPLOAD_TO_S3: true
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_BASEURL: ${{ secrets.AWS_BASEURL }}
@@ -226,6 +227,7 @@ jobs:
           GITHUB_REPOSITORY: ${{ secrets.GITHUB_REPOSITORY  }}
           CI_RELEASE_ID: ${{ needs.create-release.outputs.id }}
           CI_TAG: ${{ steps.tag.outputs.tag }}
+          UPLOAD_TO_S3: true
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_BASEURL: ${{ secrets.AWS_BASEURL }}

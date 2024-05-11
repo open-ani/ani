@@ -209,8 +209,15 @@ fun getProperty(name: String) =
     System.getProperty(name)
         ?: System.getenv(name)
         ?: properties[name]?.toString()
-//        ?: getLocalProperty(name)
+        ?: getLocalProperty(name)
         ?: ext.get(name).toString()
+
+fun findProperty(name: String) =
+    System.getProperty(name)
+        ?: System.getenv(name)
+        ?: properties[name]?.toString()
+        ?: getLocalProperty(name)
+        ?: runCatching { ext.get(name) }.getOrNull()
 
 // do not use `object`, compiler bug
 open class ReleaseEnvironment {
