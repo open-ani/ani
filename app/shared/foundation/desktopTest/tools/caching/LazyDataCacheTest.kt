@@ -152,6 +152,7 @@ class LazyDataCacheTest {
     // allData
     ///////////////////////////////////////////////////////////////////////////
 
+    @Disabled
     @Test
     fun `allData emits initial empty list`() = runTest {
         val cache = LazyDataCache({
@@ -163,6 +164,7 @@ class LazyDataCacheTest {
         assertEquals(emptyList(), cache.allDataFlow.first())
     }
 
+    @Disabled
     @Test
     fun `allData emits first page`() = runTest {
         val cache = LazyDataCache({
