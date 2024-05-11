@@ -33,7 +33,6 @@ import org.apache.tools.ant.taskdefs.condition.Os
 import org.gradle.internal.impldep.com.amazonaws.auth.AWSStaticCredentialsProvider
 import org.gradle.internal.impldep.com.amazonaws.auth.BasicAWSCredentials
 import org.gradle.internal.impldep.com.amazonaws.client.builder.AwsClientBuilder
-import org.gradle.internal.impldep.com.amazonaws.regions.Regions
 import org.gradle.internal.impldep.com.amazonaws.services.s3.AmazonS3ClientBuilder
 import org.gradle.internal.impldep.com.amazonaws.services.s3.model.ObjectMetadata
 import org.gradle.internal.impldep.com.amazonaws.services.s3.model.PutObjectRequest
@@ -271,7 +270,6 @@ open class ReleaseEnvironment {
                     )
                 )
             )
-            .withRegion(Regions.US_EAST_1)
             .apply {
                 setEndpointConfiguration(
                     AwsClientBuilder.EndpointConfiguration(
