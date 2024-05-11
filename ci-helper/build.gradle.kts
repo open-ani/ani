@@ -140,14 +140,14 @@ tasks.register("uploadAndroidApkQR") {
 }
 
 val zipDesktopDistribution = tasks.register("zipDesktopDistribution", Zip::class) {
-    dependsOn(":app:desktop:createDistributable")
+    dependsOn(":app:desktop:packageDistributionForCurrentOS")
     from(project(":app:desktop").layout.buildDirectory.dir("compose/binaries/main/app"))
     archiveBaseName.set("ani")
 }
 
 tasks.register("uploadDesktopInstallers") {
     dependsOn(
-        ":app:desktop:createDistributable",
+        ":app:desktop:packageDistributionForCurrentOS",
     )
 
     doLast {
@@ -176,7 +176,6 @@ tasks.register("prepareArtifactsForManualUpload") {
     dependsOn(
         ":app:desktop:createDistributable",
         ":app:desktop:packageDistributionForCurrentOS",
-        ":app:desktop:packageUberJarForCurrentOS"
     )
     dependsOn(zipDesktopDistribution)
 
