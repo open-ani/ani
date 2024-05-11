@@ -35,6 +35,7 @@ import org.gradle.internal.impldep.com.amazonaws.auth.BasicAWSCredentials
 import org.gradle.internal.impldep.com.amazonaws.client.builder.AwsClientBuilder
 import org.gradle.internal.impldep.com.amazonaws.regions.Regions
 import org.gradle.internal.impldep.com.amazonaws.services.s3.AmazonS3ClientBuilder
+import org.gradle.internal.impldep.com.amazonaws.services.s3.model.ObjectMetadata
 import org.gradle.internal.impldep.com.amazonaws.services.s3.model.PutObjectRequest
 
 plugins {
@@ -332,7 +333,9 @@ open class ReleaseEnvironment {
 //                        })
 //                    }
                     val request = PutObjectRequest(getProperty("AWS_BUCKET"), "$tag/$name", file).apply {
-                        this.metadata.contentType = contentType
+                        this.metadata = ObjectMetadata().apply {
+                            this.contentType = contentType
+                        }
                     }
                     s3Client.putObject(request)
                 }
