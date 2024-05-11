@@ -198,6 +198,11 @@ jobs:
           GITHUB_REPOSITORY: ${{ secrets.GITHUB_REPOSITORY  }}
           CI_RELEASE_ID: ${{ needs.create-release.outputs.id }}
           CI_TAG: ${{ steps.tag.outputs.tag }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_BASEURL: ${{ secrets.AWS_BASEURL }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_BUCKET: ${{ secrets.AWS_BUCKET }}
 
       - if: ${{ env.isMac == 'true' }}
         name: Generate QR code for APK (GitHub)
@@ -221,6 +226,11 @@ jobs:
           GITHUB_REPOSITORY: ${{ secrets.GITHUB_REPOSITORY  }}
           CI_RELEASE_ID: ${{ needs.create-release.outputs.id }}
           CI_TAG: ${{ steps.tag.outputs.tag }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_BASEURL: ${{ secrets.AWS_BASEURL }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_BUCKET: ${{ secrets.AWS_BUCKET }}
 
       - name: Assemble
         run: ./gradlew assemble ${{ env.gradleArgs }}
