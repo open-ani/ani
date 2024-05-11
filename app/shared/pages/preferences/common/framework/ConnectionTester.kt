@@ -47,7 +47,8 @@ enum class ConnectionTestResult {
     NOT_ENABLED
 }
 
-fun Boolean.toConnectionTestResult() = if (this) ConnectionTestResult.SUCCESS else ConnectionTestResult.NOT_ENABLED
+fun Boolean.toConnectionTestResult() =
+    if (this) ConnectionTestResult.SUCCESS else ConnectionTestResult.FAILED
 
 @Stable
 class ConnectionTester(
