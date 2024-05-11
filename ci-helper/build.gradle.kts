@@ -145,7 +145,7 @@ val zipDesktopDistribution = tasks.register("zipDesktopDistribution", Zip::class
     // ani-3.0.0-beta22-dev7.zip
     archiveBaseName.set("ani")
     archiveVersion.set(ReleaseEnvironment().fullVersion)
-    into(layout.buildDirectory.file("distributions"))
+    destinationDirectory.set(layout.buildDirectory.dir("distributions"))
 }
 
 tasks.register("uploadDesktopInstallers") {
