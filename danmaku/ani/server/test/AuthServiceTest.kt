@@ -2,12 +2,11 @@ package me.him188.ani.danmaku.server
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.runTest
 import me.him188.ani.danmaku.server.service.AuthService
+import me.him188.ani.danmaku.server.service.ClientVersionVerifier
 import me.him188.ani.danmaku.server.util.exception.InvalidClientVersionException
 import me.him188.ani.danmaku.server.util.exception.UnauthorizedException
-import me.him188.ani.utils.coroutines.runUntilSuccess
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
@@ -16,10 +15,10 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
+import org.koin.core.module.Module
+import org.koin.dsl.module
 import java.io.File
-import kotlin.io.path.Path
 import kotlin.test.Test
-import kotlin.test.fail
 
 class AuthServiceTest {
     private val koin = object : KoinComponent {}
@@ -27,7 +26,7 @@ class AuthServiceTest {
     @TempDir
     lateinit var tempDir: File
 
-    private fun runTestWithKoin(block: suspend () -> Unit) = runTest {
+    private fun runTestWithKoin(extraKoin: Module.() -> Unit = {}, block: suspend () -> Unit) = runTest {
         val coroutineScope = CoroutineScope(SupervisorJob())
         startKoin {
             val config = ServerConfigBuilder.create {
@@ -38,7 +37,10 @@ class AuthServiceTest {
                     audience = "test_audience"
                 }
             }.build()
-            modules(getServerKoinModule(config, coroutineScope))
+            modules(
+                getServerKoinModule(config, coroutineScope),
+                module { extraKoin() }
+            )
         }
         block()
     }
@@ -63,21 +65,20 @@ class AuthServiceTest {
     }
 
     @Test
-    fun `test login bangumi with client version`() = runTestWithKoin {
-        val authService = koin.get<AuthService>()
-        runUntilSuccess(maxAttempts = 5) {
-            authService.loginBangumi("test_token_1", "3.0.0-dev")
-        }
-        runUntilSuccess(maxAttempts = 5) {
-            authService.loginBangumi("test_token_1", "3.0.0-beta21")
-        }
-        runUntilSuccess(maxAttempts = 5) {
-            try {
-                authService.loginBangumi("test_token_1", "bad_version")
-            } catch (e: InvalidClientVersionException) {
-                return@runUntilSuccess
+    fun `test login bangumi with client version`() = runTestWithKoin({
+        single<ClientVersionVerifier> {
+            object : ClientVersionVerifier {
+                override suspend fun verify(clientVersion: String): Boolean {
+                    return clientVersion == "3.0.0-dev" || clientVersion == "3.0.0-beta21"
+                }
             }
-            fail("Should throw InvalidClientVersionException")
         }
+    
+    }) {
+        val authService = koin.get<AuthService>()
+
+        assertDoesNotThrow { authService.loginBangumi("test_token_1", "3.0.0-dev") }
+        assertDoesNotThrow { authService.loginBangumi("test_token_1", "3.0.0-beta21") }
+        assertThrows<InvalidClientVersionException> { authService.loginBangumi("test_token_1", "bad_version") }
     }
 }
