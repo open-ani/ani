@@ -74,6 +74,7 @@ inline fun Logger.warn(message: () -> String) {
     warn(message())
 }
 
+@JvmName("warnThrowable")
 @OverloadResolutionByLambdaReturnType
 inline fun Logger.warn(e: () -> Throwable) {
     contract { callsInPlace(e, InvocationKind.AT_MOST_ONCE) }
@@ -88,6 +89,7 @@ inline fun Logger.error(message: () -> String) {
     error(message())
 }
 
+@JvmName("errorThrowable")
 @OverloadResolutionByLambdaReturnType
 inline fun Logger.error(e: () -> Throwable) {
     contract { callsInPlace(e, InvocationKind.AT_MOST_ONCE) }
