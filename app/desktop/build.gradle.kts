@@ -17,6 +17,7 @@
  */
 
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import java.util.UUID
 
 plugins {
     kotlin("jvm")
@@ -78,6 +79,20 @@ compose.desktop {
             packageName = "Ani"
             description = project.description
             vendor = "Him188"
+
+            val projectVersion = project.version.toString() // 3.0.0-beta22
+            macOS {
+                dockName = "Ani"
+                pkgPackageVersion = projectVersion
+                pkgPackageBuildVersion = projectVersion
+                iconFile.set(file("ani.ico"))
+//                iconFile.set(project(":app:shared").projectDir.resolve("androidRes/mipmap-xxxhdpi/a.png"))
+            }
+            windows {
+                this.upgradeUuid = UUID.randomUUID().toString()
+                iconFile.set(file("ani.ico"))
+            }
+            
             // adding copyright causes package to fail.
 //            copyright = """
 //                    Ani

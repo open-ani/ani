@@ -52,10 +52,10 @@ val hostOS: OS by lazy {
 
 val hostArch: String by lazy {
     when (val arch = System.getProperty("os.arch")) {
-        "x86_64" -> "amd64"
-        "amd64" -> "amd64"
-        "arm64" -> "arm64"
-        "aarch64" -> "arm64"
+        "x86_64" -> "x86_64"
+        "amd64" -> "x86_64"
+        "arm64" -> "aarch64"
+        "aarch64" -> "aarch64"
         else -> error("Unsupported host architecture: $arch")
     }
 }
@@ -84,8 +84,8 @@ class ArtifactNamer {
         return "$APP_NAME-$fullVersion.apk"
     }
 
-    fun androidAppQR(fullVersion: String): String {
-        return "${androidApp(fullVersion)}.qrcode.png"
+    fun androidAppQR(fullVersion: String, server: String): String {
+        return "${androidApp(fullVersion)}.$server.qrcode.png"
     }
 
     // Ani-2.0.0-beta03-macos-amd64.dmg
@@ -125,9 +125,14 @@ tasks.register("uploadAndroidApkQR") {
     doLast {
         ReleaseEnvironment().run {
             uploadReleaseAsset(
-                name = namer.androidAppQR(fullVersion),
+                name = namer.androidAppQR(fullVersion, "github"),
                 contentType = "image/png",
-                file = rootProject.file("apk-qrcode.png"),
+                file = rootProject.file("apk-qrcode-github.png"),
+            )
+            uploadReleaseAsset(
+                name = namer.androidAppQR(fullVersion, "cloudflare"),
+                contentType = "image/png",
+                file = rootProject.file("apk-qrcode-cloudflare.png"),
             )
         }
     }
@@ -136,32 +141,12 @@ tasks.register("uploadAndroidApkQR") {
 val zipDesktopDistribution = tasks.register("zipDesktopDistribution", Zip::class) {
     dependsOn(":app:desktop:createDistributable")
     from(project(":app:desktop").layout.buildDirectory.dir("compose/binaries/main/app"))
-    archiveBaseName.set("desktop")
-}
-
-tasks.register("uploadDesktopDistributionZip") {
-    dependsOn(zipDesktopDistribution)
-
-    doLast {
-        ReleaseEnvironment().run {
-            uploadReleaseAsset(
-                name = namer.desktopDistributionFile(
-                    fullVersion,
-                    osName = hostOS.name.lowercase(),
-                    extension = "zip"
-                ),
-                contentType = "application/octet-stream",
-                file = zipDesktopDistribution.get().archiveFile.get().asFile,
-            )
-        }
-    }
+    archiveBaseName.set("ani")
 }
 
 tasks.register("uploadDesktopInstallers") {
     dependsOn(
         ":app:desktop:createDistributable",
-        ":app:desktop:packageDistributionForCurrentOS",
-        ":app:desktop:packageUberJarForCurrentOS"
     )
 
     doLast {
@@ -353,25 +338,18 @@ fun ReleaseEnvironment.uploadDesktopDistributions() {
                 .single { it.extension == kind },
         )
     }
-
-    // jar
-    uploadReleaseAsset(
-        name = namer.desktopDistributionFile(
-            fullVersion,
-            osName = hostOS.name.lowercase(),
-            extension = "jar"
-        ),
-        contentType = "application/octet-stream",
-        file = project(":app:desktop").layout.buildDirectory.dir("compose/jars").get().asFile
-            .walk()
-            .single { it.extension == "jar" },
-    )
-
     // installers
     when (hostOS) {
         OS.WINDOWS -> {
-            uploadBinary("exe", osName = "windows") // all-in-one executable
-            uploadBinary("msi", osName = "windows")
+            uploadReleaseAsset(
+                name = namer.desktopDistributionFile(
+                    fullVersion,
+                    osName = hostOS.name.lowercase(),
+                    extension = "zip"
+                ),
+                contentType = "application/x-zip",
+                file = zipDesktopDistribution.get().archiveFile.get().asFile,
+            )
         }
 
         OS.MACOS -> {

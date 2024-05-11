@@ -28,22 +28,40 @@ jobs:
         with:
           tag_name: ${{ steps.tag.outputs.tag }}
           name: ${{ steps.tag-version.outputs.substring }}
+          # 修改 release-template.md 然后复制过来
           body: |
             Automatically created from tag ${{ steps.tag.outputs.tag }}. Do not change anything until assets are uploaded.
             
             ----
             
-            **附件:**
+            ### 下载
             
-            - `.zip` 是包含 JRE 的解压即用的绿色版本；
-            - `.dmg`、`.deb`、`.rpm` 和 `.msi` 分别是 macOS、Debian、RedHat 和 Windows 平台的安装程序；
-            - `.exe` 是包含 JRE 的 Windows 程序，可以直接运行。
-            - `.jar` 是不包含 JRE 的最小程序，需要配合 JRE 17 及以上使用；
+            [github-win-x64]: https://github.com/open-ani/ani/releases/download/${{steps.tag.outputs.tag}}/ani-${{steps.tag-version.outputs.substring}}-windows-x86_64.dmg
+            [github-mac-x64]: https://github.com/open-ani/ani/releases/download/${{steps.tag.outputs.tag}}/ani-${{steps.tag-version.outputs.substring}}-macos-x86_64.dmg
+            [github-mac-aarch64]: https://github.com/open-ani/ani/releases/download/${{steps.tag.outputs.tag}}/ani-${{steps.tag-version.outputs.substring}}-macos-aarch64.dmg
+            [github-android]: https://github.com/open-ani/ani/releases/download/${{steps.tag.outputs.tag}}/ani-${{steps.tag-version.outputs.substring}}.apk
             
-            注意: 桌面端目前还不支持视频播放, 建议先使用 Android 版本体验 (关注 #115)
+            [cf-win-x64]: https://d.myani.org/${{steps.tag.outputs.tag}}/ani-${{steps.tag-version.outputs.substring}}-windows-x86_64.dmg
+            [cf-mac-x64]: https://d.myani.org/${{steps.tag.outputs.tag}}/ani-${{steps.tag-version.outputs.substring}}-macos-x86_64.dmg
+            [cf-mac-aarch64]: https://d.myani.org/${{steps.tag.outputs.tag}}/ani-${{steps.tag-version.outputs.substring}}-macos-aarch64.dmg
+            [cf-android]: https://d.myani.org/${{steps.tag.outputs.tag}}/ani-${{steps.tag-version.outputs.substring}}.apk
             
-            也可扫描以下二维码下载 Android 版本：
-            ![](https://github.com/Him188/ani/releases/download/${{ steps.tag.outputs.tag }}/ani-${{ steps.tag-version.outputs.substring }}.apk.qrcode.png)
+            | 操作系统                    | 全球                           | 中国大陆                            |
+            |-------------------------|------------------------------|---------------------------------|
+            | Windows x86_64          | [GitHub][github-win-x64]     | [Cloudflare 分流][cf-win-x64]     |
+            | macOS x86_64 (Intel 芯片) | [GitHub][github-mac-x64]     | [Cloudflare 分流][cf-mac-x64]     |
+            | macOS aarch64 (M 系列芯片)  | [GitHub][github-mac-aarch64] | [Cloudflare 分流][cf-mac-aarch64] |
+            | Android APK aarch64     | [GitHub][github-android]     | [Cloudflare 分流][cf-android]     |
+            
+            扫描二维码下载 Android 版本：
+            
+            [github-android-qr]: https://github.com/open-ani/ani/releases/download/${{steps.tag.outputs.tag}}/ani-${{steps.tag-version.outputs.substring}}.apk.github.qrcode.png
+            
+            [cf-android-qr]: https://github.com/open-ani/ani/releases/download/${{steps.tag.outputs.tag}}/ani-${{steps.tag-version.outputs.substring}}.apk.cloudflare.qrcode.png
+            
+            | 全球                           | 中国大陆                            |
+            |------------------------------|---------------------------------|
+            | ![GitHub][github-android-qr] | ![Cloudflare 分流][cf-android-qr] |
 
           draft: true
           prerelease: false
@@ -68,6 +86,7 @@ jobs:
         --scan
         "-Dorg.gradle.jvmargs=-Xmx4096m" 
         "-Dfile.encoding=UTF-8"
+        --no-daemon
         --no-configuration-cache 
         "-Pbangumi.oauth.client.android.appId=${{ secrets.BANGUMI_OAUTH_CLIENT_ANDROID_ID }}" 
         "-Pbangumi.oauth.client.android.secret=${{ secrets.BANGUMI_OAUTH_CLIENT_ANDROID_SECRET }}"
@@ -181,11 +200,18 @@ jobs:
           CI_TAG: ${{ steps.tag.outputs.tag }}
 
       - if: ${{ env.isMac == 'true' }}
-        name: Generate QR code for APK
+        name: Generate QR code for APK (GitHub)
         uses: snow-actions/qrcode@v1.0.0
         with:
           text: https://github.com/Him188/ani/releases/download/${{ steps.tag.outputs.tag }}/ani-${{ steps.tag-version.outputs.substring }}.apk
-          path: apk-qrcode.png
+          path: apk-qrcode-github.png
+
+      - if: ${{ env.isMac == 'true' }}
+        name: Generate QR code for APK (Cloudflare)
+        uses: snow-actions/qrcode@v1.0.0
+        with:
+          text: https://d.myani.org/${{ steps.tag.outputs.tag }}/ani-${{ steps.tag-version.outputs.substring }}.apk
+          path: apk-qrcode-cloudflare.png
 
       - if: ${{ env.isMac == 'true' }}
         name: Upload QR code
@@ -203,13 +229,6 @@ jobs:
       #          createReleaseDistributable 
       #          packageReleaseDistributionForCurrentOS 
       #          packageReleaseUberJarForCurrentOS 
-      - name: Package
-        run: >
-          ./gradlew 
-          createDistributable 
-          packageDistributionForCurrentOS 
-          packageUberJarForCurrentOS 
-          ${{ env.gradleArgs }}
       # Upload assets for release
 
       - name: Upload Desktop Installers

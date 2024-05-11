@@ -120,9 +120,6 @@ jobs:
 
       - name: Package
         run: ./gradlew createDistributable ${{ env.gradleArgs }}
-
-      - name: Package
-        run: ./gradlew packageDistributionForCurrentOS ${{ env.gradleArgs }}
       
       #        continue-on-error: true
 
