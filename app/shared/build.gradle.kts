@@ -163,7 +163,7 @@ kotlin {
         api(libs.kotlinx.coroutines.swing)
         implementation(libs.vlcj)
         implementation(libs.jna) // required and don't change version, otherwise vlcj might crash the VM 
-//        implementation(libs.vlcj.javafx)
+
 //        implementation(libs.javafx.controls)
 //        implementation(libs.javafx.graphics)
 
@@ -185,6 +185,12 @@ kotlin {
                 null
             }
         }
+
+        implementation("org.openjfx:javafx-base:17.0.11:${classifier}")
+        implementation("org.openjfx:javafx-controls:17.0.11:${classifier}")
+        implementation("org.openjfx:javafx-graphics:17.0.11:${classifier}")
+        implementation("org.openjfx:javafx-swing:17.0.11:${classifier}")
+        implementation(libs.vlcj.javafx)
 
         runtimeOnly(libs.kotlinx.coroutines.debug)
 

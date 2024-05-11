@@ -5,9 +5,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.SwingPanel
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.round
+import javafx.embed.swing.JFXPanel
+import javafx.scene.Scene
+import javafx.scene.image.ImageView
+import javafx.scene.layout.Pane
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
@@ -27,17 +37,14 @@ import me.him188.ani.app.videoplayer.ui.state.PlaybackState
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.utils.io.SeekableInput
 import me.him188.ani.utils.logging.error
+import uk.co.caprica.vlcj.factory.MediaPlayerFactory
 import uk.co.caprica.vlcj.factory.discovery.NativeDiscovery
+import uk.co.caprica.vlcj.javafx.videosurface.ImageViewVideoSurface
 import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter
-import uk.co.caprica.vlcj.player.component.CallbackMediaPlayerComponent
 import uk.co.caprica.vlcj.player.embedded.EmbeddedMediaPlayer
-import java.awt.event.KeyAdapter
-import java.awt.event.KeyEvent
-import java.awt.event.MouseAdapter
-import java.awt.event.MouseEvent
-import java.awt.event.MouseWheelEvent
-import java.util.Locale
+import java.awt.BorderLayout
+import java.awt.Container
 import javax.swing.JPanel
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -47,16 +54,19 @@ import kotlin.time.Duration.Companion.seconds
 @Stable
 class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerState,
     AbstractPlayerState<VlcjData>(parentCoroutineContext) {
-    val component = run {
-        NativeDiscovery().discover()
-        object : CallbackMediaPlayerComponent() {
-            override fun mouseClicked(e: MouseEvent?) {
-                super.mouseClicked(e)
-                parent.dispatchEvent(e)
-            }
+    companion object {
+        init {
+            NativeDiscovery().discover()
         }
     }
-    val player: EmbeddedMediaPlayer = component.mediaPlayer()
+
+    val imageView = ImageView()
+    val player: EmbeddedMediaPlayer = MediaPlayerFactory().mediaPlayers().newEmbeddedMediaPlayer()
+    val component = run {
+        ImageViewVideoSurface(imageView).apply {
+            player.videoSurface().set(this)
+        }
+    }
 
     override val state: MutableStateFlow<PlaybackState> = MutableStateFlow(PlaybackState.PAUSED_BUFFERING)
 
@@ -213,58 +223,101 @@ actual fun VideoPlayer(
     }
 //    DisposableEffect(Unit) { onDispose(mediaPlayer::release) }
 
+    val panel = remember {
+        JFXPanel().apply {
+            scene = Scene(Pane().apply {
+                this.children.add(playerState.imageView)
+            })
+        }
+    }
     SwingPanel(
         factory = {
-            JPanel()
-//            playerState.component
+            panel
         },
         background = Color.Transparent,
         modifier = modifier.fillMaxSize()
     )
-    val surface = playerState.component.videoSurfaceComponent()
 
-    // 转发鼠标事件到 Compose
-    DisposableEffect(surface) {
-        val listener = object : MouseAdapter() {
-            override fun mouseClicked(e: MouseEvent) = dispatchToCompose(e)
-            override fun mousePressed(e: MouseEvent) = dispatchToCompose(e)
-            override fun mouseReleased(e: MouseEvent) = dispatchToCompose(e)
-            override fun mouseEntered(e: MouseEvent) = dispatchToCompose(e)
-            override fun mouseExited(e: MouseEvent) = dispatchToCompose(e)
-            override fun mouseDragged(e: MouseEvent) = dispatchToCompose(e)
-            override fun mouseMoved(e: MouseEvent) = dispatchToCompose(e)
-            override fun mouseWheelMoved(e: MouseWheelEvent) = dispatchToCompose(e)
-
-            fun dispatchToCompose(e: MouseEvent) {
-                playerState.component.parent.dispatchEvent(e)
-            }
-        }
-        surface.addMouseListener(listener)
-        onDispose {
-            surface.removeMouseListener(listener)
-        }
-    }
-
-    // 转发键盘事件到 Compose
-    DisposableEffect(surface) {
-        val listener = object : KeyAdapter() {
-            override fun keyPressed(p0: KeyEvent) = dispatchToCompose(p0)
-            override fun keyReleased(p0: KeyEvent) = dispatchToCompose(p0)
-            override fun keyTyped(p0: KeyEvent) = dispatchToCompose(p0)
-            fun dispatchToCompose(e: KeyEvent) {
-                playerState.component.parent.dispatchEvent(e)
-            }
-        }
-        surface.addKeyListener(listener)
-        onDispose {
-            surface.removeKeyListener(listener)
-        }
-    }
+//    val surface = playerState.component.videoSurfaceComponent()
+//
+//    // 转发鼠标事件到 Compose
+//    DisposableEffect(surface) {
+//        val listener = object : MouseAdapter() {
+//            override fun mouseClicked(e: MouseEvent) = dispatchToCompose(e)
+//            override fun mousePressed(e: MouseEvent) = dispatchToCompose(e)
+//            override fun mouseReleased(e: MouseEvent) = dispatchToCompose(e)
+//            override fun mouseEntered(e: MouseEvent) = dispatchToCompose(e)
+//            override fun mouseExited(e: MouseEvent) = dispatchToCompose(e)
+//            override fun mouseDragged(e: MouseEvent) = dispatchToCompose(e)
+//            override fun mouseMoved(e: MouseEvent) = dispatchToCompose(e)
+//            override fun mouseWheelMoved(e: MouseWheelEvent) = dispatchToCompose(e)
+//
+//            fun dispatchToCompose(e: MouseEvent) {
+//                playerState.component.parent.dispatchEvent(e)
+//            }
+//        }
+//        surface.addMouseListener(listener)
+//        onDispose {
+//            surface.removeMouseListener(listener)
+//        }
+//    }
+//
+//    // 转发键盘事件到 Compose
+//    DisposableEffect(surface) {
+//        val listener = object : KeyAdapter() {
+//            override fun keyPressed(p0: KeyEvent) = dispatchToCompose(p0)
+//            override fun keyReleased(p0: KeyEvent) = dispatchToCompose(p0)
+//            override fun keyTyped(p0: KeyEvent) = dispatchToCompose(p0)
+//            fun dispatchToCompose(e: KeyEvent) {
+//                playerState.component.parent.dispatchEvent(e)
+//            }
+//        }
+//        surface.addKeyListener(listener)
+//        onDispose {
+//            surface.removeKeyListener(listener)
+//        }
+//    }
 }
 
-private fun isMacOS(): Boolean {
-    val os = System
-        .getProperty("os.name", "generic")
-        .lowercase(Locale.ENGLISH)
-    return "mac" in os || "darwin" in os
+
+@Composable
+fun JavaFXPanel(
+    root: Container,
+    panel: JFXPanel,
+    onCreate: () -> Unit
+) {
+    val container = remember { JPanel() }
+    val density = LocalDensity.current.density
+
+    Layout(
+        content = {},
+        modifier = Modifier.onGloballyPositioned { childCoordinates ->
+            val coordinates = childCoordinates.parentCoordinates!!
+            val location = coordinates.localToWindow(Offset.Zero).round()
+            val size = coordinates.size
+            container.setBounds(
+                (location.x / density).toInt(),
+                (location.y / density).toInt(),
+                (size.width / density).toInt(),
+                (size.height / density).toInt()
+            )
+            container.validate()
+            container.repaint()
+        },
+        measurePolicy = { _, _ ->
+            layout(0, 0) {}
+        }
+    )
+
+    DisposableEffect(Unit) {
+        container.apply {
+            setLayout(BorderLayout(0, 0))
+            add(panel)
+        }
+        root.add(container)
+        onCreate.invoke()
+        onDispose {
+            root.remove(container)
+        }
+    }
 }
