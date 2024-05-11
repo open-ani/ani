@@ -1,0 +1,215 @@
+root {
+	display: block;
+}
+
+#content {
+
+}
+
+body {
+	font: 11pt Helvetica, Arial, sans-serif;
+	background-color: #EEE;
+	margin: 0px;
+}
+
+#libraryTree {
+	height: 300px;
+	overflow: scroll;
+	white-space: nowrap;
+	text-align: left;
+}
+
+#mediaViewer {
+	min-height: 500px;
+}
+
+#meta {
+	position: relative;
+	width: 100%;
+}
+
+#seekSlider {
+	width: 100%;
+}
+
+#volumeSlider {
+	width: 100%;
+	display: inline-block;
+}
+
+#currentVolume {
+	display: inline-block;
+}
+
+#mediaTitle {
+	text-align: center;
+	width: 100%;
+	margin-top: 5px;
+}
+
+#currentTime {
+	float: left;
+	text-align: left;
+}
+
+#totalTime {
+	float: right;
+	text-align: right;
+}
+
+#play_controls, #controls {
+	margin-top: 30px;
+	width: 95%;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+#controlTable {
+	position: relative;
+	height: 150px;
+}
+
+#buttonszone li {
+	float: left;
+}
+
+#art {
+	top: 0px;
+	width: 150px;
+	height: 150px;
+	margin: 0 auto;
+	box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+}
+
+.ui-slider-range {
+	background-color: #FFB200;
+	background: #FFB200 url(images/ui-bg_gloss-wave_35_f6a828_500x100.png) 50% 50% repeat-x;
+}
+
+
+#buttons {
+	--button-scale: 1.2;
+	margin: 0 auto;
+	position: relative;
+	width: calc(288px * var(--button-scale));
+}
+
+.button48 {
+	width: calc(48px * var(--button-scale));
+	height: calc(48px * var(--button-scale));
+	margin: 5px 0px 5px 0px;
+	background: none;
+	border: none;
+	display: inline-block;
+	cursor: pointer;
+	background-image: url("../images/buttons.png");
+	background-size: calc(672px * var(--button-scale));
+	background-repeat: no-repeat;
+}
+
+.button {
+	cursor: pointer;
+	display: inline-block;
+}
+
+#buttonOpen {
+	background-position: 0px 0px;
+}
+
+#buttonStop {
+	background-position: calc(-576px * var(--button-scale)) 0px;
+}
+
+#buttonRewd {
+	background-position: calc(-528px * var(--button-scale)) 0px;
+}
+
+#buttonFwrd {
+	background-position: calc(-96px * var(--button-scale)) 0px;
+}
+
+.playing {
+	background-position: calc(-336px * var(--button-scale)) 0px;
+}
+
+.paused {
+	background-position: calc(-384px * var(--button-scale)) 0px;
+}
+
+#buttonPrev {
+	background-position: calc(-144px * var(--button-scale)) 0px;
+}
+
+#buttonNext {
+	background-position: calc(-288px * var(--button-scale)) 0px;
+}
+
+#buttonFull {
+	background-position: calc(-192px * var(--button-scale)) 0px;
+}
+
+#buttonSout {
+	background-position: calc(-624px * var(--button-scale)) 0px;
+}
+
+#buttonEQ {
+	background-position: calc(-48px * var(--button-scale)) 0px;
+}
+
+#window_browse ol {
+	list-style-type: none;
+}
+
+#window_browse ol li {
+	list-style-type: none;
+	float: left;
+	padding: 5px;
+}
+
+.system_icon {
+	width: 80px;
+	text-align: center;
+	vertical-align: top;
+	display: inline-block;
+	cursor: pointer;
+	padding: 2px;
+	border: 1px solid #823D0A;
+	margin: 2px;
+	height: 92px;
+	background-color: #E1E1E1;
+	overflow: hidden;
+}
+
+#window_create_stream table tr td {
+	font-size: 11px;
+}
+
+#window_equalizer div div {
+	text-align: center;
+	font-size: 11px;
+	padding: 0px;
+}
+
+.eqBand {
+	margin-bottom: 10px;
+	margin-top: 10px;
+	height: 400px;
+	font-size: 1.5em;
+}
+
+.footer {
+	margin-top: 30px;
+	text-align: center;
+	font-size: 11px;
+}
+
+div.centered {
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.hidden {
+	visibility: hidden;
+	display: none;
+}

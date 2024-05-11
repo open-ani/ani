@@ -1,0 +1,106 @@
+Some VLC plugins use external libraries and make extensive use of the
+following persons' or companies' code:
+
+FAAD2 - Copyright (c) Nero AG, www.nero.com" - GPLv2 or later
+FFmpeg - Copyright (c) 2000-2017 the FFmpeg developers - LGPLv2.1 or later
+FluidLite - Copyright (c) 2016 Robin Lobel - LGPLv2.1 or later
+FluidSynth - Copyright (c) 2003-2010 Peter Hanappe, Conrad Berhörster, Antoine
+   Schmitt, Pedro López-Cabanillas, Josh Green, David Henningsson - LGPLv2.1 or
+   later
+Fontconfig - Copyright (c) 2000,2001,2002,2003,2004,2006,2007 Keith Packard,
+   (c) 2005 Patrick Lam, (c) 2009 Roozbeh Pournader, (c) 2008,2009 Red Hat,
+   Inc., (c) 2008 Danilo Šegan, (c) 2012 Google, Inc. - MIT License
+freetype - David Turner, Robert Wilhelm, and Werner Lemberg - FreeType License
+GSM - Copyright (c) 1992 - 1994, 2009 Jutta Degener & Carsten Bormann - GSM
+   permissive license
+GNU FriBidi - Copyright (c) 2004-2012 Behdad Esfahbod, Dov Grobgeld, Roozbeh
+   Pournader - LGPLv2.1 or later
+GnuTLS - Copyright (C) 2000-2012 Free Software Foundation, Inc. - LGPLv2.1 or
+   later
+harfbuzz - Copyright (c) 2010, 2011, 2012  Google, Inc., (c) 2012  Mozilla
+   Foundation, (c) 2011 Codethink Limited, (c) 2008, 2010  Nokia Corporation
+   and/or its subsidiary(-ies), (c) 2009 Keith Stribley, (c) 2009 Martin Hosken
+   and SIL International, (c) 2007 Chris Wilson, (c) 2006 Behdad Esfahbod,
+   (c) 2005 David Turner, (c) 2004, 2007, 2008, 2009, 2010 Red Hat, Inc.,
+   (c) 1998-2004 David Turner and Werner Lemberg - Old MIT License
+liba52 - Aaron Holtzman & Michel Lespinasse, et al. - GPLv2 or later
+libav - Copyright (c) 2000 - 2015 the libav developers - LGPLv2.1 or later
+libass - Copyright (c) 2006-2015 Grigori Goronzy et al. - ISC License
+libbluray - Copyright (c) 2009-2015 VideoLAN and authors - LGPLv2.1 or later
+libcaca - Copyright (c) 2004 Sam Hocevar - WTFPL / LGPLv2.1 or later /
+   GPLv2 or later / ISC
+libdca - Copyright (c) 2004-2007 VideoLAN and authors - GPLv2 or later
+libdvbpsi - Copyright (c) 2001-2017 VideoLAN and authors - LGPLv2.1 or later
+libdvdcss - Copyright (c) 2001-2017 VideoLAN and authors - GPLv2 or later
+libdvdread - GPLv2 or later
+libdvdnav - GPLv2 or later
+libebml - Copyright (c) 2002-2015 Steve Lhomme - LGPLv2.1 or later
+libFLAC - Copyright (c) 2001 - 2014 Josh Coalson et al. - Xiph.org BSD license
+libgme - LGPLv2.1 or later
+libgpg-error - Copyright 2003, 2004, 2005, 2006, 2007, 2013 g10 Code GmbH
+   - LGPLv2.1 or later
+libkate - Copyright (c) 2008-2011 Vincent Penquerc'h - 3-clause BSD License
+liblive555 - Copyright (c) 1996-2015 Live Networks, Inc. - LGPLv2.1 or later
+libmad - Copyright (c) 2000-2004 Robert Leslie, et al. - GPLv2 or later
+libmatroska - Copyright (c) 2002-2015 Steve Lhomme - LGPLv2.1 or later
+libmpeg2 - Aaron Holtzman & Michel Lespinasse, et al. - GPLv2 or later
+libmodplug - Oliver Lapicque, Konstanty - Public domain
+libogg, libvorbis - Copyright (c) 2002-2015 Xiph.org Foundation - Xiph.org BSD
+   license
+libpostproc - Copyright (C) 2001-2015 Michael Niedermayer, et al. - GPLv2 or
+   later
+libpng - Copyright (c) 2004, 2006-2014 Glenn Randers-Perhson, et al. - libpng
+   license
+libsamplerate - Copyright (c) 2002-2011 Erik de Castro Lopo - GPLv2 or later
+libschroedinger - Copyright (c) 2006 BBC and Fluendo - MIT License
+libsdl - Copyright (c) 1997-2014 Sam Lantinga et al. - LGPLv2.1 or later
+libshout - Copyright (c) 2012 - LGPLv2.1 or later
+libtheora - Copyright (c) Xiph.org Foundation - Xiph.org BSD license
+libtiff - Copyright (c) 1988-1997 Sam Leffler, (c) 1991-1997 Silicon Graphics,
+   Inc. - BSD-like
+libtwolame - Copyright (c) 2001-2004 Michael Cheng, (c) 2004-2006 The TwoLAME
+   Project - LGPLv2.1 or later
+libupnp - Copyright (c) 2000-2003 Intel Corporation - 3-clause BSD License
+libvpx - Copyright (c) 2010-2015, Google Inc. - 3-clause BSD License
+libxml2 - Copyright (c) 1998-2014 Daniel Veillard - MIT License
+lua - Copyright (c) 1994-2008 Lua.org, PUC-Rio. - MIT License
+Musepack decoder library - Copyright (c) 2005-2011, The Musepack Development
+   Team - 3-clause BSD License
+OpenJPEG - Copyright (c) 2002-2014, Communcations and Remote Sensing
+   Laboratory, UCL, Belgium - ISC License
+Opus - Copyright 2001-2013 Xiph.Org, Skype Limited, Octasic, Jean-Marc Valin,
+   Timothy B. Terriberry, CSIRO, Gregory Maxwell, Mark Borgerding,
+   Erik de Castro Lopo - Xiph.org BSD License
+Sparkle — Andy Matuschak et al. - MIT License
+Speex, Speexdsp - Copyright (c) 1992-2015 Xiph.org Foundation, Jean-Marc Valin,
+   Analog Devices Inc. Commonwealth Scientific and Industrial Research
+   Organisation, David Row, Jutta Degener, Carsten Bormann - 3-clause BSD
+   License
+taglib - Copyright (c) 2004-2016 Scott Wheeler, et al. - LGPLv2.1 or later
+x264 - Copyright (c) 2004-2017 VideoLAN and authors - GPLv2 or later
+x265 - Copyright (c) 2004-2015 x265 project - GPLv2 or later
+Zapping VBI library - Copyright (c) 2000-2003 Michael H. Schimek, Iñaki García
+   Etxebarria - LGPLv2.1 or later
+zlib - Copyright (c) 1995-2017 Jean-loup Gailly and Mark Adler - zlib license
+
+The VideoLAN team would like to thank the following donators:
+
+Julian Cain, who made a $1000 donation
+The French website MacBidouille gave €500 to help us buy a PowerMac G5
+The French magazine à vos MAC gave €500 to help us buy a PowerMac G5
+Laurent Dupuy, who made a €540 donation
+The French company Cybervia (Actech) gave €2000 to pay for webserver hosting
+Dennis Perov - Hardware donation
+
+...the following active members of our user community:
+
+Alan Wright
+David J LaBarre "DJ"
+Eric Adler
+Julien Bouquillon
+
+...and code auditors and testers:
+
+David Thiel
+Philippe A. aka "Lotesdelère"
+Sebastien Chaumat

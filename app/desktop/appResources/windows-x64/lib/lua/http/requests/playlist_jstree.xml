@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?><?vlc --[[vim:syntax=lua<!--  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - >
+<  playlist.xml: VLC media player web interface
+< - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - >
+<  Copyright (C) 2005-2006 the VideoLAN team
+< 
+<  Authors: Antoine Cellerier <dionoea -at- videolan -dot- org>
+< 
+<  This program is free software; you can redistribute it and/or modify
+<  it under the terms of the GNU General Public License as published by
+<  the Free Software Foundation; either version 2 of the License, or
+<  (at your option) any later version.
+< 
+<  This program is distributed in the hope that it will be useful,
+<  but WITHOUT ANY WARRANTY; without even the implied warranty of
+<  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<  GNU General Public License for more details.
+< 
+<  You should have received a copy of the GNU General Public License
+<  along with this program; if not, write to the Free Software
+<  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
+< - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+        ]] ?>
+<root>
+    <?vlc--[[function a(t,pre)local pre = pre or ""for k,v in pairs(t) dovlc.msg.err(pre..tostring(k).." : "..tostring(v))if type(v) == "table" thena(v,pre.."  ")endendend--]]
+
+            function print_playlist(item)if item.flags.disabled then return endif(item.children) thenlocal name = vlc.strings.convert_xml_special_chars(item.name or "")name = name or ""if(name ~= "Undefined") then            print('<item id="plid_' ..tostring(item.id).. '" name="' ..tostring(name).. '" ro="' ..(item.flags.ro and "ro" or "rw").. '"><content><name>' ..name.. '</name></content>')            for _, child in ipairs(item.children) do                print_playlist(child)            end            print('</item>')        else            for _, child in ipairs(item.children) do                print_playlist(child)            end        endelselocal name, path = vlc.strings.convert_xml_special_chars(item.name or "", item.path or "")name = name or ""local current_item_id = vlc.playlist.current()local current = ""-- Is the item the one currently playedif(current_item_id ~= nil) thenif(current_item_id == item.id) thencurrent = 'current="current"'endendprint('<item id="plid_' ..tostring(item.id).. '" uri="' ..tostring(path).. '" name="' ..name.. '" ro="' ..(item.flags.ro and "ro" or "rw").. '" duration ="' ..math.floor(item.duration).. '" ' ..current.. ' ><content><name>' ..name.. '</name></content></item>')endend
+
+            local pif _GET["search"] thenif _GET["search"] ~= "" then_G.search_key = _GET["search"]else_G.search_key = nilendlocal key = vlc.strings.decode_uri(_GET["search"])p = vlc.playlist.search(key)elsep = vlc.playlist.get()end--a(p) --Uncomment to debugprint_playlist(p)?>
+</root>

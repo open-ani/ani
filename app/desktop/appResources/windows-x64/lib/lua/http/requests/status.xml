@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?><?vlc --[[vim:syntax=lua<!--  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - >
+<  status.xml: VLC media player web interface
+< - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - >
+<  Copyright (C) 2005-2009 the VideoLAN team
+< 
+<  Authors: Antoine Cellerier <dionoea -at- videolan -dot- org>
+<  			Rob Jonson <rob -at- hobbyistsoftware -dot- com>
+< 
+<  This program is free software; you can redistribute it and/or modify
+<  it under the terms of the GNU General Public License as published by
+<  the Free Software Foundation; either version 2 of the License, or
+<  (at your option) any later version.
+< 
+<  This program is distributed in the hope that it will be useful,
+<  but WITHOUT ANY WARRANTY; without even the implied warranty of
+<  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<  GNU General Public License for more details.
+< 
+<  You should have received a copy of the GNU General Public License
+<  along with this program; if not, write to the Free Software
+<  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
+< - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+        ]]?>
+
+        <?vlc
+
+                --package.loaded.httprequests = nil --uncomment to debug changeslocal httprequests = require "httprequests"
+
+                httprequests.processcommands()
+
+                local statusTable=httprequests.getstatus(false)
+
+                print('<root>\n')httprequests.printTableAsXml(statusTable,0)
+
+                local item = vlc.input.item()
+
+                --data in the information section is presented in a non-standard way to keep compatibility.
+
+                ?>
+<information>
+    <category name="meta">
+        <?vlcif item thenlocal metas = item:metas()for k,v in pairs(metas) dolocal metadataContent = vlc.strings.convert_xml_special_chars( httprequests.xmlString(v) )print("<info name='"..httprequests.xmlString(k).."'>"..metadataContent.."</info>")endend?>
+    </category>
+    <?vlcif item thenlocal info = item:info()for k, v in pairs(info) doprint("<category name='"..httprequests.xmlString(k).."'>")for k2, v2 in pairs(v) doprint("<info name='"..httprequests.xmlString(k2).."'>"..httprequests.xmlString(v2).."</info>")endprint("</category>")endend?>
+</information><stats>
+<?vlcif item thenlocal stats = item:stats()for k,v in pairs(stats) dolocal tag = string.gsub(k,"_","")print("<"..httprequests.xmlString(tag)..">"..httprequests.xmlString(v).."</"..httprequests.xmlString(tag)..">\n")endend?>
+</stats></root>

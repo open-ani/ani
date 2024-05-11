@@ -1,0 +1,32 @@
+<script type="text/javascript">
+    //<![CDATA[
+    $(function () {
+        $('#window_batch').dialog({
+            autoOpen: false,
+            width: 600,
+            modal: true,
+            buttons: {
+                "<?vlc gettext("Send") ?>": function () {
+                    var cmds = $('#batchCommand').val().split("\n");
+                    for (var i = 0; i < cmds.length; i++) {
+                        cmds[i] = cmds[i].replace(/^#.*$/, '\n');
+                    }
+                    cmds = cmds.join(";").replace(/\n/g, ';').replace(/;+/g, ';').replace(/^;/, '');
+                    sendVLMCmd(cmds);
+                    $(this).dialog('close');
+                },
+                "<?vlc gettext("Cancel") ?>": function () {
+                    $(this).dialog('close');
+                }
+            }
+        });
+    })
+    //]]>
+</script>
+<div id="window_batch" title="<?vlc gettext(" VLM Batch Commands") ?>">
+<textarea id="batchCommand" cols="50" rows="16">
+<?vlc gettext("#paste your VLM commands here") ?>
+
+<?vlc gettext("#separate commands with a new line or a semi-colon") ?>
+</textarea>
+</div>

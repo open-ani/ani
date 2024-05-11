@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?><?vlc --[[vim:syntax=lua<!--  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - >
+<  playlist.xml: VLC media player web interface
+< - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - >
+<  Copyright (C) 2005-2006 the VideoLAN team
+<
+<  Authors: Antoine Cellerier <dionoea -at- videolan -dot- org>
+<  Authors: Rob Jonson <rob -at- hobbyistsoftware -dot- com>
+<
+<  This program is free software; you can redistribute it and/or modify
+<  it under the terms of the GNU General Public License as published by
+<  the Free Software Foundation; either version 2 of the License, or
+<  (at your option) any later version.
+<
+<  This program is distributed in the hope that it will be useful,
+<  but WITHOUT ANY WARRANTY; without even the implied warranty of
+<  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<  GNU General Public License for more details.
+<
+<  You should have received a copy of the GNU General Public License
+<  along with this program; if not, write to the Free Software
+<  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
+< - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+        ]] ?>
+
+        <?vlc
+
+                --package.loaded.httprequests = nil --uncomment to debug changeslocal httprequests = require "httprequests"
+
+                local printleaf = function(item)    print ("\n<leaf")
+
+                for k,v in pairs(item) do
+
+                if (k~="type") then            print(" "..httprequests.xmlString(k).."=\""..httprequests.xmlString(v).."\"")        endend
+
+                print ("/>")end
+
+                local printnode = function(item)    local children=NULL
+
+                print ("\n<node")
+
+                for k,v in pairs(item) do
+
+                if (k=="type") then
+
+                elseif (k=="children") then            children=v._array        else            print(" "..httprequests.xmlString(k).."=\""..httprequests.xmlString(v).."\"")        endend
+
+                print (">")
+
+                return childrenend
+
+                printitem = function(item)    local children=NULL
+
+                if item.type=="node" then        children=printnode(item)        if (children) then            for i,v in ipairs(children) do                printitem(v)            end        end        print ("</node>")    else        printleaf(item)    end
+
+                end
+
+                httprequests.processcommands()
+
+                local pt=httprequests.playlisttable()
+
+                printitem(pt)
+
+
+                ?>

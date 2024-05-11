@@ -1,0 +1,54 @@
+<script type="text/javascript">
+    //<![CDATA[
+    var bands = new Array('60Hz', '170Hz', '310Hz', '600Hz', '1kHz', '3kHz', '6kHz', '12kHz', '14kHz', '16kHz');
+    $(function () {
+        $('#window_equalizer').dialog({
+            autoOpen: false,
+            height: 650,
+            width: 500,
+            resizable: false,
+            buttons: {
+                "<?vlc gettext("Reset") ?>": function () {
+                    $('.eqBand').each(function () {
+                        $(this).slider('value', 0);
+                        sendEQCmd({
+                            command: 'equalizer',
+                            val: 0,
+                            band: $(this).attr('id').substr(2)
+                        })
+                    });
+
+                },
+                "<?vlc gettext("Close") ?>": function () {
+                    $(this).dialog("close");
+                }
+            }
+        });
+        $('#preamp').slider({
+            min: -20,
+            max: 20,
+            step: 0.1,
+            range: "min",
+            animate: true,
+            stop: function (event, ui) {
+                $('#preamp_txt').empty().append(ui.value + 'dB');
+                sendEQCmd({
+                    command: 'preamp',
+                    val: ui.value
+                })
+            },
+            slide: function (event, ui) {
+                $('#preamp_txt').empty().append(ui.value + 'dB');
+            }
+        });
+    });
+    //]]>
+</script>
+<div id="window_equalizer" title="<?vlc gettext(" Graphical Equalizer") ?>">
+<div style="margin: 5px 5px 5px 5px;">
+    <div><?vlc gettext("Preamp:") ?> <span id="preamp_txt">0dB</span></div>
+</div>
+<div style="margin: 5px 5px 10px 5px;">
+    <div id="preamp" style="font-size: 18px;"></div>
+</div>
+</div>

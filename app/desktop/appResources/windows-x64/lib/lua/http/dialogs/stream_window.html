@@ -1,0 +1,117 @@
+<script type="text/javascript">
+    //<![CDATA[
+    var stream_server = window.location.hostname;
+
+    function configureStreamWindow(stream_protocol, stream_server, stream_port, stream_file) {
+        $('#stream_protocol').val(stream_protocol);
+        $('#stream_host').val(stream_server);
+        $('#stream_port').val(stream_port);
+        $('#stream_file').val(stream_file);
+    }
+
+    $(function () {
+        $('#window_streams').dialog({
+            autoOpen: false,
+            minWidth: 600,
+            minHeight: 430,
+            buttons: {
+                "<?vlc gettext("Close") ?>": function () {
+                    $(this).dialog("close");
+                }
+            }
+        });
+        $('#window_stream_config').dialog({
+            autoOpen: false,
+            width: 400,
+            modal: true,
+            buttons: {
+                "<?vlc gettext("Okay") ?>": function () {
+                    $(this).dialog('close');
+                }
+            }
+        });
+        $('#button_create_stream').click(function () {
+            $('#window_create_stream').dialog('open');
+            return false;
+        });
+        $('#button_clear_streams').click(function () {
+            sendVLMCmd('del all');
+            return false;
+        });
+        $('#button_config_streams').click(function () {
+            $('#window_stream_config').dialog('open');
+            return false;
+        });
+        $('#button_create_mosaic').click(function () {
+            $('#window_mosaic').dialog('open');
+            return false;
+        });
+        $('#button_refresh_streams').click(function () {
+            updateStreams();
+            return false;
+        })
+        $('#stream_host').val(stream_server);
+    });
+    //]]>
+</script>
+<div id="stream_status_" style="visibility:hidden;display:none;">
+    <h3><a href="#" id="stream_title_"></a></h3>
+    <div>
+        <div id="button_stream_stop_" class="button icon ui-widget ui-state-default"
+             title="<?vlc gettext(" Stop
+        ") ?>"><span class="ui-icon ui-icon-stop"></span></div>
+    <div id="button_stream_play_" class="button icon ui-widget ui-state-default"
+         title="<?vlc gettext(" Play
+    ") ?>"><span class="ui-icon ui-icon-play"></span></div>
+<div id="button_stream_loop_" class="button icon ui-widget ui-state-default" title="<?vlc gettext("
+     Loop") ?>"><span class="ui-icon ui-icon-refresh"></span></div>
+<div id="button_stream_delete_" class="button icon ui-widget ui-state-default"
+     title="<?vlc gettext(" Remove Stream") ?>"><span class="ui-icon ui-icon-trash"></span></div>
+<div>Title: <span id="stream_file_"></span></div>
+<div style="width: 260px; margin: 5px 0px 10px 0px;">
+    <div id="stream_pos_"></div>
+    <?vlc gettext("Time:") ?> <span id="stream_current_time_">00:00:00</span> / <span
+        id="stream_total_time_">00:00:00</span>
+</div>
+</div>
+</div>
+<div id="window_streams" title="<?vlc gettext(" Manage Streams") ?>">
+<div id="button_create_stream" class="button icon ui-widget ui-state-default" title="<?vlc gettext("
+     Create New Stream") ?>" opendialog="window_create_stream"><span
+        class="ui-icon ui-icon-plus"></span></div>
+<div id="button_create_mosaic" class="button icon ui-widget ui-state-default" title="<?vlc gettext("
+     Create Mosaic") ?>" opendialog="window_create_mosaiac"><span
+        class="ui-icon ui-icon-calculator"></span></div>
+<div id="button_clear_streams" class="button icon ui-widget ui-state-default" title="<?vlc gettext("
+     Delete All Streams") ?>"><span class="ui-icon ui-icon-trash"></span></div>
+<div id="button_config_streams" class="button icon ui-widget ui-state-default"
+     title="<?vlc gettext(" Configure Stream Defaults") ?>"><span
+        class="ui-icon ui-icon-wrench"></span></div>
+<div id="button_refresh_streams" class="button ui-widget ui-state-default ui-corner-all"
+     title="<?vlc gettext(" Refresh Streams") ?>"><span
+        class="ui-icon ui-icon-arrowrefresh-1-n"></span></div>
+<div id="stream_info">
+
+</div>
+
+</div>
+<div id="window_stream_config" title="<?vlc gettext(" Stream Input Configuration") ?>">
+<table>
+    <tr>
+        <td><?vlc gettext("Protocol") ?></td>
+        <td><input type="text" name="stream_protocol" id="stream_protocol" value="http"/></td>
+    </tr>
+    <tr>
+        <td><?vlc gettext("Host") ?></td>
+        <td><input type="text" name="stream_host" id="stream_host" value=""/></td>
+    </tr>
+    <tr>
+        <td><?vlc gettext("Port") ?></td>
+        <td><input type="text" name="stream_port" id="stream_port" value="8081"/></td>
+    </tr>
+    <tr>
+        <td><?vlc gettext("File") ?></td>
+        <td><input type="text" name="stream_file" id="stream_file" value="stream.flv"/></td>
+    </tr>
+</table>
+</div>

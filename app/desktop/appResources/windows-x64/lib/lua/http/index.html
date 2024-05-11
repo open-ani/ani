@@ -1,0 +1,392 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!--  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - >
+<  index.html: VLC media player web interface - VLM
+< - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - >
+<  Copyright (C) 2005-2014 VLC authors and VideoLAN
+<
+<  Authors: Brandon Brooks <bwbrooks -at- archmageinc -dot- com>
+<
+<  This program is free software; you can redistribute it and/or modify
+<  it under the terms of the GNU General Public License as published by
+<  the Free Software Foundation; either version 2 of the License, or
+<  (at your option) any later version.
+<
+<  This program is distributed in the hope that it will be useful,
+<  but WITHOUT ANY WARRANTY; without even the implied warranty of
+<  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<  GNU General Public License for more details.
+<
+<  You should have received a copy of the GNU General Public License
+<  along with this program; if not, write to the Free Software
+<  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
+< - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+<html>
+<head>
+    <title><?vlc gettext("VLC media player - Web Interface") ?></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="referrer" content="no-referrer"/>
+    <link href="favicon.ico" type="image/x-icon" rel="shortcut icon"/>
+    <script type="text/javascript" src="js/common.js"></script>
+    <script type="text/javascript">
+        //<![CDATA[
+        if (isMobile()) {
+            window.location = 'mobile.html';
+        }
+        //]]>
+    </script>
+    <link type="text/css" href="css/ui-lightness/jquery-ui-1.8.13.custom.css" rel="stylesheet"/>
+    <link type="text/css" href="css/main.css" rel="stylesheet"/>
+    <script type="text/javascript"
+            src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
+    <script type="text/javascript"
+            src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.13/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="js/jquery.jstree.js"></script>
+    <script type="text/javascript" src="js/ui.js"></script>
+    <script type="text/javascript" src="js/controllers.js"></script>
+    <script type="text/javascript">
+        //<![CDATA[
+        var pollStatus = true;
+        $(function () {
+            $('.button').hover(function () {
+                $(this).addClass('ui-state-hover')
+            }, function () {
+                $(this).removeClass('ui-state-hover')
+            });
+            $('#buttonPlayList').click(function () {
+                $('#libraryContainer').animate({
+                    height: 'toggle'
+                });
+                $('#buttonszone1').animate({
+                    width: 'toggle'
+                });
+                return false;
+            });
+            $('#buttonViewer').click(function () {
+                $('#viewContainer').animate({
+                    height: 'toggle'
+                })
+                return false;
+            });
+            $('#buttonEqualizer').click(function () {
+                updateEQ();
+                $('#window_equalizer').dialog('open');
+                return false;
+            })
+            $('#buttonOffsets').click(function () {
+                $('#window_offset').dialog('open');
+                return false;
+            });
+            $('#buttonBatch').click(function () {
+                $('#window_batch').dialog('open');
+                return false;
+            });
+            $('#buttonOpen').click(function () {
+                browse_target = 'default';
+                browse();
+                $('#window_browse').dialog('open');
+                return false;
+            });
+            $('#buttonPrev').mousedown(function () {
+                intv = 1;
+                ccmd = 'prev';
+                setIntv();
+                return false;
+            });
+            $('#buttonPrev').mouseup(function () {
+                if (intv <= 5) {
+                    sendCommand({'command': 'pl_previous'});
+                }
+                intv = 0;
+                return false;
+            });
+            $('#buttonNext').mousedown(function () {
+                intv = 1;
+                ccmd = 'next';
+                setIntv();
+                return false;
+            });
+            $('#buttonNext').mouseup(function () {
+                if (intv <= 5) {
+                    sendCommand({'command': 'pl_next'});
+                }
+                intv = 0;
+                return false;
+            });
+            $('#buttonPlEmpty').click(function () {
+                sendCommand({'command': 'pl_empty'})
+                updatePlayList(true);
+                return false;
+            });
+            $('#buttonLoop').click(function () {
+                sendCommand({'command': 'pl_loop'});
+                return false;
+            });
+            $('#buttonRepeat').click(function () {
+                sendCommand({'command': 'pl_repeat'});
+                return false;
+            });
+            $('#buttonShuffle').click(function () {
+                sendCommand({'command': 'pl_random'});
+                return false;
+            })
+            $('#buttonRefresh').click(function () {
+                updatePlayList(true);
+                return false;
+            });
+            $('#buttonPlPlay').click(function () {
+                sendCommand({
+                    'command': 'pl_play',
+                    'id': $('.jstree-clicked', '#libraryTree').first().parents().first().attr('id').substr(5)
+                })
+                return false;
+            });
+            $('#buttonPlAdd').click(function () {
+                $('.jstree-clicked', '#libraryTree').each(function () {
+                    if ($(this).parents().first().attr('uri')) {
+                        sendCommand({
+                            'command': 'in_enqueue',
+                            'input': $(this).parents().first().attr('uri')
+                        });
+                    }
+                    ;
+                });
+                $('#libraryTree').jstree('deselect_all');
+                setTimeout(function () {
+                    updatePlayList(true);
+                }, 1000);
+                return false;
+            });
+            $('#buttonStreams, #buttonStreams2').click(function () {
+                updateStreams();
+                $('#window_streams').dialog('open');
+            });
+            $('#buttonSout').click(function () {
+                if (current_que == 'main') {
+                    $('#windowStreamConfirm').dialog('open');
+                } else {
+                    $('#player').empty();
+                    current_que = 'main';
+                    sendVLMCmd('del Current');
+                    updateStatus();
+                }
+                return false;
+            });
+            $('#qrCodeConfirm').dialog({
+                autoOpen: false,
+                width: 600,
+                modal: true,
+                buttons: {
+                    "<?vlc gettext("Yes") ?>": function () {
+                        $(this).dialog('close');
+                        var urlimg = $('#mobileintflink').prop('href');
+                        var codeimg = $('<img width="350" height="350" alt="qrcode"/>');
+                        codeimg.attr('src', 'https://chart.apis.google.com/chart?cht=qr&chs=350x350&chld=L&choe=UTF-8&chl=' + encodeURIComponent(urlimg));
+                        codeimg.dialog({
+                            width: 350,
+                            height: 350,
+                            title: "<?vlc gettext("
+                            QR Code
+                            ") ?>"
+                        });
+                    },
+                    "<?vlc gettext("No") ?>": function () {
+                        $(this).dialog('close');
+                        window.location = $('#mobileintflink').attr('href');
+                    }
+                }
+            });
+            $('#windowStreamConfirm').dialog({
+                autoOpen: false,
+                width: 600,
+                modal: true,
+                buttons: {
+                    "<?vlc gettext("Yes") ?>": function () {
+                        var file = $('[current="current"]', '#libraryTree').length > 0 ? $('[current="current"]', '#libraryTree').first().attr('uri') : ($('.jstree-clicked', '#libraryTree').length > 0 ? $('.jstree-clicked', '#libraryTree').first().parents().first().attr('uri') : ($('#plid_' + current_playlist_id).attr('uri') ? $('#plid_' + current_playlist_id).attr('uri') : false));
+                        if (file) {
+                            if ($('#viewContainer').css('display') == 'none') {
+                                $('#buttonViewer').click();
+                            }
+                            var defaultStream = 'new Current broadcast enabled input "' + file + '" output #transcode{vcodec=FLV1,vb=4096,fps=25,scale=1,acodec=mp3,ab=512,samplerate=44100,channels=2}:std{access=' + $('#stream_protocol').val() + ',mux=avformat{{mux=flv}},dst=0.0.0.0:' + $('#stream_port').val() + '/' + $('#stream_file').val() + '}';
+                            sendVLMCmd('del Current;' + defaultStream + ';control Current play');
+                            $('#player').attr('href', $('#stream_protocol').val() + '://' + $('#stream_host').val() + ':' + $('#stream_port').val() + '/' + $('#stream_file').val());
+                            current_que = 'stream';
+                            updateStreams();
+                        }
+                        $(this).dialog('close');
+                    },
+                    "<?vlc gettext("No") ?>": function () {
+                        $(this).dialog('close');
+                    }
+                }
+            });
+            $('#viewContainer').animate({height: 'toggle'});
+        });
+        /* delay script loading so we won't block if we have no net access */
+        $.getScript('https://releases.flowplayer.org/js/flowplayer-3.2.6.min.js', function (data, textStatus) {
+            $('#player').empty();
+            flowplayer("player", "https://releases.flowplayer.org/swf/flowplayer-3.2.7.swf");
+            /* .getScript only handles success() */
+        });
+        //]]>
+    </script>
+</head>
+<body id="regular_layout">
+<div class="centered">
+    <div id="mainContainer" class="centered">
+        <div id="controlContainer" class="ui-widget">
+            <div id="controlTable" class="ui-widget-content">
+                <ul id="controlButtons">
+                    <li id="buttonPrev" class="button48  ui-corner-all" title="<?vlc gettext("
+                        Previous
+                    ") ?>"></li>
+                    <li id="buttonPlay" class="button48  ui-corner-all paused"
+                        title="<?vlc gettext(" Play
+                    ") ?>"></li>
+                    <li id="buttonNext" class="button48  ui-corner-all" title="<?vlc gettext(" Next
+                    ") ?>"></li>
+                    <li id="buttonOpen" class="button48  ui-corner-all" title="<?vlc gettext(" Open
+                        Media
+                    ") ?>"></li>
+                    <li id="buttonStop" class="button48  ui-corner-all" title="<?vlc gettext(" Stop
+                    ") ?>"></li>
+                    <li id="buttonFull" class="button48  ui-corner-all" title="<?vlc gettext(" Full
+                        Screen
+                    ") ?>"></li>
+                    <li id="buttonSout" class="button48  ui-corner-all" title="<?vlc gettext(" Easy
+                        Stream
+                    ") ?>"></li>
+                </ul>
+                <ul id="buttonszone2" class="buttonszone">
+                    <li id="buttonPlayList" class="button ui-widget ui-state-default ui-corner-all"
+                        title="<?vlc gettext(" Hide
+                    / Show Library") ?>"><span
+                        class="ui-icon ui-icon-note"></span><?vlc gettext("Hide / Show Library") ?></li>
+                    <li id="buttonViewer" class="button ui-widget ui-state-default ui-corner-all"
+                        title="<?vlc gettext(" Hide
+                    / Show Viewer") ?>"><span
+                        class="ui-icon ui-icon-video"></span><?vlc gettext("Hide / Show Viewer") ?></li>
+                    <li id="buttonStreams" class="button ui-widget ui-state-default ui-corner-all"
+                        title="<?vlc gettext(" Manage Streams
+                    ") ?>"><span
+                        class="ui-icon ui-icon-script"></span><?vlc gettext("Manage Streams") ?></li>
+                    <li id="buttonOffsets" class="button ui-widget ui-state-default ui-corner-all"
+                        title="<?vlc gettext(" Track Synchronisation
+                    ") ?>"><span
+                        class="ui-icon ui-icon-transfer-e-w"></span><?vlc gettext("Track Synchronisation") ?></li>
+                    <li id="buttonEqualizer" class="button ui-widget ui-state-default ui-corner-all"
+                        title="<?vlc gettext(" Equalizer
+                    ") ?>"><span
+                        class="ui-icon ui-icon-signal"></span><?vlc gettext("Equalizer") ?></li>
+                    <li id="buttonBatch" class="button ui-widget ui-state-default ui-corner-all"
+                        title="<?vlc gettext(" VLM Batch Commands
+                    ") ?>"><span
+                        class="ui-icon ui-icon-suitcase"></span><?vlc gettext("VLM Batch Commands") ?></li>
+                </ul>
+                <div id="volumesliderzone">
+                    <div id="volumeSlider" title="Volume"><img src="images/speaker-32.png"
+                                                               class="ui-slider-handle"
+                                                               alt="volume"/></div>
+                    <div id="currentVolume" class="dynamic">50%</div>
+                </div>
+                <div id="artszone">
+                    <img id="albumArt" src="/art" width="141px" height="130px" alt="Album Art"/>
+                </div>
+                <div id="mediaTitle" class="dynamic"></div>
+                <div id="seekContainer">
+                    <div id="seekSlider" title="<?vlc gettext(" Seek Time
+                    ") ?>">
+                </div>
+                <div id="currentTime" class="dynamic">00:00:00</div>
+                <div id="totalTime" class="dynamic">00:00:00</div>
+            </div>
+        </div>
+    </div>
+    <div id="libraryContainer" class="ui-widget">
+        <ul id="buttonszone1" align="left" class="buttonszone ui-widget-content"
+            style="overflow:hidden; white-space: nowrap;">
+            <li id="buttonShuffle" class="button ui-widget ui-state-default ui-corner-all"
+                title="<?vlc gettext(" Shuffle
+            ") ?>"><span class="ui-icon ui-icon-shuffle"></span><?vlc gettext("Shuffle") ?></li>
+            <li id="buttonLoop" class="button ui-widget ui-state-default ui-corner-all"
+                title="<?vlc gettext(" Loop
+            ") ?>"><span class="ui-icon ui-icon-refresh"></span><?vlc gettext("Loop") ?></li>
+            <li id="buttonRepeat" class="button ui-widget ui-state-default ui-corner-all"
+                title="<?vlc gettext(" Repeat
+            ") ?>"><span
+                class="ui-icon ui-icon-arrowreturnthick-1-w"></span><?vlc gettext("Repeat") ?></li>
+            <li id="buttonPlEmpty" class="button ui-widget ui-state-default ui-corner-all"
+                title="<?vlc gettext(" Empty Playlist
+            ") ?>"><span
+                class="ui-icon ui-icon-trash"></span><?vlc gettext("Empty Playlist") ?></li>
+            <li id="buttonPlAdd" class="button ui-widget ui-state-default ui-corner-all"
+                title="<?vlc gettext(" Queue Selected
+            ") ?>"><span class="ui-icon ui-icon-plus"></span><?vlc gettext("Queue Selected") ?></li>
+            <li id="buttonPlPlay" class="button ui-widget ui-state-default ui-corner-all"
+                title="<?vlc gettext(" Play Selected
+            ") ?>"><span class="ui-icon ui-icon-play"></span><?vlc gettext("Play Selected") ?></li>
+            <li id="buttonRefresh" class="button ui-widget ui-state-default ui-corner-all"
+                title="<?vlc gettext(" Refresh List
+            ") ?>"><span
+                class="ui-icon ui-icon-arrowrefresh-1-n"></span><?vlc gettext("Refresh List") ?></li>
+        </ul>
+        <div id="libraryTree" class="ui-widget-content"></div>
+    </div>
+    <div id="viewContainer" class="ui-widget">
+        <div id="mediaViewer" class="ui-widget-content">
+            <div href="http://localhost:8081/stream.flv" style="display:block; width:100%"
+                 id="player">
+                <p><?vlc gettext("Loading flowplayer...") ?>
+                    <br/><?vlc gettext("If nothing appears, check your internet connection.") ?></p>
+            </div>
+        </div>
+    </div>
+    <div class="footer">
+        VLC <?vlc print(vlc.misc.version() .. ' - Lua Web Interface - <a id="mobileintflink" href="mobile.html">
+        Mobile Interface</a> - ' .. vlc.misc.copyright()) ?>
+    </div>
+</div>
+</div>
+<div id="qrCodeConfirm" title="<?vlc gettext(" Generate QR Code
+") ?>">
+<p>
+    <?vlc gettext("VLC can display a QR code linking to the mobile version of the web interface; the web address of the web interface of your VLC media player instance will be transmitted over the internet to the Google Image Charts web service to generate this QR code.") ?>
+</p>
+<p>
+    <?vlc gettext("Do you want to go ahead with this?") ?>
+</p>
+</div>
+<div id="windowStreamConfirm" title="<?vlc gettext(" Confirm Stream Settings
+") ?>">
+<p>
+    <?vlc gettext("By creating a stream, the <i>Main Controls</i> will operate the stream instead of
+    the main interface.") ?>
+    <?vlc gettext("The stream will be created using default settings, for more advanced configuration, or to modify the default settings, select the button to the right: <i>
+    Manage Streams</i>") ?>
+    <span id="buttonStreams2" class="button ui-widget ui-state-default ui-corner-all"
+          title="<?vlc gettext(" Manage Streams") ?>"><span
+        class="ui-icon ui-icon-script"></span></span>
+</p>
+<p>
+    <?vlc gettext("Once the stream is created, the <i>Media Viewer</i> window will display the
+    stream.") ?>
+    <?vlc gettext("Volume will be controlled by the player, and not the <i>Main Controls</i>.") ?>
+</p>
+<p>
+    <?vlc gettext("The current playing item will be streamed. If there is no currently playing item, the first selected item from the <i>
+    Library</i> will be the subject of the stream.") ?>
+</p>
+<p>
+    <?vlc gettext("To stop the stream and resume normal controls, click the <i>Open Stream</i>button
+    again.") ?>
+</p>
+<p>
+    <?vlc gettext("Are you sure you wish to create the stream?") ?>
+</p>
+</div>
+<?vlc
+		current_page = "index"
+
+		dialogs("browse_window.html","stream_window.html","create_stream.html","offset_window.html","mosaic_window.html","equalizer_window.html","batch_window.html","error_window.html");
+		?>
+</body>
+</html>
