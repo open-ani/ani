@@ -38,6 +38,7 @@ import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.awt.event.MouseWheelEvent
 import java.util.Locale
+import javax.swing.JPanel
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration.Companion.seconds
@@ -57,7 +58,7 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
     }
     val player: EmbeddedMediaPlayer = component.mediaPlayer()
 
-    override val state: MutableStateFlow<PlaybackState> = MutableStateFlow(PlaybackState.READY)
+    override val state: MutableStateFlow<PlaybackState> = MutableStateFlow(PlaybackState.PAUSED_BUFFERING)
 
     class VlcjData(
         override val videoSource: VideoSource<*>,
@@ -214,7 +215,8 @@ actual fun VideoPlayer(
 
     SwingPanel(
         factory = {
-            playerState.component
+            JPanel()
+//            playerState.component
         },
         background = Color.Transparent,
         modifier = modifier.fillMaxSize()

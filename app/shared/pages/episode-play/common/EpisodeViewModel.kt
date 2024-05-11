@@ -30,13 +30,14 @@ import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.danmaku.DanmakuManager
 import me.him188.ani.app.data.media.resolver.EpisodeMetadata
+import me.him188.ani.app.data.media.resolver.ResolutionFailures
 import me.him188.ani.app.data.media.resolver.UnsupportedMediaException
+import me.him188.ani.app.data.media.resolver.VideoSourceResolutionException
 import me.him188.ani.app.data.media.resolver.VideoSourceResolver
 import me.him188.ani.app.data.subject.SubjectManager
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.Context
 import me.him188.ani.app.tools.caching.ContentPolicy
-import me.him188.ani.app.torrent.api.MagnetTimeoutException
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
@@ -251,21 +252,24 @@ private class EpisodeViewModelImpl(
                     )
                     videoLoadingState.compareAndSet(VideoLoadingState.ResolvingSource, VideoLoadingState.DecodingData)
                 } catch (e: UnsupportedMediaException) {
-                    logger.error(e) { "Failed to resolve video source" }
+                    logger.error { IllegalStateException("Failed to resolve video source, unsupported media", e) }
                     videoLoadingState.value = VideoLoadingState.UnsupportedMedia
                     emit(null)
-                } catch (e: MagnetTimeoutException) {
-                    videoLoadingState.value = VideoLoadingState.ResolutionTimedOut
+                } catch (e: VideoSourceResolutionException) {
+                    videoLoadingState.value = when (e.reason) {
+                        ResolutionFailures.FETCH_TIMEOUT -> VideoLoadingState.ResolutionTimedOut
+                        ResolutionFailures.ENGINE_ERROR -> VideoLoadingState.UnknownError
+                    }
                     emit(null)
                 } catch (e: CancellationException) {
                     throw e
                 } catch (e: Throwable) {
-                    logger.error(e) { "Failed to resolve video source" }
+                    logger.error { IllegalStateException("Failed to resolve video source", e) }
                     videoLoadingState.value = VideoLoadingState.UnknownError
                     emit(null)
                 }
             }
-        }.shareInBackground()
+        }.shareInBackground(SharingStarted.Lazily)
 
 
     override val playerState: PlayerState =

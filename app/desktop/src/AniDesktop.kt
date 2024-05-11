@@ -26,7 +26,6 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -34,11 +33,8 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.ApplicationScope
-import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.application
-import androidx.compose.ui.window.rememberWindowState
 import dev.dirs.ProjectDirectories
 import kotlinx.coroutines.launch
 import me.him188.ani.app.interaction.PlatformImplementations
@@ -64,7 +60,9 @@ import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import me.him188.ani.utils.logging.logger
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
+import java.awt.Dimension
 import java.io.File
+import javax.swing.SwingUtilities
 
 private val logger = logger("Ani")
 
@@ -82,7 +80,7 @@ object AniDesktop {
         // 如果要在视频上面显示弹幕或者播放按钮需要在启动的时候设置 system's blending 并且使用1.6.1之后的 Compose 版本
         // system's blending 在windows 上还是有问题，使用 EmbeddedMediaPlayerComponent 还是不会显示视频，但是在Windows 系统上使用 CallbackMediaPlayerComponent 就没问题。
         // See https://github.com/open-ani/ani/issues/115#issuecomment-2092567727
-        System.setProperty("compose.interop.blending", "true")
+//        System.setProperty("compose.interop.blending", "true")
     }
 
     @JvmStatic
@@ -121,58 +119,48 @@ object AniDesktop {
 
         val sessionManager by koin.koin.inject<SessionManager>()
 
-        application(exitProcessOnExit = true) {
-            val platform = remember { PlatformImplementations.current }
-            val mainSnackbar = remember { SnackbarHostState() }
-            CompositionLocalProvider(LocalContext provides context) {
-                content(navigator)
-            }
+        SwingUtilities.invokeLater {
+            ComposeWindow().apply {
+                title = "ani"
+                size = Dimension((1080 / 2.2f).toInt(), (1920 / 2.2f).toInt())
 
-            LaunchedEffect(true) {
-                coroutineScope.launch {
-                    sessionManager.requireOnline(navigator)
+                setContent {
+                    println("renderApi: " + this.window.renderApi)
+                    CompositionLocalProvider(LocalContext provides context) {
+                        // This actually runs only once since app is never changed.
+                        val windowImmersed = true
+                        if (windowImmersed) {
+                            SideEffect {
+                                window.rootPane.putClientProperty("apple.awt.fullWindowContent", true)
+                                window.rootPane.putClientProperty("apple.awt.transparentTitleBar", true)
+                            }
+                        } else {
+                            SideEffect {
+                                window.rootPane.putClientProperty("apple.awt.fullWindowContent", false)
+                                window.rootPane.putClientProperty("apple.awt.transparentTitleBar", false)
+                            }
+                        }
+
+                        MainWindowContent(
+                            hostIsMacOs = PlatformImplementations.hostIsMacOs,
+                            windowImmersed = windowImmersed,
+                            navigator
+                        )
+                    }
+
+                    LaunchedEffect(true) {
+                        coroutineScope.launch {
+                            sessionManager.requireOnline(navigator)
+                        }
+                    }
                 }
+                isVisible = true
             }
         }
+//        application(exitProcessOnExit = true) {
+//        }
     }
 
-    @Composable
-    private fun ApplicationScope.content(
-        aniNavigator: AniNavigator,
-    ) {
-        Window(
-            title = "ani",
-            onCloseRequest = {
-                exitApplication()
-            },
-            state = rememberWindowState(
-                height = 1920.dp / 2.2f,
-                width = 1080.dp / 2.2f,
-            ),
-            resizable = true,
-        ) {
-            this.window
-            // This actually runs only once since app is never changed.
-            val windowImmersed = true
-            if (windowImmersed) {
-                SideEffect {
-                    window.rootPane.putClientProperty("apple.awt.fullWindowContent", true)
-                    window.rootPane.putClientProperty("apple.awt.transparentTitleBar", true)
-                }
-            } else {
-                SideEffect {
-                    window.rootPane.putClientProperty("apple.awt.fullWindowContent", false)
-                    window.rootPane.putClientProperty("apple.awt.transparentTitleBar", false)
-                }
-            }
-
-            MainWindowContent(
-                hostIsMacOs = PlatformImplementations.hostIsMacOs,
-                windowImmersed = windowImmersed,
-                aniNavigator
-            )
-        }
-    }
 }
 
 

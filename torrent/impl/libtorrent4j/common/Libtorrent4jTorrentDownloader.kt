@@ -14,8 +14,8 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.torrent.api.DefaultTorrentDownloadSession
+import me.him188.ani.app.torrent.api.FetchTorrentTimeoutException
 import me.him188.ani.app.torrent.api.HttpFileDownloader
-import me.him188.ani.app.torrent.api.MagnetTimeoutException
 import me.him188.ani.app.torrent.api.TorrentDownloadSession
 import me.him188.ani.app.torrent.api.TorrentDownloader
 import me.him188.ani.app.torrent.api.TorrentDownloaderConfig
@@ -87,10 +87,10 @@ abstract class AbstractLockedTorrentDownloader<Info : TorrentInfo>(
                 fetchMagnet(uri, timeoutSeconds, magnetCacheDir)
             }
         } catch (e: InterruptedException) {
-            throw MagnetTimeoutException(cause = e)
+            throw FetchTorrentTimeoutException(cause = e)
         }
         if (data == null) {
-            throw MagnetTimeoutException()
+            throw FetchTorrentTimeoutException()
         }
         logger.info { "Fetched magnet: size=${data.size}" }
         return EncodedTorrentInfo(data)

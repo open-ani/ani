@@ -33,7 +33,7 @@ interface TorrentDownloader : AutoCloseable {
      *
      * @param uri supports magnet link or http link for the torrent file
      *
-     * @throws MagnetTimeoutException if timeout has been reached.
+     * @throws FetchTorrentTimeoutException if timeout has been reached.
      */
     suspend fun fetchTorrent(uri: String, timeoutSeconds: Int = 60): EncodedTorrentInfo
 
@@ -59,7 +59,7 @@ interface TorrentDownloader : AutoCloseable {
     override fun close()
 }
 
-class MagnetTimeoutException(
+class FetchTorrentTimeoutException(
     override val message: String? = "Magnet fetch timeout",
     override val cause: Throwable? = null
 ) : Exception()

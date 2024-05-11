@@ -24,7 +24,9 @@ interface VideoSourceResolver {
      *
      * @throws UnsupportedMediaException if the media cannot be resolved.
      * Use [supports] to check if the media can be resolved.
+     * @throws VideoSourceResolutionException if the video source cannot be resolved.
      */
+    @Throws(VideoSourceResolutionException::class)
     suspend fun resolve(media: Media, episode: EpisodeMetadata): VideoSource<*>
 
     companion object {
@@ -44,10 +46,6 @@ data class EpisodeMetadata(
     val sort: EpisodeSort,
 )
 
-class UnsupportedMediaException(
-    val media: Media,
-) : UnsupportedOperationException("Media is not supported: $media")
-
 private class ChainedVideoSourceResolver(
     private val resolvers: List<VideoSourceResolver>
 ) : VideoSourceResolver {
@@ -60,3 +58,24 @@ private class ChainedVideoSourceResolver(
             ?: throw UnsupportedMediaException(media)
     }
 }
+
+class UnsupportedMediaException(
+    val media: Media,
+) : UnsupportedOperationException("Media is not supported: $media")
+
+enum class ResolutionFailures {
+    /**
+     * 下载种子文件超时或者解析失败
+     */
+    FETCH_TIMEOUT,
+
+    /**
+     * 引擎自身错误 (bug)
+     */
+    ENGINE_ERROR,
+}
+
+class VideoSourceResolutionException(
+    val reason: ResolutionFailures,
+    override val cause: Throwable? = null,
+) : Exception("Failed to resolve video source: $reason", cause)

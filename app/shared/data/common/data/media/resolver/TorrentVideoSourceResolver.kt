@@ -1,9 +1,11 @@
 package me.him188.ani.app.data.media.resolver
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.tools.torrent.TorrentEngine
+import me.him188.ani.app.torrent.api.FetchTorrentTimeoutException
 import me.him188.ani.app.torrent.api.files.EncodedTorrentInfo
 import me.him188.ani.app.torrent.api.files.FilePriority
 import me.him188.ani.app.videoplayer.data.OpenFailures
@@ -28,17 +30,35 @@ class TorrentVideoSourceResolver(
         return media.download is ResourceLocation.HttpTorrentFile || media.download is ResourceLocation.MagnetLink
     }
 
+    @Throws(VideoSourceResolutionException::class)
     override suspend fun resolve(media: Media, episode: EpisodeMetadata): VideoSource<*> {
-        val downloader = engine.getDownloader() ?: throw UnsupportedMediaException(media)
+        val downloader = try {
+            engine.getDownloader()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Throwable) {
+            throw VideoSourceResolutionException(ResolutionFailures.ENGINE_ERROR, e)
+        }
+
+        downloader ?: throw UnsupportedMediaException(media)
+
         return when (val location = media.download) {
             is ResourceLocation.HttpTorrentFile,
             is ResourceLocation.MagnetLink
             -> {
-                TorrentVideoSource(
-                    engine,
-                    encodedTorrentInfo = downloader.fetchTorrent(location.uri),
-                    episodeMetadata = episode,
-                )
+                try {
+                    TorrentVideoSource(
+                        engine,
+                        encodedTorrentInfo = downloader.fetchTorrent(location.uri),
+                        episodeMetadata = episode,
+                    )
+                } catch (e: FetchTorrentTimeoutException) {
+                    throw VideoSourceResolutionException(ResolutionFailures.FETCH_TIMEOUT)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    throw VideoSourceResolutionException(ResolutionFailures.ENGINE_ERROR, e)
+                }
             }
 
             else -> throw UnsupportedMediaException(media)

@@ -3,11 +3,13 @@ package me.him188.ani.app.torrent.qbittorrent
 import androidx.compose.ui.util.fastForEachIndexed
 import com.dampcake.bencode.Bencode
 import com.dampcake.bencode.Type
+import io.ktor.client.plugins.HttpRequestTimeoutException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,6 +23,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import me.him188.ani.app.tools.MonoTasker
+import me.him188.ani.app.torrent.api.FetchTorrentTimeoutException
 import me.him188.ani.app.torrent.api.HttpFileDownloader
 import me.him188.ani.app.torrent.api.TorrentDownloadSession
 import me.him188.ani.app.torrent.api.TorrentDownloadState
@@ -121,7 +124,11 @@ class QBittorrentTorrentDownloader(
         // 从下载分类 "Ani" 中找有没有正在下载的. 这只能匹配 magnet. QB 不会保存来源 HTTPS 种子文件信息.
         val torrentList = client.getTorrentList()
         if (uri.startsWith("https://") || uri.startsWith("http://")) {
-            val data = httpFileDownloader.download(uri)
+            val data = try {
+                httpFileDownloader.download(uri)
+            } catch (e: HttpRequestTimeoutException) {
+                throw FetchTorrentTimeoutException(cause = e)
+            }
             val name = decodeTorrentInfoFromTorrentFile(data)?.get("name")?.toString()
             if (name != null) {
                 torrentList.firstOrNull { it.name == name }?.let {
@@ -151,6 +158,8 @@ class QBittorrentTorrentDownloader(
             }
             client.deleteTorrents(listOf(actual.hash), false)
             return EncodedTorrentInfo(actual.magnetUri.toByteArray())
+        } catch (e: TimeoutCancellationException) {
+            throw FetchTorrentTimeoutException(cause = e)
         } finally {
             tempDir.deleteRecursively()
         }

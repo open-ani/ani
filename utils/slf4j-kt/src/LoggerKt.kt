@@ -24,6 +24,8 @@ import org.slf4j.ILoggerFactory
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.slf4j.Marker
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.reflect.KClass
 
 fun ILoggerFactory.getLogger(clazz: KClass<out Any>): Logger =
@@ -67,12 +69,32 @@ inline fun Logger.info(message: () -> String) {
     info(message())
 }
 
+@OverloadResolutionByLambdaReturnType
 inline fun Logger.warn(message: () -> String) {
     warn(message())
 }
 
+@OverloadResolutionByLambdaReturnType
+inline fun Logger.warn(e: () -> Throwable) {
+    contract { callsInPlace(e, InvocationKind.AT_MOST_ONCE) }
+    if (isErrorEnabled) {
+        val exception = e()
+        warn(exception.message, exception)
+    }
+}
+
+@OverloadResolutionByLambdaReturnType
 inline fun Logger.error(message: () -> String) {
     error(message())
+}
+
+@OverloadResolutionByLambdaReturnType
+inline fun Logger.error(e: () -> Throwable) {
+    contract { callsInPlace(e, InvocationKind.AT_MOST_ONCE) }
+    if (isErrorEnabled) {
+        val exception = e()
+        error(exception.message, exception)
+    }
 }
 
 inline fun Logger.trace(marker: Marker? = null, message: () -> String) {
