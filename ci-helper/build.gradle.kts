@@ -142,7 +142,10 @@ tasks.register("uploadAndroidApkQR") {
 val zipDesktopDistribution = tasks.register("zipDesktopDistribution", Zip::class) {
     dependsOn(":app:desktop:packageDistributionForCurrentOS")
     from(project(":app:desktop").layout.buildDirectory.dir("compose/binaries/main/app"))
+    // ani-3.0.0-beta22-dev7.zip
     archiveBaseName.set("ani")
+    archiveVersion.set(ReleaseEnvironment().fullVersion)
+    into(layout.buildDirectory.file("distributions"))
 }
 
 tasks.register("uploadDesktopInstallers") {
