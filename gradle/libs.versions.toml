@@ -20,6 +20,7 @@ coil = "3.0.0-alpha06"
 mongodb-driver-kotlin-coroutine = "4.10.1"
 kompendium = "3.14.4"
 logback = "1.4.14"
+aws = "1.0.41"
 
 
 compose-material3 = "1.2.1"
@@ -192,3 +193,10 @@ kompendium-core = { module = "io.bkbn:kompendium-core", version.ref = "kompendiu
 vlcj = { module = "uk.co.caprica:vlcj", version.ref = "vlcj" }
 vlcj-javafx = { module = "uk.co.caprica:vlcj-javafx", version = "1.2.0" }
 jna = { module = "net.java.dev.jna:jna", version.ref = "jna" }
+
+
+# S3
+aws-s3 = { module = "aws.sdk.kotlin:s3", version.ref = "aws" }
+aws-sts = { module = "aws.sdk.kotlin:sts", version.ref = "aws" }
+aws-s3control = { module = "aws.sdk.kotlin:s3control", version.ref = "aws" }
+aws-secretsmanager = { module = "aws.sdk.kotlin:secretsmanager", version.ref = "aws" }
