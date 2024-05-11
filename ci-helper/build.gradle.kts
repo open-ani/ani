@@ -146,9 +146,7 @@ val zipDesktopDistribution = tasks.register("zipDesktopDistribution", Zip::class
 }
 
 tasks.register("uploadDesktopInstallers") {
-    dependsOn(
-        ":app:desktop:packageDistributionForCurrentOS",
-    )
+    dependsOn(zipDesktopDistribution)
 
     doLast {
         ReleaseEnvironment().uploadDesktopDistributions()
