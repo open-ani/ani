@@ -56,8 +56,8 @@ dependencies {
     api(libs.compose.multiplatfrom.gradle.plugin)
     implementation(kotlin("script-runtime"))
 
-    implementation(libs.aws.s3)
-    implementation(libs.aws.s3control)
-    implementation(libs.aws.sts)
-    implementation(libs.aws.secretsmanager)
+//    api(libs.aws.s3)
+//    api(libs.aws.s3control)
+//    api(libs.aws.sts)
+//    api(libs.aws.secretsmanager)
 }

@@ -18,11 +18,6 @@
 
 @file:Suppress("UnstableApiUsage")
 
-import aws.sdk.kotlin.runtime.auth.credentials.StaticCredentialsProvider
-import aws.sdk.kotlin.services.s3.S3Client
-import aws.sdk.kotlin.services.s3.model.PutObjectRequest
-import aws.smithy.kotlin.runtime.content.FileContent
-import aws.smithy.kotlin.runtime.net.url.Url
 import io.ktor.client.HttpClient
 import io.ktor.client.request.header
 import io.ktor.client.request.parameter
@@ -35,6 +30,12 @@ import io.ktor.util.cio.readChannel
 import io.ktor.utils.io.ByteReadChannel
 import kotlinx.coroutines.runBlocking
 import org.apache.tools.ant.taskdefs.condition.Os
+import org.gradle.internal.impldep.com.amazonaws.auth.AWSStaticCredentialsProvider
+import org.gradle.internal.impldep.com.amazonaws.auth.BasicAWSCredentials
+import org.gradle.internal.impldep.com.amazonaws.client.builder.AwsClientBuilder
+import org.gradle.internal.impldep.com.amazonaws.regions.Regions
+import org.gradle.internal.impldep.com.amazonaws.services.s3.AmazonS3ClientBuilder
+import org.gradle.internal.impldep.com.amazonaws.services.s3.model.PutObjectRequest
 
 plugins {
     kotlin("jvm")
@@ -259,14 +260,26 @@ open class ReleaseEnvironment {
     }
 
     private val s3Client by lazy {
-        S3Client {
-            region = getProperty("AWS_REGION")
-            endpointUrl = Url.parse(getProperty("AWS_BASEURL"))
-            credentialsProvider = StaticCredentialsProvider {
-                accessKeyId = getProperty("AWS_ACCESS_KEY_ID")
-                secretAccessKey = getProperty("AWS_SECRET_ACCESS_KEY")
+        AmazonS3ClientBuilder
+            .standard()
+            .withCredentials(
+                AWSStaticCredentialsProvider(
+                    BasicAWSCredentials(
+                        getProperty("AWS_ACCESS_KEY_ID"),
+                        getProperty("AWS_SECRET_ACCESS_KEY"),
+                    )
+                )
+            )
+            .withRegion(Regions.US_EAST_1)
+            .apply {
+                setEndpointConfiguration(
+                    AwsClientBuilder.EndpointConfiguration(
+                        getProperty("AWS_BASEURL"),
+                        getProperty("AWS_REGION")
+                    )
+                )
             }
-        }
+            .build()
     }
 
     fun uploadReleaseAsset(
@@ -303,12 +316,23 @@ open class ReleaseEnvironment {
                     })
                 }
                 if (getProperty("UPLOAD_TO_S3") == "true") {
-                    val request = PutObjectRequest {
-                        bucket = getProperty("AWS_BUCKET")
-                        key = "$tag/$name"
-                        this.contentType = contentType
-                        metadata = mapOf("contentType" to contentType)
-                        body = FileContent(file)
+//                    val bucket = getProperty("AWS_BUCKET")
+//                    val baseUrl = getProperty("AWS_BASEURL").removeSuffix("/")
+//                    client.put("$baseUrl/$bucket/") {
+//                        header("Authorization", "Bearer $token")
+//                        header("x-amz-content-sha256",  "UNSIGNED-PAYLOAD")
+//                        parameter("name", name)
+//                        contentType(ContentType.parse(contentType))
+//                        setBody(object : OutgoingContent.ReadChannelContent() {
+//                            override val contentType: ContentType get() = ContentType.parse(contentType)
+//                            override val contentLength: Long = file.length()
+//                            override fun readFrom(): ByteReadChannel {
+//                                return file.readChannel()
+//                            }
+//                        })
+//                    }
+                    val request = PutObjectRequest(getProperty("AWS_BUCKET"), "$tag/$name", file).apply {
+                        this.metadata.contentType = contentType
                     }
                     s3Client.putObject(request)
                 }
