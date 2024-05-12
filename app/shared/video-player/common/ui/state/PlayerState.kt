@@ -236,9 +236,9 @@ abstract class AbstractPlayerState<D : AbstractPlayerState.Data>(
             if (closed) return
             closed = true
 
+            closeImpl()
             openResource.value?.releaseResource?.invoke()
             backgroundScope.cancel()
-            closeImpl()
         }
     }
 

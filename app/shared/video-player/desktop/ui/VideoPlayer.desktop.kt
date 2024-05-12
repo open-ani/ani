@@ -8,7 +8,6 @@ import androidx.compose.runtime.Stable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.SwingPanel
 import androidx.compose.ui.graphics.Color
-import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -27,6 +26,7 @@ import me.him188.ani.app.videoplayer.ui.state.PlaybackState
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.utils.io.SeekableInput
 import me.him188.ani.utils.logging.error
+import me.him188.ani.utils.logging.logger
 import uk.co.caprica.vlcj.factory.discovery.NativeDiscovery
 import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter
@@ -39,15 +39,28 @@ import java.awt.event.MouseEvent
 import java.awt.event.MouseWheelEvent
 import java.util.Locale
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration.Companion.seconds
 
 
 @Stable
 class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerState,
     AbstractPlayerState<VlcjData>(parentCoroutineContext) {
+    private companion object {
+        private val logger = logger<VlcjVideoPlayerState>()
+
+        init {
+            @OptIn(DelicateCoroutinesApi::class)
+            GlobalScope.launch {
+                try {
+                    NativeDiscovery().discover()
+                } catch (e: Throwable) {
+                    logger.error(e) { "Failed to discover vlcj native libraries" }
+                }
+            }
+        }
+    }
+
     val component = run {
-        NativeDiscovery().discover()
         object : CallbackMediaPlayerComponent() {
             override fun mouseClicked(e: MouseEvent?) {
                 super.mouseClicked(e)
@@ -88,16 +101,9 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
         )
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
     override fun closeImpl() {
-        GlobalScope.launch(
-            (backgroundScope.coroutineContext[CoroutineExceptionHandler] ?: EmptyCoroutineContext)
-                    + Dispatchers.Main.immediate
-        ) {
-            // 经测试这玩意有时候会一直 block
-            player.release()
-            lastMedia = null
-        }
+        component.release()
+        lastMedia = null
     }
 
     private var lastMedia: SeekableInputCallbackMedia? = null // keep referenced so won't be gc'ed
