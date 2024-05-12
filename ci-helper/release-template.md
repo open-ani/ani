@@ -21,6 +21,12 @@ uploaded.
 
 [cf-android]: https://d.myani.org/${{steps.tag.outputs.tag}}/ani-${{steps.tag-version.outputs.substring}}.apk
 
+[qb-enhanced]: https://github.com/c0re100/qBittorrent-Enhanced-Edition/releases/latest
+
+PC 用户注意：需要本机装有 qBittorrent 或 [qBittorrent Enhanced][qb-enhanced] (建议) 方可在线播放和缓存视频。
+
+启动后请在 Ani "我的 - 右上角设置 - 播放与缓存" 中配置 qBittorrent 连接方式。
+
 | 操作系统                    | 全球                           | 中国大陆                            |
 |-------------------------|------------------------------|---------------------------------|
 | Windows x86_64          | [GitHub][github-win-x64]     | [Cloudflare 分流][cf-win-x64]     |
@@ -32,7 +38,7 @@ uploaded.
 
 [github-android-qr]: https://github.com/open-ani/ani/releases/download/${{steps.tag.outputs.tag}}/ani-${{steps.tag-version.outputs.substring}}.apk.github.qrcode.png
 
-[cf-android-qr]: https://github.com/open-ani/ani/releases/download/${{steps.tag.outputs.tag}}/ani-${{steps.tag-version.outputs.substring}}.apk.cloudflare.qrcode.png
+[cf-android-qr]: https://d.myani.org/${{steps.tag.outputs.tag}}/ani-${{steps.tag-version.outputs.substring}}.apk.cloudflare.qrcode.png
 
 | 全球                           | 中国大陆                            |
 |------------------------------|---------------------------------|
