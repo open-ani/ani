@@ -89,7 +89,7 @@ class LazyDataCacheTest {
         })
 
         assertEquals(false, requested)
-        cache.refresh()
+        cache.refresh(RefreshOrderPolicy.REPLACE)
         assertEquals(true, requested)
     }
 

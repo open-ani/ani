@@ -4,22 +4,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisallowComposableCalls
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
+import me.him188.ani.app.ui.foundation.produceState
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.cancellation.CancellationException
 
 @Stable
 interface MonoTasker {
-    var isRunning: Boolean
+    val isRunning: Boolean
 
     fun launch(
         context: CoroutineContext = EmptyCoroutineContext,
@@ -34,7 +34,9 @@ fun MonoTasker(
     scope: CoroutineScope
 ): MonoTasker = object : MonoTasker {
     var job: Job? = null
-    override var isRunning: Boolean by mutableStateOf(false)
+
+    private val _isRunning = MutableStateFlow(false)
+    override val isRunning: Boolean by _isRunning.produceState(false, scope)
 
     override fun launch(
         context: CoroutineContext,
@@ -42,13 +44,18 @@ fun MonoTasker(
         block: suspend CoroutineScope.() -> Unit
     ) {
         job?.cancel()
-        job = scope.launch(context, start, block)
-        isRunning = true
+        job = scope.launch(context, start, block).apply {
+            invokeOnCompletion {
+                if (job === this) {
+                    _isRunning.value = false
+                }
+            }
+        }
+        _isRunning.value = true
     }
 
     override fun cancel(cause: CancellationException?) {
-        job?.cancel(cause)
-        isRunning = false
+        job?.cancel(cause) // use completion handler to set _isRunning to false
     }
 }
 

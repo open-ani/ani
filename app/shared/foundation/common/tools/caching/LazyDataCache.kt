@@ -1,6 +1,7 @@
 package me.him188.ani.app.tools.caching
 
 import androidx.compose.runtime.Stable
+import androidx.compose.ui.util.fastDistinctBy
 import androidx.datastore.core.DataStore
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -69,6 +70,11 @@ interface LazyDataCache<T> {
     val isCompleted: Flow<Boolean>
 
     /**
+     * 最后更新时间. [requestMore], [invalidate], [refresh] 都会更新这个时间.
+     */
+    val lastUpdated: Flow<Long>
+
+    /**
      * Total size of the data. It can change if [requestMore].
      *
      * It can be `null` if not known.
@@ -107,12 +113,24 @@ interface LazyDataCache<T> {
      *
      * 此函数可以在 UI 或者其他线程调用.
      */
-    suspend fun refresh()
+    suspend fun refresh(orderPolicy: RefreshOrderPolicy)
 
     /**
      * 清空所有本地缓存以及当前的 [PagedSource]. 注意, 本函数不会请求数据. 即当函数返回时, [cachedDataFlow] 为空.
      */
     suspend fun invalidate()
+}
+
+enum class RefreshOrderPolicy {
+    /**
+     * 尽量保持原有的顺序, 新的物品出现在底部.
+     */
+    KEEP_ORDER_APPEND_LAST,
+
+    /**
+     * 不保持原有顺序, 按照新的数据顺序排列.
+     */
+    REPLACE,
 }
 
 /**
@@ -169,10 +187,10 @@ suspend inline fun <T> LazyDataCache<T>.getCachedData() = cachedDataFlow.first()
 @OverloadResolutionByLambdaReturnType
 fun <T> LazyDataCache(
     createSource: suspend LazyDataCacheContext.() -> PagedSource<T>,
-    sanitize: (suspend (List<T>) -> List<T>)? = null,
+    getKey: (T) -> Any? = { it },
     debugName: String? = null,
     persistentStore: DataStore<LazyDataCacheSave<T>> = defaultPersistentStore()
-): LazyDataCache<T> = LazyDataCacheImpl(createSource, sanitize, debugName, persistentStore)
+): LazyDataCache<T> = LazyDataCacheImpl(createSource, getKey, debugName, persistentStore)
 
 private fun <T> defaultPersistentStore(): MemoryDataStore<LazyDataCacheSave<T>> =
     MemoryDataStore(LazyDataCacheSave.empty())
@@ -185,13 +203,24 @@ interface LazyDataCacheContext {
 }
 
 @Serializable
-data class LazyDataCacheSave<T>(
+class LazyDataCacheSave<T> private constructor(
     val list: List<T> = emptyList(),
     val page: Int? = null,
     val totalSize: Int? = null,
+    val time: Long = 0,
+    @Suppress("unused")
+    private val _version: Int = CURRENT_VERSION,
     // Note: we need default values to make it compatible. otherwise it will crash asDataStoreSerializer.readFrom
 ) {
+    constructor(list: List<T>, page: Int?, totalSize: Int?, time: Long = System.currentTimeMillis()) :
+            this(list, page, totalSize, time, _version = CURRENT_VERSION)
+
+    override fun toString(): String {
+        return "LazyDataCacheSave(page=$page, totalSize=$totalSize, time=$time, list=$list)"
+    }
+
     companion object {
+        private const val CURRENT_VERSION = 1
         private val Empty = LazyDataCacheSave<Any?>()
 
         @Suppress("UNCHECKED_CAST")
@@ -211,20 +240,28 @@ class MemoryDataStore<T>(initial: T) : DataStore<T> {
     }
 }
 
+
 class LazyDataCacheImpl<T>(
     private val createSource: suspend LazyDataCacheContext.() -> PagedSource<T>,
-    private val sanitize: (suspend (List<T>) -> List<T>)? = null,
+    private val getKey: (T) -> Any?,
     private val debugName: String? = null,
     // don't call [dataStore.updateData], call [LazyDataCacheImpl.updateDataSanitized] instead
     private val persistentStore: DataStore<LazyDataCacheSave<T>> = defaultPersistentStore(),
 ) : LazyDataCache<T>, LazyDataCacheContext {
     private val logger = logger(LazyDataCacheImpl::class)
 
-    // Writes must be under lock
-    private val currentSource: MutableStateFlow<PagedSource<T>?> = MutableStateFlow(null)
-    private val sourceCompleted = currentSource.flatMapLatest { it?.finished ?: flowOf(false) }
+    private class SourceInfo<T>(
+        val source: PagedSource<T>,
+        val orderPolicy: RefreshOrderPolicy,
+    )
 
-    override val cachedDataFlow: Flow<List<T>> = persistentStore.data.map {
+    // Writes must be under lock
+    private val currentSourceInfo: MutableStateFlow<SourceInfo<T>?> = MutableStateFlow(null)
+    private val currentSource get() = currentSourceInfo.map { it?.source }
+    private val sourceCompleted = currentSource.flatMapLatest { it?.finished ?: flowOf(false) }
+    private val persistentData = persistentStore.data.flowOn(Dispatchers.Default) // 别在 UI 算
+
+    override val cachedDataFlow: Flow<List<T>> = persistentData.map {
         it.list
     }
 
@@ -236,16 +273,66 @@ class LazyDataCacheImpl<T>(
         emitAll(source.totalSize)
     }
 
-    override val totalSize: Flow<Int?> = combine(persistentStore.data, remoteTotalSize) { save, remote ->
+    override val totalSize: Flow<Int?> = combine(persistentData, remoteTotalSize) { save, remote ->
         remote ?: save.totalSize
     }
 
     // Writes must be under lock
-    private suspend inline fun updateDataSanitized(crossinline block: suspend (List<T>) -> List<T>) {
+    private suspend inline fun updateDataSanitized(
+        orderPolicy: RefreshOrderPolicy,
+        crossinline block: (List<T>) -> List<T>
+    ) {
         persistentStore.updateData { save ->
-            val mapped = block(save.list)
-            val newList = sanitize?.invoke(mapped) ?: mapped
-            LazyDataCacheSave(newList, currentSource.value?.currentPage?.value, currentSource.value?.totalSize?.value)
+            val sourceInfo = currentSourceInfo.value
+            when (orderPolicy) {
+                RefreshOrderPolicy.REPLACE -> {
+                    val source = sourceInfo?.source
+                    return@updateData LazyDataCacheSave(
+                        block(save.list).fastDistinctBy { getKey(it) },
+                        source?.currentPage?.value,
+                        source?.totalSize?.value
+                    )
+                }
+
+                RefreshOrderPolicy.KEEP_ORDER_APPEND_LAST -> {
+                    val source = sourceInfo?.source
+
+                    val original = save.list
+                    val originalKeys = original.mapTo(ArrayList(original.size), getKey)
+                    val new = block(original).fastDistinctBy { getKey(it) }
+                    val newKeys = new.mapTo(ArrayList(new.size), getKey)
+
+                    val newIndices = Array(new.size) { it }
+                    newIndices.sortBy { index ->
+                        val originalIndex = originalKeys.indexOf(newKeys[index])
+                        if (originalIndex == -1) {
+                            Int.MAX_VALUE // not found, put it at the end
+                        } else originalIndex
+                    }
+                    return@updateData LazyDataCacheSave(
+                        newIndices.map { new[it] },
+                        source?.currentPage?.value,
+                        source?.totalSize?.value
+                    )
+//                    
+//                    // associateByTo also distinct
+//                    val original =
+//                        save.list.associateByTo(LinkedHashMap(initialCapacity = save.list.size)) { getKey(it) }
+//                    val new = block(save.list).associateByTo(LinkedHashMap()) { getKey(it) }
+//
+//                    new.entries.sortedBy {
+//                        val index = original.keys.indexOf(it)
+//                        if (index == -1) {
+//                            Int.MAX_VALUE
+//                        } else index
+//                    }
+//                    return@updateData LazyDataCacheSave(
+//                        new.values.toList(),
+//                        source.currentPage.value,
+//                        source.totalSize.value
+//                    )
+                }
+            }
         }
     }
 
@@ -255,7 +342,7 @@ class LazyDataCacheImpl<T>(
                 currentSource.onEach {
                     if (it == null) {
                         lock.withLock {
-                            getSourceOrCreate()
+                            getSourceOrCreate(RefreshOrderPolicy.KEEP_ORDER_APPEND_LAST)
                         }
                     }
                 }.filterNotNull().collectLatest {
@@ -302,7 +389,7 @@ class LazyDataCacheImpl<T>(
     @OptIn(UnsafeLazyDataCacheApi::class)
     override val mutator: LazyDataCacheMutator<T> = object : LazyDataCacheMutator<T>() {
         override suspend fun update(map: (List<T>) -> List<T>) { // under lock
-            updateDataSanitized { map(it) }
+            updateDataSanitized(RefreshOrderPolicy.REPLACE) { map(it) }
         }
     }
 
@@ -317,25 +404,30 @@ class LazyDataCacheImpl<T>(
             lock.withLock {
                 if (firstLoad) {
                     firstLoad = false
-                    val save = persistentStore.data.first()
+                    val save = persistentData.first()
                     logger.info { "Initialize LazyDataCache($debugName) with save $save" }
                     if (save.page != null && save.page != 0) {
                         // We have a page saved, we should restore it
-                        val source = getSourceOrCreate()
+                        val source = getSourceOrCreate(RefreshOrderPolicy.KEEP_ORDER_APPEND_LAST)
                         source.skipToPage(save.page)
                         // fall through to request the next page
                     }
                 }
 
-                val source = getSourceOrCreate()
+                val source = getSourceOrCreate(RefreshOrderPolicy.KEEP_ORDER_APPEND_LAST)
 
                 try {
                     requestInProgress.value = true
 //                    logger.info { "Requesting more data from $source, page=${source.currentPage.value}" }
                     val resp = source.nextPageOrNull() // cancellation-supported
+                    if (resp == null) {
+                        check(source.finished.value) {
+                            "PagedSource.nextPageOrNull() must not return null if the source is not finished."
+                        }
+                    }
                     return@withContext if (resp != null) {
                         try {
-                            updateDataSanitized { it + resp }
+                            updateDataSanitized(RefreshOrderPolicy.REPLACE) { it + resp }
                         } catch (e: CancellationException) {
                             // Data is not updated, we should not progress the source page
                             source.backToPrevious()
@@ -353,14 +445,14 @@ class LazyDataCacheImpl<T>(
     }
 
     // Unsafe, must be used under lock.
-    private suspend fun LazyDataCacheImpl<T>.getSourceOrCreate(): PagedSource<T> {
-        currentSource.value?.let { return it }
+    private suspend inline fun LazyDataCacheImpl<T>.getSourceOrCreate(orderPolicy: RefreshOrderPolicy): PagedSource<T> {
+        currentSourceInfo.value?.source?.let { return it }
         return createSource().also {
-            currentSource.value = it
+            currentSourceInfo.value = SourceInfo(it, orderPolicy)
         }
     }
 
-    override suspend fun refresh() {
+    override suspend fun refresh(orderPolicy: RefreshOrderPolicy) {
         lock.withLock {
             withContext(Dispatchers.IO) {
                 val source = createSource() // note: always create a new source
@@ -369,8 +461,8 @@ class LazyDataCacheImpl<T>(
                     val resp = source.nextPageOrNull() // cancellation-supported
 
                     // Update source only if the request was successful, as per documentation on [refresh]
-                    currentSource.value = source
-                    updateDataSanitized { resp.orEmpty() }
+                    currentSourceInfo.value = SourceInfo(source, orderPolicy)
+                    updateDataSanitized(orderPolicy) { resp.orEmpty() } // must after currentSourceInfo update
                 } finally {
                     requestInProgress.value = false
                 }
@@ -382,11 +474,14 @@ class LazyDataCacheImpl<T>(
         combine(requestInProgress, sourceCompleted, currentSource) { requestInProgress, sourceCompleted, source ->
             source?.finished ?: flowOf(sourceCompleted && !requestInProgress)
         }.flatMapLatest { it }
+    override val lastUpdated: Flow<Long> = persistentData.map { it.time }
 
     override suspend fun invalidate() {
         lock.withLock {
-            currentSource.value = null
-            updateDataSanitized { emptyList() }
+            currentSourceInfo.value = null
+            withContext(Dispatchers.Default) {
+                updateDataSanitized(RefreshOrderPolicy.REPLACE) { emptyList() }
+            }
         }
     }
 }

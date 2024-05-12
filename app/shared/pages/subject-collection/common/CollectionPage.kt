@@ -57,6 +57,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.subject.SubjectCollectionItem
 import me.him188.ani.app.interaction.VibrationStrength
@@ -64,6 +66,9 @@ import me.him188.ani.app.interaction.vibrateIfSupported
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.tools.caching.LazyDataCache
+import me.him188.ani.app.tools.caching.RefreshOrderPolicy
+import me.him188.ani.app.tools.rememberUiMonoTasker
+import me.him188.ani.app.ui.foundation.effects.OnLifecycleEvent
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.rememberViewModel
@@ -72,6 +77,8 @@ import me.him188.ani.app.ui.profile.UnauthorizedTips
 import me.him188.ani.app.ui.update.UpdateCheckerHost
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
+import moe.tlaster.precompose.lifecycle.Lifecycle
+import kotlin.time.Duration.Companion.minutes
 
 
 // 有顺序, https://github.com/Him188/ani/issues/73
@@ -148,12 +155,35 @@ fun CollectionPage(
                 val cache = vm.collectionsByType(type)
 
                 val pullToRefreshState = rememberPullToRefreshState()
+                var isAutoRefreshing by remember { mutableStateOf(false) }
                 if (pullToRefreshState.isRefreshing) {
                     LaunchedEffect(true) {
                         try {
-                            cache.refresh()
+                            val policy = if (isAutoRefreshing) {
+                                RefreshOrderPolicy.KEEP_ORDER_APPEND_LAST
+                            } else {
+                                RefreshOrderPolicy.REPLACE
+                            }
+                            isAutoRefreshing = false
+                            cache.refresh(policy)
+                        } catch (e: CancellationException) {
+                            throw e
+                        } catch (_: Throwable) {
                         } finally {
                             pullToRefreshState.endRefresh()
+                        }
+                    }
+                }
+
+                val autoUpdateScope = rememberUiMonoTasker()
+                OnLifecycleEvent {
+                    if (it == Lifecycle.State.Active) {
+                        autoUpdateScope.launch {
+                            val lastUpdated = cache.lastUpdated.first()
+                            if (System.currentTimeMillis() - lastUpdated > 60.minutes.inWholeMilliseconds) {
+                                isAutoRefreshing = true
+                                pullToRefreshState.startRefresh()
+                            }
                         }
                     }
                 }

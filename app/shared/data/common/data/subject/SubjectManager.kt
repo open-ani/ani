@@ -1,7 +1,6 @@
 package me.him188.ani.app.data.subject
 
 import androidx.compose.runtime.Stable
-import androidx.compose.ui.util.fastDistinctBy
 import androidx.datastore.core.DataStoreFactory
 import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import kotlinx.coroutines.Dispatchers
@@ -164,9 +163,7 @@ class SubjectManagerImpl(
                         it.convertToItem()
                     }
                 },
-                sanitize = { list ->
-                    list.fastDistinctBy { it.subjectId }
-                },
+                getKey = { it.subjectId },
                 debugName = "collectionsByType-${type.name}",
                 persistentStore = DataStoreFactory.create(
                     LazyDataCacheSave.serializer(SubjectCollectionItem.Serializer)
@@ -473,7 +470,7 @@ class SubjectCollectionItem(
     override fun toString(): String {
         return "SubjectCollectionItem($displayName)"
     }
-    
+
     object Serializer : KSerializer<SubjectCollectionItem> {
         @Serializable
         private class Delegate(
