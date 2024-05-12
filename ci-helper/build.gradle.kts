@@ -146,6 +146,7 @@ val zipDesktopDistribution = tasks.register("zipDesktopDistribution", Zip::class
     archiveBaseName.set("ani")
     archiveVersion.set(ReleaseEnvironment().fullVersion)
     destinationDirectory.set(layout.buildDirectory.dir("distributions"))
+    archiveExtension.set("zip")
 }
 
 tasks.register("uploadDesktopInstallers") {
@@ -380,7 +381,7 @@ fun ReleaseEnvironment.uploadDesktopDistributions() {
                     extension = "zip"
                 ),
                 contentType = "application/x-zip",
-                file = zipDesktopDistribution.get().archiveFile.get().asFile,
+                file = layout.buildDirectory.dir("distributions").get().asFile.walk().single { it.extension == "zip" },
             )
         }
 
