@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.ui.theme.aniDarkColorTheme
@@ -176,7 +177,7 @@ fun rememberProgressSliderState(
 ): ProgressSliderState {
     val currentPosition = playerState.currentPositionMillis.collectAsStateWithLifecycle()
     val totalDuration = remember(playerState) {
-        playerState.videoProperties.filterNotNull().map { it.durationMillis }
+        playerState.videoProperties.filterNotNull().map { it.durationMillis }.distinctUntilChanged()
     }.collectAsStateWithLifecycle(0L)
 
     val onPreviewUpdated by rememberUpdatedState(onPreview)

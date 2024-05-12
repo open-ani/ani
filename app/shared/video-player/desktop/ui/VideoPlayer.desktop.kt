@@ -11,10 +11,8 @@ import androidx.compose.ui.graphics.Color
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import me.him188.ani.app.videoplayer.data.VideoData
 import me.him188.ani.app.videoplayer.data.VideoProperties
@@ -28,6 +26,9 @@ import me.him188.ani.utils.io.SeekableInput
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.logger
 import uk.co.caprica.vlcj.factory.discovery.NativeDiscovery
+import uk.co.caprica.vlcj.media.Media
+import uk.co.caprica.vlcj.media.MediaEventAdapter
+import uk.co.caprica.vlcj.media.MediaParsedStatus
 import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter
 import uk.co.caprica.vlcj.player.component.CallbackMediaPlayerComponent
@@ -137,19 +138,32 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
     override val playbackSpeed: MutableStateFlow<Float> = MutableStateFlow(1.0f)
 
     init {
+        // NOTE: must not call native player in a event
+        player.events().addMediaEventListener(object : MediaEventAdapter() {
+            override fun mediaParsedChanged(media: Media, newStatus: MediaParsedStatus) {
+                if (newStatus == MediaParsedStatus.DONE) {
+                    videoProperties.value = createVideoProperties()
+                }
+            }
+        })
         player.events().addMediaPlayerEventListener(object : MediaPlayerEventAdapter() {
-//            override fun timeChanged(mediaPlayer: MediaPlayer, newTime: Long) {
-//                currentPositionMillis.value = newTime
-//            }
-
             override fun lengthChanged(mediaPlayer: MediaPlayer, newLength: Long) {
                 videoProperties.value = videoProperties.value?.copy(
                     durationMillis = newLength
                 )
             }
 
+//            override fun buffering(mediaPlayer: MediaPlayer?, newCache: Float) {
+//                if (newCache != 1f) {
+//                    state.value = PlaybackState.PAUSED_BUFFERING
+//                } else {
+//                    state.value = PlaybackState.READY
+//                }
+//            }
+
             override fun playing(mediaPlayer: MediaPlayer) {
                 state.value = PlaybackState.PLAYING
+                player.submit { player.media().parsing().parse() }
             }
 
             override fun paused(mediaPlayer: MediaPlayer) {
@@ -167,19 +181,30 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
         })
 
         backgroundScope.launch(Dispatchers.Main) {
-            while (currentCoroutineContext().isActive) {
-                player.media().info()?.let { info ->
-                    val duration = info.duration()
-                    if (duration != -1L && duration != 0L && duration != videoProperties.value?.durationMillis) {
-                        videoProperties.value = videoProperties.value?.copy(
-                            durationMillis = duration
-                        )
-                    }
-                }
+            while (true) {
                 currentPositionMillis.value = player.status().time()
-                delay(0.1.seconds) // 100 fps
+                delay(0.1.seconds)
             }
         }
+    }
+
+    private fun createVideoProperties(): VideoProperties? {
+        val info = player.media().info() ?: return null
+        val title = player.titles().titleDescriptions().firstOrNull()
+        val video = info.videoTracks().firstOrNull() ?: return null
+        val audio = info.audioTracks().firstOrNull() ?: return null
+        return VideoProperties(
+            title = title?.name(),
+            heightPx = video.height(),
+            widthPx = video.width(),
+            videoBitrate = video.bitRate(),
+            audioBitrate = audio.bitRate(),
+            frameRate = video.frameRate().toFloat(),
+            durationMillis = info.duration(),
+            fileLengthBytes = 0,
+            fileHash = null,
+            filename = title?.name() ?: ""
+        )
     }
 
     override fun setPlaybackSpeed(speed: Float) {
