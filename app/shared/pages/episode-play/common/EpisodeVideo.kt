@@ -60,7 +60,7 @@ import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 internal fun EpisodeVideoImpl(
     playerState: PlayerState,
     expanded: Boolean,
-    controllerVisible: Boolean,
+    controllerVisible: () -> Boolean,
     setControllerVisible: (Boolean) -> Unit,
     title: @Composable () -> Unit,
     danmakuHostState: DanmakuHostState,
@@ -81,7 +81,7 @@ internal fun EpisodeVideoImpl(
         expanded = expanded,
         maintainAspectRatio = maintainAspectRatio,
         modifier = modifier,
-        controllersVisible = { controllerVisible },
+        controllersVisible = controllerVisible,
         gestureLocked = { isLocked },
         topBar = {
             EpisodeVideoTopBar(
@@ -144,7 +144,7 @@ internal fun EpisodeVideoImpl(
                 locked = isLocked,
                 setControllerVisible = { setControllerVisible(it) },
                 Modifier.padding(top = 100.dp),
-                onDoubleClickScreen = {
+                onTogglePauseResume = {
                     if (playerState.state.value.isPlaying) {
                         indicatorTasker.launch {
                             indicatorState.showPausedLong()
@@ -156,6 +156,9 @@ internal fun EpisodeVideoImpl(
                     }
                     playerState.togglePause()
                 },
+                onToggleFullscreen = {
+                    onClickFullScreen()
+                }
             )
         },
         floatingMessage = {

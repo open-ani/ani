@@ -1,7 +1,10 @@
 package me.him188.ani.app.platform
 
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
 import kotlin.contracts.contract
 
+@Immutable
 sealed class Platform {
     abstract val name: String
     abstract val arch: Arch
@@ -47,6 +50,7 @@ sealed class Platform {
     ) : Desktop("Linux")
 
     companion object {
+        @Stable
         val currentPlatform: Platform = currentPlatformImpl()
     }
 }

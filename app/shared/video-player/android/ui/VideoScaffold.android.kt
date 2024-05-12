@@ -123,11 +123,11 @@ private fun PreviewVideoScaffoldImpl(
                 swipeSeekerState,
                 indicatorState,
                 fastSkipState = rememberPlayerFastSkipState(playerState, indicatorState),
-                controllerVisible = controllerVisible,
+                controllerVisible = { controllerVisible },
                 locked = isLocked,
                 setControllerVisible = { controllerVisible = it },
                 Modifier.padding(top = 100.dp),
-                onDoubleClickScreen = {
+                onTogglePauseResume = {
                     if (playerState.state.value.isPlaying) {
                         tasker.launch {
                             indicatorState.showPausedLong()

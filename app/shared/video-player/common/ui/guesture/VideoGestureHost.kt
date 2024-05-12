@@ -37,6 +37,7 @@ import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
@@ -51,14 +52,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.StreamType
 import me.him188.ani.app.platform.getComponentAccessors
 import me.him188.ani.app.tools.rememberUiMonoTasker
+import me.him188.ani.app.ui.foundation.effects.ComposeKey
+import me.him188.ani.app.ui.foundation.effects.onKey
+import me.him188.ani.app.ui.foundation.effects.onPointerEventMultiplatform
+import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.theme.aniDarkColorTheme
 import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.BRIGHTNESS
 import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.FAST_BACKWARD
@@ -325,6 +332,49 @@ fun GestureIndicator(
     }
 }
 
+@Stable
+val Platform.mouseFamily: GestureFamily
+    get() = when (this) {
+        is Platform.Desktop -> GestureFamily.MOUSE
+        Platform.Android -> GestureFamily.TOUCH
+    }
+
+@Immutable
+enum class GestureFamily(
+    val clickToPauseResume: Boolean,
+    val clickToToggleController: Boolean,
+    val doubleClickToFullscreen: Boolean,
+    val doubleClickToPauseResume: Boolean,
+    val swipeToSeek: Boolean,
+    val swipeRhsForVolume: Boolean,
+    val swipeLhsForBrightness: Boolean,
+    val longPressForFastSkip: Boolean,
+    val keyboardSpaceForPauseResume: Boolean = true,
+    val keyboardUpDownForVolume: Boolean = true,
+    val keyboardLeftRightToSeek: Boolean = true,
+    val mouseHoverForController: Boolean = true,
+) {
+    TOUCH(
+        clickToPauseResume = false,
+        clickToToggleController = true,
+        doubleClickToFullscreen = false,
+        doubleClickToPauseResume = true,
+        swipeToSeek = true,
+        swipeRhsForVolume = true,
+        swipeLhsForBrightness = true,
+        longPressForFastSkip = true,
+    ),
+    MOUSE(
+        clickToPauseResume = true,
+        clickToToggleController = false,
+        doubleClickToFullscreen = true,
+        doubleClickToPauseResume = false,
+        swipeToSeek = false,
+        swipeRhsForVolume = false,
+        swipeLhsForBrightness = false,
+        longPressForFastSkip = false,
+    )
+}
 
 @Composable
 fun VideoGestureHost(
@@ -332,9 +382,14 @@ fun VideoGestureHost(
     indicatorState: GestureIndicatorState,
     fastSkipState: FastSkipState,
     modifier: Modifier = Modifier,
-    onClickScreen: () -> Unit = {},
-    onDoubleClickScreen: () -> Unit = {},
+    family: GestureFamily = Platform.currentPlatform.mouseFamily,
+    onToggleControllerVisibility: (setVisible: Boolean?) -> Unit = {},
+    onTogglePauseResume: () -> Unit = {},
+    onToggleFullscreen: () -> Unit = {},
 ) {
+    val onTogglePauseResumeState by rememberUpdatedState(onTogglePauseResume)
+    val onToggleControllerVisibilityState by rememberUpdatedState(onToggleControllerVisibility)
+
     BoxWithConstraints {
         Row(Modifier.align(Alignment.TopCenter).padding(top = 80.dp)) {
             LaunchedEffect(seekerState.deltaSeconds) {
@@ -368,50 +423,113 @@ fun VideoGestureHost(
                 .combinedClickable(
                     remember { MutableInteractionSource() },
                     indication = null,
-                    onClick = onClickScreen,
-                    onDoubleClick = onDoubleClickScreen,
+                    onClick = remember(family) {
+                        {
+                            if (family.clickToPauseResume) {
+                                onTogglePauseResumeState()
+                            }
+                            if (family.clickToToggleController) {
+                                onToggleControllerVisibilityState(null)
+                            }
+                        }
+                    },
+                    onDoubleClick = remember(family, onToggleFullscreen) {
+                        {
+                            if (family.doubleClickToFullscreen) {
+                                onToggleFullscreen()
+                            }
+                            if (family.doubleClickToPauseResume) {
+                                onTogglePauseResumeState()
+                            }
+                        }
+                    },
                 )
-                .swipeToSeek(seekerState, Orientation.Horizontal)
+                .ifThen(family.swipeToSeek) {
+                    swipeToSeek(seekerState, Orientation.Horizontal)
+                }
+                .ifThen(family.keyboardLeftRightToSeek) {
+                    onKeyboardHorizontalDirection(
+                        onBackward = {
+                            seekerState.onSeek(-5)
+                        },
+                        onForward = {
+                            seekerState.onSeek(5)
+                        }
+                    )
+                }
+                .ifThen(family.keyboardUpDownForVolume) {
+                    audioController?.let { controller ->
+                        onKey(ComposeKey.DirectionUp) {
+                            controller.increaseLevel(0.10f)
+                        }
+                        onKey(ComposeKey.DirectionDown) {
+                            controller.decreaseLevel(0.10f)
+                        }
+                    }
+                }
+                .ifThen(family.keyboardSpaceForPauseResume) {
+                    onKey(ComposeKey.Spacebar) {
+                        onTogglePauseResumeState()
+                    }
+                }
+                .ifThen(family.mouseHoverForController) {
+                    val scope = rememberUiMonoTasker()
+                    onPointerEventMultiplatform(PointerEventType.Move) { events ->
+                        onToggleControllerVisibilityState(true)
+                        scope.launch {
+                            delay(3000)
+                            onToggleControllerVisibilityState(false)
+                        }
+                    }
+                }
                 .fillMaxSize()
         ) {
             Row(Modifier.matchParentSize()) {
-                Box(
-                    Modifier.then(
+                Box(Modifier
+                    .ifThen(family.swipeLhsForBrightness) {
                         brightnessLevelController?.let { controller ->
-                            Modifier.swipeLevelControl(
+                            swipeLevelControl(
                                 controller,
                                 ((maxHeight - 100.dp) / 40).coerceAtLeast(2.dp),
                                 Orientation.Vertical,
+                                step = 0.01f,
                                 afterStep = {
                                     indicatorTasker.launch {
                                         indicatorState.showBrightnessRange(controller.level)
                                     }
                                 }
                             )
-                        } ?: Modifier,
-                    ).weight(1f).fillMaxHeight()
+                        }
+                    }
+                    .weight(1f)
+                    .fillMaxHeight()
                 )
 
                 Box(Modifier.weight(1f).fillMaxHeight())
 
                 Box(Modifier
-                    .longPressFastSkip(fastSkipState, SkipDirection.FORWARD)
-                    .then(
+                    .ifThen(family.longPressForFastSkip) {
+                        longPressFastSkip(fastSkipState, SkipDirection.FORWARD)
+                    }
+                    .ifThen(family.swipeRhsForVolume) {
                         audioController?.let { controller ->
-                            Modifier.swipeLevelControl(
+                            swipeLevelControl(
                                 controller,
                                 ((maxHeight - 100.dp) / 40).coerceAtLeast(2.dp),
                                 Orientation.Vertical,
+                                step = 0.05f,
                                 afterStep = {
                                     indicatorTasker.launch {
                                         indicatorState.showVolumeRange(controller.level)
                                     }
                                 }
                             )
-                        } ?: Modifier
-                    ).weight(1f).fillMaxHeight())
+                        }
+                    }
+                    .weight(1f)
+                    .fillMaxHeight()
+                )
             }
         }
     }
 }
-

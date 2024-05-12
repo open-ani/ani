@@ -16,7 +16,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -91,7 +94,7 @@ fun GestureLock(
  */
 @Composable
 fun LockedScreenGestureHost(
-    controllerVisible: Boolean,
+    controllerVisible: () -> Boolean,
     setControllerVisible: (visible: Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -104,7 +107,7 @@ fun LockedScreenGestureHost(
             ).fillMaxSize(),
     )
 
-    if (controllerVisible) {
+    if (controllerVisible()) {
         LaunchedEffect(true) {
             delay(2.seconds)
             setControllerVisible(false)
@@ -119,24 +122,29 @@ fun LockableVideoGestureHost(
     seekerState: SwipeSeekerState,
     indicatorState: GestureIndicatorState,
     fastSkipState: FastSkipState,
-    controllerVisible: Boolean,
+    controllerVisible: () -> Boolean,
     locked: Boolean,
     setControllerVisible: (visible: Boolean) -> Unit,
     modifier: Modifier = Modifier,
-    onDoubleClickScreen: () -> Unit = {},
+    onTogglePauseResume: () -> Unit = {},
+    onToggleFullscreen: () -> Unit = {},
 ) {
     if (locked) {
         LockedScreenGestureHost(controllerVisible, setControllerVisible, modifier)
     } else {
+        val setControllerVisibleState by rememberUpdatedState(setControllerVisible)
+        val controllerVisibleState by derivedStateOf(controllerVisible)
         VideoGestureHost(
             seekerState,
             indicatorState,
             fastSkipState,
-            modifier,
-            onClickScreen = {
-                setControllerVisible(!controllerVisible)
+            onToggleControllerVisibility = remember {
+                {
+                    setControllerVisibleState(it ?: !controllerVisibleState)
+                }
             },
-            onDoubleClickScreen = onDoubleClickScreen,
+            onTogglePauseResume = onTogglePauseResume,
+            onToggleFullscreen = onToggleFullscreen,
         )
     }
 }

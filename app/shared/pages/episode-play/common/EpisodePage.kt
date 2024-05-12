@@ -261,7 +261,7 @@ private fun EpisodeVideo(
     EpisodeVideoImpl(
         vm.playerState,
         expanded = expanded,
-        controllerVisible = controllerVisible,
+        controllerVisible = { controllerVisible },
         setControllerVisible = { controllerVisible = it },
         title = {
             val episode = vm.episodePresentation

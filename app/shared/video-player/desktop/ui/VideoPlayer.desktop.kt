@@ -238,8 +238,10 @@ actual fun VideoPlayer(
             }
         }
         surface.addMouseListener(listener)
+        surface.addMouseMotionListener(listener)
         onDispose {
             surface.removeMouseListener(listener)
+            surface.removeMouseMotionListener(listener)
         }
     }
 

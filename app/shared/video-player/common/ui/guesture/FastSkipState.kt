@@ -3,6 +3,7 @@ package me.him188.ani.app.videoplayer.ui.guesture
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,6 +49,7 @@ class PlayerFastSkipState(
     )
 }
 
+@Stable
 class FastSkipState(
     private val onStart: (skipDirection: SkipDirection) -> Unit,
     private val onStop: () -> Unit,

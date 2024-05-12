@@ -12,12 +12,12 @@ import me.him188.ani.app.platform.StreamType
 
 interface LevelController {
     val level: Float
-    
-    @MainThread
-    fun increaseLevel()
 
     @MainThread
-    fun decreaseLevel()
+    fun increaseLevel(step: Float = 0.05f)
+
+    @MainThread
+    fun decreaseLevel(step: Float = 0.05f)
 }
 
 fun AudioManager.asLevelController(
@@ -26,14 +26,14 @@ fun AudioManager.asLevelController(
     override val level: Float
         get() = getVolume(streamType)
 
-    override fun increaseLevel() {
+    override fun increaseLevel(step: Float) {
         val current = getVolume(streamType)
-        setVolume(streamType, (current + 0.05f).coerceAtMost(1f))
+        setVolume(streamType, (current + step).coerceAtMost(1f))
     }
 
-    override fun decreaseLevel() {
+    override fun decreaseLevel(step: Float) {
         val current = getVolume(streamType)
-        setVolume(streamType, (current - 0.05f).coerceAtLeast(0f))
+        setVolume(streamType, (current - step).coerceAtLeast(0f))
     }
 }
 
@@ -41,14 +41,14 @@ fun BrightnessManager.asLevelController(): LevelController = object : LevelContr
     override val level: Float
         get() = getBrightness()
 
-    override fun increaseLevel() {
+    override fun increaseLevel(step: Float) {
         val current = getBrightness()
-        setBrightness((current + 0.01f).coerceAtMost(1f))
+        setBrightness((current + step).coerceAtMost(1f))
     }
 
-    override fun decreaseLevel() {
+    override fun decreaseLevel(step: Float) {
         val current = getBrightness()
-        setBrightness((current - 0.01f).coerceAtLeast(0f))
+        setBrightness((current - step).coerceAtLeast(0f))
     }
 }
 
@@ -56,6 +56,7 @@ fun Modifier.swipeLevelControl(
     controller: LevelController,
     stepSize: Dp,
     orientation: Orientation,
+    step: Float = 0.05f,
     afterStep: (StepDirection) -> Unit = {},
 ): Modifier = composed(
     inspectorInfo = debugInspectorInfo {
@@ -70,8 +71,8 @@ fun Modifier.swipeLevelControl(
             stepSize = stepSize,
             onStep = { direction ->
                 when (direction) {
-                    StepDirection.FORWARD -> controller.increaseLevel()
-                    StepDirection.BACKWARD -> controller.decreaseLevel()
+                    StepDirection.FORWARD -> controller.increaseLevel(step)
+                    StepDirection.BACKWARD -> controller.decreaseLevel(step)
                 }
                 afterStep(direction)
             },

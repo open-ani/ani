@@ -1,6 +1,8 @@
 package me.him188.ani.app.ui.foundation.effects
 
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.focus.FocusDirection
@@ -11,6 +13,11 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.pointer.AwaitPointerEventScope
+import androidx.compose.ui.input.pointer.PointerEvent
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 
 
@@ -45,6 +52,8 @@ fun Modifier.defaultFocus(
     focusRequester(requester)
 }
 
+typealias ComposeKey = Key
+
 /**
  * Handles key event.
  */
@@ -59,5 +68,24 @@ fun Modifier.onKey(
         true
     } else {
         false
+    }
+}
+
+fun Modifier.onPointerEventMultiplatform(
+    eventType: PointerEventType,
+    pass: PointerEventPass = PointerEventPass.Main,
+    onEvent: AwaitPointerEventScope.(event: PointerEvent) -> Unit
+): Modifier = composed {
+    val currentEventType by rememberUpdatedState(eventType)
+    val currentOnEvent by rememberUpdatedState(onEvent)
+    pointerInput(pass) {
+        awaitPointerEventScope {
+            while (true) {
+                val event = awaitPointerEvent(pass)
+                if (event.type == currentEventType) {
+                    currentOnEvent(event)
+                }
+            }
+        }
     }
 }
