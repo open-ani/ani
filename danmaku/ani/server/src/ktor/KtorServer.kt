@@ -9,6 +9,7 @@ import io.ktor.server.netty.Netty
 import io.ktor.server.netty.NettyApplicationEngine
 import me.him188.ani.danmaku.server.ServerConfig
 import me.him188.ani.danmaku.server.ServerConfigBuilder
+import me.him188.ani.danmaku.server.ktor.plugins.configureAutoHeadResponse
 import me.him188.ani.danmaku.server.ktor.plugins.configureCallLogging
 import me.him188.ani.danmaku.server.ktor.plugins.configureKoin
 import me.him188.ani.danmaku.server.ktor.plugins.configureNotarizedApplication
@@ -54,5 +55,7 @@ internal fun Application.serverModule(config: ServerConfig) {
     configureNotarizedApplication()
     configureSwagger()
     
+    configureAutoHeadResponse()
     configureRouting()
 }
+
