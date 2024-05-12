@@ -20,7 +20,7 @@ coil = "3.0.0-alpha06"
 mongodb-driver-kotlin-coroutine = "4.10.1"
 kompendium = "3.14.4"
 logback = "1.4.14"
-aws = "1.0.41"
+aws = "2.25.49"
 
 
 compose-material3 = "1.2.1"
@@ -196,8 +196,11 @@ vlcj-javafx = { module = "uk.co.caprica:vlcj-javafx", version = "1.2.0" }
 jna = { module = "net.java.dev.jna:jna", version.ref = "jna" }
 
 
+#// https://mvnrepository.com/artifact/software.amazon.awssdk/s3
+#testImplementation("software.amazon.awssdk:s3:2.25.49")
+
 # S3
-aws-s3 = { module = "aws.sdk.kotlin:s3", version.ref = "aws" }
-aws-sts = { module = "aws.sdk.kotlin:sts", version.ref = "aws" }
-aws-s3control = { module = "aws.sdk.kotlin:s3control", version.ref = "aws" }
-aws-secretsmanager = { module = "aws.sdk.kotlin:secretsmanager", version.ref = "aws" }
+aws-s3 = { module = "software.amazon.awssdk:s3", version.ref = "aws" }
+aws-sts = { module = "software.amazon.awssdk:sts", version.ref = "aws" }
+aws-s3control = { module = "software.amazon.awssdk:s3control", version.ref = "aws" }
+aws-secretsmanager = { module = "software.amazon.awssdk:secretsmanager", version.ref = "aws" }

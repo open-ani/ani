@@ -18,11 +18,6 @@
 
 @file:Suppress("UnstableApiUsage")
 
-import aws.sdk.kotlin.runtime.auth.credentials.StaticCredentialsProvider
-import aws.sdk.kotlin.services.s3.S3Client
-import aws.sdk.kotlin.services.s3.model.PutObjectRequest
-import aws.smithy.kotlin.runtime.content.FileContent
-import aws.smithy.kotlin.runtime.net.url.Url
 import io.ktor.client.HttpClient
 import io.ktor.client.request.header
 import io.ktor.client.request.parameter
@@ -35,6 +30,12 @@ import io.ktor.util.cio.readChannel
 import io.ktor.utils.io.ByteReadChannel
 import kotlinx.coroutines.runBlocking
 import org.apache.tools.ant.taskdefs.condition.Os
+import org.gradle.internal.impldep.com.amazonaws.auth.AWSStaticCredentialsProvider
+import org.gradle.internal.impldep.com.amazonaws.auth.BasicAWSCredentials
+import org.gradle.internal.impldep.com.amazonaws.client.builder.AwsClientBuilder
+import org.gradle.internal.impldep.com.amazonaws.services.s3.AmazonS3ClientBuilder
+import org.gradle.internal.impldep.com.amazonaws.services.s3.model.ObjectMetadata
+import org.gradle.internal.impldep.com.amazonaws.services.s3.model.PutObjectRequest
 
 plugins {
     kotlin("jvm")
@@ -52,10 +53,10 @@ val hostOS: OS by lazy {
 
 val hostArch: String by lazy {
     when (val arch = System.getProperty("os.arch")) {
-        "x86_64" -> "amd64"
-        "amd64" -> "amd64"
-        "arm64" -> "arm64"
-        "aarch64" -> "arm64"
+        "x86_64" -> "x86_64"
+        "amd64" -> "x86_64"
+        "arm64" -> "aarch64"
+        "aarch64" -> "aarch64"
         else -> error("Unsupported host architecture: $arch")
     }
 }
@@ -84,8 +85,8 @@ class ArtifactNamer {
         return "$APP_NAME-$fullVersion.apk"
     }
 
-    fun androidAppQR(fullVersion: String): String {
-        return "${androidApp(fullVersion)}.qrcode.png"
+    fun androidAppQR(fullVersion: String, server: String): String {
+        return "${androidApp(fullVersion)}.$server.qrcode.png"
     }
 
     // Ani-2.0.0-beta03-macos-amd64.dmg
@@ -125,44 +126,39 @@ tasks.register("uploadAndroidApkQR") {
     doLast {
         ReleaseEnvironment().run {
             uploadReleaseAsset(
-                name = namer.androidAppQR(fullVersion),
+                name = namer.androidAppQR(fullVersion, "github"),
                 contentType = "image/png",
-                file = rootProject.file("apk-qrcode.png"),
+                file = rootProject.file("apk-qrcode-github.png"),
+            )
+            uploadReleaseAsset(
+                name = namer.androidAppQR(fullVersion, "cloudflare"),
+                contentType = "image/png",
+                file = rootProject.file("apk-qrcode-cloudflare.png"),
             )
         }
     }
 }
 
 val zipDesktopDistribution = tasks.register("zipDesktopDistribution", Zip::class) {
-    dependsOn(":app:desktop:createDistributable")
+    dependsOn(
+        ":app:desktop:createDistributable",
+    )
     from(project(":app:desktop").layout.buildDirectory.dir("compose/binaries/main/app"))
-    archiveBaseName.set("desktop")
-}
-
-tasks.register("uploadDesktopDistributionZip") {
-    dependsOn(zipDesktopDistribution)
-
-    doLast {
-        ReleaseEnvironment().run {
-            uploadReleaseAsset(
-                name = namer.desktopDistributionFile(
-                    fullVersion,
-                    osName = hostOS.name.lowercase(),
-                    extension = "zip"
-                ),
-                contentType = "application/octet-stream",
-                file = zipDesktopDistribution.get().archiveFile.get().asFile,
-            )
-        }
-    }
+    // ani-3.0.0-beta22-dev7.zip
+    archiveBaseName.set("ani")
+    archiveVersion.set(ReleaseEnvironment().fullVersion)
+    destinationDirectory.set(layout.buildDirectory.dir("distributions"))
+    archiveExtension.set("zip")
 }
 
 tasks.register("uploadDesktopInstallers") {
-    dependsOn(
-        ":app:desktop:createDistributable",
-        ":app:desktop:packageDistributionForCurrentOS",
-        ":app:desktop:packageUberJarForCurrentOS"
-    )
+    dependsOn(zipDesktopDistribution)
+
+    if (hostOS != OS.WINDOWS) {
+        dependsOn(
+            ":app:desktop:packageDistributionForCurrentOS"
+        )
+    }
 
     doLast {
         ReleaseEnvironment().uploadDesktopDistributions()
@@ -190,7 +186,6 @@ tasks.register("prepareArtifactsForManualUpload") {
     dependsOn(
         ":app:desktop:createDistributable",
         ":app:desktop:packageDistributionForCurrentOS",
-        ":app:desktop:packageUberJarForCurrentOS"
     )
     dependsOn(zipDesktopDistribution)
 
@@ -224,8 +219,15 @@ fun getProperty(name: String) =
     System.getProperty(name)
         ?: System.getenv(name)
         ?: properties[name]?.toString()
-//        ?: getLocalProperty(name)
+        ?: getLocalProperty(name)
         ?: ext.get(name).toString()
+
+fun findProperty(name: String) =
+    System.getProperty(name)
+        ?: System.getenv(name)
+        ?: properties[name]?.toString()
+        ?: getLocalProperty(name)
+        ?: runCatching { ext.get(name) }.getOrNull()
 
 // do not use `object`, compiler bug
 open class ReleaseEnvironment {
@@ -267,14 +269,25 @@ open class ReleaseEnvironment {
     }
 
     private val s3Client by lazy {
-        S3Client {
-            region = getProperty("AWS_REGION")
-            endpointUrl = Url.parse(getProperty("AWS_BASEURL"))
-            credentialsProvider = StaticCredentialsProvider {
-                accessKeyId = getProperty("AWS_ACCESS_KEY_ID")
-                secretAccessKey = getProperty("AWS_SECRET_ACCESS_KEY")
+        AmazonS3ClientBuilder
+            .standard()
+            .withCredentials(
+                AWSStaticCredentialsProvider(
+                    BasicAWSCredentials(
+                        getProperty("AWS_ACCESS_KEY_ID"),
+                        getProperty("AWS_SECRET_ACCESS_KEY"),
+                    )
+                )
+            )
+            .apply {
+                setEndpointConfiguration(
+                    AwsClientBuilder.EndpointConfiguration(
+                        getProperty("AWS_BASEURL"),
+                        getProperty("AWS_REGION")
+                    )
+                )
             }
-        }
+            .build()
     }
 
     fun uploadReleaseAsset(
@@ -311,12 +324,25 @@ open class ReleaseEnvironment {
                     })
                 }
                 if (getProperty("UPLOAD_TO_S3") == "true") {
-                    val request = PutObjectRequest {
-                        bucket = getProperty("AWS_BUCKET")
-                        key = "$tag/$name"
-                        this.contentType = contentType
-                        metadata = mapOf("contentType" to contentType)
-                        body = FileContent(file)
+//                    val bucket = getProperty("AWS_BUCKET")
+//                    val baseUrl = getProperty("AWS_BASEURL").removeSuffix("/")
+//                    client.put("$baseUrl/$bucket/") {
+//                        header("Authorization", "Bearer $token")
+//                        header("x-amz-content-sha256",  "UNSIGNED-PAYLOAD")
+//                        parameter("name", name)
+//                        contentType(ContentType.parse(contentType))
+//                        setBody(object : OutgoingContent.ReadChannelContent() {
+//                            override val contentType: ContentType get() = ContentType.parse(contentType)
+//                            override val contentLength: Long = file.length()
+//                            override fun readFrom(): ByteReadChannel {
+//                                return file.readChannel()
+//                            }
+//                        })
+//                    }
+                    val request = PutObjectRequest(getProperty("AWS_BUCKET"), "$tag/$name", file).apply {
+                        this.metadata = ObjectMetadata().apply {
+                            this.contentType = contentType
+                        }
                     }
                     s3Client.putObject(request)
                 }
@@ -353,25 +379,18 @@ fun ReleaseEnvironment.uploadDesktopDistributions() {
                 .single { it.extension == kind },
         )
     }
-
-    // jar
-    uploadReleaseAsset(
-        name = namer.desktopDistributionFile(
-            fullVersion,
-            osName = hostOS.name.lowercase(),
-            extension = "jar"
-        ),
-        contentType = "application/octet-stream",
-        file = project(":app:desktop").layout.buildDirectory.dir("compose/jars").get().asFile
-            .walk()
-            .single { it.extension == "jar" },
-    )
-
     // installers
     when (hostOS) {
         OS.WINDOWS -> {
-            uploadBinary("exe", osName = "windows") // all-in-one executable
-            uploadBinary("msi", osName = "windows")
+            uploadReleaseAsset(
+                name = namer.desktopDistributionFile(
+                    fullVersion,
+                    osName = hostOS.name.lowercase(),
+                    extension = "zip"
+                ),
+                contentType = "application/x-zip",
+                file = layout.buildDirectory.dir("distributions").get().asFile.walk().single { it.extension == "zip" },
+            )
         }
 
         OS.MACOS -> {
