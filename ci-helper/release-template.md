@@ -5,7 +5,7 @@ uploaded.
 
 ### 下载
 
-[github-win-x64]: https://github.com/open-ani/ani/releases/download/${{steps.tag.outputs.tag}}/ani-${{steps.tag-version.outputs.substring}}-windows-x86_64.dmg
+[github-win-x64]: https://github.com/open-ani/ani/releases/download/${{steps.tag.outputs.tag}}/ani-${{steps.tag-version.outputs.substring}}-windows-x86_64.zip
 
 [github-mac-x64]: https://github.com/open-ani/ani/releases/download/${{steps.tag.outputs.tag}}/ani-${{steps.tag-version.outputs.substring}}-macos-x86_64.dmg
 
@@ -13,7 +13,7 @@ uploaded.
 
 [github-android]: https://github.com/open-ani/ani/releases/download/${{steps.tag.outputs.tag}}/ani-${{steps.tag-version.outputs.substring}}.apk
 
-[cf-win-x64]: https://d.myani.org/${{steps.tag.outputs.tag}}/ani-${{steps.tag-version.outputs.substring}}-windows-x86_64.dmg
+[cf-win-x64]: https://d.myani.org/${{steps.tag.outputs.tag}}/ani-${{steps.tag-version.outputs.substring}}-windows-x86_64.zip
 
 [cf-mac-x64]: https://d.myani.org/${{steps.tag.outputs.tag}}/ani-${{steps.tag-version.outputs.substring}}-macos-x86_64.dmg
 
