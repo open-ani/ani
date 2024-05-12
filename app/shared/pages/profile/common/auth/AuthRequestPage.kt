@@ -22,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -40,6 +41,7 @@ import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.navigation.LocalBackHandler
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.ui.feedback.ErrorDialogHost
 import me.him188.ani.app.ui.foundation.AniTopAppBar
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
@@ -127,6 +129,13 @@ private fun AuthResults(viewModel: AuthViewModel) {
     )
 }
 
+@Stable
+internal val Platform.supportsCallbackLogin: Boolean
+    get() = when (this) {
+        is Platform.Desktop -> false
+        Platform.Android -> true
+    }
+
 @Composable
 internal fun AuthDialogContent(
     viewModel: AuthViewModel,
@@ -162,11 +171,11 @@ internal fun AuthDialogContent(
         }
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("请在打开的窗口中完成登录", style = MaterialTheme.typography.bodyMedium)
-
-            HorizontalDivider()
-
-            Text("登录成功后无响应? 请尝试备用方案", style = MaterialTheme.typography.titleMedium)
+            if (Platform.currentPlatform.supportsCallbackLogin) {
+                Text("请在打开的窗口中完成登录", style = MaterialTheme.typography.bodyMedium)
+                HorizontalDivider()
+                Text("登录成功后无响应? 请尝试备用方案", style = MaterialTheme.typography.titleMedium)
+            }
 
             Text("1. 你将前往 Bangumi 开发者测试页面")
             Text("2. 如果提示输入邮箱 (Email), 请使用你的 Bangumi 账号登录")
