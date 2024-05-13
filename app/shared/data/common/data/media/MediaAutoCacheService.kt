@@ -22,6 +22,7 @@ import me.him188.ani.app.ui.subject.episode.mediaFetch.EpisodeMediaFetchSession
 import me.him188.ani.app.ui.subject.episode.mediaFetch.FetcherMediaSelectorConfig
 import me.him188.ani.app.ui.subject.episode.mediaFetch.awaitCompletion
 import me.him188.ani.datasources.api.MediaCacheMetadata
+import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.datasources.api.topic.isDoneOrDropped
 import me.him188.ani.datasources.bangumi.processing.isOnAir
 import me.him188.ani.datasources.bangumi.processing.toCollectionType
@@ -51,7 +52,12 @@ fun DefaultMediaAutoCacheService(
     subjectCollections = { settings ->
         koin.get<SubjectManager>()
             .subjectCollectionsFlow(ContentPolicy.CACHE_FIRST)
-            .map { it.take(settings.mostRecentCount) }
+            .map { list ->
+                list.asSequence()
+                    .filter { it.collectionType == UnifiedCollectionType.WISH }
+                    .take(settings.mostRecentCount)
+                    .toList()
+            }
             .first()
     },
     config = koin.get<PreferencesRepository>().mediaCacheSettings.flow,
