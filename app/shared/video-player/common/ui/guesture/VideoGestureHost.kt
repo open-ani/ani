@@ -363,6 +363,7 @@ enum class GestureFamily(
         swipeRhsForVolume = true,
         swipeLhsForBrightness = true,
         longPressForFastSkip = true,
+        mouseHoverForController = false,
     ),
     MOUSE(
         clickToPauseResume = true,
