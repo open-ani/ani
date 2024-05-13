@@ -421,6 +421,7 @@ fun VideoGestureHost(
 
         Box(
             modifier
+                .padding(top = 60.dp)
                 .combinedClickable(
                     remember { MutableInteractionSource() },
                     indication = null,
