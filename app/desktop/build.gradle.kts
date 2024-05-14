@@ -115,6 +115,9 @@ compose.desktop {
             packageVersion = properties["package.version"].toString()
         }
 
+        buildTypes.release.proguard {
+            isEnabled.set(false)
+        }
         // TODO: Uncomment this to enable proguard for desktop, need some tweaks
 //        buildTypes.release.proguard {
 //            this.configurationFiles.from(project(":app:shared").file("proguard-rules.pro"))
