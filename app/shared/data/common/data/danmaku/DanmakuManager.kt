@@ -23,6 +23,7 @@ import me.him188.ani.danmaku.ani.client.AniDanmakuSender
 import me.him188.ani.danmaku.ani.client.AniDanmakuSenderImpl
 import me.him188.ani.danmaku.ani.client.SendDanmakuException
 import me.him188.ani.danmaku.api.Danmaku
+import me.him188.ani.danmaku.api.DanmakuEvent
 import me.him188.ani.danmaku.api.DanmakuProvider
 import me.him188.ani.danmaku.api.DanmakuProviderConfig
 import me.him188.ani.danmaku.api.DanmakuSearchRequest
@@ -138,7 +139,7 @@ class CombinedDanmakuSession(
             else counts.sumOf { it ?: 0 }
         }
 
-    override fun at(progress: Flow<Duration>): Flow<Danmaku> {
+    override fun at(progress: Flow<Duration>): Flow<DanmakuEvent> {
         return sessions.map { session ->
             session.flatMapLatest { it.at(progress) }
         }.merge()

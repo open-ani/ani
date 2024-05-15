@@ -34,6 +34,7 @@ import me.him188.ani.app.data.media.resolver.ResolutionFailures
 import me.him188.ani.app.data.media.resolver.UnsupportedMediaException
 import me.him188.ani.app.data.media.resolver.VideoSourceResolutionException
 import me.him188.ani.app.data.media.resolver.VideoSourceResolver
+import me.him188.ani.app.data.repositories.PreferencesRepository
 import me.him188.ani.app.data.subject.SubjectManager
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.Context
@@ -51,6 +52,7 @@ import me.him188.ani.app.videoplayer.data.VideoSourceOpenException
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import me.him188.ani.danmaku.api.Danmaku
+import me.him188.ani.danmaku.api.DanmakuEvent
 import me.him188.ani.danmaku.api.DanmakuPresentation
 import me.him188.ani.danmaku.api.DanmakuSearchRequest
 import me.him188.ani.danmaku.api.DanmakuSession
@@ -198,6 +200,7 @@ private class EpisodeViewModelImpl(
     private val subjectManager: SubjectManager by inject()
     private val danmakuManager: DanmakuManager by inject()
     private val videoSourceResolver: VideoSourceResolver by inject()
+    private val preferencesRepository: PreferencesRepository by inject()
 
     private val subjectDisplayName = flowOf(subjectId).mapLatest { subjectId ->
         subjectManager.getSubjectName(subjectId)
@@ -350,7 +353,7 @@ private class EpisodeViewModelImpl(
         )
     }.shareInBackground(started = SharingStarted.Lazily)
 
-    private val danmakuFlow: Flow<Danmaku> = danmakuSessionFlow.flatMapLatest { session ->
+    private val danmakuFlow: Flow<DanmakuEvent> = danmakuSessionFlow.flatMapLatest { session ->
         session.at(progress = playerState.currentPositionMillis.map { it.milliseconds })
     }
 
@@ -370,13 +373,30 @@ private class EpisodeViewModelImpl(
         launchInBackground {
             cancellableCoroutineScope {
                 val selfId = selfUserId.stateIn(this, started = SharingStarted.Eagerly, initialValue = null)
-                danmakuFlow.collect { data ->
-                    danmaku.danmakuHostState.trySend(
-                        DanmakuPresentation(
-                            data,
-                            isSelf = selfId.value == data.senderId
-                        ),
-                    )
+                val danmakuConfig = preferencesRepository.danmakuConfig.flow.stateIn(
+                    this,
+                    started = SharingStarted.Eagerly,
+                    initialValue = null
+                )
+                danmakuFlow.collect { event ->
+                    when (event) {
+                        is DanmakuEvent.Add -> {
+                            val data = event.danmaku
+                            danmaku.danmakuHostState.trySend(
+                                createDanmakuPresentation(data, selfId.value),
+                            )
+                        }
+
+                        is DanmakuEvent.Repopulate -> {
+                            danmaku.danmakuHostState.repopulate(
+                                event.list.map {
+                                    createDanmakuPresentation(it, selfId.value)
+                                },
+                                danmakuConfig.filterNotNull().first().style,
+                            )
+
+                        }
+                    }
                 }
                 cancelScope()
             }
@@ -404,6 +424,14 @@ private class EpisodeViewModelImpl(
             }
         }
     }
+
+    private fun createDanmakuPresentation(
+        data: Danmaku,
+        selfId: String?,
+    ) = DanmakuPresentation(
+        data,
+        isSelf = selfId == data.senderId
+    )
 
     /**
      * Requests the user to select a media if not already.

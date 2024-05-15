@@ -15,6 +15,7 @@ import me.him188.ani.danmaku.protocol.DanmakuInfo
 import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.danmaku.ui.DanmakuHostState
 import me.him188.ani.danmaku.ui.DanmakuTrackProperties
+import me.him188.ani.danmaku.ui.send
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 

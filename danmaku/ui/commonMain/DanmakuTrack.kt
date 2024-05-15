@@ -45,12 +45,16 @@ import kotlinx.coroutines.withContext
 import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuLocation
 import me.him188.ani.danmaku.api.DanmakuPresentation
+import me.him188.ani.danmaku.api.DanmakuSessionAlgorithm
 import java.util.UUID
 
 @Stable
 class DanmakuState internal constructor(
     val danmaku: DanmakuPresentation,
-    val offsetInsideTrack: Float = 0f,
+    /**
+     * 初始值满足 [offsetInsideTrack] + [DanmakuTrackState.trackOffset] == [DanmakuTrackState.trackSize].width
+     */
+    val offsetInsideTrack: Float = 0f, // positive
 ) {
     /**
      * Layout width of the view in px, late-init by [onPlaced].
@@ -101,18 +105,14 @@ class DanmakuTrackState(
     private val maxCount: Int,
     private val danmakuTrackProperties: DanmakuTrackProperties = DanmakuTrackProperties.Default,
 ) {
-    @PublishedApi
-    internal val channel = Channel<DanmakuPresentation>(2)
-
     /**
-     * 尝试发送一条弹幕到这个轨道. 当轨道已满时返回 `false`.
+     * 正在发送的弹幕. 用于缓存后台逻辑帧发送的弹幕, 以便在下一 UI 帧开始渲染
+     *
+     * impl notes: 弹幕逻辑帧已经相当于有缓存, 这里不要缓存多余的, 可能造成滞后
+     * @see DanmakuSessionAlgorithm
      */
-    fun trySend(danmaku: DanmakuPresentation): Boolean = channel.trySend(danmaku).isSuccess
-
-    suspend inline fun send(danmaku: DanmakuPresentation) {
-        // inline to improve performance as this is called frequently
-        channel.send(danmaku)
-    }
+    @PublishedApi
+    internal val channel = Channel<DanmakuPresentation>(1)
 
     internal val isPaused by isPaused
 
@@ -121,6 +121,9 @@ class DanmakuTrackState(
      */
     internal var trackSize: IntSize by mutableStateOf(IntSize.Zero)
 
+    /**
+     * 在屏幕中可见的弹幕
+     */
     @Stable
     internal val visibleDanmaku: MutableList<DanmakuState> = SnapshotStateList() // Random Access is needed
 
@@ -130,6 +133,55 @@ class DanmakuTrackState(
      */
     @Stable
     internal val startingDanmaku: MutableList<DanmakuState> = ArrayList() // actually contains only one element
+
+    /**
+     * 上次 [animateMove] 的速度. px/s
+     */
+    @JvmField
+    var lastBaseSpeed: Float = 0f
+
+    @JvmField
+    var lastSafeSeparation: Float = 0f
+
+    /**
+     * 尝试发送一条弹幕到这个轨道. 当轨道已满时返回 `false`.
+     * @see channel
+     */
+    fun trySend(danmaku: DanmakuPresentation): Boolean = channel.trySend(danmaku).isSuccess
+
+    /**
+     * 挂起当前协程, 直到成功发送这条弹幕.
+     */
+    suspend inline fun send(danmaku: DanmakuPresentation) {
+        // inline to avoid additional Continuation as this is called frequently
+        channel.send(danmaku)
+    }
+
+    /**
+     * 立即将弹幕放置到轨道中, 忽视轨道是否已满或是否有弹幕仍然占据了初始位置.
+     */
+    @UiThread
+    fun place(
+        presentation: DanmakuPresentation,
+        offsetInsideTrack: Float = -trackOffset + trackSize.width,
+    ): DanmakuState {
+        return DanmakuState(presentation, offsetInsideTrack = offsetInsideTrack).also {
+            visibleDanmaku.add(it)
+            startingDanmaku.add(it)
+        }
+    }
+
+    /**
+     * 清空所有屏幕上可见的弹幕以及发送队列.
+     */
+    @UiThread
+    fun clear() {
+        @Suppress("ControlFlowWithEmptyBody")
+        while (channel.tryReceive().isSuccess);
+        visibleDanmaku.clear()
+        startingDanmaku.clear()
+    }
+
 
     /**
      * Called on every frame to update the state.
@@ -142,9 +194,7 @@ class DanmakuTrackState(
         if (startingDanmaku.isNotEmpty()) return // 有弹幕仍然在屏幕右边   
 
         val danmaku = channel.tryReceive().getOrNull() ?: return
-        val state = DanmakuState(danmaku, offsetInsideTrack = trackOffset - trackSize.width)
-        startingDanmaku.add(state)
-        visibleDanmaku.add(state)
+        place(danmaku)
     }
 
     @UiThread
@@ -152,34 +202,50 @@ class DanmakuTrackState(
         layoutDirection: LayoutDirection,
         safeSeparation: Float
     ) {
+        lastSafeSeparation = safeSeparation
         // Remove the danmaku from the track when it is out of screen, 
         // so that Track view will remove the Danmaku view from the layout.
         val trackOffset = trackOffset
         if (trackOffset.isNaN()) return
         visibleDanmaku.removeAll { danmaku -> // With RandomAccess, fast
             if (danmaku.textWidth == -1) return@removeAll false // not yet placed
-            val posInScreen = -danmaku.offsetInsideTrack + trackOffset
+            val posInScreen = danmaku.offsetInsideTrack + trackOffset
             posInScreen + danmaku.textWidth + danmakuTrackProperties.visibilitySafeArea <= 0  // out of screen
         }
 
         // Remove the danmaku from [startingDanmaku] if it is fully visible on the screen (with [safeSeparation]),
         // so that the track will receive the next danmaku and display it.
         startingDanmaku.removeAll { danmaku ->
-            val posInScreen = -danmaku.offsetInsideTrack + trackOffset
-            val isFullyVisible = if (layoutDirection == LayoutDirection.Ltr) {
-                posInScreen + danmaku.textWidth + safeSeparation + danmakuTrackProperties.visibilitySafeArea < trackSize.width
-            } else {
-                posInScreen - safeSeparation > 0
-            }
+            val posInScreen = danmaku.offsetInsideTrack + trackOffset
+            val isFullyVisible = isFullyVisible(danmaku, safeSeparation, layoutDirection, posInScreen)
             posInScreen < 0 || isFullyVisible
         }
     }
 
     /**
+     * 弹幕是否已经完全显示在屏幕上. 因为弹幕初始的时候是整个都在屏幕右边外面
+     */
+    fun isFullyVisible(
+        danmaku: DanmakuState,
+        safeSeparation: Float = lastSafeSeparation,
+        layoutDirection: LayoutDirection = LayoutDirection.Ltr,
+        posInScreen: Float = danmaku.offsetInsideTrack + trackOffset,
+    ) = if (layoutDirection == LayoutDirection.Ltr) {
+        posInScreen + danmaku.textWidth + safeSeparation + danmakuTrackProperties.visibilitySafeArea < trackSize.width
+    } else {
+        posInScreen - safeSeparation > 0
+    }
+
+    /**
      * 轨道位置偏移量, 会是负数. 轨道初始在屏幕右边缘.
+     *
+     * 使用时注意检查 [Float.isNaN]
      */
     var trackOffset: Float by mutableFloatStateOf(Float.NaN)
-        private set
+        internal set
+
+    var populationVersion: Int by mutableIntStateOf(0)
+        internal set
 
     /**
      * 匀速减少 [trackOffset].
@@ -195,20 +261,31 @@ class DanmakuTrackState(
     suspend fun animateMove(
         baseSpeed: Float,
     ) {
-        val startTime = withFrameNanos { it }
+        lastBaseSpeed = baseSpeed
         val speed = -baseSpeed / 1_000_000_000f // px/ns
-
         if (trackOffset.isNaN()) {
             trackOffset = trackSize.width.toFloat()
         }
 
-        val startOffset = trackOffset
+        restartAnimation@ while (true) {
+            val currentVersion = populationVersion
+            val startOffset = trackOffset
+            val startTime = withFrameNanos { it }
 
-        while (true) {
-            // Update offset on every frame
-            withFrameNanos {
-                val elapsed = it - startTime
-                trackOffset = startOffset + speed * elapsed
+            while (true) { // for each frame
+                // Update offset on every frame
+                val shouldRestart = withFrameNanos {
+                    val elapsed = it - startTime
+                    val res = startOffset + speed * elapsed
+                    if (currentVersion != populationVersion) { // 必须在赋值 trackOffset 之前检查
+                        return@withFrameNanos true
+                    }
+                    trackOffset = res
+                    false
+                }
+                if (shouldRestart) {
+                    continue@restartAnimation
+                }
             }
         }
     }
@@ -245,6 +322,7 @@ fun DanmakuTrack(
     trackState: DanmakuTrackState,
     modifier: Modifier = Modifier,
     config: DanmakuConfig = DanmakuConfig.Default,
+    baseStyle: TextStyle = MaterialTheme.typography.bodyMedium,
     content: @Composable DanmakuTrackScope.() -> Unit, // box scope
 ) {
     val configUpdated by rememberUpdatedState(config)
@@ -273,7 +351,7 @@ fun DanmakuTrack(
                     modifier
                         .alpha(if (danmaku.animationStarted) 1f else 0f) // Don't use `danmaku.offset == 0`, see danmaku.offset comments.
                         .graphicsLayer {
-                            translationX = -danmaku.offsetInsideTrack
+                            translationX = danmaku.offsetInsideTrack
                         }
                         .onPlaced { layoutCoordinates ->
                             danmaku.onPlaced(layoutCoordinates)
@@ -283,6 +361,7 @@ fun DanmakuTrack(
                     DanmakuText(
                         danmaku,
                         style = style,
+                        baseStyle = baseStyle,
                         onTextLayout = {
                             danmaku.textWidth = it.size.width
                             danmaku.animationStarted = true
