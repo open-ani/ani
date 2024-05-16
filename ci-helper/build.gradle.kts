@@ -141,7 +141,7 @@ tasks.register("uploadAndroidApkQR") {
 
 val zipDesktopDistribution = tasks.register("zipDesktopDistribution", Zip::class) {
     dependsOn(
-        ":app:desktop:createDistributable",
+        ":app:desktop:createReleaseDistributable",
     )
     from(project(":app:desktop").layout.buildDirectory.dir("compose/binaries/main/app"))
     // ani-3.0.0-beta22-dev7.zip
@@ -156,7 +156,7 @@ tasks.register("uploadDesktopInstallers") {
 
     if (hostOS != OS.WINDOWS) {
         dependsOn(
-            ":app:desktop:packageDistributionForCurrentOS"
+            ":app:desktop:packageReleaseDistributionForCurrentOS"
         )
     }
 
@@ -184,8 +184,8 @@ tasks.register("uploadDesktopInstallers") {
 
 tasks.register("prepareArtifactsForManualUpload") {
     dependsOn(
-        ":app:desktop:createDistributable",
-        ":app:desktop:packageDistributionForCurrentOS",
+        ":app:desktop:createReleaseDistributable",
+        ":app:desktop:packageReleaseDistributionForCurrentOS",
     )
     dependsOn(zipDesktopDistribution)
 
