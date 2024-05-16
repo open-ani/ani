@@ -84,7 +84,7 @@ jobs:
       matrix:
         os:
           - windows-2022
-          - ubuntu-20.04
+          #          - ubuntu-20.04
           - macos-12
     env:
       enableLocalPublishingTest: 'false'

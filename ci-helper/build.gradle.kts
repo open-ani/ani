@@ -141,9 +141,9 @@ tasks.register("uploadAndroidApkQR") {
 
 val zipDesktopDistribution = tasks.register("zipDesktopDistribution", Zip::class) {
     dependsOn(
-        ":app:desktop:createDistributable",
+        ":app:desktop:createReleaseDistributable",
     )
-    from(project(":app:desktop").layout.buildDirectory.dir("compose/binaries/main/app"))
+    from(project(":app:desktop").layout.buildDirectory.dir("compose/binaries/main-release/app"))
     // ani-3.0.0-beta22-dev7.zip
     archiveBaseName.set("ani")
     archiveVersion.set(ReleaseEnvironment().fullVersion)
@@ -156,7 +156,7 @@ tasks.register("uploadDesktopInstallers") {
 
     if (hostOS != OS.WINDOWS) {
         dependsOn(
-            ":app:desktop:packageDistributionForCurrentOS"
+            ":app:desktop:packageReleaseDistributionForCurrentOS"
         )
     }
 
@@ -184,8 +184,8 @@ tasks.register("uploadDesktopInstallers") {
 
 tasks.register("prepareArtifactsForManualUpload") {
     dependsOn(
-        ":app:desktop:createDistributable",
-        ":app:desktop:packageDistributionForCurrentOS",
+        ":app:desktop:createReleaseDistributable",
+        ":app:desktop:packageReleaseDistributionForCurrentOS",
     )
     dependsOn(zipDesktopDistribution)
 
@@ -374,7 +374,7 @@ fun ReleaseEnvironment.uploadDesktopDistributions() {
                 extension = kind
             ),
             contentType = "application/octet-stream",
-            file = project(":app:desktop").layout.buildDirectory.dir("compose/binaries/main/$kind").get().asFile
+            file = project(":app:desktop").layout.buildDirectory.dir("compose/binaries/main-release/$kind").get().asFile
                 .walk()
                 .single { it.extension == kind },
         )
