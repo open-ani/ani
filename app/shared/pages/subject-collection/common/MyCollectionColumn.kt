@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
@@ -83,70 +84,73 @@ fun SubjectCollectionsColumn(
     item: @Composable (item: SubjectCollectionItem) -> Unit,
     onEmpty: @Composable () -> Unit,
     modifier: Modifier = Modifier,
+    lazyListState: LazyListState = rememberLazyListState(),
     contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
     val spacedBy = 16.dp
-    val state = rememberLazyListState()
 
-    val data by cache.cachedDataFlow.collectAsState(emptyList())
+    val data = cache.cachedDataFlow.collectAsState(null).value // 反正下面会立即用到, recompose 总是重组整个函数
 
     // 如果不 debounce, 会导致刚刚加载完成后会显示一小会 "空空如也"
     val isCompleted by remember(cache) { cache.isCompleted.debounce(1.seconds) }.collectAsState(false)
 
-    if (data.isEmpty() && isCompleted) {
+    if (data.isNullOrEmpty() && isCompleted) {
         onEmpty()
         return
     }
 
-    LazyColumn(
-        modifier.padding(horizontal = 12.dp).padding(vertical = 0.dp),
-        state,
-        verticalArrangement = Arrangement.spacedBy(spacedBy),
-    ) {
-        // 每两个 item 之间有 spacedBy dp, 这里再上补充 contentPadding 要求的高度, 这样顶部的总留空就是 contentPadding 要求的高度
-        // 这个高度是可以滚到上面的, 所以它
-        (contentPadding.calculateTopPadding() - spacedBy).coerceAtLeast(0.dp).let {
-            item { Spacer(Modifier.height(it)) }
-        }
-
-        items(data, key = { it.subjectId }) { collection ->
-            // 在首次加载时展示一个渐入的动画, 随后不再展示
-            var targetAlpha by rememberSaveable { mutableStateOf(0f) }
-            val alpha by animateFloatAsState(
-                targetAlpha,
-                if (state.canScrollBackward || state.canScrollForward) {
-                    snap(0)
-                } else tween(150)
-            )
-            Box(
-                Modifier.then(
-                    if (LocalIsPreviewing.current) { // 预览模式下无动画
-                        Modifier
-                    } else
-                        Modifier.alpha(alpha)
-                ).animateItemPlacement()
-            ) {
-                item(collection)
+    if (data != null) {
+        LazyColumn(
+            modifier.padding(horizontal = 12.dp).padding(vertical = 0.dp),
+            lazyListState,
+            verticalArrangement = Arrangement.spacedBy(spacedBy),
+        ) {
+            // 每两个 item 之间有 spacedBy dp, 这里再上补充 contentPadding 要求的高度, 这样顶部的总留空就是 contentPadding 要求的高度
+            // 这个高度是可以滚到上面的, 所以它
+            (contentPadding.calculateTopPadding() - spacedBy).coerceAtLeast(0.dp).let {
+                item { Spacer(Modifier.height(it)) }
             }
-            SideEffect {
-                targetAlpha = 1f
-            }
-        }
 
-        if (!isCompleted) {
-            item("dummy loader") {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                    CircularProgressIndicator()
+
+            items(data, key = { it.subjectId }) { collection ->
+                // 在首次加载时展示一个渐入的动画, 随后不再展示
+                var targetAlpha by rememberSaveable { mutableStateOf(0f) }
+                val alpha by animateFloatAsState(
+                    targetAlpha,
+                    if (lazyListState.canScrollBackward || lazyListState.canScrollForward) {
+                        snap(0)
+                    } else tween(150)
+                )
+                Box(
+                    Modifier.then(
+                        if (LocalIsPreviewing.current) { // 预览模式下无动画
+                            Modifier
+                        } else
+                            Modifier.alpha(alpha)
+                    ).animateItemPlacement()
+                ) {
+                    item(collection)
                 }
-
-                LaunchedEffect(true) {
-                    onRequestMore()
+                SideEffect {
+                    targetAlpha = 1f
                 }
             }
-        }
 
-        (contentPadding.calculateBottomPadding() - spacedBy).coerceAtLeast(0.dp).let {
-            item { Spacer(Modifier.height(it)) }
+            if (!isCompleted) {
+                item("dummy loader") {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                        CircularProgressIndicator()
+                    }
+
+                    LaunchedEffect(true) {
+                        onRequestMore()
+                    }
+                }
+            }
+
+            (contentPadding.calculateBottomPadding() - spacedBy).coerceAtLeast(0.dp).let {
+                item { Spacer(Modifier.height(it)) }
+            }
         }
     }
 }

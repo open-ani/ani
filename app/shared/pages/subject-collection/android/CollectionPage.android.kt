@@ -34,7 +34,7 @@ internal actual fun PreviewCollectionPage() {
             MyCollectionsViewModelImpl().apply {
                 val testData = testCollections()
                 runBlocking {
-                    collectionsByType.forEach { (type, cache) ->
+                    collectionsByType1.forEach { (type, cache) ->
                         cache.mutate {
                             testData.filter { it.collectionType == type }
                         }

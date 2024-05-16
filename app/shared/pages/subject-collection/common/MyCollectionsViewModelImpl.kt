@@ -1,5 +1,6 @@
 package me.him188.ani.app.ui.collection
 
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Stable
 import kotlinx.coroutines.flow.Flow
 import me.him188.ani.app.ViewModelAuthSupport
@@ -20,11 +21,18 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
 @Stable
+class CollectionsByType(
+    val type: UnifiedCollectionType,
+    val cache: LazyDataCache<SubjectCollectionItem>,
+    val lazyListState: LazyListState = LazyListState(),
+)
+
+@Stable
 interface MyCollectionsViewModel : HasBackgroundScope, ViewModelAuthSupport {
     val subjectManager: SubjectManager
 
     @Stable
-    fun collectionsByType(type: UnifiedCollectionType): LazyDataCache<SubjectCollectionItem>
+    fun collectionsByType(type: UnifiedCollectionType): CollectionsByType
 
     fun requestMore(type: UnifiedCollectionType)
 
@@ -53,14 +61,17 @@ class MyCollectionsViewModelImpl : AbstractViewModel(), KoinComponent, MyCollect
     override val subjectManager: SubjectManager by inject()
     private val cacheManager: MediaCacheManager by inject()
 
-    val collectionsByType get() = subjectManager.collectionsByType
+    val collectionsByType = subjectManager.collectionsByType.map {
+        CollectionsByType(it.key, it.value)
+    }
 
     @Stable
-    override fun collectionsByType(type: UnifiedCollectionType) =
-        subjectManager.collectionsByType[type]!!
+    override fun collectionsByType(type: UnifiedCollectionType): CollectionsByType =
+        collectionsByType.firstOrNull { it.type == type }
+            ?: error("No such collection type: $type") // should not happen
 
 
-    private val requestMoreTaskers = collectionsByType.keys.associateWith {
+    private val requestMoreTaskers = collectionsByType.map { it.type }.associateWith {
         MonoTasker(backgroundScope)
     }
 
@@ -68,7 +79,7 @@ class MyCollectionsViewModelImpl : AbstractViewModel(), KoinComponent, MyCollect
         requestMoreTaskers[type]!!.run {
             if (isRunning) return
             launch {
-                collectionsByType[type]!!.requestMore()
+                collectionsByType(type).cache.requestMore()
             }
         }
     }
@@ -104,7 +115,7 @@ class MyCollectionsViewModelImpl : AbstractViewModel(), KoinComponent, MyCollect
                 UnifiedCollectionType.DONE,
                 UnifiedCollectionType.DROPPED,
             ).forEach { type ->
-                collectionsByType[type]?.let { cache ->
+                collectionsByType(type).cache.let { cache ->
                     if (cache.getCachedData().isEmpty()) {
                         cache.requestMore()
                     }

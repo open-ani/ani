@@ -26,6 +26,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
@@ -138,7 +140,7 @@ fun CollectionPage(
                         onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
                         text = {
                             val type = COLLECTION_TABS_SORTED[index]
-                            val cache = vm.collectionsByType(type)
+                            val cache = vm.collectionsByType(type).cache
                             val size by cache.totalSize.collectAsStateWithLifecycle(null)
                             if (size == null) {
                                 Text(text = collectionType.displayText())
@@ -152,7 +154,7 @@ fun CollectionPage(
 
             HorizontalPager(state = pagerState, Modifier.fillMaxSize()) { index ->
                 val type = COLLECTION_TABS_SORTED[index]
-                val cache = vm.collectionsByType(type)
+                val collection = vm.collectionsByType(type)
 
                 val pullToRefreshState = rememberPullToRefreshState()
                 var isAutoRefreshing by remember { mutableStateOf(false) }
@@ -165,7 +167,7 @@ fun CollectionPage(
                                 RefreshOrderPolicy.REPLACE
                             }
                             isAutoRefreshing = false
-                            cache.refresh(policy)
+                            collection.cache.refresh(policy)
                         } catch (e: CancellationException) {
                             throw e
                         } catch (_: Throwable) {
@@ -179,7 +181,7 @@ fun CollectionPage(
                 OnLifecycleEvent {
                     if (it == Lifecycle.State.Active) {
                         autoUpdateScope.launch {
-                            val lastUpdated = cache.lastUpdated.first()
+                            val lastUpdated = collection.cache.lastUpdated.first()
                             if (System.currentTimeMillis() - lastUpdated > 60.minutes.inWholeMilliseconds) {
                                 isAutoRefreshing = true
                                 pullToRefreshState.startRefresh()
@@ -190,12 +192,13 @@ fun CollectionPage(
 
                 Box(Modifier.clipToBounds()) {
                     TabContent(
-                        cache,
+                        collection.cache,
                         onRequestMore = { vm.requestMore(type) },
                         vm, type, isLoggedIn, contentPadding,
                         Modifier
                             .nestedScroll(pullToRefreshState.nestedScrollConnection)
-                            .fillMaxSize()
+                            .fillMaxSize(),
+                        lazyListState = collection.lazyListState,
                     )
                     PullToRefreshContainer(
                         pullToRefreshState,
@@ -219,6 +222,7 @@ private fun TabContent(
     isLoggedIn: Boolean?,
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
+    lazyListState: LazyListState = rememberLazyListState(),
 ) {
     val context by rememberUpdatedState(LocalContext.current)
     SubjectCollectionsColumn(
@@ -311,6 +315,7 @@ private fun TabContent(
         },
         modifier,
         contentPadding = contentPadding,
+        lazyListState = lazyListState,
     )
 }
 
