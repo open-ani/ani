@@ -53,6 +53,7 @@ import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.tools.torrent.DefaultTorrentManager
 import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.app.ui.foundation.AniApp
+import me.him188.ani.app.ui.foundation.LocalWindowState
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.main.AniAppContent
 import me.him188.ani.app.ui.theme.AppTheme
@@ -87,7 +88,12 @@ object AniDesktop {
     fun main(args: Array<String>) {
         println("dataDir: ${projectDirectories.dataDir}")
         println("cacheDir: ${projectDirectories.cacheDir}")
+
+        val windowState = WindowState(
+            size = DpSize(800.dp, 1000.dp),
+        )
         val context = DesktopContext(
+            windowState,
             File(projectDirectories.dataDir),
             File(projectDirectories.dataDir)
         )
@@ -120,13 +126,14 @@ object AniDesktop {
         val sessionManager by koin.koin.inject<SessionManager>()
 
         singleWindowApplication(
-            state = WindowState(
-                size = DpSize(800.dp, 1000.dp),
-            ),
+            state = windowState,
             title = "Ani",
         ) {
             println("renderApi: " + this.window.renderApi)
-            CompositionLocalProvider(LocalContext provides context) {
+            CompositionLocalProvider(
+                LocalContext provides context,
+                LocalWindowState provides windowState
+            ) {
                 // This actually runs only once since app is never changed.
                 val windowImmersed = true
                 if (windowImmersed) {

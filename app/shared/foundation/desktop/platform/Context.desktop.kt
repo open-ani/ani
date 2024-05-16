@@ -21,6 +21,8 @@ package me.him188.ani.app.platform
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.ui.window.WindowPlacement
+import androidx.compose.ui.window.WindowState
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
@@ -29,6 +31,7 @@ import java.io.File
 actual abstract class Context
 
 class DesktopContext(
+    val windowState: WindowState,
     val dataDir: File,
     val cacheDir: File,
 ) : Context() {
@@ -55,6 +58,9 @@ actual val LocalContext: ProvidableCompositionLocal<Context> = compositionLocalO
 actual fun isInLandscapeMode(): Boolean = false
 
 actual fun Context.setRequestFullScreen(fullscreen: Boolean) {
+    if (this is DesktopContext) {
+        windowState.placement = if (fullscreen) WindowPlacement.Fullscreen else WindowPlacement.Floating
+    }
 }
 
 internal actual val Context.filesImpl: ContextFiles
