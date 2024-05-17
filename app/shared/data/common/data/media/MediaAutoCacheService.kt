@@ -54,7 +54,7 @@ fun DefaultMediaAutoCacheService(
             .subjectCollectionsFlow(ContentPolicy.CACHE_FIRST)
             .map { list ->
                 list.asSequence()
-                    .filter { it.collectionType == UnifiedCollectionType.WISH }
+                    .filter { it.collectionType == UnifiedCollectionType.DOING }
                     .take(settings.mostRecentCount)
                     .toList()
             }
