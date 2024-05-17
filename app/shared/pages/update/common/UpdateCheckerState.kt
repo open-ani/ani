@@ -87,7 +87,7 @@ class UpdateCheckerState : AbstractViewModel() {
 
                 NewVersion(
                     name = tag.substringAfter("v"),
-                    changelog = release.body.substringBeforeLast("----").trim(),
+                    changelog = release.body.substringBeforeLast("### 下载").substringBeforeLast("----").trim(),
                     apkUrl = release.assets.firstOrNull { it.name.endsWith(".apk") }?.browserDownloadUrl ?: "",
                     publishedAt = kotlin.runCatching {
                         TimeFormatter().format(

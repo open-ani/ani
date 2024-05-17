@@ -67,7 +67,6 @@ class MediaSourceManagerImpl(
             // 一定要 additionalSources 在前面, local sources 需要优先使用
             val enabledSources = defaultMediaPreference.fallbackMediaSourceIds
             this.additionalSources
-                .filter { enabledSources == null || it.mediaSourceId in enabledSources }
                 .plus(
                     factories
                         .filter { enabledSources == null || it.mediaSourceId in enabledSources }

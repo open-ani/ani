@@ -5,6 +5,8 @@ uploaded.
 
 ### 下载
 
+[//]: # (注意, `checkLatestVersion` 有字符串处理, 修改标题和分隔符前务必查询)
+
 [github-win-x64]: https://github.com/open-ani/ani/releases/download/${{steps.tag.outputs.tag}}/ani-${{steps.tag-version.outputs.substring}}-windows-x86_64.zip
 
 [github-mac-x64]: https://github.com/open-ani/ani/releases/download/${{steps.tag.outputs.tag}}/ani-${{steps.tag-version.outputs.substring}}-macos-x86_64.dmg
