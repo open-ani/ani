@@ -39,6 +39,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.tools.TimeFormatter
 import me.him188.ani.app.ui.foundation.AbstractViewModel
@@ -85,10 +86,13 @@ class UpdateCheckerState : AbstractViewModel() {
                 val release = json.decodeFromString(Release.serializer(), body)
                 val tag = release.tagName
 
+                val distributionSuffix = getDistributionSuffix()
                 NewVersion(
                     name = tag.substringAfter("v"),
                     changelog = release.body.substringBeforeLast("### 下载").substringBeforeLast("----").trim(),
-                    apkUrl = release.assets.firstOrNull { it.name.endsWith(".apk") }?.browserDownloadUrl ?: "",
+                    apkUrl = release.assets.firstOrNull {
+                        it.name.endsWith(distributionSuffix)
+                    }?.browserDownloadUrl ?: "",
                     publishedAt = kotlin.runCatching {
                         TimeFormatter().format(
                             Instant.parse(release.publishedAt).toEpochMilli()
@@ -102,6 +106,13 @@ class UpdateCheckerState : AbstractViewModel() {
             logger.error(it) { "Failed to get latest version" }
             return null
         }.getOrNull()
+    }
+
+    private fun getDistributionSuffix(): String = when (val platform = Platform.currentPlatform) {
+        is Platform.Linux -> "debian-${platform.arch.displayName}.deb"
+        is Platform.MacOS -> "macos-${platform.arch.displayName}.dmg"
+        is Platform.Windows -> "windows-${platform.arch.displayName}.zip"
+        Platform.Android -> "apk"
     }
 }
 
