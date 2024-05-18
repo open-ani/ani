@@ -51,8 +51,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
@@ -75,6 +77,7 @@ import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.RES
 import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.SEEKING
 import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.VOLUME
 import me.him188.ani.app.videoplayer.ui.guesture.SwipeSeekerState.Companion.swipeToSeek
+import me.him188.ani.app.videoplayer.ui.top.needWorkaroundForFocusManager
 import me.him188.ani.datasources.bangumi.processing.fixToString
 import kotlin.math.absoluteValue
 
@@ -418,9 +421,17 @@ fun VideoGestureHost(
         }
 
         val indicatorTasker = rememberUiMonoTasker()
+        val focusManager by rememberUpdatedState(LocalFocusManager.current) // workaround for #288
 
         Box(
             modifier
+                .ifThen(needWorkaroundForFocusManager) {
+                    onFocusEvent {
+                        if (it.hasFocus) {
+                            focusManager.clearFocus()
+                        }
+                    }
+                }
                 .padding(top = 60.dp)
                 .combinedClickable(
                     remember { MutableInteractionSource() },

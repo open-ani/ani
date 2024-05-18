@@ -45,19 +45,23 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.foundation.effects.onKey
+import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.theme.aniLightColorTheme
 import me.him188.ani.app.ui.theme.slightlyWeaken
 import me.him188.ani.app.ui.theme.stronglyWeaken
+import me.him188.ani.app.videoplayer.ui.top.needWorkaroundForFocusManager
 
 
 @Stable
@@ -244,9 +248,16 @@ object PlayerControllerDefaults {
         onClickFullscreen: () -> Unit,
         modifier: Modifier = Modifier,
     ) {
+        val focusManager by rememberUpdatedState(LocalFocusManager.current) // workaround for #288
         IconButton(
             onClick = onClickFullscreen,
-            modifier
+            modifier.ifThen(needWorkaroundForFocusManager) {
+                onFocusEvent {
+                    if (it.hasFocus) {
+                        focusManager.clearFocus()
+                    }
+                }
+            }
         ) {
             if (isFullscreen) {
                 Icon(Icons.Rounded.FullscreenExit, contentDescription = "Exit Fullscreen", Modifier.size(32.dp))
