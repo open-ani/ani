@@ -4,6 +4,7 @@ import io.ktor.client.HttpClientConfig
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
 import kotlinx.serialization.Serializable
+import me.him188.ani.app.data.subject.PackedDate
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.utils.ktor.createDefaultHttpClient
 import me.him188.ani.utils.logging.info
@@ -32,7 +33,12 @@ interface DanmakuProvider : AutoCloseable {
 
 class DanmakuSearchRequest(
     val subjectId: Int,
-    val subjectName: String,
+    val subjectPrimaryName: String,
+    val subjectNames: List<String>,
+    /**
+     * Cane be [PackedDate.Invalid]
+     */
+    val subjectPublishDate: PackedDate,
     val episodeId: Int,
     val episodeSort: EpisodeSort,
     val episodeEp: EpisodeSort?,
@@ -52,7 +58,11 @@ fun interface DanmakuMatcher {
 data class DanmakuEpisode(
     val id: String,
     val subjectName: String,
-    val episodeName: String
+    val episodeName: String,
+    /**
+     * 可能是系列内的, 也可能是单季的
+     */
+    val epOrSort: EpisodeSort?,
 )
 
 object DanmakuMatchers {

@@ -13,14 +13,39 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import me.him188.ani.danmaku.dandanplay.data.DandanplayDanmaku
 import me.him188.ani.danmaku.dandanplay.data.DandanplayDanmakuListResponse
+import me.him188.ani.danmaku.dandanplay.data.DandanplayGetBangumiResponse
 import me.him188.ani.danmaku.dandanplay.data.DandanplayMatchVideoResponse
 import me.him188.ani.danmaku.dandanplay.data.DandanplaySearchEpisodeResponse
+import me.him188.ani.danmaku.dandanplay.data.DandanplaySeasonSearchResponse
 import java.util.Locale
 import kotlin.time.Duration
 
 internal class DandanplayClient(
     private val client: HttpClient,
 ) {
+    suspend fun getSeasonAnimeList(
+        year: Int,
+        month: Int,
+    ): DandanplaySeasonSearchResponse {
+        // https://api.dandanplay.net/api/v2/bangumi/season/anime/2024/04
+        val response = client.get("https://api.dandanplay.net/api/v2/bangumi/season/anime/$year/$month") {
+            accept(ContentType.Application.Json)
+        }
+
+        return response.body<DandanplaySeasonSearchResponse>()
+    }
+
+    suspend fun searchSubject(
+        subjectName: String,
+    ): DandanplaySearchEpisodeResponse {
+        val response = client.get("https://api.dandanplay.net/api/v2/search/subject") {
+            accept(ContentType.Application.Json)
+            parameter("keyword", subjectName)
+        }
+
+        return response.body<DandanplaySearchEpisodeResponse>()
+    }
+
     suspend fun searchEpisode(
         subjectName: String,
         episodeName: String?,
@@ -32,6 +57,16 @@ internal class DandanplayClient(
         }
 
         return response.body<DandanplaySearchEpisodeResponse>()
+    }
+
+    suspend fun getBangumiEpisodes(
+        bangumiId: Int, // 注意, 这是 dandanplay 的 id, 不是 Bangumi.tv 的 id
+    ): DandanplayGetBangumiResponse {
+        val response = client.get("https://api.dandanplay.net/api/v2/bangumi/$bangumiId") {
+            accept(ContentType.Application.Json)
+        }
+
+        return response.body<DandanplayGetBangumiResponse>()
     }
 
     suspend fun matchVideo(

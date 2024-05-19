@@ -33,10 +33,29 @@ data class DandanplaySearchEpisodeResponse(
 )
 
 @Serializable
+data class DandanplayGetBangumiResponse(
+    val hasMore: Boolean = false,
+    val bangumi: DandanplayBangumiDetails,
+    val errorCode: Int = 0,
+    val success: Boolean = true,
+    val errorMessage: String? = null,
+)
+
+@Serializable
+data class DandanplaySeasonSearchResponse(
+    val hasMore: Boolean = false,
+    val bangumiList: List<SearchEpisodesAnime> = listOf(),
+    val errorCode: Int = 0,
+    val success: Boolean = true,
+    val errorMessage: String? = null,
+)
+
+@Serializable
 data class SearchEpisodesAnime(
     val animeId: Int,
+    val bangumiId: Int? = null,
     val animeTitle: String? = null,
-    val type: String,
+//    val type: String? = null,
     val typeDescription: String? = null,
     val episodes: List<SearchEpisodeDetails> = listOf(),
 )
@@ -45,4 +64,5 @@ data class SearchEpisodesAnime(
 data class SearchEpisodeDetails(
     val episodeId: Int,
     val episodeTitle: String? = null,
+    val episodeNumber: String? = null, // 可能没有, 我随便加的
 )

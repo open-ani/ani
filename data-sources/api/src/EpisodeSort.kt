@@ -11,6 +11,10 @@ import java.math.BigDecimal
  *
  * - [Normal] 代表普通正片剧集, 例如 "01", "24.5". 注意, 只有整数和 ".5" 的浮点数会被解析为 Normal 类型.
  * - [Special] 代表任何其他剧集, 统称为特殊剧集, 例如 "OVA", "SP".
+ *
+ *
+ * - Sort: 在系列中的集数, 例如第二季的第一集为 26
+ * - Ep: 在当前季度中的集数, 例如第二季的第一集为 01
  */
 @Serializable
 @Stable

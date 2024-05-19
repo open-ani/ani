@@ -21,7 +21,6 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.flow.transform
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
@@ -120,7 +119,7 @@ interface SubjectManager {
     /**
      * 从缓存中获取条目, 若没有则从网络获取.
      */
-    suspend fun getSubjectName(subjectId: Int): String
+    suspend fun getSubjectInfo(subjectId: Int): SubjectInfo
 
     /**
      * 从缓存中获取剧集, 若没有则从网络获取.
@@ -206,11 +205,11 @@ class SubjectManagerImpl(
         }
         .flowOn(Dispatchers.Default)
 
-    override suspend fun getSubjectName(subjectId: Int): String {
-        findCachedSubjectCollection(subjectId)?.displayName?.let { return it }
+    override suspend fun getSubjectInfo(subjectId: Int): SubjectInfo {
+        findCachedSubjectCollection(subjectId)?.info?.let { return it }
         return runUntilSuccess {
             // TODO: we should unify how to compute display name from subject 
-            subjectRepository.getSubject(subjectId)?.nameCNOrName() ?: error("Failed to get subject")
+            subjectRepository.getSubject(subjectId)?.createSubjectInfo() ?: error("Failed to get subject")
         }
     }
 
@@ -270,7 +269,7 @@ class SubjectManagerImpl(
         cache.mutate {
             setEach({ it.subjectId == subjectId }) {
                 copy(
-                    episodes = _episodes.map { episode ->
+                    _episodes = _episodes.map { episode ->
                         episode.copy(type = EpisodeCollectionType.WATCHED)
                     }
                 )
@@ -294,7 +293,7 @@ class SubjectManagerImpl(
 
         cache.mutate {
             setEach({ it.subjectId == subjectId }) {
-                copy(episodes = _episodes.replaceAll({ it.episode.id == episodeId }) {
+                copy(_episodes = _episodes.replaceAll({ it.episode.id == episodeId }) {
                     copy(type = collectionType.toEpisodeCollectionType())
                 })
             }
@@ -332,6 +331,7 @@ class SubjectManagerImpl(
                 totalEps = episodes.size,
                 _episodes = episodes,
                 collectionType = type.toCollectionType(),
+                info = subject.createSubjectInfo(),
             )
         }
 
@@ -344,6 +344,7 @@ class SubjectManagerImpl(
             totalEps = episodes.size,
             _episodes = episodes,
             collectionType = type.toCollectionType(),
+            info = subject.createSubjectInfo(),
         )
     }
 
@@ -352,8 +353,8 @@ class SubjectManagerImpl(
 
 
 @Stable
-@Serializable
-class SubjectCollectionItem(
+@Serializable(SubjectCollectionItem.Serializer::class)
+data class SubjectCollectionItem(
     val subjectId: Int,
     val displayName: String,
     val image: String,
@@ -364,20 +365,18 @@ class SubjectCollectionItem(
 
     val _episodes: List<@Serializable(UserEpisodeCollectionSerializer::class) UserEpisodeCollection>,
     val collectionType: UnifiedCollectionType,
+    val info: SubjectInfo,
 ) {
-    @Transient
     val isOnAir = run {
         _episodes.firstOrNull { it.episode.isOnAir() == true } != null
     }
 
-    @Transient
     val lastWatchedEpIndex = run {
         _episodes.indexOfLast {
             it.type == EpisodeCollectionType.WATCHED || it.type == EpisodeCollectionType.DISCARDED
         }.takeIf { it != -1 }
     }
 
-    @Transient
     val latestEp = run {
         _episodes.lastOrNull { it.episode.isOnAir() == false }
             ?: _episodes.lastOrNull { it.episode.isOnAir() != true }
@@ -386,18 +385,14 @@ class SubjectCollectionItem(
     /**
      * 是否已经开播了第一集
      */
-    @Transient
     val hasStarted = _episodes.firstOrNull()?.episode?.isOnAir() == false
 
-    @Transient
     val episodes: List<UserEpisodeCollection> = _episodes.sortedBy { it.episode.sort }
 
-    @Transient
     val latestEpIndex: Int? = _episodes.indexOfFirst { it.episode.id == latestEp?.episode?.id }
         .takeIf { it != -1 }
         ?: _episodes.lastIndex.takeIf { it != -1 }
 
-    @Transient
     val onAirDescription = if (isOnAir) {
         if (latestEp == null) {
             "连载中"
@@ -408,10 +403,8 @@ class SubjectCollectionItem(
         "已完结"
     }
 
-    @Transient
     val serialProgress = "全 $totalEps 话"
 
-    @Transient
     val continueWatchingStatus = run {
         val item = this
         when (item.lastWatchedEpIndex) {
@@ -446,26 +439,28 @@ class SubjectCollectionItem(
             }
         }
     }
-
-    fun copy(
-        subjectId: Int = this.subjectId,
-        displayName: String = this.displayName,
-        image: String = this.image,
-        rate: Int? = this.rate,
-        date: String? = this.date,
-        totalEps: Int = this.totalEps,
-        episodes: List<UserEpisodeCollection> = this._episodes,
-        collectionType: UnifiedCollectionType = this.collectionType,
-    ) = SubjectCollectionItem(
-        subjectId = subjectId,
-        displayName = displayName,
-        image = image,
-        rate = rate,
-        date = date,
-        totalEps = totalEps,
-        _episodes = episodes,
-        collectionType = collectionType,
-    )
+//
+//    fun copy(
+//        subjectId: Int = this.subjectId,
+//        displayName: String = this.displayName,
+//        image: String = this.image,
+//        rate: Int? = this.rate,
+//        date: String? = this.date,
+//        totalEps: Int = this.totalEps,
+//        episodes: List<UserEpisodeCollection> = this._episodes,
+//        collectionType: UnifiedCollectionType = this.collectionType,
+//        info: SubjectInfo = this.info,
+//    ) = SubjectCollectionItem(
+//        subjectId = subjectId,
+//        displayName = displayName,
+//        image = image,
+//        rate = rate,
+//        date = date,
+//        totalEps = totalEps,
+//        _episodes = episodes,
+//        collectionType = collectionType,
+//        info = info,
+//    )
 
     override fun toString(): String {
         return "SubjectCollectionItem($displayName)"
@@ -482,6 +477,7 @@ class SubjectCollectionItem(
             val totalEps: Int,
             val episodes: List<@Serializable(UserEpisodeCollectionSerializer::class) UserEpisodeCollection>,
             val collectionType: SubjectCollectionType?,
+            val info: SubjectInfo = SubjectInfo.Empty
         )
 
         override val descriptor: SerialDescriptor get() = Delegate.serializer().descriptor
@@ -497,6 +493,7 @@ class SubjectCollectionItem(
                 totalEps = delegate.totalEps,
                 _episodes = delegate.episodes,
                 collectionType = delegate.collectionType.toCollectionType(),
+                info = delegate.info
             )
         }
 
@@ -512,6 +509,7 @@ class SubjectCollectionItem(
                     totalEps = value.totalEps,
                     episodes = value._episodes,
                     collectionType = value.collectionType.toSubjectCollectionType(),
+                    info = value.info
                 )
             )
         }

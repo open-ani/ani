@@ -35,6 +35,7 @@ import me.him188.ani.app.data.media.resolver.UnsupportedMediaException
 import me.him188.ani.app.data.media.resolver.VideoSourceResolutionException
 import me.him188.ani.app.data.media.resolver.VideoSourceResolver
 import me.him188.ani.app.data.repositories.PreferencesRepository
+import me.him188.ani.app.data.subject.SubjectInfo
 import me.him188.ani.app.data.subject.SubjectManager
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.Context
@@ -74,12 +75,14 @@ import kotlin.time.Duration.Companion.milliseconds
 class SubjectPresentation(
     val title: String,
     val isPlaceholder: Boolean = false,
+    val info: SubjectInfo,
 ) {
     companion object {
         @Stable
         val Placeholder = SubjectPresentation(
             title = "placeholder",
             isPlaceholder = true,
+            info = SubjectInfo.Empty,
         )
     }
 }
@@ -202,8 +205,8 @@ private class EpisodeViewModelImpl(
     private val videoSourceResolver: VideoSourceResolver by inject()
     private val preferencesRepository: PreferencesRepository by inject()
 
-    private val subjectDisplayName = flowOf(subjectId).mapLatest { subjectId ->
-        subjectManager.getSubjectName(subjectId)
+    private val subjectInfo = flowOf(subjectId).mapLatest { subjectId ->
+        subjectManager.getSubjectInfo(subjectId)
     }.shareInBackground()
 
     // Media Selection
@@ -278,9 +281,9 @@ private class EpisodeViewModelImpl(
     override val playerState: PlayerState =
         playerStateFactory.create(context, backgroundScope.coroutineContext)
 
-    override val subjectPresentation: SubjectPresentation by subjectDisplayName
+    override val subjectPresentation: SubjectPresentation by subjectInfo
         .map {
-            SubjectPresentation(title = it)
+            SubjectPresentation(title = it.displayName, info = it)
         }
         .produceState(SubjectPresentation.Placeholder)
 
@@ -337,7 +340,9 @@ private class EpisodeViewModelImpl(
         danmakuManager.fetch(
             request = DanmakuSearchRequest(
                 subjectId = subjectId,
-                subjectName = subject.title,
+                subjectPrimaryName = subject.info.displayName,
+                subjectNames = subject.info.allNames,
+                subjectPublishDate = subject.info.publishDate,
                 episodeId = episodeId,
                 episodeSort = EpisodeSort(episode.sort),
                 episodeEp = EpisodeSort(episode.ep),
