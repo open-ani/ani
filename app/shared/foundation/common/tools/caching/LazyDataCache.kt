@@ -252,7 +252,6 @@ class LazyDataCacheImpl<T>(
 
     private class SourceInfo<T>(
         val source: PagedSource<T>,
-        val orderPolicy: RefreshOrderPolicy,
     )
 
     // Writes must be under lock
@@ -448,7 +447,7 @@ class LazyDataCacheImpl<T>(
     private suspend inline fun LazyDataCacheImpl<T>.getSourceOrCreate(orderPolicy: RefreshOrderPolicy): PagedSource<T> {
         currentSourceInfo.value?.source?.let { return it }
         return createSource().also {
-            currentSourceInfo.value = SourceInfo(it, orderPolicy)
+            currentSourceInfo.value = SourceInfo(it)
         }
     }
 
@@ -461,7 +460,7 @@ class LazyDataCacheImpl<T>(
                     val resp = source.nextPageOrNull() // cancellation-supported
 
                     // Update source only if the request was successful, as per documentation on [refresh]
-                    currentSourceInfo.value = SourceInfo(source, orderPolicy)
+                    currentSourceInfo.value = SourceInfo(source)
                     updateDataSanitized(orderPolicy) { resp.orEmpty() } // must after currentSourceInfo update
                 } finally {
                     requestInProgress.value = false
