@@ -1,16 +1,22 @@
 package me.him188.ani.app.videoplayer
 
+import android.util.Pair
 import androidx.annotation.MainThread
 import androidx.annotation.OptIn
 import androidx.annotation.UiThread
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
+import androidx.media3.common.TrackGroup
+import androidx.media3.common.Tracks
 import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
+import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
+import androidx.media3.exoplayer.trackselection.ExoTrackSelection
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -27,9 +33,12 @@ import me.him188.ani.app.videoplayer.data.VideoProperties
 import me.him188.ani.app.videoplayer.data.VideoSource
 import me.him188.ani.app.videoplayer.media.VideoDataDataSource
 import me.him188.ani.app.videoplayer.ui.state.AbstractPlayerState
+import me.him188.ani.app.videoplayer.ui.state.Label
+import me.him188.ani.app.videoplayer.ui.state.MutableTrackGroup
 import me.him188.ani.app.videoplayer.ui.state.PlaybackState
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
+import me.him188.ani.app.videoplayer.ui.state.SubtitleTrack
 import me.him188.ani.utils.logging.error
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration.Companion.seconds
@@ -93,9 +102,80 @@ internal class ExoPlayerState @UiThread constructor(
     private val updateVideoPropertiesTasker = MonoTasker(backgroundScope)
 
     val player = kotlin.run {
-        ExoPlayer.Builder(context).apply {}.build().apply {
+        ExoPlayer.Builder(context).apply {
+            setTrackSelector(object : DefaultTrackSelector(context) {
+                override fun selectTextTrack(
+                    mappedTrackInfo: MappedTrackInfo,
+                    rendererFormatSupports: Array<out Array<IntArray>>,
+                    params: Parameters,
+                    selectedAudioLanguage: String?
+                ): Pair<ExoTrackSelection.Definition, Int>? {
+                    val preferred = subtitleTracks.current.value
+                        ?: return super.selectTextTrack(
+                            mappedTrackInfo,
+                            rendererFormatSupports,
+                            params,
+                            selectedAudioLanguage
+                        )
+
+                    infix fun SubtitleTrack.matches(group: TrackGroup): Boolean {
+                        if (this.labels.isEmpty()) return false
+                        for (index in 0 until group.length) {
+                            val format = group.getFormat(index)
+                            if (format.labels.isEmpty()) {
+                                continue
+                            }
+                            if (this.labels.any { it.value == format.labels.first().value }) {
+                                return true
+                            }
+                        }
+                        return false
+                    }
+
+                    // 备注: 这个实现可能并不好, 他只是恰好能跑
+                    for (rendererIndex in 0 until mappedTrackInfo.rendererCount) {
+                        if (C.TRACK_TYPE_TEXT != mappedTrackInfo.getRendererType(rendererIndex)) continue
+
+                        val groups = mappedTrackInfo.getTrackGroups(rendererIndex)
+                        for (groupIndex in 0 until groups.length) {
+                            val trackGroup = groups[groupIndex]
+                            if (preferred matches trackGroup) {
+                                return Pair(
+                                    ExoTrackSelection.Definition(
+                                        trackGroup,
+                                        trackGroup.length - 1, // 如果选择所有字幕会闪烁
+                                    ),
+                                    rendererIndex
+                                )
+                            }
+                        }
+                    }
+                    return super.selectTextTrack(mappedTrackInfo, rendererFormatSupports, params, selectedAudioLanguage)
+                }
+            })
+        }.build().apply {
             playWhenReady = true
             addListener(object : Player.Listener {
+                override fun onTracksChanged(tracks: Tracks) {
+                    subtitleTracks.candidates.value =
+                        tracks.groups.asSequence()
+                            .filter { it.type == C.TRACK_TYPE_TEXT }
+                            .flatMapIndexed { groupIndex: Int, group: Tracks.Group ->
+                                sequence {
+                                    repeat(group.length) { index ->
+                                        val format = group.getTrackFormat(index)
+                                        yield(
+                                            SubtitleTrack(
+                                                "${openResource.value?.videoData?.filename}-$groupIndex-$index",
+                                                format.language,
+                                                format.labels.map { Label(it.language, it.value) })
+                                        )
+                                    }
+                                }
+                            }
+                            .toList()
+                }
+
                 override fun onPlayerError(error: PlaybackException) {
                     state.value = PlaybackState.ERROR
                     logger.warn("ExoPlayer error: ${error.errorCodeName}")
@@ -185,6 +265,8 @@ internal class ExoPlayerState @UiThread constructor(
         player.seekTo(positionMillis)
     }
 
+    override val subtitleTracks: MutableTrackGroup<SubtitleTrack> = MutableTrackGroup()
+
     override val currentPositionMillis: MutableStateFlow<Long> = MutableStateFlow(0)
     override fun getExactCurrentPositionMillis(): Long = player.currentPosition
 
@@ -194,6 +276,13 @@ internal class ExoPlayerState @UiThread constructor(
                 currentPositionMillis.value = player.currentPosition
                 bufferedPercentage.value = player.bufferedPercentage
                 delay(0.1.seconds) // 100 fps
+            }
+        }
+        backgroundScope.launch(Dispatchers.Main) {
+            subtitleTracks.current.collect {
+                player.trackSelectionParameters = player.trackSelectionParameters.buildUpon().apply {
+                    setPreferredTextLanguage(it?.labels?.first()?.value ?: it?.language)
+                }.build()
             }
         }
     }

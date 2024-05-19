@@ -28,7 +28,6 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.ProvideTextStyle
@@ -36,6 +35,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -276,8 +276,30 @@ object PlayerControllerDefaults {
         value: Float,
         onValueChange: (Float) -> Unit,
         modifier: Modifier = Modifier,
-        style: TextStyle = LocalTextStyle.current,
         optionsProvider: () -> List<Float> = { listOf(0.5f, 0.75f, 1f, 1.25f, 1.5f, 1.75f, 2f, 3f) },
+    ) {
+        return OptionsSwitcher(
+            value = value,
+            onValueChange = onValueChange,
+            optionsProvider = optionsProvider,
+            renderValue = { Text(remember(it) { "${it}x" }) },
+            renderValueExposed = { Text(remember(it) { if (it == 1.0f) "倍速" else """${it}x""" }) },
+            modifier,
+        )
+    }
+
+    /**
+     * @param optionsProvider The options to choose from. Note that when the value changes, it will not reflect in the UI.
+     */
+    @Composable
+    fun <T> OptionsSwitcher(
+        value: T,
+        onValueChange: (T) -> Unit,
+        optionsProvider: () -> List<T>,
+        renderValue: @Composable (T) -> Unit,
+        renderValueExposed: @Composable (T) -> Unit = renderValue,
+        modifier: Modifier = Modifier,
+        enabled: Boolean = true,
     ) {
         Box(modifier, contentAlignment = Alignment.Center) {
             var expanded by rememberSaveable { mutableStateOf(false) }
@@ -285,12 +307,12 @@ object PlayerControllerDefaults {
                 { expanded = true },
                 colors = ButtonDefaults.textButtonColors(
                     contentColor = LocalContentColor.current
-                )
+                ),
+                enabled = enabled
             ) {
-                Text(remember(value) { if (value == 1.0f) "倍速" else """${value}x""" }, style = style)
+                renderValueExposed(value)
             }
 
-            // TODO: Replace SpeedSwitcher dropdown with a side sheet in the future 
             DropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false },
@@ -299,15 +321,14 @@ object PlayerControllerDefaults {
                 for (option in options) {
                     DropdownMenuItem(
                         text = {
-                            Text(
-                                remember(option) { "${option}x" },
-                                color =
-                                if (value == option) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    LocalContentColor.current
-                                }
-                            )
+                            val color = if (value == option) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                LocalContentColor.current
+                            }
+                            CompositionLocalProvider(LocalContentColor provides color) {
+                                renderValue(option)
+                            }
                         },
                         onClick = {
                             expanded = false

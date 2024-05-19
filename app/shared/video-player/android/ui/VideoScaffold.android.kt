@@ -39,6 +39,7 @@ import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults.SpeedSwitcher
 import me.him188.ani.app.videoplayer.ui.progress.ProgressIndicator
 import me.him188.ani.app.videoplayer.ui.progress.ProgressSlider
+import me.him188.ani.app.videoplayer.ui.progress.SubtitleSwitcher
 import me.him188.ani.app.videoplayer.ui.progress.rememberProgressSliderState
 import me.him188.ani.app.videoplayer.ui.state.DummyPlayerState
 import me.him188.ani.app.videoplayer.ui.state.togglePause
@@ -196,6 +197,7 @@ private fun PreviewVideoScaffoldImpl(
                     }
                 },
                 endActions = {
+                    PlayerControllerDefaults.SubtitleSwitcher(playerState.subtitleTracks)
                     val speed by playerState.playbackSpeed.collectAsStateWithLifecycle()
                     SpeedSwitcher(
                         speed,

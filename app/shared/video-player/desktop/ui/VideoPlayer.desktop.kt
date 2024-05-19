@@ -20,10 +20,14 @@ import me.him188.ani.app.videoplayer.data.VideoSource
 import me.him188.ani.app.videoplayer.io.SeekableInputCallbackMedia
 import me.him188.ani.app.videoplayer.ui.VlcjVideoPlayerState.VlcjData
 import me.him188.ani.app.videoplayer.ui.state.AbstractPlayerState
+import me.him188.ani.app.videoplayer.ui.state.Label
+import me.him188.ani.app.videoplayer.ui.state.MutableTrackGroup
 import me.him188.ani.app.videoplayer.ui.state.PlaybackState
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
+import me.him188.ani.app.videoplayer.ui.state.SubtitleTrack
 import me.him188.ani.utils.io.SeekableInput
 import me.him188.ani.utils.logging.error
+import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import uk.co.caprica.vlcj.factory.discovery.NativeDiscovery
 import uk.co.caprica.vlcj.media.Media
@@ -164,6 +168,16 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
             override fun playing(mediaPlayer: MediaPlayer) {
                 state.value = PlaybackState.PLAYING
                 player.submit { player.media().parsing().parse() }
+
+                subtitleTracks.candidates.value = player.subpictures().trackDescriptions()
+                    .filterNot { it.id() == -1 } // "Disable"
+                    .map {
+                        SubtitleTrack(
+                            openResource.value?.videoData?.filename + "-" + it.id(),
+                            null,
+                            listOf(Label(null, it.description()))
+                        )
+                    }
             }
 
             override fun paused(mediaPlayer: MediaPlayer) {
@@ -184,6 +198,34 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
             while (true) {
                 currentPositionMillis.value = player.status().time()
                 delay(0.1.seconds)
+            }
+        }
+        backgroundScope.launch {
+            subtitleTracks.current.collect { track ->
+                try {
+                    if (state.value == PlaybackState.READY) {
+                        return@collect
+                    }
+                    if (track == null) {
+                        if (player.subpictures().track() != -1) {
+                            player.subpictures().setTrack(-1)
+                        }
+                        return@collect
+                    }
+                    val id = track.id.substringAfterLast("-").toIntOrNull() ?: run {
+                        logger.error { "Invalid subtitle track id: ${track.id}" }
+                        return@collect
+                    }
+                    val count = player.subpictures().trackCount()
+                    if (id > count) {
+                        logger.error { "Invalid subtitle track id: $id, count: $count" }
+                        return@collect
+                    }
+                    player.subpictures().setTrack(id)
+                    logger.info { "Set subtitle track to $id (${track.labels.firstOrNull()})" }
+                } catch (e: Throwable) {
+                    logger.error(e) { "Exception while setting subtitle track" }
+                }
             }
         }
     }
@@ -215,6 +257,8 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
     override fun seekTo(positionMillis: Long) {
         player.controls().setTime(positionMillis)
     }
+
+    override val subtitleTracks: MutableTrackGroup<SubtitleTrack> = MutableTrackGroup()
 
 }
 

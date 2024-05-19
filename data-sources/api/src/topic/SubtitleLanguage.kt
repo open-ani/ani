@@ -57,7 +57,8 @@ sealed class SubtitleLanguage(
                 "Zh-Hans",
                 "Zh_Hans",
                 "zh_cn",
-                "SC"
+                "SC",
+                "zh"
             )
 
         override fun matches(text: String): Boolean {
@@ -88,7 +89,9 @@ sealed class SubtitleLanguage(
         }
     }
 
-    object Other : SubtitleLanguage("Other", "其他") {
+    class Other(
+        displayName: String
+    ) : SubtitleLanguage("Other", displayName) {
         override fun matches(text: String): Boolean {
             return true
         }

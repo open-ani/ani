@@ -43,6 +43,7 @@ import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults.SpeedSwitcher
 import me.him188.ani.app.videoplayer.ui.progress.ProgressIndicator
 import me.him188.ani.app.videoplayer.ui.progress.ProgressSlider
+import me.him188.ani.app.videoplayer.ui.progress.SubtitleSwitcher
 import me.him188.ani.app.videoplayer.ui.progress.rememberProgressSliderState
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.app.videoplayer.ui.state.togglePause
@@ -203,6 +204,7 @@ internal fun EpisodeVideoImpl(
                 },
                 danmakuEditor = danmakuEditor,
                 endActions = {
+                    PlayerControllerDefaults.SubtitleSwitcher(playerState.subtitleTracks)
                     val speed by playerState.playbackSpeed.collectAsStateWithLifecycle()
                     SpeedSwitcher(
                         speed,

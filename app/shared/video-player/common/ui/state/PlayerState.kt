@@ -123,6 +123,8 @@ interface PlayerState {
      */
     @UiThread
     fun seekTo(positionMillis: Long)
+
+    val subtitleTracks: TrackGroup<SubtitleTrack>
 }
 
 fun PlayerState.togglePause() {
@@ -350,4 +352,6 @@ class DummyPlayerState : AbstractPlayerState<AbstractPlayerState.Data>(EmptyCoro
     override fun seekTo(positionMillis: Long) {
         this.currentPositionMillis.value = positionMillis
     }
+
+    override val subtitleTracks: TrackGroup<SubtitleTrack> = emptyTrackGroup()
 }
