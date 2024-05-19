@@ -110,6 +110,9 @@ fun AniAppContent(aniNavigator: AniNavigator) {
                     onClickGlobalCacheSettings = {
                         aniNavigator.navigatePreferences(PreferenceTab.MEDIA)
                     },
+                    onClickGlobalCacheManage = {
+                        aniNavigator.navigateCaches()
+                    }
                 )
             }
         }

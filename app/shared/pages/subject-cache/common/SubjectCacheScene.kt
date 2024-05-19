@@ -151,6 +151,7 @@ private val emptyDefaultSubjectCacheState = DefaultSubjectCacheState(emptyList()
 fun SubjectCacheScene(
     vm: SubjectCacheViewModel,
     onClickGlobalCacheSettings: () -> Unit,
+    onClickGlobalCacheManage: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val state by vm.state.collectAsStateWithLifecycle(emptyDefaultSubjectCacheState)
@@ -164,6 +165,7 @@ fun SubjectCacheScene(
             Text(title.orEmpty(), Modifier.placeholder(title == null))
         },
         onClickGlobalCacheSettings,
+        onClickGlobalCacheManage,
         onDeleteCache = { episodeCacheState ->
             vm.deleteCache(episodeCacheState.episodeId)
         },
