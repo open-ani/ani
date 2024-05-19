@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.data.media.MediaCacheManager
+import me.him188.ani.app.ui.feedback.ErrorMessage
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.subject.episode.mediaFetch.testMediaList
 import me.him188.ani.datasources.api.CachedMedia
@@ -66,9 +67,9 @@ private fun createTestVM() = object : CacheManagementPageViewModel {
         MediaCachePresentation(testMediaCache1),
         MediaCachePresentation(testMediaCache2)
     )
+    override val errorMessage = MutableStateFlow<ErrorMessage?>(null)
 
-    override fun delete(item: MediaCachePresentation): Boolean {
-        return true
+    override fun delete(item: MediaCachePresentation) {
     }
 }
 

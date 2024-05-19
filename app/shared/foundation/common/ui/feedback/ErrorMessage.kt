@@ -1,17 +1,24 @@
 package me.him188.ani.app.ui.feedback
 
 import androidx.annotation.UiThread
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -125,6 +132,12 @@ fun ErrorDialogHost(
         ConnectingDialog(
             text = {
                 Text(text = error?.message ?: "Operation failed, please try again")
+                val cause = error?.cause
+                if (cause != null) {
+                    Column(Modifier.heightIn(max = 360.dp).verticalScroll(rememberScrollState())) {
+                        Text(text = cause.stackTraceToString())
+                    }
+                }
             },
             progress = if (error?.isRecovering == true) {
                 {
@@ -138,6 +151,14 @@ fun ErrorDialogHost(
             },
             confirmButton = {
                 if (error?.isRecovering == false) {
+                    if (error.cause != null) {
+                        val clipboardManager = LocalClipboardManager.current
+                        TextButton(onClick = {
+                            clipboardManager.setText(AnnotatedString("删除缓存失败\n\n" + error.cause?.stackTraceToString()))
+                        }) {
+                            Text("复制")
+                        }
+                    }
                     TextButton(onClick = {
                         controller.hide()
                         error.onConfirm?.invoke()
@@ -189,6 +210,7 @@ fun ErrorDialogHost(
 /**
  * An error message to be presented.
  */
+@Stable
 interface ErrorMessage {
     val message: String?
     val cause: Throwable?

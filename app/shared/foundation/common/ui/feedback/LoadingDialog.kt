@@ -3,7 +3,6 @@ package me.him188.ani.app.ui.loading
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -61,7 +60,7 @@ fun ConnectingDialog(
             verticalArrangement = Arrangement.Center,
         ) {
             text?.let {
-                Box(modifier = Modifier.width(IntrinsicSize.Max)) {
+                Column(modifier = Modifier.width(IntrinsicSize.Max)) {
                     ProvideTextStyle(value = MaterialTheme.typography.titleMedium) {
                         CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
                             text()

@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.DialogProperties
 import io.ktor.util.logging.error
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
@@ -133,16 +134,24 @@ class SubjectCacheViewModel(
     }
 
     fun deleteCache(episodeId: Int) {
-        launchInBackground {
+        if (errorMessage.value != null) return
+        val job = launchInBackground(start = CoroutineStart.LAZY) {
             val epString = episodeId.toString()
-            for (storage in cacheManager.enabledStorages.first()) {
-                for (mediaCache in storage.listFlow.first()) {
-                    if (mediaCache.metadata.episodeId == epString) {
-                        storage.delete(mediaCache)
+            try {
+                for (storage in cacheManager.enabledStorages.first()) {
+                    for (mediaCache in storage.listFlow.first()) {
+                        if (mediaCache.metadata.episodeId == epString) {
+                            storage.delete(mediaCache)
+                        }
                     }
                 }
+                errorMessage.value = null
+            } catch (e: Exception) {
+                errorMessage.value = ErrorMessage.simple("删除缓存失败", e)
             }
         }
+        errorMessage.value = ErrorMessage.processing("正在删除缓存", onCancel = { job.cancel() })
+        job.start()
     }
 }
 

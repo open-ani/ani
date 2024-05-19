@@ -31,6 +31,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
@@ -38,6 +41,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.media.MediaCacheManager
+import me.him188.ani.app.ui.feedback.ErrorDialogHost
+import me.him188.ani.app.ui.feedback.ErrorMessage
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.TopAppBarGoBackButton
 import me.him188.ani.app.ui.foundation.rememberViewModel
@@ -56,7 +61,9 @@ interface CacheManagementPageViewModel {
     val overallStats: MediaStats
     val storages: List<MediaCacheStorageState>?
     val accumulatedList: List<MediaCachePresentation>?
-    fun delete(item: MediaCachePresentation): Boolean
+
+    val errorMessage: StateFlow<ErrorMessage?>
+    fun delete(item: MediaCachePresentation)
 }
 
 @Stable
@@ -97,6 +104,7 @@ class CacheManagementPageViewModelImpl : CacheManagementPageViewModel,
                 }
         }.produceState(null)
     }
+    override val errorMessage = MutableStateFlow<ErrorMessage?>(null)
 
     private fun mapCacheToItem(list: List<MediaCache>): List<MediaCachePresentation> {
         return list.map { cache ->
@@ -108,16 +116,21 @@ class CacheManagementPageViewModelImpl : CacheManagementPageViewModel,
         }
     }
 
-    override fun delete(item: MediaCachePresentation): Boolean {
-        if (items.remove(item.cache) == null) {
-            return false
-        }
-        backgroundScope.launch {
-            storages.forEach { storage ->
-                storage.storage.delete(item.cache)
+    override fun delete(item: MediaCachePresentation) {
+        if (errorMessage.value != null) return
+        val job = backgroundScope.launch(start = CoroutineStart.LAZY) {
+            try {
+                storages.forEach { storage ->
+                    storage.storage.delete(item.cache)
+                }
+                items.remove(item.cache)
+                errorMessage.value = null
+            } catch (e: Exception) {
+                errorMessage.value = ErrorMessage.simple("删除缓存失败", e)
             }
         }
-        return true
+        errorMessage.value = ErrorMessage.processing("正在删除缓存", onCancel = { job.cancel() })
+        job.start()
     }
 }
 
@@ -165,6 +178,7 @@ fun CacheManagementPage(
                         Text("还未缓存任何内容", style = MaterialTheme.typography.titleMedium)
                     }
                 }
+                ErrorDialogHost(vm.errorMessage)
                 StorageManagerView(
                     list ?: emptyList(),
                     onDelete = { item ->
