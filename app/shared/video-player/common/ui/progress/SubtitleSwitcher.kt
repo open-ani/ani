@@ -26,7 +26,7 @@ class SubtitleTrackState(
 ) : AbstractViewModel() {
     val options = candidates.map { tracks ->
         tracks.map { track ->
-            SubtitlePresentation(track, track.subtitleLanguage.displayName)
+            SubtitlePresentation(track, track.subtitleLanguage)
         }
     }.flowOn(Dispatchers.Default).shareInBackground()
 
