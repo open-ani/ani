@@ -1,43 +1,9 @@
 package me.him188.ani.datasources.core.cache
 
-import androidx.compose.runtime.Stable
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flowOf
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaCacheMetadata
-import me.him188.ani.datasources.api.topic.FileSize
-import me.him188.ani.datasources.api.topic.sum
 import kotlin.coroutines.CoroutineContext
-
-@Stable
-interface MediaStats {
-    /**
-     * Total amount of bytes uploaded
-     */
-    val uploaded: Flow<FileSize>
-    val downloaded: Flow<FileSize>
-
-    val uploadRate: Flow<FileSize>
-    val downloadRate: Flow<FileSize>
-}
-
-fun Iterable<MediaStats>.sum(): MediaStats = object : MediaStats {
-    override val uploaded: Flow<FileSize> = combine(map { it.uploaded }) { list -> list.sum() }
-    override val downloaded: Flow<FileSize> = combine(map { it.downloaded }) { list -> list.sum() }
-    override val uploadRate: Flow<FileSize> = combine(map { it.uploadRate }) { list -> list.sum() }
-    override val downloadRate: Flow<FileSize> = combine(map { it.downloadRate }) { list -> list.sum() }
-}
-
-/**
- * Only for tests
- */
-fun emptyMediaStats() = object : MediaStats {
-    override val uploaded: Flow<FileSize> = flowOf(FileSize.Zero)
-    override val downloaded: Flow<FileSize> = flowOf(FileSize.Zero)
-    override val uploadRate: Flow<FileSize> = flowOf(FileSize.Zero)
-    override val downloadRate: Flow<FileSize> = flowOf(FileSize.Zero)
-}
 
 /**
  * 媒体缓存引擎, 处理 [MediaCache] 的创建与恢复, 以及实际的下载操作.
