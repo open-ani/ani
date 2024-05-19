@@ -47,8 +47,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -125,8 +125,12 @@ fun SubjectCollectionsColumn(
                     Modifier.then(
                         if (LocalIsPreviewing.current) { // 预览模式下无动画
                             Modifier
-                        } else
-                            Modifier.alpha(alpha)
+                        } else {
+                            // improves performance than `.alpha()`
+                            Modifier.graphicsLayer {
+                                this.alpha = alpha
+                            }
+                        }
                     ).animateItemPlacement()
                 ) {
                     item(collection)
