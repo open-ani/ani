@@ -180,7 +180,7 @@ fun SubjectCachePage(
 @Composable
 private fun PreferenceScope.AutoCacheGroup(onClickGlobalCacheSettings: () -> Unit) {
     Group(
-        title = { Text("自动预缓存") },
+        title = { Text("自动缓存") },
         description = {
             Text("自动缓存未观看的剧集")
         }
