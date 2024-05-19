@@ -827,7 +827,7 @@ fun PreferenceScope.SwitchItem(
     enabled: Boolean = true,
 ) {
     SwitchItem(
-        { onCheckedChange(!checked) },
+        { if (enabled) onCheckedChange(!checked) },
         title,
         modifier,
         description,
