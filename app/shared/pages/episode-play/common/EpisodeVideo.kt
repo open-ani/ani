@@ -68,6 +68,7 @@ internal fun EpisodeVideoImpl(
     videoLoadingState: () -> VideoLoadingState,
     danmakuConfig: () -> DanmakuConfig,
     onClickFullScreen: () -> Unit,
+    onExitFullscreen: () -> Unit,
     danmakuEnabled: () -> Boolean,
     setDanmakuEnabled: (enabled: Boolean) -> Unit,
     danmakuEditor: @Composable (RowScope.() -> Unit),
@@ -159,7 +160,8 @@ internal fun EpisodeVideoImpl(
                 },
                 onToggleFullscreen = {
                     onClickFullScreen()
-                }
+                },
+                onExitFullscreen = onExitFullscreen,
             )
         },
         floatingMessage = {

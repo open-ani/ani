@@ -285,6 +285,10 @@ private fun EpisodeVideo(
                 context.setRequestFullScreen(true)
             }
         },
+        onExitFullscreen = {
+            context.setRequestFullScreen(false)
+            vm.isFullscreen = false
+        },
         danmakuEnabled = { danmakuEnabled },
         setDanmakuEnabled = { vm.launchInBackground { danmaku.setEnabled(it) } },
         danmakuEditor = {

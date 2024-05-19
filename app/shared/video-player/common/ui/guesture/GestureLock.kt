@@ -128,6 +128,7 @@ fun LockableVideoGestureHost(
     modifier: Modifier = Modifier,
     onTogglePauseResume: () -> Unit = {},
     onToggleFullscreen: () -> Unit = {},
+    onExitFullscreen: () -> Unit = {},
 ) {
     if (locked) {
         LockedScreenGestureHost(controllerVisible, setControllerVisible, modifier)
@@ -145,6 +146,7 @@ fun LockableVideoGestureHost(
             },
             onTogglePauseResume = onTogglePauseResume,
             onToggleFullscreen = onToggleFullscreen,
+            onExitFullscreen = onExitFullscreen,
         )
     }
 }

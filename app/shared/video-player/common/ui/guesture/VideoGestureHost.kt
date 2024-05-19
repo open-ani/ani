@@ -57,6 +57,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
@@ -358,6 +359,7 @@ enum class GestureFamily(
     val keyboardUpDownForVolume: Boolean = true,
     val keyboardLeftRightToSeek: Boolean = true,
     val mouseHoverForController: Boolean = true,
+    val escToExitFullscreen: Boolean = true,
 ) {
     TOUCH(
         clickToPauseResume = false,
@@ -392,6 +394,7 @@ fun VideoGestureHost(
     onToggleControllerVisibility: (setVisible: Boolean?) -> Unit = {},
     onTogglePauseResume: () -> Unit = {},
     onToggleFullscreen: () -> Unit = {},
+    onExitFullscreen: () -> Unit = {},
 ) {
     val onTogglePauseResumeState by rememberUpdatedState(onTogglePauseResume)
     val onToggleControllerVisibilityState by rememberUpdatedState(onToggleControllerVisibility)
@@ -424,9 +427,12 @@ fun VideoGestureHost(
 
         val indicatorTasker = rememberUiMonoTasker()
         val focusRequester = remember { FocusRequester() }
+        val manager = LocalFocusManager.current
+        val keyboardFocus = remember { FocusRequester() } // focus 了才能用键盘快捷键
 
         Box(
             modifier
+                .focusRequester(keyboardFocus)
                 .padding(top = 60.dp)
                 .ifThen(family.swipeToSeek) {
                     swipeToSeek(seekerState, Orientation.Horizontal)
@@ -460,10 +466,19 @@ fun VideoGestureHost(
                     val scope = rememberUiMonoTasker()
                     onPointerEventMultiplatform(PointerEventType.Move) { events ->
                         onToggleControllerVisibilityState(true)
+                        keyboardFocus.requestFocus()
                         scope.launch {
                             delay(3000)
                             onToggleControllerVisibilityState(false)
                         }
+                    }
+                }
+                .ifThen(family.escToExitFullscreen) {
+                    onKey(ComposeKey.Escape) {
+                        if (needWorkaroundForFocusManager) {
+                            manager.clearFocus()
+                        }
+                        onExitFullscreen()
                     }
                 }
                 .fillMaxSize()
@@ -473,7 +488,7 @@ fun VideoGestureHost(
                     .ifThen(needWorkaroundForFocusManager) {
                         onFocusEvent {
                             if (it.hasFocus) {
-                                focusRequester.requestFocus() // 随便转移走就行
+                                focusRequester.requestFocus()
                             }
                         }
                     }
@@ -493,6 +508,9 @@ fun VideoGestureHost(
                         },
                         onDoubleClick = remember(family, onToggleFullscreen) {
                             {
+                                if (needWorkaroundForFocusManager) {
+                                    manager.clearFocus()
+                                }
                                 if (family.doubleClickToFullscreen) {
                                     onToggleFullscreen()
                                 }
