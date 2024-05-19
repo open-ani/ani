@@ -9,6 +9,7 @@ import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.core.fetch.MediaFetcher
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.absoluteValue
 
 /**
@@ -164,7 +165,7 @@ interface MediaCache {
      * Deletes the cache.
      *
      * This function must close every using resources cleanup potential cache files,
-     * and must not throw.
+     * and must not throw (except for [CancellationException]).
      */
     suspend fun delete()
 }

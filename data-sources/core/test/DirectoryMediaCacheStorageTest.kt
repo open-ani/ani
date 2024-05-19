@@ -78,7 +78,7 @@ class DirectoryMediaCacheStorageTest {
 
         override suspend fun createCache(
             origin: Media,
-            request: MediaCacheMetadata,
+            metadata: MediaCacheMetadata,
             parentContext: CoroutineContext
         ): MediaCache {
             return TestMediaCache(
@@ -87,7 +87,7 @@ class DirectoryMediaCacheStorageTest {
                     CACHE_MEDIA_SOURCE_ID,
                     download = origin.download,
                 ),
-                metadata = request.withExtra(mapOf("testExtra" to "1")),
+                metadata = metadata.withExtra(mapOf("testExtra" to "1")),
             )
         }
 

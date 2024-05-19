@@ -27,6 +27,7 @@ import kotlinx.coroutines.SupervisorJob
 import me.him188.ani.app.data.danmaku.DanmakuManager
 import me.him188.ani.app.data.danmaku.DanmakuManagerImpl
 import me.him188.ani.app.data.media.DefaultMediaAutoCacheService
+import me.him188.ani.app.data.media.DummyMediaCacheEngine
 import me.him188.ani.app.data.media.MediaAutoCacheService
 import me.him188.ani.app.data.media.MediaCacheManager
 import me.him188.ani.app.data.media.MediaCacheManagerImpl
@@ -115,18 +116,35 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
             }
         }
 
+        val engines = get<TorrentManager>().engines
         MediaCacheManagerImpl(
-            get<TorrentManager>().engines.map { engine ->
-                DirectoryMediaCacheStorage(
-                    mediaSourceId = id,
-                    metadataDir = getMediaMetadataDir(engine.type.id)
-                        .toPath().apply { createDirectories() },
-                    engine = TorrentMediaCacheEngine(
-                        mediaSourceId = id,
-                        torrentEngine = engine,
-                    ),
-                    coroutineScope.childScopeContext(),
-                )
+            storagesIncludingDisabled = buildList(capacity = engines.size) {
+                if (DummyMediaCacheEngine.isEnabled) {
+                    // 注意, 这个必须要在第一个, 见 [DefaultTorrentManager.engines] 注释
+                    add(
+                        DirectoryMediaCacheStorage(
+                            mediaSourceId = "test-in-memory",
+                            metadataDir = getMediaMetadataDir("test-in-memory")
+                                .toPath().apply { createDirectories() },
+                            engine = DummyMediaCacheEngine("test-in-memory"),
+                            coroutineScope.childScopeContext(),
+                        )
+                    )
+                }
+                for (engine in engines) {
+                    add(
+                        DirectoryMediaCacheStorage(
+                            mediaSourceId = id,
+                            metadataDir = getMediaMetadataDir(engine.type.id)
+                                .toPath().apply { createDirectories() },
+                            engine = TorrentMediaCacheEngine(
+                                mediaSourceId = id,
+                                torrentEngine = engine,
+                            ),
+                            coroutineScope.childScopeContext(),
+                        )
+                    )
+                }
             }
         )
     }

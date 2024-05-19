@@ -61,7 +61,7 @@ interface MediaCacheEngine {
      */
     suspend fun createCache(
         origin: Media,
-        request: MediaCacheMetadata,
+        metadata: MediaCacheMetadata,
         parentContext: CoroutineContext
     ): MediaCache
 

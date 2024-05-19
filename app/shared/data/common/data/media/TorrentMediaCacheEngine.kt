@@ -31,6 +31,7 @@ import me.him188.ani.datasources.api.MediaCacheMetadata
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.datasources.api.topic.ResourceLocation
+import me.him188.ani.datasources.core.cache.AbstractMediaStats
 import me.him188.ani.datasources.core.cache.MediaCache
 import me.him188.ani.datasources.core.cache.MediaCacheEngine
 import me.him188.ani.datasources.core.cache.MediaStats
@@ -163,6 +164,7 @@ class TorrentMediaCacheEngine(
             }
             val handle = lazyFileHandle.handle.first() ?: kotlin.run {
                 // did not even selected a file
+                logger.info { "Deleting torrent cache: No file selected" }
                 lazyFileHandle.scope.coroutineContext.job.cancelAndJoin()
                 return
             }
@@ -184,7 +186,7 @@ class TorrentMediaCacheEngine(
 
     override val isEnabled: Flow<Boolean> get() = torrentEngine.isEnabled
 
-    override val stats: MediaStats = object : MediaStats {
+    override val stats: MediaStats = object : AbstractMediaStats() {
         override val uploaded: Flow<FileSize> =
             flow { emit(torrentEngine.getDownloader()) }
                 .flatMapLatest { it?.totalUploaded ?: flowOf(0L) }
@@ -246,6 +248,10 @@ class TorrentMediaCacheEngine(
                 episodeSort = metadata.episodeSort,
                 episodeEp = metadata.episodeEp,
             )
+
+            if (selectedFile == null) {
+                logger.warn { "No file selected for ${metadata.episodeName}" }
+            }
 
             val handle = selectedFile?.createHandle()
             if (handle == null) {

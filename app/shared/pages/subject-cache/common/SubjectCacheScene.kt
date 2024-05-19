@@ -1,6 +1,7 @@
 package me.him188.ani.app.ui.subject.cache
 
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -12,6 +13,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.window.DialogProperties
 import io.ktor.util.logging.error
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -182,26 +184,33 @@ fun SubjectCacheScene(
             var selectedMedia by remember(vm.subjectId, episodeCacheState.episodeId) { mutableStateOf<Media?>(null) }
 
             if (selectedMedia != null) {
-                MediaCacheStorageSelector(
-                    remember(vm) { MediaCacheStorageSelectorState(vm.cacheStorages) },
-                    onSelect = { storage ->
-                        selectedMedia?.let { media ->
-                            vm.launchInBackground {
-                                addCache(
-                                    media,
-                                    metadata = { epFetch.mediaFetchSession.map { it.request }.first() },
-                                    storage
-                                )
-                                withContext(Dispatchers.Main) {
-                                    dismissSelector()
+                BasicAlertDialog(
+                    {},
+                    properties = DialogProperties(
+                        dismissOnBackPress = false, dismissOnClickOutside = false
+                    )
+                ) {
+                    MediaCacheStorageSelector(
+                        remember(vm) { MediaCacheStorageSelectorState(vm.cacheStorages) },
+                        onSelect = { storage ->
+                            selectedMedia?.let { media ->
+                                vm.launchInBackground {
+                                    addCache(
+                                        media,
+                                        metadata = { epFetch.mediaFetchSession.map { it.request }.first() },
+                                        storage
+                                    )
+                                    withContext(Dispatchers.Main) {
+                                        dismissSelector()
+                                    }
                                 }
                             }
+                        },
+                        onDismissRequest = {
+                            selectedMedia = null
                         }
-                    },
-                    onDismissRequest = {
-                        selectedMedia = null
-                    }
-                )
+                    )
+                }
             }
 
             ModalBottomSheet(
