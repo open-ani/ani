@@ -39,6 +39,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -51,10 +52,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
@@ -421,42 +423,11 @@ fun VideoGestureHost(
         }
 
         val indicatorTasker = rememberUiMonoTasker()
-        val focusManager by rememberUpdatedState(LocalFocusManager.current) // workaround for #288
+        val focusRequester = remember { FocusRequester() }
 
         Box(
             modifier
-                .ifThen(needWorkaroundForFocusManager) {
-                    onFocusEvent {
-                        if (it.hasFocus) {
-                            focusManager.clearFocus()
-                        }
-                    }
-                }
                 .padding(top = 60.dp)
-                .combinedClickable(
-                    remember { MutableInteractionSource() },
-                    indication = null,
-                    onClick = remember(family) {
-                        {
-                            if (family.clickToPauseResume) {
-                                onTogglePauseResumeState()
-                            }
-                            if (family.clickToToggleController) {
-                                onToggleControllerVisibilityState(null)
-                            }
-                        }
-                    },
-                    onDoubleClick = remember(family, onToggleFullscreen) {
-                        {
-                            if (family.doubleClickToFullscreen) {
-                                onToggleFullscreen()
-                            }
-                            if (family.doubleClickToPauseResume) {
-                                onTogglePauseResumeState()
-                            }
-                        }
-                    },
-                )
                 .ifThen(family.swipeToSeek) {
                     swipeToSeek(seekerState, Orientation.Horizontal)
                 }
@@ -497,7 +468,44 @@ fun VideoGestureHost(
                 }
                 .fillMaxSize()
         ) {
-            Row(Modifier.matchParentSize()) {
+            Box(
+                Modifier
+                    .ifThen(needWorkaroundForFocusManager) {
+                        onFocusEvent {
+                            if (it.hasFocus) {
+                                focusRequester.requestFocus() // 随便转移走就行
+                            }
+                        }
+                    }
+                    .matchParentSize()
+                    .combinedClickable(
+                        remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = remember(family) {
+                            {
+                                if (family.clickToPauseResume) {
+                                    onTogglePauseResumeState()
+                                }
+                                if (family.clickToToggleController) {
+                                    onToggleControllerVisibilityState(null)
+                                }
+                            }
+                        },
+                        onDoubleClick = remember(family, onToggleFullscreen) {
+                            {
+                                if (family.doubleClickToFullscreen) {
+                                    onToggleFullscreen()
+                                }
+                                if (family.doubleClickToPauseResume) {
+                                    onTogglePauseResumeState()
+                                }
+                            }
+                        },
+                    )
+
+            )
+
+            Row(Modifier.focusRequester(focusRequester).matchParentSize()) {
                 Box(Modifier
                     .ifThen(family.swipeLhsForBrightness) {
                         brightnessLevelController?.let { controller ->
@@ -542,6 +550,10 @@ fun VideoGestureHost(
                     .weight(1f)
                     .fillMaxHeight()
                 )
+            }
+
+            SideEffect {
+                focusRequester.requestFocus()
             }
         }
     }
