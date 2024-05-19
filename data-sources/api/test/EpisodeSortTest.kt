@@ -1,5 +1,6 @@
 package me.him188.ani.datasources.api
 
+import me.him188.ani.test.permutedSequence
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
 import kotlin.test.assertEquals
@@ -102,25 +103,9 @@ class EpisodeSortTest {
         "int with sp" to listOf(ep(1), ep(3), ep("SP1")),
         "float with sp" to listOf(ep("1.5"), ep(3), ep("SP1")),
     ).flatMap { (name, sorted) ->
-        permute(sorted).map { unsorted ->
+        sorted.permutedSequence().map { unsorted ->
             DynamicTest.dynamicTest("$name: $unsorted => $sorted") {
                 assertEquals(sorted, unsorted.sorted())
-            }
-        }
-    }
-}
-
-
-private fun <T> permute(list: List<T>): Sequence<List<T>> {
-    if (list.size == 1) return sequenceOf(list)
-    return sequence {
-        for (i in list.indices) {
-            val first = list[i]
-            val remaining = list.toMutableList()
-            remaining.removeAt(i)
-            val remainingPermutations = permute(remaining)
-            for (p in remainingPermutations) {
-                yield(listOf(first) + p)
             }
         }
     }
