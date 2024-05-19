@@ -28,7 +28,7 @@ private fun PreviewSubjectCachePage() {
                         EpisodeCacheState(
                             2,
                             sort = EpisodeSort(2),
-                            title = "第二集的标题",
+                            title = "第二集的标题第二集的标题第二集的标题第二集的标题第二集的标题第二集的标题第二集的标题第二集的标题",
                             watchStatus = UnifiedCollectionType.DONE,
                             EpisodeCacheStatus.Caching(progress = 0.3f, totalSize = 300.megaBytes),
                             hasPublished = true,
@@ -36,7 +36,7 @@ private fun PreviewSubjectCachePage() {
                         EpisodeCacheState(
                             3,
                             sort = EpisodeSort(3),
-                            title = "第三集的标题",
+                            title = "第三集的标题第三集的标题第三集的标题第三集的标题第三集的标题第三集的标题第三集的标题第三集的标题",
                             watchStatus = UnifiedCollectionType.DOING,
                             cacheStatus = EpisodeCacheStatus.NotCached,
                             hasPublished = true,

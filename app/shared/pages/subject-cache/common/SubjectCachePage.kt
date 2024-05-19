@@ -40,6 +40,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
 import me.him188.ani.app.data.media.EpisodeCacheStatus
@@ -306,7 +307,7 @@ private fun PreferenceScope.EpisodeItem(
         },
         title = {
             CompositionLocalProvider(LocalContentColor provides colorByWatchStatus) {
-                Text(episode.title)
+                Text(episode.title, Modifier.weight(1f), overflow = TextOverflow.Ellipsis)
 
                 when (episode.watchStatus) {
                     UnifiedCollectionType.DONE -> {
