@@ -12,10 +12,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ViewList
 import androidx.compose.material.icons.rounded.ArrowOutward
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.DownloadDone
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -99,6 +101,14 @@ fun SubjectCachePage(
                 navigationIcon = {
                     TopAppBarGoBackButton()
                 },
+                actions = {
+                    IconButton(
+                        onClick = onClickGlobalCacheSettings,
+                        content = {
+                            Icon(Icons.Rounded.Settings, "查看全局设置")
+                        }
+                    )
+                }
             )
         }
     ) { paddingValues ->
@@ -194,18 +204,10 @@ private fun PreferenceScope.AutoCacheGroup(onClickGlobalCacheSettings: () -> Uni
             enabled = false,
         )
 
-        AnimatedVisibility(useGlobalSettings) {
-            TextItem(
-                title = { Text("查看全局设置") },
-                icon = { Icon(Icons.Rounded.ArrowOutward, null) },
-                onClick = onClickGlobalCacheSettings,
-            )
-        }
-
         AnimatedVisibility(!useGlobalSettings) {
             var sliderValue by remember { mutableFloatStateOf(0f) }
             SliderItem(
-                title = { Text("最大预缓存话数") },
+                title = { Text("最大自动缓存话数") },
                 description = {
                     Row {
                         Text(remember(sliderValue) { autoCacheDescription(sliderValue) })
@@ -223,7 +225,22 @@ private fun PreferenceScope.AutoCacheGroup(onClickGlobalCacheSettings: () -> Uni
                     enabled = !useGlobalSettings,
                 )
             }
+            HorizontalDividerItem()
         }
+
+        AnimatedVisibility(useGlobalSettings) {
+            TextItem(
+                title = { Text("查看全局设置") },
+                icon = { Icon(Icons.Rounded.ArrowOutward, null) },
+                onClick = onClickGlobalCacheSettings,
+            )
+        }
+
+        TextItem(
+            title = { Text("管理全部缓存") },
+            icon = { Icon(Icons.AutoMirrored.Rounded.ViewList, null) },
+            onClick = onClickGlobalCacheSettings,
+        )
     }
 }
 
