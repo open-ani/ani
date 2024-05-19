@@ -189,23 +189,23 @@ class TorrentMediaCacheEngine(
             flow { emit(torrentEngine.getDownloader()) }
                 .flatMapLatest { it?.totalUploaded ?: flowOf(0L) }
                 .map { it.bytes }
-                .flowOn(Dispatchers.Main)
+                .flowOn(Dispatchers.Default)
         override val downloaded: Flow<FileSize> =
             flow { emit(torrentEngine.getDownloader()) }
                 .flatMapLatest { it?.totalDownloaded ?: flowOf(0L) }
                 .map { it.bytes }
-                .flowOn(Dispatchers.Main)
+                .flowOn(Dispatchers.Default)
 
         override val uploadRate: Flow<FileSize> =
             flow { emit(torrentEngine.getDownloader()) }
                 .flatMapLatest { it?.totalUploadRate ?: flowOf(0L) }
                 .map { it.bytes }
-                .flowOn(Dispatchers.Main)
+                .flowOn(Dispatchers.Default)
         override val downloadRate: Flow<FileSize> =
             flow { emit(torrentEngine.getDownloader()) }
                 .flatMapLatest { it?.totalDownloadRate ?: flowOf(0L) }
                 .map { it.bytes }
-                .flowOn(Dispatchers.Main)
+                .flowOn(Dispatchers.Default)
     }
 
     @OptIn(ExperimentalStdlibApi::class)
