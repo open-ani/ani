@@ -30,7 +30,9 @@ import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaCacheMetadata
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
+import me.him188.ani.datasources.api.topic.OptionalFileSize
 import me.him188.ani.datasources.api.topic.ResourceLocation
+import me.him188.ani.datasources.api.topic.asOptional
 import me.him188.ani.datasources.core.cache.MediaCache
 import me.him188.ani.datasources.core.cache.MediaCacheEngine
 import me.him188.ani.datasources.core.cache.MediaStats
@@ -185,27 +187,36 @@ class TorrentMediaCacheEngine(
     override val isEnabled: Flow<Boolean> get() = torrentEngine.isEnabled
 
     override val stats: MediaStats = object : MediaStats {
-        override val uploaded: Flow<FileSize> =
+        override val uploaded: Flow<OptionalFileSize> =
             flow { emit(torrentEngine.getDownloader()) }
                 .flatMapLatest { it?.totalUploaded ?: flowOf(0L) }
-                .map { it.bytes }
+                .map { it.bytes.asOptional() }
                 .flowOn(Dispatchers.Default)
-        override val downloaded: Flow<FileSize> =
+        override val downloaded: Flow<OptionalFileSize> =
             flow { emit(torrentEngine.getDownloader()) }
                 .flatMapLatest { it?.totalDownloaded ?: flowOf(0L) }
-                .map { it.bytes }
+                .map { it.bytes.asOptional() }
                 .flowOn(Dispatchers.Default)
 
-        override val uploadRate: Flow<FileSize> =
+        override val uploadRate: Flow<OptionalFileSize> =
             flow { emit(torrentEngine.getDownloader()) }
                 .flatMapLatest { it?.totalUploadRate ?: flowOf(0L) }
-                .map { it.bytes }
+                .map { it.bytes.asOptional() }
                 .flowOn(Dispatchers.Default)
-        override val downloadRate: Flow<FileSize> =
+        override val size: Flow<OptionalFileSize> =
+            flow { emit(torrentEngine.getDownloader()) }
+                .flatMapLatest { it?.total ?: flowOf(0L) }
+                .map { it.bytes.asOptional() }
+                .flowOn(Dispatchers.Default)
+        override val downloadRate: Flow<OptionalFileSize> =
             flow { emit(torrentEngine.getDownloader()) }
                 .flatMapLatest { it?.totalDownloadRate ?: flowOf(0L) }
-                .map { it.bytes }
+                .map { it.bytes.asOptional() }
                 .flowOn(Dispatchers.Default)
+        override val downloadProgress: Flow<Float>
+            get() = TODO("Not yet implemented")
+        override val downloadFinished: Flow<Boolean>
+            get() = TODO("Not yet implemented")
     }
 
     @OptIn(ExperimentalStdlibApi::class)

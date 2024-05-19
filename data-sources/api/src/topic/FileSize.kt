@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-@file:Suppress("NOTHING_TO_INLINE")
+@file:Suppress("NOTHING_TO_INLINE") // 注意: 我们需要这些 inline 来优化 compose 性能
 
 package me.him188.ani.datasources.api.topic
 
@@ -27,6 +27,8 @@ import kotlinx.coroutines.flow.reduce
 import kotlinx.serialization.Serializable
 import me.him188.ani.datasources.api.topic.FileSize.Companion.Unspecified
 import me.him188.ani.datasources.api.topic.FileSize.Companion.Zero
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 /**
  * ```
@@ -34,8 +36,11 @@ import me.him188.ani.datasources.api.topic.FileSize.Companion.Zero
  * assertEquals("233 MB", size.toString())
  * ```
  *
- * @see Unspecified
- * @see Zero
+ * [Unspecified] 表示未指定的文件大小, 一般用于表示不支持统计文件大小.
+ *
+ * 对于零, 可以使用 [Zero] 来表示.
+ *
+ * @see OptionalFileSize
  */
 @JvmInline
 @Serializable
@@ -93,12 +98,14 @@ value class FileSize(
         inline val Double.gigaBytes: FileSize get() = (this * 1024).megaBytes
 
         @Stable
+        @JvmStatic // 无需初始化 Companion
         val Zero = 0.bytes
 
         /**
          * 特殊值
          */
         @Stable
+        @JvmStatic // 无需初始化 Companion
         val Unspecified = FileSize(-1L)
     }
 
@@ -151,3 +158,62 @@ inline operator fun Double.minus(another: FileSize): FileSize = FileSize((this -
 suspend inline fun Flow<FileSize>.sum() = reduce { acc, value -> acc + value }
 inline fun Iterable<FileSize>.sum() = reduce { acc, value -> acc + value }
 inline fun Array<FileSize>.sum() = reduce { acc, value -> acc + value }
+
+/**
+ * 将 [FileSize] 转换为 [OptionalFileSize], 要求使用方强制检查是否为 [FileSize.Unspecified]
+ */
+inline fun FileSize.asOptional(): OptionalFileSize = OptionalFileSize(this)
+
+/**
+ * 一个强制要求检查 [FileSize.Unspecified] 的 [FileSize].
+ * 可帮助避免忘记检查 [FileSize.Unspecified] 的情况.
+ */
+@JvmInline
+value class OptionalFileSize(
+    @PublishedApi internal val delegate: FileSize
+) {
+    inline val isUnspecified: Boolean get() = delegate == FileSize.Unspecified
+    inline val isSpecified: Boolean get() = !isUnspecified
+
+    companion object {
+        inline val Unspecified get() = FileSize.Unspecified.asOptional()
+        inline val Zero get() = FileSize.Zero.asOptional()
+    }
+}
+
+/**
+ * 返回一个 [FileSize] 实例, 如果 [OptionalFileSize] 是 [FileSize.Unspecified] 则抛出异常.
+ */
+inline fun OptionalFileSize.getSpecified(): FileSize {
+    check(isSpecified) { "FileSize is Unspecified" }
+    return delegate
+}
+
+/**
+ * 若 [OptionalFileSize] 是 [FileSize.Unspecified], 则返回 [FileSize.Zero], 否则返回原 [FileSize].
+ */
+inline fun OptionalFileSize.orZero(): FileSize = ifUnspecified { Zero }
+
+/**
+ * 返回一个可能为 [FileSize.Unspecified] 的 [FileSize]
+ */
+inline fun OptionalFileSize.orUnspecified(): FileSize = delegate
+
+/**
+ * 若 [OptionalFileSize] 是 [FileSize.Unspecified], 则返回 [block] 的结果, 否则返回原 [FileSize].
+ */
+inline fun OptionalFileSize.ifUnspecified(block: () -> FileSize): FileSize {
+    contract { callsInPlace(block, InvocationKind.AT_MOST_ONCE) }
+    return if (isUnspecified) block() else this.delegate
+}
+
+inline fun <R> OptionalFileSize.fold(
+    onUnspecified: () -> R,
+    onSpecified: (FileSize) -> R
+): R {
+    contract {
+        callsInPlace(onUnspecified, InvocationKind.AT_MOST_ONCE)
+        callsInPlace(onSpecified, InvocationKind.AT_MOST_ONCE)
+    }
+    return if (isUnspecified) onUnspecified() else onSpecified(delegate)
+}
