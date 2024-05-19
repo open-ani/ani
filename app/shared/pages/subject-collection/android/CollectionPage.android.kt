@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.runBlocking
 import me.him188.ani.app.data.media.EpisodeCacheStatus
 import me.him188.ani.app.data.subject.SubjectCollectionItem
+import me.him188.ani.app.data.subject.SubjectInfo
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.tools.caching.mutate
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
@@ -100,7 +101,8 @@ private fun testCollections(): List<SubjectCollectionItem> {
                 date = "2023 年 10 月",
                 totalEps = 2,
                 _episodes = eps,
-                collectionType = UnifiedCollectionType.DOING
+                collectionType = UnifiedCollectionType.DOING,
+                info = SubjectInfo.Empty,
             )
         )
         add(
@@ -112,7 +114,8 @@ private fun testCollections(): List<SubjectCollectionItem> {
                 date = "2023 年 10 月",
                 totalEps = 2,
                 _episodes = eps,
-                collectionType = UnifiedCollectionType.DOING
+                collectionType = UnifiedCollectionType.DOING,
+                info = SubjectInfo.Empty,
             )
         )
         add(
@@ -124,7 +127,8 @@ private fun testCollections(): List<SubjectCollectionItem> {
                 date = "2023 年 10 月",
                 totalEps = 2,
                 _episodes = eps,
-                collectionType = UnifiedCollectionType.DOING
+                collectionType = UnifiedCollectionType.DOING,
+                info = SubjectInfo.Empty,
             )
         )
         add(
@@ -136,7 +140,8 @@ private fun testCollections(): List<SubjectCollectionItem> {
                 date = "2023 年 10 月",
                 totalEps = 2,
                 _episodes = eps,
-                collectionType = UnifiedCollectionType.WISH
+                collectionType = UnifiedCollectionType.WISH,
+                info = SubjectInfo.Empty,
             )
         )
     }

@@ -62,7 +62,7 @@ data class DanmakuEpisode(
     /**
      * 可能是系列内的, 也可能是单季的
      */
-    val epOrSort: EpisodeSort?,
+    val epOrSort: EpisodeSort? = null,
 )
 
 object DanmakuMatchers {
