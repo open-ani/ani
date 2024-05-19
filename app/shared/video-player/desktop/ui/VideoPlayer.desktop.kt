@@ -140,6 +140,7 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
     }
 
     override val playbackSpeed: MutableStateFlow<Float> = MutableStateFlow(1.0f)
+    override val subtitleTracks: MutableTrackGroup<SubtitleTrack> = MutableTrackGroup()
 
     init {
         // NOTE: must not call native player in a event
@@ -257,8 +258,6 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
     override fun seekTo(positionMillis: Long) {
         player.controls().setTime(positionMillis)
     }
-
-    override val subtitleTracks: MutableTrackGroup<SubtitleTrack> = MutableTrackGroup()
 
 }
 
