@@ -41,10 +41,15 @@ interface TorrentDownloader : AutoCloseable {
      * Starts download of a torrent using the torrent data.
      *
      * This function may involve I/O operation e.g. to compare with local caches.
+     *
+     * @param overrideSaveDir 覆盖的保存目录. 注意, 若这是季度全集资源, 他可能会在 qBit 平台上出问题.
+     * 因为 qBit 依赖保存目录获取已有资源.
+     * 于是这个参数目前一直没使用.
      */
     suspend fun startDownload(
         data: EncodedTorrentInfo,
         parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
+        overrideSaveDir: File? = null,
     ): TorrentDownloadSession
 
     fun getSaveDirForTorrent(
@@ -95,7 +100,8 @@ class TestTorrentDownloader : TorrentDownloader {
 
     override suspend fun startDownload(
         data: EncodedTorrentInfo,
-        parentCoroutineContext: CoroutineContext
+        parentCoroutineContext: CoroutineContext,
+        overrideSaveDir: File?
     ): TorrentDownloadSession = DefaultTorrentDownloadSession(
         torrentName = "test",
         saveDirectory = File("test"),

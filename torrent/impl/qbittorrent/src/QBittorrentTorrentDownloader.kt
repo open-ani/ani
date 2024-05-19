@@ -186,25 +186,30 @@ class QBittorrentTorrentDownloader(
 
     override suspend fun startDownload(
         data: EncodedTorrentInfo,
-        parentCoroutineContext: CoroutineContext
+        parentCoroutineContext: CoroutineContext,
+        overrideSaveDir: File?
     ): TorrentDownloadSession {
         // note: this hash is not equivalent to torrent info hash
-        val dir = getSaveDirForTorrent(data).apply { mkdirs() }
+        val dir = (overrideSaveDir ?: getSaveDirForTorrent(data)).apply { mkdirs() }
+        val uri = data.data.decodeToString()
 
-        val info = client.getTorrentList().firstOrNull { it.savePath == dir.absolutePath }
-            ?: run {
-                val uri = data.data.decodeToString()
-                check(uri.startsWith("magnet")) { "Only magnet uri is supported, but had $uri" }
-                client.addTorrentFromUri(
-                    uri, // magnet
-                    savePath = dir.absolutePath,
-                    paused = false,
-                    sequentialDownload = true,
-                    firstLastPiecePrio = true,
-                )
-                awaitTorrentData { it.savePath == dir.absolutePath }
-            }
+        val info = client.getTorrentList().firstOrNull {
+            it.savePath == dir.absolutePath || it.magnetUri == uri
+        } ?: run {
+            check(uri.startsWith("magnet")) { "Only magnet uri is supported, but had $uri" }
+            client.addTorrentFromUri(
+                uri, // magnet
+                savePath = dir.absolutePath,
+                paused = false,
+                sequentialDownload = true,
+                firstLastPiecePrio = true,
+            )
+            awaitTorrentData { it.savePath == dir.absolutePath }
+        }
 
+        if (dir.absolutePath != info.savePath) {
+            client.setTorrentLocation(info.hash, dir.absolutePath)
+        }
         client.recheckTorrents(listOf(info.hash))
 
         return QBittorrentTorrentDownloadSession(

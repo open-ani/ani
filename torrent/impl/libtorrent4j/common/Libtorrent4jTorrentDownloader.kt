@@ -121,6 +121,7 @@ abstract class AbstractLockedTorrentDownloader<Info : TorrentInfo>(
     override suspend fun startDownload(
         data: EncodedTorrentInfo,
         parentCoroutineContext: CoroutineContext,
+        overrideSaveDir: File?,
     ): TorrentDownloadSession = lock.withLock {
         withContext(Dispatchers.IO) {
             val torrentInfo = sessionManager.use {
@@ -130,7 +131,7 @@ abstract class AbstractLockedTorrentDownloader<Info : TorrentInfo>(
             val torrentName = torrentInfo.name
 
             logger.info { "[$torrentName] TorrentDownloader.startDownload called" }
-            val saveDirectory = getSaveDirForTorrent(data).apply { mkdirs() }
+            val saveDirectory = (overrideSaveDir ?: getSaveDirForTorrent(data)).apply { mkdirs() }
             val hash = torrentInfo.infoHashHex
 
             val reopened = dataToSession[hash]?.let {

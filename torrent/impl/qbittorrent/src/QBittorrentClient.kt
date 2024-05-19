@@ -292,6 +292,20 @@ class QBittorrentClient(
 //        }
 //    }
 
+    suspend fun setTorrentLocation(
+        hash: String,
+        location: String
+    ): Unit = autoLogin {
+        client.submitForm(
+            "v2/torrents/setLocation",
+            formParameters = parameters {
+                append("hashes", hash)
+                append("location", location)
+            }
+        )
+    }
+
+
     suspend fun setFirstLastPiecePriority(
         hashes: List<String>
     ): Unit = autoLogin {

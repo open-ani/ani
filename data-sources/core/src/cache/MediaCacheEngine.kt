@@ -66,7 +66,7 @@ interface MediaCacheEngine {
     ): MediaCache
 
     /**
-     * 删除所有未在 [all] 中找到对应 [MediaCache] 的文件.
+     * 删除所有未在 [all] 中找到对应 [MediaCache] 的文件. 这通常包括在线播放的视频. 不会包括通过缓存功能创建的.
      */
     suspend fun deleteUnusedCaches(all: List<MediaCache>)
 }

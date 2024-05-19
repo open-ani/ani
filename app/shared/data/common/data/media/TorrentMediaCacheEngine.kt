@@ -292,14 +292,26 @@ class TorrentMediaCacheEngine(
         )
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     override suspend fun deleteUnusedCaches(all: List<MediaCache>) {
-        val allowed = all.mapNotNull { it.metadata.extra[EXTRA_TORRENT_CACHE_DIR] }
-
         val downloader = torrentEngine.getDownloader() ?: return
+        val allowedAbsolute = buildSet(capacity = all.size) {
+            for (mediaCache in all) {
+                add(mediaCache.metadata.extra[EXTRA_TORRENT_CACHE_DIR]) // 上次记录的位置
+
+                val data = mediaCache.metadata.extra[EXTRA_TORRENT_DATA]?.runCatching { hexToByteArray() }?.getOrNull()
+                if (data != null) {
+                    // 如果新版本 ani 的缓存目录有变, 对于旧版本的 metadata, 存的缓存目录会是旧版本的, 
+                    // 就需要用 `getSaveDirForTorrent` 重新计算新目录
+                    add(downloader.getSaveDirForTorrent(EncodedTorrentInfo(data)).absolutePath)
+                }
+            }
+        }
+
         withContext(Dispatchers.IO) {
             val saves = downloader.listSaves()
             for (save in saves) {
-                if (save.absolutePath !in allowed) {
+                if (save.absolutePath !in allowedAbsolute) {
                     val totalLength = save.walk().sumOf { it.length() }
                     logger.warn { "本地种子缓存文件未找到匹配的 MediaCache, 已释放 ${totalLength.bytes}: ${save.absolutePath}" }
                     save.deleteRecursively()
