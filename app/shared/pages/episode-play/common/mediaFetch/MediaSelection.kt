@@ -1,8 +1,5 @@
 package me.him188.ani.app.ui.subject.episode.mediaFetch
 
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,7 +34,6 @@ import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -78,22 +74,29 @@ fun MediaSelector(
             val progress = progressProvider() // recompose this row only as the progress might update frequently
             if (progress == 1f) return@Row
 
-            if (progress == null) {
-                LinearProgressIndicator(
-                    Modifier.padding(bottom = verticalPadding)
-                        .fillMaxWidth()
-                )
-            } else {
-                val progressAnimated by animateFloatAsState(
-                    targetValue = progress,
-                    spring(Spring.StiffnessHigh)
-                )
-                LinearProgressIndicator(
-                    { progressAnimated },
-                    Modifier.padding(bottom = verticalPadding)
-                        .fillMaxWidth()
-                )
-            }
+            LinearProgressIndicator(
+                Modifier.padding(bottom = verticalPadding)
+                    .fillMaxWidth()
+            )
+
+            // 刻意一直展示一个一直在动的进度条, 因为实测其实资源都是一起来的, 也就是进度很多时候只有 0 和 1.
+            // 如果按进度展示进度条, 就会一直是 0, 进度条整个是白色的, 看不出来, 不容易区分是正在加载还是加载完了.
+//            if (progress == null) {
+//                LinearProgressIndicator(
+//                    Modifier.padding(bottom = verticalPadding)
+//                        .fillMaxWidth()
+//                )
+//            } else {
+//                val progressAnimated by animateFloatAsState(
+//                    targetValue = progress,
+//                    spring(Spring.StiffnessHigh)
+//                )
+//                LinearProgressIndicator(
+//                    { progressAnimated },
+//                    Modifier.padding(bottom = verticalPadding)
+//                        .fillMaxWidth()
+//                )
+//            }
         }
 
         LazyColumn(
