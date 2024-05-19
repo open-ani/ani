@@ -131,6 +131,7 @@ kotlin {
 
     sourceSets.commonTest.dependencies {
         implementation(libs.kotlinx.coroutines.test)
+        implementation(projects.utils.testing)
     }
 
     sourceSets.androidMain.dependencies {

@@ -5,7 +5,10 @@ import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
 import me.him188.ani.app.data.media.resolver.TorrentVideoSourceResolver
 import me.him188.ani.datasources.api.EpisodeSort
+import me.him188.ani.test.permuted
+import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestFactory
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
@@ -119,4 +122,142 @@ class SelectVideoFileEntryTest {
             selected
         )
     }
+
+    @TestFactory
+    fun `select normal over PV`() = listOf(
+        "[DBD-Raws][未来日记][01][1080P][BDRip][HEVC-10bit][FLACx2].mkv",
+        "[DBD-Raws][未来日记] PV [01][1080P][BDRip][HEVC-10bit][FLAC].mkv",
+        "[DBD-Raws][未来日记] PV01 [1080P][BDRip][HEVC-10bit][FLAC].mkv",
+    ).permuted().mapIndexed { index, list ->
+        DynamicTest.dynamicTest(index.toString()) {
+            val selected = TorrentVideoSourceResolver.selectVideoFileEntry(
+                list,
+                { this },
+                episodeTitles = listOf("未来日记"),
+                episodeSort = EpisodeSort(1),
+                episodeEp = null,
+            )
+            assertEquals(
+                "[DBD-Raws][未来日记][01][1080P][BDRip][HEVC-10bit][FLACx2].mkv",
+                selected,
+                message = list.toString()
+            )
+        }
+    }
+
+    @TestFactory
+    fun `select SP over PV`() = listOf(
+        "[DBD-Raws][未来日记][01][1080P][BDRip][HEVC-10bit][FLACx2].mkv",
+        "[DBD-Raws][未来日记][PV][01][1080P][BDRip][HEVC-10bit][FLAC].mkv",
+        "[DBD-Raws][未来日记][SP][1080P][BDRip][HEVC-10bit][FLAC].mkv",
+        "[DBD-Raws][未来日记][NCOP1][1080P][BDRip][HEVC-10bit][FLAC].mkv",
+    ).permuted().mapIndexed { index, list ->
+        DynamicTest.dynamicTest(index.toString()) {
+            val selected = TorrentVideoSourceResolver.selectVideoFileEntry(
+                list,
+                { this },
+                episodeTitles = listOf("未来日记"),
+                episodeSort = EpisodeSort("SP"),
+                episodeEp = null,
+            )
+            assertEquals(
+                "[DBD-Raws][未来日记][SP][1080P][BDRip][HEVC-10bit][FLAC].mkv",
+                selected,
+                message = list.toString()
+            )
+        }
+    }
+
+    @TestFactory
+    fun `select SP 01 over PV`() = listOf(
+        "[DBD-Raws][未来日记][01][1080P][BDRip][HEVC-10bit][FLACx2].mkv",
+        "[DBD-Raws][未来日记][PV][01][1080P][BDRip][HEVC-10bit][FLAC].mkv",
+        "[DBD-Raws][未来日记][SP][01][1080P][BDRip][HEVC-10bit][FLAC].mkv",
+        "[DBD-Raws][未来日记][NCOP1][1080P][BDRip][HEVC-10bit][FLAC].mkv",
+    ).permuted().mapIndexed { index, list ->
+        DynamicTest.dynamicTest(index.toString()) {
+            val selected = TorrentVideoSourceResolver.selectVideoFileEntry(
+                list,
+                { this },
+                episodeTitles = listOf("未来日记"),
+                episodeSort = EpisodeSort("SP"),
+                episodeEp = null,
+            )
+            assertEquals(
+                "[DBD-Raws][未来日记][SP][01][1080P][BDRip][HEVC-10bit][FLAC].mkv",
+                selected,
+                message = list.toString()
+            )
+        }
+    }
+
+    @TestFactory
+    fun `select OVA over PV`() = listOf(
+        "[DBD-Raws][未来日记][01][1080P][BDRip][HEVC-10bit][FLACx2].mkv",
+        "[DBD-Raws][未来日记][PV][01][1080P][BDRip][HEVC-10bit][FLAC].mkv",
+        "[DBD-Raws][未来日记][OVA][1080P][BDRip][HEVC-10bit][FLAC].mkv",
+        "[DBD-Raws][未来日记][NCOP1][1080P][BDRip][HEVC-10bit][FLAC].mkv",
+    ).permuted().mapIndexed { index, list ->
+        DynamicTest.dynamicTest(index.toString()) {
+            val selected = TorrentVideoSourceResolver.selectVideoFileEntry(
+                list,
+                { this },
+                episodeTitles = listOf("未来日记"),
+                episodeSort = EpisodeSort("OVA"),
+                episodeEp = null,
+            )
+            assertEquals(
+                "[DBD-Raws][未来日记][OVA][1080P][BDRip][HEVC-10bit][FLAC].mkv",
+                selected,
+                message = list.toString()
+            )
+        }
+    }
+
+    @TestFactory
+    fun `select OVA12 over PV`() = listOf(
+        "[DBD-Raws][未来日记][01][1080P][BDRip][HEVC-10bit][FLACx2].mkv",
+        "[DBD-Raws][未来日记][PV][01][1080P][BDRip][HEVC-10bit][FLAC].mkv",
+        "[DBD-Raws][未来日记][OVA12][1080P][BDRip][HEVC-10bit][FLAC].mkv",
+        "[DBD-Raws][未来日记][NCOP1][1080P][BDRip][HEVC-10bit][FLAC].mkv",
+    ).permuted().mapIndexed { index, list ->
+        DynamicTest.dynamicTest(index.toString()) {
+            val selected = TorrentVideoSourceResolver.selectVideoFileEntry(
+                list,
+                { this },
+                episodeTitles = listOf("未来日记"),
+                episodeSort = EpisodeSort("OVA"),
+                episodeEp = null,
+            )
+            assertEquals(
+                "[DBD-Raws][未来日记][OVA12][1080P][BDRip][HEVC-10bit][FLAC].mkv",
+                selected,
+                message = list.toString()
+            )
+        }
+    }
+
+    @TestFactory
+    fun `select normal 01 over PV if no match`() = listOf(
+        "[DBD-Raws][未来日记][01][1080P][BDRip][HEVC-10bit][FLACx2].mkv",
+        "[DBD-Raws][未来日记][PV][01][1080P][BDRip][HEVC-10bit][FLAC].mkv",
+        "[DBD-Raws][未来日记][SP][01][1080P][BDRip][HEVC-10bit][FLAC].mkv",
+        "[DBD-Raws][未来日记][NCOP1][1080P][BDRip][HEVC-10bit][FLAC].mkv",
+    ).permuted().mapIndexed { index, list ->
+        DynamicTest.dynamicTest(index.toString()) {
+            val selected = TorrentVideoSourceResolver.selectVideoFileEntry(
+                list,
+                { this },
+                episodeTitles = listOf("未来日记"),
+                episodeSort = EpisodeSort("08"),
+                episodeEp = null,
+            )
+            assertEquals(
+                "[DBD-Raws][未来日记][01][1080P][BDRip][HEVC-10bit][FLACx2].mkv",
+                selected,
+                message = list.toString()
+            )
+        }
+    }
+
 }

@@ -14,3 +14,5 @@ fun <T> List<T>.permutedSequence(): Sequence<List<T>> {
         }
     }
 }
+
+fun <T> List<T>.permuted(): List<List<T>> = permutedSequence().toList()

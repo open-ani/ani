@@ -70,6 +70,27 @@ class TorrentVideoSourceResolver(
             setOf("mp4", "mkv", "avi", "mpeg", "mov", "flv", "wmv", "webm", "rm", "rmvb")
 
         /**
+         * 黑名单词, 包含这些词的文件会被放到最后.
+         *
+         * 黑名单也有顺序, 在黑名单中的越靠前越容易被选择.
+         */
+        @Suppress("RegExpRedundantEscape")
+        private val BLACKLIST_WORDS = // 性能还可以, regex 只是让 70ms 变成了 150ms (不过它可能在指数的复杂度)
+            setOf(
+                Regex("""\[SP[0-9]*\]"""),
+                Regex("""\[OVA[0-9]*\]"""),
+                // SP 和 OVA 要放到前面, 因为用户可能就是要看这个
+                Regex("""PV[0-9]*"""),
+                Regex("""NCOP[0-9]*"""),
+                Regex("""NCED[0-9]*"""),
+                Regex("""OP[0-9]+"""),
+                Regex("""ED[0-9]+"""), // 必须匹配数字防止名字带有 OP ED 的情况
+                Regex("""\[OP[0-9]*\]"""),
+                Regex("""\[ED[0-9]*\]"""),
+                Regex("""\[CM[0-9]*\]"""),
+            )
+
+        /**
          * @param episodeSort 在系列中的集数, 例如第二季的第一集为 26
          * @param episodeEp 在当前季度中的集数, 例如第二季的第一集为 01
          */
@@ -82,8 +103,18 @@ class TorrentVideoSourceResolver(
             videoExtensions: Set<String> = DEFAULT_VIDEO_EXTENSIONS,
         ): T? {
             // Filter by file extension
-            val videos = entries.filter {
-                videoExtensions.any { fileType -> it.getPath().endsWith(fileType, ignoreCase = true) }
+            val videos = entries
+                .filterTo(ArrayList(entries.size)) {
+                    videoExtensions.any { fileType -> it.getPath().endsWith(fileType, ignoreCase = true) }
+                }
+
+            videos.sortByDescending {
+                BLACKLIST_WORDS.forEachIndexed { index, blacklistWord ->
+                    if (it.getPath().contains(blacklistWord)) {
+                        return@sortByDescending -index // 包含黑名单词的放到最后
+                    }
+                }
+                1
             }
 
             // Find by name match
@@ -95,19 +126,27 @@ class TorrentVideoSourceResolver(
             }
 
             // 解析标题匹配集数
-            val parsedTitles = videos.associateWith {
-                RawTitleParser.getDefault().parse(it.getPath().substringBeforeLast("."), null).episodeRange
+            val parsedTitles = buildMap { // similar to `associateWith`, but ignores nulls
+                for (entry in videos) {
+                    val title = RawTitleParser.getDefault().parse(
+                        entry.getPath().substringBeforeLast("."),
+                        null
+                    ).episodeRange
+                    if (title != null) { // difference between `associateWith`
+                        put(entry, title)
+                    }
+                }
             }
             // 优先按系列集数 sort 匹配 (数字较大)
             if (parsedTitles.isNotEmpty()) {
                 parsedTitles.entries.firstOrNull {
-                    it.value?.contains(episodeSort) == true
+                    it.value.contains(episodeSort)
                 }?.key?.let { return it }
             }
             // 然后按季度集数 ep 匹配
             if (episodeEp != null && parsedTitles.isNotEmpty()) {
                 parsedTitles.entries.firstOrNull {
-                    it.value?.contains(episodeEp) == true
+                    it.value.contains(episodeEp)
                 }?.key?.let { return it }
             }
 
