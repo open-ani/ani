@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
-import kotlinx.coroutines.flow.transform
+import kotlinx.coroutines.flow.transformLatest
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.core.cache.MediaCache
 import me.him188.ani.datasources.core.cache.MediaCacheStorage
@@ -62,7 +62,7 @@ abstract class MediaCacheManager {
     ): Flow<EpisodeCacheStatus> {
         val subjectIdString = subjectId.toString()
         val episodeIdString = episodeId.toString()
-        return cacheListFlow.transform { list ->
+        return cacheListFlow.transformLatest { list ->
             var hasAnyCached: MediaCache? = null
             var hasAnyCaching: MediaCache? = null
 
