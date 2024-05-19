@@ -16,6 +16,7 @@ import me.him188.ani.utils.coroutines.onReplacement
 import me.him188.ani.utils.coroutines.runUntilSuccess
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
+import kotlin.coroutines.cancellation.CancellationException
 
 
 /**
@@ -48,6 +49,7 @@ interface TorrentEngine {
      *
      * @throws IllegalStateException 当 [isEnabled] 为 `false` 时抛出
      * @throws TorrentDownloaderInitializationException 当创建失败时抛出
+     * @throws CancellationException
      */
     @Throws(TorrentDownloaderInitializationException::class)
     suspend fun getDownloader(): TorrentDownloader?
@@ -101,6 +103,8 @@ abstract class AbstractTorrentEngine<Downloader : TorrentDownloader, Config : To
         }
         return try {
             downloader.first()
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Throwable) {
             throw TorrentDownloaderInitializationException(cause = e)
         }
