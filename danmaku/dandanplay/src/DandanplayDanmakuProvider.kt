@@ -78,9 +78,11 @@ class DandanplayDanmakuProvider(
                     logger.error(it) { "Failed to fetch episodes by fuzzy search" }
                 }.getOrNull()
 
+        val prefixedExpectedEpisodeName =
+            "第${(request.episodeEp ?: request.episodeSort).toString().removePrefix("0")}话 " + request.episodeName
         val matcher = DanmakuMatchers.mostRelevant(
             request.subjectPrimaryName,
-            "第${(request.episodeEp ?: request.episodeSort).toString().removePrefix("0")}话 " + request.episodeName
+            prefixedExpectedEpisodeName
         )
 
         // 用剧集编号匹配
@@ -93,6 +95,21 @@ class DandanplayDanmakuProvider(
             episodes.firstOrNull { it.epOrSort != null && it.epOrSort == request.episodeEp }?.let {
                 logger.info { "Matched episode by exact episodeEp: ${it.subjectName} - ${it.episodeName}" }
                 return createSession(it.id.toLong(), 0, DanmakuMatchMethod.Exact(it.subjectName, it.episodeName))
+            }
+
+            // 用名称精确匹配, 标记为 Exact
+            if (request.episodeName.isNotBlank()) {
+                val match =
+                    episodes.firstOrNull { it.episodeName == request.episodeName }
+                        ?: episodes.firstOrNull { it.episodeName == prefixedExpectedEpisodeName }
+                match?.let { episode ->
+                    logger.info { "Matched episode by exact episodeName: ${episode.subjectName} - ${episode.episodeName}" }
+                    return createSession(
+                        episode.id.toLong(),
+                        0,
+                        DanmakuMatchMethod.Exact(episode.subjectName, episode.episodeName)
+                    )
+                }
             }
         }
 
