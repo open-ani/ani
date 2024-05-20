@@ -154,7 +154,7 @@ fun PlayerStatistics(
                                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                                 verticalArrangement = Arrangement.spacedBy(16.dp),
                             ) {
-                                items(loadingState.matchInfos, { it }) {
+                                items(loadingState.matchInfos, { it.providerId }) {
                                     DanmakuMatchInfoView(it, { isShowDetails })
                                 }
                             }
