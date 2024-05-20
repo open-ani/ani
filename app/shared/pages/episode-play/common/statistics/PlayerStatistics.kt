@@ -4,10 +4,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.QuestionMark
@@ -147,14 +149,23 @@ fun PlayerStatistics(
                                 }
                             }
 
-                            FlowRow(
+                            LazyVerticalGrid(
+                                GridCells.Fixed(2),
                                 horizontalArrangement = Arrangement.spacedBy(16.dp),
-                                verticalArrangement = Arrangement.spacedBy(16.dp)
+                                verticalArrangement = Arrangement.spacedBy(16.dp),
                             ) {
-                                for (info in loadingState.matchInfos) {
-                                    DanmakuMatchInfoView(info, { isShowDetails })
+                                items(loadingState.matchInfos, { it }) {
+                                    DanmakuMatchInfoView(it, { isShowDetails })
                                 }
                             }
+//                            FlowRow(
+//                                horizontalArrangement = Arrangement.spacedBy(16.dp),
+//                                verticalArrangement = Arrangement.spacedBy(16.dp)
+//                            ) {
+//                                for (info in loadingState.matchInfos) {
+//                                    DanmakuMatchInfoView(info, { isShowDetails })
+//                                }
+//                            }
                         }
 
                         else -> {}
