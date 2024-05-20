@@ -3,11 +3,13 @@ package me.him188.ani.danmaku.ani.client
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import me.him188.ani.danmaku.api.AbstractDanmakuProvider
+import me.him188.ani.danmaku.api.DanmakuFetchResult
+import me.him188.ani.danmaku.api.DanmakuMatchInfo
+import me.him188.ani.danmaku.api.DanmakuMatchMethod
 import me.him188.ani.danmaku.api.DanmakuProvider
 import me.him188.ani.danmaku.api.DanmakuProviderConfig
 import me.him188.ani.danmaku.api.DanmakuProviderFactory
 import me.him188.ani.danmaku.api.DanmakuSearchRequest
-import me.him188.ani.danmaku.api.DanmakuSession
 import me.him188.ani.danmaku.api.TimeBasedDanmakuSession
 import me.him188.ani.danmaku.protocol.DanmakuGetResponse
 import me.him188.ani.utils.logging.info
@@ -45,23 +47,30 @@ class AniDanmakuProvider(
 
     override val id: String get() = ID
 
-    override suspend fun fetch(request: DanmakuSearchRequest): DanmakuSession {
+    override suspend fun fetch(request: DanmakuSearchRequest): DanmakuFetchResult {
         val resp = client.get("${baseUrl}/v1/danmaku/${request.episodeId}")
         val list = resp.body<DanmakuGetResponse>().danmakuList
         logger.info { "$ID Fetched danmaku list: ${list.size}" }
-        return TimeBasedDanmakuSession.create(
-            list.asSequence().map {
-                ApiDanmaku(
-                    id = it.id,
-                    providerId = ID,
-                    playTimeMillis = it.danmakuInfo.playTime,
-                    senderId = it.senderId,
-                    location = it.danmakuInfo.location.toApi(),
-                    text = it.danmakuInfo.text,
-                    color = it.danmakuInfo.color,
-                )
-            },
-            coroutineContext = sessionCoroutineContext
+        return DanmakuFetchResult(
+            matchInfo = DanmakuMatchInfo(
+                providerId = id,
+                count = list.size,
+                method = DanmakuMatchMethod.ExactId(request.subjectId, request.episodeId),
+            ),
+            TimeBasedDanmakuSession.create(
+                list.asSequence().map {
+                    ApiDanmaku(
+                        id = it.id,
+                        providerId = ID,
+                        playTimeMillis = it.danmakuInfo.playTime,
+                        senderId = it.senderId,
+                        location = it.danmakuInfo.location.toApi(),
+                        text = it.danmakuInfo.text,
+                        color = it.danmakuInfo.color,
+                    )
+                },
+                coroutineContext = sessionCoroutineContext
+            )
         )
     }
 }

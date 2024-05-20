@@ -14,7 +14,6 @@ import androidx.compose.ui.text.AnnotatedString
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -47,6 +46,8 @@ import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.app.ui.subject.episode.danmaku.PlayerDanmakuViewModel
 import me.him188.ani.app.ui.subject.episode.mediaFetch.EpisodeMediaFetchSession
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorState
+import me.him188.ani.app.ui.subject.episode.statistics.DanmakuLoadingState
+import me.him188.ani.app.ui.subject.episode.statistics.PlayerStatisticsState
 import me.him188.ani.app.videoplayer.data.OpenFailures
 import me.him188.ani.app.videoplayer.data.VideoSource
 import me.him188.ani.app.videoplayer.data.VideoSourceOpenException
@@ -143,6 +144,8 @@ interface EpisodeViewModel : HasBackgroundScope {
      */
     val episodeMediaFetchSession: EpisodeMediaFetchSession
 
+    val playerStatistics: PlayerStatisticsState
+
     // Media Selection
 
     /**
@@ -153,7 +156,7 @@ interface EpisodeViewModel : HasBackgroundScope {
 
     // Video
 
-    val videoLoadingState: StateFlow<VideoLoadingState>
+    val videoLoadingState: StateFlow<VideoLoadingState> get() = playerStatistics.videoLoadingState
 
     /**
      * `true` if a play source is selected by user (or automatically)
@@ -216,6 +219,7 @@ private class EpisodeViewModelImpl(
         episodeId,
         backgroundScope.coroutineContext,
     )
+    override val playerStatistics: PlayerStatisticsState = PlayerStatisticsState()
 
     override var mediaSelectorVisible: Boolean by mutableStateOf(false)
 
@@ -227,7 +231,7 @@ private class EpisodeViewModelImpl(
         mediaSelectorState.selected != null
     }
 
-    override val videoLoadingState: MutableStateFlow<VideoLoadingState> = MutableStateFlow(VideoLoadingState.Initial)
+    override val videoLoadingState get() = playerStatistics.videoLoadingState
 
     /**
      * The [VideoSource] selected to play.
@@ -264,14 +268,14 @@ private class EpisodeViewModelImpl(
                 } catch (e: VideoSourceResolutionException) {
                     videoLoadingState.value = when (e.reason) {
                         ResolutionFailures.FETCH_TIMEOUT -> VideoLoadingState.ResolutionTimedOut
-                        ResolutionFailures.ENGINE_ERROR -> VideoLoadingState.UnknownError
+                        ResolutionFailures.ENGINE_ERROR -> VideoLoadingState.UnknownError(e)
                     }
                     emit(null)
                 } catch (e: CancellationException) {
                     throw e
                 } catch (e: Throwable) {
                     logger.error { IllegalStateException("Failed to resolve video source", e) }
-                    videoLoadingState.value = VideoLoadingState.UnknownError
+                    videoLoadingState.value = VideoLoadingState.UnknownError(e)
                     emit(null)
                 }
             }
@@ -328,34 +332,42 @@ private class EpisodeViewModelImpl(
     }
 
     private val danmakuSessionFlow: Flow<DanmakuSession> = playerState.videoData.filterNotNull().mapLatest { data ->
+        playerStatistics.danmakuLoadingState.value = DanmakuLoadingState.Loading
         val filename = data.filename
 //            ?: selectedMedia.first().originalTitle
+        try {
 
-        val subject: SubjectPresentation
-        val episode: EpisodePresentation
-        withContext(Dispatchers.Main.immediate) {
-            subject = subjectPresentation
-            episode = episodePresentation
-        }
-        danmakuManager.fetch(
-            request = DanmakuSearchRequest(
-                subjectId = subjectId,
-                subjectPrimaryName = subject.info.displayName,
-                subjectNames = subject.info.allNames,
-                subjectPublishDate = subject.info.publishDate,
-                episodeId = episodeId,
-                episodeSort = EpisodeSort(episode.sort),
-                episodeEp = EpisodeSort(episode.ep),
-                episodeName = episode.title,
-                filename = filename,
-                fileHash = "aa".repeat(16),
-                fileSize = data.fileLength,
-                videoDuration = 0.milliseconds,
+            val subject: SubjectPresentation
+            val episode: EpisodePresentation
+            withContext(Dispatchers.Main.immediate) {
+                subject = subjectPresentation
+                episode = episodePresentation
+            }
+            val result = danmakuManager.fetch(
+                request = DanmakuSearchRequest(
+                    subjectId = subjectId,
+                    subjectPrimaryName = subject.info.displayName,
+                    subjectNames = subject.info.allNames,
+                    subjectPublishDate = subject.info.publishDate,
+                    episodeId = episodeId,
+                    episodeSort = EpisodeSort(episode.sort),
+                    episodeEp = EpisodeSort(episode.ep),
+                    episodeName = episode.title,
+                    filename = filename,
+                    fileHash = "aa".repeat(16),
+                    fileSize = data.fileLength,
+                    videoDuration = 0.milliseconds,
 //                fileHash = video.fileHash ?: "aa".repeat(16),
 //                fileSize = video.fileLengthBytes,
 //                videoDuration = video.durationMillis.milliseconds,
-            ),
-        )
+                ),
+            )
+            playerStatistics.danmakuLoadingState.value = DanmakuLoadingState.Success(result.matchInfos)
+            result.danmakuSession
+        } catch (e: Throwable) {
+            playerStatistics.danmakuLoadingState.value = DanmakuLoadingState.Failed(e)
+            throw e
+        }
     }.shareInBackground(started = SharingStarted.Lazily)
 
     private val danmakuFlow: Flow<DanmakuEvent> = danmakuSessionFlow.flatMapLatest { session ->
@@ -423,7 +435,7 @@ private class EpisodeViewModelImpl(
                     return@collect
                 } catch (e: Throwable) {
                     logger.error(e) { "Failed to set video source" }
-                    videoLoadingState.value = VideoLoadingState.UnknownError
+                    videoLoadingState.value = VideoLoadingState.UnknownError(e)
                 }
                 videoLoadingState.value = VideoLoadingState.Succeed
             }
@@ -485,5 +497,7 @@ sealed interface VideoLoadingState {
      */
     data object UnsupportedMedia : Failed()
     data object NoMatchingFile : Failed()
-    data object UnknownError : Failed()
+    data class UnknownError(
+        val cause: Throwable,
+    ) : Failed()
 }

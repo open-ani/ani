@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -16,18 +17,24 @@ import androidx.compose.material.icons.rounded.ArrowOutward
 import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material.icons.rounded.DisplaySettings
 import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.InsertChartOutlined
 import androidx.compose.material.icons.rounded.Outbox
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,6 +44,8 @@ import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.app.ui.subject.episode.EpisodeViewModel
+import me.him188.ani.app.ui.subject.episode.statistics.PlayerStatistics
+import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
 
 @Composable
@@ -49,8 +58,17 @@ fun EpisodeActionRow(
     val context by rememberUpdatedState(LocalContext.current)
 
     val navigator by rememberUpdatedState(LocalNavigator.current)
+
+    var showPlayerStatistics by remember { mutableStateOf(false) }
+    if (showPlayerStatistics) {
+        ModalBottomSheet({ showPlayerStatistics = false }) {
+            PlayerStatistics(viewModel.playerStatistics, Modifier.padding(16.dp))
+        }
+    }
+
     EpisodeActionRow(
         mediaFetcherCompleted = viewModel.episodeMediaFetchSession.mediaFetcherCompleted,
+        isDanmakuLoading = viewModel.playerStatistics.isDanmakuLoading.collectAsStateWithLifecycle(false).value,
         onClickMediaSelection = { viewModel.mediaSelectorVisible = true },
         onClickCopyLink = {
             viewModel.launchInMain {
@@ -59,6 +77,9 @@ fun EpisodeActionRow(
         },
         onClickCache = {
             navigator.navigateSubjectCaches(viewModel.subjectId)
+        },
+        onClickStatistics = {
+            showPlayerStatistics = true
         },
         onClickDownload = {
             viewModel.launchInMain {
@@ -82,9 +103,11 @@ fun EpisodeActionRow(
 @Composable
 fun EpisodeActionRow(
     mediaFetcherCompleted: Boolean,
+    isDanmakuLoading: Boolean,
     onClickMediaSelection: () -> Unit,
     onClickCopyLink: () -> Unit,
     onClickCache: () -> Unit,
+    onClickStatistics: () -> Unit,
     onClickDownload: () -> Unit,
     onClickOriginalPage: () -> Unit,
     modifier: Modifier = Modifier,
@@ -100,11 +123,13 @@ fun EpisodeActionRow(
             onClick = onClickMediaSelection,
             Modifier.weight(1f),
         )
+
         ActionButton(
-            onClick = onClickCopyLink,
-            icon = { Icon(Icons.Rounded.ContentCopy, null) },
-            text = { Text("复制磁力", maxLines = 1, softWrap = false) },
+            onClick = onClickStatistics,
+            icon = { Icon(Icons.Rounded.InsertChartOutlined, null) },
+            text = { Text("视频统计", maxLines = 1, softWrap = false) },
             Modifier.weight(1f),
+            isLoading = isDanmakuLoading
         )
 
         ActionButton(
@@ -114,19 +139,33 @@ fun EpisodeActionRow(
             Modifier.weight(1f),
         )
 
-        ActionButton(
-            onClick = onClickDownload,
-            icon = { Icon(Icons.Rounded.Outbox, null) },
-            text = { Text("外部下载", maxLines = 1, softWrap = false) },
-            Modifier.weight(1f),
-        )
+        var showMore by remember { mutableStateOf(false) }
+        Box(Modifier.weight(1f)) { // to provide placement
+            ActionButton(
+                onClick = { showMore = true },
+                icon = { Icon(Icons.Rounded.Outbox, null) },
+                text = { Text("更多", maxLines = 1, softWrap = false) },
+                Modifier.fillMaxWidth(),
+            )
 
-        ActionButton(
-            onClick = onClickOriginalPage,
-            icon = { Icon(Icons.Rounded.ArrowOutward, null) },
-            text = { Text("原始页面", maxLines = 1, softWrap = false) },
-            Modifier.weight(1f),
-        )
+            DropdownMenu(showMore, { showMore = false }) {
+                DropdownMenuItem(
+                    text = { Text("复制磁力链接") },
+                    onClick = onClickCopyLink,
+                    leadingIcon = { Icon(Icons.Rounded.ContentCopy, null) },
+                )
+                DropdownMenuItem(
+                    text = { Text("使用其他应用打开") },
+                    onClick = onClickDownload,
+                    leadingIcon = { Icon(Icons.Rounded.Outbox, null) },
+                )
+                DropdownMenuItem(
+                    text = { Text("访问原始页面") },
+                    onClick = onClickOriginalPage,
+                    leadingIcon = { Icon(Icons.Rounded.ArrowOutward, null) },
+                )
+            }
+        }
     }
 }
 

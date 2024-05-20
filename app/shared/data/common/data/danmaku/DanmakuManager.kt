@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.withTimeout
 import me.him188.ani.app.data.repositories.PreferencesRepository
 import me.him188.ani.app.platform.getAniUserAgent
 import me.him188.ani.app.session.SessionManager
@@ -24,6 +25,7 @@ import me.him188.ani.danmaku.ani.client.AniDanmakuSenderImpl
 import me.him188.ani.danmaku.ani.client.SendDanmakuException
 import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuEvent
+import me.him188.ani.danmaku.api.DanmakuMatchInfo
 import me.him188.ani.danmaku.api.DanmakuProvider
 import me.him188.ani.danmaku.api.DanmakuProviderConfig
 import me.him188.ani.danmaku.api.DanmakuSearchRequest
@@ -40,6 +42,7 @@ import org.koin.core.component.inject
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * 管理多个弹幕源 [DanmakuProvider]
@@ -49,11 +52,16 @@ interface DanmakuManager {
 
     suspend fun fetch(
         request: DanmakuSearchRequest,
-    ): DanmakuSession
+    ): CombinedDanmakuFetchResult
 
     @Throws(SendDanmakuException::class)
     suspend fun post(episodeId: Int, danmaku: DanmakuInfo): Danmaku
 }
+
+class CombinedDanmakuFetchResult(
+    val matchInfos: List<DanmakuMatchInfo>,
+    val danmakuSession: DanmakuSession,
+)
 
 object DanmakuProviderLoader {
     fun load(
@@ -107,21 +115,27 @@ class DanmakuManagerImpl(
 
     override suspend fun fetch(
         request: DanmakuSearchRequest,
-    ): CombinedDanmakuSession {
+    ): CombinedDanmakuFetchResult {
         logger.info { "Search for danmaku with filename='${request.filename}'" }
-        return CombinedDanmakuSession(
-            providers.first().map { provider ->
-                flow {
-                    provider.fetch(request = request)?.let { emit(it) }
-                }.retry(1) {
-                    if (it is CancellationException && !currentCoroutineContext().isActive) {
-                        // collector was cancelled
-                        return@retry false
-                    }
-                    logger.error(it) { "Failed to fetch danmaku from provider '${provider.id}'" }
-                    true
-                }.catch {} // 忽略错误, 否则一个源炸了会导致所有弹幕都不发射了
-            }
+        val results = combine(providers.first().map { provider ->
+            flow {
+                emit(withTimeout(20.seconds) {
+                    provider.fetch(request = request)
+                })
+            }.retry(1) {
+                if (it is CancellationException && !currentCoroutineContext().isActive) {
+                    // collector was cancelled
+                    return@retry false
+                }
+                logger.error(it) { "Failed to fetch danmaku from provider '${provider.id}'" }
+                true
+            }.catch {}// 忽略错误, 否则一个源炸了会导致所有弹幕都不发射了
+        }) {
+            it.toList()
+        }.first()
+        return CombinedDanmakuFetchResult(
+            results.map { it.matchInfo },
+            CombinedDanmakuSession(results.mapNotNull { it.danmakuSession })
         )
     }
 
@@ -131,17 +145,16 @@ class DanmakuManagerImpl(
 }
 
 class CombinedDanmakuSession(
-    private val sessions: List<Flow<DanmakuSession>>,
+    private val sessions: List<DanmakuSession>,
 ) : DanmakuSession {
     override val totalCount: Flow<Int?>
-        get() = combine(sessions.map { list -> list.flatMapLatest { it.totalCount } }) { counts ->
-            if (counts.all { it == null }) null
-            else counts.sumOf { it ?: 0 }
+        get() = combine(sessions.map { it.totalCount }) { array ->
+            array.sumOf { it ?: 0 }
         }
 
     override fun at(progress: Flow<Duration>): Flow<DanmakuEvent> {
         return sessions.map { session ->
-            session.flatMapLatest { it.at(progress) }
+            session.at(progress)
         }.merge()
     }
 }

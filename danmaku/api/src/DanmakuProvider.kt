@@ -28,7 +28,7 @@ interface DanmakuProvider : AutoCloseable {
      */
     suspend fun fetch(
         request: DanmakuSearchRequest,
-    ): DanmakuSession?
+    ): DanmakuFetchResult
 }
 
 class DanmakuSearchRequest(
@@ -49,6 +49,56 @@ class DanmakuSearchRequest(
     val fileSize: Long,
     val videoDuration: Duration,
 )
+
+class DanmakuFetchResult(
+    val matchInfo: DanmakuMatchInfo,
+    val danmakuSession: DanmakuSession?,
+) {
+    companion object {
+        @JvmStatic
+        fun noMatch(providerId: String) = DanmakuFetchResult(
+            matchInfo = DanmakuMatchInfo(
+                providerId = providerId,
+                count = 0,
+                method = DanmakuMatchMethod.NoMatch,
+            ),
+            danmakuSession = null,
+        )
+    }
+}
+
+class DanmakuMatchInfo(
+    /**
+     * @see DanmakuProvider.id
+     */
+    val providerId: String,
+    val count: Int,
+    val method: DanmakuMatchMethod,
+)
+
+sealed class DanmakuMatchMethod {
+    data class Exact(
+        val subjectTitle: String,
+        val episodeTitle: String,
+    ) : DanmakuMatchMethod()
+
+    data class ExactSubjectFuzzyEpisode(
+        val subjectTitle: String,
+        val episodeTitle: String,
+    ) : DanmakuMatchMethod()
+
+    data class Fuzzy(
+        val subjectTitle: String,
+        val episodeTitle: String,
+    ) : DanmakuMatchMethod()
+
+    data class ExactId(
+        val subjectId: Int,
+        val episodeId: Int,
+    ) : DanmakuMatchMethod()
+
+    data object NoMatch : DanmakuMatchMethod()
+}
 
 fun interface DanmakuMatcher {
     fun match(list: List<DanmakuEpisode>): DanmakuEpisode?

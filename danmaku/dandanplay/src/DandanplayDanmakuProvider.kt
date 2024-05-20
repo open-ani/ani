@@ -6,11 +6,13 @@ import io.ktor.client.plugins.HttpTimeout
 import me.him188.ani.app.data.subject.SubjectInfo
 import me.him188.ani.danmaku.api.AbstractDanmakuProvider
 import me.him188.ani.danmaku.api.DanmakuEpisode
+import me.him188.ani.danmaku.api.DanmakuFetchResult
+import me.him188.ani.danmaku.api.DanmakuMatchInfo
+import me.him188.ani.danmaku.api.DanmakuMatchMethod
 import me.him188.ani.danmaku.api.DanmakuMatchers
 import me.him188.ani.danmaku.api.DanmakuProviderConfig
 import me.him188.ani.danmaku.api.DanmakuProviderFactory
 import me.him188.ani.danmaku.api.DanmakuSearchRequest
-import me.him188.ani.danmaku.api.DanmakuSession
 import me.him188.ani.danmaku.api.TimeBasedDanmakuSession
 import me.him188.ani.danmaku.dandanplay.data.SearchEpisodesAnime
 import me.him188.ani.danmaku.dandanplay.data.toDanmakuOrNull
@@ -52,7 +54,7 @@ class DandanplayDanmakuProvider(
 
     override suspend fun fetch(
         request: DanmakuSearchRequest,
-    ): DanmakuSession? {
+    ): DanmakuFetchResult {
         // 获取剧集流程:
         //
         // 1. 获取该番剧所属季度的所有番的名字, 匹配 bangumi 条目所有别名
@@ -86,11 +88,11 @@ class DandanplayDanmakuProvider(
         if (episodes != null) {
             episodes.firstOrNull { it.epOrSort != null && it.epOrSort == request.episodeSort }?.let {
                 logger.info { "Matched episode by exact episodeSort: ${it.subjectName} - ${it.episodeName}" }
-                return createSession(it.id.toLong(), 0)
+                return createSession(it.id.toLong(), 0, DanmakuMatchMethod.Exact(it.subjectName, it.episodeName))
             }
             episodes.firstOrNull { it.epOrSort != null && it.epOrSort == request.episodeEp }?.let {
                 logger.info { "Matched episode by exact episodeEp: ${it.subjectName} - ${it.episodeName}" }
-                return createSession(it.id.toLong(), 0)
+                return createSession(it.id.toLong(), 0, DanmakuMatchMethod.Exact(it.subjectName, it.episodeName))
             }
         }
 
@@ -98,7 +100,11 @@ class DandanplayDanmakuProvider(
         if (!episodes.isNullOrEmpty()) {
             matcher.match(episodes)?.let {
                 logger.info { "Matched episode by ep search: ${it.subjectName} - ${it.episodeName}" }
-                return createSession(it.id.toLong(), 0)
+                return createSession(
+                    it.id.toLong(),
+                    0,
+                    DanmakuMatchMethod.ExactSubjectFuzzyEpisode(it.subjectName, it.episodeName)
+                )
             }
         }
 
@@ -111,7 +117,7 @@ class DandanplayDanmakuProvider(
             videoDuration = request.videoDuration
         )
         val match = if (resp.isMatched) {
-            resp.matches.firstOrNull() ?: return null
+            resp.matches.firstOrNull() ?: return DanmakuFetchResult.noMatch(ID)
         } else {
             matcher.match(resp.matches.map {
                 DanmakuEpisode(
@@ -122,11 +128,15 @@ class DandanplayDanmakuProvider(
                 )
             })?.let { match ->
                 resp.matches.first { it.episodeId.toString() == match.id }
-            } ?: return null
+            } ?: return DanmakuFetchResult.noMatch(ID)
         }
         logger.info { "Best match by file match: ${match.animeTitle} - ${match.episodeTitle}" }
         val episodeId = match.episodeId
-        return createSession(episodeId, (match.shift * 1000L).toLong())
+        return createSession(
+            episodeId,
+            (match.shift * 1000L).toLong(),
+            DanmakuMatchMethod.Fuzzy(match.animeTitle, match.episodeTitle)
+        )
     }
 
     /**
@@ -211,14 +221,18 @@ class DandanplayDanmakuProvider(
 
     private suspend fun createSession(
         episodeId: Long,
-        shiftMillis: Long
-    ): DanmakuSession {
+        shiftMillis: Long,
+        matchMethod: DanmakuMatchMethod,
+    ): DanmakuFetchResult {
         val list = dandanplayClient.getDanmakuList(episodeId = episodeId)
         logger.info { "$ID Fetched danmaku list: ${list.size}" }
-        return TimeBasedDanmakuSession.create(
-            list.asSequence().mapNotNull { it.toDanmakuOrNull() },
-            shiftMillis = shiftMillis,
-            coroutineContext = sessionCoroutineContext,
+        return DanmakuFetchResult(
+            matchInfo = DanmakuMatchInfo(ID, list.size, matchMethod),
+            TimeBasedDanmakuSession.create(
+                list.asSequence().mapNotNull { it.toDanmakuOrNull() },
+                shiftMillis = shiftMillis,
+                coroutineContext = sessionCoroutineContext,
+            )
         )
     }
 }
