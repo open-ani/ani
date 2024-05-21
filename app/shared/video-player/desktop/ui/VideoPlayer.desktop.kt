@@ -175,6 +175,7 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
                     .map {
                         SubtitleTrack(
                             openResource.value?.videoData?.filename + "-" + it.id(),
+                            it.id().toString(),
                             null,
                             listOf(Label(null, it.description()))
                         )
@@ -213,7 +214,7 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
                         }
                         return@collect
                     }
-                    val id = track.id.substringAfterLast("-").toIntOrNull() ?: run {
+                    val id = track.internalId.toIntOrNull() ?: run {
                         logger.error { "Invalid subtitle track id: ${track.id}" }
                         return@collect
                     }

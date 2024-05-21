@@ -17,6 +17,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import androidx.media3.exoplayer.trackselection.ExoTrackSelection
+import androidx.media3.exoplayer.trackselection.TrackSelection
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -119,6 +120,8 @@ internal class ExoPlayerState @UiThread constructor(
                         )
 
                     infix fun SubtitleTrack.matches(group: TrackGroup): Boolean {
+                        if (this.internalId == group.id) return true
+
                         if (this.labels.isEmpty()) return false
                         for (index in 0 until group.length) {
                             val format = group.getFormat(index)
@@ -143,7 +146,8 @@ internal class ExoPlayerState @UiThread constructor(
                                 return Pair(
                                     ExoTrackSelection.Definition(
                                         trackGroup,
-                                        trackGroup.length - 1, // 如果选择所有字幕会闪烁
+                                        IntArray(trackGroup.length) { it }, // 如果选择所有字幕会闪烁
+                                        TrackSelection.TYPE_UNSET,
                                     ),
                                     rendererIndex
                                 )
@@ -167,6 +171,7 @@ internal class ExoPlayerState @UiThread constructor(
                                         yield(
                                             SubtitleTrack(
                                                 "${openResource.value?.videoData?.filename}-$groupIndex-$index",
+                                                group.mediaTrackGroup.id,
                                                 format.language,
                                                 format.labels.map { Label(it.language, it.value) })
                                         )
@@ -281,7 +286,7 @@ internal class ExoPlayerState @UiThread constructor(
         backgroundScope.launch(Dispatchers.Main) {
             subtitleTracks.current.collect {
                 player.trackSelectionParameters = player.trackSelectionParameters.buildUpon().apply {
-                    setPreferredTextLanguage(it?.labels?.first()?.value ?: it?.language)
+                    setPreferredTextLanguage(it?.internalId) // dummy value to trigger a select, we have custom selector
                 }.build()
             }
         }
