@@ -130,7 +130,6 @@ internal class DanmakuHostStateImpl(
                 || tracks.fastAny { it.trackOffset.isNaN() }
             ) {
                 delay(100)
-                break
             }
             runPopulate(list, style)
         }
@@ -231,8 +230,10 @@ internal class DanmakuHostStateImpl(
         isPaused = false
     }
 
+    @Volatile
     private lateinit var textMeasurer: TextMeasurer
 
+    @Volatile
     private lateinit var baseStyle: TextStyle
 
     @Composable
