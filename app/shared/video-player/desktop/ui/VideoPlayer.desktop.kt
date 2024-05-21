@@ -66,7 +66,7 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
     }
 
     val component = run {
-        object : CallbackMediaPlayerComponent() {
+        object : CallbackMediaPlayerComponent() { //"-vv", "--avcodec-hw", "none"
             override fun mouseClicked(e: MouseEvent?) {
                 super.mouseClicked(e)
                 parent.dispatchEvent(e)
@@ -116,6 +116,8 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
     override suspend fun startPlayer(data: VlcjData) {
         val new = SeekableInputCallbackMedia(data.input)
         player.media().play(new)
+//        player.media().options().add(*arrayOf(":avcodec-hw=none")) // dxva2
+//        player.controls().play()
         lastMedia = new
 //        player.media().play/*OR .start*/(data.videoData.file.absolutePath)
     }
@@ -223,6 +225,7 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
                         logger.error { "Invalid subtitle track id: $id, count: $count" }
                         return@collect
                     }
+                    logger.info { "All ids: ${player.subpictures().trackDescriptions().map { it.id() }}" }
                     player.subpictures().setTrack(id)
                     logger.info { "Set subtitle track to $id (${track.labels.firstOrNull()})" }
                 } catch (e: Throwable) {
