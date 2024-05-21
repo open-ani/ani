@@ -6,6 +6,6 @@ See <https://github.com/JetBrains/compose-multiplatform/blob/master/tutorials/Na
 
 #### Libvlc
 
-- macos-arm64: 3.0.18
+- macos-arm64: 3.0.20
 - macos-x64: 3.0.18
 - windows-x64: 3.0.20
