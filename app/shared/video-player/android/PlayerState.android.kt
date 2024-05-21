@@ -165,18 +165,7 @@ internal class ExoPlayerState @UiThread constructor(
                         tracks.groups.asSequence()
                             .filter { it.type == C.TRACK_TYPE_TEXT }
                             .flatMapIndexed { groupIndex: Int, group: Tracks.Group ->
-                                sequence {
-                                    repeat(group.length) { index ->
-                                        val format = group.getTrackFormat(index)
-                                        yield(
-                                            SubtitleTrack(
-                                                "${openResource.value?.videoData?.filename}-$groupIndex-$index",
-                                                group.mediaTrackGroup.id,
-                                                format.language,
-                                                format.labels.map { Label(it.language, it.value) })
-                                        )
-                                    }
-                                }
+                                group.getSubtitleTracks()
                             }
                             .toList()
                 }
@@ -258,6 +247,21 @@ internal class ExoPlayerState @UiThread constructor(
                     playbackSpeed.value = playbackParameters.speed
                 }
             })
+        }
+    }
+
+    private fun Tracks.Group.getSubtitleTracks() = sequence {
+        repeat(length) { index ->
+            val format = getTrackFormat(index)
+            val firstLabel = format.labels.firstNotNullOfOrNull { it.value }
+            format.metadata
+            this.yield(
+                SubtitleTrack(
+                    "${openResource.value?.videoData?.filename}-${mediaTrackGroup.id}-$index",
+                    mediaTrackGroup.id,
+                    firstLabel ?: mediaTrackGroup.id,
+                    format.labels.map { Label(it.language, it.value) })
+            )
         }
     }
 

@@ -12,5 +12,5 @@ class SubtitlePresentation(
 
 @Stable
 val SubtitleTrack.subtitleLanguage: String
-    get() = labels.firstOrNull()?.value ?: language ?: id.substringAfterLast("-").takeLast(4)
+    get() = language ?: labels.firstOrNull()?.value ?: internalId
 

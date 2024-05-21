@@ -30,7 +30,7 @@ interface Track
 data class SubtitleTrack(
     val id: String,
     val internalId: String,
-    val language: String?, // "zh", 注意, 这可能不是实际字母语言
+    val language: String?,
     val labels: List<Label>,
 ) : Track
 
