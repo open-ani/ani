@@ -3,7 +3,6 @@ package me.him188.ani.danmaku.server
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.test.runTest
-import me.him188.ani.danmaku.protocol.ClientPlatform
 import me.him188.ani.danmaku.server.data.UserRepository
 import me.him188.ani.danmaku.server.service.AuthService
 import me.him188.ani.danmaku.server.service.ClientVersionVerifier
@@ -76,7 +75,7 @@ class AuthServiceTest {
                 }
             }
         }
-    
+
     }) {
         val authService = koin.get<AuthService>()
 
@@ -84,19 +83,19 @@ class AuthServiceTest {
         assertDoesNotThrow { authService.loginBangumi("test_token_1", "3.0.0-beta21") }
         assertThrows<InvalidClientVersionException> { authService.loginBangumi("test_token_1", "bad_version") }
     }
-    
+
     @Test
     fun `test login bangumi with client platform`() = runTestWithKoin {
         val authService = koin.get<AuthService>()
         val userRepository = koin.get<UserRepository>()
 
-        val userId = authService.loginBangumi("test_token_1", "3.0.0-dev", ClientPlatform.Android)
-        assertEquals(setOf(ClientPlatform.Android), userRepository.getUserById(userId)?.clientPlatforms)
-        
-        authService.loginBangumi("test_token_1", "3.0.0-dev", ClientPlatform.MacosX8664)
-        assertEquals(setOf(ClientPlatform.Android, ClientPlatform.MacosX8664), userRepository.getUserById(userId)?.clientPlatforms)
-        
-        authService.loginBangumi("test_token_1", "3.0.0-dev", ClientPlatform.Android)
-        assertEquals(setOf(ClientPlatform.Android, ClientPlatform.MacosX8664), userRepository.getUserById(userId)?.clientPlatforms)
+        val userId = authService.loginBangumi("test_token_1", "3.0.0-dev", "android-aarch64")
+        assertEquals(setOf("android-aarch64"), userRepository.getUserById(userId)?.clientPlatforms)
+
+        authService.loginBangumi("test_token_1", "3.0.0-dev", "macos-x86_64")
+        assertEquals(setOf("android-aarch64", "macos-x86_64"), userRepository.getUserById(userId)?.clientPlatforms)
+
+        authService.loginBangumi("test_token_1", "3.0.0-dev", "android-aarch64")
+        assertEquals(setOf("android-aarch64", "macos-x86_64"), userRepository.getUserById(userId)?.clientPlatforms)
     }
 }

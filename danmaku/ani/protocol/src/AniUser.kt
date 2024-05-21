@@ -14,7 +14,7 @@ data class AniUser(
     val registerTime: Long,
     val lastLoginTime: Long,
     val clientVersion: String? = null,
-    val clientPlatforms: Set<ClientPlatform> = emptySet(),
+    val clientPlatforms: Set<String> = emptySet(),
 ) {
     companion object {
         val MAGIC_REGISTER_TIME = ZonedDateTime.of(

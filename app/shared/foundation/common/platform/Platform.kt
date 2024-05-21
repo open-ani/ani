@@ -6,7 +6,7 @@ import kotlin.contracts.contract
 
 @Immutable
 sealed class Platform {
-    abstract val name: String
+    abstract val name: String // don't change, it's actually an ID
     abstract val arch: Arch
 
     val nameAndArch get() = "$name ${arch.displayName}"
@@ -56,7 +56,7 @@ sealed class Platform {
 }
 
 enum class Arch(
-    val displayName: String,
+    val displayName: String, // Don't change, used by the server
 ) {
     X86_64("x86_64"),
     AARCH64("aarch64"),

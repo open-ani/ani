@@ -1,6 +1,5 @@
 package me.him188.ani.danmaku.server.service
 
-import me.him188.ani.danmaku.protocol.ClientPlatform
 import me.him188.ani.danmaku.server.data.UserRepository
 import me.him188.ani.danmaku.server.util.exception.InvalidClientVersionException
 import me.him188.ani.danmaku.server.util.exception.OperationFailedException
@@ -12,7 +11,7 @@ interface AuthService {
     suspend fun loginBangumi(
         bangumiToken: String,
         clientVersion: String? = null,
-        clientPlatform: ClientPlatform? = null
+        clientPlatform: String? = null
     ): String
 }
 
@@ -24,7 +23,7 @@ class AuthServiceImpl : AuthService, KoinComponent {
     override suspend fun loginBangumi(
         bangumiToken: String,
         clientVersion: String?,
-        clientPlatform: ClientPlatform?
+        clientPlatform: String?
     ): String {
         val bangumiUser = bangumiLoginHelper.login(bangumiToken) ?: throw UnauthorizedException()
         if (clientVersion != null) {

@@ -1,11 +1,7 @@
 package me.him188.ani.danmaku.server.data.mongodb
 
-import com.mongodb.client.model.Updates
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import me.him188.ani.danmaku.protocol.AniUser
-import me.him188.ani.danmaku.protocol.ClientPlatform
 import me.him188.ani.danmaku.server.data.UserRepository
 import me.him188.ani.danmaku.server.data.model.UserModel
 import me.him188.ani.danmaku.server.util.exception.OperationFailedException
@@ -99,7 +95,7 @@ class MongoUserRepositoryImpl : UserRepository, KoinComponent {
             registerTime = registerTime,
             lastLoginTime = lastLoginTime,
             clientVersion = user.clientVersion,
-            clientPlatforms = user.clientPlatforms?.map { ClientPlatform.valueOf(it) }?.toSet() ?: emptySet()
+            clientPlatforms = user.clientPlatforms?.toSet() ?: emptySet()
         )
     }
 
@@ -116,11 +112,11 @@ class MongoUserRepositoryImpl : UserRepository, KoinComponent {
             Field.of(UserModel::clientVersion) setTo clientVersion
         )
     }
-    
-    override suspend fun addClientPlatform(userId: String, clientPlatform: ClientPlatform) {
+
+    override suspend fun addClientPlatform(userId: String, clientPlatform: String) {
         userTable.updateOne(
             Field.Id eq UUID.fromString(userId),
-            Field.of(UserModel::clientPlatforms) addToSet clientPlatform.name
+            Field.of(UserModel::clientPlatforms) addToSet clientPlatform
         )
     }
 }

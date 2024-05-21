@@ -2,9 +2,7 @@ package me.him188.ani.danmaku.server.data
 
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.serialization.json.Json
 import me.him188.ani.danmaku.protocol.AniUser
-import me.him188.ani.danmaku.protocol.ClientPlatform
 import me.him188.ani.danmaku.server.data.model.UserModel
 
 interface UserRepository {
@@ -26,7 +24,7 @@ interface UserRepository {
     suspend fun getUserById(userId: String): AniUser?
     suspend fun setLastLoginTime(userId: String, time: Long): Boolean
     suspend fun setClientVersion(userId: String, clientVersion: String)
-    suspend fun addClientPlatform(userId: String, clientPlatform: ClientPlatform)
+    suspend fun addClientPlatform(userId: String, clientPlatform: String)
 }
 
 class InMemoryUserRepositoryImpl : UserRepository {
@@ -66,7 +64,7 @@ class InMemoryUserRepositoryImpl : UserRepository {
     }
 
     override suspend fun getBangumiId(userId: String): Int? {
-        mutex.withLock { 
+        mutex.withLock {
             return users.find { it.id.toString() == userId }?.bangumiUserId
         }
     }
@@ -90,7 +88,7 @@ class InMemoryUserRepositoryImpl : UserRepository {
     override suspend fun getUserById(userId: String): AniUser? {
         mutex.withLock {
             val user = users.find { it.id.toString() == userId } ?: return null
-            val registerTime = user.registerTime ?: AniUser.MAGIC_REGISTER_TIME.also { 
+            val registerTime = user.registerTime ?: AniUser.MAGIC_REGISTER_TIME.also {
                 users.remove(user)
                 users.add(user.copy(registerTime = it))
             }
@@ -106,7 +104,7 @@ class InMemoryUserRepositoryImpl : UserRepository {
                 registerTime = registerTime,
                 lastLoginTime = lastLoginTime,
                 clientVersion = user.clientVersion,
-                clientPlatforms = user.clientPlatforms?.map { ClientPlatform.valueOf(it) }?.toSet() ?: emptySet(),
+                clientPlatforms = user.clientPlatforms?.toSet() ?: emptySet(),
             )
         }
     }
@@ -128,12 +126,12 @@ class InMemoryUserRepositoryImpl : UserRepository {
         }
     }
 
-    override suspend fun addClientPlatform(userId: String, clientPlatform: ClientPlatform) {
+    override suspend fun addClientPlatform(userId: String, clientPlatform: String) {
         mutex.withLock {
             val user = users.find { it.id.toString() == userId } ?: return
             users.remove(user)
             val newPlatform = user.clientPlatforms?.toMutableSet() ?: mutableSetOf()
-            newPlatform.add(clientPlatform.name)
+            newPlatform.add(clientPlatform)
             users.add(user.copy(clientPlatforms = newPlatform.toList()))
         }
     }

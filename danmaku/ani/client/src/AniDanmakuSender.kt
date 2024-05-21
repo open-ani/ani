@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
@@ -118,7 +119,9 @@ class AniDanmakuSenderImpl(
                 setBody(
                     BangumiLoginRequest(
                         bangumiToken,
-                        clientVersion = currentAniBuildConfig.versionName
+                        clientVersion = currentAniBuildConfig.versionName,
+                        clientOS = Platform.currentPlatform.name,
+                        clientArch = Platform.currentPlatform.arch.displayName,
                     )
                 )
             }
