@@ -2,7 +2,9 @@ package me.him188.ani.danmaku.server.data
 
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.serialization.json.Json
 import me.him188.ani.danmaku.protocol.AniUser
+import me.him188.ani.danmaku.protocol.ClientPlatform
 import me.him188.ani.danmaku.server.data.model.UserModel
 
 interface UserRepository {
@@ -24,6 +26,7 @@ interface UserRepository {
     suspend fun getUserById(userId: String): AniUser?
     suspend fun setLastLoginTime(userId: String, time: Long): Boolean
     suspend fun setClientVersion(userId: String, clientVersion: String)
+    suspend fun addClientPlatform(userId: String, clientPlatform: ClientPlatform)
 }
 
 class InMemoryUserRepositoryImpl : UserRepository {
@@ -103,6 +106,7 @@ class InMemoryUserRepositoryImpl : UserRepository {
                 registerTime = registerTime,
                 lastLoginTime = lastLoginTime,
                 clientVersion = user.clientVersion,
+                clientPlatforms = user.clientPlatforms?.map { ClientPlatform.valueOf(it) }?.toSet() ?: emptySet(),
             )
         }
     }
@@ -121,6 +125,16 @@ class InMemoryUserRepositoryImpl : UserRepository {
             val user = users.find { it.id.toString() == userId } ?: return
             users.remove(user)
             users.add(user.copy(clientVersion = clientVersion))
+        }
+    }
+
+    override suspend fun addClientPlatform(userId: String, clientPlatform: ClientPlatform) {
+        mutex.withLock {
+            val user = users.find { it.id.toString() == userId } ?: return
+            users.remove(user)
+            val newPlatform = user.clientPlatforms?.toMutableSet() ?: mutableSetOf()
+            newPlatform.add(clientPlatform.name)
+            users.add(user.copy(clientPlatforms = newPlatform.toList()))
         }
     }
 }

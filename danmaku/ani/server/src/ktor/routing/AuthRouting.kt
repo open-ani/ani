@@ -12,6 +12,7 @@ import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import me.him188.ani.danmaku.protocol.BangumiLoginRequest
 import me.him188.ani.danmaku.protocol.BangumiLoginResponse
+import me.him188.ani.danmaku.protocol.ClientPlatform
 import me.him188.ani.danmaku.server.service.AuthService
 import me.him188.ani.danmaku.server.service.JwtTokenManager
 import me.him188.ani.danmaku.server.util.exception.InvalidClientVersionException
@@ -26,7 +27,7 @@ fun Route.authRouting() {
         documentation()
         post {
             val request = call.receive<BangumiLoginRequest>()
-            val userId = service.loginBangumi(request.bangumiToken, request.clientVersion)
+            val userId = service.loginBangumi(request.bangumiToken, request.clientVersion, request.clientPlatform)
             val userToken = jwtTokenManager.createToken(userId)
             call.respond(BangumiLoginResponse(userToken))
         }
@@ -41,7 +42,11 @@ private fun Route.documentation() {
             request {
                 requestType<BangumiLoginRequest>()
                 description("Bangumi token字符串")
-                examples("" to BangumiLoginRequest("VAcbHKhXqcjpCOVY5KFxwYEeQCOw4i0u"))
+                examples("" to BangumiLoginRequest(
+                    bangumiToken = "VAcbHKhXqcjpCOVY5KFxwYEeQCOw4i0u",
+                    clientVersion = "3.0.0-beta24",
+                    clientPlatform = ClientPlatform.Android
+                ))
             }
             response {
                 responseCode(HttpStatusCode.OK)

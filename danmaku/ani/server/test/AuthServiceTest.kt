@@ -3,11 +3,14 @@ package me.him188.ani.danmaku.server
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.test.runTest
+import me.him188.ani.danmaku.protocol.ClientPlatform
+import me.him188.ani.danmaku.server.data.UserRepository
 import me.him188.ani.danmaku.server.service.AuthService
 import me.him188.ani.danmaku.server.service.ClientVersionVerifier
 import me.him188.ani.danmaku.server.util.exception.InvalidClientVersionException
 import me.him188.ani.danmaku.server.util.exception.UnauthorizedException
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
@@ -80,5 +83,20 @@ class AuthServiceTest {
         assertDoesNotThrow { authService.loginBangumi("test_token_1", "3.0.0-dev") }
         assertDoesNotThrow { authService.loginBangumi("test_token_1", "3.0.0-beta21") }
         assertThrows<InvalidClientVersionException> { authService.loginBangumi("test_token_1", "bad_version") }
+    }
+    
+    @Test
+    fun `test login bangumi with client platform`() = runTestWithKoin {
+        val authService = koin.get<AuthService>()
+        val userRepository = koin.get<UserRepository>()
+
+        val userId = authService.loginBangumi("test_token_1", "3.0.0-dev", ClientPlatform.Android)
+        assertEquals(setOf(ClientPlatform.Android), userRepository.getUserById(userId)?.clientPlatforms)
+        
+        authService.loginBangumi("test_token_1", "3.0.0-dev", ClientPlatform.MacosX8664)
+        assertEquals(setOf(ClientPlatform.Android, ClientPlatform.MacosX8664), userRepository.getUserById(userId)?.clientPlatforms)
+        
+        authService.loginBangumi("test_token_1", "3.0.0-dev", ClientPlatform.Android)
+        assertEquals(setOf(ClientPlatform.Android, ClientPlatform.MacosX8664), userRepository.getUserById(userId)?.clientPlatforms)
     }
 }

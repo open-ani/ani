@@ -14,4 +14,5 @@ data class UserModel(
     val registerTime: Long? = null,
     val lastLoginTime: Long? = null,
     val clientVersion: String? = null,
+    val clientPlatforms: List<String>? = emptyList(),
 )

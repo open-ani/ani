@@ -43,6 +43,10 @@ data class Field(val name: String) {
         return Updates.set(name, time)
     }
 
+    infix fun <TItem> addToSet(time: TItem & Any): Bson {
+        return Updates.addToSet(name, time)
+    }
+
     companion object {
         val Id = Field("_id")
 

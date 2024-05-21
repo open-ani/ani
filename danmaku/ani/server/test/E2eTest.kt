@@ -17,6 +17,7 @@ import kotlinx.serialization.json.Json
 import me.him188.ani.danmaku.protocol.AniUser
 import me.him188.ani.danmaku.protocol.BangumiLoginRequest
 import me.him188.ani.danmaku.protocol.BangumiLoginResponse
+import me.him188.ani.danmaku.protocol.ClientPlatform
 import me.him188.ani.danmaku.protocol.DanmakuGetResponse
 import me.him188.ani.danmaku.protocol.DanmakuInfo
 import me.him188.ani.danmaku.protocol.DanmakuLocation
@@ -49,7 +50,11 @@ class E2eTest {
 
         val response = client.post("$serverEndpoint/login/bangumi") {
             contentType(ContentType.Application.Json)
-            setBody(BangumiLoginRequest( "test_token_1"))
+            setBody(BangumiLoginRequest(
+                bangumiToken = "test_token_1",
+                clientVersion = "3.0.0-dev",
+                clientPlatform = ClientPlatform.Android,
+            ))
         }
         assertEquals(HttpStatusCode.OK, response.status)
         val token = response.body<BangumiLoginResponse>().token

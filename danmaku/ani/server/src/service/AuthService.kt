@@ -1,5 +1,6 @@
 package me.him188.ani.danmaku.server.service
 
+import me.him188.ani.danmaku.protocol.ClientPlatform
 import me.him188.ani.danmaku.server.data.UserRepository
 import me.him188.ani.danmaku.server.util.exception.InvalidClientVersionException
 import me.him188.ani.danmaku.server.util.exception.OperationFailedException
@@ -8,7 +9,11 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
 interface AuthService {
-    suspend fun loginBangumi(bangumiToken: String, clientVersion: String? = null): String
+    suspend fun loginBangumi(
+        bangumiToken: String,
+        clientVersion: String? = null,
+        clientPlatform: ClientPlatform? = null
+    ): String
 }
 
 class AuthServiceImpl : AuthService, KoinComponent {
@@ -16,7 +21,11 @@ class AuthServiceImpl : AuthService, KoinComponent {
     private val userRepository: UserRepository by inject()
     private val clientVersionVerifier: ClientVersionVerifier by inject()
 
-    override suspend fun loginBangumi(bangumiToken: String, clientVersion: String?): String {
+    override suspend fun loginBangumi(
+        bangumiToken: String,
+        clientVersion: String?,
+        clientPlatform: ClientPlatform?
+    ): String {
         val bangumiUser = bangumiLoginHelper.login(bangumiToken) ?: throw UnauthorizedException()
         if (clientVersion != null) {
             if (!clientVersionVerifier.verify(clientVersion.trim())) {
@@ -31,6 +40,9 @@ class AuthServiceImpl : AuthService, KoinComponent {
         }
         if (clientVersion != null) {
             userRepository.setClientVersion(userId, clientVersion.trim())
+        }
+        if (clientPlatform != null) {
+            userRepository.addClientPlatform(userId, clientPlatform)
         }
         return userId
     }

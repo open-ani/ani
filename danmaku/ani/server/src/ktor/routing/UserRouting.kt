@@ -11,6 +11,7 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 import me.him188.ani.danmaku.protocol.AniUser
+import me.him188.ani.danmaku.protocol.ClientPlatform
 import me.him188.ani.danmaku.server.service.UserService
 import me.him188.ani.danmaku.server.util.getUserIdOrRespond
 import org.koin.ktor.ext.inject
@@ -48,7 +49,8 @@ private fun Route.documentation() {
                         largeAvatar = "https://example.com/avatarLarge.jpg",
                         registerTime = 1714404248957,
                         lastLoginTime = 1714404248957,
-                        clientVersion = "3.0.0-beta22"
+                        clientVersion = "3.0.0-beta22",
+                        clientPlatforms = setOf(ClientPlatform.Android)
                     )
                 )
             }
