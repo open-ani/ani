@@ -1,4 +1,4 @@
-package me.him188.ani.app.ui.preference.tabs.media
+package me.him188.ani.app.ui.settings.tabs.media
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
@@ -18,7 +18,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.util.fastAll
 import me.him188.ani.app.data.media.MediaCacheManager
 import me.him188.ani.app.ui.external.placeholder.placeholder
-import me.him188.ani.app.ui.preference.PreferenceScope
+import me.him188.ani.app.ui.settings.SettingsScope
 import me.him188.ani.app.ui.subject.episode.details.renderResolution
 import me.him188.ani.app.ui.subject.episode.details.renderSubtitleLanguage
 import me.him188.ani.app.ui.subject.episode.mediaFetch.renderMediaSource
@@ -26,7 +26,7 @@ import me.him188.ani.app.ui.subject.episode.mediaFetch.renderMediaSourceDescript
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 
 @Composable
-internal fun PreferenceScope.MediaSelectionGroup(vm: MediaPreferenceViewModel) {
+internal fun SettingsScope.MediaSelectionGroup(vm: MediaSettingsViewModel) {
     Group(
         title = {
             Text("资源选择偏好")

@@ -2,7 +2,7 @@ package me.him188.ani.app.navigation
 
 import androidx.compose.runtime.compositionLocalOf
 import kotlinx.coroutines.CompletableDeferred
-import me.him188.ani.app.ui.preference.PreferenceTab
+import me.him188.ani.app.ui.settings.SettingsTab
 import moe.tlaster.precompose.navigation.NavOptions
 import moe.tlaster.precompose.navigation.Navigator
 import org.koin.core.component.KoinComponent
@@ -45,7 +45,7 @@ interface AniNavigator {
         navigator.navigate("/auth", NavOptions(launchSingleTop = true))
     }
 
-    fun navigatePreferences(tab: PreferenceTab = PreferenceTab.Default) {
+    fun navigatePreferences(tab: SettingsTab = SettingsTab.Default) {
         navigator.navigate("/preferences?tab=${tab.ordinal}")
     }
 

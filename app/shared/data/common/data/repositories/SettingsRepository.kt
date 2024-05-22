@@ -13,7 +13,7 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import me.him188.ani.app.data.models.DanmakuSettings
 import me.him188.ani.app.data.models.MediaCacheSettings
-import me.him188.ani.app.data.models.ProxyPreferences
+import me.him188.ani.app.data.models.ProxySettings
 import me.him188.ani.app.data.serializers.DanmakuConfigSerializer
 import me.him188.ani.app.tools.torrent.engines.Libtorrent4jConfig
 import me.him188.ani.app.tools.torrent.engines.QBittorrentConfig
@@ -23,43 +23,46 @@ import me.him188.ani.utils.logging.debug
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.logger
 
-interface PreferencesRepository {
-    val danmakuEnabled: Preference<Boolean>
-    val danmakuConfig: Preference<DanmakuConfig>
+/**
+ * 所有设置
+ */
+interface SettingsRepository {
+    val danmakuEnabled: Settings<Boolean>
+    val danmakuConfig: Settings<DanmakuConfig>
 
 //    suspend fun setDanmakuEnabled(enabled: Boolean)
 
     /**
-     * 全局默认设置
+     * 全局默认选择资源的偏好设置
      *
      * @see EpisodePreferencesRepository
      */
-    val defaultMediaPreference: Preference<MediaPreference>
+    val defaultMediaPreference: Settings<MediaPreference>
 
-    val proxyPreferences: Preference<ProxyPreferences>
-    val mediaCacheSettings: Preference<MediaCacheSettings>
-    val danmakuSettings: Preference<DanmakuSettings>
+    val proxySettings: Settings<ProxySettings>
+    val mediaCacheSettings: Settings<MediaCacheSettings>
+    val danmakuSettings: Settings<DanmakuSettings>
 
-    val libtorrent4jConfig: Preference<Libtorrent4jConfig>
-    val qBittorrentConfig: Preference<QBittorrentConfig>
+    val libtorrent4jConfig: Settings<Libtorrent4jConfig>
+    val qBittorrentConfig: Settings<QBittorrentConfig>
 }
 
 @Stable
-interface Preference<T> {
+interface Settings<T> {
     val flow: Flow<T>
     suspend fun set(value: T)
 }
 
 class PreferencesRepositoryImpl(
     private val preferences: DataStore<Preferences>,
-) : PreferencesRepository {
+) : SettingsRepository {
     private val format = Json {
         ignoreUnknownKeys = true
     }
 
     inner class BooleanPreference(
         val name: String,
-    ) : Preference<Boolean> {
+    ) : Settings<Boolean> {
         private val key = booleanPreferencesKey(name)
         override val flow: Flow<Boolean> = preferences.data.map { it[key] ?: true }
         override suspend fun set(value: Boolean) {
@@ -71,7 +74,7 @@ class PreferencesRepositoryImpl(
         val name: String,
         private val serializer: KSerializer<T>,
         default: () -> T,
-    ) : Preference<T> {
+    ) : Settings<T> {
         private val key = stringPreferencesKey(name)
         override val flow: Flow<T> = preferences.data
             .map { it[key] }
@@ -95,42 +98,42 @@ class PreferencesRepositoryImpl(
         }
     }
 
-    override val danmakuEnabled: Preference<Boolean> = BooleanPreference("danmaku_enabled")
-    override val danmakuConfig: Preference<DanmakuConfig> =
+    override val danmakuEnabled: Settings<Boolean> = BooleanPreference("danmaku_enabled")
+    override val danmakuConfig: Settings<DanmakuConfig> =
         SerializablePreference("danmaku_config", DanmakuConfigSerializer, default = { DanmakuConfig.Default })
-    override val defaultMediaPreference: Preference<MediaPreference> =
+    override val defaultMediaPreference: Settings<MediaPreference> =
         SerializablePreference(
             "defaultMediaPreference",
             MediaPreference.serializer(),
             default = { MediaPreference.Default }
         )
-    override val proxyPreferences: Preference<ProxyPreferences> = SerializablePreference(
+    override val proxySettings: Settings<ProxySettings> = SerializablePreference(
         "proxyPreferences",
-        ProxyPreferences.serializer(),
-        default = { ProxyPreferences.Default }
+        ProxySettings.serializer(),
+        default = { ProxySettings.Default }
     )
-    override val mediaCacheSettings: Preference<MediaCacheSettings> = SerializablePreference(
+    override val mediaCacheSettings: Settings<MediaCacheSettings> = SerializablePreference(
         "cachePreferences",
         MediaCacheSettings.serializer(),
         default = { MediaCacheSettings.Default }
     )
-    override val danmakuSettings: Preference<DanmakuSettings> = SerializablePreference(
+    override val danmakuSettings: Settings<DanmakuSettings> = SerializablePreference(
         "danmakuSettings",
         DanmakuSettings.serializer(),
         default = { DanmakuSettings.Default }
     )
-    override val libtorrent4jConfig: Preference<Libtorrent4jConfig> = SerializablePreference(
+    override val libtorrent4jConfig: Settings<Libtorrent4jConfig> = SerializablePreference(
         "libtorrent4jConfig",
         Libtorrent4jConfig.serializer(),
         default = { Libtorrent4jConfig.Default }
     )
-    override val qBittorrentConfig: Preference<QBittorrentConfig> = SerializablePreference(
+    override val qBittorrentConfig: Settings<QBittorrentConfig> = SerializablePreference(
         "qBittorrentConfig",
         QBittorrentConfig.serializer(),
         default = { QBittorrentConfig.Default }
     )
 
     private companion object {
-        private val logger = logger<PreferencesRepository>()
+        private val logger = logger<SettingsRepository>()
     }
 }

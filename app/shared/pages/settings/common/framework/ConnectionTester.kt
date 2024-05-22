@@ -1,4 +1,4 @@
-package me.him188.ani.app.ui.preference.framework
+package me.him188.ani.app.ui.settings.framework
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -31,7 +31,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import me.him188.ani.app.ui.preference.PreferenceScope
+import me.him188.ani.app.ui.settings.SettingsScope
 import me.him188.ani.app.ui.subject.episode.mediaFetch.getMediaSourceIcon
 import me.him188.ani.app.ui.subject.episode.mediaFetch.renderMediaSource
 import me.him188.ani.app.ui.subject.episode.mediaFetch.renderMediaSourceDescription
@@ -92,7 +92,7 @@ class ConnectionTester(
 }
 
 @Composable
-fun PreferenceScope.MediaSourceTesterView(
+fun SettingsScope.MediaSourceTesterView(
     tester: ConnectionTester,
     showTime: Boolean,
     title: @Composable RowScope.() -> Unit = { Text(remember(tester.id) { renderMediaSource(tester.id) }) },

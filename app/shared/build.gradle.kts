@@ -257,7 +257,7 @@ kotlin {
         submodule("app/shared/pages/episode-play")
         submodule("app/shared/pages/home")
         submodule("app/shared/pages/main")
-        submodule("app/shared/pages/preferences")
+        submodule("app/shared/pages/settings")
         submodule("app/shared/pages/cache-manage")
         submodule("app/shared/pages/update")
     }

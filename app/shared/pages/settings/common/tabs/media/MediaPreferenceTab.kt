@@ -1,4 +1,4 @@
-package me.him188.ani.app.ui.preference.tabs.media
+package me.him188.ani.app.ui.settings.tabs.media
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
@@ -7,20 +7,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import kotlinx.coroutines.flow.map
-import me.him188.ani.app.data.media.MediaCacheManager
 import me.him188.ani.app.data.media.MediaSourceManager
 import me.him188.ani.app.data.models.MediaCacheSettings
-import me.him188.ani.app.data.repositories.PreferencesRepository
+import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.app.tools.torrent.engines.Libtorrent4jConfig
 import me.him188.ani.app.tools.torrent.engines.QBittorrentConfig
 import me.him188.ani.app.ui.foundation.rememberViewModel
-import me.him188.ani.app.ui.preference.PreferenceTab
-import me.him188.ani.app.ui.preference.SelectableItem
-import me.him188.ani.app.ui.preference.framework.AbstractSettingsViewModel
-import me.him188.ani.app.ui.preference.framework.toConnectionTestResult
+import me.him188.ani.app.ui.settings.SelectableItem
+import me.him188.ani.app.ui.settings.SettingsTab
+import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
+import me.him188.ani.app.ui.settings.framework.toConnectionTestResult
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.datasources.api.topic.Resolution
 import me.him188.ani.datasources.api.topic.SubtitleLanguage
@@ -28,16 +27,15 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
 @Stable
-class MediaPreferenceViewModel : AbstractSettingsViewModel(), KoinComponent {
-    private val preferencesRepository: PreferencesRepository by inject()
+class MediaSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
+    private val settingsRepository: SettingsRepository by inject()
     private val mediaSourceManager: MediaSourceManager by inject()
-    private val mediaCacheManager: MediaCacheManager by inject()
     private val torrentManager: TorrentManager by inject()
 
     @Stable
     private val placeholderMediaPreference = MediaPreference.Empty.copy() // don't remove .copy, we need identity check
 
-    val defaultMediaPreference by preferencesRepository.defaultMediaPreference.flow
+    val defaultMediaPreference by settingsRepository.defaultMediaPreference.flow
         .map {
             it
         }.produceState(placeholderMediaPreference)
@@ -84,20 +82,20 @@ class MediaPreferenceViewModel : AbstractSettingsViewModel(), KoinComponent {
     private val defaultMediaPreferenceTasker = MonoTasker(this.backgroundScope)
     fun updateDefaultMediaPreference(copy: MediaPreference) {
         defaultMediaPreferenceTasker.launch {
-            preferencesRepository.defaultMediaPreference.set(copy)
+            settingsRepository.defaultMediaPreference.set(copy)
         }
     }
 
 
     val mediaCacheSettings by settings(
-        preferencesRepository.mediaCacheSettings,
+        settingsRepository.mediaCacheSettings,
         MediaCacheSettings(placeholder = -1),
     )
 
     private val mediaCacheSettingsTasker = MonoTasker(this.backgroundScope)
     fun updateMediaCacheSettings(copy: MediaCacheSettings) {
         mediaCacheSettingsTasker.launch {
-            preferencesRepository.mediaCacheSettings.set(copy)
+            settingsRepository.mediaCacheSettings.set(copy)
         }
     }
 
@@ -106,11 +104,11 @@ class MediaPreferenceViewModel : AbstractSettingsViewModel(), KoinComponent {
     ///////////////////////////////////////////////////////////////////////////
 
     val libtorrent4jConfig by settings(
-        preferencesRepository.libtorrent4jConfig,
+        settingsRepository.libtorrent4jConfig,
         placeholder = Libtorrent4jConfig(placeholder = -1)
     )
     val qBittorrentConfig by settings(
-        preferencesRepository.qBittorrentConfig,
+        settingsRepository.qBittorrentConfig,
         placeholder = QBittorrentConfig(placeholder = -1)
     )
 
@@ -121,11 +119,11 @@ class MediaPreferenceViewModel : AbstractSettingsViewModel(), KoinComponent {
 
 @Composable
 fun MediaPreferenceTab(
-    vm: MediaPreferenceViewModel = rememberViewModel { MediaPreferenceViewModel() },
+    vm: MediaSettingsViewModel = rememberViewModel { MediaSettingsViewModel() },
     modifier: Modifier = Modifier,
 ) {
     val navigator by rememberUpdatedState(LocalNavigator.current)
-    PreferenceTab(modifier) {
+    SettingsTab(modifier) {
         AutoCacheGroup(vm, navigator)
         TorrentEngineGroup(vm)
         MediaSelectionGroup(vm)

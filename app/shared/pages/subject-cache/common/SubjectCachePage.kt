@@ -45,10 +45,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
 import me.him188.ani.app.data.media.EpisodeCacheStatus
 import me.him188.ani.app.ui.foundation.TopAppBarGoBackButton
-import me.him188.ani.app.ui.preference.PreferenceScope
-import me.him188.ani.app.ui.preference.PreferenceTab
-import me.him188.ani.app.ui.preference.SwitchItem
-import me.him188.ani.app.ui.preference.tabs.media.autoCacheDescription
+import me.him188.ani.app.ui.settings.SettingsScope
+import me.him188.ani.app.ui.settings.SettingsTab
+import me.him188.ani.app.ui.settings.SwitchItem
+import me.him188.ani.app.ui.settings.tabs.media.autoCacheDescription
 import me.him188.ani.app.ui.theme.stronglyWeaken
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
@@ -114,7 +114,7 @@ fun SubjectCachePage(
                 }
             }
 
-            PreferenceTab {
+            SettingsTab {
                 Spacer(Modifier.fillMaxWidth()) // tab has spacedBy arrangement
 
                 AutoCacheGroup(onClickGlobalCacheSettings, onClickGlobalCacheManage)
@@ -181,7 +181,7 @@ fun SubjectCachePage(
 }
 
 @Composable
-private fun PreferenceScope.AutoCacheGroup(
+private fun SettingsScope.AutoCacheGroup(
     onClickGlobalCacheSettings: () -> Unit,
     onClickGlobalCacheManage: () -> Unit,
 ) {
@@ -241,7 +241,7 @@ private fun PreferenceScope.AutoCacheGroup(
 }
 
 @Composable
-private fun PreferenceScope.EpisodeItem(
+private fun SettingsScope.EpisodeItem(
     episode: EpisodeCacheState,
     action: @Composable () -> Unit = {},
     onClick: () -> Unit,

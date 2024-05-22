@@ -1,4 +1,4 @@
-package me.him188.ani.app.ui.preference.tabs
+package me.him188.ani.app.ui.settings.tabs
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -11,12 +11,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import me.him188.ani.app.data.media.MediaSourceManager
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.rememberViewModel
-import me.him188.ani.app.ui.preference.PreferencePage
-import me.him188.ani.app.ui.preference.PreferenceScope
-import me.him188.ani.app.ui.preference.PreferenceTab
-import me.him188.ani.app.ui.preference.SwitchItem
-import me.him188.ani.app.ui.preference.TextFieldDialog
-import me.him188.ani.app.ui.preference.framework.ConnectionTestResult
+import me.him188.ani.app.ui.settings.SettingsPage
+import me.him188.ani.app.ui.settings.SettingsScope
+import me.him188.ani.app.ui.settings.SettingsTab
+import me.him188.ani.app.ui.settings.SwitchItem
+import me.him188.ani.app.ui.settings.TextFieldDialog
+import me.him188.ani.app.ui.settings.framework.ConnectionTestResult
 import me.him188.ani.datasources.acgrip.AcgRipMediaSource
 import me.him188.ani.datasources.api.paging.PageBasedPagedSource
 import me.him188.ani.datasources.api.paging.Paged
@@ -32,10 +32,10 @@ import kotlin.random.Random
 
 @Composable
 private fun PreviewTab(
-    content: @Composable PreferenceScope.() -> Unit,
+    content: @Composable SettingsScope.() -> Unit,
 ) {
     ProvideCompositionLocalsForPreview {
-        PreferenceTab {
+        SettingsTab {
             content()
         }
     }
@@ -45,7 +45,7 @@ private fun PreviewTab(
 @Composable
 private fun PreviewPreferencePage() {
     ProvideCompositionLocalsForPreview {
-        PreferencePage()
+        SettingsPage()
     }
 }
 
@@ -87,14 +87,14 @@ private fun PreviewNetworkPreferenceTab() {
             }
         }
     ) {
-        val vm = rememberViewModel { NetworkPreferenceViewModel() }
+        val vm = rememberViewModel { NetworkSettingsViewModel() }
         SideEffect {
             val testers = vm.allMediaTesters.testers
             testers.first().result = ConnectionTestResult.SUCCESS
             testers.drop(1).first().result = ConnectionTestResult.FAILED
             testers.drop(2).first().result = ConnectionTestResult.NOT_ENABLED
         }
-        NetworkPreferenceTab()
+        NetworkSettingsTab()
     }
 }
 
@@ -102,7 +102,7 @@ private fun PreviewNetworkPreferenceTab() {
 @Composable
 private fun PreviewPreferenceScope() {
     ProvideCompositionLocalsForPreview {
-        PreferenceTab {
+        SettingsTab {
             SwitchItem(
                 checked = true,
                 onCheckedChange = {},

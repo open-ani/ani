@@ -1,4 +1,4 @@
-package me.him188.ani.app.ui.preference.tabs.media
+package me.him188.ani.app.ui.settings.tabs.media
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.PreviewLightDark

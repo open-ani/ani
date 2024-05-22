@@ -1,4 +1,4 @@
-package me.him188.ani.app.ui.preference.tabs.media
+package me.him188.ani.app.ui.settings.tabs.media
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
@@ -19,13 +19,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.ui.external.placeholder.placeholder
-import me.him188.ani.app.ui.preference.PreferenceScope
-import me.him188.ani.app.ui.preference.SwitchItem
+import me.him188.ani.app.ui.settings.SettingsScope
+import me.him188.ani.app.ui.settings.SwitchItem
 import kotlin.math.roundToInt
 
 @Composable
-internal fun PreferenceScope.AutoCacheGroup(
-    vm: MediaPreferenceViewModel,
+internal fun SettingsScope.AutoCacheGroup(
+    vm: MediaSettingsViewModel,
     navigator: AniNavigator
 ) {
     Group(

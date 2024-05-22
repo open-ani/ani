@@ -1,4 +1,4 @@
-package me.him188.ani.app.ui.preference.tabs.media
+package me.him188.ani.app.ui.settings.tabs.media
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -32,12 +32,12 @@ import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.files
 import me.him188.ani.app.platform.isAndroid
 import me.him188.ani.app.ui.foundation.widgets.RichDialogLayout
-import me.him188.ani.app.ui.preference.PreferenceScope
-import me.him188.ani.app.ui.preference.framework.MediaSourceTesterView
+import me.him188.ani.app.ui.settings.SettingsScope
+import me.him188.ani.app.ui.settings.framework.MediaSourceTesterView
 import me.him188.ani.utils.ktor.ClientProxyConfigValidator
 
 @Composable
-internal fun PreferenceScope.TorrentEngineGroup(vm: MediaPreferenceViewModel) {
+internal fun SettingsScope.TorrentEngineGroup(vm: MediaSettingsViewModel) {
     if (Platform.currentPlatform.isAndroid()) {
         return // 安卓不需要设置, 安卓必须启用 libtorrent, 而 qBit 目前只支持本地, 安卓手机即使连接到 PC 的 qBit 也没用
     }
@@ -46,7 +46,7 @@ internal fun PreferenceScope.TorrentEngineGroup(vm: MediaPreferenceViewModel) {
 }
 
 @Composable
-private fun PreferenceScope.QBGroup(vm: MediaPreferenceViewModel) {
+private fun SettingsScope.QBGroup(vm: MediaSettingsViewModel) {
     val config by vm.qBittorrentConfig
     val clientConfig by derivedStateOf {
         config.clientConfig

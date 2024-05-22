@@ -16,8 +16,8 @@ import org.koin.core.component.inject
 
 interface EpisodePreferencesRepository : KoinComponent {
     /**
-     * 获取用户对这个条目的设置, 当不存在时返回全局默认设置 [PreferencesRepository.defaultMediaPreference]
-     * @see PreferencesRepository.defaultMediaPreference
+     * 获取用户对这个条目的设置, 当不存在时返回全局默认设置 [SettingsRepository.defaultMediaPreference]
+     * @see SettingsRepository.defaultMediaPreference
      */
     fun mediaPreferenceFlow(subjectId: Int): Flow<MediaPreference>
     suspend fun setMediaPreference(subjectId: Int, mediaPreference: MediaPreference)
@@ -26,7 +26,7 @@ interface EpisodePreferencesRepository : KoinComponent {
 internal class EpisodePreferencesRepositoryImpl(
     private val store: DataStore<Preferences>,
 ) : EpisodePreferencesRepository, KoinComponent {
-    private val preferences: PreferencesRepository by inject()
+    private val preferences: SettingsRepository by inject()
 
     // 全局默认设置
     private val defaultMediaPreference = preferences.defaultMediaPreference.flow

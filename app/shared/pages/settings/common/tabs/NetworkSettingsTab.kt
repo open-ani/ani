@@ -1,4 +1,4 @@
-package me.him188.ani.app.ui.preference.tabs
+package me.him188.ani.app.ui.settings.tabs
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Public
@@ -7,7 +7,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -21,34 +20,30 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.data.media.MediaSourceManager
 import me.him188.ani.app.data.models.DanmakuSettings
-import me.him188.ani.app.data.models.ProxyPreferences
-import me.him188.ani.app.data.repositories.PreferencesRepository
-import me.him188.ani.app.tools.MonoTasker
+import me.him188.ani.app.data.models.ProxySettings
+import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.app.ui.foundation.rememberViewModel
-import me.him188.ani.app.ui.preference.PreferenceTab
-import me.him188.ani.app.ui.preference.SwitchItem
-import me.him188.ani.app.ui.preference.framework.AbstractSettingsViewModel
-import me.him188.ani.app.ui.preference.framework.ConnectionTestResult
-import me.him188.ani.app.ui.preference.framework.ConnectionTester
-import me.him188.ani.app.ui.preference.framework.MediaSourceTesterView
+import me.him188.ani.app.ui.settings.SettingsTab
+import me.him188.ani.app.ui.settings.SwitchItem
+import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
+import me.him188.ani.app.ui.settings.framework.ConnectionTestResult
+import me.him188.ani.app.ui.settings.framework.ConnectionTester
+import me.him188.ani.app.ui.settings.framework.MediaSourceTesterView
 import me.him188.ani.danmaku.ani.client.AniBangumiSeverBaseUrls
 import me.him188.ani.datasources.api.source.ConnectionStatus
 import me.him188.ani.datasources.api.subject.SubjectProvider
 import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
 import me.him188.ani.utils.ktor.ClientProxyConfigValidator
-import me.him188.ani.utils.logging.info
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
 @Stable
-class NetworkPreferenceViewModel : AbstractSettingsViewModel(), KoinComponent {
-    private val preferencesRepository: PreferencesRepository by inject()
+class NetworkSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
+    private val settingsRepository: SettingsRepository by inject()
     private val mediaSourceManager: MediaSourceManager by inject()
     private val bangumiSubjectProvider by inject<SubjectProvider>()
-
-    private val proxyPreferences = preferencesRepository.proxyPreferences
 
     ///////////////////////////////////////////////////////////////////////////
     // Media Testing
@@ -95,25 +90,20 @@ class NetworkPreferenceViewModel : AbstractSettingsViewModel(), KoinComponent {
         Testers(mediaSourceTesters + nonConnectionTesters, backgroundScope)
 
     ///////////////////////////////////////////////////////////////////////////
-    // Proxy Preferences
+    // Proxy
     ///////////////////////////////////////////////////////////////////////////
 
-    val proxyPreferencesFlow = proxyPreferences.flow.shareInBackground()
-    private val proxyPreferencesUpdater = MonoTasker(backgroundScope)
-    fun updateProxyPreferences(proxyPreferences: ProxyPreferences) {
-        proxyPreferencesUpdater.launch {
-            logger.info { "Updating proxy preferences: $proxyPreferences" }
-            preferencesRepository.proxyPreferences.set(proxyPreferences)
-        }
-    }
+    val proxySettings by settings(
+        settingsRepository.proxySettings,
+        placeholder = ProxySettings(_placeHolder = -1)
+    )
 
     ///////////////////////////////////////////////////////////////////////////
     // DanmakuSettings
     ///////////////////////////////////////////////////////////////////////////
 
-    val danmakuSettings = Settings(
-        "danmaku settings",
-        preferencesRepository.danmakuSettings,
+    val danmakuSettings by settings(
+        settingsRepository.danmakuSettings,
         placeholder = DanmakuSettings(_placeholder = -1)
     )
 
@@ -146,13 +136,13 @@ class NetworkPreferenceViewModel : AbstractSettingsViewModel(), KoinComponent {
 }
 
 @Composable
-fun NetworkPreferenceTab(
-    vm: NetworkPreferenceViewModel = rememberViewModel { NetworkPreferenceViewModel() },
+fun NetworkSettingsTab(
+    vm: NetworkSettingsViewModel = rememberViewModel { NetworkSettingsViewModel() },
     modifier: Modifier = Modifier,
 ) {
-    val proxyPreferences by vm.proxyPreferencesFlow.collectAsState(ProxyPreferences.Default)
+    val proxySettings by vm.proxySettings
 
-    PreferenceTab(modifier) {
+    SettingsTab(modifier) {
         Group(
             title = { Text("全局默认代理") },
             description = {
@@ -160,9 +150,9 @@ fun NetworkPreferenceTab(
             }
         ) {
             SwitchItem(
-                checked = proxyPreferences.default.enabled,
+                checked = proxySettings.default.enabled,
                 onCheckedChange = {
-                    vm.updateProxyPreferences(proxyPreferences.copy(default = proxyPreferences.default.copy(enabled = it)))
+                    vm.proxySettings.update(proxySettings.copy(default = proxySettings.default.copy(enabled = it)))
                 },
                 title = { Text("启用代理") },
                 description = { Text("启用后下面的配置才生效") },
@@ -170,8 +160,8 @@ fun NetworkPreferenceTab(
 
             HorizontalDividerItem()
 
-            var url by remember(proxyPreferences) {
-                mutableStateOf(proxyPreferences.default.config.url)
+            var url by remember(proxySettings) {
+                mutableStateOf(proxySettings.default.config.url)
             }
             TextFieldItem(
                 url,
@@ -183,10 +173,10 @@ fun NetworkPreferenceTab(
                     )
                 },
                 onValueChangeCompleted = {
-                    vm.updateProxyPreferences(
-                        proxyPreferences.copy(
-                            default = proxyPreferences.default.copy(
-                                config = proxyPreferences.default.config.copy(
+                    vm.proxySettings.update(
+                        proxySettings.copy(
+                            default = proxySettings.default.copy(
+                                config = proxySettings.default.config.copy(
                                     url = url
                                 )
                             )
@@ -200,12 +190,12 @@ fun NetworkPreferenceTab(
 
             HorizontalDividerItem()
 
-            var username by remember(proxyPreferences) {
-                mutableStateOf(proxyPreferences.default.config.authorization?.username ?: "")
+            var username by remember(proxySettings) {
+                mutableStateOf(proxySettings.default.config.authorization?.username ?: "")
             }
 
-            var password by remember(proxyPreferences) {
-                mutableStateOf(proxyPreferences.default.config.authorization?.password ?: "")
+            var password by remember(proxySettings) {
+                mutableStateOf(proxySettings.default.config.authorization?.password ?: "")
             }
 
             TextFieldItem(
@@ -215,11 +205,11 @@ fun NetworkPreferenceTab(
                 description = { Text("可选") },
                 placeholder = { Text("无") },
                 onValueChangeCompleted = {
-                    vm.updateProxyPreferences(
-                        proxyPreferences.copy(
-                            default = proxyPreferences.default.copy(
-                                config = proxyPreferences.default.config.copy(
-                                    authorization = proxyPreferences.default.config.authorization?.copy(
+                    vm.proxySettings.update(
+                        proxySettings.copy(
+                            default = proxySettings.default.copy(
+                                config = proxySettings.default.config.copy(
+                                    authorization = proxySettings.default.config.authorization?.copy(
                                         username = username
                                     )
                                 )
@@ -238,11 +228,11 @@ fun NetworkPreferenceTab(
                 description = { Text("可选") },
                 placeholder = { Text("无") },
                 onValueChangeCompleted = {
-                    vm.updateProxyPreferences(
-                        proxyPreferences.copy(
-                            default = proxyPreferences.default.copy(
-                                config = proxyPreferences.default.config.copy(
-                                    authorization = proxyPreferences.default.config.authorization?.copy(
+                    vm.proxySettings.update(
+                        proxySettings.copy(
+                            default = proxySettings.default.copy(
+                                config = proxySettings.default.config.copy(
+                                    authorization = proxySettings.default.config.authorization?.copy(
                                         password = password
                                     )
                                 )

@@ -7,10 +7,10 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.shareIn
 import me.him188.ani.app.data.media.MediaCacheManager.Companion.LOCAL_FS_MEDIA_SOURCE_ID
-import me.him188.ani.app.data.models.MediaSourceProxyPreferences
+import me.him188.ani.app.data.models.MediaSourceProxySettings
 import me.him188.ani.app.data.models.ProxyAuthorization
 import me.him188.ani.app.data.repositories.MikanIndexCacheRepository
-import me.him188.ani.app.data.repositories.PreferencesRepository
+import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.platform.getAniUserAgent
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceConfig
@@ -48,11 +48,11 @@ interface MediaSourceManager { // available by inject
 class MediaSourceManagerImpl(
     additionalSources: () -> List<MediaSource>, // local sources
 ) : MediaSourceManager, KoinComponent {
-    private val preferencesRepository: PreferencesRepository by inject()
+    private val settingsRepository: SettingsRepository by inject()
     private val mikanIndexCacheRepository: MikanIndexCacheRepository by inject()
 
-    private val defaultMediaPreference = preferencesRepository.defaultMediaPreference.flow
-    private val proxyConfig = preferencesRepository.proxyPreferences.flow
+    private val defaultMediaPreference = settingsRepository.defaultMediaPreference.flow
+    private val proxyConfig = settingsRepository.proxySettings.flow
 
 
     private val scope = CoroutineScope(CoroutineExceptionHandler { _, throwable ->
@@ -85,7 +85,7 @@ class MediaSourceManagerImpl(
         allIds.filter { !isLocal(it) }
     }
 
-    private fun MediaSourceFactory.create(pref: MediaSourceProxyPreferences): MediaSource {
+    private fun MediaSourceFactory.create(pref: MediaSourceProxySettings): MediaSource {
         val mediaSourceConfig = MediaSourceConfig(
             proxy = pref.toClientProxyConfig(),
             userAgent = getAniUserAgent(),
@@ -102,7 +102,7 @@ class MediaSourceManagerImpl(
     }
 }
 
-private fun MediaSourceProxyPreferences.toClientProxyConfig(): ClientProxyConfig? {
+private fun MediaSourceProxySettings.toClientProxyConfig(): ClientProxyConfig? {
     return if (enabled) {
         config.run {
             ClientProxyConfig(

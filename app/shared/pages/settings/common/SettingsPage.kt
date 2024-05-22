@@ -1,4 +1,4 @@
-package me.him188.ani.app.ui.preference
+package me.him188.ani.app.ui.settings
 
 import androidx.annotation.IntRange
 import androidx.compose.animation.core.animateDpAsState
@@ -55,6 +55,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -78,9 +79,9 @@ import me.him188.ani.app.ui.foundation.effects.onKey
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
 import me.him188.ani.app.ui.foundation.widgets.RichDialogLayout
-import me.him188.ani.app.ui.preference.tabs.AboutTab
-import me.him188.ani.app.ui.preference.tabs.NetworkPreferenceTab
-import me.him188.ani.app.ui.preference.tabs.media.MediaPreferenceTab
+import me.him188.ani.app.ui.settings.tabs.AboutTab
+import me.him188.ani.app.ui.settings.tabs.NetworkSettingsTab
+import me.him188.ani.app.ui.settings.tabs.media.MediaPreferenceTab
 import me.him188.ani.app.ui.theme.stronglyWeaken
 import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorder
@@ -88,7 +89,8 @@ import org.burnoutcrew.reorderable.detectReorderAfterLongPress
 import org.burnoutcrew.reorderable.rememberReorderableLazyListState
 import org.burnoutcrew.reorderable.reorderable
 
-enum class PreferenceTab {
+@Immutable
+enum class SettingsTab {
     //    ABOUT,
     MEDIA,
     NETWORK,
@@ -96,14 +98,15 @@ enum class PreferenceTab {
     ;
 
     companion object {
+        @Stable
         val Default = MEDIA
     }
 }
 
 @Composable
-fun PreferencePage(
+fun SettingsPage(
     modifier: Modifier = Modifier,
-    initialTab: PreferenceTab = PreferenceTab.Default,
+    initialTab: SettingsTab = SettingsTab.Default,
     contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
     Scaffold(
@@ -118,7 +121,7 @@ fun PreferencePage(
         }
     ) { topBarPaddings ->
         val pagerState =
-            rememberPagerState(initialPage = initialTab.ordinal) { PreferenceTab.entries.size }
+            rememberPagerState(initialPage = initialTab.ordinal) { SettingsTab.entries.size }
         val scope = rememberCoroutineScope()
 
         // Pager with TabRow
@@ -132,7 +135,7 @@ fun PreferencePage(
                 },
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                PreferenceTab.entries.forEachIndexed { index, tabId ->
+                SettingsTab.entries.forEachIndexed { index, tabId ->
                     Tab(
                         selected = pagerState.currentPage == index,
                         onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
@@ -144,12 +147,12 @@ fun PreferencePage(
             }
 
             HorizontalPager(state = pagerState, Modifier.fillMaxSize()) { index ->
-                val type = PreferenceTab.entries[index]
+                val type = SettingsTab.entries[index]
                 Column(Modifier.fillMaxSize().padding(contentPadding)) {
                     when (type) {
-                        PreferenceTab.MEDIA -> MediaPreferenceTab(modifier = Modifier.fillMaxSize())
-                        PreferenceTab.NETWORK -> NetworkPreferenceTab(modifier = Modifier.fillMaxSize())
-                        PreferenceTab.ABOUT -> AboutTab(modifier = Modifier.fillMaxSize())
+                        SettingsTab.MEDIA -> MediaPreferenceTab(modifier = Modifier.fillMaxSize())
+                        SettingsTab.NETWORK -> NetworkSettingsTab(modifier = Modifier.fillMaxSize())
+                        SettingsTab.ABOUT -> AboutTab(modifier = Modifier.fillMaxSize())
                     }
                 }
             }
@@ -160,41 +163,41 @@ fun PreferencePage(
 
 @Composable
 private fun renderPreferenceTab(
-    tab: PreferenceTab,
+    tab: SettingsTab,
 ): String {
     return when (tab) {
 //        PreferenceTab.GENERAL -> "通用"
-        PreferenceTab.NETWORK -> "网络"
-        PreferenceTab.MEDIA -> "播放与缓存"
-        PreferenceTab.ABOUT -> "关于"
+        SettingsTab.NETWORK -> "网络"
+        SettingsTab.MEDIA -> "播放与缓存"
+        SettingsTab.ABOUT -> "关于"
     }
 }
 
 @Composable
-internal fun PreferenceTab(
+internal fun SettingsTab(
     modifier: Modifier = Modifier,
-    content: @Composable PreferenceScope.() -> Unit,
+    content: @Composable SettingsScope.() -> Unit,
 ) {
     Column(modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         val scope = remember(this) {
-            object : PreferenceScope(), ColumnScope by this {}
+            object : SettingsScope(), ColumnScope by this {}
         }
         scope.content()
     }
 }
 
 @DslMarker
-annotation class PreferenceDsl
+annotation class SettingsDsl
 
 private const val LABEL_ALPHA = 0.8f
 
-@PreferenceDsl
-abstract class PreferenceScope {
+@SettingsDsl
+abstract class SettingsScope {
     @Stable
     @PublishedApi
     internal val itemHorizontalPadding = 16.dp
 
-    @PreferenceDsl
+    @SettingsDsl
     @Composable
     fun Group(
         title: @Composable () -> Unit,
@@ -317,7 +320,7 @@ abstract class PreferenceScope {
         }
     }
 
-    @PreferenceDsl
+    @SettingsDsl
     @Composable
     fun HorizontalDividerItem(modifier: Modifier = Modifier) {
         Row(
@@ -333,7 +336,7 @@ abstract class PreferenceScope {
     /**
      * A switch item that only the switch is interactable.
      */
-    @PreferenceDsl
+    @SettingsDsl
     @Composable
     fun SwitchItem(
         title: @Composable RowScope.() -> Unit,
@@ -350,7 +353,7 @@ abstract class PreferenceScope {
     }
 
 
-    @PreferenceDsl
+    @SettingsDsl
     @Composable
     fun SliderItem(
         title: @Composable RowScope.() -> Unit,
@@ -381,7 +384,7 @@ abstract class PreferenceScope {
         }
     }
 
-    @PreferenceDsl
+    @SettingsDsl
     @Composable
     fun TextFieldItem(
         value: String,
@@ -481,7 +484,7 @@ abstract class PreferenceScope {
     }
 
 
-    @PreferenceDsl
+    @SettingsDsl
     @Composable
     fun TextButtonItem(
         onClick: () -> Unit,
@@ -499,7 +502,7 @@ abstract class PreferenceScope {
         }
     }
 
-    @PreferenceDsl
+    @SettingsDsl
     @Composable
     fun RowButtonItem(
         onClick: () -> Unit,
@@ -524,7 +527,7 @@ abstract class PreferenceScope {
     /**
      * Can become a text button if [onClick] is not null.
      */
-    @PreferenceDsl
+    @SettingsDsl
     @Composable
     fun TextItem(
         title: @Composable RowScope.() -> Unit,
@@ -566,7 +569,7 @@ abstract class PreferenceScope {
         }
     }
 
-    @PreferenceDsl
+    @SettingsDsl
     @Composable
     fun <T> DropdownItem(
         selected: () -> T,
@@ -627,7 +630,7 @@ abstract class PreferenceScope {
      * @param exposed 未展开时显示在项目右侧的标签, 来表示当前的排序
      * @param key 用于区分每个项目的唯一键, 必须快速且稳定
      */
-    @PreferenceDsl
+    @SettingsDsl
     @Composable
     fun <T> SorterItem(
         values: () -> List<SelectableItem<T>>,
@@ -799,9 +802,9 @@ internal fun TextFieldDialog(
 /**
  * A switch item that the entire item is clickable.
  */
-@PreferenceDsl
+@SettingsDsl
 @Composable
-fun PreferenceScope.SwitchItem(
+fun SettingsScope.SwitchItem(
     onClick: () -> Unit,
     title: @Composable RowScope.() -> Unit,
     modifier: Modifier = Modifier,
@@ -816,9 +819,9 @@ fun PreferenceScope.SwitchItem(
 /**
  * A switch item that the entire item is clickable.
  */
-@PreferenceDsl
+@SettingsDsl
 @Composable
-fun PreferenceScope.SwitchItem(
+fun SettingsScope.SwitchItem(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     title: @Composable RowScope.() -> Unit,
@@ -841,9 +844,9 @@ fun PreferenceScope.SwitchItem(
 }
 
 
-@PreferenceDsl
+@SettingsDsl
 @Composable
-fun PreferenceScope.SliderItem(
+fun SettingsScope.SliderItem(
     value: Float,
     onValueChange: (Float) -> Unit,
     title: @Composable RowScope.() -> Unit,

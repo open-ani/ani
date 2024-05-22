@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.models.MediaCacheSettings
 import me.him188.ani.app.data.repositories.EpisodeRepository
-import me.him188.ani.app.data.repositories.PreferencesRepository
+import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.data.subject.SubjectCollectionItem
 import me.him188.ani.app.data.subject.SubjectManager
 import me.him188.ani.app.tools.caching.ContentPolicy
@@ -60,7 +60,7 @@ fun DefaultMediaAutoCacheService(
             }
             .first()
     },
-    config = koin.get<PreferencesRepository>().mediaCacheSettings.flow,
+    config = koin.get<SettingsRepository>().mediaCacheSettings.flow,
     episodeRepository = koin.get(),
     cacheManager = koin.get(),
     targetStorage = koin.get<MediaCacheManager>().enabledStorages.mapNotNull { it.firstOrNull() },

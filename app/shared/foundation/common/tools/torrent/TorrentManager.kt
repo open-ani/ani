@@ -3,7 +3,7 @@ package me.him188.ani.app.tools.torrent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import me.him188.ani.app.data.repositories.PreferencesRepository
+import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.tools.torrent.engines.Libtorrent4jEngine
 import me.him188.ani.app.tools.torrent.engines.QBittorrentEngine
@@ -46,10 +46,10 @@ class DefaultTorrentManager(
     parentCoroutineContext: CoroutineContext,
     private val saveDir: (type: TorrentEngineType) -> File,
 ) : TorrentManager, KoinComponent {
-    private val preferencesRepository: PreferencesRepository by inject()
+    private val settingsRepository: SettingsRepository by inject()
 
-    private val libtorrent4jConfig get() = preferencesRepository.libtorrent4jConfig.flow
-    private val qbittorrentConfig get() = preferencesRepository.qBittorrentConfig.flow
+    private val libtorrent4jConfig get() = settingsRepository.libtorrent4jConfig.flow
+    private val qbittorrentConfig get() = settingsRepository.qBittorrentConfig.flow
 
     private val scope = CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
 

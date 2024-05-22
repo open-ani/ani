@@ -1,4 +1,4 @@
-package me.him188.ani.app.ui.preference.tabs
+package me.him188.ani.app.ui.settings.tabs
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -34,8 +34,8 @@ import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.rememberViewModel
-import me.him188.ani.app.ui.preference.PreferenceTab
 import me.him188.ani.app.ui.profile.DebugInfo
+import me.him188.ani.app.ui.settings.SettingsTab
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -80,7 +80,7 @@ fun AboutTab(
 ) {
     val context by rememberUpdatedState(LocalContext.current)
 
-    PreferenceTab(modifier) {
+    SettingsTab(modifier) {
         Group(
             title = { Text("关于 Ani") },
         ) {

@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withTimeout
-import me.him188.ani.app.data.repositories.PreferencesRepository
+import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.platform.getAniUserAgent
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.ui.foundation.BackgroundScope
@@ -82,10 +82,10 @@ object DanmakuProviderLoader {
 class DanmakuManagerImpl(
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
 ) : DanmakuManager, KoinComponent, HasBackgroundScope by BackgroundScope(parentCoroutineContext) {
-    private val preferencesRepository: PreferencesRepository by inject()
+    private val settingsRepository: SettingsRepository by inject()
     private val sessionManager: SessionManager by inject()
 
-    private val config = preferencesRepository.danmakuSettings.flow.map { config ->
+    private val config = settingsRepository.danmakuSettings.flow.map { config ->
         DanmakuProviderConfig(
             userAgent = getAniUserAgent(),
             useGlobal = config.useGlobal,

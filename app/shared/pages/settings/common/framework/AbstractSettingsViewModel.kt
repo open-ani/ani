@@ -1,4 +1,4 @@
-package me.him188.ani.app.ui.preference.framework
+package me.him188.ani.app.ui.settings.framework
 
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
@@ -8,7 +8,6 @@ import io.ktor.client.plugins.HttpTimeout
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
-import me.him188.ani.app.data.repositories.Preference
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.utils.ktor.createDefaultHttpClient
@@ -43,7 +42,7 @@ abstract class AbstractSettingsViewModel : AbstractViewModel(), KoinComponent {
     }
 
     fun <T> settings(
-        pref: Preference<T>,
+        pref: me.him188.ani.app.data.repositories.Settings<T>,
         placeholder: T,
     ) =
         propertyDelegateProvider {
@@ -53,7 +52,7 @@ abstract class AbstractSettingsViewModel : AbstractViewModel(), KoinComponent {
     @Stable
     inner class Settings<T>(
         private val debugName: String,
-        private val pref: Preference<T>,
+        private val pref: me.him188.ani.app.data.repositories.Settings<T>,
         private val placeholder: T,
     ) : State<T> by pref.flow.produceState(placeholder) {
         val loading by derivedStateOf { value === placeholder }

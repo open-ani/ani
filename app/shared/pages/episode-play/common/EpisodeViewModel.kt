@@ -33,7 +33,7 @@ import me.him188.ani.app.data.media.resolver.ResolutionFailures
 import me.him188.ani.app.data.media.resolver.UnsupportedMediaException
 import me.him188.ani.app.data.media.resolver.VideoSourceResolutionException
 import me.him188.ani.app.data.media.resolver.VideoSourceResolver
-import me.him188.ani.app.data.repositories.PreferencesRepository
+import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.data.subject.SubjectInfo
 import me.him188.ani.app.data.subject.SubjectManager
 import me.him188.ani.app.navigation.BrowserNavigator
@@ -206,7 +206,7 @@ private class EpisodeViewModelImpl(
     private val subjectManager: SubjectManager by inject()
     private val danmakuManager: DanmakuManager by inject()
     private val videoSourceResolver: VideoSourceResolver by inject()
-    private val preferencesRepository: PreferencesRepository by inject()
+    private val settingsRepository: SettingsRepository by inject()
 
     private val subjectInfo = flowOf(subjectId).mapLatest { subjectId ->
         subjectManager.getSubjectInfo(subjectId)
@@ -390,7 +390,7 @@ private class EpisodeViewModelImpl(
         launchInBackground {
             cancellableCoroutineScope {
                 val selfId = selfUserId.stateIn(this, started = SharingStarted.Eagerly, initialValue = null)
-                val danmakuConfig = preferencesRepository.danmakuConfig.flow.stateIn(
+                val danmakuConfig = settingsRepository.danmakuConfig.flow.stateIn(
                     this,
                     started = SharingStarted.Eagerly,
                     initialValue = null

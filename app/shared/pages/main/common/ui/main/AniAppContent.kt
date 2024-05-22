@@ -14,10 +14,10 @@ import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.pages.cache.manage.CacheManagementPage
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.foundation.rememberViewModel
-import me.him188.ani.app.ui.preference.PreferencePage
-import me.him188.ani.app.ui.preference.PreferenceTab
 import me.him188.ani.app.ui.profile.AuthViewModel
 import me.him188.ani.app.ui.profile.auth.AuthRequestScene
+import me.him188.ani.app.ui.settings.SettingsPage
+import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.subject.cache.SubjectCacheScene
 import me.him188.ani.app.ui.subject.cache.SubjectCacheViewModel
 import me.him188.ani.app.ui.subject.details.SubjectDetailsScene
@@ -88,9 +88,9 @@ fun AniAppContent(aniNavigator: AniNavigator) {
             }
             scene("/preferences") { backStackEntry ->
                 val initialTab = backStackEntry.query<Int>("tab")
-                    ?.let { PreferenceTab.entries.getOrNull(it) }
-                    ?: PreferenceTab.MEDIA
-                PreferencePage(
+                    ?.let { SettingsTab.entries.getOrNull(it) }
+                    ?: SettingsTab.MEDIA
+                SettingsPage(
                     Modifier.fillMaxSize(),
                     initialTab = initialTab,
                 )
@@ -108,7 +108,7 @@ fun AniAppContent(aniNavigator: AniNavigator) {
                 SubjectCacheScene(
                     vm,
                     onClickGlobalCacheSettings = {
-                        aniNavigator.navigatePreferences(PreferenceTab.MEDIA)
+                        aniNavigator.navigatePreferences(SettingsTab.MEDIA)
                     },
                     onClickGlobalCacheManage = {
                         aniNavigator.navigateCaches()

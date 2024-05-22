@@ -23,7 +23,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.merge
-import me.him188.ani.app.data.repositories.PreferencesRepository
+import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.theme.aniDarkColorTheme
@@ -46,9 +46,9 @@ interface EpisodeVideoSettingsViewModel {
 fun EpisodeVideoSettingsViewModel(): EpisodeVideoSettingsViewModel = EpisodeVideoSettingsViewModelImpl()
 
 private class EpisodeVideoSettingsViewModelImpl : EpisodeVideoSettingsViewModel, AbstractViewModel(), KoinComponent {
-    private val preferencesRepository by inject<PreferencesRepository>()
+    private val settingsRepository by inject<SettingsRepository>()
 
-    private val danmakuConfigPersistent = preferencesRepository.danmakuConfig.flow
+    private val danmakuConfigPersistent = settingsRepository.danmakuConfig.flow
     private val danmakuConfigUpdate: MutableStateFlow<DanmakuConfig?> = MutableStateFlow(null)
     override val danmakuConfig = merge(danmakuConfigPersistent, danmakuConfigUpdate).filterNotNull()
 
@@ -56,7 +56,7 @@ private class EpisodeVideoSettingsViewModelImpl : EpisodeVideoSettingsViewModel,
         launchInBackground {
             danmakuConfigUpdate.debounce(0.1.seconds).filterNotNull().collect {
                 logger.info { "Saving DanmakuConfig: $it" }
-                preferencesRepository.danmakuConfig.set(it)
+                settingsRepository.danmakuConfig.set(it)
             }
         }
     }
