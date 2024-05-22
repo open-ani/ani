@@ -50,7 +50,7 @@ import java.util.UUID
 
 @Stable
 class DanmakuState internal constructor(
-    val danmaku: DanmakuPresentation,
+    val presentation: DanmakuPresentation,
     /**
      * 初始值满足 [offsetInsideTrack] + [DanmakuTrackState.trackOffset] == [DanmakuTrackState.trackSize].width
      */
@@ -417,7 +417,7 @@ fun DanmakuTrack(
  */
 @Composable
 fun DanmakuText(
-    danmaku: DanmakuState,
+    state: DanmakuState,
     modifier: Modifier = Modifier,
     style: DanmakuStyle = DanmakuStyle.Default,
     baseStyle: TextStyle = MaterialTheme.typography.bodyMedium,
@@ -426,7 +426,7 @@ fun DanmakuText(
     Box(modifier.alpha(style.alpha)) {
         // Black text with stronger stroke
         Text(
-            danmaku.danmaku.danmaku.text,
+            state.presentation.danmaku.text,
             Modifier,
             overflow = TextOverflow.Clip,
             maxLines = 1,
@@ -437,13 +437,13 @@ fun DanmakuText(
         // Covered by a white, smaller text.
         // So the resulting look is a white text with black border.
         Text(
-            danmaku.danmaku.danmaku.text,
+            state.presentation.danmaku.text,
             Modifier,
             overflow = TextOverflow.Clip,
             maxLines = 1,
             softWrap = false,
             style = baseStyle.merge(style.styleForText()),
-            textDecoration = if (danmaku.danmaku.isSelf) TextDecoration.Underline else null,
+            textDecoration = if (state.presentation.isSelf) TextDecoration.Underline else null,
         )
     }
 }

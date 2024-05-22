@@ -96,7 +96,7 @@ fun DanmakuHost(
                 danmaku(DummyDanmakuState, Modifier.alpha(0f).padding(vertical = 1.dp), style = config.style)
 
                 for (danmaku in track.visibleDanmaku) {
-                    key(danmaku.danmaku.id) {
+                    key(danmaku.presentation.id) {
                         danmaku(danmaku, style = config.style)
                     }
                 }
