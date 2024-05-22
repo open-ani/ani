@@ -14,9 +14,9 @@
 
 集找番、追番、看番的一站式弹幕追番平台。
 
-Ani 的目标是提供舒适的弹幕追番体验。
+Ani 的目标是提供尽可能简单且舒适的追番体验。
 
-支持云同步观看记录 ([Bangumi][Bangumi]), 多视频数据源, 弹幕播放, 以及更多功能。
+支持云同步观看记录 ([Bangumi][Bangumi]), 多视频数据源, 缓存, 弹幕, 以及更多功能。
 
 > 我不是专业客户端开发人员, 开发纯属兴趣, 不过有点讲究代码质量, 欢迎各位指点.
 
@@ -38,12 +38,13 @@ Ani 3.0 **正在**开发中. 以下几点可以给你一个技术上的大概了
 
 ## 下载
 
-Ani 支持 Android 和桌面端 (macOS、Linux、Windows)。现阶段对 Android 支持比较好。桌面端未支持视频播放,
-有已知的登录问题正在解决。
+Ani 支持 Android 和桌面端 (macOS、Windows)。现阶段对 Android 支持最佳, PC 需要依赖 qBittorrent 才能下载视频。
 
 3.0 功能正逐渐完善, 每隔几天会发布一个 beta 测试版本。
 
-欢迎加入 QQ 群 927170241（[PC 一键加入](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=2EbZ0Qxe-fI_AHJLCMnSIOnqw-nfrFH5&authKey=L31zTMwfbMG0FhIgt8xNHGOFPHc531mSw2YzUVupHLRJ4L2f8xerAd%2ByNl4OigRK&noverify=0&group_code=927170241)）或 Telegram 群 [点击加入](https://t.me/+afDaMsCSIcsyNDVk)
+欢迎加入 QQ 群
+927170241（[PC 一键加入](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=2EbZ0Qxe-fI_AHJLCMnSIOnqw-nfrFH5&authKey=L31zTMwfbMG0FhIgt8xNHGOFPHc531mSw2YzUVupHLRJ4L2f8xerAd%2ByNl4OigRK&noverify=0&group_code=927170241)
+）或 Telegram 群 [点击加入](https://t.me/+afDaMsCSIcsyNDVk)
 
 请关注 [releases](https://github.com/Him188/ani/releases/latest)
 以下载最新版本
@@ -66,6 +67,7 @@ Ani 支持 Android 和桌面端 (macOS、Linux、Windows)。现阶段对 Android
 <img width="300" src=".readme/images/collection/collection-light.jpeg" alt="collection-light"/> <img width="300" src=".readme/images/collection/collection-dark.jpg" alt="collection-dark"/>
 
 - 根据找番时会关注的声优, 制作公司, 监督等几点设计
+  > 其实这个页面并未实现很多功能, 在计划中
 
 <img width="300" src=".readme/images/subject/subject-light.jpeg" alt="subject-light"/> <img width="300" src=".readme/images/subject/subject-dark.jpg" alt="subject-dark"/>
 
@@ -75,6 +77,7 @@ Ani 支持 Android 和桌面端 (macOS、Linux、Windows)。现阶段对 Android
 
 - 自动解析资源, 可按分辨率, 字幕语言与字幕组选择视频源
 - 记忆上次选择, 下次直接播放
+- 支持季度全集资源
 
 <img width="270" src=".readme/images/episode/episode-player-loading.jpg" alt="episode-player-loading"/> <img width="270" src=".readme/images/episode/episode-media.jpeg" alt="episode-media"/>  <img width="270" src=".readme/images/episode/episode-media-expanded.jpeg" alt="episode-media-expanded"/> 
 
@@ -82,7 +85,7 @@ Ani 支持 Android 和桌面端 (macOS、Linux、Windows)。现阶段对 Android
 
 - 从[弹弹play][ddplay]以及*其他弹幕网站*获取弹幕
 - 支持自定义弹幕样式与速度
-- 发送弹幕到 Ani 服务器
+- 发送弹幕到 Ani 的公益弹幕服务器
 
 <img width="600" src=".readme/images/episode/player-controller.jpeg" alt="player-controller"/>
 
@@ -126,16 +129,40 @@ Ani 支持 Android 和桌面端 (macOS、Linux、Windows)。现阶段对 Android
 - 使用靠谱的 [Bangumi][Bangumi] 记录追番数据, 不怕网站跑路丢失数据
 - 视频播放使用 P2P 资源, 无服务器维护成本, ~即使我跑路了 Ani 也能用~
 - 开放源代码, 公开自动构建, 无资料泄露风险
-- 可 PR 添加自己喜欢的功能 (只要不用于商用)
+- 可 PR 添加自己喜欢的功能
 
 ### 代理设置
 
-自 3.0.0-beta15 起，Ani 增加了一个全球均可访问的数据源，无需设置代理。若你想要，也可以设置代理后使用所有数据源。代理设置入口为"我的"的右上角。
+Ani 自带一个全球均可访问的数据源 (Mikan)
+，无需设置代理。若你想要，也可以设置代理后使用所有数据源。代理设置入口为"我的"的右上角。
 
 <img width="300" src=".readme/images/preferences/preferences-network-proxy.jpg" alt="preferences-network-proxy"/> <img width="300" src=".readme/images/preferences/preferences-network-danmaku.jpg" alt="preferences-network-danmaku"/>
 
 ### 桌面端
 
-除了目前不支持视频播放以外, 桌面端其他功能与 Android 端功能一致. 桌面端可使用 "下载" 功能跳转到外部下载器下载视频.
+与安卓功能一致。但目前仅为 PC 适配了播放器键盘快捷键等功能, 还未开发其他页面的大屏 UI, 因此这些页面会使用手机竖屏
+UI。
 
-桌面端视频播放功能正在开发中 [#115](https://github.com/Him188/ani/issues/115)
+桌面端仍处于较早期开发阶段, 整体稳定性还不如安卓。
+
+## FAQ
+
+### 资源来源是什么?
+
+全部视频数据都来自公共 BitTorrent P2P 网络, Ani 本身不存储任何视频数据. 每个在 BT
+网络上的人都可分享自己拥有的资源供他人下载.
+
+本着互助精神, Ani 会自动做种 (分享数据).
+BT 指纹为 `-aniLT3000-`, 其中 `3000` 为版本号; UA 为类似 `ani_libtorrent/3.0.0`.
+
+### 弹幕来源是什么?
+
+Ani 拥有自己的公益弹幕服务器, 在 Ani 应用内发送的弹幕将会发送到弹幕服务器上. 每条弹幕都会以 bangumi
+用户名绑定以防滥用 (并考虑未来增加举报和屏蔽功能).
+
+Ani 还会从[弹弹play][ddplay]获取关联弹幕, 弹弹play 还会从其他弹幕平台例如哔哩哔哩港澳台和巴哈姆特获取弹幕.
+番剧每集可拥有几十到几千条不等的弹幕量.
+
+#### 弹幕过滤
+
+我们已经听到了许多用户关注弹幕的质量的请求. Ani 有 AI 团队正在研发云过滤模型, 将逐渐推进云过滤功能.
