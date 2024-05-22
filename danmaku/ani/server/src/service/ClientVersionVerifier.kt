@@ -4,6 +4,8 @@ import io.ktor.client.HttpClient
 import io.ktor.client.request.head
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.CompletableDeferred
+import me.him188.ani.danmaku.server.util.FileServerLocalSetBuffer
+import me.him188.ani.danmaku.server.util.ServerLocalSetBuffer
 
 interface ClientVersionVerifier {
     suspend fun verify(clientVersion: String): Boolean

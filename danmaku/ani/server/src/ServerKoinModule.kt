@@ -14,6 +14,8 @@ import me.him188.ani.danmaku.server.service.AuthService
 import me.him188.ani.danmaku.server.service.AuthServiceImpl
 import me.him188.ani.danmaku.server.service.BangumiLoginHelper
 import me.him188.ani.danmaku.server.service.BangumiLoginHelperImpl
+import me.him188.ani.danmaku.server.service.ClientReleaseInfoManager
+import me.him188.ani.danmaku.server.service.ClientReleaseInfoManagerImpl
 import me.him188.ani.danmaku.server.service.DanmakuService
 import me.him188.ani.danmaku.server.service.DanmakuServiceImpl
 import me.him188.ani.danmaku.server.service.ClientVersionVerifier
@@ -27,6 +29,7 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.slf4j.Logger
 import org.slf4j.helpers.NOPLogger
+import kotlin.time.Duration.Companion.minutes
 
 fun getServerKoinModule(
     config: ServerConfig,
@@ -46,6 +49,9 @@ fun getServerKoinModule(
             versionWhitelistRegex = listOf("[3-9].[0-9]{1,2}.[0-9]{1,2}-dev")
         )
     }
+    single<ClientReleaseInfoManager> { ClientReleaseInfoManagerImpl(
+        bufferExpirationTime = 1.minutes.inWholeMilliseconds
+    ) }
 
     if (config.testing) {
         single<DanmakuRepository> { InMemoryDanmakuRepositoryImpl() }

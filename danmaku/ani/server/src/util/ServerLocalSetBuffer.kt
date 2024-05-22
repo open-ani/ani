@@ -1,6 +1,5 @@
-package me.him188.ani.danmaku.server.service
+package me.him188.ani.danmaku.server.util
 
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
