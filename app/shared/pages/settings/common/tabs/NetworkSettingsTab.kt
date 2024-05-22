@@ -155,6 +155,7 @@ fun NetworkSettingsTab(
                     vm.proxySettings.update(proxySettings.copy(default = proxySettings.default.copy(enabled = it)))
                 },
                 title = { Text("启用代理") },
+                Modifier.placeholder(vm.proxySettings.loading),
                 description = { Text("启用后下面的配置才生效") },
             )
 
@@ -167,6 +168,7 @@ fun NetworkSettingsTab(
                 url,
                 { url = it.trim() },
                 title = { Text("代理地址") },
+                Modifier.placeholder(vm.proxySettings.loading),
                 description = {
                     Text(
                         "示例: http://127.0.0.1:7890 或 socks5://127.0.0.1:1080"
@@ -202,6 +204,7 @@ fun NetworkSettingsTab(
                 username,
                 { username = it },
                 title = { Text("用户名") },
+                Modifier.placeholder(vm.proxySettings.loading),
                 description = { Text("可选") },
                 placeholder = { Text("无") },
                 onValueChangeCompleted = {
@@ -225,6 +228,7 @@ fun NetworkSettingsTab(
                 password,
                 { password = it },
                 title = { Text("密码") },
+                Modifier.placeholder(vm.proxySettings.loading),
                 description = { Text("可选") },
                 placeholder = { Text("无") },
                 onValueChangeCompleted = {
