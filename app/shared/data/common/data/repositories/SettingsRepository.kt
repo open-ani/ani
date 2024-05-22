@@ -14,6 +14,7 @@ import kotlinx.serialization.json.Json
 import me.him188.ani.app.data.models.DanmakuSettings
 import me.him188.ani.app.data.models.MediaCacheSettings
 import me.him188.ani.app.data.models.ProxySettings
+import me.him188.ani.app.data.models.UISettings
 import me.him188.ani.app.data.serializers.DanmakuConfigSerializer
 import me.him188.ani.app.tools.torrent.engines.Libtorrent4jConfig
 import me.him188.ani.app.tools.torrent.engines.QBittorrentConfig
@@ -42,6 +43,7 @@ interface SettingsRepository {
     val proxySettings: Settings<ProxySettings>
     val mediaCacheSettings: Settings<MediaCacheSettings>
     val danmakuSettings: Settings<DanmakuSettings>
+    val uiSettings: Settings<UISettings>
 
     val libtorrent4jConfig: Settings<Libtorrent4jConfig>
     val qBittorrentConfig: Settings<QBittorrentConfig>
@@ -121,6 +123,11 @@ class PreferencesRepositoryImpl(
         "danmakuSettings",
         DanmakuSettings.serializer(),
         default = { DanmakuSettings.Default }
+    )
+    override val uiSettings: Settings<UISettings> = SerializablePreference(
+        "uiSettings",
+        UISettings.serializer(),
+        default = { UISettings.Default },
     )
     override val libtorrent4jConfig: Settings<Libtorrent4jConfig> = SerializablePreference(
         "libtorrent4jConfig",

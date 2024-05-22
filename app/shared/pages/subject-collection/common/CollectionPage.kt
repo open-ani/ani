@@ -203,6 +203,7 @@ fun CollectionPage(
                             .nestedScroll(pullToRefreshState.nestedScrollConnection)
                             .fillMaxSize(),
                         lazyListState = collection.lazyListState,
+                        enableAnimation = { vm.settings.enableListAnimation }
                     )
                     PullToRefreshContainer(
                         pullToRefreshState,
@@ -227,6 +228,7 @@ private fun TabContent(
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
     lazyListState: LazyListState = rememberLazyListState(),
+    enableAnimation: () -> Boolean = { true },
 ) {
     val context by rememberUpdatedState(LocalContext.current)
     SubjectCollectionsColumn(
@@ -320,6 +322,7 @@ private fun TabContent(
         modifier,
         contentPadding = contentPadding,
         lazyListState = lazyListState,
+        enableAnimation = enableAnimation,
     )
 }
 

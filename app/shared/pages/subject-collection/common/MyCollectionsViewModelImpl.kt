@@ -2,10 +2,14 @@ package me.him188.ani.app.ui.collection
 
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import me.him188.ani.app.ViewModelAuthSupport
 import me.him188.ani.app.data.media.EpisodeCacheStatus
 import me.him188.ani.app.data.media.MediaCacheManager
+import me.him188.ani.app.data.models.MyCollectionsSettings
+import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.data.subject.SubjectCollectionItem
 import me.him188.ani.app.data.subject.SubjectManager
 import me.him188.ani.app.data.subject.setEpisodeWatched
@@ -30,6 +34,8 @@ class CollectionsByType(
 @Stable
 interface MyCollectionsViewModel : HasBackgroundScope, ViewModelAuthSupport {
     val subjectManager: SubjectManager
+
+    val settings: MyCollectionsSettings
 
     @Stable
     fun collectionsByType(type: UnifiedCollectionType): CollectionsByType
@@ -60,10 +66,14 @@ fun MyCollectionsViewModel(): MyCollectionsViewModel = MyCollectionsViewModelImp
 class MyCollectionsViewModelImpl : AbstractViewModel(), KoinComponent, MyCollectionsViewModel {
     override val subjectManager: SubjectManager by inject()
     private val cacheManager: MediaCacheManager by inject()
+    private val settingsRepository: SettingsRepository by inject()
 
     val collectionsByType = subjectManager.collectionsByType.map {
         CollectionsByType(it.key, it.value)
     }
+    override val settings: MyCollectionsSettings by settingsRepository.uiSettings.flow
+        .map { it.myCollections }
+        .produceState(MyCollectionsSettings.Default)
 
     @Stable
     override fun collectionsByType(type: UnifiedCollectionType): CollectionsByType =

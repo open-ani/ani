@@ -56,6 +56,7 @@ import me.him188.ani.app.data.media.EpisodeCacheStatus
 import me.him188.ani.app.data.subject.SubjectCollectionItem
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.ui.foundation.AsyncImage
+import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.indication.HorizontalIndicator
 import me.him188.ani.app.ui.foundation.indication.IndicatedBox
 import me.him188.ani.app.ui.subject.details.COVER_WIDTH_TO_HEIGHT_RATIO
@@ -84,6 +85,7 @@ fun SubjectCollectionsColumn(
     modifier: Modifier = Modifier,
     lazyListState: LazyListState = rememberLazyListState(),
     contentPadding: PaddingValues = PaddingValues(0.dp),
+    enableAnimation: () -> Boolean = { true },
 ) {
     val data by cache.cachedDataFlow.collectAsState(null) // 反正下面会立即用到, recompose 总是重组整个函数
     val dataNotNull by remember { derivedStateOf { data.orEmpty() } }
@@ -91,6 +93,7 @@ fun SubjectCollectionsColumn(
     // 如果不 debounce, 会导致刚刚加载完成后会显示一小会 "空空如也"
     val isCompleted by remember(cache) { cache.isCompleted.debounce(1.seconds) }.collectAsState(false)
     val dataNullOrEmpty by remember { derivedStateOf { data.isNullOrEmpty() } }
+    val enableAnimation by remember(enableAnimation) { derivedStateOf(enableAnimation) }
 
     Composition {
         if (dataNullOrEmpty && isCompleted) {
@@ -110,7 +113,7 @@ fun SubjectCollectionsColumn(
         }
 
         items(dataNotNull, key = { it.subjectId }) { collection ->
-            Box(Modifier.animateItemPlacement()) {
+            Box(Modifier.ifThen(enableAnimation) { animateItemPlacement() }) {
                 item(collection)
             }
         }

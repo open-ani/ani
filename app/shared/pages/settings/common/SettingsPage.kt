@@ -82,6 +82,7 @@ import me.him188.ani.app.ui.foundation.widgets.RichDialogLayout
 import me.him188.ani.app.ui.settings.tabs.AboutTab
 import me.him188.ani.app.ui.settings.tabs.NetworkSettingsTab
 import me.him188.ani.app.ui.settings.tabs.media.MediaPreferenceTab
+import me.him188.ani.app.ui.settings.tabs.ui.UISettingsTab
 import me.him188.ani.app.ui.theme.stronglyWeaken
 import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorder
@@ -92,6 +93,7 @@ import org.burnoutcrew.reorderable.reorderable
 @Immutable
 enum class SettingsTab {
     //    ABOUT,
+    UI,
     MEDIA,
     NETWORK,
     ABOUT,
@@ -153,6 +155,7 @@ fun SettingsPage(
                         SettingsTab.MEDIA -> MediaPreferenceTab(modifier = Modifier.fillMaxSize())
                         SettingsTab.NETWORK -> NetworkSettingsTab(modifier = Modifier.fillMaxSize())
                         SettingsTab.ABOUT -> AboutTab(modifier = Modifier.fillMaxSize())
+                        SettingsTab.UI -> UISettingsTab(modifier = Modifier.fillMaxSize())
                     }
                 }
             }
@@ -167,6 +170,7 @@ private fun renderPreferenceTab(
 ): String {
     return when (tab) {
 //        PreferenceTab.GENERAL -> "通用"
+        SettingsTab.UI -> "界面"
         SettingsTab.NETWORK -> "网络"
         SettingsTab.MEDIA -> "播放与缓存"
         SettingsTab.ABOUT -> "关于"
