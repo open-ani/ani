@@ -135,7 +135,6 @@ internal class DanmakuHostStateImpl(
         }
     }
 
-    // 不能 suspend, 否则 `track.populationVersion++` 可能无效
     private fun runPopulate(
         list: List<DanmakuPresentation>,
         style: DanmakuStyle
@@ -190,7 +189,6 @@ internal class DanmakuHostStateImpl(
         for (danmaku in list) { // 时间由旧到新
             // 调整到正确时间间隔 (模拟出两条弹幕之间的间隔)
             for (track in tracks) {
-                //                    val lastSent = track.lastSent ?: continue // 轨道还未发送过弹幕, 不需要模拟运动
                 lastSent ?: continue
                 if (track.state.lastBaseSpeed.isNaN()) continue
                 check(danmaku.danmaku.playTimeMillis >= lastSent.playTimeMillis) {
@@ -199,14 +197,12 @@ internal class DanmakuHostStateImpl(
                 val off =
                     (danmaku.danmaku.playTimeMillis - lastSent.playTimeMillis) / 1000f * track.state.lastBaseSpeed
                 check(off >= 0f)
-                track.state.trackOffset -= off //+ width + track.state.lastSafeSeparation
+                track.state.trackOffset -= off
             }
             lastSent = danmaku.danmaku
 
             val track = useNextTrackOrNull() ?: continue // 所有轨道都有弹幕还未完全显示, 也就是都不能发弹幕, 跳过
 
-            //                track.state.trackOffset -= width + track.state.lastSafeSeparation
-            // 先把轨道往左移动, 留出足够放得下这个弹幕的空间, 然后放置
             track.state.place(danmaku).apply {
                 textWidth = textMeasurer.measure(
                     danmaku.danmaku.text,
