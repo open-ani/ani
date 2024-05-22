@@ -12,13 +12,14 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.serialization.Transient
 import me.him188.ani.danmaku.api.Danmaku
 
 /**
  * Configuration for the presentation of each [Danmaku].
  */
 @Immutable
-class DanmakuConfig(
+data class DanmakuConfig(
     /**
      * Controls the text styles of the [Danmaku].
      * For example, font size, stroke width.
@@ -35,30 +36,14 @@ class DanmakuConfig(
      * The minimum distance between two [Danmaku]s so that they don't overlap.
      */
     val safeSeparation: Dp = 48.dp,
+    /**
+     * 允许彩色弹幕. 禁用时将会把所有彩色弹幕都显示为白色.
+     */
+    val enableColor: Boolean = true,
+    @Suppress("PropertyName") @Transient val _placeholder: Int = 0,
 ) {
-    fun copy(
-        style: DanmakuStyle = this.style,
-        speed: Float = this.speed,
-        safeSeparation: Dp = this.safeSeparation,
-    ): DanmakuConfig {
-        if (style == this.style &&
-            speed == this.speed &&
-            safeSeparation == this.safeSeparation
-        ) {
-            return this
-        }
-        return DanmakuConfig(
-            style = style,
-            speed = speed,
-            safeSeparation = safeSeparation,
-        )
-    }
-
-    override fun toString(): String {
-        return "DanmakuConfig(style=$style, speed=$speed, safeSeparation=$safeSeparation)"
-    }
-
     companion object {
+        @Stable
         val Default = DanmakuConfig()
     }
 }
@@ -86,9 +71,9 @@ class DanmakuStyle(
 
     // 'inside' the border
     @Stable
-    fun styleForText(): TextStyle = TextStyle(
+    fun styleForText(color: Color = Color.White): TextStyle = TextStyle(
         fontSize = fontSize,
-        color = Color.White,
+        color = color,
         textMotion = TextMotion.Animated,
     )
 
@@ -96,13 +81,13 @@ class DanmakuStyle(
         fontSize: TextUnit = this.fontSize,
         alpha: Float = this.alpha,
         strokeColor: Color = this.strokeColor,
-        strokeMidth: Float = this.strokeWidth,
+        strokeWidth: Float = this.strokeWidth,
         shadow: Shadow? = this.shadow,
     ): DanmakuStyle {
         if (fontSize == this.fontSize &&
             alpha == this.alpha &&
             strokeColor == this.strokeColor &&
-            strokeMidth == this.strokeWidth &&
+            strokeWidth == this.strokeWidth &&
             shadow == this.shadow
         ) {
             return this
@@ -111,7 +96,7 @@ class DanmakuStyle(
             fontSize = fontSize,
             alpha = alpha,
             strokeColor = strokeColor,
-            strokeWidth = strokeMidth,
+            strokeWidth = strokeWidth,
             shadow = shadow,
         )
     }

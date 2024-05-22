@@ -97,13 +97,13 @@ internal actual fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
         Row {
             DanmakuHost(
                 state,
-                Modifier.weight(1f),
-                config
-            )
+                Modifier.weight(1f)
+            ) { config }
             VerticalDivider()
             EpisodeVideoSettings(
                 config,
                 { config = it },
+                isLoading = { false },
                 Modifier.weight(1f)
             )
         }
@@ -113,13 +113,13 @@ internal actual fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
                 state,
                 Modifier
                     .weight(1f)
-                    .fillMaxWidth(),
-                config
-            )
+                    .fillMaxWidth()
+            ) { config }
             HorizontalDivider()
             EpisodeVideoSettings(
                 config,
                 { config = it },
+                isLoading = { false },
                 Modifier.weight(1f)
             )
         }
@@ -135,7 +135,7 @@ private fun PreviewDanmakuText() {
         Surface(color = Color.White) {
             DanmakuText(
                 DummyDanmakuState,
-                style = DanmakuStyle()
+                style = DanmakuStyle(),
             )
         }
     }

@@ -84,7 +84,7 @@ fun DanmakuHostState(
 fun DanmakuHost(
     state: DanmakuHostState,
     modifier: Modifier = Modifier,
-    config: DanmakuConfig = DanmakuConfig.Default,
+    config: () -> DanmakuConfig,
 ) {
     Column(modifier.background(Color.Transparent)) {
         val baseStyle = MaterialTheme.typography.bodyMedium
@@ -93,11 +93,11 @@ fun DanmakuHost(
             DanmakuTrack(track, Modifier.fillMaxWidth(), config, baseStyle = baseStyle) {
                 // fix height even if there is no danmaku showing
                 // so that the second track will not move to the top of the screen when the first track is empty.
-                danmaku(DummyDanmakuState, Modifier.alpha(0f).padding(vertical = 1.dp), style = config.style)
+                danmaku(DummyDanmakuState, Modifier.alpha(0f).padding(vertical = 1.dp))
 
                 for (danmaku in track.visibleDanmaku) {
                     key(danmaku.presentation.id) {
-                        danmaku(danmaku, style = config.style)
+                        danmaku(danmaku)
                     }
                 }
             }

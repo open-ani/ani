@@ -129,7 +129,7 @@ internal fun EpisodeVideoImpl(
                 enter = fadeIn(tween(200)),
                 exit = fadeOut(tween(200))
             ) {
-                DanmakuHost(danmakuHostState, Modifier.matchParentSize(), danmakuConfig())
+                DanmakuHost(danmakuHostState, Modifier.matchParentSize(), danmakuConfig)
             }
         },
         gestureHost = {

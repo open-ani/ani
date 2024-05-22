@@ -25,6 +25,7 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onPlaced
@@ -300,9 +301,8 @@ abstract class DanmakuTrackScope {
     fun danmaku(
         danmaku: DanmakuState,
         modifier: Modifier = Modifier,
-        style: DanmakuStyle,
     ) {
-        danmakuImpl(danmaku, style, modifier)
+        danmakuImpl(danmaku, modifier)
     }
 
     /**
@@ -312,7 +312,6 @@ abstract class DanmakuTrackScope {
     internal abstract fun danmakuImpl(
         // need this because abstract composable cannot have defaults
         danmaku: DanmakuState,
-        style: DanmakuStyle,
         modifier: Modifier,
     )
 }
@@ -321,11 +320,11 @@ abstract class DanmakuTrackScope {
 fun DanmakuTrack(
     trackState: DanmakuTrackState,
     modifier: Modifier = Modifier,
-    config: DanmakuConfig = DanmakuConfig.Default,
+    config: () -> DanmakuConfig = { DanmakuConfig.Default },
     baseStyle: TextStyle = MaterialTheme.typography.bodyMedium,
     content: @Composable DanmakuTrackScope.() -> Unit, // box scope
 ) {
-    val configUpdated by rememberUpdatedState(config)
+    val configUpdated by remember(config) { derivedStateOf(config) }
     val safeSeparation by rememberUpdatedState(
         with(LocalDensity.current) {
             configUpdated.safeSeparation.toPx()
@@ -344,7 +343,6 @@ fun DanmakuTrack(
             @Composable
             override fun danmakuImpl(
                 danmaku: DanmakuState,
-                style: DanmakuStyle,
                 modifier: Modifier
             ) {
                 Box(
@@ -360,7 +358,7 @@ fun DanmakuTrack(
                 ) {
                     DanmakuText(
                         danmaku,
-                        style = style,
+                        config = configUpdated,
                         baseStyle = baseStyle,
                         onTextLayout = {
                             danmaku.textWidth = it.size.width
@@ -419,7 +417,8 @@ fun DanmakuTrack(
 fun DanmakuText(
     state: DanmakuState,
     modifier: Modifier = Modifier,
-    style: DanmakuStyle = DanmakuStyle.Default,
+    config: DanmakuConfig = DanmakuConfig.Default,
+    style: DanmakuStyle = config.style,
     baseStyle: TextStyle = MaterialTheme.typography.bodyMedium,
     onTextLayout: ((TextLayoutResult) -> Unit)? = null,
 ) {
@@ -442,8 +441,21 @@ fun DanmakuText(
             overflow = TextOverflow.Clip,
             maxLines = 1,
             softWrap = false,
-            style = baseStyle.merge(style.styleForText()),
+            style = baseStyle.merge(
+                style.styleForText(
+                    color = if (config.enableColor) {
+                        rgbColor(
+                            state.presentation.danmaku.color.toUInt().toLong()
+                        )
+                    } else Color.White
+                )
+            ),
             textDecoration = if (state.presentation.isSelf) TextDecoration.Underline else null,
         )
     }
+}
+
+@Suppress("NOTHING_TO_INLINE")
+private inline fun rgbColor(value: Long): Color {
+    return Color(0xFF_00_00_00L or value)
 }
