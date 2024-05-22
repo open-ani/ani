@@ -68,7 +68,9 @@ class TimeBasedDanmakuSession private constructor(
             samplePeriod: Duration = 30.milliseconds,
             coroutineContext: CoroutineContext = EmptyCoroutineContext,
         ): DanmakuSession {
-            val list = sequence.toCollection(ArrayList())
+            val list = sequence.mapTo(ArrayList()) {
+                DanmakuSanitizer.sanitize(it)
+            }
             list.sortBy { it.playTimeMillis }
             return TimeBasedDanmakuSession(list, shiftMillis, samplePeriod, coroutineContext)
         }

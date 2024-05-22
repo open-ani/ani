@@ -11,7 +11,7 @@ class DanmakuPresentation(
 }
 
 @Immutable
-class Danmaku(
+data class Danmaku(
     val id: String,
     val providerId: String,
     val playTimeMillis: Long, // xx.xx seconds
