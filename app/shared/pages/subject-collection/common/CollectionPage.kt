@@ -203,7 +203,7 @@ fun CollectionPage(
                             .nestedScroll(pullToRefreshState.nestedScrollConnection)
                             .fillMaxSize(),
                         lazyListState = collection.lazyListState,
-                        enableAnimation = { vm.settings.enableListAnimation }
+                        enableAnimation = { vm.myCollectionsSettings.enableListAnimation }
                     )
                     PullToRefreshContainer(
                         pullToRefreshState,
@@ -261,10 +261,11 @@ private fun TabContent(
                                 setEpisodeWatched(
                                     subjectCollection.subjectId,
                                     progressItem.episodeId,
-                                    watched = progressItem.watchStatus != UnifiedCollectionType.DONE
+                                    watched = progressItem.watchStatus != UnifiedCollectionType.DONE,
                                 )
                             }
                         },
+                        colors = EpisodeProgressDefaults.colors(vm.episodeProgressSettings.theme)
                     )
                 }
             }

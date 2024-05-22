@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.map
 import me.him188.ani.app.ViewModelAuthSupport
 import me.him188.ani.app.data.media.EpisodeCacheStatus
 import me.him188.ani.app.data.media.MediaCacheManager
+import me.him188.ani.app.data.models.EpisodeProgressSettings
 import me.him188.ani.app.data.models.MyCollectionsSettings
 import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.data.subject.SubjectCollectionItem
@@ -35,7 +36,8 @@ class CollectionsByType(
 interface MyCollectionsViewModel : HasBackgroundScope, ViewModelAuthSupport {
     val subjectManager: SubjectManager
 
-    val settings: MyCollectionsSettings
+    val myCollectionsSettings: MyCollectionsSettings
+    val episodeProgressSettings: EpisodeProgressSettings
 
     @Stable
     fun collectionsByType(type: UnifiedCollectionType): CollectionsByType
@@ -71,9 +73,12 @@ class MyCollectionsViewModelImpl : AbstractViewModel(), KoinComponent, MyCollect
     val collectionsByType = subjectManager.collectionsByType.map {
         CollectionsByType(it.key, it.value)
     }
-    override val settings: MyCollectionsSettings by settingsRepository.uiSettings.flow
+    override val myCollectionsSettings: MyCollectionsSettings by settingsRepository.uiSettings.flow
         .map { it.myCollections }
         .produceState(MyCollectionsSettings.Default)
+    override val episodeProgressSettings: EpisodeProgressSettings by settingsRepository.uiSettings.flow
+        .map { it.episodeProgress }
+        .produceState(EpisodeProgressSettings.Default)
 
     @Stable
     override fun collectionsByType(type: UnifiedCollectionType): CollectionsByType =

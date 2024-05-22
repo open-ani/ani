@@ -10,6 +10,72 @@ import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 
 
+private val testEpisodes = listOf(
+    EpisodeProgressItem(
+        episodeId = 0,
+        episodeSort = "00",
+        watchStatus = UnifiedCollectionType.DONE,
+        isOnAir = false,
+        cacheStatus = EpisodeCacheStatus.Caching(0.3f, 300.megaBytes),
+    ),
+    EpisodeProgressItem(
+        episodeId = 1,
+        episodeSort = "01",
+        watchStatus = UnifiedCollectionType.DONE,
+        isOnAir = false,
+        cacheStatus = EpisodeCacheStatus.NotCached,
+    ),
+    EpisodeProgressItem(
+        episodeId = 2,
+        episodeSort = "02",
+        watchStatus = UnifiedCollectionType.DONE,
+        isOnAir = false,
+        cacheStatus = EpisodeCacheStatus.Cached(300.megaBytes),
+    ),
+    EpisodeProgressItem(
+        episodeId = 3,
+        episodeSort = "03",
+        watchStatus = UnifiedCollectionType.WISH,
+        isOnAir = false,
+        cacheStatus = EpisodeCacheStatus.Cached(300.megaBytes),
+    ),
+    EpisodeProgressItem(
+        episodeId = 4,
+        episodeSort = "04",
+        watchStatus = UnifiedCollectionType.WISH,
+        isOnAir = false,
+        cacheStatus = EpisodeCacheStatus.Caching(0.7f, 300.megaBytes),
+    ),
+    EpisodeProgressItem(
+        episodeId = 5,
+        episodeSort = "05",
+        watchStatus = UnifiedCollectionType.WISH,
+        isOnAir = false,
+        cacheStatus = EpisodeCacheStatus.NotCached,
+    ),
+    EpisodeProgressItem(
+        episodeId = 6,
+        episodeSort = "06",
+        watchStatus = UnifiedCollectionType.WISH,
+        isOnAir = true,
+        cacheStatus = EpisodeCacheStatus.NotCached,
+    ),
+    EpisodeProgressItem(
+        episodeId = 7,
+        episodeSort = "07",
+        watchStatus = UnifiedCollectionType.WISH,
+        isOnAir = true,
+        cacheStatus = EpisodeCacheStatus.Cached(300.megaBytes),
+    ),
+    EpisodeProgressItem(
+        episodeId = 8,
+        episodeSort = "08",
+        watchStatus = UnifiedCollectionType.WISH,
+        isOnAir = true,
+        cacheStatus = EpisodeCacheStatus.Caching(0.3f, 300.megaBytes),
+    ),
+)
+
 @PreviewLightDark
 @Composable
 private fun PreviewEpisodeProgressDialog() {
@@ -21,71 +87,7 @@ private fun PreviewEpisodeProgressDialog() {
             onClickCache = {},
         ) {
             val episodes = remember {
-                listOf(
-                    EpisodeProgressItem(
-                        episodeId = 0,
-                        episodeSort = "00",
-                        watchStatus = UnifiedCollectionType.DONE,
-                        isOnAir = false,
-                        cacheStatus = EpisodeCacheStatus.Caching(0.3f, 300.megaBytes),
-                    ),
-                    EpisodeProgressItem(
-                        episodeId = 1,
-                        episodeSort = "01",
-                        watchStatus = UnifiedCollectionType.DONE,
-                        isOnAir = false,
-                        cacheStatus = EpisodeCacheStatus.NotCached,
-                    ),
-                    EpisodeProgressItem(
-                        episodeId = 2,
-                        episodeSort = "02",
-                        watchStatus = UnifiedCollectionType.DONE,
-                        isOnAir = false,
-                        cacheStatus = EpisodeCacheStatus.Cached(300.megaBytes),
-                    ),
-                    EpisodeProgressItem(
-                        episodeId = 3,
-                        episodeSort = "03",
-                        watchStatus = UnifiedCollectionType.WISH,
-                        isOnAir = false,
-                        cacheStatus = EpisodeCacheStatus.Cached(300.megaBytes),
-                    ),
-                    EpisodeProgressItem(
-                        episodeId = 4,
-                        episodeSort = "04",
-                        watchStatus = UnifiedCollectionType.WISH,
-                        isOnAir = false,
-                        cacheStatus = EpisodeCacheStatus.Caching(0.7f, 300.megaBytes),
-                    ),
-                    EpisodeProgressItem(
-                        episodeId = 5,
-                        episodeSort = "05",
-                        watchStatus = UnifiedCollectionType.WISH,
-                        isOnAir = false,
-                        cacheStatus = EpisodeCacheStatus.NotCached,
-                    ),
-                    EpisodeProgressItem(
-                        episodeId = 6,
-                        episodeSort = "06",
-                        watchStatus = UnifiedCollectionType.WISH,
-                        isOnAir = true,
-                        cacheStatus = EpisodeCacheStatus.NotCached,
-                    ),
-                    EpisodeProgressItem(
-                        episodeId = 7,
-                        episodeSort = "07",
-                        watchStatus = UnifiedCollectionType.WISH,
-                        isOnAir = true,
-                        cacheStatus = EpisodeCacheStatus.Cached(300.megaBytes),
-                    ),
-                    EpisodeProgressItem(
-                        episodeId = 8,
-                        episodeSort = "08",
-                        watchStatus = UnifiedCollectionType.WISH,
-                        isOnAir = true,
-                        cacheStatus = EpisodeCacheStatus.Caching(0.3f, 300.megaBytes),
-                    ),
-                )
+                testEpisodes
             }
             EpisodeProgressRow(
                 episodes = {
@@ -93,6 +95,31 @@ private fun PreviewEpisodeProgressDialog() {
                 },
                 onClickEpisodeState = {},
                 onLongClickEpisode = {}
+            )
+        }
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun PreviewEpisodeProgressDialogLightUp() {
+    ProvideCompositionLocalsForPreview {
+        EpisodeProgressDialog(
+            onDismissRequest = {},
+            onClickDetails = {},
+            title = { Text(text = "葬送的芙莉莲") },
+            onClickCache = {},
+        ) {
+            val episodes = remember {
+                testEpisodes
+            }
+            EpisodeProgressRow(
+                episodes = {
+                    episodes
+                },
+                onClickEpisodeState = {},
+                onLongClickEpisode = {},
+                colors = EpisodeProgressDefaults.colors(EpisodeProgressTheme.LIGHT_UP)
             )
         }
     }

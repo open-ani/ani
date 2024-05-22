@@ -28,6 +28,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -124,6 +125,7 @@ fun EpisodeProgressRow(
     onClickEpisodeState: (episode: EpisodeProgressItem) -> Unit,
     onLongClickEpisode: (episode: EpisodeProgressItem) -> Unit,
     modifier: Modifier = Modifier,
+    colors: EpisodeProgressColors = EpisodeProgressDefaults.colors(),
 ) {
     FlowRow(
         modifier.fillMaxWidth(),
@@ -138,6 +140,7 @@ fun EpisodeProgressRow(
                 onClick = { onClickEpisodeState(it) },
                 onLongClick = { onLongClickEpisode(it) },
                 cacheStatus = it.cacheStatus,
+                colors = colors,
             )
         }
     }
@@ -160,6 +163,65 @@ fun EpisodeProgressRow(
 //    }
 }
 
+@Immutable
+class EpisodeProgressColors(
+    /**
+     * 看过或抛弃的颜色
+     */
+    val doneOrDroppedColor: Color,
+    /**
+     * 可以看但还没看
+     */
+    val canWatchColor: Color,
+    /**
+     * 未开播颜色
+     */
+    val notPublishedColor: Color,
+)
+
+@Immutable
+enum class EpisodeProgressTheme {
+    /**
+     * 点亮模式, 看过的是亮色
+     */
+    LIGHT_UP,
+
+    /**
+     * 动作模式, 可以看的是亮色
+     */
+    ACTION;
+
+    companion object {
+        @Stable
+        val Default = ACTION
+    }
+}
+
+object EpisodeProgressDefaults {
+    @Composable
+    fun colors(
+        theme: EpisodeProgressTheme = EpisodeProgressTheme.Default,
+        action: Color = MaterialTheme.colorScheme.primary,
+        disabled: Color = MaterialTheme.colorScheme.onSurface.stronglyWeaken(),
+    ): EpisodeProgressColors {
+        val dark = action.weaken()
+        return when (theme) {
+            EpisodeProgressTheme.ACTION -> EpisodeProgressColors(
+                doneOrDroppedColor = dark,
+                canWatchColor = action,
+                notPublishedColor = disabled,
+            )
+
+            EpisodeProgressTheme.LIGHT_UP -> EpisodeProgressColors(
+                doneOrDroppedColor = action,
+                canWatchColor = dark,
+                notPublishedColor = disabled,
+            )
+        }
+    }
+}
+
+
 @Composable
 private fun SmallEpisodeButton(
     episodeSort: () -> String,
@@ -169,6 +231,7 @@ private fun SmallEpisodeButton(
     onLongClick: () -> Unit,
     modifier: Modifier = Modifier,
     cacheStatus: EpisodeCacheStatus? = null,
+    colors: EpisodeProgressColors = EpisodeProgressDefaults.colors(),
 ) {
     val isDoneOrDropped = watchStatus == UnifiedCollectionType.DONE || watchStatus == UnifiedCollectionType.DROPPED
     IndicatedBox(
@@ -185,20 +248,14 @@ private fun SmallEpisodeButton(
         modifier//.padding(end = if (hasBadge) 12.dp else 0.dp)
     ) {
         val containerColor = when {
-            isDoneOrDropped ->
-                MaterialTheme.colorScheme.primary.weaken()
-
-            isOnAir != false ->  // 未开播
-                MaterialTheme.colorScheme.onSurface.stronglyWeaken()
-
-            // 还没看
-            else -> MaterialTheme.colorScheme.primary
+            isDoneOrDropped -> colors.doneOrDroppedColor
+            isOnAir != false -> colors.notPublishedColor // 未开播
+            else -> colors.canWatchColor // 还没看
         }
         me.him188.ani.app.ui.foundation.FilledTonalCombinedClickButton(
             onClick = onClick,
             onLongClick = onLongClick,
-            modifier =
-            Modifier
+            modifier = Modifier
                 .combinedClickable(onLongClick = onLongClick, onClick = onClick)
                 .heightIn(min = 48.dp)
                 .widthIn(min = 48.dp),
