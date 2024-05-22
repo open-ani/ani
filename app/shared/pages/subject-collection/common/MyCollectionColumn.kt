@@ -1,8 +1,5 @@
 package me.him188.ani.app.ui.collection
 
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.snap
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,17 +35,17 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -59,7 +56,6 @@ import me.him188.ani.app.data.media.EpisodeCacheStatus
 import me.him188.ani.app.data.subject.SubjectCollectionItem
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.ui.foundation.AsyncImage
-import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.indication.HorizontalIndicator
 import me.him188.ani.app.ui.foundation.indication.IndicatedBox
 import me.him188.ani.app.ui.subject.details.COVER_WIDTH_TO_HEIGHT_RATIO
@@ -67,6 +63,8 @@ import me.him188.ani.app.ui.subject.details.Tag
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import org.openapitools.client.models.UserEpisodeCollection
 import kotlin.time.Duration.Companion.seconds
+
+private inline val spacedBy get() = 16.dp
 
 /**
  * Lazy column of [item]s, designed for My Collections.
@@ -87,78 +85,57 @@ fun SubjectCollectionsColumn(
     lazyListState: LazyListState = rememberLazyListState(),
     contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
-    val spacedBy = 16.dp
-
-    val data = cache.cachedDataFlow.collectAsState(null).value // 反正下面会立即用到, recompose 总是重组整个函数
+    val data by cache.cachedDataFlow.collectAsState(null) // 反正下面会立即用到, recompose 总是重组整个函数
+    val dataNotNull by remember { derivedStateOf { data.orEmpty() } }
 
     // 如果不 debounce, 会导致刚刚加载完成后会显示一小会 "空空如也"
     val isCompleted by remember(cache) { cache.isCompleted.debounce(1.seconds) }.collectAsState(false)
+    val dataNullOrEmpty by remember { derivedStateOf { data.isNullOrEmpty() } }
 
-    if (data.isNullOrEmpty() && isCompleted) {
-        onEmpty()
-        return
+    Composition {
+        if (dataNullOrEmpty && isCompleted) {
+            onEmpty()
+        }
     }
 
-    if (data != null) {
-        LazyColumn(
-            modifier.padding(horizontal = 12.dp).padding(vertical = 0.dp),
-            lazyListState,
-            verticalArrangement = Arrangement.spacedBy(spacedBy),
-        ) {
-            // 每两个 item 之间有 spacedBy dp, 这里再上补充 contentPadding 要求的高度, 这样顶部的总留空就是 contentPadding 要求的高度
-            // 这个高度是可以滚到上面的, 所以它
-            (contentPadding.calculateTopPadding() - spacedBy).coerceAtLeast(0.dp).let {
-                item { Spacer(Modifier.height(it)) }
+    LazyColumn(
+        modifier.padding(horizontal = 12.dp).padding(vertical = 0.dp),
+        lazyListState,
+        verticalArrangement = Arrangement.spacedBy(spacedBy),
+    ) {
+        // 每两个 item 之间有 spacedBy dp, 这里再上补充 contentPadding 要求的高度, 这样顶部的总留空就是 contentPadding 要求的高度
+        // 这个高度是可以滚到上面的, 所以它
+        (contentPadding.calculateTopPadding() - spacedBy).coerceAtLeast(0.dp).let {
+            item { Spacer(Modifier.height(it)) }
+        }
+
+        items(dataNotNull, key = { it.subjectId }) { collection ->
+            Box(Modifier.animateItemPlacement()) {
+                item(collection)
             }
+        }
 
-
-            items(data, key = { it.subjectId }) { collection ->
-                // 在首次加载时展示一个渐入的动画, 随后不再展示
-                var targetAlpha by rememberSaveable { mutableStateOf(0f) }
-                val alpha by animateFloatAsState(
-                    targetAlpha,
-                    if (lazyListState.canScrollBackward || lazyListState.canScrollForward) {
-                        snap(0)
-                    } else tween(150)
-                )
-                Box(
-                    Modifier.then(
-                        if (LocalIsPreviewing.current) { // 预览模式下无动画
-                            Modifier
-                        } else {
-                            // improves performance than `.alpha()`
-                            Modifier.graphicsLayer {
-                                this.alpha = alpha
-                            }
-                        }
-                    ).animateItemPlacement()
-                ) {
-                    item(collection)
+        if (!isCompleted) {
+            item("dummy loader") {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                    CircularProgressIndicator()
                 }
-                SideEffect {
-                    targetAlpha = 1f
-                }
-            }
 
-            if (!isCompleted) {
-                item("dummy loader") {
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                        CircularProgressIndicator()
-                    }
-
-                    LaunchedEffect(true) {
-                        onRequestMore()
-                    }
-                }
+                val onRequestMoreState by rememberUpdatedState(onRequestMore)
+                LaunchedEffect(true) { onRequestMoreState() }
             }
+        }
 
-            (contentPadding.calculateBottomPadding() - spacedBy).coerceAtLeast(0.dp).let {
-                item { Spacer(Modifier.height(it)) }
-            }
+        (contentPadding.calculateBottomPadding() - spacedBy).coerceAtLeast(0.dp).let {
+            item { Spacer(Modifier.height(it)) }
         }
     }
 }
 
+@Composable
+private fun Composition(content: @Composable () -> Unit) {
+    content()
+}
 
 /**
  * 追番列表的一个条目卡片
@@ -283,9 +260,8 @@ private fun SubjectCollectionItemContent(
                 Text("选集")
             }
 
-            val onPlay: () -> Unit = {
-                getEpisodeToPlay(item)?.let(onClickEpisode)
-            }
+            val onClickEpisodeState by rememberUpdatedState(onClickEpisode)
+            val onPlay: () -> Unit = { getEpisodeToPlay(item)?.let(onClickEpisodeState) }
             IndicatedBox(indicator = {
                 getEpisodeToPlay(item)?.episode?.id?.let { episodeId ->
                     HorizontalIndicator(
@@ -305,7 +281,7 @@ private fun SubjectCollectionItemContent(
                 when (val status = item.continueWatchingStatus) {
                     is ContinueWatchingStatus.Continue -> {
                         Button(onClick = onPlay) {
-                            Text("继续观看 ${status.episodeSort}")
+                            Text(remember(status.episodeSort) { "继续观看 ${status.episodeSort}" })
                         }
                     }
 

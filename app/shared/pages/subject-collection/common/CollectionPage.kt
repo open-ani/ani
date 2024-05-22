@@ -54,12 +54,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.subject.SubjectCollectionItem
@@ -158,8 +160,10 @@ fun CollectionPage(
 
                 val pullToRefreshState = rememberPullToRefreshState()
                 var isAutoRefreshing by remember { mutableStateOf(false) }
-                if (pullToRefreshState.isRefreshing) {
-                    LaunchedEffect(true) {
+                LaunchedEffect(true) {
+                    snapshotFlow { pullToRefreshState.isRefreshing }.collectLatest {
+                        if (!it) return@collectLatest
+
                         try {
                             val policy = if (isAutoRefreshing) {
                                 RefreshOrderPolicy.KEEP_ORDER_APPEND_LAST
