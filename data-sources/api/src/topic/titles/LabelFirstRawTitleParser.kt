@@ -117,6 +117,8 @@ class LabelFirstRawTitleParser : RawTitleParser() {
             val str = this
                 .remove("第")
                 .remove("_完")
+                .remove("_END")
+                .remove("(完)")
                 .remove("完")
                 .remove("话")
                 .remove("END")
@@ -168,7 +170,7 @@ class LabelFirstRawTitleParser : RawTitleParser() {
 }
 
 private val newAnime = Regex("(?:★?|★(.*)?)([0-9]|[一二三四五六七八九十]{0,4}) ?[月年] ?(?:新番|日剧)★?")
-private val brackets = Regex("""[\[【(](.*?)[]】)]""")
+private val brackets = Regex("""[\[【(『](.*?)[]】)』]""")
 
 private val collectionPattern = Regex(
     """(\d{1,4})\s?-{1,2}\s?(\d{1,4})(TV|BDrip|BD)?(\+.+)?""",

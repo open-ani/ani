@@ -503,7 +503,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
   @Test
   public fun `252303_TSDM_Mirai_Nikki_26_END_720p_MKV`() {
     val r = parse("【TSDM字幕組】[未来日记][Mirai Nikki][26_END][720p][简繁内挂][MKV]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("26..26", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
   }
@@ -1031,7 +1031,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
   @Test
   public fun `249300_Mirai_Nikk_24_720P_mkv`() {
     val r = parse("【萌月字幕组】[未来日记][Mirai Nikk]『24』[十月新番]★[720P]☆[简体][mkv]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("24..24", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
   }
@@ -1271,7 +1271,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
   @Test
   public fun `248322_Mirai_Nikk_23_720P_mkv`() {
     val r = parse("【萌月字幕组】[未来日记][Mirai Nikk]『23』[十月新番]★[720P]☆[简体][mkv]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("23..23", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
   }
@@ -1447,7 +1447,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
   @Test
   public fun `247313_Mirai_Nikk_22_720P_mkv`() {
     val r = parse("【萌月字幕组】[未来日记][Mirai Nikk]『22』[十月新番]★[720P]☆[简体][mkv]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("22..22", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
   }
@@ -1623,7 +1623,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
   @Test
   public fun `246421_Mirai_Nikk_21_720P_mkv`() {
     val r = parse("【萌月字幕组】[未来日记][Mirai Nikk]『21』[十月新番]★[720P]☆[简体][mkv]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("21..21", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
   }
@@ -2087,7 +2087,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
   @Test
   public fun `243098_Mirai_Nikk_18_720P_mkv`() {
     val r = parse("【萌月字幕组】[未来日记][Mirai Nikk]『18』[十月新番]★[720P]☆[简体][mkv]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("18..18", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
   }
@@ -2327,7 +2327,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
   @Test
   public fun `241874_Mirai_Nikk_17_720P_mkv`() {
     val r = parse("【萌月字幕组】[未来日记][Mirai Nikk]『17』[十月新番]★[720P]☆[简体][mkv]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("17..17", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
   }
@@ -2495,7 +2495,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
   @Test
   public fun `241042_Mirai_Nikk_16_720P_mkv`() {
     val r = parse("【萌月字幕组】[未来日记][Mirai Nikk]『16』[十月新番]★[720P]☆[简体][mkv]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("16..16", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
   }
@@ -2743,7 +2743,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
   @Test
   public fun `240086_Mirai_Nikk_15_720P_mkv`() {
     val r = parse("【萌月字幕组】[未来日记][Mirai Nikk]『15』[十月新番]★[720P]☆[简体][mkv]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("15..15", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
   }
@@ -2864,7 +2864,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
   @Test
   public fun `239185_Mirai_Nikk_14_720P_mkv`() {
     val r = parse("【萌月字幕组】[未来日记][Mirai Nikk]『14』[十月新番]★[720P]☆[简体][mkv]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("14..14", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
   }
@@ -3080,7 +3080,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
   @Test
   public fun `238360_Mirai_Nikk_13_720P_mkv`() {
     val r = parse("【萌月字幕组】[未来日记][Mirai Nikk]『13』[十月新番]★[720P]☆[简体][mkv]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("13..13", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
   }
@@ -3464,7 +3464,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
   @Test
   public fun `236267_Mirai_Nikk_11_720P_mkv`() {
     val r = parse("【萌月字幕组】[未来日记][Mirai Nikk]『11』[十月新番]★[720P]☆[简体][mkv]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("11..11", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
   }
@@ -3721,7 +3721,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
   @Test
   public fun `235407_Mirai_Nikk_10_720P_mkv`() {
     val r = parse("【萌月字幕组】[未来日记][Mirai Nikk]『10』[十月新番]★[720P]☆[简体][mkv]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("10..10", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
   }
@@ -3961,7 +3961,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
   @Test
   public fun `234616_Mirai_Nikk_09_720P_mkv`() {
     val r = parse("【萌月字幕组】[未来日记][Mirai Nikk]『09』[十月新番]★[720P]☆[简体][mkv]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("09..09", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
   }
@@ -4121,7 +4121,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
   @Test
   public fun `233697_Mirai_Nikk_08_720P_mkv`() {
     val r = parse("【萌月字幕组】[未来日记][Mirai Nikk]『08』[十月新番]★[720P]☆[简体][mkv]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("08..08", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
   }
@@ -4297,7 +4297,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
   @Test
   public fun `233027_Mirai_Nikk_07_720P_mkv`() {
     val r = parse("【萌月字幕组】[未来日记][Mirai Nikk]『07』[十月新番]★[720P]☆[简体][mkv]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("07..07", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
   }
@@ -4585,7 +4585,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
   @Test
   public fun `231911_Mirai_Nikk_06_720P_mkv`() {
     val r = parse("【萌月字幕组】[未来日记][Mirai Nikk]『06』[十月新番]★[720P]☆[简体][mkv]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
   }
@@ -4761,7 +4761,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
   @Test
   public fun `230957_Mirai_Nikk_05_720P_mkv`() {
     val r = parse("【萌月字幕组】[未来日记][Mirai Nikk]『05』[十月新番]★[720P]☆[简体][mkv]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
   }
@@ -5010,7 +5010,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
   @Test
   public fun `229944_Mirai_Nikk_04_720P_mkv`() {
     val r = parse("【萌月字幕组】[未来日记][Mirai Nikk]『04』[十月新番]★[720P]☆[简体][mkv]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
   }
@@ -5234,7 +5234,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
   @Test
   public fun `228889_Mirai_Nikk_03_720P_mkv`() {
     val r = parse("【萌月字幕组】[未来日记][Mirai Nikk]『03』[十月新番]★[720P]☆[简体][mkv]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
   }
@@ -5434,7 +5434,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
   @Test
   public fun `227968_Mirai_Nikk_02V2_720P_mkv`() {
     val r = parse("【萌月字幕组】[未来日记][Mirai Nikk]『02V2』[十月新番]★[720P]☆[简体][mkv]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
   }
@@ -5450,7 +5450,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
   @Test
   public fun `227923_Mirai_Nikk_02_720P_mkv`() {
     val r = parse("【萌月字幕组】[未来日记][Mirai Nikk]『02』[十月新番]★[720P]☆[简体][mkv]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
   }
@@ -5642,7 +5642,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
   @Test
   public fun `226956_Mirai_Nikk_01_720P_mkv`() {
     val r = parse("【萌月字幕组】[未来日记][Mirai Nikk]『01』[十月新番]★[720P]☆[简体][mkv]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
   }
