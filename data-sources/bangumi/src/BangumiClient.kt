@@ -265,7 +265,7 @@ internal class BangumiClientImpl(
             chain.proceed(
                 chain.request().newBuilder().addHeader(
                     "User-Agent",
-                    "him188/ani/3.0.0-beta01 (Android) (https://github.com/Him188/ani)"
+                    "open-ani/ani/3.0.0-beta01 (Android) (https://github.com/open-ani/ani)"
                 ).build()
             )
         }
