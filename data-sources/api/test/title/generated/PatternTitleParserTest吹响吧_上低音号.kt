@@ -1390,7 +1390,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   @Test
   public fun `472387_DHR_Sound_21Euphonium_S2_SP01_07_720P_MP4`() {
     val r = parse("【DHR動研字幕組&茉語星夢&千夏字幕組】[吹響吧！上低音號 第二季_Sound!Euphonium S2][SP01-07全][繁體][720P][MP4]")
-    assertEquals("01..07", r.episodeRange.toString())
+    assertEquals("SP01..SP07", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
   }
@@ -1494,7 +1494,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   @Test
   public fun `456299_2_SP1_4_720P_MP4`() {
     val r = parse("【悠风社】吹响吧！上低音号 2 SP1~4 [简][720P][MP4]")
-    assertEquals("SP1~4..SP1~4", r.episodeRange.toString())
+    assertEquals("SP1..SP4", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
   }

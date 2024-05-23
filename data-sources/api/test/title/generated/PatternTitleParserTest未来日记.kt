@@ -463,7 +463,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
   @Test
   public fun `259171_Mirai_Nikki_1_26FIN_720p_MKV`() {
     val r = parse("【诸神字幕組】[未来日记][Mirai Nikki][1~26FIN][720p][中日双语字幕][MKV]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("01..26", r.episodeRange.toString())
     assertEquals("JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
   }
@@ -479,7 +479,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
   @Test
   public fun `252310_TSDM_Mirai_Nikki_1_26FIN_720p_MKV`() {
     val r = parse("【TSDM字幕組】[未来日记][Mirai Nikki][1~26FIN][720p][简繁内挂][MKV]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("01..26", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
   }
@@ -5466,7 +5466,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
   @Test
   public fun `227831_TSDM_Mirai_Nikki_01v2_02_720p_MKV`() {
     val r = parse("【TSDM字幕組】[未来日记][Mirai Nikki][01v2~02][720p][简繁内挂][MKV]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("01..02", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
   }
