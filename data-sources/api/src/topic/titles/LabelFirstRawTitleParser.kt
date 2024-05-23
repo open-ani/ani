@@ -133,9 +133,6 @@ class LabelFirstRawTitleParser : RawTitleParser() {
                 return true
             }
             collectionPattern.find(str)?.let { result ->
-                if (result.groupValues.size < 4) {
-                    return@let
-                }
                 val start = result.groups["start"]?.value ?: return@let
                 val end = result.groups["end"]?.value ?: return@let
                 start.getPrefix()?.let { prefix ->
@@ -145,7 +142,7 @@ class LabelFirstRawTitleParser : RawTitleParser() {
                         return true
                     }
                 }
-                
+
                 if (end.startsWith("0") && !start.startsWith("0")) {
                     // "Hibike! Euphonium 3 - 02"
                     builder.episodeRange = EpisodeRange.single(EpisodeSort(end))
@@ -188,7 +185,25 @@ private fun String.getPrefix(): String? {
 }
 
 private val newAnime = Regex("(?:★?|★(.*)?)([0-9]|[一二三四五六七八九十]{0,4}) ?[月年] ?(?:新番|日剧)★?")
-private val brackets = Regex("""[\[【(『](.*?)[]】)』]""")
+
+// 性能没问题, 测了一般就 100 steps
+private val brackets =
+    Regex("""\[(?<v1>.+?)]|\((?<v2>.+?)\)|\{(?<v3>.+?)}|【(?<v4>.+?)】|（(?<v5>.+?)）|「(?<v6>.+?)」|『(?<v7>.+?)』""")
+
+//private val brackets = listOf(
+//    "[" to "]",
+//    "【" to "】",
+//    "（" to "）",
+//    "(" to ")",
+//    "『" to "』",
+//    "「" to "」",
+//    "〖" to "〗",
+//    "〈" to "〉",
+//    "《" to "》",
+//    "〔" to "〕",
+//    "〘" to "〙",
+//    "〚" to "〛",
+//)
 
 private val collectionPattern = Regex(
     """(?<start>(?:SP)?\d{1,4})\s?(?:-{1,2}|~|～)\s?(?<end>\d{1,4})(?:TV|BDrip|BD)?(?<extra>\+.+)?""",
@@ -197,7 +212,9 @@ private val collectionPattern = Regex(
 
 private fun String.remove(str: String) = replace(str, "", ignoreCase = true)
 
-private fun String.splitWords(): Sequence<String> {
+private val DEFAULT_SPLIT_WORDS_DELIMITER = charArrayOf('/', '\\', '|', ' ')
+
+internal fun String.splitWords(vararg delimiters: Char = DEFAULT_SPLIT_WORDS_DELIMITER): Sequence<String> {
     val text = this
     return sequence {
         var index = 0
@@ -205,18 +222,27 @@ private fun String.splitWords(): Sequence<String> {
             if (index < result.range.first) {
                 yieldAll(
                     text.substring(index until result.range.first)
-                        .splitToSequence('/', '\\', '|', ' ')
+                        .splitToSequence(delimiters = delimiters)
                 )
             }
             index = result.range.last + 1
 
-            val tag = result.groups[1]!!.value // can be "WebRip 1080p HEVC-10bit AAC" or "简繁内封字幕"
-            yield(tag)
+
+            val groups = result.groups
+            val tag = groups["v1"]
+                ?: groups["v2"]
+                ?: groups["v3"]
+                ?: groups["v4"]
+                ?: groups["v5"]
+                ?: groups["v6"]
+                ?: groups["v7"]
+            // can be "WebRip 1080p HEVC-10bit AAC" or "简繁内封字幕"
+            yield(tag!!.value)
         }
         if (index < text.length) {
             yieldAll(
                 text.substring(index until text.length)
-                    .splitToSequence('/', '\\', '|', ' ')
+                    .splitToSequence(delimiters = delimiters)
             )
         }
     }

@@ -599,7 +599,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
   @Test
   public fun `251286_DHR_Sakura_Cafe_Mirai_nikki_26_848_480`() {
     val r = parse("★御宅千夏&DHR動研&Sakura Cafe★ [未來日記][Mirai_nikki][26(完)][848 × 480][繁體](人員招募中～)")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("26..26", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
   }
