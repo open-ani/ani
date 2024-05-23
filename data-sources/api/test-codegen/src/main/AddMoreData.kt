@@ -43,6 +43,7 @@ suspend fun main() {
         "终末列车去往何方",
         "迷宫饭",
         "吹响吧！上低音号",
+        "间谍过家家"
     )
 
     TopicFetcher(output, "dmhy").run {
