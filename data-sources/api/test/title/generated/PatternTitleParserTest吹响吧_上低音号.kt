@@ -2279,7 +2279,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   @Test
   public fun `419515_Hibike_21_Euphonium_720P_BIG5`() {
     val r = parse("【极影字幕社】★[吹响吧！上低音号Hibike! Euphonium ][番外篇][720P]BIG5")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("番外篇..番外篇", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
   }
@@ -2295,7 +2295,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   @Test
   public fun `419458_Hibike_21_Euphonium_720P_GB`() {
     val r = parse("【极影字幕社】★[吹响吧！上低音号Hibike! Euphonium ][番外篇][720P]GB")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("番外篇..番外篇", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
   }

@@ -56,7 +56,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
   }
-
+ 
   @Test
   public fun `655383_DBD_Raws_Mirai_Nikki_01_26TV_OVA_JPN_Ver_1080P_BDRip_HEVC_10bit_FLAC_MKV`() {
     val r =
