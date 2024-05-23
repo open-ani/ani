@@ -140,13 +140,13 @@ class TorrentVideoSourceResolver(
             // 优先按系列集数 sort 匹配 (数字较大)
             if (parsedTitles.isNotEmpty()) {
                 parsedTitles.entries.firstOrNull {
-                    it.value.contains(episodeSort)
+                    it.value.contains(episodeSort, allowSeason = false) // 季度全集在匹配文件时是无意义的
                 }?.key?.let { return it }
             }
             // 然后按季度集数 ep 匹配
             if (episodeEp != null && parsedTitles.isNotEmpty()) {
                 parsedTitles.entries.firstOrNull {
-                    it.value.contains(episodeEp)
+                    it.value.contains(episodeEp, allowSeason = false)
                 }?.key?.let { return it }
             }
 

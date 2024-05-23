@@ -40,7 +40,7 @@ public class PatternTitleParserTest樱Trick : PatternBasedTitleParserTestSuite()
   @Test
   public fun `521448_Snow_Raws_Trick_Sakura_Trick_Trick_BD_1920x1080_HEVC_YUV420P10_FLAC`() {
     val r = parse("[Snow-Raws] 樱Trick/Sakura Trick/桜Trick(BD 1920x1080 HEVC-YUV420P10 FLAC)")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("S?", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
   }
@@ -49,7 +49,7 @@ public class PatternTitleParserTest樱Trick : PatternBasedTitleParserTestSuite()
   public fun `451596_DMG_Hakugetsu_VCB_Studio_Sakura_Trick_Trick_10_bit_1080p_BDRip_Reseed_Fin`() {
     val r =
         parse("[DMG&Hakugetsu&VCB-Studio] Sakura Trick / 樱Trick 10-bit 1080p BDRip [Reseed Fin]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("S?", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
   }
@@ -57,7 +57,7 @@ public class PatternTitleParserTest樱Trick : PatternBasedTitleParserTestSuite()
   @Test
   public fun `367159_Sakura_Trick_Trick_BDRip`() {
     val r = parse("【华盟字幕社】[Sakura_Trick][樱Trick][BDRip][简繁日外挂][庆祝华盟字幕社成立十周年]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
   }
@@ -73,7 +73,7 @@ public class PatternTitleParserTest樱Trick : PatternBasedTitleParserTestSuite()
   @Test
   public fun `363209_VCB_S_Sakura_Trick_trick_10bit_1080p_BDRip_Fin`() {
     val r = parse("[动漫国 & 白月 & VCB-S] Sakura Trick/樱trick 10bit 1080p BDRip Fin 繁简外挂")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
   }
@@ -81,7 +81,7 @@ public class PatternTitleParserTest樱Trick : PatternBasedTitleParserTestSuite()
   @Test
   public fun `363207_VCB_S_Sakura_Trick_trick_8bit_720p_BDRip_Fin`() {
     val r = parse("[动漫国 & 白月 & VCB-S] Sakura Trick/樱trick 8bit 720p BDRip Fin 繁简外挂")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
   }

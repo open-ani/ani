@@ -1113,7 +1113,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   public fun `651923_Hibike_21_Euphonium_Ensemble_Contest_Hen_BDRip_AVC_8bit_1080p`() {
     val r =
         parse("[❀拨雪寻春❀] 吹響吧！上低音號～合奏比賽篇～ / Hibike! Euphonium Ensemble Contest Hen [BDRip][AVC-8bit 1080p][繁日内嵌]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
   }
@@ -1122,7 +1122,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   public fun `651922_Hibike_21_Euphonium_Ensemble_Contest_Hen_BDRip_AVC_8bit_1080p`() {
     val r =
         parse("[❀拨雪寻春❀] 吹响吧！上低音号～合奏比赛篇～ / Hibike! Euphonium Ensemble Contest Hen [BDRip][AVC-8bit 1080p][简日内嵌]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
   }
@@ -1131,7 +1131,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   public fun `651921_Hibike_21_Euphonium_Ensemble_Contest_Hen_BDRip_HEVC_10bit_1080p`() {
     val r =
         parse("[❀拨雪寻春❀] 吹响吧！上低音号～合奏比赛篇～ / Hibike! Euphonium Ensemble Contest Hen [BDRip][HEVC-10bit 1080p][简繁日内封]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
   }
@@ -1141,7 +1141,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
       fun `649884_Tokubetsu_Hen_Hibike_21_Euphonium_Ensemble_Contest_Hen_BDrip_AVC_8bit_1080p_AAC`() {
     val r =
         parse("[桜都字幕組] 特別篇 吹響吧！上低音號 ~ 合奏比賽 ~ / Tokubetsu Hen Hibike! Euphonium: Ensemble Contest Hen [BDrip][AVC-8bit 1080p AAC][繁日內嵌]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
   }
@@ -1150,7 +1150,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   public fun `648009_Tokubetsu_Hen_Hibike_21_Euphonium_Ensemble_Contest_Hen_BDRip_1080p_AVC`() {
     val r =
         parse("[千夏字幕組][特別篇 吹響吧！上低音號 ~合奏競賽~_Tokubetsu Hen Hibike! Euphonium: Ensemble Contest Hen][劇場版][BDRip_1080p_AVC][繁日双语][招募新人]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
   }
@@ -1170,7 +1170,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
       fun `647860_Tokubetsu_Hen_Hibike_21_Euphonium_Ensemble_Contest_Hen_BDRip_v2_1080p_HEVC_FLAC`() {
     val r =
         parse("[北宇治字幕组] 特別篇 吹響吧！上低音號 ~ 合奏比賽 ~ / Tokubetsu Hen Hibike! Euphonium ~ Ensemble Contest Hen ~ [BDRip v2][1080p][HEVC_FLAC][繁日內嵌]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
   }
@@ -1189,7 +1189,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   public fun `597732_5_EUPHO_5TH_REGULAR_CONCERT_BDRIP_1080p_x265_TrueHD_Atmos_TrueHD_2_0`() {
     val r =
         parse("吹响吧！上低音号5周年纪念公演[EUPHO 5TH REGULAR CONCERT][BDRIP_1080p_x265_TrueHD_Atmos_TrueHD_2.0]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("S?", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
   }
@@ -1197,7 +1197,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   @Test
   public fun `560011_DHR_Chikai_no_Finale_BDRip_720P_MP4`() {
     val r = parse("【DHR動研字幕組&茉語星夢】[吹響吧！上低音號～誓言的終章～_Chikai no Finale][劇場版][BDRip][繁體][720P][MP4]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
   }
@@ -1207,7 +1207,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
       fun `540923_VCB_Studio_Gekijouban_Hibike_21_Euphonium_Chikai_no_Finale_10_bit_1080p_HEVC_BDRip_MOVIE`() {
     val r =
         parse("[千夏字幕组&VCB-Studio] Gekijouban Hibike! Euphonium Chikai no Finale / 剧场版 吹响吧！上低音号～誓言的终章～ 10-bit 1080p HEVC BDRip [MOVIE]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("S?", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
   }
@@ -1225,7 +1225,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   public fun `535781_Gekijouban_Hibike_21_Euphonium_Chikai_no_Finale_v2_BDRip_1080p_AVC`() {
     val r =
         parse("【千夏字幕组】【剧场版 吹响吧！上低音号 ~誓言的终曲~_Gekijouban Hibike! Euphonium: Chikai no Finale】[剧场版_v2][BDRip_1080p_AVC][简体]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
   }
@@ -1234,7 +1234,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   public fun `535761_Gekijouban_Hibike_21_Euphonium_Chikai_no_Finale_v2_BDRip_1080p_AVC`() {
     val r =
         parse("【千夏字幕組】【劇場版 吹響吧！上低音號 ~誓言的終曲~_Gekijouban Hibike! Euphonium: Chikai no Finale】[劇場版_v2][BDRip_1080p_AVC][繁體]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
   }
@@ -1244,7 +1244,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
       fun `535752_LoliHouse_Gekijouban_Hibike_21_Euphonium_Chikai_no_Finale_BDRip_1080p_HEVC_10bit_FLAC`() {
     val r =
         parse("[千夏字幕组&LoliHouse] 剧场版 吹响吧！上低音号 ~誓言的终曲~ / Gekijouban Hibike! Euphonium: Chikai no Finale [BDRip 1080p HEVC-10bit FLAC][简繁外挂字幕]（索引：誓言的终章）")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
   }
@@ -1272,7 +1272,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   @Test
   public fun `518747_DHR_Liz_to_Aoi_Tori_BDRip_720P_MP4`() {
     val r = parse("【DHR動研字幕組&茉語星夢】[吹響吧！上低音號～莉茲與青鳥～_Liz to Aoi Tori][劇場版][BDRip][繁體][720P][MP4]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
   }
@@ -1280,7 +1280,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   @Test
   public fun `506290_Hibike_21_Euphonium_BDrip_1080P_HEVC`() {
     val r = parse("【极影字幕社】★[吹响吧！上低音号 Hibike! Euphonium][BDrip][1080P][HEVC]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("S?", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
   }
@@ -1290,7 +1290,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
       fun `505589_U3_Project_Liz_and_the_Blue_Bird_Liz_to_Aoi_Tori_MOVIE_BD_AVC_1080p_DTS_HDMA_FLAC_U3`() {
     val r =
         parse("[U3-Project] 吹響吧！上低音號～莉茲與青鳥～ / 利茲與青鳥 / Liz and the Blue Bird / Liz to Aoi Tori / リズと青い鳥 [MOVIE][BD AVC 1080p DTS-HDMA FLAC]【U3自購團招人 / 新增合購計畫 , 內詳】")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("S?", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
   }
@@ -1299,7 +1299,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   public fun `505581_U3_Project_Liz_and_the_Blue_Bird_Liz_to_Aoi_Tori_BDMV_1080p_MOVIE_U3`() {
     val r =
         parse("[U3-Project] 吹響吧！上低音號～莉茲與青鳥～ / Liz and the Blue Bird / Liz to Aoi Tori / リズと青い鳥 [台本付数量限定版][BDMV][1080p][MOVIE]【U3自購團招人 / 新增合購計畫 , 內詳】")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("S?", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
   }
@@ -1309,7 +1309,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
       fun `504907_VCB_Studio_Gekijouban_Hibike_21_Euphonium_Todoketai_Melody_10_bit_1080p_HEVC_BDRip_Movie_Fin`() {
     val r =
         parse("[VCB-Studio] Gekijouban Hibike! Euphonium: Todoketai Melody / 剧场版 吹响吧！上低音号~想要传达的旋律~ 10-bit 1080p HEVC BDRip [Movie Fin]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("S?", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
   }
@@ -1319,7 +1319,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
       fun `484696_Gekijouban_Hibike_21_Euphonium_Todoketai_Melody_BDRip_1920x1080_AVC_8bit_AAC`() {
     val r =
         parse("[届恋字幕组] 剧场版 吹响吧！上低音号 ～想要传达的旋律～ / Gekijouban Hibike! Euphonium Todoketai Melody [BDRip 1920x1080 AVC-8bit AAC][繁体内嵌字幕]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
   }
@@ -1329,7 +1329,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
       fun `484695_Gekijouban_Hibike_21_Euphonium_Todoketai_Melody_BDRip_1920x1080_AVC_8bit_AAC`() {
     val r =
         parse("[届恋字幕组] 剧场版 吹响吧！上低音号 ～想要传达的旋律～ / Gekijouban Hibike! Euphonium Todoketai Melody [BDRip 1920x1080 AVC-8bit AAC][简体内嵌字幕]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
   }
@@ -1338,7 +1338,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   public fun `484593_Moozzi2_Hibike_21_Euphonium_Todoketai_Melody_BD_1920x1080_x264_Flac`() {
     val r =
         parse("[Moozzi2] 劇場版 吹響吧！上低音號～想要傳達的旋律～ Hibike! Euphonium Todoketai Melody (BD 1920x1080 x264 Flac)")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("S?", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
   }
@@ -1348,7 +1348,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
       fun `484106_Eupho_Fans_Hibike_21_Euphonium_Movie_Todoketai_Melody_BDRip_x264_1920x1080_AAC_DTS_PGS_MKV`() {
     val r =
         parse("[Eupho-Fans] 劇場版 吹響吧！上低音號～想要傳達的旋律～ / 劇場版 響け！ユーフォニアム～届けたいメロディ～ / Hibike! Euphonium Movie: Todoketai Melody [BDRip x264 1920x1080 AAC DTS PGS MKV]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("S?", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
   }
@@ -1356,7 +1356,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   @Test
   public fun `478260_Hibike_21_Euphonium_S2_BDrip_1080P_HEVC`() {
     val r = parse("【极影字幕社】★[吹响吧！上低音号二期 Hibike! Euphonium S2][BDrip][1080P][HEVC]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("S?", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
   }
@@ -1373,7 +1373,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   public fun `476911_DHR_Sound_21Euphonium_S1_S2_Movie_BDRip_1080P_AVC_P10_FLAC_OPUSx2_SUP`() {
     val r =
         parse("【DHR動研&茉語星夢&千夏】[吹響吧！上低音號_Sound!Euphonium][S1+S2+Movie][繁體外掛字幕][BDRip][1080P][AVC_P10_FLAC_OPUSx2_SUP]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
   }
@@ -1436,7 +1436,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   @Test
   public fun `465556_BD720P`() {
     val r = parse("【浩天个人发布】吹响吧！上低音号第二季 BD720P内嵌简体字幕")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
   }
@@ -1444,7 +1444,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   @Test
   public fun `464608_Xrip_2_Sound_21Euphonium_2_BDrip_Vol_01_07_1080P_x265_10bit_flac`() {
     val r = parse("【Xrip】[吹響吧！上低音號 2][Sound!Euphonium 2][BDrip][Vol.01_07][1080P][x265_10bit_flac]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("S?", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
   }
@@ -1452,7 +1452,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   @Test
   public fun `464607_Xrip_2_Sound_21Euphonium_2_BDrip_Vol_01_07_1080P_x264_10bit_flac`() {
     val r = parse("【Xrip】[吹響吧！上低音號 2][Sound!Euphonium 2][BDrip][Vol.01_07][1080P][x264_10bit_flac]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("S?", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
   }
@@ -2194,7 +2194,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
       fun `442933_LowPower_Raws_Hibike_21_Euphonium_Kitauji_Koukou_Suisougaku_Bu_e_Youkoso___Movie_BD_1080P_x264_FLAC`() {
     val r =
         parse("[LowPower-Raws]吹响吧！上低音号～欢迎加入北宇治高中管乐团～ Hibike! Euphonium Kitauji Koukou Suisougaku Bu e Youkoso - Movie (BD 1080P x264 FLAC)")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("S?", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
   }
@@ -2202,7 +2202,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   @Test
   public fun `442833_BDRip_MKV`() {
     val r = parse("【极影字幕社】吹响吧！上低音号 剧场版 [繁体内嵌] [BDRip][MKV]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
   }
@@ -2211,7 +2211,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   public fun `442728_ReinForce_Gekijouban_Hibike_21_Euphonium_BDRip_1920x1080_x264_FLAC`() {
     val r =
         parse("[ReinForce] 劇場版 吹響吧！上低音號～歡迎加入北宇治高中管樂團～Gekijouban Hibike! Euphonium (BDRip 1920x1080 x264 FLAC) [字幕内附]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("S?", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
   }
@@ -2221,7 +2221,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
       fun `442727_Ohys_Raws_Gekijouban_Hibike_21_Euphonium___Kitauji_Koukou_Suisougaku_Bu_e_Youkoso_BD_1280x720_x264_AACx3`() {
     val r =
         parse("[Ohys-Raws]劇場版 吹響吧！上低音號～歡迎加入北宇治高中管樂團～Gekijouban Hibike! Euphonium - Kitauji Koukou Suisougaku Bu e Youkoso (BD 1280x720 x264 AACx3) [字幕内附]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("S?", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
   }
@@ -2229,7 +2229,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   @Test
   public fun `442306_BDRip_MKV`() {
     val r = parse("【极影字幕社】吹响吧！上低音号 剧场版 [简体内嵌] [BDRip][MKV]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
   }
@@ -2247,7 +2247,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   public fun `433693__Hibike_21_Euphonium___Vol_1__BDRip_1920x1080_x264_AC_3_MP4`() {
     val r =
         parse("【极影字幕社】吹响吧！上低音号-Hibike! Euphonium - Vol.1-[简体内嵌] [BDRip 1920x1080 x264 AC-3][MP4]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
   }
@@ -2255,7 +2255,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   @Test
   public fun `425284_BD720P`() {
     val r = parse("【浩天个人发布】吹响吧！上低音号 BD720P内嵌简体字幕")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
   }
@@ -2287,7 +2287,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   @Test
   public fun `419510_Xrip_Sound_21Euphonium_BDrip_Vol_01_07_1080P_x264_10bit_flac`() {
     val r = parse("【Xrip】[吹響吧！上低音號][Sound!Euphonium][BDrip][Vol.01_07][1080P][x264_10bit_flac]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("S?", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
   }
@@ -2303,7 +2303,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   @Test
   public fun `419401_VCB_Studio_Hibike_21_Euphonium_10bit_1080p_AVC_BDRip_Fin`() {
     val r = parse("[VCB-Studio] Hibike! Euphonium/吹响吧！上低音号 10bit 1080p AVC BDRip [Fin]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("S?", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
   }
@@ -2311,7 +2311,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   @Test
   public fun `419400_VCB_Studio_Hibike_21_Euphonium_8bit_1080p_BDRip_MP4_ver`() {
     val r = parse("[VCB-Studio] Hibike! Euphonium/吹响吧！上低音号 8bit 1080p BDRip [MP4 ver]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("S?", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
   }

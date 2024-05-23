@@ -152,11 +152,14 @@ sealed class EpisodeRange {
         /**
          * 第几季
          */
-        val number: Int? = null,
+        val rawNumber: Int,
     ) : EpisodeRange() {
+        val numberOrZero: Int get() = if (rawNumber == -1) 0 else rawNumber
+        val numberOrNull: Int? get() = if (rawNumber == -1) null else rawNumber
+
         override val knownSorts: Sequence<EpisodeSort> get() = emptySequence()
         override val isKnown: Boolean get() = false
-        override fun toString(): String = if (number != null) "S$number" else "S?"
+        override fun toString(): String = if (rawNumber != -1) "S$rawNumber" else "S?"
     }
 
     companion object {
@@ -173,6 +176,9 @@ sealed class EpisodeRange {
         fun combined(list: Iterable<EpisodeRange>): EpisodeRange =
             list.reduceOrNull { acc, episodeRange -> combined(acc, episodeRange) }
                 ?: Empty
+
+        fun season(number: Int): Season = Season(number)
+        fun unknownSeason(): Season = Season(-1)
     }
 }
 

@@ -35,13 +35,31 @@ class LabelFirstRawTitleParser : RawTitleParser() {
         builder: ParsedTopicTitle.Builder,
     ) {
         Session(builder).run {
+            val words = mutableListOf<String>()
             for (s in text.splitWords()) {
                 if (s.isBlank()) continue
                 if (newAnime.matches(s)) {
                     builder.tags.add(s)
                     continue
                 }
-                parseWord(s.remove("招募").remove("招新").trim())
+                val word = s.remove("招募").remove("招新").trim()
+                words.add(word)
+            }
+
+            // 第一遍, 解析剧集, 分辨率, 字幕等
+            for (word in words) {
+                parseWord(word)
+            }
+
+            // 第二遍, 如果没有解析到剧集, 找是不是有 "BDRip", 判定为季度全集
+            if (builder.episodeRange == null) {
+                words.forEach { word ->
+                    if (word.contains("BD", ignoreCase = true)
+                        || word.contains("Blu-Ray", ignoreCase = true)
+                    ) {
+                        builder.episodeRange = EpisodeRange.unknownSeason()
+                    }
+                }
             }
         }
         return
