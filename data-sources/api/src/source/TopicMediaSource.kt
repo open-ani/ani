@@ -29,7 +29,6 @@ abstract class TopicMediaSource : MediaSource {
                         category = TopicCategory.ANIME,
                         episodeSort = query.episodeSort,
                         episodeEp = query.episodeEp,
-                        episodeName = query.episodeName,
                     )
                 ).map {
                     MediaMatch(it.toOnlineMedia(mediaSourceId), MatchKind.FUZZY)
@@ -46,7 +45,10 @@ data class DownloadSearchQuery(
     val ordering: SearchOrdering? = null,
     val episodeSort: EpisodeSort? = null,
     val episodeEp: EpisodeSort? = null,
-    val episodeName: String? = null,
+    /**
+     * 覆盖设置, 直接返回所有搜索结果, 不要使用 [episodeSort] 等匹配
+     */
+    val allowAny: Boolean = false,
 )
 
 

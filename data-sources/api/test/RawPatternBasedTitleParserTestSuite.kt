@@ -26,7 +26,7 @@ import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
 import kotlin.test.assertEquals
 
-internal class RawTitleParserTest {
+internal class RawPatternBasedTitleParserTestSuite {
     val data = mapOf(
         "Lilith-Raws [Lilith-Raws] Overlord IV - 05 [Baha][WEB-DL][1080p][AVC AAC][CHT][MP4]" to ParsedTopicTitle(
             listOf("Baha", "WEB-DL", "AVC", "AAC", "MP4")

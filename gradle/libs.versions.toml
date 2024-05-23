@@ -3,6 +3,7 @@ bencode = "1.4.1"
 jna = "5.12.1"
 kotlin = "2.0.0-RC1"
 coroutines = "1.8.1"
+kotlinpoet = "1.16.0"
 log4j-core = "2.20.0"
 okhttp = "4.12.0"
 reorderable = "0.9.6"
@@ -48,6 +49,7 @@ compose-multiplatfrom-gradle-plugin = { module = "org.jetbrains.compose:org.jetb
 
 # Kotlinx
 #kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "0.5.0" }
+kotlinpoet = { module = "com.squareup:kotlinpoet", version.ref = "kotlinpoet" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
 kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "coroutines" }

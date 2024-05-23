@@ -29,7 +29,7 @@ import me.him188.ani.datasources.api.topic.matches
 import me.him188.ani.datasources.api.topic.titles.toTopicDetails
 import me.him188.ani.datasources.dmhy.impl.protocol.Network
 
-internal class DmhyPagedSourceImpl(
+class DmhyPagedSourceImpl(
     private val query: DownloadSearchQuery,
     private val network: Network,
 ) : PagedSource<Topic>, AbstractPageBasedPagedSource<Topic>() {

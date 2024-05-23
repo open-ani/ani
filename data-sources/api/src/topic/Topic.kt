@@ -18,6 +18,7 @@
 
 package me.him188.ani.datasources.api.topic
 
+import kotlinx.serialization.Serializable
 import me.him188.ani.datasources.api.source.DownloadSearchQuery
 import me.him188.ani.datasources.api.source.MediaSource
 import java.time.Instant
@@ -28,6 +29,7 @@ import java.time.format.DateTimeFormatter
 /**
  * An item search from a [MediaSource]
  */
+@Serializable
 class Topic(
     /**
      * 数据源内部的 ID.
@@ -72,6 +74,7 @@ fun Topic.publishedTimeString(): String? {
     }
 }
 
+@Serializable
 class TopicDetails(
     val tags: List<String>,
     val chineseTitle: String?,
@@ -87,9 +90,11 @@ fun DownloadSearchQuery.matches(topic: Topic, allowEpMatch: Boolean): Boolean {
     return TopicCriteria(
         episodeSort = episodeSort,
         episodeEp = episodeEp,
+        fallback = allowAny,
     ).matches(topic, allowEpMatch)
 }
 
+@Serializable
 enum class TopicCategory {
     ANIME,
 }

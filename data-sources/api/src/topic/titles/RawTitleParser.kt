@@ -119,7 +119,7 @@ fun RawTitleParser.parse(text: String, allianceName: String?, builder: ParsedTop
     )
 }
 
-fun RawTitleParser.parse(text: String, allianceName: String?): ParsedTopicTitle {
+fun RawTitleParser.parse(text: String, allianceName: String? = null): ParsedTopicTitle {
     return ParsedTopicTitle.Builder().run {
         parse(text, allianceName, this)
         build()

@@ -4,7 +4,7 @@ import me.him188.ani.datasources.api.topic.EpisodeRange
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-class EpisodeRangeTest {
+class EpRangeTest {
     @Test
     fun testEmpty() {
         val empty = EpisodeRange.empty()

@@ -1,0 +1,13 @@
+<component name="ProjectRunConfigurationManager">
+    <configuration default="false" name="GenerateTestsKt" type="JetRunConfigurationType"
+            nameIsGenerated="true">
+        <option name="MAIN_CLASS_NAME"
+                value="me.him188.ani.datasources.api.test.codegen.main.GenerateTestsKt" />
+        <module name="ani.data-sources.api.test-codegen.main" />
+        <shortenClasspath name="NONE" />
+        <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/data-sources/api/test-codegen" />
+        <method v="2">
+            <option name="Make" enabled="true" />
+        </method>
+    </configuration>
+</component>

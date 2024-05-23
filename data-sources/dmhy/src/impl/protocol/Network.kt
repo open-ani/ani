@@ -30,7 +30,7 @@ import me.him188.ani.datasources.dmhy.impl.cache.Cache
 import me.him188.ani.datasources.dmhy.impl.cache.CacheImpl
 import org.jsoup.nodes.Document
 
-internal class Network(
+class Network(
     private val client: HttpClient,
 ) {
     private object Paths {

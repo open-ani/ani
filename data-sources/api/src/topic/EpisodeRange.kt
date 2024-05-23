@@ -24,9 +24,11 @@ import me.him188.ani.datasources.api.EpisodeSort
 /**
  * single or range, parsed from topic titles
  */
+@Serializable
 sealed class EpisodeRange {
     abstract val sorts: Sequence<EpisodeSort>
 
+    @Serializable
     private data object Empty : EpisodeRange() {
         override val sorts: Sequence<EpisodeSort>
             get() = emptySequence()
@@ -34,6 +36,7 @@ sealed class EpisodeRange {
         override fun toString(): String = "EpisodeRange(empty)"
     }
 
+    @Serializable
     private class Single(
         val value: EpisodeSort,
     ) : EpisodeRange() {
@@ -54,6 +57,7 @@ sealed class EpisodeRange {
         }
     }
 
+    @Serializable
     private class Range(
         val start: EpisodeSort,
         val end: EpisodeSort,

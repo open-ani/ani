@@ -26,7 +26,7 @@ import me.him188.ani.datasources.api.topic.Resolution
 import me.him188.ani.datasources.api.topic.SubtitleLanguage
 
 /**
- * 人工适配的
+ * 人工适配的标题解析器
  */
 class PatternBasedRawTitleParser : RawTitleParser() {
     private val brackets = Regex("""[\[【(](.*?)[]】)]""")

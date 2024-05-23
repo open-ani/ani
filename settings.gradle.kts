@@ -69,6 +69,7 @@ includeProject(":app:android", "app/android") // Android client
 
 // data sources
 includeProject(":data-sources:api", "data-sources/api") // data source interfaces: Media, MediaSource 
+includeProject(":data-sources:api:test-codegen") // 生成单元测试
 includeProject(":data-sources:core", "data-sources/core") // data source managers: MediaFetcher, MediaCacheStorage
 includeProject(":data-sources:dmhy", "data-sources/dmhy") // data source from https://dmhy.org
 includeProject(":data-sources:acg-rip", "data-sources/acg.rip") // data source from https://acg.rip

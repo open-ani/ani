@@ -26,6 +26,7 @@ plugins {
     // But for simplicity, we just include compose here.
     id("org.jetbrains.compose")
     `flatten-source-sets`
+    idea
 }
 
 dependencies {
@@ -37,4 +38,8 @@ dependencies {
     testImplementation(projects.utils.testing)
 
     implementation(compose.runtime) // required by the compose compiler
+}
+
+idea {
+    module.generatedSourceDirs.add(file("test/title/generated"))
 }

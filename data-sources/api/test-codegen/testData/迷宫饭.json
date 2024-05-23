@@ -1,0 +1,1138 @@
+{
+  "originalName": "迷宫饭",
+  "kotlinClassName": "迷宫饭",
+  "topics": [
+    {
+      "id": "670480_1_Dungeon_Meshi_21_BIG5_MP4_1920X1080.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【21】【BIG5_MP4】【1920X1080】"
+    },
+    {
+      "id": "670479_1_Dungeon_Meshi_21_GB_MP4_1920X1080.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【21】【GB_MP4】【1920X1080】"
+    },
+    {
+      "id": "670475_1_Dungeon_Meshi_21_BIG5_MP4_1280X720.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【21】【BIG5_MP4】【1280X720】"
+    },
+    {
+      "id": "670474_1_Dungeon_Meshi_21_GB_MP4_1280X720.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【21】【GB_MP4】【1280X720】"
+    },
+    {
+      "id": "670438_Dungeon_Meshi_20_1080p.html",
+      "rawTitle": "[云光字幕组] 迷宫饭 Dungeon Meshi [20][简体双语][1080p]招募翻译"
+    },
+    {
+      "id": "670199_Dungeon_Meshi_20_1080p.html",
+      "rawTitle": "[桜都字幕组] 迷宫饭 / Dungeon Meshi [20][1080p][简繁内封]"
+    },
+    {
+      "id": "670198_Dungeon_Meshi_20_1080p.html",
+      "rawTitle": "[桜都字幕組] 迷宮飯 / Dungeon Meshi [20][1080p][繁體內嵌]"
+    },
+    {
+      "id": "670197_Dungeon_Meshi_20_1080p.html",
+      "rawTitle": "[桜都字幕组] 迷宫饭 / Dungeon Meshi [20][1080p][简体内嵌]"
+    },
+    {
+      "id": "670092_LoliHouse_Dungeon_Meshi_Delicious_in_Dungeon_-_20_WebRip_1080p_HEVC-10bit_AAC_EAC3.html",
+      "rawTitle": "[喵萌奶茶屋&LoliHouse] 迷宫饭 / Dungeon Meshi / Delicious in Dungeon - 20 [WebRip 1080p HEVC-10bit AAC EAC3][简繁日内封字幕]"
+    },
+    {
+      "id": "670077_01_Dungeon_Meshi_Delicious_in_Dungeon_20_1080p.html",
+      "rawTitle": "【喵萌奶茶屋】★01月新番★[迷宮飯 / Dungeon Meshi / Delicious in Dungeon][20][1080p][繁日雙語][招募翻譯時軸]"
+    },
+    {
+      "id": "670076_01_Dungeon_Meshi_Delicious_in_Dungeon_20_1080p.html",
+      "rawTitle": "【喵萌奶茶屋】★01月新番★[迷宫饭 / Dungeon Meshi / Delicious in Dungeon][20][1080p][简日双语][招募翻译时轴]"
+    },
+    {
+      "id": "669908_1_Dungeon_Meshi_20_BIG5_MP4_1920X1080.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【20】【BIG5_MP4】【1920X1080】"
+    },
+    {
+      "id": "669907_1_Dungeon_Meshi_20_GB_MP4_1920X1080.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【20】【GB_MP4】【1920X1080】"
+    },
+    {
+      "id": "669906_1_Dungeon_Meshi_20_BIG5_MP4_1280X720.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【20】【BIG5_MP4】【1280X720】"
+    },
+    {
+      "id": "669905_1_Dungeon_Meshi_20_GB_MP4_1280X720.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【20】【GB_MP4】【1280X720】"
+    },
+    {
+      "id": "669845_Dungeon_Meshi_19_1080p.html",
+      "rawTitle": "[云光字幕组] 迷宫饭 Dungeon Meshi [19][简体双语][1080p]招募翻译"
+    },
+    {
+      "id": "669844_Dungeon_Meshi_18_1080p.html",
+      "rawTitle": "[云光字幕组] 迷宫饭 Dungeon Meshi [18][简体双语][1080p]招募翻译"
+    },
+    {
+      "id": "669364_LoliHouse_Dungeon_Meshi_Delicious_in_Dungeon_-_19v2_WebRip_1080p_HEVC-10bit_AAC_EAC3.html",
+      "rawTitle": "[喵萌奶茶屋&LoliHouse] 迷宫饭 / Dungeon Meshi / Delicious in Dungeon - 19v2 [WebRip 1080p HEVC-10bit AAC EAC3][简繁日内封字幕]"
+    },
+    {
+      "id": "669296_01_Dungeon_Meshi_Delicious_in_Dungeon_19_1080p.html",
+      "rawTitle": "【喵萌奶茶屋】★01月新番★[迷宮飯 / Dungeon Meshi / Delicious in Dungeon][19][1080p][繁日雙語][招募翻譯時軸]"
+    },
+    {
+      "id": "669295_01_Dungeon_Meshi_Delicious_in_Dungeon_19_1080p.html",
+      "rawTitle": "【喵萌奶茶屋】★01月新番★[迷宫饭 / Dungeon Meshi / Delicious in Dungeon][19][1080p][简日双语][招募翻译时轴]"
+    },
+    {
+      "id": "669290_Dungeon_Meshi_19_1080p.html",
+      "rawTitle": "[桜都字幕组] 迷宫饭 / Dungeon Meshi [19][1080p][简繁内封]"
+    },
+    {
+      "id": "669289_Dungeon_Meshi_19_1080p.html",
+      "rawTitle": "[桜都字幕組] 迷宮飯 / Dungeon Meshi [19][1080p][繁體內嵌]"
+    },
+    {
+      "id": "669288_Dungeon_Meshi_19_1080p.html",
+      "rawTitle": "[桜都字幕组] 迷宫饭 / Dungeon Meshi [19][1080p][简体内嵌]"
+    },
+    {
+      "id": "669202_1_Dungeon_Meshi_19_BIG5_MP4_1920X1080.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【19】【BIG5_MP4】【1920X1080】"
+    },
+    {
+      "id": "669201_1_Dungeon_Meshi_19_GB_MP4_1920X1080.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【19】【GB_MP4】【1920X1080】"
+    },
+    {
+      "id": "669200_1_Dungeon_Meshi_19_BIG5_MP4_1280X720.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【19】【BIG5_MP4】【1280X720】"
+    },
+    {
+      "id": "669199_1_Dungeon_Meshi_19_GB_MP4_1280X720.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【19】【GB_MP4】【1280X720】"
+    },
+    {
+      "id": "668901_Dungeon_Meshi_18_1080p.html",
+      "rawTitle": "[桜都字幕组] 迷宫饭 / Dungeon Meshi [18][1080p][简繁内封]"
+    },
+    {
+      "id": "668900_Dungeon_Meshi_18_1080p.html",
+      "rawTitle": "[桜都字幕組] 迷宮飯 / Dungeon Meshi [18][1080p][繁體內嵌]"
+    },
+    {
+      "id": "668899_Dungeon_Meshi_18_1080p.html",
+      "rawTitle": "[桜都字幕组] 迷宫饭 / Dungeon Meshi [18][1080p][简体内嵌]"
+    },
+    {
+      "id": "668763_Dungeon_Meshi_17_x264_1080p_CHT.html",
+      "rawTitle": "【悠哈璃羽字幕社】[迷宫饭/Dungeon Meshi][17][x264 1080p][CHT]"
+    },
+    {
+      "id": "668762_Dungeon_Meshi_17_x264_1080p_CHS.html",
+      "rawTitle": "【悠哈璃羽字幕社】[迷宫饭/Dungeon Meshi][17][x264 1080p][CHS]"
+    },
+    {
+      "id": "668761_LoliHouse_Dungeon_Meshi_Delicious_in_Dungeon_-_18_WebRip_1080p_HEVC-10bit_AAC_EAC3.html",
+      "rawTitle": "[喵萌奶茶屋&LoliHouse] 迷宫饭 / Dungeon Meshi / Delicious in Dungeon - 18 [WebRip 1080p HEVC-10bit AAC EAC3][简繁日内封字幕]"
+    },
+    {
+      "id": "668722_01_Dungeon_Meshi_Delicious_in_Dungeon_18_1080p.html",
+      "rawTitle": "【喵萌奶茶屋】★01月新番★[迷宮飯 / Dungeon Meshi / Delicious in Dungeon][18][1080p][繁日雙語][招募翻譯時軸]"
+    },
+    {
+      "id": "668721_01_Dungeon_Meshi_Delicious_in_Dungeon_18_1080p.html",
+      "rawTitle": "【喵萌奶茶屋】★01月新番★[迷宫饭 / Dungeon Meshi / Delicious in Dungeon][18][1080p][简日双语][招募翻译时轴]"
+    },
+    {
+      "id": "668697_Dungeon_Meshi_16_1080p.html",
+      "rawTitle": "[云光字幕组] 迷宫饭 Dungeon Meshi [17][简体双语][1080p]招募翻译"
+    },
+    {
+      "id": "668638_1_Dungeon_Meshi_18_BIG5_MP4_1920X1080.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【18】【BIG5_MP4】【1920X1080】"
+    },
+    {
+      "id": "668637_1_Dungeon_Meshi_18_GB_MP4_1920X1080.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【18】【GB_MP4】【1920X1080】"
+    },
+    {
+      "id": "668636_1_Dungeon_Meshi_18_BIG5_MP4_1280X720.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【18】【BIG5_MP4】【1280X720】"
+    },
+    {
+      "id": "668635_1_Dungeon_Meshi_18_GB_MP4_1280X720.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【18】【GB_MP4】【1280X720】"
+    },
+    {
+      "id": "668567_Dungeon_Meshi_17v2_1080p.html",
+      "rawTitle": "[桜都字幕组] 迷宫饭 / Dungeon Meshi [17v2][1080p][简繁内封]"
+    },
+    {
+      "id": "668566_Dungeon_Meshi_17v2_1080p.html",
+      "rawTitle": "[桜都字幕組] 迷宮飯 / Dungeon Meshi [17v2][1080p][繁體內嵌]"
+    },
+    {
+      "id": "668565_Dungeon_Meshi_17v2_1080p.html",
+      "rawTitle": "[桜都字幕组] 迷宫饭 / Dungeon Meshi [17v2][1080p][简体内嵌]"
+    },
+    {
+      "id": "668293_LoliHouse_Dungeon_Meshi_Delicious_in_Dungeon_-_17_WebRip_1080p_HEVC-10bit_AAC_EAC3.html",
+      "rawTitle": "[喵萌奶茶屋&LoliHouse] 迷宫饭 / Dungeon Meshi / Delicious in Dungeon - 17 [WebRip 1080p HEVC-10bit AAC EAC3][简繁日内封字幕]"
+    },
+    {
+      "id": "668279_01_Dungeon_Meshi_Delicious_in_Dungeon_17_1080p.html",
+      "rawTitle": "【喵萌奶茶屋】★01月新番★[迷宮飯 / Dungeon Meshi / Delicious in Dungeon][17][1080p][繁日雙語][招募翻譯時軸]"
+    },
+    {
+      "id": "668278_01_Dungeon_Meshi_Delicious_in_Dungeon_17_1080p.html",
+      "rawTitle": "【喵萌奶茶屋】★01月新番★[迷宫饭 / Dungeon Meshi / Delicious in Dungeon][17][1080p][简日双语][招募翻译时轴]"
+    },
+    {
+      "id": "668196_1_Dungeon_Meshi_17_BIG5_MP4_1920X1080.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【17】【BIG5_MP4】【1920X1080】"
+    },
+    {
+      "id": "668195_1_Dungeon_Meshi_17_GB_MP4_1920X1080.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【17】【GB_MP4】【1920X1080】"
+    },
+    {
+      "id": "668191_1_Dungeon_Meshi_17_BIG5_MP4_1280X720.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【17】【BIG5_MP4】【1280X720】"
+    },
+    {
+      "id": "668190_1_Dungeon_Meshi_17_GB_MP4_1280X720.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【17】【GB_MP4】【1280X720】"
+    },
+    {
+      "id": "668183_Dungeon_Meshi_16_1080p.html",
+      "rawTitle": "[云光字幕组] 迷宫饭 Dungeon Meshi [16][简体双语][1080p]招募翻译"
+    },
+    {
+      "id": "668060_DBD-Raws_Dungeon_Meshi_01-06TV_BOX1_1080P_BDRip_HEVC-10bit_FLAC_MKV.html",
+      "rawTitle": "[DBD-Raws][迷宫饭/Dungeon Meshi/ダンジョン飯][01-06TV+特典映像][BOX1][1080P][BDRip][HEVC-10bit][FLAC][MKV]"
+    },
+    {
+      "id": "668029_Dungeon_Meshi_16_x264_1080p_CHT.html",
+      "rawTitle": "【悠哈璃羽字幕社】[迷宫饭/Dungeon Meshi][16][x264 1080p][CHT]"
+    },
+    {
+      "id": "668028_Dungeon_Meshi_16_x264_1080p_CHS.html",
+      "rawTitle": "【悠哈璃羽字幕社】[迷宫饭/Dungeon Meshi][16][x264 1080p][CHS]"
+    },
+    {
+      "id": "667774_Dungeon_Meshi_16_1080p.html",
+      "rawTitle": "[桜都字幕组] 迷宫饭 / Dungeon Meshi [16][1080p][简繁内封]"
+    },
+    {
+      "id": "667772_Dungeon_Meshi_16_1080p.html",
+      "rawTitle": "[桜都字幕組] 迷宮飯 / Dungeon Meshi [16][1080p][繁體內嵌]"
+    },
+    {
+      "id": "667771_Dungeon_Meshi_16_1080p.html",
+      "rawTitle": "[桜都字幕组] 迷宫饭 / Dungeon Meshi [16][1080p][简体内嵌]"
+    },
+    {
+      "id": "667728_LoliHouse_Dungeon_Meshi_Delicious_in_Dungeon_-_16_WebRip_1080p_HEVC-10bit_AAC_EAC3.html",
+      "rawTitle": "[喵萌奶茶屋&LoliHouse] 迷宫饭 / Dungeon Meshi / Delicious in Dungeon - 16 [WebRip 1080p HEVC-10bit AAC EAC3][简繁日内封字幕]"
+    },
+    {
+      "id": "667704_01_Dungeon_Meshi_Delicious_in_Dungeon_16_1080p.html",
+      "rawTitle": "【喵萌奶茶屋】★01月新番★[迷宮飯 / Dungeon Meshi / Delicious in Dungeon][16][1080p][繁日雙語][招募翻譯時軸]"
+    },
+    {
+      "id": "667703_01_Dungeon_Meshi_Delicious_in_Dungeon_16_1080p.html",
+      "rawTitle": "【喵萌奶茶屋】★01月新番★[迷宫饭 / Dungeon Meshi / Delicious in Dungeon][16][1080p][简日双语][招募翻译时轴]"
+    },
+    {
+      "id": "667604_1_Dungeon_Meshi_16_GB_MP4_1920X1080.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【16】【GB_MP4】【1920X1080】"
+    },
+    {
+      "id": "667602_1_Dungeon_Meshi_16_BIG5_MP4_1920X1080.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【16】【BIG5_MP4】【1920X1080】"
+    },
+    {
+      "id": "667597_1_Dungeon_Meshi_16_BIG5_MP4_1280X720.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【16】【BIG5_MP4】【1280X720】"
+    },
+    {
+      "id": "667595_1_Dungeon_Meshi_16_GB_MP4_1280X720.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【16】【GB_MP4】【1280X720】"
+    },
+    {
+      "id": "667535_Dungeon_Meshi_15_1080p.html",
+      "rawTitle": "[云光字幕组] 迷宫饭 Dungeon Meshi [15][简体双语][1080p]招募翻译"
+    },
+    {
+      "id": "667474_Dungeon_Meshi_15_x264_1080p_CHT.html",
+      "rawTitle": "【悠哈璃羽字幕社】[迷宫饭/Dungeon Meshi][15][x264 1080p][CHT]"
+    },
+    {
+      "id": "667473_Dungeon_Meshi_15_x264_1080p_CHS.html",
+      "rawTitle": "【悠哈璃羽字幕社】[迷宫饭/Dungeon Meshi][15][x264 1080p][CHS]"
+    },
+    {
+      "id": "667445_Dungeon_Meshi_14_1080p.html",
+      "rawTitle": "[云光字幕组] 迷宫饭 Dungeon Meshi [14][简体双语][1080p]招募翻译"
+    },
+    {
+      "id": "667367_LoliHouse_Dungeon_Meshi_Delicious_in_Dungeon_-_15_WebRip_1080p_HEVC-10bit_AAC_EAC3.html",
+      "rawTitle": "[喵萌奶茶屋&LoliHouse] 迷宫饭 / Dungeon Meshi / Delicious in Dungeon - 15 [WebRip 1080p HEVC-10bit AAC EAC3][简繁日内封字幕]"
+    },
+    {
+      "id": "667249_Dungeon_Meshi_15_1080p.html",
+      "rawTitle": "[桜都字幕组] 迷宫饭 / Dungeon Meshi [15][1080p][简繁内封]"
+    },
+    {
+      "id": "667250_Dungeon_Meshi_15_1080p.html",
+      "rawTitle": "[桜都字幕組] 迷宮飯 / Dungeon Meshi [15][1080p][繁體內嵌]"
+    },
+    {
+      "id": "667248_Dungeon_Meshi_15_1080p.html",
+      "rawTitle": "[桜都字幕组] 迷宫饭 / Dungeon Meshi [15][1080p][简体内嵌]"
+    },
+    {
+      "id": "667126_1_Dungeon_Meshi_06_1080P_MP4.html",
+      "rawTitle": "[愛戀字幕社][1月新番][迷宮飯][Dungeon Meshi][06][1080P][MP4][繁日雙語]"
+    },
+    {
+      "id": "667125_1_Dungeon_Meshi_06_1080P_MP4.html",
+      "rawTitle": "[爱恋字幕社][1月新番][迷宫饭][Dungeon Meshi][06][1080P][MP4][简日双语]"
+    },
+    {
+      "id": "667028_01_Dungeon_Meshi_Delicious_in_Dungeon_15_1080p.html",
+      "rawTitle": "【喵萌奶茶屋】★01月新番★[迷宮飯 / Dungeon Meshi / Delicious in Dungeon][15][1080p][繁日雙語][招募翻譯時軸]"
+    },
+    {
+      "id": "667027_01_Dungeon_Meshi_Delicious_in_Dungeon_15_1080p.html",
+      "rawTitle": "【喵萌奶茶屋】★01月新番★[迷宫饭 / Dungeon Meshi / Delicious in Dungeon][15][1080p][简日双语][招募翻译时轴]"
+    },
+    {
+      "id": "666938_1_Dungeon_Meshi_15_BIG5_MP4_1920X1080.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【15】【BIG5_MP4】【1920X1080】"
+    },
+    {
+      "id": "666937_1_Dungeon_Meshi_15_GB_MP4_1920X1080.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【15】【GB_MP4】【1920X1080】"
+    },
+    {
+      "id": "666936_1_Dungeon_Meshi_15_BIG5_MP4_1280X720.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【15】【BIG5_MP4】【1280X720】"
+    },
+    {
+      "id": "666935_1_Dungeon_Meshi_15_GB_MP4_1280X720.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【15】【GB_MP4】【1280X720】"
+    },
+    {
+      "id": "666874_Dungeon_Meshi_14_x264_1080p_CHT.html",
+      "rawTitle": "【悠哈璃羽字幕社】[迷宫饭/Dungeon Meshi][14][x264 1080p][CHT]"
+    },
+    {
+      "id": "666873_Dungeon_Meshi_14_x264_1080p_CHS.html",
+      "rawTitle": "【悠哈璃羽字幕社】[迷宫饭/Dungeon Meshi][14][x264 1080p][CHS]"
+    },
+    {
+      "id": "666871_Dungeon_Meshi_13_x264_1080p_CHT.html",
+      "rawTitle": "【悠哈璃羽字幕社】[迷宫饭/Dungeon Meshi][13][x264 1080p][CHT]"
+    },
+    {
+      "id": "666870_Dungeon_Meshi_13_x264_1080p_CHS.html",
+      "rawTitle": "【悠哈璃羽字幕社】[迷宫饭/Dungeon Meshi][13][x264 1080p][CHS]"
+    },
+    {
+      "id": "666365_Dungeon_Meshi_14_1080p.html",
+      "rawTitle": "[桜都字幕组] 迷宫饭 / Dungeon Meshi [14][1080p][简繁内封]"
+    },
+    {
+      "id": "666364_Dungeon_Meshi_14_1080p.html",
+      "rawTitle": "[桜都字幕組] 迷宮飯 / Dungeon Meshi [14][1080p][繁體內嵌]"
+    },
+    {
+      "id": "666363_Dungeon_Meshi_14_1080p.html",
+      "rawTitle": "[桜都字幕组] 迷宫饭 / Dungeon Meshi [14][1080p][简体内嵌]"
+    },
+    {
+      "id": "666360_Dungeon_Meshi_13_1080p.html",
+      "rawTitle": "[云光字幕组] 迷宫饭 Dungeon Meshi [13][简体双语][1080p]招募翻译"
+    },
+    {
+      "id": "666283_LoliHouse_Dungeon_Meshi_Delicious_in_Dungeon_-_14_WebRip_1080p_HEVC-10bit_AAC_EAC3.html",
+      "rawTitle": "[喵萌奶茶屋&LoliHouse] 迷宫饭 / Dungeon Meshi / Delicious in Dungeon - 14 [WebRip 1080p HEVC-10bit AAC EAC3][简繁日内封字幕]"
+    },
+    {
+      "id": "666243_01_Dungeon_Meshi_Delicious_in_Dungeon_14_1080p.html",
+      "rawTitle": "【喵萌奶茶屋】★01月新番★[迷宮飯 / Dungeon Meshi / Delicious in Dungeon][14][1080p][繁日雙語][招募翻譯時軸]"
+    },
+    {
+      "id": "666242_01_Dungeon_Meshi_Delicious_in_Dungeon_14_1080p.html",
+      "rawTitle": "【喵萌奶茶屋】★01月新番★[迷宫饭 / Dungeon Meshi / Delicious in Dungeon][14][1080p][简日双语][招募翻译时轴]"
+    },
+    {
+      "id": "666136_1_Dungeon_Meshi_14_BIG5_MP4_1920X1080.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【14】【BIG5_MP4】【1920X1080】"
+    },
+    {
+      "id": "666135_1_Dungeon_Meshi_14_GB_MP4_1920X1080.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【14】【GB_MP4】【1920X1080】"
+    },
+    {
+      "id": "666134_1_Dungeon_Meshi_14_BIG5_MP4_1280X720.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【14】【BIG5_MP4】【1280X720】"
+    },
+    {
+      "id": "666133_1_Dungeon_Meshi_14_GB_MP4_1280X720.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【14】【GB_MP4】【1280X720】"
+    },
+    {
+      "id": "665797_Dungeon_Meshi_12_1080p.html",
+      "rawTitle": "[云光字幕组] 迷宫饭 Dungeon Meshi [12][简体双语][1080p]招募翻译"
+    },
+    {
+      "id": "665785_Dungeon_Meshi_12_x264_1080p_CHT.html",
+      "rawTitle": "【悠哈璃羽字幕社】[迷宫饭/Dungeon Meshi][12][x264 1080p][CHT]"
+    },
+    {
+      "id": "665784_Dungeon_Meshi_12_x264_1080p_CHS.html",
+      "rawTitle": "【悠哈璃羽字幕社】[迷宫饭/Dungeon Meshi][12][x264 1080p][CHS]"
+    },
+    {
+      "id": "665781_Dungeon_Meshi_13_1080p.html",
+      "rawTitle": "[桜都字幕组] 迷宫饭 / Dungeon Meshi [13][1080p][简繁内封]"
+    },
+    {
+      "id": "665780_Dungeon_Meshi_13_1080p.html",
+      "rawTitle": "[桜都字幕組] 迷宮飯 / Dungeon Meshi [13][1080p][繁體內嵌]"
+    },
+    {
+      "id": "665779_Dungeon_Meshi_13_1080p.html",
+      "rawTitle": "[桜都字幕组] 迷宫饭 / Dungeon Meshi [13][1080p][简体内嵌]"
+    },
+    {
+      "id": "665756_LoliHouse_Dungeon_Meshi_Delicious_in_Dungeon_-_13_WebRip_1080p_HEVC-10bit_AAC_EAC3.html",
+      "rawTitle": "[喵萌奶茶屋&LoliHouse] 迷宫饭 / Dungeon Meshi / Delicious in Dungeon - 13 [WebRip 1080p HEVC-10bit AAC EAC3][简繁日内封字幕]"
+    },
+    {
+      "id": "665727_01_Dungeon_Meshi_Delicious_in_Dungeon_13_1080p.html",
+      "rawTitle": "【喵萌奶茶屋】★01月新番★[迷宮飯 / Dungeon Meshi / Delicious in Dungeon][13][1080p][繁日雙語][招募翻譯時軸]"
+    },
+    {
+      "id": "665726_01_Dungeon_Meshi_Delicious_in_Dungeon_13_1080p.html",
+      "rawTitle": "【喵萌奶茶屋】★01月新番★[迷宫饭 / Dungeon Meshi / Delicious in Dungeon][13][1080p][简日双语][招募翻译时轴]"
+    },
+    {
+      "id": "665686_1_Dungeon_Meshi_13_BIG5_MP4_1920X1080.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【13】【BIG5_MP4】【1920X1080】"
+    },
+    {
+      "id": "665684_1_Dungeon_Meshi_13_GB_MP4_1920X1080.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【13】【GB_MP4】【1920X1080】"
+    },
+    {
+      "id": "665683_1_Dungeon_Meshi_13_BIG5_MP4_1280X720.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【13】【BIG5_MP4】【1280X720】"
+    },
+    {
+      "id": "665682_1_Dungeon_Meshi_13_GB_MP4_1280X720.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【13】【GB_MP4】【1280X720】"
+    },
+    {
+      "id": "665621_Dungeon_Meshi_11_1080p.html",
+      "rawTitle": "[云光字幕组] 迷宫饭 Dungeon Meshi [11][简体双语][1080p]招募翻译"
+    },
+    {
+      "id": "665571_1_Dungeon_Meshi_05_1080P_MP4.html",
+      "rawTitle": "[愛戀字幕社][1月新番][迷宮飯][Dungeon Meshi][05][1080P][MP4][繁日雙語]"
+    },
+    {
+      "id": "665570_1_Dungeon_Meshi_05_1080P_MP4.html",
+      "rawTitle": "[爱恋字幕社][1月新番][迷宫饭][Dungeon Meshi][05][1080P][MP4][简日双语]"
+    },
+    {
+      "id": "665463_Dungeon_Meshi_12_1080p.html",
+      "rawTitle": "[桜都字幕组] 迷宫饭 / Dungeon Meshi [12][1080p][简繁内封]"
+    },
+    {
+      "id": "665461_Dungeon_Meshi_12_1080p.html",
+      "rawTitle": "[桜都字幕組] 迷宮飯 / Dungeon Meshi [12][1080p][繁體內嵌]"
+    },
+    {
+      "id": "665460_Dungeon_Meshi_12_1080p.html",
+      "rawTitle": "[桜都字幕组] 迷宫饭 / Dungeon Meshi [12][1080p][简体内嵌]"
+    },
+    {
+      "id": "665346_1_Dungeon_Meshi_04_1080P_MP4.html",
+      "rawTitle": "[愛戀字幕社][1月新番][迷宮飯][Dungeon Meshi][04][1080P][MP4][繁日雙語]"
+    },
+    {
+      "id": "665345_1_Dungeon_Meshi_04_1080P_MP4.html",
+      "rawTitle": "[爱恋字幕社][1月新番][迷宫饭][Dungeon Meshi][04][1080P][MP4][简日双语]"
+    },
+    {
+      "id": "665318_LoliHouse_Dungeon_Meshi_Delicious_in_Dungeon_-_12_WebRip_1080p_HEVC-10bit_AAC_EAC3.html",
+      "rawTitle": "[喵萌奶茶屋&LoliHouse] 迷宫饭 / Dungeon Meshi / Delicious in Dungeon - 12 [WebRip 1080p HEVC-10bit AAC EAC3][简繁日内封字幕]"
+    },
+    {
+      "id": "665311_01_Dungeon_Meshi_Delicious_in_Dungeon_12_1080p.html",
+      "rawTitle": "【喵萌奶茶屋】★01月新番★[迷宮飯 / Dungeon Meshi / Delicious in Dungeon][12][1080p][繁日雙語][招募翻譯時軸]"
+    },
+    {
+      "id": "665310_01_Dungeon_Meshi_Delicious_in_Dungeon_12_1080p.html",
+      "rawTitle": "【喵萌奶茶屋】★01月新番★[迷宫饭 / Dungeon Meshi / Delicious in Dungeon][12][1080p][简日双语][招募翻译时轴]"
+    },
+    {
+      "id": "665239_1_Dungeon_Meshi_12_BIG5_MP4_1920X1080.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【12】【BIG5_MP4】【1920X1080】"
+    },
+    {
+      "id": "665238_1_Dungeon_Meshi_12_GB_MP4_1280X720.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【12】【GB_MP4】【1280X720】"
+    },
+    {
+      "id": "665237_1_Dungeon_Meshi_12_GB_MP4_1920X1080.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【12】【GB_MP4】【1920X1080】"
+    },
+    {
+      "id": "665236_1_Dungeon_Meshi_12_BIG5_MP4_1280X720.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【12】【BIG5_MP4】【1280X720】"
+    },
+    {
+      "id": "665136_Dungeon_Meshi_11_x264_1080p_CHT.html",
+      "rawTitle": "【悠哈璃羽字幕社】[迷宫饭/Dungeon Meshi][11][x264 1080p][CHT]"
+    },
+    {
+      "id": "665135_Dungeon_Meshi_11_x264_1080p_CHS.html",
+      "rawTitle": "【悠哈璃羽字幕社】[迷宫饭/Dungeon Meshi][11][x264 1080p][CHS]"
+    },
+    {
+      "id": "664998_Dungeon_Meshi_11_1080p.html",
+      "rawTitle": "[桜都字幕组] 迷宫饭 / Dungeon Meshi [11][1080p][简繁内封]"
+    },
+    {
+      "id": "664997_Dungeon_Meshi_11_1080p.html",
+      "rawTitle": "[桜都字幕組] 迷宮飯 / Dungeon Meshi [11][1080p][繁體內嵌]"
+    },
+    {
+      "id": "664996_Dungeon_Meshi_11_1080p.html",
+      "rawTitle": "[桜都字幕组] 迷宫饭 / Dungeon Meshi [11][1080p][简体内嵌]"
+    },
+    {
+      "id": "664887_LoliHouse_Dungeon_Meshi_Delicious_in_Dungeon_-_11_WebRip_1080p_HEVC-10bit_AAC_EAC3.html",
+      "rawTitle": "[喵萌奶茶屋&LoliHouse] 迷宫饭 / Dungeon Meshi / Delicious in Dungeon - 11 [WebRip 1080p HEVC-10bit AAC EAC3][简繁日内封字幕]"
+    },
+    {
+      "id": "664886_01_Dungeon_Meshi_Delicious_in_Dungeon_11_1080p.html",
+      "rawTitle": "【喵萌奶茶屋】★01月新番★[迷宮飯 / Dungeon Meshi / Delicious in Dungeon][11][1080p][繁日雙語][招募翻譯時軸]"
+    },
+    {
+      "id": "664885_01_Dungeon_Meshi_Delicious_in_Dungeon_11_1080p.html",
+      "rawTitle": "【喵萌奶茶屋】★01月新番★[迷宫饭 / Dungeon Meshi / Delicious in Dungeon][11][1080p][简日双语][招募翻译时轴]"
+    },
+    {
+      "id": "664850_1_Dungeon_Meshi_11_BIG5_MP4_1920X1080.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【11】【BIG5_MP4】【1920X1080】"
+    },
+    {
+      "id": "664849_1_Dungeon_Meshi_11_GB_MP4_1920X1080.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【11】【GB_MP4】【1920X1080】"
+    },
+    {
+      "id": "664848_1_Dungeon_Meshi_11_BIG5_MP4_1280X720.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【11】【BIG5_MP4】【1280X720】"
+    },
+    {
+      "id": "664847_1_Dungeon_Meshi_11_GB_MP4_1280X720.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【11】【GB_MP4】【1280X720】"
+    },
+    {
+      "id": "664840_Dungeon_Meshi_10_1080p.html",
+      "rawTitle": "[云光字幕组] 迷宫饭 Dungeon Meshi [10][简体双语][1080p]招募翻译"
+    },
+    {
+      "id": "664782_LoliHouse_Dungeon_Meshi_Delicious_in_Dungeon_-_10_WebRip_1080p_HEVC-10bit_AAC_EAC3.html",
+      "rawTitle": "[喵萌奶茶屋&LoliHouse] 迷宫饭 / Dungeon Meshi / Delicious in Dungeon - 10 [WebRip 1080p HEVC-10bit AAC EAC3][简繁日内封字幕]"
+    },
+    {
+      "id": "664728_Dungeon_Meshi_10_1080p.html",
+      "rawTitle": "[桜都字幕组] 迷宫饭 / Dungeon Meshi [10][1080p][简繁内封]"
+    },
+    {
+      "id": "664727_Dungeon_Meshi_10_1080p.html",
+      "rawTitle": "[桜都字幕組] 迷宮飯 / Dungeon Meshi [10][1080p][繁體內嵌]"
+    },
+    {
+      "id": "664726_Dungeon_Meshi_10_1080p.html",
+      "rawTitle": "[桜都字幕组] 迷宫饭 / Dungeon Meshi [10][1080p][简体内嵌]"
+    },
+    {
+      "id": "664723_1_Dungeon_Meshi_03_1080P_MP4.html",
+      "rawTitle": "[愛戀字幕社][1月新番][迷宮飯][Dungeon Meshi][03][1080P][MP4][繁日雙語]"
+    },
+    {
+      "id": "664722_1_Dungeon_Meshi_03_1080P_MP4.html",
+      "rawTitle": "[爱恋字幕社][1月新番][迷宫饭][Dungeon Meshi][03][1080P][MP4][简日双语]"
+    },
+    {
+      "id": "664505_Dungeon_Meshi_10_x264_1080p_CHT.html",
+      "rawTitle": "【悠哈璃羽字幕社】[迷宫饭/Dungeon Meshi][10][x264 1080p][CHT]"
+    },
+    {
+      "id": "664504_Dungeon_Meshi_10_x264_1080p_CHS.html",
+      "rawTitle": "【悠哈璃羽字幕社】[迷宫饭/Dungeon Meshi][10][x264 1080p][CHS]"
+    },
+    {
+      "id": "664469_01_Dungeon_Meshi_Delicious_in_Dungeon_10_1080p.html",
+      "rawTitle": "【喵萌奶茶屋】★01月新番★[迷宮飯 / Dungeon Meshi / Delicious in Dungeon][10][1080p][繁日雙語][招募翻譯時軸]"
+    },
+    {
+      "id": "664468_01_Dungeon_Meshi_Delicious_in_Dungeon_10_1080p.html",
+      "rawTitle": "【喵萌奶茶屋】★01月新番★[迷宫饭 / Dungeon Meshi / Delicious in Dungeon][10][1080p][简日双语][招募翻译时轴]"
+    },
+    {
+      "id": "664427_1_Dungeon_Meshi_10_BIG5_MP4_1920X1080.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【10】【BIG5_MP4】【1920X1080】"
+    },
+    {
+      "id": "664426_1_Dungeon_Meshi_10_GB_MP4_1920X1080.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【10】【GB_MP4】【1920X1080】"
+    },
+    {
+      "id": "664424_1_Dungeon_Meshi_10_BIG5_MP4_1280X720.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【10】【BIG5_MP4】【1280X720】"
+    },
+    {
+      "id": "664423_1_Dungeon_Meshi_10_GB_MP4_1280X720.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【10】【GB_MP4】【1280X720】"
+    },
+    {
+      "id": "664299_Dungeon_Meshi_09_1080p.html",
+      "rawTitle": "[云光字幕组] 迷宫饭 Dungeon Meshi [09][简体双语][1080p]招募翻译"
+    },
+    {
+      "id": "664298_Dungeon_Meshi_08_1080p.html",
+      "rawTitle": "[云光字幕组] 迷宫饭 Dungeon Meshi [08][简体双语][1080p]招募翻译"
+    },
+    {
+      "id": "664289_1_Dungeon_Meshi_02_1080P_MP4.html",
+      "rawTitle": "[愛戀字幕社][1月新番][迷宮飯][Dungeon Meshi][02][1080P][MP4][繁日雙語]"
+    },
+    {
+      "id": "664288_1_Dungeon_Meshi_02_1080P_MP4.html",
+      "rawTitle": "[爱恋字幕社][1月新番][迷宫饭][Dungeon Meshi][02][1080P][MP4][简日双语]"
+    },
+    {
+      "id": "664165_Dungeon_Meshi_07_1080p.html",
+      "rawTitle": "[云光字幕组] 迷宫饭 Dungeon Meshi [07][简体双语][1080p]招募翻译"
+    },
+    {
+      "id": "664146_LoliHouse_Dungeon_Meshi_Delicious_in_Dungeon_-_09_WebRip_1080p_HEVC-10bit_AAC_EAC3.html",
+      "rawTitle": "[喵萌奶茶屋&LoliHouse] 迷宫饭 / Dungeon Meshi / Delicious in Dungeon - 09 [WebRip 1080p HEVC-10bit AAC EAC3][简繁日内封字幕]"
+    },
+    {
+      "id": "663992_Dungeon_Meshi_09_1080p.html",
+      "rawTitle": "[桜都字幕组] 迷宫饭 / Dungeon Meshi [09][1080p][简繁内封]"
+    },
+    {
+      "id": "663991_Dungeon_Meshi_09_1080p.html",
+      "rawTitle": "[桜都字幕組] 迷宮飯 / Dungeon Meshi [09][1080p][繁體內嵌]"
+    },
+    {
+      "id": "663990_Dungeon_Meshi_09_1080p.html",
+      "rawTitle": "[桜都字幕组] 迷宫饭 / Dungeon Meshi [09][1080p][简体内嵌]"
+    },
+    {
+      "id": "663949_Dungeon_Meshi_09_x264_1080p_CHT.html",
+      "rawTitle": "【悠哈璃羽字幕社】[迷宫饭/Dungeon Meshi][09][x264 1080p][CHT]"
+    },
+    {
+      "id": "663948_Dungeon_Meshi_09_x264_1080p_CHS.html",
+      "rawTitle": "【悠哈璃羽字幕社】[迷宫饭/Dungeon Meshi][09][x264 1080p][CHS]"
+    },
+    {
+      "id": "663878_01_Dungeon_Meshi_Delicious_in_Dungeon_09_1080p.html",
+      "rawTitle": "【喵萌奶茶屋】★01月新番★[迷宮飯 / Dungeon Meshi / Delicious in Dungeon][09][1080p][繁日雙語][招募翻譯時軸]"
+    },
+    {
+      "id": "663877_01_Dungeon_Meshi_Delicious_in_Dungeon_09_1080p.html",
+      "rawTitle": "【喵萌奶茶屋】★01月新番★[迷宫饭 / Dungeon Meshi / Delicious in Dungeon][09][1080p][简日双语][招募翻译时轴]"
+    },
+    {
+      "id": "663857_1_Dungeon_Meshi_09_BIG5_MP4_1920X1080.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【09】【BIG5_MP4】【1920X1080】"
+    },
+    {
+      "id": "663856_1_Dungeon_Meshi_09_GB_MP4_1920X1080.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【09】【GB_MP4】【1920X1080】"
+    },
+    {
+      "id": "663855_1_Dungeon_Meshi_09_BIG5_MP4_1280X720.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【09】【BIG5_MP4】【1280X720】"
+    },
+    {
+      "id": "663854_1_Dungeon_Meshi_09_GB_MP4_1280X720.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【09】【GB_MP4】【1280X720】"
+    },
+    {
+      "id": "663851_Dungeon_Meshi_06_1080p.html",
+      "rawTitle": "[云光字幕组] 迷宫饭 Dungeon Meshi [06][简体双语][1080p]招募翻译"
+    },
+    {
+      "id": "663602_Dungeon_Meshi_08_x264_1080p_CHT.html",
+      "rawTitle": "【悠哈璃羽字幕社】[迷宫饭/Dungeon Meshi][08][x264 1080p][CHT]"
+    },
+    {
+      "id": "663601_Dungeon_Meshi_08_x264_1080p_CHS.html",
+      "rawTitle": "【悠哈璃羽字幕社】[迷宫饭/Dungeon Meshi][08][x264 1080p][CHS]"
+    },
+    {
+      "id": "663572_Dungeon_Meshi_08_1080p.html",
+      "rawTitle": "[桜都字幕组] 迷宫饭 / Dungeon Meshi [08][1080p][简繁内封]"
+    },
+    {
+      "id": "663571_Dungeon_Meshi_08_1080p.html",
+      "rawTitle": "[桜都字幕組] 迷宮飯 / Dungeon Meshi [08][1080p][繁體內嵌]"
+    },
+    {
+      "id": "663570_Dungeon_Meshi_08_1080p.html",
+      "rawTitle": "[桜都字幕组] 迷宫饭 / Dungeon Meshi [08][1080p][简体内嵌]"
+    },
+    {
+      "id": "663455_LoliHouse_Dungeon_Meshi_Delicious_in_Dungeon_-_08_WebRip_1080p_HEVC-10bit_AAC_EAC3.html",
+      "rawTitle": "[喵萌奶茶屋&LoliHouse] 迷宫饭 / Dungeon Meshi / Delicious in Dungeon - 08 [WebRip 1080p HEVC-10bit AAC EAC3][简繁日内封字幕]"
+    },
+    {
+      "id": "663375_01_Dungeon_Meshi_Delicious_in_Dungeon_08_1080p.html",
+      "rawTitle": "【喵萌奶茶屋】★01月新番★[迷宮飯 / Dungeon Meshi / Delicious in Dungeon][08][1080p][繁日雙語][招募翻譯時軸]"
+    },
+    {
+      "id": "663374_01_Dungeon_Meshi_Delicious_in_Dungeon_08_1080p.html",
+      "rawTitle": "【喵萌奶茶屋】★01月新番★[迷宫饭 / Dungeon Meshi / Delicious in Dungeon][08][1080p][简日双语][招募翻译时轴]"
+    },
+    {
+      "id": "663350_1_Dungeon_Meshi_08_BIG5_MP4_1920X1080.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【08】【BIG5_MP4】【1920X1080】"
+    },
+    {
+      "id": "663349_1_Dungeon_Meshi_08_GB_MP4_1920X1080.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【08】【GB_MP4】【1920X1080】"
+    },
+    {
+      "id": "663348_1_Dungeon_Meshi_08_BIG5_MP4_1280X720.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【08】【BIG5_MP4】【1280X720】"
+    },
+    {
+      "id": "663347_1_Dungeon_Meshi_08_GB_MP4_1280X720.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【08】【GB_MP4】【1280X720】"
+    },
+    {
+      "id": "663133_Dungeon_Meshi_07_x264_1080p_CHS.html",
+      "rawTitle": "【悠哈璃羽字幕社】[迷宫饭/Dungeon Meshi][07][x264 1080p][CHS]"
+    },
+    {
+      "id": "663132_Dungeon_Meshi_07_x264_1080p_CHT.html",
+      "rawTitle": "【悠哈璃羽字幕社】[迷宫饭/Dungeon Meshi][07][x264 1080p][CHT]"
+    },
+    {
+      "id": "663106_Dungeon_Meshi_07_1080p.html",
+      "rawTitle": "[桜都字幕组] 迷宫饭 / Dungeon Meshi [07][1080p][简繁内封]"
+    },
+    {
+      "id": "663105_Dungeon_Meshi_07_1080p.html",
+      "rawTitle": "[桜都字幕組] 迷宮飯 / Dungeon Meshi [07][1080p][繁體內嵌]"
+    },
+    {
+      "id": "663104_Dungeon_Meshi_07_1080p.html",
+      "rawTitle": "[桜都字幕组] 迷宫饭 / Dungeon Meshi [07][1080p][简体内嵌]"
+    },
+    {
+      "id": "662978_1_Dungeon_Meshi_01_1080P_MP4.html",
+      "rawTitle": "[愛戀字幕社][1月新番][迷宮飯][Dungeon Meshi][01][1080P][MP4][繁日雙語]"
+    },
+    {
+      "id": "662977_1_Dungeon_Meshi_01_1080P_MP4.html",
+      "rawTitle": "[爱恋字幕社][1月新番][迷宫饭][Dungeon Meshi][01][1080P][MP4][简日双语]"
+    },
+    {
+      "id": "662912_LoliHouse_Dungeon_Meshi_Delicious_in_Dungeon_-_07_WebRip_1080p_HEVC-10bit_AAC_EAC3.html",
+      "rawTitle": "[喵萌奶茶屋&LoliHouse] 迷宫饭 / Dungeon Meshi / Delicious in Dungeon - 07 [WebRip 1080p HEVC-10bit AAC EAC3][简繁日内封字幕]"
+    },
+    {
+      "id": "662907_01_Dungeon_Meshi_Delicious_in_Dungeon_07_1080p.html",
+      "rawTitle": "【喵萌奶茶屋】★01月新番★[迷宮飯 / Dungeon Meshi / Delicious in Dungeon][07][1080p][繁日雙語][招募翻譯時軸]"
+    },
+    {
+      "id": "662906_01_Dungeon_Meshi_Delicious_in_Dungeon_07_1080p.html",
+      "rawTitle": "【喵萌奶茶屋】★01月新番★[迷宫饭 / Dungeon Meshi / Delicious in Dungeon][07][1080p][简日双语][招募翻译时轴]"
+    },
+    {
+      "id": "662862_1_Dungeon_Meshi_07_BIG5_MP4_1920X1080.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【07】【BIG5_MP4】【1920X1080】"
+    },
+    {
+      "id": "662861_1_Dungeon_Meshi_07_GB_MP4_1920X1080.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【07】【GB_MP4】【1920X1080】"
+    },
+    {
+      "id": "662859_1_Dungeon_Meshi_07_BIG5_MP4_1280X720.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【07】【BIG5_MP4】【1280X720】"
+    },
+    {
+      "id": "662856_1_Dungeon_Meshi_07_GB_MP4_1280X720.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【07】【GB_MP4】【1280X720】"
+    },
+    {
+      "id": "662800_Dungeon_Meshi_06_1080p.html",
+      "rawTitle": "[桜都字幕组] 迷宫饭 / Dungeon Meshi [06][1080p][简繁内封]"
+    },
+    {
+      "id": "662799_Dungeon_Meshi_06_1080p.html",
+      "rawTitle": "[桜都字幕組] 迷宮飯 / Dungeon Meshi [06][1080p][繁體內嵌]"
+    },
+    {
+      "id": "662798_Dungeon_Meshi_06_1080p.html",
+      "rawTitle": "[桜都字幕组] 迷宫饭 / Dungeon Meshi [06][1080p][简体内嵌]"
+    },
+    {
+      "id": "662690_Dungeon_Meshi_06_x264_1080p_CHT.html",
+      "rawTitle": "【悠哈璃羽字幕社】[迷宫饭/Dungeon Meshi][06][x264 1080p][CHT]"
+    },
+    {
+      "id": "662689_Dungeon_Meshi_06_x264_1080p_CHS.html",
+      "rawTitle": "【悠哈璃羽字幕社】[迷宫饭/Dungeon Meshi][06][x264 1080p][CHS]"
+    },
+    {
+      "id": "662517_LoliHouse_Dungeon_Meshi_Delicious_in_Dungeon_-_06_WebRip_1080p_HEVC-10bit_AAC_EAC3.html",
+      "rawTitle": "[喵萌奶茶屋&LoliHouse] 迷宫饭 / Dungeon Meshi / Delicious in Dungeon - 06 [WebRip 1080p HEVC-10bit AAC EAC3][简繁日内封字幕]"
+    },
+    {
+      "id": "662499_01_Dungeon_Meshi_Delicious_in_Dungeon_06_1080p.html",
+      "rawTitle": "【喵萌奶茶屋】★01月新番★[迷宮飯 / Dungeon Meshi / Delicious in Dungeon][06][1080p][繁日雙語][招募翻譯]"
+    },
+    {
+      "id": "662498_01_Dungeon_Meshi_Delicious_in_Dungeon_06_1080p.html",
+      "rawTitle": "【喵萌奶茶屋】★01月新番★[迷宫饭 / Dungeon Meshi / Delicious in Dungeon][06][1080p][简日双语][招募翻译]"
+    },
+    {
+      "id": "662374_1_Dungeon_Meshi_06_BIG5_MP4_1920X1080.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【06】【BIG5_MP4】【1920X1080】"
+    },
+    {
+      "id": "662373_1_Dungeon_Meshi_06_GB_MP4_1920X1080.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【06】【GB_MP4】【1920X1080】"
+    },
+    {
+      "id": "662371_1_Dungeon_Meshi_06_BIG5_MP4_1280X720.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【06】【BIG5_MP4】【1280X720】"
+    },
+    {
+      "id": "662370_1_Dungeon_Meshi_06_GB_MP4_1280X720.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【06】【GB_MP4】【1280X720】"
+    },
+    {
+      "id": "662317_Dungeon_Meshi_05_1080p.html",
+      "rawTitle": "[云光字幕组] 迷宫饭 Dungeon Meshi [05][简体双语][1080p]招募翻译"
+    },
+    {
+      "id": "662096_Dungeon_Meshi_05_1080p.html",
+      "rawTitle": "[桜都字幕组] 迷宫饭 / Dungeon Meshi [05][1080p][简繁内封]"
+    },
+    {
+      "id": "662095_Dungeon_Meshi_05_1080p.html",
+      "rawTitle": "[桜都字幕組] 迷宮飯 / Dungeon Meshi [05][1080p][繁體內嵌]"
+    },
+    {
+      "id": "662094_Dungeon_Meshi_05_1080p.html",
+      "rawTitle": "[桜都字幕组] 迷宫饭 / Dungeon Meshi [05][1080p][简体内嵌]"
+    },
+    {
+      "id": "662083_Dungeon_Meshi_05_x264_1080p_CHT.html",
+      "rawTitle": "【悠哈璃羽字幕社】[迷宫饭/Dungeon Meshi][05][x264 1080p][CHT]"
+    },
+    {
+      "id": "662082_Dungeon_Meshi_05_x264_1080p_CHS.html",
+      "rawTitle": "【悠哈璃羽字幕社】[迷宫饭/Dungeon Meshi][05][x264 1080p][CHS]"
+    },
+    {
+      "id": "661962_LoliHouse_Dungeon_Meshi_Delicious_in_Dungeon_-_05_WebRip_1080p_HEVC-10bit_AAC_EAC3.html",
+      "rawTitle": "[喵萌奶茶屋&LoliHouse] 迷宫饭 / Dungeon Meshi / Delicious in Dungeon - 05 [WebRip 1080p HEVC-10bit AAC EAC3][简繁日内封字幕]"
+    },
+    {
+      "id": "661959_01_Dungeon_Meshi_Delicious_in_Dungeon_05_1080p.html",
+      "rawTitle": "【喵萌奶茶屋】★01月新番★[迷宮飯 / Dungeon Meshi / Delicious in Dungeon][05][1080p][繁日雙語][招募翻譯]"
+    },
+    {
+      "id": "661958_01_Dungeon_Meshi_Delicious_in_Dungeon_05_1080p.html",
+      "rawTitle": "【喵萌奶茶屋】★01月新番★[迷宫饭 / Dungeon Meshi / Delicious in Dungeon][05][1080p][简日双语][招募翻译]"
+    },
+    {
+      "id": "661907_1_Dungeon_Meshi_05_BIG5_MP4_1920X1080.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【05】【BIG5_MP4】【1920X1080】"
+    },
+    {
+      "id": "661906_1_Dungeon_Meshi_05_BIG5_MP4_1280X720.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【05】【BIG5_MP4】【1280X720】"
+    },
+    {
+      "id": "661904_1_Dungeon_Meshi_05_GB_MP4_1920X1080.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【05】【GB_MP4】【1920X1080】"
+    },
+    {
+      "id": "661903_1_Dungeon_Meshi_05_GB_MP4_1280X720.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【05】【GB_MP4】【1280X720】"
+    },
+    {
+      "id": "661841_Dungeon_Meshi_04_1080p.html",
+      "rawTitle": "[云光字幕组] 迷宫饭 Dungeon Meshi [04][简体双语][1080p]招募翻译"
+    },
+    {
+      "id": "661672_Dungeon_Meshi_04_1080p.html",
+      "rawTitle": "[桜都字幕组] 迷宫饭 / Dungeon Meshi [04][1080p][简繁内封]"
+    },
+    {
+      "id": "661671_Dungeon_Meshi_04_1080p.html",
+      "rawTitle": "[桜都字幕組] 迷宮飯 / Dungeon Meshi [04][1080p][繁體內嵌]"
+    },
+    {
+      "id": "661670_Dungeon_Meshi_04_1080p.html",
+      "rawTitle": "[桜都字幕组] 迷宫饭 / Dungeon Meshi [04][1080p][简体内嵌]"
+    },
+    {
+      "id": "661648_Dungeon_Meshi_04_x264_1080p_CHS.html",
+      "rawTitle": "【悠哈璃羽字幕社】[迷宫饭/Dungeon Meshi][04][x264 1080p][CHS]"
+    },
+    {
+      "id": "661647_Dungeon_Meshi_04_x264_1080p_CHT.html",
+      "rawTitle": "【悠哈璃羽字幕社】[迷宫饭/Dungeon Meshi][04][x264 1080p][CHT]"
+    },
+    {
+      "id": "661638_LoliHouse_Dungeon_Meshi_Delicious_in_Dungeon_-_04v2_WebRip_1080p_HEVC-10bit_AAC_EAC3.html",
+      "rawTitle": "[喵萌奶茶屋&LoliHouse] 迷宫饭 / Dungeon Meshi / Delicious in Dungeon - 04v2 [WebRip 1080p HEVC-10bit AAC EAC3][简繁日内封字幕]"
+    },
+    {
+      "id": "661607_LoliHouse_Dungeon_Meshi_Delicious_in_Dungeon_-_04_WebRip_1080p_HEVC-10bit_AAC_EAC3.html",
+      "rawTitle": "[喵萌奶茶屋&LoliHouse] 迷宫饭 / Dungeon Meshi / Delicious in Dungeon - 04 [WebRip 1080p HEVC-10bit AAC EAC3][简繁日内封字幕]"
+    },
+    {
+      "id": "661470_01_Dungeon_Meshi_Delicious_in_Dungeon_04_1080p.html",
+      "rawTitle": "【喵萌奶茶屋】★01月新番★[迷宮飯 / Dungeon Meshi / Delicious in Dungeon][04][1080p][繁日雙語][招募翻譯]"
+    },
+    {
+      "id": "661469_01_Dungeon_Meshi_Delicious_in_Dungeon_04_1080p.html",
+      "rawTitle": "【喵萌奶茶屋】★01月新番★[迷宫饭 / Dungeon Meshi / Delicious in Dungeon][04][1080p][简日双语][招募翻译]"
+    },
+    {
+      "id": "661438_1_Dungeon_Meshi_04_BIG5_MP4_1920X1080.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【04】【BIG5_MP4】【1920X1080】"
+    },
+    {
+      "id": "661436_1_Dungeon_Meshi_04_GB_MP4_1920X1080.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【04】【GB_MP4】【1920X1080】"
+    },
+    {
+      "id": "661434_1_Dungeon_Meshi_04_BIG5_MP4_1280X720.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【04】【BIG5_MP4】【1280X720】"
+    },
+    {
+      "id": "661433_1_Dungeon_Meshi_04_GB_MP4_1280X720.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【04】【GB_MP4】【1280X720】"
+    },
+    {
+      "id": "661307_Dungeon_Meshi_03_1080p.html",
+      "rawTitle": "[云光字幕组] 迷宫饭 Dungeon Meshi [03][简体双语][1080p]招募翻译"
+    },
+    {
+      "id": "661184_Dungeon_Meshi_03_x264_1080p_CHT.html",
+      "rawTitle": "【悠哈璃羽字幕社】[迷宫饭/Dungeon Meshi][03][x264 1080p][CHT]"
+    },
+    {
+      "id": "661183_Dungeon_Meshi_03_x264_1080p_CHS.html",
+      "rawTitle": "【悠哈璃羽字幕社】[迷宫饭/Dungeon Meshi][03][x264 1080p][CHS]"
+    },
+    {
+      "id": "661182_Dungeon_Meshi_02_x264_1080p_CHT.html",
+      "rawTitle": "【悠哈璃羽字幕社】[迷宫饭/Dungeon Meshi][02][x264 1080p][CHT]"
+    },
+    {
+      "id": "661181_Dungeon_Meshi_02_x264_1080p_CHS.html",
+      "rawTitle": "【悠哈璃羽字幕社】[迷宫饭/Dungeon Meshi][02][x264 1080p][CHS]"
+    },
+    {
+      "id": "661164_Dungeon_Meshi_03_x264_1080p_CHT.html",
+      "rawTitle": "【悠哈璃羽字幕社】[迷宫饭/Dungeon Meshi][03][x264 1080p][CHT]"
+    },
+    {
+      "id": "661163_Dungeon_Meshi_03_x264_1080p_CHS.html",
+      "rawTitle": "【悠哈璃羽字幕社】[迷宫饭/Dungeon Meshi][03][x264 1080p][CHS]"
+    },
+    {
+      "id": "661162_Dungeon_Meshi_02_x264_1080p_CHT.html",
+      "rawTitle": "【悠哈璃羽字幕社】[迷宫饭/Dungeon Meshi][02][x264 1080p][CHT]"
+    },
+    {
+      "id": "661161_Dungeon_Meshi_02_x264_1080p_CHS.html",
+      "rawTitle": "【悠哈璃羽字幕社】[迷宫饭/Dungeon Meshi][02][x264 1080p][CHS]"
+    },
+    {
+      "id": "661103_Dungeon_Meshi_03_1080p.html",
+      "rawTitle": "[桜都字幕组] 迷宫饭 / Dungeon Meshi [03][1080p][简繁内封]"
+    },
+    {
+      "id": "661102_Dungeon_Meshi_03_1080p.html",
+      "rawTitle": "[桜都字幕組] 迷宮飯 / Dungeon Meshi [03][1080p][繁體內嵌]"
+    },
+    {
+      "id": "661101_Dungeon_Meshi_03_1080p.html",
+      "rawTitle": "[桜都字幕组] 迷宫饭 / Dungeon Meshi [03][1080p][简体内嵌]"
+    },
+    {
+      "id": "660921_LoliHouse_Dungeon_Meshi_Delicious_in_Dungeon_-_03_WebRip_1080p_HEVC-10bit_AAC_EAC3.html",
+      "rawTitle": "[喵萌奶茶屋&LoliHouse] 迷宫饭 / Dungeon Meshi / Delicious in Dungeon - 03 [WebRip 1080p HEVC-10bit AAC EAC3][简繁日内封字幕]"
+    },
+    {
+      "id": "660889_01_Dungeon_Meshi_Delicious_in_Dungeon_03_1080p.html",
+      "rawTitle": "【喵萌奶茶屋】★01月新番★[迷宮飯 / Dungeon Meshi / Delicious in Dungeon][03][1080p][繁日雙語][招募翻譯]"
+    },
+    {
+      "id": "660888_01_Dungeon_Meshi_Delicious_in_Dungeon_03_1080p.html",
+      "rawTitle": "【喵萌奶茶屋】★01月新番★[迷宫饭 / Dungeon Meshi / Delicious in Dungeon][03][1080p][简日双语][招募翻译]"
+    },
+    {
+      "id": "660877_1_Dungeon_Meshi_03_BIG5_MP4_1920X1080.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【03】【BIG5_MP4】【1920X1080】"
+    },
+    {
+      "id": "660876_1_Dungeon_Meshi_03_GB_MP4_1920X1080.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【03】【GB_MP4】【1920X1080】"
+    },
+    {
+      "id": "660875_1_Dungeon_Meshi_03_BIG5_MP4_1280X720.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【03】【BIG5_MP4】【1280X720】"
+    },
+    {
+      "id": "660874_1_Dungeon_Meshi_03_GB_MP4_1280X720.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【03】【GB_MP4】【1280X720】"
+    },
+    {
+      "id": "660861_Dungeon_Meshi_02_1080p.html",
+      "rawTitle": "[云光字幕组] 迷宫饭 Dungeon Meshi [02][简体双语][1080p]招募翻译"
+    },
+    {
+      "id": "660760_Dungeon_Meshi_02_1080p_2024_1.html",
+      "rawTitle": "[摆烂字幕组＆猎户译制部] 迷宫饭 / Dungeon Meshi [02] [1080p] [繁日内嵌] [2024年1月番]"
+    },
+    {
+      "id": "660759_Dungeon_Meshi_02_1080p_2024_1.html",
+      "rawTitle": "[摆烂字幕组＆猎户译制部] 迷宫饭 / Dungeon Meshi [02] [1080p] [简日内嵌] [2024年1月番]"
+    },
+    {
+      "id": "660594_Delicious_in_Dungeon_03_MKV_1080P_NETFLIX.html",
+      "rawTitle": "[天月搬運組][迷宮飯 Delicious in Dungeon][02][日語中字][MKV][1080P][NETFLIX][高畫質版]"
+    },
+    {
+      "id": "660593_Delicious_in_Dungeon_02_MKV_1080P_NETFLIX.html",
+      "rawTitle": "[天月搬運組][迷宮飯 Delicious in Dungeon][02][日語中字][MKV][1080P][NETFLIX][高壓版]"
+    },
+    {
+      "id": "660539_Dungeon_Meshi_02_1080p.html",
+      "rawTitle": "[桜都字幕组] 迷宫饭 / Dungeon Meshi [02][1080p][简繁内封]"
+    },
+    {
+      "id": "660538_Dungeon_Meshi_02_1080p.html",
+      "rawTitle": "[桜都字幕組] 迷宮飯 / Dungeon Meshi [02][1080p][繁體內嵌]"
+    },
+    {
+      "id": "660537_Dungeon_Meshi_02_1080p.html",
+      "rawTitle": "[桜都字幕组] 迷宫饭 / Dungeon Meshi [02][1080p][简体内嵌]"
+    },
+    {
+      "id": "660374_Dungeon_Meshi_01_1080p.html",
+      "rawTitle": "[云光字幕组] 迷宫饭 Dungeon Meshi [01][简体双语][1080p]招募翻译"
+    },
+    {
+      "id": "660359_LoliHouse_Dungeon_Meshi_Delicious_in_Dungeon_-_02_WebRip_1080p_HEVC-10bit_AAC_EAC3.html",
+      "rawTitle": "[喵萌奶茶屋&LoliHouse] 迷宫饭 / Dungeon Meshi / Delicious in Dungeon - 02 [WebRip 1080p HEVC-10bit AAC EAC3][简繁日内封字幕]"
+    },
+    {
+      "id": "660340_01_Dungeon_Meshi_Delicious_in_Dungeon_02_1080p.html",
+      "rawTitle": "【喵萌奶茶屋】★01月新番★[迷宮飯 / Dungeon Meshi / Delicious in Dungeon][02][1080p][繁日雙語][招募翻譯]"
+    },
+    {
+      "id": "660339_01_Dungeon_Meshi_Delicious_in_Dungeon_02_1080p.html",
+      "rawTitle": "【喵萌奶茶屋】★01月新番★[迷宫饭 / Dungeon Meshi / Delicious in Dungeon][02][1080p][简日双语][招募翻译]"
+    },
+    {
+      "id": "660326_1_Dungeon_Meshi_02_BIG5_MP4_1920X1080.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【02】【BIG5_MP4】【1920X1080】"
+    },
+    {
+      "id": "660325_1_Dungeon_Meshi_02_GB_MP4_1920X1080.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【02】【GB_MP4】【1920X1080】"
+    },
+    {
+      "id": "660324_1_Dungeon_Meshi_02_BIG5_MP4_1280X720.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【02】【BIG5_MP4】【1280X720】"
+    },
+    {
+      "id": "660323_1_Dungeon_Meshi_02_GB_MP4_1280X720.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【02】【GB_MP4】【1280X720】"
+    },
+    {
+      "id": "660128_Dungeon_Meshi_01_x264_1080p_CHS.html",
+      "rawTitle": "[悠哈璃羽字幕社][迷宫饭/Dungeon Meshi][01][x264 1080p][CHS]"
+    },
+    {
+      "id": "660127_Dungeon_Meshi_01_x264_1080p_CHT.html",
+      "rawTitle": "[悠哈璃羽字幕社][迷宫饭/Dungeon Meshi][01][x264 1080p][CHT]"
+    },
+    {
+      "id": "660105_Dungeon_Meshi_01_1080p_2024_1.html",
+      "rawTitle": "[摆烂字幕组＆猎户译制部] 迷宫饭 / Dungeon Meshi [01] [1080p] [简日内嵌] [2024年1月番]"
+    },
+    {
+      "id": "660004_LoliHouse_Dungeon_Meshi_Delicious_in_Dungeon_-_01_WebRip_1080p_HEVC-10bit_AAC_EAC3.html",
+      "rawTitle": "[喵萌奶茶屋&LoliHouse] 迷宫饭 / Dungeon Meshi / Delicious in Dungeon - 01 [WebRip 1080p HEVC-10bit AAC EAC3][简繁日内封字幕]"
+    },
+    {
+      "id": "659971_Dungeon_Meshi_01_1080p.html",
+      "rawTitle": "[桜都字幕组] 迷宫饭 / Dungeon Meshi [01][1080p][简繁内封]"
+    },
+    {
+      "id": "659970_Dungeon_Meshi_01_1080p.html",
+      "rawTitle": "[桜都字幕組] 迷宮飯 / Dungeon Meshi [01][1080p][繁體內嵌]"
+    },
+    {
+      "id": "659969_Dungeon_Meshi_01_1080p.html",
+      "rawTitle": "[桜都字幕组] 迷宫饭 / Dungeon Meshi [01][1080p][简体内嵌]"
+    },
+    {
+      "id": "659933_1_Dungeon_Meshi_01v2_BIG5_MP4_1920X1080.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【01v2】【BIG5_MP4】【1920X1080】"
+    },
+    {
+      "id": "659932_1_Dungeon_Meshi_01v2_GB_MP4_1920X1080.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【01v2】【GB_MP4】【1920X1080】"
+    },
+    {
+      "id": "659931_1_Dungeon_Meshi_01v2_BIG5_MP4_1280X720.html",
+      "rawTitle": "【幻櫻字幕組】【1月新番】【迷宮飯 Dungeon Meshi】【01v2】【BIG5_MP4】【1280X720】"
+    },
+    {
+      "id": "659930_1_Dungeon_Meshi_01v2_GB_MP4_1280X720.html",
+      "rawTitle": "【幻樱字幕组】【1月新番】【迷宫饭 Dungeon Meshi】【01v2】【GB_MP4】【1280X720】"
+    },
+    {
+      "id": "659916_01_Dungeon_Meshi_Delicious_in_Dungeon_01_1080p.html",
+      "rawTitle": "【喵萌奶茶屋】★01月新番★[迷宮飯 / Dungeon Meshi / Delicious in Dungeon][01][1080p][繁日雙語][招募翻譯]"
+    },
+    {
+      "id": "659915_01_Dungeon_Meshi_Delicious_in_Dungeon_01_1080p.html",
+      "rawTitle": "【喵萌奶茶屋】★01月新番★[迷宫饭 / Dungeon Meshi / Delicious in Dungeon][01][1080p][简日双语][招募翻译]"
+    },
+    {
+      "id": "659896_Delicious_in_Dungeon_01_MKV_1080P_NETFLIX_Multi-VeryG.html",
+      "rawTitle": "[天月搬運組][迷宮飯 Delicious in Dungeon][01][日語中字][MKV][1080P][NETFLIX][高畫質版]"
+    },
+    {
+      "id": "659895_Delicious_in_Dungeon_01_MKV_1080P_NETFLIX_VeryG.html",
+      "rawTitle": "[天月搬運組][迷宮飯 Delicious in Dungeon][01][日語中字][MKV][1080P][NETFLIX][高壓版]"
+    }
+  ]
+}
