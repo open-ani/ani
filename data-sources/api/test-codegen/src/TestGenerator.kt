@@ -72,6 +72,8 @@ class TestGenerator(
             addMember("\"NonAsciiCharacters\"")
             addMember("\"SpellCheckingInspection\"")
         }.build())
+        addImport("me.him188.ani.datasources.api.title", "PatternBasedTitleParserTestSuite")
+        addImport("kotlin.test", "assertEquals") // 它不允许 "*"
         addType(
             TypeSpec.classBuilder(
                 ClassName(
@@ -89,7 +91,6 @@ class TestGenerator(
                         如果是, 请更新测试数据: 执行 `GenerateTests.kt`.
                 """.trimIndent()
                 )
-                addImport("kotlin.test", "assertEquals") // 它不允许 "*"
                 superclass(ClassName("me.him188.ani.datasources.api.title", "PatternBasedTitleParserTestSuite"))
                 for (case in suite.cases) case.parsed.run {
                     addFunction(

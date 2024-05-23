@@ -137,7 +137,8 @@ class LabelFirstRawTitleParser : RawTitleParser() {
                 val (start, end) = result.destructured
                 if (end.startsWith("0") && !start.startsWith("0")) {
                     // "Hibike! Euphonium 3 - 02"
-                    return@let
+                    builder.episodeRange = EpisodeRange.single(EpisodeSort(end))
+                    return true
                 }
 
                 if (result.groupValues.size >= 5 && result.groupValues[4].isNotBlank()) {

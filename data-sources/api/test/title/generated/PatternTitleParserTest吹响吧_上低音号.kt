@@ -197,7 +197,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   public fun `669834_Sub_Hibike_21_Euphonium_3___06_WebRip_1080P_HEVC_AAC_ASSx3`() {
     val r =
         parse("[萌樱字幕组&霜庭云花Sub][吹响吧！上低音号 第三季 / Hibike! Euphonium 3 - 06 [WebRip 1080P HEVC AAC][简繁日内封 ASSx3]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
   }
@@ -437,7 +437,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   public fun `668742_Sub_Hibike_21_Euphonium_3___04_WebRip_1080P_HEVC_AAC_ASSx3`() {
     val r =
         parse("[萌樱字幕组&霜庭云花Sub][吹响吧！上低音号 第三季 / Hibike! Euphonium 3 - 04 [WebRip 1080P HEVC AAC][简繁日内封 ASSx3]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
   }
@@ -601,7 +601,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   public fun `668315_Sub_Hibike_21_Euphonium_3___03_WebRip_1080P_HEVC_AAC_ASSx3`() {
     val r =
         parse("[萌樱字幕组&霜庭云花Sub][吹响吧！上低音号 第三季 / Hibike! Euphonium 3 - 03 [WebRip 1080P HEVC AAC][简繁日内封 ASSx3]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
   }
@@ -751,7 +751,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   public fun `667884_Sub_Hibike_21_Euphonium_3___02_WebRip_1080P_HEVC_AAC_ASSx3`() {
     val r =
         parse("[萌樱字幕组&霜庭云花Sub][吹响吧！上低音号 第三季 / Hibike! Euphonium 3 - 02 [WebRip 1080P HEVC AAC][简繁日内封 ASSx3]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
   }
@@ -1032,7 +1032,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   public fun `666599_Sub_Hibike_21_Euphonium_3___01_WebRip_1080P_HEVC_AAC_ASSx2`() {
     val r =
         parse("[萌樱字幕组&霜庭云花Sub][吹响吧！上低音号 第三季 / Hibike! Euphonium 3 - 01 [WebRip 1080P HEVC AAC][简繁日内封 ASSx2]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
   }
