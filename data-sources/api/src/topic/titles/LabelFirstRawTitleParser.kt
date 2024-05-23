@@ -114,20 +114,7 @@ class LabelFirstRawTitleParser : RawTitleParser() {
                 || this.contains("x265", ignoreCase = true)
             ) return false
 
-            val str = this
-                .remove("第")
-                .remove("_完")
-                .remove("_END")
-                .remove("(完)") // 26(完)
-                .remove("完")
-                .remove("话")
-                .remove("END")
-                .remove("集")
-                .remove("話")
-                .remove("版") // 第06話V2版
-                .remove("v1")
-                .remove("v2")
-                .remove("v3")
+            val str = episodeRemove.fold(this) { acc, regex -> acc.remove(regex) }
             str.toFloatOrNull()?.let {
                 builder.episodeRange = EpisodeRange.single(str)
                 return true
@@ -184,6 +171,16 @@ private fun String.getPrefix(): String? {
     return this.substring(0, index)
 }
 
+// 第02話V2版
+// 02V2
+private val episodeRemove = listOf(
+    Regex("""第"""),
+    Regex("""_?(?:完|END)|\(完\)""", RegexOption.IGNORE_CASE),
+    Regex("""[话集話]"""),
+    Regex("""v[0-9]""", RegexOption.IGNORE_CASE),
+    Regex("""版"""),
+)
+
 private val newAnime = Regex("(?:★?|★(.*)?)([0-9]|[一二三四五六七八九十]{0,4}) ?[月年] ?(?:新番|日剧)★?")
 
 // 性能没问题, 测了一般就 100 steps
@@ -211,6 +208,7 @@ private val collectionPattern = Regex(
 )
 
 private fun String.remove(str: String) = replace(str, "", ignoreCase = true)
+private fun String.remove(regex: Regex) = replace(regex) { "" }
 
 private val DEFAULT_SPLIT_WORDS_DELIMITER = charArrayOf('/', '\\', '|', ' ')
 
