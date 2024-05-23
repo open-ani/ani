@@ -171,7 +171,7 @@ private constructor(
     val episodeEp: EpisodeSort? = episodeSort,
     val episodeName: String,
     val extra: Map<String, String> = emptyMap(),
-    @Suppress("unused") private val _primaryConstructorMarker: Byte = 0, // avoid compiler error
+    @Transient @Suppress("unused") private val _primaryConstructorMarker: Byte = 0, // avoid compiler error
 ) {
     constructor(
 //    /**
