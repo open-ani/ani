@@ -177,7 +177,7 @@ private val episodeRemove = listOf(
     Regex("""第"""),
     Regex("""_?(?:完|END)|\(完\)""", RegexOption.IGNORE_CASE),
     Regex("""[话集話]"""),
-    Regex("""v[0-9]""", RegexOption.IGNORE_CASE),
+    Regex("""_?v[0-9]""", RegexOption.IGNORE_CASE),
     Regex("""版"""),
 )
 

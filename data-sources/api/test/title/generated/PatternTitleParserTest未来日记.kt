@@ -5218,7 +5218,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
   @Test
   public fun `228910_Dymy_Mirai_Nikki_03_V2_BIG5_1024X576_RMVB`() {
     val r = parse("【Dymy字幕組】【Mirai_Nikki_未來日記】【03_V2】【BIG5】【1024X576】【RMVB】")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
   }
