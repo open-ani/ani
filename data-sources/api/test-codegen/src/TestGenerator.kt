@@ -41,9 +41,12 @@ class TestGenerator(
         fun String.sanitize() = replace("%", "_")
             .replace(".", "_")
             .replace("-", "_")
+            .replace("!", "_")
+            .replace("！", "_")
+            .replace("～", "_")
 
         return TestSuite(
-            originalName = testData.originalName,
+            originalName = testData.originalName.sanitize(),
             name = testData.kotlinClassName.sanitize(),
             dataSource = testData.dataSource,
             cases = testData.topics.map {

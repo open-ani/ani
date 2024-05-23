@@ -2,7 +2,7 @@ package me.him188.ani.datasources.api.test.codegen.main
 
 import me.him188.ani.datasources.api.test.codegen.TestGenerator
 import me.him188.ani.datasources.api.test.codegen.json
-import me.him188.ani.datasources.api.topic.titles.PatternBasedRawTitleParser
+import me.him188.ani.datasources.api.topic.titles.RawTitleParser
 import java.io.File
 
 /**
@@ -24,13 +24,16 @@ fun main(args: Array<String>) { // 直接 run 就行
 
     println("Found ${suites.size} test data, total ${suites.sumOf { it.topics.size }} topics")
 
-    TestGenerator(PatternBasedRawTitleParser()).run {
+    TestGenerator(RawTitleParser.getDefault()).run {
         for (data in suites) {
 //            val out = outputDir.resolve(data.kotlinClassName + ".kt")
             println("Generating suite '${data.kotlinClassName}'")
             val suite = createSuite(data)
             val generated = generateSuite(suite)
             generated.writeTo(outputDir)
+            outputDir.resolve(generated.name + ".kt").run {
+                writeText("// @formatter:off\n" + readText() + "\n// @formatter:on\n")
+            }
         }
     }
 }

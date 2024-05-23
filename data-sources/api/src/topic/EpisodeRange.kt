@@ -98,6 +98,36 @@ sealed class EpisodeRange {
         }
     }
 
+    @Serializable
+    class Combined(
+        val first: EpisodeRange,
+        val second: EpisodeRange,
+    ) : EpisodeRange() {
+        override val sorts: Sequence<EpisodeSort>
+            get() = sequence {
+                yieldAll(first.sorts)
+                yieldAll(second.sorts)
+            }
+
+        override fun toString(): String = when {
+            second is Single -> "$first+${second.value}"
+            first is Single -> "${first.value}+$second"
+            else -> super.toString()
+        }
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other !is EpisodeRange) return false
+            return sorts.toList() == other.sorts.toList() // TODO: optimize performance EpisodeRange.Combined.equals
+        }
+
+        override fun hashCode(): Int {
+            var result = first.hashCode()
+            result = 31 * result + second.hashCode()
+            return result
+        }
+    }
+
     companion object {
         fun empty(): EpisodeRange = Empty
         fun single(raw: EpisodeSort): EpisodeRange = Single(raw)
@@ -105,6 +135,7 @@ sealed class EpisodeRange {
         fun range(start: EpisodeSort, end: EpisodeSort): EpisodeRange = Range(start, end)
         fun range(start: String, end: String) = range(EpisodeSort(start), EpisodeSort(end))
         fun range(start: Int, end: Int) = range(EpisodeSort(start), EpisodeSort(end))
+        fun combined(first: EpisodeRange, second: EpisodeRange) = Combined(first, second)
     }
 }
 

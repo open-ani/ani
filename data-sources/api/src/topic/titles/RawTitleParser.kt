@@ -50,7 +50,7 @@ abstract class RawTitleParser {
 
     companion object {
         fun getDefault(): RawTitleParser {
-            return PatternBasedRawTitleParser()
+            return LabelFirstRawTitleParser()
 //            when (allianceName) {
 //                "LoliHouse",
 //                "NC-Raws",
