@@ -56,7 +56,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
   }
- 
+
   @Test
   public fun `655383_DBD_Raws_Mirai_Nikki_01_26TV_OVA_JPN_Ver_1080P_BDRip_HEVC_10bit_FLAC_MKV`() {
     val r =
@@ -260,7 +260,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
   @Test
   public fun `318870_HiNA_Betsuni_Mirai_Nikki_OVA_480p_DVD_A558F62A_mkv_OAD`() {
     val r = parse("[HiNA-Betsuni] Mirai Nikki OVA [480p DVD] [A558F62A].mkv 未来日记 OAD 第0集短篇[内封英文]")
-    assertEquals("OVA..OVA", r.episodeRange.toString())
+    assertEquals("OAD..OAD", r.episodeRange.toString())
     assertEquals("ENG, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
   }
@@ -5786,7 +5786,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
   @Test
   public fun `226235_Mirai_Nikki_OAD_MKV`() {
     val r = parse("【华盟字幕社】[Mirai_Nikki][未来日记][OAD][MKV][简繁外挂]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("OAD..OAD", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
   }
@@ -5794,7 +5794,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
   @Test
   public fun `226220_10_Mirai_Nikki_OAD_GB_480p_MP4`() {
     val r = parse("【华盟字幕社】[Mirai_Nikki][未来日记][OAD][GB][480p_MP4]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("OAD..OAD", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
   }
@@ -5802,7 +5802,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
   @Test
   public fun `200485_Mirai_Nikki_OAD_DVDRIP_GB_BIG5_MKV`() {
     val r = parse("[四魂制作组][Mirai Nikki 未来日记][OAD][DVDRIP][GB_BIG5][MKV]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("OAD..OAD", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
   }
@@ -5810,7 +5810,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
   @Test
   public fun `192030_12_OAD_848x480_RMVB`() {
     val r = parse("【動漫國字幕組】★12月[未來日記][OAD][848x480][繁體][RMVB]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("OAD..OAD", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
   }
@@ -5818,7 +5818,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
   @Test
   public fun `191983_Mirai_Nikki_OAD_BIG5_RMVB`() {
     val r = parse("[四魂制作组][Mirai Nikki 未来日记][OAD][BIG5繁體][RMVB]")
-    assertEquals("null", r.episodeRange.toString())
+    assertEquals("OAD..OAD", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
   }
