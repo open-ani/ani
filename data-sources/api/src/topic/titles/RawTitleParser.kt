@@ -36,37 +36,17 @@ abstract class RawTitleParser {
 
     abstract fun parse(
         text: String,
-        allianceName: String?, // used to filter out alliance tags.
-        collectTag: (title: String) -> Unit,
-        collectChineseTitle: (String) -> Unit,
-        collectOtherTitle: (String) -> Unit,
-        collectEpisode: (EpisodeRange) -> Unit, // may be 12.5 or SP1
-        collectResolution: (Resolution) -> Unit,
-        collectFrameRate: (FrameRate) -> Unit,
-        collectMediaOrigin: (MediaOrigin) -> Unit, // WebRip BDRip Blu-ray
-        collectSubtitleLanguage: (SubtitleLanguage) -> Unit, // may be called multiple times
+        allianceName: String? = null, // used to filter out alliance tags.
+        builder: ParsedTopicTitle.Builder,
     )
 
 
     companion object {
-        fun getDefault(): RawTitleParser {
-            return LabelFirstRawTitleParser()
-//            when (allianceName) {
-//                "LoliHouse",
-//                "NC-Raws",
-//                "Lilith-Raws",
-//                "桜都字幕组",
-//                "Skymoon-Raws",
-//                "天月動漫&發佈組",
-//                "天月搬運組",
-//                -> {
-//                    return RawTitleParserA()
-//                }
-//
-//                else -> {}
-//            }
-//            return null
+        private val default by lazy(LazyThreadSafetyMode.PUBLICATION) {
+            LabelFirstRawTitleParser()
         }
+
+        fun getDefault(): RawTitleParser = default
     }
 }
 
@@ -103,20 +83,6 @@ data class ParsedTopicTitle(
             )
         }
     }
-}
-
-fun RawTitleParser.parse(text: String, allianceName: String?, builder: ParsedTopicTitle.Builder) {
-    return parse(
-        text, allianceName,
-        collectTag = { builder.tags.add(it) },
-        collectChineseTitle = { builder.chineseTitle = it },
-        collectOtherTitle = { builder.otherTitles.add(it) },
-        collectEpisode = { builder.episodeRange = it },
-        collectResolution = { builder.resolution = it },
-        collectFrameRate = { builder.frameRate = it },
-        collectMediaOrigin = { builder.mediaOrigin = it },
-        collectSubtitleLanguage = { builder.subtitleLanguages.add(it) }
-    )
 }
 
 fun RawTitleParser.parse(text: String, allianceName: String? = null): ParsedTopicTitle {

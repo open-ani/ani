@@ -34,7 +34,22 @@ class PatternBasedRawTitleParser : RawTitleParser() {
     private val specialEpisode = Regex("★特别篇") // 风之圣殿
     private val excludeTags = arrayOf(newAnime, specialEpisode, Regex("(短篇动画)|(招募)"))
 
-    override fun parse(
+    override fun parse(text: String, allianceName: String?, builder: ParsedTopicTitle.Builder) {
+        return parse(
+            text = text,
+            allianceName = allianceName,
+            collectTag = { builder.tags.add(it) },
+            collectChineseTitle = { builder.chineseTitle = it },
+            collectOtherTitle = { builder.otherTitles.add(it) },
+            collectEpisode = { builder.episodeRange = it },
+            collectResolution = { builder.resolution = it },
+            collectFrameRate = { builder.frameRate = it },
+            collectMediaOrigin = { builder.mediaOrigin = it },
+            collectSubtitleLanguage = { builder.subtitleLanguages.add(it) },
+        )
+    }
+
+    fun parse(
         text: String,
         allianceName: String?,
         collectTag: (title: String) -> Unit,
