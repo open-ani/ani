@@ -10,6 +10,7 @@ import me.him188.ani.datasources.api.CachedMedia
 import me.him188.ani.datasources.api.DefaultMedia
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.MediaProperties
+import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.ResourceLocation
@@ -28,7 +29,7 @@ internal val testMediaList = listOf(
         download = ResourceLocation.MagnetLink("magnet:?xt=urn:btih:1"),
         originalUrl = "https://example.com/1",
         publishedTime = System.currentTimeMillis(),
-        episodes = listOf(EpisodeSort(1)),
+        episodeRange = EpisodeRange.single(EpisodeSort(1)),
         properties = MediaProperties(
             subtitleLanguageIds = listOf(ChineseSimplified, ChineseTraditional).map { it.id },
             resolution = "1080P",
@@ -44,7 +45,7 @@ internal val testMediaList = listOf(
         download = ResourceLocation.MagnetLink("magnet:?xt=urn:btih:1"),
         originalUrl = "https://example.com/1",
         publishedTime = System.currentTimeMillis(),
-        episodes = listOf(EpisodeSort(1)),
+        episodeRange = EpisodeRange.single(EpisodeSort(1)),
         properties = MediaProperties(
             subtitleLanguageIds = listOf(ChineseSimplified, ChineseTraditional).map { it.id },
             resolution = "1080P",
@@ -60,7 +61,7 @@ internal val testMediaList = listOf(
         download = ResourceLocation.MagnetLink("magnet:?xt=urn:btih:1"),
         originalUrl = "https://example.com/1",
         publishedTime = System.currentTimeMillis(),
-        episodes = listOf(EpisodeSort(2)),
+        episodeRange = EpisodeRange.single(EpisodeSort(2)),
         properties = MediaProperties(
             subtitleLanguageIds = listOf(ChineseTraditional).map { it.id },
             resolution = "1080P",
@@ -75,7 +76,7 @@ internal val testMediaList = listOf(
         download = ResourceLocation.MagnetLink("magnet:?xt=urn:btih:1"),
         originalUrl = "https://example.com/1",
         publishedTime = System.currentTimeMillis(),
-        episodes = listOf(EpisodeSort(2)),
+        episodeRange = EpisodeRange.single(EpisodeSort(2)),
         properties = MediaProperties(
             subtitleLanguageIds = listOf(ChineseSimplified).map { it.id },
             resolution = "1080P",
@@ -90,7 +91,7 @@ internal val testMediaList = listOf(
         download = ResourceLocation.MagnetLink("magnet:?xt=urn:btih:1"),
         originalUrl = "https://example.com/1",
         publishedTime = System.currentTimeMillis(),
-        episodes = listOf(EpisodeSort(3)),
+        episodeRange = EpisodeRange.single(EpisodeSort(3)),
         properties = MediaProperties(
             subtitleLanguageIds = listOf(),
             resolution = "1080P",

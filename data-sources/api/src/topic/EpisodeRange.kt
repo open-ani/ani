@@ -167,6 +167,12 @@ sealed class EpisodeRange {
         fun range(start: String, end: String) = range(EpisodeSort(start), EpisodeSort(end))
         fun range(start: Int, end: Int) = range(EpisodeSort(start), EpisodeSort(end))
         fun combined(first: EpisodeRange, second: EpisodeRange) = Combined(first, second)
+        fun range(episodes: Iterable<EpisodeSort>): EpisodeRange =
+            combined(episodes.map { single(it) })
+
+        fun combined(list: Iterable<EpisodeRange>): EpisodeRange =
+            list.reduceOrNull { acc, episodeRange -> combined(acc, episodeRange) }
+                ?: Empty
     }
 }
 

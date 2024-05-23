@@ -7,6 +7,7 @@ import kotlinx.serialization.Transient
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceLocation
+import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.datasources.api.topic.ResourceLocation
@@ -14,8 +15,8 @@ import me.him188.ani.datasources.api.topic.ResourceLocation
 /**
  * 表示从数据源获取到的一个资源, 即一个字幕组发布的资源.
  *
- * 一个资源可能对应一个剧集 [episodes], 新番资源资源大部分都是这样.
- * 一个资源也可能对应多个剧集 [episodes], 尤其是老番的季度全集资源.
+ * 一个资源可能对应一个剧集 [episodeRange], 新番资源资源大部分都是这样.
+ * 一个资源也可能对应多个剧集 [episodeRange], 尤其是老番的季度全集资源.
  *
  * [Media] 的使用方可自行
  */
@@ -50,9 +51,9 @@ sealed interface Media {
      * - 如果是单集资源, 该列表可能包含 1 个元素.
      * - 如果是季度全集资源, 该列表可能包含多个元素, 典型值为 12 个.
      *
-     * 注意, 当解析剧集列表失败时, 该列表为空.
+     * 当解析剧集列表失败时为 `null`
      */
-    val episodes: List<EpisodeSort>
+    val episodeRange: EpisodeRange?
 
     /**
      * 字幕组发布的原标题
@@ -89,7 +90,7 @@ class DefaultMedia(
     override val originalTitle: String,
     override val publishedTime: Long,
     override val properties: MediaProperties,
-    override val episodes: List<EpisodeSort>,
+    override val episodeRange: EpisodeRange? = null,
     override val location: MediaSourceLocation = MediaSourceLocation.Online,
 ) : Media
 

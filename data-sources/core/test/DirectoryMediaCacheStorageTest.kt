@@ -12,6 +12,7 @@ import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaCacheMetadata
 import me.him188.ani.datasources.api.MediaProperties
+import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
@@ -102,7 +103,7 @@ class DirectoryMediaCacheStorageTest {
         download = ResourceLocation.MagnetLink("magnet:?xt=urn:btih:1"),
         originalUrl = "https://example.com/1",
         publishedTime = System.currentTimeMillis(),
-        episodes = listOf(EpisodeSort(2)),
+        episodeRange = EpisodeRange.single(EpisodeSort(2)),
         properties = MediaProperties(
             subtitleLanguageIds = listOf("CHT"),
             resolution = "1080P",
