@@ -240,8 +240,9 @@ private val episodeRemove = listOf(
 private val newAnime = Regex("(?:★?|★(.*)?)([0-9]|[一二三四五六七八九十]{0,4}) ?[月年] ?(?:新番|日剧)★?")
 
 // 性能没问题, 测了一般就 100 steps
+@Suppress("RegExpRedundantEscape") // required on android
 private val brackets =
-    Regex("""\[(?<v1>.+?)]|\((?<v2>.+?)\)|\{(?<v3>.+?)}|【(?<v4>.+?)】|（(?<v5>.+?)）|「(?<v6>.+?)」|『(?<v7>.+?)』""")
+    Regex("""\[(?<v1>.+?)\]|\((?<v2>.+?)\)|\{(?<v3>.+?)\}|【(?<v4>.+?)】|（(?<v5>.+?)）|「(?<v6>.+?)」|『(?<v7>.+?)』""")
 
 //private val brackets = listOf(
 //    "[" to "]",
