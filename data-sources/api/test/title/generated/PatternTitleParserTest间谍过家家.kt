@@ -1166,7 +1166,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
   public fun `642385_jibaketa_SPY_FAMILY___S1_BD_1920x1080_x264_AACx2_PGS_SRT_MUSE_CHT`() {
     val r =
         parse("[jibaketa合成&壓制][代理商粵語]SPY×FAMILY間諜家家酒 / 间谍过家家 - S1 [粵日雙語+內封繁體中文字幕] (BD 1920x1080 x264 AACx2 PGS+SRT MUSE CHT)")
-    assertEquals("SPY×FAMILY間諜家家酒..SPY×FAMILY間諜家家酒", r.episodeRange.toString())
+    assertEquals("S1", r.episodeRange.toString())
     assertEquals("CHC, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
   }

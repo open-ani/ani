@@ -128,7 +128,7 @@ sealed class EpisodeRange {
         override fun toString(): String = when {
             second is Single -> "$first+${second.value}"
             first is Single -> "${first.value}+$second"
-            else -> super.toString()
+            else -> "$first+$second"
         }
 
         override fun equals(other: Any?): Boolean {
@@ -178,6 +178,9 @@ sealed class EpisodeRange {
                 ?: Empty
 
         fun season(number: Int): Season = Season(number)
+
+        @JvmName("seasonNullable")
+        fun season(number: Int?): Season = Season(number ?: -1)
         fun unknownSeason(): Season = Season(-1)
     }
 }

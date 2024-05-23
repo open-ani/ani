@@ -119,6 +119,49 @@ class LabelFirstRawTitleParser : RawTitleParser() {
                 builder.episodeRange = EpisodeRange.single(str)
                 return true
             }
+//            collectionPattern.find(str)?.let { result ->
+//                val startGroup = result.groups["start"]
+//                val endGroup = result.groups["end"]
+//                val extraGroup = result.groups["extra"]
+//
+//                if (extraGroup == null && (startGroup == null || endGroup == null)) {
+//                    return@let
+//                }
+//                val start = startGroup?.value
+//                val end = endGroup?.value
+//
+//                var range: EpisodeRange
+//                if (start != null && end != null) {
+//                    start.getPrefix()?.let { prefix ->
+//                        if (!end.startsWith(prefix)) {
+//                            // "SP1-5"
+//                            builder.episodeRange = EpisodeRange.range(start, prefix + end)
+//                            return true
+//                        }
+//                    }
+//
+//                    if (end.startsWith("0") && !start.startsWith("0")) {
+//                        // "Hibike! Euphonium 3 - 02"
+//                        builder.episodeRange = EpisodeRange.single(EpisodeSort(end))
+//                        return true
+//                    }
+//
+//                    range = EpisodeRange.range(start, end)
+//                } else {
+//                    range = EpisodeRange.empty()
+//                }
+//
+//                if (extraGroup != null) {
+//                    for (extra in result.groups.indexOf(extraGroup)..<result.groups.size) {
+//                        range = EpisodeRange.combined(
+//                            range,
+//                            EpisodeRange.single(EpisodeSort(result.groups[extra]!!.value.removePrefix("+")))
+//                        )
+//                    }
+//                }
+//                builder.episodeRange = range
+//                return true
+//            }
             collectionPattern.find(str)?.let { result ->
                 val start = result.groups["start"]?.value ?: return@let
                 val end = result.groups["end"]?.value ?: return@let
@@ -145,6 +188,19 @@ class LabelFirstRawTitleParser : RawTitleParser() {
                 } else {
                     builder.episodeRange = EpisodeRange.range(start, end)
                 }
+                return true
+            }
+            seasonPattern.find(str)?.let { result ->
+                builder.episodeRange =
+                    EpisodeRange.combined(result.groups.drop(1).mapNotNull { group ->
+                        group?.value?.removePrefix("+")?.takeIf { it.isNotBlank() }
+                    }.map {
+                        if (it.startsWith("S", ignoreCase = true) && !it.startsWith("SP", ignoreCase = true)) {
+                            EpisodeRange.season(it.drop(1).toIntOrNull())
+                        } else {
+                            EpisodeRange.single(it)
+                        }
+                    })
                 return true
             }
             if (str.contains("SP", ignoreCase = true) // 包括 "Special"
@@ -203,9 +259,12 @@ private val brackets =
 //)
 
 private val collectionPattern = Regex(
+//    """((?<start>(?:SP)?\d{1,4})\s?(?:-{1,2}|~|～)\s?(?<end>\d{1,4}))?(?:TV|BDrip|BD)?(?<extra>\+.+)*""",
     """(?<start>(?:SP)?\d{1,4})\s?(?:-{1,2}|~|～)\s?(?<end>\d{1,4})(?:TV|BDrip|BD)?(?<extra>\+.+)?""",
     RegexOption.IGNORE_CASE
 )
+
+private val seasonPattern = Regex("""(S\d)(?:(\+S\d)|(\+S\w)|(\+\w+))*""", RegexOption.IGNORE_CASE)
 
 private fun String.remove(str: String) = replace(str, "", ignoreCase = true)
 private fun String.remove(regex: Regex) = replace(regex) { "" }

@@ -1769,7 +1769,7 @@ public class PatternTitleParserTest無職轉生_到了異世界就拿出真本�
       fun `602366_VCB_Studio_Mushoku_Tensei_Isekai_Ittara_Honki_Dasu_10_bit_1080p_HEVC_BDRip_S1_Fin`() {
     val r =
         parse("[喵萌奶茶屋&VCB-Studio] Mushoku Tensei: Isekai Ittara Honki Dasu / 无职转生～到了异世界就拿出真本事～ 10-bit 1080p HEVC BDRip [S1 Fin]")
-    assertEquals("S?", r.episodeRange.toString())
+    assertEquals("S1", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
   }
