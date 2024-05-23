@@ -136,17 +136,19 @@ class LabelFirstRawTitleParser : RawTitleParser() {
                 if (result.groupValues.size < 4) {
                     return@let
                 }
-                val (start, end) = result.destructured
+                val start = result.groups["start"]?.value ?: return@let
+                val end = result.groups["end"]?.value ?: return@let
                 if (end.startsWith("0") && !start.startsWith("0")) {
                     // "Hibike! Euphonium 3 - 02"
                     builder.episodeRange = EpisodeRange.single(EpisodeSort(end))
                     return true
                 }
 
-                if (result.groupValues.size >= 5 && result.groupValues[4].isNotBlank()) {
+                val extra = result.groups["extra"]?.value
+                if (extra != null) {
                     builder.episodeRange = EpisodeRange.combined(
                         EpisodeRange.range(start, end),
-                        EpisodeRange.single(EpisodeSort(result.groupValues[4].removePrefix("+")))
+                        EpisodeRange.single(EpisodeSort(extra.removePrefix("+")))
                     )
                 } else {
                     builder.episodeRange = EpisodeRange.range(start, end)
@@ -173,7 +175,7 @@ private val newAnime = Regex("(?:★?|★(.*)?)([0-9]|[一二三四五六七八�
 private val brackets = Regex("""[\[【(『](.*?)[]】)』]""")
 
 private val collectionPattern = Regex(
-    """(\d{1,4})\s?-{1,2}\s?(\d{1,4})(TV|BDrip|BD)?(\+.+)?""",
+    """(?<start>\d{1,4})\s?-{1,2}\s?(?<end>\d{1,4})(?:TV|BDrip|BD)?(?<extra>\+.+)?""",
     RegexOption.IGNORE_CASE
 )
 
