@@ -61,7 +61,7 @@ fun Topic.toOnlineMedia(mediaSourceId: String): DefaultMedia {
         download = downloadLink,
         originalTitle = rawTitle,
         publishedTime = publishedTimeMillis ?: 0,
-        episodes = details?.episodeRange?.sorts?.toList() ?: emptyList(),
+        episodes = details?.episodeRange?.knownSorts?.toList() ?: emptyList(),
         properties = MediaProperties(
             subtitleLanguageIds = details?.subtitleLanguages?.map { it.id } ?: emptyList(),
             resolution = details?.resolution?.toString() ?: Resolution.R1080P.toString(),

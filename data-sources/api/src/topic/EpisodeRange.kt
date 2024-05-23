@@ -20,17 +20,33 @@ package me.him188.ani.datasources.api.topic
 
 import kotlinx.serialization.Serializable
 import me.him188.ani.datasources.api.EpisodeSort
+import me.him188.ani.datasources.api.topic.EpisodeRange.Combined
+import me.him188.ani.datasources.api.topic.EpisodeRange.Range
+import me.him188.ani.datasources.api.topic.EpisodeRange.Season
+import me.him188.ani.datasources.api.topic.EpisodeRange.Single
 
 /**
- * single or range, parsed from topic titles
+ * 剧集范围:
+ * - [Single] 单个剧集
+ * - [Range] 一段连续剧集范围
+ * - [Combined] 多个 [EpisodeRange] 的组合, 不连续
+ * - [Season] 一整季的剧集, 但是不知道具体包含哪些集数, 也可能不知道具体是哪一季
  */
 @Serializable
 sealed class EpisodeRange {
-    abstract val sorts: Sequence<EpisodeSort>
+    /**
+     * 是否知道具体集数
+     */
+    open val isKnown: Boolean get() = true
+
+    /**
+     * 已知的集数列表. 若未知, 则返回空序列
+     */
+    abstract val knownSorts: Sequence<EpisodeSort>
 
     @Serializable
     private data object Empty : EpisodeRange() {
-        override val sorts: Sequence<EpisodeSort>
+        override val knownSorts: Sequence<EpisodeSort>
             get() = emptySequence()
 
         override fun toString(): String = "EpisodeRange(empty)"
@@ -40,7 +56,7 @@ sealed class EpisodeRange {
     private class Single(
         val value: EpisodeSort,
     ) : EpisodeRange() {
-        override val sorts: Sequence<EpisodeSort>
+        override val knownSorts: Sequence<EpisodeSort>
             get() = sequenceOf(value)
 
         override fun toString(): String = "$value..$value"
@@ -62,7 +78,7 @@ sealed class EpisodeRange {
         val start: EpisodeSort,
         val end: EpisodeSort,
     ) : EpisodeRange() {
-        override val sorts: Sequence<EpisodeSort>
+        override val knownSorts: Sequence<EpisodeSort>
             get() = sequence {
                 if (!(start is EpisodeSort.Normal && end is EpisodeSort.Normal)) {
                     yield(start)
@@ -103,10 +119,10 @@ sealed class EpisodeRange {
         val first: EpisodeRange,
         val second: EpisodeRange,
     ) : EpisodeRange() {
-        override val sorts: Sequence<EpisodeSort>
+        override val knownSorts: Sequence<EpisodeSort>
             get() = sequence {
-                yieldAll(first.sorts)
-                yieldAll(second.sorts)
+                yieldAll(first.knownSorts)
+                yieldAll(second.knownSorts)
             }
 
         override fun toString(): String = when {
@@ -118,7 +134,7 @@ sealed class EpisodeRange {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other !is EpisodeRange) return false
-            return sorts.toList() == other.sorts.toList() // TODO: optimize performance EpisodeRange.Combined.equals
+            return knownSorts.toList() == other.knownSorts.toList() // TODO: optimize performance EpisodeRange.Combined.equals
         }
 
         override fun hashCode(): Int {
@@ -126,6 +142,21 @@ sealed class EpisodeRange {
             result = 31 * result + second.hashCode()
             return result
         }
+    }
+
+    /**
+     * 季度全集, 但是不知道具体包含哪些集数
+     */
+    @Serializable
+    data class Season(
+        /**
+         * 第几季
+         */
+        val number: Int? = null,
+    ) : EpisodeRange() {
+        override val knownSorts: Sequence<EpisodeSort> get() = emptySequence()
+        override val isKnown: Boolean get() = false
+        override fun toString(): String = if (number != null) "S$number" else "S?"
     }
 
     companion object {
@@ -139,8 +170,13 @@ sealed class EpisodeRange {
     }
 }
 
-operator fun EpisodeRange.contains(expected: EpisodeSort): Boolean {
-    return sorts.any { it == expected } // TODO: optimize  EpisodeRange.contains
+operator fun EpisodeRange.plus(other: EpisodeRange): EpisodeRange = EpisodeRange.combined(this, other)
+
+operator fun EpisodeRange.contains(expected: EpisodeSort): Boolean = contains(expected, allowSeason = true)
+
+fun EpisodeRange.contains(expected: EpisodeSort, allowSeason: Boolean = true): Boolean {
+    if (allowSeason && this is Season) return true
+    return knownSorts.any { it == expected } // TODO: optimize  EpisodeRange.contains
 }
 
 @Serializable
