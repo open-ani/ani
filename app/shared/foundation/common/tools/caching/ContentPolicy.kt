@@ -16,7 +16,7 @@ enum class ContentPolicy {
     CACHE_ONLY,
 
     /**
-     * 缓存有限策略. 若本地已经有缓存, 则不会请求网络.
+     * 缓存优先策略. 若本地已经有缓存, 则不会请求网络.
      */
     CACHE_FIRST,
 }
