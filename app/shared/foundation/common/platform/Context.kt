@@ -29,6 +29,8 @@ expect val LocalContext: ProvidableCompositionLocal<Context>
 
 expect abstract class Context
 
+typealias ContextMP = Context // compose bug, use this in common
+
 val Context.files: ContextFiles get() = filesImpl
 internal expect val Context.filesImpl: ContextFiles
 
