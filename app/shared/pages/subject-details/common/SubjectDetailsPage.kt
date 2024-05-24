@@ -4,7 +4,6 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -15,7 +14,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
@@ -29,14 +27,18 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -54,9 +56,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.navigation.LocalNavigator
+import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.collection.CollectionActionButton
 import me.him188.ani.app.ui.external.placeholder.placeholder
-import me.him188.ani.app.ui.foundation.AniTopAppBar
 import me.him188.ani.app.ui.foundation.TopAppBarGoBackButton
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
 import me.him188.ani.app.ui.foundation.backgroundWithGradient
@@ -77,13 +79,23 @@ fun SubjectDetailsPage(
     viewModel: SubjectDetailsViewModel,
     goBack: () -> Unit,
 ) {
+    val context = LocalContext.current
     Scaffold(
         topBar = {
-            AniTopAppBar(
-                Modifier.statusBarsPadding(),
-                padding = PaddingValues(start = 12.dp, top = 6.dp, end = 16.dp, bottom = 6.dp),
-                actions = { TopAppBarGoBackButton(goBack) },
-                containerColor = Color.Transparent,
+            TopAppBar(
+                title = { },
+//                Modifier.statusBarsPadding(),
+//                padding = PaddingValues(start = 12.dp, top = 6.dp, end = 16.dp, bottom = 6.dp),
+                navigationIcon = { TopAppBarGoBackButton(goBack) },
+                actions = {
+                    IconButton({ viewModel.browseSubjectBangumi(context) }) {
+                        Icon(Icons.AutoMirrored.Outlined.OpenInNew, null)
+                    }
+                },
+//                containerColor = Color.Transparent,
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.Transparent,
+                )
             )
         },
         contentWindowInsets = WindowInsets(0.dp)

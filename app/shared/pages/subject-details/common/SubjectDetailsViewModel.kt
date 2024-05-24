@@ -15,6 +15,8 @@ import kotlinx.coroutines.runInterruptible
 import me.him188.ani.app.data.repositories.EpisodeRepository
 import me.him188.ani.app.data.repositories.SubjectRepository
 import me.him188.ani.app.data.repositories.setSubjectCollectionTypeOrDelete
+import me.him188.ani.app.navigation.BrowserNavigator
+import me.him188.ani.app.platform.ContextMP
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.datasources.api.paging.PageBasedPagedSource
@@ -45,6 +47,7 @@ class SubjectDetailsViewModel(
     private val bangumiClient: BangumiClient by inject()
     private val subjectRepository: SubjectRepository by inject()
     private val episodeRepository: EpisodeRepository by inject()
+    private val browserNavigator: BrowserNavigator by inject()
 //    private val subjectProvider: SubjectProvider by inject()
 
     val subjectId: MutableStateFlow<Int> = MutableStateFlow(initialSubjectId)
@@ -165,7 +168,7 @@ class SubjectDetailsViewModel(
     }
 
     suspend fun setAllEpisodesWatched() {
-        
+
         episodeRepository.setEpisodeCollection(
             subjectId.value,
             episodesMain.first().map { it.id.toInt() },
@@ -183,6 +186,10 @@ class SubjectDetailsViewModel(
             )
         }.results.toList()
     }.shareInBackground()
+
+    fun browseSubjectBangumi(context: ContextMP) {
+        browserNavigator.openBrowser(context, "https://bgm.tv/subject/${subjectId.value}")
+    }
 }
 
 //private val ignoredLevels = listOf(
