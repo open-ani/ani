@@ -311,10 +311,18 @@ internal class MediaSelectorStateImpl(
         infix fun <Pref : Any> Pref?.matches(prop: List<Pref>): Boolean = this == null || this in prop
 
         mediaList.filter {
-            selectedAlliance matches it.properties.alliance &&
+            val match = selectedAlliance matches it.properties.alliance &&
                     selectedResolution matches it.properties.resolution &&
-                    selectedSubtitleLanguageId matches it.properties.subtitleLanguageIds &&
-                    (selectedMediaSource matches it.mediaSourceId || it.location == MediaSourceLocation.Local) // always show local, so that [makeDefaultSelection] will select a local one
+                    selectedSubtitleLanguageId matches it.properties.subtitleLanguageIds
+            if (!match) {
+                return@filter false // 基础信息不匹配 
+            }
+
+            if (selectedMediaSource matches it.mediaSourceId || it.location == MediaSourceLocation.Local) {
+                return@filter true // always show local, so that [makeDefaultSelection] will select a local one
+            }
+
+            (mergedPreference.showWithoutSubtitle || it.properties.subtitleLanguageIds.isNotEmpty())
         }.sortedWith(
             compareBy<Media> { it.costForDownload }.thenByDescending { it.publishedTime }
         )

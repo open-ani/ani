@@ -19,6 +19,7 @@ import androidx.compose.ui.util.fastAll
 import me.him188.ani.app.data.media.MediaCacheManager
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.settings.SettingsScope
+import me.him188.ani.app.ui.settings.SwitchItem
 import me.him188.ani.app.ui.subject.episode.details.renderResolution
 import me.him188.ani.app.ui.subject.episode.details.renderSubtitleLanguage
 import me.him188.ani.app.ui.subject.episode.mediaFetch.renderMediaSource
@@ -117,6 +118,20 @@ internal fun SettingsScope.MediaSelectionGroup(vm: MediaSettingsViewModel) {
 
         HorizontalDividerItem()
 
+        SwitchItem(
+            checked = vm.defaultMediaPreference.showWithoutSubtitle,
+            onCheckedChange = {
+                vm.updateDefaultMediaPreference(
+                    vm.defaultMediaPreference.copy(showWithoutSubtitle = it)
+                )
+            },
+            title = { Text("显示无字幕资源") },
+            Modifier.placeholder(vm.defaultMediaPreferenceLoading),
+            description = { Text("这可能是资源本身是生肉，也可能是字幕未识别到。是生肉的可能性更高") },
+        )
+
+        HorizontalDividerItem()
+
         SorterItem(
             values = { vm.sortedResolutions },
             onSort = { list ->
@@ -146,6 +161,7 @@ internal fun SettingsScope.MediaSelectionGroup(vm: MediaSettingsViewModel) {
             dialogDescription = { Text(TIPS_LONG_CLICK_SORT) },
             icon = { Icon(Icons.Rounded.Hd, null) },
             title = { Text("分辨率") },
+            description = { Text("在播放和手动缓存时，未选择的分辨率也会显示，但不会自动选择") },
         )
 
         HorizontalDividerItem()

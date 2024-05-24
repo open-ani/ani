@@ -39,6 +39,10 @@ data class MediaPreference(
         SubtitleLanguage.ChineseSimplified,
         SubtitleLanguage.ChineseTraditional,
     ).map { it.id },
+    /**
+     * 是否显示没有解析到字幕的资源, 这可能是本身是生肉, 也可能是字幕未匹配到. 是生肉的可能性更高.
+     */
+    val showWithoutSubtitle: Boolean = false,
 
     /**
      * 优先使用的媒体源
