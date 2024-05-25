@@ -1,7 +1,7 @@
 [versions]
 bencode = "1.4.1"
 jna = "5.12.1"
-kotlin = "2.0.0-RC1"
+kotlin = "2.0.0"
 coroutines = "1.8.1"
 kotlinpoet = "1.16.0"
 log4j-core = "2.20.0"
@@ -13,9 +13,9 @@ ktor = "2.3.10"
 koin = "3.5.3"
 slf4j = "2.0.12"
 jsoup = "1.15.4"
-android-gradle-plugin = "8.2.2"
-accompanist = "0.33.2-alpha"
-datastore = "1.1.0"
+android-gradle-plugin = "8.3.2"
+accompanist = "0.34.0"
+datastore = "1.1.1"
 libtorrent4j = "2.1.0-31"
 coil = "3.0.0-alpha06"
 mongodb-driver-kotlin-coroutine = "4.10.1"
@@ -27,14 +27,12 @@ aws = "2.25.49"
 compose-material3 = "1.2.1"
 
 # https://androidx.tech/artifacts/compose.material/material-android/
-jetpack-compose = "1.6.6"
-# https://androidx.dev/storage/compose-compiler/repository
-jetpack-compose-compiler = "1.5.13-dev-k2.0.0-RC1-50f08dfa4b4" # used by android
+jetpack-compose = "1.6.7"
 # https://github.com/JetBrains/compose-multiplatform/releases
 # https://www.jetbrains.com/help/kotlin-multiplatform-dev/compose-compatibility-and-versioning.html#use-a-developer-version-of-compose-multiplatform-compiler
-compose-multiplatform = "1.6.10-beta02"
+compose-multiplatform = "1.6.10"
 # https://maven.pkg.jetbrains.space/public/p/compose/dev/org/jetbrains/compose/compiler/compiler/
-compose-multiplatform-compiler = "1.5.11-kt-2.0.0-RC1" # used by buildscript, don't remove
+#compose-multiplatform-compiler = "1.5.11-kt-2.0.0-RC1" # used by buildscript, don't remove
 vlcj = "4.8.2" # don't change version, otherwise it might crash the vm
 
 [libraries]

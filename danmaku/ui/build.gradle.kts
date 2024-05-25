@@ -125,11 +125,7 @@ android {
         )
     }
     buildFeatures {
-        compose = true
         buildConfig = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.jetpack.compose.compiler.get()
     }
 }
 

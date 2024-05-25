@@ -21,6 +21,7 @@ import java.util.UUID
 
 plugins {
     kotlin("jvm")
+    kotlin("plugin.compose")
     id("org.jetbrains.compose")
     kotlin("plugin.serialization")
     `flatten-source-sets`

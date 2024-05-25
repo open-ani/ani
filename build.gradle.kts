@@ -1,5 +1,3 @@
-import org.jetbrains.compose.ComposeExtension
-
 /*
  * Ani
  * Copyright (C) 2022-2024 Him188
@@ -32,6 +30,7 @@ plugins {
     kotlin("android") apply false
     kotlin("jvm") apply false
     kotlin("plugin.serialization") version libs.versions.kotlin apply false
+    kotlin("plugin.compose") version libs.versions.kotlin apply false
     id("org.jetbrains.compose") apply false
     id("com.android.library") apply false
     id("com.android.application") apply false
@@ -61,10 +60,10 @@ subprojects {
         configureKotlinTestSettings()
         configureEncoding()
         configureJvmTarget()
-        kotlin.runCatching {
-            extensions.findByType(ComposeExtension::class)?.apply {
-                this.kotlinCompilerPlugin.set(libs.versions.compose.multiplatform.compiler.get())
-            }
-        }
+//        kotlin.runCatching {
+//            extensions.findByType(ComposeExtension::class)?.apply {
+//                this.kotlinCompilerPlugin.set(libs.versions.compose.multiplatform.compiler.get())
+//            }
+//        }
     }
 }

@@ -26,6 +26,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 plugins {
     kotlin("multiplatform")
     id("com.android.library")
+    kotlin("plugin.compose")
     id("org.jetbrains.compose")
     // 注意! 前几个插件顺序非常重要, 调整后可能导致 compose multiplatform resources 生成错误
     `flatten-source-sets`
@@ -359,9 +360,6 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.jetpack.compose.compiler.get()
     }
 }
 

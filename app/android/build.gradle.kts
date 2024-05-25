@@ -20,6 +20,7 @@ plugins {
     id("org.jetbrains.compose")
     id("com.android.application")
     kotlin("android")
+    kotlin("plugin.compose")
     id("kotlinx-atomicfu")
     id("kotlin-parcelize")
 }
@@ -56,9 +57,6 @@ android {
         targetSdk = getIntProperty("android.compile.sdk")
         versionCode = getIntProperty("android.version.code")
         versionName = project.version.toString()
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.jetpack.compose.compiler.get()
     }
     signingConfigs {
         kotlin.runCatching { getProperty("signing_release_storeFileFromRoot") }.getOrNull()?.let {

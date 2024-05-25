@@ -19,7 +19,6 @@
 import org.gradle.api.NamedDomainObjectCollection
 import org.gradle.api.NamedDomainObjectList
 import org.gradle.api.Project
-import org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
@@ -48,11 +47,6 @@ private inline fun <reified T> Project.namedDomainObjectListOf(vararg values: T)
 val Project.isKotlinJvmProject: Boolean get() = extensions.findByName("kotlin") is KotlinJvmProjectExtension
 val Project.isKotlinMpp: Boolean get() = extensions.findByName("kotlin") is KotlinMultiplatformExtension
 
-fun Project.allKotlinCompilations(action: (KotlinCompilation<KotlinCommonOptions>) -> Unit) {
-    allKotlinTargets().all {
-        compilations.all(action)
-    }
-}
 
 //val ANI_DISAMBIGUATION: Attribute<String> = Attribute.of("me.him188.ani.disambiguation", String::class.java)
 

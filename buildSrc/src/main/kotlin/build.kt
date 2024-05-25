@@ -135,6 +135,11 @@ fun Project.configureJvmTarget() {
 
     withKotlinTargets {
         it.compilations.all {
+            compileTaskProvider.configure {
+                compilerOptions {
+                    freeCompilerArgs.add("-Xdont-warn-on-error-suppression")
+                }
+            }
             if (this is KotlinJvmAndroidCompilation) {
                 compileTaskProvider.configure {
                     compilerOptions {

@@ -19,6 +19,7 @@
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
+    kotlin("plugin.compose")
 
     // for @Stable and @Immutable
     // Note: we actually can avoid this, by using a `compose_compiler_config.conf`
