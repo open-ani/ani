@@ -45,7 +45,7 @@ import me.him188.ani.app.tools.caching.mutate
 import me.him188.ani.app.tools.caching.removeFirstOrNull
 import me.him188.ani.app.tools.caching.setEach
 import me.him188.ani.app.ui.collection.ContinueWatchingStatus
-import me.him188.ani.app.ui.collection.EpisodeProgressItem
+import me.him188.ani.app.ui.collection.progress.EpisodeProgressItem
 import me.him188.ani.datasources.api.paging.map
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.datasources.bangumi.processing.airSeason
@@ -289,6 +289,12 @@ class SubjectManagerImpl(
         episodeId: Int,
         collectionType: UnifiedCollectionType
     ) {
+        episodeRepository.setEpisodeCollection(
+            subjectId,
+            listOf(episodeId),
+            collectionType.toEpisodeCollectionType(),
+        )
+
         val cache = findSubjectCacheById(subjectId) ?: return
 
         cache.mutate {
@@ -298,12 +304,6 @@ class SubjectManagerImpl(
                 })
             }
         }
-
-        episodeRepository.setEpisodeCollection(
-            subjectId,
-            listOf(episodeId),
-            collectionType.toEpisodeCollectionType(),
-        )
     }
 
     private suspend fun UserSubjectCollection.convertToItem() = coroutineScope {

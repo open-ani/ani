@@ -36,6 +36,7 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SecondaryScrollableTabRow
 import androidx.compose.material3.Tab
@@ -51,7 +52,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -65,13 +65,12 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.subject.SubjectCollectionItem
-import me.him188.ani.app.interaction.VibrationStrength
-import me.him188.ani.app.interaction.vibrateIfSupported
 import me.him188.ani.app.navigation.LocalNavigator
-import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.tools.caching.RefreshOrderPolicy
 import me.him188.ani.app.tools.rememberUiMonoTasker
+import me.him188.ani.app.ui.collection.progress.EpisodeProgressDialog
+import me.him188.ani.app.ui.collection.progress.rememberEpisodeProgressState
 import me.him188.ani.app.ui.foundation.effects.OnLifecycleEvent
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
@@ -230,47 +229,28 @@ private fun TabContent(
     lazyListState: LazyListState = rememberLazyListState(),
     enableAnimation: () -> Boolean = { true },
 ) {
-    val context by rememberUpdatedState(LocalContext.current)
     SubjectCollectionsColumn(
         cache,
         onRequestMore = onRequestMore,
         item = { subjectCollection ->
             var showEpisodeProgressDialog by rememberSaveable { mutableStateOf(false) }
 
-            val progress by remember(vm, subjectCollection) {
-                vm.subjectProgress(subjectCollection.subjectId)
-            }.collectAsStateWithLifecycle(emptyList()) // #155: 在 dialog 弹出之前就开始加载, 否则点击 "选集" 会需要等待 1 秒左右
-
-            if (showEpisodeProgressDialog) {
-                val navigator = LocalNavigator.current
-
-                EpisodeProgressDialog(
-                    onDismissRequest = { showEpisodeProgressDialog = false },
-                    onClickDetails = { navigator.navigateSubjectDetails(subjectCollection.subjectId) },
-                    title = { Text(text = subjectCollection.displayName) },
-                    onClickCache = { navigator.navigateSubjectCaches(subjectCollection.subjectId) },
-                ) {
-                    EpisodeProgressRow(
-                        episodes = { progress },
-                        onClickEpisodeState = {
-                            navigator.navigateEpisodeDetails(subjectCollection.subjectId, it.episodeId)
-                        },
-                        onLongClickEpisode = { progressItem ->
-                            context.vibrateIfSupported(VibrationStrength.TICK)
-                            vm.launchInBackground {
-                                setEpisodeWatched(
-                                    subjectCollection.subjectId,
-                                    progressItem.episodeId,
-                                    watched = progressItem.watchStatus != UnifiedCollectionType.DONE,
-                                )
-                            }
-                        },
-                        colors = EpisodeProgressDefaults.colors(vm.episodeProgressSettings.theme)
-                    )
-                }
-            }
+            // 即使对话框不显示也加载, 避免打开对话框要等待一秒才能看到进度
+            val episodeProgressState = rememberEpisodeProgressState(subjectCollection.subjectId)
 
             val navigator = LocalNavigator.current
+            if (showEpisodeProgressDialog) {
+                EpisodeProgressDialog(
+                    episodeProgressState,
+                    onDismissRequest = { showEpisodeProgressDialog = false },
+                    actions = {
+                        OutlinedButton({ navigator.navigateSubjectDetails(episodeProgressState.subjectId) }) {
+                            Text("条目详情")
+                        }
+                    }
+                )
+            }
+
             SubjectCollectionItem(
                 subjectCollection,
                 episodeCacheStatus = { subjectId, episodeId ->

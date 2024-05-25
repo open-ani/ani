@@ -2,11 +2,11 @@ package me.him188.ani.app.ui.subject.details
 
 import androidx.compose.runtime.Stable
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
@@ -18,30 +18,32 @@ import me.him188.ani.app.data.repositories.setSubjectCollectionTypeOrDelete
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.ContextMP
 import me.him188.ani.app.session.SessionManager
+import me.him188.ani.app.ui.collection.progress.EpisodeProgressState
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.datasources.api.paging.PageBasedPagedSource
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.datasources.bangumi.BangumiClient
-import me.him188.ani.datasources.bangumi.Rating
 import me.him188.ani.datasources.bangumi.client.BangumiEpType
 import me.him188.ani.datasources.bangumi.client.BangumiEpisode
-import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectDetails
 import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectImageSize
-import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectInfo
-import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectTag
+import me.him188.ani.datasources.bangumi.processing.nameCNOrName
 import me.him188.ani.datasources.bangumi.processing.sortByRelation
 import me.him188.ani.datasources.bangumi.processing.toCollectionType
 import me.him188.ani.datasources.bangumi.processing.toSubjectCollectionType
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.openapitools.client.infrastructure.ClientException
+import org.openapitools.client.models.Count
 import org.openapitools.client.models.EpisodeCollectionType
+import org.openapitools.client.models.Item
 import org.openapitools.client.models.RelatedCharacter
 import org.openapitools.client.models.RelatedPerson
+import org.openapitools.client.models.Subject
+import org.openapitools.client.models.Tag
 
 @Stable
 class SubjectDetailsViewModel(
-    initialSubjectId: Int,
+    val subjectId: Int,
 ) : AbstractViewModel(), KoinComponent {
     private val sessionManager: SessionManager by inject()
     private val bangumiClient: BangumiClient by inject()
@@ -50,20 +52,14 @@ class SubjectDetailsViewModel(
     private val browserNavigator: BrowserNavigator by inject()
 //    private val subjectProvider: SubjectProvider by inject()
 
-    val subjectId: MutableStateFlow<Int> = MutableStateFlow(initialSubjectId)
-
-    private val subject: SharedFlow<BangumiSubjectDetails?> = this.subjectId.mapLatest {
-        bangumiClient.subjects.getSubjectById(it)
+    private val subject: SharedFlow<Subject?> = flowOf(this.subjectId).mapLatest {
+        subjectRepository.getSubject(it)
     }.shareInBackground()
 
     private val subjectNotNull = subject.mapNotNull { it }
 
-    val chineseName: SharedFlow<String> =
-        subjectNotNull.map { subject ->
-            subject.chineseName.takeIf { it.isNotBlank() } ?: subject.originalName
-        }.shareInBackground()
-    val officialName: SharedFlow<String> =
-        subjectNotNull.map { it.originalName }.shareInBackground()
+    val chineseName: SharedFlow<String> = subjectNotNull.map { it.nameCNOrName() }.shareInBackground()
+    val officialName: SharedFlow<String> = subjectNotNull.map { it.name }.shareInBackground()
 
     val coverImage: SharedFlow<String> = subjectNotNull.map {
         bangumiClient.subjects.getSubjectImageUrl(
@@ -75,18 +71,18 @@ class SubjectDetailsViewModel(
     val totalEpisodes: SharedFlow<Int> =
         subjectNotNull.map { it.totalEpisodes }.shareInBackground()
 
-    val tags: SharedFlow<List<BangumiSubjectTag>> =
+    val tags: SharedFlow<List<Tag>> =
         subjectNotNull.map { it.tags }
             .map { tags -> tags.sortedByDescending { it.count } }
             .shareInBackground()
 
     val ratingScore: SharedFlow<String> = subjectNotNull.map { it.rating.score }
         .mapLatest { String.format(".2f", it) }.shareInBackground()
-    val ratingCounts: SharedFlow<Map<Rating, Int>> =
+    val ratingCounts: SharedFlow<Count> =
         subjectNotNull.map { it.rating.count }.shareInBackground()
 
-    private val infoboxList: SharedFlow<List<BangumiSubjectInfo>> =
-        subjectNotNull.map { it.infobox }.shareInBackground()
+    private val infoboxList: SharedFlow<List<Item>> =
+        subjectNotNull.map { it.infobox.orEmpty() }.shareInBackground()
 
     val summary: SharedFlow<String> =
         subjectNotNull.map { it.summary }.shareInBackground()
@@ -156,13 +152,15 @@ class SubjectDetailsViewModel(
      */
     val selfCollectionAction = selfCollectionType.shareInBackground()
 
+    val episodeProgressState by lazy { EpisodeProgressState(subjectId, this) }
+
     /**
      * null means delete
      */
     suspend fun setSelfCollectionType(subjectCollectionType: UnifiedCollectionType) {
         selfCollectionType.emit(subjectCollectionType)
         subjectRepository.setSubjectCollectionTypeOrDelete(
-            subjectId.value,
+            subjectId,
             subjectCollectionType.toSubjectCollectionType()
         )
     }
@@ -170,13 +168,13 @@ class SubjectDetailsViewModel(
     suspend fun setAllEpisodesWatched() {
 
         episodeRepository.setEpisodeCollection(
-            subjectId.value,
+            subjectId,
             episodesMain.first().map { it.id.toInt() },
             EpisodeCollectionType.WATCHED,
         )
     }
 
-    private fun episodesFlow(type: BangumiEpType) = this.subjectId.mapLatest { subjectId ->
+    private fun episodesFlow(type: BangumiEpType) = flowOf(this.subjectId).mapLatest { subjectId ->
         PageBasedPagedSource { page ->
             bangumiClient.episodes.getEpisodes(
                 subjectId.toLong(),
@@ -188,7 +186,7 @@ class SubjectDetailsViewModel(
     }.shareInBackground()
 
     fun browseSubjectBangumi(context: ContextMP) {
-        browserNavigator.openBrowser(context, "https://bgm.tv/subject/${subjectId.value}")
+        browserNavigator.openBrowser(context, "https://bgm.tv/subject/${subjectId}")
     }
 }
 

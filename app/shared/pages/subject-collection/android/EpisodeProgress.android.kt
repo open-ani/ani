@@ -5,6 +5,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import me.him188.ani.app.data.media.EpisodeCacheStatus
+import me.him188.ani.app.ui.collection.progress.EpisodeProgressDefaults
+import me.him188.ani.app.ui.collection.progress.EpisodeProgressDialog
+import me.him188.ani.app.ui.collection.progress.EpisodeProgressItem
+import me.him188.ani.app.ui.collection.progress.EpisodeProgressRow
+import me.him188.ani.app.ui.collection.progress.EpisodeProgressTheme
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
@@ -82,7 +87,6 @@ private fun PreviewEpisodeProgressDialog() {
     ProvideCompositionLocalsForPreview {
         EpisodeProgressDialog(
             onDismissRequest = {},
-            onClickDetails = {},
             title = { Text(text = "葬送的芙莉莲") },
             onClickCache = {},
         ) {
@@ -106,7 +110,6 @@ private fun PreviewEpisodeProgressDialogLightUp() {
     ProvideCompositionLocalsForPreview {
         EpisodeProgressDialog(
             onDismissRequest = {},
-            onClickDetails = {},
             title = { Text(text = "葬送的芙莉莲") },
             onClickCache = {},
         ) {
@@ -132,7 +135,6 @@ private fun PreviewEpisodeProgressDialogVeryLong() {
     ProvideCompositionLocalsForPreview {
         EpisodeProgressDialog(
             onDismissRequest = {},
-            onClickDetails = {},
             title = { Text(text = "银魂") },
             onClickCache = {},
         ) {

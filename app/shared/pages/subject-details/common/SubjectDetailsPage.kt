@@ -37,13 +37,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -58,6 +62,8 @@ import androidx.compose.ui.unit.dp
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.collection.CollectionActionButton
+import me.him188.ani.app.ui.collection.EditCollectionTypeDropDown
+import me.him188.ani.app.ui.collection.progress.EpisodeProgressDialog
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.TopAppBarGoBackButton
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
@@ -143,20 +149,20 @@ fun SubjectDetailsPage(
 // 详情页内容 (不包含背景)
 @Composable
 private fun SubjectDetailsContent(
-    viewModel: SubjectDetailsViewModel,
+    vm: SubjectDetailsViewModel,
     modifier: Modifier = Modifier,
     horizontalPadding: Dp = 16.dp,
 ) {
     Column(modifier) {
         // 封面, 标题, 标签 
         SubjectDetailsHeader(
-            viewModel,
+            vm,
             Modifier.padding(top = 8.dp, bottom = 4.dp).padding(start = horizontalPadding)
         )
 
         // 收藏数据和收藏按钮
         Column(Modifier.fillMaxWidth().padding(vertical = 8.dp).padding(horizontal = horizontalPadding)) {
-            val collection by viewModel.collection.collectAsStateWithLifecycle(null)
+            val collection by vm.collection.collectAsStateWithLifecycle(null)
             // 数据
             Row(Modifier.placeholder(visible = collection == null).fillMaxWidth()) {
                 if (collection == null) {
@@ -175,24 +181,56 @@ private fun SubjectDetailsContent(
                 }
             }
 
-            val selfCollectionType by viewModel.selfCollectionAction.collectAsStateWithLifecycle(null)
-            val selfCollected by viewModel.selfCollected.collectAsStateWithLifecycle(null)
+            val selfCollectionType by vm.selfCollectionAction.collectAsStateWithLifecycle(null)
+            val selfCollected by vm.selfCollected.collectAsStateWithLifecycle(null)
 
             Row(
                 Modifier.padding(start = 8.dp, top = 8.dp).align(Alignment.End)
             ) {
                 // 收藏按钮
-                CollectionActionButton(
-                    collected = selfCollected,
-                    type = selfCollectionType,
-                    onCollect = { viewModel.launchInBackground { setSelfCollectionType(UnifiedCollectionType.DOING) } },
-                    onEdit = { viewModel.launchInBackground { setSelfCollectionType(it) } },
-                    onSetAllEpisodesDone = { viewModel.launchInBackground { setAllEpisodesWatched() } },
-                )
+                if (selfCollected == true) {
+                    var showEpisodeProgressDialog by rememberSaveable { mutableStateOf(false) }
+                    if (showEpisodeProgressDialog) {
+                        EpisodeProgressDialog(
+                            vm.episodeProgressState,
+                            onDismissRequest = { showEpisodeProgressDialog = false }
+                        )
+                    }
+                    TextButton({ showEpisodeProgressDialog = true }) {
+                        Text("选集播放")
+                    }
+
+                    var showDropdown by remember { mutableStateOf(false) }
+                    EditCollectionTypeDropDown(
+                        currentType = selfCollectionType,
+                        expanded = showDropdown,
+                        onDismissRequest = { showDropdown = false },
+                        onSetAllEpisodesDone = { vm.launchInBackground { setAllEpisodesWatched() } },
+                        onClick = {
+                            showDropdown = false
+                            vm.launchInBackground { setSelfCollectionType(it.type) }
+                        },
+                    )
+                    CollectionActionButton(
+                        collected = selfCollected,
+                        type = selfCollectionType,
+                        onCollect = { vm.launchInBackground { setSelfCollectionType(UnifiedCollectionType.DOING) } },
+                        onEdit = { vm.launchInBackground { setSelfCollectionType(it) } },
+                        onSetAllEpisodesDone = { vm.launchInBackground { setAllEpisodesWatched() } },
+                    )
+                } else {
+                    CollectionActionButton(
+                        collected = selfCollected,
+                        type = selfCollectionType,
+                        onCollect = { vm.launchInBackground { setSelfCollectionType(UnifiedCollectionType.DOING) } },
+                        onEdit = { vm.launchInBackground { setSelfCollectionType(it) } },
+                        onSetAllEpisodesDone = { vm.launchInBackground { setAllEpisodesWatched() } },
+                    )
+                }
             }
         }
 
-        val characters by viewModel.characters.collectAsStateWithLifecycle(null)
+        val characters by vm.characters.collectAsStateWithLifecycle(null)
         SectionTitle(Modifier.padding(horizontal = horizontalPadding)) {
             Text("角色")
         }
@@ -210,7 +248,7 @@ private fun SubjectDetailsContent(
             )
         }
 
-        val staff by viewModel.relatedPersons.collectAsStateWithLifecycle(null)
+        val staff by vm.relatedPersons.collectAsStateWithLifecycle(null)
         SectionTitle(Modifier.padding(horizontal = horizontalPadding)) {
             Text("Staff")
         }
@@ -223,38 +261,38 @@ private fun SubjectDetailsContent(
         }
 
         val navigator = LocalNavigator.current
-        val episodesMain by viewModel.episodesMain.collectAsStateWithLifecycle(listOf())
+        val episodesMain by vm.episodesMain.collectAsStateWithLifecycle(listOf())
         if (episodesMain.isNotEmpty()) {
             SectionTitle(Modifier.padding(horizontal = horizontalPadding)) { Text("正片") }
             EpisodeList(
                 episodesMain,
                 horizontalPadding,
-                { navigator.navigateEpisodeDetails(viewModel.subjectId.value, it.id.toInt()) },
+                { navigator.navigateEpisodeDetails(vm.subjectId, it.id.toInt()) },
                 Modifier.padding(top = 8.dp)
             )
         }
 
-        val episodesSP by viewModel.episodesSP.collectAsStateWithLifecycle(listOf())
-        if (episodesSP.isNotEmpty()) {
-            SectionTitle(Modifier.padding(horizontal = horizontalPadding)) { Text("SP") }
-            EpisodeList(
-                episodesSP,
-                horizontalPadding,
-                { navigator.navigateEpisodeDetails(viewModel.subjectId.value, it.id.toInt()) },
-                Modifier.padding(top = 8.dp)
-            )
-        }
-
-        val episodesPV by viewModel.episodesPV.collectAsStateWithLifecycle(listOf())
-        if (episodesPV.isNotEmpty()) {
-            SectionTitle(Modifier.padding(horizontal = horizontalPadding)) { Text("PV") }
-            EpisodeList(
-                episodesPV,
-                horizontalPadding,
-                { navigator.navigateEpisodeDetails(viewModel.subjectId.value, it.id.toInt()) },
-                Modifier.padding(top = 8.dp)
-            )
-        }
+//        val episodesSP by viewModel.episodesSP.collectAsStateWithLifecycle(listOf())
+//        if (episodesSP.isNotEmpty()) {
+//            SectionTitle(Modifier.padding(horizontal = horizontalPadding)) { Text("SP") }
+//            EpisodeList(
+//                episodesSP,
+//                horizontalPadding,
+//                { navigator.navigateEpisodeDetails(viewModel.subjectId.value, it.id.toInt()) },
+//                Modifier.padding(top = 8.dp)
+//            )
+//        }
+//
+//        val episodesPV by viewModel.episodesPV.collectAsStateWithLifecycle(listOf())
+//        if (episodesPV.isNotEmpty()) {
+//            SectionTitle(Modifier.padding(horizontal = horizontalPadding)) { Text("PV") }
+//            EpisodeList(
+//                episodesPV,
+//                horizontalPadding,
+//                { navigator.navigateEpisodeDetails(viewModel.subjectId.value, it.id.toInt()) },
+//                Modifier.padding(top = 8.dp)
+//            )
+//        }
     }
 }
 

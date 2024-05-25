@@ -13,9 +13,7 @@ import me.him188.ani.app.data.models.MyCollectionsSettings
 import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.data.subject.SubjectCollectionItem
 import me.him188.ani.app.data.subject.SubjectManager
-import me.him188.ani.app.data.subject.setEpisodeWatched
 import me.him188.ani.app.tools.MonoTasker
-import me.him188.ani.app.tools.caching.ContentPolicy
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.tools.caching.getCachedData
 import me.him188.ani.app.ui.foundation.AbstractViewModel
@@ -44,22 +42,12 @@ interface MyCollectionsViewModel : HasBackgroundScope, ViewModelAuthSupport {
 
     fun requestMore(type: UnifiedCollectionType)
 
-    /**
-     * 返回用户观看该番剧的进度 [Flow].
-     *
-     * 该 flow 总是使用 [ContentPolicy.CACHE_ONLY]
-     */
-    @Stable
-    fun subjectProgress(subjectId: Int): Flow<List<EpisodeProgressItem>>
-
     @Stable
     fun cacheStatusForEpisode(subjectId: Int, episodeId: Int): Flow<EpisodeCacheStatus>
 
     suspend fun setCollectionType(subjectId: Int, type: UnifiedCollectionType)
 
     suspend fun setAllEpisodesWatched(subjectId: Int)
-
-    suspend fun setEpisodeWatched(subjectId: Int, episodeId: Int, watched: Boolean)
 }
 
 fun MyCollectionsViewModel(): MyCollectionsViewModel = MyCollectionsViewModelImpl()
@@ -100,10 +88,6 @@ class MyCollectionsViewModelImpl : AbstractViewModel(), KoinComponent, MyCollect
     }
 
     @Stable
-    override fun subjectProgress(subjectId: Int): Flow<List<EpisodeProgressItem>> =
-        subjectManager.subjectProgressFlow(subjectId, ContentPolicy.CACHE_ONLY)
-
-    @Stable
     override fun cacheStatusForEpisode(subjectId: Int, episodeId: Int): Flow<EpisodeCacheStatus> =
         cacheManager.cacheStatusForEpisode(
             subjectId = subjectId,
@@ -114,9 +98,6 @@ class MyCollectionsViewModelImpl : AbstractViewModel(), KoinComponent, MyCollect
         subjectManager.setSubjectCollectionType(subjectId, type)
 
     override suspend fun setAllEpisodesWatched(subjectId: Int) = subjectManager.setAllEpisodesWatched(subjectId)
-
-    override suspend fun setEpisodeWatched(subjectId: Int, episodeId: Int, watched: Boolean) =
-        subjectManager.setEpisodeWatched(subjectId, episodeId, watched)
 
     override fun init() {
         // 获取第一页, 得到数量

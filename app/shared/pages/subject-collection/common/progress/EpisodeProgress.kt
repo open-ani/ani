@@ -1,4 +1,4 @@
-package me.him188.ani.app.ui.collection
+package me.him188.ani.app.ui.collection.progress
 
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -24,12 +25,15 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
@@ -39,6 +43,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import me.him188.ani.app.data.media.EpisodeCacheStatus
+import me.him188.ani.app.interaction.VibrationStrength
+import me.him188.ani.app.interaction.vibrateIfSupported
+import me.him188.ani.app.navigation.LocalNavigator
+import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.foundation.indication.HorizontalIndicator
 import me.him188.ani.app.ui.foundation.indication.IndicatedBox
 import me.him188.ani.app.ui.theme.stronglyWeaken
@@ -46,13 +54,45 @@ import me.him188.ani.app.ui.theme.weaken
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 
 
+/**
+ * "选集播放" 对话框, 包含剧集观看进度, 还可以标记为已看
+ */
+@Composable
+fun EpisodeProgressDialog(
+    state: EpisodeProgressState,
+    onDismissRequest: () -> Unit,
+    actions: @Composable RowScope.() -> Unit = {},
+) {
+    val navigator by rememberUpdatedState(LocalNavigator.current)
+    val context by rememberUpdatedState(LocalContext.current)
+
+    EpisodeProgressDialog(
+        onDismissRequest = onDismissRequest,
+        title = { Text(text = state.title) },
+        onClickCache = { navigator.navigateSubjectCaches(state.subjectId) },
+        actions = actions,
+    ) {
+        EpisodeProgressRow(
+            episodes = { state.subjectProgress },
+            onClickEpisodeState = {
+                navigator.navigateEpisodeDetails(state.subjectId, it.episodeId)
+            },
+            onLongClickEpisode = { progressItem ->
+                context.vibrateIfSupported(VibrationStrength.TICK)
+                state.toggleEpisodeWatched(progressItem)
+            },
+            colors = EpisodeProgressDefaults.colors(state.theme)
+        )
+    }
+}
+
 @Composable
 fun EpisodeProgressDialog(
     onDismissRequest: () -> Unit,
-    onClickDetails: () -> Unit,
     title: @Composable () -> Unit,
     onClickCache: () -> Unit,
     properties: DialogProperties = DialogProperties(),
+    actions: @Composable RowScope.() -> Unit = {},
     content: @Composable () -> Unit,
 ) {
     Dialog(onDismissRequest, properties) {
@@ -88,9 +128,7 @@ fun EpisodeProgressDialog(
                     }
 
                     Row(Modifier.padding(top = 16.dp).align(Alignment.End)) {
-                        OutlinedButton(onClickDetails) {
-                            Text("条目详情")
-                        }
+                        actions()
 
                         FilledTonalButton(onDismissRequest, Modifier.padding(start = 8.dp)) {
                             Text("取消")
@@ -115,8 +153,10 @@ class EpisodeProgressItem(
     val episodeSort: String,
     val watchStatus: UnifiedCollectionType,
     val isOnAir: Boolean?,
-    val cacheStatus: EpisodeCacheStatus?
-)
+    val cacheStatus: EpisodeCacheStatus?,
+) {
+    var isLoading by mutableStateOf(false)
+}
 
 
 @Composable
@@ -277,7 +317,7 @@ private fun SmallEpisodeButton(
 @Composable
 fun cacheStatusIndicationColor(
     cacheStatus: EpisodeCacheStatus?,
-    isDoneOrDropped: Boolean
+    isDoneOrDropped: Boolean,
 ): Color {
     if (isDoneOrDropped) return Color.Transparent
     return when (cacheStatus) {

@@ -9,7 +9,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import me.him188.ani.app.data.models.UISettings
 import me.him188.ani.app.data.repositories.SettingsRepository
-import me.him188.ani.app.ui.collection.EpisodeProgressTheme
+import me.him188.ani.app.ui.collection.progress.EpisodeProgressTheme
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.settings.SettingsTab

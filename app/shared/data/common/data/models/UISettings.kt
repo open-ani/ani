@@ -4,7 +4,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import me.him188.ani.app.ui.collection.EpisodeProgressTheme
+import me.him188.ani.app.ui.collection.progress.EpisodeProgressTheme
 
 @Serializable
 @Immutable

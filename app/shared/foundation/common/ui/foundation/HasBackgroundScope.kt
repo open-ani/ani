@@ -2,20 +2,25 @@ package me.him188.ani.app.ui.foundation
 
 import androidx.annotation.UiThread
 import androidx.annotation.WorkerThread
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisallowComposableCalls
 import androidx.compose.runtime.FloatState
 import androidx.compose.runtime.IntState
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.RememberObserver
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -334,11 +339,39 @@ fun BackgroundScope(
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext
 ): HasBackgroundScope = SimpleBackgroundScope(parentCoroutineContext)
 
+/**
+ * @param coroutineContext 变化不会反应到返回的 [HasBackgroundScope].
+ */
+@Composable
+inline fun rememberBackgroundScope(
+    crossinline coroutineContext: @DisallowComposableCalls () -> CoroutineContext = { EmptyCoroutineContext }
+): HasBackgroundScope =
+    remember { RememberedBackgroundScope(coroutineContext()) }
+
 private class SimpleBackgroundScope(
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext
 ) : HasBackgroundScope {
     override val backgroundScope: CoroutineScope =
         CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
+}
+
+@PublishedApi
+internal class RememberedBackgroundScope(
+    parentCoroutineContext: CoroutineContext = EmptyCoroutineContext
+) : HasBackgroundScope, RememberObserver {
+    override val backgroundScope: CoroutineScope =
+        CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
+
+    override fun onAbandoned() {
+        backgroundScope.cancel("RememberedBackgroundScope left the composition")
+    }
+
+    override fun onForgotten() {
+        backgroundScope.cancel("RememberedBackgroundScope left the composition")
+    }
+
+    override fun onRemembered() {
+    }
 }
 
 fun <V : HasBackgroundScope> V.launchInBackgroundAnimated(

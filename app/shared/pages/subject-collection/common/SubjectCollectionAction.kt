@@ -1,11 +1,8 @@
 package me.him188.ani.app.ui.collection
 
-import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ListAlt
@@ -43,7 +40,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.external.placeholder.placeholder
-import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 
 @Immutable
@@ -232,20 +228,47 @@ fun CollectionActionButton(
     val action = remember(type) {
         SubjectCollectionActionsForCollect.find { it.type == type }
     }
+    val collectedState by rememberUpdatedState(collected)
+    val onCollectState by rememberUpdatedState(onCollect)
     Box(Modifier.placeholder(collected == null || type == null)) {
         var showDropdown by rememberSaveable { mutableStateOf(false) }
-        BasicSubjectCollectionActionButton(
-            action,
-            onClick = {
-                when (collected) {
-                    null -> return@BasicSubjectCollectionActionButton
-                    false -> onCollect()
+        val onClick = remember {
+            {
+                when (collectedState) {
+                    null -> {}
+                    false -> onCollectState()
                     true -> showDropdown = true
                 }
-            },
-            colors = if (collected == true) CollectedActionButtonColors else UncollectedActionButtonColors
-        )
+            }
+        }
+        if (collected == true) {
+            FilledTonalButton(
+                onClick = onClick,
+            ) {
+                if (action != null) {
+                    action.icon()
+                    Row(Modifier.padding(start = 8.dp)) {
+                        action.title()
+                    }
+                } else {
+                    Text("载入") // 随便什么都行, 占空间
+                }
+            }
+        } else {
+            Button(
+                onClick = onClick,
+            ) {
+                if (action != null) {
+                    action.icon()
+                    Row(Modifier.padding(start = 8.dp)) {
+                        action.title()
+                    }
+                } else {
+                    Text("载入") // 随便什么都行, 占空间
+                }
+            }
 
+        }
         EditCollectionTypeDropDown(
             currentType = type,
             expanded = showDropdown,
@@ -256,35 +279,6 @@ fun CollectionActionButton(
                 onEdit(it.type)
             },
         )
-    }
-}
-
-@Composable
-@Preview
-fun PreviewCollectionActionButton() = ProvideCompositionLocalsForPreview {
-    Row {
-        Column {
-            for (entry in UnifiedCollectionType.entries) {
-                CollectionActionButton(
-                    collected = true,
-                    type = entry,
-                    onCollect = {},
-                    onEdit = {},
-                    onSetAllEpisodesDone = {},
-                )
-            }
-        }
-        Column {
-            for (entry in UnifiedCollectionType.entries) {
-                CollectionActionButton(
-                    collected = false,
-                    type = entry,
-                    onCollect = {},
-                    onEdit = {},
-                    onSetAllEpisodesDone = {},
-                )
-            }
-        }
     }
 }
 
@@ -303,10 +297,7 @@ private fun BasicSubjectCollectionActionButton(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             if (action != null) {
-                Box(Modifier.size(16.dp)) {
-                    action.icon()
-                }
-
+                action.icon()
                 Row(Modifier.padding(start = 8.dp)) {
                     action.title()
                 }
