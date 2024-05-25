@@ -17,7 +17,9 @@ import kotlinx.coroutines.launch
 import me.him188.ani.app.videoplayer.data.VideoData
 import me.him188.ani.app.videoplayer.data.VideoProperties
 import me.him188.ani.app.videoplayer.data.VideoSource
+import me.him188.ani.app.videoplayer.data.emptyVideoData
 import me.him188.ani.app.videoplayer.io.SeekableInputCallbackMedia
+import me.him188.ani.app.videoplayer.torrent.HttpStreamingVideoSource
 import me.him188.ani.app.videoplayer.ui.VlcjVideoPlayerState.VlcjData
 import me.him188.ani.app.videoplayer.ui.state.AbstractPlayerState
 import me.him188.ani.app.videoplayer.ui.state.Label
@@ -25,7 +27,6 @@ import me.him188.ani.app.videoplayer.ui.state.MutableTrackGroup
 import me.him188.ani.app.videoplayer.ui.state.PlaybackState
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.app.videoplayer.ui.state.SubtitleTrack
-import me.him188.ani.utils.io.SeekableInput
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
@@ -80,7 +81,7 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
     class VlcjData(
         override val videoSource: VideoSource<*>,
         override val videoData: VideoData,
-        val input: SeekableInput,
+        val setPlay: () -> Unit,
         releaseResource: () -> Unit
     ) : Data(videoSource, videoData, releaseResource)
 
@@ -91,14 +92,28 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
 //                IllegalStateException("Unsupported video source: $source")
 //            )
 //        }
+        if (source is HttpStreamingVideoSource) {
+            return VlcjData(
+                source,
+                emptyVideoData(),
+                setPlay = {
+                    player.media().play(source.uri)
+                    lastMedia = null
+                },
+                releaseResource = {}
+            )
+        }
 
         val data = source.open()
         val input = data.createInput()
-
         return VlcjData(
             source,
             data,
-            input,
+            setPlay = {
+                val new = SeekableInputCallbackMedia(input)
+                player.media().play(new)
+                lastMedia = new
+            },
             releaseResource = {
                 data.close()
                 input.close()
@@ -114,11 +129,10 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
     private var lastMedia: SeekableInputCallbackMedia? = null // keep referenced so won't be gc'ed
 
     override suspend fun startPlayer(data: VlcjData) {
-        val new = SeekableInputCallbackMedia(data.input)
-        player.media().play(new)
+        data.setPlay()
+
 //        player.media().options().add(*arrayOf(":avcodec-hw=none")) // dxva2
 //        player.controls().play()
-        lastMedia = new
 //        player.media().play/*OR .start*/(data.videoData.file.absolutePath)
     }
 

@@ -92,6 +92,8 @@ public interface SeekableInput : AutoCloseable {
     public override fun close()
 }
 
+public fun emptySeekableInput(): SeekableInput = EmptySeekableInput
+
 /**
  * Reads max [maxLength] bytes from this [SeekableInput], and advances the current position by the number of bytes read.
  *
@@ -161,3 +163,33 @@ public fun SeekableInput.readExactBytes(
 //        return maxRead.toInt()
 //    }
 //}
+
+private object EmptySeekableInput : SeekableInput {
+    override val position: Long get() = 0
+    override val bytesRemaining: Long get() = 0
+    override val size: Long get() = 0
+
+    override fun seek(position: Long) {
+        require(position >= 0) { "offset must be non-negative, but was $position" }
+        checkClosed()
+    }
+
+    override fun read(buffer: ByteArray, offset: Int, length: Int): Int {
+        checkClosed()
+        return -1
+    }
+
+    @Volatile
+    private var closed: Boolean = false
+    private fun checkClosed() {
+        if (closed) throw IllegalStateException("This SeekableInput is closed")
+    }
+
+    override fun close() {
+        if (closed) return
+        synchronized(this) {
+            if (closed) return
+            closed = true
+        }
+    }
+}

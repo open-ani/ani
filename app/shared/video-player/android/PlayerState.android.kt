@@ -32,7 +32,9 @@ import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.videoplayer.data.VideoData
 import me.him188.ani.app.videoplayer.data.VideoProperties
 import me.him188.ani.app.videoplayer.data.VideoSource
+import me.him188.ani.app.videoplayer.data.emptyVideoData
 import me.him188.ani.app.videoplayer.media.VideoDataDataSource
+import me.him188.ani.app.videoplayer.torrent.HttpStreamingVideoSource
 import me.him188.ani.app.videoplayer.ui.state.AbstractPlayerState
 import me.him188.ani.app.videoplayer.ui.state.Label
 import me.him188.ani.app.videoplayer.ui.state.MutableTrackGroup
@@ -62,14 +64,12 @@ internal class ExoPlayerState @UiThread constructor(
         videoSource: VideoSource<*>,
         videoData: VideoData,
         releaseResource: () -> Unit,
-        val factory: ProgressiveMediaSource.Factory,
+        val setMedia: () -> Unit,
     ) : Data(videoSource, videoData, releaseResource)
 
     override suspend fun startPlayer(data: ExoPlayerData) {
-        val item =
-            data.factory.createMediaSource(MediaItem.fromUri(data.videoSource.uri))
         withContext(Dispatchers.Main.immediate) {
-            player.setMediaSource(item)
+            data.setMedia()
             player.prepare()
             player.play()
         }
@@ -83,8 +83,23 @@ internal class ExoPlayerState @UiThread constructor(
     }
 
     override suspend fun openSource(source: VideoSource<*>): ExoPlayerData {
+        if (source is HttpStreamingVideoSource) {
+            return ExoPlayerData(
+                source,
+                emptyVideoData(),
+                releaseResource = {},
+                setMedia = {
+                    player.setMediaItem(MediaItem.fromUri(source.uri))
+                },
+            )
+        }
         val data = source.open()
-        val file = data.createInput()
+        val file = withContext(Dispatchers.IO) {
+            data.createInput()
+        }
+        val factory = ProgressiveMediaSource.Factory {
+            VideoDataDataSource(data, file)
+        }
         return ExoPlayerData(
             source,
             data,
@@ -92,11 +107,9 @@ internal class ExoPlayerState @UiThread constructor(
                 file.close()
                 data.close()
             },
-            factory = ProgressiveMediaSource.Factory {
-                VideoDataDataSource(
-                    data, file
-                )
-            }
+            setMedia = {
+                player.setMediaSource(factory.createMediaSource(MediaItem.fromUri(source.uri)))
+            },
         )
     }
 

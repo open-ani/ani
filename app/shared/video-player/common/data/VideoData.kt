@@ -2,8 +2,10 @@ package me.him188.ani.app.videoplayer.data
 
 import androidx.compose.runtime.Stable
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.utils.io.SeekableInput
+import me.him188.ani.utils.io.emptySeekableInput
 import java.io.IOException
 
 /**
@@ -11,12 +13,12 @@ import java.io.IOException
  */
 @Stable
 interface VideoData : AutoCloseable {
-    val filename: String
+    val filename: String // 会显示在 UI
 
     /**
      * Returns the length of the video file in bytes.
      */
-    val fileLength: Long
+    val fileLength: Long // 用于匹配弹幕 (仅备选方案下), 一般用不到
 
     /**
      * The download speed in bytes per second.
@@ -40,10 +42,10 @@ interface VideoData : AutoCloseable {
     val supportsStreaming: Boolean get() = false
 
     /**
-     * Optional hash of the video file. `null` if not available.
+     * MD5 hash. 可以为 `null`.
      */
     @Throws(IOException::class)
-    fun computeHash(): String?
+    fun computeHash(): String? // 用于匹配弹幕 (仅备选方案下), 一般用不到
 
     /**
      * Opens a new input stream to the video file.
@@ -56,4 +58,16 @@ interface VideoData : AutoCloseable {
     fun createInput(): SeekableInput
 
     override fun close()
+}
+
+fun emptyVideoData(): VideoData = EmptyVideoData
+
+private object EmptyVideoData : VideoData {
+    override val filename: String get() = ""
+    override val fileLength: Long get() = 0
+    override val downloadSpeed: Flow<FileSize> get() = emptyFlow()
+    override val uploadRate: Flow<FileSize> get() = emptyFlow()
+    override fun computeHash(): String? = null
+    override fun createInput(): SeekableInput = emptySeekableInput()
+    override fun close() {}
 }

@@ -33,6 +33,18 @@ sealed class ResourceLocation {
     }
 
     /**
+     * `*.mkv`, `*.mp4` form `http://`, `https://`.
+     */
+    @Serializable
+    data class HttpStreamingFile(override val uri: String) : ResourceLocation() {
+        init {
+            require(uri.startsWith("https://") || uri.startsWith("http://")) {
+                "HttpStreamingFile uri must start with http:// or https://"
+            }
+        }
+    }
+
+    /**
      * `file://`
      */
     @Serializable
