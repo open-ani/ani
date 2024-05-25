@@ -146,7 +146,9 @@ fun CollectionPage(
                             if (size == null) {
                                 Text(text = collectionType.displayText())
                             } else {
-                                Text(text = collectionType.displayText() + " " + size)
+                                Text(text = remember(collectionType, size) {
+                                    collectionType.displayText() + " " + size
+                                })
                             }
                         }
                     )
@@ -307,6 +309,7 @@ private fun TabContent(
     )
 }
 
+@Stable
 private fun UnifiedCollectionType.displayText(): String {
     return when (this) {
         UnifiedCollectionType.WISH -> "想看"
