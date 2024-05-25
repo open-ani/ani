@@ -9,9 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
@@ -161,12 +159,8 @@ fun NetworkSettingsTab(
 
             HorizontalDividerItem()
 
-            var url by remember(proxySettings) {
-                mutableStateOf(proxySettings.default.config.url)
-            }
             TextFieldItem(
-                url,
-                { url = it.trim() },
+                proxySettings.default.config.url,
                 title = { Text("代理地址") },
                 Modifier.placeholder(vm.proxySettings.loading),
                 description = {
@@ -179,30 +173,34 @@ fun NetworkSettingsTab(
                         proxySettings.copy(
                             default = proxySettings.default.copy(
                                 config = proxySettings.default.config.copy(
-                                    url = url
+                                    url = it
                                 )
                             )
                         )
                     )
                 },
                 isErrorProvider = {
-                    !ClientProxyConfigValidator.isValidProxy(url)
-                }
+                    !ClientProxyConfigValidator.isValidProxy(it)
+                },
+                sanitizeValue = { it.trim() }
             )
 
             HorizontalDividerItem()
 
-            var username by remember(proxySettings) {
-                mutableStateOf(proxySettings.default.config.authorization?.username ?: "")
+            val username by remember {
+                derivedStateOf {
+                    proxySettings.default.config.authorization?.username ?: ""
+                }
             }
 
-            var password by remember(proxySettings) {
-                mutableStateOf(proxySettings.default.config.authorization?.password ?: "")
+            val password by remember {
+                derivedStateOf {
+                    proxySettings.default.config.authorization?.password ?: ""
+                }
             }
 
             TextFieldItem(
                 username,
-                { username = it },
                 title = { Text("用户名") },
                 Modifier.placeholder(vm.proxySettings.loading),
                 description = { Text("可选") },
@@ -213,20 +211,20 @@ fun NetworkSettingsTab(
                             default = proxySettings.default.copy(
                                 config = proxySettings.default.config.copy(
                                     authorization = proxySettings.default.config.authorization?.copy(
-                                        username = username
+                                        username = it
                                     )
                                 )
                             )
                         )
                     )
-                }
+                },
+                sanitizeValue = { it }
             )
 
             HorizontalDividerItem()
 
             TextFieldItem(
                 password,
-                { password = it },
                 title = { Text("密码") },
                 Modifier.placeholder(vm.proxySettings.loading),
                 description = { Text("可选") },
@@ -243,7 +241,8 @@ fun NetworkSettingsTab(
                             )
                         )
                     )
-                }
+                },
+                sanitizeValue = { it }
             )
         }
 

@@ -9,10 +9,9 @@ import androidx.compose.material.icons.rounded.Subtitles
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.util.fastAll
@@ -166,25 +165,25 @@ internal fun SettingsScope.MediaSelectionGroup(vm: MediaSettingsViewModel) {
 
         HorizontalDividerItem()
 
-        var allianceRegexes by remember(vm.defaultMediaPreference) {
-            mutableStateOf(vm.defaultMediaPreference.alliancePatterns?.joinToString() ?: "")
+        val allianceRegexes by remember(vm) {
+            derivedStateOf { vm.defaultMediaPreference.alliancePatterns?.joinToString() ?: "" }
         }
         TextFieldItem(
             value = allianceRegexes,
-            onValueChange = { allianceRegexes = it.replace("，", ",") },
             title = { Text("字幕组") },
+            modifier = Modifier.placeholder(vm.defaultMediaPreferenceLoading),
             description = {
                 Text("支持使用正则表达式，使用逗号分隔。越靠前的表达式的优先级越高\n\n示例: 桜都, 喵萌, 北宇治\n将优先采用桜都字幕组资源，否则采用喵萌，以此类推")
             },
             icon = { Icon(Icons.Rounded.Subtitles, null) },
             placeholder = { Text(textAny) },
-            modifier = Modifier.placeholder(vm.defaultMediaPreferenceLoading),
-            onValueChangeCompleted = {
+            onValueChangeCompleted = { new ->
                 vm.updateDefaultMediaPreference(
                     vm.defaultMediaPreference.copy(
-                        alliancePatterns = allianceRegexes.split(",", "，").map { it.trim() })
+                        alliancePatterns = new.split(",", "，").map { it.trim() })
                 )
             },
+            sanitizeValue = { it.replace("，", ",") },
         )
     }
 }

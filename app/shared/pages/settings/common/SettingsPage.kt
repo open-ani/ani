@@ -388,19 +388,23 @@ abstract class SettingsScope {
         }
     }
 
+    /**
+     * @param sanitizeValue 每当用户输入时调用, 可以清除首尾空格等
+     * @param onValueChangeCompleted 当用户点击对话框的 "确认" 时调用
+     */
     @SettingsDsl
     @Composable
     fun TextFieldItem(
         value: String,
-        onValueChange: (String) -> Unit,
         title: @Composable () -> Unit,
         modifier: Modifier = Modifier,
         description: @Composable (() -> Unit)? = null,
         icon: @Composable (() -> Unit)? = null,
         placeholder: @Composable (() -> Unit)? = null,
-        onValueChangeCompleted: () -> Unit = {},
+        onValueChangeCompleted: (value: String) -> Unit = {},
         inverseTitleDescription: Boolean = false,
-        isErrorProvider: () -> Boolean = { false }, // calculated in a derivedState
+        isErrorProvider: (value: String) -> Boolean = { false }, // calculated in a derivedState
+        sanitizeValue: (value: String) -> String = { it },
         textFieldDescription: @Composable (() -> Unit)? = description,
     ) {
         var showDialog by rememberSaveable { mutableStateOf(false) }
@@ -412,6 +416,7 @@ abstract class SettingsScope {
                 Modifier,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
+                // 保存了的值
                 val valueText = @Composable {
                     if (placeholder != null && value.isEmpty()) {
                         placeholder()
@@ -443,14 +448,18 @@ abstract class SettingsScope {
                 }
 
                 if (showDialog) {
+                    // 正在编辑的值
+                    var editingValue by remember(value) {
+                        mutableStateOf(value)
+                    }
                     val error by remember(isErrorProvider) {
                         derivedStateOf {
-                            isErrorProvider()
+                            isErrorProvider(editingValue)
                         }
                     }
                     val onConfirm = remember(onValueChangeCompleted) {
                         {
-                            onValueChangeCompleted()
+                            onValueChangeCompleted(editingValue)
                             showDialog = false
                         }
                     }
@@ -463,8 +472,8 @@ abstract class SettingsScope {
                         description = textFieldDescription,
                     ) {
                         OutlinedTextField(
-                            value = value,
-                            onValueChange = onValueChange,
+                            value = editingValue,
+                            onValueChange = { editingValue = sanitizeValue(it) },
                             shape = MaterialTheme.shapes.medium,
                             keyboardActions = KeyboardActions {
                                 if (!error) {

@@ -77,13 +77,23 @@ private fun SettingsScope.QBGroup(vm: MediaSettingsViewModel) {
 //
 //        HorizontalDividerItem()
 
-        var url by remember(clientConfig) {
-            mutableStateOf(clientConfig.baseUrl)
+        val url by remember {
+            derivedStateOf { clientConfig.baseUrl }
         }
         TextFieldItem(
             url,
-            { url = it.trim() },
             title = { Text("Web UI 连接地址") },
+            onValueChangeCompleted = {
+                vm.qBittorrentConfig.update(
+                    config.copy(
+                        clientConfig = clientConfig.copy(baseUrl = it)
+                    )
+                )
+            },
+            isErrorProvider = {
+                !ClientProxyConfigValidator.isValidProxy(it, allowSocks = false)
+            },
+            sanitizeValue = { it.trim() },
             textFieldDescription = {
                 Column {
                     Text("示例：http://127.0.0.1:8080")
@@ -93,80 +103,68 @@ private fun SettingsScope.QBGroup(vm: MediaSettingsViewModel) {
                     Spacer(Modifier.height(8.dp))
                     Text("注意：目前仅支持连接本机 qBittorrent。连接远程实例时可以管理但不能播放。如你希望支持远程连接，请在 GitHub 创建一个 issue。")
                 }
-            },
-            onValueChangeCompleted = {
-                vm.qBittorrentConfig.update(
-                    config.copy(
-                        clientConfig = clientConfig.copy(baseUrl = url)
-                    )
-                )
-            },
-            isErrorProvider = {
-                !ClientProxyConfigValidator.isValidProxy(url, allowSocks = false)
             }
         )
 
         HorizontalDividerItem()
 
-        var username by remember(clientConfig) {
-            mutableStateOf(clientConfig.username ?: "")
+        val username by remember {
+            derivedStateOf { clientConfig.username ?: "" }
         }
 
         TextFieldItem(
             username,
-            { username = it },
             title = { Text("用户名") },
             description = { Text("可选") },
             placeholder = { Text("无") },
             onValueChangeCompleted = {
                 vm.qBittorrentConfig.update(
                     config.copy(
-                        clientConfig = clientConfig.copy(username = username)
+                        clientConfig = clientConfig.copy(username = it)
                     )
                 )
-            }
+            },
         )
 
         HorizontalDividerItem()
 
-        var password by remember(clientConfig) {
-            mutableStateOf(clientConfig.password ?: "")
+        val password by remember {
+            derivedStateOf { clientConfig.password ?: "" }
         }
 
         TextFieldItem(
             password,
-            { password = it },
             title = { Text("密码") },
             description = { Text("可选") },
             placeholder = { Text("无") },
             onValueChangeCompleted = {
                 vm.qBittorrentConfig.update(
                     config.copy(
-                        clientConfig = clientConfig.copy(password = password)
+                        clientConfig = clientConfig.copy(password = it)
                     )
                 )
-            }
+            },
         )
 
         HorizontalDividerItem()
 
-        var category by remember(clientConfig) {
-            mutableStateOf(clientConfig.category)
+        val category by remember {
+            derivedStateOf { clientConfig.category }
         }
 
         TextFieldItem(
             category,
-            { category = it },
             title = { Text("分类") },
             description = { Text("创建的资源将会添加到该分类内，方便管理") },
             placeholder = { Text("") },
             onValueChangeCompleted = {
                 vm.qBittorrentConfig.update(
                     config.copy(
-                        clientConfig = clientConfig.copy(password = category)
+                        clientConfig = clientConfig.copy(password = it)
                     )
                 )
-            }
+            },
+            sanitizeValue = { it.trim() }
         )
 
         HorizontalDividerItem()
