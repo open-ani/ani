@@ -8,7 +8,11 @@ import io.ktor.client.plugins.UserAgent
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.header
 import io.ktor.http.HttpHeaders
+import io.ktor.http.URLBuilder
+import io.ktor.http.URLParserException
+import io.ktor.http.URLProtocol
 import io.ktor.http.Url
+import io.ktor.http.takeFrom
 import kotlinx.serialization.Serializable
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
@@ -41,13 +45,13 @@ object ClientProxyConfigValidator {
 
     fun isValidProxy(url: String, allowSocks: Boolean = true): Boolean {
         return try {
-            val proxy = parseProxy(url)
-            if (!allowSocks) {
-                if (proxy.type() == java.net.Proxy.Type.SOCKS) {
-                    return false
-                }
-            }
+            val u = URLBuilder(protocol = URLProtocol("dummy", 1)).takeFrom(url).build()
+            if (u.host.isBlank()) return false
+            if (!allowSocks && u.protocol.name in setOf("socks", "socks5")) return false
+            if (u.protocol.name !in setOf("http", "https", "socks", "socks5")) return false
             true
+        } catch (e: URLParserException) {
+            false
         } catch (e: Exception) {
             false
         }
