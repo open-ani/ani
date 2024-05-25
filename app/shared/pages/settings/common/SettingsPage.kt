@@ -443,14 +443,16 @@ abstract class SettingsScope {
                 }
 
                 if (showDialog) {
-                    val error by remember {
+                    val error by remember(isErrorProvider) {
                         derivedStateOf {
                             isErrorProvider()
                         }
                     }
-                    val onConfirm = {
-                        onValueChangeCompleted()
-                        showDialog = false
+                    val onConfirm = remember(onValueChangeCompleted) {
+                        {
+                            onValueChangeCompleted()
+                            showDialog = false
+                        }
                     }
 
                     TextFieldDialog(
