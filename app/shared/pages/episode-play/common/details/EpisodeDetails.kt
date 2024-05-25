@@ -37,6 +37,7 @@ import me.him188.ani.app.ui.subject.episode.EpisodeViewModel
 import me.him188.ani.app.ui.subject.episode.mediaSelectorState
 import me.him188.ani.app.ui.theme.slightlyWeaken
 import me.him188.ani.datasources.api.Media
+import me.him188.ani.datasources.api.topic.FileSize.Companion.Unspecified
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.datasources.api.topic.Resolution
 import me.him188.ani.datasources.api.topic.SubtitleLanguage
@@ -96,7 +97,7 @@ private fun Media.render(): String {
         properties.resolution,
         properties.subtitleLanguageIds.joinToString("/") { renderSubtitleLanguage(it) }
             .takeIf { it.isNotBlank() },
-        properties.size.takeIf { it != 0.bytes },
+        properties.size.takeIf { it != 0.bytes && it != Unspecified },
         properties.alliance,
     ).joinToString(" · ")
 }

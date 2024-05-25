@@ -245,7 +245,7 @@ private fun MediaItem(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    if (media.properties.size != FileSize.Zero) {
+                    if (media.properties.size != FileSize.Zero && media.properties.size != FileSize.Unspecified) {
                         InputChip(
                             false,
                             onClick = {},

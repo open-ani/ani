@@ -15,7 +15,10 @@ fun formatDateTime(
     timestamp: Long, // millis
 ): String {
     val formatter by rememberUpdatedState(LocalTimeFormatter.current)
-    return remember(timestamp) { formatter.format(timestamp) }
+    return remember(timestamp) {
+        if (timestamp == 0L) ""
+        else formatter.format(timestamp)
+    }
 //    val formatter = remember(format) { DateTimeFormatter.ofPattern(format) }
 //    return remember(timestamp) {
 //        formatter.format(java.time.Instant.ofEpochMilli(timestamp))
