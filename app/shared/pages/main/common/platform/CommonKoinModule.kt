@@ -34,10 +34,6 @@ import me.him188.ani.app.data.media.MediaCacheManagerImpl
 import me.him188.ani.app.data.media.MediaSourceManager
 import me.him188.ani.app.data.media.MediaSourceManagerImpl
 import me.him188.ani.app.data.media.TorrentMediaCacheEngine
-import me.him188.ani.app.data.media.resolver.HttpStreamingVideoSourceResolver
-import me.him188.ani.app.data.media.resolver.LocalFileVideoSourceResolver
-import me.him188.ani.app.data.media.resolver.TorrentVideoSourceResolver
-import me.him188.ani.app.data.media.resolver.VideoSourceResolver
 import me.him188.ani.app.data.repositories.EpisodePreferencesRepository
 import me.him188.ani.app.data.repositories.EpisodePreferencesRepositoryImpl
 import me.him188.ani.app.data.repositories.EpisodeRepository
@@ -151,14 +147,6 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
     }
 
 
-    single<VideoSourceResolver> {
-        VideoSourceResolver.from(
-            get<TorrentManager>().engines
-                .map { TorrentVideoSourceResolver(it) }
-                .plus(LocalFileVideoSourceResolver())
-                .plus(HttpStreamingVideoSourceResolver())
-        )
-    }
     single<MediaSourceManager> {
         MediaSourceManagerImpl(
             additionalSources = {

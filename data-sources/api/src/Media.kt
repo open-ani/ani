@@ -82,7 +82,7 @@ sealed interface Media {
  */
 @Immutable
 @Serializable
-class DefaultMedia(
+data class DefaultMedia(
     override val mediaId: String,
     override val mediaSourceId: String, // e.g. "dmhy"
     override val originalUrl: String,
@@ -143,6 +143,10 @@ class MediaProperties private constructor(
         subtitleLanguageIds, resolution, alliance, size,
         _primaryConstructorMarker = Unit
     )
+
+    override fun toString(): String {
+        return "MediaProperties(subtitleLanguageIds=$subtitleLanguageIds, resolution='$resolution', alliance='$alliance', size=$size)"
+    }
 }
 
 /**

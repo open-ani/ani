@@ -39,7 +39,24 @@ sealed class ResourceLocation {
     data class HttpStreamingFile(override val uri: String) : ResourceLocation() {
         init {
             require(uri.startsWith("https://") || uri.startsWith("http://")) {
-                "HttpStreamingFile uri must start with http:// or https://"
+                "HttpStreamingFile uri must start with 'http://' or 'https://', but was $uri"
+            }
+        }
+    }
+
+    /**
+     * 需要 WebView 去里面解析视频链接
+     */
+    @Serializable
+    data class WebVideo(
+        /**
+         * Web 页面地址
+         */
+        override val uri: String,
+    ) : ResourceLocation() {
+        init {
+            require(uri.startsWith("https://") || uri.startsWith("http://")) {
+                "WebVideo uri must start with 'http://' or 'https://', but was $uri"
             }
         }
     }

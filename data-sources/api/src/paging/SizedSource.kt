@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.merge
 
 /**
@@ -29,6 +30,24 @@ inline fun <T, R> SizedSource<T>.map(crossinline transform: suspend (T) -> R): S
         override val results = this@map.results.map(transform)
         override val finished = this@map.finished
         override val totalSize = this@map.totalSize
+    }
+}
+
+inline fun <T, R> SizedSource<T>.mapNotNull(crossinline transform: suspend (T) -> R?): SizedSource<R> {
+    val self = this
+    return object : SizedSource<R> {
+        override val results = self.results.mapNotNull(transform)
+        override val finished = self.finished
+        override val totalSize = self.totalSize
+    }
+}
+
+inline fun <T> SizedSource<T>.filter(crossinline predicate: suspend (T) -> Boolean): SizedSource<T> {
+    val self = this
+    return object : SizedSource<T> {
+        override val results = self.results.filter(predicate)
+        override val finished = self.finished
+        override val totalSize = self.totalSize
     }
 }
 

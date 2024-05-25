@@ -1,5 +1,6 @@
 package me.him188.ani.app.data.media.resolver
 
+import androidx.compose.runtime.Composable
 import me.him188.ani.app.videoplayer.data.VideoSource
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
@@ -15,6 +16,13 @@ interface VideoSourceResolver {
      * Checks if this resolver supports the given media's [Media.download].
      */
     suspend fun supports(media: Media): Boolean
+
+    /**
+     * "挂载" 到 composable 中, 以便进行需要虚拟 UI 的操作, 例如 WebView
+     */
+    @Composable
+    fun ComposeContent() {
+    }
 
     /**
      * 根据 [EpisodeMetadata] 中的集数信息和 [Media.location] 中的下载方式,
@@ -51,6 +59,13 @@ private class ChainedVideoSourceResolver(
 ) : VideoSourceResolver {
     override suspend fun supports(media: Media): Boolean {
         return resolvers.any { it.supports(media) }
+    }
+
+    @Composable
+    override fun ComposeContent() {
+        this.resolvers.forEach {
+            it.ComposeContent()
+        }
     }
 
     override suspend fun resolve(media: Media, episode: EpisodeMetadata): VideoSource<*> {

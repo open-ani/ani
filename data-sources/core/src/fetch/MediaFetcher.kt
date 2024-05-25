@@ -21,9 +21,12 @@ import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.take
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.paging.SizedSource
+import me.him188.ani.datasources.api.paging.filter
+import me.him188.ani.datasources.api.source.MatchKind
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.source.MediaMatch
 import me.him188.ani.datasources.api.source.MediaSource
+import me.him188.ani.datasources.api.topic.contains
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.logger
 import kotlin.coroutines.CoroutineContext
@@ -223,7 +226,9 @@ class MediaSourceMediaFetcher(
                 config,
                 pagedSources = flowOf(request)
                     .map {
-                        provider.fetch(it)
+                        provider.fetch(it).filter { media ->
+                            media.matches(request)
+                        }
                     }.shareIn(
                         scope, replay = 1, started = SharingStarted.Lazily,
                     ).take(1) // so that the flow can normally complete
@@ -281,4 +286,11 @@ class MediaSourceMediaFetcher(
     private companion object {
         val logger = logger<MediaSourceMediaFetcher>()
     }
+}
+
+private fun MediaMatch.matches(request: MediaFetchRequest): Boolean {
+    if (this.kind == MatchKind.NONE) return false
+    val actualEpRange = this.media.episodeRange ?: return false
+    val expectedEp = request.episodeEp
+    return !(request.episodeSort !in actualEpRange && (expectedEp == null || expectedEp !in actualEpRange))
 }

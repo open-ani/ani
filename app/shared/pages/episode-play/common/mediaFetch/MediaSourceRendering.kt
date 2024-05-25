@@ -20,6 +20,7 @@ import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
 import me.him188.ani.datasources.dmhy.DmhyMediaSource
 import me.him188.ani.datasources.mikan.MikanCNMediaSource
 import me.him188.ani.datasources.mikan.MikanMediaSource
+import me.him188.ani.datasources.nyafun.NyafunMediaSource
 import org.jetbrains.compose.resources.painterResource
 
 @Stable
@@ -31,6 +32,7 @@ fun renderMediaSource(
     MikanMediaSource.ID -> "Mikan"
     MikanCNMediaSource.ID -> "Mikan (中国大陆)"
     BangumiSubjectProvider.ID -> "Bangumi"
+    NyafunMediaSource.ID -> "Nyafun"
     LOCAL_FS_MEDIA_SOURCE_ID -> "本地"
     else -> id
 }
@@ -44,6 +46,7 @@ fun renderMediaSourceDescription(
     MikanMediaSource.ID -> "mikanani.me"
     MikanCNMediaSource.ID -> "mikanime.tv"
     BangumiSubjectProvider.ID -> "bgm.tv"
+    NyafunMediaSource.ID -> "nyafun.net"
     LOCAL_FS_MEDIA_SOURCE_ID -> null
     else -> null
 }

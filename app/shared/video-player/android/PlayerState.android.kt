@@ -13,7 +13,9 @@ import androidx.media3.common.TrackGroup
 import androidx.media3.common.Tracks
 import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import androidx.media3.exoplayer.trackselection.ExoTrackSelection
@@ -89,7 +91,23 @@ internal class ExoPlayerState @UiThread constructor(
                 emptyVideoData(),
                 releaseResource = {},
                 setMedia = {
-                    player.setMediaItem(MediaItem.fromUri(source.uri))
+                    player.setMediaSource(
+                        DefaultMediaSourceFactory(
+                            DefaultHttpDataSource.Factory()
+                                .setUserAgent("""Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3""")
+                                .setDefaultRequestProperties(
+                                    mapOf(
+                                        "Referer" to "https://play.nyafun.net/",
+                                        "Sec-Ch-Ua-Mobile" to "?0",
+                                        "Sec-Ch-Ua-Platform" to "macOS",
+                                        "Sec-Fetch-Dest" to "video",
+                                        "Sec-Fetch-Mode" to "no-cors",
+                                        "Sec-Fetch-Site" to "cross-site",
+                                    )
+                                )
+                                .setConnectTimeoutMs(30_000),
+                        ).createMediaSource(MediaItem.fromUri(source.uri))
+                    )
                 },
             )
         }

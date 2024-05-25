@@ -39,6 +39,10 @@ import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.singleWindowApplication
 import dev.dirs.ProjectDirectories
 import kotlinx.coroutines.launch
+import me.him188.ani.app.data.media.resolver.HttpStreamingVideoSourceResolver
+import me.him188.ani.app.data.media.resolver.LocalFileVideoSourceResolver
+import me.him188.ani.app.data.media.resolver.TorrentVideoSourceResolver
+import me.him188.ani.app.data.media.resolver.VideoSourceResolver
 import me.him188.ani.app.interaction.PlatformImplementations
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.BrowserNavigator
@@ -118,6 +122,14 @@ object AniDesktop {
                     }
                 }
                 single<BrowserNavigator> { DesktopBrowserNavigator() }
+                factory<VideoSourceResolver> {
+                    VideoSourceResolver.from(
+                        get<TorrentManager>().engines
+                            .map { TorrentVideoSourceResolver(it) }
+                            .plus(LocalFileVideoSourceResolver())
+                            .plus(HttpStreamingVideoSourceResolver())
+                    )
+                }
             })
         }.startCommonKoinModule(coroutineScope)
 

@@ -72,7 +72,7 @@ interface MediaSource {
 /**
  * A media matched from the source.
  */
-class MediaMatch(
+data class MediaMatch(
     val media: Media,
     val kind: MatchKind,
 )
@@ -191,6 +191,8 @@ enum class ConnectionStatus {
     SUCCESS,
     FAILED,
 }
+
+fun Boolean.toConnectionStatus() = if (this) ConnectionStatus.SUCCESS else ConnectionStatus.FAILED
 
 interface SearchOrdering {
     val id: String

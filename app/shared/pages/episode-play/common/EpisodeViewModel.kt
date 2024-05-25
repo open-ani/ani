@@ -127,6 +127,8 @@ class EpisodePresentation(
 
 @Stable
 interface EpisodeViewModel : HasBackgroundScope {
+    val videoSourceResolver: VideoSourceResolver
+    
     val subjectId: Int
     val episodeId: Int
 
@@ -205,7 +207,7 @@ private class EpisodeViewModelImpl(
     private val playerStateFactory: PlayerStateFactory by inject()
     private val subjectManager: SubjectManager by inject()
     private val danmakuManager: DanmakuManager by inject()
-    private val videoSourceResolver: VideoSourceResolver by inject()
+    override val videoSourceResolver: VideoSourceResolver by inject()
     private val settingsRepository: SettingsRepository by inject()
 
     private val subjectInfo = flowOf(subjectId).mapLatest { subjectId ->

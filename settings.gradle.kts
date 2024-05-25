@@ -74,6 +74,7 @@ includeProject(":data-sources:core", "data-sources/core") // data source manager
 includeProject(":data-sources:dmhy", "data-sources/dmhy") // data source from https://dmhy.org
 includeProject(":data-sources:acg-rip", "data-sources/acg.rip") // data source from https://acg.rip
 includeProject(":data-sources:mikan", "data-sources/mikan") // data source from https://mikanani.me/
+includeProject(":data-sources:nyafun", "data-sources/nyafun") // data source from https://nyafun.net/
 includeProject(
     ":data-sources:bangumi",
     "data-sources/bangumi"

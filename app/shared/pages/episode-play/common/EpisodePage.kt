@@ -127,6 +127,8 @@ fun EpisodePageContent(
             }
         }
     }
+
+    vm.videoSourceResolver.ComposeContent()
 }
 
 @Composable

@@ -26,12 +26,17 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.remember
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
+import me.him188.ani.app.data.media.resolver.HttpStreamingVideoSourceResolver
+import me.him188.ani.app.data.media.resolver.LocalFileVideoSourceResolver
+import me.him188.ani.app.data.media.resolver.TorrentVideoSourceResolver
+import me.him188.ani.app.data.media.resolver.VideoSourceResolver
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.getCommonKoinModule
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.session.TestSessionManagers
+import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.app.ui.theme.aniColorScheme
 import me.him188.ani.app.videoplayer.ui.state.DummyPlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
@@ -66,6 +71,14 @@ fun ProvideCompositionLocalsForPreview(
                         playerStateFactory
                     }
                     single<SessionManager> { TestSessionManagers.Online }
+                    factory<VideoSourceResolver> {
+                        VideoSourceResolver.from(
+                            get<TorrentManager>().engines
+                                .map { TorrentVideoSourceResolver(it) }
+                                .plus(LocalFileVideoSourceResolver())
+                                .plus(HttpStreamingVideoSourceResolver())
+                        )
+                    }
                     module()
                 })
             }
