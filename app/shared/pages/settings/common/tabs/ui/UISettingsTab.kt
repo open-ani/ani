@@ -12,6 +12,7 @@ import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.ui.collection.progress.EpisodeProgressTheme
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.rememberViewModel
+import me.him188.ani.app.ui.settings.SettingsScope
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.SwitchItem
 import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
@@ -71,5 +72,9 @@ fun UISettingsTab(
                 description = { Text("高亮已经看过的剧集，而不是将要看的剧集") },
             )
         }
+        UISettingsTabPlatform(vm)
     }
 }
+
+@Composable
+internal expect fun SettingsScope.UISettingsTabPlatform(vm: UiSettingsViewModel)

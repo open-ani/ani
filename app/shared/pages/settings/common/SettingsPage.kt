@@ -92,7 +92,6 @@ import org.burnoutcrew.reorderable.reorderable
 
 @Immutable
 enum class SettingsTab {
-    //    ABOUT,
     UI,
     MEDIA,
     NETWORK,
@@ -169,8 +168,7 @@ private fun renderPreferenceTab(
     tab: SettingsTab,
 ): String {
     return when (tab) {
-//        PreferenceTab.GENERAL -> "通用"
-        SettingsTab.UI -> "界面"
+        SettingsTab.UI -> "界面与应用"
         SettingsTab.NETWORK -> "网络"
         SettingsTab.MEDIA -> "播放与缓存"
         SettingsTab.ABOUT -> "关于"
