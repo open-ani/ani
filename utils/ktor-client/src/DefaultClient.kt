@@ -19,7 +19,7 @@ fun createDefaultHttpClient(
     }
     install(HttpCookies)
     install(HttpTimeout) {
-        requestTimeoutMillis = 5000
+        requestTimeoutMillis = 30_000
     }
     install(UserAgent) {
         agent = "him188/ani (https://github.com/Him188/ani)"
