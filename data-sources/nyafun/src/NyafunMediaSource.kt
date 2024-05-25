@@ -39,6 +39,7 @@ import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.utils.ktor.createDefaultHttpClient
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
+import me.him188.ani.utils.logging.warn
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 
@@ -68,7 +69,7 @@ class NyafunWebVideoMatcher : WebVideoMatcher {
 
 class NyafunMediaSource(config: MediaSourceConfig) : MediaSource {
     companion object {
-        val ID = "nyafun"
+        const val ID = "nyafun"
         val logger = logger<NyafunMediaSource>()
         internal const val BASE_URL = "https://www.nyafun.net"
 
@@ -159,7 +160,7 @@ class NyafunMediaSource(config: MediaSourceConfig) : MediaSource {
             }.map {
                 parseBangumiSearch(it)
             }.retry(3) { e ->
-                logger.warn("Failed to search using name '$name'", e)
+                logger.warn(e) { "Failed to search using name '$name'" }
                 true
             }.firstOrNull() ?: return@flatMapMerge emptyFlow()
 
@@ -170,11 +171,13 @@ class NyafunMediaSource(config: MediaSourceConfig) : MediaSource {
                     }.map {
                         parseEpisodeList(it)
                     }.retry(3) { e ->
-                        logger.warn("Failed to search using name '$name'", e)
+                        logger.warn(e) { "Failed to get episodes using name '$name'" }
                         true
                     }.firstOrNull()?.map { ep ->
                         createMediaMatch(bangumi, ep)
-                    }.orEmpty().asFlow()
+                    }.orEmpty().also {
+                        logger.info { "$ID fetched ${it.size} episodes for '$name'" }
+                    }.asFlow()
                 }
         }
     }
