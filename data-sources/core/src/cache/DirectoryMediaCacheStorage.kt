@@ -182,6 +182,10 @@ class DirectoryMediaCacheStorage(
                 cacheEquals(it, media, metadata)
             }?.let { return@withLock it }
 
+            if (!engine.supports(media)) {
+                // TODO: add more engines 
+                throw UnsupportedOperationException("Engine does not support media: $media")
+            }
             val cache = engine.createCache(
                 media, metadata,
                 scope.coroutineContext

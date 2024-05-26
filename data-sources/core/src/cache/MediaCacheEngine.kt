@@ -38,6 +38,8 @@ interface MediaCacheEngine {
      */
     val stats: MediaStats
 
+    fun supports(media: Media): Boolean
+
 //    /**
 //     * Total file size occupied on the disk.
 //     */
@@ -49,6 +51,7 @@ interface MediaCacheEngine {
      * @param metadata from `MediaCache.media.cacheMetadata` from [createCache]
      *
      * Returns `null` if the cache was deleted or invalid.
+     * @throws UnsupportedOperationException if [supports] returned false
      */
     suspend fun restore(
         origin: Media,
@@ -58,6 +61,7 @@ interface MediaCacheEngine {
 
     /**
      * 创建一个新的返回
+     * @throws UnsupportedOperationException if [supports] returned false
      */
     suspend fun createCache(
         origin: Media,

@@ -30,6 +30,7 @@ class DummyMediaCacheEngine(
 
     override val isEnabled: Flow<Boolean> = flowOf(Companion.isEnabled)
     override val stats: MediaStats = emptyMediaStats()
+    override fun supports(media: Media): Boolean = true
 
     override suspend fun restore(
         origin: Media,

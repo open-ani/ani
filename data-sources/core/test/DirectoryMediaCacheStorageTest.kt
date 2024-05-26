@@ -68,6 +68,7 @@ class DirectoryMediaCacheStorageTest {
     private val engine = object : MediaCacheEngine {
         override val isEnabled: Flow<Boolean> = flowOf(true)
         override val stats: MediaStats = emptyMediaStats()
+        override fun supports(media: Media): Boolean = true
 
         override suspend fun restore(
             origin: Media,

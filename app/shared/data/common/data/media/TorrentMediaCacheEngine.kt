@@ -210,12 +210,18 @@ class TorrentMediaCacheEngine(
                 .flowOn(Dispatchers.Default)
     }
 
+    override fun supports(media: Media): Boolean {
+        return media.download is ResourceLocation.HttpTorrentFile
+                || media.download is ResourceLocation.MagnetLink
+    }
+
     @OptIn(ExperimentalStdlibApi::class)
     override suspend fun restore(
         origin: Media,
         metadata: MediaCacheMetadata,
         parentContext: CoroutineContext
     ): MediaCache? {
+        if (!supports(origin)) throw UnsupportedOperationException("Media is not supported by this engine $this: ${origin.download}")
         val data = metadata.extra[EXTRA_TORRENT_DATA]?.hexToByteArray() ?: return null
         return TorrentMediaCache(
             origin = origin,
@@ -276,6 +282,7 @@ class TorrentMediaCacheEngine(
         request: MediaCacheMetadata,
         parentContext: CoroutineContext
     ): MediaCache {
+        if (!supports(origin)) throw UnsupportedOperationException("Media is not supported by this engine $this: ${origin.download}")
         val downloader = torrentEngine.getDownloader() ?: error("Engine $torrentEngine is not enabled")
         val data = downloader.fetchTorrent(origin.download.uri)
         val metadata = request.withExtra(
