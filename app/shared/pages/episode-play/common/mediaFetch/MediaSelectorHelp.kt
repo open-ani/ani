@@ -28,7 +28,7 @@ fun MediaSelectorHelp(onDismissRequest: () -> Unit, modifier: Modifier = Modifie
             TextButton(onDismissRequest) {
                 Text("关闭")
             }
-        },
+        }, 
         modifier,
     ) {
         Text("数据源类型", style = MaterialTheme.typography.titleMedium)
