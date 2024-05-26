@@ -232,17 +232,17 @@ class MediaSourceMediaFetcher(
         }
 
         override fun restart() {
-            restartCount.value++
             while (true) {
                 val value = state.value
                 if (value is MediaSourceState.Completed || value is MediaSourceState.Disabled) {
                     if (state.compareAndSet(value, MediaSourceState.Idle)) {
-                        return
+                        break
                     }
                 } else {
-                    return
+                    break
                 }
             }
+            restartCount.value++
         }
     }
 
@@ -263,7 +263,7 @@ class MediaSourceMediaFetcher(
                         source.fetch(it).filter { media ->
                             media.matches(request)
                         }
-                    }// so that the flow can normally complete
+                    }
             )
         }
 

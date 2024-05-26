@@ -6,11 +6,14 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastDistinctBy
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.withContext
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.source.MediaSourceLocation
 
@@ -123,6 +126,12 @@ interface MediaSelectorState {
      */
     @MainThread
     fun makeDefaultSelection()
+
+    /**
+     * 逐渐取消选择, 直到 [candidates] 有至少一个元素.
+     */
+    @MainThread
+    suspend fun unselectUntilFirstCandidate()
 
     /**
      * A event source receiving updates to the user's preferences.
@@ -312,21 +321,28 @@ internal class MediaSelectorStateImpl(
     }
 
     override val candidates: List<Media> by derivedStateOf {
-        infix fun <Pref : Any> Pref?.matches(prop: Pref): Boolean = this == null || this == prop
-        infix fun <Pref : Any> Pref?.matches(prop: List<Pref>): Boolean = this == null || this in prop
-
         mediaList.filter {
-            if (it.location == MediaSourceLocation.Local) {
-                return@filter true // always show local, so that [makeDefaultSelection] will select a local one
-            }
-
-            selectedAlliance matches it.properties.alliance &&
-                    selectedResolution matches it.properties.resolution &&
-                    selectedSubtitleLanguageId matches it.properties.subtitleLanguageIds &&
-                    selectedMediaSource matches it.mediaSourceId
+            filterCandidate(it)
         }.sortedWith(
             compareBy<Media> { it.costForDownload }.thenByDescending { it.publishedTime }
         )
+    }
+
+    private infix fun <Pref : Any> Pref?.matches(prop: Pref): Boolean = this == null || this == prop
+    private infix fun <Pref : Any> Pref?.matches(prop: List<Pref>): Boolean = this == null || this in prop
+
+    /**
+     * 当 [it] 满足当前筛选条件时返回 `true`.
+     */
+    private fun filterCandidate(it: Media): Boolean {
+        if (it.location == MediaSourceLocation.Local) {
+            return true // always show local, so that [makeDefaultSelection] will select a local one
+        }
+
+        return selectedAlliance matches it.properties.alliance &&
+                selectedResolution matches it.properties.resolution &&
+                selectedSubtitleLanguageId matches it.properties.subtitleLanguageIds &&
+                selectedMediaSource matches it.mediaSourceId
     }
 
     // User input
@@ -457,6 +473,15 @@ internal class MediaSelectorStateImpl(
         }
 
         selectDefault(candidates.first(), null)
+    }
+
+    override suspend fun unselectUntilFirstCandidate() {
+        if (withContext(Dispatchers.Main) { candidates.isNotEmpty() }) return
+        explicitlyRemovedAlliance = true
+        if (withContext(Dispatchers.Main) { mediaList.fastAny { filterCandidate(it) } }) return
+        explicitlyRemovedSubtitleLanguage = true
+        if (withContext(Dispatchers.Main) { mediaList.fastAny { filterCandidate(it) } }) return
+        explicitlyRemovedResolution = true
     }
 
     class PreferenceUpdatesImpl : PreferenceUpdates {

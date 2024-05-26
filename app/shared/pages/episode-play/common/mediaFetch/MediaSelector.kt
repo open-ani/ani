@@ -45,12 +45,14 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.tools.formatDateTime
 import me.him188.ani.app.ui.foundation.ifThen
@@ -136,12 +138,16 @@ fun MediaSelector(
                     Modifier.animateItemPlacement(),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    val scope = rememberCoroutineScope()
                     val onClick: (MediaSourceResultPresentation) -> Unit = remember(state) {
                         { item ->
                             if (item.isDisabled || item.isFailed) {
                                 item.restart()
                             } else {
                                 state.preferMediaSource(item.mediaSourceId, removeOnExist = true)
+                                scope.launch {
+                                    state.unselectUntilFirstCandidate()
+                                }
                             }
                         }
                     }
