@@ -138,44 +138,47 @@ private fun PreviewMediaSelector() {
                     },
                 )
             },
-            sourceResults = rememberMediaSelectorSourceResults(
-                { MediaSelectorSettings.Default }
-            ) {
-                listOf(
-                    TestMediaSourceResult(
-                        MikanMediaSource.ID,
-                        MediaSourceKind.BitTorrent,
-                        initialState = MediaSourceState.Working,
-                        results = testMediaList
-                    ),
-                    TestMediaSourceResult(
-                        "dmhy",
-                        MediaSourceKind.BitTorrent,
-                        initialState = MediaSourceState.Succeed,
-                        results = testMediaList
-                    ),
-                    TestMediaSourceResult(
-                        "acg.rip",
-                        MediaSourceKind.BitTorrent,
-                        initialState = MediaSourceState.Disabled,
-                        results = testMediaList
-                    ),
-                    TestMediaSourceResult(
-                        "nyafun",
-                        MediaSourceKind.WEB,
-                        initialState = MediaSourceState.Succeed,
-                        results = testMediaList
-                    ),
-                    TestMediaSourceResult(
-                        MikanCNMediaSource.ID,
-                        MediaSourceKind.BitTorrent,
-                        initialState = MediaSourceState.Failed(IllegalStateException()),
-                        results = emptyList()
-                    ),
-                )
-            }
+            sourceResults = rememberTestMediaSourceResults()
         )
     }
+}
+
+@Composable
+internal fun rememberTestMediaSourceResults() = rememberMediaSelectorSourceResults(
+    { MediaSelectorSettings.Default }
+) {
+    listOf(
+        TestMediaSourceResult(
+            MikanMediaSource.ID,
+            MediaSourceKind.BitTorrent,
+            initialState = MediaSourceState.Working,
+            results = testMediaList
+        ),
+        TestMediaSourceResult(
+            "dmhy",
+            MediaSourceKind.BitTorrent,
+            initialState = MediaSourceState.Succeed,
+            results = testMediaList
+        ),
+        TestMediaSourceResult(
+            "acg.rip",
+            MediaSourceKind.BitTorrent,
+            initialState = MediaSourceState.Disabled,
+            results = testMediaList
+        ),
+        TestMediaSourceResult(
+            "nyafun",
+            MediaSourceKind.WEB,
+            initialState = MediaSourceState.Succeed,
+            results = testMediaList
+        ),
+        TestMediaSourceResult(
+            MikanCNMediaSource.ID,
+            MediaSourceKind.BitTorrent,
+            initialState = MediaSourceState.Failed(IllegalStateException()),
+            results = emptyList()
+        ),
+    )
 }
 
 private class TestMediaSourceResult(

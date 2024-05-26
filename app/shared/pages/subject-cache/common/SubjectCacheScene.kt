@@ -33,7 +33,9 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.media.MediaCacheManager
+import me.him188.ani.app.data.models.MediaSelectorSettings
 import me.him188.ani.app.data.repositories.EpisodeRepository
+import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.data.repositories.SubjectRepository
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.feedback.ErrorDialogHost
@@ -42,6 +44,7 @@ import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.subject.episode.mediaFetch.EpisodeMediaFetchSession
 import me.him188.ani.app.ui.subject.episode.mediaFetch.FetcherMediaSelectorConfig
+import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberMediaSelectorSourceResults
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaCacheMetadata
@@ -62,6 +65,7 @@ class SubjectCacheViewModel(
 ) : AbstractViewModel(), KoinComponent {
     private val subjectRepository: SubjectRepository by inject()
     private val episodeRepository: EpisodeRepository by inject()
+    private val settingsRepository: SettingsRepository by inject()
     private val cacheManager: MediaCacheManager by inject()
 
     private val cacheStoragesPlaceholder = ArrayList<MediaCacheStorage>(0)
@@ -71,6 +75,8 @@ class SubjectCacheViewModel(
         cacheStorages !== cacheStoragesPlaceholder
     }
 
+    val mediaSelectorSettings: MediaSelectorSettings by settingsRepository.mediaSelectorSettings.flow
+        .produceState(MediaSelectorSettings.Default)
 
     val subjectTitle by flowOf(subjectId).mapLatest { subjectId ->
         runUntilSuccess { subjectRepository.getSubject(subjectId)!! }
@@ -247,6 +253,9 @@ fun SubjectCacheScene(
                         }
                     },
                     onCancel = dismissSelector,
+                    sourceResults = rememberMediaSelectorSourceResults(
+                        settingsProvider = { vm.mediaSelectorSettings }
+                    ) { epFetch.sourceResults },
                     Modifier.fillMaxHeight().navigationBarsPadding() // 防止添加筛选后数量变少导致 bottom sheet 高度变化
                 )
             }

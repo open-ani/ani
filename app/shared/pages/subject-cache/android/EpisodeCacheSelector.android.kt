@@ -7,6 +7,7 @@ import me.him188.ani.app.data.media.MediaCacheManager
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorState
+import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSourceResults
 import me.him188.ani.app.ui.subject.episode.mediaFetch.testMediaList
 import me.him188.ani.datasources.api.CachedMedia
 import me.him188.ani.datasources.api.topic.ResourceLocation
@@ -19,6 +20,7 @@ private fun PreviewEpisodeCacheMediaSelector() {
             remember { createState() },
             onSelect = {},
             onCancel = {},
+            sourceResults = rememberTestMediaSourceResults(),
         )
     }
 }

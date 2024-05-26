@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelector
+import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorSourceResults
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorState
 import me.him188.ani.datasources.api.Media
 
@@ -21,6 +22,7 @@ fun EpisodeCacheMediaSelector(
     state: MediaSelectorState,
     onSelect: (Media) -> Unit,
     onCancel: () -> Unit,
+    sourceResults: MediaSelectorSourceResults,
     modifier: Modifier = Modifier,
 ) {
     MediaSelector(
@@ -34,6 +36,7 @@ fun EpisodeCacheMediaSelector(
             OutlinedButton(onCancel) {
                 Text("取消")
             }
-        }
+        },
+        sourceResults = sourceResults,
     )
 }
