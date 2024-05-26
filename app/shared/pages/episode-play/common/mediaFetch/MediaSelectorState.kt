@@ -155,7 +155,12 @@ internal class MediaSelectorStateImpl(
         val initialUserPreference get() = MediaPreference.Empty
     }
 
-    override val mediaList: List<Media> by derivedStateOf { mediaListProvider() }
+    override val mediaList: List<Media> by derivedStateOf {
+        mediaListProvider()
+            .filter {
+                (mergedPreference.showWithoutSubtitle || it.properties.subtitleLanguageIds.isNotEmpty())
+            }
+    }
 
 //    /**
 //     * We need to mangle the media list because different media sources might return medias with the same properties but different titles, etc.
@@ -318,8 +323,7 @@ internal class MediaSelectorStateImpl(
             selectedAlliance matches it.properties.alliance &&
                     selectedResolution matches it.properties.resolution &&
                     selectedSubtitleLanguageId matches it.properties.subtitleLanguageIds &&
-                    selectedMediaSource matches it.mediaSourceId &&
-                    (mergedPreference.showWithoutSubtitle || it.properties.subtitleLanguageIds.isNotEmpty())
+                    selectedMediaSource matches it.mediaSourceId
         }.sortedWith(
             compareBy<Media> { it.costForDownload }.thenByDescending { it.publishedTime }
         )

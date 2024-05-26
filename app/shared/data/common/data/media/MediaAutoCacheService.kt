@@ -5,6 +5,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.dropWhile
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flow
@@ -18,6 +19,7 @@ import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.data.subject.SubjectCollectionItem
 import me.him188.ani.app.data.subject.SubjectManager
 import me.him188.ani.app.tools.caching.ContentPolicy
+import me.him188.ani.app.tools.caching.data
 import me.him188.ani.app.ui.subject.episode.mediaFetch.EpisodeMediaFetchSession
 import me.him188.ani.app.ui.subject.episode.mediaFetch.FetcherMediaSelectorConfig
 import me.him188.ani.app.ui.subject.episode.mediaFetch.awaitCompletion
@@ -51,12 +53,11 @@ fun DefaultMediaAutoCacheService(
 ) = DefaultMediaAutoCacheService(
     subjectCollections = { settings ->
         koin.get<SubjectManager>()
-            .subjectCollectionsFlow(ContentPolicy.CACHE_FIRST)
+            .collectionsByType[UnifiedCollectionType.DOING]!!
+            .data(ContentPolicy.CACHE_FIRST)
+            .filter { it.isNotEmpty() }
             .map { list ->
-                list.asSequence()
-                    .filter { it.collectionType == UnifiedCollectionType.DOING }
-                    .take(settings.mostRecentCount)
-                    .toList()
+                list.take(settings.mostRecentCount)
             }
             .first()
     },

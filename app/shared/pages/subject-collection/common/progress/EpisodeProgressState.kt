@@ -66,7 +66,7 @@ class EpisodeProgressStateImpl(
         .produceState(EpisodeProgressTheme.Default)
 
     override val subjectProgress: List<EpisodeProgressItem> by subjectManager
-        .subjectProgressFlow(subjectId, ContentPolicy.CACHE_FIRST)
+        .subjectProgressFlow(subjectId, ContentPolicy.CACHE_ONLY)
         .produceState(emptyList())
 
     override fun toggleEpisodeWatched(item: EpisodeProgressItem) {

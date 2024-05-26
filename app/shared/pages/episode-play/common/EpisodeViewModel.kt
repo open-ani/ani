@@ -298,7 +298,7 @@ private class EpisodeViewModelImpl(
         .produceState(SubjectPresentation.Placeholder)
 
     override val episodePresentation: EpisodePresentation by
-    subjectManager.episodeCollectionFlow(subjectId, episodeId, ContentPolicy.CACHE_FIRST)
+    subjectManager.episodeCollectionFlow(subjectId, episodeId, ContentPolicy.CACHE_ONLY)
         .map {
             EpisodePresentation(
                 title = it.episode.nameCNOrName(),
