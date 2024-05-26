@@ -33,7 +33,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.InputChip
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
@@ -79,18 +78,6 @@ fun MediaSelector(
     actions: (@Composable RowScope.() -> Unit)? = null,
 ) = Surface {
     Column(modifier) {
-        if (sourceResults.anyLoading) {
-            Row(Modifier.fillMaxWidth()) {
-
-                // 刻意一直展示一个一直在动的进度条, 因为实测其实资源都是一起来的, 也就是进度很多时候只有 0 和 1.
-                // 如果按进度展示进度条, 就会一直是 0, 进度条整个是白色的, 看不出来, 不容易区分是正在加载还是加载完了.
-                LinearProgressIndicator(
-                    Modifier.padding(bottom = WINDOW_VERTICAL_PADDING)
-                        .fillMaxWidth()
-                )
-            }
-        }
-
         val lazyListState = rememberLazyListState()
         var isShowDetails by remember { mutableStateOf(false) }
         LazyColumn(
@@ -327,7 +314,7 @@ private fun MediaSourceResultCard(
     expanded: Boolean,
     onClick: () -> Unit,
     source: MediaSourceResultPresentation,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     if (expanded) {
         OutlinedCard(
@@ -442,7 +429,7 @@ private fun MediaItem(
     selected: Boolean,
     state: MediaSelectorState,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     ElevatedCard(
         onClick,
