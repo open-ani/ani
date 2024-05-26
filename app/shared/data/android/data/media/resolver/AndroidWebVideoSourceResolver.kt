@@ -29,7 +29,9 @@ import java.io.ByteArrayInputStream
  * 用 WebView 加载网站, 拦截 WebView 加载资源, 用各数据源提供的 [WebVideoMatcher]
  */
 class AndroidWebVideoSourceResolver : VideoSourceResolver {
-    private val matchers = java.util.ServiceLoader.load(WebVideoMatcher::class.java).filterNotNull()
+    private val matchers by lazy {
+        java.util.ServiceLoader.load(WebVideoMatcher::class.java).filterNotNull()
+    }
 
     override suspend fun supports(media: Media): Boolean = media.download is ResourceLocation.WebVideo
 

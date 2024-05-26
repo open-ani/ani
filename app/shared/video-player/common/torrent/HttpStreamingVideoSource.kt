@@ -16,6 +16,10 @@ class HttpStreamingVideoSource(
     override suspend fun open(): HttpStreamingVideoData {
         return HttpStreamingVideoData(uri, filename)
     }
+
+    override fun toString(): String {
+        return "HttpStreamingVideoSource(webVideo=$webVideo, filename='$filename')"
+    }
 }
 
 

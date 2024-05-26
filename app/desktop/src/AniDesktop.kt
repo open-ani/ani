@@ -39,6 +39,7 @@ import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.singleWindowApplication
 import dev.dirs.ProjectDirectories
 import kotlinx.coroutines.launch
+import me.him188.ani.app.data.media.resolver.DesktopWebVideoSourceResolver
 import me.him188.ani.app.data.media.resolver.HttpStreamingVideoSourceResolver
 import me.him188.ani.app.data.media.resolver.LocalFileVideoSourceResolver
 import me.him188.ani.app.data.media.resolver.TorrentVideoSourceResolver
@@ -128,6 +129,7 @@ object AniDesktop {
                             .map { TorrentVideoSourceResolver(it) }
                             .plus(LocalFileVideoSourceResolver())
                             .plus(HttpStreamingVideoSourceResolver())
+                            .plus(DesktopWebVideoSourceResolver())
                     )
                 }
             })

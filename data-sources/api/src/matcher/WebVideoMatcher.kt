@@ -16,13 +16,18 @@ class WebVideoMatcherContext(
     val media: Media,
 )
 
-class WebVideo(
+data class WebVideo(
     /**
      * 视频数据地址
      */
     val m3u8Url: String,
     /**
      * 请求视频数据时需要的 headers
+     *
+     * 建议提供:
+     *
+     * - `User-Agent`
+     * - `Referer`
      */
     val headers: Map<String, String>
 )

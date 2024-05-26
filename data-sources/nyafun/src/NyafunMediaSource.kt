@@ -61,7 +61,17 @@ class NyafunWebVideoMatcher : WebVideoMatcher {
         if ((url.contains(".mp4") || url.contains(".mkv") || url.contains(".m3u8"))
             && url.contains("verify=")
         ) {
-            return WebVideo(url, mapOf("Referer" to "https://www.nyafun.net/play"))
+            return WebVideo(
+                url, mapOf(
+                    "User-Agent" to """Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3""",
+                    "Referer" to "https://play.nyafun.net/",
+                    "Sec-Ch-Ua-Mobile" to "?0",
+                    "Sec-Ch-Ua-Platform" to "macOS",
+                    "Sec-Fetch-Dest" to "video",
+                    "Sec-Fetch-Mode" to "no-cors",
+                    "Sec-Fetch-Site" to "cross-site",
+                )
+            )
         }
         return null
     }
@@ -176,7 +186,7 @@ class NyafunMediaSource(config: MediaSourceConfig) : MediaSource {
                     }.firstOrNull()?.map { ep ->
                         createMediaMatch(bangumi, ep)
                     }.orEmpty().also {
-                        logger.info { "$ID fetched ${it.size} episodes for '$name'" }
+                        logger.info { "$ID fetched ${it.size} episodes for '$name': ${it.joinToString { it.media.episodeRange.toString() }}" }
                     }.asFlow()
                 }
         }

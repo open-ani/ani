@@ -67,7 +67,7 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
     }
 
     val component = run {
-        object : CallbackMediaPlayerComponent() { //"-vv", "--avcodec-hw", "none"
+        object : CallbackMediaPlayerComponent("-v") { //"-vv", "--avcodec-hw", "none"
             override fun mouseClicked(e: MouseEvent?) {
                 super.mouseClicked(e)
                 parent.dispatchEvent(e)
@@ -97,7 +97,17 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
                 source,
                 emptyVideoData(),
                 setPlay = {
-                    player.media().play(source.uri)
+
+                    player.media().play(
+                        source.uri,
+                        *buildList {
+                            add("http-user-agent=${source.webVideo.headers["User-Agent"] ?: "Mozilla/5.0"}")
+                            val referer = source.webVideo.headers["Referer"]
+                            if (referer != null) {
+                                add("http-referrer=${referer}")
+                            }
+                        }.toTypedArray()
+                    )
                     lastMedia = null
                 },
                 releaseResource = {}

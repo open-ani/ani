@@ -91,20 +91,15 @@ internal class ExoPlayerState @UiThread constructor(
                 emptyVideoData(),
                 releaseResource = {},
                 setMedia = {
+                    val headers = source.webVideo.headers
                     player.setMediaSource(
                         DefaultMediaSourceFactory(
                             DefaultHttpDataSource.Factory()
-                                .setUserAgent("""Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3""")
-                                .setDefaultRequestProperties(
-                                    mapOf(
-                                        "Referer" to "https://play.nyafun.net/",
-                                        "Sec-Ch-Ua-Mobile" to "?0",
-                                        "Sec-Ch-Ua-Platform" to "macOS",
-                                        "Sec-Fetch-Dest" to "video",
-                                        "Sec-Fetch-Mode" to "no-cors",
-                                        "Sec-Fetch-Site" to "cross-site",
-                                    )
+                                .setUserAgent(
+                                    headers["User-Agent"]
+                                        ?: """Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"""
                                 )
+                                .setDefaultRequestProperties(headers)
                                 .setConnectTimeoutMs(30_000),
                         ).createMediaSource(MediaItem.fromUri(source.uri))
                     )

@@ -6,6 +6,7 @@ coroutines = "1.8.1"
 kotlinpoet = "1.16.0"
 log4j-core = "2.20.0"
 okhttp = "4.12.0"
+playwright = "1.44.0"
 reorderable = "0.9.6"
 serialization = "1.6.3"
 atomicfu = "0.23.2"
@@ -95,6 +96,7 @@ directories = { module = "dev.dirs:directories", version = "26" }
 # Slf4j
 log4j-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j-core" }
 log4j2-slf4j-impl = { module = "org.apache.logging.log4j:log4j-slf4j2-impl", version.ref = "log4j-core" }
+playwright = { module = "com.microsoft.playwright:playwright", version.ref = "playwright" }
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 
