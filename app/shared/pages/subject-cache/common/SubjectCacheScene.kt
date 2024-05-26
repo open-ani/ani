@@ -1,5 +1,6 @@
 package me.him188.ani.app.ui.subject.cache
 
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.ModalBottomSheet
@@ -246,7 +247,7 @@ fun SubjectCacheScene(
                         }
                     },
                     onCancel = dismissSelector,
-                    Modifier.navigationBarsPadding(),
+                    Modifier.fillMaxHeight().navigationBarsPadding(), // 防止添加筛选后数量变少导致 bottom sheet 高度变化
                     progressProvider = { epFetch.mediaFetcherProgress }
                 )
             }

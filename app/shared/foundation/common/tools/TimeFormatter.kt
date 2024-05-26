@@ -10,11 +10,13 @@ import java.time.temporal.ChronoUnit
  */
 // TimeFormatterTest
 class TimeFormatter(
-    private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+    private val formatterWithTime: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+        .withZone(ZoneId.systemDefault()),
+    private val formatterWithoutTime: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
         .withZone(ZoneId.systemDefault()),
     private val getTimeNow: () -> Long = { System.currentTimeMillis() },
 ) {
-    fun format(timestamp: Long): String {
+    fun format(timestamp: Long, showTime: Boolean = true): String {
         val now = getTimeNow()
         val differenceInSeconds = ChronoUnit.SECONDS.between(Instant.ofEpochMilli(timestamp), Instant.ofEpochMilli(now))
 
@@ -29,7 +31,10 @@ class TimeFormatter(
             in -86400..<-3600 -> "${-differenceInSeconds / 3600} 小时后"
             in 86400..<86400 * 2 -> "${differenceInSeconds / 86400} 天前"
             in -86400 * 2..<-86400 -> "${differenceInSeconds / 86400} 天后"
-            else -> formatter.format(Instant.ofEpochMilli(timestamp))
+            else -> getFormatter(showTime).format(Instant.ofEpochMilli(timestamp))
         }
     }
+
+    private fun getFormatter(showTime: Boolean) =
+        if (showTime) formatterWithTime else formatterWithoutTime
 }

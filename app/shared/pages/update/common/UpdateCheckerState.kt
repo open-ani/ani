@@ -95,7 +95,7 @@ class UpdateCheckerState : AbstractViewModel() {
                     }?.browserDownloadUrl ?: "",
                     publishedAt = kotlin.runCatching {
                         TimeFormatter().format(
-                            Instant.parse(release.publishedAt).toEpochMilli()
+                            Instant.parse(release.publishedAt).toEpochMilli(),
                         )
                     }.getOrElse { release.publishedAt }
                 ).also {

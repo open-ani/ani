@@ -12,7 +12,7 @@ class TimeFormatterTest {
     private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))
 
     private val timeFormatter = TimeFormatter(
-        formatter = formatter,
+        formatterWithTime = formatter,
         getTimeNow = { fixedTime }
     )
 

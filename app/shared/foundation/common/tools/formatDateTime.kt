@@ -9,15 +9,18 @@ import androidx.compose.runtime.rememberUpdatedState
 /**
  * @see TimeFormatter
  * @see LocalTimeFormatter
+ *
+ * @param showTime 当距今比较远时, 是否展示时间
  */
 @Composable
 fun formatDateTime(
     timestamp: Long, // millis
+    showTime: Boolean = true,
 ): String {
     val formatter by rememberUpdatedState(LocalTimeFormatter.current)
-    return remember(timestamp) {
+    return remember(timestamp, showTime) {
         if (timestamp == 0L) ""
-        else formatter.format(timestamp)
+        else formatter.format(timestamp, showTime)
     }
 //    val formatter = remember(format) { DateTimeFormatter.ofPattern(format) }
 //    return remember(timestamp) {
