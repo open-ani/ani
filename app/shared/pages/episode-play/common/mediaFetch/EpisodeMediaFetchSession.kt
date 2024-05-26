@@ -154,7 +154,7 @@ internal class DefaultEpisodeMediaFetchSession(
         runUntilSuccess { episodeRepository.getEpisodeById(episodeId)!! }
     }
 
-    private val mediaFetcher = mediaSourceManager.enabledSources.map { providers ->
+    private val mediaFetcher = mediaSourceManager.allSources.map { providers ->
         val defaultPreference = settingsRepository.defaultMediaPreference.flow.first()
         MediaSourceMediaFetcher(
             configProvider = { MediaFetcherConfig.Default },

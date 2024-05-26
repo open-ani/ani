@@ -33,6 +33,7 @@ import me.him188.ani.app.data.media.resolver.ResolutionFailures
 import me.him188.ani.app.data.media.resolver.UnsupportedMediaException
 import me.him188.ani.app.data.media.resolver.VideoSourceResolutionException
 import me.him188.ani.app.data.media.resolver.VideoSourceResolver
+import me.him188.ani.app.data.models.MediaSelectorSettings
 import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.data.subject.SubjectInfo
 import me.him188.ani.app.data.subject.SubjectManager
@@ -128,7 +129,7 @@ class EpisodePresentation(
 @Stable
 interface EpisodeViewModel : HasBackgroundScope {
     val videoSourceResolver: VideoSourceResolver
-    
+
     val subjectId: Int
     val episodeId: Int
 
@@ -145,6 +146,7 @@ interface EpisodeViewModel : HasBackgroundScope {
      * 查询剧集数据源资源的会话
      */
     val episodeMediaFetchSession: EpisodeMediaFetchSession
+    val mediaSelectorSettings: MediaSelectorSettings
 
     val playerStatistics: PlayerStatisticsState
 
@@ -221,6 +223,8 @@ private class EpisodeViewModelImpl(
         episodeId,
         backgroundScope.coroutineContext,
     )
+    override val mediaSelectorSettings: MediaSelectorSettings by
+    settingsRepository.mediaSelectorSettings.flow.produceState(MediaSelectorSettings.Default)
     override val playerStatistics: PlayerStatisticsState = PlayerStatisticsState()
 
     override var mediaSelectorVisible: Boolean by mutableStateOf(false)

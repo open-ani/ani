@@ -80,6 +80,21 @@ internal fun SettingsScope.MediaSelectionGroup(vm: MediaSettingsViewModel) {
 
         HorizontalDividerItem()
 
+        val mediaSelectorSettings by vm.mediaSelectorSettings
+        SwitchItem(
+            checked = mediaSelectorSettings.showDisabled,
+            onCheckedChange = {
+                vm.mediaSelectorSettings.update(
+                    mediaSelectorSettings.copy(showDisabled = it)
+                )
+            },
+            title = { Text("显示禁用的数据源") },
+            Modifier.placeholder(vm.mediaSelectorSettings.loading),
+            description = { Text("以便在偏好数据源中未找到资源时，可临时启用禁用的数据源") },
+        )
+
+        HorizontalDividerItem()
+
         SorterItem(
             values = { vm.sortedLanguages },
             onSort = { list ->

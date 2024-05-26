@@ -82,7 +82,9 @@ fun EpisodeDetails(
                 ModalBottomSheet(onDismissRequest = { viewModel.mediaSelectorVisible = false }) {
                     EpisodePlayMediaSelector(
                         viewModel.mediaSelectorState,
-                        sourceResults = rememberMediaSelectorSourceResults { viewModel.episodeMediaFetchSession.sourceResults },
+                        sourceResults = rememberMediaSelectorSourceResults(
+                            settingsProvider = { viewModel.mediaSelectorSettings }
+                        ) { viewModel.episodeMediaFetchSession.sourceResults },
                         onDismissRequest = { viewModel.mediaSelectorVisible = false },
                         modifier = Modifier.fillMaxHeight(), // 防止添加筛选后数量变少导致 bottom sheet 高度变化
                     )

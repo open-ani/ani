@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.media.MediaCacheManager
+import me.him188.ani.app.data.models.MediaSelectorSettings
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.datasources.acgrip.AcgRipMediaSource
 import me.him188.ani.datasources.api.CachedMedia
@@ -137,7 +138,9 @@ private fun PreviewMediaSelector() {
                     },
                 )
             },
-            sourceResults = rememberMediaSelectorSourceResults {
+            sourceResults = rememberMediaSelectorSourceResults(
+                { MediaSelectorSettings.Default }
+            ) {
                 listOf(
                     TestMediaSourceResult(
                         MikanMediaSource.ID,

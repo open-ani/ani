@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.data.media.MediaSourceManager
 import me.him188.ani.app.data.models.MediaCacheSettings
+import me.him188.ani.app.data.models.MediaSelectorSettings
 import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.tools.MonoTasker
@@ -34,6 +35,11 @@ class MediaSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
 
     @Stable
     private val placeholderMediaPreference = MediaPreference.Empty.copy() // don't remove .copy, we need identity check
+
+    val mediaSelectorSettings by settings(
+        settingsRepository.mediaSelectorSettings,
+        MediaSelectorSettings.Default.copy(_placeholder = -1)
+    )
 
     val defaultMediaPreference by settingsRepository.defaultMediaPreference.flow
         .map {

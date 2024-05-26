@@ -13,6 +13,7 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import me.him188.ani.app.data.models.DanmakuSettings
 import me.him188.ani.app.data.models.MediaCacheSettings
+import me.him188.ani.app.data.models.MediaSelectorSettings
 import me.him188.ani.app.data.models.ProxySettings
 import me.him188.ani.app.data.models.UISettings
 import me.him188.ani.app.data.serializers.DanmakuConfigSerializer
@@ -31,7 +32,7 @@ interface SettingsRepository {
     val danmakuEnabled: Settings<Boolean>
     val danmakuConfig: Settings<DanmakuConfig>
 
-//    suspend fun setDanmakuEnabled(enabled: Boolean)
+    val mediaSelectorSettings: Settings<MediaSelectorSettings>
 
     /**
      * 全局默认选择资源的偏好设置
@@ -103,6 +104,11 @@ class PreferencesRepositoryImpl(
     override val danmakuEnabled: Settings<Boolean> = BooleanPreference("danmaku_enabled")
     override val danmakuConfig: Settings<DanmakuConfig> =
         SerializablePreference("danmaku_config", DanmakuConfigSerializer, default = { DanmakuConfig.Default })
+    override val mediaSelectorSettings: Settings<MediaSelectorSettings> = SerializablePreference(
+        "mediaSelectorSettings",
+        MediaSelectorSettings.serializer(),
+        default = { MediaSelectorSettings.Default }
+    )
     override val defaultMediaPreference: Settings<MediaPreference> =
         SerializablePreference(
             "defaultMediaPreference",

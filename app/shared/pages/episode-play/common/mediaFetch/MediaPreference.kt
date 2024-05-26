@@ -88,7 +88,6 @@ data class MediaPreference(
 }
 
 fun MediaPreference.isSourceEnabled(id: String): Boolean {
-    if (mediaSourceId == null) return true
     if (fallbackMediaSourceIds == null) return true
     return mediaSourceId == id || fallbackMediaSourceIds.contains(id)
 }
