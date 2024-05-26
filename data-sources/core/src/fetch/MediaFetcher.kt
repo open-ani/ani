@@ -1,5 +1,6 @@
 package me.him188.ani.datasources.core.fetch
 
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -10,6 +11,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flowOf
@@ -18,7 +20,6 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.flow.shareIn
-import kotlinx.coroutines.flow.take
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.paging.SizedSource
 import me.him188.ani.datasources.api.paging.filter
@@ -60,7 +61,7 @@ interface MediaFetchSession {
     /**
      * Results from each source. The key is the source ID.
      */
-    val resultsPerSource: Map<String, MediaSourceResult> // dev notes: see implementation of [DownloadProvider]s for the IDs.
+    val resultsPerSource: Map<String, MediaSourceResult> // dev notes: see implementation of [MediaSource]s for the IDs.
 
     /**
      * Cumulative results from all sources.
@@ -79,18 +80,12 @@ interface MediaFetchSession {
      * If [resultsPerSource] is not collected, this will always be false.
      */
     val hasCompleted: Flow<Boolean>
-
-    /**
-     * Overall progress of all the sources.
-     *
-     * If one of the source cannot be determined the total size, the overall progress will skip that source.
-     * Hence when [progress] emits `1f`, it does not necessarily mean all sources have completed.
-     */
-    val progress: Flow<Float>
 }
 
 @Stable
 interface MediaSourceResult {
+    val mediaSourceId: String
+
     val state: StateFlow<MediaSourceState>
 
     /**
@@ -108,16 +103,40 @@ interface MediaSourceResult {
      */
     val results: Flow<List<Media>>
 
-    val progress: Flow<Progress>
+    /**
+     * 仅当启用时才获取结果.
+     */
+    val resultsIfEnabled
+        get() = state
+            .map { it !is MediaSourceState.Disabled }
+            .distinctUntilChanged()
+            .flatMapLatest {
+                if (it) results else flowOf(emptyList())
+            }
+
+    /**
+     * 重新请求获取结果.
+     *
+     * 即使状态是 [MediaSourceState.Disabled], 也会重新请求.
+     */
+    fun restart()
 }
 
+@Immutable
 class Progress(
     val current: Int,
     val total: Int?,
 )
 
+@Stable
 sealed class MediaSourceState {
     data object Idle : MediaSourceState()
+
+    /**
+     * 被禁用, 因此不会主动发起请求. 仍然可以通过 [MediaSourceResult.restart] 发起请求.
+     */
+    data object Disabled : MediaSourceState()
+
     data object Working : MediaSourceState()
 
 
@@ -154,63 +173,63 @@ class MediaFetcherConfig {
 class MediaSourceMediaFetcher(
     private val configProvider: () -> MediaFetcherConfig,
     private val mediaSources: List<MediaSource>,
+    private val sourceEnabled: (MediaSource) -> Boolean,
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
 ) : MediaFetcher {
     private val scope = CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
 
     private inner class MediaSourceResultImpl(
-        private val dataSourceId: String,
+        override val mediaSourceId: String,
         private val config: MediaFetcherConfig,
+        val disabled: Boolean,
         pagedSources: Flow<SizedSource<MediaMatch>>,
     ) : MediaSourceResult {
-        override val state: MutableStateFlow<MediaSourceState> = MutableStateFlow(MediaSourceState.Idle)
+        override val state: MutableStateFlow<MediaSourceState> =
+            MutableStateFlow(if (disabled) MediaSourceState.Disabled else MediaSourceState.Idle)
+        private val restartCount = MutableStateFlow(0)
 
         override val results: Flow<List<Media>> by lazy {
-            pagedSources
-                .flatMapMerge { sources ->
-                    sources.results.map { it.media }
-                }
-                .onStart {
-                    state.value = MediaSourceState.Working
-                }
-                .catch {
-                    state.value = MediaSourceState.Failed(it)
-                    logger.error(it) { "Failed to fetch media from $dataSourceId because of upstream error" }
-                    throw it
-                }
-                .onCompletion {
-                    if (it == null) {
-                        state.value = MediaSourceState.Succeed
-                    } else {
-                        val currentState = state.value
-                        if (currentState is MediaSourceState.Failed) {
-                            // upstream failure re-caught here
-                            throw it
-                        }
-                        // downstream (collector) failure
-                        state.value = MediaSourceState.Abandoned(it)
-                        logger.error(it) { "Failed to fetch media from $dataSourceId because of downstream error" }
+            restartCount.flatMapLatest {
+                pagedSources
+                    .flatMapMerge { sources ->
+                        sources.results.map { it.media }
+                    }
+                    .onStart {
+                        state.value = MediaSourceState.Working
+                    }
+                    .catch {
+                        state.value = MediaSourceState.Failed(it)
+                        logger.error(it) { "Failed to fetch media from $mediaSourceId because of upstream error" }
                         throw it
                     }
-                }
-                .runningFold(emptyList<Media>()) { acc, list ->
-                    acc + list
-                }
-                .map { list ->
-                    list.distinctBy { it.mediaId }
-                }
-                .shareIn(
-                    scope, replay = 1, started = SharingStarted.WhileSubscribed(5000)
-                )
+                    .onCompletion {
+                        if (it == null) {
+                            state.value = MediaSourceState.Succeed
+                        } else {
+                            val currentState = state.value
+                            if (currentState is MediaSourceState.Failed) {
+                                // upstream failure re-caught here
+                                throw it
+                            }
+                            // downstream (collector) failure
+                            state.value = MediaSourceState.Abandoned(it)
+                            logger.error(it) { "Failed to fetch media from $mediaSourceId because of downstream error" }
+                            throw it
+                        }
+                    }
+                    .runningFold(emptyList<Media>()) { acc, list ->
+                        acc + list
+                    }
+                    .map { list ->
+                        list.distinctBy { it.mediaId }
+                    }
+            }.shareIn(
+                scope, replay = 1, started = SharingStarted.WhileSubscribed(5000)
+            )
         }
 
-        override val progress: Flow<Progress> by lazy {
-            combine(results, pagedSources.flatMapLatest { it.totalSize }) { res, total ->
-                Progress(
-                    current = res.size,
-                    total = total
-                )
-            }
+        override fun restart() {
+            restartCount.value++
         }
     }
 
@@ -220,23 +239,22 @@ class MediaSourceMediaFetcher(
     ) : MediaFetchSession {
         override val resultsPerSource: Map<String, MediaSourceResult> = mediaSources.associateBy {
             it.mediaSourceId
-        }.mapValues { (id, provider) ->
+        }.mapValues { (id, source) ->
             MediaSourceResultImpl(
-                dataSourceId = id,
+                mediaSourceId = id,
                 config,
+                disabled = !sourceEnabled(source),
                 pagedSources = flowOf(request)
                     .map {
-                        provider.fetch(it).filter { media ->
+                        source.fetch(it).filter { media ->
                             media.matches(request)
                         }
-                    }.shareIn(
-                        scope, replay = 1, started = SharingStarted.Lazily,
-                    ).take(1) // so that the flow can normally complete
+                    }// so that the flow can normally complete
             )
         }
 
         override val cumulativeResults: Flow<List<Media>> =
-            combine(resultsPerSource.values.map { it.results }) { lists ->
+            combine(resultsPerSource.values.map { it.resultsIfEnabled }) { lists ->
                 // Merge into one single list
                 lists.fold(mutableListOf<Media>()) { acc, list ->
                     acc.addAll(list.distinctBy { it.originalTitle }) // distinct within this source's scope
@@ -250,32 +268,6 @@ class MediaSourceMediaFetcher(
 
         override val hasCompleted = combine(resultsPerSource.values.map { it.state }) { states ->
             states.all { it is MediaSourceState.Completed }
-        }
-
-        override val progress: Flow<Float> = combine(resultsPerSource.values.map { it.progress }) { progresses ->
-            var total = 0
-            var current = 0
-            if (progresses.isEmpty()) {
-                return@combine 1f
-            }
-            if (progresses.all { it.total == null }) {
-                return@combine 1f
-            }
-            for (progress in progresses) {
-                if (progress.total == null) {
-                    continue
-                } else {
-                    total += progress.total
-                    current += progress.current
-                }
-            }
-            if (total == 0) {
-                0f
-            } else {
-                current.toFloat() / total
-            }
-        }.combine(hasCompleted) { progress, hasCompleted ->
-            if (hasCompleted) 1f else progress
         }
     }
 

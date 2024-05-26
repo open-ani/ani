@@ -1,6 +1,7 @@
 package me.him188.ani.app.ui.subject.episode.mediaFetch
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,24 +10,27 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.outlined.Subtitles
+import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.HorizontalRule
 import androidx.compose.material.icons.rounded.DownloadDone
 import androidx.compose.material.icons.rounded.Public
 import androidx.compose.material.icons.rounded.Radar
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
@@ -34,12 +38,14 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -53,6 +59,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.tools.formatDateTime
+import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.subject.episode.details.renderSubtitleLanguage
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.source.MediaSourceLocation
@@ -65,42 +72,87 @@ private inline val WINDOW_VERTICAL_PADDING get() = 8.dp
 /**
  * 通用的数据源选择器. See preview
  *
- * @param progressProvider `1f` to hide the progress bar. `null` to show a endless progress bar.
  * @param actions shown at the bottom
  */
 @Composable
 fun MediaSelector(
     state: MediaSelectorState,
     modifier: Modifier = Modifier,
-    progressProvider: () -> Float? = { 1f },
+    sourceResults: MediaSelectorSourceResults = emptyMediaSelectorSourceResults(),
     onClickItem: ((Media) -> Unit)? = null,
     actions: (@Composable RowScope.() -> Unit)? = null,
 ) = Surface {
     Column(modifier) {
-        Row(Modifier.fillMaxWidth()) {
-            val progress = progressProvider() // recompose this row only as the progress might update frequently
-            if (progress == 1f) return@Row
+        if (sourceResults.anyLoading) {
+            Row(Modifier.fillMaxWidth()) {
 
-            // 刻意一直展示一个一直在动的进度条, 因为实测其实资源都是一起来的, 也就是进度很多时候只有 0 和 1.
-            // 如果按进度展示进度条, 就会一直是 0, 进度条整个是白色的, 看不出来, 不容易区分是正在加载还是加载完了.
-            LinearProgressIndicator(
-                Modifier.padding(bottom = WINDOW_VERTICAL_PADDING)
-                    .fillMaxWidth()
-            )
+                // 刻意一直展示一个一直在动的进度条, 因为实测其实资源都是一起来的, 也就是进度很多时候只有 0 和 1.
+                // 如果按进度展示进度条, 就会一直是 0, 进度条整个是白色的, 看不出来, 不容易区分是正在加载还是加载完了.
+                LinearProgressIndicator(
+                    Modifier.padding(bottom = WINDOW_VERTICAL_PADDING)
+                        .fillMaxWidth()
+                )
+            }
         }
 
         val lazyListState = rememberLazyListState()
+        var isShowDetails by remember { mutableStateOf(false) }
         LazyColumn(
             Modifier.padding(bottom = WINDOW_VERTICAL_PADDING).weight(1f, fill = false),
             lazyListState,
         ) {
             item {
-                MediaSourceResultsRow()
+
+                Row(
+                    Modifier.clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) { isShowDetails = !isShowDetails },
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        remember(
+                            sourceResults.anyLoading,
+                            sourceResults.enabledSourceCount,
+                            sourceResults.totalSourceCount
+                        ) {
+                            val status = if (sourceResults.anyLoading) "正在查询" else "已查询"
+                            "$status ${sourceResults.enabledSourceCount}/${sourceResults.totalSourceCount} 数据源"
+                        },
+                        Modifier.weight(1f),
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+
+                    // TODO: 允许展开的话可能要考虑需要把下面 FlowList 变成 Grid 
+//                    IconButton({ isShowDetails = !isShowDetails }) {
+//                        if (isShowDetails) {
+//                            Icon(Icons.Rounded.UnfoldLess, "展示更少")
+//                        } else {
+//                            Icon(Icons.Rounded.UnfoldMore, "展示更多")
+//                        }
+//                    }
+                }
             }
 
             item {
-                HorizontalDivider(Modifier.padding(top = 8.dp))
+                MediaSourceResultsRow(
+                    isShowDetails,
+                    sourceResults,
+                    sourceSelected = { state.selectedMediaSource == it },
+                    onClick = {
+                        if (it.isDisabled || it.isFailed) {
+                            it.restart()
+                        } else {
+                            state.preferMediaSource(it.mediaSourceId, removeOnExist = true)
+                        }
+                    },
+                    Modifier.animateItemPlacement()
+                )
             }
+
+//            item {
+//                HorizontalDivider(Modifier.padding(top = 8.dp))
+//            }
 
             stickyHeader {
                 val isStuck by remember(lazyListState) {
@@ -110,23 +162,23 @@ fun MediaSelector(
                 }
                 Surface(
 //                    tonalElevation = if (isStuck) 3.dp else 0.dp,
-                    shadowElevation = if (isStuck) 3.dp else 0.dp
+                    Modifier.animateItemPlacement(),
                 ) {
                     Column(
                         Modifier.padding(vertical = 12.dp).fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        MediaSelectorFilters(state)
-
                         Text(
                             remember(state.candidates.size, state.mediaList.size) {
                                 "筛选到 ${state.candidates.size}/${state.mediaList.size} 条资源"
                             },
                             style = MaterialTheme.typography.titleMedium,
                         )
+
+                        MediaSelectorFilters(state)
                     }
                     if (isStuck) {
-                        HorizontalDivider(Modifier.fillMaxWidth())
+                        HorizontalDivider(Modifier.fillMaxWidth(), thickness = 2.dp)
                     }
                 }
             }
@@ -164,43 +216,189 @@ fun MediaSelector(
 }
 
 @Composable
-private fun MediaSourceResultsRow(modifier: Modifier = Modifier) {
-    LazyHorizontalGrid(
-        GridCells.Fixed(2),
-        Modifier.height(64.dp * 2 + 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        item {
-            OutlinedCard(
-                modifier,
-                shape = MaterialTheme.shapes.medium,
-            ) {
-                Column(
-                    Modifier.padding(all = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text("Mikan", style = MaterialTheme.typography.titleMedium)
+private fun MediaSourceResultsRow(
+    expanded: Boolean,
+    sourceResults: MediaSelectorSourceResults,
+    sourceSelected: (String) -> Boolean,
+    onClick: (MediaSourceResultPresentation) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    if (expanded) {
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = modifier
+        ) {
+            for (item in sourceResults.listSorted) {
+                MediaSourceResultCard(
+                    sourceSelected(item.mediaSourceId),
+                    expanded = true,
+                    { onClick(item) },
+                    item,
+                    Modifier
+                        .widthIn(min = 100.dp)
+                        .ifThen(item.isDisabled) {
+                            alpha(1 - 0.618f)
+                        }
+                )
+            }
+        }
+    } else {
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = modifier,
+        ) {
+            items(sourceResults.listSorted, key = { it.mediaSourceId }) { item ->
+                MediaSourceResultCard(
+                    sourceSelected(item.mediaSourceId),
+                    expanded = false,
+                    { onClick(item) },
+                    item,
+                    Modifier
+                        .ifThen(item.isDisabled) {
+                            alpha(1 - 0.618f)
+                        }
+                )
+            }
+        }
+    }
+}
 
-                    ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Icon(Icons.Outlined.Subtitles, "弹幕数量")
+@Composable
+private fun MediaSourceResultCard(
+    selected: Boolean,
+    expanded: Boolean,
+    onClick: () -> Unit,
+    source: MediaSourceResultPresentation,
+    modifier: Modifier = Modifier
+) {
+    if (expanded) {
+        OutlinedCard(
+            onClick = onClick,
+            modifier,
+            shape = MaterialTheme.shapes.medium,
+            colors = CardDefaults.elevatedCardColors(
+                containerColor = if (selected) MaterialTheme.colorScheme.secondaryContainer
+                else CardDefaults.elevatedCardColors().containerColor
+            ),
+        ) {
+            Column(
+                Modifier.padding(all = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    MediaSourceIcon(id = source.mediaSourceId, allowText = false)
+
+                    Text(
+                        renderMediaSource(source.mediaSourceId),
+                        style = MaterialTheme.typography.titleMedium,
+                        maxLines = 1,
+                        softWrap = false,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.widthIn(max = 80.dp),
+                    )
+                }
+
+                ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
+                    Row(
+                        Modifier.heightIn(min = 24.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        when {
+                            source.isDisabled -> {
+                                Icon(Icons.Outlined.HorizontalRule, null)
+                                Text("点击临时启用")
+                            }
+
+                            source.isLoading -> {
+                                CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 3.dp)
+                                Text(remember(source.totalCount) { "${source.totalCount}" })
+                            }
+
+                            source.isFailed -> {
+                                CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.error) {
+                                    Icon(Icons.Outlined.Close, "查询失败")
+                                    Text("点击重试")
+                                }
+                            }
+
+                            else -> {
+                                Icon(Icons.Outlined.Check, "查询成功")
+                                Text(remember(source.totalCount) { "${source.totalCount}" })
+                            }
                         }
                     }
+                }
 
-                    ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                        }
+                ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
                     }
                 }
             }
         }
+    } else {
+        InputChip(
+            selected,
+            onClick,
+            label = {
+                when {
+                    source.isDisabled -> {
+                        Icon(Icons.Outlined.HorizontalRule, null)
+                    }
+
+                    source.isLoading -> {
+                        CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 3.dp)
+                    }
+
+                    source.isFailed -> {
+                        CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.error) {
+                            Icon(Icons.Outlined.Close, "查询失败")
+                        }
+                    }
+
+                    else -> {
+                        Text(remember(source.totalCount) { "${source.totalCount}" })
+                    }
+                }
+            },
+            modifier = modifier.heightIn(min = 40.dp),
+            leadingIcon = {
+                MediaSourceIcon(id = source.mediaSourceId)
+            }
+        )
+//        Row(
+//            Modifier.padding(vertical = 8.dp, horizontal = 12.dp),
+//            horizontalArrangement = Arrangement.spacedBy(8.dp),
+//            verticalAlignment = Alignment.CenterVertically
+//        ) {
+//            MediaSourceIcon(id = source.mediaSourceId)
+//            when {
+//                source.isDisabled -> {
+//                    Icon(Icons.Outlined.HorizontalRule, null)
+//                }
+//
+//                source.isLoading -> {
+//                    CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 3.dp)
+//                }
+//
+//                source.isFailed -> {
+//                    CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.error) {
+//                        Icon(Icons.Outlined.Close, "查询失败")
+//                    }
+//                }
+//
+//                else -> {
+//                    Text(remember(source.totalCount) { "${source.totalCount}" })
+//                }
+//            }
+//        }
     }
 }
 
@@ -220,20 +418,18 @@ private fun MediaSelectorFilters(
         modifier,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        MediaSelectorFilterChip(
-            selected = state.selectedMediaSource,
-            allValues = { state.mediaSources },
-            onSelect = { state.preferMediaSource(it) },
-            onDeselect = { state.preferMediaSource(it, removeOnExist = true) },
-            name = { Text("数据源") },
-            Modifier.widthIn(min = minWidth, max = maxWidth),
-            label = { MediaSelectorFilterChipText(renderMediaSource(it)) },
-            leadingIcon = { id ->
-                getMediaSourceIcon(id)?.let {
-                    Icon(it, null)
-                }
-            }
-        )
+//        MediaSelectorFilterChip(
+//            selected = state.selectedMediaSource,
+//            allValues = { state.mediaSources },
+//            onSelect = { state.preferMediaSource(it) },
+//            onDeselect = { state.preferMediaSource(it, removeOnExist = true) },
+//            name = { Text("数据源") },
+//            Modifier.widthIn(min = minWidth, max = maxWidth),
+//            label = { MediaSelectorFilterChipText(renderMediaSource(it)) },
+//            leadingIcon = { id ->
+//                MediaSourceIcon(id)
+//            }
+//        )
         MediaSelectorFilterChip(
             selected = state.selectedResolution,
             allValues = { state.resolutions },
@@ -313,8 +509,10 @@ private fun <T : Any> MediaSelectorFilterChip(
                         label(it)
                     }
                 } else {
-                    Box {
-                        Box(Modifier.alpha(if (selectedState == null) 1f else 0f)) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Box(
+                            Modifier.alpha(if (selectedState == null) 1f else 0f) // 总是占位
+                        ) {
                             name()
                         }
                         selectedState?.let {
@@ -336,7 +534,7 @@ private fun <T : Any> MediaSelectorFilterChip(
                     }
                 }
             },
-            modifier = modifier,
+            modifier = modifier.heightIn(min = 40.dp),
         )
 
         DropdownMenu(showDropdown, onDismissRequest = { showDropdown = false }) {

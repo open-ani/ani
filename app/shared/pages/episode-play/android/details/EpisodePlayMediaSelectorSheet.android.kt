@@ -10,6 +10,7 @@ import me.him188.ani.app.data.media.MediaCacheManager
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorState
+import me.him188.ani.app.ui.subject.episode.mediaFetch.emptyMediaSelectorSourceResults
 import me.him188.ani.app.ui.subject.episode.mediaFetch.testMediaList
 import me.him188.ani.datasources.api.CachedMedia
 import me.him188.ani.datasources.api.topic.ResourceLocation
@@ -19,9 +20,9 @@ import me.him188.ani.datasources.api.topic.ResourceLocation
 private fun PreviewEpisodePlayMediaSelectorSheet() = ProvideCompositionLocalsForPreview {
     EpisodePlayMediaSelector(
         remember { createState() },
+        emptyMediaSelectorSourceResults(),
         onDismissRequest = {},
         Modifier.background(MaterialTheme.colorScheme.surface),
-        progressProvider = { null },
     )
 }
 
@@ -30,9 +31,9 @@ private fun PreviewEpisodePlayMediaSelectorSheet() = ProvideCompositionLocalsFor
 private fun PreviewEpisodePlayMediaSelectorSheet2() = ProvideCompositionLocalsForPreview {
     EpisodePlayMediaSelector(
         remember { createState() },
+        emptyMediaSelectorSourceResults(),
         onDismissRequest = {},
         Modifier.background(MaterialTheme.colorScheme.surface),
-        progressProvider = { 0.7f },
     )
 }
 
@@ -41,9 +42,9 @@ private fun PreviewEpisodePlayMediaSelectorSheet2() = ProvideCompositionLocalsFo
 private fun PreviewEpisodePlayMediaSelectorSheet3() = ProvideCompositionLocalsForPreview {
     EpisodePlayMediaSelector(
         remember { createState() },
+        emptyMediaSelectorSourceResults(),
         onDismissRequest = {},
         Modifier.background(MaterialTheme.colorScheme.surface),
-        progressProvider = { 1f },
     )
 }
 

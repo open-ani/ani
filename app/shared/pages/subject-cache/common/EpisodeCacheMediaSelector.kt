@@ -22,20 +22,18 @@ fun EpisodeCacheMediaSelector(
     onSelect: (Media) -> Unit,
     onCancel: () -> Unit,
     modifier: Modifier = Modifier,
-    progressProvider: () -> Float? = { 1f },
 ) {
     MediaSelector(
         state,
         modifier.padding(vertical = 12.dp, horizontal = 16.dp)
             .fillMaxWidth(),
-        progressProvider = progressProvider,
+        onClickItem = {
+            onSelect(it)
+        },
         actions = {
             OutlinedButton(onCancel) {
                 Text("取消")
             }
-        },
-        onClickItem = {
-            onSelect(it)
         }
     )
 }

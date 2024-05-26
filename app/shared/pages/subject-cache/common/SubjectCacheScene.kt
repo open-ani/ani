@@ -247,8 +247,7 @@ fun SubjectCacheScene(
                         }
                     },
                     onCancel = dismissSelector,
-                    Modifier.fillMaxHeight().navigationBarsPadding(), // 防止添加筛选后数量变少导致 bottom sheet 高度变化
-                    progressProvider = { epFetch.mediaFetcherProgress }
+                    Modifier.fillMaxHeight().navigationBarsPadding() // 防止添加筛选后数量变少导致 bottom sheet 高度变化
                 )
             }
         },

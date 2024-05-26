@@ -5,9 +5,23 @@ package me.him188.ani.app.ui.subject.episode.mediaFetch
  *     ./gradlew generateComposeResClass prepareAppResources
  */
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.DisplaySettings
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import me.him188.ani.app.Res
 import me.him188.ani.app.acg_rip
 import me.him188.ani.app.bangumi
@@ -64,5 +78,33 @@ fun getMediaSourceIcon(
         MikanMediaSource.ID, MikanCNMediaSource.ID -> painterResource(Res.drawable.mikan)
         BangumiSubjectProvider.ID -> painterResource(Res.drawable.bangumi)
         else -> null
+    }
+}
+
+/**
+ * 宽度不固定
+ */
+@Composable
+fun MediaSourceIcon(
+    id: String?,
+    modifier: Modifier = Modifier,
+    allowText: Boolean = true,
+) {
+    Box(modifier.clip(MaterialTheme.shapes.extraSmall).height(24.dp)) {
+        val icon = getMediaSourceIcon(id)
+        if (icon == null) {
+            if (allowText && id != null) {
+                Text(
+                    renderMediaSource(id),
+                    Modifier.height(24.dp),
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center,
+                )
+            } else {
+                Icon(Icons.Rounded.DisplaySettings, id)
+            }
+        } else {
+            Image(icon, null, Modifier.size(24.dp))
+        }
     }
 }

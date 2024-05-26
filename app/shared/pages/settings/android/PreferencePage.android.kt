@@ -8,6 +8,7 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.datasource.LoremIpsum
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import me.him188.ani.app.data.media.MediaSourceManager
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.rememberViewModel
@@ -80,6 +81,8 @@ private fun PreviewNetworkPreferenceTab() {
                             TestMediaSource("local"),
                         )
                     )
+                    override val allSources: SharedFlow<List<MediaSource>>
+                        get() = enabledSources
                     override val allIds: List<String> = enabledSources.value.map { it.mediaSourceId }
                     override val allIdsExceptLocal: List<String>
                         get() = allIds.filter { !isLocal(it) }

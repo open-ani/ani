@@ -3,12 +3,20 @@ package me.him188.ani.app.ui.subject.episode.mediaFetch
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.PreviewLightDark
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
 import me.him188.ani.app.data.media.MediaCacheManager
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.datasources.acgrip.AcgRipMediaSource
 import me.him188.ani.datasources.api.CachedMedia
 import me.him188.ani.datasources.api.DefaultMedia
 import me.him188.ani.datasources.api.EpisodeSort
+import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaProperties
 import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
@@ -16,7 +24,11 @@ import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.datasources.api.topic.SubtitleLanguage.ChineseSimplified
 import me.him188.ani.datasources.api.topic.SubtitleLanguage.ChineseTraditional
+import me.him188.ani.datasources.core.fetch.MediaSourceResult
+import me.him188.ani.datasources.core.fetch.MediaSourceState
 import me.him188.ani.datasources.dmhy.DmhyMediaSource
+import me.him188.ani.datasources.mikan.MikanCNMediaSource
+import me.him188.ani.datasources.mikan.MikanMediaSource
 
 private const val SOURCE_DMHY = DmhyMediaSource.ID
 private const val SOURCE_ACG = AcgRipMediaSource.ID
@@ -124,6 +136,48 @@ private fun PreviewMediaSelector() {
                     },
                 )
             },
+            sourceResults = rememberMediaSelectorSourceResults {
+                listOf(
+                    TestMediaSourceResult(
+                        MikanMediaSource.ID,
+                        initialState = MediaSourceState.Working,
+                        results = testMediaList
+                    ),
+                    TestMediaSourceResult(
+                        "dmhy",
+                        initialState = MediaSourceState.Succeed,
+                        results = testMediaList
+                    ),
+                    TestMediaSourceResult(
+                        "acg.rip",
+                        initialState = MediaSourceState.Disabled,
+                        results = testMediaList
+                    ),
+                    TestMediaSourceResult(
+                        MikanCNMediaSource.ID,
+                        initialState = MediaSourceState.Failed(IllegalStateException()),
+                        results = emptyList()
+                    ),
+                )
+            }
         )
+    }
+}
+
+private class TestMediaSourceResult(
+    override val mediaSourceId: String,
+    initialState: MediaSourceState,
+    results: List<Media>,
+) : MediaSourceResult {
+    override val state: MutableStateFlow<MediaSourceState> = MutableStateFlow(initialState)
+    override val results: Flow<List<Media>> = flowOf(results)
+
+    @OptIn(DelicateCoroutinesApi::class)
+    override fun restart() {
+        state.value = MediaSourceState.Working
+        GlobalScope.launch {
+            delay(3000)
+            state.value = MediaSourceState.Succeed
+        }
     }
 }

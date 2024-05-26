@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelector
+import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorSourceResults
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorState
 
 /**
@@ -17,20 +18,20 @@ import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorState
 @Composable
 fun EpisodePlayMediaSelector(
     state: MediaSelectorState,
+    sourceResults: MediaSelectorSourceResults,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
-    progressProvider: () -> Float? = { 1f },
 ) {
     MediaSelector(
         state,
         modifier.padding(vertical = 12.dp, horizontal = 16.dp)
             .fillMaxWidth()
             .navigationBarsPadding(),
-        progressProvider = progressProvider,
         actions = {
             TextButton(onDismissRequest) {
                 Text("取消")
             }
-        }
+        },
+        sourceResults = sourceResults,
     )
 }

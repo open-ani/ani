@@ -35,6 +35,7 @@ import me.him188.ani.app.tools.rememberBackgroundMonoTasker
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.subject.episode.EpisodeCollectionActionButton
 import me.him188.ani.app.ui.subject.episode.EpisodeViewModel
+import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberMediaSelectorSourceResults
 import me.him188.ani.app.ui.subject.episode.mediaSelectorState
 import me.him188.ani.app.ui.theme.slightlyWeaken
 import me.him188.ani.datasources.api.Media
@@ -81,9 +82,9 @@ fun EpisodeDetails(
                 ModalBottomSheet(onDismissRequest = { viewModel.mediaSelectorVisible = false }) {
                     EpisodePlayMediaSelector(
                         viewModel.mediaSelectorState,
+                        sourceResults = rememberMediaSelectorSourceResults { viewModel.episodeMediaFetchSession.sourceResults },
                         onDismissRequest = { viewModel.mediaSelectorVisible = false },
-                        Modifier.fillMaxHeight(), // 防止添加筛选后数量变少导致 bottom sheet 高度变化
-                        progressProvider = { viewModel.episodeMediaFetchSession.mediaFetcherProgress },
+                        modifier = Modifier.fillMaxHeight(), // 防止添加筛选后数量变少导致 bottom sheet 高度变化
                     )
                 }
             }

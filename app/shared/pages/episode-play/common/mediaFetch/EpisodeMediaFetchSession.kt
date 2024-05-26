@@ -17,11 +17,11 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.media.MediaSourceManager
 import me.him188.ani.app.data.repositories.EpisodePreferencesRepository
 import me.him188.ani.app.data.repositories.EpisodeRepository
+import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.data.repositories.SubjectRepository
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
@@ -35,8 +35,8 @@ import me.him188.ani.datasources.core.fetch.MediaFetchSession
 import me.him188.ani.datasources.core.fetch.MediaFetcher
 import me.him188.ani.datasources.core.fetch.MediaFetcherConfig
 import me.him188.ani.datasources.core.fetch.MediaSourceMediaFetcher
+import me.him188.ani.datasources.core.fetch.MediaSourceResult
 import me.him188.ani.utils.coroutines.runUntilSuccess
-import me.him188.ani.utils.coroutines.sampleWithInitial
 import org.koin.core.Koin
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -54,13 +54,6 @@ interface EpisodeMediaFetchSession {
     val mediaFetchSession: SharedFlow<MediaFetchSession>
 
     /**
-     * Range is `0f..1f`. `null` means progress is not yet known.
-     *
-     * It is guaranteed to emit `1f` when the fetcher has succeed.
-     */
-    val mediaFetcherProgress: Float?
-
-    /**
      * Whether the [mediaFetchSession] has succeed. It is always `false` when initialized.
      */
     val mediaFetcherCompleted: Boolean
@@ -69,6 +62,11 @@ interface EpisodeMediaFetchSession {
      * A [MediaSelectorState] associated with the fetched medias.
      */
     val mediaSelectorState: MediaSelectorState
+
+    /**
+     * 每个数据源的结果
+     */
+    val sourceResults: List<MediaSourceResult>
 }
 
 suspend fun EpisodeMediaFetchSession.awaitCompletion() {
@@ -147,6 +145,7 @@ internal class DefaultEpisodeMediaFetchSession(
     private val episodeRepository: EpisodeRepository by inject()
     private val mediaSourceManager: MediaSourceManager by inject()
     private val episodePreferencesRepository: EpisodePreferencesRepository by inject()
+    private val settingsRepository: SettingsRepository by inject()
 
     private val subject = flowOf(subjectId).mapLatest {
         runUntilSuccess { subjectRepository.getSubject(subjectId)!! }
@@ -156,9 +155,11 @@ internal class DefaultEpisodeMediaFetchSession(
     }
 
     private val mediaFetcher = mediaSourceManager.enabledSources.map { providers ->
+        val defaultPreference = settingsRepository.defaultMediaPreference.flow.first()
         MediaSourceMediaFetcher(
             configProvider = { MediaFetcherConfig.Default },
             mediaSources = providers,
+            sourceEnabled = { defaultPreference.isSourceEnabled(it.mediaSourceId) },
             parentCoroutineContext = backgroundScope.coroutineContext,
         )
     }.shareInBackground(started = SharingStarted.Lazily)
@@ -184,12 +185,6 @@ internal class DefaultEpisodeMediaFetchSession(
     override val mediaFetchSession = combine(mediaFetchRequest, mediaFetcher) { req, fetcher ->
         fetcher.fetch(req)
     }.shareInBackground(started = SharingStarted.Lazily)
-
-    override val mediaFetcherProgress by mediaFetchSession
-        .flatMapLatest { it.progress }
-        .sampleWithInitial(100)
-        .onCompletion { if (it == null) emit(1f) }
-        .produceState(null)
 
     override val mediaFetcherCompleted by mediaFetchSession.flatMapLatest { it.hasCompleted }
         .produceState(false)
@@ -282,4 +277,8 @@ internal class DefaultEpisodeMediaFetchSession(
             }
         }
     }
+
+    override val sourceResults: List<MediaSourceResult> by mediaFetchSession.map {
+        it.resultsPerSource.values.toList()
+    }.produceState(emptyList())
 }

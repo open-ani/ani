@@ -9,11 +9,13 @@ import androidx.compose.runtime.IntState
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.RememberObserver
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
@@ -36,6 +38,9 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
+import me.him188.ani.app.platform.currentAniBuildConfig
+import me.him188.ani.utils.logging.error
+import me.him188.ani.utils.logging.logger
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration.Companion.seconds
@@ -68,6 +73,7 @@ import kotlin.time.Duration.Companion.seconds
  * It is recommended to only use [HasBackgroundScope] in internal implementations,
  * so that public users of your API does not see the background scope and can't misuse it - launching a job in a scope that they don't control is bad.
  */
+@Stable
 interface HasBackgroundScope {
     /**
      * The background scope for launching background jobs.
@@ -345,8 +351,7 @@ fun BackgroundScope(
 @Composable
 inline fun rememberBackgroundScope(
     crossinline coroutineContext: @DisallowComposableCalls () -> CoroutineContext = { EmptyCoroutineContext }
-): HasBackgroundScope =
-    remember { RememberedBackgroundScope(coroutineContext()) }
+): HasBackgroundScope = remember { RememberedBackgroundScope(coroutineContext()) }
 
 private class SimpleBackgroundScope(
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext
@@ -359,8 +364,22 @@ private class SimpleBackgroundScope(
 internal class RememberedBackgroundScope(
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext
 ) : HasBackgroundScope, RememberObserver {
+    private companion object {
+        val logger = logger<RememberedBackgroundScope>()
+    }
+
+    private val creationStacktrace =
+        if (currentAniBuildConfig.isDebug) Throwable("Stacktrace for background scope creation") else null
+
     override val backgroundScope: CoroutineScope =
-        CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
+        CoroutineScope(
+            CoroutineExceptionHandler { coroutineContext, throwable ->
+                if (throwable is CancellationException) return@CoroutineExceptionHandler
+                creationStacktrace?.let { throwable.addSuppressed(it) }
+                logger.error(throwable) { "An error occurred in the background scope in coroutine $coroutineContext" }
+            }.plus(parentCoroutineContext)
+                .plus(SupervisorJob(parentCoroutineContext[Job]))
+        )
 
     override fun onAbandoned() {
         backgroundScope.cancel("RememberedBackgroundScope left the composition")
