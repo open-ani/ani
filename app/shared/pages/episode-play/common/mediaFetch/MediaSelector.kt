@@ -20,7 +20,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.Help
+import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.HorizontalRule
@@ -126,7 +126,7 @@ fun MediaSelector(
                         }
                     }
                     IconButton({ showHelp = true }) {
-                        Icon(Icons.AutoMirrored.Outlined.Help, "帮助")
+                        Icon(Icons.AutoMirrored.Outlined.HelpOutline, "帮助")
                     }
                     val navigator = LocalNavigator.current
                     IconButton({ navigator.navigatePreferences(SettingsTab.MEDIA) }) {

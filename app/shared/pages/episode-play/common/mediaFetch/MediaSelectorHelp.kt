@@ -60,7 +60,7 @@ fun MediaSelectorHelp(
 }
 
 @Composable
-fun ExplainerCard(
+fun ExplainerCard(  
     title: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     icon: (@Composable () -> Unit)? = null,
