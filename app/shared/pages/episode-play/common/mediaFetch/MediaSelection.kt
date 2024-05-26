@@ -20,15 +20,15 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Help
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.HorizontalRule
-import androidx.compose.material.icons.rounded.DownloadDone
-import androidx.compose.material.icons.rounded.Public
-import androidx.compose.material.icons.rounded.Radar
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -36,6 +36,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.LocalContentColor
@@ -58,11 +59,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.tools.formatDateTime
 import me.him188.ani.app.ui.foundation.ifThen
+import me.him188.ani.app.ui.icons.MediaSourceIcons
+import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.subject.episode.details.renderSubtitleLanguage
 import me.him188.ani.datasources.api.Media
-import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.datasources.api.topic.FileSize
 
 
@@ -123,6 +126,20 @@ fun MediaSelector(
                         style = MaterialTheme.typography.titleMedium,
                     )
 
+                    var showHelp by remember { mutableStateOf(false) }
+                    if (showHelp) {
+                        BasicAlertDialog({ showHelp = false }) {
+                            MediaSelectorHelp({ showHelp = false })
+                        }
+                    }
+                    IconButton({ showHelp = true }) {
+                        Icon(Icons.AutoMirrored.Outlined.Help, "帮助")
+                    }
+                    val navigator = LocalNavigator.current
+                    IconButton({ navigator.navigatePreferences(SettingsTab.MEDIA) }) {
+                        Icon(Icons.Outlined.Settings, "设置")
+                    }
+
                     // TODO: 允许展开的话可能要考虑需要把下面 FlowList 变成 Grid 
 //                    IconButton({ isShowDetails = !isShowDetails }) {
 //                        if (isShowDetails) {
@@ -135,19 +152,54 @@ fun MediaSelector(
             }
 
             item {
-                MediaSourceResultsRow(
-                    isShowDetails,
-                    sourceResults,
-                    sourceSelected = { state.selectedMediaSource == it },
-                    onClick = {
-                        if (it.isDisabled || it.isFailed) {
-                            it.restart()
-                        } else {
-                            state.preferMediaSource(it.mediaSourceId, removeOnExist = true)
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    val onClick: (MediaSourceResultPresentation) -> Unit = remember(state) {
+                        { item ->
+                            if (item.isDisabled || item.isFailed) {
+                                item.restart()
+                            } else {
+                                state.preferMediaSource(item.mediaSourceId, removeOnExist = true)
+                            }
                         }
-                    },
-                    Modifier.animateItemPlacement()
-                )
+                    }
+                    MediaSourceResultsRow(
+                        isShowDetails,
+                        sourceResults.btSources,
+                        sourceSelected = { state.selectedMediaSource == it },
+                        onClick = onClick,
+                        label = {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(MediaSourceIcons.KindBT, null)
+                                ProvideTextStyle(MaterialTheme.typography.labelSmall) {
+                                    Box(Modifier.padding(top = 2.dp), contentAlignment = Alignment.Center) {
+                                        Text("在线", Modifier.alpha(0f)) // 相同宽度
+                                        Text("BT")
+                                    }
+                                }
+                            }
+                        },
+                        Modifier.animateItemPlacement()
+                    )
+                    MediaSourceResultsRow(
+                        isShowDetails,
+                        sourceResults.webSources,
+                        sourceSelected = { state.selectedMediaSource == it },
+                        onClick = onClick,
+                        label = {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(MediaSourceIcons.KindWeb, null)
+                                ProvideTextStyle(MaterialTheme.typography.labelSmall) {
+                                    Box(Modifier.padding(top = 2.dp), contentAlignment = Alignment.Center) {
+                                        Text("在线")
+                                    }
+                                }
+                            }
+//                            Icon(MediaSourceIcons.Web, null)
+//                            Text("在线", Modifier.padding(start = 4.dp))
+                        },
+                        Modifier.animateItemPlacement()
+                    )
+                }
             }
 
 //            item {
@@ -164,21 +216,23 @@ fun MediaSelector(
 //                    tonalElevation = if (isStuck) 3.dp else 0.dp,
                     Modifier.animateItemPlacement(),
                 ) {
-                    Column(
-                        Modifier.padding(vertical = 12.dp).fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        Text(
-                            remember(state.candidates.size, state.mediaList.size) {
-                                "筛选到 ${state.candidates.size}/${state.mediaList.size} 条资源"
-                            },
-                            style = MaterialTheme.typography.titleMedium,
-                        )
+                    Column {
+                        Column(
+                            Modifier.padding(vertical = 12.dp).fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            Text(
+                                remember(state.candidates.size, state.mediaList.size) {
+                                    "筛选到 ${state.candidates.size}/${state.mediaList.size} 条资源"
+                                },
+                                style = MaterialTheme.typography.titleMedium,
+                            )
 
-                        MediaSelectorFilters(state)
-                    }
-                    if (isStuck) {
-                        HorizontalDivider(Modifier.fillMaxWidth(), thickness = 2.dp)
+                            MediaSelectorFilters(state)
+                        }
+                        if (isStuck) {
+                            HorizontalDivider(Modifier.fillMaxWidth(), thickness = 2.dp)
+                        }
                     }
                 }
             }
@@ -218,47 +272,56 @@ fun MediaSelector(
 @Composable
 private fun MediaSourceResultsRow(
     expanded: Boolean,
-    sourceResults: MediaSelectorSourceResults,
+    list: List<MediaSourceResultPresentation>,
     sourceSelected: (String) -> Boolean,
     onClick: (MediaSourceResultPresentation) -> Unit,
+    label: @Composable RowScope.() -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    if (expanded) {
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = modifier
-        ) {
-            for (item in sourceResults.listSorted) {
-                MediaSourceResultCard(
-                    sourceSelected(item.mediaSourceId),
-                    expanded = true,
-                    { onClick(item) },
-                    item,
-                    Modifier
-                        .widthIn(min = 100.dp)
-                        .ifThen(item.isDisabled) {
-                            alpha(1 - 0.618f)
-                        }
-                )
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+        ProvideTextStyle(MaterialTheme.typography.labelLarge) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                label()
             }
         }
-    } else {
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = modifier,
-        ) {
-            items(sourceResults.listSorted, key = { it.mediaSourceId }) { item ->
-                MediaSourceResultCard(
-                    sourceSelected(item.mediaSourceId),
-                    expanded = false,
-                    { onClick(item) },
-                    item,
-                    Modifier
-                        .ifThen(item.isDisabled) {
-                            alpha(1 - 0.618f)
-                        }
-                )
+
+        if (expanded) {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = modifier
+            ) {
+                for (item in list) {
+                    MediaSourceResultCard(
+                        sourceSelected(item.mediaSourceId),
+                        expanded = true,
+                        { onClick(item) },
+                        item,
+                        Modifier
+                            .widthIn(min = 100.dp)
+                            .ifThen(item.isDisabled) {
+                                alpha(1 - 0.618f)
+                            }
+                    )
+                }
+            }
+        } else {
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = modifier,
+            ) {
+                items(list, key = { it.mediaSourceId }) { item ->
+                    MediaSourceResultCard(
+                        sourceSelected(item.mediaSourceId),
+                        expanded = false,
+                        { onClick(item) },
+                        item,
+                        Modifier
+                            .ifThen(item.isDisabled) {
+                                alpha(1 - 0.618f)
+                            }
+                    )
+                }
             }
         }
     }
@@ -632,11 +695,7 @@ private fun MediaItem(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            when (media.location) {
-                                MediaSourceLocation.Local -> Icon(Icons.Rounded.DownloadDone, null)
-                                MediaSourceLocation.Lan -> Icon(Icons.Rounded.Radar, null)
-                                MediaSourceLocation.Online -> Icon(Icons.Rounded.Public, null)
-                            }
+                            Icon(MediaSourceIcons.location(media.location, media.kind), null)
 
                             Text(
                                 remember(media.mediaSourceId) { renderMediaSource(media.mediaSourceId) },

@@ -16,6 +16,7 @@ import me.him188.ani.datasources.api.topic.TopicCategory
  */
 abstract class TopicMediaSource : MediaSource {
     override val location: MediaSourceLocation get() = MediaSourceLocation.Online
+    override val kind: MediaSourceKind get() = MediaSourceKind.BitTorrent
 
     // For backward compatibility
     protected abstract suspend fun startSearch(query: DownloadSearchQuery): SizedSource<Topic>
@@ -68,5 +69,6 @@ fun Topic.toOnlineMedia(mediaSourceId: String): DefaultMedia {
             alliance = alliance,
             size = size,
         ),
+        kind = MediaSourceKind.BitTorrent,
     )
 }

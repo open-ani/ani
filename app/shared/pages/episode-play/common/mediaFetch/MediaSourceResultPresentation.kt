@@ -9,6 +9,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.rememberBackgroundScope
+import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.core.fetch.MediaSourceResult
 import me.him188.ani.datasources.core.fetch.MediaSourceState
 
@@ -25,6 +26,8 @@ class MediaSourceResultPresentation(
     val isLoading by derivedStateOf { state is MediaSourceState.Working }
     val isDisabled by derivedStateOf { state is MediaSourceState.Disabled }
     val isFailed by derivedStateOf { state is MediaSourceState.Failed }
+
+    val kind = delegate.kind
 
     val totalCount: Int by delegate.resultsIfEnabled
         .map { it.size }
@@ -53,8 +56,11 @@ class MediaSelectorSourceResults(
 
     val anyLoading by derivedStateOf { list.any { it.isLoading } }
 
-    val listSorted by derivedStateOf {
-        list.sortedWith(listComparator)
+    val webSources: List<MediaSourceResultPresentation> by derivedStateOf {
+        list.filterTo(mutableListOf()) { it.kind == MediaSourceKind.WEB }.apply { sortWith(listComparator) }
+    }
+    val btSources: List<MediaSourceResultPresentation> by derivedStateOf {
+        list.filterTo(mutableListOf()) { it.kind == MediaSourceKind.BitTorrent }.apply { sortWith(listComparator) }
     }
 
     val enabledSourceCount by derivedStateOf { list.count { !it.isDisabled } }

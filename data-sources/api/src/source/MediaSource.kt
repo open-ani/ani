@@ -27,6 +27,7 @@ import kotlinx.serialization.encoding.Encoder
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.paging.SizedSource
+import me.him188.ani.datasources.api.topic.ResourceLocation
 import kotlin.contracts.contract
 
 /**
@@ -55,6 +56,8 @@ interface MediaSource {
     val location: MediaSourceLocation
         get() = MediaSourceLocation.Online
 
+    val kind: MediaSourceKind
+
     /**
      * Checks whether this source is reachable.
      */
@@ -67,6 +70,24 @@ interface MediaSource {
      * to give as many results as possible.
      */
     suspend fun fetch(query: MediaFetchRequest): SizedSource<MediaMatch>
+}
+
+@Serializable
+enum class MediaSourceKind {
+    /**
+     * 在线视频网站. 资源为 [ResourceLocation.WebVideo] 或 [ResourceLocation.HttpStreamingFile]
+     */
+    WEB,
+
+    /**
+     * P2P BitTorrent 网络. 资源为 [ResourceLocation.HttpTorrentFile] 或 [ResourceLocation.MagnetLink]
+     */
+    BitTorrent,
+
+    /**
+     * 本地视频文件
+     */
+    Local
 }
 
 /**

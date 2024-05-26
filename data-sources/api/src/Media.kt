@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.source.MediaSource
+import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.datasources.api.topic.FileSize
@@ -71,6 +72,11 @@ sealed interface Media {
      * 查看 [MediaSourceLocation.Local] 和 [MediaSourceLocation.Online].
      */
     val location: MediaSourceLocation
+
+    /**
+     * @see MediaSource.kind
+     */
+    val kind: MediaSourceKind
 }
 
 /**
@@ -92,6 +98,7 @@ data class DefaultMedia(
     override val properties: MediaProperties,
     override val episodeRange: EpisodeRange? = null,
     override val location: MediaSourceLocation = MediaSourceLocation.Online,
+    override val kind: MediaSourceKind = MediaSourceKind.BitTorrent,
 ) : Media
 
 /**
@@ -102,7 +109,8 @@ class CachedMedia(
     val origin: Media,
     cacheMediaSourceId: String,
     override val download: ResourceLocation,
-    override val location: MediaSourceLocation = MediaSourceLocation.Local
+    override val location: MediaSourceLocation = MediaSourceLocation.Local,
+    override val kind: MediaSourceKind = origin.kind,
 ) : Media by origin {
     override val mediaId: String = "${cacheMediaSourceId}:${origin.mediaId}"
     override val mediaSourceId: String = cacheMediaSourceId

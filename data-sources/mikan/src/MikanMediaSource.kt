@@ -57,6 +57,7 @@ import me.him188.ani.datasources.api.source.MediaMatch
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.source.MediaSourceFactory
+import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.source.applyMediaSourceConfig
 import me.him188.ani.datasources.api.source.toOnlineMedia
 import me.him188.ani.datasources.api.topic.FileSize.Companion.Zero
@@ -125,6 +126,7 @@ abstract class AbstractMikanMediaSource(
     baseUrl: String,
     private val indexCacheProvider: MikanIndexCacheProvider,
 ) : MediaSource {
+    override val kind: MediaSourceKind get() = MediaSourceKind.BitTorrent
     private val logger = logger(this::class)
 
     private val baseUrl = baseUrl.removeSuffix("/")

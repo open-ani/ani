@@ -27,6 +27,7 @@ import me.him188.ani.datasources.api.source.MatchKind
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.source.MediaMatch
 import me.him188.ani.datasources.api.source.MediaSource
+import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.topic.contains
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.logger
@@ -85,6 +86,7 @@ interface MediaFetchSession {
 @Stable
 interface MediaSourceResult {
     val mediaSourceId: String
+    val kind: MediaSourceKind
 
     val state: StateFlow<MediaSourceState>
 
@@ -180,6 +182,7 @@ class MediaSourceMediaFetcher(
 
     private inner class MediaSourceResultImpl(
         override val mediaSourceId: String,
+        override val kind: MediaSourceKind,
         private val config: MediaFetcherConfig,
         val disabled: Boolean,
         pagedSources: Flow<SizedSource<MediaMatch>>,
@@ -242,6 +245,7 @@ class MediaSourceMediaFetcher(
         }.mapValues { (id, source) ->
             MediaSourceResultImpl(
                 mediaSourceId = id,
+                source.kind,
                 config,
                 disabled = !sourceEnabled(source),
                 pagedSources = flowOf(request)

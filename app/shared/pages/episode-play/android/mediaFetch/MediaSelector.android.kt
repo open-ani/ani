@@ -18,6 +18,7 @@ import me.him188.ani.datasources.api.DefaultMedia
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaProperties
+import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
@@ -140,21 +141,31 @@ private fun PreviewMediaSelector() {
                 listOf(
                     TestMediaSourceResult(
                         MikanMediaSource.ID,
+                        MediaSourceKind.BitTorrent,
                         initialState = MediaSourceState.Working,
                         results = testMediaList
                     ),
                     TestMediaSourceResult(
                         "dmhy",
+                        MediaSourceKind.BitTorrent,
                         initialState = MediaSourceState.Succeed,
                         results = testMediaList
                     ),
                     TestMediaSourceResult(
                         "acg.rip",
+                        MediaSourceKind.BitTorrent,
                         initialState = MediaSourceState.Disabled,
                         results = testMediaList
                     ),
                     TestMediaSourceResult(
+                        "nyafun",
+                        MediaSourceKind.WEB,
+                        initialState = MediaSourceState.Succeed,
+                        results = testMediaList
+                    ),
+                    TestMediaSourceResult(
                         MikanCNMediaSource.ID,
+                        MediaSourceKind.BitTorrent,
                         initialState = MediaSourceState.Failed(IllegalStateException()),
                         results = emptyList()
                     ),
@@ -166,6 +177,7 @@ private fun PreviewMediaSelector() {
 
 private class TestMediaSourceResult(
     override val mediaSourceId: String,
+    override val kind: MediaSourceKind,
     initialState: MediaSourceState,
     results: List<Media>,
 ) : MediaSourceResult {
@@ -181,3 +193,4 @@ private class TestMediaSourceResult(
         }
     }
 }
+

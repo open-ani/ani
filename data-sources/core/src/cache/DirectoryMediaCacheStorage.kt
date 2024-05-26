@@ -29,6 +29,7 @@ import me.him188.ani.datasources.api.source.MatchKind
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.source.MediaMatch
 import me.him188.ani.datasources.api.source.MediaSource
+import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
@@ -244,6 +245,7 @@ private class MediaCacheStorageSource(
     override val location: MediaSourceLocation = MediaSourceLocation.Local
 ) : MediaSource {
     override val mediaSourceId: String get() = storage.mediaSourceId
+    override val kind: MediaSourceKind get() = MediaSourceKind.Local 
 
     override suspend fun checkConnection(): ConnectionStatus = ConnectionStatus.SUCCESS
 

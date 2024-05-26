@@ -31,6 +31,7 @@ import me.him188.ani.datasources.api.source.MediaMatch
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.source.MediaSourceFactory
+import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.source.applyMediaSourceConfig
 import me.him188.ani.datasources.api.source.toConnectionStatus
 import me.him188.ani.datasources.api.topic.EpisodeRange
@@ -131,6 +132,7 @@ class NyafunMediaSource(config: MediaSourceConfig) : MediaSource {
                         size = FileSize.Unspecified,
                     ),
                     episodeRange = EpisodeRange.single(sort),
+                    kind = MediaSourceKind.WEB,
                 ), MatchKind.FUZZY
             )
         }
@@ -155,6 +157,7 @@ class NyafunMediaSource(config: MediaSourceConfig) : MediaSource {
         BrowserUserAgent()
         expectSuccess = true
     }
+    override val kind: MediaSourceKind get() = MediaSourceKind.WEB
 
     override val mediaSourceId: String get() = ID
 
