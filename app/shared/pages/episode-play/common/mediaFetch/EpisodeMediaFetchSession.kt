@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.yield
 import me.him188.ani.app.data.media.MediaSourceManager
 import me.him188.ani.app.data.repositories.EpisodePreferencesRepository
 import me.him188.ani.app.data.repositories.EpisodeRepository
@@ -217,6 +218,7 @@ internal class DefaultEpisodeMediaFetchSession(
                 launchInMain {
                     // Save users' per-subject preferences when they click the filter chips
                     preferenceUpdates.preference.collect {
+                        yield()
                         episodePreferencesRepository.setMediaPreference(
                             subjectId,
                             defaultPreference.merge(it)
