@@ -145,7 +145,10 @@ fun MediaSelector(
             }
 
             item {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(
+                    Modifier.animateItemPlacement(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     val onClick: (MediaSourceResultPresentation) -> Unit = remember(state) {
                         { item ->
                             if (item.isDisabled || item.isFailed) {
@@ -171,7 +174,6 @@ fun MediaSelector(
                                 }
                             }
                         },
-                        Modifier.animateItemPlacement()
                     )
                     MediaSourceResultsRow(
                         isShowDetails,
@@ -190,7 +192,6 @@ fun MediaSelector(
 //                            Icon(MediaSourceIcons.Web, null)
 //                            Text("在线", Modifier.padding(start = 4.dp))
                         },
-                        Modifier.animateItemPlacement()
                     )
                 }
             }
