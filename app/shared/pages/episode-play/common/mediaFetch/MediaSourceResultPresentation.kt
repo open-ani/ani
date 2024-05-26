@@ -73,8 +73,8 @@ class MediaSelectorSourceResults(
         }.apply { sortWith(listComparator) }
     }
 
-    val enabledSourceCount by derivedStateOf { list.count { !it.isDisabled } }
-    val totalSourceCount by derivedStateOf { list.size }
+    val enabledSourceCount by derivedStateOf { list.count { !it.isDisabled && it.kind != MediaSourceKind.LocalCache } }
+    val totalSourceCount by derivedStateOf { list.count { it.kind != MediaSourceKind.LocalCache } } // 缓存数据源属于内部的, 用户应当无感
 }
 
 private val EmptyMediaSelectorSourceResults by lazy(LazyThreadSafetyMode.NONE) {

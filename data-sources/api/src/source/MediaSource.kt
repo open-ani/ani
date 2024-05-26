@@ -85,9 +85,9 @@ enum class MediaSourceKind {
     BitTorrent,
 
     /**
-     * 本地视频文件
+     * 本地视频缓存. 只表示那些通过 `MediaCacheManager` 缓存的视频.
      */
-    Local
+    LocalCache
 }
 
 /**

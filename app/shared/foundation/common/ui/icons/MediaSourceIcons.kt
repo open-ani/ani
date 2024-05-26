@@ -20,7 +20,7 @@ object MediaSourceIcons {
     fun kind(kind: MediaSourceKind) = when (kind) {
         MediaSourceKind.WEB -> KindWeb
         MediaSourceKind.BitTorrent -> KindBT
-        MediaSourceKind.Local -> KindLocal
+        MediaSourceKind.LocalCache -> KindLocal
     }
 
     // MediaLocation

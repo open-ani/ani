@@ -245,7 +245,7 @@ private class MediaCacheStorageSource(
     override val location: MediaSourceLocation = MediaSourceLocation.Local
 ) : MediaSource {
     override val mediaSourceId: String get() = storage.mediaSourceId
-    override val kind: MediaSourceKind get() = MediaSourceKind.Local 
+    override val kind: MediaSourceKind get() = MediaSourceKind.LocalCache 
 
     override suspend fun checkConnection(): ConnectionStatus = ConnectionStatus.SUCCESS
 
