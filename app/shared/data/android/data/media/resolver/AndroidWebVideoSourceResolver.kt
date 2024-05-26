@@ -30,7 +30,7 @@ import java.io.ByteArrayInputStream
  */
 class AndroidWebVideoSourceResolver : VideoSourceResolver {
     private val matchers by lazy {
-        java.util.ServiceLoader.load(WebVideoMatcher::class.java).filterNotNull()
+        java.util.ServiceLoader.load(WebVideoMatcher::class.java, this::class.java.classLoader).filterNotNull()
     }
 
     override suspend fun supports(media: Media): Boolean = media.download is ResourceLocation.WebVideo
@@ -97,6 +97,9 @@ class WebViewVideoExtractor {
                 ): WebResourceResponse? {
                     if (request == null) return null
                     val url = request.url ?: return super.shouldInterceptRequest(view, request)
+                    if (url.toString().contains(".mp4")) {
+                        logger.info { "Found url: $url" }
+                    }
                     val matched = resourceMatcher(url.toString())
                     if (matched != null) {
                         logger.info { "Found video resource via shouldInterceptRequest: $url" }
