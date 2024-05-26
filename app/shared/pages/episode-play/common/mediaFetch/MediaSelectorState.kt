@@ -8,12 +8,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastDistinctBy
+import androidx.compose.ui.util.fastFirstOrNull
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.withContext
+import me.him188.ani.datasources.api.CachedMedia
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.source.MediaSourceLocation
 
@@ -126,6 +128,13 @@ interface MediaSelectorState {
      */
     @MainThread
     fun makeDefaultSelection()
+
+    /**
+     * 尝试选择缓存作为默认选择, 如果没有缓存则不做任何事情
+     * @return 是否成功选择了缓存
+     */
+    @MainThread
+    fun trySelectCachedByDefault(): Boolean
 
     /**
      * 逐渐取消选择, 直到 [candidates] 有至少一个元素.
@@ -473,6 +482,15 @@ internal class MediaSelectorStateImpl(
         }
 
         selectDefault(candidates.first(), null)
+    }
+
+    override fun trySelectCachedByDefault(): Boolean {
+        if (selected != null) return false
+        val cached = candidates.fastFirstOrNull { it is CachedMedia }
+        if (cached != null) {
+            selectDefault(cached, null)
+        }
+        return true
     }
 
     override suspend fun unselectUntilFirstCandidate() {

@@ -30,14 +30,16 @@ import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.source.MediaFetchRequest
-import me.him188.ani.datasources.api.source.isLowEffort
 import me.him188.ani.datasources.bangumi.processing.nameCNOrName
 import me.him188.ani.datasources.core.fetch.MediaFetchSession
 import me.him188.ani.datasources.core.fetch.MediaFetcher
 import me.him188.ani.datasources.core.fetch.MediaFetcherConfig
 import me.him188.ani.datasources.core.fetch.MediaSourceMediaFetcher
 import me.him188.ani.datasources.core.fetch.MediaSourceResult
+import me.him188.ani.utils.coroutines.OwnedCancellationException
+import me.him188.ani.utils.coroutines.checkOwner
 import me.him188.ani.utils.coroutines.runUntilSuccess
+import me.him188.ani.utils.logging.logger
 import org.koin.core.Koin
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -140,6 +142,10 @@ internal class DefaultEpisodeMediaFetchSession(
     private val config: FetcherMediaSelectorConfig = FetcherMediaSelectorConfig.Default,
     private val koin: () -> Koin = { GlobalContext.get() },
 ) : EpisodeMediaFetchSession, HasBackgroundScope by BackgroundScope(parentCoroutineContext), KoinComponent {
+    private companion object {
+        private val logger = logger(DefaultEpisodeMediaFetchSession::class)
+    }
+
     override fun getKoin(): Koin = koin()
 
     private val subjectRepository: SubjectRepository by inject()
@@ -263,18 +269,20 @@ internal class DefaultEpisodeMediaFetchSession(
             }
             if (config.autoSelectLocal) {
                 launchInMain {
-                    combine(
-                        mediaFetchSession.flatMapLatest { it.cumulativeResults },
-                        defaultPreferencesFetched
-                    ) { list, defaultPreferencesFetched ->
-                        if (!defaultPreferencesFetched) return@combine // wait for config load
-
-                        if (list.any { it.location.isLowEffort() }) {
-                            if (selected == null) { // only if user has not selected
-                                makeDefaultSelection()
+                    val owner = Any()
+                    try {
+                        combine(
+                            mediaFetchSession.flatMapLatest { it.cumulativeResults },
+                            defaultPreferencesFetched
+                        ) { _, defaultPreferencesFetched ->
+                            if (!defaultPreferencesFetched) return@combine // wait for config load
+                            if (trySelectCachedByDefault()) {
+                                throw OwnedCancellationException(owner)
                             }
-                        }
-                    }.collect()
+                        }.collect()
+                    } catch (e: OwnedCancellationException) {
+                        e.checkOwner(owner)
+                    }
                 }
             }
         }
