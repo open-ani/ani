@@ -268,7 +268,7 @@ class MediaSourceMediaFetcher(
         }
 
         override val cumulativeResults: Flow<List<Media>> =
-            combine(resultsPerSource.values.map { it.resultsIfEnabled }) { lists ->
+            combine(resultsPerSource.values.map { it.resultsIfEnabled.onStart { emit(emptyList()) } }) { lists ->
                 // Merge into one single list
                 lists.fold(mutableListOf<Media>()) { acc, list ->
                     acc.addAll(list.distinctBy { it.originalTitle }) // distinct within this source's scope
