@@ -3,6 +3,7 @@ package me.him188.ani.app.ui.subject.episode.mediaFetch
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.util.fastAll
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -17,10 +18,15 @@ import kotlinx.coroutines.flow.mapLatest
 import me.him188.ani.app.data.media.MediaSourceManager
 import me.him188.ani.app.data.media.selector.DefaultMediaSelector
 import me.him188.ani.app.data.media.selector.MediaSelector
+import me.him188.ani.app.data.media.selector.MediaSelectorContext
 import me.him188.ani.app.data.repositories.EpisodePreferencesRepository
 import me.him188.ani.app.data.repositories.EpisodeRepository
 import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.data.repositories.SubjectRepository
+import me.him188.ani.app.data.subject.PackedDate
+import me.him188.ani.app.data.subject.SubjectManager
+import me.him188.ani.app.data.subject.minus
+import me.him188.ani.app.tools.caching.ContentPolicy
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
@@ -42,6 +48,7 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.context.GlobalContext
 import kotlin.coroutines.CoroutineContext
+import kotlin.time.Duration.Companion.days
 
 /**
  * 一个正在进行中的对剧集资源的获取操作.
@@ -141,6 +148,7 @@ internal class DefaultEpisodeMediaFetchSession(
     override fun getKoin(): Koin = koin()
 
     private val subjectRepository: SubjectRepository by inject()
+    private val subjectManager: SubjectManager by inject()
     private val episodeRepository: EpisodeRepository by inject()
     private val mediaSourceManager: MediaSourceManager by inject()
     private val episodePreferencesRepository: EpisodePreferencesRepository by inject()
@@ -196,10 +204,29 @@ internal class DefaultEpisodeMediaFetchSession(
                 )
             }
 
+        val subjectProgress = subjectManager.subjectProgressFlow(subjectId, ContentPolicy.CACHE_ONLY)
+
         DefaultMediaSelector(
+            mediaSelectorContextNotCached = subjectProgress.map { eps ->
+                val allEpisodesFinished = eps.fastAll { it.isOnAir == false }
+
+                val finishedLongTimeAgo = allEpisodesFinished || run {
+                    val now = PackedDate.now()
+                    val maxAirDate = eps
+                        .filter { it.airDate.isValid }
+                        .maxOfOrNull { it.airDate }
+
+                    maxAirDate != null && now - maxAirDate >= 14.days
+                }
+
+                MediaSelectorContext(
+                    subjectFinishedForAConservativeTime = finishedLongTimeAgo
+                )
+            },
             mediaListNotCached = fetchResult,
             savedUserPreference = episodePreferencesRepository.mediaPreferenceFlow(subjectId),
             savedDefaultPreference = settingsRepository.defaultMediaPreference.flow,
+            mediaSelectorSettings = settingsRepository.mediaSelectorSettings.flow,
         )
     }
 

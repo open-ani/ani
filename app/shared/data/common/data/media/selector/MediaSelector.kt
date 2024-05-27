@@ -1,6 +1,7 @@
 package me.him188.ani.app.data.media.selector
 
 import androidx.compose.runtime.Stable
+import androidx.compose.ui.util.fastFilter
 import androidx.compose.ui.util.fastFirstOrNull
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -14,9 +15,11 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
+import me.him188.ani.app.data.models.MediaSelectorSettings
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.source.MediaSourceKind
+import me.him188.ani.datasources.api.topic.isSingleEpisode
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -145,7 +148,15 @@ interface MediaPreferenceItem<T : Any> {
     suspend fun removePreference()
 }
 
+data class MediaSelectorContext(
+    /**
+     * 该条目已经完结了一段时间了
+     */
+    val subjectFinishedForAConservativeTime: Boolean,
+)
+
 class DefaultMediaSelector(
+    mediaSelectorContextNotCached: Flow<MediaSelectorContext>,
     mediaListNotCached: Flow<List<Media>>,
     /**
      * 数据库中的用户偏好. 仅当用户在本次会话中没有设置新的偏好时, 才会使用此偏好 (跟随 flow 更新). 不能为空 flow, 否则 select 会一直挂起.
@@ -155,6 +166,7 @@ class DefaultMediaSelector(
      * 若 [savedUserPreference] 未指定某个属性的偏好, 则使用此默认值. 不能为空 flow, 否则 select 会一直挂起.
      */
     private val savedDefaultPreference: Flow<MediaPreference>,
+    mediaSelectorSettings: Flow<MediaSelectorSettings>,
     /**
      * context for flow
      */
@@ -169,20 +181,47 @@ class DefaultMediaSelector(
         return this.shareIn(CoroutineScope(flowCoroutineContext), SharingStarted.WhileSubscribed(), replay = 1)
     }
 
+    private val mediaSelectorSettings = mediaSelectorSettings.cached()
+    private val mediaSelectorContext = mediaSelectorContextNotCached.cached()
+
     override val mediaList: Flow<List<Media>> = combine(
         mediaListNotCached.cached(), // cache 是必要的, 当 newPreferences 变更的时候不能重新加载 media list (网络)
-        savedDefaultPreference // 只需要使用 default, 因为目前不能覆盖生肉设置
+        savedDefaultPreference, // 只需要使用 default, 因为目前不能覆盖生肉设置
         // 如果依赖 merged pref, 会产生循环依赖 (mediaList -> mediaPreferenceItem -> newPreferences -> mediaList)
-    ) { list, pref ->
-        if (pref.showWithoutSubtitle) {
-            list
-        } else {
-            list.filter {
-                if (isLocalCache(it)) return@filter true
-                it.properties.subtitleLanguageIds.isNotEmpty()
-            }
-        }
+        this.mediaSelectorSettings,
+        this.mediaSelectorContext,
+    ) { list, pref, settings, context ->
+        filterMediaList(pref, settings, context, list)
     }.flowOn(flowCoroutineContext)
+
+    /**
+     * 过滤掉 [MediaSelectorSettings] 指定的内容. 例如过滤生肉, 对于完结番过滤掉单集
+     */
+    private fun filterMediaList(
+        preference: MediaPreference,
+        settings: MediaSelectorSettings,
+        context: MediaSelectorContext,
+        list: List<Media>
+    ): List<Media> {
+        val needFilter = preference.showWithoutSubtitle || settings.hideSingleEpisodeForCompleted
+        if (!needFilter) return list // no copy
+        return list.fastFilter filter@{ media ->
+            if (isLocalCache(media)) return@filter true // 本地缓存总是要显示
+
+            if (settings.hideSingleEpisodeForCompleted && context.subjectFinishedForAConservativeTime
+                && media.kind == MediaSourceKind.BitTorrent
+            ) {
+                val range = media.episodeRange ?: return@filter false
+                if (range.isSingleEpisode()) return@filter false
+            }
+
+            if (!preference.showWithoutSubtitle && media.properties.subtitleLanguageIds.isEmpty()) {
+                return@filter false
+            }
+            true
+        }
+
+    }
 
     private val savedUserPreferenceNotCached = savedUserPreference
     private val savedUserPreference: Flow<MediaPreference> = savedUserPreference.cached()

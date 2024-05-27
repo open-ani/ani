@@ -15,8 +15,17 @@ data class MediaSelectorSettings(
      * 即使数据源禁用, 也在选择器中以灰色显示, 方便临时启用
      */
     val showDisabled: Boolean = true,
+    /**
+     * 完结后隐藏单集资源
+     */
+    val hideSingleEpisodeForCompleted: Boolean = true,
+    /**
+     * 优先选择季度全集资源
+     */
+    val preferSeasons: Boolean = true,
     @Suppress("PropertyName") @Transient val _placeholder: Int = 0,
 ) {
+    // 这篇小说已经完结了
     companion object {
         @Stable
         val Default = MediaSelectorSettings()

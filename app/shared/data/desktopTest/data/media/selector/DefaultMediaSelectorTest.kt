@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.yield
+import me.him188.ani.app.data.models.MediaSelectorSettings
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.datasources.api.DefaultMedia
 import me.him188.ani.datasources.api.EpisodeSort
@@ -31,12 +32,20 @@ class DefaultMediaSelectorTest {
 
     private val savedUserPreference = MutableStateFlow(MediaPreference.Empty)
     private val savedDefaultPreference = MutableStateFlow(MediaPreference.Empty)
+    private val mediaSelectorSettings = MutableStateFlow(MediaSelectorSettings.Default)
+    private val mediaSelectorContext = MutableStateFlow(
+        MediaSelectorContext(
+            subjectFinishedForAConservativeTime = false,
+        )
+    )
 
     private val selector = DefaultMediaSelector(
+        mediaSelectorContextNotCached = mediaSelectorContext,
         mediaListNotCached = mediaList,
         savedUserPreference = savedUserPreference,
         savedDefaultPreference = savedDefaultPreference,
         enableCaching = false,
+        mediaSelectorSettings = mediaSelectorSettings
     )
 
     ///////////////////////////////////////////////////////////////////////////
@@ -103,14 +112,14 @@ class DefaultMediaSelectorTest {
 
     @Test
     fun `empty preferences select all`() = runTest {
-        addMedia(media(alliance = "字幕组"), media(alliance = "字幕组"))
+        addMedia(media(alliance = "字幕组"), media(alliance = "字幕组2"))
         assertEquals(mediaList.value, selector.filteredCandidates.first())
     }
 
     @Test
     fun `select by user alliance`() = runTest {
         val media = media(alliance = "字幕组")
-        addMedia(media, media(alliance = "字幕组"))
+        addMedia(media, media(alliance = "字幕组2"))
         savedUserPreference.value = MediaPreference(alliance = "字幕组")
         assertEquals(media, selector.filteredCandidates.first().single())
     }
@@ -118,7 +127,7 @@ class DefaultMediaSelectorTest {
     @Test
     fun `select by default alliance`() = runTest {
         val media = media(alliance = "字幕组")
-        addMedia(media, media(alliance = "字幕组"))
+        addMedia(media, media(alliance = "字幕组2"))
         savedDefaultPreference.value = MediaPreference(alliance = "字幕组")
         assertEquals(media, selector.filteredCandidates.first().single())
     }
@@ -126,7 +135,7 @@ class DefaultMediaSelectorTest {
     @Test
     fun `select by user resolution`() = runTest {
         val media = media(resolution = "字幕组")
-        addMedia(media, media(resolution = "字幕组"))
+        addMedia(media, media(resolution = "字幕组2"))
         savedUserPreference.value = MediaPreference(resolution = "字幕组")
         assertEquals(media, selector.filteredCandidates.first().single())
     }
@@ -134,7 +143,7 @@ class DefaultMediaSelectorTest {
     @Test
     fun `select by default resolution`() = runTest {
         val media = media(resolution = "字幕组")
-        addMedia(media, media(resolution = "字幕组"))
+        addMedia(media, media(resolution = "字幕组2"))
         savedDefaultPreference.value = MediaPreference(resolution = "字幕组")
         assertEquals(media, selector.filteredCandidates.first().single())
     }
@@ -392,6 +401,31 @@ class DefaultMediaSelectorTest {
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    // 已完结后隐藏单集资源
+    ///////////////////////////////////////////////////////////////////////////
+
+    @Test
+    fun `can hide single episode after finished`() = runTest {
+        val target: DefaultMedia
+        mediaSelectorContext.value = MediaSelectorContext(subjectFinishedForAConservativeTime = true)
+        addMedia(
+            media(alliance = "字幕组1", episodeRange = EpisodeRange.single("1")),
+            media(
+                alliance = "字幕组2", episodeRange = EpisodeRange.range(1, 2),
+            ).also { target = it },
+            media(
+                alliance = "字幕组6", episodeRange = EpisodeRange.season(1),
+            ),
+            media(alliance = "字幕组3", episodeRange = EpisodeRange.single("2")),
+            media(alliance = "字幕组4", episodeRange = EpisodeRange.single("3")),
+            media(alliance = "字幕组5", episodeRange = EpisodeRange.single("4"))
+        )
+        assertEquals(2, selector.filteredCandidates.first().size)
+        assertEquals(target, selector.filteredCandidates.first()[0])
+    }
+
+
+    ///////////////////////////////////////////////////////////////////////////
     // Events
     ///////////////////////////////////////////////////////////////////////////
 
@@ -496,6 +530,7 @@ private fun media(
     subtitleLanguages: List<String> = listOf(ChineseSimplified, ChineseTraditional).map { it.id },
     location: MediaSourceLocation = MediaSourceLocation.Online,
     kind: MediaSourceKind = MediaSourceKind.BitTorrent,
+    episodeRange: EpisodeRange = EpisodeRange.single(EpisodeSort(1))
 ): DefaultMedia {
     val id = mediaId++
     return DefaultMedia(
@@ -505,7 +540,7 @@ private fun media(
         download = ResourceLocation.MagnetLink("magnet:?xt=urn:btih:$id"),
         originalUrl = "https://example.com/$id",
         publishedTime = publishedTime,
-        episodeRange = EpisodeRange.single(EpisodeSort(id)),
+        episodeRange = episodeRange,
         properties = MediaProperties(
             subtitleLanguageIds = subtitleLanguages,
             resolution = resolution,

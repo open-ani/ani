@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.media.MediaCacheManager
 import me.him188.ani.app.data.media.selector.DefaultMediaSelector
+import me.him188.ani.app.data.media.selector.MediaSelectorContext
 import me.him188.ani.app.data.models.MediaSelectorSettings
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.rememberBackgroundScope
@@ -134,6 +135,7 @@ private fun PreviewMediaSelector() {
             state = remember {
                 MediaSelectorPresentation(
                     DefaultMediaSelector(
+                        mediaSelectorContextNotCached = flowOf(MediaSelectorContext(false)),
                         mediaListNotCached = MutableStateFlow(
                             listOf(
                                 CachedMedia(
@@ -149,6 +151,7 @@ private fun PreviewMediaSelector() {
                                 subtitleLanguageId = "CHS"
                             )
                         ),
+                        mediaSelectorSettings = flowOf(MediaSelectorSettings.Default)
                     ),
                     backgroundScope = backgroundScope.backgroundScope,
                 )

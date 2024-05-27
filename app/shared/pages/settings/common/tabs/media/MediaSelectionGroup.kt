@@ -200,6 +200,34 @@ internal fun SettingsScope.MediaSelectionGroup(vm: MediaSettingsViewModel) {
             Modifier.placeholder(vm.defaultMediaPreferenceLoading),
             description = { Text("这可能是资源本身是生肉，也可能是字幕未识别到。是生肉的可能性更高") },
         )
+
+        HorizontalDividerItem()
+
+        SwitchItem(
+            checked = mediaSelectorSettings.hideSingleEpisodeForCompleted,
+            onCheckedChange = {
+                vm.mediaSelectorSettings.update(
+                    mediaSelectorSettings.copy(hideSingleEpisodeForCompleted = it)
+                )
+            },
+            title = { Text("完结后隐藏单集 BT 资源") },
+            Modifier.placeholder(vm.mediaSelectorSettings.loading),
+            description = { Text("在番剧完结后，单集资源通常会没有速度") },
+        )
+
+        HorizontalDividerItem()
+
+        SwitchItem(
+            checked = mediaSelectorSettings.preferSeasons,
+            onCheckedChange = {
+                vm.mediaSelectorSettings.update(
+                    mediaSelectorSettings.copy(preferSeasons = it)
+                )
+            },
+            title = { Text("BT 资源优先选择季度全集") },
+            Modifier.placeholder(vm.defaultMediaPreferenceLoading),
+            description = { Text("季度全集资源通常更快，仅对 BT 数据源有效") },
+        )
     }
 }
 

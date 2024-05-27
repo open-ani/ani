@@ -196,6 +196,7 @@ class SubjectManagerImpl(
                         episodeSort = episode.episode.sort.toString(),
                         watchStatus = episode.type.toCollectionType(),
                         isOnAir = episode.episode.isOnAir(),
+                        airDate = PackedDate.parseFromDate(episode.episode.airdate),
                         cacheStatus = cacheStatus,
                     )
                 }

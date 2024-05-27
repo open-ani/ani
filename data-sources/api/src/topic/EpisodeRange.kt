@@ -53,7 +53,7 @@ sealed class EpisodeRange {
     }
 
     @Serializable
-    private class Single(
+    internal class Single(
         val value: EpisodeSort,
     ) : EpisodeRange() {
         override val knownSorts: Sequence<EpisodeSort>
@@ -74,7 +74,7 @@ sealed class EpisodeRange {
     }
 
     @Serializable
-    private class Range(
+    internal class Range(
         val start: EpisodeSort,
         val end: EpisodeSort,
     ) : EpisodeRange() {
@@ -192,6 +192,18 @@ operator fun EpisodeRange.contains(expected: EpisodeSort): Boolean = contains(ex
 fun EpisodeRange.contains(expected: EpisodeSort, allowSeason: Boolean = true): Boolean {
     if (allowSeason && this is Season) return true
     return knownSorts.any { it == expected } // TODO: optimize  EpisodeRange.contains
+}
+
+/**
+ * 是否为单一剧集. 季度全集不算.
+ */
+fun EpisodeRange.isSingleEpisode(): Boolean {
+    return when (this) {
+        is Single -> true
+        is Range -> start == end
+        is Combined -> first == second
+        else -> false
+    }
 }
 
 @Serializable

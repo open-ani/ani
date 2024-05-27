@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import me.him188.ani.app.data.media.EpisodeCacheStatus
+import me.him188.ani.app.data.subject.PackedDate
 import me.him188.ani.app.ui.collection.progress.EpisodeProgressDefaults
 import me.him188.ani.app.ui.collection.progress.EpisodeProgressDialog
 import me.him188.ani.app.ui.collection.progress.EpisodeProgressItem
@@ -15,12 +16,15 @@ import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 
 
+private val airDate = PackedDate(2021, 1, 1)
+
 private val testEpisodes = listOf(
     EpisodeProgressItem(
         episodeId = 0,
         episodeSort = "00",
         watchStatus = UnifiedCollectionType.DONE,
         isOnAir = false,
+        airDate = airDate,
         cacheStatus = EpisodeCacheStatus.Caching(0.3f, 300.megaBytes),
     ),
     EpisodeProgressItem(
@@ -28,6 +32,7 @@ private val testEpisodes = listOf(
         episodeSort = "01",
         watchStatus = UnifiedCollectionType.DONE,
         isOnAir = false,
+        airDate = airDate,
         cacheStatus = EpisodeCacheStatus.NotCached,
     ),
     EpisodeProgressItem(
@@ -35,6 +40,7 @@ private val testEpisodes = listOf(
         episodeSort = "02",
         watchStatus = UnifiedCollectionType.DONE,
         isOnAir = false,
+        airDate = airDate,
         cacheStatus = EpisodeCacheStatus.Cached(300.megaBytes),
     ),
     EpisodeProgressItem(
@@ -42,6 +48,7 @@ private val testEpisodes = listOf(
         episodeSort = "03",
         watchStatus = UnifiedCollectionType.WISH,
         isOnAir = false,
+        airDate = airDate,
         cacheStatus = EpisodeCacheStatus.Cached(300.megaBytes),
     ),
     EpisodeProgressItem(
@@ -49,6 +56,7 @@ private val testEpisodes = listOf(
         episodeSort = "04",
         watchStatus = UnifiedCollectionType.WISH,
         isOnAir = false,
+        airDate = airDate,
         cacheStatus = EpisodeCacheStatus.Caching(0.7f, 300.megaBytes),
     ),
     EpisodeProgressItem(
@@ -56,6 +64,7 @@ private val testEpisodes = listOf(
         episodeSort = "05",
         watchStatus = UnifiedCollectionType.WISH,
         isOnAir = false,
+        airDate = airDate,
         cacheStatus = EpisodeCacheStatus.NotCached,
     ),
     EpisodeProgressItem(
@@ -63,6 +72,7 @@ private val testEpisodes = listOf(
         episodeSort = "06",
         watchStatus = UnifiedCollectionType.WISH,
         isOnAir = true,
+        airDate = airDate,
         cacheStatus = EpisodeCacheStatus.NotCached,
     ),
     EpisodeProgressItem(
@@ -70,6 +80,7 @@ private val testEpisodes = listOf(
         episodeSort = "07",
         watchStatus = UnifiedCollectionType.WISH,
         isOnAir = true,
+        airDate = airDate,
         cacheStatus = EpisodeCacheStatus.Cached(300.megaBytes),
     ),
     EpisodeProgressItem(
@@ -77,6 +88,7 @@ private val testEpisodes = listOf(
         episodeSort = "08",
         watchStatus = UnifiedCollectionType.WISH,
         isOnAir = true,
+        airDate = airDate,
         cacheStatus = EpisodeCacheStatus.Caching(0.3f, 300.megaBytes),
     ),
 )
@@ -158,5 +170,6 @@ private fun item(id: Int) = EpisodeProgressItem(
     episodeSort = id.toString(),
     watchStatus = UnifiedCollectionType.WISH,
     isOnAir = true,
+    airDate = airDate,
     cacheStatus = EpisodeCacheStatus.Caching(0.3f, 300.megaBytes),
 )

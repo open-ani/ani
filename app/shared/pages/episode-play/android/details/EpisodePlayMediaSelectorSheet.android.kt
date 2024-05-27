@@ -10,6 +10,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import me.him188.ani.app.data.media.selector.DefaultMediaSelector
+import me.him188.ani.app.data.media.selector.MediaSelectorContext
+import me.him188.ani.app.data.models.MediaSelectorSettings
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.rememberBackgroundScope
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
@@ -59,9 +61,11 @@ fun rememberTestMediaSelectorPresentation(): MediaSelectorPresentation {
 private fun createState(backgroundScope: CoroutineScope) =
     MediaSelectorPresentation(
         DefaultMediaSelector(
+            mediaSelectorContextNotCached = flowOf(MediaSelectorContext(false)),
             mediaListNotCached = MutableStateFlow(previewMediaList),
             savedUserPreference = flowOf(MediaPreference.Empty),
             savedDefaultPreference = flowOf(MediaPreference.Empty),
+            mediaSelectorSettings = flowOf(MediaSelectorSettings.Default)
         ),
         backgroundScope,
     )
