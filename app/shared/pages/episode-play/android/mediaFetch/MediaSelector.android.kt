@@ -11,8 +11,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.media.MediaCacheManager
+import me.him188.ani.app.data.media.selector.DefaultMediaSelector
 import me.him188.ani.app.data.models.MediaSelectorSettings
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.ui.foundation.rememberBackgroundScope
 import me.him188.ani.datasources.acgrip.AcgRipMediaSource
 import me.him188.ani.datasources.api.CachedMedia
 import me.him188.ani.datasources.api.DefaultMedia
@@ -35,7 +37,7 @@ import me.him188.ani.datasources.mikan.MikanMediaSource
 private const val SOURCE_DMHY = DmhyMediaSource.ID
 private const val SOURCE_ACG = AcgRipMediaSource.ID
 
-internal val testMediaList = listOf(
+internal val previewMediaList = listOf(
     DefaultMedia(
         mediaId = "$SOURCE_DMHY.1",
         mediaSourceId = SOURCE_DMHY,
@@ -113,29 +115,42 @@ internal val testMediaList = listOf(
             size = 702.megaBytes,
         ),
     ),
-)
+).run {
+    listOf(
+        CachedMedia(
+            origin = this[0],
+            cacheMediaSourceId = MediaCacheManager.LOCAL_FS_MEDIA_SOURCE_ID,
+            download = ResourceLocation.LocalFile("file://test.txt"),
+        )
+    ) + this
+}
 
 @PreviewLightDark
 @Composable
 private fun PreviewMediaSelector() {
     ProvideCompositionLocalsForPreview {
-        MediaSelector(
+        val backgroundScope = rememberBackgroundScope()
+        MediaSelectorView(
             state = remember {
-                MediaSelectorState(
-                    mediaListProvider = {
-                        listOf(
-                            CachedMedia(
-                                origin = testMediaList[0],
-                                cacheMediaSourceId = MediaCacheManager.LOCAL_FS_MEDIA_SOURCE_ID,
-                                download = ResourceLocation.LocalFile("file://test.txt"),
+                MediaSelectorPresentation(
+                    DefaultMediaSelector(
+                        mediaListNotCached = MutableStateFlow(
+                            listOf(
+                                CachedMedia(
+                                    origin = previewMediaList[0],
+                                    cacheMediaSourceId = MediaCacheManager.LOCAL_FS_MEDIA_SOURCE_ID,
+                                    download = ResourceLocation.LocalFile("file://test.txt"),
+                                )
+                            ) + previewMediaList
+                        ),
+                        savedUserPreference = flowOf(MediaPreference.Empty),
+                        savedDefaultPreference = flowOf(
+                            MediaPreference(
+                                subtitleLanguageId = "CHS"
                             )
-                        ) + testMediaList
-                    },
-                    defaultPreferenceProvider = {
-                        MediaPreference(
-                            subtitleLanguageId = "CHS"
-                        )
-                    },
+                        ),
+                    ),
+                    backgroundScope = backgroundScope.backgroundScope,
                 )
             },
             sourceResults = rememberTestMediaSourceResults()
@@ -152,25 +167,25 @@ internal fun rememberTestMediaSourceResults() = rememberMediaSelectorSourceResul
             MikanMediaSource.ID,
             MediaSourceKind.BitTorrent,
             initialState = MediaSourceState.Working,
-            results = testMediaList
+            results = previewMediaList
         ),
         TestMediaSourceResult(
             "dmhy",
             MediaSourceKind.BitTorrent,
             initialState = MediaSourceState.Succeed,
-            results = testMediaList
+            results = previewMediaList
         ),
         TestMediaSourceResult(
             "acg.rip",
             MediaSourceKind.BitTorrent,
             initialState = MediaSourceState.Disabled,
-            results = testMediaList
+            results = previewMediaList
         ),
         TestMediaSourceResult(
             "nyafun",
             MediaSourceKind.WEB,
             initialState = MediaSourceState.Succeed,
-            results = testMediaList
+            results = previewMediaList
         ),
         TestMediaSourceResult(
             MikanCNMediaSource.ID,

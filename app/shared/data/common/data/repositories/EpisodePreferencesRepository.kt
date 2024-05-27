@@ -41,13 +41,13 @@ internal class EpisodePreferencesRepositoryImpl(
             it[stringPreferencesKey(subjectId.toString())]
         }.map {
             if (it.isNullOrBlank()) {
-                logger.info { "Loaded user MediaPreference for subject $subjectId: null, use default" }
+//                logger.info { "Loaded user MediaPreference for subject $subjectId: null, use default" }
                 return@map defaultMediaPreference.first()
             }
             val res = kotlin.runCatching {
                 json.decodeFromString(MediaPreference.serializer(), it)
             }.getOrNull() ?: defaultMediaPreference.first()
-            logger.info { "Loaded user MediaPreference for subject $subjectId: $res" }
+//            logger.info { "Loaded user MediaPreference for subject $subjectId: $res" }
             res
         }
     }

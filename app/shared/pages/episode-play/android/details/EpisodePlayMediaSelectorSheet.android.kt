@@ -6,20 +6,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import me.him188.ani.app.data.media.MediaCacheManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flowOf
+import me.him188.ani.app.data.media.selector.DefaultMediaSelector
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.ui.foundation.rememberBackgroundScope
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
-import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorState
+import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.emptyMediaSelectorSourceResults
-import me.him188.ani.app.ui.subject.episode.mediaFetch.testMediaList
-import me.him188.ani.datasources.api.CachedMedia
-import me.him188.ani.datasources.api.topic.ResourceLocation
+import me.him188.ani.app.ui.subject.episode.mediaFetch.previewMediaList
 
 @Preview(name = "progress = null")
 @Composable
 private fun PreviewEpisodePlayMediaSelectorSheet() = ProvideCompositionLocalsForPreview {
     EpisodePlayMediaSelector(
-        remember { createState() },
+        rememberTestMediaSelectorPresentation(),
         emptyMediaSelectorSourceResults(),
         onDismissRequest = {},
         Modifier.background(MaterialTheme.colorScheme.surface),
@@ -30,7 +32,7 @@ private fun PreviewEpisodePlayMediaSelectorSheet() = ProvideCompositionLocalsFor
 @Composable
 private fun PreviewEpisodePlayMediaSelectorSheet2() = ProvideCompositionLocalsForPreview {
     EpisodePlayMediaSelector(
-        remember { createState() },
+        rememberTestMediaSelectorPresentation(),
         emptyMediaSelectorSourceResults(),
         onDismissRequest = {},
         Modifier.background(MaterialTheme.colorScheme.surface),
@@ -41,26 +43,25 @@ private fun PreviewEpisodePlayMediaSelectorSheet2() = ProvideCompositionLocalsFo
 @Composable
 private fun PreviewEpisodePlayMediaSelectorSheet3() = ProvideCompositionLocalsForPreview {
     EpisodePlayMediaSelector(
-        remember { createState() },
+        rememberTestMediaSelectorPresentation(),
         emptyMediaSelectorSourceResults(),
         onDismissRequest = {},
         Modifier.background(MaterialTheme.colorScheme.surface),
     )
 }
 
-private fun createState() = MediaSelectorState(
-    mediaListProvider = {
-        listOf(
-            CachedMedia(
-                origin = testMediaList[0],
-                cacheMediaSourceId = MediaCacheManager.LOCAL_FS_MEDIA_SOURCE_ID,
-                download = ResourceLocation.LocalFile("file://test.txt"),
-            )
-        ) + testMediaList
-    },
-    defaultPreferenceProvider = {
-        MediaPreference(
-            subtitleLanguageId = "CHS"
-        )
-    },
-)
+@Composable
+fun rememberTestMediaSelectorPresentation(): MediaSelectorPresentation {
+    val backgroundScope = rememberBackgroundScope()
+    return remember(backgroundScope) { createState(backgroundScope.backgroundScope) }
+}
+
+private fun createState(backgroundScope: CoroutineScope) =
+    MediaSelectorPresentation(
+        DefaultMediaSelector(
+            mediaListNotCached = MutableStateFlow(previewMediaList),
+            savedUserPreference = flowOf(MediaPreference.Empty),
+            savedDefaultPreference = flowOf(MediaPreference.Empty),
+        ),
+        backgroundScope,
+    )

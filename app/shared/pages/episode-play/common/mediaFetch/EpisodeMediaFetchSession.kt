@@ -3,9 +3,6 @@ package me.him188.ani.app.ui.subject.episode.mediaFetch
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -17,16 +14,17 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import me.him188.ani.app.data.media.MediaSourceManager
+import me.him188.ani.app.data.media.selector.DefaultMediaSelector
+import me.him188.ani.app.data.media.selector.MediaSelector
 import me.him188.ani.app.data.repositories.EpisodePreferencesRepository
 import me.him188.ani.app.data.repositories.EpisodeRepository
 import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.data.repositories.SubjectRepository
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
-import me.him188.ani.app.ui.foundation.launchInMain
+import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.source.MediaFetchRequest
@@ -62,9 +60,9 @@ interface EpisodeMediaFetchSession {
     val mediaFetcherCompleted: Boolean
 
     /**
-     * A [MediaSelectorState] associated with the fetched medias.
+     * 数据源选择器
      */
-    val mediaSelectorState: MediaSelectorState
+    val mediaSelector: MediaSelector
 
     /**
      * 每个数据源的结果
@@ -110,7 +108,7 @@ class FetcherMediaSelectorConfig(
 
 /**
  * Creates a [EpisodeMediaFetchSession] that fetches media for the given [subjectId] and [episodeId],
- * and then maintains a [MediaSelectorState] for user selection.
+ * and then maintains a [MediaSelectorPresentation] for user selection.
  *
  * @param parentCoroutineContext must have a [Job] to manage the lifecycle of this fetcher.
  */
@@ -132,7 +130,7 @@ fun EpisodeMediaFetchSession(
 /**
  * [MediaFetcher]-based media selector.
  *
- * This class fetches media from the [MediaFetcher] and maintains a [MediaSelectorState] for user selection.
+ * This class fetches media from the [MediaFetcher] and maintains a [MediaSelectorPresentation] for user selection.
  * It also considers the user's per-subject preferences with [EpisodePreferencesRepository].
  */
 internal class DefaultEpisodeMediaFetchSession(
@@ -196,93 +194,79 @@ internal class DefaultEpisodeMediaFetchSession(
     override val mediaFetcherCompleted by mediaFetchSession.flatMapLatest { it.hasCompleted }
         .produceState(false)
 
-    override val mediaSelectorState = kotlin.run {
-        val fetchResult by mediaFetchSession.flatMapLatest { it.cumulativeResults }
+    override val mediaSelector = kotlin.run {
+        val fetchResult = mediaFetchSession.flatMapLatest { it.cumulativeResults }
             .mapLatest { list ->
                 list.sortedWith(
                     compareBy<Media> { it.costForDownload }.thenByDescending { it.properties.size.inBytes }
                 )
             }
-            .produceState(emptyList())
 
-        val placeholderDefaultPreference = MediaPreference.Empty.copy() // don't remove .copy, we need identity
-        val defaultPreferencesFlow = episodePreferencesRepository.mediaPreferenceFlow(subjectId)
-            .stateInBackground(placeholderDefaultPreference, started = SharingStarted.Eagerly)
-        val defaultPreferencesFetched = defaultPreferencesFlow.map {
-            it !== placeholderDefaultPreference
+        DefaultMediaSelector(
+            mediaListNotCached = fetchResult,
+            savedUserPreference = episodePreferencesRepository.mediaPreferenceFlow(subjectId),
+            savedDefaultPreference = settingsRepository.defaultMediaPreference.flow,
+        )
+    }
+
+    init {
+        if (config.savePreferencesOnFilter) {
+            launchInBackground {
+                // Save users' per-subject preferences when they click the filter chips
+                mediaSelector.events.onChangePreference.collect {
+                    yield()
+                    episodePreferencesRepository.setMediaPreference(subjectId, it)
+                }
+            }
         }
-        var defaultPreference by mutableStateOf(placeholderDefaultPreference)
-        launchInMain {
-            defaultPreference = withContext(Dispatchers.Default) { defaultPreferencesFlow.first() }
-        } // 不要用 produceState, 会造成递归 (用户点击过滤 -> 保存默认 -> 默认更新 -> 筛选更新)
-
-        MediaSelectorState(
-            { fetchResult },
-            { defaultPreference },
-        ).apply {
-            if (config.savePreferencesOnFilter) {
-                launchInMain {
-                    // Save users' per-subject preferences when they click the filter chips
-                    preferenceUpdates.preference.collect {
-                        yield()
-                        episodePreferencesRepository.setMediaPreference(
-                            subjectId,
-                            defaultPreference.merge(it)
-                        )
-                    }
+        if (config.savePreferencesOnSelect) {
+            launchInBackground {
+                // Save users' per-subject preferences when they click cards
+                mediaSelector.events.onSelect.collect { event ->
+                    val media = event.media ?: return@collect
+                    val pref = MediaPreference(
+                        alliance = media.properties.alliance,
+                        resolution = media.properties.resolution,
+                        // Use the filter chip if any
+                        // because a media has multiple languages and user may choose the media because it includes their desired one
+                        subtitleLanguageId = event.subtitleLanguageId
+                            ?: media.properties.subtitleLanguageIds.firstOrNull(),
+                        mediaSourceId = media.mediaSourceId
+                    )
+                    episodePreferencesRepository.setMediaPreference(subjectId, pref)
                 }
             }
-            if (config.savePreferencesOnSelect) {
-                launchInMain {
-                    // Save users' per-subject preferences when they click cards
-                    preferenceUpdates.select.collect { media ->
-                        episodePreferencesRepository.setMediaPreference(
-                            subjectId,
-                            MediaPreference(
-                                alliance = media.properties.alliance,
-                                resolution = media.properties.resolution,
-                                // Use the filter chip if any
-                                // because a media has multiple languages and user may choose the media because it includes their desired one
-                                subtitleLanguageId = selectedSubtitleLanguageId
-                                    ?: media.properties.subtitleLanguageIds.firstOrNull(),
-                                mediaSourceId = media.mediaSourceId
-                            )
-                        )
+        }
+        if (config.autoSelectOnFetchCompletion) {
+            launchInBackground {
+                // Automatically select a media when the list is ready
+                val owner = Any()
+                try {
+                    // 等全部加载完成
+                    mediaFetchSession.flatMapLatest { it.hasCompleted }.filter { it }.first()
+                    if (mediaSelector.selected.first() == null) {
+                        mediaSelector.trySelectDefault()
                     }
+                } catch (e: OwnedCancellationException) {
+                    e.checkOwner(owner)
                 }
             }
-            if (config.autoSelectOnFetchCompletion) {
-                launchInMain {
-                    // Automatically select a media when the list is ready
+        }
+        if (config.autoSelectLocal) {
+            launchInBackground {
+                val owner = Any()
+                try {
                     combine(
-                        mediaFetchSession.flatMapLatest { it.hasCompleted }.filter { it },
-                        defaultPreferencesFetched
-                    ) { _, defaultPreferencesFetched ->
-                        if (!defaultPreferencesFetched) return@combine // wait for config load
-
-                        // on completion
-                        if (selected == null) { // only if user has not selected
-                            makeDefaultSelection()
+                        mediaFetchSession.flatMapLatest { it.cumulativeResults },
+                    ) { _ ->
+                        if (mediaSelector.selected.first() != null ||
+                            mediaSelector.trySelectCached() != null
+                        ) {
+                            throw OwnedCancellationException(owner) // 设置成功一次, 退出
                         }
                     }.collect()
-                }
-            }
-            if (config.autoSelectLocal) {
-                launchInMain {
-                    val owner = Any()
-                    try {
-                        combine(
-                            mediaFetchSession.flatMapLatest { it.cumulativeResults },
-                            defaultPreferencesFetched
-                        ) { _, defaultPreferencesFetched ->
-                            if (!defaultPreferencesFetched) return@combine // wait for config load
-                            if (trySelectCachedByDefault()) {
-                                throw OwnedCancellationException(owner)
-                            }
-                        }.collect()
-                    } catch (e: OwnedCancellationException) {
-                        e.checkOwner(owner)
-                    }
+                } catch (e: OwnedCancellationException) {
+                    e.checkOwner(owner)
                 }
             }
         }

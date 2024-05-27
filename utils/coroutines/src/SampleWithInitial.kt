@@ -81,7 +81,7 @@ internal val UNINITIALIZED = Symbol("UNINITIALIZED")
 @JvmField
 internal val DONE = Symbol("DONE")
 
-internal class Symbol(@JvmField val symbol: String) {
+class Symbol(@JvmField val symbol: String) {
     override fun toString(): String = "<$symbol>"
 
     @Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")

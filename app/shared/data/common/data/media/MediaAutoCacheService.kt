@@ -117,8 +117,8 @@ class DefaultMediaAutoCacheService(
                 ).run {
                     this.awaitCompletion()
                     val request = this.mediaFetchSession.first().request
-                    this.mediaSelectorState.makeDefaultSelection()
-                    this.mediaSelectorState.selected?.let { media ->
+                    this.mediaSelector.trySelectDefault()
+                    this.mediaSelector.selected.first()?.let { media ->
                         targetStorage.first().cache(media, MediaCacheMetadata(request))
                         logger.info { "Created cache ${media.mediaId} for ${subject.debugName()} ${firstUnwatched.episode.name}" }
                     }

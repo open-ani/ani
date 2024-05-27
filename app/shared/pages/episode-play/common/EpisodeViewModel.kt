@@ -46,7 +46,7 @@ import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.app.ui.subject.episode.danmaku.PlayerDanmakuViewModel
 import me.him188.ani.app.ui.subject.episode.mediaFetch.EpisodeMediaFetchSession
-import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorState
+import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
 import me.him188.ani.app.ui.subject.episode.statistics.DanmakuLoadingState
 import me.him188.ani.app.ui.subject.episode.statistics.PlayerStatisticsState
 import me.him188.ani.app.videoplayer.data.OpenFailures
@@ -147,6 +147,7 @@ interface EpisodeViewModel : HasBackgroundScope {
      */
     val episodeMediaFetchSession: EpisodeMediaFetchSession
     val mediaSelectorSettings: MediaSelectorSettings
+    val mediaSelectorPresentation: MediaSelectorPresentation
 
     val playerStatistics: PlayerStatisticsState
 
@@ -187,8 +188,7 @@ interface EpisodeViewModel : HasBackgroundScope {
 }
 
 @Stable
-val EpisodeViewModel.mediaSelectorState: MediaSelectorState
-    get() = episodeMediaFetchSession.mediaSelectorState
+val EpisodeViewModel.mediaSelector get() = episodeMediaFetchSession.mediaSelector
 
 fun EpisodeViewModel(
     initialSubjectId: Int,
@@ -225,16 +225,22 @@ private class EpisodeViewModelImpl(
     )
     override val mediaSelectorSettings: MediaSelectorSettings by
     settingsRepository.mediaSelectorSettings.flow.produceState(MediaSelectorSettings.Default)
+    override val mediaSelectorPresentation: MediaSelectorPresentation by lazy {
+        MediaSelectorPresentation(
+            mediaSelector,
+            backgroundScope
+        )
+    }
     override val playerStatistics: PlayerStatisticsState = PlayerStatisticsState()
 
     override var mediaSelectorVisible: Boolean by mutableStateOf(false)
 
-    private val selectedMedia = mediaSelectorState.selectedFlow
+    private val selectedMedia = mediaSelectorPresentation.mediaSelector.selected
         .filterNotNull()
         .distinctUntilChanged()
 
     override val mediaSelected by derivedStateOf {
-        mediaSelectorState.selected != null
+        mediaSelectorPresentation.selected != null
     }
 
     override val videoLoadingState get() = playerStatistics.videoLoadingState
@@ -462,13 +468,13 @@ private class EpisodeViewModelImpl(
      */
     @UiThread
     private suspend fun requestMediaOrNull(): Media? {
-        mediaSelectorState.selected?.let {
+        mediaSelectorPresentation.selected?.let {
             return it // already selected
         }
 
         mediaSelectorVisible = true
         snapshotFlow { mediaSelectorVisible }.first { !it } // await closed
-        return mediaSelectorState.selected
+        return mediaSelectorPresentation.selected
     }
 }
 

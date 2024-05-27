@@ -7,9 +7,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelector
+import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorSourceResults
-import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorState
+import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorView
 import me.him188.ani.datasources.api.Media
 
 /**
@@ -19,13 +19,13 @@ import me.him188.ani.datasources.api.Media
  */
 @Composable
 fun EpisodeCacheMediaSelector(
-    state: MediaSelectorState,
+    state: MediaSelectorPresentation,
     onSelect: (Media) -> Unit,
     onCancel: () -> Unit,
     sourceResults: MediaSelectorSourceResults,
     modifier: Modifier = Modifier,
 ) {
-    MediaSelector(
+    MediaSelectorView(
         state,
         modifier.padding(vertical = 12.dp, horizontal = 16.dp)
             .fillMaxWidth(),

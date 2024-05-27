@@ -38,7 +38,7 @@ class MediaSourceResultPresentation(
 }
 
 /**
- * 在 [MediaSelector] 使用, 管理多个 [MediaSourceResultPresentation] 的结果
+ * 在 [MediaSelectorView] 使用, 管理多个 [MediaSourceResultPresentation] 的结果
  */
 @Stable
 class MediaSelectorSourceResults(

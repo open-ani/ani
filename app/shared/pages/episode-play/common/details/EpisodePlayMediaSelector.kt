@@ -8,21 +8,21 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelector
+import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorSourceResults
-import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorState
+import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorView
 
 /**
  * 播放视频时的选择数据源
  */
 @Composable
 fun EpisodePlayMediaSelector(
-    state: MediaSelectorState,
+    state: MediaSelectorPresentation,
     sourceResults: MediaSelectorSourceResults,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    MediaSelector(
+    MediaSelectorView(
         state,
         modifier.padding(vertical = 12.dp, horizontal = 16.dp)
             .fillMaxWidth()

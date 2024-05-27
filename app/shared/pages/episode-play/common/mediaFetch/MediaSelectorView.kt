@@ -72,8 +72,8 @@ private inline val WINDOW_VERTICAL_PADDING get() = 8.dp
  * @param actions shown at the bottom
  */
 @Composable
-fun MediaSelector(
-    state: MediaSelectorState,
+fun MediaSelectorView(
+    state: MediaSelectorPresentation,
     modifier: Modifier = Modifier,
     sourceResults: MediaSelectorSourceResults = emptyMediaSelectorSourceResults(),
     onClickItem: ((Media) -> Unit)? = null,
@@ -144,9 +144,9 @@ fun MediaSelector(
                             if (item.isDisabled || item.isFailed) {
                                 item.restart()
                             } else {
-                                state.preferMediaSource(item.mediaSourceId, removeOnExist = true)
+                                state.mediaSource.preferOrRemove(item.mediaSourceId)
                                 scope.launch {
-                                    state.unselectUntilFirstCandidate()
+                                    state.mediaSelector.removePreferencesUntilFirstCandidate()
                                 }
                             }
                         }
@@ -154,7 +154,7 @@ fun MediaSelector(
                     MediaSourceResultsRow(
                         isShowDetails,
                         sourceResults.btSources,
-                        sourceSelected = { state.selectedMediaSource == it },
+                        sourceSelected = { state.mediaSource.finalSelected == it },
                         onClick = onClick,
                         label = {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -171,7 +171,7 @@ fun MediaSelector(
                     MediaSourceResultsRow(
                         isShowDetails,
                         sourceResults.webSources,
-                        sourceSelected = { state.selectedMediaSource == it },
+                        sourceSelected = { state.mediaSource.finalSelected == it },
                         onClick = onClick,
                         label = {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -209,8 +209,8 @@ fun MediaSelector(
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
                             Text(
-                                remember(state.candidates.size, state.mediaList.size) {
-                                    "筛选到 ${state.candidates.size}/${state.mediaList.size} 条资源"
+                                remember(state.filteredCandidates.size, state.mediaList.size) {
+                                    "筛选到 ${state.filteredCandidates.size}/${state.mediaList.size} 条资源"
                                 },
                                 style = MaterialTheme.typography.titleMedium,
                             )
@@ -224,7 +224,7 @@ fun MediaSelector(
                 }
             }
 
-            items(state.candidates, key = { it.mediaId }) { item ->
+            items(state.filteredCandidates, key = { it.mediaId }) { item ->
                 MediaItem(
                     item,
                     state.selected == item,
@@ -433,7 +433,7 @@ private fun MediaSourceResultCard(
 private fun MediaItem(
     media: Media,
     selected: Boolean,
-    state: MediaSelectorState,
+    state: MediaSelectorPresentation,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -467,16 +467,16 @@ private fun MediaItem(
                 }
                 InputChip(
                     false,
-                    onClick = { state.preferResolution(media.properties.resolution) },
+                    onClick = { state.resolution.preferOrRemove(media.properties.resolution) },
                     label = { Text(media.properties.resolution) },
-                    enabled = state.selectedResolution != media.properties.resolution,
+                    enabled = state.resolution.finalSelected != media.properties.resolution,
                 )
                 media.properties.subtitleLanguageIds.map {
                     InputChip(
                         false,
-                        onClick = { state.preferSubtitleLanguage(it) },
+                        onClick = { state.subtitleLanguageId.preferOrRemove(it) },
                         label = { Text(renderSubtitleLanguage(it)) },
-                        enabled = state.selectedSubtitleLanguageId != it,
+                        enabled = state.subtitleLanguageId.finalSelected != it,
                     )
                 }
             }

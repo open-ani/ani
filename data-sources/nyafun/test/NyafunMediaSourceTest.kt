@@ -4,6 +4,8 @@ import me.him188.ani.datasources.api.DefaultMedia
 import me.him188.ani.datasources.api.MediaProperties
 import me.him188.ani.datasources.api.source.MatchKind
 import me.him188.ani.datasources.api.source.MediaMatch
+import me.him188.ani.datasources.api.source.MediaSourceKind
+import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.ResourceLocation
@@ -61,6 +63,8 @@ class NyafunMediaSourceTest {
                         size = FileSize.Unspecified,
                     ),
                     episodeRange = EpisodeRange.single("01"),
+                    location = MediaSourceLocation.Online,
+                    kind = MediaSourceKind.WEB,
                 ),
                 MatchKind.FUZZY
             ).toString(),

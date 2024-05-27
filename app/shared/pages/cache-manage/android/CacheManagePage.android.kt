@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.map
 import me.him188.ani.app.data.media.MediaCacheManager
 import me.him188.ani.app.ui.feedback.ErrorMessage
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
-import me.him188.ani.app.ui.subject.episode.mediaFetch.testMediaList
+import me.him188.ani.app.ui.subject.episode.mediaFetch.previewMediaList
 import me.him188.ani.datasources.api.CachedMedia
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
@@ -114,7 +114,7 @@ private class TestMediaCacheStorage : MediaCacheStorage {
         listOf(
             TestMediaCache(
                 CachedMedia(
-                    testMediaList[0],
+                    previewMediaList[0],
                     MediaCacheManager.LOCAL_FS_MEDIA_SOURCE_ID,
                     ResourceLocation.MagnetLink("magnet:?xt=urn:btih:1"),
                 ),
@@ -161,7 +161,7 @@ private class TestMediaCacheStorage : MediaCacheStorage {
 
 private val testMediaCache1 = TestMediaCache(
     CachedMedia(
-        testMediaList[0],
+        previewMediaList[0],
         MediaCacheManager.LOCAL_FS_MEDIA_SOURCE_ID,
         ResourceLocation.MagnetLink("magnet:?xt=urn:btih:1"),
     ),
@@ -180,7 +180,7 @@ private val testMediaCache1 = TestMediaCache(
 
 private val testMediaCache2 = TestMediaCache(
     CachedMedia(
-        testMediaList[1],
+        previewMediaList[1],
         MediaCacheManager.LOCAL_FS_MEDIA_SOURCE_ID,
         ResourceLocation.MagnetLink("magnet:?xt=urn:btih:1"),
     ),

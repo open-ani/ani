@@ -110,7 +110,7 @@ class CachedMedia(
     cacheMediaSourceId: String,
     override val download: ResourceLocation,
     override val location: MediaSourceLocation = MediaSourceLocation.Local,
-    override val kind: MediaSourceKind = origin.kind,
+    override val kind: MediaSourceKind = MediaSourceKind.LocalCache,
 ) : Media by origin {
     override val mediaId: String = "${cacheMediaSourceId}:${origin.mediaId}"
     override val mediaSourceId: String = cacheMediaSourceId

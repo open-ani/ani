@@ -42,8 +42,10 @@ import me.him188.ani.app.ui.feedback.ErrorDialogHost
 import me.him188.ani.app.ui.feedback.ErrorMessage
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.launchInBackground
+import me.him188.ani.app.ui.foundation.rememberBackgroundScope
 import me.him188.ani.app.ui.subject.episode.mediaFetch.EpisodeMediaFetchSession
 import me.him188.ani.app.ui.subject.episode.mediaFetch.FetcherMediaSelectorConfig
+import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberMediaSelectorSourceResults
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
@@ -196,6 +198,10 @@ fun SubjectCacheScene(
                     FetcherMediaSelectorConfig.NoAutoSelect
                 )
             }
+            val backgroundScope = rememberBackgroundScope()
+            val mediaSelectorPresentation = remember(epFetch, backgroundScope) {
+                MediaSelectorPresentation(epFetch.mediaSelector, backgroundScope.backgroundScope)
+            }
 
             var selectedMedia by remember(vm.subjectId, episodeCacheState.episodeId) { mutableStateOf<Media?>(null) }
 
@@ -234,7 +240,7 @@ fun SubjectCacheScene(
                 sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
             ) {
                 EpisodeCacheMediaSelector(
-                    epFetch.mediaSelectorState,
+                    mediaSelectorPresentation,
                     onSelect = { media ->
                         if (vm.cacheStorages.size == 1) {
                             val storage = vm.cacheStorages.first()

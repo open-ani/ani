@@ -39,7 +39,7 @@ private inline val maxWidth get() = 120.dp
  */
 @Composable
 fun MediaSelectorFilters(
-    state: MediaSelectorState,
+    state: MediaSelectorPresentation,
     modifier: Modifier = Modifier,
 ) {
     FlowRow(
@@ -59,27 +59,27 @@ fun MediaSelectorFilters(
 //            }
 //        )
         MediaSelectorFilterChip(
-            selected = state.selectedResolution,
-            allValues = { state.resolutions },
-            onSelect = { state.preferResolution(it) },
-            onDeselect = { state.preferResolution(it, removeOnExist = true) },
+            selected = state.resolution.finalSelected,
+            allValues = { state.resolution.available },
+            onSelect = { state.resolution.prefer(it) },
+            onDeselect = { state.resolution.removePreference() },
             name = { Text("分辨率") },
             Modifier.widthIn(min = minWidth, max = maxWidth),
         )
         MediaSelectorFilterChip(
-            selected = state.selectedSubtitleLanguageId,
-            allValues = { state.subtitleLanguageIds },
-            onSelect = { state.preferSubtitleLanguage(it) },
-            onDeselect = { state.preferSubtitleLanguage(it, removeOnExist = true) },
+            selected = state.subtitleLanguageId.finalSelected,
+            allValues = { state.subtitleLanguageId.available },
+            onSelect = { state.subtitleLanguageId.prefer(it) },
+            onDeselect = { state.subtitleLanguageId.removePreference() },
             name = { Text("字幕") },
             Modifier.widthIn(min = minWidth, max = maxWidth),
             label = { MediaSelectorFilterChipText(renderSubtitleLanguage(it)) }
         )
         MediaSelectorFilterChip(
-            selected = state.selectedAlliance,
-            allValues = { state.alliances },
-            onSelect = { state.preferAlliance(it) },
-            onDeselect = { state.preferAlliance(it, removeOnExist = true) },
+            selected = state.alliance.finalSelected,
+            allValues = { state.alliance.available },
+            onSelect = { state.alliance.prefer(it) },
+            onDeselect = { state.alliance.removePreference() },
             name = { Text("字幕组") },
             Modifier.widthIn(min = minWidth, max = maxWidth),
         )

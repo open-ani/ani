@@ -35,7 +35,6 @@ import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.subject.episode.EpisodeCollectionActionButton
 import me.him188.ani.app.ui.subject.episode.EpisodeViewModel
 import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberMediaSelectorSourceResults
-import me.him188.ani.app.ui.subject.episode.mediaSelectorState
 import me.him188.ani.app.ui.theme.slightlyWeaken
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.topic.FileSize.Companion.Unspecified
@@ -80,7 +79,7 @@ fun EpisodeDetails(
             if (viewModel.mediaSelectorVisible) {
                 ModalBottomSheet(onDismissRequest = { viewModel.mediaSelectorVisible = false }) {
                     EpisodePlayMediaSelector(
-                        viewModel.mediaSelectorState,
+                        viewModel.mediaSelectorPresentation,
                         sourceResults = rememberMediaSelectorSourceResults(
                             settingsProvider = { viewModel.mediaSelectorSettings }
                         ) { viewModel.episodeMediaFetchSession.sourceResults },
@@ -127,7 +126,7 @@ fun renderResolution(id: String): String {
 private fun NowPlayingLabel(viewModel: EpisodeViewModel, modifier: Modifier = Modifier) {
     Row(modifier) {
         ProvideTextStyle(MaterialTheme.typography.labelMedium) {
-            val playing = viewModel.mediaSelectorState.selected
+            val playing = viewModel.mediaSelectorPresentation.selected
             if (playing != null) {
                 Column {
                     Row {
