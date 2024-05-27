@@ -59,6 +59,11 @@ interface MediaSelector {
     suspend fun select(candidate: Media)
 
     /**
+     * 清除当前的选择, 不会更新配置
+     */
+    fun unselect()
+
+    /**
      * 尝试使用目前的偏好设置, 自动选择一个. 当已经有用户选择或默认选择时返回 `null`.
      */
     suspend fun trySelectDefault(): Media?
@@ -164,7 +169,21 @@ class DefaultMediaSelector(
         return this.shareIn(CoroutineScope(flowCoroutineContext), SharingStarted.WhileSubscribed(), replay = 1)
     }
 
-    override val mediaList: Flow<List<Media>> = mediaListNotCached.cached()
+    override val mediaList: Flow<List<Media>> = combine(
+        mediaListNotCached.cached(), // cache 是必要的, 当 newPreferences 变更的时候不能重新加载 media list (网络)
+        savedDefaultPreference // 只需要使用 default, 因为目前不能覆盖生肉设置
+        // 如果依赖 merged pref, 会产生循环依赖 (mediaList -> mediaPreferenceItem -> newPreferences -> mediaList)
+    ) { list, pref ->
+        if (pref.showWithoutSubtitle) {
+            list
+        } else {
+            list.filter {
+                if (isLocalCache(it)) return@filter true
+                it.properties.subtitleLanguageIds.isNotEmpty()
+            }
+        }
+    }.flowOn(flowCoroutineContext)
+
     private val savedUserPreferenceNotCached = savedUserPreference
     private val savedUserPreference: Flow<MediaPreference> = savedUserPreference.cached()
 
@@ -239,7 +258,7 @@ class DefaultMediaSelector(
          * 当 [it] 满足当前筛选条件时返回 `true`.
          */
         fun filterCandidate(it: Media): Boolean {
-            if (it.kind == MediaSourceKind.LocalCache) {
+            if (isLocalCache(it)) {
                 return true // always show local, so that [makeDefaultSelection] will select a local one
             }
 
@@ -271,6 +290,10 @@ class DefaultMediaSelector(
         // Publish events
         broadcastChangePreference()
         events.onSelect.emit(SelectEvent(candidate, null))
+    }
+
+    override fun unselect() {
+        selected.value = null
     }
 
     private fun selectDefault(candidate: Media): Media? {
@@ -409,9 +432,11 @@ class DefaultMediaSelector(
     override suspend fun trySelectCached(): Media? {
         if (selected.value != null) return null
         val candidates = filteredCandidates.first()
-        val cached = candidates.fastFirstOrNull { it.kind == MediaSourceKind.LocalCache } ?: return null
+        val cached = candidates.fastFirstOrNull { isLocalCache(it) } ?: return null
         return selectDefault(cached)
     }
+
+    private fun isLocalCache(it: Media) = it.kind == MediaSourceKind.LocalCache
 
     override suspend fun removePreferencesUntilFirstCandidate() {
         if (filteredCandidates.first().isNotEmpty()) return
