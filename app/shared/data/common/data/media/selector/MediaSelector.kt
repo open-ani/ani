@@ -555,6 +555,7 @@ class DefaultMediaSelector(
 
         override suspend fun removePreference() {
             overridePreference.value = OptionalPreference.preferNoValue()
+            broadcastChangePreference(null)
         }
 
         override fun preferWithoutBroadcast(value: T) {
