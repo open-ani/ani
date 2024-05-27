@@ -79,12 +79,14 @@ interface MediaSelectorEvents {
     val onSelect: Flow<SelectEvent>
 
     /**
-     * 用户偏好发生变化, flow 的值为新的用户设置
+     * 用户偏好发生变化, 这可能是 [MediaSelector.select], 也可能是 [MediaPreferenceItem.prefer].
+     *
+     * flow 的值为新的用户设置
      */
     val onChangePreference: Flow<MediaPreference>
 }
 
-class SelectEvent(
+data class SelectEvent(
     val media: Media?,
     val subtitleLanguageId: String?,
 )
@@ -130,12 +132,12 @@ interface MediaPreferenceItem<T : Any> {
     /**
      * 用户选择
      */
-    fun prefer(value: T)
+    suspend fun prefer(value: T)
 
     /**
      * 删除已有的选择
      */
-    fun removePreference()
+    suspend fun removePreference()
 }
 
 class DefaultMediaSelector(
@@ -166,53 +168,49 @@ class DefaultMediaSelector(
     private val savedUserPreferenceNotCached = savedUserPreference
     private val savedUserPreference: Flow<MediaPreference> = savedUserPreference.cached()
 
-    override val alliance: MediaPreferenceItem<String> =
-        mediaPreferenceItem(
-            "alliance",
-            getFromMediaList = { list ->
-                list.mapTo(HashSet(list.size)) { it.properties.alliance }
-                    .sortedBy { it }
-            },
-            getFromPreference = { it.alliance }
-        )
-    override val resolution: MediaPreferenceItem<String> =
-        mediaPreferenceItem(
-            "resolution",
-            getFromMediaList = { list ->
-                list.mapTo(HashSet(list.size)) { it.properties.resolution }
-                    .sortedBy { it }
-            },
-            getFromPreference = { it.resolution }
-        )
-    override val subtitleLanguageId: MediaPreferenceItem<String> =
-        mediaPreferenceItem(
-            "subtitleLanguage",
-            getFromMediaList = { list ->
-                list.flatMapTo(HashSet(list.size)) { it.properties.subtitleLanguageIds }
-                    .sortedByDescending {
-                        when (it.uppercase()) {
-                            "8K", "4320P" -> 6
-                            "4K", "2160P" -> 5
-                            "2K", "1440P" -> 4
-                            "1080P" -> 3
-                            "720P" -> 2
-                            "480P" -> 1
-                            "360P" -> 0
-                            else -> -1
-                        }
+    override val alliance = mediaPreferenceItem(
+        "alliance",
+        getFromMediaList = { list ->
+            list.mapTo(HashSet(list.size)) { it.properties.alliance }
+                .sortedBy { it }
+        },
+        getFromPreference = { it.alliance }
+    )
+    override val resolution = mediaPreferenceItem(
+        "resolution",
+        getFromMediaList = { list ->
+            list.mapTo(HashSet(list.size)) { it.properties.resolution }
+                .sortedBy { it }
+        },
+        getFromPreference = { it.resolution }
+    )
+    override val subtitleLanguageId = mediaPreferenceItem(
+        "subtitleLanguage",
+        getFromMediaList = { list ->
+            list.flatMapTo(HashSet(list.size)) { it.properties.subtitleLanguageIds }
+                .sortedByDescending {
+                    when (it.uppercase()) {
+                        "8K", "4320P" -> 6
+                        "4K", "2160P" -> 5
+                        "2K", "1440P" -> 4
+                        "1080P" -> 3
+                        "720P" -> 2
+                        "480P" -> 1
+                        "360P" -> 0
+                        else -> -1
                     }
-            },
-            getFromPreference = { it.subtitleLanguageId }
-        )
-    override val mediaSourceId: MediaPreferenceItem<String> =
-        mediaPreferenceItem(
-            "mediaSource",
-            getFromMediaList = { list ->
-                list.mapTo(HashSet(list.size)) { it.properties.resolution }
-                    .sortedBy { it }
-            },
-            getFromPreference = { it.mediaSourceId }
-        )
+                }
+        },
+        getFromPreference = { it.subtitleLanguageId }
+    )
+    override val mediaSourceId = mediaPreferenceItem(
+        "mediaSource",
+        getFromMediaList = { list ->
+            list.mapTo(HashSet(list.size)) { it.properties.resolution }
+                .sortedBy { it }
+        },
+        getFromPreference = { it.mediaSourceId }
+    )
 
     /**
      * 当前会话中的生效偏好
@@ -263,14 +261,28 @@ class DefaultMediaSelector(
     override suspend fun select(candidate: Media) {
         selected.value = candidate
 
+        alliance.preferWithoutBroadcast(candidate.properties.alliance)
+        resolution.preferWithoutBroadcast(candidate.properties.resolution)
+        mediaSourceId.preferWithoutBroadcast(candidate.mediaSourceId)
+        candidate.properties.subtitleLanguageIds.singleOrNull()?.let {
+            subtitleLanguageId.preferWithoutBroadcast(it)
+        }
+
         // Publish events
-        events.onSelect.emit(SelectEvent(candidate, null))
         broadcastChangePreference()
+        events.onSelect.emit(SelectEvent(candidate, null))
+    }
+
+    private fun selectDefault(candidate: Media): Media? {
+        if (!selected.compareAndSet(null, candidate)) return null
+        // 自动选择时不更新 preference
+        return candidate
     }
 
     private suspend fun broadcastChangePreference(overrideLanguageId: String? = null) {
+        if (events.onChangePreference.subscriptionCount.value == 0) return // 没人监听, 就不用算新的 preference 了
         val savedUserPreference = savedUserPreferenceNotCached.first()
-        val preference = newPreferences.first()
+        val preference = newPreferences.first() // must access un-cached
         events.onChangePreference.emit(
             savedUserPreference.copy(
                 alliance = preference.alliance,
@@ -281,11 +293,6 @@ class DefaultMediaSelector(
         )
     }
 
-    private suspend fun selectDefault(candidate: Media, languageId: String?): Media? {
-        if (!selected.compareAndSet(null, candidate)) return null
-        broadcastChangePreference(languageId)
-        return candidate
-    }
 
     override suspend fun trySelectDefault(): Media? {
         if (selected.value != null) return null
@@ -378,7 +385,7 @@ class DefaultMediaSelector(
                             mediaSource == null || mediaSource == it.mediaSourceId
                         }
                         if (filteredByMediaSource.isEmpty()) continue
-                        return selectDefault(filteredByMediaSource.first(), languageId)
+                        return selectDefault(filteredByMediaSource.first())
                     }
                 }
 
@@ -389,21 +396,21 @@ class DefaultMediaSelector(
                         mediaSource == null || mediaSource == it.mediaSourceId
                     }
                     if (filteredByMediaSource.isEmpty()) continue
-                    return selectDefault(filteredByMediaSource.first(), languageId)
+                    return selectDefault(filteredByMediaSource.first())
                 }
             }
 
             // 该分辨率下无字幕语言, 换下一个分辨率
         }
 
-        return selectDefault(candidates.first(), null)
+        return selectDefault(candidates.first())
     }
 
     override suspend fun trySelectCached(): Media? {
         if (selected.value != null) return null
         val candidates = filteredCandidates.first()
         val cached = candidates.fastFirstOrNull { it.kind == MediaSourceKind.LocalCache } ?: return null
-        return selectDefault(cached, null)
+        return selectDefault(cached)
     }
 
     override suspend fun removePreferencesUntilFirstCandidate() {
@@ -417,11 +424,15 @@ class DefaultMediaSelector(
         mediaSourceId.removePreference()
     }
 
+    interface MediaPreferenceItemImpl<T : Any> : MediaPreferenceItem<T> {
+        fun preferWithoutBroadcast(value: T)
+    }
+
     private inline fun <reified T : Any> mediaPreferenceItem(
         debugName: String,
         crossinline getFromMediaList: (list: List<Media>) -> List<T>,
         crossinline getFromPreference: (MediaPreference) -> T?,
-    ) = object : MediaPreferenceItem<T> {
+    ) = object : MediaPreferenceItemImpl<T> {
         override val available: Flow<List<T>> = mediaList.map { list ->
             getFromMediaList(list)
         }.flowOn(flowCoroutineContext).cached()
@@ -450,13 +461,17 @@ class DefaultMediaSelector(
             user.orElse { default }
         }.flowOn(flowCoroutineContext)
 
-        override fun removePreference() {
+        override suspend fun removePreference() {
             overridePreference.value = OptionalPreference.preferNoValue()
         }
 
-        override fun prefer(value: T) {
+        override fun preferWithoutBroadcast(value: T) {
             overridePreference.value = OptionalPreference.prefer(value)
-            events.onSelect.tryEmit(SelectEvent(null, null))
+        }
+
+        override suspend fun prefer(value: T) {
+            preferWithoutBroadcast(value)
+            broadcastChangePreference(null)
         }
 
         override fun toString(): String = "MediaPreferenceItem($debugName)"

@@ -1,8 +1,11 @@
 package me.him188.ani.app.data.media.selector
 
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.yield
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.datasources.api.DefaultMedia
 import me.him188.ani.datasources.api.EpisodeSort
@@ -15,6 +18,7 @@ import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.datasources.api.topic.SubtitleLanguage.ChineseSimplified
 import me.him188.ani.datasources.api.topic.SubtitleLanguage.ChineseTraditional
+import me.him188.ani.utils.coroutines.cancellableCoroutineScope
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -328,6 +332,97 @@ class DefaultMediaSelectorTest {
             media(alliance = "桜都字幕组5", subtitleLanguages = listOf("CHS"))
         )
         assertEquals(target, selector.trySelectCached())
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Events
+    ///////////////////////////////////////////////////////////////////////////
+
+    @Test
+    fun `do not save subtitle language when it is ambiguous`() = runTest {
+        val target = media(alliance = "桜都字幕组", subtitleLanguages = listOf("CHS", "CHT"))
+        addMedia(target)
+        runCollectEvents {
+            selector.select(target)
+        }.run {
+            assertEquals(1, onSelect.size)
+            assertEquals(SelectEvent(target, null), onSelect.first())
+            assertEquals(1, onChangePreference.size)
+            assertEquals(
+                // 
+                MediaPreference.Empty.copy(
+                    alliance = "桜都字幕组",
+                    resolution = target.properties.resolution,
+                    mediaSourceId = "dmhy"
+                ), onChangePreference.first()
+            )
+        }
+    }
+
+    @Test
+    fun `event select`() = runTest {
+        val target = media(alliance = "桜都字幕组", subtitleLanguages = listOf("CHS"))
+        addMedia(target)
+        runCollectEvents {
+            selector.select(target)
+        }.run {
+            assertEquals(1, onSelect.size)
+            assertEquals(SelectEvent(target, null), onSelect.first())
+            assertEquals(1, onChangePreference.size)
+            assertEquals(
+                MediaPreference.Empty.copy(
+                    alliance = "桜都字幕组",
+                    resolution = target.properties.resolution,
+                    subtitleLanguageId = "CHS",
+                    mediaSourceId = "dmhy"
+                ), onChangePreference.first()
+            )
+        }
+    }
+
+    @Test
+    fun `event prefer`() = runTest {
+        val target = media(alliance = "桜都字幕组")
+        addMedia(target)
+        runCollectEvents {
+            selector.alliance.prefer("桜都字幕组")
+        }.run {
+            assertEquals(0, onSelect.size)
+            assertEquals(1, onChangePreference.size)
+            assertEquals(
+                MediaPreference.Empty.copy(
+                    alliance = "桜都字幕组",
+                ), onChangePreference.first()
+            )
+        }
+    }
+
+    class CollectedEvents(
+        val onSelect: MutableList<SelectEvent> = mutableListOf(),
+        val onChangePreference: MutableList<MediaPreference> = mutableListOf(),
+    )
+
+    private suspend fun runCollectEvents(block: suspend () -> Unit): CollectedEvents {
+        return CollectedEvents().apply {
+            cancellableCoroutineScope {
+                launch(start = CoroutineStart.UNDISPATCHED) {
+                    selector.events.onSelect.collect {
+                        onSelect.add(it)
+                    }
+                }
+                launch(start = CoroutineStart.UNDISPATCHED) {
+                    selector.events.onChangePreference.collect {
+                        onChangePreference.add(it)
+                    }
+                }
+                try {
+                    block()
+                    yield()
+                } finally {
+                    cancelScope()
+                }
+            }
+        }
     }
 }
 

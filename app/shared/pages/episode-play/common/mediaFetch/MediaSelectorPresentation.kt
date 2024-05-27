@@ -3,8 +3,10 @@ package me.him188.ani.app.ui.subject.episode.mediaFetch
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import me.him188.ani.app.data.media.selector.MediaPreferenceItem
 import me.him188.ani.app.data.media.selector.MediaSelector
+import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.datasources.api.Media
@@ -52,21 +54,27 @@ interface MediaSelectorPresentation {
 
 @Stable
 class MediaPreferenceItemPresentation<T : Any>(
-    private val item: MediaPreferenceItem<T>,
+    @PublishedApi internal val item: MediaPreferenceItem<T>,
     override val backgroundScope: CoroutineScope,
 ) : HasBackgroundScope {
     val available: List<T> by item.available.produceState(emptyList())
     val finalSelected: T? by item.finalSelected.produceState(null)
 
+    private val tasker = MonoTasker(backgroundScope)
+
     /**
      * 用户选择
      */
-    fun prefer(value: T) = item.prefer(value)
+    fun prefer(value: T) {
+        tasker.launch(start = CoroutineStart.UNDISPATCHED) { item.prefer(value) }
+    }
 
     /**
      * 删除已有的选择
      */
-    fun removePreference() = item.removePreference()
+    fun removePreference() {
+        tasker.launch(start = CoroutineStart.UNDISPATCHED) { item.removePreference() }
+    }
 }
 
 fun <T : Any> MediaPreferenceItemPresentation<T>.preferOrRemove(value: T?) {

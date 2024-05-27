@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.yield
 import me.him188.ani.app.data.media.MediaSourceManager
 import me.him188.ani.app.data.media.selector.DefaultMediaSelector
 import me.him188.ani.app.data.media.selector.MediaSelector
@@ -77,13 +76,9 @@ suspend fun EpisodeMediaFetchSession.awaitCompletion() {
 @Immutable
 class FetcherMediaSelectorConfig(
     /**
-     * When user clicks the filter chip.
+     * 保存本次会话用户更新的资源选择偏好设置
      */
-    val savePreferencesOnFilter: Boolean = true,
-    /**
-     * When user clicks a media.
-     */
-    val savePreferencesOnSelect: Boolean = true,
+    val savePreferenceChanges: Boolean = true,
     /**
      * Automatically select a media when the [MediaFetchSession] has completed.
      */
@@ -100,8 +95,7 @@ class FetcherMediaSelectorConfig(
             autoSelectLocal = false,
         )
         val NoSave = FetcherMediaSelectorConfig(
-            savePreferencesOnFilter = false,
-            savePreferencesOnSelect = false
+            savePreferenceChanges = false
         )
     }
 }
@@ -210,30 +204,10 @@ internal class DefaultEpisodeMediaFetchSession(
     }
 
     init {
-        if (config.savePreferencesOnFilter) {
+        if (config.savePreferenceChanges) {
             launchInBackground {
-                // Save users' per-subject preferences when they click the filter chips
                 mediaSelector.events.onChangePreference.collect {
-                    yield()
                     episodePreferencesRepository.setMediaPreference(subjectId, it)
-                }
-            }
-        }
-        if (config.savePreferencesOnSelect) {
-            launchInBackground {
-                // Save users' per-subject preferences when they click cards
-                mediaSelector.events.onSelect.collect { event ->
-                    val media = event.media ?: return@collect
-                    val pref = MediaPreference(
-                        alliance = media.properties.alliance,
-                        resolution = media.properties.resolution,
-                        // Use the filter chip if any
-                        // because a media has multiple languages and user may choose the media because it includes their desired one
-                        subtitleLanguageId = event.subtitleLanguageId
-                            ?: media.properties.subtitleLanguageIds.firstOrNull(),
-                        mediaSourceId = media.mediaSourceId
-                    )
-                    episodePreferencesRepository.setMediaPreference(subjectId, pref)
                 }
             }
         }
