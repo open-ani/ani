@@ -19,6 +19,7 @@ import me.him188.ani.app.data.models.MediaSelectorSettings
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.source.MediaSourceKind
+import me.him188.ani.datasources.api.topic.hasSeason
 import me.him188.ani.datasources.api.topic.isSingleEpisode
 import kotlin.coroutines.CoroutineContext
 
@@ -370,6 +371,11 @@ class DefaultMediaSelector(
         val candidates = filteredCandidates.first()
         if (candidates.isEmpty()) return null
 
+        val mediaSelectorContext = mediaSelectorContext.first()
+        val mediaSelectorSettings = mediaSelectorSettings.first()
+        val shouldPreferSeasons =
+            mediaSelectorContext.subjectFinishedForAConservativeTime && mediaSelectorSettings.preferSeasons
+
         val languageIds = sequence {
             selectedSubtitleLanguageId?.let {
                 yield(it)
@@ -425,47 +431,69 @@ class DefaultMediaSelector(
         // - 分辨率最高优先: 1080P >> 720P, 但不能为了要 4K 而选择不想要的字幕语言
         // - 不要为了选择偏好字幕组而放弃其他字幕组的更好的语言
 
-        // 注意, 这个函数会跑在主线程
         // 实际上这些 loop 都只需要跑一次, 除了分辨率. 而这也只需要多遍历两次 list 而已.
         // 例如: 4K (无匹配) -> 2K (无匹配) -> 1080P -> 简中 -> 桜都 -> Mikan
 
-        for (resolution in resolutions) { // DFS 尽可能匹配第一个分辨率
-            val filteredByResolution = candidates.filter { resolution == it.properties.resolution }
-            if (filteredByResolution.isEmpty()) continue
+        fun selectAny(list: List<Media>): Media? {
+            if (list.isEmpty()) {
+                return null
+            }
+            if (shouldPreferSeasons) {
+                return selectDefault(list.fastFirstOrNull { it.episodeRange?.hasSeason() == null }
+                    ?: list.first())
+            }
+            return selectDefault(list.first())
+        }
 
-            for (languageId in languageIds) {
-                val filteredByLanguage = filteredByResolution.filter { languageId in it.properties.subtitleLanguageIds }
-                if (filteredByLanguage.isEmpty()) continue
+        // TODO: too complex, should refactor
 
-                for (alliance in alliances) { // 能匹配第一个最好
-                    // 这里是消耗最大的地方, 因为有正则匹配
-                    val filteredByAlliance = filteredByLanguage.filter { alliance == it.properties.alliance }
-                    if (filteredByAlliance.isEmpty()) continue
+        fun selectImpl(candidates: List<Media>): Media? {
+            for (resolution in resolutions) { // DFS 尽可能匹配第一个分辨率
+                val filteredByResolution = candidates.filter { resolution == it.properties.resolution }
+                if (filteredByResolution.isEmpty()) continue
+
+                for (languageId in languageIds) {
+                    val filteredByLanguage =
+                        filteredByResolution.filter { languageId in it.properties.subtitleLanguageIds }
+                    if (filteredByLanguage.isEmpty()) continue
+
+                    for (alliance in alliances) { // 能匹配第一个最好
+                        // 这里是消耗最大的地方, 因为有正则匹配
+                        val filteredByAlliance = filteredByLanguage.filter { alliance == it.properties.alliance }
+                        if (filteredByAlliance.isEmpty()) continue
+
+                        for (mediaSource in mediaSources) {
+                            val filteredByMediaSource = filteredByAlliance.filter {
+                                mediaSource == null || mediaSource == it.mediaSourceId
+                            }
+                            if (filteredByMediaSource.isEmpty()) continue
+                            return selectAny(filteredByMediaSource)
+                        }
+                    }
+
+                    // 字幕组没匹配到, 但最好不要换更差语言
 
                     for (mediaSource in mediaSources) {
-                        val filteredByMediaSource = filteredByAlliance.filter {
+                        val filteredByMediaSource = filteredByLanguage.filter {
                             mediaSource == null || mediaSource == it.mediaSourceId
                         }
                         if (filteredByMediaSource.isEmpty()) continue
-                        return selectDefault(filteredByMediaSource.first())
+                        return selectAny(filteredByMediaSource)
                     }
                 }
 
-                // 字幕组没匹配到, 但最好不要换更差语言
-
-                for (mediaSource in mediaSources) {
-                    val filteredByMediaSource = filteredByLanguage.filter {
-                        mediaSource == null || mediaSource == it.mediaSourceId
-                    }
-                    if (filteredByMediaSource.isEmpty()) continue
-                    return selectDefault(filteredByMediaSource.first())
-                }
+                // 该分辨率下无字幕语言, 换下一个分辨率
             }
-
-            // 该分辨率下无字幕语言, 换下一个分辨率
+            return null
         }
 
-        return selectDefault(candidates.first())
+        return if (shouldPreferSeasons) {
+            val seasons = candidates.filter { it.episodeRange?.hasSeason() == true }
+            selectImpl(seasons)
+                ?: selectImpl(candidates)
+        } else {
+            selectImpl(candidates)
+        } ?: selectAny(candidates)
     }
 
     override suspend fun trySelectCached(): Media? {

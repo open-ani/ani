@@ -206,6 +206,12 @@ fun EpisodeRange.isSingleEpisode(): Boolean {
     }
 }
 
+fun EpisodeRange.hasSeason(): Boolean = when (this) {
+    is Season -> true
+    is Combined -> first.hasSeason() || second.hasSeason()
+    else -> false
+}
+
 @Serializable
 data class Alliance(
     val id: String,

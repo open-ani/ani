@@ -30,8 +30,8 @@ class DefaultMediaSelectorTest {
         mediaList.value.addAll(media)
     }
 
-    private val savedUserPreference = MutableStateFlow(MediaPreference.Empty)
-    private val savedDefaultPreference = MutableStateFlow(MediaPreference.Empty)
+    private val savedUserPreference = MutableStateFlow(MediaPreference.Default)
+    private val savedDefaultPreference = MutableStateFlow(MediaPreference.Default)
     private val mediaSelectorSettings = MutableStateFlow(MediaSelectorSettings.Default)
     private val mediaSelectorContext = MutableStateFlow(
         MediaSelectorContext(
@@ -408,6 +408,10 @@ class DefaultMediaSelectorTest {
     fun `can hide single episode after finished`() = runTest {
         val target: DefaultMedia
         mediaSelectorContext.value = MediaSelectorContext(subjectFinishedForAConservativeTime = true)
+        mediaSelectorSettings.value = MediaSelectorSettings.Default.copy(
+            hideSingleEpisodeForCompleted = true,
+            preferSeasons = false,
+        )
         addMedia(
             media(alliance = "字幕组1", episodeRange = EpisodeRange.single("1")),
             media(
@@ -424,6 +428,90 @@ class DefaultMediaSelectorTest {
         assertEquals(target, selector.filteredCandidates.first()[0])
     }
 
+    @Test
+    fun `do not hide single episode after finished if settings off`() = runTest {
+        mediaSelectorContext.value = MediaSelectorContext(subjectFinishedForAConservativeTime = true)
+        mediaSelectorSettings.value = MediaSelectorSettings.Default.copy(
+            hideSingleEpisodeForCompleted = false,
+            preferSeasons = false,
+        )
+        addMedia(
+            media(alliance = "字幕组1", episodeRange = EpisodeRange.single("1")),
+            media(alliance = "字幕组2", episodeRange = EpisodeRange.range(1, 2)),
+            media(alliance = "字幕组6", episodeRange = EpisodeRange.season(1)),
+            media(alliance = "字幕组3", episodeRange = EpisodeRange.single("2")),
+            media(alliance = "字幕组4", episodeRange = EpisodeRange.single("3")),
+            media(alliance = "字幕组5", episodeRange = EpisodeRange.single("4"))
+        )
+        assertEquals(6, selector.filteredCandidates.first().size)
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // 已完结后优先选择季度全集资源
+    ///////////////////////////////////////////////////////////////////////////
+
+    @Test
+    fun `prefer seasons after finished`() = runTest {
+        val target: DefaultMedia
+        mediaSelectorContext.value = MediaSelectorContext(subjectFinishedForAConservativeTime = true)
+        mediaSelectorSettings.value = MediaSelectorSettings.Default.copy(
+            hideSingleEpisodeForCompleted = false,
+            preferSeasons = true,
+        )
+        savedUserPreference.value = MediaPreference.Default
+        savedDefaultPreference.value = MediaPreference.Default // 允许选择 1080P 等
+        addMedia(
+            media(alliance = "字幕组1", episodeRange = EpisodeRange.single("1")),
+            media(alliance = "字幕组2", episodeRange = EpisodeRange.season(1)).also { target = it },
+            media(alliance = "字幕组3", episodeRange = EpisodeRange.single("2")),
+            media(alliance = "字幕组4", episodeRange = EpisodeRange.single("3")),
+            media(alliance = "字幕组5", episodeRange = EpisodeRange.single("4"))
+        )
+        assertEquals(5, selector.filteredCandidates.first().size)
+        assertEquals(target, selector.trySelectDefault())
+    }
+
+    @Test
+    fun `do not prefer season if disabled`() = runTest {
+        val target: DefaultMedia
+        mediaSelectorContext.value = MediaSelectorContext(subjectFinishedForAConservativeTime = true)
+        mediaSelectorSettings.value = MediaSelectorSettings.Default.copy(
+            hideSingleEpisodeForCompleted = false,
+            preferSeasons = false,
+        )
+        savedUserPreference.value = MediaPreference.Default
+        savedDefaultPreference.value = MediaPreference.Default
+        addMedia(
+            media(alliance = "字幕组1", episodeRange = EpisodeRange.single("1")).also { target = it },
+            media(alliance = "字幕组2", episodeRange = EpisodeRange.season(1)),
+            media(alliance = "字幕组3", episodeRange = EpisodeRange.single("2")),
+            media(alliance = "字幕组4", episodeRange = EpisodeRange.single("3")),
+            media(alliance = "字幕组5", episodeRange = EpisodeRange.single("4"))
+        )
+        assertEquals(5, selector.filteredCandidates.first().size)
+        assertEquals(target, selector.trySelectDefault())
+    }
+
+    @Test
+    fun `do not prefer season if not matched`() = runTest {
+        val target: DefaultMedia
+        mediaSelectorContext.value = MediaSelectorContext(subjectFinishedForAConservativeTime = true)
+        mediaSelectorSettings.value = MediaSelectorSettings.Default.copy(
+            hideSingleEpisodeForCompleted = false,
+            preferSeasons = true,
+        )
+        savedUserPreference.value = MediaPreference.Empty
+        savedDefaultPreference.value = MediaPreference.Empty // 啥都不要, 就一定会 fallback 成选第一个
+        addMedia(
+            media(alliance = "字幕组1", episodeRange = EpisodeRange.single("1")).also { target = it },
+            media(alliance = "字幕组2", episodeRange = EpisodeRange.season(1)),
+            media(alliance = "字幕组3", episodeRange = EpisodeRange.single("2")),
+            media(alliance = "字幕组4", episodeRange = EpisodeRange.single("3")),
+            media(alliance = "字幕组5", episodeRange = EpisodeRange.single("4"))
+        )
+        assertEquals(5, selector.filteredCandidates.first().size)
+        assertEquals(target, selector.trySelectDefault())
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     // Events
@@ -431,6 +519,8 @@ class DefaultMediaSelectorTest {
 
     @Test
     fun `do not save subtitle language when it is ambiguous`() = runTest {
+        savedUserPreference.value = MediaPreference.Empty
+        savedDefaultPreference.value = MediaPreference.Empty // 方便后面比较
         val target = media(alliance = "字幕组", subtitleLanguages = listOf("CHS", "CHT"))
         addMedia(target)
         runCollectEvents {
@@ -452,6 +542,8 @@ class DefaultMediaSelectorTest {
 
     @Test
     fun `event select`() = runTest {
+        savedUserPreference.value = MediaPreference.Empty
+        savedDefaultPreference.value = MediaPreference.Empty // 方便后面比较
         val target = media(alliance = "字幕组", subtitleLanguages = listOf("CHS"))
         addMedia(target)
         runCollectEvents {
@@ -473,6 +565,8 @@ class DefaultMediaSelectorTest {
 
     @Test
     fun `event prefer`() = runTest {
+        savedUserPreference.value = MediaPreference.Empty
+        savedDefaultPreference.value = MediaPreference.Empty // 方便后面比较
         val target = media(alliance = "字幕组")
         addMedia(target)
         runCollectEvents {
