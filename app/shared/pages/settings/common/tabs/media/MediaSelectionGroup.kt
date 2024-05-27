@@ -80,21 +80,6 @@ internal fun SettingsScope.MediaSelectionGroup(vm: MediaSettingsViewModel) {
 
         HorizontalDividerItem()
 
-        val mediaSelectorSettings by vm.mediaSelectorSettings
-        SwitchItem(
-            checked = mediaSelectorSettings.showDisabled,
-            onCheckedChange = {
-                vm.mediaSelectorSettings.update(
-                    mediaSelectorSettings.copy(showDisabled = it)
-                )
-            },
-            title = { Text("显示禁用的数据源") },
-            Modifier.placeholder(vm.mediaSelectorSettings.loading),
-            description = { Text("以便在偏好数据源中未找到资源时，可临时启用禁用的数据源") },
-        )
-
-        HorizontalDividerItem()
-
         SorterItem(
             values = { vm.sortedLanguages },
             onSort = { list ->
@@ -128,20 +113,6 @@ internal fun SettingsScope.MediaSelectionGroup(vm: MediaSettingsViewModel) {
             },
             icon = { Icon(Icons.Rounded.Language, null) },
             title = { Text("字幕语言") },
-        )
-
-        HorizontalDividerItem()
-
-        SwitchItem(
-            checked = vm.defaultMediaPreference.showWithoutSubtitle,
-            onCheckedChange = {
-                vm.updateDefaultMediaPreference(
-                    vm.defaultMediaPreference.copy(showWithoutSubtitle = it)
-                )
-            },
-            title = { Text("显示无字幕资源") },
-            Modifier.placeholder(vm.defaultMediaPreferenceLoading),
-            description = { Text("这可能是资源本身是生肉，也可能是字幕未识别到。是生肉的可能性更高") },
         )
 
         HorizontalDividerItem()
@@ -199,6 +170,35 @@ internal fun SettingsScope.MediaSelectionGroup(vm: MediaSettingsViewModel) {
                 )
             },
             sanitizeValue = { it.replace("，", ",") },
+        )
+
+        HorizontalDividerItem()
+
+        val mediaSelectorSettings by vm.mediaSelectorSettings
+        SwitchItem(
+            checked = mediaSelectorSettings.showDisabled,
+            onCheckedChange = {
+                vm.mediaSelectorSettings.update(
+                    mediaSelectorSettings.copy(showDisabled = it)
+                )
+            },
+            title = { Text("显示禁用的数据源") },
+            Modifier.placeholder(vm.mediaSelectorSettings.loading),
+            description = { Text("以便在偏好数据源中未找到资源时，可临时启用禁用的数据源") },
+        )
+
+        HorizontalDividerItem()
+
+        SwitchItem(
+            checked = vm.defaultMediaPreference.showWithoutSubtitle,
+            onCheckedChange = {
+                vm.updateDefaultMediaPreference(
+                    vm.defaultMediaPreference.copy(showWithoutSubtitle = it)
+                )
+            },
+            title = { Text("显示无字幕资源") },
+            Modifier.placeholder(vm.defaultMediaPreferenceLoading),
+            description = { Text("这可能是资源本身是生肉，也可能是字幕未识别到。是生肉的可能性更高") },
         )
     }
 }
