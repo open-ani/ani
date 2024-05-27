@@ -22,10 +22,12 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.remember
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.SupervisorJob
 import me.him188.ani.app.data.media.resolver.HttpStreamingVideoSourceResolver
 import me.him188.ani.app.data.media.resolver.LocalFileVideoSourceResolver
 import me.him188.ani.app.data.media.resolver.TorrentVideoSourceResolver
@@ -36,6 +38,7 @@ import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.getCommonKoinModule
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.session.TestSessionManagers
+import me.him188.ani.app.tools.torrent.DefaultTorrentManager
 import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.app.ui.theme.aniColorScheme
 import me.him188.ani.app.videoplayer.ui.state.DummyPlayerState
@@ -44,10 +47,14 @@ import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.core.module.Module
 import org.koin.dsl.module
+import java.io.File
 
 val LocalIsPreviewing = compositionLocalOf {
     false
 }
+
+@Stable
+private val globalScope = CoroutineScope(SupervisorJob())
 
 @OptIn(DelicateCoroutinesApi::class)
 @Composable
@@ -63,9 +70,8 @@ fun ProvideCompositionLocalsForPreview(
         PlatformPreviewCompositionLocalProvider {
             val context = LocalContext.current
             runCatching { stopKoin() }
-            val scope = GlobalScope
             startKoin {
-                modules(getCommonKoinModule({ context }, scope))
+                modules(getCommonKoinModule({ context }, globalScope))
                 modules(module {
                     single<PlayerStateFactory> {
                         playerStateFactory
@@ -78,6 +84,9 @@ fun ProvideCompositionLocalsForPreview(
                                 .plus(LocalFileVideoSourceResolver())
                                 .plus(HttpStreamingVideoSourceResolver())
                         )
+                    }
+                    single<TorrentManager> {
+                        DefaultTorrentManager(globalScope.coroutineContext) { File("preview-cache") }
                     }
                     module()
                 })

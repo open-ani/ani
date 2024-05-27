@@ -87,7 +87,7 @@ class DirectoryMediaCacheStorage(
                 }
 
                 withContext(Dispatchers.IO) {
-                    restoreFiles()
+                    restoreFiles() // 必须要跑这个, 这个会去创建文件夹
                 }
             }
         }

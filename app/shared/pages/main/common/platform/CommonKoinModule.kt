@@ -71,7 +71,6 @@ import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
 import org.koin.core.KoinApplication
 import org.koin.dsl.module
-import kotlin.io.path.createDirectories
 
 @Suppress("UnusedReceiverParameter") // bug
 fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScope: CoroutineScope) = module {
@@ -121,8 +120,7 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
                     add(
                         DirectoryMediaCacheStorage(
                             mediaSourceId = "test-in-memory",
-                            metadataDir = getMediaMetadataDir("test-in-memory")
-                                .toPath().apply { createDirectories() },
+                            metadataDir = getMediaMetadataDir("test-in-memory").toPath(),
                             engine = DummyMediaCacheEngine("test-in-memory"),
                             coroutineScope.childScopeContext(),
                         )
@@ -132,8 +130,7 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
                     add(
                         DirectoryMediaCacheStorage(
                             mediaSourceId = id,
-                            metadataDir = getMediaMetadataDir(engine.type.id)
-                                .toPath().apply { createDirectories() },
+                            metadataDir = getMediaMetadataDir(engine.type.id).toPath(),
                             engine = TorrentMediaCacheEngine(
                                 mediaSourceId = id,
                                 torrentEngine = engine,
