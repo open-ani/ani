@@ -5,6 +5,10 @@ package me.him188.ani.app.data.subject
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
+import java.util.Calendar
+import java.util.TimeZone
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 @Immutable
 @JvmInline
@@ -13,7 +17,7 @@ value class PackedDate @PublishedApi internal constructor(
     @JvmField
     @PublishedApi
     internal val packed: Int
-) {
+) : Comparable<PackedDate> {
     inline val isValid: Boolean get() = packed != Int.MAX_VALUE
 
     inline val year: Int get() = if (isValid) DatePacker.unpack1(packed) else 0
@@ -47,7 +51,30 @@ value class PackedDate @PublishedApi internal constructor(
                 split[2].toIntOrNull() ?: return Invalid
             )
         }
+
+        fun now(): PackedDate {
+            val currentTimeMillis = System.currentTimeMillis()
+            val timeZone = TimeZone.getTimeZone("UTC+8") // bangumi 是固定 UTC+8
+            val calendar = Calendar.getInstance(timeZone).apply { timeInMillis = currentTimeMillis }
+
+            val year = calendar.get(Calendar.YEAR)
+            val month = calendar.get(Calendar.MONTH) + 1 // Calendar.MONTH is zero-based
+            val day = calendar.get(Calendar.DAY_OF_MONTH)
+            return PackedDate(year, month, day)
+        }
     }
+
+    override fun compareTo(other: PackedDate): Int = packed.compareTo(other.packed) // trivial!
+}
+
+operator fun PackedDate.minus(other: PackedDate): Duration {
+    val thisCalendar = Calendar.getInstance().apply {
+        set(year, rawMonth - 1, day)
+    }
+    val otherCalendar = Calendar.getInstance().apply {
+        set(other.year, other.rawMonth - 1, other.day)
+    }
+    return (thisCalendar.timeInMillis - otherCalendar.timeInMillis).milliseconds
 }
 
 @Stable
