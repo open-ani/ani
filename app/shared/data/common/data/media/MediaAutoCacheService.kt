@@ -52,6 +52,7 @@ fun DefaultMediaAutoCacheService(
     koin: Koin = GlobalContext.get()
 ) = DefaultMediaAutoCacheService(
     subjectCollections = { settings ->
+        @Suppress("DEPRECATION")
         koin.get<SubjectManager>()
             .collectionsByType[UnifiedCollectionType.DOING]!!
             .data(ContentPolicy.CACHE_FIRST)

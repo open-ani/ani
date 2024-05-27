@@ -18,12 +18,14 @@ enum class ContentPolicy {
     /**
      * 缓存优先策略. 若本地已经有缓存, 则不会请求网络.
      */
+    @Deprecated("这东西现在会贪婪请求全部列表, 导致大量请求, 要先修一下") // TODO
     CACHE_FIRST,
 }
 
 /**
  * 根据 [ContentPolicy], 选择仅使用已缓存数据 [LazyDataCache.cachedDataFlow] 还是使用允许网络请求的所有数据 [LazyDataCache.allDataFlow].
  */
+@Suppress("DEPRECATION")
 fun <T> LazyDataCache<T>.data(policy: ContentPolicy): Flow<List<T>> = when (policy) {
     CACHE_ONLY -> cachedDataFlow
     CACHE_FIRST -> allDataFlow
