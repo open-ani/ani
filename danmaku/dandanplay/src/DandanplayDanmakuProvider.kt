@@ -178,15 +178,21 @@ class DandanplayDanmakuProvider(
     }
 
     private suspend fun getEpisodesByFuzzyEpisodeSearch(request: DanmakuSearchRequest): List<DanmakuEpisode> {
-        val searchEpisodeResponse = dandanplayClient.searchEpisode(
-            subjectName = request.subjectPrimaryName.trim().substringBeforeLast(" "),
-            episodeName = null // 用我们的匹配算法
-            //            episodeName = "第${(request.episodeEp ?: request.episodeSort).toString().removePrefix("0")}话",
-            // 弹弹的是 EP 顺序
-            // 弹弹数据库有时候会只有 "第x话" 没有具体标题, 所以不带标题搜索就够了
-        )
+        val searchEpisodeResponse = request.subjectNames.flatMap { name ->
+            kotlin.runCatching {
+                dandanplayClient.searchEpisode(
+                    subjectName = name.trim().substringBeforeLast(" "),
+                    episodeName = null // 用我们的匹配算法
+                    //            episodeName = "第${(request.episodeEp ?: request.episodeSort).toString().removePrefix("0")}话",
+                    // 弹弹的是 EP 顺序
+                    // 弹弹数据库有时候会只有 "第x话" 没有具体标题, 所以不带标题搜索就够了
+                ).animes
+            }.onFailure {
+                logger.error(it) { "Failed to getEpisodesByFuzzyEpisodeSearch with '$name'" }
+            }.getOrNull() ?: emptySet()
+        }
         logger.info { "Ep search result: ${searchEpisodeResponse}}" }
-        return searchEpisodeResponse.animes.flatMap { anime ->
+        return searchEpisodeResponse.flatMap { anime ->
             anime.episodes.map { ep ->
                 DanmakuEpisode(
                     id = ep.episodeId.toString(),
@@ -220,14 +226,14 @@ class DandanplayDanmakuProvider(
             }
 
 
-        kotlin.runCatching {
-            // 用名字搜索
-            dandanplayClient.searchSubject(request.subjectPrimaryName)
-        }.onFailure {
-            logger.error(it) { "Failed to fetch anime list by name" }
-        }.getOrNull()
-            ?.animes
-            ?.firstOrNull { it.animeTitle in expectedNames }
+        request.subjectNames.flatMap { name ->
+            kotlin.runCatching {
+                dandanplayClient.searchSubject(name).animes
+            }.onFailure {
+                logger.error(it) { "Failed to fetch anime list by name" }
+            }.getOrNull() ?: emptySet()
+        }
+            .firstOrNull { it.animeTitle in expectedNames }
             ?.let {
                 logger.info { "Matched Dandanplay Anime by search using name: ${it.animeId} ${it.animeTitle}" }
                 return it
