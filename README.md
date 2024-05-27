@@ -20,15 +20,16 @@ Ani 的目标是提供尽可能简单且舒适的追番体验。
 
 > 我不是专业客户端开发人员, 开发纯属兴趣, 不过有点讲究代码质量, 欢迎各位指点.
 
-## 3.0 新版开发中
+## 技术总览
 
-Ani 3.0 **正在**开发中. 以下几点可以给你一个技术上的大概了解, 不感兴趣的可以直接看[截图](#功能截图).
+以下几点可以给你一个技术上的大概了解, 不感兴趣的可以直接看[截图](#功能截图).
 
 - Kotlin 多平台架构: Android + 桌面 JVM，绝大部分代码共享在 app/shared
 - UI 100% [Compose][Compose Multiplatform]
 - Compose 弹幕引擎，自建弹幕服务器+网络弹幕源，预留接入其他弹幕数据源的接口
 - Compose 视频播放器，Android 底层为 ExoPlayer，PC 底层为 VLC
-- 独立的抽象数据源对接模块：SPI 方式加载 [动漫花园][dmhy]、[acg.rip][acg.rip]、[Mikan][Mikan] 等。现阶段支持代码里扩展私有数据源，局域网缓存服务器等。未来计划开放 API
+- 独立的抽象数据源对接模块：SPI 方式加载 [动漫花园][dmhy]、[acg.rip][acg.rip]、[Mikan][Mikan]
+  等。现阶段支持代码里扩展私有数据源，局域网缓存服务器等。未来计划开放 API
 
 ### 参与开发
 
@@ -37,7 +38,8 @@ Ani 3.0 **正在**开发中. 以下几点可以给你一个技术上的大概了
 
 ## 下载
 
-Ani 支持 Android 和桌面端 (macOS、Windows)。现阶段对 Android 支持最佳, PC 需要依赖 qBittorrent 才能下载 BT 视频，但不安装 qBit 也可以使用在线数据源。
+Ani 支持 Android 和桌面端 (macOS、Windows)。现阶段对 Android 支持最佳, PC 需要依赖 qBittorrent 才能下载
+BT 视频，但不安装 qBit 也可以使用在线数据源。
 
 3.0 功能正逐渐完善, 每隔几天会发布一个 beta 测试版本。
 
@@ -52,38 +54,29 @@ Ani 支持 Android 和桌面端 (macOS、Windows)。现阶段对 Android 支持�
 
 快速开发中, 我每隔几天会更一下截图. 实际样式请以最新版本为准.
 
-### 登录
-
-使用 [Bangumi][Bangumi] OAuth (浏览器) 登录, 不要求在客户端内输入账号密码.
-
 ### 管理追番
 
 - 同步 [Bangumi][Bangumi] 收藏
-- 快捷修改收藏状态
 - 按"在看/想看/看过"分类
-- 快速跳转到下一集
+- 记录观看进度, 快速跳转到下一集
 
-<img width="300" src=".readme/images/collection/collection-light.jpeg" alt="collection-light"/> <img width="300" src=".readme/images/collection/collection-dark.jpg" alt="collection-dark"/>
-
-- 根据找番时会关注的声优, 制作公司, 监督等几点设计
-  > 其实这个页面并未实现很多功能, 在计划中
-
-<img width="300" src=".readme/images/subject/subject-light.jpeg" alt="subject-light"/> <img width="300" src=".readme/images/subject/subject-dark.jpg" alt="subject-dark"/>
+<img width="300" src=".readme/images/collection/collection-dark.jpg" alt="collection-dark"/> <img width="300" src=".readme/images/subject/subject-dark.jpg" alt="subject-dark"/>
 
 ### 多数据源在线视频播放
 
 多数据源适配, 总有一个源有你想看的番和喜欢的字幕组
 
-- 自动解析资源, 可按分辨率, 字幕语言与字幕组选择视频源
-- 记忆上次选择, 下次直接播放
+- 支持多个 BT 数据源与在线数据源, 兼顾资源质量与缓冲速度
+- 自动解析资源信息, 可配置的智能选择算法完全避免找资源的麻烦
+- 按番剧记忆偏好选项
 - 支持季度全集资源
 
-<img width="270" src=".readme/images/episode/episode-player-loading.jpg" alt="episode-player-loading"/> <img width="270" src=".readme/images/episode/episode-media.jpeg" alt="episode-media"/>  <img width="270" src=".readme/images/episode/episode-media-expanded.jpeg" alt="episode-media-expanded"/> 
+<img width="270" src=".readme/images/episode/episode-player-loading.jpg" alt="episode-player-loading"/> <img width="270" src=".readme/images/episode/episode-stats.jpg" alt="episode-stats"/> <img width="270" src=".readme/images/episode/episode-media.jpg" alt="episode-media"/> 
 
 ### 视频弹幕
 
-- 从[弹弹play][ddplay]以及*其他弹幕网站*获取弹幕
-- 支持自定义弹幕样式与速度
+- 从[弹弹play][ddplay], *其他弹幕网站*, 以及 Ani 弹幕服务获取弹幕
+- 自定义弹幕样式与速度
 - 发送弹幕到 Ani 的公益弹幕服务器
 
 <img width="600" src=".readme/images/episode/player-controller.jpeg" alt="player-controller"/>
@@ -97,14 +90,9 @@ Ani 支持 Android 和桌面端 (macOS、Windows)。现阶段对 Android 支持�
 
 ### 视频手势
 
-你习惯的视频手势
-
-- 双击切换播放/暂停
-- 左右滑动快进/快退
-- 左侧上下滑动调整亮度
-- 右侧上下滑动调整音量
-- 倍速播放
-- 锁定手势
+- 双击切换播放/暂停, 左右滑动快进/快退
+- 左侧上下滑动调整亮度, 右侧上下滑动调整音量
+- 倍速播放, 长按快进, 手势开关, 键盘快捷键
 
 <img width="600" src=".readme/images/episode/player-gesture.jpeg" alt="episode-gesture"/>
 
@@ -113,7 +101,7 @@ Ani 支持 Android 和桌面端 (macOS、Windows)。现阶段对 Android 支持�
 - 设置全局优先选择的字幕组, 字幕语言等设置
 - 在观看时修改过滤可自动记忆并应用到下次播放和自动缓存
 
-<img width="300" src=".readme/images/preferences/subtitle-language.jpg"  alt="subtitle-language.jpg"/> <img width="300" src=".readme/images/preferences/media-source.jpg"  alt="media-source.jpg"/> 
+<img width="300" src=".readme/images/preferences/preferences-media.jpg"  alt="subtitle-language.jpg"/>  
 
 ### 视频缓存
 
