@@ -190,15 +190,15 @@ fun SubjectCacheScene(
             vm.deleteCache(episodeCacheState.episodeId)
         },
         mediaSelector = { episodeCacheState, dismissSelector ->
+            val backgroundScope = rememberBackgroundScope()
             val epFetch = remember(vm.subjectId, episodeCacheState.episodeId) {
                 EpisodeMediaFetchSession(
                     vm.subjectId,
                     episodeCacheState.episodeId,
-                    vm.backgroundScope.coroutineContext,
+                    backgroundScope.backgroundScope.coroutineContext,
                     FetcherMediaSelectorConfig.NoAutoSelect
                 )
             }
-            val backgroundScope = rememberBackgroundScope()
             val mediaSelectorPresentation = remember(epFetch, backgroundScope) {
                 MediaSelectorPresentation(epFetch.mediaSelector, backgroundScope.backgroundScope)
             }
