@@ -31,6 +31,7 @@ import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -48,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.pages.cache.manage.CacheManagementPage
+import me.him188.ani.app.requireOnline
 import me.him188.ani.app.ui.collection.CollectionPage
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
@@ -55,6 +57,7 @@ import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.home.HomePage
 import me.him188.ani.app.ui.home.SearchViewModel
+import me.him188.ani.app.ui.isLoggedIn
 import me.him188.ani.app.ui.profile.AccountViewModel
 import me.him188.ani.app.ui.profile.ProfilePage
 import me.him188.ani.app.ui.settings.SettingsPage
@@ -78,10 +81,18 @@ private fun UserAvatar(
     vm: AccountViewModel = rememberViewModel { AccountViewModel() },
 ) {
     val user by vm.selfInfo.collectAsStateWithLifecycle()
-    AvatarImage(
-        url = user?.avatar?.medium,
-        modifier.clip(MaterialTheme.shapes.small).placeholder(user == null),
-    )
+    val loggedIn by isLoggedIn()
+    if (loggedIn == false) {
+        val navigator = LocalNavigator.current
+        TextButton({ vm.requireOnline(navigator = navigator) }, modifier) {
+            Text("登录")
+        }
+    } else {
+        AvatarImage(
+            url = user?.avatar?.medium,
+            modifier.clip(CircleShape).placeholder(user == null),
+        )
+    }
 }
 
 @Composable
@@ -121,7 +132,7 @@ private fun HomeSceneLandscape(
                 NavigationRail(
                     Modifier.padding(top = 16.dp).weight(1f),
                     header = {
-                        UserAvatar(Modifier.clip(CircleShape).size(48.dp))
+                        UserAvatar(Modifier.size(48.dp))
                     }
                 ) {
                     Column(
