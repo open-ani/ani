@@ -150,7 +150,11 @@ fun SettingsPage(
                 }
             }
 
-            HorizontalPager(state = pagerState, Modifier.fillMaxSize()) { index ->
+            HorizontalPager(
+                state = pagerState,
+                Modifier.fillMaxSize(),
+                userScrollEnabled = !isShowLandscapeUI(),
+            ) { index ->
                 val type = SettingsTab.entries[index]
                 Column(Modifier.fillMaxSize().padding(contentPadding)) {
                     when (type) {

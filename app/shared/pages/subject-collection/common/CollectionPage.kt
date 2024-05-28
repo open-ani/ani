@@ -181,7 +181,11 @@ fun CollectionPage(
                 }
             }
 
-            HorizontalPager(state = pagerState, Modifier.fillMaxSize()) { index ->
+            HorizontalPager(
+                state = pagerState,
+                Modifier.fillMaxSize(),
+                userScrollEnabled = !isShowLandscapeUI(),
+            ) { index ->
                 val type = COLLECTION_TABS_SORTED[index]
                 val collection = vm.collectionsByType(type)
 
