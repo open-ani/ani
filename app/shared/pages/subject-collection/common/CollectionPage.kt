@@ -47,6 +47,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -73,11 +74,14 @@ import me.him188.ani.app.ui.collection.progress.EpisodeProgressDialog
 import me.him188.ani.app.ui.collection.progress.rememberEpisodeProgressState
 import me.him188.ani.app.ui.foundation.effects.OnLifecycleEvent
 import me.him188.ani.app.ui.foundation.launchInBackground
+import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.isLoggedIn
 import me.him188.ani.app.ui.profile.UnauthorizedTips
-import me.him188.ani.app.ui.update.UpdateCheckerHost
+import me.him188.ani.app.ui.update.ChangelogDialog
+import me.him188.ani.app.ui.update.HasUpdateTag
+import me.him188.ani.app.ui.update.UpdateCheckerState
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.lifecycle.Lifecycle
@@ -94,24 +98,46 @@ val COLLECTION_TABS_SORTED = listOf(
     UnifiedCollectionType.DONE,
 )
 
+@Composable
+private fun UpdateCheckerHost(
+    state: UpdateCheckerState = rememberViewModel { UpdateCheckerState() },
+) {
+    SideEffect {
+        state.startCheckLatestVersion()
+    }
+
+    var showDialog by rememberSaveable { mutableStateOf(false) }
+    if (showDialog) {
+        ChangelogDialog(state, { showDialog = false })
+    }
+    if (state.hasUpdate) {
+        HasUpdateTag(onClick = { showDialog = true })
+    }
+}
+
+
 /**
  * My collections
  */
 @Composable
 fun CollectionPage(
     onClickCaches: () -> Unit,
+    modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
     val vm = rememberViewModel { MyCollectionsViewModel() }
     Scaffold(
+        modifier,
         topBar = {
             TopAppBar(
                 title = { Text("我的追番") },
                 actions = {
-                    UpdateCheckerHost()
+                    if (!isShowLandscapeUI()) {
+                        UpdateCheckerHost()
 
-                    IconButton(onClickCaches) {
-                        Icon(Icons.Rounded.Download, "缓存管理")
+                        IconButton(onClickCaches) {
+                            Icon(Icons.Rounded.Download, "缓存管理")
+                        }
                     }
                 }
             )

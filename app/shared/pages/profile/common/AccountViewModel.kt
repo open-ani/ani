@@ -13,6 +13,7 @@ import me.him188.ani.utils.coroutines.runUntilSuccess
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
+// TODO: review and maybe refactor AccountViewModel
 class AccountViewModel : AbstractViewModel(), KoinComponent {
     private val sessionManager: SessionManager by inject()
     private val profileRepository: ProfileRepository by inject()

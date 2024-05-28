@@ -76,6 +76,7 @@ import kotlinx.coroutines.launch
 import me.him188.ani.app.ui.foundation.TopAppBarGoBackButton
 import me.him188.ani.app.ui.foundation.effects.defaultFocus
 import me.him188.ani.app.ui.foundation.effects.onKey
+import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
 import me.him188.ani.app.ui.foundation.widgets.RichDialogLayout
@@ -116,7 +117,9 @@ fun SettingsPage(
             TopAppBar(
                 title = { Text("设置") },
                 navigationIcon = {
-                    TopAppBarGoBackButton()
+                    if (!isShowLandscapeUI()) {
+                        TopAppBarGoBackButton()
+                    }
                 },
             )
         }

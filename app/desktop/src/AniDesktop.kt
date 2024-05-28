@@ -95,7 +95,7 @@ object AniDesktop {
         println("cacheDir: ${projectDirectories.cacheDir}")
 
         val windowState = WindowState(
-            size = DpSize(800.dp, 1000.dp),
+            size = DpSize(800.dp * 1.3f, 800.dp),
         )
         val context = DesktopContext(
             windowState,

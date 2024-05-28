@@ -26,7 +26,6 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.remember
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
 import me.him188.ani.app.data.media.resolver.HttpStreamingVideoSourceResolver
 import me.him188.ani.app.data.media.resolver.LocalFileVideoSourceResolver
@@ -36,10 +35,13 @@ import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.getCommonKoinModule
+import me.him188.ani.app.platform.isInLandscapeMode
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.session.TestSessionManagers
 import me.him188.ani.app.tools.torrent.DefaultTorrentManager
 import me.him188.ani.app.tools.torrent.TorrentManager
+import me.him188.ani.app.ui.foundation.layout.LayoutMode
+import me.him188.ani.app.ui.foundation.layout.LocalLayoutMode
 import me.him188.ani.app.ui.theme.aniColorScheme
 import me.him188.ani.app.videoplayer.ui.state.DummyPlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
@@ -56,7 +58,6 @@ val LocalIsPreviewing = compositionLocalOf {
 @Stable
 private val globalScope = CoroutineScope(SupervisorJob())
 
-@OptIn(DelicateCoroutinesApi::class)
 @Composable
 fun ProvideCompositionLocalsForPreview(
     isDark: Boolean = isSystemInDarkTheme(),
@@ -92,9 +93,11 @@ fun ProvideCompositionLocalsForPreview(
                 })
             }
             val aniNavigator = remember { AniNavigator() }
+            val showLandscapeUI = isInLandscapeMode()
             CompositionLocalProvider(
                 LocalIsPreviewing provides true,
                 LocalNavigator provides aniNavigator,
+                LocalLayoutMode provides remember { LayoutMode(showLandscapeUI) },
             ) {
                 AniApp(aniColorScheme(isDark)) {
                     content()

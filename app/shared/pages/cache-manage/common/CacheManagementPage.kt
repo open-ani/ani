@@ -45,6 +45,7 @@ import me.him188.ani.app.ui.feedback.ErrorDialogHost
 import me.him188.ani.app.ui.feedback.ErrorMessage
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.TopAppBarGoBackButton
+import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.core.cache.MediaCache
@@ -152,7 +153,9 @@ fun CacheManagementPage(
             TopAppBar(
                 title = { Text("缓存管理") },
                 navigationIcon = {
-                    TopAppBarGoBackButton()
+                    if (!isShowLandscapeUI()) {
+                        TopAppBarGoBackButton()
+                    }
                 },
             )
         }

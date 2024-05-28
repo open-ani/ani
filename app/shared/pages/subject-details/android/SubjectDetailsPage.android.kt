@@ -13,6 +13,6 @@ internal fun PreviewSubjectDetails() {
         val vm = remember {
             SubjectDetailsViewModel(PreviewData.SOSOU_NO_FURILEN_SUBJECT_ID)
         }
-        SubjectDetailsPage(vm, goBack = {})
+        SubjectDetailsPage(vm)
     }
 }

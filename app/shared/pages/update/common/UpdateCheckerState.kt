@@ -21,12 +21,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -44,7 +43,6 @@ import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.tools.TimeFormatter
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.launchInBackground
-import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.foundation.widgets.RichDialogLayout
 import me.him188.ani.app.ui.profile.update.Release
 import me.him188.ani.utils.logging.error
@@ -57,6 +55,10 @@ class UpdateCheckerState : AbstractViewModel() {
 
     var latestVersion: NewVersion? by mutableStateOf(null)
     val currentVersion = currentAniBuildConfig.versionName
+
+    val hasUpdate by derivedStateOf {
+        this.latestVersion != null && this.latestVersion?.name != this.currentVersion
+    }
 
     private var lastCheckTime: Long = 0L
 
@@ -119,70 +121,60 @@ class UpdateCheckerState : AbstractViewModel() {
 private const val RELEASES = "https://github.com/open-ani/ani/releases"
 
 @Composable
-fun UpdateCheckerHost(
-    state: UpdateCheckerState = rememberViewModel { UpdateCheckerState() }
+fun ChangelogDialog(
+    state: UpdateCheckerState,
+    onDismissRequest: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    SideEffect {
-        state.startCheckLatestVersion()
-    }
-
-    var showDialog by rememberSaveable { mutableStateOf(false) }
-
-    if (showDialog) {
-        BasicAlertDialog({ showDialog = false }) {
-            RichDialogLayout(
-                title = {
-                    Text("有新版本")
-                },
-                description = {
-                    Text("Ani 目前处于测试阶段, 建议更新到最新版本以获得最佳体验")
-                },
-                buttons = {
-                    val context by rememberUpdatedState(LocalContext.current)
-                    TextButton(onClick = { showDialog = false }) {
-                        Text("取消")
-                    }
-                    OutlinedButton({ GlobalContext.get().get<BrowserNavigator>().openBrowser(context, RELEASES) }) {
-                        Icon(Icons.Rounded.ArrowOutward, null)
-                    }
-                    Button({
-                        GlobalContext.get().get<BrowserNavigator>().openBrowser(context, state.latestVersion!!.apkUrl)
-                    }) {
-                        Icon(Icons.Rounded.Download, null)
-                    }
+    BasicAlertDialog(onDismissRequest, modifier) {
+        RichDialogLayout(
+            title = {
+                Text("有新版本")
+            },
+            description = {
+                Text("Ani 目前处于测试阶段, 建议更新到最新版本以获得最佳体验")
+            },
+            buttons = {
+                val context by rememberUpdatedState(LocalContext.current)
+                TextButton(onClick = onDismissRequest) {
+                    Text("取消")
                 }
-            ) {
-                Column(
-                    Modifier.heightIn(max = 400.dp).verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Text(
-                        "当前版本为 ${state.currentVersion}, 最新版本为 ${state.latestVersion?.name}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-
-                    Text(
-                        "发布时间: " + state.latestVersion?.publishedAt.orEmpty(),
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-
-                    Text(
-                        "更新内容: ",
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-
-                    Text(
-                        state.latestVersion?.changelog.orEmpty(),
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
+                OutlinedButton({ GlobalContext.get().get<BrowserNavigator>().openBrowser(context, RELEASES) }) {
+                    Icon(Icons.Rounded.ArrowOutward, null)
+                }
+                Button({
+                    GlobalContext.get().get<BrowserNavigator>().openBrowser(context, state.latestVersion!!.apkUrl)
+                }) {
+                    Icon(Icons.Rounded.Download, null)
                 }
             }
-        }
-    }
+        ) {
+            Column(
+                Modifier.heightIn(max = 400.dp).verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(
+                    "当前版本为 ${state.currentVersion}, 最新版本为 ${state.latestVersion?.name}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                )
 
-    if (state.latestVersion != null && state.latestVersion?.name != state.currentVersion) {
-        HasUpdateTag(onClick = { showDialog = true })
+                Text(
+                    "发布时间: " + state.latestVersion?.publishedAt.orEmpty(),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+
+                Text(
+                    "更新内容: ",
+                    style = MaterialTheme.typography.titleMedium,
+                )
+
+                Text(
+                    state.latestVersion?.changelog.orEmpty(),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+        }
     }
 }
 
