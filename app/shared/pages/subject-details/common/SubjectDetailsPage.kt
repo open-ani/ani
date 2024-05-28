@@ -83,7 +83,6 @@ import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 @Composable
 fun SubjectDetailsPage(
     viewModel: SubjectDetailsViewModel,
-    goBack: () -> Unit,
 ) {
     val context = LocalContext.current
     Scaffold(
@@ -92,7 +91,7 @@ fun SubjectDetailsPage(
                 title = { },
 //                Modifier.statusBarsPadding(),
 //                padding = PaddingValues(start = 12.dp, top = 6.dp, end = 16.dp, bottom = 6.dp),
-                navigationIcon = { TopAppBarGoBackButton(goBack) },
+                navigationIcon = { TopAppBarGoBackButton() },
                 actions = {
                     IconButton({ viewModel.browseSubjectBangumi(context) }) {
                         Icon(Icons.AutoMirrored.Outlined.OpenInNew, null)
