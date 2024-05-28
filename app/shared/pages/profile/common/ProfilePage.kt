@@ -31,7 +31,6 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
@@ -42,7 +41,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.navigation.BrowserNavigator
@@ -91,12 +89,12 @@ private fun DebugInfoView(modifier: Modifier = Modifier) {
         val context by rememberUpdatedState(LocalContext.current)
 
         Text(
-            "感谢你参加测试",
+            "感谢你的支持",
             style = MaterialTheme.typography.titleMedium,
         )
 
         Text(
-            "Ani 目前主要在优化播放体验, 还有很多其他想法没实现. 欢迎加入 QQ 群反馈建议或者闲聊: 927170241. 如遇到问题, 除加群外也可以在 GitHub 反馈."
+            "欢迎加入 QQ 群反馈建议或者闲聊: 927170241. 如遇到问题, 除加群外也可以在 GitHub 反馈."
         )
 
         Row(Modifier.align(Alignment.End), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -114,19 +112,6 @@ private fun DebugInfoView(modifier: Modifier = Modifier) {
             style = MaterialTheme.typography.bodyMedium.copy(
                 fontWeight = FontWeight.Bold
             ),
-        )
-
-        HorizontalDivider()
-
-        Text(
-            "之前的东西哪去了? -- 鸣谢搬到设置里了; 检查更新现在是自动的, 有更新时你就知道了",
-            style = MaterialTheme.typography.labelMedium,
-            fontStyle = FontStyle.Italic
-        )
-        Text(
-            "这是限时提示, 只有测试用户可以看到!",
-            style = MaterialTheme.typography.labelSmall,
-            fontStyle = FontStyle.Italic
         )
     }
 }
