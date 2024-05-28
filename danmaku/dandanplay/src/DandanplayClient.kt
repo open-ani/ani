@@ -8,6 +8,7 @@ import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -41,6 +42,10 @@ internal class DandanplayClient(
         val response = client.get("https://api.dandanplay.net/api/v2/search/subject") {
             accept(ContentType.Application.Json)
             parameter("keyword", subjectName)
+        }
+
+        if (response.status == HttpStatusCode.NotFound) {
+            return DandanplaySearchEpisodeResponse()
         }
 
         return response.body<DandanplaySearchEpisodeResponse>()
