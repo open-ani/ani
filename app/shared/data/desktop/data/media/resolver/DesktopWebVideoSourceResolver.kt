@@ -71,7 +71,7 @@ class WebViewVideoExtractor(
             }
             val playwright = Playwright.create(Playwright.CreateOptions().apply {
                 env = mapOf(
-                    "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD" to "firefox,webkit"
+//                    "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD" to "firefox,webkit"
                 )
             })
             val browser = playwright.chromium().launch(
