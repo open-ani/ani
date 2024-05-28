@@ -19,12 +19,17 @@
 package me.him188.ani.app.ui.foundation
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.DpSize
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import me.him188.ani.app.data.media.resolver.HttpStreamingVideoSourceResolver
@@ -94,13 +99,19 @@ fun ProvideCompositionLocalsForPreview(
             }
             val aniNavigator = remember { AniNavigator() }
             val showLandscapeUI = isInLandscapeMode()
-            CompositionLocalProvider(
-                LocalIsPreviewing provides true,
-                LocalNavigator provides aniNavigator,
-                LocalLayoutMode provides remember { LayoutMode(showLandscapeUI) },
-            ) {
-                AniApp(aniColorScheme(isDark)) {
-                    content()
+
+            BoxWithConstraints {
+                val size by rememberUpdatedState(with(LocalDensity.current) {
+                    DpSize(constraints.maxWidth.toDp(), constraints.maxHeight.toDp())
+                })
+                CompositionLocalProvider(
+                    LocalIsPreviewing provides true,
+                    LocalNavigator provides aniNavigator,
+                    LocalLayoutMode provides remember(size) { LayoutMode(showLandscapeUI, size) },
+                ) {
+                    AniApp(aniColorScheme(isDark)) {
+                        content()
+                    }
                 }
             }
         }

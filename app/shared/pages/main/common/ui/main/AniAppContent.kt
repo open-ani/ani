@@ -7,8 +7,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.platform.showTabletUI
@@ -34,9 +39,12 @@ fun AniAppContent(aniNavigator: AniNavigator) {
     }
 
     BoxWithConstraints(Modifier.fillMaxSize()) {
-        val isLandscape = showTabletUI()
-        val layoutMode = remember(isLandscape) {
-            LayoutMode(isLandscape)
+        val isLandscape by rememberUpdatedState(showTabletUI())
+        val size by rememberUpdatedState(with(LocalDensity.current) {
+            DpSize(constraints.maxWidth.toDp(), constraints.maxHeight.toDp())
+        })
+        val layoutMode by remember {
+            derivedStateOf { LayoutMode(isLandscape, size) }
         }
         CompositionLocalProvider(LocalLayoutMode provides layoutMode) {
 //            if (isLandscape) {

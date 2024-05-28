@@ -1,6 +1,5 @@
 package me.him188.ani.app.ui.subject.episode
 
-import androidx.compose.animation.Crossfade
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -8,10 +7,10 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
@@ -22,10 +21,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,14 +34,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.setRequestFullScreen
-import me.him188.ani.app.platform.showTabletUI
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
@@ -50,6 +48,7 @@ import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.effects.OnLifecycleEvent
 import me.him188.ani.app.ui.foundation.effects.ScreenOnEffect
 import me.him188.ani.app.ui.foundation.launchInBackground
+import me.him188.ani.app.ui.foundation.layout.LocalLayoutMode
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.subject.episode.details.EpisodeActionRow
 import me.him188.ani.app.ui.subject.episode.details.EpisodeDetails
@@ -116,19 +115,62 @@ fun EpisodePageContent(
     AutoPauseEffect(vm)
 
     BoxWithConstraints(modifier) {
-        Crossfade(
-            targetState = showTabletUI(),
-            modifier = Modifier.fillMaxSize()
-        ) { isTablet ->
-            if (isTablet) {
-                EpisodePageContentTablet(vm, Modifier.fillMaxSize())
-            } else {
-                EpisodePageContentPhone(vm, Modifier.fillMaxSize())
-            }
+        val layoutMode by rememberUpdatedState(LocalLayoutMode.current)
+        val isVeryWide by remember {
+            derivedStateOf { layoutMode.deviceSize.width / layoutMode.deviceSize.height >= 1200f / 770 }
+        }
+        when {
+            isVeryWide -> EpisodePageContentTabletVeryWide(vm, Modifier.fillMaxSize())
+            layoutMode.showLandscapeUI -> EpisodePageContentTablet(vm, Modifier.fillMaxSize())
+            else -> EpisodePageContentPhone(vm, Modifier.fillMaxSize())
         }
     }
 
     vm.videoSourceResolver.ComposeContent()
+}
+
+@Composable
+private fun EpisodePageContentTabletVeryWide(
+    vm: EpisodeViewModel,
+    modifier: Modifier = Modifier,
+) {
+    BoxWithConstraints {
+        val maxWidth = maxWidth
+        Row(
+            modifier
+                .then(
+                    if (vm.isFullscreen) Modifier.fillMaxSize()
+                    else Modifier.navigationBarsPadding()
+                ),
+        ) {
+            EpisodeVideo(
+                vm,
+                expanded = true,
+                maintainAspectRatio = false,
+                initialControllerVisible = true,
+                modifier = Modifier.weight(1f).fillMaxHeight()
+            )
+
+            if (vm.isFullscreen) {
+                return@Row
+            }
+
+            Column(Modifier.width(width = (maxWidth * 0.18f).coerceAtLeast(300.dp))) {
+                EpisodeDetails(
+                    vm,
+                    LocalSnackbar.current,
+                    Modifier.fillMaxWidth()
+                        .verticalScroll(rememberScrollState()),
+                    actionRow = {
+                        EpisodeActionRow(
+                            vm,
+                            snackbar = LocalSnackbar.current,
+                        )
+                    }
+                )
+            }
+        }
+    }
 }
 
 @Composable
@@ -169,20 +211,6 @@ private fun EpisodePageContentTablet(
                         Modifier.width(400.dp),
                     )
                 }
-            )
-        }
-
-        if (vm.isFullscreen) {
-            return@Row
-        }
-
-        Column(Modifier.width(240.dp)) {
-            // 选集
-            Text(
-                "这里是选集, 快有了",
-                Modifier.padding(16.dp),
-                style = MaterialTheme.typography.labelLarge,
-                fontStyle = FontStyle.Italic
             )
         }
     }
@@ -272,7 +300,7 @@ private fun EpisodeVideo(
                 episode.ep,
                 episode.title,
                 subject.title,
-                modifier.placeholder(episode.isPlaceholder || subject.isPlaceholder)
+                Modifier.placeholder(episode.isPlaceholder || subject.isPlaceholder)
             )
         },
         danmakuHostState = vm.danmaku.danmakuHostState,
@@ -300,7 +328,7 @@ private fun EpisodeVideo(
                 Modifier.weight(1f)
             )
         },
-        modifier = Modifier.fillMaxWidth().background(Color.Black)
+        modifier = modifier.fillMaxWidth().background(Color.Black)
             .then(if (expanded) Modifier.fillMaxSize() else Modifier.statusBarsPadding()),
         maintainAspectRatio = maintainAspectRatio,
     )
