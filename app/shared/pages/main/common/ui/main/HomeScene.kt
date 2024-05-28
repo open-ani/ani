@@ -16,6 +16,7 @@ import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.Login
 import androidx.compose.material.icons.rounded.DownloadDone
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Star
@@ -23,6 +24,8 @@ import androidx.compose.material.icons.rounded.TravelExplore
 import androidx.compose.material.icons.rounded.Update
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -31,7 +34,6 @@ import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -84,8 +86,10 @@ private fun UserAvatar(
     val loggedIn by isLoggedIn()
     if (loggedIn == false) {
         val navigator = LocalNavigator.current
-        TextButton({ vm.requireOnline(navigator = navigator) }, modifier) {
-            Text("登录")
+        CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.primary) {
+            IconButton({ vm.requireOnline(navigator = navigator) }, modifier) {
+                Icon(Icons.AutoMirrored.Rounded.Login, "登录")
+            }
         }
     } else {
         AvatarImage(
