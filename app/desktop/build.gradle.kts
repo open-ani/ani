@@ -66,7 +66,8 @@ compose.desktop {
         nativeDistributions {
             modules(
                 "jdk.unsupported", // sun.misc.Unsafe used by androidx datastore
-                "java.management" // javax.management.MBeanRegistrationException
+                "java.management", // javax.management.MBeanRegistrationException
+                "java.net.http"
             )
             appResourcesRootDir.set(file("appResources"))
             targetFormats(*buildList {

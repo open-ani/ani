@@ -3,7 +3,9 @@ package me.him188.ani.app.data.media.resolver
 import io.github.bonigarcia.wdm.WebDriverManager
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.models.ProxyConfig
 import me.him188.ani.app.data.repositories.SettingsRepository
@@ -14,6 +16,7 @@ import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.matcher.WebVideoMatcher
 import me.him188.ani.datasources.api.matcher.WebVideoMatcherContext
 import me.him188.ani.datasources.api.topic.ResourceLocation
+import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import org.koin.core.component.KoinComponent
@@ -177,11 +180,11 @@ class SeleniumWebViewVideoExtractor(
             }
             val decoratedDriver: WebDriver =
                 EventFiringDecorator(WebDriver::class.java, listener).decorate(driver)
-            deferred.invokeOnCompletion {
-                decoratedDriver.quit()
+            val emptyResponseHandler = HttpHandler { _ ->
+                HttpResponse().apply {
+                    status = 500
+                }
             }
-
-            val emptyResponseHandler = HttpHandler { _ -> HttpResponse() }
 
             val route: Route = Route.matching { req ->
                 if (HttpMethod.GET != req.method) return@matching false
@@ -196,7 +199,19 @@ class SeleniumWebViewVideoExtractor(
                 false
             }.to { emptyResponseHandler }
 
-            NetworkInterceptor(driver, route)
+            val interceptor = NetworkInterceptor(driver, route)
+            deferred.invokeOnCompletion {
+                @Suppress("OPT_IN_USAGE")
+                GlobalScope.launch {
+                    kotlin.runCatching {
+                        interceptor.close()
+                        decoratedDriver.quit()
+                    }.onFailure {
+                        logger.error(it) { "Failed to close selenium" }
+                    }
+                }
+            }
+
 
             decoratedDriver.navigate().to(pageUrl)
         }
