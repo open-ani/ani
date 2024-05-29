@@ -1,15 +1,14 @@
 package me.him188.ani.app.videoplayer.ui
 
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.awt.SwingPanel
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,6 +29,7 @@ import me.him188.ani.app.videoplayer.ui.state.SubtitleTrack
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
+import uk.co.caprica.vlcj.factory.MediaPlayerFactory
 import uk.co.caprica.vlcj.factory.discovery.NativeDiscovery
 import uk.co.caprica.vlcj.media.Media
 import uk.co.caprica.vlcj.media.MediaEventAdapter
@@ -38,11 +38,6 @@ import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter
 import uk.co.caprica.vlcj.player.component.CallbackMediaPlayerComponent
 import uk.co.caprica.vlcj.player.embedded.EmbeddedMediaPlayer
-import java.awt.event.KeyAdapter
-import java.awt.event.KeyEvent
-import java.awt.event.MouseAdapter
-import java.awt.event.MouseEvent
-import java.awt.event.MouseWheelEvent
 import java.util.Locale
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration.Companion.seconds
@@ -66,15 +61,67 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
         }
     }
 
+    init {
+        CallbackMediaPlayerComponent() // init libraries
+    }
+
     val component = run {
-        object : CallbackMediaPlayerComponent("-v") { //"-vv", "--avcodec-hw", "none"
-            override fun mouseClicked(e: MouseEvent?) {
-                super.mouseClicked(e)
-                parent.dispatchEvent(e)
-            }
+        object : ComposeMediaPlayerComponent("-v") { //"-vv", "--avcodec-hw", "none"
+//            override fun mouseClicked(e: MouseEvent?) {
+//                super.mouseClicked(e)
+//                parent.dispatchEvent(e)
+//            }
         }
     }
+    var bitmap: ImageBitmap by component::composeImage
+    val mediaPlayerFactory = MediaPlayerFactory(
+        "--video-title=vlcj video output",
+        "--no-snapshot-preview",
+        "--intf=dummy",
+        "-v"
+    )
     val player: EmbeddedMediaPlayer = component.mediaPlayer()
+//        mediaPlayerFactory.mediaPlayers().newEmbeddedMediaPlayer()
+
+//    val surface = SkiaVideoSurface(
+//        renderCallback = {
+//            bitmap = it
+//        },
+//        videoSurfaceAdapter = null
+//    ).apply {
+//        attach(player)
+//    }
+
+//    val surface = mediaPlayerFactory.videoSurfaces().newVideoSurface(
+//        object : BufferFormatCallback {
+//            override fun getBufferFormat(sourceWidth: Int, sourceHeight: Int): BufferFormat {
+//                return BufferFormat(
+//                    "RV32",
+//                    sourceWidth,
+//                    sourceHeight,
+//                    intArrayOf(sourceWidth * 4),
+//                    intArrayOf(sourceHeight)
+//                )
+//            }
+//
+//            override fun allocatedBuffers(buffers: Array<out ByteBuffer>) {
+//
+//            }
+//        },
+//        { mediaPlayer, nativeBuffers, bufferFormat ->
+//            val buffer = nativeBuffers[0]
+//            val out = ByteArray(buffer.capacity())
+//            buffer.get(out)
+//            val bitmap = Bitmap().apply {
+//                this.allocPixels()
+//                this.installPixels(out)
+//            }
+//            this.bitmap = bitmap
+//        },
+//        false,
+//    ).apply {
+//        attach(player)
+//    }
 
     override val state: MutableStateFlow<PlaybackState> = MutableStateFlow(PlaybackState.PAUSED_BUFFERING)
 
@@ -132,7 +179,7 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
     }
 
     override fun closeImpl() {
-        component.release()
+//        component.release()
         lastMedia = null
     }
 
@@ -222,7 +269,7 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
             }
         })
 
-        backgroundScope.launch(Dispatchers.Main) {
+        backgroundScope.launch {
             while (true) {
                 currentPositionMillis.value = player.status().time()
                 delay(0.1.seconds)
@@ -314,54 +361,92 @@ actual fun VideoPlayer(
     }
 //    DisposableEffect(Unit) { onDispose(mediaPlayer::release) }
 
-    SwingPanel(
-        factory = {
-            playerState.component
-        },
-        background = Color.Transparent,
-        modifier = modifier.fillMaxSize()
-    )
-    val surface = playerState.component.videoSurfaceComponent()
+    Canvas(modifier) {
+        //        val colorType = config.toSkiaColorType()
+//        val alphaType = if (hasAlpha) ColorAlphaType.PREMUL else ColorAlphaType.OPAQUE
+//        val skiaColorSpace = colorSpace.toSkiaColorSpace()
+//        val colorInfo = ColorInfo(colorType, alphaType, skiaColorSpace)
+//        val imageInfo = ImageInfo(colorInfo, width, height)
+//        val bitmap = Bitmap()
+//        bitmap.allocPixels(imageInfo)
+//        val map =  SkiaBackedImageBitmap(bitmap)
+//        bitmap.readPixels()
+        fun calculateImageSizeAndOffsetToFillFrame(
+            imageWidth: Int,
+            imageHeight: Int,
+            frameWidth: Int,
+            frameHeight: Int
+        ): Pair<IntSize, IntOffset> {
+            // 计算图片和画框的宽高比
+            val imageAspectRatio = imageWidth.toDouble() / imageHeight.toDouble()
 
-    // 转发鼠标事件到 Compose
-    DisposableEffect(surface) {
-        val listener = object : MouseAdapter() {
-            override fun mouseClicked(e: MouseEvent) = dispatchToCompose(e)
-            override fun mousePressed(e: MouseEvent) = dispatchToCompose(e)
-            override fun mouseReleased(e: MouseEvent) = dispatchToCompose(e)
-            override fun mouseEntered(e: MouseEvent) = dispatchToCompose(e)
-            override fun mouseExited(e: MouseEvent) = dispatchToCompose(e)
-            override fun mouseDragged(e: MouseEvent) = dispatchToCompose(e)
-            override fun mouseMoved(e: MouseEvent) = dispatchToCompose(e)
-            override fun mouseWheelMoved(e: MouseWheelEvent) = dispatchToCompose(e)
+            // 初始化最终的宽度和高度
+            val finalWidth: Int = frameWidth
+            val finalHeight: Int = (frameWidth / imageAspectRatio).toInt()
 
-            fun dispatchToCompose(e: MouseEvent) {
-                playerState.component.parent.dispatchEvent(e)
-            }
+            // 计算左上角的偏移量
+            val offsetX = 0
+            val offsetY = (frameHeight - finalHeight) / 2
+
+            return Pair(IntSize(finalWidth, finalHeight), IntOffset(offsetX, offsetY))
         }
-        surface.addMouseListener(listener)
-        surface.addMouseMotionListener(listener)
-        onDispose {
-            surface.removeMouseListener(listener)
-            surface.removeMouseMotionListener(listener)
-        }
+
+        val bitmap = playerState.bitmap
+        val (dstSize, dstOffset) = calculateImageSizeAndOffsetToFillFrame(
+            bitmap.width, bitmap.height,
+            size.width.toInt(), size.height.toInt()
+        )
+        drawImage(playerState.bitmap, dstSize = dstSize, dstOffset = dstOffset)
     }
+
+//    SwingPanel(
+//        factory = {
+//            playerState.component
+//        },
+//        background = Color.Transparent,
+//        modifier = modifier.fillMaxSize()
+//    )
+//    val surface = playerState.component.videoSurfaceComponent()
+//
+//    // 转发鼠标事件到 Compose
+//    DisposableEffect(surface) {
+//        val listener = object : MouseAdapter() {
+//            override fun mouseClicked(e: MouseEvent) = dispatchToCompose(e)
+//            override fun mousePressed(e: MouseEvent) = dispatchToCompose(e)
+//            override fun mouseReleased(e: MouseEvent) = dispatchToCompose(e)
+//            override fun mouseEntered(e: MouseEvent) = dispatchToCompose(e)
+//            override fun mouseExited(e: MouseEvent) = dispatchToCompose(e)
+//            override fun mouseDragged(e: MouseEvent) = dispatchToCompose(e)
+//            override fun mouseMoved(e: MouseEvent) = dispatchToCompose(e)
+//            override fun mouseWheelMoved(e: MouseWheelEvent) = dispatchToCompose(e)
+//
+//            fun dispatchToCompose(e: MouseEvent) {
+//                playerState.component.parent.dispatchEvent(e)
+//            }
+//        }
+//        surface.addMouseListener(listener)
+//        surface.addMouseMotionListener(listener)
+//        onDispose {
+//            surface.removeMouseListener(listener)
+//            surface.removeMouseMotionListener(listener)
+//        }
+//    }
 
     // 转发键盘事件到 Compose
-    DisposableEffect(surface) {
-        val listener = object : KeyAdapter() {
-            override fun keyPressed(p0: KeyEvent) = dispatchToCompose(p0)
-            override fun keyReleased(p0: KeyEvent) = dispatchToCompose(p0)
-            override fun keyTyped(p0: KeyEvent) = dispatchToCompose(p0)
-            fun dispatchToCompose(e: KeyEvent) {
-                playerState.component.parent.dispatchEvent(e)
-            }
-        }
-        surface.addKeyListener(listener)
-        onDispose {
-            surface.removeKeyListener(listener)
-        }
-    }
+//    DisposableEffect(surface) {
+//        val listener = object : KeyAdapter() {
+//            override fun keyPressed(p0: KeyEvent) = dispatchToCompose(p0)
+//            override fun keyReleased(p0: KeyEvent) = dispatchToCompose(p0)
+//            override fun keyTyped(p0: KeyEvent) = dispatchToCompose(p0)
+//            fun dispatchToCompose(e: KeyEvent) {
+//                playerState.component.parent.dispatchEvent(e)
+//            }
+//        }
+//        surface.addKeyListener(listener)
+//        onDispose {
+//            surface.removeKeyListener(listener)
+//        }
+//    }
 }
 
 private fun isMacOS(): Boolean {

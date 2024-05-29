@@ -162,6 +162,7 @@ kotlin {
             exclude(compose.material) // We use material3
         }
         api(compose.material3)
+        api("org.jetbrains.compose.ui:ui-graphics-desktop:${libs.versions.compose.multiplatform.get()}")
         api(projects.utils.slf4jKt)
         api(libs.kotlinx.coroutines.swing)
         implementation(libs.vlcj)
