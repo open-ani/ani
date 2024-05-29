@@ -33,7 +33,7 @@ Ani 的目标是提供尽可能简单且舒适的追番体验。
 
 ### 参与开发
 
-欢迎你提交 PR 参与开发, 如果很大兴趣我也很乐意为这个项目创建一个组织以共同维护.
+欢迎你提交 PR 参与开发, 也欢迎加入 open-ani 组织。
 有关项目技术细节请参考 [CONTRIBUTING](CONTRIBUTING.md)。
 
 ## 下载
@@ -62,6 +62,8 @@ BT 视频，但不安装 qBit 也可以使用在线数据源。
 
 <img width="300" src=".readme/images/collection/collection-dark.jpg" alt="collection-dark"/> <img width="300" src=".readme/images/subject/subject-dark.jpg" alt="subject-dark"/>
 
+<img width="600" src=".readme/images/collection/collection-desktop.png" alt="collection-desktop"/>
+
 ### 多数据源在线视频播放
 
 多数据源适配, 总有一个源有你想看的番和喜欢的字幕组
@@ -87,6 +89,8 @@ BT 视频，但不安装 qBit 也可以使用在线数据源。
 <img width="600" src=".readme/images/episode/player-danmaku.jpeg" alt="player-danmaku"/>
 
 <img width="600" src=".readme/images/episode/player-settings.jpeg" alt="player-settings"/>
+
+<img width="600" src=".readme/images/episode/episode-play-desktop.png" alt="episode-play-desktop"/>
 
 ### 视频手势
 
@@ -127,10 +131,9 @@ Ani 自带一个全球均可访问的数据源 (Mikan)
 
 ### 桌面端
 
-与安卓功能一致。但目前仅为 PC 适配了播放器键盘快捷键等功能, 还未开发其他页面的大屏 UI, 因此这些页面会使用手机竖屏
-UI。
+与安卓功能一致。
 
-桌面端仍处于较早期开发阶段, 整体稳定性还不如安卓。
+桌面端仍处于较早期开发阶段, 整体稳定性还不如安卓。欢迎体验并提出建议。
 
 ## FAQ
 
