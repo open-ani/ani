@@ -425,9 +425,9 @@ class QBittorrentTorrentDownloadSession(
                                     QBPieceState.DOWNLOADING -> PieceState.DOWNLOADING
                                     QBPieceState.DOWNLOADED -> PieceState.FINISHED
                                 }
-                                if (newState == PieceState.FINISHED && pieces[i].state.value != newState) {
-                                    logger.info { "[$torrentName] Piece ${pieces[i].pieceIndex} finished" }
-                                }
+//                                if (newState == PieceState.FINISHED && pieces[i].state.value != newState) {
+//                                    logger.info { "[$torrentName] Piece ${pieces[i].pieceIndex} finished" }
+//                                }
                                 pieces[i].state.value = newState
                             }
                         }
