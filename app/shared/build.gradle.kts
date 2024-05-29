@@ -198,7 +198,24 @@ kotlin {
         implementation(libs.ktor.server.content.negotiation)
         implementation(libs.ktor.serialization.kotlinx.json)
 
-        implementation(libs.playwright)
+        implementation(libs.selenium.java)
+        implementation(libs.webdrivermanager)
+//        implementation(libs.htmlunit)
+//        implementation("org.openjfx:javafx-base:17.0.11:$classifier") {
+//            exclude("org.openjfx")
+//        }
+//        implementation("org.openjfx:javafx-controls:17.0.11:$classifier") {
+//            exclude("org.openjfx")
+//        }
+//        implementation("org.openjfx:javafx-graphics:17.0.11:$classifier") {
+//            exclude("org.openjfx")
+//        }
+//        implementation("org.openjfx:javafx-media:17.0.11:$classifier") {
+//            exclude("org.openjfx")
+//        }
+//        implementation("org.openjfx:javafx-web:17.0.11:$classifier") {
+//            exclude("org.openjfx")
+//        }
     }
 
     sourceSets {
