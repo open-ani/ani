@@ -8,9 +8,10 @@ import me.him188.ani.datasources.api.topic.Resolution
 import me.him188.ani.datasources.api.topic.SubtitleLanguage
 import me.him188.ani.datasources.nyafun.NyafunMediaSource
 
+@Suppress("DataClassPrivateConstructor")
 @Immutable
 @Serializable
-data class MediaPreference(
+data class MediaPreference private constructor(
     /**
      * 精确匹配字幕组
      */
@@ -54,17 +55,19 @@ data class MediaPreference(
     /**
      * @see fallbackSubtitleLanguageIds
      */
-    val fallbackMediaSourceIds: List<String>? =
-        if (Platform.currentPlatform.isDesktop())
-            listOf(NyafunMediaSource.ID) // PC 默认不启用 BT 源
-        else null,
+    val fallbackMediaSourceIds: List<String>? = null
 ) {
     companion object {
         /**
          * With default values
          * @see Empty
          */
-        val Default = MediaPreference()
+        val PlatformDefault = MediaPreference(
+            fallbackMediaSourceIds =
+            if (Platform.currentPlatform.isDesktop())
+                listOf(NyafunMediaSource.ID) // PC 默认不启用 BT 源
+            else null,
+        )
 
         /**
          * No preference

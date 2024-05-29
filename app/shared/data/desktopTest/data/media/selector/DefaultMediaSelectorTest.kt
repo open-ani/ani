@@ -16,6 +16,7 @@ import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
+import me.him188.ani.datasources.api.topic.Resolution
 import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.datasources.api.topic.SubtitleLanguage.ChineseSimplified
 import me.him188.ani.datasources.api.topic.SubtitleLanguage.ChineseTraditional
@@ -30,8 +31,8 @@ class DefaultMediaSelectorTest {
         mediaList.value.addAll(media)
     }
 
-    private val savedUserPreference = MutableStateFlow(MediaPreference.Default)
-    private val savedDefaultPreference = MutableStateFlow(MediaPreference.Default)
+    private val savedUserPreference = MutableStateFlow(DEFAULT_PREFERENCE)
+    private val savedDefaultPreference = MutableStateFlow(DEFAULT_PREFERENCE)
     private val mediaSelectorSettings = MutableStateFlow(MediaSelectorSettings.Default)
     private val mediaSelectorContext = MutableStateFlow(
         MediaSelectorContext(
@@ -47,6 +48,21 @@ class DefaultMediaSelectorTest {
         enableCaching = false,
         mediaSelectorSettings = mediaSelectorSettings
     )
+
+    companion object {
+        private val DEFAULT_PREFERENCE = MediaPreference.Empty.copy(
+            fallbackResolutions = listOf(
+                Resolution.R2160P,
+                Resolution.R1440P,
+                Resolution.R1080P,
+                Resolution.R720P,
+            ).map { it.id },
+            fallbackSubtitleLanguageIds = listOf(
+                ChineseSimplified,
+                ChineseTraditional,
+            ).map { it.id }
+        )
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     // 单个选项测试
@@ -79,7 +95,7 @@ class DefaultMediaSelectorTest {
     @Test
     fun `default prefer alliance`() = runTest {
         addMedia(media(alliance = "字幕组"))
-        savedDefaultPreference.value = MediaPreference(alliance = "字幕组")
+        savedDefaultPreference.value = DEFAULT_PREFERENCE.copy(alliance = "字幕组")
         assertEquals("字幕组", selector.alliance.defaultSelected.first())
         assertEquals(null, selector.alliance.userSelected.first().preferredValueOrNull)
         assertEquals("字幕组", selector.alliance.finalSelected.first())
@@ -88,7 +104,7 @@ class DefaultMediaSelectorTest {
     @Test
     fun `user override alliance`() = runTest {
         addMedia(media(alliance = "字幕组"))
-        savedDefaultPreference.value = MediaPreference(alliance = "字幕组")
+        savedDefaultPreference.value = DEFAULT_PREFERENCE.copy(alliance = "字幕组")
         assertEquals("字幕组", selector.alliance.defaultSelected.first())
         assertEquals(null, selector.alliance.userSelected.first().preferredValueOrNull)
         assertEquals("字幕组", selector.alliance.finalSelected.first())
@@ -97,7 +113,7 @@ class DefaultMediaSelectorTest {
     @Test
     fun `user override no preference`() = runTest {
         addMedia(media(alliance = "字幕组"))
-        savedDefaultPreference.value = MediaPreference(alliance = "字幕组")
+        savedDefaultPreference.value = DEFAULT_PREFERENCE.copy(alliance = "字幕组")
         assertEquals("字幕组", selector.alliance.defaultSelected.first())
         assertEquals(false, selector.alliance.userSelected.first().isPreferNoValue)
         assertNotEquals(null, selector.alliance.finalSelected.first())
@@ -120,7 +136,7 @@ class DefaultMediaSelectorTest {
     fun `select by user alliance`() = runTest {
         val media = media(alliance = "字幕组")
         addMedia(media, media(alliance = "字幕组2"))
-        savedUserPreference.value = MediaPreference(alliance = "字幕组")
+        savedUserPreference.value = DEFAULT_PREFERENCE.copy(alliance = "字幕组")
         assertEquals(media, selector.filteredCandidates.first().single())
     }
 
@@ -128,7 +144,7 @@ class DefaultMediaSelectorTest {
     fun `select by default alliance`() = runTest {
         val media = media(alliance = "字幕组")
         addMedia(media, media(alliance = "字幕组2"))
-        savedDefaultPreference.value = MediaPreference(alliance = "字幕组")
+        savedDefaultPreference.value = DEFAULT_PREFERENCE.copy(alliance = "字幕组")
         assertEquals(media, selector.filteredCandidates.first().single())
     }
 
@@ -136,7 +152,7 @@ class DefaultMediaSelectorTest {
     fun `select by user resolution`() = runTest {
         val media = media(resolution = "字幕组")
         addMedia(media, media(resolution = "字幕组2"))
-        savedUserPreference.value = MediaPreference(resolution = "字幕组")
+        savedUserPreference.value = DEFAULT_PREFERENCE.copy(resolution = "字幕组")
         assertEquals(media, selector.filteredCandidates.first().single())
     }
 
@@ -144,7 +160,7 @@ class DefaultMediaSelectorTest {
     fun `select by default resolution`() = runTest {
         val media = media(resolution = "字幕组")
         addMedia(media, media(resolution = "字幕组2"))
-        savedDefaultPreference.value = MediaPreference(resolution = "字幕组")
+        savedDefaultPreference.value = DEFAULT_PREFERENCE.copy(resolution = "字幕组")
         assertEquals(media, selector.filteredCandidates.first().single())
     }
 
@@ -152,7 +168,7 @@ class DefaultMediaSelectorTest {
     fun `select by user subtitle one of`() = runTest {
         val media = media(subtitleLanguages = listOf("字幕组", "a"))
         addMedia(media, media(subtitleLanguages = listOf("b")))
-        savedUserPreference.value = MediaPreference(subtitleLanguageId = "a")
+        savedUserPreference.value = DEFAULT_PREFERENCE.copy(subtitleLanguageId = "a")
         assertEquals(media, selector.filteredCandidates.first().single())
     }
 
@@ -160,7 +176,7 @@ class DefaultMediaSelectorTest {
     fun `select by default subtitle one of`() = runTest {
         val media = media(subtitleLanguages = listOf("字幕组", "a"))
         addMedia(media, media(subtitleLanguages = listOf("b")))
-        savedDefaultPreference.value = MediaPreference(subtitleLanguageId = "a")
+        savedDefaultPreference.value = DEFAULT_PREFERENCE.copy(subtitleLanguageId = "a")
         assertEquals("a", selector.subtitleLanguageId.finalSelected.first())
         assertEquals(media, selector.filteredCandidates.first().single())
     }
@@ -168,14 +184,14 @@ class DefaultMediaSelectorTest {
     @Test
     fun `select none because pref not match`() = runTest {
         addMedia(media(alliance = "字幕组"), media(alliance = "字幕组"))
-        savedDefaultPreference.value = MediaPreference(alliance = "a")
+        savedDefaultPreference.value = DEFAULT_PREFERENCE.copy(alliance = "a")
         assertEquals(0, selector.filteredCandidates.first().size)
     }
 
     @Test
     fun `select with user override no preference`() = runTest {
         addMedia(media(alliance = "字幕组"))
-        savedDefaultPreference.value = MediaPreference(alliance = "组")
+        savedDefaultPreference.value = DEFAULT_PREFERENCE.copy(alliance = "组")
         assertEquals(0, selector.filteredCandidates.first().size)
         selector.alliance.removePreference()
         assertEquals(1, selector.filteredCandidates.first().size)
@@ -184,7 +200,7 @@ class DefaultMediaSelectorTest {
     @Test
     fun `select with user override no preference then prefer`() = runTest {
         addMedia(media(alliance = "字幕组"), media(alliance = "字幕组2"))
-        savedDefaultPreference.value = MediaPreference(alliance = "组")
+        savedDefaultPreference.value = DEFAULT_PREFERENCE.copy(alliance = "组")
         assertEquals(0, selector.filteredCandidates.first().size)
         selector.alliance.removePreference()
         assertEquals(2, selector.filteredCandidates.first().size)
@@ -231,7 +247,7 @@ class DefaultMediaSelectorTest {
             media(alliance = "字幕组4", subtitleLanguages = listOf("CHS", "CHT")).also { target = it },
             media(alliance = "字幕组5", subtitleLanguages = listOf("CHS"))
         )
-        savedDefaultPreference.value = MediaPreference(alliancePatterns = listOf("4"))
+        savedDefaultPreference.value = DEFAULT_PREFERENCE.copy(alliancePatterns = listOf("4"))
         assertEquals(target, selector.trySelectDefault())
     }
 
@@ -245,7 +261,7 @@ class DefaultMediaSelectorTest {
             media(alliance = "字幕组4", subtitleLanguages = listOf("CHS", "CHT", "R")).also { target = it },
             media(alliance = "字幕组5", subtitleLanguages = listOf("CHS"))
         )
-        savedDefaultPreference.value = MediaPreference(subtitleLanguageId = "R")
+        savedDefaultPreference.value = DEFAULT_PREFERENCE.copy(subtitleLanguageId = "R")
         assertEquals(target, selector.trySelectDefault())
     }
 
@@ -259,7 +275,7 @@ class DefaultMediaSelectorTest {
             media(alliance = "字幕组4", subtitleLanguages = listOf("CHS", "CHT", "R")).also { target = it },
             media(alliance = "字幕组5", subtitleLanguages = listOf("CHS"))
         )
-        savedDefaultPreference.value = MediaPreference(fallbackSubtitleLanguageIds = listOf("R", "CHS"))
+        savedDefaultPreference.value = DEFAULT_PREFERENCE.copy(fallbackSubtitleLanguageIds = listOf("R", "CHS"))
         assertEquals(target, selector.trySelectDefault())
     }
 
@@ -273,7 +289,7 @@ class DefaultMediaSelectorTest {
             media(alliance = "字幕组4", subtitleLanguages = listOf("CHS", "CHT", "R")),
             media(alliance = "字幕组5", subtitleLanguages = listOf("CHS"))
         )
-        savedDefaultPreference.value = MediaPreference(resolution = "Special")
+        savedDefaultPreference.value = DEFAULT_PREFERENCE.copy(resolution = "Special")
         assertEquals(target, selector.trySelectDefault())
     }
 
@@ -287,7 +303,7 @@ class DefaultMediaSelectorTest {
             media(alliance = "字幕组4", subtitleLanguages = listOf("CHS", "CHT", "R")),
             media(alliance = "字幕组5", subtitleLanguages = listOf("CHS"))
         )
-        savedDefaultPreference.value = MediaPreference(fallbackResolutions = listOf("Special", "1080P"))
+        savedDefaultPreference.value = DEFAULT_PREFERENCE.copy(fallbackResolutions = listOf("Special", "1080P"))
         assertEquals(target, selector.trySelectDefault())
     }
 
@@ -376,7 +392,7 @@ class DefaultMediaSelectorTest {
     @Test
     fun `can select cached raw`() = runTest {
         val target: DefaultMedia
-        savedDefaultPreference.value = MediaPreference(
+        savedDefaultPreference.value = DEFAULT_PREFERENCE.copy(
             alliance = "字幕组2",
             showWithoutSubtitle = true
         )
@@ -392,7 +408,7 @@ class DefaultMediaSelectorTest {
             media(alliance = "字幕组5", subtitleLanguages = listOf("CHS"))
         )
         assertEquals(target, selector.trySelectCached())
-        savedDefaultPreference.value = MediaPreference(
+        savedDefaultPreference.value = DEFAULT_PREFERENCE.copy(
             alliance = "字幕组2",
             showWithoutSubtitle = false
         )
@@ -458,8 +474,8 @@ class DefaultMediaSelectorTest {
             hideSingleEpisodeForCompleted = false,
             preferSeasons = true,
         )
-        savedUserPreference.value = MediaPreference.Default
-        savedDefaultPreference.value = MediaPreference.Default // 允许选择 1080P 等
+        savedUserPreference.value = DEFAULT_PREFERENCE
+        savedDefaultPreference.value = DEFAULT_PREFERENCE // 允许选择 1080P 等
         addMedia(
             media(alliance = "字幕组1", episodeRange = EpisodeRange.single("1")),
             media(alliance = "字幕组2", episodeRange = EpisodeRange.season(1)).also { target = it },
@@ -479,8 +495,8 @@ class DefaultMediaSelectorTest {
             hideSingleEpisodeForCompleted = false,
             preferSeasons = false,
         )
-        savedUserPreference.value = MediaPreference.Default
-        savedDefaultPreference.value = MediaPreference.Default
+        savedUserPreference.value = DEFAULT_PREFERENCE
+        savedDefaultPreference.value = DEFAULT_PREFERENCE
         addMedia(
             media(alliance = "字幕组1", episodeRange = EpisodeRange.single("1")).also { target = it },
             media(alliance = "字幕组2", episodeRange = EpisodeRange.season(1)),

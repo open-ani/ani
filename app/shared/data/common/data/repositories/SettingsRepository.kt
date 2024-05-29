@@ -113,7 +113,7 @@ class PreferencesRepositoryImpl(
         SerializablePreference(
             "defaultMediaPreference",
             MediaPreference.serializer(),
-            default = { MediaPreference.Default }
+            default = { MediaPreference.PlatformDefault }
         )
     override val proxySettings: Settings<ProxySettings> = SerializablePreference(
         "proxyPreferences",

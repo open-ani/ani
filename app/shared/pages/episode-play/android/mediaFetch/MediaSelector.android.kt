@@ -147,7 +147,7 @@ private fun PreviewMediaSelector() {
                         ),
                         savedUserPreference = flowOf(MediaPreference.Empty),
                         savedDefaultPreference = flowOf(
-                            MediaPreference(
+                            MediaPreference.PlatformDefault.copy(
                                 subtitleLanguageId = "CHS"
                             )
                         ),
