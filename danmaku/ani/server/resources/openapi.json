@@ -220,7 +220,10 @@
               "examples": {
                 "": {
                   "value": {
-                    "bangumiToken": "VAcbHKhXqcjpCOVY5KFxwYEeQCOw4i0u"
+                    "bangumiToken": "VAcbHKhXqcjpCOVY5KFxwYEeQCOw4i0u",
+                    "clientVersion": "3.0.0-beta24",
+                    "clientOS": "Android",
+                    "clientArch": "aarch64"
                   }
                 }
               }
@@ -293,8 +296,14 @@
                       "smallAvatar": "https://example.com/avatarSmall.jpg",
                       "mediumAvatar": "https://example.com/avatarMedium.jpg",
                       "largeAvatar": "https://example.com/avatarLarge.jpg",
+                      "registerTime": 1714404248957,
                       "lastLoginTime": 1714404248957,
-                      "clientVersion": "3.0.0-beta22"
+                      "clientVersion": "3.0.0-beta22",
+                      "clientPlatforms": [
+                        "macos-aarch64",
+                        "android-aarch64",
+                        "windows-x86_64"
+                      ]
                     }
                   }
                 }
@@ -328,6 +337,177 @@
             "auth-jwt": []
           }
         ]
+      },
+      "parameters": []
+    },
+    "/v1/updates/incremental": {
+      "get": {
+        "tags": [],
+        "summary": "获取可更新的版本号列表",
+        "description": "返回所有大于当前版本的更新版本号。",
+        "parameters": [
+          {
+            "name": "clientVersion",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "客户端当前版本号。不合法的版本号会导致服务器返回461 Invalid Client Version错误。",
+            "required": true,
+            "deprecated": false
+          },
+          {
+            "name": "clientArch",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "客户端平台及架构。不合法的架构会导致服务器返回空的版本号列表。",
+            "required": true,
+            "deprecated": false
+          },
+          {
+            "name": "releaseClass",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "更新版本的发布类型，可选值：alpha, beta, rc, stable。不合法的发布类型会导致服务器返回400 Bad Request错误。",
+            "required": true,
+            "deprecated": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "更新版本号列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReleaseUpdatesResponse"
+                },
+                "examples": {
+                  "": {
+                    "value": {
+                      "versions": [
+                        "3.0.0-rc01",
+                        "3.0.0-rc02",
+                        "3.0.0-rc03"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Any"
+                }
+              }
+            }
+          },
+          "461": {
+            "description": "不合法的客户端版本号",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Any"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      },
+      "parameters": []
+    },
+    "/v1/updates/incremental/details": {
+      "get": {
+        "tags": [],
+        "summary": "获取可更新的版本详情",
+        "description": "返回所有大于当前版本的更新版本的详细信息，包括版本号、下载地址、发布时间以及更新内容。",
+        "parameters": [
+          {
+            "name": "clientVersion",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "客户端当前版本号。不合法的版本号会导致服务器返回461 Invalid Client Version错误。",
+            "required": true,
+            "deprecated": false
+          },
+          {
+            "name": "clientArch",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "客户端平台及架构。不合法的架构会导致服务器返回空的更新详情列表。",
+            "required": true,
+            "deprecated": false
+          },
+          {
+            "name": "releaseClass",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "更新版本的发布类型，可选值：alpha, beta, rc, stable。不合法的发布类型会导致服务器返回400 Bad Request错误。",
+            "required": true,
+            "deprecated": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "更新版本详细信息列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReleaseUpdatesResponse"
+                },
+                "examples": {
+                  "": {
+                    "value": {
+                      "updates": [
+                        {
+                          "version": "3.0.0-rc01",
+                          "downloadUrl": "https://d.myani.org/v3.0.0-rc01/ani-3.0.0-rc01.apk",
+                          "publishTime": 1716604732,
+                          "description": "## 主要更新\n- 重新设计资源选择器 #328\n   - 了解每个数据源的查询结果, 失败时点击重试 #327 #309\n   - 支持临时启用禁用数据源以应对未找到的情况\n   - 区分 BT 源和在线源并增加提示 #330\n- 优化资源选择算法\n  - 默认隐藏生肉资源, 可在设置中恢复显示\n  - 支持番剧完结后隐藏单集 BT 资源, 默认启用, 可在设置关闭\n  - 支持优先选择季度全集资源 #304\n  - 自动优先选择本地缓存资源, 不再需要等待 #258 #260\n## 次要更新\n- 提高弹幕匹配准确率 #338\n- 自动选择数据源时不再覆盖偏好设置\n- 自动选择数据源时不再保存不准确的字幕语言设置\n- 在切换数据源时, 将会按顺序自动取消筛选直到显示列表不为空\n- 在取消选择数据源的过滤时也记忆偏好设置\n- 修复有时候选择资源时会崩溃的问题\n- 优化数据源请求时的性能\n- 修复标题过长挤掉按钮的问题 #311\n- 修复会请求过多条目的问题\n- 修复条目缓存页可能有资源泄露的问题 #190"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Any"
+                }
+              }
+            }
+          },
+          "461": {
+            "description": "不合法的客户端版本号",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Any"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
       },
       "parameters": []
     }
@@ -438,6 +618,26 @@
           "bangumiToken": {
             "type": "string"
           },
+          "clientArch": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "clientOS": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
           "clientVersion": {
             "oneOf": [
               {
@@ -456,6 +656,12 @@
       "AniUser": {
         "type": "object",
         "properties": {
+          "clientPlatforms": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "clientVersion": {
             "oneOf": [
               {
@@ -482,6 +688,10 @@
           "nickname": {
             "type": "string"
           },
+          "registerTime": {
+            "type": "number",
+            "format": "int64"
+          },
           "smallAvatar": {
             "type": "string"
           }
@@ -492,7 +702,22 @@
           "lastLoginTime",
           "mediumAvatar",
           "nickname",
+          "registerTime",
           "smallAvatar"
+        ]
+      },
+      "ReleaseUpdatesResponse": {
+        "type": "object",
+        "properties": {
+          "versions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "versions"
         ]
       }
     },
