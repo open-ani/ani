@@ -3,6 +3,7 @@ plugins {
     kotlin("plugin.serialization")
     application
     `flatten-source-sets`
+    idea
 }
 
 dependencies {
@@ -39,4 +40,8 @@ dependencies {
 
 application {
     mainClass.set("me.him188.ani.danmaku.server.ApplicationKt")
+}
+
+idea {
+    module.excludeDirs.add(file("logs"))
 }
