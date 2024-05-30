@@ -85,7 +85,11 @@ class UpdateCheckerState : AbstractViewModel() {
             }
 
             job = launchInBackground {
-                val ver = checkLatestVersion()
+                val ver = try {
+                    checkLatestVersion()
+                } finally {
+                    lastCheckTime = System.currentTimeMillis()
+                }
                 withContext(Dispatchers.Main) { latestVersion = ver }
             }
         }
@@ -133,8 +137,6 @@ class UpdateCheckerState : AbstractViewModel() {
                     }?.browserDownloadUrl ?: "",
                     publishedAt = publishedAt
                 ).also {
-                    lastCheckTime = System.currentTimeMillis()
-                }.also {
                     logger.info { "Got latest version from Github: ${it.name}" }
                 }
             }.onFailure {
