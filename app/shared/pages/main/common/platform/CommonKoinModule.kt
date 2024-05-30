@@ -182,6 +182,9 @@ fun createAppRootCoroutineScope(): CoroutineScope {
 
 @Stable
 interface AniBuildConfig {
+    /**
+     * `3.0.0-rc04`
+     */
     val versionName: String
     val bangumiOauthClientAppId: String
     val bangumiOauthClientSecret: String
