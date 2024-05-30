@@ -9,6 +9,7 @@ import me.him188.ani.app.ui.collection.progress.EpisodeProgressTheme
 @Serializable
 @Immutable
 data class UISettings(
+    val theme: ThemeSettings = ThemeSettings.Default,
     val myCollections: MyCollectionsSettings = MyCollectionsSettings.Default,
     val episodeProgress: EpisodeProgressSettings = EpisodeProgressSettings.Default,
     @Suppress("PropertyName") @Transient val _placeholder: Int = 0,
@@ -17,6 +18,23 @@ data class UISettings(
         @Stable
         val Default = UISettings()
     }
+}
+
+@Serializable
+@Immutable
+data class ThemeSettings(
+    val kind: ThemeKind = ThemeKind.AUTO,
+    @Suppress("PropertyName") @Transient val _placeholder: Int = 0,
+) {
+    companion object {
+        @Stable
+        val Default = ThemeSettings()
+    }
+}
+
+@Serializable
+enum class ThemeKind {
+    LIGHT, DARK, AUTO
 }
 
 @Serializable

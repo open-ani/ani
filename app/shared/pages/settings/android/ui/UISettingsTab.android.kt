@@ -16,6 +16,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.effects.OnLifecycleEvent
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
@@ -47,11 +48,16 @@ internal actual fun SettingsScope.UISettingsTabPlatform(vm: UiSettingsViewModel)
         }
         // 禁用电池优化
         if (powerManager != null) {
+            val isPreviewing = LocalIsPreviewing.current
             var isIgnoring by remember {
-                mutableStateOf(powerManager?.isIgnoringBatteryOptimizations(context.packageName) == true)
+                if (isPreviewing) {
+                    mutableStateOf(false)
+                } else {
+                    mutableStateOf(powerManager?.isIgnoringBatteryOptimizations(context.packageName) == true)
+                }
             }
             OnLifecycleEvent {
-                if (it == Lifecycle.State.Active) {
+                if (!isPreviewing && it == Lifecycle.State.Active) {
                     isIgnoring = powerManager?.isIgnoringBatteryOptimizations(context.packageName) == true
                 }
             }

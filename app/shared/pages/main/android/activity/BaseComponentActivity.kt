@@ -21,30 +21,18 @@ package me.him188.ani.app.activity
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import me.him188.ani.app.ui.theme.aniDarkColorTheme
-import me.him188.ani.app.ui.theme.aniLightColorTheme
 
 abstract class BaseComponentActivity : ComponentActivity() {
     @Stable
     val snackbarHostState = SnackbarHostState()
-
-    val currentColorScheme
-        @Composable
-        get() = if (isSystemInDarkTheme()) {
-            aniDarkColorTheme()
-        } else {
-            aniLightColorTheme()
-        }
 
     fun enableDrawingToSystemBars() {
         enableEdgeToEdge(

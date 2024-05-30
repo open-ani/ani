@@ -1,5 +1,10 @@
 package me.him188.ani.app.ui.settings.tabs.ui
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.DarkMode
+import androidx.compose.material.icons.rounded.HdrAuto
+import androidx.compose.material.icons.rounded.LightMode
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
@@ -7,13 +12,17 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import me.him188.ani.app.data.models.ThemeKind
 import me.him188.ani.app.data.models.UISettings
 import me.him188.ani.app.data.repositories.SettingsRepository
+import me.him188.ani.app.platform.Platform
+import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.ui.collection.progress.EpisodeProgressTheme
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
+import me.him188.ani.app.ui.settings.framework.components.DropdownItem
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
 import org.koin.core.component.inject
@@ -36,6 +45,43 @@ fun UISettingsTab(
 ) {
     val uiSettings by vm.uiSettings
     SettingsTab(modifier) {
+        if (Platform.currentPlatform.isDesktop()) {
+            Group(title = { Text("通用") }) {
+                val theme by remember { derivedStateOf { uiSettings.theme } }
+                DropdownItem(
+                    selected = { theme.kind },
+                    values = { ThemeKind.entries },
+                    itemText = {
+                        when (it) {
+                            ThemeKind.AUTO -> Text("自动")
+                            ThemeKind.LIGHT -> Text("浅色")
+                            ThemeKind.DARK -> Text("深色")
+                        }
+                    },
+                    onSelect = {
+                        vm.uiSettings.update(
+                            uiSettings.copy(
+                                theme = uiSettings.theme.copy(kind = it)
+                            )
+                        )
+                    },
+                    modifier = Modifier.placeholder(vm.uiSettings.loading),
+                    itemIcon = {
+                        when (it) {
+                            ThemeKind.AUTO -> Icon(Icons.Rounded.HdrAuto, null)
+                            ThemeKind.LIGHT -> Icon(Icons.Rounded.LightMode, null)
+                            ThemeKind.DARK -> Icon(Icons.Rounded.DarkMode, null)
+                        }
+                    },
+                    description = {
+                        if (theme.kind == ThemeKind.AUTO) {
+                            Text("根据系统设置自动切换")
+                        }
+                    },
+                    title = { Text("主题") },
+                )
+            }
+        }
         Group(title = { Text("我的追番") }) {
             val myCollections by remember { derivedStateOf { uiSettings.myCollections } }
             SwitchItem(

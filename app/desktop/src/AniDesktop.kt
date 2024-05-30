@@ -62,7 +62,6 @@ import me.him188.ani.app.ui.foundation.LocalWindowState
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.main.AniAppContent
 import me.him188.ani.app.ui.theme.AppTheme
-import me.him188.ani.app.ui.theme.aniColorScheme
 import me.him188.ani.app.videoplayer.ui.VlcjVideoPlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import me.him188.ani.utils.logging.logger
@@ -186,7 +185,7 @@ private fun MainWindowContent(
     windowImmersed: Boolean,
     aniNavigator: AniNavigator,
 ) {
-    AniApp(aniColorScheme()) {
+    AniApp {
         Box(
             Modifier.background(color = AppTheme.colorScheme.background)
                 .statusBarsPadding()

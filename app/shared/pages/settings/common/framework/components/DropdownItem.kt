@@ -1,5 +1,6 @@
 package me.him188.ani.app.ui.settings.framework.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -24,8 +25,8 @@ fun <T> SettingsScope.DropdownItem(
     values: () -> List<T>,
     itemText: @Composable (T) -> Unit,
     onSelect: (T) -> Unit,
-    itemIcon: @Composable ((T) -> Unit)? = null,
     modifier: Modifier = Modifier,
+    itemIcon: @Composable ((T) -> Unit)? = null,
     description: @Composable (() -> Unit)? = null,
     icon: @Composable (() -> Unit)? = null,
     title: @Composable (RowScope.() -> Unit),
@@ -37,7 +38,7 @@ fun <T> SettingsScope.DropdownItem(
     }
     TextItem(
         title = title,
-        modifier = modifier,
+        modifier = modifier.clickable(onClick = { showDropdown = true }),
         description = description,
         icon = icon,
         action = {
