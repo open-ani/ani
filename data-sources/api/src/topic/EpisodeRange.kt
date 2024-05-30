@@ -42,7 +42,7 @@ sealed class EpisodeRange {
     open val isKnown: Boolean get() = true
 
     /**
-     * 已知的集数列表. 若未知, 则返回空序列
+     * 已知的集数列表. 若未知 (例如 [unknownSeason]), 则返回空序列.
      */
     abstract val knownSorts: Sequence<EpisodeSort>
 
@@ -116,8 +116,11 @@ sealed class EpisodeRange {
         }
     }
 
+    /**
+     * @see combined
+     */
     @Serializable
-    class Combined(
+    class Combined internal constructor(
         val first: EpisodeRange,
         val second: EpisodeRange,
     ) : EpisodeRange() {
@@ -166,31 +169,83 @@ sealed class EpisodeRange {
 
     companion object {
         fun empty(): EpisodeRange = Empty
+
+        /**
+         * 单个剧集
+         */
         fun single(raw: EpisodeSort): EpisodeRange = Single(raw)
+
+        /**
+         * 单个剧集
+         */
         fun single(raw: String): EpisodeRange = Single(EpisodeSort(raw))
+
+        /**
+         * 从 [start] 到 [end] (包含) 的连续剧集范围.
+         */
         fun range(start: EpisodeSort, end: EpisodeSort): EpisodeRange = Range(start, end)
+
+        /**
+         * 从 [start] 到 [end] (包含) 的连续剧集范围.
+         */
         fun range(start: String, end: String) = range(EpisodeSort(start), EpisodeSort(end))
+
+        /**
+         * 从 [start] 到 [end] (包含) 的连续剧集范围.
+         */
         fun range(start: Int, end: Int) = range(EpisodeSort(start), EpisodeSort(end))
+
+        /**
+         * 将多个 [EpisodeRange] 合并.
+         * @see EpisodeRange.plus
+         */
         fun combined(first: EpisodeRange, second: EpisodeRange) = Combined(first, second)
+
+        /**
+         * 一系列剧集
+         */
         fun range(episodes: Iterable<EpisodeSort>): EpisodeRange =
             combined(episodes.map { single(it) })
 
+        /**
+         * 将多个 [EpisodeRange] 合并.
+         */
         fun combined(list: Iterable<EpisodeRange>): EpisodeRange =
             list.reduceOrNull { acc, episodeRange -> combined(acc, episodeRange) }
                 ?: Empty
 
+        /**
+         * 一个不知道具体集数的季度全集.
+         */
         fun season(number: Int): Season = Season(number)
 
+        /**
+         * 一个不知道具体集数的季度全集. 当 `number` 为 null 时, 表示未知季度.
+         */
         @JvmName("seasonNullable")
         fun season(number: Int?): Season = Season(number ?: -1)
+
+        /**
+         * 一个不确定是第几季, 也不确定其中包含多少集数的季度全集.
+         */
         fun unknownSeason(): Season = Season(-1)
     }
 }
 
+/**
+ * 合并两个 [EpisodeRange].
+ */
 operator fun EpisodeRange.plus(other: EpisodeRange): EpisodeRange = EpisodeRange.combined(this, other)
 
+/**
+ * 判断 [expected] 是否在 [this] 范围内.
+ */
 operator fun EpisodeRange.contains(expected: EpisodeSort): Boolean = contains(expected, allowSeason = true)
 
+/**
+ * 判断 [expected] 是否在 [this] 范围内.
+ * @param allowSeason 为 `true` 时, 将 [EpisodeRange.unknownSeason] 判定为包含.
+ */
 fun EpisodeRange.contains(expected: EpisodeSort, allowSeason: Boolean = true): Boolean {
     if (allowSeason && this is Season) return true
     return knownSorts.any { it == expected } // TODO: optimize  EpisodeRange.contains
@@ -208,6 +263,10 @@ fun EpisodeRange.isSingleEpisode(): Boolean {
     }
 }
 
+/**
+ * 是否包含季度全集 [EpisodeRange.Season].
+ * 注意, 如果 [this] 为 [EpisodeRange.Range], 即使范围为 `1..12`, 该函数也会返回 `false`.
+ */
 fun EpisodeRange.hasSeason(): Boolean = when (this) {
     is Season -> true
     is Combined -> first.hasSeason() || second.hasSeason()

@@ -49,10 +49,14 @@ sealed interface Media {
     /**
      * 该资源包含的剧集列表.
      *
-     * - 如果是单集资源, 该列表可能包含 1 个元素.
-     * - 如果是季度全集资源, 该列表可能包含多个元素, 典型值为 12 个.
+     * - 如果是单集资源, 该列表可能包含 1 个元素, 即 [EpisodeRange.single]
+     * - 如果是季度全集资源, 该列表可能包含多个元素, 典型值为 12 个. 季度全集可以是 [EpisodeRange.range] (`1..12`) 或 [EpisodeRange.season] (`S1`).
      *
-     * 当解析剧集列表失败时为 `null`
+     * 当解析剧集列表失败时为 `null`.
+     *
+     * 注意, 如果为 `null`, 数据源选择器 UI 很可能会过滤掉, 因为默认偏好设置是忽略剧集不匹配的资源.
+     *
+     * 在 [MediaSource.fetch] 时, 如果自定义的数据源查询到的资源没有确定的剧集信息, 可以考虑猜测该资源的剧集为 [MediaFetchRequest.episodeSort].
      */
     val episodeRange: EpisodeRange?
 
