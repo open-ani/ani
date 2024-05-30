@@ -29,6 +29,7 @@ import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.paging.SizedSource
 import me.him188.ani.datasources.api.topic.ResourceLocation
 import java.io.File
+import java.util.ServiceLoader
 import kotlin.contracts.contract
 
 /**
@@ -38,6 +39,10 @@ import kotlin.contracts.contract
  *
  * 未来可能会支持更多的条目服务, 但目前只支持 Bangumi.
  *
+ * ### 数据源全局唯一
+ *
+ * 每个数据源都拥有全局唯一的 ID [mediaSourceId], 可用于保存用户偏好, 识别缓存资源的来源等.
+ *
  * ### 查询
  *
  * 数据源从一个地方查询资源, 例如在线视频网站, BitTorrent 网络, 本地文件系统等.
@@ -45,9 +50,19 @@ import kotlin.contracts.contract
  * 每一次查询 ([MediaSource.fetch]) 都需要一个查询请求 [MediaFetchRequest],
  * 数据源尽可能多地使用请求中的信息去匹配资源, 并返回匹配到的资源列表.
  *
- * ### 数据源全局唯一
+ * ### 加载和配置数据源
  *
- * 每个数据源都拥有全局唯一的 ID [mediaSourceId], 可用于保存用户偏好, 识别缓存资源的来源等.
+ * 通过 Java SPI [ServiceLoader] 加载 [MediaSourceFactory], 然后由 factory 创建数据源实例.
+ * [MediaSourceFactory.create] 时接受 [MediaSourceConfig] 参数, 可以
+ *
+ * #### 使 APP 能够检测到新的 [MediaSource] 的示例步骤
+ * 假设你已经实现了一个数据源, 名为 `foo`, 模块位置为 `:data-sources:foo`.
+ * 1. 在 `data-sources/foo/resources/META-INF/services` 目录下创建一个名为 `me.him188.ani.datasources.api.source.MediaSourceFactory` 的文件
+ * 2. 在文件中写入你的 `MediaSourceFactory` 的全限定类名, 例如 `me.him188.ani.datasources.api.source.impl.MyMediaSourceFactory`
+ * 3. 在 `MyMediaSourceFactory` 中实现 `create` 方法, 根据传入的 [MediaSourceConfig], 构造并返回你的 [MediaSource] 实例
+ * 4. 在 `:app:shared` 中的 `build.gradle.kts` 搜索 `api(projects.dataSources.core)`, 找到现有数据源的依赖定义,
+ * 仿照着增加一行你的模块: `api(projects.dataSources.foo)`
+ * 5. 现在启动 app 便可以自动加载你的数据源了, 可在设置中验证
  */
 interface MediaSource {
     /**
