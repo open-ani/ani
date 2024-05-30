@@ -5,8 +5,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class IkarosVideoSubtitle(
-    @SerialName("master_attachment_id") val masterAttachmentId:Long,
-    @SerialName("attachment_id") val attachmentId:Long,
-    val name:String,
-    val url:String,
+    @SerialName("master_attachment_id") val masterAttachmentId: Long,
+    @SerialName("attachment_id") val attachmentId: Long,
+    val name: String,
+    val url: String,
 )

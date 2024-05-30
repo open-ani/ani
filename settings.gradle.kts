@@ -78,8 +78,8 @@ includeProject(":data-sources:nyafun", "data-sources/nyafun") // data source fro
 includeProject(
     ":data-sources:bangumi",
     "data-sources/bangumi"
-)
-includeProject(":data-sources:ikaros", "data-sources/ikaros") // data source from https://ikaros.run/// data source from https://bangumi.tv
+) // data source from https://bangumi.tv
+includeProject(":data-sources:ikaros", "data-sources/ikaros") // data source from https://ikaros.run/
 
 // danmaku
 //includeProject(":danmaku:api", "danmaku/api") // danmaku source interfaces

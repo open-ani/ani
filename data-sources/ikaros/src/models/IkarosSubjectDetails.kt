@@ -14,7 +14,7 @@ data class IkarosSubjectDetails(
     @SerialName("airTime") val airTime: String?,
     val cover: String?,
     @SerialName("collection_status") val collectionType: IkarosCollectionType?,
-    val canRead:Boolean = true,
+    val canRead: Boolean = true,
     @SerialName("total_episodes") val totalEpisodes: Long,
-    var episodes:List<IkarosEpisodeDetails>,
+    var episodes: List<IkarosEpisodeDetails>,
 )
