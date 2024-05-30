@@ -7,10 +7,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.DownloadDone
@@ -161,7 +163,7 @@ fun CacheManagementPage(
         }
     ) { paddingValues ->
         Column(Modifier.padding(paddingValues)) {
-            val state = rememberLazyListState()
+            val state = rememberLazyGridState()
 
             StorageOverallStats(
                 vm.overallStats,
@@ -286,19 +288,20 @@ fun StorageManagerView(
     list: List<MediaCachePresentation>,
     onDelete: (MediaCachePresentation) -> Unit,
     modifier: Modifier = Modifier,
-    state: LazyListState = rememberLazyListState(),
+    state: LazyGridState = rememberLazyGridState(),
 ) {
-    LazyColumn(
+    LazyVerticalGrid(
+        GridCells.Adaptive(360.dp),
         modifier,
         state = state,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        item { }
+        item(span = { GridItemSpan(maxLineSpan) }) { }
 
         items(list, key = { it.cache.cacheId }) { item ->
             CacheItemView(item, onDelete, { item.mediaSourceId })
         }
 
-        item { }
+        item(span = { GridItemSpan(maxLineSpan) }) { }
     }
 }
