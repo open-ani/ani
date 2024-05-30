@@ -15,9 +15,12 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -102,15 +105,17 @@ fun SubjectCollectionsColumn(
         }
     }
 
-    LazyColumn(
+    LazyVerticalGrid(
+        GridCells.Adaptive(360.dp),
         modifier.padding(horizontal = 12.dp).padding(vertical = 0.dp),
-        lazyListState,
+        rememberLazyGridState(),
         verticalArrangement = Arrangement.spacedBy(spacedBy),
+        horizontalArrangement = Arrangement.spacedBy(spacedBy),
     ) {
         // 每两个 item 之间有 spacedBy dp, 这里再上补充 contentPadding 要求的高度, 这样顶部的总留空就是 contentPadding 要求的高度
         // 这个高度是可以滚到上面的, 所以它
         (contentPadding.calculateTopPadding() - spacedBy).coerceAtLeast(0.dp).let {
-            item { Spacer(Modifier.height(it)) }
+            item(span = { GridItemSpan(maxLineSpan) }) { Spacer(Modifier.height(it)) }
         }
 
         items(dataNotNull, key = { it.subjectId }) { collection ->
@@ -120,7 +125,7 @@ fun SubjectCollectionsColumn(
         }
 
         if (!isCompleted) {
-            item("dummy loader") {
+            item("dummy loader", span = { GridItemSpan(maxLineSpan) }) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                     CircularProgressIndicator()
                 }
@@ -131,7 +136,7 @@ fun SubjectCollectionsColumn(
         }
 
         (contentPadding.calculateBottomPadding() - spacedBy).coerceAtLeast(0.dp).let {
-            item { Spacer(Modifier.height(it)) }
+            item(span = { GridItemSpan(maxLineSpan) }) { Spacer(Modifier.height(it)) }
         }
     }
 }
