@@ -25,7 +25,9 @@ import me.him188.ani.danmaku.ani.client.AniDanmakuSenderImpl
 import me.him188.ani.danmaku.ani.client.SendDanmakuException
 import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuEvent
+import me.him188.ani.danmaku.api.DanmakuFetchResult
 import me.him188.ani.danmaku.api.DanmakuMatchInfo
+import me.him188.ani.danmaku.api.DanmakuMatchMethod
 import me.him188.ani.danmaku.api.DanmakuProvider
 import me.him188.ani.danmaku.api.DanmakuProviderConfig
 import me.him188.ani.danmaku.api.DanmakuSearchRequest
@@ -129,7 +131,19 @@ class DanmakuManagerImpl(
                 }
                 logger.error(it) { "Failed to fetch danmaku from provider '${provider.id}'" }
                 true
-            }.catch {}// 忽略错误, 否则一个源炸了会导致所有弹幕都不发射了
+            }.catch {
+                emit(
+                    DanmakuFetchResult(
+                        DanmakuMatchInfo(
+                            provider.id,
+                            0,
+                            DanmakuMatchMethod.NoMatch
+                        ),
+                        null
+                    )
+                )// 忽略错误, 否则一个源炸了会导致所有弹幕都不发射了
+                // 必须要 emit 一个, 否则下面 .first 会出错
+            }
         }) {
             it.toList()
         }.first()
