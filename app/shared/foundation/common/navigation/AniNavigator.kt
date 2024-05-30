@@ -46,7 +46,7 @@ interface AniNavigator {
     }
 
     fun navigatePreferences(tab: SettingsTab = SettingsTab.Default) {
-        navigator.navigate("/preferences?tab=${tab.ordinal}")
+        navigator.navigate("/preferences?tab=${tab.ordinal}&back=true")
     }
 
     fun navigateCaches() {

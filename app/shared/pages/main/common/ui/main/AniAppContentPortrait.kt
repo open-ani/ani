@@ -79,6 +79,7 @@ fun AniAppContentPortrait(
                 SettingsPage(
                     Modifier.fillMaxSize(),
                     initialTab = initialTab,
+                    allowBack = backStackEntry.query("back") ?: false
                 )
             }
             scene("/caches") {

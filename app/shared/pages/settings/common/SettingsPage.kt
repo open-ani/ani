@@ -55,6 +55,7 @@ fun SettingsPage(
     modifier: Modifier = Modifier,
     initialTab: SettingsTab = SettingsTab.Default,
     contentPadding: PaddingValues = PaddingValues(0.dp),
+    allowBack: Boolean = !isShowLandscapeUI(),
 ) {
     Scaffold(
         modifier,
@@ -62,7 +63,7 @@ fun SettingsPage(
             TopAppBar(
                 title = { Text("设置") },
                 navigationIcon = {
-                    if (!isShowLandscapeUI()) {
+                    if (allowBack) {
                         TopAppBarGoBackButton()
                     }
                 },
