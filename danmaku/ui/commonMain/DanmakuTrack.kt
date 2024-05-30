@@ -424,8 +424,16 @@ fun DanmakuText(
 ) {
     Box(modifier.alpha(style.alpha)) {
         // Black text with stronger stroke
+        val text = if (config.isDebug) {
+            remember(state) {
+                state.presentation.danmaku.text +
+                        " (${String.format("%.2f", state.presentation.danmaku.playTimeMillis.toFloat().div(1000))})"
+            }
+        } else {
+            state.presentation.danmaku.text
+        }
         Text(
-            state.presentation.danmaku.text,
+            text,
             Modifier,
             overflow = TextOverflow.Clip,
             maxLines = 1,
@@ -436,7 +444,7 @@ fun DanmakuText(
         // Covered by a white, smaller text.
         // So the resulting look is a white text with black border.
         Text(
-            state.presentation.danmaku.text,
+            text,
             Modifier,
             overflow = TextOverflow.Clip,
             maxLines = 1,

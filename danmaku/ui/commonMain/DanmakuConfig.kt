@@ -20,6 +20,7 @@ import me.him188.ani.danmaku.api.Danmaku
  */
 @Immutable
 data class DanmakuConfig(
+    // 备注: 增加新的属性后还要修改 [DanmakuConfigData]
     /**
      * Controls the text styles of the [Danmaku].
      * For example, font size, stroke width.
@@ -40,6 +41,10 @@ data class DanmakuConfig(
      * 允许彩色弹幕. 禁用时将会把所有彩色弹幕都显示为白色.
      */
     val enableColor: Boolean = true,
+    /**
+     * 调试模式, 启用发送弹幕的信息.
+     */
+    val isDebug: Boolean = false,
     @Suppress("PropertyName") @Transient val _placeholder: Int = 0,
 ) {
     companion object {

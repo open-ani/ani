@@ -14,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import me.him188.ani.app.data.repositories.SettingsRepository
+import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
@@ -177,6 +178,18 @@ fun EpisodeVideoSettings(
                 description = { Text("关闭后所有彩色弹幕都会显示为白色") },
                 modifier = Modifier.placeholder(isLoadingState),
             )
+            if (currentAniBuildConfig.isDebug) {
+                SwitchItem(
+                    danmakuConfig.isDebug,
+                    onCheckedChange = {
+                        setDanmakuConfig(
+                            danmakuConfig.copy(isDebug = it)
+                        )
+                    },
+                    title = { Text("弹幕调试模式") },
+                    modifier = Modifier.placeholder(isLoadingState),
+                )
+            }
         }
     }
 }
