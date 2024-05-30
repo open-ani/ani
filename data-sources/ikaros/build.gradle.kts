@@ -36,7 +36,8 @@ dependencies {
 
     implementation("com.squareup.moshi:moshi-kotlin:1.14.0")
     implementation("com.squareup.moshi:moshi-adapters:1.14.0")
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("org.apache.httpcomponents:httpclient:4.5.14")
+
 
     testImplementation(libs.slf4j.simple)
 }
