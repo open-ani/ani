@@ -27,6 +27,7 @@ import kotlinx.serialization.encoding.Encoder
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.paging.SizedSource
+import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.datasources.api.topic.ResourceLocation
 import java.io.File
 import java.util.ServiceLoader
@@ -104,16 +105,25 @@ interface MediaSource {
 enum class MediaSourceKind {
     /**
      * 在线视频网站. 资源为 [ResourceLocation.WebVideo] 或 [ResourceLocation.HttpStreamingFile].
+     *
+     * 对于完结番, [WEB] 的单集资源**不会**被过滤掉.
+     * @see BitTorrent
      */
     WEB,
 
     /**
-     * P2P BitTorrent 网络. 资源为 [ResourceLocation.HttpTorrentFile] 或 [ResourceLocation.MagnetLink]
+     * P2P BitTorrent 网络. 资源为 [ResourceLocation.HttpTorrentFile] 或 [ResourceLocation.MagnetLink].
+     *
+     * 如果 [Media.episodeRange] 剧集为单集 [EpisodeRange.single], 且类型为 [MediaSourceKind.BitTorrent], 则很有可能会因为默认启用的"完结番隐藏单集资源"功能而被过滤掉.
+     * @see WEB
+     * @see Media.episodeRange
      */
     BitTorrent,
 
     /**
      * 本地视频缓存. 只表示那些通过 `MediaCacheManager` 缓存的视频.
+     *
+     * 该类型的资源总是会显示, 忽略一切过滤条件.
      */
     LocalCache
 }
