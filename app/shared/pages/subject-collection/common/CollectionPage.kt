@@ -26,8 +26,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
@@ -227,13 +225,15 @@ fun CollectionPage(
 
                 Box(Modifier.clipToBounds()) {
                     TabContent(
-                        collection.cache,
+                        cache = collection.cache,
                         onRequestMore = { vm.requestMore(type) },
-                        vm, type, isLoggedIn, contentPadding,
-                        Modifier
+                        vm = vm,
+                        type = type,
+                        isLoggedIn = isLoggedIn,
+                        contentPadding = contentPadding,
+                        modifier = Modifier
                             .nestedScroll(pullToRefreshState.nestedScrollConnection)
                             .fillMaxSize(),
-                        lazyListState = collection.lazyListState,
                         enableAnimation = { vm.myCollectionsSettings.enableListAnimation }
                     )
                     PullToRefreshContainer(
@@ -258,7 +258,6 @@ private fun TabContent(
     isLoggedIn: Boolean?,
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
-    lazyListState: LazyListState = rememberLazyListState(),
     enableAnimation: () -> Boolean = { true },
 ) {
     SubjectCollectionsColumn(
@@ -334,7 +333,6 @@ private fun TabContent(
         },
         modifier,
         contentPadding = contentPadding,
-        lazyListState = lazyListState,
         enableAnimation = enableAnimation,
     )
 }

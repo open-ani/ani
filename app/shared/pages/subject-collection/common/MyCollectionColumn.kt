@@ -15,13 +15,11 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -38,7 +36,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -66,6 +63,7 @@ import me.him188.ani.app.ui.foundation.indication.IndicatedBox
 import me.him188.ani.app.ui.subject.details.COVER_WIDTH_TO_HEIGHT_RATIO
 import me.him188.ani.app.ui.subject.details.Tag
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
+import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.openapitools.client.models.UserEpisodeCollection
 import kotlin.time.Duration.Companion.seconds
 
@@ -87,16 +85,18 @@ fun SubjectCollectionsColumn(
     item: @Composable (item: SubjectCollectionItem) -> Unit,
     onEmpty: @Composable () -> Unit,
     modifier: Modifier = Modifier,
-    lazyListState: LazyListState = rememberLazyListState(),
     contentPadding: PaddingValues = PaddingValues(0.dp),
     enableAnimation: () -> Boolean = { true },
 ) {
-    val data by cache.cachedDataFlow.collectAsState(null) // 反正下面会立即用到, recompose 总是重组整个函数
-    val dataNotNull by remember { derivedStateOf { data.orEmpty() } }
+    // 当从其他页面回到这个页面时, cache.cachedDataFlow 会重新开始 collect
+    val data by cache.cachedDataFlow.collectAsStateWithLifecycle(null) // 反正下面会立即用到, recompose 总是重组整个函数
+    val dataLoaded by remember { derivedStateOf { data != null } }
 
     // 如果不 debounce, 会导致刚刚加载完成后会显示一小会 "空空如也"
-    val isCompleted by remember(cache) { cache.isCompleted.debounce(1.seconds) }.collectAsState(false)
+    val isCompleted by remember(cache) { cache.isCompleted.debounce(1.seconds) }.collectAsStateWithLifecycle(false)
     val dataNullOrEmpty by remember { derivedStateOf { data.isNullOrEmpty() } }
+
+    @Suppress("NAME_SHADOWING")
     val enableAnimation by remember(enableAnimation) { derivedStateOf(enableAnimation) }
 
     Composition {
@@ -105,10 +105,14 @@ fun SubjectCollectionsColumn(
         }
     }
 
+    val gridState = rememberLazyGridState() // 要放在前面, 防止 return 后丢失
+
+    if (!dataLoaded) return // 还没加载完, 不要去更新 grid 状态, 否则会恢复到顶部
+
     LazyVerticalGrid(
         GridCells.Adaptive(360.dp),
         modifier.padding(horizontal = 12.dp).padding(vertical = 0.dp),
-        rememberLazyGridState(),
+        gridState,
         verticalArrangement = Arrangement.spacedBy(spacedBy),
         horizontalArrangement = Arrangement.spacedBy(spacedBy),
     ) {
@@ -118,7 +122,7 @@ fun SubjectCollectionsColumn(
             item(span = { GridItemSpan(maxLineSpan) }) { Spacer(Modifier.height(it)) }
         }
 
-        items(dataNotNull, key = { it.subjectId }) { collection ->
+        items(data.orEmpty(), key = { it.subjectId }) { collection ->
             Box(Modifier.ifThen(enableAnimation) { animateItemPlacement() }) {
                 item(collection)
             }
