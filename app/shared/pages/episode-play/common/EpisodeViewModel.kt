@@ -398,6 +398,11 @@ private class EpisodeViewModelImpl(
                 }
             }
         }
+        launchInBackground {
+            videoLoadingState.collect {
+                playerStatistics.videoLoadingState.value = it
+            }
+        }
 
         launchInBackground {
             cancellableCoroutineScope {
