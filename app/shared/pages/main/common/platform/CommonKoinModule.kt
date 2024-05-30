@@ -220,7 +220,9 @@ val AniBuildConfig.versionCode: String
 
 @Stable
 expect val currentAniBuildConfigImpl: AniBuildConfig
-val currentAniBuildConfig: AniBuildConfig get() = currentAniBuildConfigImpl
+
+@Stable
+inline val currentAniBuildConfig: AniBuildConfig get() = currentAniBuildConfigImpl
 
 /**
  * 满足各个数据源建议格式的 User-Agent, 所有 HTTP 请求都应该带此 UA.

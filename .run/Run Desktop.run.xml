@@ -4,7 +4,7 @@
         <module name="ani.app.desktop.main" />
         <shortenClasspath name="NONE" />
         <option name="VM_PARAMETERS"
-                value="-Dorg.slf4j.simpleLogger.defaultLogLevel=TRACE -Dcompose.interop.blending=true -Dkotlinx.coroutines.debug=on" />
+                value="-Dorg.slf4j.simpleLogger.defaultLogLevel=TRACE -Dcompose.interop.blending=true -Dkotlinx.coroutines.debug=on -Dani.debug=true" />
         <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/app/desktop/test-sandbox" />
         <method v="2">
             <option name="Make" enabled="true" />
