@@ -5,6 +5,9 @@ import me.him188.ani.utils.ktor.ClientProxyConfig
 import me.him188.ani.utils.ktor.proxy
 import me.him188.ani.utils.ktor.userAgent
 
+/**
+ * @see MediaSource
+ */
 interface MediaSourceFactory {
     /**
      * @see MediaSource.mediaSourceId
@@ -19,6 +22,7 @@ interface MediaSourceFactory {
 class MediaSourceConfig(
     val proxy: ClientProxyConfig? = null,
     val userAgent: String? = null
+    // TODO: 增加每个数据源专有的配置, 并支持序列化
 )
 
 

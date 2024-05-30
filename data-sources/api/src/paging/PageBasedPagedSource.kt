@@ -36,6 +36,23 @@ fun <T> SinglePagePagedSource(getAll: suspend PagedSourceContext.() -> Flow<T>):
     }
 }
 
+/**
+ * 基于自增页码的 [PagedSource].
+ * [nextPageOrNull] 会携带当前请求的页码参数.
+ *
+ * 示例:
+ *
+ * ```
+ * PageBasedPagedSource { page ->
+ *     bangumiClient.episodes.getEpisodes(
+ *         subjectId.toLong(),
+ *         type,
+ *         offset = page * 100,
+ *         limit = 100
+ *     )
+ * }
+ * ```
+ */
 @Suppress("FunctionName")
 fun <T> PageBasedPagedSource(
     initialPage: Int = 0,

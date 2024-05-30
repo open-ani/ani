@@ -31,6 +31,8 @@ import me.him188.ani.datasources.api.topic.EpisodeRange.Single
  * - [Range] 一段连续剧集范围
  * - [Combined] 多个 [EpisodeRange] 的组合, 不连续
  * - [Season] 一整季的剧集, 但是不知道具体包含哪些集数, 也可能不知道具体是哪一季
+ *
+ * @see EpisodeSort
  */
 @Serializable
 sealed class EpisodeRange {

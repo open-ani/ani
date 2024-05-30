@@ -57,23 +57,35 @@ sealed interface Media {
     val episodeRange: EpisodeRange?
 
     /**
-     * 字幕组发布的原标题
+     * 字幕组发布的原标题.
+     *
+     * 为空字符串表示数据源不支持该属性.
      */
-    val originalTitle: String
+    val originalTitle: String // 实现提示: 在播放页会显示在 "正在播放: " 的标签中, 无其他作用
 
     /**
      * 该资源发布时间, 毫秒时间戳
+     *
+     * 为 `0` 表示数据源不支持该属性.
      */
-    val publishedTime: Long
+    val publishedTime: Long // 如果
 
+    /**
+     * 用于数据源选择器内过滤的属性.
+     * @see MediaProperties
+     */
     val properties: MediaProperties
 
     /**
+     * 该资源的存放位置.
+     *
      * 查看 [MediaSourceLocation.Local] 和 [MediaSourceLocation.Online].
      */
     val location: MediaSourceLocation
 
     /**
+     * 该资源的类型. 例如 [在线视频][MediaSourceKind.WEB] 或 [BT 资源][MediaSourceKind.BitTorrent]
+     *
      * @see MediaSource.kind
      */
     val kind: MediaSourceKind
@@ -117,27 +129,41 @@ class CachedMedia(
 }
 
 /**
- * Properties of [Media] that might be useful for filtering.
+ * 用于播放或缓存时过滤选择资源的属性.
  */
 @Immutable
 @Serializable
 class MediaProperties private constructor(
     /**
-     * Empty list means no subtitles
+     * 该资源支持的字幕语言列表. 可以有多个.
+     *
+     * 建议的值: "CHS", "CHT", "JPY", "ENG".
+     *
+     * 为空表示没有任何字幕.
+     * 为空时, 很有可能会被数据源选择器忽略掉. 因为默认设置是忽略无字幕的资源.
+     *
+     * 如果数据源不支持检索该属性, 可以返回一个最大努力上的猜测, 例如简体中文视频网站就只返回 `listOf("CHS")`.
      */
     val subtitleLanguageIds: List<String>,
     /**
-     * Resolution, e.g. "1080P", "4K"
+     * 分辨率.
+     *
+     * 建议的值: "720P", "1080P", "2P", "4K".
+     *
+     * 提供 "1440P" 和 "2160P" 也可能能正确识别, 但是不建议.
+     * 提供其他的值可能会导致
+     *
+     * 若未知, 返回空字符串.
      */
     val resolution: String,
     /**
-     * Subtitle group
-     */
+     * 字幕组名称, 例如 "桜都字幕组", "北宇治字幕组".
+     */ // 最好是稳定的, 用户选择数据源后会自动保存这个属性, 下次自动选择
     val alliance: String,
     /**
-     * Size of the media file. Can be [FileSize.Zero] if not available.
-     */
-    val size: FileSize = 0.bytes, // note: only for compatibility
+     * 文件大小, 若未知可以提供 [FileSize.Unspecified].
+     */ // 提供的话, 在数据源选择器中会有一个标签显示这个大小
+    val size: FileSize = 0.bytes, // note: default value only for compatibility
     @Suppress("unused")
     @Transient private val _primaryConstructorMarker: Unit = Unit,
 ) {

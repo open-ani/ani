@@ -10,6 +10,8 @@ import kotlinx.coroutines.flow.merge
 
 /**
  * A [Flow] that [totalSize] may be known in advance.
+ *
+ * @see PageBasedPagedSource
  */
 interface SizedSource<out T> {
     /**
