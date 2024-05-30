@@ -98,7 +98,7 @@ class ClientReleaseInfoManagerImpl(
 
         val buffer = getBuffer()
         val latestRelease = getLatestReleaseInternal(buffer, clientArch, releaseClass) ?: return listOf()
-        return buffer.dropWhile { it.version < semVersion }.takeWhile { it.version <= latestRelease.version }
+        return buffer.dropWhile { it.version <= semVersion }.takeWhile { it.version <= latestRelease.version }
     }
 
     override fun getCloudflareDownloadUrl(clientVersion: SemVersion, clientArch: String): String {

@@ -40,10 +40,15 @@ fun Route.updatesRouting() {
             get {
                 val updates = updateInfos(clientReleaseInfoManager)
                 val clientArch = call.request.queryParameters["clientArch"] ?: throw BadRequestException()
-                call.respond(ReleaseUpdatesDetailedResponse(updates.map {
+                call.respond(ReleaseUpdatesDetailedResponse(updates.mapNotNull {
+                    val downloadUrl = try {
+                        clientReleaseInfoManager.getCloudflareDownloadUrl(it.version, clientArch)
+                    } catch (e: IllegalArgumentException) {
+                        return@mapNotNull null
+                    }
                     UpdateInfo(
                         it.version.toString(),
-                        clientReleaseInfoManager.getCloudflareDownloadUrl(it.version, clientArch),
+                        downloadUrl,
                         it.publishTime,
                         it.description
                     )
@@ -87,7 +92,7 @@ private fun Route.incrementalDoc() {
                     name = "clientArch",
                     `in` = Parameter.Location.query,
                     required = true,
-                    description = "客户端平台及架构。不合法的架构会导致服务器返回空的版本号列表。",
+                    description = "客户端平台及架构，例：windows-x86_64, android。不合法的值会导致服务器返回空的版本号列表。",
                     schema = TypeDefinition.STRING
                 ),
                 Parameter(
@@ -137,7 +142,7 @@ private fun Route.incrementalDetailedDoc() {
                     name = "clientArch",
                     `in` = Parameter.Location.query,
                     required = true,
-                    description = "客户端平台及架构。不合法的架构会导致服务器返回空的更新详情列表。",
+                    description = "客户端平台及架构，例：windows-x86_64, android。不合法的值会导致服务器返回空的版本号列表。",
                     schema = TypeDefinition.STRING
                 ),
                 Parameter(
