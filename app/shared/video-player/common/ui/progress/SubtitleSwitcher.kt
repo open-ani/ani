@@ -1,5 +1,6 @@
 package me.him188.ani.app.videoplayer.ui.progress
 
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
@@ -8,6 +9,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
@@ -88,11 +91,15 @@ fun PlayerControllerDefaults.SubtitleSwitcher(
             if (it == null) {
                 Text("自动")
             } else {
-                Text(it.displayName)
+                Text(it.displayName, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         },
         renderValueExposed = {
-            Text(remember(it) { it?.displayName ?: "字幕" })
+            Text(
+                remember(it) { it?.displayName ?: "字幕" },
+                Modifier.widthIn(max = 64.dp),
+                maxLines = 1, overflow = TextOverflow.Ellipsis,
+            )
         },
         modifier,
     )
