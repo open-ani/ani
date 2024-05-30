@@ -96,9 +96,9 @@ class IkarosClient(private val baseUrl: String, private val username: String, pr
                         originalTitle = epRes.name,
                         publishedTime = 0L,
                         properties = MediaProperties(
-                            subtitleLanguageIds = listOf(ChineseSimplified, ChineseTraditional).map { it.id },
-                            resolution = "1080P",
-                            alliance = "桜都字幕组",
+                            subtitleLanguageIds = listOf(ChineseSimplified).map { it.id },
+                            resolution = "1080p",
+                            alliance = IkarosMediaSource.ID,
                             size = FileSize.Zero,   
                         ),
                         episodeRange = EpisodeRange.single(seq.toString()),
