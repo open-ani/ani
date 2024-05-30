@@ -65,6 +65,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.subject.SubjectCollectionItem
 import me.him188.ani.app.navigation.LocalNavigator
+import me.him188.ani.app.platform.Platform
+import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.tools.caching.RefreshOrderPolicy
 import me.him188.ani.app.tools.rememberUiMonoTasker
@@ -182,7 +184,7 @@ fun CollectionPage(
             HorizontalPager(
                 state = pagerState,
                 Modifier.fillMaxSize(),
-                userScrollEnabled = !isShowLandscapeUI(),
+                userScrollEnabled = Platform.currentPlatform.isMobile(),
             ) { index ->
                 val type = COLLECTION_TABS_SORTED[index]
                 val collection = vm.collectionsByType(type)

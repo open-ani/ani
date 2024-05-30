@@ -25,6 +25,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import me.him188.ani.app.platform.Platform
+import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.ui.foundation.TopAppBarGoBackButton
 import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
@@ -96,7 +98,7 @@ fun SettingsPage(
             HorizontalPager(
                 state = pagerState,
                 Modifier.fillMaxSize(),
-                userScrollEnabled = !isShowLandscapeUI(),
+                userScrollEnabled = Platform.currentPlatform.isMobile(),
             ) { index ->
                 val type = SettingsTab.entries[index]
                 Column(Modifier.fillMaxSize().padding(contentPadding)) {
