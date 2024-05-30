@@ -4,6 +4,7 @@ import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 import me.him188.ani.datasources.api.EpisodeSort.Normal
 import me.him188.ani.datasources.api.EpisodeSort.Special
+import me.him188.ani.datasources.api.topic.EpisodeRange
 import java.math.BigDecimal
 
 /**
@@ -13,21 +14,34 @@ import java.math.BigDecimal
  * - [Special] 代表任何其他剧集, 统称为特殊剧集, 例如 "OVA", "SP".
  *
  *
- * - Sort: 在系列中的集数, 例如第二季的第一集为 26
- * - Ep: 在当前季度中的集数, 例如第二季的第一集为 01
+ * 在使用 [EpisodeSort] 时, 建议根据用途定义不同的变量名:
+ * - `val episodeSort: EpisodeSort`: 在系列中的集数, 例如第二季的第一集为 26
+ * - `val episodeEp: EpisodeSort`: 在当前季度中的集数, 例如第二季的第一集为 01
+ *
+ * @see EpisodeRange
  */
 @Serializable
 @Stable
 sealed class EpisodeSort : Comparable<EpisodeSort> {
+    /**
+     * 若是普通剧集, 则返回序号, 例如 ``, 否则返回 null.
+     */
     abstract val number: Float?
 
     /**
-     * "1", "1.5", "SP"
-     * Not padded.
+     * "1", "1.5", "SP". 对于小于 10 的序号, 前面没有 "0".
      *
      * @see toString
      */
     internal abstract val raw: String
+
+    /**
+     * 返回该剧集的人类易读名称.
+     *
+     * 为普通剧集补零了的字符串.
+     * 例如 1 -> "01", 1.5 -> "1.5", SP -> "SP".
+     */
+    abstract override fun toString(): String
 
     /**
      * An integer or a `.5` float.
