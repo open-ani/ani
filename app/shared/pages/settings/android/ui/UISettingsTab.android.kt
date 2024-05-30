@@ -18,8 +18,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.effects.OnLifecycleEvent
-import me.him188.ani.app.ui.settings.SettingsScope
-import me.him188.ani.app.ui.settings.SwitchItem
+import me.him188.ani.app.ui.settings.framework.components.SettingsScope
+import me.him188.ani.app.ui.settings.framework.components.SwitchItem
 import moe.tlaster.precompose.lifecycle.Lifecycle
 
 

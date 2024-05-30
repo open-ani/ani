@@ -16,9 +16,9 @@ import androidx.compose.ui.Modifier
 import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.settings.SettingsTab
-import me.him188.ani.app.ui.settings.SliderItem
-import me.him188.ani.app.ui.settings.SwitchItem
 import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
+import me.him188.ani.app.ui.settings.framework.components.SliderItem
+import me.him188.ani.app.ui.settings.framework.components.SwitchItem
 import me.him188.ani.app.ui.theme.aniDarkColorTheme
 import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.danmaku.ui.DanmakuStyle

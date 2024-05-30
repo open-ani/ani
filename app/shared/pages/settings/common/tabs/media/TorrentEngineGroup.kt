@@ -32,8 +32,11 @@ import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.files
 import me.him188.ani.app.platform.isAndroid
 import me.him188.ani.app.ui.foundation.widgets.RichDialogLayout
-import me.him188.ani.app.ui.settings.SettingsScope
 import me.him188.ani.app.ui.settings.framework.MediaSourceTesterView
+import me.him188.ani.app.ui.settings.framework.components.SettingsScope
+import me.him188.ani.app.ui.settings.framework.components.TextButtonItem
+import me.him188.ani.app.ui.settings.framework.components.TextFieldItem
+import me.him188.ani.app.ui.settings.framework.components.TextItem
 import me.him188.ani.utils.ktor.ClientProxyConfigValidator
 
 @Composable

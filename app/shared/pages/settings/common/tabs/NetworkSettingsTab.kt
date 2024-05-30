@@ -24,11 +24,13 @@ import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.settings.SettingsTab
-import me.him188.ani.app.ui.settings.SwitchItem
 import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
 import me.him188.ani.app.ui.settings.framework.ConnectionTestResult
 import me.him188.ani.app.ui.settings.framework.ConnectionTester
 import me.him188.ani.app.ui.settings.framework.MediaSourceTesterView
+import me.him188.ani.app.ui.settings.framework.components.SwitchItem
+import me.him188.ani.app.ui.settings.framework.components.TextButtonItem
+import me.him188.ani.app.ui.settings.framework.components.TextFieldItem
 import me.him188.ani.danmaku.ani.client.AniBangumiSeverBaseUrls
 import me.him188.ani.datasources.api.source.ConnectionStatus
 import me.him188.ani.datasources.api.subject.SubjectProvider

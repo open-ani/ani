@@ -17,9 +17,9 @@ import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.app.tools.torrent.engines.Libtorrent4jConfig
 import me.him188.ani.app.tools.torrent.engines.QBittorrentConfig
 import me.him188.ani.app.ui.foundation.rememberViewModel
-import me.him188.ani.app.ui.settings.SelectableItem
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
+import me.him188.ani.app.ui.settings.framework.components.SelectableItem
 import me.him188.ani.app.ui.settings.framework.toConnectionTestResult
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.datasources.api.topic.Resolution

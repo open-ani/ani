@@ -13,11 +13,11 @@ import me.him188.ani.app.data.media.MediaSourceManager
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.settings.SettingsPage
-import me.him188.ani.app.ui.settings.SettingsScope
 import me.him188.ani.app.ui.settings.SettingsTab
-import me.him188.ani.app.ui.settings.SwitchItem
-import me.him188.ani.app.ui.settings.TextFieldDialog
 import me.him188.ani.app.ui.settings.framework.ConnectionTestResult
+import me.him188.ani.app.ui.settings.framework.components.SettingsScope
+import me.him188.ani.app.ui.settings.framework.components.SwitchItem
+import me.him188.ani.app.ui.settings.framework.components.TextFieldDialog
 import me.him188.ani.datasources.acgrip.AcgRipMediaSource
 import me.him188.ani.datasources.api.paging.PageBasedPagedSource
 import me.him188.ani.datasources.api.paging.Paged
