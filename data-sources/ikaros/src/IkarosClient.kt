@@ -1,10 +1,10 @@
 package me.him188.ani.datasources.ikaros
 
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.serialization.json.Json
 import me.him188.ani.datasources.api.DefaultMedia
-import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.MediaProperties
 import me.him188.ani.datasources.api.paging.SizedSource
 import me.him188.ani.datasources.api.source.MatchKind
@@ -14,7 +14,6 @@ import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.datasources.api.topic.SubtitleLanguage.ChineseSimplified
-import me.him188.ani.datasources.api.topic.SubtitleLanguage.ChineseTraditional
 import me.him188.ani.datasources.ikaros.models.IkarosSubjectDetails
 import org.apache.http.HttpHeaders
 import org.apache.http.HttpStatus
@@ -27,13 +26,12 @@ import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.util.Base64
-import java.util.Collections
 
 class IkarosClient(private val baseUrl: String, private val username: String, private val password: String) {
     companion object {
         private val logger: Logger = LoggerFactory.getLogger(IkarosClient::class.java)
     }
-    
+
     private val client: HttpClient = HttpClients.createDefault()
     private var authStr = "Basic "
 
@@ -53,14 +51,15 @@ class IkarosClient(private val baseUrl: String, private val username: String, pr
     }
 
 
-    
-    fun postSubjectSyncBgmTv(bgmTvSubjectId:String): IkarosSubjectDetails? {
+    fun postSubjectSyncBgmTv(bgmTvSubjectId: String): IkarosSubjectDetails? {
         if (bgmTvSubjectId.isEmpty()) {
             return null
         }
-        
-        val post = HttpPost(baseUrl
-        + "/api/v1alpha1/subject/sync/platform?platform=BGM_TV&platformId=" + bgmTvSubjectId)
+
+        val post = HttpPost(
+            baseUrl
+                    + "/api/v1alpha1/subject/sync/platform?platform=BGM_TV&platformId=" + bgmTvSubjectId
+        )
         post.addHeader(HttpHeaders.AUTHORIZATION, authStr)
 
         val response = client.execute(post);
@@ -74,11 +73,11 @@ class IkarosClient(private val baseUrl: String, private val username: String, pr
         }
         val readAllBytes = response.entity.content.readAllBytes()
         val json = String(readAllBytes, StandardCharsets.UTF_8)
-        
-        val subjectDetails:IkarosSubjectDetails = Json{ignoreUnknownKeys = true}.decodeFromString(json)
+
+        val subjectDetails: IkarosSubjectDetails = Json { ignoreUnknownKeys = true }.decodeFromString(json)
         return subjectDetails
     }
-    
+
     fun subjectDetails2SizedSource(subjectDetails: IkarosSubjectDetails, seq: Int): SizedSource<MediaMatch> {
         val episodes = subjectDetails.episodes
         val mediaMatchs = mutableListOf<MediaMatch>()
@@ -99,7 +98,7 @@ class IkarosClient(private val baseUrl: String, private val username: String, pr
                             subtitleLanguageIds = listOf(ChineseSimplified).map { it.id },
                             resolution = "1080p",
                             alliance = IkarosMediaSource.ID,
-                            size = FileSize.Zero,   
+                            size = FileSize.Zero,
                         ),
                         episodeRange = EpisodeRange.single(seq.toString()),
                         kind = MediaSourceKind.WEB,
@@ -111,7 +110,7 @@ class IkarosClient(private val baseUrl: String, private val username: String, pr
                 };
             }
         }
-        
+
         val sizedSource = IkarosSizeSource(
             totalSize = flowOf(mediaMatchs.size),
             finished = flowOf(true),
@@ -122,4 +121,10 @@ class IkarosClient(private val baseUrl: String, private val username: String, pr
     }
 }
 
+class IkarosSizeSource(
+    override val results: Flow<MediaMatch>,
+    override val finished: Flow<Boolean>,
+    override val totalSize: Flow<Int?>
+) : SizedSource<MediaMatch> {
+}
 

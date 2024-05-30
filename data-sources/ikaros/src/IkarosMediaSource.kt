@@ -9,7 +9,6 @@ import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.source.MediaSourceFactory
 import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.utils.logging.logger
-import kotlinx.coroutines.flow.Flow
 
 class IkarosMediaSource(config: MediaSourceConfig) : MediaSource {
     companion object {
@@ -53,11 +52,4 @@ class IkarosMediaSource(config: MediaSourceConfig) : MediaSource {
         val ikarosSubjectDetails = checkNotNull(client.postSubjectSyncBgmTv(subjectId))
         return client.subjectDetails2SizedSource(ikarosSubjectDetails, episodeSort)
     }
-}
-
-class IkarosSizeSource(
-    override val results: Flow<MediaMatch>,
-    override val finished: Flow<Boolean>,
-    override val totalSize: Flow<Int?>
-) : SizedSource<MediaMatch> {
 }
