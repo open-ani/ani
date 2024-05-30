@@ -20,7 +20,7 @@ dependencies {
     implementation(projects.utils.slf4jKt)
     implementation(projects.utils.ktorClient)
     runtimeOnly(libs.ktor.client.okhttp)
-    implementation(libs.slf4j.simple)
+    testImplementation(libs.slf4j.simple)
 }
 
 tasks.withType<Jar> {
