@@ -17,7 +17,7 @@ data class QBTorrent(
     /**
      * Amount of data left to download (bytes)
      */
-    @SerialName("amount_left") val amountLeft: Int,
+    @SerialName("amount_left") val amountLeft: Long,
     /**
      * Whether this torrent is managed by Automatic Torrent Management
      */
@@ -33,7 +33,7 @@ data class QBTorrent(
     /**
      * Amount of transfer data completed (bytes)
      */
-    @SerialName("completed") val completed: Int,
+    @SerialName("completed") val completed: Long,
     /**
      * Time (Unix Epoch) when the torrent completed
      */
@@ -45,7 +45,7 @@ data class QBTorrent(
     /**
      * Torrent download speed limit (bytes/s). -1 if unlimited.
      */
-    @SerialName("dl_limit") val dlLimit: Int,
+    @SerialName("dl_limit") val dlLimit: Long,
     /**
      * Torrent download speed (bytes/s)
      */
@@ -57,11 +57,11 @@ data class QBTorrent(
     /**
      * Amount of data downloaded this session
      */
-    @SerialName("downloaded_session") val downloadedSession: Int,
+    @SerialName("downloaded_session") val downloadedSession: Long,
     /**
      * Torrent ETA (seconds)
      */
-    @SerialName("eta") val eta: Int,
+    @SerialName("eta") val eta: Long,
     /**
      * True if first last piece are prioritized
      */
@@ -89,7 +89,7 @@ data class QBTorrent(
     /**
      * Maximum seeding time (seconds) until torrent is stopped from seeding
      */
-    @SerialName("max_seeding_time") val maxSeedingTime: Int,
+    @SerialName("max_seeding_time") val maxSeedingTime: Long,
     /**
      * Torrent name
      */
@@ -97,23 +97,23 @@ data class QBTorrent(
     /**
      * Number of seeds in the swarm
      */
-    @SerialName("num_complete") val numComplete: Int,
+    @SerialName("num_complete") val numComplete: Long,
     /**
      * Number of leechers in the swarm
      */
-    @SerialName("num_incomplete") val numIncomplete: Int,
+    @SerialName("num_incomplete") val numIncomplete: Long,
     /**
      * Number of leechers connected to
      */
-    @SerialName("num_leechs") val numLeechs: Int,
+    @SerialName("num_leechs") val numLeechs: Long,
     /**
      * Number of seeds connected to
      */
-    @SerialName("num_seeds") val numSeeds: Int,
+    @SerialName("num_seeds") val numSeeds: Long,
     /**
      * Torrent priority. Returns -1 if queuing is disabled or torrent is in seed mode
      */
-    @SerialName("priority") val priority: Int,
+    @SerialName("priority") val priority: Long,
     /**
      * Torrent progress (percentage/100)
      */
@@ -133,11 +133,11 @@ data class QBTorrent(
     /**
      * Torrent elapsed time while complete (seconds)
      */
-    @SerialName("seeding_time") val seedingTime: Int,
+    @SerialName("seeding_time") val seedingTime: Long,
     /**
      * (what is different from max_seeding_time?) seeding_time_limit is a per torrent setting, when Automatic Torrent Management is disabled, furthermore then max_seeding_time is set to seeding_time_limit for this torrent. If Automatic Torrent Management is enabled, the value is -2. And if max_seeding_time is unset it have a default value -1.
      */
-    @SerialName("seeding_time_limit") val seedingTimeLimit: Int,
+    @SerialName("seeding_time_limit") val seedingTimeLimit: Long,
     /**
      * Time (Unix Epoch) when this torrent was last seen complete
      */
@@ -185,7 +185,7 @@ data class QBTorrent(
     /**
      * Amount of data uploaded this session
      */
-    @SerialName("uploaded_session") val uploadedSession: Int,
+    @SerialName("uploaded_session") val uploadedSession: Long,
     /**
      * Torrent upload speed (bytes/s)
      */
@@ -201,7 +201,7 @@ data class QBDetails(
     /**
      * Torrent creation date (Unix timestamp)
      */
-    @SerialName("creation_date") val creationDate: Int,
+    @SerialName("creation_date") val creationDate: Long,
     /**
      * Torrent piece size (bytes)
      */
@@ -213,47 +213,47 @@ data class QBDetails(
     /**
      * Total data wasted for torrent (bytes)
      */
-    @SerialName("total_wasted") val totalWasted: Int,
+    @SerialName("total_wasted") val totalWasted: Long,
     /**
      * Total data uploaded for torrent (bytes)
      */
-    @SerialName("total_uploaded") val totalUploaded: Int,
+    @SerialName("total_uploaded") val totalUploaded: Long,
     /**
      * Total data uploaded this session (bytes)
      */
-    @SerialName("total_uploaded_session") val totalUploadedSession: Int,
+    @SerialName("total_uploaded_session") val totalUploadedSession: Long,
     /**
      * Total data downloaded for torrent (bytes)
      */
-    @SerialName("total_downloaded") val totalDownloaded: Int,
+    @SerialName("total_downloaded") val totalDownloaded: Long,
     /**
      * Total data downloaded this session (bytes)
      */
-    @SerialName("total_downloaded_session") val totalDownloadedSession: Int,
+    @SerialName("total_downloaded_session") val totalDownloadedSession: Long,
     /**
      * Torrent upload limit (bytes/s)
      */
-    @SerialName("up_limit") val upLimit: Int,
+    @SerialName("up_limit") val upLimit: Long,
     /**
      * Torrent download limit (bytes/s)
      */
-    @SerialName("dl_limit") val dlLimit: Int,
+    @SerialName("dl_limit") val dlLimit: Long,
     /**
      * Torrent elapsed time (seconds)
      */
-    @SerialName("time_elapsed") val timeElapsed: Int,
+    @SerialName("time_elapsed") val timeElapsed: Long,
     /**
      * Torrent elapsed time while complete (seconds)
      */
-    @SerialName("seeding_time") val seedingTime: Int,
+    @SerialName("seeding_time") val seedingTime: Long,
     /**
      * Torrent connection count
      */
-    @SerialName("nb_connections") val nbConnections: Int,
+    @SerialName("nb_connections") val nbConnections: Long,
     /**
      * Torrent connection count limit
      */
-    @SerialName("nb_connections_limit") val nbConnectionsLimit: Int,
+    @SerialName("nb_connections_limit") val nbConnectionsLimit: Long,
     /**
      * Torrent share ratio
      */
@@ -261,11 +261,11 @@ data class QBDetails(
     /**
      * When this torrent was added (unix timestamp)
      */
-    @SerialName("addition_date") val additionDate: Int,
+    @SerialName("addition_date") val additionDate: Long,
     /**
      * Torrent completion date (unix timestamp)
      */
-    @SerialName("completion_date") val completionDate: Int,
+    @SerialName("completion_date") val completionDate: Long,
     /**
      * Torrent creator
      */
@@ -273,59 +273,59 @@ data class QBDetails(
     /**
      * Torrent average download speed (bytes/second)
      */
-    @SerialName("dl_speed_avg") val dlSpeedAvg: Int,
+    @SerialName("dl_speed_avg") val dlSpeedAvg: Long,
     /**
      * Torrent download speed (bytes/second)
      */
-    @SerialName("dl_speed") val dlSpeed: Int,
+    @SerialName("dl_speed") val dlSpeed: Long,
     /**
      * Torrent ETA (seconds)
      */
-    @SerialName("eta") val eta: Int,
+    @SerialName("eta") val eta: Long,
     /**
      * Last seen complete date (unix timestamp)
      */
-    @SerialName("last_seen") val lastSeen: Int,
+    @SerialName("last_seen") val lastSeen: Long,
     /**
      * Number of peers connected to
      */
-    @SerialName("peers") val peers: Int,
+    @SerialName("peers") val peers: Long,
     /**
      * Number of peers in the swarm
      */
-    @SerialName("peers_total") val peersTotal: Int,
+    @SerialName("peers_total") val peersTotal: Long,
     /**
      * Number of pieces owned
      */
-    @SerialName("pieces_have") val piecesHave: Int,
+    @SerialName("pieces_have") val piecesHave: Long,
     /**
      * Number of pieces of the torrent
      */
-    @SerialName("pieces_num") val piecesNum: Int,
+    @SerialName("pieces_num") val piecesNum: Long,
     /**
      * Number of seconds until the next announce
      */
-    @SerialName("reannounce") val reannounce: Int,
+    @SerialName("reannounce") val reannounce: Long,
     /**
      * Number of seeds connected to
      */
-    @SerialName("seeds") val seeds: Int,
+    @SerialName("seeds") val seeds: Long,
     /**
      * Number of seeds in the swarm
      */
-    @SerialName("seeds_total") val seedsTotal: Int,
+    @SerialName("seeds_total") val seedsTotal: Long,
     /**
      * Torrent total size (bytes)
      */
-    @SerialName("total_size") val totalSize: Int,
+    @SerialName("total_size") val totalSize: Long,
     /**
      * Torrent average upload speed (bytes/second)
      */
-    @SerialName("up_speed_avg") val upSpeedAvg: Int,
+    @SerialName("up_speed_avg") val upSpeedAvg: Long,
     /**
      * Torrent upload speed (bytes/second)
      */
-    @SerialName("up_speed") val upSpeed: Int
+    @SerialName("up_speed") val upSpeed: Long
 )
 
 
@@ -420,15 +420,15 @@ data class QBFile(
     /**
      * True if file is seeding/complete
      */
-    @SerialName("is_seed") val isSeed: Boolean,
+    @SerialName("is_seed") val isSeed: Boolean = false,
     /**
      * The first number is the starting piece index and the second number is the ending piece index (inclusive)
      */
-    @SerialName("piece_range") private val pieceRangeRaw: List<Int>,
+    @SerialName("piece_range") private val pieceRangeRaw: List<Int> = listOf(),
     /**
      * Percentage of file pieces currently available (percentage/100)
      */
-    @SerialName("availability") val availability: Float
+    @SerialName("availability") val availability: Float = 0f
 ) {
     val priority: QBFilePriority
         get() = QBFilePriority.entries.first {
