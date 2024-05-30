@@ -37,8 +37,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -79,7 +81,7 @@ fun ProfilePage(
     }
 }
 
-private const val ISSUE_TRACKER = "https://github.com/him188/ani/issues"
+internal const val ISSUE_TRACKER = "https://github.com/open-ani/ani/issues"
 
 @Composable
 private fun DebugInfoView(modifier: Modifier = Modifier) {
@@ -93,8 +95,10 @@ private fun DebugInfoView(modifier: Modifier = Modifier) {
             style = MaterialTheme.typography.titleMedium,
         )
 
+        var showHelp by remember { mutableStateOf(false) }
+
         Text(
-            "欢迎加入 QQ 群反馈建议或者闲聊: 927170241. 如遇到问题, 除加群外也可以在 GitHub 反馈."
+            "欢迎加入 QQ 群反馈建议或者闲聊: 927170241. Telegram 群 openapi. 如遇到问题, 除加群外也可以在 GitHub 反馈."
         )
 
         Row(Modifier.align(Alignment.End), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -102,10 +106,11 @@ private fun DebugInfoView(modifier: Modifier = Modifier) {
                 Text("打开 GitHub")
             }
 
-            Button({ GlobalContext.get().get<BrowserNavigator>().openJoinGroup(context) }) {
+            Button({ showHelp = true }) {
                 Text("加群")
             }
         }
+        HelpDropdown(showHelp, { showHelp = false })
 
         Text(
             "要让每个番剧都拥有不错的弹幕量需要不小用户基数, 如果你喜欢本应用, 请向朋友推荐以增加弹幕量!",

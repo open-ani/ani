@@ -11,7 +11,10 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -65,11 +68,22 @@ class AboutTabViewModel : AbstractViewModel(), KoinComponent {
     }
 }
 
+@Stable
 private const val GITHUB_REPO = "https://github.com/him188/ani"
+
+@Stable
 private const val BANGUMI = "https://bangumi.tv"
+
+@Stable
 private const val DANDANPLAY = "https://www.dandanplay.com/"
+
+@Stable
 private const val DMHY = "https://dmhy.b168.net/"
+
+@Stable
 private const val ACG_RIP = "https://acg.rip/"
+
+@Stable
 private const val MIKAN = "https://mikanime.tv/"
 
 @OptIn(DelicateCoroutinesApi::class)
@@ -85,19 +99,32 @@ fun AboutTab(
             title = { Text("关于 Ani") },
         ) {
             Column(Modifier.padding(horizontal = 16.dp)) {
-                ClickableText(
-                    buildAnnotatedString {
-                        append("Ani 完全免费无广告且开源, 源代码可在 ")
-                        pushStyle(
-                            SpanStyle(
-                                color = MaterialTheme.colorScheme.primary,
-                                textDecoration = TextDecoration.Underline
+                val style by rememberUpdatedState(
+                    MaterialTheme.typography.bodyMedium.toSpanStyle()
+                        .copy(color = MaterialTheme.colorScheme.onSurface)
+                )
+                val primaryColor by rememberUpdatedState(MaterialTheme.colorScheme.primary)
+                val text by remember {
+                    derivedStateOf {
+                        buildAnnotatedString {
+                            pushStyle(style)
+                            append("Ani 完全免费无广告且开源, 源代码可在 ")
+                            pushStyle(
+                                SpanStyle(
+                                    color = primaryColor,
+                                    textDecoration = TextDecoration.Underline
+                                )
                             )
-                        )
-                        append("GitHub")
-                        pop()
-                        append(" 找到")
-                    },
+                            append("GitHub")
+                            pop()
+                            append(" 找到")
+                            pop()
+                        }
+
+                    }
+                }
+                ClickableText(
+                    text,
                     style = MaterialTheme.typography.bodyMedium,
                 ) {
                     vm.browserNavigator.openBrowser(context, GITHUB_REPO)
@@ -151,40 +178,42 @@ fun AboutTab(
             }
         }
 
-        Group(
-            title = { Text("调试信息") },
-            description = { Text("测试版本的调试信息, 如遇到登录失败等登录相关问题请截图本页面并一起提交给开发者") }
-        ) {
-            Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                val debugInfo by vm.debugInfo.collectAsStateWithLifecycle(null)
-                val clipboard = LocalClipboardManager.current
-                for ((name, value) in debugInfo?.properties.orEmpty()) {
-                    Text(
-                        "$name: $value",
-                        Modifier.fillMaxWidth().clickable {
-                            value?.let { clipboard.setText(AnnotatedString(it)) }
-                        },
-                        style = MaterialTheme.typography.labelSmall,
-                    )
-                }
-
-                FilledTonalButton({
-                    GlobalScope.launch {
-                        GlobalContext.get().get<MediaAutoCacheService>().checkCache()
+        if (currentAniBuildConfig.isDebug) {
+            Group(
+                title = { Text("调试信息") },
+                description = { Text("测试版本的调试信息, 如遇到登录失败等登录相关问题请截图本页面并一起提交给开发者") }
+            ) {
+                Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    val debugInfo by vm.debugInfo.collectAsStateWithLifecycle(null)
+                    val clipboard = LocalClipboardManager.current
+                    for ((name, value) in debugInfo?.properties.orEmpty()) {
+                        Text(
+                            "$name: $value",
+                            Modifier.fillMaxWidth().clickable {
+                                value?.let { clipboard.setText(AnnotatedString(it)) }
+                            },
+                            style = MaterialTheme.typography.labelSmall,
+                        )
                     }
-                }) {
-                    Text("执行自动缓存")
-                }
 
-                FilledTonalButton({
-                    GlobalScope.launch {
-                        GlobalContext.get().get<SessionManager>().logout()
+                    FilledTonalButton({
+                        GlobalScope.launch {
+                            GlobalContext.get().get<MediaAutoCacheService>().checkCache()
+                        }
+                    }) {
+                        Text("执行自动缓存")
                     }
-                }) {
-                    Text("退出登录")
-                }
 
-                PlatformDebugInfoItems()
+                    FilledTonalButton({
+                        GlobalScope.launch {
+                            GlobalContext.get().get<SessionManager>().logout()
+                        }
+                    }) {
+                        Text("退出登录")
+                    }
+
+                    PlatformDebugInfoItems()
+                }
             }
         }
     }
