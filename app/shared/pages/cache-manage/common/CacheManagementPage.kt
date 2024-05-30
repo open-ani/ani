@@ -294,7 +294,8 @@ fun StorageManagerView(
         GridCells.Adaptive(360.dp),
         modifier,
         state = state,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         item(span = { GridItemSpan(maxLineSpan) }) { }
 
