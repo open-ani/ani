@@ -12,6 +12,8 @@
 
 [Mikan]: https://mikanani.me/
 
+[Ikaros]: https://ikaros.run/
+
 集找番、追番、看番的一站式弹幕追番平台。
 
 Ani 的目标是提供尽可能简单且舒适的追番体验。
