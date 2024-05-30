@@ -32,9 +32,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.singleWindowApplication
 import dev.dirs.ProjectDirectories
@@ -95,6 +97,7 @@ object AniDesktop {
 
         val windowState = WindowState(
             size = DpSize(800.dp * 1.3f, 800.dp),
+            position = WindowPosition.Aligned(Alignment.Center)
         )
         val context = DesktopContext(
             windowState,
