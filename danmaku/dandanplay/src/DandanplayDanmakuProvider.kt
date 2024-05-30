@@ -47,8 +47,9 @@ class DandanplayDanmakuProvider(
             delayMillis { 2000 }
         }
         install(HttpTimeout) {
-            requestTimeoutMillis = 30_000 // 弹弹服务器请求比较慢
+            requestTimeoutMillis = 50_000 // 弹弹服务器请求比较慢
             connectTimeoutMillis = 10_000 // 弹弹服务器请求比较慢
+            socketTimeoutMillis = 10_000 // 弹弹服务器请求比较慢
         }
     }
 
