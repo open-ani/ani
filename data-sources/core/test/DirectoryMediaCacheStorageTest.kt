@@ -12,6 +12,8 @@ import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaCacheMetadata
 import me.him188.ani.datasources.api.MediaProperties
+import me.him188.ani.datasources.api.source.MediaSourceKind
+import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
@@ -111,6 +113,8 @@ class DirectoryMediaCacheStorageTest {
             alliance = "北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组",
             size = 233.megaBytes,
         ),
+        kind = MediaSourceKind.BitTorrent,
+        location = MediaSourceLocation.Online,
     )
 
     @Test

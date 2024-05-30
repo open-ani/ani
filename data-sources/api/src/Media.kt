@@ -104,7 +104,9 @@ sealed interface Media {
  */
 @Immutable
 @Serializable
-data class DefaultMedia(
+data class DefaultMedia
+@Suppress("DataClassPrivateConstructor")
+private constructor(
     override val mediaId: String,
     override val mediaSourceId: String, // e.g. "dmhy"
     override val originalUrl: String,
@@ -115,7 +117,33 @@ data class DefaultMedia(
     override val episodeRange: EpisodeRange? = null,
     override val location: MediaSourceLocation = MediaSourceLocation.Online,
     override val kind: MediaSourceKind = MediaSourceKind.BitTorrent,
-) : Media
+    @Transient private val _primaryConstructorMarker: Unit = Unit,
+) : Media {
+    constructor(
+        mediaId: String,
+        mediaSourceId: String, // e.g. "dmhy"
+        originalUrl: String,
+        download: ResourceLocation,
+        originalTitle: String,
+        publishedTime: Long,
+        properties: MediaProperties,
+        episodeRange: EpisodeRange?,
+        location: MediaSourceLocation,
+        kind: MediaSourceKind,
+    ) : this(
+        mediaId,
+        mediaSourceId,
+        originalUrl,
+        download,
+        originalTitle,
+        publishedTime,
+        properties,
+        episodeRange,
+        location,
+        kind,
+        _primaryConstructorMarker = Unit,
+    )
+}
 
 /**
  * A media that is already cached into an easily accessible location, i.e. [MediaSourceLocation.Local].

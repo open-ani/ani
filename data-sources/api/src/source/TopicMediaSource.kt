@@ -70,5 +70,6 @@ fun Topic.toOnlineMedia(mediaSourceId: String): DefaultMedia {
             size = size,
         ),
         kind = MediaSourceKind.BitTorrent,
+        location = MediaSourceLocation.Online,
     )
 }

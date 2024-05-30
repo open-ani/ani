@@ -23,6 +23,7 @@ import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaProperties
 import me.him188.ani.datasources.api.source.MediaSourceKind
+import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
@@ -53,6 +54,8 @@ internal val previewMediaList = listOf(
             alliance = "桜都字幕组",
             size = 122.megaBytes,
         ),
+        kind = MediaSourceKind.BitTorrent,
+        location = MediaSourceLocation.Online,
     ),
     // exactly same properties as the first one, except for the ids.
     DefaultMedia(
@@ -69,6 +72,8 @@ internal val previewMediaList = listOf(
             alliance = "桜都字幕组",
             size = 122.megaBytes,
         ),
+        kind = MediaSourceKind.BitTorrent,
+        location = MediaSourceLocation.Online,
     ),
 
     DefaultMedia(
@@ -85,6 +90,8 @@ internal val previewMediaList = listOf(
             alliance = "北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组",
             size = 233.megaBytes,
         ),
+        kind = MediaSourceKind.BitTorrent,
+        location = MediaSourceLocation.Online,
     ),
     DefaultMedia(
         mediaId = "$SOURCE_ACG.2",
@@ -100,6 +107,8 @@ internal val previewMediaList = listOf(
             alliance = "桜都字幕组",
             size = 0.bytes,
         ),
+        kind = MediaSourceKind.BitTorrent,
+        location = MediaSourceLocation.Online,
     ),
     DefaultMedia(
         mediaId = "$SOURCE_ACG.3",
@@ -115,6 +124,8 @@ internal val previewMediaList = listOf(
             alliance = "Lilith-Raws",
             size = 702.megaBytes,
         ),
+        kind = MediaSourceKind.BitTorrent,
+        location = MediaSourceLocation.Online,
     ),
 ).run {
     listOf(
