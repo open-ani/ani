@@ -6,7 +6,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class IkarosSubjectMeta (
     val id: Long,
-    val type: IkarosSubjectType?,
     val name: String?,
     @SerialName("name_cn") val nameCn: String?,
     val infobox: String?,

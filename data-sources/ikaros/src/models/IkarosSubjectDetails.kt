@@ -6,7 +6,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class IkarosSubjectDetails(
     val id: Long,
-    val type: IkarosSubjectType?,
     val name: String?,
     @SerialName("name_cn") val nameCn: String?,
     val infobox: String?,
@@ -17,5 +16,5 @@ data class IkarosSubjectDetails(
     @SerialName("collection_status") val collectionType: IkarosCollectionType?,
     val canRead:Boolean = true,
     @SerialName("total_episodes") val totalEpisodes: Long,
-    var episodes:List<IkarosEpisodeMeta>,
+    var episodes:List<IkarosEpisodeDetails>,
 )

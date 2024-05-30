@@ -1,63 +1,55 @@
-import adapt.IkarosPagingSizedSourceAdapt;
-import kotlin.coroutines.Continuation;
-import me.him188.ani.datasources.api.paging.SizedSource;
-import me.him188.ani.datasources.api.source.ConnectionStatus;
-import me.him188.ani.datasources.api.source.MediaFetchRequest;
-import me.him188.ani.datasources.api.source.MediaMatch;
-import me.him188.ani.datasources.api.source.MediaSource;
-import me.him188.ani.datasources.api.source.MediaSourceKind;
+package me.him188.ani.datasources.ikaros
 
-import me.him188.ani.datasources.api.source.MediaSourceLocation;
+import me.him188.ani.datasources.api.paging.SizedSource
+import me.him188.ani.datasources.api.source.ConnectionStatus
+import me.him188.ani.datasources.api.source.MediaFetchRequest
+import me.him188.ani.datasources.api.source.MediaMatch
+import me.him188.ani.datasources.api.source.MediaSource
+import me.him188.ani.datasources.api.source.MediaSourceConfig
+import me.him188.ani.datasources.api.source.MediaSourceFactory
+import me.him188.ani.datasources.api.source.MediaSourceKind
+import me.him188.ani.utils.logging.logger
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-public class IkarosMediaSource implements MediaSource {
-    public static final String ID = "Ikaros";
-    private static final String BASE_URL = GetEnv("ANI_DS_IKAROS_BASE_URL");
-    private static final String USERNAME = GetEnv("ANI_DS_IKAROS_USERNAME");
-    private static final String PASSWORD = GetEnv("ANI_DS_IKAROS_PASSWORD");
-    private IkarosClient ikarosClient = new IkarosClient(BASE_URL, USERNAME, PASSWORD);
-
-    private static String GetEnv(String envName) {
-        if (envName == null || envName.isEmpty()) {
-            return "";
+class IkarosMediaSource(config: MediaSourceConfig) : MediaSource {
+    companion object {
+        const val ID = "ikaros"
+        val logger = logger<IkarosMediaSource>()
+        val BASE_URL = GetEnv("ANI_DS_IKAROS_BASE_URL")
+        val USERNAME = GetEnv("ANI_DS_IKAROS_USERNAME")
+        val PASSWORD = GetEnv("ANI_DS_IKAROS_PASSWORD")
+        private fun GetEnv(envName: String?): String {
+            if (envName.isNullOrEmpty()) {
+                return ""
+            }
+            val env = System.getenv(envName)
+            if (env == null || env.isEmpty()) {
+                return ""
+            }
+            return env
         }
-        String env = System.getenv(envName);
-        if (env == null || env.isEmpty()) {
-            return "";
-        }
-        return env;
     }
 
-    @NotNull
-    @Override
-    public String getMediaSourceId() {
-        return ID;
+    internal val client = IkarosClient(BASE_URL, USERNAME, PASSWORD)
+
+    class Factory : MediaSourceFactory {
+        override val mediaSourceId: String get() = ID
+
+        override fun create(config: MediaSourceConfig): MediaSource = IkarosMediaSource(config)
     }
 
-    @NotNull
-    @Override
-    public MediaSourceKind getKind() {
-        return MediaSourceKind.WEB;
+    override val kind: MediaSourceKind get() = MediaSourceKind.WEB
+
+    override val mediaSourceId: String get() = ID
+    
+    override suspend fun checkConnection(): ConnectionStatus {
+        return if ((200 == client.checkConnection())
+        ) ConnectionStatus.SUCCESS else ConnectionStatus.FAILED
     }
 
-    @Nullable
-    @Override
-    public ConnectionStatus checkConnection(@NotNull Continuation<? super ConnectionStatus> $completion) {
-        return (200 == ikarosClient.checkConnection()) 
-                ? ConnectionStatus.SUCCESS : ConnectionStatus.FAILED;
-    }
-
-    @Nullable
-    @Override
-    public SizedSource<MediaMatch> fetch(@NotNull MediaFetchRequest query, @NotNull Continuation<? super SizedSource<? extends MediaMatch>> $completion) {
-        return new IkarosPagingSizedSourceAdapt<>(ikarosClient.getSubjectMediaMatchs(query));
-    }
-
-    @NotNull
-    @Override
-    public MediaSourceLocation getLocation() {
-        return MediaSourceLocation.Online.INSTANCE;
+    override suspend fun fetch(query: MediaFetchRequest): SizedSource<MediaMatch> {
+        val subjectId = checkNotNull(query.subjectId)
+        val episodeSort = checkNotNull(query.episodeSort.number?.toInt())
+        val ikarosSubjectDetails = checkNotNull(client.postSubjectSyncBgmTv(subjectId))
+        return client.subjectDetails2SizedSource(ikarosSubjectDetails, episodeSort)
     }
 }

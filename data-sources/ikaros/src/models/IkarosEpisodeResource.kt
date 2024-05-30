@@ -11,5 +11,4 @@ data class IkarosEpisodeResource(
     val url:String,
     val canRead:Boolean,
     val name:String,
-    val tags:Set<String>,
 )
