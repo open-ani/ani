@@ -77,10 +77,14 @@ class IkarosClient(private val baseUrl: String, private val username: String, pr
         val subjectDetails: IkarosSubjectDetails = Json { ignoreUnknownKeys = true }.decodeFromString(json)
         return subjectDetails
     }
-    
-    fun getResUrl(url:String):String {
-        if (url.isEmpty()) {return ""}
-        if (url.startsWith("http://") || url.startsWith("https://")) {return url}
+
+    fun getResUrl(url: String): String {
+        if (url.isEmpty()) {
+            return ""
+        }
+        if (url.startsWith("http://") || url.startsWith("https://")) {
+            return url
+        }
         return baseUrl + url;
     }
 

@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class IkarosSubjectMeta (
+data class IkarosSubjectMeta(
     val id: Long,
     val name: String?,
     @SerialName("name_cn") val nameCn: String?,
@@ -14,5 +14,5 @@ data class IkarosSubjectMeta (
     @SerialName("airTime") val airTime: String?,
     val cover: String?,
     @SerialName("collection_status") val collectionType: IkarosCollectionType?,
-    val canRead:Boolean = true,
+    val canRead: Boolean = true,
 )

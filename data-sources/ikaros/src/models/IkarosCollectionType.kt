@@ -13,18 +13,22 @@ enum class IkarosCollectionType(val id: Int) {
      * Wist watch.
      */
     WISH(1),
+
     /**
      * Watching.
      */
     DOING(2),
+
     /**
      * Watch done.
      */
     DONE(3),
+
     /**
      * No time to watch it.
      */
     SHELVE(4),
+
     /**
      * Discard it.
      */

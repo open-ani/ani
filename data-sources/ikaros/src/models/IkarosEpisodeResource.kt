@@ -5,10 +5,10 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class IkarosEpisodeResource(
-    val attachmentId:Long,
-    val parentAttachmentId:Long,
-    val episodeId:Long,
-    val url:String,
-    val canRead:Boolean,
-    val name:String,
+    val attachmentId: Long,
+    val parentAttachmentId: Long,
+    val episodeId: Long,
+    val url: String,
+    val canRead: Boolean?,
+    val name: String,
 )
