@@ -11,7 +11,7 @@ on:
 
 jobs:
   build:
-    name: "${{ matrix.os }}"
+    name: "${{ matrix.name }}"
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -25,7 +25,7 @@ jobs:
           - os: windows-2022
             name: Windows x86_64
             uploadApk: false
-          - os: ubuntu-2022
+          - os: ubuntu-20.04
             name: Ubuntu x86_64
             uploadApk: false
           - os: macos-12

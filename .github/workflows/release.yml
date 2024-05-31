@@ -79,7 +79,7 @@ jobs:
 
   release:
     needs: [ create-release ]
-    name: ${{ matrix.os }}
+    name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
