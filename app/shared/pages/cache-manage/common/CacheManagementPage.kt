@@ -148,6 +148,7 @@ class MediaCacheStorageState(
 fun CacheManagementPage(
     modifier: Modifier = Modifier,
     vm: CacheManagementPageViewModel = rememberViewModel { CacheManagementPageViewModelImpl() },
+    showBack: Boolean = !isShowLandscapeUI(),
 ) {
     Scaffold(
         modifier,
@@ -155,7 +156,7 @@ fun CacheManagementPage(
             TopAppBar(
                 title = { Text("缓存管理") },
                 navigationIcon = {
-                    if (!isShowLandscapeUI()) {
+                    if (showBack) {
                         TopAppBarGoBackButton()
                     }
                 },

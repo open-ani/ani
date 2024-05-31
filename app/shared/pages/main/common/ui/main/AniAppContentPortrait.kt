@@ -83,7 +83,7 @@ fun AniAppContentPortrait(
                 )
             }
             scene("/caches") {
-                CacheManagementPage(Modifier.fillMaxSize())
+                CacheManagementPage(Modifier.fillMaxSize(), showBack = true)
             }
             scene("/subjects/{subjectId}/caches") { backStackEntry ->
                 val subjectId = backStackEntry.path<Int>("subjectId") ?: run {
