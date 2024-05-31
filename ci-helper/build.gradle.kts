@@ -39,7 +39,17 @@ import org.gradle.internal.impldep.com.amazonaws.services.s3.model.PutObjectRequ
 
 plugins {
     kotlin("jvm")
+    kotlin("plugin.serialization")
     id("kotlinx-atomicfu")
+    `flatten-source-sets`
+}
+
+dependencies {
+    implementation(projects.danmaku.ani.protocol)
+    implementation(projects.utils.ktorClient)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.aws.s3)
 }
 
 val hostOS: OS by lazy {
