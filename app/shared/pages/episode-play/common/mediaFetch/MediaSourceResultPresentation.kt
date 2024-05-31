@@ -26,7 +26,7 @@ class MediaSourceResultPresentation(
     val state: MediaSourceState by delegate.state.produceState()
     val isLoading by derivedStateOf { state is MediaSourceState.Working }
     val isDisabled by derivedStateOf { state is MediaSourceState.Disabled }
-    val isFailed by derivedStateOf { state is MediaSourceState.Failed }
+    val isFailed by derivedStateOf { state is MediaSourceState.Failed || state is MediaSourceState.Abandoned }
 
     val kind = delegate.kind
 
