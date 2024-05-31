@@ -92,8 +92,12 @@ object AniDesktop {
 
     @JvmStatic
     fun main(args: Array<String>) {
-        println("dataDir: ${projectDirectories.dataDir}")
-        println("cacheDir: ${projectDirectories.cacheDir}")
+        println("dataDir: file://${projectDirectories.dataDir}")
+        println("cacheDir: file://${projectDirectories.cacheDir}")
+        val logsDir = File(projectDirectories.dataDir).resolve("logs").apply { mkdirs() }
+        println("logsDir: file://${logsDir.absolutePath.replace(" ", "%20")}")
+
+        Log4j2Config.configureLogging(logsDir)
 
         val windowState = WindowState(
             size = DpSize(800.dp * 1.3f, 800.dp),
@@ -102,7 +106,8 @@ object AniDesktop {
         val context = DesktopContext(
             windowState,
             File(projectDirectories.dataDir),
-            File(projectDirectories.dataDir)
+            File(projectDirectories.dataDir),
+            logsDir
         )
 
         val coroutineScope = createAppRootCoroutineScope()

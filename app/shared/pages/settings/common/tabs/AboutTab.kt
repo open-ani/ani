@@ -178,12 +178,12 @@ fun AboutTab(
             }
         }
 
-        if (currentAniBuildConfig.isDebug) {
-            Group(
-                title = { Text("调试信息") },
-                description = { Text("测试版本的调试信息, 如遇到登录失败等登录相关问题请截图本页面并一起提交给开发者") }
-            ) {
-                Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Group(
+            title = { Text("调试信息") },
+            description = { Text("在反馈问题时附上日志可能有用") }
+        ) {
+            Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                if (currentAniBuildConfig.isDebug) {
                     val debugInfo by vm.debugInfo.collectAsStateWithLifecycle(null)
                     val clipboard = LocalClipboardManager.current
                     for ((name, value) in debugInfo?.properties.orEmpty()) {
@@ -203,17 +203,17 @@ fun AboutTab(
                     }) {
                         Text("执行自动缓存")
                     }
-
-                    FilledTonalButton({
-                        GlobalScope.launch {
-                            GlobalContext.get().get<SessionManager>().logout()
-                        }
-                    }) {
-                        Text("退出登录")
-                    }
-
-                    PlatformDebugInfoItems()
                 }
+
+                FilledTonalButton({
+                    GlobalScope.launch {
+                        GlobalContext.get().get<SessionManager>().logout()
+                    }
+                }) {
+                    Text("退出登录")
+                }
+
+                PlatformDebugInfoItems()
             }
         }
     }

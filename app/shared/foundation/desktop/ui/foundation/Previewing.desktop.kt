@@ -16,7 +16,9 @@ actual fun PlatformPreviewCompositionLocalProvider(content: @Composable () -> Un
         LocalContext provides remember {
             DesktopContext(
                 WindowState(size = DpSize(1920.dp, 1080.dp)),
-                File("."), File(".")
+                File("."),
+                File("."),
+                File("./logs"),
             )
         }) {
         content()

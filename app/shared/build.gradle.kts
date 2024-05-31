@@ -193,7 +193,7 @@ kotlin {
         runtimeOnly(libs.kotlinx.coroutines.debug)
 
         implementation(libs.log4j.core)
-        implementation(libs.log4j2.slf4j.impl)
+        implementation(libs.log4j.slf4j.impl)
 
         implementation(libs.ktor.server.cio)
         implementation(libs.ktor.server.content.negotiation)
