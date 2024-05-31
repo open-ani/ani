@@ -25,15 +25,19 @@ jobs:
           - os: windows-2022
             name: Windows x86_64
             uploadApk: false
+            arch: x64
           - os: ubuntu-20.04
             name: Ubuntu x86_64
             uploadApk: false
+            arch: x64
           - os: macos-12
             name: macOS x86_64
             uploadApk: false
+            arch: x64
           - os: macos-14
             name: macOS aarch64
             uploadApk: true
+            arch: aarch64
     env:
       enableLocalPublishingTest: 'false'
       gradleArgs: >-
@@ -58,8 +62,9 @@ jobs:
 
       - uses: actions/setup-java@v2
         with:
-          distribution: temurin
+          distribution: zulu
           java-version: 17
+          architecture: ${{ matrix.arch }}
 
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
