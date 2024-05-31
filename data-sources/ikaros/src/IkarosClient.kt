@@ -77,6 +77,12 @@ class IkarosClient(private val baseUrl: String, private val username: String, pr
         val subjectDetails: IkarosSubjectDetails = Json { ignoreUnknownKeys = true }.decodeFromString(json)
         return subjectDetails
     }
+    
+    fun getResUrl(url:String):String {
+        if (url.isEmpty()) {return ""}
+        if (url.startsWith("http://") || url.startsWith("https://")) {return url}
+        return baseUrl + url;
+    }
 
     fun subjectDetails2SizedSource(subjectDetails: IkarosSubjectDetails, seq: Int): SizedSource<MediaMatch> {
         val episodes = subjectDetails.episodes
@@ -88,9 +94,9 @@ class IkarosClient(private val baseUrl: String, private val username: String, pr
                     DefaultMedia(
                         mediaId = epRes.attachmentId.toString(),
                         mediaSourceId = IkarosMediaSource.ID,
-                        originalUrl = baseUrl + epRes.url,
+                        originalUrl = getResUrl(epRes.url),
                         download = ResourceLocation.HttpStreamingFile(
-                            uri = baseUrl + epRes.url
+                            uri = getResUrl(epRes.url)
                         ),
                         originalTitle = epRes.name,
                         publishedTime = 0L,
