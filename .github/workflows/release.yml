@@ -89,6 +89,16 @@ jobs:
           #          - ubuntu-20.04
           - macos-12 # x86_64
           - macos-14 # aarch64
+        include:
+          - os: windows-2022
+            name: Windows x86_64
+            uploadApk: false
+          - os: macos-12
+            name: macOS x86_64
+            uploadApk: false
+          - os: macos-14
+            name: macOS aarch64
+            uploadApk: true
     env:
       enableLocalPublishingTest: 'false'
       gradleArgs: >-
@@ -106,6 +116,7 @@ jobs:
       isWindows: ${{ startsWith(matrix.os, 'windows') }}
       isUbuntu: ${{ startsWith(matrix.os, 'ubuntu') }}
       isUnix: ${{ startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu') }}
+      uploadApk: ${{ matrix.uploadApk == 'true' || matrix.uploadApk == true }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -181,7 +192,7 @@ jobs:
       - name: Explicitly generate Compose resources
         run: ./gradlew generateComposeResClass ${{ env.gradleArgs }}
 
-      - if: ${{ env.isMac == 'true' }}
+      - if: ${{ env.uploadApk == 'true' }}
         name: Prepare Android Signing Key
         id: android_signing_key
         uses: timheuer/base64-to-file@v1.1
@@ -190,7 +201,7 @@ jobs:
           fileDir: './'
           encodedString: ${{ secrets.SIGNING_RELEASE_STOREFILE }}
 
-      - if: ${{ env.isMac == 'true' }}
+      - if: ${{ env.uploadApk == 'true' }}
         name: Build Android APK
         run: ./gradlew assembleRelease ${{ env.gradleArgs }}
         env:
@@ -199,7 +210,7 @@ jobs:
           "signing_release_keyAlias": ${{ secrets.SIGNING_RELEASE_KEYALIAS }}
           "signing_release_keyPassword": ${{ secrets.SIGNING_RELEASE_KEYPASSWORD }}
 
-      - if: ${{ env.isMac == 'true' }}
+      - if: ${{ env.uploadApk == 'true' }}
         name: Upload Android APK
         run: "./gradlew :ci-helper:uploadAndroidApk ${{ env.gradleArgs }}"
         env:
@@ -214,21 +225,21 @@ jobs:
           AWS_REGION: ${{ secrets.AWS_REGION }}
           AWS_BUCKET: ${{ secrets.AWS_BUCKET }}
 
-      - if: ${{ env.isMac == 'true' }}
+      - if: ${{ env.uploadApk == 'true' }}
         name: Generate QR code for APK (GitHub)
         uses: snow-actions/qrcode@v1.0.0
         with:
           text: https://github.com/Him188/ani/releases/download/${{ steps.tag.outputs.tag }}/ani-${{ steps.tag-version.outputs.substring }}.apk
           path: apk-qrcode-github.png
 
-      - if: ${{ env.isMac == 'true' }}
+      - if: ${{ env.uploadApk == 'true' }}
         name: Generate QR code for APK (Cloudflare)
         uses: snow-actions/qrcode@v1.0.0
         with:
           text: https://d.myani.org/${{ steps.tag.outputs.tag }}/ani-${{ steps.tag-version.outputs.substring }}.apk
           path: apk-qrcode-cloudflare.png
 
-      - if: ${{ env.isMac == 'true' }}
+      - if: ${{ env.uploadApk == 'true' }}
         name: Upload QR code
         run: "./gradlew :ci-helper:uploadAndroidApkQR ${{ env.gradleArgs }}"
         env:
@@ -243,8 +254,6 @@ jobs:
           AWS_REGION: ${{ secrets.AWS_REGION }}
           AWS_BUCKET: ${{ secrets.AWS_BUCKET }}
 
-      - name: Assemble
-        run: ./gradlew assemble ${{ env.gradleArgs }}
       - name: Check
         run: ./gradlew check ${{ env.gradleArgs }}
       #          createReleaseDistributable 
