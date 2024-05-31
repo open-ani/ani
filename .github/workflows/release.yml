@@ -198,6 +198,9 @@ jobs:
           fileDir: './'
           encodedString: ${{ secrets.SIGNING_RELEASE_STOREFILE }}
 
+      - name: Check
+        run: ./gradlew check ${{ env.gradleArgs }}
+
       - if: ${{ env.uploadApk == 'true' }}
         name: Build Android APK
         run: ./gradlew assembleRelease ${{ env.gradleArgs }}
@@ -251,8 +254,6 @@ jobs:
           AWS_REGION: ${{ secrets.AWS_REGION }}
           AWS_BUCKET: ${{ secrets.AWS_BUCKET }}
 
-      - name: Check
-        run: ./gradlew check ${{ env.gradleArgs }}
       #          createReleaseDistributable 
       #          packageReleaseDistributionForCurrentOS 
       #          packageReleaseUberJarForCurrentOS 
