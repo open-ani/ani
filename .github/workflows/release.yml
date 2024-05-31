@@ -87,7 +87,8 @@ jobs:
         os:
           - windows-2022
           #          - ubuntu-20.04
-          - macos-12
+          - macos-12 # x86_64
+          - macos-14 # aarch64
     env:
       enableLocalPublishingTest: 'false'
       gradleArgs: >-
