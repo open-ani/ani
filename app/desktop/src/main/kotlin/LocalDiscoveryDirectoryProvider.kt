@@ -1,4 +1,4 @@
-package me.him188.ani.desktop
+package me.him188.ani.app.desktop
 
 import me.him188.ani.app.platform.Arch
 import me.him188.ani.app.platform.Platform

@@ -1,4 +1,4 @@
-package me.him188.ani.desktop
+package me.him188.ani.app.desktop
 
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.LogManager

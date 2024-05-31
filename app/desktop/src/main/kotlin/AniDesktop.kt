@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.ani.desktop
+package me.him188.ani.app.desktop
 
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.desktop.ui.tooling.preview.Preview
@@ -36,9 +36,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
-import androidx.compose.ui.window.singleWindowApplication
+import androidx.compose.ui.window.application
 import dev.dirs.ProjectDirectories
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.media.resolver.DesktopWebVideoSourceResolver
@@ -66,7 +67,10 @@ import me.him188.ani.app.ui.main.AniAppContent
 import me.him188.ani.app.ui.theme.AppTheme
 import me.him188.ani.app.videoplayer.ui.VlcjVideoPlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
+import me.him188.ani.desktop.generated.resources.Res
+import me.him188.ani.desktop.generated.resources.a_round
 import me.him188.ani.utils.logging.logger
+import org.jetbrains.compose.resources.painterResource
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
 import java.io.File
@@ -146,41 +150,46 @@ object AniDesktop {
 
         val sessionManager by koin.koin.inject<SessionManager>()
 
-        singleWindowApplication(
-            state = windowState,
-            title = "Ani",
-        ) {
-            println("renderApi: " + this.window.renderApi)
-            CompositionLocalProvider(
-                LocalContext provides context,
-                LocalWindowState provides windowState
+        application {
+            Window(
+                onCloseRequest = { exitApplication() },
+                state = windowState,
+                title = "Ani",
+                icon = painterResource(Res.drawable.a_round),
             ) {
-                // This actually runs only once since app is never changed.
-                val windowImmersed = true
-                if (windowImmersed) {
-                    SideEffect {
-                        window.rootPane.putClientProperty("apple.awt.fullWindowContent", true)
-                        window.rootPane.putClientProperty("apple.awt.transparentTitleBar", true)
+                println("renderApi: " + this.window.renderApi)
+                CompositionLocalProvider(
+                    LocalContext provides context,
+                    LocalWindowState provides windowState
+                ) {
+                    // This actually runs only once since app is never changed.
+                    val windowImmersed = true
+                    if (windowImmersed) {
+                        SideEffect {
+                            window.rootPane.putClientProperty("apple.awt.fullWindowContent", true)
+                            window.rootPane.putClientProperty("apple.awt.transparentTitleBar", true)
+                        }
+                    } else {
+                        SideEffect {
+                            window.rootPane.putClientProperty("apple.awt.fullWindowContent", false)
+                            window.rootPane.putClientProperty("apple.awt.transparentTitleBar", false)
+                        }
                     }
-                } else {
-                    SideEffect {
-                        window.rootPane.putClientProperty("apple.awt.fullWindowContent", false)
-                        window.rootPane.putClientProperty("apple.awt.transparentTitleBar", false)
-                    }
+
+                    MainWindowContent(
+                        hostIsMacOs = PlatformImplementations.hostIsMacOs,
+                        windowImmersed = windowImmersed,
+                        navigator
+                    )
                 }
 
-                MainWindowContent(
-                    hostIsMacOs = PlatformImplementations.hostIsMacOs,
-                    windowImmersed = windowImmersed,
-                    navigator
-                )
-            }
-
-            LaunchedEffect(true) {
-                coroutineScope.launch {
-                    sessionManager.requireOnline(navigator)
+                LaunchedEffect(true) {
+                    coroutineScope.launch {
+                        sessionManager.requireOnline(navigator)
+                    }
                 }
             }
+
         }
     }
 
