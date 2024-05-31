@@ -98,7 +98,7 @@ private fun DebugInfoView(modifier: Modifier = Modifier) {
         var showHelp by remember { mutableStateOf(false) }
 
         Text(
-            "欢迎加入 QQ 群反馈建议或者闲聊: 927170241. Telegram 群 openapi. 如遇到问题, 除加群外也可以在 GitHub 反馈."
+            "欢迎加入 QQ 群反馈建议或者闲聊: 927170241. Telegram 群 openani. 如遇到问题, 除加群外也可以在 GitHub 反馈."
         )
 
         Row(Modifier.align(Alignment.End), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
