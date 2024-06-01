@@ -16,6 +16,7 @@ import me.him188.ani.app.data.models.MediaCacheSettings
 import me.him188.ani.app.data.models.MediaSelectorSettings
 import me.him188.ani.app.data.models.ProxySettings
 import me.him188.ani.app.data.models.UISettings
+import me.him188.ani.app.data.models.UpdateSettings
 import me.him188.ani.app.data.serializers.DanmakuConfigSerializer
 import me.him188.ani.app.tools.torrent.engines.Libtorrent4jConfig
 import me.him188.ani.app.tools.torrent.engines.QBittorrentConfig
@@ -45,6 +46,7 @@ interface SettingsRepository {
     val mediaCacheSettings: Settings<MediaCacheSettings>
     val danmakuSettings: Settings<DanmakuSettings>
     val uiSettings: Settings<UISettings>
+    val updateSettings: Settings<UpdateSettings>
 
     val libtorrent4jConfig: Settings<Libtorrent4jConfig>
     val qBittorrentConfig: Settings<QBittorrentConfig>
@@ -134,6 +136,11 @@ class PreferencesRepositoryImpl(
         "uiSettings",
         UISettings.serializer(),
         default = { UISettings.Default },
+    )
+    override val updateSettings: Settings<UpdateSettings> = SerializablePreference(
+        "updateSettings",
+        UpdateSettings.serializer(),
+        default = { UpdateSettings.Default }
     )
     override val libtorrent4jConfig: Settings<Libtorrent4jConfig> = SerializablePreference(
         "libtorrent4jConfig",

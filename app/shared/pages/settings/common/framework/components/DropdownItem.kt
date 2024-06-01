@@ -18,6 +18,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 
+/**
+ * 下来菜单, 用于显示简单的选择. 例如选择主题是深色还是浅色.
+ */
 @SettingsDsl
 @Composable
 fun <T> SettingsScope.DropdownItem(
@@ -30,6 +33,7 @@ fun <T> SettingsScope.DropdownItem(
     description: @Composable (() -> Unit)? = null,
     icon: @Composable (() -> Unit)? = null,
     title: @Composable (RowScope.() -> Unit),
+    exposedItemText: @Composable (T) -> Unit = itemText,
 ) {
     var showDropdown by rememberSaveable { mutableStateOf(false) }
 
@@ -43,7 +47,7 @@ fun <T> SettingsScope.DropdownItem(
         icon = icon,
         action = {
             TextButton(onClick = { showDropdown = true }) {
-                itemText(selectedState)
+                exposedItemText(selectedState)
             }
             DropdownMenu(
                 expanded = showDropdown,

@@ -12,6 +12,7 @@ import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.utils.ktor.createDefaultHttpClient
 import me.him188.ani.utils.logging.info
+import org.jetbrains.annotations.TestOnly
 import org.koin.core.component.KoinComponent
 import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadOnlyProperty
@@ -54,7 +55,7 @@ abstract class AbstractSettingsViewModel : AbstractViewModel(), KoinComponent {
         private val debugName: String,
         private val pref: me.him188.ani.app.data.repositories.Settings<T>,
         private val placeholder: T,
-    ) : State<T> by pref.flow.produceState(placeholder) {
+    ) : State<T> {
         val loading by derivedStateOf { value === placeholder }
 
         private val tasker = MonoTasker(backgroundScope)
@@ -64,6 +65,15 @@ abstract class AbstractSettingsViewModel : AbstractViewModel(), KoinComponent {
                 pref.set(value)
             }
         }
+
+        // 在 preview 时传入, 避免一直显示加载中状态
+        @Suppress("PropertyName")
+        @JvmField
+        @TestOnly
+        var _valueOverride: T? = null
+        private val valueDelegate = pref.flow.produceState(placeholder)
+        override val value: T
+            get() = _valueOverride ?: valueDelegate.value
     }
 
     /**

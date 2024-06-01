@@ -33,12 +33,15 @@ import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.tabs.AboutTab
 import me.him188.ani.app.ui.settings.tabs.NetworkSettingsTab
+import me.him188.ani.app.ui.settings.tabs.app.AppSettingsTab
 import me.him188.ani.app.ui.settings.tabs.media.MediaPreferenceTab
-import me.him188.ani.app.ui.settings.tabs.ui.UISettingsTab
 
+/**
+ * @see renderPreferenceTab 查看名称
+ */
 @Immutable
 enum class SettingsTab {
-    UI,
+    APP,
     MEDIA,
     NETWORK,
     ABOUT,
@@ -107,7 +110,7 @@ fun SettingsPage(
                         SettingsTab.MEDIA -> MediaPreferenceTab(modifier = Modifier.fillMaxSize())
                         SettingsTab.NETWORK -> NetworkSettingsTab(modifier = Modifier.fillMaxSize())
                         SettingsTab.ABOUT -> AboutTab(modifier = Modifier.fillMaxSize())
-                        SettingsTab.UI -> UISettingsTab(modifier = Modifier.fillMaxSize())
+                        SettingsTab.APP -> AppSettingsTab(modifier = Modifier.fillMaxSize())
                     }
                 }
             }
@@ -121,7 +124,7 @@ private fun renderPreferenceTab(
     tab: SettingsTab,
 ): String {
     return when (tab) {
-        SettingsTab.UI -> "界面与应用"
+        SettingsTab.APP -> "应用与界面"
         SettingsTab.NETWORK -> "网络"
         SettingsTab.MEDIA -> "播放与缓存"
         SettingsTab.ABOUT -> "关于"

@@ -42,11 +42,13 @@ import io.ktor.http.appendPathSegments
 import io.ktor.utils.io.jvm.javaio.toInputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
+import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.Platform
@@ -57,13 +59,18 @@ import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.widgets.RichDialogLayout
 import me.him188.ani.app.ui.profile.update.Release
+import me.him188.ani.danmaku.protocol.ReleaseClass
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.koin.core.context.GlobalContext
 import java.time.Instant
 
 @Stable
-class UpdateCheckerState : AbstractViewModel() {
+class UpdateCheckerState : AbstractViewModel(), KoinComponent {
+    private val settingsRepository: SettingsRepository by inject()
+    private val updateSettings = settingsRepository.updateSettings.flow
 //    private val logger = logger(UpdateCheckerState::class)
 
     var latestVersion: NewVersion? by mutableStateOf(null)
@@ -100,15 +107,18 @@ class UpdateCheckerState : AbstractViewModel() {
     }
 
     private suspend fun checkLatestVersion(): NewVersion? {
+        val updateSettings = updateSettings.first()
+        logger.info { "Checking latest version, updateSettings=${updateSettings}" }
+
         HttpClient {
             expectSuccess = true
         }.use { client ->
             return kotlin.runCatching {
-                client.getVersionFromAniServer("https://danmaku-global.myani.org/").also {
+                client.getVersionFromAniServer("https://danmaku-global.myani.org/", updateSettings.releaseClass).also {
                     logger.info { "Got latest version from global server: ${it?.name}" }
                 }
             }.recoverCatching {
-                client.getVersionFromAniServer("https://danmaku-cn.myani.org/").also {
+                client.getVersionFromAniServer("https://danmaku-cn.myani.org/", updateSettings.releaseClass).also {
                     logger.info { "Got latest version from CN server: ${it?.name}" }
                 }
             }.recoverCatching {
@@ -150,7 +160,7 @@ class UpdateCheckerState : AbstractViewModel() {
         seconds: Long,
     ): String = kotlin.runCatching { TimeFormatter().format(seconds * 1000) }.getOrElse { seconds.toString() }
 
-    private suspend fun HttpClient.getVersionFromAniServer(baseUrl: String): NewVersion? {
+    private suspend fun HttpClient.getVersionFromAniServer(baseUrl: String, releaseClass: ReleaseClass): NewVersion? {
         @Serializable
         class UpdatesIncrementalResponse(
             val versions: List<String>,
@@ -189,7 +199,7 @@ class UpdateCheckerState : AbstractViewModel() {
             val platform = currentPlatform
             parameter("clientVersion", currentAniBuildConfig.versionName)
             parameter("clientArch", platform.name.lowercase() + "-" + platform.arch.displayName)
-            parameter("releaseClass", "rc")
+            parameter("releaseClass", releaseClass.name)
         }.bodyAsChannel().toInputStream().use {
             json.decodeFromStream(UpdatesIncrementalDetailsResponse.serializer(), it)
         }.updates

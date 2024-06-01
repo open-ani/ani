@@ -1,9 +1,12 @@
-package me.him188.ani.app.ui.settings.tabs.ui
+package me.him188.ani.app.ui.settings.tabs.app
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.HdrAuto
 import androidx.compose.material.icons.rounded.LightMode
+import androidx.compose.material.icons.rounded.RocketLaunch
+import androidx.compose.material.icons.rounded.Science
+import androidx.compose.material.icons.rounded.Verified
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -14,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import me.him188.ani.app.data.models.ThemeKind
 import me.him188.ani.app.data.models.UISettings
+import me.him188.ani.app.data.models.UpdateSettings
 import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.isDesktop
@@ -25,26 +29,77 @@ import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
 import me.him188.ani.app.ui.settings.framework.components.DropdownItem
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
+import me.him188.ani.danmaku.protocol.ReleaseClass
 import org.koin.core.component.inject
 
 
 @Stable
-class UiSettingsViewModel : AbstractSettingsViewModel() {
+class AppSettingsViewModel : AbstractSettingsViewModel() {
     private val settingsRepository: SettingsRepository by inject()
 
     val uiSettings by settings(
         settingsRepository.uiSettings,
         UISettings(_placeholder = -1)
     )
+    val updateSettings by settings(
+        settingsRepository.updateSettings,
+        UpdateSettings(_placeholder = -1)
+    )
 }
 
 @Composable
-fun UISettingsTab(
-    vm: UiSettingsViewModel = rememberViewModel<UiSettingsViewModel> { UiSettingsViewModel() },
+fun AppSettingsTab(
+    vm: AppSettingsViewModel = rememberViewModel<AppSettingsViewModel> { AppSettingsViewModel() },
     modifier: Modifier = Modifier
 ) {
     val uiSettings by vm.uiSettings
     SettingsTab(modifier) {
+        Group(title = { Text("软件更新") }) {
+            val updateSettings by vm.updateSettings
+            SwitchItem(
+                updateSettings.autoCheckUpdate,
+                onCheckedChange = {
+                    vm.updateSettings.update(updateSettings.copy(autoCheckUpdate = !updateSettings.autoCheckUpdate))
+                },
+                title = { Text("自动检查更新") },
+                description = { Text("只会在首页提示有更新，不会自动下载") },
+                modifier = Modifier.placeholder(vm.updateSettings.loading)
+            )
+            DropdownItem(
+                selected = { updateSettings.releaseClass },
+                values = { ReleaseClass.enabledEntries },
+                itemText = {
+                    when (it) {
+                        ReleaseClass.ALPHA -> Text("每日构建 (最早体验新功能)")
+                        ReleaseClass.BETA -> Text("测试版 (兼顾新功能和一定稳定性)")
+                        ReleaseClass.RC, // RC 实际上不会有
+                        ReleaseClass.STABLE -> Text("正式版 (最稳定)")
+                    }
+                },
+                exposedItemText = {
+                    when (it) {
+                        ReleaseClass.ALPHA -> Text("每日构建")
+                        ReleaseClass.BETA -> Text("测试版")
+                        ReleaseClass.RC, // RC 实际上不会有
+                        ReleaseClass.STABLE -> Text("正式版")
+                    }
+                },
+                onSelect = {
+                    vm.updateSettings.update(updateSettings.copy(releaseClass = it))
+                },
+                modifier = Modifier.placeholder(vm.updateSettings.loading),
+                itemIcon = {
+                    when (it) {
+                        ReleaseClass.ALPHA -> Icon(Icons.Rounded.RocketLaunch, null)
+                        ReleaseClass.BETA -> Icon(Icons.Rounded.Science, null)
+                        ReleaseClass.RC -> Icon(Icons.Rounded.Verified, null)
+                        ReleaseClass.STABLE -> Icon(Icons.Rounded.Verified, null)
+                    }
+                },
+                title = { Text("更新类型") },
+            )
+        }
+
         if (Platform.currentPlatform.isDesktop()) {
             Group(title = { Text("通用") }) {
                 val theme by remember { derivedStateOf { uiSettings.theme } }
@@ -118,9 +173,9 @@ fun UISettingsTab(
                 description = { Text("高亮已经看过的剧集，而不是将要看的剧集") },
             )
         }
-        UISettingsTabPlatform(vm)
+        AppSettingsTabPlatform(vm)
     }
 }
 
 @Composable
-internal expect fun SettingsScope.UISettingsTabPlatform(vm: UiSettingsViewModel)
+internal expect fun SettingsScope.AppSettingsTabPlatform(vm: AppSettingsViewModel)
