@@ -108,6 +108,10 @@ class UpdateCheckerState : AbstractViewModel(), KoinComponent {
 
     private suspend fun checkLatestVersion(): NewVersion? {
         val updateSettings = updateSettings.first()
+        if (!updateSettings.autoCheckUpdate) {
+            logger.info { "autoCheckUpdate disabled" }
+            return null
+        }
         logger.info { "Checking latest version, updateSettings=${updateSettings}" }
 
         HttpClient {
