@@ -1,5 +1,8 @@
 package me.him188.ani.app.platform
 
+import androidx.compose.runtime.Stable
+
+@Stable
 actual fun Platform.Companion.currentPlatformImpl(): Platform {
     val os = System.getProperty("os.name")?.lowercase() ?: error("Cannot determine platform, 'os.name' is null.")
     val arch = getArch()
