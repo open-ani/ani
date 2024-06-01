@@ -27,6 +27,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
@@ -80,7 +81,11 @@ class UpdateCheckerState : AbstractViewModel(), KoinComponent {
         this.latestVersion != null && this.latestVersion?.name != this.currentVersion
     }
 
-    private var lastCheckTime: Long = 0L
+    private var lastCheckTime: Long by mutableLongStateOf(0L)
+
+    val checked by derivedStateOf {
+        lastCheckTime != 0L
+    }
 
     private var job: Job? = null
     fun startCheckLatestVersion() {
@@ -95,7 +100,9 @@ class UpdateCheckerState : AbstractViewModel(), KoinComponent {
                 val ver = try {
                     checkLatestVersion()
                 } finally {
-                    lastCheckTime = System.currentTimeMillis()
+                    withContext(Dispatchers.Main) {
+                        lastCheckTime = System.currentTimeMillis()
+                    }
                 }
                 withContext(Dispatchers.Main) { latestVersion = ver }
             }
@@ -106,7 +113,7 @@ class UpdateCheckerState : AbstractViewModel(), KoinComponent {
         ignoreUnknownKeys = true
     }
 
-    private suspend fun checkLatestVersion(): NewVersion? {
+    suspend fun checkLatestVersion(): NewVersion? {
         val updateSettings = updateSettings.first()
         if (!updateSettings.autoCheckUpdate) {
             logger.info { "autoCheckUpdate disabled" }
@@ -236,9 +243,10 @@ private const val RELEASES = "https://github.com/open-ani/ani/releases"
 
 @Composable
 fun ChangelogDialog(
-    state: UpdateCheckerState,
+    latestVersion: NewVersion,
     onDismissRequest: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    currentVersion: String = currentAniBuildConfig.versionName,
 ) {
     BasicAlertDialog(onDismissRequest, modifier) {
         RichDialogLayout(
@@ -257,7 +265,7 @@ fun ChangelogDialog(
                     Icon(Icons.Rounded.ArrowOutward, null)
                 }
                 Button({
-                    GlobalContext.get().get<BrowserNavigator>().openBrowser(context, state.latestVersion!!.apkUrl)
+                    GlobalContext.get().get<BrowserNavigator>().openBrowser(context, latestVersion.apkUrl)
                 }) {
                     Icon(Icons.Rounded.Download, null)
                 }
@@ -268,12 +276,12 @@ fun ChangelogDialog(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    "当前版本为 ${state.currentVersion}, 最新版本为 ${state.latestVersion?.name}",
+                    "当前版本为 $currentVersion, 最新版本为 ${latestVersion.name}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.primary,
                 )
 
-                for (changelog in state.latestVersion?.changelogs.orEmpty()) {
+                for (changelog in latestVersion.changelogs) {
                     HorizontalDivider()
 
                     Row(verticalAlignment = Alignment.Bottom) {

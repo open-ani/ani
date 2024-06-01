@@ -108,7 +108,13 @@ private fun UpdateCheckerItem(
     }
     var showDialog by rememberSaveable { mutableStateOf(false) }
     if (showDialog) {
-        ChangelogDialog(state, { showDialog = false })
+        state.latestVersion?.let {
+            ChangelogDialog(
+                latestVersion = it,
+                { showDialog = false },
+                currentVersion = state.currentVersion
+            )
+        }
     }
     if (state.hasUpdate) {
         NavigationRailItem(
