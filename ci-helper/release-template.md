@@ -23,13 +23,13 @@ uploaded.
 
 [cf-android]: https://d.myani.org/${{steps.tag.outputs.tag}}/ani-${{steps.tag-version.outputs.substring}}.apk
 
-[ghproxy-win-x64]: https://ghproxy.com/?q=https%3A%2F%2Fgithub.com%2Fopen-ani%2Fani%2Freleases%2Fdownload%2F${{steps.tag.outputs.tag}}%2Fani-${{steps.tag-version.outputs.substring}}-windows-x86_64.zip
+[ghproxy-win-x64]: https://mirror.ghproxy.com/?q=https%3A%2F%2Fgithub.com%2Fopen-ani%2Fani%2Freleases%2Fdownload%2F${{steps.tag.outputs.tag}}%2Fani-${{steps.tag-version.outputs.substring}}-windows-x86_64.zip
 
-[ghproxy-mac-x64]: https://ghproxy.com/?q=https%3A%2F%2Fgithub.com%2Fopen-ani%2Fani%2Freleases%2Fdownload%2F${{steps.tag.outputs.tag}}%2Fani-${{steps.tag-version.outputs.substring}}-macos-x86_64.dmg
+[ghproxy-mac-x64]: https://mirror.ghproxy.com/?q=https%3A%2F%2Fgithub.com%2Fopen-ani%2Fani%2Freleases%2Fdownload%2F${{steps.tag.outputs.tag}}%2Fani-${{steps.tag-version.outputs.substring}}-macos-x86_64.dmg
 
-[ghproxy-mac-aarch64]: https://ghproxy.com/?q=https%3A%2F%2Fgithub.com%2Fopen-ani%2Fani%2Freleases%2Fdownload%2F${{steps.tag.outputs.tag}}%2Fani-${{steps.tag-version.outputs.substring}}-macos-aarch64.dmg
+[ghproxy-mac-aarch64]: https://mirror.ghproxy.com/?q=https%3A%2F%2Fgithub.com%2Fopen-ani%2Fani%2Freleases%2Fdownload%2F${{steps.tag.outputs.tag}}%2Fani-${{steps.tag-version.outputs.substring}}-macos-aarch64.dmg
 
-[ghproxy-android]: https://ghproxy.com/?q=https%3A%2F%2Fgithub.com%2Fopen-ani%2Fani%2Freleases%2Fdownload%2F${{steps.tag.outputs.tag}}%2Fani-${{steps.tag-version.outputs.substring}}.apk
+[ghproxy-android]: https://mirror.ghproxy.com/?q=https%3A%2F%2Fgithub.com%2Fopen-ani%2Fani%2Freleases%2Fdownload%2F${{steps.tag.outputs.tag}}%2Fani-${{steps.tag-version.outputs.substring}}.apk
 
 [qb-enhanced]: https://github.com/c0re100/qBittorrent-Enhanced-Edition/releases/latest
 
