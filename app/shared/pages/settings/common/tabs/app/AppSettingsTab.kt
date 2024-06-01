@@ -20,6 +20,7 @@ import me.him188.ani.app.data.models.UISettings
 import me.him188.ani.app.data.models.UpdateSettings
 import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.platform.Platform
+import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.ui.collection.progress.EpisodeProgressTheme
 import me.him188.ani.app.ui.external.placeholder.placeholder
@@ -29,8 +30,10 @@ import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
 import me.him188.ani.app.ui.settings.framework.components.DropdownItem
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
+import me.him188.ani.app.ui.settings.framework.components.TextItem
 import me.him188.ani.danmaku.protocol.ReleaseClass
 import org.koin.core.component.inject
+import java.util.Locale
 
 
 @Stable
@@ -55,6 +58,34 @@ fun AppSettingsTab(
     val uiSettings by vm.uiSettings
     SettingsTab(modifier) {
         Group(title = { Text("软件更新") }) {
+            TextItem(
+                title = {
+                    Text(currentAniBuildConfig.versionName)
+                },
+                description = { Text("当前版本") },
+                icon = {
+                    val releaseClass = remember {
+                        val metadata = currentAniBuildConfig.versionName
+                            .substringAfter("-", "")
+                            .lowercase(Locale.ENGLISH)
+                        when {
+                            metadata.isEmpty() -> ReleaseClass.STABLE
+                            "alpha" in metadata || "dev" in metadata -> ReleaseClass.ALPHA
+                            "beta" in metadata -> ReleaseClass.BETA
+                            "rc" in metadata -> ReleaseClass.RC
+                            else -> ReleaseClass.STABLE
+                        }
+                    }
+
+                    when (releaseClass) {
+                        ReleaseClass.ALPHA -> Icon(Icons.Rounded.RocketLaunch, null)
+                        ReleaseClass.BETA -> Icon(Icons.Rounded.Science, null)
+                        ReleaseClass.RC,
+                        ReleaseClass.STABLE -> Icon(Icons.Rounded.Verified, null)
+                    }
+                }
+            )
+            HorizontalDividerItem()
             val updateSettings by vm.updateSettings
             SwitchItem(
                 updateSettings.autoCheckUpdate,
@@ -65,6 +96,7 @@ fun AppSettingsTab(
                 description = { Text("只会在首页提示有更新，不会自动下载") },
                 modifier = Modifier.placeholder(vm.updateSettings.loading)
             )
+            HorizontalDividerItem()
             DropdownItem(
                 selected = { updateSettings.releaseClass },
                 values = { ReleaseClass.enabledEntries },
@@ -92,7 +124,7 @@ fun AppSettingsTab(
                     when (it) {
                         ReleaseClass.ALPHA -> Icon(Icons.Rounded.RocketLaunch, null)
                         ReleaseClass.BETA -> Icon(Icons.Rounded.Science, null)
-                        ReleaseClass.RC -> Icon(Icons.Rounded.Verified, null)
+                        ReleaseClass.RC,
                         ReleaseClass.STABLE -> Icon(Icons.Rounded.Verified, null)
                     }
                 },
