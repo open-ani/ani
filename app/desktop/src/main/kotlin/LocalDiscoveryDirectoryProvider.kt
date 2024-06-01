@@ -31,6 +31,7 @@ class TestDiscoveryDirectoryProvider : DiscoveryDirectoryProvider {
     override fun supported(): Boolean = true
 }
 
+// 在打包后的 app 使用
 class ComposeResourcesDiscoveryDirectoryProvider : DiscoveryDirectoryProvider {
     override fun priority(): Int = DiscoveryProviderPriority.USER_DIR
 
