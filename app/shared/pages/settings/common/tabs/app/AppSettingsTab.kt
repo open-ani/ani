@@ -35,9 +35,9 @@ import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
 import me.him188.ani.app.ui.settings.framework.components.TextButtonItem
 import me.him188.ani.app.ui.settings.framework.components.TextItem
-import me.him188.ani.app.ui.update.ChangelogDialog
-import me.him188.ani.app.ui.update.NewVersion
-import me.him188.ani.app.ui.update.UpdateCheckerState
+import me.him188.ani.app.update.ui.ChangelogDialog
+import me.him188.ani.app.update.ui.NewVersion
+import me.him188.ani.app.update.ui.UpdateChecker
 import me.him188.ani.danmaku.protocol.ReleaseClass
 import org.koin.core.component.inject
 import java.util.Locale
@@ -71,8 +71,11 @@ class AppSettingsViewModel : AbstractSettingsViewModel() {
         Tester(
             "new",
             onTest = {
-                UpdateCheckerState().use {
-                    val v = it.checkLatestVersion()
+                UpdateChecker().let { checker ->
+                    val v = checker.checkLatestVersion(
+                        updateSettings.value.releaseClass,
+                        currentAniBuildConfig.versionName
+                    )
                     if (v == null) {
                         CheckVersionResult.UpToDate
                     } else {
@@ -91,7 +94,6 @@ fun AppSettingsTab(
     vm: AppSettingsViewModel = rememberViewModel<AppSettingsViewModel> { AppSettingsViewModel() },
     modifier: Modifier = Modifier
 ) {
-    val uiSettings by vm.uiSettings
     SettingsTab(modifier) {
         Group(title = { Text("软件更新") }) {
             val version = currentAniBuildConfig.versionName
@@ -195,7 +197,15 @@ fun AppSettingsTab(
                 },
                 modifier = Modifier.placeholder(vm.updateSettings.loading),
             )
+            SwitchItem(
+                updateSettings.autoDownloadUpdate,
+                { vm.updateSettings.update(updateSettings.copy(autoDownloadUpdate = true)) },
+                title = { Text("自动下载更新") },
+                description = { Text("下载完成后会在\"我的追番\"页面提示，不会自动安装") },
+                enabled = updateSettings.autoCheckUpdate,
+            )
         }
+        val uiSettings by vm.uiSettings
 
         if (Platform.currentPlatform.isDesktop()) {
             Group(title = { Text("通用") }) {

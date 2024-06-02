@@ -65,6 +65,8 @@ import me.him188.ani.app.ui.foundation.LocalWindowState
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.main.AniAppContent
 import me.him188.ani.app.ui.theme.AppTheme
+import me.him188.ani.app.update.DesktopUpdateInstaller
+import me.him188.ani.app.update.UpdateInstaller
 import me.him188.ani.app.videoplayer.ui.VlcjVideoPlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import me.him188.ani.desktop.generated.resources.Res
@@ -143,6 +145,7 @@ object AniDesktop {
                             .plus(DesktopWebVideoSourceResolver())
                     )
                 }
+                single<UpdateInstaller> { DesktopUpdateInstaller.currentOS() }
             })
         }.startCommonKoinModule(coroutineScope)
 

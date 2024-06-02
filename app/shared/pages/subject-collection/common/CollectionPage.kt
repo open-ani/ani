@@ -79,9 +79,9 @@ import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.isLoggedIn
 import me.him188.ani.app.ui.profile.UnauthorizedTips
-import me.him188.ani.app.ui.update.ChangelogDialog
-import me.him188.ani.app.ui.update.HasUpdateTag
-import me.him188.ani.app.ui.update.UpdateCheckerState
+import me.him188.ani.app.update.ui.AutoUpdateViewModel
+import me.him188.ani.app.update.ui.ChangelogDialog
+import me.him188.ani.app.update.ui.HasUpdateTag
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.lifecycle.Lifecycle
@@ -100,10 +100,10 @@ val COLLECTION_TABS_SORTED = listOf(
 
 @Composable
 private fun UpdateCheckerHost(
-    state: UpdateCheckerState = rememberViewModel { UpdateCheckerState() },
+    state: AutoUpdateViewModel = rememberViewModel { AutoUpdateViewModel() },
 ) {
     SideEffect {
-        state.startCheckLatestVersion()
+        state.startAutomaticCheckLatestVersion()
     }
 
     var showDialog by rememberSaveable { mutableStateOf(false) }

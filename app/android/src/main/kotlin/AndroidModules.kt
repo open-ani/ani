@@ -10,6 +10,8 @@ import me.him188.ani.app.data.media.resolver.VideoSourceResolver
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.tools.torrent.DefaultTorrentManager
 import me.him188.ani.app.tools.torrent.TorrentManager
+import me.him188.ani.app.update.AndroidUpdateInstaller
+import me.him188.ani.app.update.UpdateInstaller
 import me.him188.ani.app.videoplayer.ExoPlayerStateFactory
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import org.koin.dsl.module
@@ -38,4 +40,5 @@ fun getAndroidModules(
                 .plus(AndroidWebVideoSourceResolver())
         )
     }
+    single<UpdateInstaller> { AndroidUpdateInstaller() }
 }
