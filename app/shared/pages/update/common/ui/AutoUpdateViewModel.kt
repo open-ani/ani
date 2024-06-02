@@ -12,7 +12,11 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.data.update.UpdateManager
+import me.him188.ani.app.navigation.BrowserNavigator
+import me.him188.ani.app.platform.ContextMP
 import me.him188.ani.app.platform.currentAniBuildConfig
+import me.him188.ani.app.platform.currentPlatform
+import me.him188.ani.app.platform.isAndroid
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.update.DefaultFileDownloader
@@ -20,6 +24,7 @@ import me.him188.ani.app.update.FileDownloaderState
 import me.him188.ani.utils.logging.info
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import org.koin.core.context.GlobalContext
 
 /**
  * 主页使用的自动更新检查
@@ -90,11 +95,16 @@ class AutoUpdateViewModel : AbstractViewModel(), KoinComponent {
                 return // 1 小时内检查过
             }
 
-            startCheckLatestVersion()
+            startCheckLatestVersion(null)
         }
     }
 
-    fun startCheckLatestVersion() {
+    /**
+     * @param context 为 null 则不会自动下载
+     */
+    fun startCheckLatestVersion(
+        context: ContextMP?
+    ) {
         autoCheckTasker.launch {
             val updateSettings = updateSettings.first()
 
@@ -113,15 +123,23 @@ class AutoUpdateViewModel : AbstractViewModel(), KoinComponent {
             }
             withContext(Dispatchers.Main) { latestVersion = ver }
 
-            if (ver != null && updateSettings.autoDownloadUpdate) {
+            if (context != null && ver != null && updateSettings.autoDownloadUpdate) {
                 logger.info { "autoDownloadUpdate is true, starting download" }
-                startDownload(ver)
+                startDownload(ver, context)
             }
         }
     }
 
     private val autoDownloadTasker = MonoTasker(backgroundScope)
-    fun startDownload(ver: NewVersion) {
+    fun startDownload(ver: NewVersion, context: ContextMP) {
+        if (currentPlatform.isAndroid()) {
+            GlobalContext.get().get<BrowserNavigator>().openBrowser(
+                context,
+                ver.downloadUrlAlternatives.first()
+            )
+            return
+        }
+
         autoDownloadTasker.launch {
             val dir = updateManager.saveDir.resolve("download")
             if (dir.exists()) {
@@ -146,8 +164,8 @@ class AutoUpdateViewModel : AbstractViewModel(), KoinComponent {
         }
     }
 
-    fun restartDownload() {
-        latestVersion?.let { startDownload(it) }
+    fun restartDownload(context: ContextMP) {
+        latestVersion?.let { startDownload(it, context) }
     }
 }
 

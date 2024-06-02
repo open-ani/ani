@@ -113,18 +113,18 @@ private fun UpdateCheckerItem(
         vm.startAutomaticCheckLatestVersion()
     }
     var showDialog by rememberSaveable { mutableStateOf(false) }
+    val context by rememberUpdatedState(LocalContext.current)
     if (showDialog) {
         vm.latestVersion?.let {
             ChangelogDialog(
                 latestVersion = it,
                 onDismissRequest = { showDialog = false },
-                onStartDownload = { vm.startDownload(it) },
+                onStartDownload = { vm.startDownload(it, context) },
                 currentVersion = vm.currentVersion,
             )
         }
     }
     if (vm.hasUpdate) {
-        val context = LocalContext.current
         var installationError by remember { mutableStateOf<InstallationFailureReason?>(null) }
         if (installationError != null) {
             FailedToInstallDialog({ installationError = null }, { vm.logoState })

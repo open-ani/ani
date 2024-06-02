@@ -77,21 +77,20 @@ fun TextButtonUpdateLogo(
     }
 
     var showDialog by rememberSaveable { mutableStateOf(false) }
+    val context by rememberUpdatedState(LocalContext.current)
     if (showDialog) {
         state.latestVersion?.let {
             ChangelogDialog(
                 latestVersion = it,
                 onDismissRequest = { showDialog = false },
                 onStartDownload = {
-                    state.startDownload(it)
+                    state.startDownload(it, context)
                 },
                 currentVersion = state.currentVersion
             )
         }
     }
     if (state.hasUpdate) {
-        val context by rememberUpdatedState(LocalContext.current)
-
         var installationError by remember { mutableStateOf<InstallationFailureReason?>(null) }
         if (installationError != null) {
             FailedToInstallDialog(

@@ -75,7 +75,7 @@ fun AutoUpdateViewModel.handleClickLogo(
 ) {
     when (val logo = logoState) {
         UpdateLogoState.ClickToCheck -> {} // should not happen
-        is UpdateLogoState.DownloadFailed -> this.restartDownload()
+        is UpdateLogoState.DownloadFailed -> this.restartDownload(context)
         is UpdateLogoState.Downloaded -> {
             val result = GlobalContext.get().get<UpdateInstaller>().install(logo.file, context)
             if (result is InstallationResult.Failed) {
@@ -85,6 +85,6 @@ fun AutoUpdateViewModel.handleClickLogo(
 
         is UpdateLogoState.Downloading -> {}
         is UpdateLogoState.HasUpdate -> showChangelogDialog()
-        UpdateLogoState.UpToDate -> this.startCheckLatestVersion()
+        UpdateLogoState.UpToDate -> this.startCheckLatestVersion(context)
     }
 }

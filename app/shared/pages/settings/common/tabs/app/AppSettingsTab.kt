@@ -16,14 +16,17 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import me.him188.ani.app.data.models.ThemeKind
 import me.him188.ani.app.data.models.UISettings
 import me.him188.ani.app.data.models.UpdateSettings
 import me.him188.ani.app.data.repositories.SettingsRepository
+import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.currentAniBuildConfig
+import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.ui.collection.progress.EpisodeProgressTheme
 import me.him188.ani.app.ui.external.placeholder.placeholder
@@ -36,6 +39,7 @@ import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
 import me.him188.ani.app.ui.settings.framework.components.TextButtonItem
 import me.him188.ani.app.ui.settings.framework.components.TextItem
+import me.him188.ani.app.update.supportsInAppUpdate
 import me.him188.ani.app.update.ui.AutoUpdateViewModel
 import me.him188.ani.app.update.ui.ChangelogDialog
 import me.him188.ani.app.update.ui.NewVersion
@@ -51,7 +55,7 @@ sealed class CheckVersionResult {
         val newVersion: NewVersion,
     ) : CheckVersionResult()
 
-    object UpToDate : CheckVersionResult()
+    data object UpToDate : CheckVersionResult()
     data class Failed(
         val throwable: Throwable,
     ) : CheckVersionResult()
@@ -113,12 +117,7 @@ fun AppSettingsTab(
                         guessReleaseClass(version)
                     }
 
-                    when (releaseClass) {
-                        ReleaseClass.ALPHA -> Icon(Icons.Rounded.RocketLaunch, null)
-                        ReleaseClass.BETA -> Icon(Icons.Rounded.Science, null)
-                        ReleaseClass.RC,
-                        ReleaseClass.STABLE -> Icon(Icons.Rounded.Verified, null)
-                    }
+                    ReleaseClassIcon(releaseClass)
                 }
             )
             HorizontalDividerItem()
@@ -157,32 +156,30 @@ fun AppSettingsTab(
                 },
                 modifier = Modifier.placeholder(vm.updateSettings.loading),
                 itemIcon = {
-                    when (it) {
-                        ReleaseClass.ALPHA -> Icon(Icons.Rounded.RocketLaunch, null)
-                        ReleaseClass.BETA -> Icon(Icons.Rounded.Science, null)
-                        ReleaseClass.RC,
-                        ReleaseClass.STABLE -> Icon(Icons.Rounded.Verified, null)
-                    }
+                    ReleaseClassIcon(it)
                 },
                 title = { Text("更新类型") },
             )
-            HorizontalDividerItem()
-            SwitchItem(
-                updateSettings.autoDownloadUpdate,
-                { vm.updateSettings.update(updateSettings.copy(autoDownloadUpdate = it)) },
-                title = { Text("自动下载更新") },
-                description = { Text("下载完成后会在\"我的追番\"页面提示，需要点击确认才会安装") },
-                enabled = updateSettings.autoCheckUpdate,
-            )
+            if (currentPlatform.supportsInAppUpdate) {
+                HorizontalDividerItem()
+                SwitchItem(
+                    updateSettings.autoDownloadUpdate,
+                    { vm.updateSettings.update(updateSettings.copy(autoDownloadUpdate = it)) },
+                    title = { Text("自动下载更新") },
+                    description = { Text("下载完成后会在\"我的追番\"页面提示，需要点击确认才会安装") },
+                    enabled = updateSettings.autoCheckUpdate,
+                )
+            }
             HorizontalDividerItem()
             var showUpdatePopup by remember { mutableStateOf(false) }
             val autoUpdate: AutoUpdateViewModel = rememberViewModel { AutoUpdateViewModel() }
+            val context by rememberUpdatedState(LocalContext.current)
             if (showUpdatePopup) {
                 (vm.updateCheckerTester.tester.result as? CheckVersionResult.HasNewVersion)?.let {
                     ChangelogDialog(
                         latestVersion = it.newVersion,
                         onDismissRequest = { showUpdatePopup = false },
-                        onStartDownload = { autoUpdate.startDownload(it.newVersion) },
+                        onStartDownload = { autoUpdate.startDownload(it.newVersion, context) },
                     )
                 }
             }
@@ -210,7 +207,7 @@ fun AppSettingsTab(
                         is CheckVersionResult.UpToDate,
                         null -> {
                             vm.updateCheckerTester.testAll()
-                            autoUpdate.startCheckLatestVersion()
+                            autoUpdate.startCheckLatestVersion(context)
                         }
                     }
                 },
@@ -302,6 +299,16 @@ fun AppSettingsTab(
             )
         }
         AppSettingsTabPlatform(vm)
+    }
+}
+
+@Composable
+private fun ReleaseClassIcon(releaseClass: ReleaseClass) {
+    when (releaseClass) {
+        ReleaseClass.ALPHA -> Icon(Icons.Rounded.RocketLaunch, null)
+        ReleaseClass.BETA -> Icon(Icons.Rounded.Science, null)
+        ReleaseClass.RC,
+        ReleaseClass.STABLE -> Icon(Icons.Rounded.Verified, null)
     }
 }
 

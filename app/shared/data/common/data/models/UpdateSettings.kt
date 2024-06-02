@@ -4,6 +4,8 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import me.him188.ani.app.platform.currentPlatform
+import me.him188.ani.app.update.supportsInAppUpdate
 import me.him188.ani.danmaku.protocol.ReleaseClass
 
 @Immutable
@@ -11,7 +13,7 @@ import me.him188.ani.danmaku.protocol.ReleaseClass
 data class UpdateSettings(
     val autoCheckUpdate: Boolean = true,
     val releaseClass: ReleaseClass = ReleaseClass.STABLE,
-    val autoDownloadUpdate: Boolean = false,
+    val autoDownloadUpdate: Boolean = currentPlatform.supportsInAppUpdate,
     @Suppress("PropertyName") @Transient val _placeholder: Int = 0,
 ) {
     // 有关默认的更新策略:

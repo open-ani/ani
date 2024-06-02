@@ -1,6 +1,8 @@
 package me.him188.ani.app.update
 
+import androidx.compose.runtime.Stable
 import me.him188.ani.app.platform.ContextMP
+import me.him188.ani.app.platform.Platform
 import java.io.File
 
 interface UpdateInstaller {
@@ -19,3 +21,10 @@ sealed class InstallationResult {
 enum class InstallationFailureReason {
     UNSUPPORTED_FILE_STRUCTURE,
 }
+
+@Stable
+val Platform.supportsInAppUpdate: Boolean
+    get() = when (this) {
+        is Platform.Desktop -> true
+        Platform.Android -> false
+    }
