@@ -33,7 +33,6 @@ import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.logger
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.random.Random
 
 /**
  * A fetcher that supports concurrent fetching of [Media]s from multiple [MediaSource]s.
@@ -262,7 +261,6 @@ class MediaSourceMediaFetcher(
                 disabled = !sourceEnabled(source),
                 pagedSources = flowOf(request)
                     .map {
-                        if (Random.nextBoolean()) error("dummy failure")
                         source.fetch(it).filter { media ->
                             media.matches(request)
                         }
