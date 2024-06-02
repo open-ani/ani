@@ -39,16 +39,17 @@ fun Route.updatesRouting() {
             incrementalDetailedDoc()
             get {
                 val updates = updateInfos(clientReleaseInfoManager)
+                val clientPlatform = call.request.queryParameters["clientPlatform"] ?: throw BadRequestException()
                 val clientArch = call.request.queryParameters["clientArch"] ?: throw BadRequestException()
                 call.respond(ReleaseUpdatesDetailedResponse(updates.mapNotNull {
-                    val downloadUrl = try {
-                        clientReleaseInfoManager.getCloudflareDownloadUrl(it.version, clientArch)
+                    val downloadUrls = try {
+                        clientReleaseInfoManager.parseDownloadUrls(it.version, "$clientPlatform-$clientArch")
                     } catch (e: IllegalArgumentException) {
                         return@mapNotNull null
                     }
                     UpdateInfo(
                         it.version.toString(),
-                        downloadUrl,
+                        downloadUrls,
                         it.publishTime,
                         it.description
                     )
@@ -62,6 +63,7 @@ private suspend fun PipelineContext<Unit, ApplicationCall>.updateInfos(
     clientReleaseInfoManager: ClientReleaseInfoManager
 ): List<ReleaseInfo> {
     val version = call.request.queryParameters["clientVersion"] ?: throw BadRequestException()
+    val clientPlatform = call.request.queryParameters["clientPlatform"] ?: throw BadRequestException()
     val clientArch = call.request.queryParameters["clientArch"] ?: throw BadRequestException()
     val releaseClass = call.request.queryParameters["releaseClass"]?.let {
         ReleaseClass.fromStringOrNull(it)
@@ -69,7 +71,7 @@ private suspend fun PipelineContext<Unit, ApplicationCall>.updateInfos(
 
     val updates = clientReleaseInfoManager.getAllUpdateLogs(
         version,
-        clientArch,
+        "$clientPlatform-$clientArch",
         releaseClass,
     )
     return updates
@@ -89,10 +91,17 @@ private fun Route.incrementalDoc() {
                     schema = TypeDefinition.STRING
                 ),
                 Parameter(
+                    name = "clientPlatform",
+                    `in` = Parameter.Location.query,
+                    required = true,
+                    description = "客户端平台，例：windows, android。不合法的值会导致服务器返回空的版本号列表。",
+                    schema = TypeDefinition.STRING
+                ),
+                Parameter(
                     name = "clientArch",
                     `in` = Parameter.Location.query,
                     required = true,
-                    description = "客户端平台及架构，例：windows-x86_64, android。不合法的值会导致服务器返回空的版本号列表。",
+                    description = "客户端架构，例：x86_64, arm64。不合法的值会导致服务器返回空的版本号列表。",
                     schema = TypeDefinition.STRING
                 ),
                 Parameter(
@@ -139,10 +148,17 @@ private fun Route.incrementalDetailedDoc() {
                     schema = TypeDefinition.STRING
                 ),
                 Parameter(
+                    name = "clientPlatform",
+                    `in` = Parameter.Location.query,
+                    required = true,
+                    description = "客户端平台，例：windows, android。不合法的值会导致服务器返回空的版本号列表。",
+                    schema = TypeDefinition.STRING
+                ),
+                Parameter(
                     name = "clientArch",
                     `in` = Parameter.Location.query,
                     required = true,
-                    description = "客户端平台及架构，例：windows-x86_64, android。不合法的值会导致服务器返回空的版本号列表。",
+                    description = "客户端架构，例：x86_64, arm64。不合法的值会导致服务器返回空的版本号列表。",
                     schema = TypeDefinition.STRING
                 ),
                 Parameter(
@@ -162,7 +178,7 @@ private fun Route.incrementalDetailedDoc() {
                         listOf(
                             UpdateInfo(
                                 "3.0.0-rc01",
-                                "https://d.myani.org/v3.0.0-rc01/ani-3.0.0-rc01.apk",
+                                listOf("https://d.myani.org/v3.0.0-rc01/ani-3.0.0-rc01.apk"),
                                 1716604732,
                                 """
                                     ## 主要更新

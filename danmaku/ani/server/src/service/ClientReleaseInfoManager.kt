@@ -5,9 +5,9 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.http.HttpStatusCode
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.bearerAuth
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
-import io.ktor.util.Platform
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.Serializable
@@ -17,8 +17,14 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import me.him188.ani.danmaku.protocol.ReleaseClass
+import me.him188.ani.danmaku.server.ServerConfig
+import me.him188.ani.danmaku.server.ServerConfigBuilder
 import me.him188.ani.danmaku.server.util.exception.InvalidClientVersionException
 import me.him188.ani.danmaku.server.util.semver.SemVersion
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
+import org.koin.core.context.startKoin
+import org.koin.dsl.module
 import java.time.ZonedDateTime
 import java.util.Locale
 import kotlin.time.Duration.Companion.minutes
@@ -26,17 +32,17 @@ import kotlin.time.Duration.Companion.seconds
 
 interface ClientReleaseInfoManager {
     suspend fun getLatestRelease(
-        clientArch: String,
+        clientPlatformArch: String,
         releaseClass: ReleaseClass,
     ): ReleaseInfo?
 
     suspend fun getAllUpdateLogs(
         version: String,
-        clientArch: String,
+        clientPlatformArch: String,
         releaseClass: ReleaseClass,
     ): List<ReleaseInfo>
 
-    fun getCloudflareDownloadUrl(clientVersion: SemVersion, clientArch: String): String
+    fun parseDownloadUrls(clientVersion: SemVersion, clientPlatformArch: String): List<String>
 }
 
 @Serializable
@@ -50,19 +56,19 @@ data class ReleaseInfo(
 
 class ClientReleaseInfoManagerImpl(
     private val bufferExpirationTime: Long = 1.minutes.inWholeMilliseconds,
-) : ClientReleaseInfoManager {
+) : ClientReleaseInfoManager, KoinComponent {
     private var buffer: List<ReleaseInfo> = listOf()
     private var lastRecordTime: Long = 0
     private val bufferMutex = Mutex()
     private val bufferExpired get() = System.currentTimeMillis() - lastRecordTime > bufferExpirationTime
 
-    override suspend fun getLatestRelease(clientArch: String, releaseClass: ReleaseClass): ReleaseInfo? {
-        return getLatestReleaseInternal(getBuffer(), clientArch, releaseClass)
+    override suspend fun getLatestRelease(clientPlatformArch: String, releaseClass: ReleaseClass): ReleaseInfo? {
+        return getLatestReleaseInternal(getBuffer(), clientPlatformArch, releaseClass)
     }
 
     private fun getLatestReleaseInternal(
         releaseInfoList: List<ReleaseInfo>,
-        clientArch: String,
+        clientPlatformArch: String,
         releaseClass: ReleaseClass
     ): ReleaseInfo? {
         return releaseInfoList.lastOrNull { info ->
@@ -74,10 +80,10 @@ class ClientReleaseInfoManagerImpl(
              * the target release version should only be [ReleaseClass.STABLE].
              */
             info.version.parseClass().moreStableThan(releaseClass) && info.assetNames.any {
-                if (clientArch == "android") {
+                if (clientPlatformArch.startsWith("android")) {
                     it.endsWith(".apk")
                 } else {
-                    it.contains(clientArch)
+                    it.contains(clientPlatformArch)
                 }
             }
         }
@@ -85,7 +91,7 @@ class ClientReleaseInfoManagerImpl(
 
     override suspend fun getAllUpdateLogs(
         version: String,
-        clientArch: String,
+        clientPlatformArch: String,
         releaseClass: ReleaseClass
     ): List<ReleaseInfo> {
         val semVersion = try {
@@ -97,19 +103,22 @@ class ClientReleaseInfoManagerImpl(
         }
 
         val buffer = getBuffer()
-        val latestRelease = getLatestReleaseInternal(buffer, clientArch, releaseClass) ?: return listOf()
+        val latestRelease = getLatestReleaseInternal(buffer, clientPlatformArch, releaseClass) ?: return listOf()
         return buffer.dropWhile { it.version <= semVersion }.takeWhile { it.version <= latestRelease.version }
     }
 
-    override fun getCloudflareDownloadUrl(clientVersion: SemVersion, clientArch: String): String {
+    override fun parseDownloadUrls(clientVersion: SemVersion, clientPlatformArch: String): List<String> {
         val distributionSuffix = when {
-            clientArch.startsWith("debian") -> "-$clientArch.deb"
-            clientArch.startsWith("macos") -> "-$clientArch.dmg"
-            clientArch.startsWith("windows") -> "-$clientArch.zip"
-            clientArch.startsWith("android") -> ".apk"
-            else -> throw IllegalArgumentException("Unknown client arch: $clientArch")
+            clientPlatformArch.startsWith("debian") -> "-$clientPlatformArch.deb"
+            clientPlatformArch.startsWith("macos") -> "-$clientPlatformArch.dmg"
+            clientPlatformArch.startsWith("windows") -> "-$clientPlatformArch.zip"
+            clientPlatformArch.startsWith("android") -> ".apk"
+            else -> throw IllegalArgumentException("Unknown client arch: $clientPlatformArch")
         }
-        return "https://d.myani.org/v${clientVersion}/ani-${clientVersion}${distributionSuffix}"
+        return listOf(
+            "https://d.myani.org/v${clientVersion}/ani-${clientVersion}${distributionSuffix}",
+            "https://mirror.ghproxy.com/?q=https://github.com/open-ani/ani/releases/download/v${clientVersion}/ani-${clientVersion}${distributionSuffix}"
+        )
     }
 
     private suspend fun getBuffer(): List<ReleaseInfo> {
@@ -136,9 +145,12 @@ class ClientReleaseInfoManagerImpl(
     }
 
     private suspend fun getReleaseInfoFromGithub(): List<ReleaseInfo> {
+        val githubToken =
+            get<ServerConfig>().githubAccessToken ?: throw IllegalStateException("Github access token is not set")
         val response = tryUntilSuccess(timeLimit = 10.seconds.inWholeMilliseconds) {
             httpClient.get(githubReleasesUrl) {
                 contentType(ContentType.Application.Json)
+                bearerAuth(githubToken)
             }.also {
                 if (it.status != HttpStatusCode.OK) {
                     throw RuntimeException("Failed to get release info from Github")
@@ -199,3 +211,66 @@ private suspend fun <T> tryUntilSuccess(timeLimit: Long, block: suspend () -> T)
         }
     }
 }
+
+class TestClientReleaseInfoManager : ClientReleaseInfoManager {
+    override suspend fun getLatestRelease(clientPlatformArch: String, releaseClass: ReleaseClass): ReleaseInfo? {
+        return ReleaseInfo(
+            version = SemVersion(2, 0, 0),
+            htmlUrl = "testUrl/v2.0.0",
+            assetNames = setOf("testAsset"),
+            publishTime = 0,
+            description = "This is version 2.0.0",
+        )
+    }
+
+    override suspend fun getAllUpdateLogs(
+        version: String,
+        clientPlatformArch: String,
+        releaseClass: ReleaseClass
+    ): List<ReleaseInfo> {
+        return listOf(
+            ReleaseInfo(
+                version = SemVersion(1, 0, 0),
+                htmlUrl = "testUrl/v1.0.0",
+                assetNames = setOf("testAsset"),
+                publishTime = 0,
+                description = "This is version 1.0.0",
+            ),
+            ReleaseInfo(
+                version = SemVersion(1, 0, 1),
+                htmlUrl = "testUrl/v1.0.1",
+                assetNames = setOf("testAsset"),
+                publishTime = 0,
+                description = "This is version 1.0.1",
+            ),
+            ReleaseInfo(
+                version = SemVersion(2, 0, 0),
+                htmlUrl = "testUrl/v2.0.0",
+                assetNames = setOf("testAsset"),
+                publishTime = 0,
+                description = "This is version 2.0.0",
+            )
+        )
+    }
+
+    override fun parseDownloadUrls(clientVersion: SemVersion, clientPlatformArch: String): List<String> {
+        return listOf("testUrl/v${clientVersion}")
+    }
+}
+
+//suspend fun main() {
+//    startKoin {
+//        modules(module {
+//            single {
+//                ServerConfigBuilder.create(arrayOf()) {
+//                    githubAccessToken = "-- token here --"
+//                }.build()
+//            }
+//        })
+//
+//    }
+//    val manager = ClientReleaseInfoManagerImpl()
+//    val updates = manager.getAllUpdateLogs("3.0.0-beta20", "android-aarch64", ReleaseClass.RC)
+//    println(updates)
+//    println(manager.parseDownloadUrls(SemVersion(3, 0, 0, "beta20"), "android-aarch64"))
+//}

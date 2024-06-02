@@ -28,6 +28,7 @@ class ServerConfig(
     val mongoDbConnectionString: String?,
     val danmakuGetRequestMaxCountAllowed: Int,
     val jwt: JwtConfig,
+    val githubAccessToken: String?,
 ) {
     class JwtConfig(
         val secret: ByteArray,
@@ -49,6 +50,7 @@ class ServerConfigBuilder private constructor(
     var mongoDbConnectionString: String? = null
     var danmakuGetRequestMaxCountAllowed: Int? = null
     private var jwt: JwtConfigBuilder = JwtConfigBuilder()
+    var githubAccessToken: String? = null
 
     @KtorDsl
     class JwtConfigBuilder {
@@ -82,7 +84,8 @@ class ServerConfigBuilder private constructor(
                 audience = jwt.audience ?: throw IllegalStateException("JWT audience is not set"),
                 expiration = jwt.expiration ?: throw IllegalStateException("JWT expiration is not set"),
                 realm = jwt.realm ?: throw IllegalStateException("JWT realm is not set"),
-            )
+            ),
+            githubAccessToken = githubAccessToken,
         )
     }
 
@@ -100,6 +103,7 @@ class ServerConfigBuilder private constructor(
         jwt.audience = jwt.audience ?: parser["jwt.audience"]
         jwt.expiration = jwt.expiration ?: parser["jwt.expiration"]?.toLongOrNull()
         jwt.realm = jwt.realm ?: parser["jwt.realm"]
+        githubAccessToken = githubAccessToken ?: parser["githubAccessToken"]
     }
 
     private fun configFilePass() {
@@ -115,6 +119,7 @@ class ServerConfigBuilder private constructor(
         jwt.audience = jwt.audience ?: config.propertyOrNull("jwt.audience")?.getString()
         jwt.expiration = jwt.expiration ?: config.propertyOrNull("jwt.expiration")?.getString()?.toLongOrNull()
         jwt.realm = jwt.realm ?: config.propertyOrNull("jwt.realm")?.getString()
+        githubAccessToken = githubAccessToken ?: config.propertyOrNull("github.accessToken")?.getString()
     }
 
     private fun environmentVariablesPass() {
@@ -130,6 +135,7 @@ class ServerConfigBuilder private constructor(
         jwt.audience = jwt.audience ?: System.getenv("JWT_AUDIENCE")
         jwt.expiration = jwt.expiration ?: System.getenv("JWT_EXPIRATION")?.toLongOrNull()
         jwt.realm = jwt.realm ?: System.getenv("JWT_REALM")
+        githubAccessToken = githubAccessToken ?: System.getenv("GITHUB_ACCESS_TOKEN")
     }
 
     private fun defaultValuePass() {

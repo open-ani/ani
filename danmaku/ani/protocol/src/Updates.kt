@@ -16,7 +16,7 @@ data class ReleaseUpdatesDetailedResponse(
 @Serializable
 data class UpdateInfo(
     val version: String,
-    val downloadUrl: String,
+    val downloadUrlAlternatives: List<String>,
     val publishTime: Long,
     val description: String,
 )
