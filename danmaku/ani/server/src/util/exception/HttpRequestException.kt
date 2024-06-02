@@ -11,7 +11,9 @@ fun HttpStatusCode.Companion.fromException(exception: HttpRequestException): Htt
     return HttpStatusCode(exception.statusCode, exception.statusMessage)
 }
 
-class BadRequestException: HttpRequestException() {
+class BadRequestException(
+    override val message: String,
+): HttpRequestException() {
     override val statusCode: Int = 400
     override val statusMessage: String = "Bad Request"
 }
@@ -46,7 +48,9 @@ class InvalidClientVersionException: HttpRequestException() {
     override val statusMessage: String = "Invalid Client Version"
 }
 
-class InternalServerErrorException: HttpRequestException() {
+class InternalServerErrorException(
+    override val message: String,
+): HttpRequestException() {
     override val statusCode: Int = 500
     override val statusMessage: String = "Internal Server Error"
 }

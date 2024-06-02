@@ -97,14 +97,18 @@ class E2eTest {
     
     @Test
     fun `test get update info`() = runTest {
-        val response = client.get("$serverEndpoint/updates/incremental/details") {
+        val response1 = client.get("$serverEndpoint/updates/incremental/details")
+        assertEquals(HttpStatusCode.BadRequest, response1.status)
+        println(response1.body<String>())
+        
+        val response2 = client.get("$serverEndpoint/updates/incremental/details") {
             parameter("clientVersion", "1.0.0")
             parameter("clientPlatform", "android")
             parameter("clientArch", "aarch64")
             parameter("releaseClass", "stable")
         }
-        assertEquals(HttpStatusCode.OK, response.status)
-        val versions = response.body<ReleaseUpdatesDetailedResponse>()
+        assertEquals(HttpStatusCode.OK, response2.status)
+        val versions = response2.body<ReleaseUpdatesDetailedResponse>()
         assertContentEquals(
             listOf(
                 UpdateInfo(

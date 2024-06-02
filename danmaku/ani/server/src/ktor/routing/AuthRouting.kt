@@ -33,7 +33,7 @@ fun Route.authRouting() {
             val platform: String?
             if (os != null && arch != null) {
                 if (os !in BangumiLoginRequest.AllowedOSes || arch !in BangumiLoginRequest.AllowedArchs) {
-                    throw BadRequestException()
+                    throw BadRequestException("Bad client platform or architecture")
                 }
                 platform = "$os-$arch"
             } else {

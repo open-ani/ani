@@ -18,13 +18,10 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import me.him188.ani.danmaku.protocol.ReleaseClass
 import me.him188.ani.danmaku.server.ServerConfig
-import me.him188.ani.danmaku.server.ServerConfigBuilder
 import me.him188.ani.danmaku.server.util.exception.InvalidClientVersionException
 import me.him188.ani.danmaku.server.util.semver.SemVersion
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
-import org.koin.core.context.startKoin
-import org.koin.dsl.module
 import java.time.ZonedDateTime
 import java.util.Locale
 import kotlin.time.Duration.Companion.minutes
@@ -71,6 +68,7 @@ class ClientReleaseInfoManagerImpl(
         clientPlatformArch: String,
         releaseClass: ReleaseClass
     ): ReleaseInfo? {
+        val platformArch = clientPlatformArch.lowercase()
         return releaseInfoList.lastOrNull { info ->
             /**
              * The class of target release version should be more stable than or equal to the required release class.
@@ -80,10 +78,10 @@ class ClientReleaseInfoManagerImpl(
              * the target release version should only be [ReleaseClass.STABLE].
              */
             info.version.parseClass().moreStableThan(releaseClass) && info.assetNames.any {
-                if (clientPlatformArch.startsWith("android")) {
+                if (platformArch.startsWith("android")) {
                     it.endsWith(".apk")
                 } else {
-                    it.contains(clientPlatformArch)
+                    it.contains(platformArch)
                 }
             }
         }
@@ -108,12 +106,13 @@ class ClientReleaseInfoManagerImpl(
     }
 
     override fun parseDownloadUrls(clientVersion: SemVersion, clientPlatformArch: String): List<String> {
+        val platformArch = clientPlatformArch.lowercase()
         val distributionSuffix = when {
-            clientPlatformArch.startsWith("debian") -> "-$clientPlatformArch.deb"
-            clientPlatformArch.startsWith("macos") -> "-$clientPlatformArch.dmg"
-            clientPlatformArch.startsWith("windows") -> "-$clientPlatformArch.zip"
-            clientPlatformArch.startsWith("android") -> ".apk"
-            else -> throw IllegalArgumentException("Unknown client arch: $clientPlatformArch")
+            platformArch.startsWith("debian") -> "-$platformArch.deb"
+            platformArch.startsWith("macos") -> "-$platformArch.dmg"
+            platformArch.startsWith("windows") -> "-$platformArch.zip"
+            platformArch.startsWith("android") -> ".apk"
+            else -> throw IllegalArgumentException("Unknown client arch: $platformArch")
         }
         return listOf(
             "https://d.myani.org/v${clientVersion}/ani-${clientVersion}${distributionSuffix}",

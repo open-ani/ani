@@ -39,8 +39,8 @@ fun Route.updatesRouting() {
             incrementalDetailedDoc()
             get {
                 val updates = updateInfos(clientReleaseInfoManager)
-                val clientPlatform = call.request.queryParameters["clientPlatform"] ?: throw BadRequestException()
-                val clientArch = call.request.queryParameters["clientArch"] ?: throw BadRequestException()
+                val clientPlatform = call.request.queryParameters["clientPlatform"] ?: throw BadRequestException("Missing parameter clientPlatform")
+                val clientArch = call.request.queryParameters["clientArch"] ?: throw BadRequestException("Missing parameter clientArch")
                 call.respond(ReleaseUpdatesDetailedResponse(updates.mapNotNull {
                     val downloadUrls = try {
                         clientReleaseInfoManager.parseDownloadUrls(it.version, "$clientPlatform-$clientArch")
@@ -62,12 +62,12 @@ fun Route.updatesRouting() {
 private suspend fun PipelineContext<Unit, ApplicationCall>.updateInfos(
     clientReleaseInfoManager: ClientReleaseInfoManager
 ): List<ReleaseInfo> {
-    val version = call.request.queryParameters["clientVersion"] ?: throw BadRequestException()
-    val clientPlatform = call.request.queryParameters["clientPlatform"] ?: throw BadRequestException()
-    val clientArch = call.request.queryParameters["clientArch"] ?: throw BadRequestException()
+    val version = call.request.queryParameters["clientVersion"] ?: throw BadRequestException("Missing parameter clientVersion")
+    val clientPlatform = call.request.queryParameters["clientPlatform"] ?: throw BadRequestException("Missing parameter clientPlatform")
+    val clientArch = call.request.queryParameters["clientArch"] ?: throw BadRequestException("Missing parameter clientArch")
     val releaseClass = call.request.queryParameters["releaseClass"]?.let {
         ReleaseClass.fromStringOrNull(it)
-    } ?: throw BadRequestException()
+    } ?: throw BadRequestException("Missing or invalid parameter releaseClass")
 
     val updates = clientReleaseInfoManager.getAllUpdateLogs(
         version,

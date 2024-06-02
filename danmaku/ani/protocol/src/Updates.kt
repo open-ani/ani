@@ -61,7 +61,7 @@ enum class ReleaseClass {
 
         fun fromStringOrNull(value: String): ReleaseClass? {
             return value.let {
-                entries.firstOrNull { it.toString() == value }
+                entries.firstOrNull { it.toString() == value.lowercase() }
             }
         }
     }
