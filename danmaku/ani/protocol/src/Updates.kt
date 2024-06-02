@@ -17,7 +17,7 @@ data class ReleaseUpdatesDetailedResponse(
 data class UpdateInfo(
     val version: String,
     val downloadUrlAlternatives: List<String>,
-    val publishTime: Long,
+    val publishTime: Long, // seconds
     val description: String,
 )
 

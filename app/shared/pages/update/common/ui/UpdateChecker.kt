@@ -8,8 +8,6 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.appendPathSegments
 import io.ktor.utils.io.jvm.javaio.toInputStream
 import kotlinx.coroutines.CancellationException
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import me.him188.ani.app.platform.Platform
@@ -18,6 +16,7 @@ import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.tools.TimeFormatter
 import me.him188.ani.app.ui.profile.update.Release
 import me.him188.ani.danmaku.protocol.ReleaseClass
+import me.him188.ani.danmaku.protocol.ReleaseUpdatesDetailedResponse
 import me.him188.ani.utils.coroutines.withExceptionCollector
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
@@ -101,24 +100,6 @@ class UpdateChecker {
         currentVersion: String = currentAniBuildConfig.versionName,
         releaseClass: ReleaseClass,
     ): NewVersion? {
-        @Serializable
-        class UpdatesIncrementalResponse(
-            val versions: List<String>,
-        )
-
-        @Serializable
-        class Update(
-            val version: String,
-            val downloadUrl: String,
-            @SerialName("publishTime") val publishTimeSeconds: Long,
-            val description: String,
-        )
-
-        @Serializable
-        class UpdatesIncrementalDetailsResponse(
-            val updates: List<Update>,
-        )
-
 //        val versions = get(baseUrl) {
 //            url {
 //                appendPathSegments("v1/updates/incremental")
@@ -138,10 +119,11 @@ class UpdateChecker {
             }
             val platform = currentPlatform
             parameter("clientVersion", currentAniBuildConfig.versionName)
-            parameter("clientArch", platform.name.lowercase() + "-" + platform.arch.displayName)
+            parameter("clientPlatform", platform.name.lowercase())
+            parameter("clientArch", platform.arch.displayName)
             parameter("releaseClass", releaseClass.name)
         }.bodyAsChannel().toInputStream().use {
-            json.decodeFromStream(UpdatesIncrementalDetailsResponse.serializer(), it)
+            json.decodeFromStream(ReleaseUpdatesDetailedResponse.serializer(), it)
         }.updates
 
         if (updates.isEmpty()) {
@@ -152,10 +134,10 @@ class UpdateChecker {
             NewVersion(
                 name = latest.version,
                 changelogs = updates.asReversed().asSequence().take(10).filter { it.version != currentVersion }.map {
-                    Changelog(it.version, formatTime(it.publishTimeSeconds), it.description)
+                    Changelog(it.version, formatTime(it.publishTime), it.description)
                 }.toList(),
-                downloadUrlAlternatives = listOf(latest.downloadUrl),
-                publishedAt = formatTime(latest.publishTimeSeconds)
+                downloadUrlAlternatives = latest.downloadUrlAlternatives,
+                publishedAt = formatTime(latest.publishTime)
             )
         }
     }
