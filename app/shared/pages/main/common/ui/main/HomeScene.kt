@@ -186,22 +186,25 @@ private fun UpdateCheckerItem(
                     -> Icon(Icons.Rounded.RestartAlt, null, tint = MaterialTheme.colorScheme.error)
 
                     is UpdateLogoState.Downloading
-                    -> Icon(Icons.Rounded.Downloading, null, tint = MaterialTheme.colorScheme.error)
+                    -> Icon(Icons.Rounded.Downloading, null)
 
                     UpdateLogoState.UpToDate
                     -> Icon(Icons.Rounded.CheckCircleOutline, null)
                 }
             },
             label = {
-                val text = when (val logo = state.logoState) {
-                    UpdateLogoState.ClickToCheck -> "检查更新"
-                    is UpdateLogoState.DownloadFailed -> "下载失败"
-                    is UpdateLogoState.Downloaded -> "重启更新"
-                    is UpdateLogoState.Downloading -> "下载中 ${logo.progress.toPercentageString()}"
-                    is UpdateLogoState.HasUpdate -> "有新版本"
-                    UpdateLogoState.UpToDate -> "已是最新"
+                when (val logo = state.logoState) {
+                    UpdateLogoState.ClickToCheck -> Text(text = "检查更新")
+                    is UpdateLogoState.DownloadFailed -> Text(
+                        text = "下载失败",
+                        color = MaterialTheme.colorScheme.error
+                    )
+
+                    is UpdateLogoState.Downloaded -> Text(text = "重启更新", color = MaterialTheme.colorScheme.error)
+                    is UpdateLogoState.Downloading -> Text(text = "下载中 ${logo.progress.toPercentageString()}")
+                    is UpdateLogoState.HasUpdate -> Text(text = "有新版本", color = MaterialTheme.colorScheme.error)
+                    UpdateLogoState.UpToDate -> Text(text = "已是最新")
                 }
-                Text(text = text, color = MaterialTheme.colorScheme.error)
             }
         )
     }
