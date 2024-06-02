@@ -109,7 +109,7 @@ class DefaultFileDownloader : FileDownloader {
                                 state.value = FileDownloaderState.Succeed(url, targetFile)
                                 return true
                             } else {
-                                logger.info { "File $filename already exists, but checksum does not match" }
+                                logger.info { "File $filename already exists, but checksum does not match, deleting" }
                                 withContext(Dispatchers.IO) {
                                     targetFile.delete()
                                     checksumFile.delete()

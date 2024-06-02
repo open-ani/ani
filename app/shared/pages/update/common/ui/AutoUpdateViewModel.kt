@@ -205,12 +205,25 @@ class AutoUpdateViewModel : AbstractViewModel(), KoinComponent {
     private val autoDownloadTasker = MonoTasker(backgroundScope)
     fun startDownload(ver: NewVersion) {
         autoDownloadTasker.launch {
+            val dir = updateManager.saveDir.resolve("download")
+            if (dir.exists()) {
+                // 删除旧的文件
+                val allowedFilenames = ver.downloadUrlAlternatives.map {
+                    it.substringAfterLast("/", "")
+                }
+                for (file in dir.listFiles().orEmpty()) {
+                    if (allowedFilenames.none { file.name.contains(it) }) {
+                        logger.info { "Deleting old installer: $file" }
+                        updateManager.deleteInstalled(file, currentVersion)
+                    }
+                }
+            }
+
+            withContext(Dispatchers.IO) { dir.mkdirs() }
             fileDownloader.download(
                 alternativeUrls = ver.downloadUrlAlternatives,
                 filenameProvider = { it.substringAfterLast("/", "") },
-                saveDir = updateManager.saveDir.resolve("download").apply {
-                    withContext(Dispatchers.IO) { mkdirs() }
-                }
+                saveDir = dir
             )
         }
     }

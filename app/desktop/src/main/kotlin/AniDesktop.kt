@@ -100,8 +100,8 @@ object AniDesktop {
 
     @JvmStatic
     fun main(args: Array<String>) {
-        println("dataDir: file://${projectDirectories.dataDir}")
-        println("cacheDir: file://${projectDirectories.cacheDir}")
+        println("dataDir: file://${projectDirectories.dataDir.replace(" ", "%20")}")
+        println("cacheDir: file://${projectDirectories.cacheDir.replace(" ", "%20")}")
         val logsDir = File(projectDirectories.dataDir).resolve("logs").apply { mkdirs() }
         println("logsDir: file://${logsDir.absolutePath.replace(" ", "%20")}")
 
