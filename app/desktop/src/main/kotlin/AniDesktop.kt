@@ -47,6 +47,7 @@ import me.him188.ani.app.data.media.resolver.HttpStreamingVideoSourceResolver
 import me.him188.ani.app.data.media.resolver.LocalFileVideoSourceResolver
 import me.him188.ani.app.data.media.resolver.TorrentVideoSourceResolver
 import me.him188.ani.app.data.media.resolver.VideoSourceResolver
+import me.him188.ani.app.data.update.UpdateManager
 import me.him188.ani.app.interaction.PlatformImplementations
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.BrowserNavigator
@@ -71,6 +72,7 @@ import me.him188.ani.app.videoplayer.ui.VlcjVideoPlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import me.him188.ani.desktop.generated.resources.Res
 import me.him188.ani.desktop.generated.resources.a_round
+import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.logger
 import org.jetbrains.compose.resources.painterResource
 import org.koin.core.context.startKoin
@@ -148,6 +150,12 @@ object AniDesktop {
                 single<UpdateInstaller> { DesktopUpdateInstaller.currentOS() }
             })
         }.startCommonKoinModule(coroutineScope)
+
+        kotlin.runCatching {
+            koin.koin.get<UpdateManager>().deleteInstalledFiles()
+        }.onFailure {
+            logger.error(it) { "Failed to delete installed files" }
+        }
 
         val navigator = AniNavigator()
 
