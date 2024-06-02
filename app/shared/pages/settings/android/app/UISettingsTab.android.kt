@@ -43,18 +43,22 @@ private fun PreviewAppSettingsTab() {
 @SuppressLint("BatteryLife")
 @Composable
 internal actual fun SettingsScope.AppSettingsTabPlatform(vm: AppSettingsViewModel) {
-    Group(
-        title = { Text("后台运行") },
-        description = { Text(text = "缓存功能需要应用保持在后台运行才能下载视频") }
-    ) {
-        val context by rememberUpdatedState(newValue = LocalContext.current)
-        val powerManager by remember {
-            derivedStateOf {
-                kotlin.runCatching { context.getSystemService(Context.POWER_SERVICE) as PowerManager? }.getOrNull()
-            }
+    val context by rememberUpdatedState(newValue = LocalContext.current)
+    val powerManager by remember {
+        derivedStateOf {
+            kotlin.runCatching {
+                val manager = context.getSystemService(Context.POWER_SERVICE) as? PowerManager?
+                manager?.isIgnoringBatteryOptimizations(context.packageName) // check 
+                manager
+            }.getOrNull()
         }
-        // 禁用电池优化
-        if (powerManager != null) {
+    }
+    // 禁用电池优化
+    if (powerManager != null) {
+        Group(
+            title = { Text("后台运行") },
+            description = { Text(text = "缓存功能需要应用保持在后台运行才能下载视频") }
+        ) {
             val isPreviewing = LocalIsPreviewing.current
             var isIgnoring by remember {
                 if (isPreviewing) {
