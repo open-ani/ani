@@ -22,6 +22,7 @@ import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.update.DefaultFileDownloader
 import me.him188.ani.app.update.FileDownloaderState
 import me.him188.ani.utils.logging.info
+import me.him188.ani.utils.logging.warn
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.context.GlobalContext
@@ -123,7 +124,7 @@ class AutoUpdateViewModel : AbstractViewModel(), KoinComponent {
             }
             withContext(Dispatchers.Main) { latestVersion = ver }
 
-            if (context != null && ver != null && updateSettings.autoDownloadUpdate) {
+            if (ver != null && updateSettings.autoDownloadUpdate) {
                 logger.info { "autoDownloadUpdate is true, starting download" }
                 startDownload(ver, context)
             }
@@ -131,8 +132,12 @@ class AutoUpdateViewModel : AbstractViewModel(), KoinComponent {
     }
 
     private val autoDownloadTasker = MonoTasker(backgroundScope)
-    fun startDownload(ver: NewVersion, context: ContextMP) {
+    fun startDownload(ver: NewVersion, context: ContextMP?) {
         if (currentPlatform.isAndroid()) {
+            if (context == null) {
+                logger.warn { "Context is null, cannot navigate to browser (should not happen)" }
+                return
+            }
             GlobalContext.get().get<BrowserNavigator>().openBrowser(
                 context,
                 ver.downloadUrlAlternatives.first()
