@@ -101,7 +101,7 @@ private fun Route.incrementalDoc() {
                     name = "clientArch",
                     `in` = Parameter.Location.query,
                     required = true,
-                    description = "客户端架构，例：x86_64, arm64。不合法的值会导致服务器返回空的版本号列表。",
+                    description = "客户端架构，例：x86_64, aarch64。不合法的值会导致服务器返回空的版本号列表。",
                     schema = TypeDefinition.STRING
                 ),
                 Parameter(
@@ -158,7 +158,7 @@ private fun Route.incrementalDetailedDoc() {
                     name = "clientArch",
                     `in` = Parameter.Location.query,
                     required = true,
-                    description = "客户端架构，例：x86_64, arm64。不合法的值会导致服务器返回空的版本号列表。",
+                    description = "客户端架构，例：x86_64, aarch64。不合法的值会导致服务器返回空的版本号列表。",
                     schema = TypeDefinition.STRING
                 ),
                 Parameter(

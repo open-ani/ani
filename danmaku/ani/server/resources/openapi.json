@@ -357,12 +357,22 @@
             "deprecated": false
           },
           {
+            "name": "clientPlatform",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "客户端平台，例：windows, android。不合法的值会导致服务器返回空的版本号列表。",
+            "required": true,
+            "deprecated": false
+          },
+          {
             "name": "clientArch",
             "in": "query",
             "schema": {
               "type": "string"
             },
-            "description": "客户端平台及架构。不合法的架构会导致服务器返回空的版本号列表。",
+            "description": "客户端架构，例：x86_64, aarch64。不合法的值会导致服务器返回空的版本号列表。",
             "required": true,
             "deprecated": false
           },
@@ -441,12 +451,22 @@
             "deprecated": false
           },
           {
+            "name": "clientPlatform",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "客户端平台，例：windows, android。不合法的值会导致服务器返回空的版本号列表。",
+            "required": true,
+            "deprecated": false
+          },
+          {
             "name": "clientArch",
             "in": "query",
             "schema": {
               "type": "string"
             },
-            "description": "客户端平台及架构。不合法的架构会导致服务器返回空的更新详情列表。",
+            "description": "客户端架构，例：x86_64, aarch64。不合法的值会导致服务器返回空的版本号列表。",
             "required": true,
             "deprecated": false
           },
@@ -475,7 +495,9 @@
                       "updates": [
                         {
                           "version": "3.0.0-rc01",
-                          "downloadUrl": "https://d.myani.org/v3.0.0-rc01/ani-3.0.0-rc01.apk",
+                          "downloadUrlAlternatives": [
+                            "https://d.myani.org/v3.0.0-rc01/ani-3.0.0-rc01.apk"
+                          ],
                           "publishTime": 1716604732,
                           "description": "## 主要更新\n- 重新设计资源选择器 #328\n   - 了解每个数据源的查询结果, 失败时点击重试 #327 #309\n   - 支持临时启用禁用数据源以应对未找到的情况\n   - 区分 BT 源和在线源并增加提示 #330\n- 优化资源选择算法\n  - 默认隐藏生肉资源, 可在设置中恢复显示\n  - 支持番剧完结后隐藏单集 BT 资源, 默认启用, 可在设置关闭\n  - 支持优先选择季度全集资源 #304\n  - 自动优先选择本地缓存资源, 不再需要等待 #258 #260\n## 次要更新\n- 提高弹幕匹配准确率 #338\n- 自动选择数据源时不再覆盖偏好设置\n- 自动选择数据源时不再保存不准确的字幕语言设置\n- 在切换数据源时, 将会按顺序自动取消筛选直到显示列表不为空\n- 在取消选择数据源的过滤时也记忆偏好设置\n- 修复有时候选择资源时会崩溃的问题\n- 优化数据源请求时的性能\n- 修复标题过长挤掉按钮的问题 #311\n- 修复会请求过多条目的问题\n- 修复条目缓存页可能有资源泄露的问题 #190"
                         }
