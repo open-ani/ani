@@ -34,6 +34,7 @@ fun <T> SettingsScope.DropdownItem(
     icon: @Composable (() -> Unit)? = null,
     title: @Composable (RowScope.() -> Unit),
     exposedItemText: @Composable (T) -> Unit = itemText,
+    enabled: Boolean = true,
 ) {
     var showDropdown by rememberSaveable { mutableStateOf(false) }
 
@@ -46,7 +47,7 @@ fun <T> SettingsScope.DropdownItem(
         description = description,
         icon = icon,
         action = {
-            TextButton(onClick = { showDropdown = true }) {
+            TextButton(onClick = { showDropdown = true }, enabled = enabled) {
                 exposedItemText(selectedState)
             }
             DropdownMenu(

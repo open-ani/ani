@@ -17,17 +17,10 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Login
-import androidx.compose.material.icons.rounded.CheckCircleOutline
 import androidx.compose.material.icons.rounded.DownloadDone
-import androidx.compose.material.icons.rounded.Downloading
-import androidx.compose.material.icons.rounded.ErrorOutline
-import androidx.compose.material.icons.rounded.RestartAlt
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.TravelExplore
-import androidx.compose.material.icons.rounded.Update
-import androidx.compose.material3.BasicAlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -40,7 +33,6 @@ import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -66,8 +58,6 @@ import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
 import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
 import me.him188.ani.app.ui.foundation.rememberViewModel
-import me.him188.ani.app.ui.foundation.text.toPercentageString
-import me.him188.ani.app.ui.foundation.widgets.RichDialogLayout
 import me.him188.ani.app.ui.home.HomePage
 import me.him188.ani.app.ui.home.SearchViewModel
 import me.him188.ani.app.ui.isLoggedIn
@@ -75,13 +65,13 @@ import me.him188.ani.app.ui.profile.AccountViewModel
 import me.him188.ani.app.ui.profile.ProfilePage
 import me.him188.ani.app.ui.settings.SettingsPage
 import me.him188.ani.app.update.InstallationFailureReason
-import me.him188.ani.app.update.InstallationResult
-import me.him188.ani.app.update.UpdateInstaller
 import me.him188.ani.app.update.ui.AutoUpdateViewModel
 import me.him188.ani.app.update.ui.ChangelogDialog
-import me.him188.ani.app.update.ui.UpdateLogoState
+import me.him188.ani.app.update.ui.FailedToInstallDialog
+import me.him188.ani.app.update.ui.UpdateLogoIcon
+import me.him188.ani.app.update.ui.UpdateLogoLabel
+import me.him188.ani.app.update.ui.handleClickLogo
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
-import org.koin.core.context.GlobalContext
 
 
 @Composable
@@ -117,95 +107,40 @@ private fun UserAvatar(
 
 @Composable
 private fun UpdateCheckerItem(
-    state: AutoUpdateViewModel = rememberViewModel { AutoUpdateViewModel() },
+    vm: AutoUpdateViewModel = rememberViewModel { AutoUpdateViewModel() },
 ) {
     SideEffect {
-        state.startAutomaticCheckLatestVersion()
+        vm.startAutomaticCheckLatestVersion()
     }
     var showDialog by rememberSaveable { mutableStateOf(false) }
     if (showDialog) {
-        state.latestVersion?.let {
+        vm.latestVersion?.let {
             ChangelogDialog(
                 latestVersion = it,
-                { showDialog = false },
-                currentVersion = state.currentVersion
+                onDismissRequest = { showDialog = false },
+                onStartDownload = { vm.startDownload(it) },
+                currentVersion = vm.currentVersion,
             )
         }
     }
-    if (state.hasUpdate) {
+    if (vm.hasUpdate) {
         val context = LocalContext.current
         var installationError by remember { mutableStateOf<InstallationFailureReason?>(null) }
         if (installationError != null) {
-            BasicAlertDialog({ installationError = null }) {
-                RichDialogLayout(
-                    title = { Text("自动安装失败") },
-                    buttons = {
-                        TextButton({ installationError = null }) { Text("取消更新") }
-                        Button(
-                            onClick = {
-                                (state.logoState as? UpdateLogoState.Downloaded)?.file?.let {
-                                    GlobalContext.get().get<UpdateInstaller>().openForManualInstallation(it, context)
-                                }
-                            }
-                        ) { Text("查看安装包") }
-                    }
-                ) {
-                    Text("自动安装失败, 请手动安装")
-                }
-            }
+            FailedToInstallDialog({ installationError = null }, { vm.logoState })
         }
 
         NavigationRailItem(
             false,
             onClick = {
-                when (val logo = state.logoState) {
-                    UpdateLogoState.ClickToCheck -> {} // should not happen
-                    is UpdateLogoState.DownloadFailed -> state.restartDownload()
-                    is UpdateLogoState.Downloaded -> {
-                        val result = GlobalContext.get().get<UpdateInstaller>().install(logo.file, context)
-                        if (result is InstallationResult.Failed) {
-                            installationError = result.reason
-                        }
-                    }
-
-                    is UpdateLogoState.Downloading -> {}
-                    is UpdateLogoState.HasUpdate -> showDialog = true
-                    UpdateLogoState.UpToDate -> state.startCheckLatestVersion()
-                }
+                vm.handleClickLogo(
+                    context,
+                    onInstallationError = { installationError = it },
+                    showChangelogDialog = { showDialog = true }
+                )
             },
-            icon = {
-                when (state.logoState) {
-                    UpdateLogoState.ClickToCheck,
-                    is UpdateLogoState.HasUpdate,
-                    -> Icon(Icons.Rounded.Update, null, tint = MaterialTheme.colorScheme.error)
-
-                    is UpdateLogoState.DownloadFailed,
-                    -> Icon(Icons.Rounded.ErrorOutline, null, tint = MaterialTheme.colorScheme.error)
-
-                    is UpdateLogoState.Downloaded
-                    -> Icon(Icons.Rounded.RestartAlt, null, tint = MaterialTheme.colorScheme.error)
-
-                    is UpdateLogoState.Downloading
-                    -> Icon(Icons.Rounded.Downloading, null)
-
-                    UpdateLogoState.UpToDate
-                    -> Icon(Icons.Rounded.CheckCircleOutline, null)
-                }
-            },
-            label = {
-                when (val logo = state.logoState) {
-                    UpdateLogoState.ClickToCheck -> Text(text = "检查更新")
-                    is UpdateLogoState.DownloadFailed -> Text(
-                        text = "下载失败",
-                        color = MaterialTheme.colorScheme.error
-                    )
-
-                    is UpdateLogoState.Downloaded -> Text(text = "重启更新", color = MaterialTheme.colorScheme.error)
-                    is UpdateLogoState.Downloading -> Text(text = "下载中 ${logo.progress.toPercentageString()}")
-                    is UpdateLogoState.HasUpdate -> Text(text = "有新版本", color = MaterialTheme.colorScheme.error)
-                    UpdateLogoState.UpToDate -> Text(text = "已是最新")
-                }
-            }
+            icon = { UpdateLogoIcon(vm.logoState) },
+            label = { UpdateLogoLabel(vm.logoState) }
         )
     }
 }

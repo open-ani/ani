@@ -1,5 +1,6 @@
 package me.him188.ani.app.ui.settings.tabs.app
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.HdrAuto
@@ -35,8 +36,10 @@ import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
 import me.him188.ani.app.ui.settings.framework.components.TextButtonItem
 import me.him188.ani.app.ui.settings.framework.components.TextItem
+import me.him188.ani.app.update.ui.AutoUpdateViewModel
 import me.him188.ani.app.update.ui.ChangelogDialog
 import me.him188.ani.app.update.ui.NewVersion
+import me.him188.ani.app.update.ui.TextButtonUpdateLogo
 import me.him188.ani.app.update.ui.UpdateChecker
 import me.him188.ani.danmaku.protocol.ReleaseClass
 import org.koin.core.component.inject
@@ -67,7 +70,10 @@ class AppSettingsViewModel : AbstractSettingsViewModel() {
         UpdateSettings(_placeholder = -1)
     )
 
-    val updateChecker = SingleTester(
+    /**
+     * 检查更新, 与 [AutoUpdateViewModel] 不同的是可以更好地在设置中展示状态
+     */
+    val updateCheckerTester = SingleTester(
         Tester(
             "new",
             onTest = {
@@ -163,28 +169,30 @@ fun AppSettingsTab(
             HorizontalDividerItem()
             SwitchItem(
                 updateSettings.autoDownloadUpdate,
-                { vm.updateSettings.update(updateSettings.copy(autoDownloadUpdate = !it)) },
+                { vm.updateSettings.update(updateSettings.copy(autoDownloadUpdate = it)) },
                 title = { Text("自动下载更新") },
                 description = { Text("下载完成后会在\"我的追番\"页面提示，需要点击确认才会安装") },
                 enabled = updateSettings.autoCheckUpdate,
             )
             HorizontalDividerItem()
             var showUpdatePopup by remember { mutableStateOf(false) }
+            val autoUpdate: AutoUpdateViewModel = rememberViewModel { AutoUpdateViewModel() }
             if (showUpdatePopup) {
-                (vm.updateChecker.tester.result as? CheckVersionResult.HasNewVersion)?.let {
+                (vm.updateCheckerTester.tester.result as? CheckVersionResult.HasNewVersion)?.let {
                     ChangelogDialog(
                         latestVersion = it.newVersion,
                         onDismissRequest = { showUpdatePopup = false },
+                        onStartDownload = { autoUpdate.startDownload(it.newVersion) },
                     )
                 }
             }
             TextButtonItem(
                 title = {
-                    if (vm.updateChecker.tester.isTesting) {
+                    if (vm.updateCheckerTester.tester.isTesting) {
                         Text("检查中...")
                         return@TextButtonItem
                     }
-                    when (val result = vm.updateChecker.tester.result) {
+                    when (val result = vm.updateCheckerTester.tester.result) {
                         is CheckVersionResult.Failed -> Text("检查失败")
                         is CheckVersionResult.UpToDate -> Text("已是最新")
                         is CheckVersionResult.HasNewVersion -> Text(remember(result.newVersion.name) { "有新版本: ${result.newVersion.name}" })
@@ -192,19 +200,31 @@ fun AppSettingsTab(
                     }
                 },
                 onClick = {
-                    if (vm.updateChecker.tester.isTesting) {
-                        vm.updateChecker.cancel()
+                    if (vm.updateCheckerTester.tester.isTesting) {
+                        vm.updateCheckerTester.cancel()
                         return@TextButtonItem
                     }
-                    when (vm.updateChecker.tester.result) {
+                    when (vm.updateCheckerTester.tester.result) {
                         is CheckVersionResult.HasNewVersion -> showUpdatePopup = true
                         is CheckVersionResult.Failed,
                         is CheckVersionResult.UpToDate,
-                        null -> vm.updateChecker.testAll()
+                        null -> {
+                            vm.updateCheckerTester.testAll()
+                            autoUpdate.startCheckLatestVersion()
+                        }
                     }
                 },
                 modifier = Modifier.placeholder(vm.updateSettings.loading),
             )
+            AnimatedVisibility(
+                vm.updateCheckerTester.tester.result is CheckVersionResult.HasNewVersion // 在设置里检查的
+                        || autoUpdate.hasUpdate // 在主页自动检查的
+            ) {
+                HorizontalDividerItem()
+                Item(action = {
+                    TextButtonUpdateLogo(autoUpdate)
+                })
+            }
         }
         val uiSettings by vm.uiSettings
 

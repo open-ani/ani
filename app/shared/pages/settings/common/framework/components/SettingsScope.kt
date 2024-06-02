@@ -134,7 +134,7 @@ abstract class SettingsScope {
         modifier: Modifier = Modifier,
         icon: @Composable (() -> Unit)? = null,
         action: @Composable (() -> Unit)? = null,
-        content: @Composable () -> Unit,
+        content: @Composable () -> Unit = {},
     ) {
         Row(
             modifier

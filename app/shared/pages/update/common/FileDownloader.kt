@@ -65,7 +65,10 @@ sealed class FileDownloaderState {
 }
 
 class DefaultFileDownloader : FileDownloader {
-    private val logger = logger<DefaultFileDownloader>()
+    private companion object {
+        private val logger = logger<DefaultFileDownloader>()
+    }
+
     override val state = MutableStateFlow<FileDownloaderState>(FileDownloaderState.Idle)
 
     private val _progress = MutableStateFlow(0f)
