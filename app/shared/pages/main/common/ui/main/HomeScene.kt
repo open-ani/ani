@@ -26,6 +26,8 @@ import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.TravelExplore
 import androidx.compose.material.icons.rounded.Update
+import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -38,12 +40,14 @@ import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -63,12 +67,15 @@ import me.him188.ani.app.ui.foundation.avatar.AvatarImage
 import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.foundation.text.toPercentageString
+import me.him188.ani.app.ui.foundation.widgets.RichDialogLayout
 import me.him188.ani.app.ui.home.HomePage
 import me.him188.ani.app.ui.home.SearchViewModel
 import me.him188.ani.app.ui.isLoggedIn
 import me.him188.ani.app.ui.profile.AccountViewModel
 import me.him188.ani.app.ui.profile.ProfilePage
 import me.him188.ani.app.ui.settings.SettingsPage
+import me.him188.ani.app.update.InstallationFailureReason
+import me.him188.ani.app.update.InstallationResult
 import me.him188.ani.app.update.UpdateInstaller
 import me.him188.ani.app.update.ui.AutoUpdateViewModel
 import me.him188.ani.app.update.ui.ChangelogDialog
@@ -127,6 +134,27 @@ private fun UpdateCheckerItem(
     }
     if (state.hasUpdate) {
         val context = LocalContext.current
+        var installationError by remember { mutableStateOf<InstallationFailureReason?>(null) }
+        if (installationError != null) {
+            BasicAlertDialog({ installationError = null }) {
+                RichDialogLayout(
+                    title = { Text("自动安装失败") },
+                    buttons = {
+                        TextButton({ installationError = null }) { Text("取消更新") }
+                        Button(
+                            onClick = {
+                                (state.logoState as? UpdateLogoState.Downloaded)?.file?.let {
+                                    GlobalContext.get().get<UpdateInstaller>().openForManualInstallation(it, context)
+                                }
+                            }
+                        ) { Text("查看安装包") }
+                    }
+                ) {
+                    Text("自动安装失败, 请手动安装")
+                }
+            }
+        }
+
         NavigationRailItem(
             false,
             onClick = {
@@ -134,7 +162,10 @@ private fun UpdateCheckerItem(
                     UpdateLogoState.ClickToCheck -> {} // should not happen
                     is UpdateLogoState.DownloadFailed -> state.restartDownload()
                     is UpdateLogoState.Downloaded -> {
-                        GlobalContext.get().get<UpdateInstaller>().install(logo.file, context)
+                        val result = GlobalContext.get().get<UpdateInstaller>().install(logo.file, context)
+                        if (result is InstallationResult.Failed) {
+                            installationError = result.reason
+                        }
                     }
 
                     is UpdateLogoState.Downloading -> {}
