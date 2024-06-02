@@ -161,6 +161,14 @@ fun AppSettingsTab(
                 title = { Text("更新类型") },
             )
             HorizontalDividerItem()
+            SwitchItem(
+                updateSettings.autoDownloadUpdate,
+                { vm.updateSettings.update(updateSettings.copy(autoDownloadUpdate = !it)) },
+                title = { Text("自动下载更新") },
+                description = { Text("下载完成后会在\"我的追番\"页面提示，需要点击确认才会安装") },
+                enabled = updateSettings.autoCheckUpdate,
+            )
+            HorizontalDividerItem()
             var showUpdatePopup by remember { mutableStateOf(false) }
             if (showUpdatePopup) {
                 (vm.updateChecker.tester.result as? CheckVersionResult.HasNewVersion)?.let {
@@ -196,13 +204,6 @@ fun AppSettingsTab(
                     }
                 },
                 modifier = Modifier.placeholder(vm.updateSettings.loading),
-            )
-            SwitchItem(
-                updateSettings.autoDownloadUpdate,
-                { vm.updateSettings.update(updateSettings.copy(autoDownloadUpdate = true)) },
-                title = { Text("自动下载更新") },
-                description = { Text("下载完成后会在\"我的追番\"页面提示，不会自动安装") },
-                enabled = updateSettings.autoCheckUpdate,
             )
         }
         val uiSettings by vm.uiSettings
