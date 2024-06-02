@@ -2,7 +2,7 @@ package me.him188.ani.app.update
 
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpTimeout
-import io.ktor.client.request.get
+import io.ktor.client.request.prepareRequest
 import io.ktor.client.statement.bodyAsChannel
 import io.ktor.http.contentLength
 import kotlinx.coroutines.CancellationException
@@ -150,34 +150,35 @@ class DefaultFileDownloader : FileDownloader {
     ) {
         cancellableCoroutineScope {
             logger.info { "Attempting $url" }
-            val resp = client.get(url)
-            val length = resp.contentLength()
-            logger.info { "Downloading $url to ${file.absolutePath}, length=${(length ?: 0).bytes}" }
-            val downloaded = java.util.concurrent.atomic.AtomicLong(0L)
-            val input = resp.bodyAsChannel()
-            val buffer = ByteArray(8192)
-            if (length != null) {
-                launch {
-                    while (isActive) {
-                        delay(1.seconds)
-                        _progress.value = downloaded.get().toFloat() / length
-                    }
-                }
-            }
             try {
-                file.outputStream().use { output ->
-                    while (!input.isClosedForRead) {
-                        val read = input.readAvailable(buffer, 0, buffer.size)
-                        if (read == -1) {
-                            return@cancellableCoroutineScope
-                        }
-                        downloaded.addAndGet(read.toLong())
-                        withContext(Dispatchers.IO) {
-                            output.write(buffer, 0, read)
+                client.prepareRequest(url).execute { resp ->
+                    val length = resp.contentLength()
+                    logger.info { "Downloading $url to ${file.absolutePath}, length=${(length ?: 0).bytes}" }
+                    val downloaded = java.util.concurrent.atomic.AtomicLong(0L)
+                    val input = resp.bodyAsChannel()
+                    val buffer = ByteArray(8192)
+                    if (length != null) {
+                        launch {
+                            while (isActive) {
+                                delay(1.seconds)
+                                _progress.value = downloaded.get().toFloat() / length
+                            }
                         }
                     }
+                    file.outputStream().use { output ->
+                        while (!input.isClosedForRead) {
+                            val read = input.readAvailable(buffer, 0, buffer.size)
+                            if (read == -1) {
+                                return@execute
+                            }
+                            downloaded.addAndGet(read.toLong())
+                            withContext(Dispatchers.IO) {
+                                output.write(buffer, 0, read)
+                            }
+                        }
+                    }
+                    logger.info { "Successfully downloaded: $url" }
                 }
-                logger.info { "Successfully downloaded: $url" }
             } catch (e: Throwable) {
                 logger.info(e) { "Failed to download $url" }
                 throw e
@@ -185,7 +186,6 @@ class DefaultFileDownloader : FileDownloader {
                 cancelScope()
             }
         }
-
     }
 }
 
