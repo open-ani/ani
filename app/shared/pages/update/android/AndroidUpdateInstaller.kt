@@ -8,6 +8,7 @@ import android.net.Uri
 import android.provider.Settings
 import androidx.core.content.ContextCompat.startActivity
 import androidx.core.content.FileProvider
+import me.him188.ani.BuildConfig
 import me.him188.ani.app.platform.ContextMP
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
@@ -59,7 +60,7 @@ class AndroidUpdateInstaller : UpdateInstaller {
 //        }
 //        file.copyTo(externalFile)
         intent.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive")
-        val apkUri = FileProvider.getUriForFile(context, "me.him188.ani.android.fileprovider", file)
+        val apkUri = FileProvider.getUriForFile(context, "${BuildConfig.APP_APPLICATION_ID}.fileprovider", file)
         intent.setDataAndType(apkUri, "application/vnd.android.package-archive")
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
