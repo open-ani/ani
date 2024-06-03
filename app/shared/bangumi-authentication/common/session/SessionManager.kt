@@ -170,7 +170,7 @@ internal class SessionManagerImpl(
                 if (it == null || it.expiresAt <= System.currentTimeMillis()) {
                     null
                 } else
-                    runUntilSuccess { profileRepository.getSelfOrNull() }?.username
+                    runUntilSuccess(maxAttempts = Int.MAX_VALUE) { profileRepository.getSelfOrNull() }?.username
             }
             .distinctUntilChanged()
             .shareInBackground(SharingStarted.Eagerly)

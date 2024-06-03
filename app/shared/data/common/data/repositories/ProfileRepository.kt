@@ -1,5 +1,7 @@
 package me.him188.ani.app.data.repositories
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.utils.logging.logger
 import org.koin.core.component.KoinComponent
@@ -21,7 +23,9 @@ internal class ProfileRepositoryImpl : ProfileRepository, KoinComponent {
 
     override suspend fun getSelfOrNull(): User? {
         return try {
-            client.api.getMyself()
+            withContext(Dispatchers.IO) {
+                client.api.getMyself()
+            }
         } catch (e: ClientException) {
             if (e.statusCode == 403 || e.statusCode == 401) {
                 return null
