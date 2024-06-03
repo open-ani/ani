@@ -41,14 +41,16 @@ Ani 的目标是提供尽可能简单且舒适的追番体验。
 Ani 支持 Android 和桌面端 (macOS、Windows)。现阶段对 Android 支持最佳, PC 需要依赖 qBittorrent 才能下载
 BT 视频，但不安装 qBit 也可以使用在线数据源。
 
-3.0 功能正逐渐完善, 每隔几天会发布一个 beta 测试版本。
-
 欢迎加入 QQ 群
 927170241（[PC 一键加入](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=2EbZ0Qxe-fI_AHJLCMnSIOnqw-nfrFH5&authKey=L31zTMwfbMG0FhIgt8xNHGOFPHc531mSw2YzUVupHLRJ4L2f8xerAd%2ByNl4OigRK&noverify=0&group_code=927170241)
 ）或 Telegram 群 [点击加入](https://t.me/+afDaMsCSIcsyNDVk)
 
-请关注 [releases](https://github.com/Him188/ani/releases/latest)
-以下载最新版本
+下载:
+
+- 稳定版本: 每 1-2 周更新, 功能稳定  
+  [下载稳定版本](https://github.com/Him188/ani/releases/latest)
+- 测试版本: 每 1-3 天更新, 体验最新功能  
+  [下载测试版本](https://github.com/Him188/ani/releases)
 
 ## 功能截图
 
@@ -58,7 +60,7 @@ BT 视频，但不安装 qBit 也可以使用在线数据源。
 
 - 同步 [Bangumi][Bangumi] 收藏
 - 按"在看/想看/看过"分类
-- 记录观看进度, 快速跳转到下一集
+- 记录观看进度
 
 <img width="300" src=".readme/images/collection/collection-dark.jpg" alt="collection-dark"/> <img width="300" src=".readme/images/subject/subject-dark.jpg" alt="subject-dark"/>
 
@@ -68,7 +70,7 @@ BT 视频，但不安装 qBit 也可以使用在线数据源。
 
 多数据源适配, 总有一个源有你想看的番和喜欢的字幕组
 
-- 支持多个 BT 数据源与在线数据源, 兼顾资源质量与缓冲速度
+- 全自动整合多个 BT 数据源与在线数据源, 兼顾资源质量与缓冲速度
 - 自动解析资源信息, 可配置的智能选择算法完全避免找资源的麻烦
 - 按番剧记忆偏好选项
 - 支持季度全集资源
@@ -124,16 +126,10 @@ BT 视频，但不安装 qBit 也可以使用在线数据源。
 
 ### 代理设置
 
-Ani 自带一个全球均可访问的数据源 (Mikan)
-，无需设置代理。若你想要，也可以设置代理后使用所有数据源。代理设置入口为"我的"的右上角。
+Ani 自带不需要代理的数据源 ，无需配置代理。
+若你想要，也可以设置代理后使用所有数据源。
 
 <img width="300" src=".readme/images/preferences/preferences-network-proxy.jpg" alt="preferences-network-proxy"/> <img width="300" src=".readme/images/preferences/preferences-network-danmaku.jpg" alt="preferences-network-danmaku"/>
-
-### 桌面端
-
-与安卓功能一致。
-
-桌面端仍处于较早期开发阶段, 整体稳定性还不如安卓。欢迎体验并提出建议。
 
 ## FAQ
 
