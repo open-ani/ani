@@ -15,8 +15,6 @@ import me.him188.ani.app.data.update.UpdateManager
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.ContextMP
 import me.him188.ani.app.platform.currentAniBuildConfig
-import me.him188.ani.app.platform.currentPlatform
-import me.him188.ani.app.platform.isAndroid
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.update.DefaultFileDownloader
@@ -133,19 +131,24 @@ class AutoUpdateViewModel : AbstractViewModel(), KoinComponent {
 
     private val autoDownloadTasker = MonoTasker(backgroundScope)
     fun startDownload(ver: NewVersion, context: ContextMP?) {
-        if (currentPlatform.isAndroid()) {
-            if (context == null) {
-                logger.warn { "Context is null, cannot navigate to browser (should not happen)" }
-                return
-            }
-            GlobalContext.get().get<BrowserNavigator>().openBrowser(
-                context,
-                ver.downloadUrlAlternatives.first()
-            )
-            return
-        }
-
         autoDownloadTasker.launch {
+            val settings = updateSettings.first()
+            if (!settings.inAppDownload) {
+                if (context == null) {
+                    logger.warn { "Context is null, cannot navigate to browser (should not happen)" }
+                    return@launch
+                }
+                ver.downloadUrlAlternatives.firstOrNull()?.let {
+                    GlobalContext.get().get<BrowserNavigator>().openBrowser(
+                        context,
+                        it
+                    )
+                } ?: run {
+                    logger.warn { "No download URL found, ignoring" }
+                }
+                return@launch
+            }
+
             val dir = updateManager.saveDir.resolve("download")
             if (dir.exists()) {
                 // 删除旧的文件

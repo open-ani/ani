@@ -160,15 +160,31 @@ fun AppSettingsTab(
                 },
                 title = { Text("更新类型") },
             )
+            HorizontalDividerItem()
+            SwitchItem(
+                updateSettings.inAppDownload,
+                { vm.updateSettings.update(updateSettings.copy(inAppDownload = it)) },
+                title = { Text("应用内下载") },
+                description = {
+                    if (updateSettings.inAppDownload) {
+                        Text("在应用内下载安装包，省去跳转浏览器步骤")
+                    } else {
+                        Text("已关闭，将会跳转到外部浏览器完成下载")
+                    }
+                },
+                enabled = updateSettings.autoCheckUpdate,
+            )
             if (currentPlatform.supportsInAppUpdate) {
-                HorizontalDividerItem()
-                SwitchItem(
-                    updateSettings.autoDownloadUpdate,
-                    { vm.updateSettings.update(updateSettings.copy(autoDownloadUpdate = it)) },
-                    title = { Text("自动下载更新") },
-                    description = { Text("下载完成后会在\"我的追番\"页面提示，需要点击确认才会安装") },
-                    enabled = updateSettings.autoCheckUpdate,
-                )
+                AnimatedVisibility(updateSettings.inAppDownload) {
+                    HorizontalDividerItem()
+                    SwitchItem(
+                        updateSettings.autoDownloadUpdate,
+                        { vm.updateSettings.update(updateSettings.copy(autoDownloadUpdate = it)) },
+                        title = { Text("自动下载更新") },
+                        description = { Text("下载完成后会在\"我的追番\"页面提示，需要点击确认才会安装") },
+                        enabled = updateSettings.autoCheckUpdate,
+                    )
+                }
             }
             HorizontalDividerItem()
             var showUpdatePopup by remember { mutableStateOf(false) }

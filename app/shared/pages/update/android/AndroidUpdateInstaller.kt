@@ -2,17 +2,18 @@ package me.him188.ani.app.update
 
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.content.pm.ResolveInfo
 import android.net.Uri
-import android.os.Build
-import android.os.Environment
-import android.provider.MediaStore
 import android.provider.Settings
 import androidx.core.content.ContextCompat.startActivity
+import androidx.core.content.FileProvider
 import me.him188.ani.app.platform.ContextMP
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
 import java.io.File
+
 
 class AndroidUpdateInstaller : UpdateInstaller {
     private companion object {
@@ -46,20 +47,32 @@ class AndroidUpdateInstaller : UpdateInstaller {
         context: Context,
         file: File,
     ) {
-        // TODO: installApk does not work 
         val intent = Intent(Intent.ACTION_VIEW)
-        val externalFile = Environment.getExternalStorageDirectory().resolve("Download/api-update.apk")
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            MediaStore.createWriteRequest(
-                context.contentResolver,
-                listOf(Uri.fromFile(externalFile)),
-            ).apply {
-                startActivity(context, intent, null)
-            }
-        }
-        file.copyTo(externalFile)
-        intent.setDataAndType(Uri.fromFile(externalFile), "application/vnd.android.package-archive")
+//        val externalFile = Environment.getExternalStorageDirectory().resolve("Download/api-update.apk")
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+//            MediaStore.createWriteRequest(
+//                context.contentResolver,
+//                listOf(Uri.fromFile(externalFile)),
+//            ).apply {
+//                startActivity(context, intent, null)
+//            }
+//        }
+//        file.copyTo(externalFile)
+        intent.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive")
+        val apkUri = FileProvider.getUriForFile(context, "me.him188.ani.android.fileprovider", file)
+        intent.setDataAndType(apkUri, "application/vnd.android.package-archive")
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        val resInfoList: List<ResolveInfo> =
+            context.packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)
+        for (resolveInfo in resInfoList) {
+            val packageName = resolveInfo.activityInfo.packageName
+            context.grantUriPermission(
+                packageName,
+                apkUri,
+                Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION
+            )
+        }
         startActivity(context, intent, null)
     }
 }

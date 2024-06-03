@@ -37,9 +37,7 @@ enum class InstallationFailureReason {
     UNSUPPORTED_FILE_STRUCTURE,
 }
 
+@Suppress("UnusedReceiverParameter")
 @Stable
-val Platform.supportsInAppUpdate: Boolean
-    get() = when (this) {
-        is Platform.Desktop -> true
-        Platform.Android -> false
-    }
+val Platform.supportsInAppUpdate: Boolean // 虽然目前都支持, 但未来可能增加 iOS 不支持
+    get() = true
