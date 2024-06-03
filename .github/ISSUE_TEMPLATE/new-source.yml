@@ -13,20 +13,12 @@ body:
     id: issue-description
     attributes:
       label: 数据源站点和截图
-      description: 网站地址和截图
+      description: 网站地址, 截图, 以及描述
       placeholder: |
         https://example.com
         
         *我是一张截图*
-    validations:
-      required: true
-
-  - type: textarea
-    id: issue-description
-    attributes:
-      label: 描述
-      description: 该数据源的简单描述
-      placeholder: |
+        
         资源比较全面
     validations:
       required: true
