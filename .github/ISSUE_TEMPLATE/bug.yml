@@ -18,23 +18,9 @@ body:
       description: 详细描述你遇到的问题，可以附加截图或录屏。
       placeholder: |
         例如：
-        
         在一条船上把大象放入冰箱之后，冰箱门就关不上了。如果把大象放到陆地上就不会有这个问题。
-        
-        把大象放入冰箱之前:
-        *我是一张图片*
-        ```
-           <--冰箱-->
-        <------船------>
-        ```
-        
-        把大象放入冰箱之后:
-        *我是一张图片*
-        ```
-          <--冰 (大象) 箱-->
-        <------船------>
-        ```
-        
+        - 把大象放入冰箱之前: *我是一个图片*
+        - 把大象放入冰箱之后: *我是另一个图片*
         可以看到，冰箱的门被大象挡住了，所以就关不上了。
     validations:
       required: true
@@ -48,8 +34,7 @@ body:
         例如:
         1. 打开船上的冰箱门
         2. 把大象装进去
-        3. 尝试关上冰箱门
-        4. 发现关不上
+        3. 尝试关上冰箱门, 发现关不上
     validations:
       required: false
 
@@ -58,7 +43,7 @@ body:
     attributes:
       label: Ani 版本号
       description: 你使用的 Ani 版本号，可在 "设置-界面与应用" 中找到，如 `3.0.0`。
-      placeholder: 3.0.0
+      placeholder: "例如: 3.0.0"
     validations:
       required: true
 
@@ -80,10 +65,13 @@ body:
   - type: textarea
     id: logs-system
     attributes:
-      label: 系统日志
+      label: 应用日志
       description: |
         对于 PC 端用户，在 "设置-关于" 中点击打开日志目录，把 `app.log` 复制粘贴或拖到这里。
         对于 Android 用户，目前不支持收集日志，可以跳过此步骤。
       render: 'text'
+      placeholder: |
+        请在这里粘贴日志内容，或拖拽文件到这里。
+        请同时说明问题的发生时间，最好精确到分钟 (例如 19:43 左右)。
     validations:
       required: false
