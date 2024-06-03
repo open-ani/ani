@@ -7,6 +7,8 @@ import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.datasources.api.topic.Resolution
 import me.him188.ani.datasources.api.topic.SubtitleLanguage
+import me.him188.ani.datasources.dmhy.DmhyMediaSource
+import me.him188.ani.datasources.mikan.MikanCNMediaSource
 import me.him188.ani.datasources.nyafun.NyafunMediaSource
 
 /**
@@ -59,7 +61,7 @@ data class MediaPreference private constructor(
     /**
      * @see fallbackSubtitleLanguageIds
      */
-    val fallbackMediaSourceIds: List<String>? = null
+    val fallbackMediaSourceIds: List<String>? = null,
 ) {
     companion object {
         /**
@@ -70,7 +72,11 @@ data class MediaPreference private constructor(
             fallbackMediaSourceIds =
             if (Platform.currentPlatform.isDesktop())
                 listOf(NyafunMediaSource.ID) // PC 默认不启用 BT 源
-            else null,
+            else listOf(
+                NyafunMediaSource.ID,
+                MikanCNMediaSource.ID,
+                DmhyMediaSource.ID,
+            ), // TODO(3.1.0): 需要重写下数据源优先级与默认设置, 更新注释
         )
 
         /**

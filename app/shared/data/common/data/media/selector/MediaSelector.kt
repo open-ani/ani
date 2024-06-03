@@ -415,11 +415,10 @@ class DefaultMediaSelector(
                 return@sequence
             }
             val fallback = mergedPreference.fallbackMediaSourceIds
-            if (fallback == null) {
-                yield(null)
-            } else {
-                yieldAll(fallback)
+            if (fallback != null) {
+                yieldAll(fallback) // 如果有设置, 那就优先使用设置的
             }
+            yield(null) // 最后 (未匹配到时) 总是任意选一个
         }
 
         // For rules discussion, see #174
