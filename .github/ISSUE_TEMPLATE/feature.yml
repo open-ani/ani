@@ -1,0 +1,48 @@
+name: 新特性与建议
+description: 请求添加一个新特性或提出一个一般建议
+labels:
+  - "t: feature"
+  - "N"
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        欢迎提交建议！在提交之前，请确保你已经搜索过已有的 issues，确保没有重复问题。
+        请尽量提供多的信息，这将帮助我们评估建议的可行性，并让它更快实现。
+
+  - type: textarea
+    id: issue-description
+    attributes:
+      label: 建议内容
+      description: 详细描述你的建议内容以及为什么，可以附加图片。
+      placeholder: |
+        例如：
+        在播放页面的选择数据源的弹窗中，增加一个“自动选择”的按钮，根据设置中的偏好自动选择。
+        虽然目前有自动选择，但它只会在刚刚加载完数据源的时候自动执行一次，随后如果我修改了筛选，就不会自动选择了。
+    validations:
+      required: true
+
+  - type: input
+    id: version-ani
+    attributes:
+      label: 当前 Ani 版本号
+      description: 你正在使用的 Ani 版本号，可在 "设置-界面与应用" 中找到，如 `3.0.0`。
+      placeholder: "例如: 3.0.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: 操作系统
+      multiple: true
+      options:
+        - Android
+        - macOS (Intel)
+        - macOS (M 系列芯片)
+        - Windows
+        - Linux
+        - 其他 (请在上方描述中补充)
+    validations:
+      required: true
