@@ -371,7 +371,7 @@ android {
         buildConfigField("String", "BANGUMI_OAUTH_CLIENT_SECRET", "\"$bangumiClientAndroidSecret\"")
     }
     buildTypes.getByName("release") {
-        isMinifyEnabled = true
+        isMinifyEnabled = false // shared 不能 minify, 否则构建 app 会失败
         isShrinkResources = false
         proguardFiles(
             getDefaultProguardFile("proguard-android-optimize.txt"),
