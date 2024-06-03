@@ -62,6 +62,11 @@ object WindowsUpdateInstaller : DesktopUpdateInstaller {
     ) = """
 setlocal
 
+rmdir /S /Q ".\Ani"
+
+echo Extracting update.zip to the current folder
+powershell -Command "Expand-Archive -Path '${zipFile.absolutePath}' -DestinationPath '.' -Force"
+
 echo Waiting until Ani.exe ends
 :waitloop
 tasklist /FI "IMAGENAME eq Ani.exe" 2>NUL | find /I /N "Ani.exe">NUL
@@ -75,9 +80,6 @@ del /F /Q "Ani.exe"
 del /F /Q "Ani.ico"
 rmdir /S /Q "app"
 rmdir /S /Q "runtime"
-
-echo Extracting update.zip to the current folder
-powershell -Command "Expand-Archive -Path '${zipFile.absolutePath}' -DestinationPath '.' -Force"
 
 echo Copying everything from ./Ani to ./
 xcopy /E /H /R /Y ".\Ani\*" "."
