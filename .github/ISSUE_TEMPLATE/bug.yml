@@ -23,7 +23,7 @@ body:
         - 把大象放入冰箱之后: *我是另一个图片*
         可以看到，冰箱的门被大象挡住了，所以就关不上了。
     validations:
-      required: true
+      required: false
 
   - type: textarea
     id: reproduce
@@ -51,6 +51,7 @@ body:
     id: platform
     attributes:
       label: 操作系统
+      description: 你使用的操作系统
       multiple: true
       options:
         - Android
