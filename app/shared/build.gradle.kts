@@ -377,10 +377,10 @@ android {
             getDefaultProguardFile("proguard-android-optimize.txt"),
             *sharedAndroidProguardRules(),
         )
-        buildConfigField("String", "APP_APPLICATION_ID", "\"me.him188.ani.android\"")
+        buildConfigField("String", "APP_APPLICATION_ID", "\"me.him188.ani\"")
     }
     buildTypes.getByName("debug") {
-        buildConfigField("String", "APP_APPLICATION_ID", "\"me.him188.ani.android.debug2\"")
+        buildConfigField("String", "APP_APPLICATION_ID", "\"me.him188.ani.debug2\"")
     }
     buildFeatures {
         compose = true
