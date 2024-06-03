@@ -37,6 +37,7 @@ body:
     attributes:
       label: 操作系统
       multiple: true
+      description: 适用的操作系统。如果适用于全部，可留空
       options:
         - Android
         - macOS (Intel)
@@ -45,4 +46,4 @@ body:
         - Linux
         - 其他 (请在上方描述中补充)
     validations:
-      required: true
+      required: false
