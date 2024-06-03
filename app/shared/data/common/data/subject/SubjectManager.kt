@@ -126,6 +126,8 @@ interface SubjectManager {
      */
     suspend fun getEpisode(episodeId: Int): Episode
 
+    suspend fun getEpisodeCollections(subjectId: Int): List<UserEpisodeCollection>
+
     fun episodeCollectionFlow(subjectId: Int, episodeId: Int, contentPolicy: ContentPolicy): Flow<UserEpisodeCollection>
 
     suspend fun setSubjectCollectionType(subjectId: Int, type: UnifiedCollectionType)
@@ -196,7 +198,6 @@ class SubjectManagerImpl(
                         episodeSort = episode.episode.sort.toString(),
                         watchStatus = episode.type.toCollectionType(),
                         isOnAir = episode.episode.isOnAir(),
-                        airDate = PackedDate.parseFromDate(episode.episode.airdate),
                         cacheStatus = cacheStatus,
                     )
                 }
@@ -224,6 +225,13 @@ class SubjectManagerImpl(
         return runUntilSuccess {
             episodeRepository.getEpisodeById(episodeId)?.toEpisode() ?: error("Failed to get episode")
         }
+    }
+
+    override suspend fun getEpisodeCollections(subjectId: Int): List<UserEpisodeCollection> {
+        return findCachedSubjectCollection(subjectId)?._episodes
+            ?: runUntilSuccess {
+                episodeRepository.getSubjectEpisodeCollection(subjectId, EpType.MainStory)
+            }.toList()
     }
 
     override fun episodeCollectionFlow(

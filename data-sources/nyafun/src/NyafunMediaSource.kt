@@ -11,7 +11,6 @@ import io.ktor.http.isSuccess
 import io.ktor.utils.io.jvm.javaio.toInputStream
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flow
@@ -134,11 +133,22 @@ class NyafunMediaSource(config: MediaSourceConfig) : MediaSource {
                         alliance = ID,
                         size = FileSize.Unspecified,
                     ),
-                    episodeRange = EpisodeRange.single(sort),
+                    episodeRange = EpisodeRange.single(
+                        if (isPossiblyMovie(ep.name) && sort is EpisodeSort.Special) {
+                            EpisodeSort(1) // 电影总是 01
+                        } else {
+                            sort
+                        }
+                    ),
                     location = MediaSourceLocation.Online,
                     kind = MediaSourceKind.WEB,
                 ), MatchKind.FUZZY
             )
+        }
+
+        private fun isPossiblyMovie(title: String): Boolean {
+            val t = title
+            return ("简" in t || "繁" in t) && ("2160P" in t || "1440P" in t || "2K" in t || "4K" in t || "1080P" in t || "720P" in t)
         }
     }
 
@@ -183,25 +193,30 @@ class NyafunMediaSource(config: MediaSourceConfig) : MediaSource {
 
             bangumiList.asFlow()
                 .flatMapMerge { bangumi ->
-                    flow {
+                    val result = flow {
                         emit(getDocument(bangumi.url))
                     }.map {
                         parseEpisodeList(it)
                     }.retry(3) { e ->
                         logger.warn(e) { "Failed to get episodes using name '$name'" }
                         true
-                    }.firstOrNull()?.map { ep ->
-                        createMediaMatch(bangumi, ep)
-                    }.orEmpty().also {
-                        logger.info { "$ID fetched ${it.size} episodes for '$name': ${it.joinToString { it.media.episodeRange.toString() }}" }
-                    }.asFlow()
-                }
-                .filter {
-                    it.definitelyMatches(query)
+                    }.firstOrNull()
+                        .orEmpty()
+                        .asSequence()
+                        .map { ep ->
+                            createMediaMatch(bangumi, ep)
+                        }
+                        .filter {
+                            it.definitelyMatches(query) ||
+                                    isPossiblyMovie(it.media.originalTitle)
+                        }
+                        .toList()
+
+                    logger.info { "$ID fetched ${result.size} episodes for '$name': ${result.joinToString { it.media.episodeRange.toString() }}" }
+                    result.asFlow()
                 }
         }
     }
-
 
     private suspend inline fun getDocument(
         url: String,

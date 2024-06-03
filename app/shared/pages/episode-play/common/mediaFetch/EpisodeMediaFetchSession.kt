@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
@@ -26,13 +27,13 @@ import me.him188.ani.app.data.repositories.SubjectRepository
 import me.him188.ani.app.data.subject.PackedDate
 import me.him188.ani.app.data.subject.SubjectManager
 import me.him188.ani.app.data.subject.minus
-import me.him188.ani.app.tools.caching.ContentPolicy
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.source.MediaFetchRequest
+import me.him188.ani.datasources.bangumi.processing.isOnAir
 import me.him188.ani.datasources.bangumi.processing.nameCNOrName
 import me.him188.ani.datasources.core.fetch.MediaFetchSession
 import me.him188.ani.datasources.core.fetch.MediaFetcher
@@ -204,17 +205,22 @@ internal class DefaultEpisodeMediaFetchSession(
                 )
             }
 
-        val subjectProgress = subjectManager.subjectProgressFlow(subjectId, ContentPolicy.CACHE_ONLY)
+        val subjectProgress = flow {
+            emit(subjectManager.getEpisodeCollections(subjectId).map { it.episode })
+        }
 
         DefaultMediaSelector(
             mediaSelectorContextNotCached = subjectProgress.map { eps ->
-                val allEpisodesFinished = eps.fastAll { it.isOnAir == false }
+                val allEpisodesFinished = eps.fastAll { it.isOnAir() == false }
 
                 val finishedLongTimeAgo = allEpisodesFinished || run {
                     val now = PackedDate.now()
                     val maxAirDate = eps
-                        .filter { it.airDate.isValid }
-                        .maxOfOrNull { it.airDate }
+                        .map {
+                            PackedDate.parseFromDate(it.airdate)
+                        }
+                        .filter { it.isValid }
+                        .maxOrNull()
 
                     maxAirDate != null && now - maxAirDate >= 14.days
                 }
