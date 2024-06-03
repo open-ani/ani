@@ -24,6 +24,7 @@ import me.him188.ani.utils.ktor.userAgent
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import java.io.File
+import java.io.InputStream
 import java.security.MessageDigest
 import kotlin.time.Duration.Companion.seconds
 
@@ -126,7 +127,7 @@ class DefaultFileDownloader : FileDownloader {
                             logger.info { "File $filename already exists, size=${targetFile.length().bytes}, checking checksum" }
                             val checksum = checksumFile.readText()
                             val actualChecksum = targetFile.inputStream().use {
-                                it.readBytes().sha256()
+                                it.sha256()
                             }
                             if (checksum == actualChecksum) {
                                 logger.info { "File $filename already exists and checksum matches, skipping download" }
@@ -150,7 +151,7 @@ class DefaultFileDownloader : FileDownloader {
                         )
                         // 下载完成, 更新 checksum
                         checksumFile.writeText(targetFile.inputStream().use {
-                            it.readBytes().sha256()
+                            it.sha256()
                         })
                         state.value = FileDownloaderState.Succeed(url, targetFile)
                         return true
@@ -217,8 +218,11 @@ class DefaultFileDownloader : FileDownloader {
 }
 
 @OptIn(ExperimentalStdlibApi::class)
-private fun ByteArray.sha256(): String {
-    val digest = MessageDigest.getInstance("SHA-256")
-    return digest.digest(this).toHexString()
-}
+private fun InputStream.sha256(): String = MessageDigest.getInstance("SHA-256").apply {
+    val buffer = ByteArray(8192)
+    var read: Int
+    while (read(buffer).also { read = it } != -1) {
+        update(buffer, 0, read)
+    }
+}.digest().toHexString()
 
