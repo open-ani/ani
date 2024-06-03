@@ -2,12 +2,16 @@ package me.him188.ani.app.ui.subject.episode.mediaFetch
 
 import androidx.compose.runtime.Immutable
 import kotlinx.serialization.Serializable
+import me.him188.ani.app.data.models.MediaSelectorSettings
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.datasources.api.topic.Resolution
 import me.him188.ani.datasources.api.topic.SubtitleLanguage
 import me.him188.ani.datasources.nyafun.NyafunMediaSource
 
+/**
+ * @see MediaSelectorSettings
+ */
 @Suppress("DataClassPrivateConstructor")
 @Immutable
 @Serializable

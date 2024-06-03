@@ -171,9 +171,9 @@ interface MediaCache {
 }
 
 /**
- * Returns `true` if the request matches the cache, either exactly or fuzzily.
+ * 尝试匹配
  */
-infix fun MediaFetchRequest.matches(cache: MediaCacheMetadata): MatchKind {
+infix fun MediaFetchRequest.matches(cache: MediaCacheMetadata): MatchKind? {
     if (episodeId != null && cache.episodeId != null) {
         // Both query and cache have episodeId, perform exact match.
         if (cache.episodeId == episodeId) {
@@ -181,7 +181,7 @@ infix fun MediaFetchRequest.matches(cache: MediaCacheMetadata): MatchKind {
         }
 
         // Don't go for fuzzy match otherwise we'll always get false positives.
-        return MatchKind.NONE
+        return null
     }
 
     // Exact match is not possible, do a fuzzy match.
@@ -196,9 +196,9 @@ infix fun MediaFetchRequest.matches(cache: MediaCacheMetadata): MatchKind {
             // Episode sort matches
             MatchKind.FUZZY
         } else {
-            MatchKind.NONE
+            null
         }
     }
 
-    return MatchKind.NONE
+    return null
 }

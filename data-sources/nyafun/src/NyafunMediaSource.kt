@@ -11,6 +11,7 @@ import io.ktor.http.isSuccess
 import io.ktor.utils.io.jvm.javaio.toInputStream
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flow
@@ -34,6 +35,7 @@ import me.him188.ani.datasources.api.source.MediaSourceFactory
 import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.datasources.api.source.applyMediaSourceConfig
+import me.him188.ani.datasources.api.source.definitelyMatches
 import me.him188.ani.datasources.api.source.toConnectionStatus
 import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.datasources.api.topic.FileSize
@@ -193,6 +195,9 @@ class NyafunMediaSource(config: MediaSourceConfig) : MediaSource {
                     }.orEmpty().also {
                         logger.info { "$ID fetched ${it.size} episodes for '$name': ${it.joinToString { it.media.episodeRange.toString() }}" }
                     }.asFlow()
+                }
+                .filter {
+                    it.definitelyMatches(query)
                 }
         }
     }

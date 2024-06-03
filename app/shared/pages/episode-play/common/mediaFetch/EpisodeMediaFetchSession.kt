@@ -220,7 +220,7 @@ internal class DefaultEpisodeMediaFetchSession(
                 }
 
                 MediaSelectorContext(
-                    subjectFinishedForAConservativeTime = finishedLongTimeAgo
+                    subjectFinishedForAConservativeTime = finishedLongTimeAgo,
                 )
             },
             mediaListNotCached = fetchResult,

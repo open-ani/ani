@@ -28,7 +28,7 @@ import kotlin.coroutines.CoroutineContext
  */
 interface MediaSelector {
     /**
-     * 搜索到的全部的列表
+     * 搜索到的全部的列表, 经过了设置 [MediaSelectorSettings] 筛选.
      */
     val mediaList: Flow<List<Media>>
 
@@ -38,12 +38,12 @@ interface MediaSelector {
     val mediaSourceId: MediaPreferenceItem<String>
 
     /**
-     * 经过筛选后的列表
+     * 经过 [alliance], [resolution] 等[偏好][MediaPreference]筛选后的列表.
      */
     val filteredCandidates: Flow<List<Media>>
 
     /**
-     * The final media selected from the [filteredCandidates].
+     * 目前选中的项目. 它不一定是 [filteredCandidates] 中的一个项目.
      */
     val selected: Flow<Media?>
 
@@ -204,7 +204,7 @@ class DefaultMediaSelector(
         context: MediaSelectorContext,
         list: List<Media>
     ): List<Media> {
-        val needFilter = preference.showWithoutSubtitle || settings.hideSingleEpisodeForCompleted
+        val needFilter = !preference.showWithoutSubtitle || settings.hideSingleEpisodeForCompleted
         if (!needFilter) return list // no copy
         return list.fastFilter filter@{ media ->
             if (isLocalCache(media)) return@filter true // 本地缓存总是要显示
@@ -212,13 +212,16 @@ class DefaultMediaSelector(
             if (settings.hideSingleEpisodeForCompleted && context.subjectFinishedForAConservativeTime
                 && media.kind == MediaSourceKind.BitTorrent
             ) {
+                // 完结番隐藏单集资源
                 val range = media.episodeRange ?: return@filter false
                 if (range.isSingleEpisode()) return@filter false
             }
 
             if (!preference.showWithoutSubtitle && media.properties.subtitleLanguageIds.isEmpty()) {
+                // 不显示无字幕的
                 return@filter false
             }
+
             true
         }
 

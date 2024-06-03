@@ -29,6 +29,7 @@ import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.paging.SizedSource
 import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.datasources.api.topic.ResourceLocation
+import me.him188.ani.datasources.api.topic.contains
 import java.io.File
 import java.util.ServiceLoader
 import kotlin.contracts.contract
@@ -92,6 +93,17 @@ interface MediaSource {
 
     /**
      * 使用 [MediaFetchRequest] 中的信息, 尽可能多地查询一个剧集的所有可下载的资源, 返回一个分页的资源列表.
+     *
+     * 数据源应当尽可能*精准*地返回结果:
+     * - 对于**完全**肯定匹配的资源, 标记为 [MatchKind.EXACT].
+     * - 对于**完全**肯定不不配的资源, 需要剔除.
+     * - 对于无法 100% 区分的, 则应当返回, 并标记为 [MatchKind.FUZZY].
+     *
+     * ## 数据源选择的实现细节
+     *
+     * ### 数据源需要负责区分剧集的正确性
+     * - 若请求 [MediaFetchRequest.episodeSort] 为 "01", 但 [fetch] 返回 "02", 该剧集不会被后续流程自动剔除.
+     * 所有 [fetch] 返回的资源, 都将会被 `MediaSelector` 接收. 当用户关闭设置中的所有自动过滤选项时, 将能够看到所有 [fetch] 返回的资源.
      */
     suspend fun fetch(query: MediaFetchRequest): SizedSource<MediaMatch>
 }
@@ -136,6 +148,25 @@ data class MediaMatch(
     val kind: MatchKind,
 )
 
+/**
+ * 判断该 [MediaMatch] 是否满足条件 [request].
+ *
+ * 返回 `null` 表示条件不足以判断. 届时可以根据数据源大致的准确性或者其他信息考虑是否需要在 [MediaSource.fetch] 的返回中包含此资源.
+ *
+ * 该函数会在如下情况下返回 `null`:
+ * - 当 [Media.episodeRange] 为 `null` 时. 这意味着无法知道该资源的剧集范围.
+ */
+fun MediaMatch.matches(request: MediaFetchRequest): Boolean? {
+    val actualEpRange = this.media.episodeRange ?: return null
+    val expectedEp = request.episodeEp
+    return !(request.episodeSort !in actualEpRange && (expectedEp == null || expectedEp !in actualEpRange))
+}
+
+/**
+ * 当且仅当该资源一定满足请求时返回 `true`. 若条件不足, 返回 `false`.
+ */
+fun MediaMatch.definitelyMatches(request: MediaFetchRequest): Boolean = matches(request) == true
+
 enum class MatchKind {
     /**
      * The request has an exact match with the cache.
@@ -149,13 +180,6 @@ enum class MatchKind {
      * This is done on a best-effort basis where they can be false positives.
      */
     FUZZY,
-
-    /**
-     * The request does not match the cache.
-     *
-     * This is done on a best-effort basis where they can be false negatives.
-     */
-    NONE
 }
 
 /**

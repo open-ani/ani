@@ -5,9 +5,11 @@ import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import me.him188.ani.datasources.api.source.MediaFetchRequest
+import me.him188.ani.datasources.api.source.MediaMatch
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.source.MediaSourceLocation
+import me.him188.ani.datasources.api.source.matches
 import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
@@ -53,7 +55,7 @@ sealed interface Media {
      * - 如果是季度全集资源, 该列表可能包含多个元素, 典型值为 12 个. 季度全集可以是 [EpisodeRange.range] (`1..12`) 或 [EpisodeRange.season] (`S1`).
      *
      * 当解析剧集列表失败时为 `null`.
-     * 注意, 如果为 `null`, 数据源选择器 (`MediaSelector`) 一定会过滤掉这个资源. 因为 `MediaSelector` 会忽略所有剧集不匹配的资源, 而空剧集列表是无法匹配的.
+     * 注意, 如果为 `null`, [MediaMatch.matches] 一定会过滤掉这个资源. 如果你实现的[数据源][MediaSource]使用 [MediaMatch.matches], 则需要小心.
      *
      * 在 [MediaSource.fetch] 时, 如果自定义的数据源查询到的资源没有确定的剧集信息, 可以考虑猜测该资源的剧集为 [MediaFetchRequest.episodeSort].
      *
