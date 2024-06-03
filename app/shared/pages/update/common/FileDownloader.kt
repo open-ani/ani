@@ -35,6 +35,9 @@ import kotlin.time.Duration.Companion.seconds
  * - 支持提供进度.
  */
 interface FileDownloader {
+    /**
+     * Range: `[0, 1]`
+     */
     val progress: Flow<Float>
     val state: StateFlow<FileDownloaderState>
 
@@ -52,13 +55,31 @@ interface FileDownloader {
 }
 
 sealed class FileDownloaderState {
+    /**
+     * [FileDownloader.download] 还没被调用过
+     */
     data object Idle : FileDownloaderState()
+
+    /**
+     * 正在尝试下载某一个 URL
+     */
     data object Downloading : FileDownloaderState()
 
     sealed class Completed : FileDownloaderState()
+
+    /**
+     * 成功下载并保存了校验和文件
+     */
     data class Succeed(
+        /**
+         * 原始来源 URL
+         */
         val url: String,
+        /**
+         * 下载完成的文件
+         */
         val file: File,
+        // 校验和文件总是 `${file.name}.sha256`
     ) : Completed()
 
     data class Failed(val throwable: Throwable) : Completed()
@@ -95,7 +116,7 @@ class DefaultFileDownloader : FileDownloader {
         }.use { client ->
             _progress.value = 0f
             withExceptionCollector {
-                for (url in alternativeUrls) {
+                for (url in alternativeUrls) { // 依次尝试
                     state.value = FileDownloaderState.Downloading
                     try {
                         val filename = filenameProvider(url)
@@ -146,6 +167,9 @@ class DefaultFileDownloader : FileDownloader {
         }
     }
 
+    /**
+     * 尝试下载一个文件并保存校验和, 同时会更新进度 [_progress], 不会更新状态. 下载失败时抛出异常.
+     */
     private suspend fun tryDownload(
         client: HttpClient,
         url: String,

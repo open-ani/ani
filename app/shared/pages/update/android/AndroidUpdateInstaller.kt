@@ -46,6 +46,7 @@ class AndroidUpdateInstaller : UpdateInstaller {
         context: Context,
         file: File,
     ) {
+        // TODO: installApk does not work 
         val intent = Intent(Intent.ACTION_VIEW)
         val externalFile = Environment.getExternalStorageDirectory().resolve("Download/api-update.apk")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
