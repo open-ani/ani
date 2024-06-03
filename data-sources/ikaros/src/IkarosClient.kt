@@ -1,5 +1,21 @@
 package me.him188.ani.datasources.ikaros
 
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.call.receive
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.defaultRequest
+import io.ktor.client.request.get
+import io.ktor.client.request.head
+import io.ktor.client.request.header
+import io.ktor.client.request.post
+import io.ktor.client.request.request
+import io.ktor.client.statement.HttpResponse
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.headers
+import io.ktor.http.headersOf
+import io.ktor.http.isSuccess
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.flowOf
@@ -15,15 +31,10 @@ import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.datasources.api.topic.SubtitleLanguage.ChineseSimplified
 import me.him188.ani.datasources.ikaros.models.IkarosSubjectDetails
-import org.apache.http.HttpHeaders
-import org.apache.http.HttpStatus
-import org.apache.http.client.HttpClient
-import org.apache.http.client.methods.HttpGet
-import org.apache.http.client.methods.HttpPost
-import org.apache.http.impl.client.HttpClients
+import me.him188.ani.utils.logging.error
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.io.IOException
+import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 import java.util.Base64
 
@@ -32,53 +43,53 @@ class IkarosClient(private val baseUrl: String, private val username: String, pr
         private val logger: Logger = LoggerFactory.getLogger(IkarosClient::class.java)
     }
 
-    private val client: HttpClient = HttpClients.createDefault()
+    private val client: HttpClient;
     private var authStr = "Basic "
 
     init {
         authStr +=
             Base64.getEncoder().encodeToString("$username:$password".toByteArray(StandardCharsets.UTF_8))
+        client = HttpClient(CIO) {
+            defaultRequest { 
+                header(HttpHeaders.Authorization, authStr)
+            }
+        }
     }
 
-    fun checkConnection(): Int {
-        val get = HttpGet(baseUrl)
-        try {
-            return client.execute(get).statusLine.statusCode
-        } catch (e: IOException) {
-            logger.error("Check connection failed", e)
-            return HttpStatus.SC_SERVICE_UNAVAILABLE
+    suspend fun checkConnection(): HttpStatusCode {
+        return try {
+            client.get(baseUrl).run {
+                check(status.isSuccess()) { "Request failed: $this" }
+            }
+            HttpStatusCode.OK
+        } catch (e: Exception) {
+            logger.error(e) { "Failed to connect to $baseUrl" }
+            HttpStatusCode.ServiceUnavailable
         }
     }
 
 
-    fun postSubjectSyncBgmTv(bgmTvSubjectId: String): IkarosSubjectDetails? {
+    suspend fun postSubjectSyncBgmTv(bgmTvSubjectId: String): IkarosSubjectDetails? {
         if (bgmTvSubjectId.isEmpty()) {
             return null
         }
-
-        val post = HttpPost(
-            baseUrl
-                    + "/api/v1alpha1/subject/sync/platform?platform=BGM_TV&platformId=" + bgmTvSubjectId
-        )
-        post.addHeader(HttpHeaders.AUTHORIZATION, authStr)
-
-        val response = client.execute(post);
-        if (response.statusLine.statusCode != HttpStatus.SC_OK) {
+        val url = "$baseUrl/api/v1alpha1/subject/sync/platform?platform=BGM_TV&platformId=$bgmTvSubjectId"
+        
+        val httpResponse: HttpResponse = client.post(url)
+        if (!httpResponse.status.isSuccess()) {
             logger.error(
                 "Post Ikaros Subject Sync By BgmTv failed for http status code: {} and message: {}",
-                response.statusLine.statusCode,
-                response.statusLine.reasonPhrase
+                httpResponse.status.value,
+                httpResponse.status.description
             )
             return null
         }
-        val readAllBytes = response.entity.content.readAllBytes()
-        val json = String(readAllBytes, StandardCharsets.UTF_8)
-
+        val json = httpResponse.body<String>();
         val subjectDetails: IkarosSubjectDetails = Json { ignoreUnknownKeys = true }.decodeFromString(json)
         return subjectDetails
     }
 
-    fun getResUrl(url: String): String {
+    private fun getResUrl(url: String): String {
         if (url.isEmpty()) {
             return ""
         }

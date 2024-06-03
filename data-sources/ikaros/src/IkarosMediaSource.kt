@@ -1,5 +1,6 @@
 package me.him188.ani.datasources.ikaros
 
+import io.ktor.http.HttpStatusCode
 import me.him188.ani.datasources.api.paging.SizedSource
 import me.him188.ani.datasources.api.source.ConnectionStatus
 import me.him188.ani.datasources.api.source.MediaFetchRequest
@@ -42,7 +43,7 @@ class IkarosMediaSource(config: MediaSourceConfig) : MediaSource {
     override val mediaSourceId: String get() = ID
 
     override suspend fun checkConnection(): ConnectionStatus {
-        return if ((200 == client.checkConnection())
+        return if ((HttpStatusCode.OK == client.checkConnection())
         ) ConnectionStatus.SUCCESS else ConnectionStatus.FAILED
     }
 
