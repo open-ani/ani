@@ -87,6 +87,7 @@ class MikanCNMediaSource(
 ) : AbstractMikanMediaSource(ID, config, "https://mikanime.tv", indexCacheProvider) {
     class Factory : MediaSourceFactory {
         override val mediaSourceId: String get() = ID
+
         override fun create(config: MediaSourceConfig): MediaSource =
             MikanCNMediaSource(config)
 
