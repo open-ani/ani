@@ -14,6 +14,14 @@ interface WebVideoMatcher { // SPI service load
 
 class WebVideoMatcherContext(
     val media: Media,
+//    requestInfoLazy: () -> WebVideoRequestInfo,
+) {
+//    val requestInfo by lazy { requestInfoLazy() }
+}
+
+class WebVideoRequestInfo(
+    val url: String,
+    val headers: Map<String, String>
 )
 
 data class WebVideo(
