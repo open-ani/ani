@@ -24,10 +24,10 @@ fun createDefaultHttpClient(
     install(UserAgent) {
         agent = "him188/ani (https://github.com/Him188/ani)"
     }
-    clientConfig()
     install(ContentNegotiation) {
         json(Json {
             ignoreUnknownKeys = true
         })
     }
+    clientConfig()
 }

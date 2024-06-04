@@ -5,7 +5,7 @@ import me.him188.ani.datasources.api.Media
 /**
  * 匹配 WebView 拦截到的资源.
  */
-interface WebVideoMatcher {
+interface WebVideoMatcher { // SPI service load
     fun match(
         url: String,
         context: WebVideoMatcherContext

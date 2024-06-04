@@ -9,7 +9,7 @@ import me.him188.ani.utils.ktor.userAgent
 /**
  * @see MediaSource
  */
-interface MediaSourceFactory {
+interface MediaSourceFactory { // SPI service load
     /**
      * @see MediaSource.mediaSourceId
      */

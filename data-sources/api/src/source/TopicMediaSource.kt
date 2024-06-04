@@ -14,7 +14,7 @@ import me.him188.ani.datasources.api.topic.TopicCategory
 /**
  * A [remote][MediaSourceLocation.Online] [MediaSource] that uses [Topic] internally.
  */
-abstract class TopicMediaSource : MediaSource {
+abstract class TopicMediaSource : HttpMediaSource() {
     override val location: MediaSourceLocation get() = MediaSourceLocation.Online
     override val kind: MediaSourceKind get() = MediaSourceKind.BitTorrent
 

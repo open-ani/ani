@@ -20,6 +20,7 @@ import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.source.MediaSourceFactory
 import me.him188.ani.datasources.mikan.MikanCNMediaSource
 import me.him188.ani.datasources.mikan.MikanMediaSource
+import me.him188.ani.utils.coroutines.onReplacement
 import me.him188.ani.utils.ktor.ClientProxyConfig
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.logger
@@ -77,6 +78,8 @@ class MediaSourceManagerImpl(
                 .plus(factories.map { factory ->
                     factory.create(proxyConfig.get(factory.mediaSourceId))
                 })
+        }.onReplacement { list ->
+            (list.toSet() - this.additionalSources.toSet()).forEach { it.close() }
         }.shareIn(scope, replay = 1, started = SharingStarted.Lazily)
     override val enabledSources =
         combine(allSources, defaultMediaPreference) { allSources, defaultMediaPreference ->

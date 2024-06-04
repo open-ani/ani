@@ -18,29 +18,11 @@
 
 package me.him188.ani.datasources.acgrip
 
-import io.ktor.client.HttpClient
-import io.ktor.client.HttpClientConfig
-import io.ktor.client.plugins.HttpRequestRetry
-import io.ktor.client.plugins.HttpTimeout
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.plugins.cookies.HttpCookies
-import io.ktor.client.plugins.logging.LogLevel
-import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.client.statement.bodyAsChannel
-import io.ktor.http.ContentType
-import io.ktor.http.content.OutgoingContent
 import io.ktor.http.isSuccess
-import io.ktor.serialization.ContentConverter
-import io.ktor.serialization.kotlinx.json.json
-import io.ktor.util.reflect.TypeInfo
-import io.ktor.utils.io.ByteReadChannel
-import io.ktor.utils.io.charsets.Charset
-import io.ktor.utils.io.charsets.decode
 import io.ktor.utils.io.jvm.javaio.toInputStream
-import io.ktor.utils.io.streams.asInput
-import kotlinx.serialization.json.Json
 import me.him188.ani.datasources.api.paging.PageBasedPagedSource
 import me.him188.ani.datasources.api.paging.Paged
 import me.him188.ani.datasources.api.paging.PagedSource
@@ -50,7 +32,7 @@ import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.source.MediaSourceFactory
 import me.him188.ani.datasources.api.source.TopicMediaSource
-import me.him188.ani.datasources.api.source.applyMediaSourceConfig
+import me.him188.ani.datasources.api.source.useHttpClient
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.datasources.api.topic.Topic
@@ -60,8 +42,6 @@ import me.him188.ani.datasources.api.topic.titles.RawTitleParser
 import me.him188.ani.datasources.api.topic.titles.parse
 import me.him188.ani.datasources.api.topic.titles.toTopicDetails
 import me.him188.ani.utils.logging.error
-import me.him188.ani.utils.logging.info
-import me.him188.ani.utils.logging.logger
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import java.time.ZonedDateTime
@@ -69,7 +49,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 class AcgRipMediaSource(
-    private val config: MediaSourceConfig,
+    config: MediaSourceConfig,
 ) : TopicMediaSource() {
     class Factory : MediaSourceFactory {
         override val mediaSourceId: String get() = ID
@@ -78,10 +58,11 @@ class AcgRipMediaSource(
 
     companion object {
         const val ID = "acg.rip"
-        private val logger = logger<AcgRipMediaSource>()
     }
 
     override val mediaSourceId: String get() = ID
+
+    private val client by lazy { useHttpClient(config) }
 
     override suspend fun checkConnection(): ConnectionStatus {
         return try {
@@ -92,18 +73,6 @@ class AcgRipMediaSource(
         } catch (e: Exception) {
             logger.error(e) { "Failed to connect to acg.rip" }
             ConnectionStatus.FAILED
-        }
-    }
-
-    private val client = createHttpClient {
-        applyMediaSourceConfig(config)
-        Logging {
-            logger = object : io.ktor.client.plugins.logging.Logger {
-                override fun log(message: String) {
-                    Companion.logger.info { message }
-                }
-            }
-            level = LogLevel.INFO
         }
     }
 
@@ -168,45 +137,5 @@ private fun parseDocument(document: Document): List<Topic> {
             details = details.toTopicDetails(),
             originalLink = element.getElementsByTag("link").text(),
         )
-    }
-}
-
-private fun createHttpClient(
-    clientConfig: HttpClientConfig<*>.() -> Unit = {},
-) = HttpClient {
-    install(HttpRequestRetry) {
-        maxRetries = 1
-        delayMillis { 1000 }
-    }
-    install(HttpCookies)
-    install(HttpTimeout) {
-        requestTimeoutMillis = 5000
-    }
-    clientConfig()
-    install(ContentNegotiation) {
-        json(Json {
-            ignoreUnknownKeys = true
-        })
-        register(
-            ContentType.Text.Xml,
-            object : ContentConverter {
-                override suspend fun deserialize(charset: Charset, typeInfo: TypeInfo, content: ByteReadChannel): Any? {
-                    if (typeInfo.type.qualifiedName != Document::class.qualifiedName) return null
-                    content.awaitContent()
-                    val decoder = Charsets.UTF_8.newDecoder()
-                    val string = decoder.decode(content.toInputStream().asInput())
-                    return Jsoup.parse(string, charset.name())
-                }
-
-                override suspend fun serializeNullable(
-                    contentType: ContentType,
-                    charset: Charset,
-                    typeInfo: TypeInfo,
-                    value: Any?
-                ): OutgoingContent? {
-                    return null
-                }
-            },
-        ) {}
     }
 }

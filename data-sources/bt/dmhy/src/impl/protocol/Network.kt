@@ -19,16 +19,14 @@
 package me.him188.ani.datasources.dmhy.impl.protocol
 
 import io.ktor.client.HttpClient
-import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
-import io.ktor.client.statement.HttpResponse
 import io.ktor.http.URLProtocol
 import io.ktor.http.appendPathSegments
+import me.him188.ani.datasources.api.source.bodyAsDocument
 import me.him188.ani.datasources.dmhy.DmhyTopic
 import me.him188.ani.datasources.dmhy.impl.cache.Cache
 import me.him188.ani.datasources.dmhy.impl.cache.CacheImpl
-import org.jsoup.nodes.Document
 
 class Network(
     private val client: HttpClient,
@@ -84,5 +82,3 @@ class Network(
         )
     }
 }
-
-private suspend inline fun HttpResponse.bodyAsDocument(): Document = body()

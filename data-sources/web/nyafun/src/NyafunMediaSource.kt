@@ -1,8 +1,6 @@
 package me.him188.ani.datasources.nyafun
 
 import io.ktor.client.plugins.BrowserUserAgent
-import io.ktor.client.plugins.logging.LogLevel
-import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
@@ -25,6 +23,7 @@ import me.him188.ani.datasources.api.matcher.WebVideoMatcherContext
 import me.him188.ani.datasources.api.paging.SinglePagePagedSource
 import me.him188.ani.datasources.api.paging.SizedSource
 import me.him188.ani.datasources.api.source.ConnectionStatus
+import me.him188.ani.datasources.api.source.HttpMediaSource
 import me.him188.ani.datasources.api.source.MatchKind
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.source.MediaMatch
@@ -33,15 +32,13 @@ import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.source.MediaSourceFactory
 import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.source.MediaSourceLocation
-import me.him188.ani.datasources.api.source.applyMediaSourceConfig
 import me.him188.ani.datasources.api.source.definitelyMatches
 import me.him188.ani.datasources.api.source.toConnectionStatus
+import me.him188.ani.datasources.api.source.useHttpClient
 import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.ResourceLocation
-import me.him188.ani.utils.ktor.createDefaultHttpClient
 import me.him188.ani.utils.logging.info
-import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
@@ -80,10 +77,9 @@ class NyafunWebVideoMatcher : WebVideoMatcher {
     }
 }
 
-class NyafunMediaSource(config: MediaSourceConfig) : MediaSource {
+class NyafunMediaSource(config: MediaSourceConfig) : HttpMediaSource() {
     companion object {
         const val ID = "nyafun"
-        val logger = logger<NyafunMediaSource>()
         internal const val BASE_URL = "https://www.nyafun.net"
 
         // https://www.nyafun.net/search.html?wd=girls%20band%20cry
@@ -158,19 +154,12 @@ class NyafunMediaSource(config: MediaSourceConfig) : MediaSource {
         override fun create(config: MediaSourceConfig): MediaSource = NyafunMediaSource(config)
     }
 
-    internal val client = createDefaultHttpClient {
-        applyMediaSourceConfig(config)
-        Logging {
-            logger = object : io.ktor.client.plugins.logging.Logger {
-                override fun log(message: String) {
-                    Companion.logger.info { message }
-                }
-            }
-            level = LogLevel.INFO
+    private val client by lazy {
+        useHttpClient(config) {
+            BrowserUserAgent()
         }
-        BrowserUserAgent()
-        expectSuccess = true
     }
+
     override val kind: MediaSourceKind get() = MediaSourceKind.WEB
 
     override val mediaSourceId: String get() = ID

@@ -30,6 +30,7 @@ import me.him188.ani.datasources.api.paging.SizedSource
 import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.datasources.api.topic.contains
+import java.io.Closeable
 import java.io.File
 import java.util.ServiceLoader
 import kotlin.contracts.contract
@@ -65,8 +66,10 @@ import kotlin.contracts.contract
  * 4. 在 `:app:shared` 中的 `build.gradle.kts` 搜索 `api(projects.dataSources.core)`, 找到现有数据源的依赖定义,
  * 仿照着增加一行你的模块: `api(projects.dataSources.foo)`
  * 5. 现在启动 app 便可以自动加载你的数据源了, 可在设置中验证
+ *
+ * @see MediaSourceFactory
  */
-interface MediaSource {
+interface MediaSource : Closeable {
     /**
      * 全局唯一的 ID. 可用于保存用户偏好, 识别缓存资源的来源等.
      */
@@ -106,6 +109,8 @@ interface MediaSource {
      * 所有 [fetch] 返回的资源, 都将会被 `MediaSelector` 接收. 当用户关闭设置中的所有自动过滤选项时, 将能够看到所有 [fetch] 返回的资源.
      */
     suspend fun fetch(query: MediaFetchRequest): SizedSource<MediaMatch>
+
+    override fun close() {}
 }
 
 /**
