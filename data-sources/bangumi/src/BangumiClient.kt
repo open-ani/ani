@@ -402,9 +402,12 @@ internal class BangumiClientImpl(
 
             val json = resp.body<JsonObject>();
             return json.run {
+                // results: subject total
                 val results: Int = json["results"]?.toString()?.toInt() ?: 0
+                // code: exception code
                 val code: String = json["code"]?.toString() ?: "-1"
-                if (Objects.nonNull(code) && "404" == code) return Paged.empty()
+                // return empty when code exists and not -1 and is 404
+                if ("-1" != code && "404" == code) return Paged.empty()
                 val legacySubjectsJson: String = json["list"].toString()
                 val legacySubjects: List<BangumiLegacySubject> =
                     Json { ignoreUnknownKeys = true }.decodeFromString(legacySubjectsJson)
