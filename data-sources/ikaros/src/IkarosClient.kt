@@ -2,19 +2,14 @@ package me.him188.ani.datasources.ikaros
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.call.receive
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.get
-import io.ktor.client.request.head
 import io.ktor.client.request.header
 import io.ktor.client.request.post
-import io.ktor.client.request.request
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.headers
-import io.ktor.http.headersOf
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
@@ -26,6 +21,7 @@ import me.him188.ani.datasources.api.paging.SizedSource
 import me.him188.ani.datasources.api.source.MatchKind
 import me.him188.ani.datasources.api.source.MediaMatch
 import me.him188.ani.datasources.api.source.MediaSourceKind
+import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.ResourceLocation
@@ -34,7 +30,6 @@ import me.him188.ani.datasources.ikaros.models.IkarosSubjectDetails
 import me.him188.ani.utils.logging.error
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 import java.util.Base64
 
@@ -122,6 +117,7 @@ class IkarosClient(private val baseUrl: String, private val username: String, pr
                             size = FileSize.Zero,
                         ),
                         episodeRange = EpisodeRange.single(seq.toString()),
+                        location = MediaSourceLocation.Online,
                         kind = MediaSourceKind.WEB,
                     )
                 }
