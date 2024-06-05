@@ -27,10 +27,10 @@ class BangumiPagedSource(
             noMorePages()
         }
         return paged.page
-            .map {convert2Subject(it)}
+            .map { convert2Subject(it) }
     }
 
-    private fun convert2Subject(legaSub: BangumiLegacySubject):Subject {
+    private fun convert2Subject(legaSub: BangumiLegacySubject): Subject {
         return Subject(
             id = legaSub.id,
             originalName = legaSub.originalName,
@@ -55,6 +55,6 @@ class BangumiPagedSource(
 
     private fun convertType() = when (query.type) {
         SubjectType.ANIME -> BangumiSubjectType.ANIME
-    }    
-   
+    }
+
 }

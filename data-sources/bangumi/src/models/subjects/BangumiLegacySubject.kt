@@ -27,7 +27,7 @@ data class BangumiLegacySubject(
     val rank: Int? = 0,         // 排名
     val crt: String? = "",       // 角色信息
     val staff: String? = "",     // 制作人员信息
-    
+
     // large fields
     val topic: String? = "",     // 讨论版
     val blog: String? = "",      // 评论日志
