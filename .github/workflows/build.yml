@@ -84,7 +84,7 @@ jobs:
         run: ./gradlew generateComposeResClass ${{ env.gradleArgs }}
 
 
-      - if: ${{ env.isMac == 'true' && secrets.SIGNING_RELEASE_STOREFILE != '' }}
+      - if: ${{ env.isMac == 'true' }}
         name: Prepare signing key
         id: android_signing_key
         uses: timheuer/base64-to-file@v1.1
@@ -92,6 +92,7 @@ jobs:
           fileName: 'android_signing_key'
           fileDir: './'
           encodedString: ${{ secrets.SIGNING_RELEASE_STOREFILE }}
+        continue-on-error: true
 
       - name: Assemble
         run: ./gradlew assemble ${{ env.gradleArgs }}
