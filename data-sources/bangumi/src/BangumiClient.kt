@@ -327,12 +327,6 @@ internal class BangumiClientImpl(
         val data: List<BangumiSubject>? = null,
     )
 
-    @Serializable
-    private data class SearchSubjectsByKeywordsWithOldApiResponse(
-        val results: Int,
-        val list: List<BangumiLegacySubject>? = null,
-    )
-
     override val subjects: BangumiClientSubjects = object : BangumiClientSubjects {
         override suspend fun searchSubjectByKeywords(
             keyword: String,
