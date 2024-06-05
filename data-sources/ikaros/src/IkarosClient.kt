@@ -38,7 +38,7 @@ class IkarosClient(private val baseUrl: String, private val username: String, pr
         private val logger: Logger = LoggerFactory.getLogger(IkarosClient::class.java)
     }
 
-    private val client: HttpClient;
+    private val client: HttpClient
     private var authStr = "Basic "
 
     init {
@@ -79,7 +79,7 @@ class IkarosClient(private val baseUrl: String, private val username: String, pr
             )
             return null
         }
-        val json = httpResponse.body<String>();
+        val json = httpResponse.body<String>()
         val subjectDetails: IkarosSubjectDetails = Json { ignoreUnknownKeys = true }.decodeFromString(json)
         return subjectDetails
     }
@@ -91,7 +91,7 @@ class IkarosClient(private val baseUrl: String, private val username: String, pr
         if (url.startsWith("http://") || url.startsWith("https://")) {
             return url
         }
-        return baseUrl + url;
+        return baseUrl + url
     }
 
     fun subjectDetails2SizedSource(subjectDetails: IkarosSubjectDetails, seq: Int): SizedSource<MediaMatch> {
@@ -121,10 +121,10 @@ class IkarosClient(private val baseUrl: String, private val username: String, pr
                         kind = MediaSourceKind.WEB,
                     )
                 }
-                val mediaMatch = media?.let { MediaMatch(it, MatchKind.FUZZY) };
+                val mediaMatch = media?.let { MediaMatch(it, MatchKind.FUZZY) }
                 if (mediaMatch != null) {
                     mediaMatchs.add(mediaMatch)
-                };
+                }
             }
         }
 
@@ -142,6 +142,5 @@ class IkarosSizeSource(
     override val results: Flow<MediaMatch>,
     override val finished: Flow<Boolean>,
     override val totalSize: Flow<Int?>
-) : SizedSource<MediaMatch> {
-}
+) : SizedSource<MediaMatch>
 
