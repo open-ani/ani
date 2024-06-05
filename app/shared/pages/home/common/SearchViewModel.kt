@@ -22,7 +22,7 @@ import androidx.compose.runtime.getValue
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
-import me.him188.ani.app.data.models.MySearchSettings
+import me.him188.ani.app.data.models.SearchSettings
 import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.subject.SubjectListViewModel
@@ -45,8 +45,8 @@ class SearchViewModel(
 
     val result: StateFlow<SubjectListViewModel?> = _result
 
-    private val mySearchSettings: MySearchSettings by settings.uiSettings.flow.map { it.mySearchSettings }
-        .produceState(MySearchSettings.Default)
+    private val searchSettings: SearchSettings by settings.uiSettings.flow.map { it.searchSettings }
+        .produceState(SearchSettings.Default)
 
     init {
         keyword?.let { search(it) }
@@ -63,7 +63,7 @@ class SearchViewModel(
                 subjectProvider.startSearch(
                     SubjectSearchQuery(
                         keywords.trim(),
-                        useOldSearchApi = !mySearchSettings.enableNewSearchSubjectApi
+                        useOldSearchApi = !searchSettings.enableNewSearchSubjectApi
                     )
                 )
             )

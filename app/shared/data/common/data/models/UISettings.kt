@@ -11,7 +11,7 @@ import me.him188.ani.app.ui.collection.progress.EpisodeProgressTheme
 data class UISettings(
     val theme: ThemeSettings = ThemeSettings.Default,
     val myCollections: MyCollectionsSettings = MyCollectionsSettings.Default,
-    val mySearchSettings: MySearchSettings = MySearchSettings.Default,
+    val searchSettings: SearchSettings = SearchSettings.Default,
     val episodeProgress: EpisodeProgressSettings = EpisodeProgressSettings.Default,
     @Suppress("PropertyName") @Transient val _placeholder: Int = 0,
 ) {
@@ -51,12 +51,12 @@ data class MyCollectionsSettings(
 
 @Serializable
 @Immutable
-data class MySearchSettings(
+data class SearchSettings(
     val enableNewSearchSubjectApi: Boolean = false,
 ) {
     companion object {
         @Stable
-        val Default = MySearchSettings()
+        val Default = SearchSettings()
     }
 }
 

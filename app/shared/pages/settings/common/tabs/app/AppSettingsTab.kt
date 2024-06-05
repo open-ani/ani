@@ -279,13 +279,13 @@ fun AppSettingsTab(
             }
         }
         Group(title = { Text("搜索") }) {
-            val mySearchSettings by remember { derivedStateOf { uiSettings.mySearchSettings } }
+            val mySearchSettings by remember { derivedStateOf { uiSettings.searchSettings } }
             SwitchItem(
                 checked = mySearchSettings.enableNewSearchSubjectApi,
                 onCheckedChange = {
                     vm.uiSettings.update(
                         uiSettings.copy(
-                            mySearchSettings = mySearchSettings.copy(
+                            searchSettings = mySearchSettings.copy(
                                 enableNewSearchSubjectApi = !mySearchSettings.enableNewSearchSubjectApi
                             )
                         )
