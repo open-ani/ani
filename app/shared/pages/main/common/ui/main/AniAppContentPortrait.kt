@@ -79,10 +79,11 @@ fun AniAppContentPortrait(
                 SettingsPage(
                     Modifier.fillMaxSize(),
                     initialTab = initialTab,
+                    allowBack = backStackEntry.query("back") ?: false
                 )
             }
             scene("/caches") {
-                CacheManagementPage(Modifier.fillMaxSize())
+                CacheManagementPage(Modifier.fillMaxSize(), showBack = true)
             }
             scene("/subjects/{subjectId}/caches") { backStackEntry ->
                 val subjectId = backStackEntry.path<Int>("subjectId") ?: run {

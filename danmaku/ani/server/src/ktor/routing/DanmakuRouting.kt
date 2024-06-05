@@ -38,7 +38,7 @@ fun Route.danmakuRouting() {
             post {
                 val userId = getUserIdOrRespond() ?: return@post
                 val request = call.receive<DanmakuPostRequest>()
-                val episodeId = call.parameters["episodeId"] ?: throw BadRequestException()
+                val episodeId = call.parameters["episodeId"] ?: throw BadRequestException("Missing parameter episodeId")
                 service.postDanmaku(episodeId, request.danmakuInfo, userId)
                 call.respond(HttpStatusCode.OK)
             }
@@ -49,7 +49,7 @@ fun Route.danmakuRouting() {
             val maxCount = call.request.queryParameters["maxCount"]?.toIntOrNull()
             val fromTime = call.request.queryParameters["fromTime"]?.toLongOrNull()
             val toTime = call.request.queryParameters["toTime"]?.toLongOrNull()
-            val episodeId = call.parameters["episodeId"] ?: throw BadRequestException()
+            val episodeId = call.parameters["episodeId"] ?: throw BadRequestException("Missing parameter episodeId")
             val result = service.getDanmaku(episodeId, maxCount, fromTime, toTime)
             call.respond(DanmakuGetResponse(result))
         }

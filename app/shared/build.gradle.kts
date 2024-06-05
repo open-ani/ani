@@ -83,6 +83,7 @@ kotlin {
         api(projects.dataSources.mikan)
         api(projects.dataSources.bangumi)
         api(projects.dataSources.nyafun)
+        api(projects.dataSources.mxdongman)
         api(projects.dataSources.ikaros)
 
         // Danmaku
@@ -102,9 +103,9 @@ kotlin {
         api(projects.utils.ktorClient)
 
         // Ktor
+        api(libs.ktor.client.okhttp)
         api(libs.ktor.client.websockets)
         api(libs.ktor.client.logging)
-        api(libs.ktor.client.cio)
         api(libs.ktor.client.content.negotiation)
         api(libs.ktor.serialization.kotlinx.json)
 
@@ -194,7 +195,7 @@ kotlin {
         runtimeOnly(libs.kotlinx.coroutines.debug)
 
         implementation(libs.log4j.core)
-        implementation(libs.log4j2.slf4j.impl)
+        implementation(libs.log4j.slf4j.impl)
 
         implementation(libs.ktor.server.cio)
         implementation(libs.ktor.server.content.negotiation)
@@ -372,12 +373,16 @@ android {
         buildConfigField("String", "BANGUMI_OAUTH_CLIENT_SECRET", "\"$bangumiClientAndroidSecret\"")
     }
     buildTypes.getByName("release") {
-        isMinifyEnabled = true
+        isMinifyEnabled = false // shared 不能 minify, 否则构建 app 会失败
         isShrinkResources = false
         proguardFiles(
             getDefaultProguardFile("proguard-android-optimize.txt"),
             *sharedAndroidProguardRules(),
         )
+        buildConfigField("String", "APP_APPLICATION_ID", "\"me.him188.ani\"")
+    }
+    buildTypes.getByName("debug") {
+        buildConfigField("String", "APP_APPLICATION_ID", "\"me.him188.ani.debug2\"")
     }
     buildFeatures {
         compose = true
@@ -425,7 +430,7 @@ val generateAniBuildConfigDesktop = tasks.register("generateAniBuildConfigDeskto
                 override val versionName = "${project.version}"
                 override val bangumiOauthClientAppId = "$bangumiClientDesktopAppId"
                 override val bangumiOauthClientSecret = "$bangumiClientDesktopSecret"
-                override val isDebug = true
+                override val isDebug = System.getenv("ANI_DEBUG") == "true" || System.getProperty("ani.debug") == "true"
             }
             """.trimIndent()
 

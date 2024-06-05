@@ -24,13 +24,13 @@ plugins {
     kotlin("plugin.compose")
     id("org.jetbrains.compose")
     kotlin("plugin.serialization")
-    `flatten-source-sets`
     id("kotlinx-atomicfu")
 }
 
 dependencies {
     implementation(projects.app.shared)
     implementation(compose.components.resources)
+    implementation(libs.log4j.core)
     implementation(libs.vlcj)
 }
 
@@ -61,7 +61,7 @@ compose.desktop {
             "-Dorg.slf4j.simpleLogger.defaultLogLevel=TRACE",
             "-Dcompose.interop.blending=true",
         )
-        mainClass = "me.him188.ani.desktop.AniDesktop"
+        mainClass = "me.him188.ani.app.desktop.AniDesktop"
 //        jvmArgs("--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED")
         nativeDistributions {
             modules(
@@ -87,14 +87,14 @@ compose.desktop {
                 dockName = "Ani"
                 pkgPackageVersion = projectVersion
                 pkgPackageBuildVersion = projectVersion
-                iconFile.set(file("ani.ico"))
+                iconFile.set(file("icons/a_512x512.icns"))
 //                iconFile.set(project(":app:shared").projectDir.resolve("androidRes/mipmap-xxxhdpi/a.png"))
             }
             windows {
                 this.upgradeUuid = UUID.randomUUID().toString()
-                iconFile.set(file("ani.ico"))
+                iconFile.set(file("icons/a_1024x1024_rounded.ico"))
             }
-            
+
             // adding copyright causes package to fail.
 //            copyright = """
 //                    Ani

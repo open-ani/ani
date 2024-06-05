@@ -1,0 +1,126 @@
+package me.him188.ani.datasources.api.source
+
+import io.ktor.client.HttpClient
+import io.ktor.client.request.get
+import io.ktor.http.isSuccess
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flatMapMerge
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.retry
+import me.him188.ani.datasources.api.DefaultMedia
+import me.him188.ani.datasources.api.EpisodeSort
+import me.him188.ani.datasources.api.MediaProperties
+import me.him188.ani.datasources.api.paging.SinglePagePagedSource
+import me.him188.ani.datasources.api.paging.SizedSource
+import me.him188.ani.datasources.api.topic.EpisodeRange
+import me.him188.ani.datasources.api.topic.FileSize
+import me.him188.ani.datasources.api.topic.ResourceLocation
+import me.him188.ani.utils.logging.info
+import me.him188.ani.utils.logging.warn
+import org.jsoup.nodes.Document
+
+abstract class ThreeStepWebMediaSource : WebMediaSource() {
+    data class Bangumi(
+        val internalId: String, // 可以是数字, 例如 /bangumi/128.html 中的 128
+        val name: String,
+        val url: String, // absolute url, with baseUrl
+    )
+
+    data class Ep(
+        val name: String,
+        val url: String, // absolute url, with baseUrl
+    )
+
+    abstract val baseUrl: String // no trailing '/'
+
+    // 搜索到的番剧结果
+    abstract fun parseBangumiSearch(document: Document): List<Bangumi>
+
+    abstract suspend fun search(name: String, query: MediaFetchRequest): List<Bangumi>
+
+
+    // 点看番剧后的页面
+    abstract fun parseEpisodeList(document: Document): List<Ep>
+
+    protected abstract val client: HttpClient
+    private val subtitleLanguages = listOf("CHS")
+
+    fun createMediaMatch(
+        bangumi: Bangumi,
+        ep: Ep
+    ): MediaMatch {
+        val sort = EpisodeSort(ep.name.removePrefix("第").removeSuffix("集"))
+        return MediaMatch(
+            DefaultMedia(
+                mediaId = "$mediaSourceId.${bangumi.internalId}-${sort}",
+                mediaSourceId = mediaSourceId,
+                originalUrl = bangumi.url,
+                download = ResourceLocation.WebVideo(ep.url),
+                originalTitle = """${bangumi.name} ${ep.name}""",
+                publishedTime = 0L,
+                properties = MediaProperties(
+                    subtitleLanguageIds = subtitleLanguages,
+                    resolution = "1080P",
+                    alliance = mediaSourceId,
+                    size = FileSize.Unspecified,
+                ),
+                episodeRange = EpisodeRange.single(
+                    if (isPossiblyMovie(ep.name) && sort is EpisodeSort.Special) {
+                        EpisodeSort(1) // 电影总是 01
+                    } else {
+                        sort
+                    }
+                ),
+                location = MediaSourceLocation.Online,
+                kind = MediaSourceKind.WEB,
+            ), MatchKind.FUZZY
+        )
+    }
+
+    private fun isPossiblyMovie(title: String): Boolean {
+        return ("简" in title || "繁" in title) &&
+                ("2160P" in title || "1440P" in title || "2K" in title || "4K" in title || "1080P" in title || "720P" in title)
+    }
+
+    override suspend fun checkConnection(): ConnectionStatus =
+        client.get(baseUrl).status.isSuccess().toConnectionStatus()
+
+    override suspend fun fetch(query: MediaFetchRequest): SizedSource<MediaMatch> = SinglePagePagedSource {
+        query.subjectNames.asFlow().flatMapMerge { name ->
+            val bangumiList = flow {
+                emit(search(name, query))
+            }.retry(3) { e ->
+                logger.warn(e) { "Failed to search using name '$name'" }
+                true
+            }.firstOrNull() ?: return@flatMapMerge emptyFlow()
+
+            bangumiList.asFlow()
+                .flatMapMerge { bangumi ->
+                    val result = flow {
+                        emit(client.get(bangumi.url).bodyAsDocument())
+                    }.map {
+                        parseEpisodeList(it)
+                    }.retry(3) { e ->
+                        logger.warn(e) { "Failed to get episodes using name '$name'" }
+                        true
+                    }.firstOrNull()
+                        .orEmpty()
+                        .asSequence()
+                        .map { ep ->
+                            createMediaMatch(bangumi, ep)
+                        }
+                        .filter {
+                            it.definitelyMatches(query) ||
+                                    isPossiblyMovie(it.media.originalTitle)
+                        }
+                        .toList()
+
+                    logger.info { "$mediaSourceId fetched ${result.size} episodes for '$name': ${result.joinToString { it.media.episodeRange.toString() }}" }
+                    result.asFlow()
+                }
+        }
+    }
+}

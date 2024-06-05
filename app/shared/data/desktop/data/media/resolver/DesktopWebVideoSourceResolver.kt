@@ -15,6 +15,7 @@ import me.him188.ani.app.videoplayer.torrent.HttpStreamingVideoSource
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.matcher.WebVideoMatcher
 import me.him188.ani.datasources.api.matcher.WebVideoMatcherContext
+import me.him188.ani.datasources.api.matcher.WebVideoRequestInfo
 import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
@@ -57,13 +58,12 @@ class DesktopWebVideoSourceResolver : VideoSourceResolver, KoinComponent {
 
             val config = settings.proxySettings.flow.first().default
 
-            val matcherContext = WebVideoMatcherContext(media)
             val webVideo = SeleniumWebViewVideoExtractor(config.config.takeIf { config.enabled })
                 .getVideoResourceUrl(
                     media.download.uri,
                     resourceMatcher = {
                         matchers.firstNotNullOfOrNull { matcher ->
-                            matcher.match(it, matcherContext)
+                            matcher.match(it, WebVideoMatcherContext(media))
                         }
                     }
                 )

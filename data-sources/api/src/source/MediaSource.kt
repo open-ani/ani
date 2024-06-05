@@ -27,7 +27,10 @@ import kotlinx.serialization.encoding.Encoder
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.paging.SizedSource
+import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.datasources.api.topic.ResourceLocation
+import me.him188.ani.datasources.api.topic.contains
+import java.io.Closeable
 import java.io.File
 import java.util.ServiceLoader
 import kotlin.contracts.contract
@@ -63,8 +66,10 @@ import kotlin.contracts.contract
  * 4. 在 `:app:shared` 中的 `build.gradle.kts` 搜索 `api(projects.dataSources.core)`, 找到现有数据源的依赖定义,
  * 仿照着增加一行你的模块: `api(projects.dataSources.foo)`
  * 5. 现在启动 app 便可以自动加载你的数据源了, 可在设置中验证
+ *
+ * @see MediaSourceFactory
  */
-interface MediaSource {
+interface MediaSource : Closeable {
     /**
      * 全局唯一的 ID. 可用于保存用户偏好, 识别缓存资源的来源等.
      */
@@ -91,8 +96,21 @@ interface MediaSource {
 
     /**
      * 使用 [MediaFetchRequest] 中的信息, 尽可能多地查询一个剧集的所有可下载的资源, 返回一个分页的资源列表.
+     *
+     * 数据源应当尽可能*精准*地返回结果:
+     * - 对于**完全**肯定匹配的资源, 标记为 [MatchKind.EXACT].
+     * - 对于**完全**肯定不不配的资源, 需要剔除.
+     * - 对于无法 100% 区分的, 则应当返回, 并标记为 [MatchKind.FUZZY].
+     *
+     * ## 数据源选择的实现细节
+     *
+     * ### 数据源需要负责区分剧集的正确性
+     * - 若请求 [MediaFetchRequest.episodeSort] 为 "01", 但 [fetch] 返回 "02", 该剧集不会被后续流程自动剔除.
+     * 所有 [fetch] 返回的资源, 都将会被 `MediaSelector` 接收. 当用户关闭设置中的所有自动过滤选项时, 将能够看到所有 [fetch] 返回的资源.
      */
     suspend fun fetch(query: MediaFetchRequest): SizedSource<MediaMatch>
+
+    override fun close() {}
 }
 
 /**
@@ -104,16 +122,25 @@ interface MediaSource {
 enum class MediaSourceKind {
     /**
      * 在线视频网站. 资源为 [ResourceLocation.WebVideo] 或 [ResourceLocation.HttpStreamingFile].
+     *
+     * 对于完结番, [WEB] 的单集资源**不会**被过滤掉.
+     * @see BitTorrent
      */
     WEB,
 
     /**
-     * P2P BitTorrent 网络. 资源为 [ResourceLocation.HttpTorrentFile] 或 [ResourceLocation.MagnetLink]
+     * P2P BitTorrent 网络. 资源为 [ResourceLocation.HttpTorrentFile] 或 [ResourceLocation.MagnetLink].
+     *
+     * 如果 [Media.episodeRange] 剧集为单集 [EpisodeRange.single], 且类型为 [MediaSourceKind.BitTorrent], 则很有可能会因为默认启用的"完结番隐藏单集资源"功能而被过滤掉.
+     * @see WEB
+     * @see Media.episodeRange
      */
     BitTorrent,
 
     /**
      * 本地视频缓存. 只表示那些通过 `MediaCacheManager` 缓存的视频.
+     *
+     * 该类型的资源总是会显示, 忽略一切过滤条件.
      */
     LocalCache
 }
@@ -125,6 +152,25 @@ data class MediaMatch(
     val media: Media,
     val kind: MatchKind,
 )
+
+/**
+ * 判断该 [MediaMatch] 是否满足条件 [request].
+ *
+ * 返回 `null` 表示条件不足以判断. 届时可以根据数据源大致的准确性或者其他信息考虑是否需要在 [MediaSource.fetch] 的返回中包含此资源.
+ *
+ * 该函数会在如下情况下返回 `null`:
+ * - 当 [Media.episodeRange] 为 `null` 时. 这意味着无法知道该资源的剧集范围.
+ */
+fun MediaMatch.matches(request: MediaFetchRequest): Boolean? {
+    val actualEpRange = this.media.episodeRange ?: return null
+    val expectedEp = request.episodeEp
+    return !(request.episodeSort !in actualEpRange && (expectedEp == null || expectedEp !in actualEpRange))
+}
+
+/**
+ * 当且仅当该资源一定满足请求时返回 `true`. 若条件不足, 返回 `false`.
+ */
+fun MediaMatch.definitelyMatches(request: MediaFetchRequest): Boolean = matches(request) == true
 
 enum class MatchKind {
     /**
@@ -139,13 +185,6 @@ enum class MatchKind {
      * This is done on a best-effort basis where they can be false positives.
      */
     FUZZY,
-
-    /**
-     * The request does not match the cache.
-     *
-     * This is done on a best-effort basis where they can be false negatives.
-     */
-    NONE
 }
 
 /**

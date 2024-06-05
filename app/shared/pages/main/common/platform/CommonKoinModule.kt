@@ -53,6 +53,7 @@ import me.him188.ani.app.data.repositories.UserRepository
 import me.him188.ani.app.data.repositories.UserRepositoryImpl
 import me.him188.ani.app.data.subject.SubjectManager
 import me.him188.ani.app.data.subject.SubjectManagerImpl
+import me.him188.ani.app.data.update.UpdateManager
 import me.him188.ani.app.persistent.dataStores
 import me.him188.ani.app.persistent.preferencesStore
 import me.him188.ani.app.persistent.preferredAllianceStore
@@ -89,6 +90,11 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
     single<DanmakuManager> {
         DanmakuManagerImpl(
             parentCoroutineContext = coroutineScope.coroutineContext
+        )
+    }
+    single<UpdateManager> {
+        UpdateManager(
+            saveDir = getContext().files.cacheDir.resolve("updates"),
         )
     }
     single<SettingsRepository> { PreferencesRepositoryImpl(getContext().preferencesStore) }
@@ -182,6 +188,9 @@ fun createAppRootCoroutineScope(): CoroutineScope {
 
 @Stable
 interface AniBuildConfig {
+    /**
+     * `3.0.0-rc04`
+     */
     val versionName: String
     val bangumiOauthClientAppId: String
     val bangumiOauthClientSecret: String
@@ -220,7 +229,9 @@ val AniBuildConfig.versionCode: String
 
 @Stable
 expect val currentAniBuildConfigImpl: AniBuildConfig
-val currentAniBuildConfig: AniBuildConfig get() = currentAniBuildConfigImpl
+
+@Stable
+inline val currentAniBuildConfig: AniBuildConfig get() = currentAniBuildConfigImpl
 
 /**
  * 满足各个数据源建议格式的 User-Agent, 所有 HTTP 请求都应该带此 UA.

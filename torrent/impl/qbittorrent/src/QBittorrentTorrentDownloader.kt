@@ -42,7 +42,6 @@ import me.him188.ani.app.torrent.io.TorrentFileIO
 import me.him188.ani.app.torrent.io.TorrentInput
 import me.him188.ani.utils.coroutines.SuspendLazy
 import me.him188.ani.utils.io.SeekableInput
-import me.him188.ani.utils.io.toSeekableInput
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
@@ -122,13 +121,17 @@ class QBittorrentTorrentDownloader(
 
     override suspend fun fetchTorrent(uri: String, timeoutSeconds: Int): EncodedTorrentInfo {
         // 从下载分类 "Ani" 中找有没有正在下载的. 这只能匹配 magnet. QB 不会保存来源 HTTPS 种子文件信息.
+        logger.info { "getTorrentList" }
         val torrentList = client.getTorrentList()
+        logger.info { "getTorrentList: size=${torrentList.size}" }
         if (uri.startsWith("https://") || uri.startsWith("http://")) {
             val data = try {
+                logger.info { "Downloading http torrent file: ${uri}" }
                 httpFileDownloader.download(uri)
             } catch (e: HttpRequestTimeoutException) {
                 throw FetchTorrentTimeoutException(cause = e)
             }
+            logger.info { "File downloaded, size=${data.size}" }
             val name = decodeTorrentInfoFromTorrentFile(data)?.get("name")?.toString()
             if (name != null) {
                 torrentList.firstOrNull { it.name == name }?.let {
@@ -192,6 +195,7 @@ class QBittorrentTorrentDownloader(
         // note: this hash is not equivalent to torrent info hash
         val dir = (overrideSaveDir ?: getSaveDirForTorrent(data)).apply { mkdirs() }
         val uri = data.data.decodeToString()
+        logger.info { "startDownload: $uri" }
 
         val info = client.getTorrentList().firstOrNull {
             it.savePath == dir.absolutePath || it.magnetUri == uri
@@ -208,8 +212,10 @@ class QBittorrentTorrentDownloader(
         }
 
         if (dir.absolutePath != info.savePath) {
+            logger.info { "setTorrentLocation: ${info.name}, hash=${info.hash}, from='${info.savePath}' to='${dir.absolutePath}'" }
             client.setTorrentLocation(info.hash, dir.absolutePath)
         }
+        logger.info { "startDownload: ${info.name}, hash=${info.hash}" }
         client.recheckTorrents(listOf(info.hash))
 
         return QBittorrentTorrentDownloadSession(
@@ -289,6 +295,7 @@ class QBittorrentTorrentDownloadSession(
 
     private val files = SuspendLazy {
         // 文件列表可能有延迟, 需要等
+        logger.info { "${torrentInfo.name}: getTorrentFiles" }
         val files = flow {
             emit(client.getTorrentFiles(torrentInfo.hash))
         }.onEach {
@@ -296,6 +303,9 @@ class QBittorrentTorrentDownloadSession(
                 throw IllegalStateException("No files found for torrent ${torrentInfo.name}")
             }
         }.retry {
+            if (it !is Exception) {
+                logger.error(it) { "Failed to get files for torrent ${torrentInfo.name}" }
+            }
             delay(1000)
             true
         }.first() // 一直重试直到获取到文件列表
@@ -304,6 +314,7 @@ class QBittorrentTorrentDownloadSession(
             logger.warn { "No files found for torrent ${torrentInfo.name}" }
         }
 
+        logger.info { "${torrentInfo.name}: getTorrentProperties" }
         val torrentProperties = flow {
             val prop = client.getTorrentProperties(torrentInfo.hash)
             if (prop.pieceSize == -1L) {
@@ -348,6 +359,7 @@ class QBittorrentTorrentDownloadSession(
                 currentOffset += size
             }
         }
+        logger.info { "${torrentInfo.name}: files built: size=${list.size}" }
         list
     }
 
@@ -362,13 +374,15 @@ class QBittorrentTorrentDownloadSession(
         torrentName: String,
         isDebug: Boolean,
         parentCoroutineContext: CoroutineContext,
-        override val pieces: List<Piece>?,
+        override val pieces: List<Piece>,
     ) : AbstractTorrentFileEntry(
         index, length,
         saveDirectory,
         relativePath,
         torrentName, isDebug, parentCoroutineContext
     ) {
+        private val pieceIndexToPiece = pieces.associateBy { it.pieceIndex }
+
         inner class FileHandleImpl : AbstractTorrentFileHandle() {
             override fun closeImpl() {
                 openHandles.remove(this)
@@ -377,6 +391,7 @@ class QBittorrentTorrentDownloadSession(
 
             override fun resumeImpl(priority: FilePriority) {
                 scope.launch {
+                    logger.info { "[$torrentName] file index=$index resuming, priority=${priority}, pathInTorrent='${pathInTorrent}'" }
                     client.setFilePriority(torrentInfo.hash, index, priority.toQBFilePriority())
                 }
             }
@@ -418,24 +433,21 @@ class QBittorrentTorrentDownloadSession(
                             _stats.updateFrom(it)
                         }
 
-                        if (pieces != null) {
-                            client.getPieceStates(torrentInfo.hash).fastForEachIndexed { i, qbPieceState ->
-                                val newState = when (qbPieceState) {
-                                    QBPieceState.NOT_DOWNLOADED -> PieceState.READY
-                                    QBPieceState.DOWNLOADING -> PieceState.DOWNLOADING
-                                    QBPieceState.DOWNLOADED -> PieceState.FINISHED
-                                }
-//                                if (newState == PieceState.FINISHED && pieces[i].state.value != newState) {
-//                                    logger.info { "[$torrentName] Piece ${pieces[i].pieceIndex} finished" }
-//                                }
-                                pieces[i].state.value = newState
+                        client.getPieceStates(torrentInfo.hash).fastForEachIndexed { i, qbPieceState ->
+                            val newState = when (qbPieceState) {
+                                QBPieceState.NOT_DOWNLOADED -> PieceState.READY
+                                QBPieceState.DOWNLOADING -> PieceState.DOWNLOADING
+                                QBPieceState.DOWNLOADED -> PieceState.FINISHED
+                            }
+                            pieceIndexToPiece[i]?.let {
+                                it.state.value = newState
                             }
                         }
 
                         // 已经完成了, 就不需要更新了
                         if (_stats.progress.value == 1f) {
                             logger.info { "[$torrentName] Torrent finished" }
-                            pieces?.forEach { it.state.value = PieceState.FINISHED }
+                            pieces.forEach { it.state.value = PieceState.FINISHED }
                             return@launch
                         }
                     } catch (e: Throwable) {
@@ -459,39 +471,16 @@ class QBittorrentTorrentDownloadSession(
         override fun createInput(): SeekableInput {
             val file = resolveFileOrNull()
                 ?: runBlocking { resolveDownloadingFile() } // don't switch thread if we don't need to
-            if (pieces != null) {
-                logger.info { "Using TorrentInput since we have pieces. pieces=$pieces, file offset=${offset}, file length=$length," }
-                return TorrentInput(
-                    RandomAccessFile(file, "r"),
-                    pieces,
-                    logicalStartOffset = offset,
-                    onWait = { piece ->
-                        logger.info { "[TorrentDownloadControl] $torrentName: Set piece ${piece.pieceIndex} deadline to 0 because it was requested " }
-                        // TODO: QB 优先级
-//                        torrentThreadTasks.submit { handle ->
-//                            handle.setPieceDeadline(piece.pieceIndex, 0) // 最高优先级
-//                            for (i in (piece.pieceIndex + 1..piece.pieceIndex + 3)) {
-//                                if (i < pieces.size - 1) {
-//                                    handle.setPieceDeadline( // 按请求时间的优先
-//                                        i,
-//                                        calculatePieceDeadlineByTime(i)
-//                                    )
-//                                }
-//                            }
-//                        }
-                    },
-                    size = length
-                )
-            }
-            return file.toSeekableInput(
-                onFillBuffer = {
-                    // 不支持边下边播, 应等待下载完成
-                    if (_stats.progress.value != 1f) {
-                        runBlocking {
-                            _stats.awaitFinished()
-                        }
-                    }
-                }
+            logger.info { "Using TorrentInput since we have pieces. pieces=$pieces, file offset=${offset}, file length=$length," }
+            return TorrentInput(
+                RandomAccessFile(file, "r"),
+                pieces,
+                logicalStartOffset = offset,
+                onWait = { piece ->
+                    logger.info { "[TorrentDownloadControl] $torrentName: Set piece ${piece.pieceIndex} deadline to 0 because it was requested " }
+                    // TODO: QB 优先级
+                },
+                size = length
             )
         }
     }

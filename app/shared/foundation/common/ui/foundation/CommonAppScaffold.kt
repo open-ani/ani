@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
@@ -11,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.ripple.rememberRipple
-import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
@@ -19,6 +19,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -35,18 +36,30 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
 import coil3.compose.LocalPlatformContext
+import kotlinx.coroutines.flow.map
+import me.him188.ani.app.data.models.ThemeKind
+import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.i18n.LocalI18n
 import me.him188.ani.app.i18n.loadResourceBundle
 import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.platform.Platform
+import me.him188.ani.app.platform.isAndroid
 import me.him188.ani.app.tools.LocalTimeFormatter
 import me.him188.ani.app.tools.TimeFormatter
 import me.him188.ani.app.ui.theme.AppTheme
 import me.him188.ani.app.ui.theme.aniColorScheme
 import moe.tlaster.precompose.PreComposeApp
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+
+@Stable
+class AniAppViewModel : AbstractViewModel(), KoinComponent {
+    private val settings: SettingsRepository by inject()
+    val themeKind: ThemeKind? by settings.uiSettings.flow.map { it.theme.kind }.produceState(null)
+}
 
 @Composable
 fun AniApp(
-    colorScheme: ColorScheme = aniColorScheme(),
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
@@ -67,7 +80,20 @@ fun AniApp(
         ) {
             val focusManager by rememberUpdatedState(LocalFocusManager.current)
             val keyboard by rememberUpdatedState(LocalSoftwareKeyboardController.current)
-            MaterialTheme(colorScheme) {
+
+            val viewModel = rememberViewModel { AniAppViewModel() }
+
+            val isDark = if (Platform.currentPlatform.isAndroid()) { // 安卓需要考虑系统 UI 如状态栏的颜色, 比较麻烦
+                isSystemInDarkTheme()
+            } else {
+                when (viewModel.themeKind) {
+                    null -> return@CompositionLocalProvider
+                    ThemeKind.AUTO -> isSystemInDarkTheme()
+                    ThemeKind.LIGHT -> false
+                    ThemeKind.DARK -> true
+                }
+            }
+            MaterialTheme(aniColorScheme(isDark)) {
                 Box(
                     modifier = modifier
                         .background(AppTheme.colorScheme.background)

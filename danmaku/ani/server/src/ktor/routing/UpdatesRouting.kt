@@ -39,11 +39,17 @@ fun Route.updatesRouting() {
             incrementalDetailedDoc()
             get {
                 val updates = updateInfos(clientReleaseInfoManager)
-                val clientArch = call.request.queryParameters["clientArch"] ?: throw BadRequestException()
-                call.respond(ReleaseUpdatesDetailedResponse(updates.map {
+                val clientPlatform = call.request.queryParameters["clientPlatform"] ?: throw BadRequestException("Missing parameter clientPlatform")
+                val clientArch = call.request.queryParameters["clientArch"] ?: throw BadRequestException("Missing parameter clientArch")
+                call.respond(ReleaseUpdatesDetailedResponse(updates.mapNotNull {
+                    val downloadUrls = try {
+                        clientReleaseInfoManager.parseDownloadUrls(it.version, "$clientPlatform-$clientArch")
+                    } catch (e: IllegalArgumentException) {
+                        return@mapNotNull null
+                    }
                     UpdateInfo(
                         it.version.toString(),
-                        clientReleaseInfoManager.getCloudflareDownloadUrl(it.version, clientArch),
+                        downloadUrls,
                         it.publishTime,
                         it.description
                     )
@@ -56,15 +62,16 @@ fun Route.updatesRouting() {
 private suspend fun PipelineContext<Unit, ApplicationCall>.updateInfos(
     clientReleaseInfoManager: ClientReleaseInfoManager
 ): List<ReleaseInfo> {
-    val version = call.request.queryParameters["clientVersion"] ?: throw BadRequestException()
-    val clientArch = call.request.queryParameters["clientArch"] ?: throw BadRequestException()
+    val version = call.request.queryParameters["clientVersion"] ?: throw BadRequestException("Missing parameter clientVersion")
+    val clientPlatform = call.request.queryParameters["clientPlatform"] ?: throw BadRequestException("Missing parameter clientPlatform")
+    val clientArch = call.request.queryParameters["clientArch"] ?: throw BadRequestException("Missing parameter clientArch")
     val releaseClass = call.request.queryParameters["releaseClass"]?.let {
         ReleaseClass.fromStringOrNull(it)
-    } ?: throw BadRequestException()
+    } ?: throw BadRequestException("Missing or invalid parameter releaseClass")
 
     val updates = clientReleaseInfoManager.getAllUpdateLogs(
         version,
-        clientArch,
+        "$clientPlatform-$clientArch",
         releaseClass,
     )
     return updates
@@ -84,10 +91,17 @@ private fun Route.incrementalDoc() {
                     schema = TypeDefinition.STRING
                 ),
                 Parameter(
+                    name = "clientPlatform",
+                    `in` = Parameter.Location.query,
+                    required = true,
+                    description = "客户端平台，例：windows, android。不合法的值会导致服务器返回空的版本号列表。",
+                    schema = TypeDefinition.STRING
+                ),
+                Parameter(
                     name = "clientArch",
                     `in` = Parameter.Location.query,
                     required = true,
-                    description = "客户端平台及架构。不合法的架构会导致服务器返回空的版本号列表。",
+                    description = "客户端架构，例：x86_64, aarch64。不合法的值会导致服务器返回空的版本号列表。",
                     schema = TypeDefinition.STRING
                 ),
                 Parameter(
@@ -134,10 +148,17 @@ private fun Route.incrementalDetailedDoc() {
                     schema = TypeDefinition.STRING
                 ),
                 Parameter(
+                    name = "clientPlatform",
+                    `in` = Parameter.Location.query,
+                    required = true,
+                    description = "客户端平台，例：windows, android。不合法的值会导致服务器返回空的版本号列表。",
+                    schema = TypeDefinition.STRING
+                ),
+                Parameter(
                     name = "clientArch",
                     `in` = Parameter.Location.query,
                     required = true,
-                    description = "客户端平台及架构。不合法的架构会导致服务器返回空的更新详情列表。",
+                    description = "客户端架构，例：x86_64, aarch64。不合法的值会导致服务器返回空的版本号列表。",
                     schema = TypeDefinition.STRING
                 ),
                 Parameter(
@@ -157,7 +178,7 @@ private fun Route.incrementalDetailedDoc() {
                         listOf(
                             UpdateInfo(
                                 "3.0.0-rc01",
-                                "https://d.myani.org/v3.0.0-rc01/ani-3.0.0-rc01.apk",
+                                listOf("https://d.myani.org/v3.0.0-rc01/ani-3.0.0-rc01.apk"),
                                 1716604732,
                                 """
                                     ## 主要更新

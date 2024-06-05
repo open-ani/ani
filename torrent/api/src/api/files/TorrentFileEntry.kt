@@ -225,7 +225,7 @@ abstract class AbstractTorrentFileEntry(
      *
      * must support [RandomAccess]
      */
-    abstract override val pieces: List<Piece>?
+    abstract override val pieces: List<Piece>
 
     final override val pathInTorrent: String get() = relativePath.substringAfter("/")
 

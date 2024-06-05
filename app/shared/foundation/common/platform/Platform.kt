@@ -49,12 +49,18 @@ sealed class Platform {
         override val arch: Arch
     ) : Desktop("Linux")
 
+    @Stable
     companion object {
         @Stable
         val currentPlatform: Platform = currentPlatformImpl()
     }
 }
 
+@Stable
+val currentPlatform: Platform
+    get() = Platform.currentPlatform
+
+@Immutable
 enum class Arch(
     val displayName: String, // Don't change, used by the server
 ) {
@@ -62,20 +68,25 @@ enum class Arch(
     AARCH64("aarch64"),
 }
 
+@Stable
 expect fun Platform.Companion.currentPlatformImpl(): Platform
 
+@Stable
 fun Platform.isAarch64(): Boolean = this.arch == Arch.AARCH64
 
+@Stable
 fun Platform.isDesktop(): Boolean {
     contract { returns(true) implies (this@isDesktop is Platform.Desktop) }
     return this is Platform.Desktop
 }
 
+@Stable
 fun Platform.isMobile(): Boolean {
     contract { returns(true) implies (this@isMobile is Platform.Mobile) }
     return this is Platform.Mobile
 }
 
+@Stable
 fun Platform.isAndroid(): Boolean {
     contract { returns(true) implies (this@isAndroid is Platform.Android) }
     return this is Platform.Android

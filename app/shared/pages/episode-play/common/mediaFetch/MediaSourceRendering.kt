@@ -28,12 +28,15 @@ import me.him188.ani.app.bangumi
 import me.him188.ani.app.data.media.MediaCacheManager.Companion.LOCAL_FS_MEDIA_SOURCE_ID
 import me.him188.ani.app.dmhy
 import me.him188.ani.app.mikan
+import me.him188.ani.app.mxdongman
+import me.him188.ani.app.nyafun
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.datasources.acgrip.AcgRipMediaSource
 import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
 import me.him188.ani.datasources.dmhy.DmhyMediaSource
 import me.him188.ani.datasources.mikan.MikanCNMediaSource
 import me.him188.ani.datasources.mikan.MikanMediaSource
+import me.him188.ani.datasources.mxdongman.MxdongmanMediaSource
 import me.him188.ani.datasources.nyafun.NyafunMediaSource
 import org.jetbrains.compose.resources.painterResource
 
@@ -47,6 +50,7 @@ fun renderMediaSource(
     MikanCNMediaSource.ID -> "Mikan (中国大陆)"
     BangumiSubjectProvider.ID -> "Bangumi"
     NyafunMediaSource.ID -> "Nyafun"
+    MxdongmanMediaSource.ID -> "MX 动漫"
     LOCAL_FS_MEDIA_SOURCE_ID -> "本地"
     else -> id
 }
@@ -61,6 +65,7 @@ fun renderMediaSourceDescription(
     MikanCNMediaSource.ID -> "mikanime.tv"
     BangumiSubjectProvider.ID -> "bgm.tv"
     NyafunMediaSource.ID -> "nyafun.net"
+    MxdongmanMediaSource.ID -> "mxdm4.com"
     LOCAL_FS_MEDIA_SOURCE_ID -> null
     else -> null
 }
@@ -77,6 +82,8 @@ fun getMediaSourceIcon(
         AcgRipMediaSource.ID -> painterResource(Res.drawable.acg_rip)
         MikanMediaSource.ID, MikanCNMediaSource.ID -> painterResource(Res.drawable.mikan)
         BangumiSubjectProvider.ID -> painterResource(Res.drawable.bangumi)
+        NyafunMediaSource.ID -> painterResource(Res.drawable.nyafun)
+        MxdongmanMediaSource.ID -> painterResource(Res.drawable.mxdongman)
         else -> null
     }
 }

@@ -182,6 +182,13 @@ class TorrentMediaCacheEngine(
                 }
             }
         }
+
+        override fun toString(): String {
+            return "TorrentMediaCache(subjectName='${metadata.subjectNames.firstOrNull()}', " +
+                    "episodeSort=${metadata.episodeSort}, " +
+                    "episodeName='${metadata.episodeName}', " +
+                    "origin.mediaSourceId='${origin.mediaSourceId}')"
+        }
     }
 
     override val isEnabled: Flow<Boolean> get() = torrentEngine.isEnabled

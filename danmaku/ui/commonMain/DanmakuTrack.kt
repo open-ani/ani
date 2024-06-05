@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -113,7 +114,7 @@ class DanmakuTrackState(
      * @see DanmakuSessionAlgorithm
      */
     @PublishedApi
-    internal val channel = Channel<DanmakuPresentation>(1)
+    internal val channel = Channel<DanmakuPresentation>(0, onBufferOverflow = BufferOverflow.SUSPEND)
 
     internal val isPaused by isPaused
 
@@ -188,13 +189,13 @@ class DanmakuTrackState(
      * Called on every frame to update the state.
      */
     @UiThread
-    internal fun receiveNewDanmaku() {
+    internal suspend fun receiveNewDanmaku() {
         if (trackSize == IntSize.Zero) return
         if (trackOffset.isNaN()) return // track 还未放置
         if (visibleDanmaku.size >= maxCount) return // `>` is impossible, just to be defensive
         if (startingDanmaku.isNotEmpty()) return // 有弹幕仍然在屏幕右边   
 
-        val danmaku = channel.tryReceive().getOrNull() ?: return
+        val danmaku = channel.receiveCatching().getOrNull() ?: return
         place(danmaku)
     }
 
@@ -373,11 +374,18 @@ fun DanmakuTrack(
     LaunchedEffect(true) {
         while (isActive) {
             withContext(Dispatchers.Main.immediate) {
-                trackState.receiveNewDanmaku()
                 trackState.checkDanmakuVisibility(layoutDirection, safeSeparation)
             }
             // We need this delay to calculate gently, because we need to ensure that the updating of offsets gets completed in every frame.
             delay(1000 / 120)
+        }
+    }
+
+    LaunchedEffect(true) {
+        while (isActive) {
+            trackState.receiveNewDanmaku()
+            // We need this delay to calculate gently, because we need to ensure that the updating of offsets gets completed in every frame.
+            delay(1000 / 60)
         }
     }
 
@@ -424,8 +432,16 @@ fun DanmakuText(
 ) {
     Box(modifier.alpha(style.alpha)) {
         // Black text with stronger stroke
+        val text = if (config.isDebug) {
+            remember(state) {
+                state.presentation.danmaku.text +
+                        " (${String.format("%.2f", state.presentation.danmaku.playTimeMillis.toFloat().div(1000))})"
+            }
+        } else {
+            state.presentation.danmaku.text
+        }
         Text(
-            state.presentation.danmaku.text,
+            text,
             Modifier,
             overflow = TextOverflow.Clip,
             maxLines = 1,
@@ -436,7 +452,7 @@ fun DanmakuText(
         // Covered by a white, smaller text.
         // So the resulting look is a white text with black border.
         Text(
-            state.presentation.danmaku.text,
+            text,
             Modifier,
             overflow = TextOverflow.Clip,
             maxLines = 1,

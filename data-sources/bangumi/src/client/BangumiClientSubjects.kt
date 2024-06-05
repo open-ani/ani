@@ -2,6 +2,7 @@ package me.him188.ani.datasources.bangumi.client
 
 import me.him188.ani.datasources.api.paging.Paged
 import me.him188.ani.datasources.bangumi.models.search.BangumiSort
+import me.him188.ani.datasources.bangumi.models.subjects.BangumiLegacySubject
 import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubject
 import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectDetails
 import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectImageSize
@@ -31,6 +32,29 @@ interface BangumiClientSubjects {
         ranks: List<String>? = null,
         nsfw: Boolean? = null,
     ): Paged<BangumiSubject>
+
+    /**
+     * Search bangumi subjects by old api.
+     *
+     * @see <https://github.com/bangumi/server>
+     * @see <https://bangumi.github.io/api/>
+     *
+     * @param keyword subject keyword, such as name.
+     * @param type bangumi subject type, default search all types when it is null.
+     * @param responseGroup return the data size which default is small, available values : [small, medium, large], default value is small.
+     * @param start start page, default is first page.
+     * @param maxResults max results in page, max is 25.
+     * @see BangumiSubjectType
+     * @see BangumiSubjectImageSize
+     *
+     */
+    suspend fun searchSubjectsByKeywordsWithOldApi(
+        keyword: String,
+        type: BangumiSubjectType?,
+        responseGroup: BangumiSubjectImageSize?,
+        start: Int?,
+        maxResults: Int?
+    ): Paged<BangumiLegacySubject>
 
     suspend fun getSubjectById(
         id: Int,

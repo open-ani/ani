@@ -83,7 +83,33 @@ class MainActivity : AniComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
-            AniApp(currentColorScheme) {
+            AniApp {
+//                val viewModel = rememberViewModel { AniAppViewModel() }
+//                when (viewModel.themeKind) {
+//                    null -> {}
+//                    ThemeKind.AUTO -> {
+//                        SideEffect {
+//                            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+//                        }
+//                    }
+//
+//                    ThemeKind.LIGHT -> {
+//                        SideEffect {
+//                            window.navigationBarColor = aniLightColorTheme().surfaceColorAtElevation(2.dp).toArgb()
+//                            window.statusBarColor = aniLightColorTheme().onSurface.toArgb()
+////                            window.decorView.systemUiVisibility =
+//                            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+//                        }
+//                    }
+//
+//                    ThemeKind.DARK -> {
+//                        SideEffect {
+//                            window.navigationBarColor = aniDarkColorTheme().surfaceColorAtElevation(2.dp).toArgb()
+//                            window.statusBarColor = aniDarkColorTheme().onSurface.toArgb()
+//                            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+//                        }
+//                    }
+//                }
                 AniAppContent(aniNavigator)
             }
         }

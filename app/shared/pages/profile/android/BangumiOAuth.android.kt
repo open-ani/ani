@@ -15,9 +15,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.session.BangumiAuthorizationConstants
+import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 
 private enum class LaunchChromeStatus {
     LAUNCHING,
@@ -59,5 +61,13 @@ actual fun BangumiOAuthRequest(
                 }
             }
         }
+    }
+}
+
+@Preview
+@Composable
+private fun PreviewBangumiAuthIntroLayout() {
+    ProvideCompositionLocalsForPreview {
+        BangumiAuthIntroLayout({})
     }
 }

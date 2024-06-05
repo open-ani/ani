@@ -2,6 +2,7 @@ package me.him188.ani.app.videoplayer.ui.state
 
 import androidx.annotation.UiThread
 import androidx.compose.runtime.Stable
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -198,6 +199,8 @@ abstract class AbstractPlayerState<D : AbstractPlayerState.Data>(
 
         val opened = try {
             openSource(source)
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Throwable) {
             logger.error(e) { "Failed to open VideoSource: $source" }
             throw e
@@ -208,6 +211,8 @@ abstract class AbstractPlayerState<D : AbstractPlayerState.Data>(
             state.value = PlaybackState.PAUSED_BUFFERING
             startPlayer(opened)
             logger.info { "Player is now initialized with media and will play when ready" }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Throwable) {
             logger.error(e) { "Player failed to initialize" }
             opened.releaseResource()

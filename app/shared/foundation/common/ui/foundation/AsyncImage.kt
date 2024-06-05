@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -15,13 +16,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.DefaultAlpha
 import androidx.compose.ui.graphics.FilterQuality
-import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import coil3.ImageLoader
 import coil3.compose.AsyncImagePainter
 import coil3.compose.DefaultModelEqualityDelegate
 import coil3.compose.EqualityDelegate
+import me.him188.ani.app.platform.currentPlatform
+import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.ui.external.placeholder.placeholder
 
 val LocalImageLoader = androidx.compose.runtime.staticCompositionLocalOf<ImageLoader> {
@@ -42,6 +44,9 @@ fun LoadingIndicator(progress: Float, modifier: Modifier = Modifier) {
 }
 
 
+@Stable
+inline val defaultFilterQuality get() = if (currentPlatform.isDesktop()) FilterQuality.High else FilterQuality.Low
+
 /**
  * Placeholder is [Modifier.placeholder]
  */
@@ -60,7 +65,7 @@ fun AsyncImage(
     contentScale: ContentScale = ContentScale.Fit,
     alpha: Float = DefaultAlpha,
     colorFilter: ColorFilter? = null,
-    filterQuality: FilterQuality = DrawScope.DefaultFilterQuality,
+    filterQuality: FilterQuality = defaultFilterQuality,
     clipToBounds: Boolean = true,
     modelEqualityDelegate: EqualityDelegate = DefaultModelEqualityDelegate,
 ) {
@@ -112,7 +117,7 @@ fun AsyncImage(
     contentScale: ContentScale = ContentScale.Fit,
     alpha: Float = DefaultAlpha,
     colorFilter: ColorFilter? = null,
-    filterQuality: FilterQuality = DrawScope.DefaultFilterQuality,
+    filterQuality: FilterQuality = defaultFilterQuality,
     clipToBounds: Boolean = true,
     modelEqualityDelegate: EqualityDelegate = DefaultModelEqualityDelegate,
 ) {
@@ -149,7 +154,7 @@ fun AsyncImage(
     contentScale: ContentScale = ContentScale.Fit,
     alpha: Float = DefaultAlpha,
     colorFilter: ColorFilter? = null,
-    filterQuality: FilterQuality = DrawScope.DefaultFilterQuality,
+    filterQuality: FilterQuality = defaultFilterQuality,
     clipToBounds: Boolean = true,
     modelEqualityDelegate: EqualityDelegate = DefaultModelEqualityDelegate,
 ) {

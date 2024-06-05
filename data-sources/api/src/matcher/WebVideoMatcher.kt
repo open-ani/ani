@@ -5,7 +5,7 @@ import me.him188.ani.datasources.api.Media
 /**
  * 匹配 WebView 拦截到的资源.
  */
-interface WebVideoMatcher {
+interface WebVideoMatcher { // SPI service load
     fun match(
         url: String,
         context: WebVideoMatcherContext
@@ -14,6 +14,14 @@ interface WebVideoMatcher {
 
 class WebVideoMatcherContext(
     val media: Media,
+//    requestInfoLazy: () -> WebVideoRequestInfo,
+) {
+//    val requestInfo by lazy { requestInfoLazy() }
+}
+
+class WebVideoRequestInfo(
+    val url: String,
+    val headers: Map<String, String>
 )
 
 data class WebVideo(

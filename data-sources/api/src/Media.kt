@@ -5,9 +5,11 @@ import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import me.him188.ani.datasources.api.source.MediaFetchRequest
+import me.him188.ani.datasources.api.source.MediaMatch
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.source.MediaSourceLocation
+import me.him188.ani.datasources.api.source.matches
 import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
@@ -49,10 +51,16 @@ sealed interface Media {
     /**
      * 该资源包含的剧集列表.
      *
-     * - 如果是单集资源, 该列表可能包含 1 个元素.
-     * - 如果是季度全集资源, 该列表可能包含多个元素, 典型值为 12 个.
+     * - 如果是单集资源, 该列表可能包含 1 个元素, 即 [EpisodeRange.single]
+     * - 如果是季度全集资源, 该列表可能包含多个元素, 典型值为 12 个. 季度全集可以是 [EpisodeRange.range] (`1..12`) 或 [EpisodeRange.season] (`S1`).
      *
-     * 当解析剧集列表失败时为 `null`
+     * 当解析剧集列表失败时为 `null`.
+     * 注意, 如果为 `null`, [MediaMatch.matches] 一定会过滤掉这个资源. 如果你实现的[数据源][MediaSource]使用 [MediaMatch.matches], 则需要小心.
+     *
+     * 在 [MediaSource.fetch] 时, 如果自定义的数据源查询到的资源没有确定的剧集信息, 可以考虑猜测该资源的剧集为 [MediaFetchRequest.episodeSort].
+     *
+     * 如果剧集为单集 [EpisodeRange.single], 且类型 [kind] 为 [MediaSourceKind.BitTorrent], 则很有可能会因为默认启用的"完结番隐藏单集资源"功能而被过滤掉.
+     * 在 UI 中不会显示. 设计上, 这是为了让用户看到的资源更加整洁. 如果你期望一直显示资源, 考虑将 [kind] 改为 [MediaSourceKind.WEB], 或是在 GitHub 讨论更改这个过滤行为.
      */
     val episodeRange: EpisodeRange?
 
@@ -68,7 +76,7 @@ sealed interface Media {
      *
      * 为 `0` 表示数据源不支持该属性.
      */
-    val publishedTime: Long // 如果
+    val publishedTime: Long // 为 `0` 不会影响过滤. 只是会在 UI 中不显示发布时间
 
     /**
      * 用于数据源选择器内过滤的属性.
@@ -100,7 +108,9 @@ sealed interface Media {
  */
 @Immutable
 @Serializable
-data class DefaultMedia(
+data class DefaultMedia
+@Suppress("DataClassPrivateConstructor")
+private constructor(
     override val mediaId: String,
     override val mediaSourceId: String, // e.g. "dmhy"
     override val originalUrl: String,
@@ -111,7 +121,33 @@ data class DefaultMedia(
     override val episodeRange: EpisodeRange? = null,
     override val location: MediaSourceLocation = MediaSourceLocation.Online,
     override val kind: MediaSourceKind = MediaSourceKind.BitTorrent,
-) : Media
+    @Transient private val _primaryConstructorMarker: Unit = Unit,
+) : Media {
+    constructor(
+        mediaId: String,
+        mediaSourceId: String, // e.g. "dmhy"
+        originalUrl: String,
+        download: ResourceLocation,
+        originalTitle: String,
+        publishedTime: Long,
+        properties: MediaProperties,
+        episodeRange: EpisodeRange?,
+        location: MediaSourceLocation,
+        kind: MediaSourceKind,
+    ) : this(
+        mediaId,
+        mediaSourceId,
+        originalUrl,
+        download,
+        originalTitle,
+        publishedTime,
+        properties,
+        episodeRange,
+        location,
+        kind,
+        _primaryConstructorMarker = Unit,
+    )
+}
 
 /**
  * A media that is already cached into an easily accessible location, i.e. [MediaSourceLocation.Local].
@@ -130,6 +166,7 @@ class CachedMedia(
 
 /**
  * 用于播放或缓存时过滤选择资源的属性.
+ * @see Media.properties
  */
 @Immutable
 @Serializable
@@ -137,31 +174,45 @@ class MediaProperties private constructor(
     /**
      * 该资源支持的字幕语言列表. 可以有多个.
      *
-     * 建议的值: "CHS", "CHT", "JPY", "ENG".
+     * ## APP 行为细节
      *
-     * 为空表示没有任何字幕.
-     * 为空时, 很有可能会被数据源选择器忽略掉. 因为默认设置是忽略无字幕的资源.
+     * 建议的值: "CHS", "CHT", "JPY", "ENG".
+     * 这些值能保证在 APP UI 中显示为 "简体中文" 等本地化名称.
+     *
+     * 为空字符串表示没有任何字幕. 但这很有可能会导致被数据源选择器忽略掉. 因为默认偏好设置是忽略无字幕的资源 (可在 APP 设置中关闭)
      *
      * 如果数据源不支持检索该属性, 可以返回一个最大努力上的猜测, 例如简体中文视频网站就只返回 `listOf("CHS")`.
      */
     val subtitleLanguageIds: List<String>,
     /**
-     * 分辨率.
+     * 分辨率, 例如 "1080P", 区分大小写.
      *
-     * 建议的值: "720P", "1080P", "2P", "4K".
+     * ## APP 行为细节
      *
-     * 提供 "1440P" 和 "2160P" 也可能能正确识别, 但是不建议.
-     * 提供其他的值可能会导致
+     * 建议的值: "720P", "1080P", "2K", "4K".
      *
-     * 若未知, 返回空字符串.
+     * 提供 "1440P" 和 "2160P" 能正确识别, 但建议使用上述四个选项.
+     * 提供其他的值可能导致前端 UI 无法正确匹配名称, 也会使得数据源选择器 UI 混乱影响体验.
+     * 总是使用大写.
+     *
+     * 若未知, 可以返回空字符串. 但建议尽可能提供, 可以根据数据源的大致清晰度猜测一个, 例如 "1080P".
      */
     val resolution: String,
     /**
      * 字幕组名称, 例如 "桜都字幕组", "北宇治字幕组".
-     */ // 最好是稳定的, 用户选择数据源后会自动保存这个属性, 下次自动选择
+     * 空字符串可能导致数据源选择器忽略掉这个资源.
+     *
+     * 对于无法确定字幕组的数据源, 可以使用数据源的 [MediaSource.mediaSourceId] 代替.
+     *
+     * 该属性建议比较稳定. 例如对于桜都字幕组资源, 总是返回 "桜都字幕组", 而不要返回相似的 "樱都字幕组", "桜都字幕组2" 等内容.
+     * 因为当用户选择字幕组后, 该偏好会保存, 并在下次选择时自动使用. 如果字幕组名称不稳定, 将无法选择正确的偏好资源.
+     */
     val alliance: String,
     /**
-     * 文件大小, 若未知可以提供 [FileSize.Unspecified].
+     * 文件大小, 若未知可以提供 [FileSize.Unspecified] 或 [FileSize.Zero]. 这两个值在 APP 中都会判定为未知大小.
+     * 未知大小不会导致数据源被过滤掉, 但是未来可能会影响选择顺序.
+     *
+     * 若未来实现文件大小排序筛选, 用户可能会倾向于选择更大或更小的文件, 而未知的文件大小在这两个种情况下都将会排序在最后, 导致最低优先级选择. (具体行为待定)
      */ // 提供的话, 在数据源选择器中会有一个标签显示这个大小
     val size: FileSize = 0.bytes, // note: default value only for compatibility
     @Suppress("unused")

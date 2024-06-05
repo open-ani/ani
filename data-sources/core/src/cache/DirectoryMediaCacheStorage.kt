@@ -25,7 +25,6 @@ import me.him188.ani.datasources.api.MediaCacheMetadata
 import me.him188.ani.datasources.api.paging.SinglePagePagedSource
 import me.him188.ani.datasources.api.paging.SizedSource
 import me.him188.ani.datasources.api.source.ConnectionStatus
-import me.him188.ani.datasources.api.source.MatchKind
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.source.MediaMatch
 import me.him188.ani.datasources.api.source.MediaSource
@@ -253,7 +252,7 @@ private class MediaCacheStorageSource(
         return SinglePagePagedSource {
             storage.listFlow.first().mapNotNull { cache ->
                 val kind = query.matches(cache.metadata)
-                if (kind == MatchKind.NONE) null
+                if (kind == null) null
                 else MediaMatch(cache.getCachedMedia(), kind)
             }.asFlow()
         }

@@ -21,7 +21,7 @@ class AccountViewModel : AbstractViewModel(), KoinComponent, ViewModelAuthSuppor
 
     val selfInfo = sessionManager.username
         .map {
-            if (it == null) null else runUntilSuccess { profileRepository.getSelfOrNull() }
+            if (it == null) null else runUntilSuccess(maxAttempts = Int.MAX_VALUE) { profileRepository.getSelfOrNull() }
         }
         .stateInBackground(null)
 

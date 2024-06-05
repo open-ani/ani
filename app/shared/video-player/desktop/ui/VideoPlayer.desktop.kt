@@ -29,7 +29,6 @@ import me.him188.ani.app.videoplayer.ui.state.SubtitleTrack
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
-import uk.co.caprica.vlcj.factory.MediaPlayerFactory
 import uk.co.caprica.vlcj.factory.discovery.NativeDiscovery
 import uk.co.caprica.vlcj.media.Media
 import uk.co.caprica.vlcj.media.MediaEventAdapter
@@ -74,12 +73,13 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
         }
     }
     var bitmap: ImageBitmap by component::composeImage
-    val mediaPlayerFactory = MediaPlayerFactory(
-        "--video-title=vlcj video output",
-        "--no-snapshot-preview",
-        "--intf=dummy",
-        "-v"
-    )
+
+    //    val mediaPlayerFactory = MediaPlayerFactory(
+//        "--video-title=vlcj video output",
+//        "--no-snapshot-preview",
+//        "--intf=dummy",
+//        "-v"
+//    )
     val player: EmbeddedMediaPlayer = component.mediaPlayer()
 //        mediaPlayerFactory.mediaPlayers().newEmbeddedMediaPlayer()
 
@@ -179,7 +179,7 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
     }
 
     override fun closeImpl() {
-//        component.release()
+        component.release()
         lastMedia = null
     }
 

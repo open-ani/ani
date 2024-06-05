@@ -68,18 +68,19 @@ includeProject(":app:android", "app/android") // Android client
 //includeProject(":server:database-xodus", "server/database-xodus") // database implementation with Xodus
 
 // data sources
-includeProject(":data-sources:api", "data-sources/api") // data source interfaces: Media, MediaSource 
+includeProject(":data-sources:api") // data source interfaces: Media, MediaSource 
 includeProject(":data-sources:api:test-codegen") // 生成单元测试
 includeProject(":data-sources:core", "data-sources/core") // data source managers: MediaFetcher, MediaCacheStorage
-includeProject(":data-sources:dmhy", "data-sources/dmhy") // data source from https://dmhy.org
-includeProject(":data-sources:acg-rip", "data-sources/acg.rip") // data source from https://acg.rip
-includeProject(":data-sources:mikan", "data-sources/mikan") // data source from https://mikanani.me/
-includeProject(":data-sources:nyafun", "data-sources/nyafun") // data source from https://nyafun.net/
-includeProject(
-    ":data-sources:bangumi",
-    "data-sources/bangumi"
-) // data source from https://bangumi.tv
-includeProject(":data-sources:ikaros", "data-sources/ikaros") // data source from https://ikaros.run/
+includeProject(":data-sources:bangumi", "data-sources/bangumi") // https://bangumi.tv
+//   BT 数据源
+includeProject(":data-sources:dmhy", "data-sources/bt/dmhy") // https://dmhy.org
+includeProject(":data-sources:acg-rip", "data-sources/bt/acg.rip") // https://acg.rip
+includeProject(":data-sources:mikan", "data-sources/bt/mikan") // https://mikanani.me/
+//   Web 数据源
+includeProject(":data-sources:web-base", "data-sources/web/web-base") // web 基础
+includeProject(":data-sources:nyafun", "data-sources/web/nyafun") // https://nyafun.net/
+includeProject(":data-sources:mxdongman", "data-sources/web/mxdongman") // https://mxdm4.com/
+includeProject(":data-sources:ikaros", "data-sources/ikaros") // https://ikaros.run/
 
 // danmaku
 //includeProject(":danmaku:api", "danmaku/api") // danmaku source interfaces
@@ -91,7 +92,7 @@ includeProject(":danmaku:ani:protocol", "danmaku/ani/protocol") // danmaku serve
 
 includeProject(
     ":data-sources:dmhy:dataset-tools",
-    "data-sources/dmhy/dataset-tools"
+    "data-sources/bt/dmhy/dataset-tools"
 ) // tools for generating dataset for ML title parsing
 
 // ci

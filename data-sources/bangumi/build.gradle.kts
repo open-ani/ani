@@ -39,7 +39,6 @@ dependencies {
     implementation(projects.utils.slf4jKt)
 
     api(libs.kotlinx.coroutines.core)
-    implementation(libs.ktor.client.cio)
     implementation(libs.ktor.client.logging)
     implementation(libs.ktor.client.content.negotiation)
     implementation(libs.ktor.serialization.kotlinx.json)

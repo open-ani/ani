@@ -31,7 +31,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import me.him188.ani.app.ui.settings.SettingsScope
+import me.him188.ani.app.ui.settings.framework.components.SettingsScope
+import me.him188.ani.app.ui.settings.framework.components.TextItem
 import me.him188.ani.app.ui.subject.episode.mediaFetch.getMediaSourceIcon
 import me.him188.ani.app.ui.subject.episode.mediaFetch.renderMediaSource
 import me.him188.ani.app.ui.subject.episode.mediaFetch.renderMediaSourceDescription
@@ -50,13 +51,26 @@ enum class ConnectionTestResult {
 fun Boolean.toConnectionTestResult() =
     if (this) ConnectionTestResult.SUCCESS else ConnectionTestResult.FAILED
 
+typealias ConnectionTester = Tester<ConnectionTestResult>
+
+fun ConnectionTester(
+    id: String,
+    testConnection: suspend () -> ConnectionTestResult,
+): ConnectionTester = Tester(id,
+    testConnection,
+    onError = {
+        ConnectionTestResult.FAILED
+    }
+)
+
 @Stable
-class ConnectionTester(
+open class Tester<T>(
     val id: String,
-    private val testConnection: suspend () -> ConnectionTestResult,
+    private val onTest: suspend () -> T,
+    private val onError: (Throwable) -> T,
 ) {
     var isTesting by mutableStateOf(false)
-    var result: ConnectionTestResult? by mutableStateOf(null)
+    var result: T? by mutableStateOf(null)
     var time: Duration? by mutableStateOf(null)
 
     fun reset() {
@@ -70,15 +84,16 @@ class ConnectionTester(
             isTesting = true
         }
         try {
-            val (res, t) = measureTimedValue { testConnection() }
+            val (res, t) = measureTimedValue { onTest() }
             withContext(Dispatchers.Main) {
                 time = t
                 result = res
             }
         } catch (e: Throwable) {
+            val res = onError(e)
             withContext(Dispatchers.Main) {
                 time = Duration.INFINITE
-                result = ConnectionTestResult.FAILED
+                result = res
             }
             throw e
         } finally {

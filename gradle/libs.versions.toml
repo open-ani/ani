@@ -14,7 +14,7 @@ ktor = "2.3.10"
 koin = "3.5.3"
 slf4j = "2.0.12"
 jsoup = "1.15.4"
-android-gradle-plugin = "8.3.2"
+android-gradle-plugin = "8.2.2"
 accompanist = "0.34.0"
 datastore = "1.1.1"
 libtorrent4j = "2.1.0-31"
@@ -64,6 +64,7 @@ kotlinx-io-core = { module = "org.jetbrains.kotlinx:kotlinx-io-core", version = 
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
 ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
+ktor-client-auth = { module = "io.ktor:ktor-client-auth", version.ref = "ktor" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 ktor-client-websockets = { module = "io.ktor:ktor-client-websockets", version.ref = "ktor" }
 ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
@@ -95,7 +96,7 @@ directories = { module = "dev.dirs:directories", version = "26" }
 
 # Slf4j
 log4j-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j-core" }
-log4j2-slf4j-impl = { module = "org.apache.logging.log4j:log4j-slf4j2-impl", version.ref = "log4j-core" }
+log4j-slf4j-impl = { module = "org.apache.logging.log4j:log4j-slf4j2-impl", version.ref = "log4j-core" }
 playwright = { module = "com.microsoft.playwright:playwright", version.ref = "playwright" }
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }

@@ -34,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.navigation.BackDispatcher
@@ -50,6 +51,7 @@ import me.him188.ani.app.ui.foundation.TopAppBarGoBackButton
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.widgets.RichDialogLayout
 import me.him188.ani.app.ui.profile.AuthViewModel
+import me.him188.ani.app.ui.profile.BangumiAuthIntroLayout
 import me.him188.ani.app.ui.profile.BangumiOAuthRequest
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.navigation.BackHandler
@@ -92,13 +94,24 @@ fun AuthRequestPage(
         ) {
             AuthResults(vm)
 
+            var confirmIntro by rememberSaveable { mutableStateOf(false) }
+
             val needAuth by vm.needAuth.collectAsStateWithLifecycle()
             if (needAuth) {
-                key(vm.retryCount.value) {
-                    BangumiOAuthRequest(
-                        vm,
-                        Modifier.fillMaxSize()
-                    )
+                if (confirmIntro) {
+                    key(vm.retryCount.value) {
+                        BangumiOAuthRequest(
+                            vm,
+                            Modifier.fillMaxSize()
+                        )
+                    }
+                } else {
+                    BasicAlertDialog(
+                        { confirmIntro = true },
+                        properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
+                    ) {
+                        BangumiAuthIntroLayout(onDismissRequest = { confirmIntro = true })
+                    }
                 }
             } else {
                 // already logged in

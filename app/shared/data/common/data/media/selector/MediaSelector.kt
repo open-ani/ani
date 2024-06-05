@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -28,7 +29,7 @@ import kotlin.coroutines.CoroutineContext
  */
 interface MediaSelector {
     /**
-     * 搜索到的全部的列表
+     * 搜索到的全部的列表, 经过了设置 [MediaSelectorSettings] 筛选.
      */
     val mediaList: Flow<List<Media>>
 
@@ -38,12 +39,12 @@ interface MediaSelector {
     val mediaSourceId: MediaPreferenceItem<String>
 
     /**
-     * 经过筛选后的列表
+     * 经过 [alliance], [resolution] 等[偏好][MediaPreference]筛选后的列表.
      */
     val filteredCandidates: Flow<List<Media>>
 
     /**
-     * The final media selected from the [filteredCandidates].
+     * 目前选中的项目. 它不一定是 [filteredCandidates] 中的一个项目.
      */
     val selected: Flow<Media?>
 
@@ -151,10 +152,19 @@ interface MediaPreferenceItem<T : Any> {
 
 data class MediaSelectorContext(
     /**
-     * 该条目已经完结了一段时间了
+     * 该条目已经完结了一段时间了. `null` 表示该信息还正在查询中
      */
-    val subjectFinishedForAConservativeTime: Boolean,
-)
+    val subjectFinishedForAConservativeTime: Boolean? = null,
+) {
+    fun allFieldsLoaded() = subjectFinishedForAConservativeTime != null
+
+    companion object {
+        /**
+         * 刚开始查询时的默认值
+         */
+        val Initial = MediaSelectorContext()
+    }
+}
 
 class DefaultMediaSelector(
     mediaSelectorContextNotCached: Flow<MediaSelectorContext>,
@@ -204,21 +214,25 @@ class DefaultMediaSelector(
         context: MediaSelectorContext,
         list: List<Media>
     ): List<Media> {
-        val needFilter = preference.showWithoutSubtitle || settings.hideSingleEpisodeForCompleted
+        val needFilter = !preference.showWithoutSubtitle || settings.hideSingleEpisodeForCompleted
         if (!needFilter) return list // no copy
         return list.fastFilter filter@{ media ->
             if (isLocalCache(media)) return@filter true // 本地缓存总是要显示
 
-            if (settings.hideSingleEpisodeForCompleted && context.subjectFinishedForAConservativeTime
+            if (settings.hideSingleEpisodeForCompleted
+                && context.subjectFinishedForAConservativeTime == true // 还未加载到剧集信息时, 先显示
                 && media.kind == MediaSourceKind.BitTorrent
             ) {
+                // 完结番隐藏单集资源
                 val range = media.episodeRange ?: return@filter false
                 if (range.isSingleEpisode()) return@filter false
             }
 
             if (!preference.showWithoutSubtitle && media.properties.subtitleLanguageIds.isEmpty()) {
+                // 不显示无字幕的
                 return@filter false
             }
+
             true
         }
 
@@ -371,10 +385,14 @@ class DefaultMediaSelector(
         val candidates = filteredCandidates.first()
         if (candidates.isEmpty()) return null
 
-        val mediaSelectorContext = mediaSelectorContext.first()
+        val mediaSelectorContext = mediaSelectorContext.filter {
+            it.allFieldsLoaded()
+        }.first()
         val mediaSelectorSettings = mediaSelectorSettings.first()
-        val shouldPreferSeasons =
-            mediaSelectorContext.subjectFinishedForAConservativeTime && mediaSelectorSettings.preferSeasons
+
+
+        val shouldPreferSeasons = mediaSelectorContext.subjectFinishedForAConservativeTime == true
+                && mediaSelectorSettings.preferSeasons
 
         val languageIds = sequence {
             selectedSubtitleLanguageId?.let {
@@ -412,11 +430,10 @@ class DefaultMediaSelector(
                 return@sequence
             }
             val fallback = mergedPreference.fallbackMediaSourceIds
-            if (fallback == null) {
-                yield(null)
-            } else {
-                yieldAll(fallback)
+            if (fallback != null) {
+                yieldAll(fallback) // 如果有设置, 那就优先使用设置的
             }
+            yield(null) // 最后 (未匹配到时) 总是任意选一个
         }
 
         // For rules discussion, see #174

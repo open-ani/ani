@@ -12,27 +12,28 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onStart
 import me.him188.ani.app.data.media.MediaSourceManager
 import me.him188.ani.app.data.media.selector.DefaultMediaSelector
 import me.him188.ani.app.data.media.selector.MediaSelector
 import me.him188.ani.app.data.media.selector.MediaSelectorContext
 import me.him188.ani.app.data.repositories.EpisodePreferencesRepository
-import me.him188.ani.app.data.repositories.EpisodeRepository
 import me.him188.ani.app.data.repositories.SettingsRepository
-import me.him188.ani.app.data.repositories.SubjectRepository
 import me.him188.ani.app.data.subject.PackedDate
 import me.him188.ani.app.data.subject.SubjectManager
 import me.him188.ani.app.data.subject.minus
-import me.him188.ani.app.tools.caching.ContentPolicy
+import me.him188.ani.app.data.subject.nameCnOrName
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.source.MediaFetchRequest
+import me.him188.ani.datasources.bangumi.processing.isOnAir
 import me.him188.ani.datasources.bangumi.processing.nameCNOrName
 import me.him188.ani.datasources.core.fetch.MediaFetchSession
 import me.him188.ani.datasources.core.fetch.MediaFetcher
@@ -41,8 +42,6 @@ import me.him188.ani.datasources.core.fetch.MediaSourceMediaFetcher
 import me.him188.ani.datasources.core.fetch.MediaSourceResult
 import me.him188.ani.utils.coroutines.OwnedCancellationException
 import me.him188.ani.utils.coroutines.checkOwner
-import me.him188.ani.utils.coroutines.runUntilSuccess
-import me.him188.ani.utils.logging.logger
 import org.koin.core.Koin
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -138,27 +137,21 @@ internal class DefaultEpisodeMediaFetchSession(
     subjectId: Int,
     episodeId: Int,
     parentCoroutineContext: CoroutineContext,
-    private val config: FetcherMediaSelectorConfig = FetcherMediaSelectorConfig.Default,
+    config: FetcherMediaSelectorConfig = FetcherMediaSelectorConfig.Default,
     private val koin: () -> Koin = { GlobalContext.get() },
 ) : EpisodeMediaFetchSession, HasBackgroundScope by BackgroundScope(parentCoroutineContext), KoinComponent {
-    private companion object {
-        private val logger = logger(DefaultEpisodeMediaFetchSession::class)
-    }
-
     override fun getKoin(): Koin = koin()
 
-    private val subjectRepository: SubjectRepository by inject()
     private val subjectManager: SubjectManager by inject()
-    private val episodeRepository: EpisodeRepository by inject()
     private val mediaSourceManager: MediaSourceManager by inject()
     private val episodePreferencesRepository: EpisodePreferencesRepository by inject()
     private val settingsRepository: SettingsRepository by inject()
 
     private val subject = flowOf(subjectId).mapLatest {
-        runUntilSuccess { subjectRepository.getSubject(subjectId)!! }
+        subjectManager.getSubjectInfo(subjectId) // cache-first
     }
     private val episode = flowOf(episodeId).mapLatest {
-        runUntilSuccess { episodeRepository.getEpisodeById(episodeId)!! }
+        subjectManager.getEpisode(episodeId) // cache-first
     }
 
     private val mediaFetcher = mediaSourceManager.allSources.map { providers ->
@@ -175,7 +168,7 @@ internal class DefaultEpisodeMediaFetchSession(
         MediaFetchRequest(
             subjectId = subject.id.toString(),
             episodeId = episode.id.toString(),
-            subjectNameCN = subject.nameCNOrName(),
+            subjectNameCN = subject.nameCnOrName,
             subjectNames = setOfNotNull(
                 subject.nameCn.takeIf { it.isNotBlank() },
                 subject.name.takeIf { it.isNotBlank() },
@@ -204,24 +197,33 @@ internal class DefaultEpisodeMediaFetchSession(
                 )
             }
 
-        val subjectProgress = subjectManager.subjectProgressFlow(subjectId, ContentPolicy.CACHE_ONLY)
+        val subjectProgress = flow {
+            // 这是网络请求, 无网情况下会一直失败
+            // 对于已经收藏的条目, 该请求应当会查询缓存, 就很快
+            emit(subjectManager.getEpisodeCollections(subjectId).map { it.episode })
+        }
 
         DefaultMediaSelector(
             mediaSelectorContextNotCached = subjectProgress.map { eps ->
-                val allEpisodesFinished = eps.fastAll { it.isOnAir == false }
+                val allEpisodesFinished = eps.fastAll { it.isOnAir() == false }
 
                 val finishedLongTimeAgo = allEpisodesFinished || run {
                     val now = PackedDate.now()
                     val maxAirDate = eps
-                        .filter { it.airDate.isValid }
-                        .maxOfOrNull { it.airDate }
+                        .map {
+                            PackedDate.parseFromDate(it.airdate)
+                        }
+                        .filter { it.isValid }
+                        .maxOrNull()
 
                     maxAirDate != null && now - maxAirDate >= 14.days
                 }
 
                 MediaSelectorContext(
-                    subjectFinishedForAConservativeTime = finishedLongTimeAgo
+                    subjectFinishedForAConservativeTime = finishedLongTimeAgo,
                 )
+            }.onStart {
+                emit(MediaSelectorContext.Initial) // 否则如果一直没获取到剧集信息, 就无法选集, #385
             },
             mediaListNotCached = fetchResult,
             savedUserPreference = episodePreferencesRepository.mediaPreferenceFlow(subjectId),

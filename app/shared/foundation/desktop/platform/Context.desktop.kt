@@ -34,6 +34,7 @@ class DesktopContext(
     val windowState: WindowState,
     val dataDir: File,
     val cacheDir: File,
+    val logsDir: File
 ) : Context() {
     val dataStoreDir = dataDir.resolve("datastore")
     val tokenStore: DataStore<Preferences> = PreferenceDataStoreFactory.create {

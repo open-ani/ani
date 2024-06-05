@@ -22,13 +22,10 @@ import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.flow.shareIn
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.paging.SizedSource
-import me.him188.ani.datasources.api.paging.filter
-import me.him188.ani.datasources.api.source.MatchKind
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.source.MediaMatch
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceKind
-import me.him188.ani.datasources.api.topic.contains
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.logger
 import kotlin.coroutines.CoroutineContext
@@ -92,8 +89,6 @@ interface MediaSourceResult {
 
     /**
      * Result from this data source.
-     *
-     * The flow is not shared. If there are multiple collectors, each collector will start a **new** fetch.
      *
      * ### Results are lazy
      *
@@ -203,21 +198,24 @@ class MediaSourceMediaFetcher(
                     .catch {
                         state.value = MediaSourceState.Failed(it)
                         logger.error(it) { "Failed to fetch media from $mediaSourceId because of upstream error" }
-                        throw it
+//                        throw it
                     }
                     .onCompletion {
                         if (it == null) {
-                            state.value = MediaSourceState.Succeed
+                            // catch might have already updated the state
+                            if (state.value !is MediaSourceState.Completed) {
+                                state.value = MediaSourceState.Succeed
+                            }
                         } else {
                             val currentState = state.value
-                            if (currentState is MediaSourceState.Failed) {
-                                // upstream failure re-caught here
-                                throw it
+                            if (currentState !is MediaSourceState.Failed) {
+                                // downstream (collector) failure
+                                state.value = MediaSourceState.Abandoned(it)
+                                logger.error(it) { "Failed to fetch media from $mediaSourceId because of downstream error" }
+//                                throw it
                             }
-                            // downstream (collector) failure
-                            state.value = MediaSourceState.Abandoned(it)
-                            logger.error(it) { "Failed to fetch media from $mediaSourceId because of downstream error" }
-                            throw it
+                            // upstream failure re-caught here
+//                            throw it
                         }
                     }
                     .runningFold(emptyList<Media>()) { acc, list ->
@@ -242,7 +240,7 @@ class MediaSourceMediaFetcher(
                     break
                 }
             }
-            restartCount.value++
+            restartCount.value += 1
         }
     }
 
@@ -260,9 +258,7 @@ class MediaSourceMediaFetcher(
                 disabled = !sourceEnabled(source),
                 pagedSources = flowOf(request)
                     .map {
-                        source.fetch(it).filter { media ->
-                            media.matches(request)
-                        }
+                        source.fetch(it)
                     }
             )
         }
@@ -292,11 +288,4 @@ class MediaSourceMediaFetcher(
     private companion object {
         val logger = logger<MediaSourceMediaFetcher>()
     }
-}
-
-private fun MediaMatch.matches(request: MediaFetchRequest): Boolean {
-    if (this.kind == MatchKind.NONE) return false
-    val actualEpRange = this.media.episodeRange ?: return false
-    val expectedEp = request.episodeEp
-    return !(request.episodeSort !in actualEpRange && (expectedEp == null || expectedEp !in actualEpRange))
 }

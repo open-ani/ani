@@ -1,6 +1,5 @@
 package me.him188.ani.app.ui.collection
 
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import kotlinx.coroutines.flow.Flow
@@ -26,7 +25,6 @@ import org.koin.core.component.inject
 class CollectionsByType(
     val type: UnifiedCollectionType,
     val cache: LazyDataCache<SubjectCollectionItem>,
-    val lazyListState: LazyListState = LazyListState(),
 )
 
 @Stable

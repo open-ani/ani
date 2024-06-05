@@ -1,8 +1,11 @@
 package me.him188.ani.app.ui.collection
 
+import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import android.content.res.Configuration.UI_MODE_TYPE_NORMAL
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.runBlocking
@@ -107,7 +110,7 @@ private fun testCollections(): List<SubjectCollectionItem> {
         )
         add(
             SubjectCollectionItem(
-                subjectId = id++,
+                subjectId = ++id,
                 displayName = "葬送的芙莉莲 2",
                 image = "",
                 rate = null,
@@ -120,7 +123,7 @@ private fun testCollections(): List<SubjectCollectionItem> {
         )
         add(
             SubjectCollectionItem(
-                subjectId = id++,
+                subjectId = ++id,
                 displayName = "葬送的芙莉莲 3",
                 image = "",
                 rate = null,
@@ -133,7 +136,7 @@ private fun testCollections(): List<SubjectCollectionItem> {
         )
         add(
             SubjectCollectionItem(
-                subjectId = id++,
+                subjectId = ++id,
                 displayName = "葬送的芙莉莲 4",
                 image = "",
                 rate = null,
@@ -144,22 +147,46 @@ private fun testCollections(): List<SubjectCollectionItem> {
                 info = SubjectInfo.Empty,
             )
         )
+        repeat(20) {
+            add(
+                SubjectCollectionItem(
+                    subjectId = ++id,
+                    displayName = "葬送的芙莉莲 4",
+                    image = "",
+                    rate = null,
+                    date = "2025 年 10 月",
+                    totalEps = 2,
+                    _episodes = eps + UserEpisodeCollection(
+                        episode = Episode(
+                            id = 6386,
+                            type = 5956,
+                            name = "Diana Houston",
+                            nameCn = "Nita O'Donnell",
+                            sort = BigDecimal.valueOf(2),
+                            airdate = "2099-1-1",
+                            comment = 5931,
+                            duration = "",
+                            desc = "gubergren",
+                            disc = 2272,
+                            ep = BigDecimal.valueOf(2),
+                            durationSeconds = null
+                        ),
+                        type = EpisodeCollectionType.WATCHED
+                    ),
+                    collectionType = UnifiedCollectionType.WISH,
+                    info = SubjectInfo.Empty,
+                )
+            )
+        }
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
-private fun PreviewSubjectCollectionsColumn() {
+private fun PreviewSubjectCollectionsColumnPhone() {
     ProvideCompositionLocalsForPreview {
         SubjectCollectionsColumn(
-            LazyDataCache(
-                {
-                    SinglePagePagedSource {
-                        testCollections().asFlow()
-                    }
-                },
-                debugName = "test"
-            ),
+            testLazyDataCache(),
             onRequestMore = {},
             item = {
                 SubjectCollectionItem(
@@ -176,6 +203,50 @@ private fun PreviewSubjectCollectionsColumn() {
             },
             onEmpty = {}
         )
+    }
+}
+
+@Preview(
+    heightDp = 1600, widthDp = 1600,
+    uiMode = UI_MODE_NIGHT_YES or UI_MODE_TYPE_NORMAL
+)
+@Preview(
+    heightDp = 1600, widthDp = 1600,
+)
+@Composable
+private fun PreviewSubjectCollectionsColumnDesktopLarge() {
+    ProvideCompositionLocalsForPreview {
+        SubjectCollectionsColumn(
+            testLazyDataCache(),
+            onRequestMore = {},
+            item = {
+                SubjectCollectionItem(
+                    item = it,
+                    episodeCacheStatus = { _, _ ->
+                        EpisodeCacheStatus.Cached(300.megaBytes)
+                    },
+                    onClick = { },
+                    onClickEpisode = {},
+                    onClickSelectEpisode = { },
+                    onSetAllEpisodesDone = { },
+                    onSetCollectionType = {}
+                )
+            },
+            onEmpty = {}
+        )
+    }
+}
+
+private fun testLazyDataCache(): LazyDataCache<SubjectCollectionItem> {
+    return LazyDataCache(
+        {
+            SinglePagePagedSource {
+                testCollections().asFlow()
+            }
+        },
+        debugName = "test"
+    ).apply {
+        runBlocking { requestMore() }
     }
 }
 

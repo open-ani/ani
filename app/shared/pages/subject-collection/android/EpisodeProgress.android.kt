@@ -24,7 +24,6 @@ private val testEpisodes = listOf(
         episodeSort = "00",
         watchStatus = UnifiedCollectionType.DONE,
         isOnAir = false,
-        airDate = airDate,
         cacheStatus = EpisodeCacheStatus.Caching(0.3f, 300.megaBytes),
     ),
     EpisodeProgressItem(
@@ -32,7 +31,6 @@ private val testEpisodes = listOf(
         episodeSort = "01",
         watchStatus = UnifiedCollectionType.DONE,
         isOnAir = false,
-        airDate = airDate,
         cacheStatus = EpisodeCacheStatus.NotCached,
     ),
     EpisodeProgressItem(
@@ -40,7 +38,6 @@ private val testEpisodes = listOf(
         episodeSort = "02",
         watchStatus = UnifiedCollectionType.DONE,
         isOnAir = false,
-        airDate = airDate,
         cacheStatus = EpisodeCacheStatus.Cached(300.megaBytes),
     ),
     EpisodeProgressItem(
@@ -48,7 +45,6 @@ private val testEpisodes = listOf(
         episodeSort = "03",
         watchStatus = UnifiedCollectionType.WISH,
         isOnAir = false,
-        airDate = airDate,
         cacheStatus = EpisodeCacheStatus.Cached(300.megaBytes),
     ),
     EpisodeProgressItem(
@@ -56,7 +52,6 @@ private val testEpisodes = listOf(
         episodeSort = "04",
         watchStatus = UnifiedCollectionType.WISH,
         isOnAir = false,
-        airDate = airDate,
         cacheStatus = EpisodeCacheStatus.Caching(0.7f, 300.megaBytes),
     ),
     EpisodeProgressItem(
@@ -64,7 +59,6 @@ private val testEpisodes = listOf(
         episodeSort = "05",
         watchStatus = UnifiedCollectionType.WISH,
         isOnAir = false,
-        airDate = airDate,
         cacheStatus = EpisodeCacheStatus.NotCached,
     ),
     EpisodeProgressItem(
@@ -72,7 +66,6 @@ private val testEpisodes = listOf(
         episodeSort = "06",
         watchStatus = UnifiedCollectionType.WISH,
         isOnAir = true,
-        airDate = airDate,
         cacheStatus = EpisodeCacheStatus.NotCached,
     ),
     EpisodeProgressItem(
@@ -80,7 +73,6 @@ private val testEpisodes = listOf(
         episodeSort = "07",
         watchStatus = UnifiedCollectionType.WISH,
         isOnAir = true,
-        airDate = airDate,
         cacheStatus = EpisodeCacheStatus.Cached(300.megaBytes),
     ),
     EpisodeProgressItem(
@@ -88,7 +80,6 @@ private val testEpisodes = listOf(
         episodeSort = "08",
         watchStatus = UnifiedCollectionType.WISH,
         isOnAir = true,
-        airDate = airDate,
         cacheStatus = EpisodeCacheStatus.Caching(0.3f, 300.megaBytes),
     ),
 )
@@ -170,6 +161,5 @@ private fun item(id: Int) = EpisodeProgressItem(
     episodeSort = id.toString(),
     watchStatus = UnifiedCollectionType.WISH,
     isOnAir = true,
-    airDate = airDate,
     cacheStatus = EpisodeCacheStatus.Caching(0.3f, 300.megaBytes),
 )

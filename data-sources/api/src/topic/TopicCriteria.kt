@@ -14,7 +14,7 @@ class TopicCriteria(
 }
 
 fun TopicCriteria.matches(topic: Topic, allowEpMatch: Boolean): Boolean {
-    val details = topic.details ?: return true
+    val details = topic.details ?: return fallback
     if (isEpisodeSortMatch(details)) return true
     if (allowEpMatch && isEpisodeEpMatch(details)) return true
     return fallback

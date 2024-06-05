@@ -23,6 +23,7 @@ import me.him188.ani.danmaku.server.service.GithubVersionVerifierImpl
 import me.him188.ani.danmaku.server.service.JwtTokenManager
 import me.him188.ani.danmaku.server.service.JwtTokenManagerImpl
 import me.him188.ani.danmaku.server.service.TestBangumiLoginHelperImpl
+import me.him188.ani.danmaku.server.service.TestClientReleaseInfoManager
 import me.him188.ani.danmaku.server.service.UserService
 import me.him188.ani.danmaku.server.service.UserServiceImpl
 import org.koin.core.qualifier.named
@@ -49,18 +50,21 @@ fun getServerKoinModule(
             versionWhitelistRegex = listOf("[3-9].[0-9]{1,2}.[0-9]{1,2}-dev")
         )
     }
-    single<ClientReleaseInfoManager> { ClientReleaseInfoManagerImpl(
-        bufferExpirationTime = 1.minutes.inWholeMilliseconds
-    ) }
 
     if (config.testing) {
         single<DanmakuRepository> { InMemoryDanmakuRepositoryImpl() }
         single<UserRepository> { InMemoryUserRepositoryImpl() }
         single<BangumiLoginHelper> { TestBangumiLoginHelperImpl() }
+        
+        single<ClientReleaseInfoManager> { TestClientReleaseInfoManager() }
     } else {
         single<MongoCollectionProvider> { MongoCollectionProviderImpl() }
         single<DanmakuRepository> { MongoDanmakuRepositoryImpl() }
         single<UserRepository> { MongoUserRepositoryImpl() }
         single<BangumiLoginHelper> { BangumiLoginHelperImpl() }
+
+        single<ClientReleaseInfoManager> { ClientReleaseInfoManagerImpl(
+            bufferExpirationTime = 10.minutes.inWholeMilliseconds
+        ) }
     }
 }

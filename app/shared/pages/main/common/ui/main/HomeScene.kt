@@ -21,7 +21,6 @@ import androidx.compose.material.icons.rounded.DownloadDone
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.TravelExplore
-import androidx.compose.material.icons.rounded.Update
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -40,6 +39,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.pages.cache.manage.CacheManagementPage
+import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.requireOnline
 import me.him188.ani.app.ui.collection.CollectionPage
 import me.him188.ani.app.ui.external.placeholder.placeholder
@@ -63,8 +64,13 @@ import me.him188.ani.app.ui.isLoggedIn
 import me.him188.ani.app.ui.profile.AccountViewModel
 import me.him188.ani.app.ui.profile.ProfilePage
 import me.him188.ani.app.ui.settings.SettingsPage
-import me.him188.ani.app.ui.update.ChangelogDialog
-import me.him188.ani.app.ui.update.UpdateCheckerState
+import me.him188.ani.app.update.InstallationFailureReason
+import me.him188.ani.app.update.ui.AutoUpdateViewModel
+import me.him188.ani.app.update.ui.ChangelogDialog
+import me.him188.ani.app.update.ui.FailedToInstallDialog
+import me.him188.ani.app.update.ui.UpdateLogoIcon
+import me.him188.ani.app.update.ui.UpdateLogoLabel
+import me.him188.ani.app.update.ui.handleClickLogo
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
 
@@ -101,23 +107,40 @@ private fun UserAvatar(
 
 @Composable
 private fun UpdateCheckerItem(
-    state: UpdateCheckerState = rememberViewModel { UpdateCheckerState() },
+    vm: AutoUpdateViewModel = rememberViewModel { AutoUpdateViewModel() },
 ) {
     SideEffect {
-        state.startCheckLatestVersion()
+        vm.startAutomaticCheckLatestVersion()
     }
     var showDialog by rememberSaveable { mutableStateOf(false) }
+    val context by rememberUpdatedState(LocalContext.current)
     if (showDialog) {
-        ChangelogDialog(state, { showDialog = false })
+        vm.latestVersion?.let {
+            ChangelogDialog(
+                latestVersion = it,
+                onDismissRequest = { showDialog = false },
+                onStartDownload = { vm.startDownload(it, context) },
+                currentVersion = vm.currentVersion,
+            )
+        }
     }
-    if (state.hasUpdate) {
+    if (vm.hasUpdate) {
+        var installationError by remember { mutableStateOf<InstallationFailureReason?>(null) }
+        if (installationError != null) {
+            FailedToInstallDialog({ installationError = null }, { vm.logoState })
+        }
+
         NavigationRailItem(
             false,
             onClick = {
-                showDialog = true
+                vm.handleClickLogo(
+                    context,
+                    onInstallationError = { installationError = it },
+                    showChangelogDialog = { showDialog = true }
+                )
             },
-            icon = { Icon(Icons.Rounded.Update, null, tint = MaterialTheme.colorScheme.error) },
-            label = { Text(text = "更新", color = MaterialTheme.colorScheme.error) }
+            icon = { UpdateLogoIcon(vm.logoState) },
+            label = { UpdateLogoLabel(vm.logoState) }
         )
     }
 }

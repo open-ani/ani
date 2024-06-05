@@ -26,8 +26,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
@@ -47,7 +45,6 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -67,6 +64,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.subject.SubjectCollectionItem
 import me.him188.ani.app.navigation.LocalNavigator
+import me.him188.ani.app.platform.Platform
+import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.tools.caching.RefreshOrderPolicy
 import me.him188.ani.app.tools.rememberUiMonoTasker
@@ -79,9 +78,7 @@ import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.isLoggedIn
 import me.him188.ani.app.ui.profile.UnauthorizedTips
-import me.him188.ani.app.ui.update.ChangelogDialog
-import me.him188.ani.app.ui.update.HasUpdateTag
-import me.him188.ani.app.ui.update.UpdateCheckerState
+import me.him188.ani.app.update.ui.TextButtonUpdateLogo
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.lifecycle.Lifecycle
@@ -98,22 +95,6 @@ val COLLECTION_TABS_SORTED = listOf(
     UnifiedCollectionType.DONE,
 )
 
-@Composable
-private fun UpdateCheckerHost(
-    state: UpdateCheckerState = rememberViewModel { UpdateCheckerState() },
-) {
-    SideEffect {
-        state.startCheckLatestVersion()
-    }
-
-    var showDialog by rememberSaveable { mutableStateOf(false) }
-    if (showDialog) {
-        ChangelogDialog(state, { showDialog = false })
-    }
-    if (state.hasUpdate) {
-        HasUpdateTag(onClick = { showDialog = true })
-    }
-}
 
 
 /**
@@ -133,7 +114,7 @@ fun CollectionPage(
                 title = { Text("我的追番") },
                 actions = {
                     if (!isShowLandscapeUI()) {
-                        UpdateCheckerHost()
+                        TextButtonUpdateLogo()
 
                         IconButton(onClickCaches) {
                             Icon(Icons.Rounded.Download, "缓存管理")
@@ -184,7 +165,7 @@ fun CollectionPage(
             HorizontalPager(
                 state = pagerState,
                 Modifier.fillMaxSize(),
-                userScrollEnabled = !isShowLandscapeUI(),
+                userScrollEnabled = Platform.currentPlatform.isMobile(),
             ) { index ->
                 val type = COLLECTION_TABS_SORTED[index]
                 val collection = vm.collectionsByType(type)
@@ -227,13 +208,15 @@ fun CollectionPage(
 
                 Box(Modifier.clipToBounds()) {
                     TabContent(
-                        collection.cache,
+                        cache = collection.cache,
                         onRequestMore = { vm.requestMore(type) },
-                        vm, type, isLoggedIn, contentPadding,
-                        Modifier
+                        vm = vm,
+                        type = type,
+                        isLoggedIn = isLoggedIn,
+                        contentPadding = contentPadding,
+                        modifier = Modifier
                             .nestedScroll(pullToRefreshState.nestedScrollConnection)
                             .fillMaxSize(),
-                        lazyListState = collection.lazyListState,
                         enableAnimation = { vm.myCollectionsSettings.enableListAnimation }
                     )
                     PullToRefreshContainer(
@@ -258,7 +241,6 @@ private fun TabContent(
     isLoggedIn: Boolean?,
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
-    lazyListState: LazyListState = rememberLazyListState(),
     enableAnimation: () -> Boolean = { true },
 ) {
     SubjectCollectionsColumn(
@@ -334,7 +316,6 @@ private fun TabContent(
         },
         modifier,
         contentPadding = contentPadding,
-        lazyListState = lazyListState,
         enableAnimation = enableAnimation,
     )
 }

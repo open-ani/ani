@@ -4,9 +4,11 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 
 /**
  * 数据源选择器 (播放页面点击 "数据源" 按钮弹出的) 的设置
+ * @see MediaPreference
  */
 @Serializable
 @Immutable

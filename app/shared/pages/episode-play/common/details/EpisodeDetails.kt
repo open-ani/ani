@@ -20,6 +20,7 @@ import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
@@ -30,6 +31,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import me.him188.ani.app.platform.currentPlatform
+import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.tools.rememberBackgroundMonoTasker
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.subject.episode.EpisodeCollectionActionButton
@@ -77,7 +80,10 @@ fun EpisodeDetails(
             }
 
             if (viewModel.mediaSelectorVisible) {
-                ModalBottomSheet(onDismissRequest = { viewModel.mediaSelectorVisible = false }) {
+                ModalBottomSheet(
+                    onDismissRequest = { viewModel.mediaSelectorVisible = false },
+                    sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = currentPlatform.isDesktop())
+                ) {
                     EpisodePlayMediaSelector(
                         viewModel.mediaSelectorPresentation,
                         sourceResults = rememberMediaSelectorSourceResults(

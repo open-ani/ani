@@ -278,6 +278,7 @@ private class EpisodeViewModelImpl(
                     videoLoadingState.value = VideoLoadingState.UnsupportedMedia
                     emit(null)
                 } catch (e: VideoSourceResolutionException) {
+                    logger.error { IllegalStateException("Failed to resolve video source with known error", e) }
                     videoLoadingState.value = when (e.reason) {
                         ResolutionFailures.FETCH_TIMEOUT -> VideoLoadingState.ResolutionTimedOut
                         ResolutionFailures.ENGINE_ERROR -> VideoLoadingState.UnknownError(e)
@@ -286,7 +287,7 @@ private class EpisodeViewModelImpl(
                 } catch (e: CancellationException) {
                     throw e
                 } catch (e: Throwable) {
-                    logger.error { IllegalStateException("Failed to resolve video source", e) }
+                    logger.error { IllegalStateException("Failed to resolve video source with unknown error", e) }
                     videoLoadingState.value = VideoLoadingState.UnknownError(e)
                     emit(null)
                 }
@@ -396,6 +397,11 @@ private class EpisodeViewModelImpl(
                 } else {
                     danmaku.danmakuHostState.pause()
                 }
+            }
+        }
+        launchInBackground {
+            videoLoadingState.collect {
+                playerStatistics.videoLoadingState.value = it
             }
         }
 

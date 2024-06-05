@@ -21,12 +21,15 @@ import me.him188.ani.danmaku.protocol.DanmakuGetResponse
 import me.him188.ani.danmaku.protocol.DanmakuInfo
 import me.him188.ani.danmaku.protocol.DanmakuLocation
 import me.him188.ani.danmaku.protocol.DanmakuPostRequest
+import me.him188.ani.danmaku.protocol.ReleaseUpdatesDetailedResponse
+import me.him188.ani.danmaku.protocol.UpdateInfo
 import me.him188.ani.danmaku.server.ktor.getKtorServer
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.koin.core.context.stopKoin
 import java.awt.Color
 import kotlin.test.Test
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -90,6 +93,45 @@ class E2eTest {
         assertEquals(HttpStatusCode.OK, response4.status)
         val danmakuList2 = response4.body<DanmakuGetResponse>().danmakuList
         assertTrue(danmakuList2.isEmpty())
+    }
+    
+    @Test
+    fun `test get update info`() = runTest {
+        val response1 = client.get("$serverEndpoint/updates/incremental/details")
+        assertEquals(HttpStatusCode.BadRequest, response1.status)
+        println(response1.body<String>())
+        
+        val response2 = client.get("$serverEndpoint/updates/incremental/details") {
+            parameter("clientVersion", "1.0.0")
+            parameter("clientPlatform", "android")
+            parameter("clientArch", "aarch64")
+            parameter("releaseClass", "stable")
+        }
+        assertEquals(HttpStatusCode.OK, response2.status)
+        val versions = response2.body<ReleaseUpdatesDetailedResponse>()
+        assertContentEquals(
+            listOf(
+                UpdateInfo(
+                    version = "1.0.0",
+                    downloadUrlAlternatives = listOf("testUrl/v1.0.0"),
+                    publishTime = 0,
+                    description = "This is version 1.0.0",
+                ),
+                UpdateInfo(
+                    version = "1.0.1",
+                    downloadUrlAlternatives = listOf("testUrl/v1.0.1"),
+                    publishTime = 0,
+                    description = "This is version 1.0.1",
+                ),
+                UpdateInfo(
+                    version = "2.0.0",
+                    downloadUrlAlternatives = listOf("testUrl/v2.0.0"),
+                    publishTime = 0,
+                    description = "This is version 2.0.0",
+                )
+            ),
+            versions.updates
+        )
     }
 
     companion object {

@@ -2,6 +2,7 @@ package me.him188.ani.app.torrent.qbittorrent
 
 import io.ktor.client.call.body
 import io.ktor.client.plugins.HttpRequestRetry
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.ServerResponseException
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.forms.submitForm
@@ -57,6 +58,12 @@ class QBittorrentClient(
                 // retry on rate limit error.
                 retryIf { _, response -> response.status.value.let { it == 429 } }
                 exponentialDelay()
+            }
+
+            install(HttpTimeout) {
+                connectTimeoutMillis = 5000
+                socketTimeoutMillis = 5000
+                requestTimeoutMillis = 10_000
             }
 
             val baseUrl = config.baseUrl.removeSuffix("/")

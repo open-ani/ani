@@ -36,15 +36,31 @@ jobs:
             
             ### 下载
             
+            [//]: # (注意, `checkLatestVersion` 有字符串处理, 修改标题和分隔符前务必查询)
+            
             [github-win-x64]: https://github.com/open-ani/ani/releases/download/${{steps.tag.outputs.tag}}/ani-${{steps.tag-version.outputs.substring}}-windows-x86_64.zip
+            
             [github-mac-x64]: https://github.com/open-ani/ani/releases/download/${{steps.tag.outputs.tag}}/ani-${{steps.tag-version.outputs.substring}}-macos-x86_64.dmg
+            
             [github-mac-aarch64]: https://github.com/open-ani/ani/releases/download/${{steps.tag.outputs.tag}}/ani-${{steps.tag-version.outputs.substring}}-macos-aarch64.dmg
+            
             [github-android]: https://github.com/open-ani/ani/releases/download/${{steps.tag.outputs.tag}}/ani-${{steps.tag-version.outputs.substring}}.apk
             
             [cf-win-x64]: https://d.myani.org/${{steps.tag.outputs.tag}}/ani-${{steps.tag-version.outputs.substring}}-windows-x86_64.zip
+            
             [cf-mac-x64]: https://d.myani.org/${{steps.tag.outputs.tag}}/ani-${{steps.tag-version.outputs.substring}}-macos-x86_64.dmg
+            
             [cf-mac-aarch64]: https://d.myani.org/${{steps.tag.outputs.tag}}/ani-${{steps.tag-version.outputs.substring}}-macos-aarch64.dmg
+            
             [cf-android]: https://d.myani.org/${{steps.tag.outputs.tag}}/ani-${{steps.tag-version.outputs.substring}}.apk
+            
+            [ghproxy-win-x64]: https://mirror.ghproxy.com/?q=https%3A%2F%2Fgithub.com%2Fopen-ani%2Fani%2Freleases%2Fdownload%2F${{steps.tag.outputs.tag}}%2Fani-${{steps.tag-version.outputs.substring}}-windows-x86_64.zip
+            
+            [ghproxy-mac-x64]: https://mirror.ghproxy.com/?q=https%3A%2F%2Fgithub.com%2Fopen-ani%2Fani%2Freleases%2Fdownload%2F${{steps.tag.outputs.tag}}%2Fani-${{steps.tag-version.outputs.substring}}-macos-x86_64.dmg
+            
+            [ghproxy-mac-aarch64]: https://mirror.ghproxy.com/?q=https%3A%2F%2Fgithub.com%2Fopen-ani%2Fani%2Freleases%2Fdownload%2F${{steps.tag.outputs.tag}}%2Fani-${{steps.tag-version.outputs.substring}}-macos-aarch64.dmg
+            
+            [ghproxy-android]: https://mirror.ghproxy.com/?q=https%3A%2F%2Fgithub.com%2Fopen-ani%2Fani%2Freleases%2Fdownload%2F${{steps.tag.outputs.tag}}%2Fani-${{steps.tag-version.outputs.substring}}.apk
             
             [qb-enhanced]: https://github.com/c0re100/qBittorrent-Enhanced-Edition/releases/latest
             
@@ -54,12 +70,12 @@ jobs:
             
             PC 首次播放在线数据源时, 可能需要加载 10-30 秒。
             
-            | 操作系统                    | 全球                           | 中国大陆                            |
-            |-------------------------|------------------------------|---------------------------------|
-            | Windows x86_64          | [GitHub][github-win-x64]     | [Cloudflare 分流][cf-win-x64]     |
-            | macOS x86_64 (Intel 芯片) | [GitHub][github-mac-x64]     | [Cloudflare 分流][cf-mac-x64]     |
-            | macOS aarch64 (M 系列芯片)  | [GitHub][github-mac-aarch64] | [Cloudflare 分流][cf-mac-aarch64] |
-            | Android APK aarch64     | [GitHub][github-android]     | [Cloudflare 分流][cf-android]     |
+            | 操作系统                    | 全球                           | 中国大陆                                             |
+            |-------------------------|------------------------------|--------------------------------------------------|
+            | Windows x86_64          | [GitHub][github-win-x64]     | [主线][cf-win-x64] / [备线][ghproxy-win-x64]         |
+            | macOS x86_64 (Intel 芯片) | [GitHub][github-mac-x64]     | [主线][cf-mac-x64] / [备线][ghproxy-mac-x64]         |
+            | macOS aarch64 (M 系列芯片)  | [GitHub][github-mac-aarch64] | [主线][cf-mac-aarch64] / [备线][ghproxy-mac-aarch64] |
+            | Android APK aarch64     | [GitHub][github-android]     | [主线][cf-android] / [备线][ghproxy-android]         |
             
             扫描二维码下载 Android 版本：
             
@@ -67,9 +83,10 @@ jobs:
             
             [cf-android-qr]: https://d.myani.org/${{steps.tag.outputs.tag}}/ani-${{steps.tag-version.outputs.substring}}.apk.cloudflare.qrcode.png
             
-            | 全球                           | 中国大陆                            |
-            |------------------------------|---------------------------------|
-            | ![GitHub][github-android-qr] | ![Cloudflare 分流][cf-android-qr] |
+            | 全球                           | 中国大陆                         |
+            |------------------------------|------------------------------|
+            | ![GitHub][github-android-qr] | ![Cloudflare][cf-android-qr] |
+
 
           draft: true
           prerelease: false
@@ -79,7 +96,7 @@ jobs:
 
   release:
     needs: [ create-release ]
-    name: ${{ matrix.os }}
+    name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -87,7 +104,21 @@ jobs:
         os:
           - windows-2022
           #          - ubuntu-20.04
-          - macos-12
+          - macos-12 # x86_64
+          - macos-14 # aarch64
+        include:
+          - os: windows-2022
+            name: Windows x86_64
+            uploadApk: false
+            arch: x64
+          - os: macos-12
+            name: macOS x86_64
+            uploadApk: false
+            arch: x64
+          - os: macos-14
+            name: macOS aarch64
+            uploadApk: true
+            arch: aarch64
     env:
       enableLocalPublishingTest: 'false'
       gradleArgs: >-
@@ -105,6 +136,7 @@ jobs:
       isWindows: ${{ startsWith(matrix.os, 'windows') }}
       isUbuntu: ${{ startsWith(matrix.os, 'ubuntu') }}
       isUnix: ${{ startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu') }}
+      uploadApk: ${{ matrix.uploadApk == 'true' || matrix.uploadApk == true }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -125,14 +157,16 @@ jobs:
       - if: ${{ env.isUnix == 'true' }}
         uses: actions/setup-java@v2
         with:
-          distribution: temurin
+          distribution: zulu
           java-version: 17
+          architecture: ${{ matrix.arch }}
 
       - if: ${{ env.isWindows == 'true' }}
         uses: actions/setup-java@v2
         with:
           distribution: microsoft
           java-version: 17
+          architecture: ${{ matrix.arch }}
 
 
       - name: Setup Gradle
@@ -166,9 +200,6 @@ jobs:
       - if: ${{ env.isUnix == 'true' }}
         run: chmod -R 777 *
 
-      - name: Clean and download dependencies
-        run: ./gradlew clean ${{ env.gradleArgs }}
-
       - name: Update version name
         run: ./gradlew updateReleaseVersionNameFromGit ${{ env.gradleArgs }}
         env:
@@ -180,7 +211,7 @@ jobs:
       - name: Explicitly generate Compose resources
         run: ./gradlew generateComposeResClass ${{ env.gradleArgs }}
 
-      - if: ${{ env.isMac == 'true' }}
+      - if: ${{ env.uploadApk == 'true' }}
         name: Prepare Android Signing Key
         id: android_signing_key
         uses: timheuer/base64-to-file@v1.1
@@ -189,7 +220,10 @@ jobs:
           fileDir: './'
           encodedString: ${{ secrets.SIGNING_RELEASE_STOREFILE }}
 
-      - if: ${{ env.isMac == 'true' }}
+      - name: Check
+        run: ./gradlew check ${{ env.gradleArgs }}
+
+      - if: ${{ env.uploadApk == 'true' }}
         name: Build Android APK
         run: ./gradlew assembleRelease ${{ env.gradleArgs }}
         env:
@@ -198,7 +232,7 @@ jobs:
           "signing_release_keyAlias": ${{ secrets.SIGNING_RELEASE_KEYALIAS }}
           "signing_release_keyPassword": ${{ secrets.SIGNING_RELEASE_KEYPASSWORD }}
 
-      - if: ${{ env.isMac == 'true' }}
+      - if: ${{ env.uploadApk == 'true' }}
         name: Upload Android APK
         run: "./gradlew :ci-helper:uploadAndroidApk ${{ env.gradleArgs }}"
         env:
@@ -213,21 +247,21 @@ jobs:
           AWS_REGION: ${{ secrets.AWS_REGION }}
           AWS_BUCKET: ${{ secrets.AWS_BUCKET }}
 
-      - if: ${{ env.isMac == 'true' }}
+      - if: ${{ env.uploadApk == 'true' }}
         name: Generate QR code for APK (GitHub)
         uses: snow-actions/qrcode@v1.0.0
         with:
           text: https://github.com/Him188/ani/releases/download/${{ steps.tag.outputs.tag }}/ani-${{ steps.tag-version.outputs.substring }}.apk
           path: apk-qrcode-github.png
 
-      - if: ${{ env.isMac == 'true' }}
+      - if: ${{ env.uploadApk == 'true' }}
         name: Generate QR code for APK (Cloudflare)
         uses: snow-actions/qrcode@v1.0.0
         with:
           text: https://d.myani.org/${{ steps.tag.outputs.tag }}/ani-${{ steps.tag-version.outputs.substring }}.apk
           path: apk-qrcode-cloudflare.png
 
-      - if: ${{ env.isMac == 'true' }}
+      - if: ${{ env.uploadApk == 'true' }}
         name: Upload QR code
         run: "./gradlew :ci-helper:uploadAndroidApkQR ${{ env.gradleArgs }}"
         env:
@@ -242,10 +276,6 @@ jobs:
           AWS_REGION: ${{ secrets.AWS_REGION }}
           AWS_BUCKET: ${{ secrets.AWS_BUCKET }}
 
-      - name: Assemble
-        run: ./gradlew assemble ${{ env.gradleArgs }}
-      - name: Check
-        run: ./gradlew check ${{ env.gradleArgs }}
       #          createReleaseDistributable 
       #          packageReleaseDistributionForCurrentOS 
       #          packageReleaseUberJarForCurrentOS 

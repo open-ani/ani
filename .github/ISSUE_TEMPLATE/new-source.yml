@@ -1,0 +1,45 @@
+name: 新增数据源
+description: 请求添加一个新数据源的支持
+labels:
+  - "t: feature"
+  - "s: media/new-source"
+  - "N"
+
+body:
+  - type: markdown
+    attributes:
+      value: 增加一个新数据源的支持
+  - type: textarea
+    id: issue-description
+    attributes:
+      label: 数据源站点和截图
+      description: 网站地址, 截图, 以及描述
+      placeholder: |
+        https://example.com
+        
+        *我是一张截图*
+        
+        资源比较全面
+    validations:
+      required: true
+
+  - type: input
+    id: version-ani
+    attributes:
+      label: 当前 Ani 版本号
+      description: 你正在使用的 Ani 版本号，可在 "设置-界面与应用" 中找到，如 `3.0.0`。
+      placeholder: "例如: 3.0.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: 类型
+      multiple: true
+      options:
+        - BT 论坛
+        - 在线视频网站
+        - 其他 (请在上方描述中补充)
+    validations:
+      required: true

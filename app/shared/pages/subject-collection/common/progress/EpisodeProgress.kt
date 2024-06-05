@@ -154,11 +154,14 @@ class EpisodeProgressItem(
     val episodeSort: String,
     val watchStatus: UnifiedCollectionType,
     val isOnAir: Boolean?,
-    val airDate: PackedDate,
     val cacheStatus: EpisodeCacheStatus?,
 ) {
     var isLoading by mutableStateOf(false)
 }
+
+class EpisodeInfo(
+    val airDate: PackedDate,
+)
 
 
 @Composable

@@ -2,12 +2,19 @@ package me.him188.ani.app.ui.subject.episode.mediaFetch
 
 import androidx.compose.runtime.Immutable
 import kotlinx.serialization.Serializable
+import me.him188.ani.app.data.models.MediaSelectorSettings
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.datasources.api.topic.Resolution
 import me.him188.ani.datasources.api.topic.SubtitleLanguage
+import me.him188.ani.datasources.dmhy.DmhyMediaSource
+import me.him188.ani.datasources.mikan.MikanCNMediaSource
+import me.him188.ani.datasources.mxdongman.MxdongmanMediaSource
 import me.him188.ani.datasources.nyafun.NyafunMediaSource
 
+/**
+ * @see MediaSelectorSettings
+ */
 @Suppress("DataClassPrivateConstructor")
 @Immutable
 @Serializable
@@ -55,9 +62,15 @@ data class MediaPreference private constructor(
     /**
      * @see fallbackSubtitleLanguageIds
      */
-    val fallbackMediaSourceIds: List<String>? = null
+    val fallbackMediaSourceIds: List<String>? = null,
 ) {
     companion object {
+        private inline val webMediaSourceIds
+            get() = arrayOf(
+                NyafunMediaSource.ID,
+                MxdongmanMediaSource.ID
+            )
+
         /**
          * With default values
          * @see Empty
@@ -65,8 +78,12 @@ data class MediaPreference private constructor(
         val PlatformDefault = MediaPreference(
             fallbackMediaSourceIds =
             if (Platform.currentPlatform.isDesktop())
-                listOf(NyafunMediaSource.ID) // PC 默认不启用 BT 源
-            else null,
+                listOf(*webMediaSourceIds) // PC 默认不启用 BT 源
+            else listOf(
+                *webMediaSourceIds,
+                MikanCNMediaSource.ID,
+                DmhyMediaSource.ID,
+            ), // TODO(3.1.0): 需要重写下数据源优先级与默认设置, 更新注释
         )
 
         /**

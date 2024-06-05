@@ -21,7 +21,6 @@ package me.him188.ani.datasources.bangumi
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.call.body
-import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -42,9 +41,11 @@ import io.ktor.serialization.kotlinx.json.json
 import io.ktor.utils.io.core.Closeable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runInterruptible
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import me.him188.ani.datasources.api.paging.Paged
@@ -54,6 +55,7 @@ import me.him188.ani.datasources.bangumi.client.BangumiClientSubjects
 import me.him188.ani.datasources.bangumi.client.BangumiEpType
 import me.him188.ani.datasources.bangumi.client.BangumiEpisode
 import me.him188.ani.datasources.bangumi.models.search.BangumiSort
+import me.him188.ani.datasources.bangumi.models.subjects.BangumiLegacySubject
 import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubject
 import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectDetails
 import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectImageSize
@@ -71,6 +73,9 @@ import org.openapitools.client.infrastructure.ApiClient
 import org.openapitools.client.models.PatchUserSubjectEpisodeCollectionRequest
 import org.openapitools.client.models.RelatedPerson
 import org.openapitools.client.models.UserSubjectCollectionModifyPayload
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
+import java.util.Objects
 
 interface BangumiClient : Closeable {
     // Bangumi open API: https://github.com/bangumi/api/blob/master/open-api/api.yml
@@ -294,7 +299,7 @@ internal class BangumiClientImpl(
         }
     }.build())
 
-    private val httpClient = HttpClient(CIO) {
+    private val httpClient = HttpClient {
         httpClientConfiguration()
         install(HttpRequestRetry) {
             maxRetries = 3
@@ -371,6 +376,49 @@ internal class BangumiClientImpl(
                 )
             }
         }
+
+        override suspend fun searchSubjectsByKeywordsWithOldApi(
+            keyword: String,
+            type: BangumiSubjectType?,
+            responseGroup: BangumiSubjectImageSize?,
+            start: Int?,
+            maxResults: Int?
+        ): Paged<BangumiLegacySubject> {
+            val keywordCoded = withContext(Dispatchers.IO) {
+                URLEncoder.encode(keyword, StandardCharsets.UTF_8.name())
+            }
+            val resp = httpClient.get("$BANGUMI_API_HOST/search/subject".plus("/").plus(keywordCoded)) {
+                parameter("type", BangumiSubjectType.valueOf(type.toString()).id)
+                parameter("responseGroup", responseGroup?.toString())
+                if (Objects.nonNull(start)) {
+                    parameter("start", start)
+                }
+                if (Objects.nonNull(maxResults)) parameter("max_results", maxResults)
+            }
+
+            if (!resp.status.isSuccess()) {
+                throw IllegalStateException("Failed to search subject by keywords with old api: $resp")
+            }
+
+            val json = resp.body<JsonObject>();
+            return json.run {
+                // results: subject total
+                val results: Int = json["results"]?.toString()?.toInt() ?: 0
+                // code: exception code
+                val code: String = json["code"]?.toString() ?: "-1"
+                // return empty when code exists and not -1 and is 404
+                if ("-1" != code && "404" == code) return Paged.empty()
+                val legacySubjectsJson: String = json["list"].toString()
+                val legacySubjects: List<BangumiLegacySubject> =
+                    Json { ignoreUnknownKeys = true }.decodeFromString(legacySubjectsJson)
+                Paged(
+                    results,
+                    results > legacySubjects.size,
+                    legacySubjects
+                )
+            }
+        }
+
 
         override suspend fun getSubjectById(id: Int): BangumiSubjectDetails? {
             val resp = httpClient.get("$BANGUMI_API_HOST/v0/subjects/${id}")

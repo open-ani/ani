@@ -18,16 +18,15 @@
 
 package me.him188.ani.app.ui.foundation
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.DpSize
 import kotlinx.coroutines.CoroutineScope
@@ -47,7 +46,6 @@ import me.him188.ani.app.tools.torrent.DefaultTorrentManager
 import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.app.ui.foundation.layout.LayoutMode
 import me.him188.ani.app.ui.foundation.layout.LocalLayoutMode
-import me.him188.ani.app.ui.theme.aniColorScheme
 import me.him188.ani.app.videoplayer.ui.state.DummyPlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import org.koin.core.context.startKoin
@@ -56,7 +54,7 @@ import org.koin.core.module.Module
 import org.koin.dsl.module
 import java.io.File
 
-val LocalIsPreviewing = compositionLocalOf {
+val LocalIsPreviewing = staticCompositionLocalOf {
     false
 }
 
@@ -65,7 +63,6 @@ private val globalScope = CoroutineScope(SupervisorJob())
 
 @Composable
 fun ProvideCompositionLocalsForPreview(
-    isDark: Boolean = isSystemInDarkTheme(),
     playerStateFactory: PlayerStateFactory = PlayerStateFactory { _, _ ->
         DummyPlayerState()
     },
@@ -109,7 +106,7 @@ fun ProvideCompositionLocalsForPreview(
                     LocalNavigator provides aniNavigator,
                     LocalLayoutMode provides remember(size) { LayoutMode(showLandscapeUI, size) },
                 ) {
-                    AniApp(aniColorScheme(isDark)) {
+                    AniApp {
                         content()
                     }
                 }
