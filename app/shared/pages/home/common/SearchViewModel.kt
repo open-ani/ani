@@ -18,8 +18,12 @@
 
 package me.him188.ani.app.ui.home
 
+import androidx.compose.runtime.getValue
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import me.him188.ani.app.data.models.MySearchSettings
+import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.subject.SubjectListViewModel
 import me.him188.ani.datasources.api.subject.SubjectProvider
@@ -28,9 +32,11 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
 class SearchViewModel(
-    keyword: String? = "", 
+    keyword: String? = "",
 ) : AbstractViewModel(), KoinComponent {
     private val subjectProvider: SubjectProvider by inject()
+    private val settings: SettingsRepository by inject()
+
     private val _result: MutableStateFlow<SubjectListViewModel?> = MutableStateFlow(null)
 
 
@@ -38,6 +44,9 @@ class SearchViewModel(
     val editingQuery: MutableStateFlow<String> = MutableStateFlow(keyword ?: "")
 
     val result: StateFlow<SubjectListViewModel?> = _result
+
+    private val mySearchSettings: MySearchSettings by settings.uiSettings.flow.map { it.mySearchSettings }
+        .produceState(MySearchSettings.Default)
 
     init {
         keyword?.let { search(it) }
@@ -51,7 +60,12 @@ class SearchViewModel(
         _result.value?.close()
         _result.value =
             SubjectListViewModel(
-                subjectProvider.startSearch(SubjectSearchQuery(keywords.trim()))
+                subjectProvider.startSearch(
+                    SubjectSearchQuery(
+                        keywords.trim(),
+                        useOldSearchApi = !mySearchSettings.enableNewSearchSubjectApi
+                    )
+                )
             )
     }
 }

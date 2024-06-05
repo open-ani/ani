@@ -278,6 +278,24 @@ fun AppSettingsTab(
                 )
             }
         }
+        Group(title = { Text("搜索") }) {
+            val mySearchSettings by remember { derivedStateOf { uiSettings.mySearchSettings } }
+            SwitchItem(
+                checked = mySearchSettings.enableNewSearchSubjectApi,
+                onCheckedChange = {
+                    vm.uiSettings.update(
+                        uiSettings.copy(
+                            mySearchSettings = mySearchSettings.copy(
+                                enableNewSearchSubjectApi = !mySearchSettings.enableNewSearchSubjectApi
+                            )
+                        )
+                    )
+                },
+                title = { Text("切换到新版条目查询接口") },
+                Modifier.placeholder(vm.uiSettings.loading),
+                description = { Text("实验性查询接口，如遇条目查询不到，可关闭此项切换到旧版本更稳定的查询接口。") },
+            )
+        }
         Group(title = { Text("我的追番") }) {
             val myCollections by remember { derivedStateOf { uiSettings.myCollections } }
             SwitchItem(

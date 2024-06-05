@@ -103,6 +103,7 @@ data class SubjectImages(
 class SubjectSearchQuery(
     val keyword: String,
     val type: SubjectType = SubjectType.ANIME,
+    val useOldSearchApi: Boolean = true,
 )
 
 enum class SubjectType {
