@@ -412,8 +412,8 @@ internal class BangumiClientImpl(
                 val legacySubjects: List<BangumiLegacySubject> =
                     Json { ignoreUnknownKeys = true }.decodeFromString(legacySubjectsJson)
                 Paged(
-                    results,    
-                        results > legacySubjects.size,
+                    results,
+                    results > legacySubjects.size,
                     legacySubjects
                 )
             }
