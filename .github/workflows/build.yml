@@ -50,10 +50,12 @@ jobs:
         "-Pbangumi.oauth.client.desktop.appId=${{ secrets.BANGUMI_OAUTH_CLIENT_DESKTOP_ID }}" 
         "-Pbangumi.oauth.client.desktop.secret=${{ secrets.BANGUMI_OAUTH_CLIENT_DESKTOP_SECRET }}"
 
+      # envs are strings, so check for 'true' or 'false'
       isMac: ${{ startsWith(matrix.os, 'macos') }}
       isWindows: ${{ startsWith(matrix.os, 'windows') }}
       isUbuntu: ${{ startsWith(matrix.os, 'ubuntu') }}
       isUnix: ${{ startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu') }}
+      # doSigning: ${{ github.event_name != 'pull_request' && github.repository == 'open-api/ani' }} # fork 和 PR 不使用签名
       uploadApk: ${{ matrix.uploadApk == 'true' || matrix.uploadApk == true }}
     steps:
       - uses: actions/checkout@v2
@@ -82,7 +84,7 @@ jobs:
         run: ./gradlew generateComposeResClass ${{ env.gradleArgs }}
 
 
-      - if: ${{ env.isMac == 'true' }}
+      - if: ${{ env.isMac == 'true' && secrets.SIGNING_RELEASE_STOREFILE != '' }}
         name: Prepare signing key
         id: android_signing_key
         uses: timheuer/base64-to-file@v1.1
