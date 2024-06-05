@@ -18,6 +18,8 @@ import me.him188.ani.app.ui.settings.framework.ConnectionTestResult
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
 import me.him188.ani.app.ui.settings.framework.components.TextFieldDialog
+import me.him188.ani.app.ui.settings.tabs.network.NetworkSettingsTab
+import me.him188.ani.app.ui.settings.tabs.network.NetworkSettingsViewModel
 import me.him188.ani.datasources.acgrip.AcgRipMediaSource
 import me.him188.ani.datasources.api.paging.PageBasedPagedSource
 import me.him188.ani.datasources.api.paging.Paged

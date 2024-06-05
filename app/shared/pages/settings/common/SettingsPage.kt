@@ -32,9 +32,9 @@ import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.tabs.AboutTab
-import me.him188.ani.app.ui.settings.tabs.NetworkSettingsTab
 import me.him188.ani.app.ui.settings.tabs.app.AppSettingsTab
 import me.him188.ani.app.ui.settings.tabs.media.MediaPreferenceTab
+import me.him188.ani.app.ui.settings.tabs.network.NetworkSettingsTab
 
 /**
  * @see renderPreferenceTab 查看名称
@@ -125,7 +125,7 @@ private fun renderPreferenceTab(
 ): String {
     return when (tab) {
         SettingsTab.APP -> "应用与界面"
-        SettingsTab.NETWORK -> "网络"
+        SettingsTab.NETWORK -> "数据源与网络"
         SettingsTab.MEDIA -> "播放与缓存"
         SettingsTab.ABOUT -> "关于"
     }
