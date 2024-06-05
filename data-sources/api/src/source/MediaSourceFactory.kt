@@ -14,6 +14,11 @@ interface MediaSourceFactory { // SPI service load
      * @see MediaSource.mediaSourceId
      */
     val mediaSourceId: String
+//
+//    /**
+//     * 介绍信息, 将会显示在 UI
+//     */
+//    val mediaSourceInfo: MediaSourceInfo
 
     /**
      * 数据源的可配置参数列表. 例如 API key, 用户名密码等.
@@ -25,6 +30,23 @@ interface MediaSourceFactory { // SPI service load
         config: MediaSourceConfig,
     ): MediaSource
 }
+
+///**
+// * 数据源的介绍信息
+// */
+//class MediaSourceInfo(
+//    /**
+//     * 必须和 [MediaSourceFactory.mediaSourceId] 相同
+//     */
+//    val id: String,
+//    val name: String,
+//    val description: String,
+//    /**
+//     * HTTPS URL. 如需加载本地资源, 则要在 :app:shared 中 `getMediaSourceIconResource` 修改
+//     */
+//    val iconUrl: String? = null,
+//    val website: String? = null,
+//)
 
 @Serializable
 class MediaSourceConfig(

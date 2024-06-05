@@ -1,14 +1,13 @@
 package me.him188.ani.app.ui.settings.framework
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Cancel
 import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material.icons.rounded.DisplaySettings
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -22,20 +21,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import me.him188.ani.app.ui.mediaSource.MediaSourceIcon
+import me.him188.ani.app.ui.mediaSource.renderMediaSource
+import me.him188.ani.app.ui.mediaSource.renderMediaSourceDescription
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.TextItem
-import me.him188.ani.app.ui.subject.episode.mediaFetch.getMediaSourceIcon
-import me.him188.ani.app.ui.subject.episode.mediaFetch.renderMediaSource
-import me.him188.ani.app.ui.subject.episode.mediaFetch.renderMediaSourceDescription
 import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
@@ -119,16 +115,9 @@ fun SettingsScope.MediaSourceTesterView(
         }
     },
     icon: (@Composable () -> Unit)? = {
-        val ic = getMediaSourceIcon(tester.id)
-        Image(
-            ic
-                ?: rememberVectorPainter(Icons.Rounded.DisplaySettings),
-            null,
-            Modifier.clip(MaterialTheme.shapes.extraSmall).size(48.dp),
-            contentScale = ContentScale.Fit,
-            alignment = Alignment.Center,
-            colorFilter = if (ic == null) ColorFilter.tint(MaterialTheme.colorScheme.onSurface) else null,
-        )
+        Box(Modifier.clip(MaterialTheme.shapes.extraSmall).size(48.dp)) {
+            MediaSourceIcon(tester.id)
+        }
     },
 ) {
     TextItem(

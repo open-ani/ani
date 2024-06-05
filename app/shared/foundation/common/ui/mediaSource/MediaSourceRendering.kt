@@ -1,9 +1,4 @@
-package me.him188.ani.app.ui.subject.episode.mediaFetch
-
-/*
- * !! 提示: 如果你的 Res 没有找到, 在项目根目录执行以下命令即可: 
- *     ./gradlew generateComposeResClass prepareAppResources
- */
+package me.him188.ani.app.ui.mediaSource
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
@@ -16,9 +11,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -30,6 +29,7 @@ import me.him188.ani.app.dmhy
 import me.him188.ani.app.mikan
 import me.him188.ani.app.mxdongman
 import me.him188.ani.app.nyafun
+import me.him188.ani.app.ui.foundation.AsyncImage
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.datasources.acgrip.AcgRipMediaSource
 import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
@@ -39,6 +39,14 @@ import me.him188.ani.datasources.mikan.MikanMediaSource
 import me.him188.ani.datasources.mxdongman.MxdongmanMediaSource
 import me.him188.ani.datasources.nyafun.NyafunMediaSource
 import org.jetbrains.compose.resources.painterResource
+
+
+/*
+ * !! 提示: 如果你的 Res 没有找到, 在项目根目录执行以下命令即可: 
+ *     ./gradlew build
+ */
+
+
 
 @Stable
 fun renderMediaSource(
@@ -71,7 +79,7 @@ fun renderMediaSourceDescription(
 }
 
 @Composable
-fun getMediaSourceIcon(
+fun getMediaSourceIconResource(
     id: String?
 ): Painter? {
     if (LocalIsPreviewing.current) { // compose resources does not support preview
@@ -88,17 +96,44 @@ fun getMediaSourceIcon(
     }
 }
 
+@Composable
+fun MediaSourceIcon(
+    id: String,
+    modifier: Modifier = Modifier,
+    url: String? = null,
+) {
+    if (url != null) {
+        AsyncImage(
+            url,
+            null,
+            contentScale = ContentScale.Fit,
+            alignment = Alignment.Center,
+        )
+    } else {
+        val ic = getMediaSourceIconResource(id)
+        Image(
+            ic
+                ?: rememberVectorPainter(Icons.Rounded.DisplaySettings),
+            null,
+            modifier,
+            contentScale = ContentScale.Fit,
+            alignment = Alignment.Center,
+            colorFilter = if (ic == null) ColorFilter.tint(MaterialTheme.colorScheme.onSurface) else null,
+        )
+    }
+}
+
 /**
  * 宽度不固定
  */
 @Composable
-fun MediaSourceIcon(
+fun SmallMediaSourceIcon(
     id: String?,
     modifier: Modifier = Modifier,
     allowText: Boolean = true,
 ) {
     Box(modifier.clip(MaterialTheme.shapes.extraSmall).height(24.dp)) {
-        val icon = getMediaSourceIcon(id)
+        val icon = getMediaSourceIconResource(id)
         if (icon == null) {
             if (allowText && id != null) {
                 Text(

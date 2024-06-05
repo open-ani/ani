@@ -57,6 +57,8 @@ import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.tools.formatDateTime
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.icons.MediaSourceIcons
+import me.him188.ani.app.ui.mediaSource.SmallMediaSourceIcon
+import me.him188.ani.app.ui.mediaSource.renderMediaSource
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.subject.episode.details.renderSubtitleLanguage
 import me.him188.ani.datasources.api.Media
@@ -340,7 +342,7 @@ private fun MediaSourceResultCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    MediaSourceIcon(id = source.mediaSourceId, allowText = false)
+                    SmallMediaSourceIcon(id = source.mediaSourceId, allowText = false)
 
                     Text(
                         renderMediaSource(source.mediaSourceId),
@@ -420,7 +422,9 @@ private fun MediaSourceResultCard(
             },
             modifier = modifier.heightIn(min = 40.dp),
             leadingIcon = {
-                MediaSourceIcon(id = source.mediaSourceId)
+                SmallMediaSourceIcon(
+                    id = source.mediaSourceId,
+                )
             }
         )
     }

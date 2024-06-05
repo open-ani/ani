@@ -17,14 +17,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.util.fastAll
 import me.him188.ani.app.data.media.MediaCacheManager
 import me.him188.ani.app.ui.external.placeholder.placeholder
+import me.him188.ani.app.ui.mediaSource.renderMediaSource
+import me.him188.ani.app.ui.mediaSource.renderMediaSourceDescription
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SorterItem
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
 import me.him188.ani.app.ui.settings.framework.components.TextFieldItem
 import me.him188.ani.app.ui.subject.episode.details.renderResolution
 import me.him188.ani.app.ui.subject.episode.details.renderSubtitleLanguage
-import me.him188.ani.app.ui.subject.episode.mediaFetch.renderMediaSource
-import me.him188.ani.app.ui.subject.episode.mediaFetch.renderMediaSourceDescription
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 
 @Composable
