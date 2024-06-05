@@ -389,12 +389,11 @@ internal class BangumiClientImpl(
             }
             val resp = httpClient.get("$BANGUMI_API_HOST/search/subject".plus("/").plus(keywordCoded)) {
                 parameter("type", BangumiSubjectType.valueOf(type.toString()).id)
-                if (Objects.nonNull(responseGroup)) parameter("responseGroup", responseGroup.toString())
+                parameter("responseGroup", responseGroup?.toString())
                 if (Objects.nonNull(start)) {
                     parameter("start", start)
                 }
                 if (Objects.nonNull(maxResults)) parameter("max_results", maxResults)
-                contentType(ContentType.Application.Json)
             }
 
             if (!resp.status.isSuccess()) {
