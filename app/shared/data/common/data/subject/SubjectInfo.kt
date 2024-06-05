@@ -17,6 +17,7 @@ import org.openapitools.client.models.Subject
 @Immutable
 @Serializable
 class SubjectInfo(
+    val id: Int = 0,
     // 可搜索 "吹响！悠风号 第三季.json" 看示例
     val name: String = "",
     val nameCn: String = "",
@@ -70,6 +71,9 @@ class SubjectInfo(
     }
 }
 
+@Stable
+val SubjectInfo.nameCnOrName get() = nameCn.takeIf { it.isNotBlank() } ?: name
+
 
 @Serializable
 @Immutable
@@ -87,6 +91,7 @@ class InfoboxItem(
 
 fun Subject.createSubjectInfo(): SubjectInfo {
     return SubjectInfo(
+        id = id,
         name = name,
         nameCn = nameCn,
         summary = this.summary,

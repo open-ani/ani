@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -151,10 +152,19 @@ interface MediaPreferenceItem<T : Any> {
 
 data class MediaSelectorContext(
     /**
-     * 该条目已经完结了一段时间了
+     * 该条目已经完结了一段时间了. `null` 表示该信息还正在查询中
      */
-    val subjectFinishedForAConservativeTime: Boolean,
-)
+    val subjectFinishedForAConservativeTime: Boolean? = null,
+) {
+    fun allFieldsLoaded() = subjectFinishedForAConservativeTime != null
+
+    companion object {
+        /**
+         * 刚开始查询时的默认值
+         */
+        val Initial = MediaSelectorContext()
+    }
+}
 
 class DefaultMediaSelector(
     mediaSelectorContextNotCached: Flow<MediaSelectorContext>,
@@ -209,7 +219,8 @@ class DefaultMediaSelector(
         return list.fastFilter filter@{ media ->
             if (isLocalCache(media)) return@filter true // 本地缓存总是要显示
 
-            if (settings.hideSingleEpisodeForCompleted && context.subjectFinishedForAConservativeTime
+            if (settings.hideSingleEpisodeForCompleted
+                && context.subjectFinishedForAConservativeTime == true // 还未加载到剧集信息时, 先显示
                 && media.kind == MediaSourceKind.BitTorrent
             ) {
                 // 完结番隐藏单集资源
@@ -374,10 +385,14 @@ class DefaultMediaSelector(
         val candidates = filteredCandidates.first()
         if (candidates.isEmpty()) return null
 
-        val mediaSelectorContext = mediaSelectorContext.first()
+        val mediaSelectorContext = mediaSelectorContext.filter {
+            it.allFieldsLoaded()
+        }.first()
         val mediaSelectorSettings = mediaSelectorSettings.first()
-        val shouldPreferSeasons =
-            mediaSelectorContext.subjectFinishedForAConservativeTime && mediaSelectorSettings.preferSeasons
+
+
+        val shouldPreferSeasons = mediaSelectorContext.subjectFinishedForAConservativeTime == true
+                && mediaSelectorSettings.preferSeasons
 
         val languageIds = sequence {
             selectedSubtitleLanguageId?.let {
