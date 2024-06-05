@@ -1,24 +1,31 @@
 package me.him188.ani.datasources.ikaros
 
+import io.ktor.client.plugins.defaultRequest
+import io.ktor.client.request.header
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import me.him188.ani.datasources.api.paging.SizedSource
 import me.him188.ani.datasources.api.source.ConnectionStatus
+import me.him188.ani.datasources.api.source.HttpMediaSource
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.source.MediaMatch
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.source.MediaSourceFactory
 import me.him188.ani.datasources.api.source.MediaSourceKind
+import me.him188.ani.datasources.api.source.useHttpClient
 import me.him188.ani.utils.logging.logger
+import java.nio.charset.StandardCharsets
+import java.util.Base64
 
-class IkarosMediaSource(config: MediaSourceConfig) : MediaSource {
+class IkarosMediaSource(config: MediaSourceConfig) : HttpMediaSource() {
     companion object {
         const val ID = "ikaros"
         val logger = logger<IkarosMediaSource>()
-        val BASE_URL = GetEnv("ANI_DS_IKAROS_BASE_URL")
-        val USERNAME = GetEnv("ANI_DS_IKAROS_USERNAME")
-        val PASSWORD = GetEnv("ANI_DS_IKAROS_PASSWORD")
-        private fun GetEnv(envName: String?): String {
+        val BASE_URL = getEnv("ANI_DS_IKAROS_BASE_URL")
+        val USERNAME = getEnv("ANI_DS_IKAROS_USERNAME")
+        val PASSWORD = getEnv("ANI_DS_IKAROS_PASSWORD")
+        private fun getEnv(envName: String?): String {
             if (envName.isNullOrEmpty()) {
                 return ""
             }
@@ -30,7 +37,14 @@ class IkarosMediaSource(config: MediaSourceConfig) : MediaSource {
         }
     }
 
-    internal val client = IkarosClient(BASE_URL, USERNAME, PASSWORD)
+    internal val client = IkarosClient(BASE_URL, useHttpClient(config) {
+        defaultRequest {
+            header(
+                HttpHeaders.Authorization,
+                Base64.getEncoder().encodeToString("$USERNAME:$PASSWORD".toByteArray(StandardCharsets.UTF_8))
+            )
+        }
+    })
 
     class Factory : MediaSourceFactory {
         override val mediaSourceId: String get() = ID
