@@ -55,7 +55,7 @@ jobs:
       isWindows: ${{ startsWith(matrix.os, 'windows') }}
       isUbuntu: ${{ startsWith(matrix.os, 'ubuntu') }}
       isUnix: ${{ startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu') }}
-      # doSigning: ${{ github.event_name != 'pull_request' && github.repository == 'open-api/ani' }} # fork 和 PR 不使用签名
+      doSigning: ${{ github.event_name != 'pull_request' && github.repository == 'open-api/ani' }} # fork 和 PR 不使用签名
       uploadApk: ${{ matrix.uploadApk == 'true' || matrix.uploadApk == true }}
     steps:
       - uses: actions/checkout@v2
@@ -97,7 +97,7 @@ jobs:
       - name: Assemble
         run: ./gradlew assemble ${{ env.gradleArgs }}
 
-      - if: ${{ env.uploadApk == 'true' }}
+      - if: ${{ env.uploadApk == 'true' && env.doSigning == 'true' }}
         name: Build Android APK
         run: ./gradlew assembleRelease ${{ env.gradleArgs }}
         env:
