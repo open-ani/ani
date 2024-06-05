@@ -28,6 +28,8 @@ import me.him188.ani.app.bangumi
 import me.him188.ani.app.data.media.MediaCacheManager.Companion.LOCAL_FS_MEDIA_SOURCE_ID
 import me.him188.ani.app.dmhy
 import me.him188.ani.app.mikan
+import me.him188.ani.app.mxdongman
+import me.him188.ani.app.nyafun
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.datasources.acgrip.AcgRipMediaSource
 import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
@@ -80,6 +82,8 @@ fun getMediaSourceIcon(
         AcgRipMediaSource.ID -> painterResource(Res.drawable.acg_rip)
         MikanMediaSource.ID, MikanCNMediaSource.ID -> painterResource(Res.drawable.mikan)
         BangumiSubjectProvider.ID -> painterResource(Res.drawable.bangumi)
+        NyafunMediaSource.ID -> painterResource(Res.drawable.nyafun)
+        MxdongmanMediaSource.ID -> painterResource(Res.drawable.mxdongman)
         else -> null
     }
 }
