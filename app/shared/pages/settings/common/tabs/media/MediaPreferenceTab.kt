@@ -7,7 +7,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import kotlinx.coroutines.flow.map
-import me.him188.ani.app.data.media.MediaSourceManager
 import me.him188.ani.app.data.models.MediaCacheSettings
 import me.him188.ani.app.data.models.MediaSelectorSettings
 import me.him188.ani.app.data.repositories.SettingsRepository
@@ -30,7 +29,6 @@ import org.koin.core.component.inject
 @Stable
 class MediaSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
     private val settingsRepository: SettingsRepository by inject()
-    private val mediaSourceManager: MediaSourceManager by inject()
     private val torrentManager: TorrentManager by inject()
 
     @Stable
@@ -57,12 +55,6 @@ class MediaSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
 
     val sortedLanguages by derivedStateOf {
         defaultMediaPreference.fallbackSubtitleLanguageIds.extendTo(allSubtitleLanguageIds)
-    }
-
-    val sortedMediaSources by derivedStateOf {
-        defaultMediaPreference.fallbackMediaSourceIds
-            ?.filter { !mediaSourceManager.isLocal(it) }
-            .extendTo(mediaSourceManager.allIdsExceptLocal)
     }
 
     val sortedResolutions by derivedStateOf {

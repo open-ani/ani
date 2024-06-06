@@ -6,148 +6,23 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
-import io.ktor.client.request.get
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
-import me.him188.ani.app.data.media.MediaSourceManager
-import me.him188.ani.app.data.models.DanmakuSettings
 import me.him188.ani.app.data.models.ProxySettings
-import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.ui.external.placeholder.placeholder
-import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.settings.SettingsTab
-import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
-import me.him188.ani.app.ui.settings.framework.ConnectionTestResult
-import me.him188.ani.app.ui.settings.framework.ConnectionTester
 import me.him188.ani.app.ui.settings.framework.MediaSourceTesterView
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
 import me.him188.ani.app.ui.settings.framework.components.TextButtonItem
 import me.him188.ani.app.ui.settings.framework.components.TextFieldItem
 import me.him188.ani.danmaku.ani.client.AniBangumiSeverBaseUrls
-import me.him188.ani.datasources.api.source.ConnectionStatus
-import me.him188.ani.datasources.api.subject.SubjectProvider
-import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
 import me.him188.ani.utils.ktor.ClientProxyConfigValidator
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
-
-/**
- * @see MediaSourceInfo
- */
-@Stable
-class MediaSourcePresentation(
-    val id: String,
-    val name: String,
-    val description: String,
-    val iconUrl: String?,
-    val website: String?,
-    val connectionTester: ConnectionTester,
-)
-
-@Stable
-class NetworkSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
-    private val settingsRepository: SettingsRepository by inject()
-    private val mediaSourceManager: MediaSourceManager by inject()
-    private val bangumiSubjectProvider by inject<SubjectProvider>()
-
-    ///////////////////////////////////////////////////////////////////////////
-    // Media Testing
-    ///////////////////////////////////////////////////////////////////////////
-
-    val mediaSources = mediaSourceManager.allIdsExceptLocal
-        .map { id -> createMediaSourceTester(id) }
-        .sortedBy { it.id.lowercase() }
-
-    private fun createMediaSourceTester(id: String): ConnectionTester {
-        val source = mediaSourceManager.enabledSources.map { sources ->
-            sources.firstOrNull { it.mediaSourceId == id }
-        }
-        return ConnectionTester(
-            id = id,
-        ) {
-            when (source.first()?.checkConnection()) {
-                ConnectionStatus.SUCCESS -> ConnectionTestResult.SUCCESS
-                ConnectionStatus.FAILED -> ConnectionTestResult.FAILED
-                null -> ConnectionTestResult.NOT_ENABLED
-            }
-        }.apply {
-            launchInMain {
-                source.collect {
-                    this@apply.reset()
-                }
-            }
-        }
-    }
-
-    val nonConnectionTesters = listOf(
-        ConnectionTester(
-            id = BangumiSubjectProvider.ID, // Bangumi 顺便也测一下
-        ) {
-            if (bangumiSubjectProvider.testConnection() == ConnectionStatus.SUCCESS) {
-                ConnectionTestResult.SUCCESS
-            } else {
-                ConnectionTestResult.FAILED
-            }
-        }
-    )
-
-    val allMediaTesters =
-        Testers(mediaSources + nonConnectionTesters, backgroundScope)
-
-    ///////////////////////////////////////////////////////////////////////////
-    // Proxy
-    ///////////////////////////////////////////////////////////////////////////
-
-    val proxySettings by settings(
-        settingsRepository.proxySettings,
-        placeholder = ProxySettings(_placeHolder = -1)
-    )
-
-    ///////////////////////////////////////////////////////////////////////////
-    // DanmakuSettings
-    ///////////////////////////////////////////////////////////////////////////
-
-    val danmakuSettings by settings(
-        settingsRepository.danmakuSettings,
-        placeholder = DanmakuSettings(_placeholder = -1)
-    )
-
-    val danmakuServerTesters = Testers(
-        AniBangumiSeverBaseUrls.list.map {
-            ConnectionTester(
-                id = it,
-            ) {
-                httpClient.get("$it/status")
-                ConnectionTestResult.SUCCESS
-            }
-        },
-        backgroundScope
-    )
-
-//    private val placeholderDanmakuSettings = DanmakuSettings.Default.copy()
-//    val danmakuSettings by preferencesRepository.danmakuSettings.flow
-//        .produceState(placeholderDanmakuSettings)
-//    val danmakuSettingsLoaded by derivedStateOf {
-//        danmakuSettings != placeholderDanmakuSettings
-//    }
-//
-//    private val danmakuSettingsUpdater = MonoTasker(backgroundScope)
-//    fun updateDanmakuSettings(settings: DanmakuSettings) {
-//        danmakuSettingsUpdater.launch {
-//            logger.info { "Updating danmaku settings: $settings" }
-//            preferencesRepository.danmakuSettings.set(settings)
-//        }
-//    }
-}
 
 @Composable
 fun NetworkSettingsTab(
@@ -159,31 +34,26 @@ fun NetworkSettingsTab(
     SettingsTab(modifier) {
         GlobalProxyGroup(proxySettings, vm)
         MediaSourceGroup(vm)
+        OtherTestGroup(vm)
         DanmakuGroup(vm)
     }
 }
 
 @Composable
-private fun SettingsScope.MediaSourceGroup(vm: NetworkSettingsViewModel) {
+private fun SettingsScope.OtherTestGroup(vm: NetworkSettingsViewModel) {
     Group(
-        title = { Text("数据源管理") },
+        title = { Text("其他测试") },
     ) {
-        for (tester in vm.mediaSources) {
-            MediaSourceTesterView(tester, showTime = false)
-        }
-
-        HorizontalDividerItem()
-
-        for (tester in vm.nonConnectionTesters) {
+        for (tester in vm.otherTesters.testers) {
             MediaSourceTesterView(tester, showTime = false)
         }
 
         TextButtonItem(
             onClick = {
-                vm.allMediaTesters.toggleTest()
+                vm.otherTesters.toggleTest()
             },
             title = {
-                if (vm.allMediaTesters.anyTesting) {
+                if (vm.otherTesters.anyTesting) {
                     Text("终止测试")
                 } else {
                     Text("开始测试")

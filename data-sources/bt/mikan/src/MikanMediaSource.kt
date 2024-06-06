@@ -91,6 +91,7 @@ class MikanMediaSource(
         override val mediaSourceId: String get() = ID
         override fun create(config: MediaSourceConfig): MediaSource = MikanMediaSource(config)
 
+        // TODO: this is actually not so good. We should generalize how MS can access caches.
         fun create(
             config: MediaSourceConfig,
             indexCacheProvider: MikanIndexCacheProvider = MemoryMikanIndexCacheProvider()

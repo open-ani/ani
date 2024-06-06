@@ -3,14 +3,8 @@ package me.him188.ani.app.ui.subject.episode.mediaFetch
 import androidx.compose.runtime.Immutable
 import kotlinx.serialization.Serializable
 import me.him188.ani.app.data.models.MediaSelectorSettings
-import me.him188.ani.app.platform.Platform
-import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.datasources.api.topic.Resolution
 import me.him188.ani.datasources.api.topic.SubtitleLanguage
-import me.him188.ani.datasources.dmhy.DmhyMediaSource
-import me.him188.ani.datasources.mikan.MikanCNMediaSource
-import me.him188.ani.datasources.mxdongman.MxdongmanMediaSource
-import me.him188.ani.datasources.nyafun.NyafunMediaSource
 
 /**
  * @see MediaSelectorSettings
@@ -59,32 +53,13 @@ data class MediaPreference private constructor(
      * 优先使用的媒体源
      */
     val mediaSourceId: String? = null,
-    /**
-     * @see fallbackSubtitleLanguageIds
-     */
-    val fallbackMediaSourceIds: List<String>? = null,
 ) {
     companion object {
-        private inline val webMediaSourceIds
-            get() = arrayOf(
-                NyafunMediaSource.ID,
-                MxdongmanMediaSource.ID
-            )
-
         /**
          * With default values
          * @see Empty
          */
-        val PlatformDefault = MediaPreference(
-            fallbackMediaSourceIds =
-            if (Platform.currentPlatform.isDesktop())
-                listOf(*webMediaSourceIds) // PC 默认不启用 BT 源
-            else listOf(
-                *webMediaSourceIds,
-                MikanCNMediaSource.ID,
-                DmhyMediaSource.ID,
-            ), // TODO(3.1.0): 需要重写下数据源优先级与默认设置, 更新注释
-        )
+        val PlatformDefault = MediaPreference()
 
         /**
          * No preference
@@ -92,7 +67,6 @@ data class MediaPreference private constructor(
         val Empty = MediaPreference(
             mediaSourceId = null,
             fallbackSubtitleLanguageIds = null,
-            fallbackMediaSourceIds = null,
             fallbackResolutions = null,
         )
     }
@@ -107,13 +81,7 @@ data class MediaPreference private constructor(
             subtitleLanguageId = other.subtitleLanguageId ?: subtitleLanguageId,
             fallbackSubtitleLanguageIds = other.fallbackSubtitleLanguageIds ?: fallbackSubtitleLanguageIds,
             mediaSourceId = other.mediaSourceId ?: mediaSourceId,
-            fallbackMediaSourceIds = other.fallbackMediaSourceIds ?: fallbackMediaSourceIds,
             fallbackResolutions = other.fallbackResolutions ?: fallbackResolutions,
         )
     }
-}
-
-fun MediaPreference.isSourceEnabled(id: String): Boolean {
-    if (fallbackMediaSourceIds == null) return true
-    return mediaSourceId == id || fallbackMediaSourceIds.contains(id)
 }
