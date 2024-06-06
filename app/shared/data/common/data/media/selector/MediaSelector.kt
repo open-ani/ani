@@ -155,6 +155,13 @@ data class MediaSelectorContext(
      * 该条目已经完结了一段时间了. `null` 表示该信息还正在查询中
      */
     val subjectFinishedForAConservativeTime: Boolean? = null,
+    /**
+     * 在执行自动选择时, 需要按此顺序使用数据源.
+     * 为 `null` 表示无偏好, 可以按任意顺序选择.
+     *
+     * 当使用完所有偏好的数据源后都没有筛选到资源时, 将会 fallback 为选择任意数据源的资源
+     */
+    val mediaSourcePrecedence: List<String>? = null,
 ) {
     fun allFieldsLoaded() = subjectFinishedForAConservativeTime != null
 
@@ -429,7 +436,7 @@ class DefaultMediaSelector(
                 yield(it)
                 return@sequence
             }
-            val fallback = mergedPreference.fallbackMediaSourceIds
+            val fallback = mediaSelectorContext.mediaSourcePrecedence
             if (fallback != null) {
                 yieldAll(fallback) // 如果有设置, 那就优先使用设置的
             }

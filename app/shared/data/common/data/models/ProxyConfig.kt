@@ -4,7 +4,6 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import me.him188.ani.datasources.api.source.MediaSource
 
 /**
  * All proxy preferences
@@ -16,17 +15,8 @@ data class ProxySettings(
      * Default settings to use if [MediaSourceProxySettings] is not set for a media source.
      */
     val default: MediaSourceProxySettings = MediaSourceProxySettings.Default,
-    /**
-     * Per data source [MediaSource.mediaSourceId]
-     */
-    val perSource: Map<String, MediaSourceProxySettings> = emptyMap(),
     @Suppress("PropertyName") @Transient val _placeHolder: Int = 0,
 ) {
-    @Stable
-    fun get(sourceId: String): MediaSourceProxySettings {
-        return perSource[sourceId] ?: default
-    }
-
     companion object {
         @Stable
         val Default = ProxySettings()

@@ -86,10 +86,10 @@ fun EpisodeVideoSettings(
     }
     SettingsTab(modifier) {
         Group(
-            useThinHeader = true,
             title = {
                 Text("弹幕设置")
             },
+            useThinHeader = true,
         ) {
             val fontSize by remember(danmakuConfig) {
                 mutableFloatStateOf(danmakuConfig.style.fontSize.value / DanmakuStyle.Default.fontSize.value)

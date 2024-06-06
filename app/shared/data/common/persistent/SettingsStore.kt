@@ -27,6 +27,7 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
+import me.him188.ani.app.data.repositories.MediaSourceSaves
 import me.him188.ani.app.data.repositories.MikanIndexes
 import me.him188.ani.app.platform.Context
 import java.io.File
@@ -46,6 +47,7 @@ expect val Context.dataStoresImpl: PlatformDataStoreManager
 // workaround for compiler bug
 inline val Context.dataStores: PlatformDataStoreManager get() = dataStoresImpl
 
+// 一个对象, 可都写到 common 里, 不用每个 store 都 expect/actual
 abstract class PlatformDataStoreManager {
     val mikanIndexStore: DataStore<MikanIndexes>
         get() = DataStoreFactory.create(
@@ -55,6 +57,17 @@ abstract class PlatformDataStoreManager {
                 MikanIndexes.Empty
             },
         )
+
+    val mediaSourceSaveStore by lazy {
+        DataStoreFactory.create(
+            serializer = MediaSourceSaves.serializer()
+                .asDataStoreSerializer(MediaSourceSaves.Default),
+            produceFile = { resolveDataStoreFile("mediaSourceSaves") },
+            corruptionHandler = ReplaceFileCorruptionHandler {
+                MediaSourceSaves.Default
+            },
+        )
+    }
 
     abstract fun resolveDataStoreFile(name: String): File
 }

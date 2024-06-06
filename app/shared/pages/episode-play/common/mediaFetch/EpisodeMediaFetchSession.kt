@@ -154,12 +154,10 @@ internal class DefaultEpisodeMediaFetchSession(
         subjectManager.getEpisode(episodeId) // cache-first
     }
 
-    private val mediaFetcher = mediaSourceManager.allSources.map { providers ->
-        val defaultPreference = settingsRepository.defaultMediaPreference.flow.first()
+    private val mediaFetcher = mediaSourceManager.allInstances.map { providers ->
         MediaSourceMediaFetcher(
             configProvider = { MediaFetcherConfig.Default },
             mediaSources = providers,
-            sourceEnabled = { defaultPreference.isSourceEnabled(it.mediaSourceId) },
             parentCoroutineContext = backgroundScope.coroutineContext,
         )
     }.shareInBackground(started = SharingStarted.Lazily)

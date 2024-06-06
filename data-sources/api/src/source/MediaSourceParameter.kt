@@ -1,7 +1,7 @@
 package me.him188.ani.datasources.api.source
 
 class MediaSourceParameters(
-    val list: List<MediaSourceParameter>,
+    val list: List<MediaSourceParameter<*>>,
 ) {
     companion object {
         val Empty = MediaSourceParameters(emptyList())
@@ -14,8 +14,8 @@ inline fun buildMediaSourceParameters(block: MediaSourceParametersBuilder.() -> 
 /**
  * @see buildMediaSourceParameters
  */
-class MediaSourceParametersBuilder {
-    private val list = mutableListOf<MediaSourceParameter>()
+open class MediaSourceParametersBuilder {
+    private val list = mutableListOf<MediaSourceParameter<*>>()
 
     /**
      * 增加一个字符串参数
@@ -24,8 +24,14 @@ class MediaSourceParametersBuilder {
         name: String,
         default: String? = null,
         description: String? = null,
-    ) {
-        add(StringParameter(name, description, default))
+    ): StringParameter {
+        val param = StringParameter(
+            name, description,
+            default = default ?: "",
+            isRequired = default == null
+        )
+        add(param)
+        return param
     }
 
     /**
@@ -35,8 +41,10 @@ class MediaSourceParametersBuilder {
         name: String,
         default: Boolean,
         description: String? = null,
-    ) {
-        add(BooleanParameter(name, description, default))
+    ): BooleanParameter {
+        val param = BooleanParameter(name, description, default)
+        add(param)
+        return param
     }
 
     /**
@@ -45,14 +53,12 @@ class MediaSourceParametersBuilder {
     fun simpleEnum(
         name: String,
         oneOf: List<String>,
-        default: String? = null,
+        default: String,
         description: String? = null,
-    ) {
-        require(oneOf.isNotEmpty()) { "oneOf must not be empty" }
-        if (default != null) {
-            require(default in oneOf) { "default value must be in oneOf" }
-        }
-        add(SimpleEnumParameter(name, oneOf, description, default))
+    ): SimpleEnumParameter {
+        val param = SimpleEnumParameter(name, oneOf, description, default)
+        add(param)
+        return param
     }
 
     /**
@@ -61,34 +67,87 @@ class MediaSourceParametersBuilder {
     fun simpleEnum(
         name: String,
         vararg oneOf: String,
-        default: String? = null,
+        default: String,
         description: String? = null,
-    ) = simpleEnum(name, oneOf.toList(), description, default)
+    ) = simpleEnum(name, oneOf.toList(), default, description)
 
-    fun add(parameter: MediaSourceParameter) {
+    fun <T> add(parameter: MediaSourceParameter<T>): MediaSourceParameter<T> {
         list.add(parameter)
+        return parameter
     }
 
     fun build(): MediaSourceParameters = MediaSourceParameters(list)
 }
 
-sealed interface MediaSourceParameter
+sealed interface MediaSourceParameter<T> {
+    val name: String
+    val description: String?  // todo: how to localize?
+    val default: T
 
-data class StringParameter(
-    val name: String,
-    val description: String? = null,
-    val default: String? = null,
-) : MediaSourceParameter
+    fun parseFromString(value: String): T
+}
+
+private val TrueValidator: (String) -> Boolean = { true }
+private val NoopSanitizer: (String) -> String = { it }
+
+class StringParameter(
+    override val name: String,
+    override val description: String? = null,
+    override val default: String = "",
+    val isRequired: Boolean = false,
+    /**
+     * 验证用户输入是否合法
+     */
+    validate: (String) -> Boolean = TrueValidator,
+    /**
+     * 用户每输入一个字都会用整个编辑框的值调用这个函数, 可用于自动清除首尾空格等
+     */
+    val sanitize: (String) -> String = NoopSanitizer,
+) : MediaSourceParameter<String> {
+    val validate: (String) -> Boolean = {
+        if (isRequired && it.isBlank()) {
+            false
+        } else {
+            validate(it)
+        }
+    }
+
+    init {
+        require(name.isNotEmpty()) { "name must not be empty" }
+    }
+
+    override fun parseFromString(value: String): String {
+        return sanitize(value)
+    }
+}
 
 data class BooleanParameter(
-    val name: String,
-    val description: String? = null,
-    val default: Boolean,
-) : MediaSourceParameter
+    override val name: String,
+    override val description: String? = null,
+    override val default: Boolean,
+) : MediaSourceParameter<Boolean> {
+    init {
+        require(name.isNotEmpty()) { "name must not be empty" }
+    }
+
+    override fun parseFromString(value: String): Boolean {
+        return value.toBoolean()
+    }
+}
 
 data class SimpleEnumParameter(
-    val name: String,
+    override val name: String,
     val oneOf: List<String>,
-    val description: String? = null,
-    val default: String? = null,
-) : MediaSourceParameter 
+    override val description: String? = null,
+    override val default: String,
+) : MediaSourceParameter<String> {
+    init {
+        require(name.isNotEmpty()) { "name must not be empty" }
+        require(oneOf.isNotEmpty()) { "oneOf must not be empty" }
+        require(default in oneOf) { "default value must be in oneOf" }
+    }
+
+    override fun parseFromString(value: String): String {
+        return value
+    }
+}

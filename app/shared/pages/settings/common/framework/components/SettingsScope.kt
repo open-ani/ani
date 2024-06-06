@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -55,31 +56,45 @@ abstract class SettingsScope {
         description: (@Composable () -> Unit)? = null,
         modifier: Modifier = Modifier,
         useThinHeader: Boolean = false,
+        actions: (@Composable RowScope.() -> Unit)? = null,
         content: @Composable ColumnScope.() -> Unit,
     ) {
         Surface(modifier = modifier.fillMaxWidth()) {
             Column(Modifier.padding(vertical = if (useThinHeader) 12.dp else 16.dp)) {
                 // Group header
-                Column(
-                    Modifier.padding(horizontal = itemHorizontalPadding)
-                        .padding(bottom = 8.dp)
-                        .fillMaxWidth()
-                        .heightIn(min = if (description != null) 48.dp else 24.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    ProvideTextStyleContentColor(
-                        MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary,
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(
+                        Modifier.padding(horizontal = itemHorizontalPadding)
+                            .padding(bottom = 8.dp)
+                            .weight(1f)
+                            .heightIn(min = if (description != null) 48.dp else 24.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        Row { title() }
+                        ProvideTextStyleContentColor(
+                            MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                        ) {
+                            Row { title() }
+                        }
+
+                        description?.let {
+                            ProvideTextStyleContentColor(
+                                MaterialTheme.typography.labelMedium,
+                                LocalContentColor.current.copy(labelAlpha),
+                            ) {
+                                Row(Modifier.padding()) { it() }
+                            }
+                        }
                     }
 
-                    description?.let {
-                        ProvideTextStyleContentColor(
-                            MaterialTheme.typography.labelMedium,
-                            LocalContentColor.current.copy(labelAlpha),
-                        ) {
-                            Row(Modifier.padding()) { it() }
+                    actions?.let {
+                        CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.primary) {
+                            Row(
+                                Modifier.height(48.dp).padding(bottom = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                it()
+                            }
                         }
                     }
                 }

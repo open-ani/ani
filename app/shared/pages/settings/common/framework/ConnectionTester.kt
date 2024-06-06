@@ -13,6 +13,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,6 +39,7 @@ import kotlin.time.DurationUnit
 import kotlin.time.measureTimedValue
 
 
+@Immutable
 enum class ConnectionTestResult {
     SUCCESS,
     FAILED,
@@ -125,47 +127,56 @@ fun SettingsScope.MediaSourceTesterView(
         icon = icon,
         description = description,
         action = {
-            if (tester.isTesting) {
-                CircularProgressIndicator(
-                    Modifier.size(24.dp),
-                    strokeWidth = 2.dp,
-                )
-            } else {
-                when (tester.result) {
-                    ConnectionTestResult.SUCCESS -> {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Icon(Icons.Rounded.Check, null, tint = MaterialTheme.colorScheme.primary)
-                            if (showTime) {
-                                if (tester.time == Duration.INFINITE) {
-                                    Text("超时")
-                                } else {
-                                    Text(
-                                        tester.time?.toString(
-                                            DurationUnit.SECONDS,
-                                            decimals = 2
-                                        ) ?: ""
-                                    )
-                                }
-                            }
+            ConnectionTesterResultIndicator(tester, showTime)
+        }
+    )
+}
+
+@Composable
+fun ConnectionTesterResultIndicator(
+    tester: ConnectionTester,
+    showTime: Boolean = false,
+    modifier: Modifier = Modifier,
+) = Box(modifier) {
+    if (tester.isTesting) {
+        CircularProgressIndicator(
+            Modifier.size(24.dp),
+            strokeWidth = 2.dp,
+        )
+    } else {
+        when (tester.result) {
+            ConnectionTestResult.SUCCESS -> {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(Icons.Rounded.Check, null, tint = MaterialTheme.colorScheme.primary)
+                    if (showTime) {
+                        if (tester.time == Duration.INFINITE) {
+                            Text("超时")
+                        } else {
+                            Text(
+                                tester.time?.toString(
+                                    DurationUnit.SECONDS,
+                                    decimals = 2
+                                ) ?: ""
+                            )
                         }
-                    }
-
-                    ConnectionTestResult.FAILED -> {
-                        Icon(Icons.Rounded.Cancel, null, tint = MaterialTheme.colorScheme.error)
-                    }
-
-                    ConnectionTestResult.NOT_ENABLED -> {
-                        Text("未启用")
-                    }
-
-                    null -> {
-                        Text("等待测试")
                     }
                 }
             }
+
+            ConnectionTestResult.FAILED -> {
+                Icon(Icons.Rounded.Cancel, null, tint = MaterialTheme.colorScheme.error)
+            }
+
+            ConnectionTestResult.NOT_ENABLED -> {
+                Text("未启用")
+            }
+
+            null -> {
+                Text("等待测试")
+            }
         }
-    )
+    }
 }
