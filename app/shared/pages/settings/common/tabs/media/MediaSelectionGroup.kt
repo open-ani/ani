@@ -2,27 +2,30 @@ package me.him188.ani.app.ui.settings.tabs.media
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.ArrowOutward
 import androidx.compose.material.icons.rounded.DisplaySettings
 import androidx.compose.material.icons.rounded.Hd
 import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material.icons.rounded.Subtitles
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.util.fastAll
-import me.him188.ani.app.data.media.MediaCacheManager
+import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.ui.external.placeholder.placeholder
-import me.him188.ani.app.ui.mediaSource.renderMediaSource
-import me.him188.ani.app.ui.mediaSource.renderMediaSourceDescription
+import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SorterItem
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
 import me.him188.ani.app.ui.settings.framework.components.TextFieldItem
+import me.him188.ani.app.ui.settings.framework.components.TextItem
 import me.him188.ani.app.ui.subject.episode.details.renderResolution
 import me.him188.ani.app.ui.subject.episode.details.renderSubtitleLanguage
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
@@ -43,41 +46,16 @@ internal fun SettingsScope.MediaSelectionGroup(vm: MediaSettingsViewModel) {
         val textAny = "任意"
         val textNone = "无"
 
-        SorterItem(
-            values = { vm.sortedMediaSources },
-            onSort = { list ->
-                vm.updateDefaultMediaPreference(
-                    // 总是启用本地并且在最高优先级
-                    vm.defaultMediaPreference.copy(
-                        fallbackMediaSourceIds = listOf(MediaCacheManager.LOCAL_FS_MEDIA_SOURCE_ID) + list.filter { it.selected }
-                            .map { it.item }
-                    )
-                )
-            },
-            exposed = { list ->
-                Text(
-                    remember(list) {
-                        if (list.fastAll { it.selected }) {
-                            textAny
-                        } else if (list.fastAll { !it.selected }) {
-                            textNone
-                        } else
-                            list.asSequence().filter { it.selected }
-                                .joinToString { renderMediaSource(it.item) }
-                    },
-                    softWrap = false,
-                    overflow = TextOverflow.Ellipsis
-                )
-            },
-            item = { Text(renderMediaSource(it)) },
-            key = { it },
+        TextItem(
             modifier = Modifier.placeholder(vm.defaultMediaPreferenceLoading),
-            dialogItemDescription = { id ->
-                renderMediaSourceDescription(id)?.let { Text(it) }
-            },
-            dialogDescription = { Text(TIPS_LONG_CLICK_SORT) },
             icon = { Icon(Icons.Rounded.DisplaySettings, null) },
             title = { Text("数据源") },
+            action = {
+                val navigator by rememberUpdatedState(LocalNavigator.current)
+                IconButton({ navigator.navigatePreferences(SettingsTab.NETWORK) }) {
+                    Icon(Icons.Rounded.ArrowOutward, null)
+                }
+            }
         )
 
         HorizontalDividerItem()

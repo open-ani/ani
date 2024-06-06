@@ -13,42 +13,46 @@ import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.source.MediaSourceFactory
 import me.him188.ani.datasources.api.source.MediaSourceKind
+import me.him188.ani.datasources.api.source.MediaSourceParameters
+import me.him188.ani.datasources.api.source.MediaSourceParametersBuilder
+import me.him188.ani.datasources.api.source.get
 import me.him188.ani.datasources.api.source.useHttpClient
-import me.him188.ani.utils.logging.logger
 import java.nio.charset.StandardCharsets
 import java.util.Base64
 
 class IkarosMediaSource(config: MediaSourceConfig) : HttpMediaSource() {
     companion object {
         const val ID = "ikaros"
-        val logger = logger<IkarosMediaSource>()
-        val BASE_URL = getEnv("ANI_DS_IKAROS_BASE_URL")
-        val USERNAME = getEnv("ANI_DS_IKAROS_USERNAME")
-        val PASSWORD = getEnv("ANI_DS_IKAROS_PASSWORD")
-        private fun getEnv(envName: String?): String {
-            if (envName.isNullOrEmpty()) {
-                return ""
-            }
-            val env = System.getenv(envName)
-            if (env == null || env.isEmpty()) {
-                return ""
-            }
-            return env
-        }
     }
 
-    internal val client = IkarosClient(BASE_URL, useHttpClient(config) {
-        defaultRequest {
-            header(
-                HttpHeaders.Authorization,
-                "Basic " + Base64.getEncoder().encodeToString("$USERNAME:$PASSWORD".toByteArray(StandardCharsets.UTF_8))
-            )
+    internal val client = IkarosClient(
+        config[Parameters.baseUrl],
+        useHttpClient(config) {
+            defaultRequest {
+                val username = config[Parameters.username]
+                val password = config[Parameters.password]
+                header(
+                    HttpHeaders.Authorization,
+                    "Basic " + Base64.getEncoder()
+                        .encodeToString(
+                            "$username:$password".toByteArray(
+                                StandardCharsets.UTF_8
+                            )
+                        )
+                )
+            }
         }
-    })
+    )
+
+    object Parameters : MediaSourceParametersBuilder() {
+        val baseUrl = string("baseUrl", description = "API base URL")
+        val username = string("username", description = "用户名")
+        val password = string("password", description = "密码")
+    }
 
     class Factory : MediaSourceFactory {
         override val mediaSourceId: String get() = ID
-
+        override val parameters: MediaSourceParameters = Parameters.build()
         override fun create(config: MediaSourceConfig): MediaSource = IkarosMediaSource(config)
     }
 

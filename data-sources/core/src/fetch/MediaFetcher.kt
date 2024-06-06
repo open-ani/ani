@@ -1,6 +1,5 @@
 package me.him188.ani.datasources.core.fetch
 
-import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -26,6 +25,7 @@ import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.source.MediaMatch
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceKind
+import me.him188.ani.datasources.core.instance.MediaSourceInstance
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.logger
 import kotlin.coroutines.CoroutineContext
@@ -119,11 +119,6 @@ interface MediaSourceResult {
     fun restart()
 }
 
-@Immutable
-class Progress(
-    val current: Int,
-    val total: Int?,
-)
 
 @Stable
 sealed class MediaSourceState {
@@ -169,8 +164,7 @@ class MediaFetcherConfig {
  */
 class MediaSourceMediaFetcher(
     private val configProvider: () -> MediaFetcherConfig,
-    private val mediaSources: List<MediaSource>,
-    private val sourceEnabled: (MediaSource) -> Boolean,
+    private val mediaSources: List<MediaSourceInstance>,
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
 ) : MediaFetcher {
     private val scope = CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
@@ -250,15 +244,15 @@ class MediaSourceMediaFetcher(
     ) : MediaFetchSession {
         override val resultsPerSource: Map<String, MediaSourceResult> = mediaSources.associateBy {
             it.mediaSourceId
-        }.mapValues { (id, source) ->
+        }.mapValues { (id, instance) ->
             MediaSourceResultImpl(
                 mediaSourceId = id,
-                source.kind,
+                instance.source.kind,
                 config,
-                disabled = !sourceEnabled(source),
+                disabled = !instance.isEnabled,
                 pagedSources = flowOf(request)
                     .map {
-                        source.fetch(it)
+                        instance.source.fetch(it)
                     }
             )
         }

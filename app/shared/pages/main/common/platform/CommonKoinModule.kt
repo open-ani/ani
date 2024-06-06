@@ -40,6 +40,8 @@ import me.him188.ani.app.data.repositories.EpisodeRepository
 import me.him188.ani.app.data.repositories.EpisodeRepositoryImpl
 import me.him188.ani.app.data.repositories.EpisodeRevisionRepository
 import me.him188.ani.app.data.repositories.EpisodeRevisionRepositoryImpl
+import me.him188.ani.app.data.repositories.MediaSourceInstanceRepository
+import me.him188.ani.app.data.repositories.MediaSourceInstanceRepositoryImpl
 import me.him188.ani.app.data.repositories.MikanIndexCacheRepository
 import me.him188.ani.app.data.repositories.MikanIndexCacheRepositoryImpl
 import me.him188.ani.app.data.repositories.PreferencesRepositoryImpl
@@ -86,6 +88,9 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
     single<UserRepository> { UserRepositoryImpl() }
     single<EpisodeRevisionRepository> { EpisodeRevisionRepositoryImpl() }
     single<EpisodeRepository> { EpisodeRepositoryImpl() }
+    single<MediaSourceInstanceRepository> {
+        MediaSourceInstanceRepositoryImpl(getContext().dataStores.mediaSourceSaveStore)
+    }
     single<ProfileRepository> { ProfileRepository() }
     single<DanmakuManager> {
         DanmakuManagerImpl(
