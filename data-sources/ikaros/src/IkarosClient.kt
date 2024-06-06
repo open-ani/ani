@@ -47,7 +47,7 @@ class IkarosClient(
 
 
     suspend fun postSubjectSyncBgmTv(bgmTvSubjectId: String): IkarosSubjectDetails? {
-        if (bgmTvSubjectId.isEmpty()) {
+        if (bgmTvSubjectId.isBlank() || bgmTvSubjectId.toInt() <= 0) {
             return null
         }
         val url = "$baseUrl/api/v1alpha1/subject/sync/platform?platform=BGM_TV&platformId=$bgmTvSubjectId"
