@@ -41,7 +41,7 @@ class IkarosMediaSource(config: MediaSourceConfig) : HttpMediaSource() {
         defaultRequest {
             header(
                 HttpHeaders.Authorization,
-                Base64.getEncoder().encodeToString("$USERNAME:$PASSWORD".toByteArray(StandardCharsets.UTF_8))
+                "Basic " + Base64.getEncoder().encodeToString("$USERNAME:$PASSWORD".toByteArray(StandardCharsets.UTF_8))
             )
         }
     })
