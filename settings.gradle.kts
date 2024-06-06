@@ -80,6 +80,7 @@ includeProject(":data-sources:mikan", "data-sources/bt/mikan") // https://mikana
 includeProject(":data-sources:web-base", "data-sources/web/web-base") // web 基础
 includeProject(":data-sources:nyafun", "data-sources/web/nyafun") // https://nyafun.net/
 includeProject(":data-sources:mxdongman", "data-sources/web/mxdongman") // https://mxdm4.com/
+includeProject(":data-sources:ikaros", "data-sources/ikaros") // https://ikaros.run/
 
 // danmaku
 //includeProject(":danmaku:api", "danmaku/api") // danmaku source interfaces
