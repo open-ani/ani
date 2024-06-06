@@ -174,62 +174,65 @@ internal fun SettingsScope.MediaSelectionGroup(vm: MediaSettingsViewModel) {
             sanitizeValue = { it.replace("，", ",") },
         )
 
-        HorizontalDividerItem()
+        Group(
+            title = { Text("高级设置") },
+            useThinHeader = true
+        ) {
+            val mediaSelectorSettings by vm.mediaSelectorSettings
+            SwitchItem(
+                checked = mediaSelectorSettings.showDisabled,
+                onCheckedChange = {
+                    vm.mediaSelectorSettings.update(
+                        mediaSelectorSettings.copy(showDisabled = it)
+                    )
+                },
+                title = { Text("显示禁用的数据源") },
+                Modifier.placeholder(vm.mediaSelectorSettings.loading),
+                description = { Text("以便在偏好数据源中未找到资源时，可临时启用禁用的数据源") },
+            )
 
-        val mediaSelectorSettings by vm.mediaSelectorSettings
-        SwitchItem(
-            checked = mediaSelectorSettings.showDisabled,
-            onCheckedChange = {
-                vm.mediaSelectorSettings.update(
-                    mediaSelectorSettings.copy(showDisabled = it)
-                )
-            },
-            title = { Text("显示禁用的数据源") },
-            Modifier.placeholder(vm.mediaSelectorSettings.loading),
-            description = { Text("以便在偏好数据源中未找到资源时，可临时启用禁用的数据源") },
-        )
+            HorizontalDividerItem()
 
-        HorizontalDividerItem()
+            SwitchItem(
+                checked = vm.defaultMediaPreference.showWithoutSubtitle,
+                onCheckedChange = {
+                    vm.updateDefaultMediaPreference(
+                        vm.defaultMediaPreference.copy(showWithoutSubtitle = it)
+                    )
+                },
+                title = { Text("显示无字幕资源") },
+                Modifier.placeholder(vm.defaultMediaPreferenceLoading),
+                description = { Text("这可能是资源本身是生肉，也可能是字幕未识别到。是生肉的可能性更高") },
+            )
 
-        SwitchItem(
-            checked = vm.defaultMediaPreference.showWithoutSubtitle,
-            onCheckedChange = {
-                vm.updateDefaultMediaPreference(
-                    vm.defaultMediaPreference.copy(showWithoutSubtitle = it)
-                )
-            },
-            title = { Text("显示无字幕资源") },
-            Modifier.placeholder(vm.defaultMediaPreferenceLoading),
-            description = { Text("这可能是资源本身是生肉，也可能是字幕未识别到。是生肉的可能性更高") },
-        )
+            HorizontalDividerItem()
 
-        HorizontalDividerItem()
+            SwitchItem(
+                checked = mediaSelectorSettings.hideSingleEpisodeForCompleted,
+                onCheckedChange = {
+                    vm.mediaSelectorSettings.update(
+                        mediaSelectorSettings.copy(hideSingleEpisodeForCompleted = it)
+                    )
+                },
+                title = { Text("完结后隐藏单集 BT 资源") },
+                Modifier.placeholder(vm.mediaSelectorSettings.loading),
+                description = { Text("在番剧完结后，单集资源通常会没有速度") },
+            )
 
-        SwitchItem(
-            checked = mediaSelectorSettings.hideSingleEpisodeForCompleted,
-            onCheckedChange = {
-                vm.mediaSelectorSettings.update(
-                    mediaSelectorSettings.copy(hideSingleEpisodeForCompleted = it)
-                )
-            },
-            title = { Text("完结后隐藏单集 BT 资源") },
-            Modifier.placeholder(vm.mediaSelectorSettings.loading),
-            description = { Text("在番剧完结后，单集资源通常会没有速度") },
-        )
+            HorizontalDividerItem()
 
-        HorizontalDividerItem()
-
-        SwitchItem(
-            checked = mediaSelectorSettings.preferSeasons,
-            onCheckedChange = {
-                vm.mediaSelectorSettings.update(
-                    mediaSelectorSettings.copy(preferSeasons = it)
-                )
-            },
-            title = { Text("BT 资源优先选择季度全集") },
-            Modifier.placeholder(vm.defaultMediaPreferenceLoading),
-            description = { Text("季度全集资源通常更快，仅对 BT 数据源有效") },
-        )
+            SwitchItem(
+                checked = mediaSelectorSettings.preferSeasons,
+                onCheckedChange = {
+                    vm.mediaSelectorSettings.update(
+                        mediaSelectorSettings.copy(preferSeasons = it)
+                    )
+                },
+                title = { Text("BT 资源优先选择季度全集") },
+                Modifier.placeholder(vm.defaultMediaPreferenceLoading),
+                description = { Text("季度全集资源通常更快，仅对 BT 数据源有效") },
+            )
+        }
     }
 }
 
