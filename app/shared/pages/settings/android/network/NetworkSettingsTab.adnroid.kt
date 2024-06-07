@@ -122,7 +122,7 @@ private fun PreviewNetworkPreferenceTab() {
 @Composable
 private fun PreviewSelectMediaSourceTemplateLayout() {
     ProvideCompositionLocalsForPreview {
-        SelectMediaSourceTemplateLayout(
+        SelectMediaSourceTemplateDialog(
             remember {
                 listOf(
                     MediaSourceTemplate(

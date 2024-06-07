@@ -2,11 +2,21 @@ package me.him188.ani.app.ui.settings.tabs.network
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.ProvideTextStyle
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -27,12 +37,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
-import me.him188.ani.app.ui.foundation.widgets.RichDialogLayout
 import me.him188.ani.app.ui.mediaSource.MediaSourceIcon
-import me.him188.ani.app.ui.settings.SettingsTab
-import me.him188.ani.app.ui.settings.framework.components.DropdownItem
-import me.him188.ani.app.ui.settings.framework.components.SwitchItem
-import me.him188.ani.app.ui.settings.framework.components.TextFieldItem
 import me.him188.ani.datasources.api.source.BooleanParameter
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.source.MediaSourceParameter
@@ -137,96 +142,144 @@ class SimpleEnumArgumentState(
 }
 
 @Composable
-internal fun EditMediaSourceLayout(
+internal fun EditMediaSourceDialog(
     state: EditMediaSourceState,
     onConfirm: () -> Unit,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val isLoading by state.isLoading.collectAsStateWithLifecycle(true)
-    RichDialogLayout(
+    AlertDialog(
+        onDismissRequest,
         title = {
-            when (state.editType) {
-                EditType.Add -> Text("添加数据源")
-                is EditType.Edit -> Text("编辑数据源")
+            Text(state.info.name)
+        },
+        icon = {
+            Box(Modifier.clip(MaterialTheme.shapes.extraSmall).size(24.dp)) {
+                MediaSourceIcon(state.info.mediaSourceId, Modifier.size(24.dp))
             }
         },
-        description = {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Box(Modifier.clip(MaterialTheme.shapes.extraSmall).size(24.dp)) {
-                    MediaSourceIcon(state.info.mediaSourceId, Modifier.size(24.dp))
-                }
+        text = {
+            if (state.arguments.isEmpty()) {
+                Text("无配置项")
+                return@AlertDialog
+            }
 
-                Text(state.info.name)
+            Column(
+                Modifier.verticalScroll(rememberScrollState()).padding(top = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                for (argument in state.arguments) {
+                    when (argument) {
+                        is BooleanArgumentState -> {
+                            BooleanArgument(argument)
+                        }
+
+                        is SimpleEnumArgumentState -> {
+                            SimpleEnumArgument(argument)
+                        }
+
+                        is StringArgumentState -> {
+                            OutlinedTextField(
+                                value = argument.value,
+                                onValueChange = { argument.value = argument.parameter.sanitize(it) },
+                                label = { Text(argument.name) },
+                                supportingText = argument.description?.let { { Text(it) } },
+                                isError = argument.isError,
+                                shape = MaterialTheme.shapes.medium,
+                            )
+                        }
+                    }
+                }
             }
         },
-        buttons = {
+        confirmButton = {
             val canSave by remember(state) {
                 derivedStateOf {
 //                    !isLoading && todo 不知道为什么监听不到 isLoading, 但加载速度反正很快
                     !state.hasError
                 }
             }
-            TextButton(onDismissRequest) {
-                Text("取消")
-            }
             when (state.editType) {
                 EditType.Add -> Button(onConfirm, enabled = canSave) { Text("添加") }
                 is EditType.Edit -> Button(onConfirm, enabled = canSave) { Text("保存") }
             }
         },
+        dismissButton = {
+            TextButton(onDismissRequest) {
+                Text("取消")
+            }
+        },
         modifier = modifier,
-    ) {
-        if (state.arguments.isEmpty()) {
-            Text("无需配置", style = MaterialTheme.typography.bodyMedium)
-            return@RichDialogLayout
-        }
+    )
+}
 
-        Text("配置", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
-        SettingsTab(Modifier.padding(top = 16.dp)) {
-            for ((index, argument) in state.arguments.withIndex()) {
-                if (index != 0) {
-                    HorizontalDividerItem()
+@Composable
+private fun SimpleEnumArgument(argument: SimpleEnumArgumentState, modifier: Modifier = Modifier) {
+    var expanded by remember { mutableStateOf(false) }
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = it },
+        modifier,
+        content = {
+            OutlinedTextField(
+                // The `menuAnchor` modifier must be passed to the text field to handle
+                // expanding/collapsing the menu on click. A read-only text field has
+                // the anchor type `PrimaryNotEditable`.
+                modifier = Modifier.menuAnchor(),
+                value = argument.value,
+                onValueChange = {},
+                readOnly = true,
+                singleLine = true,
+                label = { Text(argument.name) },
+                supportingText = argument.description?.let { { Text(it) } },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                shape = MaterialTheme.shapes.medium,
+            )
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+            ) {
+                argument.options.forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(option) },
+                        onClick = {
+                            argument.value = option
+                            expanded = false
+                        },
+                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                    )
                 }
-                when (argument) {
-                    is BooleanArgumentState -> {
-                        SwitchItem(
-                            checked = argument.value,
-                            onCheckedChange = {
-                                argument.value = it
-                            },
-                            title = { Text(argument.name) },
-                            description = argument.description?.let { { Text(it) } },
-                        )
-                    }
+            }
+        },
+    )
+}
 
-                    is SimpleEnumArgumentState -> {
-                        DropdownItem(
-                            selected = { argument.value },
-                            values = { argument.options },
-                            itemText = { Text(it) },
-                            onSelect = { argument.value = it },
-                            title = { Text(argument.name) },
-                            description = argument.description?.let { { Text(it) } },
-                        )
-                    }
-
-                    is StringArgumentState -> {
-                        TextFieldItem(
-                            value = argument.value,
-                            title = { Text(argument.name) },
-                            description = argument.description?.let { { Text(it) } },
-                            onValueChangeCompleted = {
-                                argument.value = it
-                            },
-                            sanitizeValue = { argument.parameter.sanitize(it) },
-                            isErrorProvider = {
-                                !argument.parameter.validate(it)
-                            },
-                        )
-                    }
+@Composable
+private fun BooleanArgument(argument: BooleanArgumentState, modifier: Modifier = Modifier) {
+    Row(modifier, verticalAlignment = Alignment.CenterVertically) {
+        Column(Modifier.weight(1f).padding(start = 8.dp).padding(end = 16.dp)) {
+            ProvideTextStyle(MaterialTheme.typography.bodyLarge) {
+                Text(
+                    argument.name,
+                )
+            }
+            ProvideTextStyle(MaterialTheme.typography.labelMedium) {
+                argument.description?.let { desc ->
+                    Text(
+                        desc,
+                        Modifier.padding(top = 2.dp),
+                    )
                 }
             }
         }
+
+        Switch(
+            checked = argument.value,
+            onCheckedChange = {
+                argument.value = it
+            },
+        )
     }
 }
