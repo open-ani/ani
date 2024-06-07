@@ -76,8 +76,8 @@ class IkarosClient(
         val episodes = subjectDetails.episodes
         val mediaMatchs = mutableListOf<MediaMatch>()
         val episode = episodes.find { ep -> ep.sequence == seq }
-        if (episode != null) {
-            for (epRes in episode.resources!!) {
+        if (episode?.resources != null && episode.resources.isNotEmpty()) {
+            for (epRes in episode.resources) {
                 val media = epRes?.let {
                     DefaultMedia(
                         mediaId = epRes.attachmentId.toString(),

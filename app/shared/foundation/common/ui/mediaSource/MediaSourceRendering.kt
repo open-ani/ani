@@ -34,6 +34,7 @@ import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.datasources.acgrip.AcgRipMediaSource
 import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
 import me.him188.ani.datasources.dmhy.DmhyMediaSource
+import me.him188.ani.datasources.ikaros.IkarosMediaSource
 import me.him188.ani.datasources.mikan.MikanCNMediaSource
 import me.him188.ani.datasources.mikan.MikanMediaSource
 import me.him188.ani.datasources.mxdongman.MxdongmanMediaSource
@@ -74,6 +75,7 @@ fun renderMediaSourceDescription(
     BangumiSubjectProvider.ID -> "bgm.tv"
     NyafunMediaSource.ID -> "nyafun.net"
     MxdongmanMediaSource.ID -> "mxdm4.com"
+    IkarosMediaSource.ID -> "ikaros.run"
     LOCAL_FS_MEDIA_SOURCE_ID -> null
     else -> null
 }
