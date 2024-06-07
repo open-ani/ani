@@ -83,7 +83,7 @@ class NetworkSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
     // Media Testing
     ///////////////////////////////////////////////////////////////////////////
 
-    val mediaSources by mediaSourceManager.allInstances
+    val mediaSourcesFlow = mediaSourceManager.allInstances
         .map { instances ->
             instances.mapNotNull { instance ->
                 val factory = findFactory(instance.source.mediaSourceId) ?: return@mapNotNull null
@@ -115,20 +115,27 @@ class NetworkSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
             }
             // 不能 sort, 会用来 reorder
         }
-        .produceState(emptyList())
+        .stateInBackground(emptyList())
 
-    val mediaSourceTemplates = mediaSourceManager.allFactories.map { factory ->
-        MediaSourceTemplate(
-            MediaSourceInfo(
-                mediaSourceId = factory.mediaSourceId,
-                name = renderMediaSource(factory.mediaSourceId),
-                description = renderMediaSourceDescription(factory.mediaSourceId),
-                iconUrl = null,
-                website = null,
-                parameters = factory.parameters,
-            ),
-        )
-    }
+    val mediaSources by mediaSourcesFlow.produceState()
+
+    val availableMediaSourceTemplates by mediaSourcesFlow.map { mediaSources ->
+        mediaSourceManager.allFactories.mapNotNull { factory ->
+            if (!factory.allowMultipleInstances && mediaSources.any { it.mediaSourceId == factory.mediaSourceId }) {
+                return@mapNotNull null
+            }
+            MediaSourceTemplate(
+                MediaSourceInfo(
+                    mediaSourceId = factory.mediaSourceId,
+                    name = renderMediaSource(factory.mediaSourceId),
+                    description = renderMediaSourceDescription(factory.mediaSourceId),
+                    iconUrl = null,
+                    website = null,
+                    parameters = factory.parameters,
+                ),
+            )
+        }
+    }.produceState(emptyList())
 
     val mediaSourceTesters by derivedStateOf {
         Testers(

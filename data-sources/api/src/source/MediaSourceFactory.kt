@@ -15,11 +15,11 @@ interface MediaSourceFactory { // SPI service load
      * @see MediaSource.mediaSourceId
      */
     val mediaSourceId: String
-//
-//    /**
-//     * 介绍信息, 将会显示在 UI
-//     */
-//    val mediaSourceInfo: MediaSourceInfo
+
+    /**
+     * 是否允许用户使用此模板创建多个实例. 不同的实例可以用不同的配置.
+     */
+    val allowMultipleInstances: Boolean get() = false
 
     /**
      * 数据源的可配置参数列表. 例如 API key, 用户名密码等.
