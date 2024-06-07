@@ -29,6 +29,7 @@ import me.him188.ani.datasources.mikan.MikanCNMediaSource
 import me.him188.ani.datasources.mikan.MikanMediaSource
 import me.him188.ani.datasources.mxdongman.MxdongmanMediaSource
 import me.him188.ani.datasources.nyafun.NyafunMediaSource
+import me.him188.ani.utils.coroutines.onReplacement
 import me.him188.ani.utils.ktor.ClientProxyConfig
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.logger
@@ -130,6 +131,8 @@ class MediaSourceManagerImpl(
         combine(instances.flow, proxyConfig.map { it.default }.distinctUntilChanged()) { saves, config ->
             // 一定要 additionalSources 在前面, local sources 需要优先使用
             this.additionalSources + saves.mapNotNull { createInstance(it, config) }
+        }.onReplacement { list ->
+            list.forEach { it.close() }
         }.flowOn(flowCoroutineContext).shareIn(scope, replay = 1, started = SharingStarted.Lazily)
     override val allFactories: List<MediaSourceFactory> get() = factories
 
