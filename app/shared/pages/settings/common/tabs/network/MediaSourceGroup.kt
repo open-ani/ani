@@ -258,7 +258,7 @@ internal fun SettingsScope.MediaSourceItem(
         },
     icon: (@Composable () -> Unit)? = {
         Box(Modifier.clip(MaterialTheme.shapes.extraSmall).size(48.dp), contentAlignment = Alignment.Center) {
-            MediaSourceIcon(item.mediaSourceId, Modifier.size(48.dp))
+            MediaSourceIcon(item.mediaSourceId, Modifier.size(48.dp), item.info.iconUrl)
         }
     },
     action: @Composable () -> Unit,
@@ -375,7 +375,7 @@ internal fun SelectMediaSourceTemplateDialog(
                         },
                         icon = {
                             Box(Modifier.clip(MaterialTheme.shapes.extraSmall).size(48.dp)) {
-                                MediaSourceIcon(item.mediaSourceId, Modifier.size(48.dp))
+                                MediaSourceIcon(item.mediaSourceId, Modifier.size(48.dp), item.info.iconUrl)
                             }
                         },
                         content = {
