@@ -12,5 +12,6 @@ data class IkarosEpisodeDetails(
     val description: String,
     @SerialName("air_time") val airTime: String?,
     val sequence: Int,
-    val resources: List<IkarosEpisodeResource?>? = null
+    val resources: List<IkarosEpisodeResource?>? = null,
+    val group: String,
 )
