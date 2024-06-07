@@ -8,6 +8,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import io.ktor.client.request.get
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -34,6 +35,7 @@ import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
 import me.him188.ani.datasources.core.instance.MediaSourceInstance
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * @see MediaSourceInstance
@@ -111,10 +113,7 @@ class NetworkSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
                     instance,
                 )
             }
-                .sortedWith(
-                    compareByDescending { if (it.isEnabled) 1 else 0 } // 开启的排前面
-                )
-                .sortedBy { it.instanceId.lowercase() }
+            // 不能 sort, 会用来 reorder
         }
         .produceState(emptyList())
 
@@ -234,6 +233,25 @@ class NetworkSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
     fun deleteMediaSource(item: MediaSourcePresentation) {
         launchInBackground {
             mediaSourceManager.removeInstance(item.instanceId)
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Sorting media source
+    ///////////////////////////////////////////////////////////////////////////
+
+    var isCompletingReorder by mutableStateOf(false)
+        private set
+
+    fun reorderMediaSources(newOrder: List<String>) {
+        launchInBackground {
+            isCompletingReorder = true
+            try {
+                mediaSourceInstanceRepository.reorder(newOrder)
+            } finally {
+                delay(0.2.seconds)
+                isCompletingReorder = false
+            }
         }
     }
 

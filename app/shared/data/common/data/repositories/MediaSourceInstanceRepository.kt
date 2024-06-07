@@ -14,6 +14,7 @@ interface MediaSourceInstanceRepository : Repository {
     suspend fun add(mediaSourceSave: MediaSourceSave)
 
     suspend fun updateConfig(instanceId: String, config: MediaSourceConfig)
+    suspend fun reorder(newOrder: List<String>)
 }
 
 @Serializable
@@ -51,6 +52,16 @@ class MediaSourceInstanceRepositoryImpl(
                     save
                 }
             })
+        }
+    }
+
+    override suspend fun reorder(newOrder: List<String>) {
+        dataStore.updateData { current ->
+            val instances = current.instances.toMutableList()
+            val newInstances = newOrder.mapNotNull { instanceId ->
+                current.instances.find { it.instanceId == instanceId }
+            }
+            current.copy(instances = newInstances + instances.filter { it.instanceId !in newOrder })
         }
     }
 }

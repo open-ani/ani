@@ -17,11 +17,12 @@ fun SettingsScope.TextButtonItem(
     onClick: () -> Unit,
     title: @Composable () -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
 ) {
     Item(
         modifier.clickable(onClick = onClick),
         action = {
-            TextButton(onClick) {
+            TextButton(onClick, enabled = enabled) {
                 title()
             }
         }
