@@ -22,6 +22,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
 import me.him188.ani.app.ui.theme.stronglyWeaken
@@ -188,13 +189,16 @@ abstract class SettingsScope {
 
     @SettingsDsl
     @Composable
-    fun HorizontalDividerItem(modifier: Modifier = Modifier) {
+    fun HorizontalDividerItem(
+        modifier: Modifier = Modifier,
+        color: Color = MaterialTheme.colorScheme.outlineVariant.stronglyWeaken()
+    ) {
         Row(
             modifier
                 .padding(horizontal = itemHorizontalPadding)
                 .fillMaxWidth() // no min 48.dp height
         ) {
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.stronglyWeaken())
+            HorizontalDivider(color = color)
         }
     }
 }

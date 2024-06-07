@@ -2,59 +2,65 @@ package me.him188.ani.app.ui.settings.tabs.network
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Sort
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Reorder
-import androidx.compose.material.icons.rounded.Save
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.feedback.ErrorDialogHost
 import me.him188.ani.app.ui.foundation.ifThen
-import me.him188.ani.app.ui.foundation.widgets.RichDialogLayout
 import me.him188.ani.app.ui.mediaSource.MediaSourceIcon
 import me.him188.ani.app.ui.mediaSource.renderMediaSource
 import me.him188.ani.app.ui.mediaSource.renderMediaSourceDescription
-import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.framework.ConnectionTesterResultIndicator
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.TextButtonItem
@@ -69,21 +75,19 @@ internal fun SettingsScope.MediaSourceGroup(vm: NetworkSettingsViewModel) {
     var showAdd by remember { mutableStateOf(false) }
     if (showAdd) {
         // 选一个数据源来添加
-        BasicAlertDialog(onDismissRequest = { showAdd = false }) {
-            SelectMediaSourceTemplateLayout(
-                templates = vm.availableMediaSourceTemplates,
-                onClick = {
-                    if (it.info.parameters.list.isEmpty()) {
-                        // 没有参数, 直接添加
-                        vm.confirmEdit(vm.startAdding(it))
-                        showAdd = false
-                        return@SelectMediaSourceTemplateLayout
-                    }
-                    vm.startAdding(it)
-                },
-                onDismissRequest = { showAdd = false }
-            )
-        }
+        SelectMediaSourceTemplateDialog(
+            templates = vm.availableMediaSourceTemplates,
+            onClick = {
+                if (it.info.parameters.list.isEmpty()) {
+                    // 没有参数, 直接添加
+                    vm.confirmEdit(vm.startAdding(it))
+                    showAdd = false
+                    return@SelectMediaSourceTemplateDialog
+                }
+                vm.startAdding(it)
+            },
+            onDismissRequest = { showAdd = false }
+        )
     }
 
     ErrorDialogHost(vm.savingError)
@@ -93,7 +97,7 @@ internal fun SettingsScope.MediaSourceGroup(vm: NetworkSettingsViewModel) {
         BasicAlertDialog(
             onDismissRequest = { vm.cancelEdit() },
         ) {
-            EditMediaSourceLayout(
+            EditMediaSourceDialog(
                 it,
                 onConfirm = {
                     vm.confirmEdit(it)
@@ -134,12 +138,12 @@ internal fun SettingsScope.MediaSourceGroup(vm: NetworkSettingsViewModel) {
                     }
                 }
             }
-            Crossfade(sorter.isSorting) { isSorting ->
+            Crossfade(sorter.isSorting, Modifier.animateContentSize()) { isSorting ->
                 if (isSorting) {
-                    FilledTonalIconButton({
+                    Button({
                         sorter.complete()
                     }) {
-                        Icon(Icons.Rounded.Save, contentDescription = "保存排序")
+                        Icon(Icons.Rounded.Check, contentDescription = "保存排序")
                     }
                 } else {
                     IconButton({
@@ -215,22 +219,6 @@ internal fun SettingsScope.MediaSourceGroup(vm: NetworkSettingsViewModel) {
                             }
                         }
                     }
-
-//                    itemsIndexed(vm.mediaSources) { index, item ->
-//                        if (index != 0) {
-//                            HorizontalDividerItem()
-//                        }
-//                        ReorderableItem(reorderableState, key = item.mediaSourceId) { isDragging ->
-//                            MediaSourceItem(
-//                                item,
-//                                onEdit = { vm.startEditing(item) },
-//                            ) {
-//                                IconButton({}, enabled = false) {
-//                                    Icon(Icons.Rounded.Reorder, "拖拽排序")
-//                                }
-//                            }
-//                        }
-//                    }
                 }
             } else {
                 // 清空 list 状态, 否则在删除一个项目后再切换到排序状态, 有的项目会消失
@@ -270,7 +258,7 @@ internal fun SettingsScope.MediaSourceItem(
         },
     icon: (@Composable () -> Unit)? = {
         Box(Modifier.clip(MaterialTheme.shapes.extraSmall).size(48.dp), contentAlignment = Alignment.Center) {
-            MediaSourceIcon(item.mediaSourceId)
+            MediaSourceIcon(item.mediaSourceId, Modifier.size(48.dp))
         }
     },
     action: @Composable () -> Unit,
@@ -305,7 +293,7 @@ internal fun NormalMediaSourceItemAction(
                 onDismissRequest = { showConfirmDelete = false },
                 icon = { Icon(Icons.Rounded.Delete, null, tint = MaterialTheme.colorScheme.error) },
                 title = { Text("删除数据源") },
-                text = { Text("同时会删除该数据源的配置，且不可恢复。\n确认删除吗？") },
+                text = { Text("同时会删除该数据源的配置，确认删除吗？") },
                 confirmButton = {
                     TextButton({ onDelete(); showConfirmDelete = false }) {
                         Text(
@@ -353,39 +341,87 @@ internal fun NormalMediaSourceItemAction(
 }
 
 @Composable
-internal fun SelectMediaSourceTemplateLayout(
+internal fun SelectMediaSourceTemplateDialog(
     templates: List<MediaSourceTemplate>,
     onClick: (MediaSourceTemplate) -> Unit,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val onClickState by rememberUpdatedState(onClick)
-    RichDialogLayout(
-        title = { Text("添加数据源") },
-        description = { Text("选择模板") },
-        buttons = {
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        title = {
+            Text("选择模板")
+        },
+        confirmButton = {
             TextButton(onDismissRequest) {
                 Text("取消")
             }
         },
-        modifier = modifier,
-    ) {
-        SettingsTab(Modifier.heightIn(max = 400.dp)) {
-            for (item in templates) {
-                ElevatedCard {
-                    TextItem(
-                        title = { Text(remember(item.mediaSourceId) { renderMediaSource(item.mediaSourceId) }) },
-                        description = renderMediaSourceDescription(item.mediaSourceId)?.let {
-                            { Text(it) }
+        text = {
+            LazyVerticalGrid(
+                columns = GridCells.Adaptive(100.dp),
+                Modifier.heightIn(max = 360.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                items(templates) { item ->
+                    MediaSourceCard(
+                        onClick = { onClick(item) },
+                        title = {
+                            Text(
+                                remember(item.mediaSourceId) { renderMediaSource(item.mediaSourceId) },
+                                maxLines = 1, overflow = TextOverflow.Ellipsis
+                            )
                         },
-                        onClick = { onClickState(item) },
                         icon = {
                             Box(Modifier.clip(MaterialTheme.shapes.extraSmall).size(48.dp)) {
-                                MediaSourceIcon(item.mediaSourceId)
+                                MediaSourceIcon(item.mediaSourceId, Modifier.size(48.dp))
+                            }
+                        },
+                        content = {
+                            renderMediaSourceDescription(item.mediaSourceId)?.let {
+                                Text(it)
                             }
                         },
                     )
                 }
+            }
+        },
+        modifier = modifier,
+    )
+}
+
+@Composable
+private fun MediaSourceCard(
+    onClick: () -> Unit,
+    title: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+    icon: (@Composable () -> Unit)? = null,
+    content: @Composable () -> Unit,
+) {
+    Card(onClick, modifier) {
+        Column(
+            Modifier.align(Alignment.CenterHorizontally).padding(all = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Column(
+                Modifier.wrapContentSize().align(Alignment.CenterHorizontally),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                icon?.let {
+                    Box(Modifier.wrapContentSize().size(24.dp), contentAlignment = Alignment.Center) {
+                        it()
+                    }
+                }
+                ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
+                    title()
+                }
+            }
+
+            ProvideTextStyle(MaterialTheme.typography.labelMedium) {
+                content()
             }
         }
     }

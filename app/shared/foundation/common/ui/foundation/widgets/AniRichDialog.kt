@@ -78,3 +78,83 @@ fun RichDialogLayout(
         }
     }
 }
+
+
+// matches material design
+///**
+// * @param buttons aligned to the end
+// */
+//@Composable
+//fun RichDialogLayout(
+//    title: @Composable RowScope.() -> Unit,
+//    buttons: @Composable RowScope.() -> Unit,
+//    modifier: Modifier = Modifier,
+//    subtitle: @Composable (RowScope.() -> Unit)? = null,
+//    description: @Composable (RowScope.() -> Unit)? = null,
+//    topBarActions: @Composable RowScope.() -> Unit = {},
+//    content: @Composable ColumnScope.() -> Unit,
+//) {
+//    Surface(
+//        modifier.wrapContentSize(),
+//        shape = AlertDialogDefaults.shape,
+//        tonalElevation = AlertDialogDefaults.TonalElevation,
+//        color = AlertDialogDefaults.containerColor,
+//    ) {
+//        Box {
+//            Column(Modifier.padding(16.dp)) {
+//                Row(verticalAlignment = Alignment.CenterVertically) {
+//                    ProvideTextStyleContentColor(
+//                        MaterialTheme.typography.titleLarge,
+//                        AlertDialogDefaults.titleContentColor
+//                    ) {
+//                        title()
+//                    }
+//                }
+//
+//                subtitle?.let {
+//                    Row(
+//                        Modifier.padding(top = 8.dp),
+//                        verticalAlignment = Alignment.CenterVertically
+//                    ) {
+//                        ProvideTextStyleContentColor(
+//                            MaterialTheme.typography.bodyLarge,
+//                            AlertDialogDefaults.titleContentColor
+//                        ) {
+//                            subtitle()
+//                        }
+//                    }
+//                }
+//
+//                description?.let {
+//                    Row(
+//                        Modifier.padding(top = 8.dp),
+//                        verticalAlignment = Alignment.CenterVertically
+//                    ) {
+//                        ProvideTextStyleContentColor(
+//                            MaterialTheme.typography.bodyMedium,
+//                            AlertDialogDefaults.textContentColor
+//                        ) {
+//                            description()
+//                        }
+//                    }
+//                }
+//
+//                Column(Modifier.padding(top = 16.dp)) {
+//                    content()
+//                }
+//
+//                Row(
+//                    Modifier.padding(top = 16.dp).align(Alignment.End),
+//                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+//                    verticalAlignment = Alignment.CenterVertically
+//                ) {
+//                    buttons()
+//                }
+//            }
+//
+//            Row(Modifier.align(Alignment.TopEnd).padding(8.dp)) {
+//                topBarActions()
+//            }
+//        }
+//    }
+//}
