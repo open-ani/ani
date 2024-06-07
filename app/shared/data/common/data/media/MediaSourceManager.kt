@@ -82,6 +82,7 @@ interface MediaSourceManager { // available by inject
 
     suspend fun addInstance(mediaSourceId: String, config: MediaSourceConfig)
     suspend fun updateConfig(instanceId: String, config: MediaSourceConfig)
+    suspend fun removeInstance(instanceId: String)
 }
 
 
@@ -172,6 +173,10 @@ class MediaSourceManagerImpl(
 
     override suspend fun updateConfig(instanceId: String, config: MediaSourceConfig) {
         instances.updateConfig(instanceId, config)
+    }
+
+    override suspend fun removeInstance(instanceId: String) {
+        instances.remove(instanceId)
     }
 
     private fun MediaSourceFactory.create(
