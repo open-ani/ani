@@ -231,6 +231,12 @@ class NetworkSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
         return mediaSourceManager.allFactories.find { it.mediaSourceId == mediaSourceId }
     }
 
+    fun deleteMediaSource(item: MediaSourcePresentation) {
+        launchInBackground {
+            mediaSourceManager.removeInstance(item.instanceId)
+        }
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     // Proxy
     ///////////////////////////////////////////////////////////////////////////

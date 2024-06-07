@@ -127,7 +127,7 @@ fun SettingsScope.MediaSourceTesterView(
         icon = icon,
         description = description,
         action = {
-            ConnectionTesterResultIndicator(tester, showTime)
+            ConnectionTesterResultIndicator(tester, showTime = showTime)
         }
     )
 }
@@ -135,8 +135,9 @@ fun SettingsScope.MediaSourceTesterView(
 @Composable
 fun ConnectionTesterResultIndicator(
     tester: ConnectionTester,
-    showTime: Boolean = false,
     modifier: Modifier = Modifier,
+    showTime: Boolean = false,
+    showIdle: Boolean = true,
 ) = Box(modifier) {
     if (tester.isTesting) {
         CircularProgressIndicator(
@@ -175,7 +176,9 @@ fun ConnectionTesterResultIndicator(
             }
 
             null -> {
-                Text("等待测试")
+                if (showIdle) {
+                    Text("等待测试")
+                }
             }
         }
     }

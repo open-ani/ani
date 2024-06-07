@@ -1,7 +1,6 @@
 package me.him188.ani.app.ui.settings.tabs.network
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -9,7 +8,13 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -99,7 +104,8 @@ internal fun SettingsScope.MediaSourceGroup(vm: NetworkSettingsViewModel) {
             }
             MediaSourceItem(
                 item,
-                onClick = { vm.startEditing(item) }
+                onEdit = { vm.startEditing(item) },
+                onDelete = { vm.deleteMediaSource(item) },
             )
         }
 
@@ -125,7 +131,8 @@ internal fun SettingsScope.MediaSourceGroup(vm: NetworkSettingsViewModel) {
 @Composable
 internal fun SettingsScope.MediaSourceItem(
     item: MediaSourcePresentation,
-    onClick: () -> Unit,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
     title: @Composable RowScope.() -> Unit = { Text(remember(item.mediaSourceId) { renderMediaSource(item.mediaSourceId) }) },
     description: (@Composable () -> Unit)? =
         renderMediaSourceDescription(item.mediaSourceId)?.let {
@@ -142,13 +149,67 @@ internal fun SettingsScope.MediaSourceItem(
         icon = icon,
         description = description,
         action = {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                ConnectionTesterResultIndicator(item.connectionTester)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton({}, enabled = false) { // 放在 button 里保持 padding 一致
+                    ConnectionTesterResultIndicator(
+                        item.connectionTester,
+                        showIdle = false,
+                    )
+                }
 
+                var showConfirmDelete by remember { mutableStateOf(false) }
+                if (showConfirmDelete) {
+                    AlertDialog(
+                        onDismissRequest = { showConfirmDelete = false },
+                        icon = { Icon(Icons.Rounded.Delete, null, tint = MaterialTheme.colorScheme.error) },
+                        title = { Text("删除数据源") },
+                        text = { Text("同时会删除该数据源的配置，且不可恢复。\n确认删除吗？") },
+                        confirmButton = {
+                            TextButton({ onDelete(); showConfirmDelete = false }) {
+                                Text(
+                                    "删除",
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        },
+                        dismissButton = { TextButton({ showConfirmDelete = false }) { Text("取消") } },
+                    )
+                }
 
+                Box {
+                    var showMore by remember { mutableStateOf(false) }
+                    DropdownMenu(
+                        expanded = showMore,
+                        onDismissRequest = { showMore = false },
+                    ) {
+                        DropdownMenuItem(
+                            leadingIcon = { Icon(Icons.Rounded.Edit, null) },
+                            text = { Text("编辑") }, // 直接点击数据源一行也可以编辑, 但还是在这里放一个按钮以免有人不知道
+                            onClick = {
+                                showMore = false
+                                onEdit()
+                            }
+                        )
+                        DropdownMenuItem(
+                            leadingIcon = { Icon(Icons.Rounded.Delete, null, tint = MaterialTheme.colorScheme.error) },
+                            text = { Text("删除", color = MaterialTheme.colorScheme.error) },
+                            onClick = {
+                                showMore = false
+                                showConfirmDelete = true
+                            }
+                        )
+                    }
+
+                    IconButton({ showMore = true }) {
+                        Icon(
+                            Icons.Rounded.MoreVert,
+                            contentDescription = "更多",
+                        )
+                    }
+                }
             }
         },
-        modifier = Modifier.clickable(onClick = onClick)
+        modifier = Modifier.clickable(onClick = onEdit)
     )
 }
 
