@@ -46,7 +46,15 @@ internal fun SettingsScope.MediaSourceGroup(vm: NetworkSettingsViewModel) {
         BasicAlertDialog(onDismissRequest = { showAdd = false }) {
             SelectMediaSourceTemplateLayout(
                 templates = vm.mediaSourceTemplates,
-                onClick = { vm.startAdding(it) },
+                onClick = {
+                    if (it.info.parameters.list.isEmpty()) {
+                        // 没有参数, 直接添加
+                        vm.confirmEdit(vm.startAdding(it))
+                        showAdd = false
+                        return@SelectMediaSourceTemplateLayout
+                    }
+                    vm.startAdding(it)
+                },
                 onDismissRequest = { showAdd = false }
             )
         }
