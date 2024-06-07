@@ -4,6 +4,7 @@ import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceConfig
+import java.io.Closeable
 
 /**
  * [MediaSource], 以及它的配置, 统称为 [MediaSourceInstance].
@@ -15,7 +16,11 @@ class MediaSourceInstance(
     val isEnabled: Boolean,
     val config: MediaSourceConfig,
     val source: MediaSource,
-)
+) : Closeable {
+    override fun close() {
+        source.close()
+    }
+}
 
 // 持久化在文件里
 @Serializable
