@@ -75,7 +75,7 @@ class IkarosClient(
     fun subjectDetails2SizedSource(subjectDetails: IkarosSubjectDetails, seq: Int): SizedSource<MediaMatch> {
         val episodes = subjectDetails.episodes
         val mediaMatchs = mutableListOf<MediaMatch>()
-        val episode = episodes.find { ep -> ep.sequence == seq }
+        val episode = episodes.find { ep -> ep.sequence == seq && "MAIN" == ep.group }
         if (episode?.resources != null && episode.resources.isNotEmpty()) {
             for (epRes in episode.resources) {
                 val media = epRes?.let {
