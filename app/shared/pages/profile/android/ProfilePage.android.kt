@@ -25,7 +25,7 @@ internal fun PreviewSelfInfo() {
                 userGroup = UserGroup.User,
             ),
             true,
-            {},
+            onClickSettings = {},
         )
     }
 }

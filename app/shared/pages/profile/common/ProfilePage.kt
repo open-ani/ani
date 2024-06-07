@@ -18,23 +18,27 @@
 
 package me.him188.ani.app.ui.profile
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -48,7 +52,6 @@ import androidx.compose.ui.unit.dp
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.isLoggedIn
-import me.him188.ani.app.ui.main.LocalContentPaddings
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.koin.core.context.GlobalContext
 import org.openapitools.client.models.User
@@ -56,29 +59,39 @@ import org.openapitools.client.models.User
 @Composable
 fun ProfilePage(
     onClickSettings: () -> Unit,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
     modifier: Modifier = Modifier
 ) {
     val viewModel = remember { AccountViewModel() }
-    Column(
-        modifier = modifier
-            .systemBarsPadding()
-            .padding(LocalContentPaddings.current).fillMaxSize(),
-    ) {
-        // user profile
-        val selfInfo by viewModel.selfInfo.collectAsStateWithLifecycle()
-        val loggedIn by isLoggedIn()
-        Column {
+
+    // user profile
+    val selfInfo by viewModel.selfInfo.collectAsStateWithLifecycle()
+    val loggedIn by isLoggedIn()
+
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        topBar = {
             SelfInfo(
                 selfInfo,
                 loggedIn,
+                modifier = Modifier
+                    .windowInsetsPadding(TopAppBarDefaults.windowInsets)
+                    .fillMaxWidth(),
                 onClickSettings,
-                Modifier.fillMaxWidth(),
             )
-
-            // debug
-            DebugInfoView(Modifier.padding(horizontal = 16.dp))
         }
+    ) { topBarPaddings ->
+        // debug
+        DebugInfoView(
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .padding(
+                    top = topBarPaddings.calculateTopPadding(),
+                    bottom = contentPadding.calculateBottomPadding()
+                )
+        )
     }
+    
 }
 
 internal const val ISSUE_TRACKER = "https://github.com/open-ani/ani/issues"
@@ -125,10 +138,12 @@ private fun DebugInfoView(modifier: Modifier = Modifier) {
 internal fun SelfInfo(
     selfInfo: User?,
     isLoggedIn: Boolean?,
+    modifier: Modifier = Modifier,
     onClickSettings: () -> Unit,
-    modifier: Modifier = Modifier
 ) {
-    Box {
+    Box(
+        modifier = Modifier.background(MaterialTheme.colorScheme.surface)
+    ) {
         UserInfoRow(
             selfInfo,
             onClickEditNickname = {},

@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -46,6 +48,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -115,13 +118,15 @@ fun SubjectCollectionsColumn(
         gridState,
         verticalArrangement = Arrangement.spacedBy(spacedBy),
         horizontalArrangement = Arrangement.spacedBy(spacedBy),
+        contentPadding = PaddingValues(
+            // 每两个 item 之间有 spacedBy dp, 这里再上补充 contentPadding 要求的高度, 这样顶部的总留空就是 contentPadding 要求的高度
+            // 这个高度是可以滚到上面的, 所以它
+            top = (contentPadding.calculateTopPadding() + spacedBy).coerceAtLeast(0.dp),
+            bottom = (contentPadding.calculateBottomPadding() + spacedBy).coerceAtLeast(0.dp),
+            start = contentPadding.calculateStartPadding(LocalLayoutDirection.current),
+            end = contentPadding.calculateEndPadding(LocalLayoutDirection.current)
+        )
     ) {
-        // 每两个 item 之间有 spacedBy dp, 这里再上补充 contentPadding 要求的高度, 这样顶部的总留空就是 contentPadding 要求的高度
-        // 这个高度是可以滚到上面的, 所以它
-        (contentPadding.calculateTopPadding() - spacedBy).coerceAtLeast(0.dp).let {
-            item(span = { GridItemSpan(maxLineSpan) }) { Spacer(Modifier.height(it)) }
-        }
-
         items(data.orEmpty(), key = { it.subjectId }) { collection ->
             Box(Modifier.ifThen(enableAnimation) { animateItemPlacement() }) {
                 item(collection)
@@ -137,10 +142,6 @@ fun SubjectCollectionsColumn(
                 val onRequestMoreState by rememberUpdatedState(onRequestMore)
                 LaunchedEffect(true) { onRequestMoreState() }
             }
-        }
-
-        (contentPadding.calculateBottomPadding() - spacedBy).coerceAtLeast(0.dp).let {
-            item(span = { GridItemSpan(maxLineSpan) }) { Spacer(Modifier.height(it)) }
         }
     }
 }

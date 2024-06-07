@@ -55,7 +55,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CancellationException
@@ -107,130 +107,140 @@ fun CollectionPage(
     contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
     val vm = rememberViewModel { MyCollectionsViewModel() }
+
+    val pagerState =
+        rememberPagerState(initialPage = COLLECTION_TABS_SORTED.size / 2) { COLLECTION_TABS_SORTED.size }
+    val scope = rememberCoroutineScope()
+    
     Scaffold(
         modifier,
         topBar = {
-            TopAppBar(
-                title = { Text("我的追番") },
-                actions = {
-                    if (!isShowLandscapeUI()) {
-                        TextButtonUpdateLogo()
+            Column(modifier = Modifier.fillMaxWidth()) {
+                TopAppBar(
+                    title = { Text("我的追番") },
+                    modifier = Modifier.alpha(0.97f),
+                    actions = {
+                        if (!isShowLandscapeUI()) {
+                            TextButtonUpdateLogo()
 
-                        IconButton(onClickCaches) {
-                            Icon(Icons.Rounded.Download, "缓存管理")
+                            IconButton(onClickCaches) {
+                                Icon(Icons.Rounded.Download, "缓存管理")
+                            }
                         }
                     }
+                )
+
+                SecondaryScrollableTabRow(
+                    selectedTabIndex = pagerState.currentPage,
+                    indicator = @Composable { tabPositions ->
+                        TabRowDefaults.SecondaryIndicator(
+                            Modifier.pagerTabIndicatorOffset(pagerState, tabPositions),
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth().alpha(0.97f),
+                ) {
+                    COLLECTION_TABS_SORTED.forEachIndexed { index, collectionType ->
+                        Tab(
+                            selected = pagerState.currentPage == index,
+                            onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
+                            text = {
+                                val type = COLLECTION_TABS_SORTED[index]
+                                val cache = vm.collectionsByType(type).cache
+                                val size by cache.totalSize.collectAsStateWithLifecycle(null)
+                                if (size == null) {
+                                    Text(text = collectionType.displayText())
+                                } else {
+                                    Text(text = remember(collectionType, size) {
+                                        collectionType.displayText() + " " + size
+                                    })
+                                }
+                            }
+                        )
+                    }
                 }
-            )
+            }
         },
 
         ) { topBarPaddings ->
         val isLoggedIn by isLoggedIn()
 
-        val pagerState =
-            rememberPagerState(initialPage = COLLECTION_TABS_SORTED.size / 2) { COLLECTION_TABS_SORTED.size }
-        val scope = rememberCoroutineScope()
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxSize(),
+            userScrollEnabled = Platform.currentPlatform.isMobile(),
+        ) { index ->
+            val type = COLLECTION_TABS_SORTED[index]
+            val collection = vm.collectionsByType(type)
 
-        // Pager with TabRow
-        Column(Modifier.padding(topBarPaddings).fillMaxSize()) {
-            SecondaryScrollableTabRow(
-                selectedTabIndex = pagerState.currentPage,
-                indicator = @Composable { tabPositions ->
-                    TabRowDefaults.SecondaryIndicator(
-                        Modifier.pagerTabIndicatorOffset(pagerState, tabPositions),
-                    )
-                },
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                COLLECTION_TABS_SORTED.forEachIndexed { index, collectionType ->
-                    Tab(
-                        selected = pagerState.currentPage == index,
-                        onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
-                        text = {
-                            val type = COLLECTION_TABS_SORTED[index]
-                            val cache = vm.collectionsByType(type).cache
-                            val size by cache.totalSize.collectAsStateWithLifecycle(null)
-                            if (size == null) {
-                                Text(text = collectionType.displayText())
-                            } else {
-                                Text(text = remember(collectionType, size) {
-                                    collectionType.displayText() + " " + size
-                                })
-                            }
+            val pullToRefreshState = rememberPullToRefreshState()
+            var isAutoRefreshing by remember { mutableStateOf(false) }
+            LaunchedEffect(true) {
+                snapshotFlow { pullToRefreshState.isRefreshing }.collectLatest {
+                    if (!it) return@collectLatest
+
+                    try {
+                        val policy = if (isAutoRefreshing) {
+                            RefreshOrderPolicy.KEEP_ORDER_APPEND_LAST
+                        } else {
+                            RefreshOrderPolicy.REPLACE
                         }
-                    )
+                        isAutoRefreshing = false
+                        collection.cache.refresh(policy)
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (_: Throwable) {
+                    } finally {
+                        pullToRefreshState.endRefresh()
+                    }
                 }
             }
 
-            HorizontalPager(
-                state = pagerState,
-                Modifier.fillMaxSize(),
-                userScrollEnabled = Platform.currentPlatform.isMobile(),
-            ) { index ->
-                val type = COLLECTION_TABS_SORTED[index]
-                val collection = vm.collectionsByType(type)
-
-                val pullToRefreshState = rememberPullToRefreshState()
-                var isAutoRefreshing by remember { mutableStateOf(false) }
-                LaunchedEffect(true) {
-                    snapshotFlow { pullToRefreshState.isRefreshing }.collectLatest {
-                        if (!it) return@collectLatest
-
-                        try {
-                            val policy = if (isAutoRefreshing) {
-                                RefreshOrderPolicy.KEEP_ORDER_APPEND_LAST
-                            } else {
-                                RefreshOrderPolicy.REPLACE
-                            }
-                            isAutoRefreshing = false
-                            collection.cache.refresh(policy)
-                        } catch (e: CancellationException) {
-                            throw e
-                        } catch (_: Throwable) {
-                        } finally {
-                            pullToRefreshState.endRefresh()
+            val autoUpdateScope = rememberUiMonoTasker()
+            OnLifecycleEvent {
+                if (it == Lifecycle.State.Active) {
+                    autoUpdateScope.launch {
+                        val lastUpdated = collection.cache.lastUpdated.first()
+                        if (System.currentTimeMillis() - lastUpdated > 60.minutes.inWholeMilliseconds) {
+                            isAutoRefreshing = true
+                            pullToRefreshState.startRefresh()
                         }
                     }
                 }
+            }
 
-                val autoUpdateScope = rememberUiMonoTasker()
-                OnLifecycleEvent {
-                    if (it == Lifecycle.State.Active) {
-                        autoUpdateScope.launch {
-                            val lastUpdated = collection.cache.lastUpdated.first()
-                            if (System.currentTimeMillis() - lastUpdated > 60.minutes.inWholeMilliseconds) {
-                                isAutoRefreshing = true
-                                pullToRefreshState.startRefresh()
-                            }
-                        }
-                    }
-                }
-
-                Box(Modifier.clipToBounds()) {
-                    TabContent(
-                        cache = collection.cache,
-                        onRequestMore = { vm.requestMore(type) },
-                        vm = vm,
-                        type = type,
-                        isLoggedIn = isLoggedIn,
-                        contentPadding = contentPadding,
-                        modifier = Modifier
-                            .nestedScroll(pullToRefreshState.nestedScrollConnection)
-                            .fillMaxSize(),
-                        enableAnimation = { vm.myCollectionsSettings.enableListAnimation }
-                    )
-                    PullToRefreshContainer(
-                        pullToRefreshState,
-                        Modifier.align(Alignment.TopCenter)
-                    )
-                }
+            Box(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                TabContent(
+                    cache = collection.cache,
+                    onRequestMore = { vm.requestMore(type) },
+                    vm = vm,
+                    type = type,
+                    isLoggedIn = isLoggedIn,
+                    contentPadding = PaddingValues(
+                        top = topBarPaddings.calculateTopPadding() + contentPadding.calculateTopPadding(),
+                        bottom = contentPadding.calculateBottomPadding(),
+                        start = 0.dp,
+                        end = 0.dp,
+                    ),
+                    modifier = Modifier
+                        .nestedScroll(pullToRefreshState.nestedScrollConnection)
+                        .fillMaxSize(),
+                    enableAnimation = { vm.myCollectionsSettings.enableListAnimation }
+                )
+                PullToRefreshContainer(
+                    pullToRefreshState,
+                    Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(topBarPaddings.calculateTopPadding())
+                )
             }
         }
     }
 }
 
 /**
- *
+ * @param contentPadding overall content padding
  */
 @Composable
 private fun TabContent(

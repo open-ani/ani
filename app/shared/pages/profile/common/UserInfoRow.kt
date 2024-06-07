@@ -1,7 +1,6 @@
 package me.him188.ani.app.ui.profile
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -49,7 +48,6 @@ fun UserInfoRow(
 ) {
     Row(
         modifier
-            .background(MaterialTheme.colorScheme.surface)
             .padding(contentPadding)
             .height(IntrinsicSize.Min)
             .heightIn(min = 64.dp),

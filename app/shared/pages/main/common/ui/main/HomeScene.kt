@@ -301,7 +301,7 @@ private fun HomeScenePortrait(
             }
         },
         contentWindowInsets = WindowInsets(0.dp)
-    ) { contentPadding ->
+    ) { contentPadding -> // only contains padding of bottom bottom appbar
         val navigator by rememberUpdatedState(LocalNavigator.current)
 
         CompositionLocalProvider(LocalContentPaddings provides contentPadding) {
@@ -317,6 +317,7 @@ private fun HomeScenePortrait(
 
                     2 -> {
                         ProfilePage(
+                            contentPadding = contentPadding,
                             onClickSettings = {
                                 navigator.navigatePreferences()
                             }
