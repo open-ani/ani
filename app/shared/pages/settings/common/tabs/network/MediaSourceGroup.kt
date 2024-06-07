@@ -71,7 +71,7 @@ internal fun SettingsScope.MediaSourceGroup(vm: NetworkSettingsViewModel) {
         // 选一个数据源来添加
         BasicAlertDialog(onDismissRequest = { showAdd = false }) {
             SelectMediaSourceTemplateLayout(
-                templates = vm.mediaSourceTemplates,
+                templates = vm.availableMediaSourceTemplates,
                 onClick = {
                     if (it.info.parameters.list.isEmpty()) {
                         // 没有参数, 直接添加

@@ -53,6 +53,7 @@ class IkarosMediaSource(config: MediaSourceConfig) : HttpMediaSource() {
     class Factory : MediaSourceFactory {
         override val mediaSourceId: String get() = ID
         override val parameters: MediaSourceParameters = Parameters.build()
+        override val allowMultipleInstances: Boolean get() = true
         override fun create(config: MediaSourceConfig): MediaSource = IkarosMediaSource(config)
     }
 
