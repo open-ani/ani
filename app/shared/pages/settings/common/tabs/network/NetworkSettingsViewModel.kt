@@ -160,14 +160,16 @@ class NetworkSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
     var editMediaSourceState by mutableStateOf<EditMediaSourceState?>(null)
         private set
 
-    fun startAdding(template: MediaSourceTemplate) {
+    fun startAdding(template: MediaSourceTemplate): EditMediaSourceState {
         cancelEdit()
-        editMediaSourceState = EditMediaSourceState(
+        val state = EditMediaSourceState(
             info = template.info,
             persistedArguments = flowOf(MediaSourceConfig.Default),
             editType = EditType.Add,
             backgroundScope.coroutineContext,
         )
+        editMediaSourceState = state
+        return state
     }
 
     fun startEditing(presentation: MediaSourcePresentation) {
