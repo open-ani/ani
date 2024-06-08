@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
@@ -396,7 +397,7 @@ actual fun VideoPlayer(
             bitmap.width, bitmap.height,
             size.width.toInt(), size.height.toInt()
         )
-        drawImage(playerState.bitmap, dstSize = dstSize, dstOffset = dstOffset)
+        drawImage(playerState.bitmap, dstSize = dstSize, dstOffset = dstOffset, filterQuality = FilterQuality.High)
     }
 
 //    SwingPanel(
