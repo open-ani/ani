@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import me.him188.ani.danmaku.protocol.DanmakuInfo
@@ -57,7 +58,7 @@ class TimeBasedDanmakuSession private constructor(
     private val list: List<Danmaku>,
     private val shiftMillis: Long = 0,
     private val samplePeriod: Duration = 30.milliseconds,
-    private val coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    private val flowCoroutineContext: CoroutineContext = EmptyCoroutineContext,
 ) : DanmakuSession {
     override val totalCount: Flow<Int?> = flowOf(list.size)
 
@@ -80,7 +81,6 @@ class TimeBasedDanmakuSession private constructor(
         if (list.isEmpty()) {
             return emptyFlow() // fast path
         }
-        // 弹幕算法总览:
 
         val state = DanmakuSessionFlowState(
             list,
@@ -90,7 +90,7 @@ class TimeBasedDanmakuSession private constructor(
         val algorithm = DanmakuSessionAlgorithm(state)
         return channelFlow {
             // 一个单独协程收集当前进度
-            launch(coroutineContext, start = CoroutineStart.UNDISPATCHED) {
+            launch(start = CoroutineStart.UNDISPATCHED) {
                 progress.collect {
                     state.curTimeShared = it
                 }
@@ -106,7 +106,7 @@ class TimeBasedDanmakuSession private constructor(
                 algorithm.tick(sendItem)
                 delay(1000 / 20) // always check for cancellation
             }
-        }
+        }.flowOn(flowCoroutineContext)
 
         // 下面的算法有 bug, 而且会创建大量协程影响性能
 
