@@ -24,15 +24,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -91,39 +91,66 @@ fun ProfilePage(
                 )
         )
     }
-    
+
 }
 
+internal const val GITHUB_HOME = "https://github.com/open-ani/ani"
+internal const val ANI_WEBSITE = "https://myani.org"
 internal const val ISSUE_TRACKER = "https://github.com/open-ani/ani/issues"
 
 @Composable
 private fun DebugInfoView(modifier: Modifier = Modifier) {
     Column(modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Spacer(Modifier.height(16.dp))
-
-        val context by rememberUpdatedState(LocalContext.current)
-
         Text(
             "感谢你的支持",
+            Modifier.padding(top = 16.dp),
             style = MaterialTheme.typography.titleMedium,
         )
 
-        var showHelp by remember { mutableStateOf(false) }
+        AniHelpSection(modifier)
+    }
+}
+
+@Composable
+fun AniHelpSection(modifier: Modifier = Modifier) {
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        val context by rememberUpdatedState(LocalContext.current)
 
         Text(
             "欢迎加入 QQ 群反馈建议或者闲聊: 927170241. Telegram 群 openani. 如遇到问题, 除加群外也可以在 GitHub 反馈."
         )
 
         Row(Modifier.align(Alignment.End), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedButton({ GlobalContext.get().get<BrowserNavigator>().openBrowser(context, ISSUE_TRACKER) }) {
-                Text("打开 GitHub")
+            Box {
+                var showOpenDropdown by remember { mutableStateOf(false) }
+                DropdownMenu(showOpenDropdown, { showOpenDropdown = false }) {
+                    DropdownMenuItem(
+                        text = { Text("GitHub 开源仓库") },
+                        onClick = { GlobalContext.get().get<BrowserNavigator>().openBrowser(context, ISSUE_TRACKER) }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("反馈问题") },
+                        onClick = { GlobalContext.get().get<BrowserNavigator>().openBrowser(context, GITHUB_HOME) }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Ani 官网") },
+                        onClick = { GlobalContext.get().get<BrowserNavigator>().openBrowser(context, ANI_WEBSITE) }
+                    )
+                }
+
+                OutlinedButton({ showOpenDropdown = true }) {
+                    Text("打开...")
+                }
             }
 
-            Button({ showHelp = true }) {
-                Text("加群")
+            Box {
+                var showHelp by remember { mutableStateOf(false) }
+                Button({ showHelp = true }) {
+                    Text("加群")
+                }
+                HelpDropdown(showHelp, { showHelp = false })
             }
         }
-        HelpDropdown(showHelp, { showHelp = false })
 
         Text(
             "要让每个番剧都拥有不错的弹幕量需要不小用户基数, 如果你喜欢本应用, 请向朋友推荐以增加弹幕量!",

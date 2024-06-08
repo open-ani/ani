@@ -37,6 +37,7 @@ import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.rememberViewModel
+import me.him188.ani.app.ui.profile.AniHelpSection
 import me.him188.ani.app.ui.profile.DebugInfo
 import me.him188.ani.app.ui.settings.SettingsTab
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
@@ -129,6 +130,10 @@ fun AboutTab(
                 ) {
                     vm.browserNavigator.openBrowser(context, GITHUB_REPO)
                 }
+            }
+
+            Group(title = { Text("感谢你的支持") }) {
+                AniHelpSection(Modifier.fillMaxWidth().padding(horizontal = 16.dp))
             }
         }
 

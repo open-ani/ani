@@ -30,10 +30,16 @@ fun HelpDropdown(
             }
         )
         DropdownMenuItem(
-            text = { Text("打开 GitHub 开源仓库") },
-            onClick = {
-                GlobalContext.get().get<BrowserNavigator>().openBrowser(context, ISSUE_TRACKER)
-            }
+            text = { Text("GitHub 开源仓库") },
+            onClick = { GlobalContext.get().get<BrowserNavigator>().openBrowser(context, ISSUE_TRACKER) }
+        )
+        DropdownMenuItem(
+            text = { Text("反馈问题") },
+            onClick = { GlobalContext.get().get<BrowserNavigator>().openBrowser(context, GITHUB_HOME) }
+        )
+        DropdownMenuItem(
+            text = { Text("Ani 官网") },
+            onClick = { GlobalContext.get().get<BrowserNavigator>().openBrowser(context, ANI_WEBSITE) }
         )
     }
 }
