@@ -13,8 +13,14 @@ interface MediaSourceInstanceRepository : Repository {
     suspend fun remove(instanceId: String)
     suspend fun add(mediaSourceSave: MediaSourceSave)
 
-    suspend fun updateConfig(instanceId: String, config: MediaSourceConfig)
+    suspend fun updateSave(instanceId: String, config: MediaSourceSave.() -> MediaSourceSave)
     suspend fun reorder(newOrder: List<String>)
+}
+
+suspend inline fun MediaSourceInstanceRepository.updateConfig(instanceId: String, config: MediaSourceConfig) {
+    updateSave(instanceId) {
+        copy(config = config)
+    }
 }
 
 @Serializable
@@ -43,11 +49,11 @@ class MediaSourceInstanceRepositoryImpl(
         }
     }
 
-    override suspend fun updateConfig(instanceId: String, config: MediaSourceConfig) {
+    override suspend fun updateSave(instanceId: String, config: MediaSourceSave.() -> MediaSourceSave) {
         dataStore.updateData { current ->
             current.copy(instances = current.instances.map { save ->
                 if (save.instanceId == instanceId) {
-                    save.copy(config = config)
+                    save.run(config)
                 } else {
                     save
                 }

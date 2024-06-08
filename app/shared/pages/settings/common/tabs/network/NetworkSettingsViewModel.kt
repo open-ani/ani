@@ -56,7 +56,7 @@ val MediaSourcePresentation.mediaSourceId get() = info.mediaSourceId
 class MediaSourceInfo(
     val mediaSourceId: String,
     val name: String,
-    val description: String? = null,
+    val description: String? = null, // localized
     val iconUrl: String? = null,
     val website: String? = null,
     val parameters: MediaSourceParameters,
@@ -244,6 +244,13 @@ class NetworkSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
             mediaSourceManager.removeInstance(item.instanceId)
         }
     }
+
+    fun toggleMediaSourceEnabled(item: MediaSourcePresentation, enabled: Boolean) {
+        launchInBackground {
+            mediaSourceManager.setEnabled(item.instanceId, enabled)
+        }
+    }
+
 
     ///////////////////////////////////////////////////////////////////////////
     // Sorting media source

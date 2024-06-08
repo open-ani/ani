@@ -31,9 +31,12 @@ import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Reorder
+import androidx.compose.material.icons.rounded.Visibility
+import androidx.compose.material.icons.rounded.VisibilityOff
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -183,6 +186,7 @@ internal fun SettingsScope.MediaSourceGroup(vm: NetworkSettingsViewModel) {
                             item,
                             onEdit = { vm.startEditing(item) },
                             onDelete = { vm.deleteMediaSource(item) },
+                            onEnabledChange = { vm.toggleMediaSourceEnabled(item, it) }
                         )
                     }
                 }
@@ -247,22 +251,36 @@ internal fun SettingsScope.MediaSourceGroup(vm: NetworkSettingsViewModel) {
 }
 
 
+private const val DISABLED_ALPHA = 0.38f
+
 @Composable
 internal fun SettingsScope.MediaSourceItem(
     item: MediaSourcePresentation,
     modifier: Modifier = Modifier,
-    title: @Composable RowScope.() -> Unit = { Text(remember(item.mediaSourceId) { renderMediaSource(item.mediaSourceId) }) },
+    isEnabled: Boolean = item.isEnabled,
+    title: @Composable RowScope.() -> Unit = {
+        Text(
+            item.info.name,
+            Modifier.ifThen(!isEnabled) { alpha(DISABLED_ALPHA) }
+        )
+    },
     description: (@Composable () -> Unit)? =
-        renderMediaSourceDescription(item.mediaSourceId)?.let {
-            { Text(it) }
+        item.info.description?.let {
+            {
+                Text(it, Modifier.ifThen(!isEnabled) { alpha(DISABLED_ALPHA) })
+            }
         },
     icon: (@Composable () -> Unit)? = {
-        Box(Modifier.clip(MaterialTheme.shapes.extraSmall).size(48.dp), contentAlignment = Alignment.Center) {
+        Box(
+            Modifier.ifThen(!isEnabled) { alpha(DISABLED_ALPHA) }.clip(MaterialTheme.shapes.extraSmall).size(48.dp),
+            contentAlignment = Alignment.Center
+        ) {
             MediaSourceIcon(item.mediaSourceId, Modifier.size(48.dp), item.info.iconUrl)
         }
     },
     action: @Composable () -> Unit,
 ) {
+    ButtonDefaults.buttonColors()
     TextItem(
         title = title,
         icon = icon,
@@ -277,6 +295,7 @@ internal fun NormalMediaSourceItemAction(
     item: MediaSourcePresentation,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
+    onEnabledChange: (enabled: Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(modifier, verticalAlignment = Alignment.CenterVertically) {
@@ -312,6 +331,26 @@ internal fun NormalMediaSourceItemAction(
                 expanded = showMore,
                 onDismissRequest = { showMore = false },
             ) {
+                DropdownMenuItem(
+                    leadingIcon = {
+                        if (item.isEnabled) {
+                            Icon(Icons.Rounded.VisibilityOff, null)
+                        } else {
+                            Icon(Icons.Rounded.Visibility, null)
+                        }
+                    },
+                    text = {
+                        if (item.isEnabled) {
+                            Text("禁用")
+                        } else {
+                            Text("启用")
+                        }
+                    },
+                    onClick = {
+                        onEnabledChange(!item.isEnabled)
+                        showMore = false
+                    }
+                )
                 DropdownMenuItem(
                     leadingIcon = { Icon(Icons.Rounded.Edit, null) },
                     text = { Text("编辑") }, // 直接点击数据源一行也可以编辑, 但还是在这里放一个按钮以免有人不知道

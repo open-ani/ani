@@ -100,6 +100,9 @@ private fun PreviewNetworkPreferenceTab() {
                     override suspend fun updateConfig(instanceId: String, config: MediaSourceConfig) {
                     }
 
+                    override suspend fun setEnabled(instanceId: String, enabled: Boolean) {
+                    }
+
                     override suspend fun removeInstance(instanceId: String) {
                     }
                 }
