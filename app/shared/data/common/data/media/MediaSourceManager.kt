@@ -16,6 +16,7 @@ import me.him188.ani.app.data.models.ProxyAuthorization
 import me.him188.ani.app.data.repositories.MediaSourceInstanceRepository
 import me.him188.ani.app.data.repositories.MikanIndexCacheRepository
 import me.him188.ani.app.data.repositories.SettingsRepository
+import me.him188.ani.app.data.repositories.updateConfig
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.getAniUserAgent
 import me.him188.ani.app.platform.isDesktop
@@ -83,9 +84,9 @@ interface MediaSourceManager { // available by inject
 
     suspend fun addInstance(mediaSourceId: String, config: MediaSourceConfig)
     suspend fun updateConfig(instanceId: String, config: MediaSourceConfig)
+    suspend fun setEnabled(instanceId: String, enabled: Boolean)
     suspend fun removeInstance(instanceId: String)
 }
-
 
 private inline val webMediaSourceIds
     get() = arrayOf(
@@ -176,6 +177,12 @@ class MediaSourceManagerImpl(
 
     override suspend fun updateConfig(instanceId: String, config: MediaSourceConfig) {
         instances.updateConfig(instanceId, config)
+    }
+
+    override suspend fun setEnabled(instanceId: String, enabled: Boolean) {
+        instances.updateSave(instanceId) {
+            copy(isEnabled = enabled)
+        }
     }
 
     override suspend fun removeInstance(instanceId: String) {
