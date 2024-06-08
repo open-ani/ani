@@ -1,6 +1,6 @@
 <div align="center">
 
-<a href="https://myani.org">
+<a href="https://www.myani.org">
     <img src="./.github/assets/logo.png" alt="Ani logo" title="Ani logo" width="80"/>
 </a>
 
