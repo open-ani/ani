@@ -106,7 +106,7 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
     }
     single<UpdateManager> {
         UpdateManager(
-            saveDir = getContext().files.cacheDir.resolve("updates"),
+            saveDir = getContext().files.cacheDir.resolve("updates/download"),
         )
     }
     single<SettingsRepository> { PreferencesRepositoryImpl(getContext().preferencesStore) }

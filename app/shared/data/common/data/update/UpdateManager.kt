@@ -30,8 +30,11 @@ class UpdateManager(
     fun deleteInstalledFiles() {
         if (!saveDir.exists()) return
         saveDir.listFiles()?.forEach {
-            logger.info { "Deleting installed file: $it" }
-            deleteInstalled(it, currentAniBuildConfig.versionName)
+            val version = currentAniBuildConfig.versionName
+            if (it.name.contains(version)) {
+                logger.info { "Deleting old installer file because it matches current version ${version}: $it" }
+                deleteInstaller(it)
+            }
         }
     }
 }

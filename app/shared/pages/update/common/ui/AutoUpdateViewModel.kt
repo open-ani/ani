@@ -149,16 +149,18 @@ class AutoUpdateViewModel : AbstractViewModel(), KoinComponent {
                 return@launch
             }
 
-            val dir = updateManager.saveDir.resolve("download")
+            val dir = updateManager.saveDir
             if (dir.exists()) {
                 // 删除旧的文件
                 val allowedFilenames = ver.downloadUrlAlternatives.map {
                     it.substringAfterLast("/", "")
                 }
                 for (file in dir.listFiles().orEmpty()) {
+                    if (file.name.equals(".DS_Store")) continue
+
                     if (allowedFilenames.none { file.name.contains(it) }) {
                         logger.info { "Deleting old installer: $file" }
-                        updateManager.deleteInstalled(file, currentVersion)
+                        updateManager.deleteInstaller(file)
                     }
                 }
             }
