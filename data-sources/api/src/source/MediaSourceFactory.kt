@@ -37,7 +37,7 @@ data class MediaSourceConfig(
     val proxy: ClientProxyConfig? = null,
     val userAgent: String? = null,
     /**
-     * 用户为数据源配置的参数列表. 一定包含 [MediaSourceFactory.parameters] 中的所有参数.
+     * 用户为数据源配置的参数列表. 一定包含 [MediaSourceFactory.parameters] 中的所有参数, 但如果数据源更新了更多参数, 则可能不会包含.
      */
     val arguments: Map<String, String?> = mapOf(),
 ) {
