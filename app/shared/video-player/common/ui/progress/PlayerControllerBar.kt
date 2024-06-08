@@ -373,25 +373,27 @@ fun PlayerControllerBar(
                 vertical = if (expanded) 4.dp else 2.dp
             )
     ) {
-        if (expanded) {
-            Column {
-                ProvideTextStyle(MaterialTheme.typography.labelMedium) {
-                    Row(Modifier.padding(start = 8.dp).padding(vertical = 4.dp)) {
-                        progressIndicator()
-                    }
-                    Row(
-                        Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        progressSlider()
-                    }
+        Column {
+            ProvideTextStyle(MaterialTheme.typography.labelMedium) {
+                Row(
+                    Modifier
+                        .padding(start = if (expanded) 8.dp else 4.dp)
+                        .padding(vertical = if (expanded) 4.dp else 2.dp)
+                ) {
+                    progressIndicator()
+                }
+                Row(
+                    Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    progressSlider()
                 }
             }
         }
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(if (expanded) 8.dp else 4.dp)
         ) {
             // 播放 / 暂停按钮
             Row(
@@ -401,23 +403,9 @@ fun PlayerControllerBar(
             }
 
             ProvideTextStyle(MaterialTheme.typography.labelSmall) {
-                if (expanded) {
-                    Column(Modifier.weight(1f)) {
-                        Row {
-                            danmakuEditor()
-                        }
-                    }
-                } else {
-                    Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
-                        progressIndicator()
-                        Row(
-                            Modifier.padding(start = 8.dp).fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            ProvideTextStyle(MaterialTheme.typography.labelLarge) {
-                                progressSlider()
-                            }
-                        }
+                Column(Modifier.weight(1f)) {
+                    Row {
+                        danmakuEditor()
                     }
                 }
             }

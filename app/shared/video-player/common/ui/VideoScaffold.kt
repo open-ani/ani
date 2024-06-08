@@ -170,7 +170,7 @@ fun VideoScaffold(
                                 )
                             )
                     ) {
-                        Spacer(Modifier.height(12.dp))
+                        Spacer(Modifier.height(if (expanded) 12.dp else 6.dp))
                         Row(
                             Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically,
