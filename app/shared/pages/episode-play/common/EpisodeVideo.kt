@@ -1,6 +1,7 @@
 package me.him188.ani.app.ui.subject.episode
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -12,7 +13,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -21,7 +24,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
+import me.him188.ani.app.data.models.FullscreenSwitchMode
+import me.him188.ani.app.data.models.VideoScaffoldConfig
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.rememberViewModel
@@ -52,7 +58,7 @@ import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.danmaku.ui.DanmakuHost
 import me.him188.ani.danmaku.ui.DanmakuHostState
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
-
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * 剧集详情页面顶部的视频控件.
@@ -70,17 +76,19 @@ internal fun EpisodeVideoImpl(
     onClickFullScreen: () -> Unit,
     onExitFullscreen: () -> Unit,
     danmakuEditor: @Composable (RowScope.() -> Unit),
+    configProvider: () -> VideoScaffoldConfig,
     modifier: Modifier = Modifier,
     maintainAspectRatio: Boolean = !expanded,
 ) {
     // Don't rememberSavable. 刻意让每次切换都是隐藏的
     var isLocked by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
+    val config by remember(configProvider) { derivedStateOf(configProvider) }
 
     VideoScaffold(
         expanded = expanded,
-        maintainAspectRatio = maintainAspectRatio,
         modifier = modifier,
+        maintainAspectRatio = maintainAspectRatio,
         controllersVisible = { videoControllerState.isVisible },
         gestureLocked = { isLocked },
         topBar = {
@@ -216,6 +224,36 @@ internal fun EpisodeVideoImpl(
                 },
                 expanded = expanded,
             )
+        },
+        floatingBottomEnd = {
+            when (config.fullscreenSwitchMode) {
+                FullscreenSwitchMode.ONLY_IN_CONTROLLER -> {}
+
+                FullscreenSwitchMode.ALWAYS_SHOW_FLOATING -> {
+                    PlayerControllerDefaults.FullscreenIcon(
+                        expanded,
+                        onClickFullscreen = onClickFullScreen,
+                    )
+                }
+
+                FullscreenSwitchMode.AUTO_HIDE_FLOATING -> {
+                    var visible by remember { mutableStateOf(true) }
+                    LaunchedEffect(true) {
+                        delay(5.seconds)
+                        visible = false
+                    }
+                    AnimatedVisibility(
+                        visible = visible,
+                        enter = fadeIn(snap()),
+                        exit = fadeOut()
+                    ) {
+                        PlayerControllerDefaults.FullscreenIcon(
+                            expanded,
+                            onClickFullscreen = onClickFullScreen,
+                        )
+                    }
+                }
+            }
         },
         rhsSheet = {
             if (showSettings) {

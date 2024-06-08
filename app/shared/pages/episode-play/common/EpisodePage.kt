@@ -336,6 +336,7 @@ private fun EpisodeVideo(
         modifier = modifier.fillMaxWidth().background(Color.Black)
             .then(if (expanded) Modifier.fillMaxSize() else Modifier.statusBarsPadding()),
         maintainAspectRatio = maintainAspectRatio,
+        configProvider = remember(vm) { { vm.videoScaffoldConfig } },
     )
 }
 

@@ -34,6 +34,7 @@ import me.him188.ani.app.data.media.resolver.UnsupportedMediaException
 import me.him188.ani.app.data.media.resolver.VideoSourceResolutionException
 import me.him188.ani.app.data.media.resolver.VideoSourceResolver
 import me.him188.ani.app.data.models.MediaSelectorSettings
+import me.him188.ani.app.data.models.VideoScaffoldConfig
 import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.data.subject.SubjectInfo
 import me.him188.ani.app.data.subject.SubjectManager
@@ -160,6 +161,7 @@ interface EpisodeViewModel : HasBackgroundScope {
 
 
     // Video
+    val videoScaffoldConfig: VideoScaffoldConfig
 
     val videoLoadingState: StateFlow<VideoLoadingState> get() = playerStatistics.videoLoadingState
 
@@ -234,6 +236,8 @@ private class EpisodeViewModelImpl(
     override val playerStatistics: PlayerStatisticsState = PlayerStatisticsState()
 
     override var mediaSelectorVisible: Boolean by mutableStateOf(false)
+    override val videoScaffoldConfig: VideoScaffoldConfig by settingsRepository.videoScaffoldConfig
+        .flow.produceState(VideoScaffoldConfig.Default)
 
     private val selectedMedia = mediaSelectorPresentation.mediaSelector.selected
         .filterNotNull()

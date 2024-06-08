@@ -19,9 +19,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import me.him188.ani.app.data.models.FullscreenSwitchMode
 import me.him188.ani.app.data.models.ThemeKind
 import me.him188.ani.app.data.models.UISettings
 import me.him188.ani.app.data.models.UpdateSettings
+import me.him188.ani.app.data.models.VideoScaffoldConfig
 import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.Platform
@@ -72,6 +74,10 @@ class AppSettingsViewModel : AbstractSettingsViewModel() {
     val updateSettings by settings(
         settingsRepository.updateSettings,
         UpdateSettings(_placeholder = -1)
+    )
+    val videoScaffoldConfig by settings(
+        settingsRepository.videoScaffoldConfig,
+        VideoScaffoldConfig(_placeholder = -1)
     )
 
     /**
@@ -332,7 +338,36 @@ fun AppSettingsTab(
                 description = { Text("高亮已经看过的剧集，而不是将要看的剧集") },
             )
         }
+        PlayerGroup(vm)
         AppSettingsTabPlatform(vm)
+    }
+}
+
+@Composable
+private fun SettingsScope.PlayerGroup(
+    vm: AppSettingsViewModel
+) {
+    Group(title = { Text("播放器") }) {
+        val config by vm.videoScaffoldConfig
+        DropdownItem(
+            selected = { config.fullscreenSwitchMode },
+            values = { FullscreenSwitchMode.entries },
+            itemText = {
+                Text(
+                    when (it) {
+                        FullscreenSwitchMode.ALWAYS_SHOW_FLOATING -> "总是显示"
+                        FullscreenSwitchMode.AUTO_HIDE_FLOATING -> "显示五秒后隐藏"
+                        FullscreenSwitchMode.ONLY_IN_CONTROLLER -> "不显示"
+                    }
+                )
+            },
+            onSelect = {
+                vm.videoScaffoldConfig.update(config.copy(fullscreenSwitchMode = it))
+            },
+            Modifier.placeholder(vm.uiSettings.loading),
+            title = { Text("竖屏模式下显示全屏按钮") },
+            description = { Text("竖屏模式下，总是显示播放器右下角的切换全屏按钮，方便切换") }
+        )
     }
 }
 

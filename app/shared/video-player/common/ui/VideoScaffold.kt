@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -76,6 +77,7 @@ fun VideoScaffold(
     floatingMessage: @Composable BoxScope.() -> Unit = {},
     rhsBar: @Composable ColumnScope.() -> Unit = {},
     bottomBar: @Composable RowScope.() -> Unit = {},
+    floatingBottomEnd: @Composable RowScope.() -> Unit = {},
     rhsSheet: @Composable () -> Unit = {},
 ) {
     val controllersVisibleState by derivedStateOf(controllersVisible)
@@ -116,73 +118,92 @@ fun VideoScaffold(
                 gestureHost()
             }
 
-            Column(Modifier.fillMaxSize().background(Color.Transparent)) {
-                // 顶部控制栏: 返回键, 标题, 设置
-                AnimatedVisibility(
-                    visible = controllersVisibleState && !gestureLockedState,
-                    enter = fadeIn(),
-                    exit = fadeOut(),
-                ) {
-                    Box {
-                        Box(
-                            Modifier
-                                .matchParentSize()
-                                .background(
-                                    Brush.verticalGradient(
-                                        0f to Color.Transparent.copy(0.72f),
-                                        0.32f to Color.Transparent.copy(0.45f),
-                                        1f to Color.Transparent,
+            Box {
+                Column(Modifier.fillMaxSize().background(Color.Transparent)) {
+                    // 顶部控制栏: 返回键, 标题, 设置
+                    AnimatedVisibility(
+                        visible = controllersVisibleState && !gestureLockedState,
+                        enter = fadeIn(),
+                        exit = fadeOut(),
+                    ) {
+                        Box {
+                            Box(
+                                Modifier
+                                    .matchParentSize()
+                                    .background(
+                                        Brush.verticalGradient(
+                                            0f to Color.Transparent.copy(0.72f),
+                                            0.32f to Color.Transparent.copy(0.45f),
+                                            1f to Color.Transparent,
+                                        )
                                     )
-                                )
-                        )
+                            )
+                            Column(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .statusBarsPadding(),
+                            ) {
+                                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                                    CompositionLocalProvider(LocalContentColor provides aniDarkColorTheme().onBackground) {
+                                        topBar()
+                                    }
+                                }
+                                Spacer(Modifier.height(16.dp))
+                            }
+
+                        }
+                    }
+
+                    Box(Modifier.weight(1f, fill = true).fillMaxWidth())
+
+                    // 底部控制栏: 播放/暂停, 进度条, 切换全屏
+                    AnimatedVisibility(
+                        visible = controllersVisibleState && !gestureLockedState,
+                        enter = fadeIn(),
+                        exit = fadeOut(),
+                    ) {
                         Column(
                             Modifier
                                 .fillMaxWidth()
-                                .statusBarsPadding(),
+                                .background(
+                                    Brush.verticalGradient(
+                                        0f to Color.Transparent,
+                                        1 - 0.32f to Color.Transparent.copy(0.45f),
+                                        1f to Color.Transparent.copy(0.72f),
+                                    )
+                                )
                         ) {
-                            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                                CompositionLocalProvider(LocalContentColor provides aniDarkColorTheme().onBackground) {
-                                    topBar()
+                            Spacer(Modifier.height(if (expanded) 12.dp else 6.dp))
+                            Row(
+                                Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                CompositionLocalProvider(LocalContentColor provides Color.White) {
+                                    bottomBar()
                                 }
                             }
-                            Spacer(Modifier.height(16.dp))
                         }
-
                     }
                 }
-
-                Box(Modifier.weight(1f, fill = true).fillMaxWidth())
-
-                // 底部控制栏: 播放/暂停, 进度条, 切换全屏
                 AnimatedVisibility(
-                    visible = controllersVisibleState && !gestureLockedState,
+                    !controllersVisibleState && !expanded,
+                    Modifier.align(Alignment.BottomEnd),
                     enter = fadeIn(),
                     exit = fadeOut(),
                 ) {
-                    Column(
-                        Modifier
-                            .fillMaxWidth()
-                            .background(
-                                Brush.verticalGradient(
-                                    0f to Color.Transparent,
-                                    1 - 0.32f to Color.Transparent.copy(0.45f),
-                                    1f to Color.Transparent.copy(0.72f),
-                                )
-                            )
+                    Row(
+                        Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.End,
                     ) {
-                        Spacer(Modifier.height(if (expanded) 12.dp else 6.dp))
-                        Row(
-                            Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
+                        MaterialTheme(aniDarkColorTheme()) {
                             CompositionLocalProvider(LocalContentColor provides Color.White) {
-                                bottomBar()
+                                floatingBottomEnd()
                             }
                         }
                     }
                 }
             }
-
             Column(Modifier.fillMaxSize().background(Color.Transparent)) {
                 // Separate from controllers, to fix position when controllers are/aren't hidden
                 Box(Modifier.weight(1f, fill = true).fillMaxWidth()) {
