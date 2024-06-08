@@ -322,8 +322,6 @@ private fun EpisodeVideo(
             context.setRequestFullScreen(false)
             vm.isFullscreen = false
         },
-        danmakuEnabled = { danmakuEnabled },
-        setDanmakuEnabled = { vm.launchInBackground { danmaku.setEnabled(it) } },
         danmakuEditor = {
             val danmakuEditorRequester = remember { Any() }
             DanmakuEditor(
@@ -342,7 +340,7 @@ private fun EpisodeVideo(
 }
 
 @Composable
-private fun DanmakuEditor(
+internal fun DanmakuEditor(
     vm: EpisodeViewModel,
     setControllerVisible: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
@@ -352,7 +350,7 @@ private fun DanmakuEditor(
         PlayerControllerDefaults.DanmakuTextField(
             text,
             onValueChange = { text = it },
-            isSending = vm.danmaku.isSending,
+            modifier = modifier,
             onSend = {
                 if (text.isEmpty()) return@DanmakuTextField
                 val textSnapshot = text
@@ -376,7 +374,7 @@ private fun DanmakuEditor(
                     }
                 }
             },
-            modifier = modifier,
+            isSending = vm.danmaku.isSending,
         )
     }
 }

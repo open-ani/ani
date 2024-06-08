@@ -155,9 +155,9 @@ object PlayerControllerDefaults {
     fun DanmakuTextField(
         value: String,
         onValueChange: (String) -> Unit,
+        modifier: Modifier = Modifier,
         onSend: () -> Unit = {},
         isSending: Boolean = false,
-        modifier: Modifier = Modifier,
         interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
         placeholder: @Composable () -> Unit = {
             Row(

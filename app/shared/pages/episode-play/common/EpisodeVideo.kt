@@ -69,8 +69,6 @@ internal fun EpisodeVideoImpl(
     danmakuConfig: () -> DanmakuConfig,
     onClickFullScreen: () -> Unit,
     onExitFullscreen: () -> Unit,
-    danmakuEnabled: () -> Boolean,
-    setDanmakuEnabled: (enabled: Boolean) -> Unit,
     danmakuEditor: @Composable (RowScope.() -> Unit),
     modifier: Modifier = Modifier,
     maintainAspectRatio: Boolean = !expanded,
@@ -125,7 +123,7 @@ internal fun EpisodeVideoImpl(
         },
         danmakuHost = {
             AnimatedVisibility(
-                danmakuEnabled(),
+                videoControllerState.danmakuEnabled,
                 enter = fadeIn(tween(200)),
                 exit = fadeOut(tween(200))
             ) {
@@ -193,8 +191,8 @@ internal fun EpisodeVideoImpl(
                     )
 
                     PlayerControllerDefaults.DanmakuIcon(
-                        danmakuEnabled(),
-                        onClick = { setDanmakuEnabled(!danmakuEnabled()) }
+                        videoControllerState.danmakuEnabled,
+                        onClick = { videoControllerState.toggleDanmakuEnabled() }
                     )
                 },
                 progressIndicator = {
