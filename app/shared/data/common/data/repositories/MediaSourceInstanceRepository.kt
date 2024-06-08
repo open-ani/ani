@@ -16,6 +16,7 @@ import java.util.UUID
 interface MediaSourceInstanceRepository : Repository {
     val flow: Flow<List<MediaSourceSave>>
 
+    suspend fun clear()
     suspend fun remove(instanceId: String)
     suspend fun add(mediaSourceSave: MediaSourceSave)
 
@@ -34,6 +35,7 @@ data class MediaSourceSaves(
     val instances: List<MediaSourceSave> = emptyList(),
 ) {
     companion object {
+        val Empty = MediaSourceSaves(emptyList())
         val Default: MediaSourceSaves = kotlin.run {
             MediaSourceSaves(
                 listOf(
@@ -70,6 +72,9 @@ class MediaSourceInstanceRepositoryImpl(
     private val dataStore: DataStore<MediaSourceSaves>
 ) : MediaSourceInstanceRepository {
     override val flow: Flow<List<MediaSourceSave>> = dataStore.data.map { it.instances }
+    override suspend fun clear() {
+        dataStore.updateData { MediaSourceSaves.Empty }
+    }
 
     override suspend fun remove(instanceId: String) {
         dataStore.updateData { current ->

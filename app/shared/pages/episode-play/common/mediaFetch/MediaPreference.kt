@@ -53,6 +53,8 @@ data class MediaPreference private constructor(
      * 优先使用的媒体源
      */
     val mediaSourceId: String? = null,
+    @Deprecated("Only for migration") // since 3.1.0-beta03
+    val fallbackMediaSourceIds: List<String>? = null,
 ) {
     companion object {
         /**
