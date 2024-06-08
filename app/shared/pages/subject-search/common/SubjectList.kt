@@ -59,7 +59,6 @@ import androidx.compose.ui.unit.dp
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.foundation.AsyncImage
-import me.him188.ani.app.ui.main.LocalContentPaddings
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
 /**
@@ -123,9 +122,7 @@ fun SubjectPreviewColumn(
             // no more items 
         }
 
-        item("footer") {
-            Spacer(Modifier.fillMaxWidth().padding(bottom = LocalContentPaddings.current.calculateBottomPadding()))
-        }
+        item("footer") {}
     }
 }
 

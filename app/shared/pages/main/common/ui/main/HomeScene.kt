@@ -223,21 +223,19 @@ private fun HomeSceneLandscape(
 
             val contentPadding = PaddingValues(16.dp)
 
-            CompositionLocalProvider(LocalContentPaddings provides contentPadding) {
-                VerticalPager(pagerState, userScrollEnabled = false) {
-                    when (it) {
-                        0 -> HomePage(contentPadding)
-                        1 -> CollectionPage(
-                            onClickCaches = {
-                                navigator.navigateCaches()
-                            },
-                            Modifier.fillMaxSize(),
-                            contentPadding,
-                        )
+            VerticalPager(pagerState, userScrollEnabled = false) {
+                when (it) {
+                    0 -> HomePage(contentPadding)
+                    1 -> CollectionPage(
+                        onClickCaches = {
+                            navigator.navigateCaches()
+                        },
+                        Modifier.fillMaxSize(),
+                        contentPadding,
+                    )
 
-                        2 -> CacheManagementPage(Modifier.fillMaxSize())
-                        3 -> SettingsPage(Modifier.fillMaxSize())
-                    }
+                    2 -> CacheManagementPage(Modifier.fillMaxSize())
+                    3 -> SettingsPage(Modifier.fillMaxSize())
                 }
             }
         }
@@ -304,25 +302,23 @@ private fun HomeScenePortrait(
     ) { contentPadding -> // only contains padding of bottom bottom appbar
         val navigator by rememberUpdatedState(LocalNavigator.current)
 
-        CompositionLocalProvider(LocalContentPaddings provides contentPadding) {
-            HorizontalPager(pagerState, userScrollEnabled = false) {
-                when (it) {
-                    0 -> HomePage(contentPadding)
-                    1 -> CollectionPage(
-                        onClickCaches = {
-                            navigator.navigateCaches()
-                        },
-                        contentPadding = contentPadding,
-                    )
+        HorizontalPager(pagerState, userScrollEnabled = false) {
+            when (it) {
+                0 -> HomePage(contentPadding)
+                1 -> CollectionPage(
+                    onClickCaches = {
+                        navigator.navigateCaches()
+                    },
+                    contentPadding = contentPadding,
+                )
 
-                    2 -> {
-                        ProfilePage(
-                            contentPadding = contentPadding,
-                            onClickSettings = {
-                                navigator.navigatePreferences()
-                            }
-                        )
-                    }
+                2 -> {
+                    ProfilePage(
+                        contentPadding = contentPadding,
+                        onClickSettings = {
+                            navigator.navigatePreferences()
+                        }
+                    )
                 }
             }
         }
