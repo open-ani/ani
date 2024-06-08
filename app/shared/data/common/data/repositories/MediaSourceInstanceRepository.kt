@@ -4,6 +4,8 @@ import androidx.datastore.core.DataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
+import me.him188.ani.app.platform.currentPlatform
+import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.datasources.acgrip.AcgRipMediaSource
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.core.instance.MediaSourceSave
@@ -37,31 +39,26 @@ data class MediaSourceSaves(
     companion object {
         val Empty = MediaSourceSaves(emptyList())
         val Default: MediaSourceSaves = kotlin.run {
-            MediaSourceSaves(
-                listOf(
-                    // Web first
-                    NyafunMediaSource.ID,
-                    MxdongmanMediaSource.ID,
+            fun createSave(it: String, isEnabled: Boolean) = MediaSourceSave(
+                instanceId = UUID.randomUUID().toString(),
+                mediaSourceId = it,
+                isEnabled = isEnabled,
+                config = MediaSourceConfig.Default,
+            )
 
-                    // BT
-                    MikanCNMediaSource.ID,
-                ).map {
-                    MediaSourceSave(
-                        instanceId = UUID.randomUUID().toString(),
-                        mediaSourceId = it,
-                        isEnabled = true,
-                        config = MediaSourceConfig.Default,
-                    )
-                } + listOf(
-                    DmhyMediaSource.ID,
-                    AcgRipMediaSource.ID,
-                ).map {
-                    MediaSourceSave(
-                        instanceId = UUID.randomUUID().toString(),
-                        mediaSourceId = it,
-                        isEnabled = false,
-                        config = MediaSourceConfig.Default,
-                    )
+            val enabledWebSources = listOf(NyafunMediaSource.ID, MxdongmanMediaSource.ID)
+            val enabledBtSources = listOf(MikanCNMediaSource.ID)
+            val disabledBtSources = listOf(DmhyMediaSource.ID, AcgRipMediaSource.ID)
+
+            MediaSourceSaves(
+                buildList {
+                    if (currentPlatform.isDesktop()) {
+                        enabledWebSources.forEach { add(createSave(it, isEnabled = true)) }
+                    } else {
+                        enabledWebSources.forEach { add(createSave(it, isEnabled = true)) }
+                        enabledBtSources.forEach { add(createSave(it, isEnabled = true)) }
+                        disabledBtSources.forEach { add(createSave(it, isEnabled = false)) }
+                    }
                 }
             )
         }
