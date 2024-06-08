@@ -17,7 +17,7 @@ object DanmakuConfigSerializer : KSerializer<DanmakuConfig> {
     private class DanmakuConfigData(
         val style: DanmakuStyleData = DanmakuStyleData(),
         val speed: Float = DanmakuConfig.Default.speed,
-        val safeSeparation: Int = DanmakuConfig.Default.safeSeparation.value.toInt(),
+        val safeSeparation: Float = DanmakuConfig.Default.safeSeparation.value,
         val enableColor: Boolean = DanmakuConfig.Default.enableColor,
         val isDebug: Boolean = DanmakuConfig.Default.isDebug,
     )
@@ -61,7 +61,7 @@ object DanmakuConfigSerializer : KSerializer<DanmakuConfig> {
                 strokeWidth = value.style.strokeWidth,
             ),
             speed = value.speed,
-            safeSeparation = value.safeSeparation.value.toInt(),
+            safeSeparation = value.safeSeparation.value,
             enableColor = value.enableColor,
             isDebug = value.isDebug,
         )

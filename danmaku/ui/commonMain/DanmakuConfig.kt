@@ -36,7 +36,13 @@ data class DanmakuConfig(
     /**
      * The minimum distance between two [Danmaku]s so that they don't overlap.
      */
-    val safeSeparation: Dp = 48.dp,
+    val safeSeparation: Dp = 36.dp,
+    /**
+     * 弹幕在屏幕中的显示区域. 0.1 表示屏幕的 10%.
+     *
+     * 范围: `[0, 1]`
+     */
+    val displayArea: Float = 0.25f,
     /**
      * 允许彩色弹幕. 禁用时将会把所有彩色弹幕都显示为白色.
      */
@@ -111,6 +117,7 @@ class DanmakuStyle(
     }
 
     companion object {
+        @Stable
         val Default = DanmakuStyle()
     }
 }

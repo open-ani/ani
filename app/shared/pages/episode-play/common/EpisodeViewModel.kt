@@ -17,7 +17,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
@@ -56,6 +58,7 @@ import me.him188.ani.app.videoplayer.data.VideoSourceOpenException
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import me.him188.ani.danmaku.api.Danmaku
+import me.him188.ani.danmaku.api.DanmakuCollection
 import me.him188.ani.danmaku.api.DanmakuEvent
 import me.him188.ani.danmaku.api.DanmakuPresentation
 import me.him188.ani.danmaku.api.DanmakuSearchRequest
@@ -348,48 +351,51 @@ private class EpisodeViewModelImpl(
         addCloseable(it)
     }
 
-    private val danmakuSessionFlow: Flow<DanmakuSession> = playerState.videoData.filterNotNull().mapLatest { data ->
-        playerStatistics.danmakuLoadingState.value = DanmakuLoadingState.Loading
-        val filename = data.filename
+    private val danmakuCollectionFlow: Flow<DanmakuCollection> =
+        playerState.videoData.filterNotNull().mapLatest { data ->
+            playerStatistics.danmakuLoadingState.value = DanmakuLoadingState.Loading
+            val filename = data.filename
 //            ?: selectedMedia.first().originalTitle
-        try {
+            try {
 
-            val subject: SubjectPresentation
-            val episode: EpisodePresentation
-            withContext(Dispatchers.Main.immediate) {
-                subject = subjectPresentation
-                episode = episodePresentation
-            }
-            val result = danmakuManager.fetch(
-                request = DanmakuSearchRequest(
-                    subjectId = subjectId,
-                    subjectPrimaryName = subject.info.displayName,
-                    subjectNames = subject.info.allNames,
-                    subjectPublishDate = subject.info.publishDate,
-                    episodeId = episodeId,
-                    episodeSort = EpisodeSort(episode.sort),
-                    episodeEp = EpisodeSort(episode.ep),
-                    episodeName = episode.title,
-                    filename = filename,
-                    fileHash = "aa".repeat(16),
-                    fileSize = data.fileLength,
-                    videoDuration = 0.milliseconds,
+                val subject: SubjectPresentation
+                val episode: EpisodePresentation
+                withContext(Dispatchers.Main.immediate) {
+                    subject = subjectPresentation
+                    episode = episodePresentation
+                }
+                val result = danmakuManager.fetch(
+                    request = DanmakuSearchRequest(
+                        subjectId = subjectId,
+                        subjectPrimaryName = subject.info.displayName,
+                        subjectNames = subject.info.allNames,
+                        subjectPublishDate = subject.info.publishDate,
+                        episodeId = episodeId,
+                        episodeSort = EpisodeSort(episode.sort),
+                        episodeEp = EpisodeSort(episode.ep),
+                        episodeName = episode.title,
+                        filename = filename,
+                        fileHash = "aa".repeat(16),
+                        fileSize = data.fileLength,
+                        videoDuration = 0.milliseconds,
 //                fileHash = video.fileHash ?: "aa".repeat(16),
 //                fileSize = video.fileLengthBytes,
 //                videoDuration = video.durationMillis.milliseconds,
-                ),
-            )
-            playerStatistics.danmakuLoadingState.value = DanmakuLoadingState.Success(result.matchInfos)
-            result.danmakuSession
-        } catch (e: Throwable) {
-            playerStatistics.danmakuLoadingState.value = DanmakuLoadingState.Failed(e)
-            throw e
-        }
+                    ),
+                )
+                playerStatistics.danmakuLoadingState.value = DanmakuLoadingState.Success(result.matchInfos)
+                result.danmakuCollection
+            } catch (e: Throwable) {
+                playerStatistics.danmakuLoadingState.value = DanmakuLoadingState.Failed(e)
+                throw e
+            }
+        }.shareInBackground(started = SharingStarted.Lazily)
+
+    private val danmakuSessionFlow: Flow<DanmakuSession> = danmakuCollectionFlow.mapLatest { session ->
+        session.at(progress = playerState.currentPositionMillis.map { it.milliseconds })
     }.shareInBackground(started = SharingStarted.Lazily)
 
-    private val danmakuFlow: Flow<DanmakuEvent> = danmakuSessionFlow.flatMapLatest { session ->
-        session.at(progress = playerState.currentPositionMillis.map { it.milliseconds })
-    }
+    private val danmakuEventFlow: Flow<DanmakuEvent> = danmakuSessionFlow.flatMapLatest { it.events }
 
     private val selfUserId = danmakuManager.selfId
 
@@ -408,6 +414,12 @@ private class EpisodeViewModelImpl(
                 playerStatistics.videoLoadingState.value = it
             }
         }
+        launchInBackground {
+            settingsRepository.danmakuConfig.flow.drop(1).collectLatest {
+                logger.info { "Danmaku config changed, repopulating" }
+                danmakuSessionFlow.first().requestRepopulate()
+            }
+        }
 
         launchInBackground {
             cancellableCoroutineScope {
@@ -417,7 +429,7 @@ private class EpisodeViewModelImpl(
                     started = SharingStarted.Eagerly,
                     initialValue = null
                 )
-                danmakuFlow.collect { event ->
+                danmakuEventFlow.collect { event ->
                     when (event) {
                         is DanmakuEvent.Add -> {
                             val data = event.danmaku

@@ -326,15 +326,19 @@ fun DanmakuTrack(
     content: @Composable DanmakuTrackScope.() -> Unit, // box scope
 ) {
     val configUpdated by remember(config) { derivedStateOf(config) }
-    val safeSeparation by rememberUpdatedState(
-        with(LocalDensity.current) {
-            configUpdated.safeSeparation.toPx()
-        }
-    )
     val density by rememberUpdatedState(LocalDensity.current)
-    val speedPxPerSecond by derivedStateOf {
-        with(density) {
-            configUpdated.speed.dp.toPx()
+    val safeSeparation by remember {
+        derivedStateOf {
+            with(density) {
+                configUpdated.safeSeparation.toPx()
+            }
+        }
+    }
+    val speedPxPerSecond by remember {
+        derivedStateOf {
+            with(density) {
+                configUpdated.speed.dp.toPx()
+            }
         }
     }
     val layoutDirection by rememberUpdatedState(LocalLayoutDirection.current)

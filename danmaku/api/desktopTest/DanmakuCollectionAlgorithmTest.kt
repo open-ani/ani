@@ -9,7 +9,7 @@ import kotlin.test.fail
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-internal class DanmakuSessionAlgorithmTest {
+internal class DanmakuCollectionAlgorithmTest {
     private fun create(
         sequence: Sequence<Danmaku>,
         repopulateThreshold: Duration = 3.seconds,

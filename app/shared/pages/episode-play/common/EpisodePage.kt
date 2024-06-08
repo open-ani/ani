@@ -316,7 +316,7 @@ private fun EpisodeVideo(
         },
         danmakuHostState = vm.danmaku.danmakuHostState,
         videoLoadingState = { videoLoadingState },
-        danmakuConfig = { danmakuConfig },
+        danmakuConfig = remember { { danmakuConfig } },
         onClickFullScreen = {
             if (vm.isFullscreen) {
                 context.setRequestFullScreen(false)

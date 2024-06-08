@@ -11,13 +11,13 @@ import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.seconds
 
 /**
- * @see DanmakuSessionAlgorithmTest
+ * @see DanmakuCollectionAlgorithmTest
  */
-internal class TimeBasedDanmakuSessionTest {
+internal class TimeBasedDanmakuCollectionTest {
     suspend fun create(
         sequence: Sequence<Danmaku>,
         shiftMillis: Long = 0,
-    ): DanmakuSession = TimeBasedDanmakuSession.create(
+    ): DanmakuCollection = TimeBasedDanmakuSession.create(
         sequence, shiftMillis,
         coroutineContext = currentCoroutineContext()[ContinuationInterceptor] ?: EmptyCoroutineContext,
     )
@@ -35,7 +35,7 @@ internal class TimeBasedDanmakuSessionTest {
                 dummyDanmaku(2.0),
             )
         )
-        val list = instance.at(flowOf(0.seconds)).toList()
+        val list = instance.at(flowOf(0.seconds)).events.toList()
         assertEquals(0, list.size)
     }
 

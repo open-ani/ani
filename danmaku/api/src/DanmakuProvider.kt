@@ -24,7 +24,7 @@ interface DanmakuProvider : AutoCloseable {
      *
      * Returns `null` if not found.
      *
-     * The returned [DanmakuSession] should be closed when it is no longer needed.
+     * The returned [DanmakuCollection] should be closed when it is no longer needed.
      */
     suspend fun fetch(
         request: DanmakuSearchRequest,
@@ -52,7 +52,7 @@ class DanmakuSearchRequest(
 
 class DanmakuFetchResult(
     val matchInfo: DanmakuMatchInfo,
-    val danmakuSession: DanmakuSession?,
+    val danmakuCollection: DanmakuCollection?,
 ) {
     companion object {
         @JvmStatic
@@ -62,7 +62,7 @@ class DanmakuFetchResult(
                 count = 0,
                 method = DanmakuMatchMethod.NoMatch,
             ),
-            danmakuSession = null,
+            danmakuCollection = null,
         )
     }
 }

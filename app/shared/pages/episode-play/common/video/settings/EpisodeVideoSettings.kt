@@ -13,8 +13,11 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.platform.currentAniBuildConfig
+import me.him188.ani.app.platform.currentPlatform
+import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
@@ -165,6 +168,46 @@ fun EpisodeVideoSettings(
                 valueLabel = { Text(remember(speed) { "${(speed * 100).roundToInt()}%" }) },
                 modifier = Modifier.placeholder(isLoadingState),
             )
+
+            val displayDensityRange = remember {
+                // 100% .. 0%
+                36.dp..(if (currentPlatform.isDesktop()) 720.dp else 240.dp)
+            }
+            var displayDensity by remember(danmakuConfig) {
+                mutableFloatStateOf(
+                    1.minus(
+                        (danmakuConfig.safeSeparation - displayDensityRange.start) /
+                                (displayDensityRange.endInclusive - displayDensityRange.start + 1.dp)
+                    ).div(0.1f).roundToInt().toFloat()
+                )
+            }
+            SliderItem(
+                value = displayDensity,
+                onValueChange = {
+                    displayDensity = it
+                },
+                onValueChangeFinished = {
+                    setDanmakuConfig(
+                        danmakuConfig.copy(
+                            safeSeparation = displayDensityRange.start +
+                                    ((displayDensityRange.endInclusive - displayDensityRange.start + 1.dp)
+                                        .times((1 - displayDensity * 0.1f)))
+                        )
+                    )
+                },
+                valueRange = 0f..10f,
+                steps = 9,
+                title = { Text("同屏密度") },
+                valueLabel = {
+                    when (displayDensity.toInt()) {
+                        in 7..10 -> Text("密集")
+                        in 4..6 -> Text("适中")
+                        in 0..3 -> Text("稀疏")
+                    }
+                },
+                modifier = Modifier.placeholder(isLoadingState),
+            )
+
             var enableColor = remember(danmakuConfig) { danmakuConfig.enableColor }
             SwitchItem(
                 enableColor,

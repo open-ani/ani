@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withTimeout
@@ -24,7 +23,7 @@ import me.him188.ani.danmaku.ani.client.AniDanmakuSender
 import me.him188.ani.danmaku.ani.client.AniDanmakuSenderImpl
 import me.him188.ani.danmaku.ani.client.SendDanmakuException
 import me.him188.ani.danmaku.api.Danmaku
-import me.him188.ani.danmaku.api.DanmakuEvent
+import me.him188.ani.danmaku.api.DanmakuCollection
 import me.him188.ani.danmaku.api.DanmakuFetchResult
 import me.him188.ani.danmaku.api.DanmakuMatchInfo
 import me.him188.ani.danmaku.api.DanmakuMatchMethod
@@ -32,6 +31,7 @@ import me.him188.ani.danmaku.api.DanmakuProvider
 import me.him188.ani.danmaku.api.DanmakuProviderConfig
 import me.him188.ani.danmaku.api.DanmakuSearchRequest
 import me.him188.ani.danmaku.api.DanmakuSession
+import me.him188.ani.danmaku.api.merge
 import me.him188.ani.danmaku.dandanplay.DandanplayDanmakuProvider
 import me.him188.ani.danmaku.protocol.DanmakuInfo
 import me.him188.ani.utils.coroutines.mapAutoClose
@@ -62,7 +62,7 @@ interface DanmakuManager {
 
 class CombinedDanmakuFetchResult(
     val matchInfos: List<DanmakuMatchInfo>,
-    val danmakuSession: DanmakuSession,
+    val danmakuCollection: DanmakuCollection,
 )
 
 object DanmakuProviderLoader {
@@ -149,7 +149,7 @@ class DanmakuManagerImpl(
         }.first()
         return CombinedDanmakuFetchResult(
             results.map { it.matchInfo },
-            CombinedDanmakuSession(results.mapNotNull { it.danmakuSession })
+            CombinedDanmakuSession(results.mapNotNull { it.danmakuCollection })
         )
     }
 
@@ -159,14 +159,14 @@ class DanmakuManagerImpl(
 }
 
 class CombinedDanmakuSession(
-    private val sessions: List<DanmakuSession>,
-) : DanmakuSession {
+    private val sessions: List<DanmakuCollection>,
+) : DanmakuCollection {
     override val totalCount: Flow<Int?>
         get() = combine(sessions.map { it.totalCount }) { array ->
             array.sumOf { it ?: 0 }
         }
 
-    override fun at(progress: Flow<Duration>): Flow<DanmakuEvent> {
+    override fun at(progress: Flow<Duration>): DanmakuSession {
         return sessions.map { session ->
             session.at(progress)
         }.merge()
