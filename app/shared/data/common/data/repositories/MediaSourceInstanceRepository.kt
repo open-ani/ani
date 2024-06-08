@@ -4,8 +4,14 @@ import androidx.datastore.core.DataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
+import me.him188.ani.datasources.acgrip.AcgRipMediaSource
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.core.instance.MediaSourceSave
+import me.him188.ani.datasources.dmhy.DmhyMediaSource
+import me.him188.ani.datasources.mikan.MikanCNMediaSource
+import me.him188.ani.datasources.mxdongman.MxdongmanMediaSource
+import me.him188.ani.datasources.nyafun.NyafunMediaSource
+import java.util.UUID
 
 interface MediaSourceInstanceRepository : Repository {
     val flow: Flow<List<MediaSourceSave>>
@@ -28,7 +34,35 @@ data class MediaSourceSaves(
     val instances: List<MediaSourceSave> = emptyList(),
 ) {
     companion object {
-        val Default = MediaSourceSaves()
+        val Default: MediaSourceSaves = kotlin.run {
+            MediaSourceSaves(
+                listOf(
+                    // Web first
+                    NyafunMediaSource.ID,
+                    MxdongmanMediaSource.ID,
+
+                    // BT
+                    MikanCNMediaSource.ID,
+                ).map {
+                    MediaSourceSave(
+                        instanceId = UUID.randomUUID().toString(),
+                        mediaSourceId = it,
+                        isEnabled = true,
+                        config = MediaSourceConfig.Default,
+                    )
+                } + listOf(
+                    DmhyMediaSource.ID,
+                    AcgRipMediaSource.ID,
+                ).map {
+                    MediaSourceSave(
+                        instanceId = UUID.randomUUID().toString(),
+                        mediaSourceId = it,
+                        isEnabled = false,
+                        config = MediaSourceConfig.Default,
+                    )
+                }
+            )
+        }
     }
 }
 
