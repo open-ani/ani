@@ -265,7 +265,7 @@ class NetworkSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
             try {
                 mediaSourceInstanceRepository.reorder(newOrder)
             } finally {
-                delay(0.2.seconds)
+                delay(0.5.seconds)
                 isCompletingReorder = false
             }
         }
