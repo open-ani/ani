@@ -3,7 +3,6 @@ package me.him188.ani.app.ui.main
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -221,17 +220,14 @@ private fun HomeSceneLandscape(
         Column(Modifier.fillMaxHeight().weight(1f)) {
             val navigator by rememberUpdatedState(LocalNavigator.current)
 
-            val contentPadding = PaddingValues(16.dp)
-
             VerticalPager(pagerState, userScrollEnabled = false) {
                 when (it) {
-                    0 -> HomePage(contentPadding)
+                    0 -> HomePage()
                     1 -> CollectionPage(
                         onClickCaches = {
                             navigator.navigateCaches()
                         },
                         Modifier.fillMaxSize(),
-                        contentPadding,
                     )
 
                     2 -> CacheManagementPage(Modifier.fillMaxSize())
@@ -298,7 +294,7 @@ private fun HomeScenePortrait(
                 }
             }
         },
-        contentWindowInsets = WindowInsets(0.dp)
+        contentWindowInsets = WindowInsets(0.dp),
     ) { contentPadding -> // only contains padding of bottom bottom appbar
         val navigator by rememberUpdatedState(LocalNavigator.current)
 
