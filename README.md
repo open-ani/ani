@@ -1,9 +1,5 @@
 <div align="center">
 
-<a href="https://myani.org">
-    <img src="./.github/assets/logo.png" alt="Ani logo" title="Ani logo" width="80"/>
-</a>
-
 # Ani
 
 [dmhy]: http://www.dmhy.org/
