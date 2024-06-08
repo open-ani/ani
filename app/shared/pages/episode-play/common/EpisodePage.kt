@@ -21,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
@@ -35,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
@@ -57,6 +59,7 @@ import me.him188.ani.app.ui.subject.episode.details.EpisodePlayerTitle
 import me.him188.ani.app.ui.theme.aniDarkColorTheme
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
+import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults.randomDanmakuPlaceholder
 import me.him188.ani.danmaku.protocol.DanmakuInfo
 import me.him188.ani.danmaku.protocol.DanmakuLocation
 import me.him188.ani.danmaku.ui.DanmakuConfig
@@ -284,13 +287,18 @@ private fun EpisodeVideo(
     // 视频
     val danmakuConfig by vm.danmaku.config.collectAsStateWithLifecycle(DanmakuConfig.Default)
 
-    val danmakuEnabled by vm.danmaku.enabled.collectAsStateWithLifecycle(false)
     val videoLoadingState by vm.videoLoadingState.collectAsStateWithLifecycle(VideoLoadingState.Initial)
 
     // Don't rememberSavable. 刻意让每次切换都是隐藏的
     var controllerVisible by remember { mutableStateOf(initialControllerVisible) }
 
     val videoControllerState = remember { VideoControllerState() }
+    var danmakuEditorText by rememberSaveable { mutableStateOf("") }
+
+
+    // Refresh every time on configuration change (i.e. switching theme, entering fullscreen)
+    val danmakuTextPlaceholder = remember { randomDanmakuPlaceholder() }
+
 
     EpisodeVideoImpl(
         vm.playerState,
@@ -325,9 +333,12 @@ private fun EpisodeVideo(
         danmakuEditor = {
             val danmakuEditorRequester = remember { Any() }
             DanmakuEditor(
-                vm,
-                { controllerVisible = false },
-                Modifier.onFocusChanged {
+                vm = vm,
+                text = danmakuEditorText,
+                onTextChange = { danmakuEditorText = it },
+                setControllerVisible = { controllerVisible = false },
+                placeholderText = danmakuTextPlaceholder,
+                modifier = Modifier.onFocusChanged {
                     if (it.isFocused) videoControllerState.setRequestAlwaysOn(danmakuEditorRequester, true)
                     else videoControllerState.setRequestAlwaysOn(danmakuEditorRequester, false)
                 }.weight(1f)
@@ -343,39 +354,52 @@ private fun EpisodeVideo(
 @Composable
 internal fun DanmakuEditor(
     vm: EpisodeViewModel,
+    text: String,
+    onTextChange: (String) -> Unit,
+    placeholderText: String,
     setControllerVisible: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val textUpdated by rememberUpdatedState(text)
+    val onTextChangeUpdated by rememberUpdatedState(onTextChange)
     MaterialTheme(aniDarkColorTheme()) {
-        var text by rememberSaveable { mutableStateOf("") }
         PlayerControllerDefaults.DanmakuTextField(
             text,
-            onValueChange = { text = it },
+            onValueChange = onTextChange,
             modifier = modifier,
-            onSend = {
-                if (text.isEmpty()) return@DanmakuTextField
-                val textSnapshot = text
-                text = ""
-                val exactPosition = vm.playerState.getExactCurrentPositionMillis()
-                vm.launchInBackground {
-                    try {
-                        danmaku.send(
-                            episodeId = vm.episodeId,
-                            DanmakuInfo(
-                                exactPosition,
-                                text = textSnapshot,
-                                color = Color.White.toArgb(),
-                                location = DanmakuLocation.NORMAL
+            onSend = remember(vm) {
+                onSend@{
+                    if (textUpdated.isEmpty()) return@onSend
+                    val textSnapshot = textUpdated
+                    onTextChangeUpdated("")
+                    val exactPosition = vm.playerState.getExactCurrentPositionMillis()
+                    vm.launchInBackground {
+                        try {
+                            danmaku.send(
+                                episodeId = vm.episodeId,
+                                DanmakuInfo(
+                                    exactPosition,
+                                    text = textSnapshot,
+                                    color = Color.White.toArgb(),
+                                    location = DanmakuLocation.NORMAL
+                                )
                             )
-                        )
-                        withContext(Dispatchers.Main) { setControllerVisible(false) }
-                    } catch (e: Throwable) {
-                        withContext(Dispatchers.Main) { text = textSnapshot }
-                        throw e
+                            withContext(Dispatchers.Main) { setControllerVisible(false) }
+                        } catch (e: Throwable) {
+                            withContext(Dispatchers.Main) { onTextChangeUpdated(textSnapshot) }
+                            throw e
+                        }
                     }
                 }
             },
             isSending = vm.danmaku.isSending,
+            placeholder = {
+                Text(
+                    placeholderText,
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 1,
+                )
+            },
         )
     }
 }

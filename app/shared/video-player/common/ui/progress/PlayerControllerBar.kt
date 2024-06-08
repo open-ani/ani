@@ -134,6 +134,8 @@ object PlayerControllerDefaults {
         "是不是忍不住想發彈幕了呢？",
     )
 
+    fun randomDanmakuPlaceholder(): String = DANMAKU_PLACEHOLDERS.random()
+
     /**
      * To send danmaku
      */
@@ -160,18 +162,11 @@ object PlayerControllerDefaults {
         isSending: Boolean = false,
         interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
         placeholder: @Composable () -> Unit = {
-            Row(
-                Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    remember { DANMAKU_PLACEHOLDERS.random() }, // Refresh every time on configuration change (i.e. switching theme, entering fullscreen)
-                    Modifier.weight(1f),
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = 1,
-                )
-            }
+            Text(
+                remember { randomDanmakuPlaceholder() },
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 1,
+            )
         },
         leadingIcon: @Composable (() -> Unit)? = null,
         trailingIcon: @Composable (() -> Unit)? = {
@@ -221,7 +216,17 @@ object PlayerControllerDefaults {
                         interactionSource = interactionSource,
                         contentPadding = PaddingValues(vertical = 7.dp, horizontal = 16.dp),
                         colors = colors,
-                        placeholder = placeholder,
+                        placeholder = {
+                            Row(
+                                Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Box(Modifier.weight(1f)) {
+                                    placeholder()
+                                }
+                            }
+                        },
                         leadingIcon = leadingIcon,
                         trailingIcon = trailingIcon,
                         container = {
