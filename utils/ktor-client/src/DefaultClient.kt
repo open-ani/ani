@@ -2,9 +2,9 @@ package me.him188.ani.utils.ktor
 
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
+import io.ktor.client.plugins.BrowserUserAgent
 import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpTimeout
-import io.ktor.client.plugins.UserAgent
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.cookies.HttpCookies
 import io.ktor.serialization.kotlinx.json.json
@@ -21,9 +21,7 @@ fun createDefaultHttpClient(
     install(HttpTimeout) {
         requestTimeoutMillis = 30_000
     }
-    install(UserAgent) {
-        agent = "him188/ani (https://github.com/Him188/ani)"
-    }
+    BrowserUserAgent()
     install(ContentNegotiation) {
         json(Json {
             ignoreUnknownKeys = true
