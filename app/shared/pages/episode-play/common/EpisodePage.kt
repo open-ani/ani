@@ -32,6 +32,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.coerceAtLeast
@@ -54,6 +55,7 @@ import me.him188.ani.app.ui.subject.episode.details.EpisodeActionRow
 import me.him188.ani.app.ui.subject.episode.details.EpisodeDetails
 import me.him188.ani.app.ui.subject.episode.details.EpisodePlayerTitle
 import me.him188.ani.app.ui.theme.aniDarkColorTheme
+import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
 import me.him188.ani.danmaku.protocol.DanmakuInfo
 import me.him188.ani.danmaku.protocol.DanmakuLocation
@@ -288,11 +290,12 @@ private fun EpisodeVideo(
     // Don't rememberSavable. 刻意让每次切换都是隐藏的
     var controllerVisible by remember { mutableStateOf(initialControllerVisible) }
 
+    val videoControllerState = remember { VideoControllerState() }
+
     EpisodeVideoImpl(
         vm.playerState,
         expanded = expanded,
-        controllerVisible = { controllerVisible },
-        setControllerVisible = { controllerVisible = it },
+        videoControllerState = videoControllerState,
         title = {
             val episode = vm.episodePresentation
             val subject = vm.subjectPresentation
@@ -322,10 +325,14 @@ private fun EpisodeVideo(
         danmakuEnabled = { danmakuEnabled },
         setDanmakuEnabled = { vm.launchInBackground { danmaku.setEnabled(it) } },
         danmakuEditor = {
+            val danmakuEditorRequester = remember { Any() }
             DanmakuEditor(
                 vm,
                 { controllerVisible = false },
-                Modifier.weight(1f)
+                Modifier.onFocusChanged {
+                    if (it.isFocused) videoControllerState.setRequestAlwaysOn(danmakuEditorRequester, true)
+                    else videoControllerState.setRequestAlwaysOn(danmakuEditorRequester, false)
+                }.weight(1f)
             )
         },
         modifier = modifier.fillMaxWidth().background(Color.Black)

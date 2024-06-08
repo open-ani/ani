@@ -31,6 +31,7 @@ import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsS
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsViewModel
 import me.him188.ani.app.ui.subject.episode.video.settings.VideoSettingsButton
 import me.him188.ani.app.ui.subject.episode.video.topbar.EpisodeVideoTopBar
+import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.VideoPlayer
 import me.him188.ani.app.videoplayer.ui.VideoScaffold
 import me.him188.ani.app.videoplayer.ui.guesture.GestureLock
@@ -61,8 +62,7 @@ import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 internal fun EpisodeVideoImpl(
     playerState: PlayerState,
     expanded: Boolean,
-    controllerVisible: () -> Boolean,
-    setControllerVisible: (Boolean) -> Unit,
+    videoControllerState: VideoControllerState,
     title: @Composable () -> Unit,
     danmakuHostState: DanmakuHostState,
     videoLoadingState: () -> VideoLoadingState,
@@ -83,7 +83,7 @@ internal fun EpisodeVideoImpl(
         expanded = expanded,
         maintainAspectRatio = maintainAspectRatio,
         modifier = modifier,
-        controllersVisible = controllerVisible,
+        controllersVisible = { videoControllerState.isVisible },
         gestureLocked = { isLocked },
         topBar = {
             EpisodeVideoTopBar(
@@ -139,12 +139,11 @@ internal fun EpisodeVideoImpl(
             val indicatorTasker = rememberUiMonoTasker()
             val indicatorState = rememberGestureIndicatorState()
             LockableVideoGestureHost(
+                videoControllerState,
                 swipeSeekerState,
                 indicatorState,
                 fastSkipState = rememberPlayerFastSkipState(playerState = playerState, indicatorState),
-                controllerVisible = controllerVisible,
                 locked = isLocked,
-                setControllerVisible = { setControllerVisible(it) },
                 Modifier.padding(top = 100.dp),
                 onTogglePauseResume = {
                     if (playerState.state.value.isPlaying) {

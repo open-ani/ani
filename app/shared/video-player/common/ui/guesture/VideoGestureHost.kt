@@ -73,6 +73,7 @@ import me.him188.ani.app.ui.foundation.effects.onKey
 import me.him188.ani.app.ui.foundation.effects.onPointerEventMultiplatform
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.theme.aniDarkColorTheme
+import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.BRIGHTNESS
 import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.FAST_BACKWARD
 import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.FAST_FORWARD
@@ -359,7 +360,7 @@ enum class GestureFamily(
     val keyboardSpaceForPauseResume: Boolean = true,
     val keyboardUpDownForVolume: Boolean = true,
     val keyboardLeftRightToSeek: Boolean = true,
-    val mouseHoverForController: Boolean = true,
+    val mouseHoverForController: Boolean = true, // not supported on mobile
     val escToExitFullscreen: Boolean = true,
 ) {
     TOUCH(
@@ -387,18 +388,17 @@ enum class GestureFamily(
 
 @Composable
 fun VideoGestureHost(
+    controllerState: VideoControllerState,
     seekerState: SwipeSeekerState,
     indicatorState: GestureIndicatorState,
     fastSkipState: FastSkipState,
     modifier: Modifier = Modifier,
     family: GestureFamily = Platform.currentPlatform.mouseFamily,
-    onToggleControllerVisibility: (setVisible: Boolean?) -> Unit = {},
     onTogglePauseResume: () -> Unit = {},
     onToggleFullscreen: () -> Unit = {},
     onExitFullscreen: () -> Unit = {},
 ) {
     val onTogglePauseResumeState by rememberUpdatedState(onTogglePauseResume)
-    val onToggleControllerVisibilityState by rememberUpdatedState(onToggleControllerVisibility)
 
     BoxWithConstraints {
         Row(Modifier.align(Alignment.TopCenter).padding(top = 80.dp)) {
@@ -468,11 +468,14 @@ fun VideoGestureHost(
                     .ifThen(family.mouseHoverForController) {
                         val scope = rememberUiMonoTasker()
                         onPointerEventMultiplatform(PointerEventType.Move) { events ->
-                            onToggleControllerVisibilityState(true)
+                            controllerState.isVisible = true
                             keyboardFocus.requestFocus()
-                            scope.launch {
-                                delay(3000)
-                                onToggleControllerVisibilityState(false)
+                            if (!controllerState.alwaysOn) {
+                                scope.launch {
+                                    delay(3000)
+                                    if (controllerState.alwaysOn) return@launch
+                                    controllerState.isVisible = false
+                                }
                             }
                         }
                     }
@@ -505,7 +508,7 @@ fun VideoGestureHost(
                                         onTogglePauseResumeState()
                                     }
                                     if (family.clickToToggleController) {
-                                        onToggleControllerVisibilityState(null)
+                                        controllerState.toggleVisible()
                                     }
                                 }
                             },
@@ -601,7 +604,7 @@ fun VideoGestureHost(
                                     onTogglePauseResumeState()
                                 }
                                 if (family.clickToToggleController) {
-                                    onToggleControllerVisibilityState(null)
+                                    controllerState.toggleVisible()
                                 }
                             }
                         },
@@ -642,16 +645,6 @@ fun VideoGestureHost(
                     .ifThen(family.keyboardSpaceForPauseResume) {
                         onKey(ComposeKey.Spacebar) {
                             onTogglePauseResumeState()
-                        }
-                    }
-                    .ifThen(family.mouseHoverForController) {
-                        val scope = rememberUiMonoTasker()
-                        onPointerEventMultiplatform(PointerEventType.Move) { events ->
-                            onToggleControllerVisibilityState(true)
-                            scope.launch {
-                                delay(3000)
-                                onToggleControllerVisibilityState(false)
-                            }
                         }
                     }
                     .fillMaxSize()

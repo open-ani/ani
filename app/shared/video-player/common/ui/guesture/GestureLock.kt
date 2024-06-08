@@ -16,10 +16,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -27,6 +24,7 @@ import kotlinx.coroutines.delay
 import me.him188.ani.app.ui.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.theme.aniLightColorTheme
 import me.him188.ani.app.ui.theme.slightlyWeaken
+import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
@@ -119,31 +117,24 @@ fun LockedScreenGestureHost(
 
 @Composable
 fun LockableVideoGestureHost(
+    controllerState: VideoControllerState,
     seekerState: SwipeSeekerState,
     indicatorState: GestureIndicatorState,
     fastSkipState: FastSkipState,
-    controllerVisible: () -> Boolean,
     locked: Boolean,
-    setControllerVisible: (visible: Boolean) -> Unit,
     modifier: Modifier = Modifier,
     onTogglePauseResume: () -> Unit = {},
     onToggleFullscreen: () -> Unit = {},
     onExitFullscreen: () -> Unit = {},
 ) {
     if (locked) {
-        LockedScreenGestureHost(controllerVisible, setControllerVisible, modifier)
+        LockedScreenGestureHost({ controllerState.isVisible }, controllerState.setVisible, modifier)
     } else {
-        val setControllerVisibleState by rememberUpdatedState(setControllerVisible)
-        val controllerVisibleState by derivedStateOf(controllerVisible)
         VideoGestureHost(
+            controllerState,
             seekerState,
             indicatorState,
             fastSkipState,
-            onToggleControllerVisibility = remember {
-                {
-                    setControllerVisibleState(it ?: !controllerVisibleState)
-                }
-            },
             onTogglePauseResume = onTogglePauseResume,
             onToggleFullscreen = onToggleFullscreen,
             onExitFullscreen = onExitFullscreen,
