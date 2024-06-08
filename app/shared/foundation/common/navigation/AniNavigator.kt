@@ -17,6 +17,8 @@ interface AniNavigator {
         navigator: Navigator,
     )
 
+    suspend fun awaitNavigator(): Navigator
+
     val navigator: Navigator
 
     fun navigateSubjectDetails(subjectId: Int) {
@@ -64,6 +66,10 @@ private class AniNavigatorImpl : AniNavigator, KoinComponent {
 
     override fun setNavigator(navigator: Navigator) {
         this._navigator.complete(navigator)
+    }
+
+    override suspend fun awaitNavigator(): Navigator {
+        return _navigator.await()
     }
 }
 

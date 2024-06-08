@@ -28,7 +28,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -73,6 +72,7 @@ import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import me.him188.ani.desktop.generated.resources.Res
 import me.him188.ani.desktop.generated.resources.a_round
 import me.him188.ani.utils.logging.error
+import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import org.jetbrains.compose.resources.painterResource
 import org.koin.core.context.startKoin
@@ -159,7 +159,13 @@ object AniDesktop {
 
         val navigator = AniNavigator()
 
-        val sessionManager by koin.koin.inject<SessionManager>()
+        coroutineScope.launch {
+            val sessionManager by koin.koin.inject<SessionManager>()
+            logger.info { "[AutoLogin] Waiting for awaitNavigator" }
+            navigator.awaitNavigator()
+            logger.info { "[AutoLogin] Got navigator, start requireOnline" }
+            sessionManager.requireOnline(navigator)
+        }
 
         application {
             Window(
@@ -197,15 +203,10 @@ object AniDesktop {
                         navigator
                     )
                 }
-
-                LaunchedEffect(true) {
-                    coroutineScope.launch {
-                        sessionManager.requireOnline(navigator)
-                    }
-                }
             }
 
         }
+        // unreachable here
     }
 
 }
