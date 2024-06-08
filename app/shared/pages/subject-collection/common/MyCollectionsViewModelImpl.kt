@@ -1,7 +1,10 @@
 package me.him188.ani.app.ui.collection
 
+import androidx.compose.material3.pulltorefresh.PullToRefreshState
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.ViewModelAuthSupport
@@ -25,7 +28,10 @@ import org.koin.core.component.inject
 class CollectionsByType(
     val type: UnifiedCollectionType,
     val cache: LazyDataCache<SubjectCollectionItem>,
-)
+) {
+    var isAutoRefreshing by mutableStateOf(false)
+    var pullToRefreshState: PullToRefreshState? by mutableStateOf(null)
+}
 
 @Stable
 interface MyCollectionsViewModel : HasBackgroundScope, ViewModelAuthSupport {

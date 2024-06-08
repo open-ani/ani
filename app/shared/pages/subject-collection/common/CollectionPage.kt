@@ -30,6 +30,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -45,6 +46,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -65,6 +67,8 @@ import kotlinx.coroutines.launch
 import me.him188.ani.app.data.subject.SubjectCollectionItem
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.Platform
+import me.him188.ani.app.platform.currentPlatform
+import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.tools.caching.RefreshOrderPolicy
@@ -96,7 +100,6 @@ val COLLECTION_TABS_SORTED = listOf(
 )
 
 
-
 /**
  * My collections
  */
@@ -111,7 +114,7 @@ fun CollectionPage(
     val pagerState =
         rememberPagerState(initialPage = COLLECTION_TABS_SORTED.size / 2) { COLLECTION_TABS_SORTED.size }
     val scope = rememberCoroutineScope()
-    
+
     Scaffold(
         modifier,
         topBar = {
@@ -125,6 +128,24 @@ fun CollectionPage(
 
                             IconButton(onClickCaches) {
                                 Icon(Icons.Rounded.Download, "缓存管理")
+                            }
+                        }
+
+                        if (currentPlatform.isDesktop()) {
+                            // PC 无法下拉刷新
+                            val refreshTasker = rememberUiMonoTasker()
+                            IconButton({
+                                val type = COLLECTION_TABS_SORTED[pagerState.currentPage]
+                                val collection = vm.collectionsByType(type)
+                                collection.isAutoRefreshing = false
+                                collection.pullToRefreshState?.startRefresh()
+//                                val cache = collection.cache
+//                                
+//                                refreshTasker.launch {
+//                                    cache.refresh(RefreshOrderPolicy.REPLACE)
+//                                }
+                            }) {
+                                Icon(Icons.Rounded.Refresh, null)
                             }
                         }
                     }
@@ -173,18 +194,20 @@ fun CollectionPage(
             val collection = vm.collectionsByType(type)
 
             val pullToRefreshState = rememberPullToRefreshState()
-            var isAutoRefreshing by remember { mutableStateOf(false) }
+            SideEffect {
+                collection.pullToRefreshState = pullToRefreshState
+            }
             LaunchedEffect(true) {
                 snapshotFlow { pullToRefreshState.isRefreshing }.collectLatest {
                     if (!it) return@collectLatest
 
                     try {
-                        val policy = if (isAutoRefreshing) {
+                        val policy = if (collection.isAutoRefreshing) {
                             RefreshOrderPolicy.KEEP_ORDER_APPEND_LAST
                         } else {
                             RefreshOrderPolicy.REPLACE
                         }
-                        isAutoRefreshing = false
+                        collection.isAutoRefreshing = false
                         collection.cache.refresh(policy)
                     } catch (e: CancellationException) {
                         throw e
@@ -201,7 +224,7 @@ fun CollectionPage(
                     autoUpdateScope.launch {
                         val lastUpdated = collection.cache.lastUpdated.first()
                         if (System.currentTimeMillis() - lastUpdated > 60.minutes.inWholeMilliseconds) {
-                            isAutoRefreshing = true
+                            collection.isAutoRefreshing = true
                             pullToRefreshState.startRefresh()
                         }
                     }
