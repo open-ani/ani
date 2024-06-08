@@ -9,11 +9,11 @@ data class BangumiLegacySubject(
     val id: Int,
     val type: BangumiSubjectType,
     @SerialName("name") val originalName: String, // 日文
-    @SerialName("name_cn") val chineseName: String, // 中文
+    @SerialName("name_cn") val chineseName: String = originalName, // 中文
     val summary: String, // can be very long
-    @SerialName("air_date") val airDate: String, // "2002-04-02"
-    @SerialName("air_weekday") val airWeekday: Int,
-    @SerialName("images") val images: BangumiSubjectImages,
+    @SerialName("air_date") val airDate: String = "", // "2002-04-02"
+    @SerialName("air_weekday") val airWeekday: Int = 0,
+    @SerialName("images") val images: BangumiSubjectImages? = null,
     val eps: Int = 1, // 话数
     @SerialName("eps_count") val epsCount: Int = 1, // 话数
     val rating: BangumiRating? = null,
