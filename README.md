@@ -49,6 +49,12 @@ Ani 的目标是提供尽可能简单且舒适的追番体验。
 Ani 支持 Android 和桌面端 (macOS、Windows)。现阶段对 Android 支持最佳, PC 需要依赖 qBittorrent 才能下载
 BT 视频，但不安装 qBit 也可以使用在线数据源。
 
+下载:
+
+- 稳定版本: 每 1-2 周更新, 功能稳定  
+  [下载稳定版本](https://github.com/Him188/ani/releases/latest)
+- 测试版本: 每 1-3 天更新, 体验最新功能  
+  [下载测试版本](https://github.com/Him188/ani/releases)
 
 ## 功能截图
 
