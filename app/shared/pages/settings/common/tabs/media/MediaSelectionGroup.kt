@@ -172,15 +172,14 @@ internal fun SettingsScope.MediaSelectionGroup(vm: MediaSettingsViewModel) {
             HorizontalDividerItem()
 
             SwitchItem(
-                checked = vm.defaultMediaPreference.showWithoutSubtitle,
+                checked = !vm.defaultMediaPreference.showWithoutSubtitle,
                 onCheckedChange = {
                     vm.updateDefaultMediaPreference(
-                        vm.defaultMediaPreference.copy(showWithoutSubtitle = it)
+                        vm.defaultMediaPreference.copy(showWithoutSubtitle = !it)
                     )
                 },
-                title = { Text("显示无字幕资源") },
+                title = { Text("隐藏无字幕资源") },
                 Modifier.placeholder(vm.defaultMediaPreferenceLoading),
-                description = { Text("这可能是资源本身是生肉，也可能是字幕未识别到。是生肉的可能性更高") },
             )
 
             HorizontalDividerItem()
