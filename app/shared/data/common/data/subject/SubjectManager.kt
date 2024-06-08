@@ -404,7 +404,7 @@ data class SubjectCollectionItem(
 
     val onAirDescription = if (isOnAir) {
         if (latestEp == null) {
-            "连载中"
+            "未开播"
         } else {
             "连载至第 ${latestEp.episode.sort} 话"
         }
