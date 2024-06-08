@@ -102,9 +102,6 @@ class NetworkSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
                     connectionTester = ConnectionTester(
                         id = instance.mediaSourceId,
                         testConnection = {
-                            if (!instance.isEnabled) {
-                                return@ConnectionTester ConnectionTestResult.NOT_ENABLED
-                            }
                             when (instance.source.checkConnection()) {
                                 ConnectionStatus.SUCCESS -> ConnectionTestResult.SUCCESS
                                 ConnectionStatus.FAILED -> ConnectionTestResult.FAILED
