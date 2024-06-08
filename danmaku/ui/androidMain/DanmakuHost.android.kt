@@ -2,8 +2,10 @@ package me.him188.ani.danmaku.ui
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.content.res.Configuration.UI_MODE_TYPE_NORMAL
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Surface
@@ -82,23 +84,25 @@ internal actual fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
             )
         }
     }
-    Column {
-        Text("Emitted: $emitted")
-        state.tracks.forEachIndexed { index, danmakuTrackState ->
-            Text(
-                "track$index: offset=${danmakuTrackState.trackOffset.toInt()}, " +
-                        "visible=${danmakuTrackState.visibleDanmaku.size}, " +
-                        "starting=${danmakuTrackState.startingDanmaku.size}"
-            )
-        }
-    }
 
     if (isInLandscapeMode()) {
         Row {
-            DanmakuHost(
-                state,
-                Modifier.weight(1f)
-            ) { config }
+            Box(Modifier.weight(1f)) {
+                DanmakuHost(
+                    state,
+                    Modifier.fillMaxHeight()
+                ) { config }
+                Column {
+                    Text("Emitted: $emitted")
+                    state.tracks.forEachIndexed { index, danmakuTrackState ->
+                        Text(
+                            "track$index: offset=${danmakuTrackState.trackOffset.toInt()}, " +
+                                    "visible=${danmakuTrackState.visibleDanmaku.size}, " +
+                                    "starting=${danmakuTrackState.startingDanmaku.size}"
+                        )
+                    }
+                }
+            }
             VerticalDivider()
             EpisodeVideoSettings(
                 config,
@@ -109,12 +113,26 @@ internal actual fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
         }
     } else {
         Column {
-            DanmakuHost(
-                state,
+            Box(
                 Modifier
                     .weight(1f)
-                    .fillMaxWidth()
-            ) { config }
+            ) {
+                DanmakuHost(
+                    state,
+                    Modifier.fillMaxWidth()
+                ) { config }
+                Column {
+                    Text("Emitted: $emitted")
+                    state.tracks.forEachIndexed { index, danmakuTrackState ->
+                        Text(
+                            "track$index: offset=${danmakuTrackState.trackOffset.toInt()}, " +
+                                    "visible=${danmakuTrackState.visibleDanmaku.size}, " +
+                                    "starting=${danmakuTrackState.startingDanmaku.size}"
+                        )
+                    }
+                }
+
+            }
             HorizontalDivider()
             EpisodeVideoSettings(
                 config,

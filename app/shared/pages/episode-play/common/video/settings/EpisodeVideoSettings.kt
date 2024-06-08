@@ -208,6 +208,53 @@ fun EpisodeVideoSettings(
                 modifier = Modifier.placeholder(isLoadingState),
             )
 
+
+            var displayArea by remember(danmakuConfig) {
+                mutableFloatStateOf(
+                    when (danmakuConfig.displayArea) {
+                        0.125f -> 1f
+                        0.25f -> 2f
+                        0.50f -> 3f
+                        0.75f -> 4f
+                        1f -> 5f
+                        else -> 2f
+                    }
+                )
+            }
+            SliderItem(
+                value = displayArea,
+                onValueChange = {
+                    displayArea = it
+                },
+                onValueChangeFinished = {
+                    setDanmakuConfig(
+                        danmakuConfig.copy(
+                            displayArea = when (displayArea) {
+                                1f -> 0.125f
+                                2f -> 0.25f
+                                3f -> 0.50f
+                                4f -> 0.75f
+                                5f -> 1f
+                                else -> 0.25f
+                            }
+                        )
+                    )
+                },
+                valueRange = 1f..5f,
+                steps = 3,
+                title = { Text("显示区域") },
+                valueLabel = {
+                    when (displayArea) {
+                        1f -> Text("1/8 屏")
+                        2f -> Text("1/4 屏")
+                        3f -> Text("半屏")
+                        4f -> Text("3/4 屏")
+                        5f -> Text("全屏")
+                    }
+                },
+                modifier = Modifier.placeholder(isLoadingState),
+            )
+
             var enableColor = remember(danmakuConfig) { danmakuConfig.enableColor }
             SwitchItem(
                 enableColor,

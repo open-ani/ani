@@ -423,12 +423,8 @@ private class EpisodeViewModelImpl(
 
         launchInBackground {
             cancellableCoroutineScope {
-                val selfId = selfUserId.stateIn(this, started = SharingStarted.Eagerly, initialValue = null)
-                val danmakuConfig = settingsRepository.danmakuConfig.flow.stateIn(
-                    this,
-                    started = SharingStarted.Eagerly,
-                    initialValue = null
-                )
+                val selfId = selfUserId.stateIn(this)
+                val danmakuConfig = settingsRepository.danmakuConfig.flow.stateIn(this)
                 danmakuEventFlow.collect { event ->
                     when (event) {
                         is DanmakuEvent.Add -> {
@@ -443,7 +439,7 @@ private class EpisodeViewModelImpl(
                                 event.list.map {
                                     createDanmakuPresentation(it, selfId.value)
                                 },
-                                danmakuConfig.filterNotNull().first().style,
+                                danmakuConfig.value.style,
                             )
 
                         }

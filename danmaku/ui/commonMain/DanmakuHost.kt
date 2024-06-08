@@ -2,20 +2,27 @@ package me.him188.ani.danmaku.ui
 
 import androidx.annotation.UiThread
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -24,13 +31,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastAny
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.withContext
 import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuPresentation
+import kotlin.math.roundToInt
 
+@Stable
 interface DanmakuHostState {
-    @Stable
     val tracks: List<DanmakuTrackState>
+
+    fun setTrackCount(count: Int)
 
     /**
      * Sends the [danmaku] to the first track that is currently ready to receive it.
@@ -84,20 +97,54 @@ fun DanmakuHostState(
 fun DanmakuHost(
     state: DanmakuHostState,
     modifier: Modifier = Modifier,
-    config: () -> DanmakuConfig,
+    configProvider: () -> DanmakuConfig,
 ) {
-    Column(modifier.background(Color.Transparent)) {
-        val baseStyle = MaterialTheme.typography.bodyMedium
-        state.Content(baseStyle)
-        for (track in state.tracks) {
-            DanmakuTrack(track, Modifier.fillMaxWidth(), config, baseStyle = baseStyle) {
-                // fix height even if there is no danmaku showing
-                // so that the second track will not move to the top of the screen when the first track is empty.
-                danmaku(DummyDanmakuState, Modifier.alpha(0f).padding(vertical = 1.dp))
+    BoxWithConstraints(modifier) {
+        val screenHeightPx by rememberUpdatedState(constraints.maxHeight)
+        Column(Modifier.background(Color.Transparent)) {
+            val baseStyle = MaterialTheme.typography.bodyMedium
+            state.Content(baseStyle)
 
-                for (danmaku in track.visibleDanmaku) {
-                    key(danmaku.presentation.id) {
-                        danmaku(danmaku)
+            val config by remember {
+                derivedStateOf(configProvider)
+            }
+            val measurer = rememberTextMeasurer(1)
+            val density by rememberUpdatedState(LocalDensity.current)
+            val verticalPadding = 1.dp // to both top and bottom
+            // 更新显示区域
+            LaunchedEffect(measurer) {
+                val configFlow = snapshotFlow { config }
+                    .distinctUntilChanged { old, new ->
+                        old.displayArea == new.displayArea && old.style == new.style
+                    }
+                val screenHeightPxFlow = snapshotFlow { screenHeightPx }
+                    .debounce(500)
+                combine(configFlow, screenHeightPxFlow) { config, screenHeightPx ->
+                    val danmakuHeightPx = measurer.measure(
+                        DummyDanmakuState.presentation.danmaku.text,
+                        style = config.style.styleForText()
+                    ).size.height
+                    val verticalPaddingPx = with(density) {
+                        (verticalPadding * 2).toPx()
+                    }
+                    val maxRows = screenHeightPx / (danmakuHeightPx + verticalPaddingPx)
+                    (config.displayArea * maxRows).roundToInt().coerceAtLeast(1)
+                }.distinctUntilChanged()
+                    .collect {
+                        state.setTrackCount(it)
+                    }
+            }
+
+            for (track in state.tracks) {
+                DanmakuTrack(track, Modifier.fillMaxWidth(), configProvider, baseStyle = baseStyle) {
+                    // fix height even if there is no danmaku showing
+                    // so that the second track will not move to the top of the screen when the first track is empty.
+                    danmaku(DummyDanmakuState, Modifier.alpha(0f).padding(vertical = verticalPadding))
+
+                    for (danmaku in track.visibleDanmaku) {
+                        key(danmaku.presentation.id) {
+                            danmaku(danmaku)
+                        }
                     }
                 }
             }
@@ -105,18 +152,29 @@ fun DanmakuHost(
     }
 }
 
+@Stable
 internal class DanmakuHostStateImpl(
-    danmakuTrackProperties: DanmakuTrackProperties,
+    private val danmakuTrackProperties: DanmakuTrackProperties,
 ) : DanmakuHostState {
     private val _isPaused = mutableStateOf(false)
 
-    override val tracks: List<DanmakuTrackState> = listOf(
-        DanmakuTrackState(_isPaused, 10, danmakuTrackProperties),
-        DanmakuTrackState(_isPaused, 10, danmakuTrackProperties),
-        DanmakuTrackState(_isPaused, 10, danmakuTrackProperties),
-        DanmakuTrackState(_isPaused, 10, danmakuTrackProperties),
-        DanmakuTrackState(_isPaused, 10, danmakuTrackProperties)
+    override var tracks: List<DanmakuTrackState> by mutableStateOf(
+        listOf(
+            DanmakuTrackState(_isPaused, 30, danmakuTrackProperties)
+        )
     )
+        private set
+
+    override fun setTrackCount(count: Int) {
+        if (tracks.size == count) return
+        tracks = if (count < tracks.size) {
+            tracks.take(count)
+        } else {
+            tracks + List(count - tracks.size) {
+                DanmakuTrackState(_isPaused, 30, danmakuTrackProperties)
+            }
+        }
+    }
 
     override fun trySend(danmaku: DanmakuPresentation): Boolean {
         return tracks.any { it.trySend(danmaku) }
