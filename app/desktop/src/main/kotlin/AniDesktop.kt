@@ -168,7 +168,11 @@ object AniDesktop {
                 title = "Ani",
                 icon = painterResource(Res.drawable.a_round),
             ) {
-                println("renderApi: " + this.window.renderApi)
+                SideEffect {
+                    logger.info {
+                        "renderApi: " + this.window.renderApi
+                    }
+                }
                 CompositionLocalProvider(
                     LocalContext provides context,
                     LocalWindowState provides windowState
