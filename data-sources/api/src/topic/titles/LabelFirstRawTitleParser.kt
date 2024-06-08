@@ -82,6 +82,10 @@ class LabelFirstRawTitleParser : RawTitleParser() {
 
         private fun String.parseSubtitleLanguages(): Boolean {
             var any = false
+            if (this.splitToSequence(" ").any { it.equals("Baha", ignoreCase = true) }
+                && builder.subtitleLanguages.isEmpty()) {
+                builder.subtitleLanguages.add(SubtitleLanguage.ChineseTraditional)
+            }
             for (entry in SubtitleLanguage.matchableEntries) {
                 if (entry.matches(this)) {
                     builder.subtitleLanguages.add(entry)
