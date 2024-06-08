@@ -13,7 +13,6 @@ import me.him188.ani.danmaku.protocol.DanmakuInfo
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 interface DanmakuSession {
@@ -57,7 +56,6 @@ class TimeBasedDanmakuSession private constructor(
      */
     private val list: List<Danmaku>,
     private val shiftMillis: Long = 0,
-    private val samplePeriod: Duration = 30.milliseconds,
     private val flowCoroutineContext: CoroutineContext = EmptyCoroutineContext,
 ) : DanmakuSession {
     override val totalCount: Flow<Int?> = flowOf(list.size)
@@ -66,14 +64,13 @@ class TimeBasedDanmakuSession private constructor(
         fun create(
             sequence: Sequence<Danmaku>,
             shiftMillis: Long = 0,
-            samplePeriod: Duration = 30.milliseconds,
             coroutineContext: CoroutineContext = EmptyCoroutineContext,
         ): DanmakuSession {
             val list = sequence.mapTo(ArrayList()) {
                 DanmakuSanitizer.sanitize(it)
             }
             list.sortBy { it.playTimeMillis }
-            return TimeBasedDanmakuSession(list, shiftMillis, samplePeriod, coroutineContext)
+            return TimeBasedDanmakuSession(list, shiftMillis, coroutineContext)
         }
     }
 

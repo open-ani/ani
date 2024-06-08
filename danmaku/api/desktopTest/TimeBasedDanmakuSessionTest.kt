@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test
 import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.assertEquals
-import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 /**
@@ -20,7 +19,6 @@ internal class TimeBasedDanmakuSessionTest {
         shiftMillis: Long = 0,
     ): DanmakuSession = TimeBasedDanmakuSession.create(
         sequence, shiftMillis,
-        samplePeriod = 0.milliseconds,
         coroutineContext = currentCoroutineContext()[ContinuationInterceptor] ?: EmptyCoroutineContext,
     )
 
