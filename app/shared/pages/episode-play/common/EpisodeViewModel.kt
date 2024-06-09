@@ -454,6 +454,10 @@ private class EpisodeViewModelImpl(
                 logger.info { "EpisodeViewModel got new video source: $it, updating playerState" }
                 try {
                     playerState.setVideoSource(it)
+                    if (it != null) {
+                        logger.info { "playerState.setVideoSource success" }
+                        videoLoadingState.value = VideoLoadingState.Succeed
+                    }
                 } catch (e: VideoSourceOpenException) {
                     videoLoadingState.value = when (e.reason) {
                         OpenFailures.NO_MATCHING_FILE -> VideoLoadingState.NoMatchingFile
@@ -467,7 +471,6 @@ private class EpisodeViewModelImpl(
                     logger.error(e) { "Failed to set video source" }
                     videoLoadingState.value = VideoLoadingState.UnknownError(e)
                 }
-                videoLoadingState.value = VideoLoadingState.Succeed
             }
         }
     }
