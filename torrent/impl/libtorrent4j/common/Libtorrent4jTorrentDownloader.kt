@@ -51,6 +51,10 @@ abstract class AbstractLockedTorrentDownloader<Info : TorrentInfo>(
     private val isDebug: Boolean,
     parentCoroutineContext: CoroutineContext,
 ) : TorrentDownloader {
+    companion object {
+        const val FAST_RESUME_FILENAME = "fastresume"
+    }
+
     private val scope = CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
 
     private val logger = logger(this::class)
@@ -259,10 +263,11 @@ class Libtorrent4jTorrentDownloader(
 
     override fun SessionManager.startDownload(ti: Torrent4jTorrentInfo, saveDirectory: File) {
         val priorities = Priority.array(Priority.IGNORE, ti.fileCount)
+        val resumeFile = saveDirectory.resolve(FAST_RESUME_FILENAME)
         download(
             ti.info,
             saveDirectory,
-            null,
+            resumeFile.takeIf { it.exists() },
             priorities,
             null,
             TorrentFlags.AUTO_MANAGED

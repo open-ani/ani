@@ -35,17 +35,20 @@ import me.him188.ani.app.torrent.api.handle.TorrentEvent
 import me.him188.ani.app.torrent.api.handle.TorrentFile
 import me.him188.ani.app.torrent.api.handle.TorrentFinishedEvent
 import me.him188.ani.app.torrent.api.handle.TorrentResumeEvent
+import me.him188.ani.app.torrent.api.handle.TorrentSaveResumeDataEvent
 import me.him188.ani.app.torrent.api.handle.TorrentThread
 import me.him188.ani.app.torrent.api.pieces.Piece
 import me.him188.ani.app.torrent.api.pieces.PiecePriorities
 import me.him188.ani.app.torrent.api.pieces.TorrentDownloadController
 import me.him188.ani.app.torrent.io.TorrentInput
+import me.him188.ani.app.torrent.libtorrent4j.AbstractLockedTorrentDownloader.Companion.FAST_RESUME_FILENAME
 import me.him188.ani.utils.coroutines.SuspendLazy
 import me.him188.ani.utils.coroutines.flows.resetStale
 import me.him188.ani.utils.io.SeekableInput
 import me.him188.ani.utils.logging.debug
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
+import org.libtorrent4j.AddTorrentParams
 import java.io.File
 import java.io.RandomAccessFile
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -383,6 +386,16 @@ open class DefaultTorrentDownloadSession(
                 is TorrentResumeEvent -> {
                     if (actualInfo.isCompleted) return
                     state.value = TorrentDownloadState.FetchingMetadata
+                }
+
+                is TorrentSaveResumeDataEvent -> {
+                    val data = event.platformData
+                    check(data is AddTorrentParams)
+                    logger.info { "[$torrentName] Save resume data, encoding..." }
+                    val buf = AddTorrentParams.writeResumeDataBuf(data)
+                    logger.info { "[$torrentName] Save resume data, buf length = ${buf.size}" }
+                    val file = saveDirectory.resolve(FAST_RESUME_FILENAME)
+                    file.writeBytes(buf)
                 }
 
                 // TODO: torrent peer stats 

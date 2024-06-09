@@ -6,12 +6,14 @@ import me.him188.ani.app.torrent.api.handle.TorrentAddEvent
 import me.him188.ani.app.torrent.api.handle.TorrentEvent
 import me.him188.ani.app.torrent.api.handle.TorrentFinishedEvent
 import me.him188.ani.app.torrent.api.handle.TorrentResumeEvent
+import me.him188.ani.app.torrent.api.handle.TorrentSaveResumeDataEvent
 import me.him188.ani.app.torrent.api.handle.TorrentThread
 import me.him188.ani.app.torrent.libtorrent4j.handle.asAniTorrentHandle
 import org.libtorrent4j.alerts.AddTorrentAlert
 import org.libtorrent4j.alerts.AlertType
 import org.libtorrent4j.alerts.BlockDownloadingAlert
 import org.libtorrent4j.alerts.PieceFinishedAlert
+import org.libtorrent4j.alerts.SaveResumeDataAlert
 import org.libtorrent4j.alerts.TorrentAlert
 import org.libtorrent4j.alerts.TorrentResumedAlert
 
@@ -53,6 +55,7 @@ internal val NeededTorrentEventTypes // no backing field: do not waste static me
         AlertType.BLOCK_FINISHED.swig(),
         AlertType.TORRENT_RESUMED.swig(),
         AlertType.TORRENT_FINISHED.swig(),
+        AlertType.SAVE_RESUME_DATA.swig(),
     )
 
 @TorrentThread
@@ -93,6 +96,7 @@ internal fun TorrentAlert<*>.toEventOrNull(): TorrentEvent? {
         is TorrentResumedAlert -> TorrentResumeEvent(torrentName())
 //        is org.libtorrent4j.alerts.BlockDownloadingAlert -> BlockDownloadingEvent(torrentName(), pieceIndex())
 //        is PieceFinishedAlert -> PieceFinishedEvent(torrentName(), pieceIndex())
+        is SaveResumeDataAlert -> TorrentSaveResumeDataEvent(torrentName(), this.params())
         is org.libtorrent4j.alerts.TorrentFinishedAlert -> TorrentFinishedEvent(
             torrentName(),
             lazy { handle().asAniTorrentHandle() }

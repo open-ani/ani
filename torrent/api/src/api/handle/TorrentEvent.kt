@@ -45,6 +45,11 @@ class TorrentResumeEvent(
     override val torrentName: String,
 ) : TorrentEvent
 
+class TorrentSaveResumeDataEvent(
+    override val torrentName: String,
+    val platformData: Any,
+) : TorrentEvent
+
 //@Deprecated("Replaced with onBlockDownloading")
 //class BlockDownloadingEvent(
 //    override val torrentName: String,
