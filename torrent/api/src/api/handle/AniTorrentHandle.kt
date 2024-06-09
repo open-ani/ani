@@ -14,6 +14,7 @@ interface AniTorrentHandle {
     fun pause()
 
     fun setPieceDeadline(pieceIndex: Int, deadline: Int)
+    fun saveResumeData() {}
 }
 
 interface TorrentContents {

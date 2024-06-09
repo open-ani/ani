@@ -45,6 +45,10 @@ constructor(
         }
         handle.setPieceDeadline(pieceIndex, deadline)
     }
+
+    override fun saveResumeData() {
+        handle.saveResumeData()
+    }
 }
 
 class Torrent4JContents(
