@@ -1,5 +1,7 @@
 package me.him188.ani.app.torrent.api
 
+import androidx.compose.ui.util.fastFirstOrNull
+import androidx.compose.ui.util.fastForEach
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -156,10 +158,10 @@ open class DefaultTorrentDownloadSession(
             val entries = entries.getCompletedOrNull() ?: return
             for ((file, downloaded) in contents.getFileProgresses()) {
                 if (file.size == downloaded) {
-                    val entry = entries.firstOrNull { it.pathInTorrent == file.path } ?: continue
+                    val entry = entries.fastFirstOrNull { it.pathInTorrent == file.path } ?: continue
                     logger.info { "[TorrentDownloadControl] Set file finished because torrent finished: ${file.path}" }
                     entry.finishedOverride.value = true
-                    entry.pieces.forEach {
+                    entry.pieces.fastForEach {
                         if (it.state.value != PieceState.FINISHED) {
                             entry.downloadedBytes.value += it.size
                             it.state.value = PieceState.FINISHED
