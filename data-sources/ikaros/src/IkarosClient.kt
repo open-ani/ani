@@ -4,7 +4,6 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.post
-import io.ktor.client.statement.HttpResponse
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.flow.Flow
@@ -53,28 +52,13 @@ class IkarosClient(
             return null
         }
         val url = "$baseUrl/api/v1alpha1/subject/sync/platform?platform=BGM_TV&platformId=$bgmTvSubjectId"
-
-        val httpResponse: HttpResponse = client.post(url)
-        if (!httpResponse.status.isSuccess()) {
-            logger.error {
-                "Post Ikaros Subject Sync By BgmTv failed for http status code: ${httpResponse.status.value} and message: ${httpResponse.status.description}"
-            }
-            return null
-        }
-        return httpResponse.body<IkarosSubjectDetails>()
+        return client.post(url).body<IkarosSubjectDetails>()
     }
 
     private suspend fun getAttachmentById(attId: Long): IkarosAttachment? {
         if (attId <= 0) return null;
-        val url = "$baseUrl/api/v1alpha1/attachment/$attId"
-
-        val httpResponse: HttpResponse = client.get(url);
-        if (!httpResponse.status.isSuccess()) {
-            logger.error {
-                "Get ikaros attachment fail for http status: ${httpResponse.status.value} and message: ${httpResponse.status.description}"
-            }
-        }
-        return httpResponse.body<IkarosAttachment>();
+        val url = baseUrl.plus("/api/v1alpha1/attachment/").plus(attId);
+        return client.get(url).body<IkarosAttachment>();
     }
 
     private fun getResUrl(url: String): String {
