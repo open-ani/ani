@@ -17,19 +17,14 @@ import me.him188.ani.app.data.repositories.MediaSourceInstanceRepository
 import me.him188.ani.app.data.repositories.MikanIndexCacheRepository
 import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.data.repositories.updateConfig
-import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.getAniUserAgent
-import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.source.MediaSourceFactory
 import me.him188.ani.datasources.core.instance.MediaSourceInstance
 import me.him188.ani.datasources.core.instance.MediaSourceSave
-import me.him188.ani.datasources.dmhy.DmhyMediaSource
 import me.him188.ani.datasources.mikan.MikanCNMediaSource
 import me.him188.ani.datasources.mikan.MikanMediaSource
-import me.him188.ani.datasources.mxdongman.MxdongmanMediaSource
-import me.him188.ani.datasources.nyafun.NyafunMediaSource
 import me.him188.ani.utils.coroutines.onReplacement
 import me.him188.ani.utils.ktor.ClientProxyConfig
 import me.him188.ani.utils.logging.error
@@ -87,20 +82,6 @@ interface MediaSourceManager { // available by inject
     suspend fun setEnabled(instanceId: String, enabled: Boolean)
     suspend fun removeInstance(instanceId: String)
 }
-
-private inline val webMediaSourceIds
-    get() = arrayOf(
-        NyafunMediaSource.ID,
-        MxdongmanMediaSource.ID
-    )
-
-private val defaultEnabledMediaSourceIds = if (Platform.currentPlatform.isDesktop())
-    listOf(*webMediaSourceIds) // PC 默认不启用 BT 源
-else listOf(
-    *webMediaSourceIds,
-    MikanCNMediaSource.ID,
-    DmhyMediaSource.ID,
-)
 
 class MediaSourceManagerImpl(
     additionalSources: () -> List<MediaSource>, // local sources
