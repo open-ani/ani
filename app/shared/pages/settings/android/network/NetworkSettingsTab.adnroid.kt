@@ -11,37 +11,14 @@ import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.settings.framework.ConnectionTestResult
 import me.him188.ani.datasources.acgrip.AcgRipMediaSource
-import me.him188.ani.datasources.api.paging.PageBasedPagedSource
-import me.him188.ani.datasources.api.paging.Paged
-import me.him188.ani.datasources.api.paging.PagedSource
-import me.him188.ani.datasources.api.source.ConnectionStatus
-import me.him188.ani.datasources.api.source.DownloadSearchQuery
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.source.MediaSourceFactory
 import me.him188.ani.datasources.api.source.MediaSourceParameters
-import me.him188.ani.datasources.api.source.TopicMediaSource
-import me.him188.ani.datasources.api.topic.Topic
+import me.him188.ani.datasources.api.source.TestHttpMediaSource
 import me.him188.ani.datasources.core.instance.MediaSourceInstance
 import me.him188.ani.datasources.dmhy.DmhyMediaSource
 import me.him188.ani.datasources.mikan.MikanMediaSource
-import kotlin.random.Random
 
-
-private class TestMediaSource(
-    override val mediaSourceId: String,
-) : TopicMediaSource() {
-    override suspend fun checkConnection(): ConnectionStatus {
-        return Random.nextBoolean().let {
-            if (it) ConnectionStatus.SUCCESS else ConnectionStatus.FAILED
-        }
-    }
-
-    override suspend fun startSearch(query: DownloadSearchQuery): PagedSource<Topic> {
-        return PageBasedPagedSource {
-            Paged.empty()
-        }
-    }
-}
 
 @Preview
 @Composable
@@ -57,7 +34,7 @@ private fun PreviewNetworkPreferenceTab() {
                                 DmhyMediaSource.ID,
                                 true,
                                 MediaSourceConfig(),
-                                TestMediaSource(AcgRipMediaSource.ID)
+                                TestHttpMediaSource(AcgRipMediaSource.ID, randomConnectivity = true)
                             ),
 
                             MediaSourceInstance(
@@ -65,7 +42,7 @@ private fun PreviewNetworkPreferenceTab() {
                                 DmhyMediaSource.ID,
                                 true,
                                 MediaSourceConfig(),
-                                TestMediaSource(DmhyMediaSource.ID)
+                                TestHttpMediaSource(DmhyMediaSource.ID, randomConnectivity = true)
                             ),
 
                             MediaSourceInstance(
@@ -73,7 +50,7 @@ private fun PreviewNetworkPreferenceTab() {
                                 DmhyMediaSource.ID,
                                 true,
                                 MediaSourceConfig(),
-                                TestMediaSource(MikanMediaSource.ID)
+                                TestHttpMediaSource(MikanMediaSource.ID, randomConnectivity = true)
                             ),
 
                             MediaSourceInstance(
@@ -81,7 +58,7 @@ private fun PreviewNetworkPreferenceTab() {
                                 DmhyMediaSource.ID,
                                 true,
                                 MediaSourceConfig(),
-                                TestMediaSource("local")
+                                TestHttpMediaSource("local", randomConnectivity = true)
                             ),
                         )
                     )

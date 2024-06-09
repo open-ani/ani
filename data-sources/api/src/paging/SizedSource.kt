@@ -2,8 +2,10 @@ package me.him188.ani.datasources.api.paging
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.merge
@@ -26,6 +28,14 @@ interface SizedSource<out T> {
      */
     val totalSize: Flow<Int?>
 }
+
+private object EmptySizedSource : SizedSource<Nothing> {
+    override val results = emptyFlow<Nothing>()
+    override val finished = flowOf(true)
+    override val totalSize = flowOf(0)
+}
+
+fun emptySizedSource(): SizedSource<Nothing> = EmptySizedSource
 
 inline fun <T, R> SizedSource<T>.map(crossinline transform: suspend (T) -> R): SizedSource<R> {
     return object : SizedSource<R> {

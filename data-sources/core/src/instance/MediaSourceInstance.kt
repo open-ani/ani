@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import java.io.Closeable
+import java.util.UUID
 
 /**
  * [MediaSource], 以及它的配置, 统称为 [MediaSourceInstance].
@@ -30,3 +31,19 @@ data class MediaSourceSave(
     val isEnabled: Boolean,
     val config: MediaSourceConfig,
 )
+
+fun createTestMediaSourceInstance(
+    source: MediaSource,
+    instanceId: String = UUID.randomUUID().toString(),
+    mediaSourceId: String = source.mediaSourceId,
+    isEnabled: Boolean = true,
+    config: MediaSourceConfig = MediaSourceConfig.Default,
+): MediaSourceInstance {
+    return MediaSourceInstance(
+        instanceId = instanceId,
+        mediaSourceId = mediaSourceId,
+        isEnabled = isEnabled,
+        config = config,
+        source = source,
+    )
+}
