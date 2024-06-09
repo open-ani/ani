@@ -17,13 +17,15 @@ import me.him188.ani.datasources.api.source.MatchKind
 import me.him188.ani.datasources.api.source.MediaMatch
 import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.source.MediaSourceLocation
-import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.ResourceLocation
-import me.him188.ani.datasources.api.topic.SubtitleLanguage.ChineseSimplified
+import me.him188.ani.datasources.api.topic.titles.RawTitleParser
+import me.him188.ani.datasources.api.topic.titles.parse
 import me.him188.ani.datasources.ikaros.models.IkarosSubjectDetails
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.logger
+import models.IkarosAttachment
+import java.text.SimpleDateFormat
 
 class IkarosClient(
     private val baseUrl: String,
@@ -62,6 +64,19 @@ class IkarosClient(
         return httpResponse.body<IkarosSubjectDetails>()
     }
 
+    private suspend fun getAttachmentById(attId: Long): IkarosAttachment? {
+        if (attId <= 0) return null;
+        val url = "$baseUrl/api/v1alpha1/attachment/$attId"
+
+        val httpResponse: HttpResponse = client.get(url);
+        if (!httpResponse.status.isSuccess()) {
+            logger.error {
+                "Get ikaros attachment fail for http status: ${httpResponse.status.value} and message: ${httpResponse.status.description}"
+            }
+        }
+        return httpResponse.body<IkarosAttachment>();
+    }
+
     private fun getResUrl(url: String): String {
         if (url.isEmpty()) {
             return ""
@@ -72,13 +87,26 @@ class IkarosClient(
         return baseUrl + url
     }
 
-    fun subjectDetails2SizedSource(subjectDetails: IkarosSubjectDetails, seq: Int): SizedSource<MediaMatch> {
+    private fun dateStr2timeStamp(dateStr: String): Long {
+        if (dateStr.isEmpty()) {
+            return 0
+        }
+        val pattern = "yyyy-MM-dd'T'HH:mm:ss"//2023-10-13T00:00:00
+        val simpleDateFormat = SimpleDateFormat(pattern)
+        val date = simpleDateFormat.parse(dateStr)
+        val timeStamp = date.time
+        return timeStamp
+    }
+
+    suspend fun subjectDetails2SizedSource(subjectDetails: IkarosSubjectDetails, seq: Int): SizedSource<MediaMatch> {
         val episodes = subjectDetails.episodes
         val mediaMatchs = mutableListOf<MediaMatch>()
         val episode = episodes.find { ep -> ep.sequence == seq && "MAIN" == ep.group }
         if (episode?.resources != null && episode.resources.isNotEmpty()) {
             for (epRes in episode.resources) {
                 val media = epRes?.let {
+                    val attachment: IkarosAttachment? = getAttachmentById(epRes.attachmentId);
+                    val parseResult = RawTitleParser.getDefault().parse(epRes.name);
                     DefaultMedia(
                         mediaId = epRes.attachmentId.toString(),
                         mediaSourceId = IkarosMediaSource.ID,
@@ -87,14 +115,14 @@ class IkarosClient(
                             uri = getResUrl(epRes.url)
                         ),
                         originalTitle = epRes.name,
-                        publishedTime = 0L,
+                        publishedTime = dateStr2timeStamp(attachment?.updateTime ?: ""),
                         properties = MediaProperties(
-                            subtitleLanguageIds = listOf(ChineseSimplified).map { it.id },
-                            resolution = "1080p",
+                            subtitleLanguageIds = parseResult.subtitleLanguages.map { it.id },
+                            resolution = parseResult.resolution?.displayName ?: "480P",
                             alliance = IkarosMediaSource.ID,
-                            size = FileSize.Zero,
+                            size = FileSize(attachment?.size ?: 0),
                         ),
-                        episodeRange = EpisodeRange.single(seq.toString()),
+                        episodeRange = parseResult.episodeRange,
                         location = MediaSourceLocation.Online,
                         kind = MediaSourceKind.WEB,
                     )
