@@ -82,7 +82,7 @@ class IkarosClient(
                     DefaultMedia(
                         mediaId = epRes.attachmentId.toString(),
                         mediaSourceId = IkarosMediaSource.ID,
-                        originalUrl = getResUrl(epRes.url),
+                        originalUrl = baseUrl.plus("/console/#/subjects/subject/details/").plus(subjectDetails.id),
                         download = ResourceLocation.HttpStreamingFile(
                             uri = getResUrl(epRes.url)
                         ),
