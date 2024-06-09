@@ -4,7 +4,6 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.post
-import io.ktor.client.statement.HttpResponse
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.flow.Flow
@@ -17,13 +16,14 @@ import me.him188.ani.datasources.api.source.MatchKind
 import me.him188.ani.datasources.api.source.MediaMatch
 import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.source.MediaSourceLocation
-import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.ResourceLocation
-import me.him188.ani.datasources.api.topic.SubtitleLanguage.ChineseSimplified
+import me.him188.ani.datasources.api.topic.titles.RawTitleParser
+import me.him188.ani.datasources.api.topic.titles.parse
 import me.him188.ani.datasources.ikaros.models.IkarosSubjectDetails
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.logger
+import models.IkarosAttachment
 
 class IkarosClient(
     private val baseUrl: String,
@@ -51,15 +51,13 @@ class IkarosClient(
             return null
         }
         val url = "$baseUrl/api/v1alpha1/subject/sync/platform?platform=BGM_TV&platformId=$bgmTvSubjectId"
+        return client.post(url).body<IkarosSubjectDetails>()
+    }
 
-        val httpResponse: HttpResponse = client.post(url)
-        if (!httpResponse.status.isSuccess()) {
-            logger.error {
-                "Post Ikaros Subject Sync By BgmTv failed for http status code: ${httpResponse.status.value} and message: ${httpResponse.status.description}"
-            }
-            return null
-        }
-        return httpResponse.body<IkarosSubjectDetails>()
+    private suspend fun getAttachmentById(attId: Long): IkarosAttachment? {
+        if (attId <= 0) return null;
+        val url = baseUrl.plus("/api/v1alpha1/attachment/").plus(attId);
+        return client.get(url).body<IkarosAttachment>();
     }
 
     private fun getResUrl(url: String): String {
@@ -72,29 +70,31 @@ class IkarosClient(
         return baseUrl + url
     }
 
-    fun subjectDetails2SizedSource(subjectDetails: IkarosSubjectDetails, seq: Int): SizedSource<MediaMatch> {
+    suspend fun subjectDetails2SizedSource(subjectDetails: IkarosSubjectDetails, seq: Int): SizedSource<MediaMatch> {
         val episodes = subjectDetails.episodes
         val mediaMatchs = mutableListOf<MediaMatch>()
         val episode = episodes.find { ep -> ep.sequence == seq && "MAIN" == ep.group }
         if (episode?.resources != null && episode.resources.isNotEmpty()) {
             for (epRes in episode.resources) {
                 val media = epRes?.let {
+                    val attachment: IkarosAttachment? = getAttachmentById(epRes.attachmentId);
+                    val parseResult = RawTitleParser.getDefault().parse(epRes.name);
                     DefaultMedia(
                         mediaId = epRes.attachmentId.toString(),
                         mediaSourceId = IkarosMediaSource.ID,
-                        originalUrl = getResUrl(epRes.url),
+                        originalUrl = baseUrl.plus("/console/#/subjects/subject/details/").plus(subjectDetails.id),
                         download = ResourceLocation.HttpStreamingFile(
                             uri = getResUrl(epRes.url)
                         ),
                         originalTitle = epRes.name,
-                        publishedTime = 0L,
+                        publishedTime = DateFormater.default.utcDateStr2timeStamp(attachment?.updateTime ?: ""),
                         properties = MediaProperties(
-                            subtitleLanguageIds = listOf(ChineseSimplified).map { it.id },
-                            resolution = "1080p",
+                            subtitleLanguageIds = parseResult.subtitleLanguages.map { it.id },
+                            resolution = parseResult.resolution?.displayName ?: "480P",
                             alliance = IkarosMediaSource.ID,
-                            size = FileSize.Zero,
+                            size = FileSize(attachment?.size ?: 0),
                         ),
-                        episodeRange = EpisodeRange.single(seq.toString()),
+                        episodeRange = parseResult.episodeRange,
                         location = MediaSourceLocation.Online,
                         kind = MediaSourceKind.WEB,
                     )
@@ -107,9 +107,7 @@ class IkarosClient(
         }
 
         val sizedSource = IkarosSizeSource(
-            totalSize = flowOf(mediaMatchs.size),
-            finished = flowOf(true),
-            results = mediaMatchs.asFlow()
+            totalSize = flowOf(mediaMatchs.size), finished = flowOf(true), results = mediaMatchs.asFlow()
         )
 
         return sizedSource
@@ -117,8 +115,6 @@ class IkarosClient(
 }
 
 class IkarosSizeSource(
-    override val results: Flow<MediaMatch>,
-    override val finished: Flow<Boolean>,
-    override val totalSize: Flow<Int?>
+    override val results: Flow<MediaMatch>, override val finished: Flow<Boolean>, override val totalSize: Flow<Int?>
 ) : SizedSource<MediaMatch>
 
