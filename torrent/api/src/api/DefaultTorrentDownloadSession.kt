@@ -22,10 +22,9 @@ import me.him188.ani.app.torrent.api.files.PieceState
 import me.him188.ani.app.torrent.api.files.TorrentFileEntry
 import me.him188.ani.app.torrent.api.files.TorrentFileHandle
 import me.him188.ani.app.torrent.api.files.TorrentFilePieceMatcher.matchPiecesForFile
+import me.him188.ani.app.torrent.api.files.findPieceByPieceIndex
 import me.him188.ani.app.torrent.api.handle.AniTorrentHandle
-import me.him188.ani.app.torrent.api.handle.BlockDownloadingEvent
 import me.him188.ani.app.torrent.api.handle.EventListener
-import me.him188.ani.app.torrent.api.handle.PieceFinishedEvent
 import me.him188.ani.app.torrent.api.handle.StatsUpdateEvent
 import me.him188.ani.app.torrent.api.handle.TaskQueue
 import me.him188.ani.app.torrent.api.handle.TorrentAddEvent
@@ -137,11 +136,12 @@ open class DefaultTorrentDownloadSession(
         fun onPieceDownloaded(index: Int) {
             pieces[index].state.value = PieceState.FINISHED
             for (openHandle in openHandles) {
-                if (openHandle.entry.pieces.any { it.pieceIndex == index }) {
+                if (openHandle.entry.findPieceByPieceIndex(index) != null) {
                     openHandle.entry.downloadedBytes.value += pieces[index].size
                 }
             }
-            logger.debug { "[TorrentDownloadControl] Piece downloaded: $index. " } // Was downloading ${controller.getDebugInfo().downloadingPieces}
+            // 不要在这里打印 log, 否则会导致启动时遍历已下载资源慢
+//            logger.debug { "[TorrentDownloadControl] Piece downloaded: $index. " } // Was downloading ${controller.getDebugInfo().downloadingPieces}
             controller.onPieceDownloaded(index)
         }
 
@@ -390,17 +390,6 @@ open class DefaultTorrentDownloadSession(
 //                is PeerDisconnectedAlert -> {
 //                    overallStats.peerCount.getAndUpdate { it - 1 }
 //                }
-
-                is BlockDownloadingEvent -> {
-                    val pieceIndex = event.pieceIndex
-                    actualInfo().onBlockDownloading(pieceIndex)
-                }
-
-                is PieceFinishedEvent -> {
-                    val pieceIndex = event.pieceIndex
-                    actualInfo().onPieceDownloaded(pieceIndex)
-                }
-
                 is TorrentFinishedEvent -> {
                     // https://libtorrent.org/reference-Alerts.html#:~:text=report%20issue%5D-,torrent_finished_alert,-Declared%20in%20%22
                     logger.info { "[$torrentName] Torrent finished" }
@@ -422,6 +411,16 @@ open class DefaultTorrentDownloadSession(
                     overallStats.uploadRate0.value = event.uploadRate
                 }
             }
+        }
+
+        @TorrentThread
+        override fun onPieceFinished(pieceIndex: Int) {
+            actualInfo().onPieceDownloaded(pieceIndex)
+        }
+
+        @TorrentThread
+        override fun onBlockDownloading(pieceIndex: Int) {
+            actualInfo().onBlockDownloading(pieceIndex)
         }
     }
 

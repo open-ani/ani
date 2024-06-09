@@ -48,6 +48,7 @@ interface TorrentFileEntry { // 实现提示, 无 test mock
      * 但不会返回一个完全不包含该文件数据的 piece.
      *
      * @throws IllegalStateException 当未匹配到正确大小的 pieces 时抛出
+     * @return 一定是 [RandomAccess] List
      */
     val pieces: List<Piece>?
 
@@ -150,6 +151,8 @@ object TorrentFilePieceMatcher {
             check(pieces.last().lastIndex - pieces.first().startIndex + 1 >= length) {
                 "Pieces size is less than file size: ${pieces.last().lastIndex - pieces.first().startIndex + 1} < $length"
             }
+
+            check(pieces is RandomAccess)
         }
     }
 }
@@ -283,5 +286,17 @@ abstract class AbstractTorrentFileEntry(
 
     override fun toString(): String {
         return "TorrentFileEntryImpl(index=$index, length=$length, relativePath='$relativePath')"
+    }
+}
+
+fun TorrentFileEntry.findPieceByPieceIndex(pieceIndex: Int): Piece? {
+    val pieces = pieces ?: return null
+    val first = pieces.firstOrNull() ?: return null
+    // Random-access get
+    return pieces.getOrNull(pieceIndex - first.pieceIndex)?.also {
+        check(it.pieceIndex == pieceIndex) {
+            "Piece index mismatch: expected $pieceIndex, actual ${it.pieceIndex}. " +
+                    "This is because [piece] is not supported which it should be."
+        }
     }
 }

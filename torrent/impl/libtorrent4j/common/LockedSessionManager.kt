@@ -26,8 +26,7 @@ class LockedSessionManager(
 
     init {
         sessionManager.addListener(object : AlertListener {
-            override fun types(): IntArray? = null
-
+            override fun types(): IntArray = NeededTorrentEventTypes
             @OptIn(TorrentThread::class)
             override fun alert(alert: Alert<*>) {
                 if (alert !is TorrentAlert<*>) return

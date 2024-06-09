@@ -10,6 +10,17 @@ interface EventListener {
     fun onEvent(event: TorrentEvent)
 
     /**
+     * [onEvent] 的特例, 优化性能用.
+     */
+    @TorrentThread
+    fun onPieceFinished(pieceIndex: Int) {
+    }
+
+    @TorrentThread
+    fun onBlockDownloading(pieceIndex: Int) {
+    }
+
+    /**
      * 当有任何更新时, 在 BT 引擎的线程里调用. 对于支持的事件, 还会触发 [onEvent].
      */
     @TorrentThread
@@ -34,15 +45,16 @@ class TorrentResumeEvent(
     override val torrentName: String,
 ) : TorrentEvent
 
-class BlockDownloadingEvent(
-    override val torrentName: String,
-    val pieceIndex: Int,
-) : TorrentEvent
+//@Deprecated("Replaced with onBlockDownloading")
+//class BlockDownloadingEvent(
+//    override val torrentName: String,
+//    val pieceIndex: Int,
+//) : TorrentEvent
 
-class PieceFinishedEvent(
-    override val torrentName: String,
-    val pieceIndex: Int,
-) : TorrentEvent
+//class PieceFinishedEvent(
+//    override val torrentName: String,
+//    val pieceIndex: Int,
+//) : TorrentEvent
 
 class TorrentFinishedEvent(
     override val torrentName: String,

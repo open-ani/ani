@@ -1,8 +1,6 @@
 package me.him188.ani.app.torrent.libtorrent4j
 
-import me.him188.ani.app.torrent.api.handle.BlockDownloadingEvent
 import me.him188.ani.app.torrent.api.handle.EventListener
-import me.him188.ani.app.torrent.api.handle.PieceFinishedEvent
 import me.him188.ani.app.torrent.api.handle.StatsUpdateEvent
 import me.him188.ani.app.torrent.api.handle.TorrentAddEvent
 import me.him188.ani.app.torrent.api.handle.TorrentEvent
@@ -11,6 +9,8 @@ import me.him188.ani.app.torrent.api.handle.TorrentResumeEvent
 import me.him188.ani.app.torrent.api.handle.TorrentThread
 import me.him188.ani.app.torrent.libtorrent4j.handle.asAniTorrentHandle
 import org.libtorrent4j.alerts.AddTorrentAlert
+import org.libtorrent4j.alerts.AlertType
+import org.libtorrent4j.alerts.BlockDownloadingAlert
 import org.libtorrent4j.alerts.PieceFinishedAlert
 import org.libtorrent4j.alerts.TorrentAlert
 import org.libtorrent4j.alerts.TorrentResumedAlert
@@ -45,6 +45,16 @@ Alert: BLOCK_FINISHED
 //            AlertType.TORRENT_FINISHED.swig(),
 //        )
 
+internal val NeededTorrentEventTypes // no backing field: do not waste static memory on Android!
+    get() = intArrayOf(
+        AlertType.ADD_TORRENT.swig(),
+        AlertType.BLOCK_DOWNLOADING.swig(),
+        AlertType.PIECE_FINISHED.swig(),
+        AlertType.BLOCK_FINISHED.swig(),
+        AlertType.TORRENT_RESUMED.swig(),
+        AlertType.TORRENT_FINISHED.swig(),
+    )
+
 @TorrentThread
 internal fun EventListener.onAlert(
     alert: TorrentAlert<*>
@@ -53,11 +63,27 @@ internal fun EventListener.onAlert(
     if (listener.torrentName != alert.torrentName()) {
         return
     }
-    alert.toEventOrNull()?.let { event ->
-        listener.onEvent(event)
+    when (alert) {
+        // 特殊处理一些事件, 避免过多创建对象
+        is PieceFinishedAlert -> {
+            listener.onPieceFinished(alert.pieceIndex())
+            // 不通知 onUpdate, 加速启动 app 时扫描已下载文件的性能
+        }
+
+        is BlockDownloadingAlert -> {
+            listener.onBlockDownloading(alert.pieceIndex())
+            listener.onEvent(alert.createStatsUpdateEvent())
+            listener.onUpdate(alert.handle().asAniTorrentHandle())
+        }
+
+        else -> {
+            alert.toEventOrNull()?.let { event ->
+                listener.onEvent(event)
+            }
+            listener.onEvent(alert.createStatsUpdateEvent())
+            listener.onUpdate(alert.handle().asAniTorrentHandle())
+        }
     }
-    listener.onEvent(alert.createStatsUpdateEvent())
-    listener.onUpdate(alert.handle().asAniTorrentHandle())
 }
 
 @TorrentThread
@@ -65,8 +91,8 @@ internal fun TorrentAlert<*>.toEventOrNull(): TorrentEvent? {
     return when (this) {
         is AddTorrentAlert -> TorrentAddEvent(handle().asAniTorrentHandle())
         is TorrentResumedAlert -> TorrentResumeEvent(torrentName())
-        is org.libtorrent4j.alerts.BlockDownloadingAlert -> BlockDownloadingEvent(torrentName(), pieceIndex())
-        is PieceFinishedAlert -> PieceFinishedEvent(torrentName(), pieceIndex())
+//        is org.libtorrent4j.alerts.BlockDownloadingAlert -> BlockDownloadingEvent(torrentName(), pieceIndex())
+//        is PieceFinishedAlert -> PieceFinishedEvent(torrentName(), pieceIndex())
         is org.libtorrent4j.alerts.TorrentFinishedAlert -> TorrentFinishedEvent(
             torrentName(),
             lazy { handle().asAniTorrentHandle() }
