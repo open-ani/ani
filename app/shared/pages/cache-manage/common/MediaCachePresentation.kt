@@ -36,6 +36,7 @@ import me.him188.ani.app.ui.mediaSource.renderMediaSource
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.core.cache.MediaCache
 import me.him188.ani.utils.coroutines.sampleWithInitial
+import me.him188.ani.utils.coroutines.sampleWithInitialUnless
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
 
@@ -51,7 +52,7 @@ class MediaCachePresentation(
 
     val downloadSpeed = cache.downloadSpeed.sampleWithInitial(1000)
     val uploadSpeed = cache.uploadSpeed.sampleWithInitial(1000)
-    val progress = cache.progress.sampleWithInitial(1000)
+    val progress = cache.progress.sampleWithInitialUnless(1000, shouldEmitImmediately = { it >= 1f })
         .onCompletion { if (it == null) emit(1f) }
     val totalSize get() = cache.totalSize
 }

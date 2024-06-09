@@ -57,6 +57,53 @@ fun <T> Flow<T>.sampleWithInitial(periodMillis: Long): Flow<T> {
     }
 }
 
+/**
+ * @see sample
+ */
+fun <T> Flow<T>.sampleWithInitialUnless(periodMillis: Long, shouldEmitImmediately: (T) -> Boolean): Flow<T> {
+    require(periodMillis > 0) { "Sample period should be positive" }
+    return scopedFlow { downstream ->
+        val values = produce(capacity = Channel.CONFLATED) {
+            collect { value -> send(value ?: NULL) }
+        }
+        var initialValueEmitted = false
+        var lastValue: Any? = null
+        val ticker = fixedPeriodTicker(periodMillis)
+        while (lastValue !== DONE) {
+            select<Unit> {
+                values.onReceiveCatching { result ->
+                    result
+                        .onSuccess {
+                            if (!initialValueEmitted) {
+                                initialValueEmitted = true
+                                downstream.emit(NULL.unbox(it))
+                            } else {
+                                val value: T = NULL.unbox(it)
+                                if (shouldEmitImmediately(value)) {
+                                    downstream.emit(value)
+                                    lastValue = null
+                                } else {
+                                    lastValue = it
+                                }
+                            }
+                        }
+                        .onFailure {
+                            it?.let { throw it }
+                            ticker.cancel(CancellationException())
+                            lastValue = DONE
+                        }
+                }
+
+                ticker.onReceive {
+                    val value = lastValue ?: return@onReceive
+                    lastValue = null // Consume the value
+                    downstream.emit(NULL.unbox(value))
+                }
+            }
+        }
+    }
+}
+
 internal fun <R> scopedFlow(@BuilderInference block: suspend CoroutineScope.(FlowCollector<R>) -> Unit): Flow<R> =
     flow {
         coroutineScope {
