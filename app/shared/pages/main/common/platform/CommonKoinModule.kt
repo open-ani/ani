@@ -74,6 +74,7 @@ import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
 import me.him188.ani.datasources.core.cache.DirectoryMediaCacheStorage
 import me.him188.ani.datasources.core.instance.MediaSourceSave
+import me.him188.ani.utils.coroutines.childScope
 import me.him188.ani.utils.coroutines.childScopeContext
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
@@ -157,7 +158,8 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
                         )
                     )
                 }
-            }
+            },
+            backgroundScope = coroutineScope.childScope(),
         )
     }
 

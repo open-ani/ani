@@ -1,24 +1,38 @@
 package me.him188.ani.app.data.media
 
 import androidx.compose.runtime.Stable
+import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.transformLatest
+import me.him188.ani.app.platform.notification.NotifManager
+import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.core.cache.MediaCache
 import me.him188.ani.datasources.core.cache.MediaCacheStorage
+import me.him188.ani.datasources.core.cache.sum
 import me.him188.ani.utils.coroutines.sampleWithInitial
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
-abstract class MediaCacheManager {
-    abstract val storagesIncludingDisabled: List<MediaCacheStorage>
+abstract class MediaCacheManager(
+    val storagesIncludingDisabled: List<MediaCacheStorage>,
+    final override val backgroundScope: CoroutineScope,
+) : KoinComponent, HasBackgroundScope { // available via inject
+    private val notificationManager: NotifManager by inject()
 
-    val enabledStorages: Flow<List<MediaCacheStorage>> by lazy {
+    val enabledStorages: Flow<List<MediaCacheStorage>> = kotlin.run {
         combine(storagesIncludingDisabled.map { it.isEnabled.map { enabled -> if (enabled) it else null } }) {
             it.filterNotNull()
         }
@@ -111,6 +125,51 @@ abstract class MediaCacheManager {
         }.flowOn(Dispatchers.Default)
     }
 
+    init {
+        enabledStorages
+            .mapLatest { list ->
+                val stats = list.map { it.stats }.sum()
+                val notif = notificationManager.downloadChannel.notif
+
+                var lastFile: MediaCache? = null
+                stats.progress
+                    .sampleWithInitial(1000)
+                    .collectLatest { progress ->
+                        if (progress >= 1f) {
+                            notif.cancel()
+                            return@collectLatest
+                        }
+                        val downloadRate = stats.downloadRate.first()
+                        notif.contentTitle = "正在下载 $downloadRate/s"
+
+                        if (lastFile?.finished?.firstOrNull() != false) {
+                            lastFile = list.findFirstDownloadingFile()
+                        }
+                        notif.contentText = lastFile?.previewText
+                        notif.setProgress(100, (progress * 100).toInt())
+                        notif.show()
+                    }
+            }
+            .flowOn(CoroutineName("MediaCacheManager.notifications"))
+            .launchIn(backgroundScope)
+    }
+
+    private suspend fun List<MediaCacheStorage>.findFirstDownloadingFile(): MediaCache? {
+        return firstNotNullOfOrNull { storage ->
+            storage.listFlow.first().find {
+                !it.finished.first()
+            }
+        }
+    }
+
+    private val MediaCache.previewText: String
+        get() {
+            metadata.subjectNames.firstOrNull()?.let { name ->
+                return "$name ${metadata.episodeName}"
+            }
+            return origin.originalTitle
+        }
+
     companion object {
         const val LOCAL_FS_MEDIA_SOURCE_ID = "local-file-system"
     }
@@ -142,4 +201,7 @@ sealed class EpisodeCacheStatus {
     data object NotCached : EpisodeCacheStatus()
 }
 
-class MediaCacheManagerImpl(override val storagesIncludingDisabled: List<MediaCacheStorage>) : MediaCacheManager()
+class MediaCacheManagerImpl(
+    storagesIncludingDisabled: List<MediaCacheStorage>,
+    backgroundScope: CoroutineScope,
+) : MediaCacheManager(storagesIncludingDisabled, backgroundScope)

@@ -6,6 +6,9 @@ import android.content.Intent
 import android.net.Uri
 import android.os.PowerManager
 import android.provider.Settings
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.ArrowOutward
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -23,6 +26,7 @@ import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.effects.OnLifecycleEvent
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
+import me.him188.ani.app.ui.settings.framework.components.TextItem
 import moe.tlaster.precompose.lifecycle.Lifecycle
 
 
@@ -98,5 +102,28 @@ internal actual fun SettingsScope.AppSettingsTabPlatform(vm: AppSettingsViewMode
                 description = { Text("可以帮助保持在后台运行。可能增加耗电") },
             )
         }
+    }
+
+    Group(
+        title = { Text("通知设置") },
+    ) {
+        TextItem(
+            title = { Text(text = "打开设置") },
+            icon = { Icon(Icons.Rounded.ArrowOutward, contentDescription = null) },
+            onClick = {
+                kotlin.runCatching {
+                    context.startActivity(
+                        Intent(
+                            Settings.ACTION_APP_NOTIFICATION_SETTINGS, // since 8.0
+                        ).putExtra(
+                            Settings.EXTRA_APP_PACKAGE,
+                            context.packageName
+                        )
+                    )
+                }.onFailure {
+                    it.printStackTrace()
+                }
+            }
+        )
     }
 }

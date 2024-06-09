@@ -56,6 +56,8 @@ import me.him188.ani.app.platform.DesktopContext
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.createAppRootCoroutineScope
 import me.him188.ani.app.platform.getCommonKoinModule
+import me.him188.ani.app.platform.notification.NoopNotifManager
+import me.him188.ani.app.platform.notification.NotifManager
 import me.him188.ani.app.platform.startCommonKoinModule
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.tools.torrent.DefaultTorrentManager
@@ -148,6 +150,7 @@ object AniDesktop {
                     )
                 }
                 single<UpdateInstaller> { DesktopUpdateInstaller.currentOS() }
+                single<NotifManager> { NoopNotifManager }
             })
         }.startCommonKoinModule(coroutineScope)
 

@@ -18,6 +18,7 @@
 
 package me.him188.ani.android.activity
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Build
@@ -27,18 +28,22 @@ import android.view.WindowInsetsController
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.core.app.ActivityCompat
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import me.him188.ani.app.navigation.AniNavigator
+import me.him188.ani.app.platform.notification.NotifManager
 import me.him188.ani.app.session.BangumiAuthorizationConstants
 import me.him188.ani.app.session.OAuthResult
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.ui.foundation.AniApp
 import me.him188.ani.app.ui.main.AniAppContent
+import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import org.koin.android.ext.android.inject
+import org.koin.core.context.GlobalContext
 
 
 class MainActivity : AniComponentActivity() {
@@ -81,6 +86,21 @@ class MainActivity : AniComponentActivity() {
 
         // 允许画到 system bars
         WindowCompat.setDecorFitsSystemWindows(window, false)
+
+        kotlin.runCatching {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    100,
+                )
+            }
+        }.onFailure {
+            logger.error(it) { "Failed to request notification permission" }
+        }
+
+        GlobalContext.get().get<NotifManager>().createChannels()
+
 
         setContent {
             AniApp {

@@ -5,9 +5,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.dropWhile
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
@@ -62,10 +64,16 @@ fun DefaultMediaAutoCacheService(
             }
             .first()
     },
-    config = koin.get<SettingsRepository>().mediaCacheSettings.flow,
-    episodeRepository = koin.get(),
-    cacheManager = koin.get(),
-    targetStorage = koin.get<MediaCacheManager>().enabledStorages.mapNotNull { it.firstOrNull() },
+    config = flow {
+        emitAll(koin.get<SettingsRepository>().mediaCacheSettings.flow)
+    },
+    episodeRepository = koin.inject(),
+    cacheManager = koin.inject(),
+    targetStorage = flow {
+        emit(koin.get<MediaCacheManager>())
+    }.flatMapLatest { manager ->
+        manager.enabledStorages.mapNotNull { it.firstOrNull() }
+    },
 )
 
 class DefaultMediaAutoCacheService(
@@ -74,16 +82,19 @@ class DefaultMediaAutoCacheService(
      */
     private val subjectCollections: suspend (MediaCacheSettings) -> List<SubjectCollectionItem>,
     private val config: Flow<MediaCacheSettings>,
-    private val episodeRepository: EpisodeRepository,
+    episodeRepository: Lazy<EpisodeRepository>,
     /**
      * Used to query if a episode already has a cache.
      */
-    private val cacheManager: MediaCacheManager,
+    cacheManager: Lazy<MediaCacheManager>,
     /**
      * Target storage to make caches to. It must be managed by the [MediaCacheManager].
      */
     private val targetStorage: Flow<MediaCacheStorage>,
 ) : MediaAutoCacheService {
+    private val episodeRepository by episodeRepository
+    private val cacheManager by cacheManager
+
     override suspend fun checkCache() {
         logger.info { "DefaultMediaAutoCacheService.checkCache: start" }
 
