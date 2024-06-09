@@ -101,4 +101,63 @@ fun ChangelogDialog(
     }
 }
 
+//@Composable
+//fun CurrentChangelogDialog(
+//    onDismissRequest: () -> Unit,
+//    modifier: Modifier = Modifier,
+//    currentVersion: String = currentAniBuildConfig.versionName,
+//) {
+//    BasicAlertDialog(onDismissRequest, modifier) {
+//        RichDialogLayout(
+//            title = {
+//                Text("更新日志")
+//            },
+//            subtitle = {
+//                Text(currentVersion)
+//            },
+//            buttons = {
+//                val context by rememberUpdatedState(LocalContext.current)
+//                TextButton({
+//                    GlobalContext.get().get<BrowserNavigator>().openBrowser(
+//                        context,
+//                        "$RELEASES/tag/v3.1.0-beta03"
+//                    )
+//                }) {
+//                    Text("在 GitHub 查看")
+//                }
+//                TextButton(onClick = onDismissRequest) {
+//                    Text("关闭")
+//                }
+//            }
+//        ) {
+//            Column(
+//                Modifier.heightIn(max = 400.dp).verticalScroll(rememberScrollState()),
+//                verticalArrangement = Arrangement.spacedBy(16.dp)
+//            ) {
+//                for (changelog in latestVersion.changelogs) {
+//                    HorizontalDivider()
+//
+//                    Row(verticalAlignment = Alignment.Bottom) {
+//                        Text(
+//                            changelog.version,
+//                            style = MaterialTheme.typography.titleMedium,
+//                        )
+//
+//                        Text(
+//                            changelog.publishedAt,
+//                            Modifier.padding(start = 16.dp),
+//                            style = MaterialTheme.typography.labelMedium,
+//                        )
+//                    }
+//                    Text(
+//                        changelog.changes,
+//                        style = MaterialTheme.typography.bodyMedium,
+//                    )
+//                }
+//
+//            }
+//        }
+//    }
+//}
+
 private const val RELEASES = "https://github.com/open-ani/ani/releases"

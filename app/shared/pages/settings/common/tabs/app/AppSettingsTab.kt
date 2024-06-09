@@ -2,6 +2,7 @@ package me.him188.ani.app.ui.settings.tabs.app
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.ArrowOutward
 import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.HdrAuto
 import androidx.compose.material.icons.rounded.LightMode
@@ -25,6 +26,7 @@ import me.him188.ani.app.data.models.UISettings
 import me.him188.ani.app.data.models.UpdateSettings
 import me.him188.ani.app.data.models.VideoScaffoldConfig
 import me.him188.ani.app.data.repositories.SettingsRepository
+import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.currentAniBuildConfig
@@ -49,6 +51,7 @@ import me.him188.ani.app.update.ui.TextButtonUpdateLogo
 import me.him188.ani.app.update.ui.UpdateChecker
 import me.him188.ani.danmaku.protocol.ReleaseClass
 import org.koin.core.component.inject
+import org.koin.core.context.GlobalContext
 import java.util.Locale
 
 
@@ -127,6 +130,27 @@ fun AppSettingsTab(
                 }
             )
             HorizontalDividerItem()
+            val context by rememberUpdatedState(LocalContext.current)
+            TextItem(
+                title = { Text("查看更新日志") },
+                onClick = {
+                    GlobalContext.get().get<BrowserNavigator>().openBrowser(
+                        context,
+                        "https://github.com/open-ani/ani/releases/tag/v${currentAniBuildConfig.versionName}"
+                    )
+//                    vm.updateCheckerTester.tester.result?.let {
+//                        if (it is CheckVersionResult.HasNewVersion) {
+//                            ChangelogDialog(
+//                                latestVersion = it.newVersion,
+//                                onDismissRequest = {},
+//                                onStartDownload = {}
+//                            )
+//                        }
+//                    }
+                },
+                icon = { Icon(Icons.Rounded.ArrowOutward, null) }
+            )
+            HorizontalDividerItem()
             val updateSettings by vm.updateSettings
             SwitchItem(
                 updateSettings.autoCheckUpdate,
@@ -195,7 +219,6 @@ fun AppSettingsTab(
             HorizontalDividerItem()
             var showUpdatePopup by remember { mutableStateOf(false) }
             val autoUpdate: AutoUpdateViewModel = rememberViewModel { AutoUpdateViewModel() }
-            val context by rememberUpdatedState(LocalContext.current)
             if (showUpdatePopup) {
                 (vm.updateCheckerTester.tester.result as? CheckVersionResult.HasNewVersion)?.let {
                     ChangelogDialog(
