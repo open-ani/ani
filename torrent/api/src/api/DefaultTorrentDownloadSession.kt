@@ -61,6 +61,7 @@ open class DefaultTorrentDownloadSession(
      */
     final override val saveDirectory: File,
     private val onClose: (DefaultTorrentDownloadSession) -> Unit,
+    private val onDelete: (DefaultTorrentDownloadSession) -> Unit,
     private val isDebug: Boolean,
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
 ) : TorrentDownloadSession {
@@ -464,6 +465,7 @@ open class DefaultTorrentDownloadSession(
     fun deleteEntireTorrentIfNotInUse() {
         if (openHandles.isEmpty() && closed) {
             saveDirectory.deleteRecursively()
+            onDelete(this)
         }
     }
 

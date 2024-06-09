@@ -95,7 +95,7 @@ class TestTorrentDownloader : TorrentDownloader {
     override val vendor: TorrentLibInfo = TorrentLibInfo("test", "1.0", true)
 
     override suspend fun fetchTorrent(uri: String, timeoutSeconds: Int): EncodedTorrentInfo {
-        return EncodedTorrentInfo(byteArrayOf())
+        return EncodedTorrentInfo.createRaw(byteArrayOf())
     }
 
     override suspend fun startDownload(
@@ -106,6 +106,7 @@ class TestTorrentDownloader : TorrentDownloader {
         torrentName = "test",
         saveDirectory = File("test"),
         onClose = {},
+        onDelete = {},
         isDebug = false,
         parentCoroutineContext = parentCoroutineContext,
     )

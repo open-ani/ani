@@ -233,7 +233,7 @@ class TorrentMediaCacheEngine(
         return TorrentMediaCache(
             origin = origin,
             metadata = metadata,
-            lazyFileHandle = getLazyFileHandle(EncodedTorrentInfo(data), metadata, parentContext)
+            lazyFileHandle = getLazyFileHandle(EncodedTorrentInfo.createRaw(data), metadata, parentContext)
         )
     }
 
@@ -317,7 +317,7 @@ class TorrentMediaCacheEngine(
                 if (data != null) {
                     // 如果新版本 ani 的缓存目录有变, 对于旧版本的 metadata, 存的缓存目录会是旧版本的, 
                     // 就需要用 `getSaveDirForTorrent` 重新计算新目录
-                    add(downloader.getSaveDirForTorrent(EncodedTorrentInfo(data)).absolutePath)
+                    add(downloader.getSaveDirForTorrent(EncodedTorrentInfo.createRaw(data)).absolutePath)
                 }
             }
         }

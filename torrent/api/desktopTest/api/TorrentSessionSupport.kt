@@ -15,11 +15,12 @@ internal abstract class TorrentSessionSupport {
 
     inline fun CoroutineScope.withSession(
         session: DefaultTorrentDownloadSession = DefaultTorrentDownloadSession(
-            "test",
-            tempDir,
-            {},
-            true,
-            SupervisorJob()
+            torrentName = "test",
+            saveDirectory = tempDir,
+            onClose = {},
+            onDelete = {},
+            isDebug = true,
+            parentCoroutineContext = SupervisorJob()
         ),
         block: DefaultTorrentDownloadSession.() -> Unit
     ) {

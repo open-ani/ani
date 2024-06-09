@@ -136,7 +136,7 @@ class QBittorrentTorrentDownloader(
             if (name != null) {
                 torrentList.firstOrNull { it.name == name }?.let {
                     logger.info { "Matched torrent using name '$name'. hash=${it.hash}" }
-                    return EncodedTorrentInfo(it.magnetUri.toByteArray())
+                    return EncodedTorrentInfo.createRaw(it.magnetUri.toByteArray())
                 }
             }
         }
@@ -144,7 +144,7 @@ class QBittorrentTorrentDownloader(
         // Find existing
         torrentList.firstOrNull { it.magnetUri == uri }?.let {
             logger.info { "Matched torrent using magnetUri. hash=${it.hash}" }
-            return EncodedTorrentInfo(it.magnetUri.toByteArray())
+            return EncodedTorrentInfo.createRaw(it.magnetUri.toByteArray())
         }
 
         val tempDir = saveDir.resolve(uri.hashCode().absoluteValue.toString()).apply {
@@ -160,7 +160,7 @@ class QBittorrentTorrentDownloader(
                 awaitTorrentData { it.savePath == tempDir.absolutePath }
             }
             client.deleteTorrents(listOf(actual.hash), false)
-            return EncodedTorrentInfo(actual.magnetUri.toByteArray())
+            return EncodedTorrentInfo.createRaw(actual.magnetUri.toByteArray())
         } catch (e: TimeoutCancellationException) {
             throw FetchTorrentTimeoutException(cause = e)
         } finally {

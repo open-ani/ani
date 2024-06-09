@@ -73,12 +73,21 @@ abstract class AbstractLockedTorrentDownloader<Info : TorrentInfo>(
         }
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     override suspend fun fetchTorrent(uri: String, timeoutSeconds: Int): EncodedTorrentInfo {
         if (uri.startsWith("http", ignoreCase = true)) {
+            val cacheFile = getHttpTorrentFileCacheFile(uri)
+            if (cacheFile.exists()) {
+                val data = cacheFile.readText().hexToByteArray()
+                logger.info { "HTTP torrent file '${uri}' found in cache: $cacheFile, length=${data.size}" }
+                return Torrent4jTorrentInfo.encode(uri, data)
+            }
             logger.info { "Fetching http url: $uri" }
             val data = httpFileDownloader.download(uri)
             logger.info { "Fetching http url success, file length = ${data.size}" }
-            return EncodedTorrentInfo(data)
+            cacheFile.writeText(data.toHexString())
+            logger.info { "Saved cache file: $cacheFile" }
+            return Torrent4jTorrentInfo.encode(uri, data)
         }
 
         logger.info { "Fetching magnet: $uri" }
@@ -93,13 +102,21 @@ abstract class AbstractLockedTorrentDownloader<Info : TorrentInfo>(
             throw FetchTorrentTimeoutException()
         }
         logger.info { "Fetched magnet: size=${data.size}" }
-        return EncodedTorrentInfo(data)
+        return Torrent4jTorrentInfo.encode(uri, data)
     }
 
     private val magnetCacheDir = cacheDirectory.resolve("magnet").apply {
         mkdirs()
-
     }
+
+    private val httpTorrentFileCacheDir = cacheDirectory.resolve("torrentFiles").apply {
+        mkdirs()
+    }
+
+    private fun getHttpTorrentFileCacheFile(uri: String): File {
+        return httpTorrentFileCacheDir.resolve(uri.hashCode().toString() + ".txt")
+    }
+
     private val downloadCacheDir = cacheDirectory.resolve("api/pieces").apply {
         mkdirs()
     }
@@ -153,6 +170,16 @@ abstract class AbstractLockedTorrentDownloader<Info : TorrentInfo>(
                             dataToSession.remove(hash)
                             logger.debug { "[$torrentName] Close: close handle" }
                             closeSession(torrentInfo)
+                        }
+                    },
+                    onDelete = {
+                        logger.debug { "[$torrentName] Delete: remove http torrent file cache" }
+                        val uri = torrentInfo.originalUri
+                        if (uri == null) {
+                            logger.error { "[$torrentName] Delete: originalUri is null" }
+                        } else {
+                            getHttpTorrentFileCacheFile(uri)
+                            logger.debug { "[$torrentName] Delete: removed" }
                         }
                     },
                     isDebug = isDebug,
@@ -238,7 +265,8 @@ class Libtorrent4jTorrentDownloader(
             null,
             priorities,
             null,
-            TorrentFlags.AUTO_MANAGED,
+            TorrentFlags.AUTO_MANAGED
+                .or_(TorrentFlags.NEED_SAVE_RESUME),
             //                TorrentFlags.SEQUENTIAL_DOWNLOAD,//.or_(TorrentFlags.NEED_SAVE_RESUME)
         )
     }

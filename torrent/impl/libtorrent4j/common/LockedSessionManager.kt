@@ -35,7 +35,7 @@ class LockedSessionManager(
                     try {
                         listener.onAlert(alert)
                     } catch (e: Throwable) {
-                        logger.error(e) { "An exception occurred in EventListener" }
+                        logger.error(e) { "An exception occurred in EventListener for alter $alert" }
                     }
                 }
             }
