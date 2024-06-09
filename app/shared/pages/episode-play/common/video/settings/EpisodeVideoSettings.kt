@@ -1,7 +1,13 @@
 package me.him188.ani.app.ui.subject.episode.video.settings
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material3.ElevatedFilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -94,6 +100,56 @@ fun EpisodeVideoSettings(
             },
             useThinHeader = true,
         ) {
+            FlowRow(
+                Modifier.padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                ElevatedFilterChip(
+                    selected = danmakuConfig.enableTop,
+                    onClick = { setDanmakuConfig(danmakuConfig.copy(enableTop = !danmakuConfig.enableTop)) },
+                    leadingIcon = {
+                        if (danmakuConfig.enableTop) Icon(Icons.Rounded.Check, contentDescription = null)
+                        else Icon(Icons.Rounded.Close, contentDescription = null)
+                    },
+                    label = { Text("顶部", maxLines = 1) },
+                    modifier = Modifier.placeholder(isLoadingState),
+                )
+                ElevatedFilterChip(
+                    selected = danmakuConfig.enableFloating,
+                    onClick = { setDanmakuConfig(danmakuConfig.copy(enableFloating = !danmakuConfig.enableFloating)) },
+                    label = { Text("滚动", maxLines = 1) },
+                    leadingIcon = {
+                        if (danmakuConfig.enableFloating) Icon(Icons.Rounded.Check, contentDescription = null)
+                        else Icon(Icons.Rounded.Close, contentDescription = null)
+                    },
+                    modifier = Modifier.placeholder(isLoadingState),
+                )
+                ElevatedFilterChip(
+                    selected = danmakuConfig.enableBottom,
+                    onClick = { setDanmakuConfig(danmakuConfig.copy(enableBottom = !danmakuConfig.enableBottom)) },
+                    label = { Text("底部", maxLines = 1) },
+                    leadingIcon = {
+                        if (danmakuConfig.enableBottom) Icon(Icons.Rounded.Check, contentDescription = null)
+                        else Icon(Icons.Rounded.Close, contentDescription = null)
+                    },
+                    modifier = Modifier.placeholder(isLoadingState),
+                )
+                ElevatedFilterChip(
+                    selected = danmakuConfig.enableColor,
+                    onClick = {
+                        setDanmakuConfig(
+                            danmakuConfig.copy(enableColor = !danmakuConfig.enableColor)
+                        )
+                    },
+                    leadingIcon = {
+                        if (danmakuConfig.enableColor) Icon(Icons.Rounded.Check, contentDescription = null)
+                        else Icon(Icons.Rounded.Close, contentDescription = null)
+                    },
+                    label = { Text("彩色", maxLines = 1) },
+                    modifier = Modifier.placeholder(isLoadingState),
+                )
+            }
+
             val fontSize by remember(danmakuConfig) {
                 mutableFloatStateOf(danmakuConfig.style.fontSize.value / DanmakuStyle.Default.fontSize.value)
             }
@@ -255,19 +311,6 @@ fun EpisodeVideoSettings(
                 modifier = Modifier.placeholder(isLoadingState),
             )
 
-            var enableColor = remember(danmakuConfig) { danmakuConfig.enableColor }
-            SwitchItem(
-                enableColor,
-                onCheckedChange = {
-                    enableColor = it
-                    setDanmakuConfig(
-                        danmakuConfig.copy(enableColor = it)
-                    )
-                },
-                title = { Text("彩色弹幕") },
-                description = { Text("关闭后所有彩色弹幕都会显示为白色") },
-                modifier = Modifier.placeholder(isLoadingState),
-            )
             if (currentAniBuildConfig.isDebug) {
                 SwitchItem(
                     danmakuConfig.isDebug,

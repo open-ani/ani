@@ -48,6 +48,18 @@ data class DanmakuConfig(
      */
     val enableColor: Boolean = true,
     /**
+     * @since 3.1.0-beta04
+     */
+    val enableTop: Boolean = true,
+    /**
+     * @since 3.1.0-beta04
+     */
+    val enableFloating: Boolean = true,
+    /**
+     * @since 3.1.0-beta04
+     */
+    val enableBottom: Boolean = true,
+    /**
      * 调试模式, 启用发送弹幕的信息.
      */
     val isDebug: Boolean = false,

@@ -20,6 +20,9 @@ object DanmakuConfigSerializer : KSerializer<DanmakuConfig> {
         val safeSeparation: Float = DanmakuConfig.Default.safeSeparation.value,
         val displayArea: Float = DanmakuConfig.Default.displayArea,
         val enableColor: Boolean = DanmakuConfig.Default.enableColor,
+        val enableTop: Boolean = DanmakuConfig.Default.enableTop,
+        val enableFloating: Boolean = DanmakuConfig.Default.enableFloating,
+        val enableBottom: Boolean = DanmakuConfig.Default.enableBottom,
         val isDebug: Boolean = DanmakuConfig.Default.isDebug,
     )
 
@@ -37,20 +40,23 @@ object DanmakuConfigSerializer : KSerializer<DanmakuConfig> {
     override val descriptor: SerialDescriptor = DanmakuConfigData.serializer().descriptor
 
     override fun deserialize(decoder: Decoder): DanmakuConfig {
-        val data = DanmakuConfigData.serializer().deserialize(decoder)
+        val value = DanmakuConfigData.serializer().deserialize(decoder)
 
         return DanmakuConfig(
             style = DanmakuStyle(
-                fontSize = data.style.fontSize.sp,
-                alpha = data.style.alpha,
-                strokeColor = Color(data.style.strokeColor),
-                strokeWidth = data.style.strokeWidth,
+                fontSize = value.style.fontSize.sp,
+                alpha = value.style.alpha,
+                strokeColor = Color(value.style.strokeColor),
+                strokeWidth = value.style.strokeWidth,
             ),
-            speed = data.speed,
-            safeSeparation = data.safeSeparation.dp,
-            displayArea = data.displayArea,
-            enableColor = data.enableColor,
-            isDebug = data.isDebug,
+            speed = value.speed,
+            safeSeparation = value.safeSeparation.dp,
+            displayArea = value.displayArea,
+            enableColor = value.enableColor,
+            enableTop = value.enableTop,
+            enableFloating = value.enableFloating,
+            enableBottom = value.enableBottom,
+            isDebug = value.isDebug,
         )
     }
 
@@ -66,6 +72,9 @@ object DanmakuConfigSerializer : KSerializer<DanmakuConfig> {
             safeSeparation = value.safeSeparation.value,
             displayArea = value.displayArea,
             enableColor = value.enableColor,
+            enableTop = value.enableTop,
+            enableFloating = value.enableFloating,
+            enableBottom = value.enableBottom,
             isDebug = value.isDebug,
         )
 

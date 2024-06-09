@@ -118,20 +118,24 @@ fun DanmakuHost(
 
         // 顶部和底部
         Column(Modifier.matchParentSize().background(Color.Transparent)) {
-            for (track in state.topTracks) {
-                FixedDanmakuTrack(track, Modifier.fillMaxWidth(), configProvider, baseStyle = baseStyle) {
-                    HeightHolder(verticalPadding)
-                    track.visibleDanmaku?.let {
-                        danmaku(it)
+            if (config.enableTop) {
+                for (track in state.topTracks) {
+                    FixedDanmakuTrack(track, Modifier.fillMaxWidth(), configProvider, baseStyle = baseStyle) {
+                        HeightHolder(verticalPadding)
+                        track.visibleDanmaku?.let {
+                            danmaku(it)
+                        }
                     }
                 }
             }
             Spacer(Modifier.weight(1f))
-            for (track in state.bottomTracks) {
-                FixedDanmakuTrack(track, Modifier.fillMaxWidth(), configProvider, baseStyle = baseStyle) {
-                    HeightHolder(verticalPadding)
-                    track.visibleDanmaku?.let {
-                        danmaku(it)
+            if (config.enableBottom) {
+                for (track in state.bottomTracks) {
+                    FixedDanmakuTrack(track, Modifier.fillMaxWidth(), configProvider, baseStyle = baseStyle) {
+                        HeightHolder(verticalPadding)
+                        track.visibleDanmaku?.let {
+                            danmaku(it)
+                        }
                     }
                 }
             }
@@ -139,39 +143,41 @@ fun DanmakuHost(
 
         // 浮动弹幕
         Column(Modifier.background(Color.Transparent)) {
-            val measurer = rememberTextMeasurer(1)
-            val density by rememberUpdatedState(LocalDensity.current)
-            // 更新显示区域
-            LaunchedEffect(measurer) {
-                val configFlow = snapshotFlow { config }
-                    .distinctUntilChanged { old, new ->
-                        old.displayArea == new.displayArea && old.style == new.style
-                    }
-                val screenHeightPxFlow = snapshotFlow { screenHeightPx }
-                    .debounce(500)
-                combine(configFlow, screenHeightPxFlow) { config, screenHeightPx ->
-                    val danmakuHeightPx = measurer.measure(
-                        DummyDanmakuState.presentation.danmaku.text,
-                        style = config.style.styleForText()
-                    ).size.height
-                    val verticalPaddingPx = with(density) {
-                        (verticalPadding * 2).toPx()
-                    }
-                    val maxRows = screenHeightPx / (danmakuHeightPx + verticalPaddingPx)
-                    (config.displayArea * maxRows).roundToInt().coerceAtLeast(1)
-                }.distinctUntilChanged()
-                    .collect {
-                        state.setTrackCount(it)
-                    }
-            }
+            if (config.enableFloating) {
+                val measurer = rememberTextMeasurer(1)
+                val density by rememberUpdatedState(LocalDensity.current)
+                // 更新显示区域
+                LaunchedEffect(measurer) {
+                    val configFlow = snapshotFlow { config }
+                        .distinctUntilChanged { old, new ->
+                            old.displayArea == new.displayArea && old.style == new.style
+                        }
+                    val screenHeightPxFlow = snapshotFlow { screenHeightPx }
+                        .debounce(500)
+                    combine(configFlow, screenHeightPxFlow) { config, screenHeightPx ->
+                        val danmakuHeightPx = measurer.measure(
+                            DummyDanmakuState.presentation.danmaku.text,
+                            style = config.style.styleForText()
+                        ).size.height
+                        val verticalPaddingPx = with(density) {
+                            (verticalPadding * 2).toPx()
+                        }
+                        val maxRows = screenHeightPx / (danmakuHeightPx + verticalPaddingPx)
+                        (config.displayArea * maxRows).roundToInt().coerceAtLeast(1)
+                    }.distinctUntilChanged()
+                        .collect {
+                            state.setTrackCount(it)
+                        }
+                }
 
-            for (track in state.floatingTracks) {
-                FloatingDanmakuTrack(track, Modifier.fillMaxWidth(), configProvider, baseStyle = baseStyle) {
-                    HeightHolder(verticalPadding)
+                for (track in state.floatingTracks) {
+                    FloatingDanmakuTrack(track, Modifier.fillMaxWidth(), configProvider, baseStyle = baseStyle) {
+                        HeightHolder(verticalPadding)
 
-                    for (danmaku in track.visibleDanmaku) {
-                        key(danmaku.presentation.id) {
-                            danmaku(danmaku)
+                        for (danmaku in track.visibleDanmaku) {
+                            key(danmaku.presentation.id) {
+                                danmaku(danmaku)
+                            }
                         }
                     }
                 }
