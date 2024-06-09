@@ -62,8 +62,11 @@ class DirectoryMediaCacheStorageTest {
             println("resume")
         }
 
+        override val isDeleted: MutableStateFlow<Boolean> = MutableStateFlow(false)
+
         override suspend fun delete() {
             println("delete called")
+            isDeleted.value = true
         }
     }
 

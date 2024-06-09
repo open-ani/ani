@@ -13,6 +13,7 @@ import me.him188.ani.datasources.api.MediaCacheMetadata
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.ResourceLocation
+import me.him188.ani.datasources.core.cache.TestMediaCache
 
 // See interactive preview
 @Preview

@@ -27,8 +27,8 @@ import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.datasources.core.cache.MediaCache
 import me.him188.ani.datasources.core.cache.MediaCacheStorage
 import me.him188.ani.datasources.core.cache.MediaStats
+import me.him188.ani.datasources.core.cache.TestMediaCache
 import me.him188.ani.datasources.core.cache.emptyMediaStats
-import java.util.concurrent.atomic.AtomicInteger
 
 // TIPS: use interactive preview
 @Preview
@@ -70,36 +70,6 @@ private fun createTestVM() = object : CacheManagementPageViewModel {
     override val errorMessage = MutableStateFlow<ErrorMessage?>(null)
 
     override fun delete(item: MediaCachePresentation) {
-    }
-}
-
-open class TestMediaCache(
-    val media: CachedMedia,
-    override val metadata: MediaCacheMetadata,
-    override val progress: Flow<Float> = MutableStateFlow(0f),
-    override val totalSize: Flow<FileSize> = MutableStateFlow(0.bytes),
-) : MediaCache {
-    override val origin: Media get() = media.origin
-    override suspend fun getCachedMedia(): CachedMedia = media
-    override fun isValid(): Boolean = true
-
-    override val downloadSpeed: Flow<FileSize> = MutableStateFlow(1.bytes)
-    override val uploadSpeed: Flow<FileSize> = MutableStateFlow(1.bytes)
-    override val finished: Flow<Boolean> by lazy { progress.map { it == 1f } }
-
-    val resumeCalled = AtomicInteger(0)
-
-    override suspend fun pause() {
-        println("pause")
-    }
-
-    override suspend fun resume() {
-        resumeCalled.incrementAndGet()
-        println("resume")
-    }
-
-    override suspend fun delete() {
-        println("delete called")
     }
 }
 

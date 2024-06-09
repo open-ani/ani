@@ -5,6 +5,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.filterNotNull
@@ -141,26 +142,25 @@ class TorrentMediaCacheEngine(
                 entry?.stats?.totalBytes?.map { it.bytes } ?: flowOf(0.bytes)
             }
 
-        @Volatile
-        private var deleted = false
-
         override suspend fun pause() {
-            if (deleted) return
+            if (isDeleted.value) return
             lazyFileHandle.handle.first()?.pause()
         }
 
         override suspend fun resume() {
-            if (deleted) return
+            if (isDeleted.value) return
             val file = lazyFileHandle.handle.first()
             logger.info { "Resuming file: $file" }
             file?.resume(FilePriority.NORMAL)
         }
 
+        override val isDeleted: MutableStateFlow<Boolean> = MutableStateFlow(false)
+
         override suspend fun delete() {
-            if (deleted) return
+            if (isDeleted.value) return
             synchronized(this) {
-                if (deleted) return
-                deleted = true
+                if (isDeleted.value) return
+                isDeleted.value = true
             }
             val handle = lazyFileHandle.handle.first() ?: kotlin.run {
                 // did not even selected a file

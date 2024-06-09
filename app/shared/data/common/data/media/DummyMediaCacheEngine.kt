@@ -1,6 +1,7 @@
 package me.him188.ani.app.data.media
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.currentAniBuildConfig
@@ -76,6 +77,9 @@ class DummyMediaCache(
     override suspend fun resume() {
     }
 
+    override val isDeleted: MutableStateFlow<Boolean> = MutableStateFlow(false)
+
     override suspend fun delete() {
+        isDeleted.value = true
     }
 }

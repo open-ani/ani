@@ -142,7 +142,11 @@ abstract class MediaCacheManager(
                         val downloadRate = stats.downloadRate.first()
                         notif.contentTitle = "正在下载 $downloadRate/s"
 
-                        if (lastFile?.finished?.firstOrNull() != false) {
+                        val file = lastFile
+                        if (file == null ||
+                            file.isDeleted.firstOrNull() == true ||
+                            file.finished.firstOrNull() != false
+                        ) {
                             lastFile = list.findFirstDownloadingFile()
                         }
                         notif.contentText = lastFile?.previewText

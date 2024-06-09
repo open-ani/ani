@@ -1,6 +1,9 @@
 package me.him188.ani.datasources.core.cache
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import me.him188.ani.datasources.api.CachedMedia
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaCacheMetadata
@@ -8,7 +11,9 @@ import me.him188.ani.datasources.api.source.MatchKind
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.topic.FileSize
+import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.datasources.core.fetch.MediaFetcher
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.absoluteValue
 
@@ -161,6 +166,8 @@ interface MediaCache {
 //     */
 //    suspend fun open(): SeekableInput
 
+    val isDeleted: StateFlow<Boolean>
+
     /**
      * Deletes the cache.
      *
@@ -201,4 +208,38 @@ infix fun MediaFetchRequest.matches(cache: MediaCacheMetadata): MatchKind? {
     }
 
     return null
+}
+
+
+open class TestMediaCache(
+    val media: CachedMedia,
+    override val metadata: MediaCacheMetadata,
+    override val progress: Flow<Float> = MutableStateFlow(0f),
+    override val totalSize: Flow<FileSize> = MutableStateFlow(0.bytes),
+) : MediaCache {
+    override val origin: Media get() = media.origin
+    override suspend fun getCachedMedia(): CachedMedia = media
+    override fun isValid(): Boolean = true
+
+    override val downloadSpeed: Flow<FileSize> = MutableStateFlow(1.bytes)
+    override val uploadSpeed: Flow<FileSize> = MutableStateFlow(1.bytes)
+    override val finished: Flow<Boolean> by lazy { progress.map { it == 1f } }
+
+    val resumeCalled = AtomicInteger(0)
+
+    override suspend fun pause() {
+        println("pause")
+    }
+
+    override suspend fun resume() {
+        resumeCalled.incrementAndGet()
+        println("resume")
+    }
+
+    override val isDeleted: MutableStateFlow<Boolean> = MutableStateFlow(false)
+
+    override suspend fun delete() {
+        println("delete called")
+        isDeleted.value = true
+    }
 }
