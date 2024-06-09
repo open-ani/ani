@@ -1,5 +1,6 @@
 package me.him188.ani.datasources.ikaros
 
+import DateFormater
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -24,7 +25,6 @@ import me.him188.ani.datasources.ikaros.models.IkarosSubjectDetails
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.logger
 import models.IkarosAttachment
-import java.text.SimpleDateFormat
 
 class IkarosClient(
     private val baseUrl: String,
@@ -71,17 +71,6 @@ class IkarosClient(
         return baseUrl + url
     }
 
-    private fun dateStr2timeStamp(dateStr: String): Long {
-        if (dateStr.isEmpty()) {
-            return 0
-        }
-        val pattern = "yyyy-MM-dd'T'HH:mm:ss"//2023-10-13T00:00:00
-        val simpleDateFormat = SimpleDateFormat(pattern)
-        val date = simpleDateFormat.parse(dateStr)
-        val timeStamp = date.time
-        return timeStamp
-    }
-
     suspend fun subjectDetails2SizedSource(subjectDetails: IkarosSubjectDetails, seq: Int): SizedSource<MediaMatch> {
         val episodes = subjectDetails.episodes
         val mediaMatchs = mutableListOf<MediaMatch>()
@@ -99,7 +88,10 @@ class IkarosClient(
                             uri = getResUrl(epRes.url)
                         ),
                         originalTitle = epRes.name,
-                        publishedTime = dateStr2timeStamp(attachment?.updateTime ?: ""),
+                        publishedTime = DateFormater.dateStr2timeStamp(
+                            attachment?.updateTime ?: "",
+                            DateFormater.PATTERN_UTC
+                        ),
                         properties = MediaProperties(
                             subtitleLanguageIds = parseResult.subtitleLanguages.map { it.id },
                             resolution = parseResult.resolution?.displayName ?: "480P",
