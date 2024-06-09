@@ -146,7 +146,7 @@ private fun PreviewMediaSelector() {
             state = remember {
                 MediaSelectorPresentation(
                     DefaultMediaSelector(
-                        mediaSelectorContextNotCached = flowOf(MediaSelectorContext(false)),
+                        mediaSelectorContextNotCached = flowOf(MediaSelectorContext.EmptyForPreview),
                         mediaListNotCached = MutableStateFlow(
                             listOf(
                                 CachedMedia(

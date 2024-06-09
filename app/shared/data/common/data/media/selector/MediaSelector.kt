@@ -171,6 +171,8 @@ data class MediaSelectorContext(
          * 刚开始查询时的默认值
          */
         val Initial = MediaSelectorContext(null, null)
+
+        val EmptyForPreview get() = MediaSelectorContext(false, emptyList())
     }
 }
 

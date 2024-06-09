@@ -61,7 +61,7 @@ fun rememberTestMediaSelectorPresentation(): MediaSelectorPresentation {
 private fun createState(backgroundScope: CoroutineScope) =
     MediaSelectorPresentation(
         DefaultMediaSelector(
-            mediaSelectorContextNotCached = flowOf(MediaSelectorContext(false)),
+            mediaSelectorContextNotCached = flowOf(MediaSelectorContext.EmptyForPreview),
             mediaListNotCached = MutableStateFlow(previewMediaList),
             savedUserPreference = flowOf(MediaPreference.Empty),
             savedDefaultPreference = flowOf(MediaPreference.Empty),
