@@ -43,7 +43,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import me.him188.ani.app.data.media.EpisodeCacheStatus
-import me.him188.ani.app.data.subject.PackedDate
 import me.him188.ani.app.interaction.VibrationStrength
 import me.him188.ani.app.interaction.vibrateIfSupported
 import me.him188.ani.app.navigation.LocalNavigator
@@ -158,10 +157,6 @@ class EpisodeProgressItem(
 ) {
     var isLoading by mutableStateOf(false)
 }
-
-class EpisodeInfo(
-    val airDate: PackedDate,
-)
 
 
 @Composable

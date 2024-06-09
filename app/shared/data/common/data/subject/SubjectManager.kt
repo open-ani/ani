@@ -59,9 +59,7 @@ import me.him188.ani.utils.coroutines.runUntilSuccess
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.openapitools.client.models.EpType
-import org.openapitools.client.models.Episode
 import org.openapitools.client.models.EpisodeCollectionType
-import org.openapitools.client.models.EpisodeDetail
 import org.openapitools.client.models.Subject
 import org.openapitools.client.models.SubjectCollectionType
 import org.openapitools.client.models.SubjectType
@@ -125,7 +123,7 @@ interface SubjectManager {
     /**
      * 从缓存中获取剧集, 若没有则从网络获取.
      */
-    suspend fun getEpisode(episodeId: Int): Episode
+    suspend fun getEpisode(episodeId: Int): EpisodeInfo
 
     /**
      * 获取用户该条目的收藏情况, 以及该条目的信息.
@@ -234,15 +232,15 @@ class SubjectManagerImpl(
         }
     }
 
-    override suspend fun getEpisode(episodeId: Int): Episode {
+    override suspend fun getEpisode(episodeId: Int): EpisodeInfo {
         collectionsByType.values.map { it.getCachedData() }.asSequence().flatten()
             .flatMap { it._episodes }
             .map { it.episode }
             .firstOrNull { it.id == episodeId }
-            ?.let { return it }
+            ?.let { return it.toEpisodeInfo() }
 
         return runUntilSuccess {
-            episodeRepository.getEpisodeById(episodeId)?.toEpisode() ?: error("Failed to get episode")
+            episodeRepository.getEpisodeById(episodeId)?.toEpisodeInfo() ?: error("Failed to get episode")
         }
     }
 
@@ -542,21 +540,4 @@ data class SubjectCollectionItem(
             )
         }
     }
-}
-
-
-private fun EpisodeDetail.toEpisode(): Episode {
-    return Episode(
-        id = id,
-        type = type,
-        name = name,
-        nameCn = nameCn,
-        sort = sort,
-        airdate = airdate,
-        comment = comment,
-        duration = duration,
-        desc = desc,
-        disc = disc,
-        ep = ep,
-    )
 }

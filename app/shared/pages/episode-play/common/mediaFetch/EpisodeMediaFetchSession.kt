@@ -23,6 +23,7 @@ import me.him188.ani.app.data.media.selector.MediaSelectorContext
 import me.him188.ani.app.data.models.MediaSelectorSettings
 import me.him188.ani.app.data.repositories.EpisodePreferencesRepository
 import me.him188.ani.app.data.repositories.SettingsRepository
+import me.him188.ani.app.data.subject.EpisodeInfo
 import me.him188.ani.app.data.subject.SubjectInfo
 import me.him188.ani.app.data.subject.SubjectManager
 import me.him188.ani.app.data.subject.isSubjectCompleted
@@ -30,10 +31,8 @@ import me.him188.ani.app.data.subject.nameCnOrName
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
-import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.source.MediaFetchRequest
-import me.him188.ani.datasources.bangumi.processing.nameCNOrName
 import me.him188.ani.datasources.core.fetch.MediaFetchSession
 import me.him188.ani.datasources.core.fetch.MediaFetcher
 import me.him188.ani.datasources.core.fetch.MediaFetcherConfig
@@ -45,7 +44,6 @@ import me.him188.ani.utils.coroutines.checkOwner
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import org.koin.core.context.GlobalContext
-import org.openapitools.client.models.Episode
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -156,7 +154,7 @@ internal class DefaultEpisodeMediaFetchSession(
     /**
      * 需要查询的 episode
      */
-    private val episode: Flow<Episode>,
+    private val episode: Flow<EpisodeInfo>,
     private val episodePreferencesRepository: EpisodePreferencesRepository,
     private val defaultMediaPreferenceFlow: Flow<MediaPreference>,
     private val mediaSelectorSettingsFlow: Flow<MediaSelectorSettings>,
@@ -274,7 +272,7 @@ internal class DefaultEpisodeMediaFetchSession(
 
 private fun createMediaFetchResult(
     subject: SubjectInfo,
-    episode: Episode
+    episode: EpisodeInfo
 ) = MediaFetchRequest(
     subjectId = subject.id.toString(),
     episodeId = episode.id.toString(),
@@ -283,7 +281,7 @@ private fun createMediaFetchResult(
         subject.nameCn.takeIf { it.isNotBlank() },
         subject.name.takeIf { it.isNotBlank() },
     ),
-    episodeSort = EpisodeSort(episode.sort.toString()),
-    episodeName = episode.nameCNOrName(),
-    episodeEp = episode.ep?.let { EpisodeSort(it) },
+    episodeSort = episode.sort,
+    episodeName = episode.nameCnOrName,
+    episodeEp = episode.ep,
 )
