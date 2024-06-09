@@ -1,3 +1,5 @@
+package me.him188.ani.datasources.ikaros
+
 import java.text.SimpleDateFormat
 
 class DateFormater {
@@ -7,7 +9,7 @@ class DateFormater {
          * Such as: 2023-10-13T00:00:00
          */
         const val PATTERN_UTC = "yyyy-MM-dd'T'HH:mm:ss"
-        fun dateStr2timeStamp(dateStr: String, pattern:String): Long {
+        fun dateStr2timeStamp(dateStr: String, pattern: String): Long {
             if (dateStr.isEmpty()) {
                 return 0
             }
