@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
@@ -126,6 +127,11 @@ interface SubjectManager {
      */
     suspend fun getEpisode(episodeId: Int): Episode
 
+    /**
+     * 获取用户该条目的收藏情况, 以及该条目的信息.
+     *
+     * 如果用户未收藏该条目, 则返回空列表.
+     */
     suspend fun getEpisodeCollections(subjectId: Int): List<UserEpisodeCollection>
 
     fun episodeCollectionFlow(subjectId: Int, episodeId: Int, contentPolicy: ContentPolicy): Flow<UserEpisodeCollection>
@@ -134,6 +140,19 @@ interface SubjectManager {
 
     suspend fun setAllEpisodesWatched(subjectId: Int)
     suspend fun setEpisodeCollectionType(subjectId: Int, episodeId: Int, collectionType: UnifiedCollectionType)
+}
+
+/**
+ * 获取指定条目是否已经完结. 不是用户是否看完, 只要条目本身完结了就算.
+ */
+fun SubjectManager.isSubjectCompleted(subjectId: Int): Flow<Boolean> {
+    return flow {
+        // 这是网络请求, 无网情况下会一直失败
+        // 对于已经收藏的条目, 该请求应当会查询缓存, 就很快
+        emit(getEpisodeCollections(subjectId).map { it.episode })
+    }.map {
+        EpisodeCollections.isSubjectCompleted(it)
+    }
 }
 
 suspend inline fun SubjectManager.setEpisodeWatched(subjectId: Int, episodeId: Int, watched: Boolean) =
