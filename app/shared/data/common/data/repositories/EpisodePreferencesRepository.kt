@@ -12,7 +12,7 @@ import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
+import org.koin.core.context.GlobalContext
 
 interface EpisodePreferencesRepository : KoinComponent {
     /**
@@ -25,12 +25,9 @@ interface EpisodePreferencesRepository : KoinComponent {
 
 internal class EpisodePreferencesRepositoryImpl(
     private val store: DataStore<Preferences>,
+    private val defaultMediaPreference: Flow<MediaPreference> = GlobalContext.get()
+        .get<SettingsRepository>().defaultMediaPreference.flow
 ) : EpisodePreferencesRepository, KoinComponent {
-    private val preferences: SettingsRepository by inject()
-
-    // 全局默认设置
-    private val defaultMediaPreference = preferences.defaultMediaPreference.flow
-
     private val logger = logger(this::class)
     private val json = Json {
         ignoreUnknownKeys = true
