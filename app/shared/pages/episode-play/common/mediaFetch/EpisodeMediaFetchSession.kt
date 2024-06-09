@@ -142,6 +142,10 @@ internal class DefaultEpisodeMediaFetchSession(
     config: FetcherMediaSelectorConfig,
     private val koin: () -> Koin = { GlobalContext.get() },
 ) : EpisodeMediaFetchSession, HasBackgroundScope by BackgroundScope(parentCoroutineContext), KoinComponent {
+    private companion object {
+        val logger = logger<DefaultEpisodeMediaFetchSession>()
+    }
+
     override fun getKoin(): Koin = koin()
 
     private val subjectManager: SubjectManager by inject()
@@ -241,14 +245,16 @@ internal class DefaultEpisodeMediaFetchSession(
             }
         }
         if (config.autoSelectOnFetchCompletion) {
+            logger.info { "autoSelectOnFetchCompletion is on" }
             launchInBackground {
                 // Automatically select a media when the list is ready
                 val owner = Any()
                 try {
                     // 等全部加载完成
                     mediaFetchSession.flatMapLatest { it.hasCompleted }.filter { it }.first()
-                    if (mediaSelector.selected.first() == null) {
-                        mediaSelector.trySelectDefault()
+                    if (mediaSelector.selected.value == null) {
+                        val selected = mediaSelector.trySelectDefault()
+                        logger.info { "autoSelectOnFetchCompletion selected: $selected" }
                     }
                 } catch (e: OwnedCancellationException) {
                     e.checkOwner(owner)
