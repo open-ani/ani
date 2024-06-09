@@ -81,27 +81,16 @@ class FetcherMediaSelectorConfig(
     /**
      * 保存本次会话用户更新的资源选择偏好设置
      */
-    val savePreferenceChanges: Boolean = true,
+    val savePreferenceChanges: Boolean,
     /**
      * Automatically select a media when the [MediaFetchSession] has completed.
      */
-    val autoSelectOnFetchCompletion: Boolean = true,
+    val autoSelectOnFetchCompletion: Boolean,
     /**
      * Automatically select the local (cached) media when there is at least one such media.
      */
-    val autoSelectLocal: Boolean = true,
-) {
-    companion object {
-        val Default = FetcherMediaSelectorConfig()
-        val NoAutoSelect = FetcherMediaSelectorConfig(
-            autoSelectOnFetchCompletion = false,
-            autoSelectLocal = false,
-        )
-        val NoSave = FetcherMediaSelectorConfig(
-            savePreferenceChanges = false
-        )
-    }
-}
+    val autoSelectLocal: Boolean,
+)
 
 /**
  * Creates a [EpisodeMediaFetchSession] that fetches media for the given [subjectId] and [episodeId],

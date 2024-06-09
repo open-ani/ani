@@ -228,7 +228,12 @@ private class EpisodeViewModelImpl(
         subjectId,
         episodeId,
         backgroundScope.coroutineContext,
-        config = FetcherMediaSelectorConfig.Default,
+        config = FetcherMediaSelectorConfig(
+            // 观看的时候, 所有设置都保存
+            savePreferenceChanges = true,
+            autoSelectOnFetchCompletion = true,
+            autoSelectLocal = true,
+        ),
     )
     override val mediaSelectorSettings: MediaSelectorSettings by
     settingsRepository.mediaSelectorSettings.flow.produceState(MediaSelectorSettings.Default)

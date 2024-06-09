@@ -125,7 +125,12 @@ class DefaultMediaAutoCacheService(
                     subject.subjectId,
                     firstUnwatched.episode.id,
                     parentCoroutineContext = this.coroutineContext,
-                    config = FetcherMediaSelectorConfig.NoSave,
+                    config = FetcherMediaSelectorConfig(
+                        // 自动缓存的时候不要保存设置
+                        savePreferenceChanges = false,
+                        autoSelectOnFetchCompletion = true,
+                        autoSelectLocal = true,
+                    ),
                 ).run {
                     this.awaitCompletion()
                     val request = this.mediaFetchSession.first().request

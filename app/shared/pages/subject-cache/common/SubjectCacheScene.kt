@@ -196,7 +196,12 @@ fun SubjectCacheScene(
                     vm.subjectId,
                     episodeCacheState.episodeId,
                     backgroundScope.backgroundScope.coroutineContext,
-                    FetcherMediaSelectorConfig.NoAutoSelect
+                    FetcherMediaSelectorConfig(
+                        // 手动缓存的时候要保存设置, 但不要自动选择
+                        savePreferenceChanges = true,
+                        autoSelectOnFetchCompletion = false,
+                        autoSelectLocal = false,
+                    )
                 )
             }
             val mediaSelectorPresentation = remember(epFetch, backgroundScope) {
