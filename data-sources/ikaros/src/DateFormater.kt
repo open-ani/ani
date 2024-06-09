@@ -22,11 +22,9 @@ internal class DateFormater {
     }
 
     companion object {
-        private val _default by lazy(LazyThreadSafetyMode.PUBLICATION) {
+        val default by lazy(LazyThreadSafetyMode.PUBLICATION) {
             DateFormater()
         }
-
-        fun getDefault(): DateFormater = _default
     }
 
 }

@@ -87,7 +87,7 @@ class IkarosClient(
                             uri = getResUrl(epRes.url)
                         ),
                         originalTitle = epRes.name,
-                        publishedTime = DateFormater.getDefault().utcDateStr2timeStamp(attachment?.updateTime ?: ""),
+                        publishedTime = DateFormater.default.utcDateStr2timeStamp(attachment?.updateTime ?: ""),
                         properties = MediaProperties(
                             subtitleLanguageIds = parseResult.subtitleLanguages.map { it.id },
                             resolution = parseResult.resolution?.displayName ?: "480P",
