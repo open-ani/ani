@@ -358,6 +358,7 @@ open class DefaultTorrentDownloadSession(
             get() = this@DefaultTorrentDownloadSession.torrentName
 
         @TorrentThread
+        @Synchronized
         override fun onEvent(event: TorrentEvent) {
             when (event) {
                 is TorrentAddEvent -> {
