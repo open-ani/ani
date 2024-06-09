@@ -15,8 +15,11 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -99,18 +102,24 @@ class DirectoryMediaCacheStorage(
 
         metadataDir.useDirectoryEntries { files ->
             val allRecovered = mutableListOf<MediaCache>()
-            for (file in files) {
-                restoreFile(
-                    file,
-                    reportRecovered = { cache ->
-                        lock.withLock {
-                            listFlow.value += cache
+            val semaphore = Semaphore(8)
+            supervisorScope {
+                for (file in files) {
+                    launch {
+                        semaphore.withPermit {
+                            restoreFile(
+                                file,
+                                reportRecovered = { cache ->
+                                    lock.withLock {
+                                        listFlow.value += cache
+                                    }
+                                    allRecovered.add(cache)
+                                }
+                            )
                         }
-                        allRecovered.add(cache)
                     }
-                )
+                }
             }
-
             engine.deleteUnusedCaches(allRecovered)
         }
     }
@@ -244,7 +253,7 @@ private class MediaCacheStorageSource(
     override val location: MediaSourceLocation = MediaSourceLocation.Local
 ) : MediaSource {
     override val mediaSourceId: String get() = storage.mediaSourceId
-    override val kind: MediaSourceKind get() = MediaSourceKind.LocalCache 
+    override val kind: MediaSourceKind get() = MediaSourceKind.LocalCache
 
     override suspend fun checkConnection(): ConnectionStatus = ConnectionStatus.SUCCESS
 
