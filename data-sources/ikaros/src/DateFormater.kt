@@ -1,13 +1,10 @@
 package me.him188.ani.datasources.ikaros
 
-import me.him188.ani.datasources.api.topic.titles.LabelFirstRawTitleParser
-import me.him188.ani.datasources.api.topic.titles.RawTitleParser
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-
-class DateFormater {
+internal class DateFormater {
     /**
      * UTC Date Str format.
      * Such as: 2023-10-13T00:00:00
@@ -25,11 +22,11 @@ class DateFormater {
     }
 
     companion object {
-        private val default by lazy(LazyThreadSafetyMode.PUBLICATION) {
+        private val _default by lazy(LazyThreadSafetyMode.PUBLICATION) {
             DateFormater()
         }
 
-        fun getDefault(): DateFormater = default
+        fun getDefault(): DateFormater = _default
     }
 
 }
