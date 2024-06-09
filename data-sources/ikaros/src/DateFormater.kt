@@ -13,8 +13,7 @@ class DateFormater {
             }
             val simpleDateFormat = SimpleDateFormat(pattern)
             val date = simpleDateFormat.parse(dateStr)
-            val timeStamp = date.time
-            return timeStamp
+            return date.time
         }
     }
 }
