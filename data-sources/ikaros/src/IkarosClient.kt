@@ -87,10 +87,7 @@ class IkarosClient(
                             uri = getResUrl(epRes.url)
                         ),
                         originalTitle = epRes.name,
-                        publishedTime = DateFormater.dateStr2timeStamp(
-                            attachment?.updateTime ?: "",
-                            DateFormater.PATTERN_UTC
-                        ),
+                        publishedTime = DateFormater.getDefault().utcDateStr2timeStamp(attachment?.updateTime ?: ""),
                         properties = MediaProperties(
                             subtitleLanguageIds = parseResult.subtitleLanguages.map { it.id },
                             resolution = parseResult.resolution?.displayName ?: "480P",
@@ -110,9 +107,7 @@ class IkarosClient(
         }
 
         val sizedSource = IkarosSizeSource(
-            totalSize = flowOf(mediaMatchs.size),
-            finished = flowOf(true),
-            results = mediaMatchs.asFlow()
+            totalSize = flowOf(mediaMatchs.size), finished = flowOf(true), results = mediaMatchs.asFlow()
         )
 
         return sizedSource
@@ -120,8 +115,6 @@ class IkarosClient(
 }
 
 class IkarosSizeSource(
-    override val results: Flow<MediaMatch>,
-    override val finished: Flow<Boolean>,
-    override val totalSize: Flow<Int?>
+    override val results: Flow<MediaMatch>, override val finished: Flow<Boolean>, override val totalSize: Flow<Int?>
 ) : SizedSource<MediaMatch>
 
