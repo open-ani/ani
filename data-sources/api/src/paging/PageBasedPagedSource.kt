@@ -78,6 +78,9 @@ fun <T> PageBasedPagedSource(
             if (!paged.hasMore) {
                 noMorePages()
             }
+            if (paged.page.isEmpty()) { // to get same behavior as [SinglePagePagedSourceTest]
+                return null
+            }
             return paged.page
         }
     }

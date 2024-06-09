@@ -6,39 +6,48 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-class SinglePagePagedSourceTest {
-    @Test
-    fun `initial page is 0`() {
-        val source = SinglePagePagedSource {
+abstract class PagedSourceTest {
+    class SinglePagedSourceTest : PagedSourceTest() {
+        override fun createSource(): PagedSource<Int> = SinglePagePagedSource {
             flowOf(1, 2, 3)
         }
+    }
+
+    class PageBasedPagedSourceTest : PagedSourceTest() {
+        override fun createSource(): PagedSource<Int> = PageBasedPagedSource {
+            if (it == 0) {
+                setTotalSize(3)
+                Paged(listOf(1, 2, 3))
+            } else {
+                Paged.empty()
+            }
+        }
+    }
+
+    @Test
+    fun `initial page is 0`() {
+        val source = createSource()
 
         assertEquals(0, source.currentPage.value)
     }
 
     @Test
     fun `initial finished is false`() {
-        val source = SinglePagePagedSource {
-            flowOf(1, 2, 3)
-        }
+        val source = createSource()
 
         assertEquals(false, source.finished.value)
     }
 
     @Test
     fun `get first page`() = runTest {
-        val source = SinglePagePagedSource {
-            flowOf(1, 2, 3)
-        }
+        val source = createSource()
 
         assertEquals(listOf(1, 2, 3), source.nextPageOrNull())
     }
 
     @Test
     fun `get second page returns null`() = runTest {
-        val source = SinglePagePagedSource {
-            flowOf(1, 2, 3)
-        }
+        val source = createSource()
 
         source.nextPageOrNull()
         assertEquals(null, source.nextPageOrNull())
@@ -46,9 +55,7 @@ class SinglePagePagedSourceTest {
 
     @Test
     fun `don't finish after first page`() = runTest {
-        val source = SinglePagePagedSource {
-            flowOf(1, 2, 3)
-        }
+        val source = createSource()
 
         assertEquals(listOf(1, 2, 3), source.nextPageOrNull())
         assertEquals(false, source.finished.value)
@@ -56,9 +63,7 @@ class SinglePagePagedSourceTest {
 
     @Test
     fun `finish after second nextPageOrNull`() = runTest {
-        val source = SinglePagePagedSource {
-            flowOf(1, 2, 3)
-        }
+        val source = createSource()
 
         source.nextPageOrNull()
         source.nextPageOrNull()
@@ -68,18 +73,14 @@ class SinglePagePagedSourceTest {
 
     @Test
     fun `collect results`() = runTest {
-        val source = SinglePagePagedSource {
-            flowOf(1, 2, 3)
-        }
+        val source = createSource()
 
         assertEquals(listOf(1, 2, 3), source.results.toList())
     }
 
     @Test
     fun `finished after results completed`() = runTest {
-        val source = SinglePagePagedSource {
-            flowOf(1, 2, 3)
-        }
+        val source = createSource()
 
         assertEquals(listOf(1, 2, 3), source.results.toList())
         assertEquals(true, source.finished.value)
@@ -87,18 +88,14 @@ class SinglePagePagedSourceTest {
 
     @Test
     fun `size not known initially`() = runTest {
-        val source = SinglePagePagedSource {
-            flowOf(1, 2, 3)
-        }
+        val source = createSource()
 
         assertEquals(null, source.totalSize.value)
     }
 
     @Test
     fun `size known after first page`() = runTest {
-        val source = SinglePagePagedSource {
-            flowOf(1, 2, 3)
-        }
+        val source = createSource()
 
         source.nextPageOrNull()
         assertEquals(3, source.totalSize.value)
@@ -106,9 +103,7 @@ class SinglePagePagedSourceTest {
 
     @Test
     fun `skip to page 1 then empty`() = runTest {
-        val source = SinglePagePagedSource {
-            flowOf(1, 2, 3)
-        }
+        val source = createSource()
 
         source.skipToPage(1)
         assertEquals(null, source.nextPageOrNull())
@@ -118,9 +113,7 @@ class SinglePagePagedSourceTest {
 
     @Test
     fun `back to previous`() = runTest {
-        val source = SinglePagePagedSource {
-            flowOf(1, 2, 3)
-        }
+        val source = createSource()
 
         assertEquals(listOf(1, 2, 3), source.nextPageOrNull())
         source.backToPrevious()
@@ -139,9 +132,7 @@ class SinglePagePagedSourceTest {
 
     @Test
     fun `back to previous after finish`() = runTest {
-        val source = SinglePagePagedSource {
-            flowOf(1, 2, 3)
-        }
+        val source = createSource()
 
         assertEquals(listOf(1, 2, 3), source.nextPageOrNull())
         assertEquals(null, source.nextPageOrNull())
@@ -158,4 +149,6 @@ class SinglePagePagedSourceTest {
         assertEquals(1, source.currentPage.value)
         assertEquals(true, source.finished.value)
     }
+
+    abstract fun createSource(): PagedSource<Int>
 }
