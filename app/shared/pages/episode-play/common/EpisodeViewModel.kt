@@ -49,6 +49,7 @@ import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.app.ui.subject.episode.danmaku.PlayerDanmakuViewModel
 import me.him188.ani.app.ui.subject.episode.mediaFetch.EpisodeMediaFetchSession
+import me.him188.ani.app.ui.subject.episode.mediaFetch.FetcherMediaSelectorConfig
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
 import me.him188.ani.app.ui.subject.episode.statistics.DanmakuLoadingState
 import me.him188.ani.app.ui.subject.episode.statistics.PlayerStatisticsState
@@ -227,6 +228,7 @@ private class EpisodeViewModelImpl(
         subjectId,
         episodeId,
         backgroundScope.coroutineContext,
+        config = FetcherMediaSelectorConfig.Default,
     )
     override val mediaSelectorSettings: MediaSelectorSettings by
     settingsRepository.mediaSelectorSettings.flow.produceState(MediaSelectorSettings.Default)

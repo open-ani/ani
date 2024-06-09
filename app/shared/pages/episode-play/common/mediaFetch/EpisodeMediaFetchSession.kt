@@ -42,6 +42,8 @@ import me.him188.ani.datasources.core.fetch.MediaSourceMediaFetcher
 import me.him188.ani.datasources.core.fetch.MediaSourceResult
 import me.him188.ani.utils.coroutines.OwnedCancellationException
 import me.him188.ani.utils.coroutines.checkOwner
+import me.him188.ani.utils.logging.info
+import me.him188.ani.utils.logging.logger
 import org.koin.core.Koin
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -116,7 +118,7 @@ fun EpisodeMediaFetchSession(
     subjectId: Int,
     episodeId: Int,
     parentCoroutineContext: CoroutineContext,
-    config: FetcherMediaSelectorConfig = FetcherMediaSelectorConfig.Default,
+    config: FetcherMediaSelectorConfig,
     koin: () -> Koin = { GlobalContext.get() },
 ): EpisodeMediaFetchSession = DefaultEpisodeMediaFetchSession(
     subjectId,
@@ -137,7 +139,7 @@ internal class DefaultEpisodeMediaFetchSession(
     subjectId: Int,
     episodeId: Int,
     parentCoroutineContext: CoroutineContext,
-    config: FetcherMediaSelectorConfig = FetcherMediaSelectorConfig.Default,
+    config: FetcherMediaSelectorConfig,
     private val koin: () -> Koin = { GlobalContext.get() },
 ) : EpisodeMediaFetchSession, HasBackgroundScope by BackgroundScope(parentCoroutineContext), KoinComponent {
     override fun getKoin(): Koin = koin()
