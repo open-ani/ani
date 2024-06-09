@@ -154,22 +154,23 @@ data class MediaSelectorContext(
     /**
      * 该条目已经完结了一段时间了. `null` 表示该信息还正在查询中
      */
-    val subjectFinishedForAConservativeTime: Boolean? = null,
+    val subjectFinishedForAConservativeTime: Boolean?,
     /**
      * 在执行自动选择时, 需要按此顺序使用数据源.
      * 为 `null` 表示无偏好, 可以按任意顺序选择.
      *
      * 当使用完所有偏好的数据源后都没有筛选到资源时, 将会 fallback 为选择任意数据源的资源
      */
-    val mediaSourcePrecedence: List<String>? = null,
+    val mediaSourcePrecedence: List<String>?,
 ) {
     fun allFieldsLoaded() = subjectFinishedForAConservativeTime != null
+            && mediaSourcePrecedence != null
 
     companion object {
         /**
          * 刚开始查询时的默认值
          */
-        val Initial = MediaSelectorContext()
+        val Initial = MediaSelectorContext(null, null)
     }
 }
 

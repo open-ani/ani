@@ -124,7 +124,7 @@ fun EpisodeMediaFetchSession(
         defaultMediaPreferenceFlow = settingsRepository.defaultMediaPreference.flow,
         mediaSelectorSettingsFlow = settingsRepository.mediaSelectorSettings.flow,
         subjectCompletedNotCached = subjectManager.isSubjectCompleted(subjectId),
-        mediaSourceInstancesNotCached = mediaSourceManager.allInstances,
+        mediaSourceInstances = mediaSourceManager.allInstances,
         parentCoroutineContext,
     )
 }
@@ -151,14 +151,14 @@ internal class DefaultEpisodeMediaFetchSession(
      * 该条目已经完结
      */
     private val subjectCompletedNotCached: Flow<Boolean>,
-    mediaSourceInstancesNotCached: Flow<List<MediaSourceInstance>>,
+    mediaSourceInstances: Flow<List<MediaSourceInstance>>,
     parentCoroutineContext: CoroutineContext,
 ) : EpisodeMediaFetchSession, HasBackgroundScope by BackgroundScope(parentCoroutineContext) {
     private companion object {
         val logger = logger<DefaultEpisodeMediaFetchSession>()
     }
 
-    private val mediaFetcher = mediaSourceInstancesNotCached.map { providers ->
+    private val mediaFetcher = mediaSourceInstances.map { providers ->
         MediaSourceMediaFetcher(
             configProvider = { MediaFetcherConfig.Default },
             mediaSources = providers,
@@ -189,8 +189,17 @@ internal class DefaultEpisodeMediaFetchSession(
             }
 
         DefaultMediaSelector(
-            mediaSelectorContextNotCached = subjectCompletedNotCached.map {
-                MediaSelectorContext(subjectFinishedForAConservativeTime = it)
+            mediaSelectorContextNotCached = combine(
+                subjectCompletedNotCached,
+                mediaSourceInstances
+            ) { it, mediaSourceInstances ->
+                MediaSelectorContext(
+                    subjectFinishedForAConservativeTime = it,
+                    mediaSourcePrecedence = mediaSourceInstances
+                        .map {
+                            it.mediaSourceId
+                        }
+                )
             }.onStart {
                 emit(MediaSelectorContext.Initial) // 否则如果一直没获取到剧集信息, 就无法选集, #385
             },

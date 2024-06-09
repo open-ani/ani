@@ -37,6 +37,7 @@ class DefaultMediaSelectorTest {
     private val mediaSelectorContext = MutableStateFlow(
         MediaSelectorContext(
             subjectFinishedForAConservativeTime = false,
+            mediaSourcePrecedence = emptyList(),
         )
     )
 
@@ -63,6 +64,16 @@ class DefaultMediaSelectorTest {
             ).map { it.id }
         )
     }
+
+    @Suppress("SameParameterValue")
+    private fun createMediaSelectorContextFromEmpty(
+        subjectCompleted: Boolean = false,
+        mediaSourcePrecedence: List<String> = emptyList()
+    ) =
+        MediaSelectorContext(
+            subjectFinishedForAConservativeTime = subjectCompleted,
+            mediaSourcePrecedence = mediaSourcePrecedence,
+        )
 
     ///////////////////////////////////////////////////////////////////////////
     // 单个选项测试
@@ -322,6 +333,58 @@ class DefaultMediaSelectorTest {
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    // Media source precedence
+    ///////////////////////////////////////////////////////////////////////////
+
+    @Test
+    fun `select first preferred media source`() = runTest {
+        val target: DefaultMedia
+        addMedia(
+            media(sourceId = "1"),
+            media(sourceId = "2").also { target = it },
+            media(sourceId = "1"),
+            media(sourceId = "1"),
+            media(sourceId = "1")
+        )
+        mediaSelectorContext.value = createMediaSelectorContextFromEmpty(
+            mediaSourcePrecedence = listOf("2", "1")
+        )
+        assertEquals(target, selector.trySelectDefault())
+    }
+
+    @Test
+    fun `select second preferred media source`() = runTest {
+        val target: DefaultMedia
+        addMedia(
+            media(sourceId = "1"),
+            media(sourceId = "2").also { target = it },
+            media(sourceId = "1"),
+            media(sourceId = "1"),
+            media(sourceId = "1")
+        )
+        mediaSelectorContext.value = createMediaSelectorContextFromEmpty(
+            mediaSourcePrecedence = listOf("3", "2", "1")
+        )
+        assertEquals(target, selector.trySelectDefault())
+    }
+
+    @Test
+    fun `select with no media source preference`() = runTest {
+        val target: DefaultMedia
+        addMedia(
+            media(sourceId = "1").also { target = it },
+            media(sourceId = "2"),
+            media(sourceId = "1"),
+            media(sourceId = "1"),
+            media(sourceId = "1")
+        )
+        mediaSelectorContext.value = createMediaSelectorContextFromEmpty(
+            mediaSourcePrecedence = emptyList()
+        )
+        assertEquals(target, selector.trySelectDefault())
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     // Cached
     ///////////////////////////////////////////////////////////////////////////
 
@@ -423,7 +486,7 @@ class DefaultMediaSelectorTest {
     @Test
     fun `can hide single episode after finished`() = runTest {
         val target: DefaultMedia
-        mediaSelectorContext.value = MediaSelectorContext(subjectFinishedForAConservativeTime = true)
+        mediaSelectorContext.value = createMediaSelectorContextFromEmpty(true)
         mediaSelectorSettings.value = MediaSelectorSettings.Default.copy(
             hideSingleEpisodeForCompleted = true,
             preferSeasons = false,
@@ -446,7 +509,7 @@ class DefaultMediaSelectorTest {
 
     @Test
     fun `do not hide single episode after finished if settings off`() = runTest {
-        mediaSelectorContext.value = MediaSelectorContext(subjectFinishedForAConservativeTime = true)
+        mediaSelectorContext.value = createMediaSelectorContextFromEmpty(true)
         mediaSelectorSettings.value = MediaSelectorSettings.Default.copy(
             hideSingleEpisodeForCompleted = false,
             preferSeasons = false,
@@ -469,7 +532,7 @@ class DefaultMediaSelectorTest {
     @Test
     fun `prefer seasons after finished`() = runTest {
         val target: DefaultMedia
-        mediaSelectorContext.value = MediaSelectorContext(subjectFinishedForAConservativeTime = true)
+        mediaSelectorContext.value = createMediaSelectorContextFromEmpty(true)
         mediaSelectorSettings.value = MediaSelectorSettings.Default.copy(
             hideSingleEpisodeForCompleted = false,
             preferSeasons = true,
@@ -490,7 +553,7 @@ class DefaultMediaSelectorTest {
     @Test
     fun `do not prefer season if disabled`() = runTest {
         val target: DefaultMedia
-        mediaSelectorContext.value = MediaSelectorContext(subjectFinishedForAConservativeTime = true)
+        mediaSelectorContext.value = createMediaSelectorContextFromEmpty(true)
         mediaSelectorSettings.value = MediaSelectorSettings.Default.copy(
             hideSingleEpisodeForCompleted = false,
             preferSeasons = false,
@@ -511,7 +574,7 @@ class DefaultMediaSelectorTest {
     @Test
     fun `do not prefer season if not matched`() = runTest {
         val target: DefaultMedia
-        mediaSelectorContext.value = MediaSelectorContext(subjectFinishedForAConservativeTime = true)
+        mediaSelectorContext.value = createMediaSelectorContextFromEmpty(true)
         mediaSelectorSettings.value = MediaSelectorSettings.Default.copy(
             hideSingleEpisodeForCompleted = false,
             preferSeasons = true,

@@ -68,7 +68,7 @@ class DefaultEpisodeMediaFetchSessionTest {
             defaultMediaPreferenceFlow = defaultMediaPreferences,
             mediaSelectorSettingsFlow = mediaSelectorSettings,
             subjectCompletedNotCached = subjectCompleted,
-            mediaSourceInstancesNotCached = mediaSourceInstances,
+            mediaSourceInstances = mediaSourceInstances,
             parentCoroutineContext = EmptyCoroutineContext,
         )
     }
