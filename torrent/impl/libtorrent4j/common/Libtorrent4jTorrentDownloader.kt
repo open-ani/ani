@@ -344,6 +344,7 @@ fun Libtorrent4jTorrentDownloader(
         uploadRateLimit(0)
         downloadRateLimit(0)
         maxPeerlistSize(1000)
+        activeChecking(4)
         dhtBootstrapNodes = setOf(
             dhtBootstrapNodes.split(",") + listOf(
                 "router.utorrent.com:6881",
