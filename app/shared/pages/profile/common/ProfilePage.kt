@@ -107,7 +107,7 @@ private fun DebugInfoView(modifier: Modifier = Modifier) {
             style = MaterialTheme.typography.titleMedium,
         )
 
-        AniHelpSection(modifier)
+        AniHelpSection(Modifier)
     }
 }
 
