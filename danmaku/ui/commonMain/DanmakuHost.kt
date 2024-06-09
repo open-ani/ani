@@ -4,6 +4,7 @@ import androidx.annotation.UiThread
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -27,8 +28,10 @@ import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastAny
+import androidx.compose.ui.util.fastForEach
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
@@ -36,12 +39,15 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.withContext
 import me.him188.ani.danmaku.api.Danmaku
+import me.him188.ani.danmaku.api.DanmakuLocation
 import me.him188.ani.danmaku.api.DanmakuPresentation
 import kotlin.math.roundToInt
 
 @Stable
 interface DanmakuHostState {
-    val tracks: List<DanmakuTrackState>
+    val floatingTracks: List<FloatingDanmakuTrackState>
+    val topTracks: List<FixedDanmakuTrackState>
+    val bottomTracks: List<FixedDanmakuTrackState>
 
     fun setTrackCount(count: Int)
 
@@ -77,7 +83,7 @@ interface DanmakuHostState {
 
 suspend inline fun DanmakuHostState.send(danmaku: DanmakuPresentation) {
     if (!trySend(danmaku)) {
-        tracks.randomOrNull()?.send(danmaku)
+        floatingTracks.randomOrNull()?.send(danmaku)
     }
 }
 
@@ -89,7 +95,7 @@ fun DanmakuHostState(
 ): DanmakuHostState = DanmakuHostStateImpl(danmakuTrackProperties)
 
 /**
- * 容纳[弹幕轨道][DanmakuTrack]的 [Column].
+ * 容纳[弹幕轨道][FloatingDanmakuTrack]的 [Column].
  *
  * @see DanmakuHostState
  */
@@ -100,17 +106,41 @@ fun DanmakuHost(
     configProvider: () -> DanmakuConfig,
 ) {
     BoxWithConstraints(modifier) {
-        val screenHeightPx by rememberUpdatedState(constraints.maxHeight)
-        Column(Modifier.background(Color.Transparent)) {
-            val baseStyle = MaterialTheme.typography.bodyMedium
-            state.Content(baseStyle)
+        val baseStyle = MaterialTheme.typography.bodyMedium
+        state.Content(baseStyle)
+        val verticalPadding = 1.dp // to both top and bottom
 
-            val config by remember {
-                derivedStateOf(configProvider)
+        val config by remember {
+            derivedStateOf(configProvider)
+        }
+
+        val screenHeightPx by rememberUpdatedState(constraints.maxHeight)
+
+        // 顶部和底部
+        Column(Modifier.matchParentSize().background(Color.Transparent)) {
+            for (track in state.topTracks) {
+                FixedDanmakuTrack(track, Modifier.fillMaxWidth(), configProvider, baseStyle = baseStyle) {
+                    HeightHolder(verticalPadding)
+                    track.visibleDanmaku?.let {
+                        danmaku(it)
+                    }
+                }
             }
+            Spacer(Modifier.weight(1f))
+            for (track in state.bottomTracks) {
+                FixedDanmakuTrack(track, Modifier.fillMaxWidth(), configProvider, baseStyle = baseStyle) {
+                    HeightHolder(verticalPadding)
+                    track.visibleDanmaku?.let {
+                        danmaku(it)
+                    }
+                }
+            }
+        }
+
+        // 浮动弹幕
+        Column(Modifier.background(Color.Transparent)) {
             val measurer = rememberTextMeasurer(1)
             val density by rememberUpdatedState(LocalDensity.current)
-            val verticalPadding = 1.dp // to both top and bottom
             // 更新显示区域
             LaunchedEffect(measurer) {
                 val configFlow = snapshotFlow { config }
@@ -135,11 +165,9 @@ fun DanmakuHost(
                     }
             }
 
-            for (track in state.tracks) {
-                DanmakuTrack(track, Modifier.fillMaxWidth(), configProvider, baseStyle = baseStyle) {
-                    // fix height even if there is no danmaku showing
-                    // so that the second track will not move to the top of the screen when the first track is empty.
-                    danmaku(DummyDanmakuState, Modifier.alpha(0f).padding(vertical = verticalPadding))
+            for (track in state.floatingTracks) {
+                FloatingDanmakuTrack(track, Modifier.fillMaxWidth(), configProvider, baseStyle = baseStyle) {
+                    HeightHolder(verticalPadding)
 
                     for (danmaku in track.visibleDanmaku) {
                         key(danmaku.presentation.id) {
@@ -152,31 +180,80 @@ fun DanmakuHost(
     }
 }
 
+@Composable
+private fun DanmakuTrackScope.HeightHolder(verticalPadding: Dp) {
+    // fix height even if there is no danmaku showing
+    // so that the second track will not move to the top of the screen when the first track is empty.
+    danmaku(DummyDanmakuState, Modifier.alpha(0f).padding(vertical = verticalPadding))
+}
+
 @Stable
 internal class DanmakuHostStateImpl(
     private val danmakuTrackProperties: DanmakuTrackProperties,
 ) : DanmakuHostState {
     private val _isPaused = mutableStateOf(false)
 
-    override var tracks: List<DanmakuTrackState> by mutableStateOf(
-        listOf(
-            DanmakuTrackState(_isPaused, 30, danmakuTrackProperties)
-        )
+    override var floatingTracks: List<FloatingDanmakuTrackState> by mutableStateOf(
+        listOf(FloatingDanmakuTrackState(_isPaused, 30, danmakuTrackProperties))
+    )
+        private set
+
+    override var topTracks: List<FixedDanmakuTrackState> by mutableStateOf(
+        listOf(FixedDanmakuTrackState(_isPaused))
+    )
+        private set
+
+    override var bottomTracks: List<FixedDanmakuTrackState> by mutableStateOf(
+        listOf(FixedDanmakuTrackState(_isPaused))
     )
         private set
 
     override fun setTrackCount(count: Int) {
-        if (tracks.size == count) return
-        tracks = if (count < tracks.size) {
-            tracks.take(count)
-        } else {
-            tracks + List(count - tracks.size) {
-                DanmakuTrackState(_isPaused, 30, danmakuTrackProperties)
+        setTrackCountImpl(
+            count = count,
+            get = { floatingTracks },
+            set = { floatingTracks = it },
+            newInstance = { FloatingDanmakuTrackState(_isPaused, 30, danmakuTrackProperties) }
+        )
+        setTrackCountImpl(
+            count = (count / 2).coerceAtLeast(1),
+            get = { topTracks },
+            set = { topTracks = it },
+            newInstance = { FixedDanmakuTrackState(_isPaused) }
+        )
+        setTrackCountImpl(
+            count = (count / 2).coerceAtLeast(1),
+            get = { bottomTracks },
+            set = { bottomTracks = it },
+            newInstance = { FixedDanmakuTrackState(_isPaused) }
+        )
+    }
+
+    private inline fun <T> setTrackCountImpl(
+        count: Int,
+        get: () -> List<T>,
+        set: (List<T>) -> Unit,
+        newInstance: () -> T,
+    ) {
+        val current = get()
+        if (current.size == count) return
+        set(
+            if (count < current.size) {
+                current.take(count)
+            } else {
+                current + List(count - current.size) {
+                    newInstance()
+                }
             }
-        }
+        )
     }
 
     override fun trySend(danmaku: DanmakuPresentation): Boolean {
+        val tracks = when (danmaku.danmaku.location) {
+            DanmakuLocation.TOP -> topTracks
+            DanmakuLocation.BOTTOM -> bottomTracks.asReversed()
+            DanmakuLocation.NORMAL -> floatingTracks
+        }
         return tracks.any { it.trySend(danmaku) }
     }
 
@@ -185,7 +262,7 @@ internal class DanmakuHostStateImpl(
             // 还没 layout 之前等着
             while (!::textMeasurer.isInitialized
                 || !::baseStyle.isInitialized
-                || tracks.fastAny { it.trackOffset.isNaN() }
+                || floatingTracks.fastAny { it.trackOffset.isNaN() }
             ) {
                 delay(100)
             }
@@ -200,7 +277,7 @@ internal class DanmakuHostStateImpl(
         val textMeasurer = textMeasurer
 
         // 重置所有轨道以及它们的偏移
-        for (track in tracks) {
+        for (track in floatingTracks) {
             track.clear()
             track.trackOffset = 0f
             track.populationVersion++
@@ -209,7 +286,7 @@ internal class DanmakuHostStateImpl(
         if (list.isEmpty()) return // fast path
 
         class Track(
-            val state: DanmakuTrackState,
+            val state: FloatingDanmakuTrackState,
         ) {
             var lastSent: Danmaku? = null
 
@@ -226,7 +303,11 @@ internal class DanmakuHostStateImpl(
             }
         }
 
-        val tracks = tracks.map { Track(it) }
+        // TODO: repopulate 支持顶部和底部 tracks
+        topTracks.fastForEach { it.clear() }
+        bottomTracks.fastForEach { it.clear() }
+
+        val tracks = floatingTracks.map { Track(it) }
         var curTrack = 0
 
         fun useNextTrackOrNull(): Track? {

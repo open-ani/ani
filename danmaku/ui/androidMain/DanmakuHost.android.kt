@@ -56,7 +56,7 @@ internal actual fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
                     counter++.toString(),
                     "dummy",
                     0L, "1",
-                    DanmakuLocation.NORMAL,
+                    DanmakuLocation.entries.random(),
                     text = LoremIpsum(Random.nextInt(1..5)).values.first(),
                     0
                 )
@@ -67,7 +67,7 @@ internal actual fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
             while (true) {
                 emit(danmaku())
                 emitted++
-                delay(Random.nextLong(50, 1000).milliseconds)
+                delay(Random.nextLong(20, 500).milliseconds)
             }
         }
     }
@@ -94,11 +94,23 @@ internal actual fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
                 ) { config }
                 Column {
                     Text("Emitted: $emitted")
-                    state.tracks.forEachIndexed { index, danmakuTrackState ->
+                    state.topTracks.forEachIndexed { index, danmakuTrackState ->
                         Text(
-                            "track$index: offset=${danmakuTrackState.trackOffset.toInt()}, " +
+                            "track top$index: visible=${danmakuTrackState.visibleDanmaku}"
+                        )
+                    }
+                    HorizontalDivider()
+                    state.floatingTracks.forEachIndexed { index, danmakuTrackState ->
+                        Text(
+                            "track floating$index: offset=${danmakuTrackState.trackOffset.toInt()}, " +
                                     "visible=${danmakuTrackState.visibleDanmaku.size}, " +
                                     "starting=${danmakuTrackState.startingDanmaku.size}"
+                        )
+                    }
+                    HorizontalDivider()
+                    state.bottomTracks.forEachIndexed { index, danmakuTrackState ->
+                        Text(
+                            "track bottom$index: visible=${danmakuTrackState.visibleDanmaku}"
                         )
                     }
                 }
@@ -123,7 +135,7 @@ internal actual fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
                 ) { config }
                 Column {
                     Text("Emitted: $emitted")
-                    state.tracks.forEachIndexed { index, danmakuTrackState ->
+                    state.floatingTracks.forEachIndexed { index, danmakuTrackState ->
                         Text(
                             "track$index: offset=${danmakuTrackState.trackOffset.toInt()}, " +
                                     "visible=${danmakuTrackState.visibleDanmaku.size}, " +

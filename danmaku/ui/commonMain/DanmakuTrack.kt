@@ -22,6 +22,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.withFrameNanos
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clipToBounds
@@ -54,7 +55,7 @@ import java.util.UUID
 class DanmakuState internal constructor(
     val presentation: DanmakuPresentation,
     /**
-     * 初始值满足 [offsetInsideTrack] + [DanmakuTrackState.trackOffset] == [DanmakuTrackState.trackSize].width
+     * 初始值满足 [offsetInsideTrack] + [FloatingDanmakuTrackState.trackOffset] == [FloatingDanmakuTrackState.trackSize].width
      */
     val offsetInsideTrack: Float = 0f, // positive
 ) {
@@ -102,11 +103,25 @@ class DanmakuTrackProperties(
     }
 }
 
-class DanmakuTrackState(
+interface DanmakuTrackState {
+    /**
+     * 尝试发送一条弹幕到这个轨道. 当轨道已满时返回 `false`.
+     */
+    @UiThread
+    fun trySend(danmaku: DanmakuPresentation): Boolean
+
+    /**
+     * 清空所有屏幕上可见的弹幕以及发送队列.
+     */
+    @UiThread
+    fun clear()
+}
+
+class FloatingDanmakuTrackState(
     isPaused: State<Boolean>,
     private val maxCount: Int,
     private val danmakuTrackProperties: DanmakuTrackProperties = DanmakuTrackProperties.Default,
-) {
+) : DanmakuTrackState {
     /**
      * 正在发送的弹幕. 用于缓存后台逻辑帧发送的弹幕, 以便在下一 UI 帧开始渲染
      *
@@ -145,11 +160,7 @@ class DanmakuTrackState(
     @JvmField
     var lastSafeSeparation: Float = 0f
 
-    /**
-     * 尝试发送一条弹幕到这个轨道. 当轨道已满时返回 `false`.
-     * @see channel
-     */
-    fun trySend(danmaku: DanmakuPresentation): Boolean = channel.trySend(danmaku).isSuccess
+    override fun trySend(danmaku: DanmakuPresentation): Boolean = channel.trySend(danmaku).isSuccess
 
     /**
      * 挂起当前协程, 直到成功发送这条弹幕.
@@ -173,11 +184,8 @@ class DanmakuTrackState(
         }
     }
 
-    /**
-     * 清空所有屏幕上可见的弹幕以及发送队列.
-     */
     @UiThread
-    fun clear() {
+    override fun clear() {
         @Suppress("ControlFlowWithEmptyBody")
         while (channel.tryReceive().isSuccess);
         visibleDanmaku.clear()
@@ -318,8 +326,8 @@ abstract class DanmakuTrackScope {
 }
 
 @Composable
-fun DanmakuTrack(
-    trackState: DanmakuTrackState,
+fun FloatingDanmakuTrack(
+    trackState: FloatingDanmakuTrackState,
     modifier: Modifier = Modifier,
     config: () -> DanmakuConfig = { DanmakuConfig.Default },
     baseStyle: TextStyle = MaterialTheme.typography.bodyMedium,
@@ -344,35 +352,7 @@ fun DanmakuTrack(
     val layoutDirection by rememberUpdatedState(LocalLayoutDirection.current)
 
     val scope = remember(trackState) {
-        object : DanmakuTrackScope() {
-            @Composable
-            override fun danmakuImpl(
-                danmaku: DanmakuState,
-                modifier: Modifier
-            ) {
-                Box(
-                    modifier
-                        .alpha(if (danmaku.animationStarted) 1f else 0f) // Don't use `danmaku.offset == 0`, see danmaku.offset comments.
-                        .graphicsLayer {
-                            translationX = danmaku.offsetInsideTrack
-                        }
-                        .onPlaced { layoutCoordinates ->
-                            danmaku.onPlaced(layoutCoordinates)
-                        }
-                        .wrapContentSize()
-                ) {
-                    DanmakuText(
-                        danmaku,
-                        config = configUpdated,
-                        baseStyle = baseStyle,
-                        onTextLayout = {
-                            danmaku.textWidth = it.size.width
-                            danmaku.animationStarted = true
-                        }
-                    )
-                }
-            }
-        }
+        DanmakuTrackScopeImpl({ configUpdated }, { baseStyle })
     }
 
     LaunchedEffect(true) {
@@ -416,6 +396,68 @@ fun DanmakuTrack(
             }
         ) {
             scope.content()
+        }
+    }
+}
+
+
+@Composable
+fun FixedDanmakuTrack(
+    trackState: FixedDanmakuTrackState,
+    modifier: Modifier = Modifier,
+    config: () -> DanmakuConfig = { DanmakuConfig.Default },
+    baseStyle: TextStyle = MaterialTheme.typography.bodyMedium,
+    content: @Composable DanmakuTrackScope.() -> Unit, // box scope
+) {
+    val configUpdated by remember(config) { derivedStateOf(config) }
+
+    val scope = remember(trackState) {
+        DanmakuTrackScopeImpl({ configUpdated }, { baseStyle })
+    }
+
+    LaunchedEffect(true) {
+        while (isActive) {
+            trackState.receiveNewDanmaku(System.currentTimeMillis())
+            // We need this delay to calculate gently, because we need to ensure that the updating of offsets gets completed in every frame.
+            delay(1000 / 60)
+        }
+    }
+
+    BoxWithConstraints(modifier, contentAlignment = Alignment.Center) {
+        scope.content()
+    }
+}
+
+@Stable
+private class DanmakuTrackScopeImpl(
+    private val getConfig: () -> DanmakuConfig,
+    private val getBaseStyle: () -> TextStyle
+) : DanmakuTrackScope() {
+    @Composable
+    override fun danmakuImpl(
+        danmaku: DanmakuState,
+        modifier: Modifier
+    ) {
+        Box(
+            modifier
+                .alpha(if (danmaku.animationStarted) 1f else 0f) // Don't use `danmaku.offset == 0`, see danmaku.offset comments.
+                .graphicsLayer {
+                    translationX = danmaku.offsetInsideTrack
+                }
+                .onPlaced { layoutCoordinates ->
+                    danmaku.onPlaced(layoutCoordinates)
+                }
+                .wrapContentSize()
+        ) {
+            DanmakuText(
+                danmaku,
+                config = getConfig(),
+                baseStyle = getBaseStyle(),
+                onTextLayout = {
+                    danmaku.textWidth = it.size.width
+                    danmaku.animationStarted = true
+                }
+            )
         }
     }
 }
