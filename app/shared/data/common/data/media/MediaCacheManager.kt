@@ -127,6 +127,7 @@ abstract class MediaCacheManager(
     }
 
     init {
+        val startTime = System.currentTimeMillis()
         enabledStorages
             .mapLatest { list ->
                 val stats = list.map { it.stats }.sum()
@@ -137,6 +138,9 @@ abstract class MediaCacheManager(
                     stats.progress
                         .sampleWithInitial(1000)
                         .collectLatest { progress ->
+                            if (System.currentTimeMillis() - startTime < 5000) {
+                                return@collectLatest
+                            }
                             if (progress >= 1f) {
                                 notif.ongoing = false
                                 notif.cancel()
