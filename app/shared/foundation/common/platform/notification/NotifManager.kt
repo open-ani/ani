@@ -68,6 +68,7 @@ interface NormalNotifChannel : NotifChannel {
 
 interface Notif {
     var priority: NotifPriority
+    var silent: Boolean
     var ongoing: Boolean
 
     var contentTitle: String?
@@ -96,6 +97,7 @@ interface Notif {
 object NoopNotifManager : NotifManager() {
     private object NoopNotif : Notif {
         override var priority: NotifPriority = NotifPriority.DEFAULT
+        override var silent: Boolean = false
         override var ongoing: Boolean = false
         override var contentTitle: String? = ""
         override var contentText: String? = ""

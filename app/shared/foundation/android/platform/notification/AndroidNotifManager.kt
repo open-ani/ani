@@ -78,6 +78,11 @@ private class AndroidNotif(
             builder.setPriority(value.toAndroidPriority())
             field = value
         }
+    override var silent: Boolean = false
+        set(value) {
+            builder.setSilent(value)
+            field = value
+        }
     override var ongoing: Boolean = false
         set(value) {
             builder.setOngoing(value)

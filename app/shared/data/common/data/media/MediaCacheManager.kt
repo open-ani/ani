@@ -136,6 +136,7 @@ abstract class MediaCacheManager(
                     .sampleWithInitial(1000)
                     .collectLatest { progress ->
                         if (progress >= 1f) {
+                            notif.ongoing = false
                             notif.cancel()
                             return@collectLatest
                         }
@@ -151,6 +152,8 @@ abstract class MediaCacheManager(
                         }
                         notif.contentText = lastFile?.previewText
                         notif.setProgress(100, (progress * 100).toInt())
+                        notif.silent = true
+                        notif.ongoing = true
                         notif.show()
                     }
             }
