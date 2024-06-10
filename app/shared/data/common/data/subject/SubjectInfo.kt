@@ -38,6 +38,7 @@ class SubjectInfo(
     /* air date in `YYYY-MM-DD` format */
     val date: String? = null,
     val infobox: List<InfoboxItem> = emptyList(),
+    val imageCommon: String = "",
 ) {
     val publishDate: PackedDate = if (date == null) PackedDate.Invalid else PackedDate.parseFromDate(date)
 
@@ -104,6 +105,7 @@ fun Subject.createSubjectInfo(): SubjectInfo {
         date = this.date,
         tags = this.tags.map { Tag(it.name, it.count) },
         infobox = this.infobox?.map { InfoboxItem(it.key, convertToJsonElement(it.value)) }.orEmpty(),
+        imageCommon = this.images.common,
     )
 }
 

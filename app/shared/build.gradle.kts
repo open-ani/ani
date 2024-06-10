@@ -143,6 +143,7 @@ kotlin {
         api(libs.datastore)
         api(libs.datastore.preferences)
         api(libs.androidx.appcompat)
+        api(libs.androidx.media)
         api(libs.androidx.core.ktx)
         api(libs.koin.android)
         implementation(libs.androidx.browser)

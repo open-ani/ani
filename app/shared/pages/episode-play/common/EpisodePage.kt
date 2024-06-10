@@ -24,11 +24,13 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -39,13 +41,23 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
+import coil3.annotation.ExperimentalCoilApi
+import coil3.compose.LocalPlatformContext
+import coil3.request.ImageRequest
+import coil3.request.SuccessResult
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.platform.notification.VideoNotificationState
 import me.him188.ani.app.platform.setRequestFullScreen
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.external.placeholder.placeholder
+import me.him188.ani.app.ui.foundation.LocalImageLoader
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.effects.OnLifecycleEvent
@@ -66,6 +78,7 @@ import me.him188.ani.danmaku.ui.DanmakuConfig
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.lifecycle.Lifecycle
 import moe.tlaster.precompose.navigation.BackHandler
+import kotlin.time.Duration.Companion.milliseconds
 
 
 private val LocalSnackbar = compositionLocalOf<SnackbarHostState> {
@@ -96,6 +109,7 @@ fun EpisodePage(
     }
 }
 
+@OptIn(ExperimentalCoilApi::class)
 @Composable
 fun EpisodePageContent(
     vm: EpisodeViewModel,
@@ -118,6 +132,42 @@ fun EpisodePageContent(
     ScreenOnEffect()
 
     AutoPauseEffect(vm)
+
+    val scope = rememberCoroutineScope()
+    val imageLoader = LocalImageLoader.current
+    val coilContext = LocalPlatformContext.current
+    DisposableEffect(vm) {
+        val state = VideoNotificationState()
+        state.setPlayer(vm.playerState)
+        scope.launch {
+            val properties = vm.playerState.videoProperties.filterNotNull().first()
+            state.setDescription(
+                title = vm.subjectPresentation.title,
+                text = "${vm.episodePresentation.sort} ${vm.episodePresentation.title}",
+                length = properties.durationMillis.milliseconds,
+            )
+            scope.launch {
+                kotlin.runCatching {
+                    val request = ImageRequest.Builder(coilContext)
+                        .data(vm.subjectPresentation.info.imageCommon)
+                        .build()
+
+                    (imageLoader.execute(request) as? SuccessResult)
+                        ?.image
+                        ?.let {
+                            state.setAlbumArt(it)
+                        }
+                }.onFailure {
+                    it.printStackTrace()
+                }
+            }
+        }
+
+        onDispose {
+            state.release()
+            scope.cancel()
+        }
+    }
 
     BoxWithConstraints(modifier) {
         val layoutMode by rememberUpdatedState(LocalLayoutMode.current)

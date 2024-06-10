@@ -1,6 +1,10 @@
 package me.him188.ani.app.platform.notification
 
 import androidx.compose.ui.graphics.ImageBitmap
+import coil3.Image
+import coil3.annotation.ExperimentalCoilApi
+import me.him188.ani.app.videoplayer.ui.state.PlayerState
+import kotlin.time.Duration
 
 abstract class NotifManager { // available via inject
     /**
@@ -13,6 +17,16 @@ abstract class NotifManager { // available via inject
         description: String? = null
     ): OngoingNotifChannel
 
+    /**
+     * 注册一条可以持续更新的通知渠道, 可用于显示下载进度等
+     */
+    abstract fun registerMediaOngoingChannel(
+        id: String,
+        name: String,
+        importance: NotifImportance = NotifImportance.LOW,
+        description: String? = null
+    ): MediaNotifChannel<MediaNotif>
+
     val downloadChannel by lazy {
         registerOngoingChannel(
             id = "download",
@@ -22,8 +36,18 @@ abstract class NotifManager { // available via inject
         )
     }
 
+    val playChannel by lazy {
+        registerMediaOngoingChannel(
+            id = "playing",
+            name = "正在播放",
+            description = "当前有视频正在播放时显示, 可控制暂停或关闭",
+            importance = NotifImportance.MIN,
+        )
+    }
+
     open fun createChannels() {
         downloadChannel
+        playChannel
     }
 }
 
@@ -46,14 +70,41 @@ enum class NotifPriority {
 
 sealed interface NotifChannel
 
-/**
- * 只能发送一条持久通知的通道
- */
 interface OngoingNotifChannel : NotifChannel {
-    /**
-     * 该通道的持久通知. 该通知不会发送, 直到 [Notif.show] 被调用.
-     */
     val notif: Notif
+}
+
+abstract class MediaNotifChannel<out T : MediaNotif> : NotifChannel {
+    /**
+     * 当前正在显示的通知
+     */
+    open val notif: T?
+        get() = _current
+
+    @Volatile
+    private var _current: T? = null
+
+    fun startNew(tag: String): T {
+        synchronized(this) {
+            releaseCurrent()
+            return create(tag).also { _current = it }
+        }
+    }
+
+    fun getOrStart(tag: String): T {
+        return _current ?: synchronized(this) {
+            _current ?: startNew(tag)
+        }
+    }
+
+    protected abstract fun create(tag: String): T
+
+    fun releaseCurrent() {
+        synchronized(this) {
+            _current?.release()
+            _current = null
+        }
+    }
 }
 
 /**
@@ -76,7 +127,14 @@ interface Notif {
 
     fun setSmallIcon(uri: String) // required
     fun setSmallIcon(bitmap: ImageBitmap)
+
+    @OptIn(ExperimentalCoilApi::class)
+    fun setSmallIcon(bitmap: Image)
+
     fun setLargeIcon(bitmap: ImageBitmap)
+
+    @OptIn(ExperimentalCoilApi::class)
+    fun setLargeIcon(bitmap: Image)
 
     fun setProgress(max: Int, progress: Int)
     fun setIndeterminateProgress()
@@ -90,12 +148,43 @@ interface Notif {
      * 清除通知
      */
     fun cancel()
+
+    fun release()
 }
 
+enum class MediaIcon {
+    PLAY,
+    PAUSE,
+    STOP,
+}
+
+interface MediaNotif : Notif {
+    fun addOneTimeAction(
+        icon: MediaIcon,
+        title: String,
+        action: () -> Unit,
+    )
+
+    fun onClickContent(action: () -> Unit)
+
+    fun updateMediaMetadata(
+        title: String? = null,
+        album: String? = null,
+        artist: String? = null,
+        duration: Duration? = null,
+    )
+
+    @OptIn(ExperimentalCoilApi::class)
+    fun updateAlbumArt(albumArt: Image) {
+        setLargeIcon(albumArt)
+    }
+
+    fun attachPlayerState(playerState: PlayerState)
+}
 
 // For desktop
 object NoopNotifManager : NotifManager() {
-    private object NoopNotif : Notif {
+    private abstract class NoopNotif : Notif {
         override var priority: NotifPriority = NotifPriority.DEFAULT
         override var silent: Boolean = false
         override var ongoing: Boolean = false
@@ -109,6 +198,18 @@ object NoopNotifManager : NotifManager() {
         override fun setIndeterminateProgress() {}
         override fun show() {}
         override fun cancel() {}
+        override fun release() {}
+
+        @ExperimentalCoilApi
+        override fun setLargeIcon(bitmap: Image) {
+        }
+
+        @ExperimentalCoilApi
+        override fun setSmallIcon(bitmap: Image) {
+        }
+
+        companion object : NoopNotif() {
+        }
     }
 
     private object NoopOngoingNotifChannel : OngoingNotifChannel {
@@ -121,4 +222,29 @@ object NoopNotifManager : NotifManager() {
         importance: NotifImportance,
         description: String?
     ): OngoingNotifChannel = NoopOngoingNotifChannel
+
+
+    private object NoopMediaNotif : NoopNotif(), MediaNotif {
+        override fun addOneTimeAction(icon: MediaIcon, title: String, action: () -> Unit) {
+        }
+
+        override fun onClickContent(action: () -> Unit) {
+        }
+
+        override fun updateMediaMetadata(title: String?, album: String?, artist: String?, duration: Duration?) {
+        }
+
+        override fun attachPlayerState(playerState: PlayerState) {}
+    }
+
+    private object NoopMediaNotifChannel : MediaNotifChannel<MediaNotif>() {
+        override fun create(tag: String): MediaNotif = NoopMediaNotif
+    }
+
+    override fun registerMediaOngoingChannel(
+        id: String,
+        name: String,
+        importance: NotifImportance,
+        description: String?
+    ): MediaNotifChannel<MediaNotif> = NoopMediaNotifChannel
 }

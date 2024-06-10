@@ -33,6 +33,8 @@ import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import me.him188.ani.app.navigation.AniNavigator
+import me.him188.ani.app.platform.notification.AndroidNotifManager
+import me.him188.ani.app.platform.notification.AndroidNotifManager.Companion.EXTRA_REQUEST_CODE
 import me.him188.ani.app.platform.notification.NotifManager
 import me.him188.ani.app.session.BangumiAuthorizationConstants
 import me.him188.ani.app.session.OAuthResult
@@ -54,6 +56,15 @@ class MainActivity : AniComponentActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+
+        GlobalContext.getOrNull()?.get<NotifManager>()?.let {
+            val code = intent.getIntExtra(EXTRA_REQUEST_CODE, -1)
+            if (code != -1) {
+                logger.info { "onNewIntent requestCode: $code" }
+                AndroidNotifManager.handleIntent(code)
+            }
+        }
+
         val data = intent.data ?: return
 
         val hasCallbackCode = data.queryParameterNames?.contains("code") == true
