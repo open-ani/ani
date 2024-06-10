@@ -22,6 +22,7 @@ import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.core.cache.MediaCache
 import me.him188.ani.datasources.core.cache.MediaCacheStorage
 import me.him188.ani.datasources.core.cache.sum
+import me.him188.ani.utils.coroutines.cancellableCoroutineScope
 import me.him188.ani.utils.coroutines.sampleWithInitial
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -132,30 +133,33 @@ abstract class MediaCacheManager(
                 val notif = notificationManager.downloadChannel.notif
 
                 var lastFile: MediaCache? = null
-                stats.progress
-                    .sampleWithInitial(1000)
-                    .collectLatest { progress ->
-                        if (progress >= 1f) {
-                            notif.ongoing = false
-                            notif.cancel()
-                            return@collectLatest
-                        }
-                        val downloadRate = stats.downloadRate.first()
-                        notif.contentTitle = "正在下载 $downloadRate/s"
+                cancellableCoroutineScope {
+                    stats.progress
+                        .sampleWithInitial(1000)
+                        .collectLatest { progress ->
+                            if (progress >= 1f) {
+                                notif.ongoing = false
+                                notif.cancel()
+                                cancelScope()
+                                return@collectLatest
+                            }
+                            val downloadRate = stats.downloadRate.first()
+                            notif.contentTitle = "正在下载 $downloadRate/s"
 
-                        val file = lastFile
-                        if (file == null ||
-                            file.isDeleted.firstOrNull() == true ||
-                            file.finished.firstOrNull() != false
-                        ) {
-                            lastFile = list.findFirstDownloadingFile()
+                            val file = lastFile
+                            if (file == null ||
+                                file.isDeleted.firstOrNull() == true ||
+                                file.finished.firstOrNull() != false
+                            ) {
+                                lastFile = list.findFirstDownloadingFile()
+                            }
+                            notif.contentText = lastFile?.previewText
+                            notif.setProgress(100, (progress * 100).toInt())
+                            notif.silent = true
+                            notif.ongoing = true
+                            notif.show()
                         }
-                        notif.contentText = lastFile?.previewText
-                        notif.setProgress(100, (progress * 100).toInt())
-                        notif.silent = true
-                        notif.ongoing = true
-                        notif.show()
-                    }
+                }
             }
             .flowOn(CoroutineName("MediaCacheManager.notifications"))
             .launchIn(backgroundScope)
