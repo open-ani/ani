@@ -25,6 +25,16 @@ class AndroidNotifManager(
         }
     }
 
+    override fun registerNormalChannel(
+        id: String,
+        name: String,
+        importance: NotifImportance,
+        description: String?
+    ): NormalNotifChannel {
+        registerChannel(id, importance, name, description)
+        return NormalNotifChannelImpl(id)
+    }
+
     override fun registerOngoingChannel(
         id: String,
         name: String,
@@ -43,6 +53,17 @@ class AndroidNotifManager(
     ): MediaNotifChannel<MediaNotif> {
         registerChannel(id, importance, name, description)
         return MediaNotifChannelImpl(id, parentCoroutineContext)
+    }
+
+    override fun hasPermission(): Boolean {
+        return kotlin.runCatching {
+            notificationManager.areNotificationsEnabled()
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+//                getContext().checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+//            } else {
+//                notificationManager.areNotificationsEnabled()
+//            }
+        }.getOrNull() ?: false
     }
 
     private fun registerChannel(
@@ -69,6 +90,14 @@ class AndroidNotifManager(
     ) : OngoingNotifChannel {
         override val notif: Notif by lazy {
             AndroidNotif(this@AndroidNotifManager, getContext, channelId)
+        }
+    }
+
+    private inner class NormalNotifChannelImpl(
+        private val channelId: String,
+    ) : NormalNotifChannel {
+        override fun newNotif(): Notif {
+            return AndroidNotif(this@AndroidNotifManager, getContext, channelId)
         }
     }
 

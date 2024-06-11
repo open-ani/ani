@@ -68,7 +68,7 @@ abstract class DownloadStats {
      * 该文件是否已经全部下载完成.
      */
     open val isFinished: Flow<Boolean>
-        get() = progress.map { it == 1f }
+        get() = progress.map { it >= 1f }
 
     /**
      * Waits for all pieces to be downloaded

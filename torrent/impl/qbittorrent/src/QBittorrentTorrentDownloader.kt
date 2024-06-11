@@ -265,7 +265,7 @@ class QBittorrentTorrentDownloadSession(
         override val downloadRate = MutableStateFlow<Long?>(null)
         override val uploadRate = MutableStateFlow<Long?>(null)
         override val progress = MutableStateFlow(0f)
-        override val isFinished = progress.map { it == 1f }
+        override val isFinished = progress.map { it >= 1f }
 
         fun updateFrom(torrentInfo: QBTorrent) {
             totalBytes.value = torrentInfo.totalSize

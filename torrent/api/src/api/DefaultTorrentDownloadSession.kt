@@ -292,7 +292,7 @@ open class DefaultTorrentDownloadSession(
                     }
                 }
             override val isFinished: Flow<Boolean> = combine(downloadedBytes, totalBytes) { downloaded, total ->
-                downloaded == total
+                downloaded >= total
             }
 
             override suspend fun awaitFinished() {

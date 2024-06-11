@@ -62,6 +62,15 @@ internal open class AndroidNotif(
             field = value
         }
 
+    override fun setGroup(groupKey: String) {
+        builder.setGroup(groupKey)
+        builder.setGroupAlertBehavior(NotificationCompat.GROUP_ALERT_SUMMARY)
+    }
+
+    override fun setAsGroupSummary(isGroupSummary: Boolean) {
+        builder.setGroupSummary(isGroupSummary)
+    }
+
     override fun setSmallIcon(uri: String) {
         kotlin.runCatching {
             builder.setSmallIcon(IconCompat.createWithContentUri(uri))

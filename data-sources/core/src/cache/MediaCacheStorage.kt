@@ -3,6 +3,8 @@ package me.him188.ani.datasources.core.cache
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import me.him188.ani.datasources.api.CachedMedia
 import me.him188.ani.datasources.api.Media
@@ -82,6 +84,11 @@ interface MediaCacheStorage : AutoCloseable {
      */
     suspend fun delete(cache: MediaCache): Boolean
 }
+
+val MediaCacheStorage.anyCaching: Flow<Boolean>
+    get() = listFlow.flatMapLatest { caches ->
+        combine(caches.map { it.progress }) { array -> array.any { it < 1f } }
+    }
 
 /**
  * A media cached in the storage.

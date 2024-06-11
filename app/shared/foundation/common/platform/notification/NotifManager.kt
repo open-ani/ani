@@ -8,7 +8,17 @@ import kotlin.time.Duration
 
 abstract class NotifManager { // available via inject
     /**
-     * 注册一条可以持续更新的通知渠道, 可用于显示下载进度等
+     * 注册一条可以创建并发送多条通知的渠道
+     */
+    abstract fun registerNormalChannel(
+        id: String,
+        name: String,
+        importance: NotifImportance = NotifImportance.LOW,
+        description: String? = null
+    ): NormalNotifChannel
+
+    /**
+     * 注册一条可以持续更新的通知渠道
      */
     abstract fun registerOngoingChannel(
         id: String,
@@ -27,12 +37,14 @@ abstract class NotifManager { // available via inject
         description: String? = null
     ): MediaNotifChannel<MediaNotif>
 
+    abstract fun hasPermission(): Boolean
+
     val downloadChannel by lazy {
-        registerOngoingChannel(
+        registerNormalChannel(
             id = "download",
             name = "缓存进度",
             description = "通知下载进度, 也可以帮助保持在后台运行",
-            importance = NotifImportance.LOW,
+            importance = NotifImportance.MIN, // 不显示图标
         )
     }
 
@@ -125,6 +137,10 @@ interface Notif {
     var contentTitle: String?
     var contentText: String?
 
+    fun setGroup(groupKey: String)
+    fun setAsGroupSummary(isGroupSummary: Boolean)
+//    fun groupSummaryStyle(): GroupSummaryStyle
+
     fun setSmallIcon(uri: String) // required
     fun setSmallIcon(bitmap: ImageBitmap)
 
@@ -151,6 +167,10 @@ interface Notif {
 
     fun release()
 }
+
+//interface GroupSummaryStyle {
+//   fun 
+//}
 
 enum class MediaIcon {
     PLAY,
@@ -191,6 +211,8 @@ object NoopNotifManager : NotifManager() {
         override var contentTitle: String? = ""
         override var contentText: String? = ""
 
+        override fun setAsGroupSummary(isGroupSummary: Boolean) {}
+        override fun setGroup(groupKey: String) {}
         override fun setSmallIcon(uri: String) {}
         override fun setSmallIcon(bitmap: ImageBitmap) {}
         override fun setLargeIcon(bitmap: ImageBitmap) {}
@@ -212,16 +234,25 @@ object NoopNotifManager : NotifManager() {
         }
     }
 
-    private object NoopOngoingNotifChannel : OngoingNotifChannel {
+    private object NoopNotifChannel : OngoingNotifChannel, NormalNotifChannel {
         override val notif: Notif get() = NoopNotif
+        override fun newNotif(): Notif = NoopNotif
     }
+
+
+    override fun registerNormalChannel(
+        id: String,
+        name: String,
+        importance: NotifImportance,
+        description: String?
+    ): NormalNotifChannel = NoopNotifChannel
 
     override fun registerOngoingChannel(
         id: String,
         name: String,
         importance: NotifImportance,
         description: String?
-    ): OngoingNotifChannel = NoopOngoingNotifChannel
+    ): OngoingNotifChannel = NoopNotifChannel
 
 
     private object NoopMediaNotif : NoopNotif(), MediaNotif {
@@ -247,4 +278,6 @@ object NoopNotifManager : NotifManager() {
         importance: NotifImportance,
         description: String?
     ): MediaNotifChannel<MediaNotif> = NoopMediaNotifChannel
+
+    override fun hasPermission(): Boolean = false
 }

@@ -36,6 +36,7 @@ import me.him188.ani.datasources.core.cache.AbstractMediaStats
 import me.him188.ani.datasources.core.cache.MediaCache
 import me.him188.ani.datasources.core.cache.MediaCacheEngine
 import me.him188.ani.datasources.core.cache.MediaStats
+import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
@@ -252,25 +253,33 @@ class TorrentMediaCacheEngine(
                 emit(null)
                 return@flow
             }
-            val session = downloader.startDownload(encoded, parentContext)
+            val res = kotlinx.coroutines.withTimeoutOrNull(30_000) {
+                val session = downloader.startDownload(encoded, parentContext)
 
-            val selectedFile = TorrentVideoSourceResolver.selectVideoFileEntry(
-                session.getFiles(),
-                { pathInTorrent },
-                listOf(metadata.episodeName),
-                episodeSort = metadata.episodeSort,
-                episodeEp = metadata.episodeEp,
-            )
+                val selectedFile = TorrentVideoSourceResolver.selectVideoFileEntry(
+                    session.getFiles(),
+                    { pathInTorrent },
+                    listOf(metadata.episodeName),
+                    episodeSort = metadata.episodeSort,
+                    episodeEp = metadata.episodeEp,
+                )
 
-            if (selectedFile == null) {
-                logger.warn { "No file selected for ${metadata.episodeName}" }
+                if (selectedFile == null) {
+                    logger.warn { "No file selected for ${metadata.episodeName}" }
+                }
+
+                val handle = selectedFile?.createHandle()
+                if (handle == null) {
+                    session.closeIfNotInUse()
+                }
+                LazyFileHandle.State(session, selectedFile, handle)
             }
-
-            val handle = selectedFile?.createHandle()
-            if (handle == null) {
-                session.closeIfNotInUse()
+            if (res == null) {
+                logger.error { "Timed out while starting torrent download: ${metadata.episodeName}" }
+                emit(null)
+            } else {
+                emit(res)
             }
-            emit(LazyFileHandle.State(session, selectedFile, handle))
         }
         return LazyFileHandle(
             scope, state
