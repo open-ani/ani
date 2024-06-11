@@ -274,7 +274,7 @@ class TorrentMediaCacheEngine(
         }
         return LazyFileHandle(
             scope, state
-                .flowOn(Dispatchers.Main)
+                .flowOn(Dispatchers.Default)
                 .shareIn(
                     scope,
                     SharingStarted.Lazily,
