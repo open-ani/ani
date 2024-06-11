@@ -158,7 +158,7 @@ fun AppSettingsTab(
                     vm.updateSettings.update(updateSettings.copy(autoCheckUpdate = !updateSettings.autoCheckUpdate))
                 },
                 title = { Text("自动检查更新") },
-                description = { Text("只会在首页提示有更新，不会自动下载") },
+                description = { Text("只会显示一个更新图标，不会自动下载") },
                 modifier = Modifier.placeholder(vm.updateSettings.loading)
             )
             HorizontalDividerItem()
@@ -197,7 +197,7 @@ fun AppSettingsTab(
                 title = { Text("应用内下载") },
                 description = {
                     if (updateSettings.inAppDownload) {
-                        Text("在应用内下载安装包，省去跳转浏览器步骤")
+                        Text("省去跳转浏览器步骤")
                     } else {
                         Text("已关闭，将会跳转到外部浏览器完成下载")
                     }
@@ -211,7 +211,7 @@ fun AppSettingsTab(
                         updateSettings.autoDownloadUpdate,
                         { vm.updateSettings.update(updateSettings.copy(autoDownloadUpdate = it)) },
                         title = { Text("自动下载更新") },
-                        description = { Text("下载完成后会在\"我的追番\"页面提示，需要点击确认才会安装") },
+                        description = { Text("下载完成后会提示，确认后才会安装") },
                         enabled = updateSettings.autoCheckUpdate,
                     )
                 }
@@ -389,7 +389,7 @@ private fun SettingsScope.PlayerGroup(
             },
             Modifier.placeholder(vm.uiSettings.loading),
             title = { Text("竖屏模式下显示全屏按钮") },
-            description = { Text("竖屏模式下，总是显示播放器右下角的切换全屏按钮，方便切换") }
+            description = { Text("总是显示播放器右下角的切换全屏按钮，方便切换") }
         )
     }
 }

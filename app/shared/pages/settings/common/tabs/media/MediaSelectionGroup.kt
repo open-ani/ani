@@ -126,7 +126,7 @@ internal fun SettingsScope.MediaSelectionGroup(vm: MediaSettingsViewModel) {
             dialogDescription = { Text(TIPS_LONG_CLICK_SORT) },
             icon = { Icon(Icons.Rounded.Hd, null) },
             title = { Text("分辨率") },
-            description = { Text("在播放和手动缓存时，未选择的分辨率也会显示，但不会自动选择") },
+            description = { Text("未选择的分辨率也会显示，但不会自动选择") },
         )
 
         HorizontalDividerItem()
@@ -207,7 +207,7 @@ internal fun SettingsScope.MediaSelectionGroup(vm: MediaSettingsViewModel) {
                 },
                 title = { Text("BT 资源优先选择季度全集") },
                 Modifier.placeholder(vm.defaultMediaPreferenceLoading),
-                description = { Text("季度全集资源通常更快，仅对 BT 数据源有效") },
+                description = { Text("季度全集资源通常更快") },
             )
         }
     }
