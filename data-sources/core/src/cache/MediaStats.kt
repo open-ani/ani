@@ -20,20 +20,10 @@ interface MediaStats {
 
     val uploadRate: Flow<FileSize>
     val downloadRate: Flow<FileSize>
-
-    val progress: Flow<Float>
 }
 
 @Stable
-abstract class AbstractMediaStats : MediaStats {
-    // 必须返回同一个实例, 以维持 @Stable 的协定
-    override val progress: Flow<Float> by lazy {
-        combine(uploaded, downloaded) { uploaded, downloaded ->
-            if (downloaded == FileSize.Zero) 0f
-            else uploaded.inBytes.toFloat() / downloaded.inBytes
-        }
-    }
-}
+abstract class AbstractMediaStats : MediaStats
 
 /**
  * 各进度都为 `0`
@@ -42,10 +32,11 @@ fun emptyMediaStats(): MediaStats = EmptyMediaStats
 
 // object 惰性初始化
 private data object EmptyMediaStats : AbstractMediaStats() {
-    override val uploaded: Flow<FileSize> = flowOf(FileSize.Zero)
-    override val downloaded: Flow<FileSize> = flowOf(FileSize.Zero)
-    override val uploadRate: Flow<FileSize> = flowOf(FileSize.Zero)
-    override val downloadRate: Flow<FileSize> = flowOf(FileSize.Zero)
+    private val ZERO_FLOW = flowOf(FileSize.Zero)
+    override val uploaded: Flow<FileSize> get() = ZERO_FLOW
+    override val downloaded: Flow<FileSize> get() = ZERO_FLOW
+    override val uploadRate: Flow<FileSize> get() = ZERO_FLOW
+    override val downloadRate: Flow<FileSize> get() = ZERO_FLOW
 }
 
 /**
