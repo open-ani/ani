@@ -320,9 +320,9 @@ fun AppSettingsTab(
                         )
                     )
                 },
-                title = { Text("切换到新版条目查询接口") },
+                title = { Text("使用新版条目查询接口") },
                 Modifier.placeholder(vm.uiSettings.loading),
-                description = { Text("实验性查询接口，如遇条目查询不到，可关闭此项切换到旧版本更稳定的查询接口") },
+                description = { Text("实验性接口，可能会缺失部分条目，谨慎启用") },
             )
         }
         Group(title = { Text("我的追番") }) {
