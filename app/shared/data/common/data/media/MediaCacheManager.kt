@@ -225,7 +225,7 @@ abstract class MediaCacheManager(
                 //                    val anyCachingFlow = combine(list.map { storage -> storage.anyCaching }) { array ->
                 //                        array.any { it }
                 //                    }.sampleWithInitial(1000)
-                combine(stats.downloadRate.sampleWithInitial(1000)) { downloadRate ->
+                combine(stats.downloadRate.sampleWithInitial(3000)) { downloadRate ->
                     //                        if (anyCaching) {
                     if (visibleCount.get() == 0) {
                         summaryNotif.cancel()
