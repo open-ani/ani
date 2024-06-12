@@ -103,7 +103,7 @@ class DanmakuTrackProperties(
     }
 }
 
-interface DanmakuTrackState {
+sealed interface DanmakuTrackState {
     /**
      * 尝试发送一条弹幕到这个轨道. 当轨道已满时返回 `false`.
      */
@@ -116,6 +116,15 @@ interface DanmakuTrackState {
     @UiThread
     fun clear()
 }
+
+// Don't use inheritance, because we want to inline this
+suspend inline fun DanmakuTrackState.send(danmaku: DanmakuPresentation) {
+    return when (this) {
+        is FixedDanmakuTrackState -> send(danmaku) // resolves to member function
+        is FloatingDanmakuTrackState -> send(danmaku) // resolves to member function
+    }
+}
+
 
 class FloatingDanmakuTrackState(
     isPaused: State<Boolean>,
