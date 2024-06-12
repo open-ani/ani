@@ -99,6 +99,12 @@ sealed interface Media {
     val kind: MediaSourceKind
 }
 
+tailrec fun Media.unwrapCached(): DefaultMedia = if (this is CachedMedia) {
+    origin.unwrapCached()
+} else {
+    this as DefaultMedia
+}
+
 /**
  * The default implementation of [Media].
  *
