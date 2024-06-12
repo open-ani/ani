@@ -1,5 +1,6 @@
 package me.him188.ani.app.torrent.api
 
+import androidx.compose.ui.util.fastAll
 import androidx.compose.ui.util.fastFirstOrNull
 import androidx.compose.ui.util.fastForEach
 import kotlinx.coroutines.CompletableDeferred
@@ -207,6 +208,15 @@ open class DefaultTorrentDownloadSession(
                     entry.pieces.fastForEach {
                         it.state.value = PieceState.FINISHED
                     }
+                    entry.downloadedBytes.value = entry.length
+                }
+            }
+
+            for (entry in entries) {
+                // 重新扫描一遍 piece, 如果全都下载完了, 则设置为 finished. #418
+                val finished = entry.pieces.fastAll { it.state.value == PieceState.FINISHED }
+                if (finished) {
+                    entry.finishedOverride.value = true
                     entry.downloadedBytes.value = entry.length
                 }
             }
