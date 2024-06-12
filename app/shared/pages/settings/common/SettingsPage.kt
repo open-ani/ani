@@ -24,7 +24,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.launch
+import me.him188.ani.app.navigation.AniNavigator
+import me.him188.ani.app.navigation.OverrideNavigation
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.ui.foundation.TopAppBarGoBackButton
@@ -99,18 +102,30 @@ fun SettingsPage(
                 }
             }
 
-            HorizontalPager(
-                state = pagerState,
-                Modifier.fillMaxSize(),
-                userScrollEnabled = Platform.currentPlatform.isMobile(),
-            ) { index ->
-                val type = SettingsTab.entries[index]
-                Column(Modifier.fillMaxSize().padding(contentPadding)) {
-                    when (type) {
-                        SettingsTab.MEDIA -> MediaPreferenceTab(modifier = Modifier.fillMaxSize())
-                        SettingsTab.NETWORK -> NetworkSettingsTab(modifier = Modifier.fillMaxSize())
-                        SettingsTab.ABOUT -> AboutTab(modifier = Modifier.fillMaxSize())
-                        SettingsTab.APP -> AppSettingsTab(modifier = Modifier.fillMaxSize())
+            OverrideNavigation(remember(scope, pagerState) {
+                { old ->
+                    object : AniNavigator by old {
+                        override fun navigatePreferences(tab: SettingsTab) {
+                            scope.launch(start = CoroutineStart.UNDISPATCHED) {
+                                pagerState.animateScrollToPage(tab.ordinal)
+                            }
+                        }
+                    }
+                }
+            }) {
+                HorizontalPager(
+                    state = pagerState,
+                    Modifier.fillMaxSize(),
+                    userScrollEnabled = Platform.currentPlatform.isMobile(),
+                ) { index ->
+                    val type = SettingsTab.entries[index]
+                    Column(Modifier.fillMaxSize().padding(contentPadding)) {
+                        when (type) {
+                            SettingsTab.MEDIA -> MediaPreferenceTab(modifier = Modifier.fillMaxSize())
+                            SettingsTab.NETWORK -> NetworkSettingsTab(modifier = Modifier.fillMaxSize())
+                            SettingsTab.ABOUT -> AboutTab(modifier = Modifier.fillMaxSize())
+                            SettingsTab.APP -> AppSettingsTab(modifier = Modifier.fillMaxSize())
+                        }
                     }
                 }
             }
