@@ -169,14 +169,6 @@ abstract class AbstractTorrentFileEntry(
     protected val scope = CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
     protected val logger = logger<AbstractTorrentFileEntry>()
 
-    protected fun logPieces(pieces: List<Piece>) {
-        logger.info {
-            val start = pieces.minByOrNull { it.startIndex }
-            val end = pieces.maxByOrNull { it.lastIndex }
-            "[$torrentName] File '$pathInTorrent' piece initialized, ${pieces.size} pieces, offset range: $start..$end"
-        }
-    }
-
     abstract inner class AbstractTorrentFileHandle : TorrentFileHandle {
         @Volatile
         private var closed = false

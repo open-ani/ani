@@ -14,11 +14,12 @@ internal class TorrentFilePieceMatcherTest : TorrentSessionSupport() {
     fun `file piece - calculation in ctor`() = runTest {
         withSession {
             assertCoroutineSuspends { getFiles() }
-            setHandle {
-                files.add(TestTorrentFile("1.mp4", 1024))
-                // 没有提供 piece
+            assertFails {
+                setHandle {
+                    files.add(TestTorrentFile("1.mp4", 1024))
+                    // 没有提供 piece
+                }
             }
-            assertFails { getFiles() }
         }
     }
 
@@ -187,32 +188,32 @@ internal class TorrentFilePieceMatcherTest : TorrentSessionSupport() {
     @Test
     fun `file piece - single size not enough`() = runTest {
         withSession {
-            setHandle {
-                files.add(TestTorrentFile("1.mp4", 5000))
-                replacePieces {
-                    piece(2000)
-                    piece(2999)
+            assertFails {
+                setHandle {
+                    files.add(TestTorrentFile("1.mp4", 5000))
+                    replacePieces {
+                        piece(2000)
+                        piece(2999)
+                    }
                 }
             }
-
-            assertFails { getFiles() }
         }
     }
 
     @Test
     fun `file piece - second file size not enough`() = runTest {
         withSession {
-            setHandle {
-                files.add(TestTorrentFile("0.mp4", 2000))
-                files.add(TestTorrentFile("1.mp4", 5000))
-                replacePieces {
-                    piece(2000)
-                    piece(2000)
-                    piece(2999)
+            assertFails {
+                setHandle {
+                    files.add(TestTorrentFile("0.mp4", 2000))
+                    files.add(TestTorrentFile("1.mp4", 5000))
+                    replacePieces {
+                        piece(2000)
+                        piece(2000)
+                        piece(2999)
+                    }
                 }
             }
-
-            assertFails { getFiles() }
         }
     }
 }
