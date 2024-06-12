@@ -18,16 +18,24 @@
 
 package me.him188.ani.app.ui.home
 
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import me.him188.ani.app.data.database.eneity.SearchHistoryEntity
 import me.him188.ani.app.data.models.SearchSettings
+import me.him188.ani.app.data.repositories.SearchHistoryRepository
 import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.subject.SubjectListViewModel
 import me.him188.ani.datasources.api.subject.SubjectProvider
 import me.him188.ani.datasources.api.subject.SubjectSearchQuery
+import moe.tlaster.precompose.viewmodel.viewModelScope
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -36,12 +44,18 @@ class SearchViewModel(
 ) : AbstractViewModel(), KoinComponent {
     private val subjectProvider: SubjectProvider by inject()
     private val settings: SettingsRepository by inject()
+    private val _searchHistory: SearchHistoryRepository by inject()
 
     private val _result: MutableStateFlow<SubjectListViewModel?> = MutableStateFlow(null)
 
 
-    val searchActive: MutableStateFlow<Boolean> = MutableStateFlow(false)
-    val editingQuery: MutableStateFlow<String> = MutableStateFlow(keyword ?: "")
+    var searchActive: MutableState<Boolean> = mutableStateOf(false)
+    var editingQuery: MutableState<String> = mutableStateOf(keyword ?: "")
+    val searchHistory: StateFlow<List<SearchHistory>> = _searchHistory
+        .getFlow()
+        .distinctUntilChanged()
+        .map { it.map { entity -> entity.toData() } }
+        .stateIn(viewModelScope, SharingStarted.Lazily, listOf())
 
     val result: StateFlow<SubjectListViewModel?> = _result
 
@@ -50,6 +64,14 @@ class SearchViewModel(
 
     init {
         keyword?.let { search(it) }
+    }
+
+    fun pushSearchHistory(content: String) {
+        _searchHistory.add(SearchHistoryEntity(content = content))
+    }
+
+    fun deleteSearchHistory(id: Int) {
+        _searchHistory.deleteBySeq(id)
     }
 
     fun search(keywords: String) {
@@ -68,4 +90,13 @@ class SearchViewModel(
                 )
             )
     }
+}
+
+data class SearchHistory(
+    val id: Int,
+    val content: String
+)
+
+fun SearchHistoryEntity.toData(): SearchHistory {
+    return SearchHistory(sequence, content)
 }

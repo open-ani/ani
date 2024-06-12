@@ -18,23 +18,60 @@
 
 package me.him188.ani.app.ui.home
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.foundation.rememberViewModel
+import me.him188.ani.app.ui.subject.SubjectPreviewColumn
+import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
 @Composable
 fun HomePage(
     contentPadding: PaddingValues = PaddingValues(0.dp),
     modifier: Modifier = Modifier,
 ) {
-    Scaffold(modifier.padding(contentPadding)) {
-        val searchViewModel = rememberViewModel { SearchViewModel() }
-        SubjectSearchBar(searchViewModel, Modifier.fillMaxWidth())
+    val searchViewModel = rememberViewModel { SearchViewModel() }
+    val snackBarHostState = remember { SnackbarHostState() }
+
+    val searchActive by remember { searchViewModel.searchActive }
+    val searchText by remember { searchViewModel.editingQuery }
+    val searchResult by searchViewModel.result.collectAsStateWithLifecycle()
+
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        snackbarHost = { SnackbarHost(snackBarHostState) },
+        containerColor = Color.Transparent,
+        topBar = {
+            SubjectSearchBar(
+                initialActive = searchActive,
+                initialSearchText = searchText,
+                modifier = Modifier.fillMaxWidth(),
+                onActiveChange = { active ->
+                    searchViewModel.searchActive.value = active
+                },
+                onSearch = { query ->
+                    searchViewModel.editingQuery.value = query
+                    searchViewModel.search(query)
+                },
+            )
+        },
+        contentWindowInsets = WindowInsets(0.dp)
+
+    ) { topBarPadding ->
+        Column(Modifier.fillMaxSize()) {
+            searchResult?.let { SubjectPreviewColumn(it) }
+        }
     }
 }
 
