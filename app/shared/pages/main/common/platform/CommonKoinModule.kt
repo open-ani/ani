@@ -19,6 +19,7 @@
 package me.him188.ani.app.platform
 
 import androidx.compose.runtime.Stable
+import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import io.ktor.client.plugins.UserAgent
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -28,6 +29,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.danmaku.DanmakuManager
 import me.him188.ani.app.data.danmaku.DanmakuManagerImpl
+import me.him188.ani.app.data.database.AniDatabase
 import me.him188.ani.app.data.media.DefaultMediaAutoCacheService
 import me.him188.ani.app.data.media.DummyMediaCacheEngine
 import me.him188.ani.app.data.media.MediaAutoCacheService
@@ -49,6 +51,8 @@ import me.him188.ani.app.data.repositories.MikanIndexCacheRepository
 import me.him188.ani.app.data.repositories.MikanIndexCacheRepositoryImpl
 import me.him188.ani.app.data.repositories.PreferencesRepositoryImpl
 import me.him188.ani.app.data.repositories.ProfileRepository
+import me.him188.ani.app.data.repositories.SearchHistoryRepository
+import me.him188.ani.app.data.repositories.SearchHistoryRepositoryImpl
 import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.data.repositories.SubjectRepository
 import me.him188.ani.app.data.repositories.SubjectRepositoryImpl
@@ -60,6 +64,7 @@ import me.him188.ani.app.data.subject.SubjectManager
 import me.him188.ani.app.data.subject.SubjectManagerImpl
 import me.him188.ani.app.data.update.UpdateManager
 import me.him188.ani.app.persistent.dataStores
+import me.him188.ani.app.persistent.databaseBuilder
 import me.him188.ani.app.persistent.preferencesStore
 import me.him188.ani.app.persistent.preferredAllianceStore
 import me.him188.ani.app.persistent.tokenStore
@@ -100,6 +105,8 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
         MediaSourceInstanceRepositoryImpl(getContext().dataStores.mediaSourceSaveStore)
     }
     single<ProfileRepository> { ProfileRepository() }
+    single<SearchHistoryRepository> { SearchHistoryRepositoryImpl(get()) }
+    
     single<DanmakuManager> {
         DanmakuManagerImpl(
             parentCoroutineContext = coroutineScope.coroutineContext
@@ -113,6 +120,14 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
     single<SettingsRepository> { PreferencesRepositoryImpl(getContext().preferencesStore) }
     single<MikanIndexCacheRepository> { MikanIndexCacheRepositoryImpl(getContext().dataStores.mikanIndexStore) }
 
+    single<AniDatabase> {
+        getContext().databaseBuilder
+            .fallbackToDestructiveMigrationOnDowngrade(true)
+            .setDriver(BundledSQLiteDriver())
+            .setQueryCoroutineContext(Dispatchers.IO)
+            .build()
+    }
+    
     // Media
     single<MediaCacheManager> {
         val id = MediaCacheManager.LOCAL_FS_MEDIA_SOURCE_ID

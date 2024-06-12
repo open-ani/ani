@@ -19,6 +19,7 @@
 @file:Suppress("UnstableApiUsage")
 @file:OptIn(ExperimentalKotlinGradlePluginApi::class)
 
+import com.google.devtools.ksp.gradle.KspTaskJvm
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
@@ -33,6 +34,8 @@ plugins {
 
     kotlin("plugin.serialization")
     id("kotlinx-atomicfu")
+    id("com.google.devtools.ksp")
+    id("androidx.room")
     idea
 }
 
@@ -122,6 +125,10 @@ kotlin {
         api(libs.precompose) // Navigator
         api(libs.precompose.koin) // Navigator
         api(libs.precompose.viewmodel) // Navigator
+        implementation(libs.androidx.room.runtime.get().toString()) {
+            exclude("org.jetbrains.kotlinx", "atomicfu")
+        } // multi-platform database
+        api(libs.sqlite.bundled) // database driver implementation
 
         // Torrent
         implementation(libs.bencode)
@@ -347,6 +354,10 @@ tasks.withType(KotlinCompilationTask::class) {
     dependsOn("generateResourceAccessorsForAndroidDebug")
 }
 
+room {
+    schemaDirectory("$projectDir/schemas")
+}
+
 
 // BUILD CONFIG
 
@@ -392,6 +403,8 @@ android {
 }
 
 dependencies {
+    add("kspDesktop", libs.androidx.room.compiler)
+    add("kspAndroid", libs.androidx.room.compiler)
     debugImplementation(libs.androidx.compose.ui.tooling)
 }
 
@@ -445,5 +458,10 @@ val generateAniBuildConfigDesktop = tasks.register("generateAniBuildConfigDeskto
 }
 
 tasks.named("compileKotlinDesktop") {
+    dependsOn(generateAniBuildConfigDesktop)
+}
+
+// :app:shared:kspKotlinDesktop
+tasks.withType(KspTaskJvm::class.java) {
     dependsOn(generateAniBuildConfigDesktop)
 }
