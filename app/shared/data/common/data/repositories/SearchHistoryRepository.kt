@@ -8,15 +8,15 @@ import org.koin.core.component.KoinComponent
 
 @Stable
 interface SearchHistoryRepository {
-    fun add(history: SearchHistoryEntity)
+    suspend fun add(history: SearchHistoryEntity)
     fun getFlow(): Flow<List<SearchHistoryEntity>>
-    fun deleteBySeq(seq: Int)
+    suspend fun deleteBySeq(seq: Int)
 }
 
 class SearchHistoryRepositoryImpl(
     private val searchHistory: SearchHistoryDao
 ) : SearchHistoryRepository, KoinComponent {
-    override fun add(history: SearchHistoryEntity) {
+    override suspend fun add(history: SearchHistoryEntity) {
         searchHistory.insert(history)
     }
 
@@ -24,7 +24,7 @@ class SearchHistoryRepositoryImpl(
         return searchHistory.getFlow()
     }
 
-    override fun deleteBySeq(seq: Int) {
+    override suspend fun deleteBySeq(seq: Int) {
         searchHistory.deleteBySequence(seq)
     }
 }

@@ -18,9 +18,10 @@
 
 package me.him188.ani.app.ui.home
 
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -39,6 +40,7 @@ import moe.tlaster.precompose.viewmodel.viewModelScope
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
+@Stable
 class SearchViewModel(
     keyword: String? = "",
 ) : AbstractViewModel(), KoinComponent {
@@ -49,8 +51,8 @@ class SearchViewModel(
     private val _result: MutableStateFlow<SubjectListViewModel?> = MutableStateFlow(null)
 
 
-    var searchActive: MutableState<Boolean> = mutableStateOf(false)
-    var editingQuery: MutableState<String> = mutableStateOf(keyword ?: "")
+    var searchActive by mutableStateOf(false)
+    var editingQuery by mutableStateOf(keyword ?: "")
     val searchHistory: StateFlow<List<SearchHistory>> = _searchHistory
         .getFlow()
         .distinctUntilChanged()
@@ -66,11 +68,11 @@ class SearchViewModel(
         keyword?.let { search(it) }
     }
 
-    fun pushSearchHistory(content: String) {
+    suspend fun pushSearchHistory(content: String) {
         _searchHistory.add(SearchHistoryEntity(content = content))
     }
 
-    fun deleteSearchHistory(id: Int) {
+    suspend fun deleteSearchHistory(id: Int) {
         _searchHistory.deleteBySeq(id)
     }
 

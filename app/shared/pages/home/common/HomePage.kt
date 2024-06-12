@@ -44,8 +44,6 @@ fun HomePage(
     val searchViewModel = rememberViewModel { SearchViewModel() }
     val snackBarHostState = remember { SnackbarHostState() }
 
-    val searchActive by remember { searchViewModel.searchActive }
-    val searchText by remember { searchViewModel.editingQuery }
     val searchResult by searchViewModel.result.collectAsStateWithLifecycle()
 
     Scaffold(
@@ -54,14 +52,14 @@ fun HomePage(
         containerColor = Color.Transparent,
         topBar = {
             SubjectSearchBar(
-                initialActive = searchActive,
-                initialSearchText = searchText,
+                initialActive = searchViewModel.searchActive,
+                initialSearchText = searchViewModel.editingQuery,
                 modifier = Modifier.fillMaxWidth(),
                 onActiveChange = { active ->
-                    searchViewModel.searchActive.value = active
+                    searchViewModel.searchActive = active
                 },
                 onSearch = { query ->
-                    searchViewModel.editingQuery.value = query
+                    searchViewModel.editingQuery = query
                     searchViewModel.search(query)
                 },
             )

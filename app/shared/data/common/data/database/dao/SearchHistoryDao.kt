@@ -9,10 +9,10 @@ import me.him188.ani.app.data.database.eneity.SearchHistoryEntity
 @Dao
 interface SearchHistoryDao {
     @Insert
-    fun insert(item: SearchHistoryEntity)
+    suspend fun insert(item: SearchHistoryEntity)
 
     @Query("delete from search_history where `sequence`=:sequence")
-    fun deleteBySequence(sequence: Int)
+    suspend fun deleteBySequence(sequence: Int)
 
     @Query("select * from search_history")
     fun getFlow(): Flow<List<SearchHistoryEntity>>
