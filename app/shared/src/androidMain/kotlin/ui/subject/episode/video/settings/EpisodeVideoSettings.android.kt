@@ -12,6 +12,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.rememberViewModel
+import me.him188.ani.danmaku.ui.DanmakuConfig
 
 @Preview
 @Composable
@@ -19,7 +20,14 @@ private fun PreviewEpisodeVideoSettings() {
     ProvideCompositionLocalsForPreview {
         EpisodeVideoSettings(
             remember {
-                EpisodeVideoSettingsViewModel()
+                object : EpisodeVideoSettingsViewModel {
+                    override val danmakuConfig: DanmakuConfig = DanmakuConfig.Default
+                    override val isLoading: Boolean = false
+
+                    override fun setDanmakuConfig(config: DanmakuConfig) {
+                        // Do nothing in preview
+                    }
+                }
             }
         )
     }

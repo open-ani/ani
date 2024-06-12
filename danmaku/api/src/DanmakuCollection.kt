@@ -78,7 +78,7 @@ class TimeBasedDanmakuSession private constructor(
         if (list.isEmpty()) {
             return emptyDanmakuSession() // fast path
         }
-
+        // filter 算法
         val state = DanmakuSessionFlowState(
             list,
             repopulateThreshold = 3.seconds,
@@ -101,6 +101,7 @@ class TimeBasedDanmakuSession private constructor(
                 }
 
                 while (true) {
+                    // 如果config变化，call repopulate
                     algorithm.tick(sendItem)
                     delay(1000 / 20) // always check for cancellation
                 }
