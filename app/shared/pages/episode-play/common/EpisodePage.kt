@@ -340,7 +340,7 @@ private fun EpisodeVideo(
     val videoLoadingState by vm.videoLoadingState.collectAsStateWithLifecycle(VideoLoadingState.Initial)
 
     // Don't rememberSavable. 刻意让每次切换都是隐藏的
-    val videoControllerState = remember { VideoControllerState() }
+    val videoControllerState = remember { VideoControllerState(initialControllerVisible) }
     var danmakuEditorText by rememberSaveable { mutableStateOf("") }
 
 
