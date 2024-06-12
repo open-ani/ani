@@ -380,6 +380,12 @@ private fun EpisodeVideo(
         },
         danmakuEditor = {
             val danmakuEditorRequester = remember { Any() }
+
+            /**
+             * 是否设置了暂停
+             */
+            var didSetPaused by rememberSaveable { mutableStateOf(false) }
+
             DanmakuEditor(
                 vm = vm,
                 text = danmakuEditorText,
@@ -389,8 +395,19 @@ private fun EpisodeVideo(
                 },
                 placeholderText = danmakuTextPlaceholder,
                 modifier = Modifier.onFocusChanged {
-                    if (it.isFocused) videoControllerState.setRequestAlwaysOn(danmakuEditorRequester, true)
-                    else videoControllerState.setRequestAlwaysOn(danmakuEditorRequester, false)
+                    if (it.isFocused) {
+                        if (vm.videoScaffoldConfig.pauseVideoOnEditDanmaku && vm.playerState.state.value.isPlaying) {
+                            didSetPaused = true
+                            vm.playerState.pause()
+                        }
+                        videoControllerState.setRequestAlwaysOn(danmakuEditorRequester, true)
+                    } else {
+                        if (didSetPaused) {
+                            didSetPaused = false
+                            vm.playerState.resume()
+                        }
+                        videoControllerState.setRequestAlwaysOn(danmakuEditorRequester, false)
+                    }
                 }.weight(1f)
             )
         },

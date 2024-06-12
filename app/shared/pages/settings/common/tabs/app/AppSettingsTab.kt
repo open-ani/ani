@@ -391,6 +391,15 @@ private fun SettingsScope.PlayerGroup(
             title = { Text("竖屏模式下显示全屏按钮") },
             description = { Text("总是显示播放器右下角的切换全屏按钮，方便切换") }
         )
+        HorizontalDividerItem()
+        SwitchItem(
+            checked = config.pauseVideoOnEditDanmaku,
+            onCheckedChange = {
+                vm.videoScaffoldConfig.update(config.copy(pauseVideoOnEditDanmaku = it))
+            },
+            title = { Text("发送弹幕时自动暂停播放") },
+            Modifier.placeholder(vm.uiSettings.loading),
+        )
     }
 }
 
