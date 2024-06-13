@@ -18,6 +18,7 @@
 
 package me.him188.ani.datasources.dmhy
 
+import kotlinx.coroutines.CancellationException
 import me.him188.ani.datasources.api.paging.PagedSource
 import me.him188.ani.datasources.api.source.ConnectionStatus
 import me.him188.ani.datasources.api.source.DownloadSearchQuery
@@ -53,6 +54,8 @@ class DmhyMediaSource(
         return try {
             network.list()
             ConnectionStatus.SUCCESS
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             logger.error(e) { "Failed to check connection" }
             ConnectionStatus.FAILED
