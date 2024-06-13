@@ -8,7 +8,6 @@ import androidx.compose.material.icons.rounded.ArrowOutward
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -36,17 +35,14 @@ internal fun SettingsScope.AutoCacheGroup(
     ) {
         val mediaCacheSettings by vm.mediaCacheSettings
         SwitchItem(
+            checked = mediaCacheSettings.enabled,
+            onCheckedChange = {
+                vm.updateMediaCacheSettings(mediaCacheSettings.copy(enabled = it))
+            },
             title = { Text("启用自动缓存") },
             description = { Text("启用后下面的设置才有效") },
-        ) {
-            Switch(
-                checked = mediaCacheSettings.enabled,
-                onCheckedChange = {
-                    vm.updateMediaCacheSettings(mediaCacheSettings.copy(enabled = it))
-                },
-                Modifier.placeholder(vm.mediaCacheSettings.loading)
-            )
-        }
+            modifier = Modifier.placeholder(vm.mediaCacheSettings.loading)
+        )
 
         HorizontalDividerItem()
 
