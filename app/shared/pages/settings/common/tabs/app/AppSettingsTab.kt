@@ -406,7 +406,7 @@ private fun SettingsScope.PlayerGroup(
             onCheckedChange = {
                 vm.videoScaffoldConfig.update(config.copy(autoMarkDone = it))
             },
-            title = { Text("看到 90% 自动标记看过") },
+            title = { Text("观看 90% 后自动标记为看过") },
             Modifier.placeholder(vm.uiSettings.loading),
         )
     }
