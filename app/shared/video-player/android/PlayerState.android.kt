@@ -1,5 +1,6 @@
 package me.him188.ani.app.videoplayer
 
+import android.net.Uri
 import android.util.Pair
 import androidx.annotation.MainThread
 import androidx.annotation.OptIn
@@ -92,6 +93,17 @@ internal class ExoPlayerState @UiThread constructor(
                 releaseResource = {},
                 setMedia = {
                     val headers = source.webVideo.headers
+                    val item = MediaItem.Builder().apply {
+                        setUri(source.uri)
+                        source.extraFiles.subtitles.map {
+                            MediaItem.SubtitleConfiguration.Builder(
+                                Uri.parse(it.uri)
+                            ).apply {
+                                it.mimeType?.let { mimeType -> setMimeType(mimeType) }
+                                it.language?.let { language -> setLanguage(language) }
+                            }.build()
+                        }
+                    }.build()
                     player.setMediaSource(
                         DefaultMediaSourceFactory(
                             DefaultHttpDataSource.Factory()
@@ -101,7 +113,7 @@ internal class ExoPlayerState @UiThread constructor(
                                 )
                                 .setDefaultRequestProperties(headers)
                                 .setConnectTimeoutMs(30_000),
-                        ).createMediaSource(MediaItem.fromUri(source.uri))
+                        ).createMediaSource(item)
                     )
                 },
             )

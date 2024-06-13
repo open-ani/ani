@@ -15,7 +15,8 @@ class LocalFileVideoSourceResolver : VideoSourceResolver {
         when (val download = media.download) {
             is ResourceLocation.LocalFile -> {
                 return FileVideoSource(
-                    File(download.filePath)
+                    File(download.filePath),
+                    media.extraFiles,
                 )
             }
 

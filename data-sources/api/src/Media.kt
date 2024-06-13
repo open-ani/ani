@@ -84,6 +84,11 @@ sealed interface Media {
     val properties: MediaProperties
 
     /**
+     * 该资源的额外文件, 例如字幕文件.
+     */
+    val extraFiles: MediaExtraFiles
+
+    /**
      * 该资源的存放位置.
      *
      * 查看 [MediaSourceLocation.Local] 和 [MediaSourceLocation.Online].
@@ -124,6 +129,7 @@ private constructor(
     override val publishedTime: Long,
     override val properties: MediaProperties,
     override val episodeRange: EpisodeRange? = null,
+    override val extraFiles: MediaExtraFiles = MediaExtraFiles.Empty,
     override val location: MediaSourceLocation = MediaSourceLocation.Online,
     override val kind: MediaSourceKind = MediaSourceKind.BitTorrent,
     @Transient private val _primaryConstructorMarker: Unit = Unit,
@@ -137,6 +143,7 @@ private constructor(
         publishedTime: Long,
         properties: MediaProperties,
         episodeRange: EpisodeRange?,
+        extraFiles: MediaExtraFiles = MediaExtraFiles.Empty,
         location: MediaSourceLocation,
         kind: MediaSourceKind,
     ) : this(
@@ -148,6 +155,7 @@ private constructor(
         publishedTime,
         properties,
         episodeRange,
+        extraFiles = extraFiles,
         location,
         kind,
         _primaryConstructorMarker = Unit,

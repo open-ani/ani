@@ -1,6 +1,7 @@
 package me.him188.ani.app.videoplayer.data
 
 import me.him188.ani.app.torrent.api.TorrentDownloadSession
+import me.him188.ani.datasources.api.MediaExtraFiles
 import me.him188.ani.utils.io.SeekableInput
 
 /**
@@ -25,6 +26,8 @@ import me.him188.ani.utils.io.SeekableInput
  */
 interface VideoSource<S : VideoData> {
     val uri: String
+
+    val extraFiles: MediaExtraFiles
 
     /**
      * Opens the underlying video data.

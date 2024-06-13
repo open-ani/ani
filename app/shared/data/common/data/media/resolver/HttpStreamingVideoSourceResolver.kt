@@ -16,7 +16,8 @@ class HttpStreamingVideoSourceResolver : VideoSourceResolver {
         return HttpStreamingVideoSource(
             media.download.uri,
             media.originalTitle,
-            WebVideo(media.download.uri, emptyMap())
+            WebVideo(media.download.uri, emptyMap()),
+            media.extraFiles,
         )
     }
 }

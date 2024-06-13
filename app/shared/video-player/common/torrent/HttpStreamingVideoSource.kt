@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import me.him188.ani.app.videoplayer.data.VideoData
 import me.him188.ani.app.videoplayer.data.VideoSource
+import me.him188.ani.datasources.api.MediaExtraFiles
 import me.him188.ani.datasources.api.matcher.WebVideo
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.utils.io.SeekableInput
@@ -12,6 +13,7 @@ class HttpStreamingVideoSource(
     override val uri: String,
     private val filename: String,
     val webVideo: WebVideo,
+    override val extraFiles: MediaExtraFiles,
 ) : VideoSource<HttpStreamingVideoData> {
     override suspend fun open(): HttpStreamingVideoData {
         return HttpStreamingVideoData(uri, filename)

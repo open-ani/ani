@@ -63,7 +63,7 @@ class AndroidWebVideoSourceResolver : VideoSourceResolver {
                 }
             }
         )
-        return HttpStreamingVideoSource(webVideo.m3u8Url, media.originalTitle, webVideo = webVideo)
+        return HttpStreamingVideoSource(webVideo.m3u8Url, media.originalTitle, webVideo = webVideo, media.extraFiles)
     }
 }
 

@@ -15,7 +15,6 @@ import me.him188.ani.app.videoplayer.torrent.HttpStreamingVideoSource
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.matcher.WebVideoMatcher
 import me.him188.ani.datasources.api.matcher.WebVideoMatcherContext
-import me.him188.ani.datasources.api.matcher.WebVideoRequestInfo
 import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
@@ -67,7 +66,12 @@ class DesktopWebVideoSourceResolver : VideoSourceResolver, KoinComponent {
                         }
                     }
                 )
-            return@withContext HttpStreamingVideoSource(webVideo.m3u8Url, media.originalTitle, webVideo = webVideo)
+            return@withContext HttpStreamingVideoSource(
+                webVideo.m3u8Url,
+                media.originalTitle,
+                webVideo = webVideo,
+                media.extraFiles
+            )
         }
     }
 }

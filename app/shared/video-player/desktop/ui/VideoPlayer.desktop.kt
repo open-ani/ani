@@ -13,6 +13,11 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import me.him188.ani.app.videoplayer.data.VideoData
 import me.him188.ani.app.videoplayer.data.VideoProperties
@@ -34,6 +39,7 @@ import uk.co.caprica.vlcj.factory.discovery.NativeDiscovery
 import uk.co.caprica.vlcj.media.Media
 import uk.co.caprica.vlcj.media.MediaEventAdapter
 import uk.co.caprica.vlcj.media.MediaParsedStatus
+import uk.co.caprica.vlcj.media.MediaSlaveType
 import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter
 import uk.co.caprica.vlcj.player.component.CallbackMediaPlayerComponent
@@ -276,6 +282,7 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
                 delay(0.1.seconds)
             }
         }
+
         backgroundScope.launch {
             subtitleTracks.current.collect { track ->
                 try {
@@ -304,6 +311,20 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
                     logger.error(e) { "Exception while setting subtitle track" }
                 }
             }
+        }
+
+        backgroundScope.launch {
+            openResource.filterNotNull().map { it.videoSource.extraFiles.subtitles }
+                .distinctUntilChanged()
+                .debounce(1000)
+                .collectLatest { urls ->
+                    logger.info { "Video ExtraFiles changed, updating slaves" }
+                    player.media().slaves().clear()
+                    for (subtitle in urls) {
+                        logger.info { "Adding SUBTITLE slave: $subtitle" }
+                        player.media().addSlave(MediaSlaveType.SUBTITLE, subtitle.uri, false)
+                    }
+                }
         }
     }
 

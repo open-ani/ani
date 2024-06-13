@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import me.him188.ani.app.videoplayer.data.VideoData
 import me.him188.ani.app.videoplayer.data.VideoSource
+import me.him188.ani.datasources.api.MediaExtraFiles
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.utils.io.SeekableInput
 import me.him188.ani.utils.io.toSeekableInput
@@ -42,6 +43,7 @@ class FileVideoData(
 
 class FileVideoSource(
     private val file: File,
+    override val extraFiles: MediaExtraFiles,
 ) : VideoSource<FileVideoData> {
     init {
         require(file.exists()) { "File does not exist: $file" }
