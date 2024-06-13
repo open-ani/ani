@@ -121,7 +121,7 @@ class DanmakuManagerImpl(
         logger.info { "Search for danmaku with filename='${request.filename}'" }
         val results = combine(providers.first().map { provider ->
             flow {
-                emit(withTimeout(20.seconds) {
+                emit(withTimeout(60.seconds) {
                     provider.fetch(request = request)
                 })
             }.retry(1) {
