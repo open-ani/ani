@@ -100,9 +100,11 @@ inline val PackedDate.seasonMonth: Int
 operator fun PackedDate.minus(other: PackedDate): Duration {
     if (this.isInvalid || other.isInvalid) return Duration.INFINITE
     val thisCalendar = Calendar.getInstance().apply {
+        clear()
         set(year, month - 1, day)
     }
     val otherCalendar = Calendar.getInstance().apply {
+        clear()
         set(other.year, other.month - 1, other.day)
     }
     return (thisCalendar.timeInMillis - otherCalendar.timeInMillis).milliseconds
