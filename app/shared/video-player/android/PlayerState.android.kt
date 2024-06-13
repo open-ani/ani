@@ -95,14 +95,14 @@ internal class ExoPlayerState @UiThread constructor(
                     val headers = source.webVideo.headers
                     val item = MediaItem.Builder().apply {
                         setUri(source.uri)
-                        source.extraFiles.subtitles.map {
+                        setSubtitleConfigurations(source.extraFiles.subtitles.map {
                             MediaItem.SubtitleConfiguration.Builder(
                                 Uri.parse(it.uri)
                             ).apply {
                                 it.mimeType?.let { mimeType -> setMimeType(mimeType) }
                                 it.language?.let { language -> setLanguage(language) }
                             }.build()
-                        }
+                        })
                     }.build()
                     player.setMediaSource(
                         DefaultMediaSourceFactory(
