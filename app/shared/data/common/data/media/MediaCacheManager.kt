@@ -26,6 +26,7 @@ import me.him188.ani.app.platform.notification.NotifManager
 import me.him188.ani.app.platform.notification.NotifPriority
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.datasources.api.topic.FileSize
+import me.him188.ani.datasources.api.topic.sum
 import me.him188.ani.datasources.core.cache.MediaCache
 import me.him188.ani.datasources.core.cache.MediaCacheStorage
 import me.him188.ani.datasources.core.cache.sum
@@ -233,7 +234,7 @@ abstract class MediaCacheManager(
                         summaryNotif.cancel()
                     } else {
                         summaryNotif.run {
-                            contentText = "下载 $downloadRate/s"
+                            contentText = "下载 ${downloadRate.sum()}/s"
                             show()
                         }
                     }
