@@ -7,7 +7,7 @@ import kotlin.test.assertEquals
 
 private typealias Source = NtdmMediaSource
 
-class MxdongmanMediaSourceTest {
+class NtdmMediaSourceTest {
 
     @Test
     fun `parse search result`() {
@@ -21,7 +21,7 @@ class MxdongmanMediaSourceTest {
         list[0].run {
             assertEquals("4621", internalId)
             assertEquals("别当欧尼酱了！", name)
-            assertEquals("https://ntdm.tv/video/4621.html", url)
+            assertEquals("http://ntdm.tv/video/4621.html", url)
         }
     }
 
@@ -36,12 +36,12 @@ class MxdongmanMediaSourceTest {
         assertEquals(22, list.size)
         list[0].run {
             assertEquals("第01集", name)
-            assertEquals("https://ntdm.tv/play/4621-1-1.html", url)
+            assertEquals("http://ntdm.tv/play/4621-1-1.html", url)
             assertEquals("第一线路", channel)
         }
         list[13].run {
             assertEquals("第02集", name)
-            assertEquals("https://ntdm.tv/play/4621-2-2.html", url)
+            assertEquals("http://ntdm.tv/play/4621-2-2.html", url)
             assertEquals("备用线路", channel)
         }
     }
