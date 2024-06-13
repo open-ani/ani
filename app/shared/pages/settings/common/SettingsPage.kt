@@ -105,7 +105,7 @@ fun SettingsPage(
             OverrideNavigation(remember(scope, pagerState) {
                 { old ->
                     object : AniNavigator by old {
-                        override fun navigatePreferences(tab: SettingsTab) {
+                        override fun navigateSettings(tab: SettingsTab) {
                             scope.launch(start = CoroutineStart.UNDISPATCHED) {
                                 pagerState.animateScrollToPage(tab.ordinal)
                             }

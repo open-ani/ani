@@ -312,7 +312,7 @@ private fun HomeScenePortrait(
                     ProfilePage(
                         contentPadding = contentPadding,
                         onClickSettings = {
-                            navigator.navigatePreferences()
+                            navigator.navigateSettings()
                         }
                     )
                 }

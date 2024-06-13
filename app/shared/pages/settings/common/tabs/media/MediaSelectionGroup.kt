@@ -52,7 +52,7 @@ internal fun SettingsScope.MediaSelectionGroup(vm: MediaSettingsViewModel) {
             title = { Text("数据源") },
             action = {
                 val navigator by rememberUpdatedState(LocalNavigator.current)
-                IconButton({ navigator.navigatePreferences(SettingsTab.NETWORK) }) {
+                IconButton({ navigator.navigateSettings(SettingsTab.NETWORK) }) {
                     Icon(Icons.Rounded.ArrowOutward, null)
                 }
             }

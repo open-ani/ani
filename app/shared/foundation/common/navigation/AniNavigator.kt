@@ -54,8 +54,8 @@ interface AniNavigator {
         navigator.navigate("/auth", NavOptions(launchSingleTop = true))
     }
 
-    fun navigatePreferences(tab: SettingsTab = SettingsTab.Default) {
-        navigator.navigate("/preferences?tab=${tab.ordinal}&back=true")
+    fun navigateSettings(tab: SettingsTab = SettingsTab.Default) {
+        navigator.navigate("/settings?tab=${tab.ordinal}&back=true")
     }
 
     fun navigateCaches() {
