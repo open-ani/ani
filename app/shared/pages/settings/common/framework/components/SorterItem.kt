@@ -2,6 +2,7 @@ package me.him188.ani.app.ui.settings.framework.components
 
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -72,7 +73,7 @@ fun <T> SettingsScope.SorterItem(
 
     TextItem(
         title = title,
-        modifier = modifier,
+        modifier = modifier.clickable { showDialog = true },
         description = description,
         icon = icon,
         action = {
