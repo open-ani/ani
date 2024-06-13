@@ -5,42 +5,56 @@ package me.him188.ani.app.data.subject
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
+import me.him188.ani.app.data.subject.PackedDate.Companion.Invalid
 import java.util.Calendar
 import java.util.TimeZone
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
+/**
+ * 一个日期, 支持年月日. 支持表示无效状态 [Invalid].
+ */
 @Immutable
 @JvmInline
 @Serializable
 value class PackedDate @PublishedApi internal constructor(
+    /**
+     * 高 16 位为年, 中 8 位为月, 低 8 位为日
+     */
     @JvmField
     @PublishedApi
     internal val packed: Int
 ) : Comparable<PackedDate> {
     inline val isValid: Boolean get() = packed != Int.MAX_VALUE
+    inline val isInvalid: Boolean get() = packed == Int.MAX_VALUE
 
+    /**
+     * 获取年份, `0..9999`. 当无效 [Invalid] 时返回 0.
+     */
     inline val year: Int get() = if (isValid) DatePacker.unpack1(packed) else 0
-    inline val rawMonth: Int get() = if (isValid) DatePacker.unpack2(packed) else 0
+
+    /**
+     * 获取原始月份信息, `1..12`. 当无效 [Invalid] 时返回 0.
+     */
+    inline val month: Int get() = if (isValid) DatePacker.unpack2(packed) else 0
+
+    /**
+     * 获取日期, `0..31`. 当无效 [Invalid] 时返回 0.
+     */
     inline val day: Int get() = if (isValid) DatePacker.unpack3(packed) else 0
 
-    @Stable
-    val coercedMonth: Int
-        get() = when (rawMonth) {
-            12, in 1..2 -> 1
-            in 3..5 -> 4
-            in 6..8 -> 7
-            in 9..11 -> 10
-            else -> 0
-        }
-
     companion object {
+        /**
+         * 表示一个无效时间.
+         */
         @JvmStatic
         val Invalid = PackedDate(Int.MAX_VALUE)
 
 
         /**
-         * @param date `2024-05-18`
+         * @param date `2024-05-18`. 允许的日期范围为 `0000-01-01` 到 `9999-12-31`. 仅检查时间格式, 不检查时间合法性.
+         * 因此 2 月 31 日也被视为是正确的.
+         * @return 当 [date] 格式不正确时返回 [Invalid]
          */
         fun parseFromDate(date: String): PackedDate {
             val split = date.split("-")
@@ -67,12 +81,29 @@ value class PackedDate @PublishedApi internal constructor(
     override fun compareTo(other: PackedDate): Int = packed.compareTo(other.packed) // trivial!
 }
 
+/**
+ * 获取月份所在季度的第一个月, `1, 4, 7, 10`.
+ */
+@Stable
+inline val PackedDate.seasonMonth: Int
+    get() = when (month) {
+        12, in 1..2 -> 1
+        in 3..5 -> 4
+        in 6..8 -> 7
+        in 9..11 -> 10
+        else -> 0
+    }
+
+/**
+ * 计算两个日期的间隔. 当任一日期无效时返回 [Duration.INFINITE].
+ */
 operator fun PackedDate.minus(other: PackedDate): Duration {
+    if (this.isInvalid || other.isInvalid) return Duration.INFINITE
     val thisCalendar = Calendar.getInstance().apply {
-        set(year, rawMonth - 1, day)
+        set(year, month - 1, day)
     }
     val otherCalendar = Calendar.getInstance().apply {
-        set(other.year, other.rawMonth - 1, other.day)
+        set(other.year, other.month - 1, other.day)
     }
     return (thisCalendar.timeInMillis - otherCalendar.timeInMillis).milliseconds
 }
