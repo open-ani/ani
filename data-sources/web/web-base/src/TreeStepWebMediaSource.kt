@@ -32,6 +32,7 @@ abstract class ThreeStepWebMediaSource : WebMediaSource() {
     data class Ep(
         val name: String,
         val url: String, // absolute url, with baseUrl
+        val channel: String? = null, // 线路 
     )
 
     abstract val baseUrl: String // no trailing '/'
@@ -53,13 +54,14 @@ abstract class ThreeStepWebMediaSource : WebMediaSource() {
         ep: Ep
     ): MediaMatch {
         val sort = EpisodeSort(ep.name.removePrefix("第").removeSuffix("集"))
+        val suffixChannel = ep.channel?.let { "-$it" }
         return MediaMatch(
             DefaultMedia(
-                mediaId = "$mediaSourceId.${bangumi.internalId}-${sort}",
+                mediaId = "$mediaSourceId.${bangumi.internalId}-${sort}$suffixChannel",
                 mediaSourceId = mediaSourceId,
                 originalUrl = bangumi.url,
                 download = ResourceLocation.WebVideo(ep.url),
-                originalTitle = """${bangumi.name} ${ep.name}""",
+                originalTitle = """${bangumi.name} ${ep.name} ${ep.channel.orEmpty()}""".trim(),
                 publishedTime = 0L,
                 properties = MediaProperties(
                     subtitleLanguageIds = subtitleLanguages,
