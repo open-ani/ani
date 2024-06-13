@@ -51,6 +51,7 @@ value class FileSize(
     inline val inMegaBytesDouble: Double get() = inKiloBytesDouble / 1024.0
     inline val inGigaBytesDouble: Double get() = inMegaBytesDouble / 1024.0
 
+    // TODO: consider Unspecified when performing operations 
     inline operator fun times(another: Long): FileSize = FileSize(this.inBytes * another)
     inline operator fun div(another: Long): FileSize = FileSize(this.inBytes / another)
     inline operator fun plus(another: Long): FileSize = FileSize(this.inBytes + another)
