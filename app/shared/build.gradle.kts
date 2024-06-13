@@ -85,6 +85,7 @@ kotlin {
         api(projects.dataSources.nyafun)
         api(projects.dataSources.mxdongman)
         api(projects.dataSources.ntdm)
+        api(projects.dataSources.jellyfin)
         api(projects.dataSources.ikaros)
 
         // Danmaku

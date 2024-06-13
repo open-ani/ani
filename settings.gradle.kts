@@ -81,6 +81,7 @@ includeProject(":data-sources:web-base", "data-sources/web/web-base") // web 基
 includeProject(":data-sources:nyafun", "data-sources/web/nyafun") // https://nyafun.net/
 includeProject(":data-sources:mxdongman", "data-sources/web/mxdongman") // https://mxdm4.com/
 includeProject(":data-sources:ntdm", "data-sources/web/ntdm") // https://ntdm.tv/
+includeProject(":data-sources:jellyfin", "data-sources/jellyfin") 
 includeProject(":data-sources:ikaros", "data-sources/ikaros") // https://ikaros.run/
 
 // danmaku

@@ -36,6 +36,7 @@ import me.him188.ani.datasources.acgrip.AcgRipMediaSource
 import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
 import me.him188.ani.datasources.dmhy.DmhyMediaSource
 import me.him188.ani.datasources.ikaros.IkarosMediaSource
+import me.him188.ani.datasources.jellyfin.JellyfinMediaSource
 import me.him188.ani.datasources.mikan.MikanCNMediaSource
 import me.him188.ani.datasources.mikan.MikanMediaSource
 import me.him188.ani.datasources.mxdongman.MxdongmanMediaSource
@@ -63,6 +64,7 @@ fun renderMediaSource(
     NyafunMediaSource.ID -> "Nyafun"
     MxdongmanMediaSource.ID -> "MX 动漫"
     NtdmMediaSource.ID -> "NT动漫"
+    JellyfinMediaSource.ID -> "Jellyfin"
     LOCAL_FS_MEDIA_SOURCE_ID -> "本地"
     else -> id
 }
@@ -99,6 +101,7 @@ fun getMediaSourceIconResource(
         NyafunMediaSource.ID -> painterResource(Res.drawable.nyafun)
         MxdongmanMediaSource.ID -> painterResource(Res.drawable.mxdongman)
         NtdmMediaSource.ID -> painterResource(Res.drawable.ntdm)
+        JellyfinMediaSource.ID -> rememberVectorPainter(Icons.Rounded.Jellyfin)
         else -> null
     }
 }
