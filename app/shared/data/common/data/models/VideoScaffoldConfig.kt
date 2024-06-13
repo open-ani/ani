@@ -26,6 +26,7 @@ enum class FullscreenSwitchMode {
 @Serializable
 @Immutable
 data class VideoScaffoldConfig(
+    // TODO: 这个名字可能不好 
     /**
      * 在小屏 (竖屏) 模式下也在右下角显示全屏按钮.
      */
@@ -35,6 +36,10 @@ data class VideoScaffoldConfig(
      * @since 3.2.0-beta01
      */
     val pauseVideoOnEditDanmaku: Boolean = true,
+    /**
+     * 在观看到 90% 进度后, 自动标记看过
+     */
+    val autoMarkDone: Boolean = true,
     @Suppress("PropertyName") @Transient val _placeholder: Int = 0,
 ) {
     companion object {

@@ -400,6 +400,15 @@ private fun SettingsScope.PlayerGroup(
             title = { Text("发送弹幕时自动暂停播放") },
             Modifier.placeholder(vm.uiSettings.loading),
         )
+        HorizontalDividerItem()
+        SwitchItem(
+            checked = config.autoMarkDone,
+            onCheckedChange = {
+                vm.videoScaffoldConfig.update(config.copy(autoMarkDone = it))
+            },
+            title = { Text("看到 90% 自动标记看过") },
+            Modifier.placeholder(vm.uiSettings.loading),
+        )
     }
 }
 
