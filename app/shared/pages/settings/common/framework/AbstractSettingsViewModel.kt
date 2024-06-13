@@ -103,7 +103,7 @@ abstract class AbstractSettingsViewModel : AbstractViewModel(), KoinComponent {
             testScope.launch {
                 supervisorScope {
                     testers.forEach {
-                        this@launch.launch {
+                        launch {
                             it.test()
                         }
                     }
