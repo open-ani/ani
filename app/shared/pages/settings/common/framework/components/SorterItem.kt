@@ -72,7 +72,6 @@ fun <T> SettingsScope.SorterItem(
     var showDialog by rememberSaveable { mutableStateOf(false) }
 
     TextItem(
-        title = title,
         modifier = modifier.clickable { showDialog = true },
         description = description,
         icon = icon,
@@ -160,5 +159,6 @@ fun <T> SettingsScope.SorterItem(
                 }
             }
         },
+        title = title,
     )
 }

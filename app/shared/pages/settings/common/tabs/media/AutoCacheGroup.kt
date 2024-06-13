@@ -18,10 +18,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.ui.external.placeholder.placeholder
+import me.him188.ani.app.ui.settings.framework.components.RowButtonItem
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SliderItem
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
-import me.him188.ani.app.ui.settings.framework.components.TextItem
 import kotlin.math.roundToInt
 
 @Composable
@@ -118,11 +118,10 @@ internal fun SettingsScope.AutoCacheGroup(
 
         HorizontalDividerItem()
 
-        TextItem(
-            title = { Text("管理已缓存的剧集") },
-            icon = { Icon(Icons.Rounded.ArrowOutward, null) },
+        RowButtonItem(
             onClick = { navigator.navigateCaches() },
-        )
+            icon = { Icon(Icons.Rounded.ArrowOutward, null) },
+        ) { Text("管理已缓存的剧集") }
     }
 }
 

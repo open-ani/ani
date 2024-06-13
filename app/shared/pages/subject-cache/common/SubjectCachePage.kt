@@ -46,6 +46,7 @@ import androidx.compose.ui.util.fastForEachIndexed
 import me.him188.ani.app.data.media.EpisodeCacheStatus
 import me.him188.ani.app.ui.foundation.TopAppBarGoBackButton
 import me.him188.ani.app.ui.settings.SettingsTab
+import me.him188.ani.app.ui.settings.framework.components.RowButtonItem
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SliderItem
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
@@ -238,18 +239,16 @@ private fun SettingsScope.AutoCacheGroup(
         }
 
         AnimatedVisibility(useGlobalSettings) {
-            TextItem(
-                title = { Text("查看全局设置") },
-                icon = { Icon(Icons.Rounded.ArrowOutward, null) },
+            RowButtonItem(
                 onClick = onClickGlobalCacheSettings,
-            )
+                icon = { Icon(Icons.Rounded.ArrowOutward, null) },
+            ) { Text("查看全局设置") }
         }
 
-        TextItem(
-            title = { Text("管理全部缓存") },
-            icon = { Icon(Icons.AutoMirrored.Rounded.ViewList, null) },
+        RowButtonItem(
             onClick = onClickGlobalCacheManage,
-        )
+            icon = { Icon(Icons.AutoMirrored.Rounded.ViewList, null) },
+        ) { Text("管理全部缓存") }
     }
 }
 
@@ -265,6 +264,11 @@ private fun SettingsScope.EpisodeItem(
         MaterialTheme.colorScheme.onSurface
     }
     TextItem(
+        icon = {
+            CompositionLocalProvider(LocalContentColor provides colorByWatchStatus) {
+                Text(episode.sort.toString())
+            }
+        },
         action = {
             if (!episode.hasPublished) {
                 CompositionLocalProvider(LocalContentColor provides colorByWatchStatus) {
@@ -311,11 +315,6 @@ private fun SettingsScope.EpisodeItem(
                     null -> {}
                 }
                 action()
-            }
-        },
-        icon = {
-            CompositionLocalProvider(LocalContentColor provides colorByWatchStatus) {
-                Text(episode.sort.toString())
             }
         },
         title = {

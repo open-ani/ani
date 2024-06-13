@@ -36,7 +36,6 @@ import androidx.compose.material.icons.rounded.VisibilityOff
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -237,6 +236,8 @@ internal fun SettingsScope.MediaSourceGroup(vm: NetworkSettingsViewModel) {
             onClick = {
                 vm.mediaSourceTesters.toggleTest()
             },
+            Modifier.ifThen(sorter.isSorting) { alpha(0f) },
+            enabled = !sorter.isSorting,
             title = {
                 if (vm.mediaSourceTesters.anyTesting) {
                     Text("终止测试")
@@ -244,8 +245,6 @@ internal fun SettingsScope.MediaSourceGroup(vm: NetworkSettingsViewModel) {
                     Text("开始测试")
                 }
             },
-            Modifier.ifThen(sorter.isSorting) { alpha(0f) },
-            enabled = !sorter.isSorting,
         )
     }
 }
@@ -280,13 +279,12 @@ internal fun SettingsScope.MediaSourceItem(
     },
     action: @Composable () -> Unit,
 ) {
-    ButtonDefaults.buttonColors()
     TextItem(
-        title = title,
-        icon = icon,
+        modifier = modifier,
         description = description,
+        icon = icon,
         action = action,
-        modifier = modifier
+        title = title
     )
 }
 

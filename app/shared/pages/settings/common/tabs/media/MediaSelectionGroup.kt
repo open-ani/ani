@@ -46,17 +46,21 @@ internal fun SettingsScope.MediaSelectionGroup(vm: MediaSettingsViewModel) {
         val textAny = "任意"
         val textNone = "无"
 
+        val navigator by rememberUpdatedState(LocalNavigator.current)
         TextItem(
             modifier = Modifier.placeholder(vm.defaultMediaPreferenceLoading),
             icon = { Icon(Icons.Rounded.DisplaySettings, null) },
-            title = { Text("数据源") },
             action = {
-                val navigator by rememberUpdatedState(LocalNavigator.current)
                 IconButton({ navigator.navigateSettings(SettingsTab.NETWORK) }) {
                     Icon(Icons.Rounded.ArrowOutward, null)
                 }
-            }
-        )
+            },
+            onClick = {
+                navigator.navigateSettings(SettingsTab.NETWORK)
+            },
+        ) {
+            Text("数据源")
+        }
 
         HorizontalDividerItem()
 

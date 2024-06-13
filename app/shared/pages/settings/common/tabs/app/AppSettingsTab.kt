@@ -39,6 +39,7 @@ import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
 import me.him188.ani.app.ui.settings.framework.Tester
 import me.him188.ani.app.ui.settings.framework.components.DropdownItem
+import me.him188.ani.app.ui.settings.framework.components.RowButtonItem
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
 import me.him188.ani.app.ui.settings.framework.components.TextButtonItem
@@ -117,9 +118,6 @@ fun AppSettingsTab(
         Group(title = { Text("软件更新") }) {
             val version = currentAniBuildConfig.versionName
             TextItem(
-                title = {
-                    Text(version)
-                },
                 description = { Text("当前版本") },
                 icon = {
                     val releaseClass = remember {
@@ -127,12 +125,14 @@ fun AppSettingsTab(
                     }
 
                     ReleaseClassIcon(releaseClass)
+                },
+                title = {
+                    Text(version)
                 }
             )
             HorizontalDividerItem()
             val context by rememberUpdatedState(LocalContext.current)
-            TextItem(
-                title = { Text("查看更新日志") },
+            RowButtonItem(
                 onClick = {
                     GlobalContext.get().get<BrowserNavigator>().openBrowser(
                         context,
@@ -148,8 +148,8 @@ fun AppSettingsTab(
 //                        }
 //                    }
                 },
-                icon = { Icon(Icons.Rounded.ArrowOutward, null) }
-            )
+                icon = { Icon(Icons.Rounded.ArrowOutward, null) },
+            ) { Text("查看更新日志") }
             HorizontalDividerItem()
             val updateSettings by vm.updateSettings
             SwitchItem(
@@ -229,18 +229,6 @@ fun AppSettingsTab(
                 }
             }
             TextButtonItem(
-                title = {
-                    if (vm.updateCheckerTester.tester.isTesting) {
-                        Text("检查中...")
-                        return@TextButtonItem
-                    }
-                    when (val result = vm.updateCheckerTester.tester.result) {
-                        is CheckVersionResult.Failed -> Text("检查失败")
-                        is CheckVersionResult.UpToDate -> Text("已是最新")
-                        is CheckVersionResult.HasNewVersion -> Text(remember(result.newVersion.name) { "有新版本: ${result.newVersion.name}" })
-                        null -> Text("检查更新")
-                    }
-                },
                 onClick = {
                     if (vm.updateCheckerTester.tester.isTesting) {
                         vm.updateCheckerTester.cancel()
@@ -257,6 +245,18 @@ fun AppSettingsTab(
                     }
                 },
                 modifier = Modifier.placeholder(vm.updateSettings.loading),
+                title = {
+                    if (vm.updateCheckerTester.tester.isTesting) {
+                        Text("检查中...")
+                        return@TextButtonItem
+                    }
+                    when (val result = vm.updateCheckerTester.tester.result) {
+                        is CheckVersionResult.Failed -> Text("检查失败")
+                        is CheckVersionResult.UpToDate -> Text("已是最新")
+                        is CheckVersionResult.HasNewVersion -> Text(remember(result.newVersion.name) { "有新版本: ${result.newVersion.name}" })
+                        null -> Text("检查更新")
+                    }
+                },
             )
             AnimatedVisibility(
                 vm.updateCheckerTester.tester.result is CheckVersionResult.HasNewVersion // 在设置里检查的

@@ -24,9 +24,9 @@ import me.him188.ani.app.data.models.UpdateSettings
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.effects.OnLifecycleEvent
+import me.him188.ani.app.ui.settings.framework.components.RowButtonItem
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
-import me.him188.ani.app.ui.settings.framework.components.TextItem
 import moe.tlaster.precompose.lifecycle.Lifecycle
 
 
@@ -107,8 +107,7 @@ internal actual fun SettingsScope.AppSettingsTabPlatform(vm: AppSettingsViewMode
     Group(
         title = { Text("通知设置") },
     ) {
-        TextItem(
-            title = { Text(text = "打开设置") },
+        RowButtonItem(
             icon = { Icon(Icons.Rounded.ArrowOutward, contentDescription = null) },
             onClick = {
                 kotlin.runCatching {
@@ -123,7 +122,7 @@ internal actual fun SettingsScope.AppSettingsTabPlatform(vm: AppSettingsViewMode
                 }.onFailure {
                     it.printStackTrace()
                 }
-            }
-        )
+            },
+        ) { Text(text = "打开设置") }
     }
 }
