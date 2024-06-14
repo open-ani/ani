@@ -41,6 +41,7 @@ import uk.co.caprica.vlcj.media.Media
 import uk.co.caprica.vlcj.media.MediaEventAdapter
 import uk.co.caprica.vlcj.media.MediaParsedStatus
 import uk.co.caprica.vlcj.media.MediaSlaveType
+import uk.co.caprica.vlcj.media.TrackType
 import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter
 import uk.co.caprica.vlcj.player.component.CallbackMediaPlayerComponent
@@ -240,7 +241,16 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
                 )
             }
 
-//            override fun buffering(mediaPlayer: MediaPlayer?, newCache: Float) {
+            override fun elementaryStreamAdded(mediaPlayer: MediaPlayer?, type: TrackType?, id: Int) {
+                if (type == TrackType.TEXT) {
+                    reloadSubtitleTracks(); // 字幕轨道更新后，则进行重载UI上的字幕轨道
+                }
+                if (type == TrackType.AUDIO) {
+                    reloadAudioTracks();
+                }
+            }
+
+            //            override fun buffering(mediaPlayer: MediaPlayer?, newCache: Float) {
 //                if (newCache != 1f) {
 //                    state.value = PlaybackState.PAUSED_BUFFERING
 //                } else {
@@ -252,27 +262,9 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
                 state.value = PlaybackState.PLAYING
                 player.submit { player.media().parsing().parse() }
 
-                subtitleTracks.candidates.value = player.subpictures().trackDescriptions()
-                    .filterNot { it.id() == -1 } // "Disable"
-                    .map {
-                        SubtitleTrack(
-                            openResource.value?.videoData?.filename + "-" + it.id(),
-                            it.id().toString(),
-                            null,
-                            listOf(Label(null, it.description()))
-                        )
-                    }
+                reloadSubtitleTracks();
 
-                audioTracks.candidates.value = player.audio().trackDescriptions()
-                    .filterNot { it.id() == -1 } // "Disable"
-                    .map {
-                        AudioTrack(
-                            openResource.value?.videoData?.filename + "-" + it.id(),
-                            it.id().toString(),
-                            null,
-                            listOf(Label(null, it.description()))
-                        )
-                    }
+                reloadAudioTracks();
             }
 
             override fun paused(mediaPlayer: MediaPlayer) {
@@ -371,6 +363,32 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
                     }
                 }
         }
+    }
+
+    private fun reloadSubtitleTracks() {
+        subtitleTracks.candidates.value = player.subpictures().trackDescriptions()
+            .filterNot { it.id() == -1 } // "Disable"
+            .map {
+                SubtitleTrack(
+                    openResource.value?.videoData?.filename + "-" + it.id(),
+                    it.id().toString(),
+                    null,
+                    listOf(Label(null, it.description()))
+                )
+            }
+    }
+    
+    private fun reloadAudioTracks() {
+        audioTracks.candidates.value = player.audio().trackDescriptions()
+            .filterNot { it.id() == -1 } // "Disable"
+            .map {
+                AudioTrack(
+                    openResource.value?.videoData?.filename + "-" + it.id(),
+                    it.id().toString(),
+                    null,
+                    listOf(Label(null, it.description()))
+                )
+            }
     }
 
     private fun createVideoProperties(): VideoProperties? {

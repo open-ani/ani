@@ -28,6 +28,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.data.models.FullscreenSwitchMode
 import me.him188.ani.app.data.models.VideoScaffoldConfig
+import me.him188.ani.app.platform.currentPlatform
+import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.rememberViewModel
@@ -212,7 +214,7 @@ internal fun EpisodeVideoImpl(
                 },
                 danmakuEditor = danmakuEditor,
                 endActions = {
-                    PlayerControllerDefaults.AudioSwitcher(playerState.audioTracks)
+                    if(currentPlatform.isDesktop()) PlayerControllerDefaults.AudioSwitcher(playerState.audioTracks)
                     PlayerControllerDefaults.SubtitleSwitcher(playerState.subtitleTracks)
                     val speed by playerState.playbackSpeed.collectAsStateWithLifecycle()
                     SpeedSwitcher(
