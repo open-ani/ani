@@ -233,7 +233,7 @@ class DirectoryMediaCacheStorage(
                     logger.error { "Attempting to delete media cache '${cache.cacheId}' but its corresponding metadata file does not exist" }
                 }
             }
-            cache.delete()
+            cache.deleteFiles()
             return true
         }
     }

@@ -8,17 +8,42 @@ import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.sum
 
 /**
- * 传输速度信息. 一般继承 [AbstractMediaStats].
+ * 传输速度信息.
+ *
+ * 实现时一般继承可 [AbstractMediaStats].
+ *
+ * @see emptyMediaStats
  */
 @Stable
 interface MediaStats {
+    // 实现约束, flow 一定要有至少一个元素.
+
     /**
-     * Total amount of bytes uploaded
+     * 总上传量.
+     *
+     * 实现约束: flow 一定要有至少一个元素.
      */
     val uploaded: Flow<FileSize>
+
+    /**
+     * 总下载量.
+     *
+     * 实现约束: flow 一定要有至少一个元素.
+     */
     val downloaded: Flow<FileSize>
 
+    /**
+     * 上传速度每秒.
+     *
+     * 实现约束: flow 一定要有至少一个元素.
+     */
     val uploadRate: Flow<FileSize>
+
+    /**
+     * 下载速度每秒.
+     *
+     * 实现约束: flow 一定要有至少一个元素.
+     */
     val downloadRate: Flow<FileSize>
 }
 
@@ -26,7 +51,7 @@ interface MediaStats {
 abstract class AbstractMediaStats : MediaStats
 
 /**
- * 各进度都为 `0`
+ * 各进度都为 `0` (单元素 flow).
  */
 fun emptyMediaStats(): MediaStats = EmptyMediaStats
 
@@ -40,7 +65,7 @@ private data object EmptyMediaStats : AbstractMediaStats() {
 }
 
 /**
- * 将多个 [MediaStats] 加起来
+ * 将多个 [MediaStats] 加起来 ([combine])
  */
 fun Iterable<MediaStats>.sum(): MediaStats = object : AbstractMediaStats() {
     override val uploaded: Flow<FileSize> = combine(map { it.uploaded }) { list -> list.sum() }

@@ -4,6 +4,7 @@ import androidx.compose.runtime.Stable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -32,22 +33,23 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
 /**
- * A fetcher that supports concurrent fetching of [Media]s from multiple [MediaSource]s.
+ * [MediaFetcher], 为支持从多个 [MediaSource] 并行获取 [Media] 的综合查询工具.
+ *
+ * 封装了获取查询进度, 重试失败的查询, 以及合并结果等功能.
  *
  * @see MediaSourceMediaFetcher
  */
-interface MediaFetcher {
+interface MediaFetcher : AutoCloseable {
     /**
-     * Starts a concurrent fetch from all [MediaSource]s this [MediaFetcher] has.
+     * 创建一个会话, 从多个 [MediaSource] 并行获取 [Media].
+     *
+     * 该会话的生命与 [MediaFetcher] 绑定. 一旦 [MediaFetcher] 被释放, 会话也会被释放.
      */
     fun fetch(request: MediaFetchRequest): MediaFetchSession
 }
 
 /**
- * A session describing the ongoing process of a fetch initiated from [MediaFetcher.fetch].
- *
- * The session is cold:
- * Only when the flows are being collected, its belonging [MediaSourceResult]s will make network requests and emitting results
+ * 从多个 [MediaSource] 并行获取 [Media] 的活跃的会话.
  */
 @Stable
 interface MediaFetchSession {
@@ -80,6 +82,9 @@ interface MediaFetchSession {
     val hasCompleted: Flow<Boolean>
 }
 
+/**
+ * 表示一个数据源 [MediaSource] 的查询结果
+ */
 @Stable
 interface MediaSourceResult {
     val mediaSourceId: String
@@ -101,7 +106,7 @@ interface MediaSourceResult {
     val results: Flow<List<Media>>
 
     /**
-     * 仅当启用时才获取结果.
+     * 仅当启用时才获取结果. 返回的 flow 一定至少有一个元素, 例如 [emptyList].
      */
     val resultsIfEnabled
         get() = state
@@ -277,6 +282,10 @@ class MediaSourceMediaFetcher(
 
     override fun fetch(request: MediaFetchRequest): MediaFetchSession {
         return MediaFetchSessionImpl(request, configProvider())
+    }
+
+    override fun close() {
+        scope.cancel()
     }
 
     private companion object {

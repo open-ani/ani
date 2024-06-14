@@ -52,6 +52,10 @@ data class DownloadSearchQuery(
     val allowAny: Boolean = false,
 )
 
+interface SearchOrdering {
+    val id: String
+    val name: String
+}
 
 fun Topic.toOnlineMedia(mediaSourceId: String): DefaultMedia {
     val details = details
