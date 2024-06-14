@@ -39,6 +39,7 @@ import me.him188.ani.app.videoplayer.data.emptyVideoData
 import me.him188.ani.app.videoplayer.media.VideoDataDataSource
 import me.him188.ani.app.videoplayer.torrent.HttpStreamingVideoSource
 import me.him188.ani.app.videoplayer.ui.state.AbstractPlayerState
+import me.him188.ani.app.videoplayer.ui.state.AudioTrack
 import me.him188.ani.app.videoplayer.ui.state.Label
 import me.him188.ani.app.videoplayer.ui.state.MutableTrackGroup
 import me.him188.ani.app.videoplayer.ui.state.PlaybackState
@@ -206,6 +207,13 @@ internal class ExoPlayerState @UiThread constructor(
                                 group.getSubtitleTracks()
                             }
                             .toList()
+                    audioTracks.candidates.value =
+                        tracks.groups.asSequence()
+                            .filter { it.type == C.TRACK_TYPE_AUDIO }
+                            .flatMapIndexed { groupIndex: Int, group: Tracks.Group ->
+                                group.getAudioTracks()
+                            }
+                            .toList()
                 }
 
                 override fun onPlayerError(error: PlaybackException) {
@@ -303,6 +311,21 @@ internal class ExoPlayerState @UiThread constructor(
         }
     }
 
+    private fun Tracks.Group.getAudioTracks() = sequence {
+        repeat(length) { index ->
+            val format = getTrackFormat(index)
+            val firstLabel = format.labels.firstNotNullOfOrNull { it.value }
+            format.metadata
+            this.yield(
+                AudioTrack(
+                    "${openResource.value?.videoData?.filename}-${mediaTrackGroup.id}-$index",
+                    mediaTrackGroup.id,
+                    firstLabel ?: mediaTrackGroup.id,
+                    format.labels.map { Label(it.language, it.value) })
+            )
+        }
+    }
+
     override val isBuffering: MutableStateFlow<Boolean> = MutableStateFlow(false) // 需要单独状态, 因为要用户可能会覆盖 [state] 
 
     override val videoProperties = MutableStateFlow<VideoProperties?>(null)
@@ -313,6 +336,8 @@ internal class ExoPlayerState @UiThread constructor(
     }
 
     override val subtitleTracks: MutableTrackGroup<SubtitleTrack> = MutableTrackGroup()
+
+    override val audioTracks: MutableTrackGroup<AudioTrack> = MutableTrackGroup()
 
     override val currentPositionMillis: MutableStateFlow<Long> = MutableStateFlow(0)
     override fun getExactCurrentPositionMillis(): Long = player.currentPosition

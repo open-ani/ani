@@ -27,6 +27,7 @@ import me.him188.ani.app.videoplayer.io.SeekableInputCallbackMedia
 import me.him188.ani.app.videoplayer.torrent.HttpStreamingVideoSource
 import me.him188.ani.app.videoplayer.ui.VlcjVideoPlayerState.VlcjData
 import me.him188.ani.app.videoplayer.ui.state.AbstractPlayerState
+import me.him188.ani.app.videoplayer.ui.state.AudioTrack
 import me.him188.ani.app.videoplayer.ui.state.Label
 import me.him188.ani.app.videoplayer.ui.state.MutableTrackGroup
 import me.him188.ani.app.videoplayer.ui.state.PlaybackState
@@ -221,6 +222,7 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
 
     override val playbackSpeed: MutableStateFlow<Float> = MutableStateFlow(1.0f)
     override val subtitleTracks: MutableTrackGroup<SubtitleTrack> = MutableTrackGroup()
+    override val audioTracks: MutableTrackGroup<AudioTrack> = MutableTrackGroup()
 
     init {
         // NOTE: must not call native player in a event
@@ -254,6 +256,17 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
                     .filterNot { it.id() == -1 } // "Disable"
                     .map {
                         SubtitleTrack(
+                            openResource.value?.videoData?.filename + "-" + it.id(),
+                            it.id().toString(),
+                            null,
+                            listOf(Label(null, it.description()))
+                        )
+                    }
+
+                audioTracks.candidates.value = player.audio().trackDescriptions()
+                    .filterNot { it.id() == -1 } // "Disable"
+                    .map {
+                        AudioTrack(
                             openResource.value?.videoData?.filename + "-" + it.id(),
                             it.id().toString(),
                             null,
@@ -309,6 +322,38 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
                     logger.info { "Set subtitle track to $id (${track.labels.firstOrNull()})" }
                 } catch (e: Throwable) {
                     logger.error(e) { "Exception while setting subtitle track" }
+                }
+            }
+        }
+
+        backgroundScope.launch {
+            audioTracks.current.collect { track ->
+                try {
+                    if (state.value == PlaybackState.READY) {
+                        return@collect
+                    }
+                    if (track == null) {
+                        if (player.audio().track() != -1) {
+                            player.audio().setTrack(-1)
+                        }
+                    }
+
+                    val id = track?.internalId?.toIntOrNull() ?: run {
+                        if (track != null) {
+                            logger.error { "Invalid audio track id: ${track.id}" }
+                        }
+                        return@collect
+                    }
+                    val count = player.audio().trackCount()
+                    if (id > count) {
+                        logger.error { "Invalid audio track id: $id, count: $count" }
+                        return@collect
+                    }
+                    logger.info { "All ids: ${player.audio().trackDescriptions().map { it.id() }}" }
+                    player.audio().setTrack(id)
+                    logger.info { "Set audio track to $id (${track.labels.firstOrNull()})" }
+                } catch (e: Throwable) {
+                    logger.error(e) { "Exception while setting audio track" }
                 }
             }
         }

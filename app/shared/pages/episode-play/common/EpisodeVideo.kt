@@ -45,6 +45,7 @@ import me.him188.ani.app.videoplayer.ui.guesture.LockableVideoGestureHost
 import me.him188.ani.app.videoplayer.ui.guesture.rememberGestureIndicatorState
 import me.him188.ani.app.videoplayer.ui.guesture.rememberPlayerFastSkipState
 import me.him188.ani.app.videoplayer.ui.guesture.rememberSwipeSeekerState
+import me.him188.ani.app.videoplayer.ui.progress.AudioSwitcher
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerBar
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults.SpeedSwitcher
@@ -211,6 +212,7 @@ internal fun EpisodeVideoImpl(
                 },
                 danmakuEditor = danmakuEditor,
                 endActions = {
+                    PlayerControllerDefaults.AudioSwitcher(playerState.audioTracks)
                     PlayerControllerDefaults.SubtitleSwitcher(playerState.subtitleTracks)
                     val speed by playerState.playbackSpeed.collectAsStateWithLifecycle()
                     SpeedSwitcher(
