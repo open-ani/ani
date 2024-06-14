@@ -163,7 +163,7 @@ private fun SettingsScope.QBGroup(vm: MediaSettingsViewModel) {
             onValueChangeCompleted = {
                 vm.qBittorrentConfig.update(
                     config.copy(
-                        clientConfig = clientConfig.copy(password = it)
+                        clientConfig = clientConfig.copy(category = it)
                     )
                 )
             },
