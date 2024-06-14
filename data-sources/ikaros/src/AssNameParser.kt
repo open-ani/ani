@@ -20,7 +20,7 @@ internal class AssNameParser {
         if (language.isEmpty()) return removeSuffix
         if (scCnLowerCaseList.contains(language.toLowerCasePreservingASCIIRules())) return "简中"
         if (tcCnLowerCaseList.contains(language.toLowerCasePreservingASCIIRules())) return "繁中"
-        return removeSuffix;
+        return language;
     }
 
     companion object {
