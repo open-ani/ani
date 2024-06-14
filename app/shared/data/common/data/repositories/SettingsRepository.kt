@@ -14,6 +14,7 @@ import kotlinx.serialization.json.Json
 import me.him188.ani.app.data.models.DanmakuSettings
 import me.him188.ani.app.data.models.MediaCacheSettings
 import me.him188.ani.app.data.models.MediaSelectorSettings
+import me.him188.ani.app.data.models.OneshotActionConfig
 import me.him188.ani.app.data.models.ProxySettings
 import me.him188.ani.app.data.models.UISettings
 import me.him188.ani.app.data.models.UpdateSettings
@@ -52,6 +53,8 @@ interface SettingsRepository {
 
     val libtorrent4jConfig: Settings<Libtorrent4jConfig>
     val qBittorrentConfig: Settings<QBittorrentConfig>
+
+    val oneshotActionConfig: Settings<OneshotActionConfig>
 }
 
 @Stable
@@ -158,6 +161,12 @@ class PreferencesRepositoryImpl(
         "qBittorrentConfig",
         QBittorrentConfig.serializer(),
         default = { QBittorrentConfig.Default }
+    )
+
+    override val oneshotActionConfig: Settings<OneshotActionConfig> = SerializablePreference(
+        "oneshotActionConfig",
+        OneshotActionConfig.serializer(),
+        default = { OneshotActionConfig.Default }
     )
 
     private companion object {

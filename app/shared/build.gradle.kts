@@ -67,7 +67,7 @@ kotlin {
     sourceSets.commonMain.dependencies {
         api(libs.kotlinx.coroutines.core)
         api(libs.kotlinx.serialization.json)
-        compileOnly(libs.atomicfu) // No need to include in the final build since atomicfu Gradle will optimize it out
+        implementation(libs.atomicfu) // room runtime
 
         // Compose
         api(compose.foundation)
@@ -136,6 +136,7 @@ kotlin {
 //        api(libs.okhttp)
 //        api(libs.okhttp.logging)
         implementation(libs.reorderable)
+        implementation(libs.constraintlayout.compose)
 
         implementation(libs.slf4j.api)
     }

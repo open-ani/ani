@@ -51,11 +51,11 @@ import me.him188.ani.app.data.repositories.MikanIndexCacheRepository
 import me.him188.ani.app.data.repositories.MikanIndexCacheRepositoryImpl
 import me.him188.ani.app.data.repositories.PreferencesRepositoryImpl
 import me.him188.ani.app.data.repositories.ProfileRepository
-import me.him188.ani.app.data.repositories.SearchHistoryRepository
-import me.him188.ani.app.data.repositories.SearchHistoryRepositoryImpl
 import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.data.repositories.SubjectRepository
 import me.him188.ani.app.data.repositories.SubjectRepositoryImpl
+import me.him188.ani.app.data.repositories.SubjectSearchRepository
+import me.him188.ani.app.data.repositories.SubjectSearchRepositoryImpl
 import me.him188.ani.app.data.repositories.TokenRepository
 import me.him188.ani.app.data.repositories.TokenRepositoryImpl
 import me.him188.ani.app.data.repositories.UserRepository
@@ -105,7 +105,9 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
         MediaSourceInstanceRepositoryImpl(getContext().dataStores.mediaSourceSaveStore)
     }
     single<ProfileRepository> { ProfileRepository() }
-    single<SearchHistoryRepository> { SearchHistoryRepositoryImpl(get()) }
+    single<SubjectSearchRepository> {
+        get<AniDatabase>().run { SubjectSearchRepositoryImpl(searchHistory(), searchTag()) }
+    }
     
     single<DanmakuManager> {
         DanmakuManagerImpl(

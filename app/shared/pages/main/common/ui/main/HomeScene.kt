@@ -249,7 +249,7 @@ private fun HomeScenePortrait(
         bottomBar = {
             val searchViewModel = rememberViewModel { SearchViewModel() }
             fun closeSearch() {
-                searchViewModel.searchActive.value = false
+                searchViewModel.searchActive = false
             }
 
             Column(Modifier.alpha(0.97f)) {
