@@ -91,20 +91,10 @@ kotlin {
         api(projects.dataSources.jellyfin)
         api(projects.dataSources.ikaros)
 
-        // Danmaku
-//        api(projects.danmaku.api)
-//        api(projects.danmaku.ui)
-//        api(projects.danmaku.dandanplay)
-
         api(projects.utils.slf4jKt)
         api(projects.utils.coroutines)
         api(projects.utils.io)
-//        api(projects.torrent.api)
-//        api(projects.torrent.impl.qbittorrent)
-//        api(projects.danmaku.api)
         api(projects.danmaku.ani.protocol)
-//        api(projects.danmaku.dandanplay)
-//        api(projects.danmaku.ani.client)
         api(projects.utils.ktorClient)
 
         // Ktor
@@ -118,7 +108,6 @@ kotlin {
         api(libs.koin.core) // dependency injection
         api(libs.directories) // Data directories on all OSes
         api(libs.coil.core) // Image loading
-//        api(libs.coil.gif) // Image loading
         api(libs.coil.svg) // Image loading
         api(libs.coil.compose.core) // Image loading
         api(libs.coil.network.okhttp) // Image loading
