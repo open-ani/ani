@@ -23,6 +23,8 @@ import android.app.Application
 import android.content.Context
 import android.os.Bundle
 import androidx.compose.runtime.Stable
+import ch.qos.logback.classic.LoggerContext
+import ch.qos.logback.core.util.StatusPrinter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -38,6 +40,7 @@ import me.him188.ani.app.torrent.qbittorrent.QBittorrentTorrentDownloader
 import org.koin.android.ext.android.getKoin
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
+import org.slf4j.LoggerFactory
 
 class AniApplication : Application() {
     companion object {
@@ -104,6 +107,15 @@ class AniApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        System.setProperty(
+            "LOGS_DIR",
+            applicationContext.filesDir.resolve("logs").absolutePath,
+        )
+
+        // Start logging, reads `logback.xml` from resources
+        val lc = LoggerFactory.getILoggerFactory() as LoggerContext
+        StatusPrinter.print(lc)
+
         instance = Instance(this)
 
         val scope = createAppRootCoroutineScope()

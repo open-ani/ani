@@ -149,7 +149,6 @@ kotlin {
         api(libs.androidx.core.ktx)
         api(libs.koin.android)
         implementation(libs.androidx.browser)
-        implementation(libs.slf4j.android)
 //        api(projects.torrent.impl.libtorrent4j)
 
         // Compose

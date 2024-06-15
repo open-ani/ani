@@ -94,14 +94,14 @@ koin-ktor = { module = "io.insert-koin:koin-ktor", version.ref = "koin" }
 # Yamlkt
 directories = { module = "dev.dirs:directories", version = "26" }
 
-# Slf4j
+# Logging
 log4j-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j-core" }
 log4j-slf4j-impl = { module = "org.apache.logging.log4j:log4j-slf4j2-impl", version.ref = "log4j-core" }
 playwright = { module = "com.microsoft.playwright:playwright", version.ref = "playwright" }
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
-
-# Logback
+slf4j-logback = { module = "org.slf4j:slf4j-logback", version.ref = "slf4j" }
+logback-android = { module = "com.github.tony19:logback-android", version = "3.0.0" }
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 
 # OkHttp
