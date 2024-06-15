@@ -214,7 +214,7 @@ internal fun EpisodeVideoImpl(
                 },
                 danmakuEditor = danmakuEditor,
                 endActions = {
-                    if(currentPlatform.isDesktop()) PlayerControllerDefaults.AudioSwitcher(playerState.audioTracks)
+                    if (currentPlatform.isDesktop()) PlayerControllerDefaults.AudioSwitcher(playerState.audioTracks)
                     PlayerControllerDefaults.SubtitleSwitcher(playerState.subtitleTracks)
                     val speed by playerState.playbackSpeed.collectAsStateWithLifecycle()
                     SpeedSwitcher(
