@@ -217,28 +217,10 @@ interface HasBackgroundScope {
         return flow
     }
 
-    fun <T> CoroutineScope.load(
-        uuid: Uuid,
-        calc: suspend () -> T?
-    ): LoadingUuidItem<T> {
-        val flow = MutableStateFlow<T?>(null)
-        launch {
-            flow.value = calc()
-        }
-        return LoadingUuidItem(uuid, flow)
-    }
-
     fun <T, R> Flow<T>.mapLatestSupervised(transform: suspend CoroutineScope.(value: T) -> R): Flow<R> =
         mapLatest {
             supervisorScope { transform(it) }
         }
-
-    fun <T> List<Uuid>.mapLoadIn(
-        scope: CoroutineScope,
-        calc: suspend (Uuid) -> T?,
-    ): List<LoadingUuidItem<T>> {
-        return map { scope.load(it) { calc(it) } }
-    }
 
     fun <T> Flow<T>.localCachedSharedFlow(
         started: SharingStarted = SharingStarted.WhileSubscribed(5.seconds),
