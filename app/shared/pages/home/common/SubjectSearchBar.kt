@@ -43,7 +43,6 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.NewLabel
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
@@ -63,9 +62,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
@@ -87,20 +86,16 @@ import androidx.compose.ui.zIndex
 import androidx.constraintlayout.compose.layoutId
 import me.him188.ani.app.OneshotTip
 import me.him188.ani.app.interaction.clearFocusOnKeyboardDismiss
-import me.him188.ani.app.ui.foundation.AnimatedFilterChip
 import kotlin.math.max
 import androidx.compose.ui.unit.max as maxDp
 
 @Composable
 fun SubjectSearchBar(
-    initialActive: Boolean = false,
-    initialSearchText: String = "",
     editingTagMode: Boolean,
     searchTag: List<SearchTag>,
     showDeleteTagTip: Boolean,
     searchHistory: List<SearchHistory>,
     contentPadding: PaddingValues,
-    modifier: Modifier = Modifier,
     onActiveChange: (Boolean) -> Unit,
     onToggleTag: (Int, Boolean) -> Unit,
     onAddTag: (String) -> Unit,
@@ -109,6 +104,9 @@ fun SubjectSearchBar(
     onDisableDeleteTagTip: () -> Unit,
     onStartEditingTagMode: () -> Unit,
     onSearch: (String, Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+    initialActive: Boolean = false,
+    initialSearchText: String = "",
 ) {
     var isActive by remember { mutableStateOf(initialActive) }
     var searchText by remember { mutableStateOf(initialSearchText) }
@@ -136,14 +134,15 @@ fun SubjectSearchBar(
         onActiveChange(isActive)
     }
 
-    NewCustomSearchFilterDialog(
-        openDialog = newCustomFilterDialogOpened,
-        onConfirm = { newTag ->
-            newCustomFilterDialogOpened = false
-            onAddTag(newTag)
-        },
-        onDismiss = { newCustomFilterDialogOpened = false }
-    )
+    if (newCustomFilterDialogOpened) {
+        NewCustomSearchFilterDialog(
+            onConfirm = { newTag ->
+                newCustomFilterDialogOpened = false
+                onAddTag(newTag)
+            },
+            onDismiss = { newCustomFilterDialogOpened = false }
+        )
+    }
     
     SearchBar(
         query = searchText,
@@ -152,7 +151,7 @@ fun SubjectSearchBar(
             Text(
                 when (searchMode) {
                     SearchMode.KEYWORD -> "搜索"
-                    SearchMode.FILTER -> "发现"
+                    SearchMode.EXPLORE -> "发现"
                 }
             )
         },
@@ -182,7 +181,7 @@ fun SubjectSearchBar(
             .clearFocusOnKeyboardDismiss()
             .onFocusEvent { state ->
                 // 标签搜索模式下不允许输入文字或拉起键盘
-                if ((state.isFocused || state.isCaptured) && searchMode == SearchMode.FILTER) {
+                if ((state.isFocused || state.isCaptured) && searchMode == SearchMode.EXPLORE) {
                     focusManager.clearFocus(true)
                     if (!isActive) {
                         toggleActive(true)
@@ -241,13 +240,13 @@ fun SubjectSearchBar(
                         shape = CircleShape,
                         onClick = {
                             fabRotateAngle -= 180f
-                            if (searchMode == SearchMode.FILTER) {
+                            if (searchMode == SearchMode.EXPLORE) {
                                 searchMode = SearchMode.KEYWORD
                                 searchText = savedSearchText
                                 focusRequester.requestFocus()
                                 keyboard?.show()
                             } else {
-                                searchMode = SearchMode.FILTER
+                                searchMode = SearchMode.EXPLORE
                                 savedSearchText = searchText
                                 searchText = ""
                                 keyboard?.hide()
@@ -263,7 +262,7 @@ fun SubjectSearchBar(
                                 .rotate(fabRotateAnimated)
                         )
                         Text(
-                            text = if (searchMode == SearchMode.FILTER) "关键词搜索" else "标签搜索",
+                            text = if (searchMode == SearchMode.EXPLORE) "关键词搜索" else "标签搜索",
                             modifier = Modifier.padding(start = 8.dp).animateContentSize()
                         )
                     }
@@ -289,7 +288,7 @@ fun SubjectSearchBar(
                             onDeleteItem = onDeleteHistory,
                         )
 
-                        SearchMode.FILTER -> SearchFilterPage(
+                        SearchMode.EXPLORE -> SearchFilterPage(
                             tags = searchTag,
                             editingTagMode = editingTagMode,
                             showDeleteTagTip = showDeleteTagTip,
@@ -440,28 +439,12 @@ private fun SearchFilterPage(
                 modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
             ) {
                 tags.forEach { tag ->
-                    AnimatedFilterChip(
+                    TagFilterChip(
                         selected = tag.checked && !editingTagMode,
                         label = { Text(text = tag.content) },
-                        trailingIcon = {
-                            AnimatedVisibility(
-                                visible = editingTagMode,
-                                enter = expandHorizontally(),
-                                exit = shrinkHorizontally()
-                            ) {
-                                IconButton(
-                                    onClick = { onDeleteTag(tag.id) },
-                                    modifier = Modifier.size(FilterChipDefaults.IconSize)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Outlined.Close,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(FilterChipDefaults.IconSize)
-                                    )
-                                }
-                            }
-                        },
+                        showCloseTag = editingTagMode,
                         onClick = { onToggleTag(tag.id, !tag.checked) },
+                        onCloseTag = { onDeleteTag(tag.id) }
                     )
                 }
                 AnimatedVisibility(
@@ -505,7 +488,7 @@ enum class SearchMode {
     /**
      * 按过滤器搜索
      */
-    FILTER
+    EXPLORE
 }
 
 /**
@@ -543,80 +526,73 @@ private fun AddNewTagChip(
     }
 }
 
-
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun NewCustomSearchFilterDialog(
-    openDialog: Boolean,
     modifier: Modifier = Modifier,
     onConfirm: (text: String) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
-    if (openDialog) {
-        var text by remember {
-            mutableStateOf("")
-        }
-        AlertDialog(
-            onDismissRequest = onDismiss,
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        if (text.isBlank()) {
-                            onDismiss()
-                        } else {
-                            onConfirm(text)
-                        }
-                    },
-                ) {
-                    Text(text = "确认")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = onDismiss) {
-                    Text(text = "取消")
-                }
-            },
-            icon = { Icon(imageVector = Icons.Outlined.NewLabel, contentDescription = null) },
-            title = {
-                Text(text = "新增搜索标签")
-            },
-            text = {
-                Column(
-                    modifier = modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    OutlinedTextField(
-                        modifier = Modifier.clearFocusOnKeyboardDismiss(),
-                        value = text,
-                        onValueChange = { text = it },
-                        label = { Text("自定义标签") },
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                        keyboardActions = KeyboardActions(
-                            onDone = {
-                                focusManager.clearFocus()
-                                keyboardController?.hide()
-                                if (text.isBlank()) {
-                                    onDismiss()
-                                } else {
-                                    onConfirm(text)
-                                }
+    var text by rememberSaveable { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    if (text.isBlank()) {
+                        onDismiss()
+                    } else {
+                        onConfirm(text)
+                    }
+                },
+            ) {
+                Text(text = "确认")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(text = "取消")
+            }
+        },
+        icon = { Icon(imageVector = Icons.Outlined.NewLabel, contentDescription = null) },
+        title = {
+            Text(text = "新增自定义标签")
+        },
+        text = {
+            Column(
+                modifier = modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                OutlinedTextField(
+                    modifier = Modifier.clearFocusOnKeyboardDismiss(),
+                    value = text,
+                    onValueChange = { text = it },
+                    label = { Text("自定义标签") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(
+                        onDone = {
+                            focusManager.clearFocus()
+                            keyboardController?.hide()
+                            if (text.isBlank()) {
+                                onDismiss()
+                            } else {
+                                onConfirm(text)
                             }
-                        )
+                        }
                     )
-                    Text(
-                        text = "新增自定义搜索标签，手动添加搜索结果过滤。" +
-                                "除此之外您也可以在搜索结果界面将标签自动添加至搜索过滤标签。"
-                    )
-                }
-            },
-            properties = DialogProperties(
-                dismissOnBackPress = true,
-                dismissOnClickOutside = true,
-                usePlatformDefaultWidth = true
-            ),
-        )
-    }
+                )
+                Text(
+                    text = "新增自定义过滤标签，搜索结果将包含该标签。"
+                )
+            }
+        },
+        properties = DialogProperties(
+            dismissOnBackPress = true,
+            dismissOnClickOutside = true,
+            usePlatformDefaultWidth = true
+        ),
+    )
 }

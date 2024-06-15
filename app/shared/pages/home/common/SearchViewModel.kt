@@ -42,7 +42,6 @@ import me.him188.ani.app.ui.subject.SubjectListViewModel
 import me.him188.ani.datasources.api.subject.SubjectProvider
 import me.him188.ani.datasources.api.subject.SubjectSearchQuery
 import me.him188.ani.utils.coroutines.update
-import me.him188.ani.utils.logging.info
 import moe.tlaster.precompose.viewmodel.viewModelScope
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -82,7 +81,6 @@ class SearchViewModel(
         .getTagFlow()
         .distinctUntilChanged()
         .combine(checkedTag) { tags, checked ->
-            logger.info { "combine flow" }
             tags.map { entity -> entity.toData(checked.contains(entity.id)) }
         }
         .stateIn(viewModelScope, SharingStarted.Lazily, listOf())
