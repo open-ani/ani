@@ -13,8 +13,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
@@ -23,6 +22,7 @@ import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
+import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuProviderConfig
 import me.him188.ani.danmaku.api.applyDanmakuProviderConfig
@@ -31,7 +31,9 @@ import me.him188.ani.danmaku.protocol.BangumiLoginRequest
 import me.him188.ani.danmaku.protocol.BangumiLoginResponse
 import me.him188.ani.danmaku.protocol.DanmakuInfo
 import me.him188.ani.danmaku.protocol.DanmakuPostRequest
+import me.him188.ani.utils.coroutines.runUntilSuccess
 import me.him188.ani.utils.ktor.createDefaultHttpClient
+import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import kotlin.coroutines.CoroutineContext
@@ -59,7 +61,7 @@ class NetworkErrorException(override val cause: Throwable?) : SendDanmakuExcepti
 
 class AniDanmakuSenderImpl(
     private val config: DanmakuProviderConfig,
-    bangumiToken: Flow<String?>,
+    private val bangumiToken: Flow<String?>,
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
 ) : AniDanmakuSender, HasBackgroundScope by BackgroundScope(parentCoroutineContext) {
     private fun getBaseUrl() = AniBangumiSeverBaseUrls.getBaseUrl(config.useGlobal)
@@ -79,6 +81,7 @@ class AniDanmakuSenderImpl(
             level = LogLevel.INFO
         }
         followRedirects = true
+        expectSuccess = false
         install(HttpTimeout) {
             connectTimeoutMillis = 20_000
             requestTimeoutMillis = 30_000
@@ -128,48 +131,60 @@ class AniDanmakuSenderImpl(
         }.body<BangumiLoginResponse>().token
     }
 
-    private suspend inline fun requireToken(): String {
-        return danmakuToken.first() ?: throw AuthorizationFailureException(null)
-    }
-
     private suspend fun sendDanmaku(
         episodeId: Int,
         info: DanmakuInfo,
     ) {
+        val token = requireSession().token
         invokeRequest {
             client.post("${getBaseUrl()}/v1/danmaku/$episodeId") {
-                bearerAuth(requireToken())
+                bearerAuth(token)
                 contentType(ContentType.Application.Json)
                 setBody(DanmakuPostRequest(info))
             }
         }
     }
 
+    private class Session(
+        val token: String,
+        val selfInfo: AniUser,
+    )
+
+    private val session = MutableStateFlow<Session?>(null)
+
+    private suspend inline fun requireSession() =
+        session.value ?: kotlin.run {
+            login()
+        }
+
+    private val loginLock = Mutex()
+    private suspend fun login(): Session = loginLock.withLock {
+        session.value?.let { return it }
+        val bangumiToken = bangumiToken.first()
+            ?: throw AuthorizationFailureException(null)
+
+        return runUntilSuccess(maxAttempts = 3) {
+            val token = authByBangumiToken(bangumiToken)
+            val selfInfo = getUserInfo(token)
+            val session = Session(token, selfInfo)
+            this.session.value = session
+            session
+        }
+    }
+
+    init {
+        launchInBackground {
+            kotlin.runCatching { login() }.onFailure {
+                logger.error(it) { "Failed to login to danmaku sever (on startup). Will try later when sending danmaku." }
+            }
+        }
+    }
+
+    override val selfId = session.map { it?.selfInfo?.id }
 
     private val sendLock = Mutex()
-
-    private val danmakuToken = bangumiToken.map {
-        if (it == null) {
-            null
-        } else {
-            authByBangumiToken(it)
-        }
-    }.stateInBackground(started = SharingStarted.Eagerly)
-
-    private val selfInfo: StateFlow<AniUser?> = danmakuToken.map {
-        if (it == null) {
-            null
-        } else {
-            getUserInfo(it)
-//            getUserInfo(it)
-        }
-    }.stateInBackground(started = SharingStarted.Eagerly)
-
-    override val selfId = selfInfo.map { it?.id }
-
     override suspend fun send(episodeId: Int, info: DanmakuInfo): Danmaku = sendLock.withLock {
-        val selfId = selfId.first()
-            ?: throw AuthorizationFailureException(null)
+        val selfId = requireSession().selfInfo.id
 
         sendDanmaku(episodeId, info)
 
