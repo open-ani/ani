@@ -1,4 +1,4 @@
-package me.him188.ani.app.interaction
+package me.him188.ani.app.ui.foundation.interaction
 
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.runtime.Composable

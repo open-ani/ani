@@ -51,7 +51,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.LocalContext
-import me.him188.ani.app.ui.isLoggedIn
+import me.him188.ani.app.session.isLoggedIn
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.koin.core.context.GlobalContext
 import org.openapitools.client.models.User

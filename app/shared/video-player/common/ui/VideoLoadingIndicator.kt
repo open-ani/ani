@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
-import me.him188.ani.app.ui.theme.aniDarkColorTheme
+import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 
 @Composable
 fun VideoLoadingIndicator(

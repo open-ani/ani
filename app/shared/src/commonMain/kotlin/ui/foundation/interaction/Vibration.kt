@@ -16,8 +16,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.ani.app.ui.theme
+@file:JvmName("Vibration_common")
 
-import androidx.compose.material3.MaterialTheme
+package me.him188.ani.app.ui.foundation.interaction
 
-typealias AppTheme = MaterialTheme
+import me.him188.ani.app.platform.Context
+
+expect fun Context.vibrateIfSupported(strength: VibrationStrength = VibrationStrength.CLICK)
+
+enum class VibrationStrength {
+    TICK,
+    CLICK,
+    HEAVY_CLICK,
+}

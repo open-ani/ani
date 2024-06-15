@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.ani.app.interaction
+package me.him188.ani.app.ui.foundation.interaction
 
 import android.annotation.SuppressLint
 import android.os.Build

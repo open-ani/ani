@@ -16,25 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.ani.app.interaction
+package me.him188.ani.app.ui.foundation.interaction
 
-import androidx.compose.foundation.Indication
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.ui.Modifier
+abstract class KeyShortcuts {
+}
 
-actual fun Modifier.onClickEx(
-    interactionSource: MutableInteractionSource,
-    indication: Indication?,
-    enabled: Boolean,
-    onDoubleClick: (() -> Unit)?,
-    onLongClick: (() -> Unit)?,
-    onClick: () -> Unit
-): Modifier = this.combinedClickable(
-    interactionSource = interactionSource,
-    indication = indication,
-    enabled = enabled,
-    onClick = onClick,
-    onLongClick = onLongClick,
-    onDoubleClick = onDoubleClick
-)

@@ -19,7 +19,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.foundation.widgets.RichDialogLayout
-import me.him188.ani.app.ui.mediaSource.renderMediaSource
+import me.him188.ani.app.ui.icons.renderMediaSource
 import me.him188.ani.datasources.core.cache.MediaCacheStorage
 
 @Stable

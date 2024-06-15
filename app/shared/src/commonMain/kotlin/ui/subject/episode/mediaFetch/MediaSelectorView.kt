@@ -57,8 +57,8 @@ import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.tools.formatDateTime
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.icons.MediaSourceIcons
-import me.him188.ani.app.ui.mediaSource.SmallMediaSourceIcon
-import me.him188.ani.app.ui.mediaSource.renderMediaSource
+import me.him188.ani.app.ui.icons.SmallMediaSourceIcon
+import me.him188.ani.app.ui.icons.renderMediaSource
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.subject.episode.details.renderSubtitleLanguage
 import me.him188.ani.datasources.api.Media

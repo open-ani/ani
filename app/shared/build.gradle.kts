@@ -275,25 +275,8 @@ kotlin {
         submodule("torrent/impl/libtorrent4j")
         submodule("torrent/impl/qbittorrent")
 
-        submodule("app/shared/foundation")
         submodule("app/shared/placeholder")
-
-        submodule("app/shared/data")
-
-        submodule("app/shared/bangumi-authentication")
         submodule("app/shared/video-player")
-
-        submodule("app/shared/pages/profile")
-        submodule("app/shared/pages/subject-collection")
-        submodule("app/shared/pages/subject-details")
-        submodule("app/shared/pages/subject-search")
-        submodule("app/shared/pages/subject-cache")
-        submodule("app/shared/pages/episode-play")
-        submodule("app/shared/pages/home")
-        submodule("app/shared/pages/main")
-        submodule("app/shared/pages/settings")
-        submodule("app/shared/pages/cache-manage")
-        submodule("app/shared/pages/update")
     }
 
 

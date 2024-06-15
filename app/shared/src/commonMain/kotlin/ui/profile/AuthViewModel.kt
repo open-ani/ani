@@ -28,8 +28,8 @@ import me.him188.ani.app.session.ExternalOAuthRequest
 import me.him188.ani.app.session.OAuthResult
 import me.him188.ani.app.session.Session
 import me.him188.ani.app.session.SessionManager
-import me.him188.ani.app.ui.feedback.ErrorMessage
 import me.him188.ani.app.ui.foundation.AbstractViewModel
+import me.him188.ani.app.ui.foundation.feedback.ErrorMessage
 import me.him188.ani.utils.logging.debug
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject

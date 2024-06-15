@@ -58,11 +58,11 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.external.placeholder.placeholder
-import me.him188.ani.app.ui.feedback.ErrorDialogHost
+import me.him188.ani.app.ui.foundation.feedback.ErrorDialogHost
 import me.him188.ani.app.ui.foundation.ifThen
-import me.him188.ani.app.ui.mediaSource.MediaSourceIcon
-import me.him188.ani.app.ui.mediaSource.renderMediaSource
-import me.him188.ani.app.ui.mediaSource.renderMediaSourceDescription
+import me.him188.ani.app.ui.icons.MediaSourceIcon
+import me.him188.ani.app.ui.icons.renderMediaSource
+import me.him188.ani.app.ui.icons.renderMediaSourceDescription
 import me.him188.ani.app.ui.settings.framework.ConnectionTesterResultIndicator
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.TextButtonItem

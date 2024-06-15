@@ -16,10 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.ani.app.interaction
+package me.him188.ani.app.ui.foundation.theme
 
-import me.him188.ani.app.platform.Context
+import androidx.compose.material3.MaterialTheme
 
-actual fun Context.vibrateIfSupported(strength: VibrationStrength) {
-    // not supported
-}
+typealias AppTheme = MaterialTheme

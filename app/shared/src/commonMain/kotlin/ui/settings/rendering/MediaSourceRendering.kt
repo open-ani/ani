@@ -1,4 +1,4 @@
-package me.him188.ani.app.ui.mediaSource
+package me.him188.ani.app.ui.icons
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box

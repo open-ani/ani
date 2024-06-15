@@ -25,7 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
-import me.him188.ani.app.ui.theme.stronglyWeaken
+import me.him188.ani.app.ui.foundation.theme.stronglyWeaken
 
 /**
  * 设置页的组件

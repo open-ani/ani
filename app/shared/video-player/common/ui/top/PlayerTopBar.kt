@@ -22,7 +22,7 @@ import me.him188.ani.app.navigation.LocalBackHandler
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.ui.foundation.ifThen
-import me.him188.ani.app.ui.theme.aniDarkColorTheme
+import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 
 /**
  * 播放器顶部导航栏

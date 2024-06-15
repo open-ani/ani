@@ -66,11 +66,11 @@ import me.him188.ani.app.ui.foundation.TopAppBarGoBackButton
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
 import me.him188.ani.app.ui.foundation.backgroundWithGradient
 import me.him188.ani.app.ui.foundation.launchInBackground
+import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
+import me.him188.ani.app.ui.foundation.theme.weaken
 import me.him188.ani.app.ui.subject.collection.CollectionActionButton
 import me.him188.ani.app.ui.subject.collection.EditCollectionTypeDropDown
 import me.him188.ani.app.ui.subject.collection.progress.EpisodeProgressDialog
-import me.him188.ani.app.ui.theme.slightlyWeaken
-import me.him188.ani.app.ui.theme.weaken
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.datasources.bangumi.client.BangumiEpisode
 import me.him188.ani.datasources.bangumi.processing.fixToString

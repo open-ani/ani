@@ -25,7 +25,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.foundation.AsyncImage
-import me.him188.ani.app.ui.theme.weaken
+import me.him188.ani.app.ui.foundation.theme.weaken
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
 const val COVER_WIDTH_TO_HEIGHT_RATIO = 849 / 1200f

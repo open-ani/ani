@@ -16,14 +16,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.ani.app.interaction
+package me.him188.ani.app.ui.foundation.interaction
 
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.window.FrameWindowScope
+import me.him188.ani.app.platform.Context
 
-interface MenuBarProvider {
-    @Composable
-    fun FrameWindowScope.MenuBar(
-        onClickPreferences: () -> Unit,
-    )
+actual fun Context.vibrateIfSupported(strength: VibrationStrength) {
+    // not supported
 }

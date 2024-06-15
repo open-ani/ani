@@ -1,4 +1,4 @@
-package me.him188.ani.app.ui.foundation
+package me.him188.ani.app.ui.main
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -46,8 +46,12 @@ import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.isAndroid
 import me.him188.ani.app.tools.LocalTimeFormatter
 import me.him188.ani.app.tools.TimeFormatter
-import me.him188.ani.app.ui.theme.AppTheme
-import me.him188.ani.app.ui.theme.aniColorScheme
+import me.him188.ani.app.ui.foundation.AbstractViewModel
+import me.him188.ani.app.ui.foundation.LocalImageLoader
+import me.him188.ani.app.ui.foundation.getDefaultImageLoader
+import me.him188.ani.app.ui.foundation.rememberViewModel
+import me.him188.ani.app.ui.foundation.theme.AppTheme
+import me.him188.ani.app.ui.foundation.theme.aniColorScheme
 import moe.tlaster.precompose.PreComposeApp
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject

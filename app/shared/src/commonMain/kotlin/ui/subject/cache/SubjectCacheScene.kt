@@ -43,9 +43,9 @@ import me.him188.ani.app.data.repositories.EpisodeRepository
 import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.data.repositories.SubjectRepository
 import me.him188.ani.app.ui.external.placeholder.placeholder
-import me.him188.ani.app.ui.feedback.ErrorDialogHost
-import me.him188.ani.app.ui.feedback.ErrorMessage
 import me.him188.ani.app.ui.foundation.AbstractViewModel
+import me.him188.ani.app.ui.foundation.feedback.ErrorDialogHost
+import me.him188.ani.app.ui.foundation.feedback.ErrorMessage
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.rememberBackgroundScope
 import me.him188.ani.app.ui.subject.episode.mediaFetch.EpisodeMediaFetchSession

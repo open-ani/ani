@@ -1,4 +1,4 @@
-package me.him188.ani.app.ui.theme
+package me.him188.ani.app.ui.foundation.theme
 
 import androidx.compose.ui.graphics.Color
 

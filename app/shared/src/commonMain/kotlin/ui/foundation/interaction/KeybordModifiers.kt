@@ -16,16 +16,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-@file:JvmName("Vibration_common")
+package me.him188.ani.app.ui.foundation.interaction
 
-package me.him188.ani.app.interaction
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.KeyEvent
 
-import me.him188.ani.app.platform.Context
-
-expect fun Context.vibrateIfSupported(strength: VibrationStrength = VibrationStrength.CLICK)
-
-enum class VibrationStrength {
-    TICK,
-    CLICK,
-    HEAVY_CLICK,
-}
+expect inline fun Modifier.onEnterKeyEvent(crossinline action: (KeyEvent) -> Boolean): Modifier

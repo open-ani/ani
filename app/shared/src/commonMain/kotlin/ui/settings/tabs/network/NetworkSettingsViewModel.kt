@@ -18,10 +18,10 @@ import me.him188.ani.app.data.models.DanmakuSettings
 import me.him188.ani.app.data.models.ProxySettings
 import me.him188.ani.app.data.repositories.MediaSourceInstanceRepository
 import me.him188.ani.app.data.repositories.SettingsRepository
-import me.him188.ani.app.ui.feedback.ErrorMessage
+import me.him188.ani.app.ui.foundation.feedback.ErrorMessage
 import me.him188.ani.app.ui.foundation.launchInBackground
-import me.him188.ani.app.ui.mediaSource.renderMediaSource
-import me.him188.ani.app.ui.mediaSource.renderMediaSourceDescription
+import me.him188.ani.app.ui.icons.renderMediaSource
+import me.him188.ani.app.ui.icons.renderMediaSourceDescription
 import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
 import me.him188.ani.app.ui.settings.framework.ConnectionTestResult
 import me.him188.ani.app.ui.settings.framework.ConnectionTester

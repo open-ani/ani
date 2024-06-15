@@ -16,19 +16,27 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-@file:JvmName("OnClick_common")
-
-package me.him188.ani.app.interaction
+package me.him188.ani.app.ui.foundation.interaction
 
 import androidx.compose.foundation.Indication
+import androidx.compose.foundation.indication
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.onClick
 import androidx.compose.ui.Modifier
 
-expect fun Modifier.onClickEx(
-    interactionSource: MutableInteractionSource = MutableInteractionSource(),
+actual fun Modifier.onClickEx(
+    interactionSource: MutableInteractionSource,
     indication: Indication?,
-    enabled: Boolean = true,
-    onDoubleClick: (() -> Unit)? = null,
-    onLongClick: (() -> Unit)? = null,
+    enabled: Boolean,
+    onDoubleClick: (() -> Unit)?,
+    onLongClick: (() -> Unit)?,
     onClick: () -> Unit
-): Modifier
+): Modifier {
+    return onClick(
+        enabled = enabled,
+        interactionSource = interactionSource,
+        onDoubleClick = onDoubleClick,
+        onLongClick = onLongClick,
+        onClick = onClick,
+    ).indication(interactionSource, indication)
+}

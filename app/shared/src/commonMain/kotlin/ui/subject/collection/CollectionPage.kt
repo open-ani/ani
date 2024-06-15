@@ -70,6 +70,7 @@ import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.platform.isMobile
+import me.him188.ani.app.session.isLoggedIn
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.tools.caching.RefreshOrderPolicy
 import me.him188.ani.app.tools.rememberUiMonoTasker
@@ -78,7 +79,6 @@ import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.rememberViewModel
-import me.him188.ani.app.ui.isLoggedIn
 import me.him188.ani.app.ui.profile.UnauthorizedTips
 import me.him188.ani.app.ui.subject.collection.progress.EpisodeProgressDialog
 import me.him188.ani.app.ui.subject.collection.progress.rememberEpisodeProgressState

@@ -1,4 +1,4 @@
-package me.him188.ani.app.ui.feedback
+package me.him188.ani.app.ui.foundation.feedback
 
 import androidx.annotation.UiThread
 import androidx.compose.foundation.layout.Column

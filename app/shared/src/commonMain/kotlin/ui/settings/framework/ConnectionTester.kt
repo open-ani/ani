@@ -28,9 +28,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import me.him188.ani.app.ui.mediaSource.MediaSourceIcon
-import me.him188.ani.app.ui.mediaSource.renderMediaSource
-import me.him188.ani.app.ui.mediaSource.renderMediaSourceDescription
+import me.him188.ani.app.ui.icons.MediaSourceIcon
+import me.him188.ani.app.ui.icons.renderMediaSource
+import me.him188.ani.app.ui.icons.renderMediaSourceDescription
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.TextItem
 import me.him188.ani.datasources.bangumi.BangumiSubjectProvider

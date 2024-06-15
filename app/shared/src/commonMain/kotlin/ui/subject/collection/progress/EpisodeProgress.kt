@@ -43,14 +43,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import me.him188.ani.app.data.media.EpisodeCacheStatus
-import me.him188.ani.app.interaction.VibrationStrength
-import me.him188.ani.app.interaction.vibrateIfSupported
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.foundation.indication.HorizontalIndicator
 import me.him188.ani.app.ui.foundation.indication.IndicatedBox
-import me.him188.ani.app.ui.theme.stronglyWeaken
-import me.him188.ani.app.ui.theme.weaken
+import me.him188.ani.app.ui.foundation.interaction.VibrationStrength
+import me.him188.ani.app.ui.foundation.interaction.vibrateIfSupported
+import me.him188.ani.app.ui.foundation.theme.stronglyWeaken
+import me.him188.ani.app.ui.foundation.theme.weaken
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 
 
