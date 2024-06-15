@@ -1,4 +1,4 @@
-package me.him188.ani.app.ui.collection.progress
+package me.him188.ani.app.ui.subject.collection.progress
 
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement

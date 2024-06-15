@@ -1,4 +1,4 @@
-package me.him188.ani.app.ui.collection
+package me.him188.ani.app.ui.subject.collection
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.content.res.Configuration.UI_MODE_TYPE_NORMAL

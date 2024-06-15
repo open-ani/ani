@@ -1,4 +1,4 @@
-package me.him188.ani.app.ui.collection
+package me.him188.ani.app.ui.subject.collection
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

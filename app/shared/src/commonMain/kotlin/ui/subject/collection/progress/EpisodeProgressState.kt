@@ -1,4 +1,4 @@
-package me.him188.ani.app.ui.collection.progress
+package me.him188.ani.app.ui.subject.collection.progress
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable

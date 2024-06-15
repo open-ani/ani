@@ -1,4 +1,4 @@
-package me.him188.ani.app.ui.collection
+package me.him188.ani.app.ui.subject.collection
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -58,11 +58,11 @@ import kotlinx.coroutines.flow.debounce
 import me.him188.ani.app.data.media.EpisodeCacheStatus
 import me.him188.ani.app.data.subject.SubjectCollectionItem
 import me.him188.ani.app.tools.caching.LazyDataCache
-import me.him188.ani.app.ui.collection.progress.cacheStatusIndicationColor
 import me.him188.ani.app.ui.foundation.AsyncImage
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.indication.HorizontalIndicator
 import me.him188.ani.app.ui.foundation.indication.IndicatedBox
+import me.him188.ani.app.ui.subject.collection.progress.cacheStatusIndicationColor
 import me.him188.ani.app.ui.subject.details.COVER_WIDTH_TO_HEIGHT_RATIO
 import me.him188.ani.app.ui.subject.details.Tag
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType

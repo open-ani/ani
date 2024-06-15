@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.ani.app.ui.collection
+package me.him188.ani.app.ui.subject.collection
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -73,8 +73,6 @@ import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.tools.caching.RefreshOrderPolicy
 import me.him188.ani.app.tools.rememberUiMonoTasker
-import me.him188.ani.app.ui.collection.progress.EpisodeProgressDialog
-import me.him188.ani.app.ui.collection.progress.rememberEpisodeProgressState
 import me.him188.ani.app.ui.foundation.effects.OnLifecycleEvent
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
@@ -82,6 +80,8 @@ import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.isLoggedIn
 import me.him188.ani.app.ui.profile.UnauthorizedTips
+import me.him188.ani.app.ui.subject.collection.progress.EpisodeProgressDialog
+import me.him188.ani.app.ui.subject.collection.progress.rememberEpisodeProgressState
 import me.him188.ani.app.update.ui.TextButtonUpdateLogo
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle

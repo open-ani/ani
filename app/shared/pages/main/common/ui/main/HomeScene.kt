@@ -52,7 +52,6 @@ import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.pages.cache.manage.CacheManagementPage
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.requireOnline
-import me.him188.ani.app.ui.collection.CollectionPage
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
 import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
@@ -63,6 +62,7 @@ import me.him188.ani.app.ui.isLoggedIn
 import me.him188.ani.app.ui.profile.AccountViewModel
 import me.him188.ani.app.ui.profile.ProfilePage
 import me.him188.ani.app.ui.settings.SettingsPage
+import me.him188.ani.app.ui.subject.collection.CollectionPage
 import me.him188.ani.app.update.InstallationFailureReason
 import me.him188.ani.app.update.ui.AutoUpdateViewModel
 import me.him188.ani.app.update.ui.ChangelogDialog

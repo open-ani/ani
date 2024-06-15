@@ -1,4 +1,4 @@
-package me.him188.ani.app.ui.collection
+package me.him188.ani.app.ui.subject.collection
 
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -7,12 +7,12 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import me.him188.ani.app.data.media.EpisodeCacheStatus
 import me.him188.ani.app.data.subject.PackedDate
 import me.him188.ani.app.pages.cache.manage.testMediaCache1
-import me.him188.ani.app.ui.collection.progress.EpisodeProgressDefaults
-import me.him188.ani.app.ui.collection.progress.EpisodeProgressDialog
-import me.him188.ani.app.ui.collection.progress.EpisodeProgressItem
-import me.him188.ani.app.ui.collection.progress.EpisodeProgressRow
-import me.him188.ani.app.ui.collection.progress.EpisodeProgressTheme
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.ui.subject.collection.progress.EpisodeProgressDefaults
+import me.him188.ani.app.ui.subject.collection.progress.EpisodeProgressDialog
+import me.him188.ani.app.ui.subject.collection.progress.EpisodeProgressItem
+import me.him188.ani.app.ui.subject.collection.progress.EpisodeProgressRow
+import me.him188.ani.app.ui.subject.collection.progress.EpisodeProgressTheme
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 

@@ -45,8 +45,8 @@ import me.him188.ani.app.tools.caching.getCachedData
 import me.him188.ani.app.tools.caching.mutate
 import me.him188.ani.app.tools.caching.removeFirstOrNull
 import me.him188.ani.app.tools.caching.setEach
-import me.him188.ani.app.ui.collection.ContinueWatchingStatus
-import me.him188.ani.app.ui.collection.progress.EpisodeProgressItem
+import me.him188.ani.app.ui.subject.collection.ContinueWatchingStatus
+import me.him188.ani.app.ui.subject.collection.progress.EpisodeProgressItem
 import me.him188.ani.datasources.api.paging.map
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.datasources.bangumi.processing.airSeason

@@ -18,8 +18,8 @@ import me.him188.ani.app.data.repositories.setSubjectCollectionTypeOrDelete
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.ContextMP
 import me.him188.ani.app.session.SessionManager
-import me.him188.ani.app.ui.collection.progress.EpisodeProgressState
 import me.him188.ani.app.ui.foundation.AbstractViewModel
+import me.him188.ani.app.ui.subject.collection.progress.EpisodeProgressState
 import me.him188.ani.datasources.api.paging.PageBasedPagedSource
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.datasources.bangumi.BangumiClient

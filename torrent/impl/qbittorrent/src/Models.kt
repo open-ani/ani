@@ -117,7 +117,7 @@ data class QBTorrent(
     /**
      * Torrent progress (percentage/100)
      */
-    @SerialName("progress") val progress: Float,
+    @SerialName("ui/subject/collection/progress") val progress: Float,
     /**
      * Torrent share ratio. Max ratio value: 9999.
      */
@@ -412,7 +412,7 @@ data class QBFile(
     /**
      * File progress (percentage/100)
      */
-    @SerialName("progress") val progress: Float,
+    @SerialName("ui/subject/collection/progress") val progress: Float,
     /**
      * File priority. See possible values here below
      */

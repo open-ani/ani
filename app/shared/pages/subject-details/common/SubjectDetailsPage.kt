@@ -61,14 +61,14 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
-import me.him188.ani.app.ui.collection.CollectionActionButton
-import me.him188.ani.app.ui.collection.EditCollectionTypeDropDown
-import me.him188.ani.app.ui.collection.progress.EpisodeProgressDialog
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.TopAppBarGoBackButton
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
 import me.him188.ani.app.ui.foundation.backgroundWithGradient
 import me.him188.ani.app.ui.foundation.launchInBackground
+import me.him188.ani.app.ui.subject.collection.CollectionActionButton
+import me.him188.ani.app.ui.subject.collection.EditCollectionTypeDropDown
+import me.him188.ani.app.ui.subject.collection.progress.EpisodeProgressDialog
 import me.him188.ani.app.ui.theme.slightlyWeaken
 import me.him188.ani.app.ui.theme.weaken
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
