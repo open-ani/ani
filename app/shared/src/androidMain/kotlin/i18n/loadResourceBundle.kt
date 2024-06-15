@@ -41,14 +41,17 @@ private fun ResourceBundleImplByProperties.Companion.load(
                     locale.region.contains("CN", ignoreCase = true) -> {
                         R.raw.app_zh_cn
                     }
+
                     locale.region.contains("TW", ignoreCase = true) ||
                             locale.region.contains("HK", ignoreCase = true)
                     -> {
                         R.raw.app_zh_hk
                     }
+
                     else -> R.raw.app_zh_cn
                 }
             }
+
             else -> {
                 R.raw.app_en
             }
