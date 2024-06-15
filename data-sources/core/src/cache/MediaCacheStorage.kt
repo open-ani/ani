@@ -39,7 +39,7 @@ interface MediaCacheStorage : AutoCloseable {
     val isEnabled: Flow<Boolean>
 
     /**
-     * The [MediaSource] implementation that queries the caches from this storage.
+     * 此空间的 [MediaSource]. 调用 [MediaSource.fetch] 则可从此空间中查询缓存, 作为 [Media].
      */
     val cacheMediaSource: MediaSource
 
@@ -91,7 +91,9 @@ val MediaCacheStorage.anyCaching: Flow<Boolean>
     }
 
 /**
- * A media cached in the storage.
+ * 表示一个进行中的资源缓存.
+ *
+ * [MediaCache] 有状态,
  *
  * 可能有用的属性:
  * - 该媒体的实际存储位置: [origin] 的 [Media.download]
@@ -121,6 +123,11 @@ interface MediaCache {
     val origin: Media
 
     /**
+     * 缓存元数据.
+     */
+    val metadata: MediaCacheMetadata
+
+    /**
      * Returns the [CachedMedia] instance for this cache.
      * The instance is cached so this function will immediately return the cached instance after the first successful call.
      */
@@ -128,60 +135,72 @@ interface MediaCache {
 
     fun isValid(): Boolean
 
-    val metadata: MediaCacheMetadata
-
     /**
-     * Emits [FileSize.Unspecified] if the speed is not available.
+     * 下载速度, 每秒. 对于不支持下载的缓存, 该值为 [FileSize.Zero].
+     *
+     * - 若 emit [FileSize.Unspecified], 表示上传速度未知. 这只会在该缓存正在上传, 但无法知道具体速度时出现.
+     * - 若 emit [FileSize.Zero], 表示上传速度真的是零.
      */
     val downloadSpeed: Flow<FileSize>
 
     /**
-     * Emits [FileSize.Unspecified] if the speed is not available.
+     * 上传速度, 每秒. 对于不支持上传的缓存, 该值为 [FileSize.Zero].
+     *
+     * - 若 emit [FileSize.Unspecified], 表示上传速度未知. 这只会在该缓存正在上传, 但无法知道具体速度时出现.
+     * - 若 emit [FileSize.Zero], 表示上传速度真的是零.
      */
     val uploadSpeed: Flow<FileSize>
 
     /**
-     * A flow listens on the progress of the caching. Range is `0..1`
+     * 下载进度, 范围为 `0.0f..1.0f`.
      */
     val progress: Flow<Float>
 
+    /**
+     * 下载是否已经完成.
+     *
+     * 在刚创建时, [MediaCache] 可能需要时间扫描已经下载的文件状态.
+     * 在扫描完成前, 即使文件已经下载成功, 该值也为 `false`.
+     */
     val finished: Flow<Boolean>
 
     /**
-     * A flow listens on the total size of the media.
+     * 下载的总大小.
+     *
+     * 在刚创建时, [MediaCache] 可能需要时间扫描已经下载的文件状态.
+     * 在扫描完成前, 即使文件已经下载成功, 该值为 [FileSize.Zero].
+     *
+     * 不会返回 [FileSize.Unspecified].
      */
     val totalSize: Flow<FileSize>
 
     /**
-     * Pauses download of this media.
-     * Attempts when the cache has already been deleted will be ignored.
+     * 请求暂停下载.
+     *
+     * 若当前状态不支持暂停, 例如已经被删除, 则忽略本次请求, 不会抛出异常.
      */
     suspend fun pause()
 
     /**
-     * Continue downloading.
-     * Attempts when the cache has already been deleted will be ignored.
+     * 请求恢复下载.
+     *
+     * 若当前状态不支持恢复, 例如已经被删除, 则忽略本次请求, 不会抛出异常.
      */
     suspend fun resume()
 
-//    /**
-//     * Opens the cached file as a [SeekableInput].
-//     * The returned [SeekableInput] needs to be closed properly.
-//     *
-//     * When the media is [deleted][MediaCacheStorage.delete] from a storage,
-//     * any operation on [SeekableInput] will throw an exception.
-//     */
-//    suspend fun open(): SeekableInput
-
+    /**
+     * 该缓存的文件是否已经被删除. 删除后不可恢复.
+     *
+     * 删除后 [MediaCacheStorage] 应当移除该 [MediaCache], 但 [MediaCache] 可能仍按被其他对象引用, 解释
+     */
     val isDeleted: StateFlow<Boolean>
 
     /**
-     * Deletes the cache.
+     * 尝试删除此 [MediaCache] 所涉及的文件.
      *
-     * This function must close every using resources cleanup potential cache files,
-     * and must not throw (except for [CancellationException]).
+     * 此函数必须关闭所有使用的资源, 清理潜在的缓存文件, 且不得抛出异常 (除非是 [CancellationException]).
      */
-    suspend fun delete()
+    suspend fun deleteFiles()
 }
 
 /**
@@ -245,7 +264,7 @@ open class TestMediaCache(
 
     override val isDeleted: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
-    override suspend fun delete() {
+    override suspend fun deleteFiles() {
         println("delete called")
         isDeleted.value = true
     }

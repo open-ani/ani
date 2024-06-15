@@ -26,6 +26,7 @@ import me.him188.ani.app.platform.notification.NotifManager
 import me.him188.ani.app.platform.notification.NotifPriority
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.datasources.api.topic.FileSize
+import me.him188.ani.datasources.api.topic.sum
 import me.him188.ani.datasources.core.cache.MediaCache
 import me.him188.ani.datasources.core.cache.MediaCacheStorage
 import me.him188.ani.datasources.core.cache.sum
@@ -109,11 +110,12 @@ abstract class MediaCacheManager(
                             hasAnyCaching.totalSize
                         ) { progress, totalSize ->
                             if (progress == 1f) {
-                                EpisodeCacheStatus.Cached(totalSize)
+                                EpisodeCacheStatus.Cached(totalSize, hasAnyCaching)
                             } else {
                                 EpisodeCacheStatus.Caching(
                                     progress = progress,
-                                    totalSize = totalSize
+                                    totalSize = totalSize,
+                                    cache = hasAnyCaching
                                 )
                             }
                         }
@@ -123,7 +125,8 @@ abstract class MediaCacheManager(
                 hasAnyCached != null -> {
                     emitAll(hasAnyCached.totalSize.map {
                         EpisodeCacheStatus.Cached(
-                            totalSize = it
+                            totalSize = it,
+                            cache = hasAnyCached
                         )
                     })
                 }
@@ -231,7 +234,7 @@ abstract class MediaCacheManager(
                         summaryNotif.cancel()
                     } else {
                         summaryNotif.run {
-                            contentText = "下载 $downloadRate/s"
+                            contentText = "下载 ${downloadRate.sum()}/s"
                             show()
                         }
                     }
@@ -260,12 +263,15 @@ abstract class MediaCacheManager(
 
 @Stable
 sealed class EpisodeCacheStatus {
+    abstract val cache: MediaCache?
+
     /**
      * At least one cache is fully downloaded.
      */
     @Stable
     data class Cached(
         val totalSize: FileSize,
+        override val cache: MediaCache,
     ) : EpisodeCacheStatus()
 
     /**
@@ -278,10 +284,13 @@ sealed class EpisodeCacheStatus {
          */
         val progress: Float?, // null means still connecting
         val totalSize: FileSize,
+        override val cache: MediaCache,
     ) : EpisodeCacheStatus()
 
     @Stable
-    data object NotCached : EpisodeCacheStatus()
+    data object NotCached : EpisodeCacheStatus() {
+        override val cache: Nothing? get() = null
+    }
 }
 
 class MediaCacheManagerImpl(

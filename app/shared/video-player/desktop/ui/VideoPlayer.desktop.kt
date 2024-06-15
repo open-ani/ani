@@ -13,6 +13,11 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import me.him188.ani.app.videoplayer.data.VideoData
 import me.him188.ani.app.videoplayer.data.VideoProperties
@@ -34,6 +39,8 @@ import uk.co.caprica.vlcj.factory.discovery.NativeDiscovery
 import uk.co.caprica.vlcj.media.Media
 import uk.co.caprica.vlcj.media.MediaEventAdapter
 import uk.co.caprica.vlcj.media.MediaParsedStatus
+import uk.co.caprica.vlcj.media.MediaSlaveType
+import uk.co.caprica.vlcj.media.TrackType
 import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter
 import uk.co.caprica.vlcj.player.component.CallbackMediaPlayerComponent
@@ -232,7 +239,13 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
                 )
             }
 
-//            override fun buffering(mediaPlayer: MediaPlayer?, newCache: Float) {
+            override fun elementaryStreamAdded(mediaPlayer: MediaPlayer?, type: TrackType?, id: Int) {
+                if (type == TrackType.TEXT) {
+                    reloadSubtitleTracks(); // 字幕轨道更新后，则进行重载UI上的字幕轨道
+                }
+            }
+
+            //            override fun buffering(mediaPlayer: MediaPlayer?, newCache: Float) {
 //                if (newCache != 1f) {
 //                    state.value = PlaybackState.PAUSED_BUFFERING
 //                } else {
@@ -244,16 +257,7 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
                 state.value = PlaybackState.PLAYING
                 player.submit { player.media().parsing().parse() }
 
-                subtitleTracks.candidates.value = player.subpictures().trackDescriptions()
-                    .filterNot { it.id() == -1 } // "Disable"
-                    .map {
-                        SubtitleTrack(
-                            openResource.value?.videoData?.filename + "-" + it.id(),
-                            it.id().toString(),
-                            null,
-                            listOf(Label(null, it.description()))
-                        )
-                    }
+                reloadSubtitleTracks();
             }
 
             override fun paused(mediaPlayer: MediaPlayer) {
@@ -276,6 +280,7 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
                 delay(0.1.seconds)
             }
         }
+
         backgroundScope.launch {
             subtitleTracks.current.collect { track ->
                 try {
@@ -305,6 +310,33 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
                 }
             }
         }
+
+        backgroundScope.launch {
+            openResource.filterNotNull().map { it.videoSource.extraFiles.subtitles }
+                .distinctUntilChanged()
+                .debounce(1000)
+                .collectLatest { urls ->
+                    logger.info { "Video ExtraFiles changed, updating slaves" }
+                    player.media().slaves().clear()
+                    for (subtitle in urls) {
+                        logger.info { "Adding SUBTITLE slave: $subtitle" }
+                        player.media().addSlave(MediaSlaveType.SUBTITLE, subtitle.uri, false)
+                    }
+                }
+        }
+    }
+
+    private fun reloadSubtitleTracks() {
+        subtitleTracks.candidates.value = player.subpictures().trackDescriptions()
+            .filterNot { it.id() == -1 } // "Disable"
+            .map {
+                SubtitleTrack(
+                    openResource.value?.videoData?.filename + "-" + it.id(),
+                    it.id().toString(),
+                    null,
+                    listOf(Label(null, it.description()))
+                )
+            }
     }
 
     private fun createVideoProperties(): VideoProperties? {

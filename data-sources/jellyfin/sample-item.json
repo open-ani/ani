@@ -1,0 +1,120 @@
+{
+  "Items": [
+    {
+      "Name": "夜晚的水母不会游泳",
+      "ServerId": "90441fd37c7b4f23bab43404b86eff22",
+      "Id": "9479952c828319401e5c500da1dfe241",
+      "CanDelete": true,
+      "PremiereDate": "2024-04-06T00:00:00.0000000Z",
+      "ChannelId": null,
+      "CommunityRating": 7.3,
+      "ProductionYear": 2024,
+      "IsFolder": true,
+      "Type": "Series",
+      "UserData": {
+        "UnplayedItemCount": 6,
+        "PlaybackPositionTicks": 0,
+        "PlayCount": 0,
+        "IsFavorite": false,
+        "Played": false,
+        "Key": "9479952c-8283-1940-1e5c-500da1dfe241"
+      },
+      "AirTime": "2024-04-06",
+      "AirDays": [
+        "Saturday"
+      ],
+      "PrimaryImageAspectRatio": 0.7055555555555556,
+      "ImageTags": {
+        "Primary": "7fa94ab8a4ce36f7135cd170d8811e0e"
+      },
+      "BackdropImageTags": [],
+      "ImageBlurHashes": {
+        "Primary": {
+          "7fa94ab8a4ce36f7135cd170d8811e0e": "dlG+5qxaMxkCx^s:n*t70JbbtQs-MxW=k9V@xvR%Rjay"
+        }
+      },
+      "LocationType": "FileSystem"
+    },
+    {
+      "Name": "夜晚的水母",
+      "ServerId": "90441fd37c7b4f23bab43404b86eff22",
+      "Id": "763e3e132aab7ba605df6c1c1af22a68",
+      "CanDelete": true,
+      "HasSubtitles": true,
+      "Container": "mkv,webm",
+      "PremiereDate": "2024-04-06T00:00:00.0000000Z",
+      "ChannelId": null,
+      "RunTimeTicks": 14250659840,
+      "ProductionYear": 2024,
+      "IndexNumber": 1,
+      "ParentIndexNumber": 1,
+      "IsFolder": false,
+      "Type": "Episode",
+      "UserData": {
+        "PlaybackPositionTicks": 0,
+        "PlayCount": 4,
+        "IsFavorite": false,
+        "LastPlayedDate": "2024-05-09T20:44:13.406Z",
+        "Played": true,
+        "Key": "9479952c-8283-1940-1e5c-500da1dfe241001001"
+      },
+      "SeriesName": "夜晚的水母不会游泳",
+      "SeriesId": "9479952c828319401e5c500da1dfe241",
+      "SeasonId": "12fb6fb758ee952450268eaf92a95f5e",
+      "PrimaryImageAspectRatio": 1.7777777777777777,
+      "SeriesPrimaryImageTag": "7fa94ab8a4ce36f7135cd170d8811e0e",
+      "SeasonName": "夜晚的水母不会游泳",
+      "VideoType": "VideoFile",
+      "ImageTags": {
+        "Primary": "1da3a9bf84db7f71bdf5ddcf69804218"
+      },
+      "BackdropImageTags": [],
+      "ImageBlurHashes": {
+        "Primary": {
+          "1da3a9bf84db7f71bdf5ddcf69804218": "WhG8vMxu0JIUbYxb%Mt7IVM{xuxuR*j[aeV[s:t6xus:R%RjR*of",
+          "7fa94ab8a4ce36f7135cd170d8811e0e": "dlG+5qxaMxkCx^s:n*t70JbbtQs-MxW=k9V@xvR%Rjay"
+        }
+      },
+      "LocationType": "FileSystem",
+      "MediaType": "Video"
+    },
+    {
+      "Name": "夜晚的水母不会游泳",
+      "ServerId": "90441fd37c7b4f23bab43404b86eff22",
+      "Id": "12fb6fb758ee952450268eaf92a95f5e",
+      "CanDelete": false,
+      "PremiereDate": "2024-04-06T00:00:00.0000000Z",
+      "ChannelId": null,
+      "CommunityRating": 7.2,
+      "ProductionYear": 2024,
+      "IndexNumber": 1,
+      "IsFolder": true,
+      "Type": "Season",
+      "UserData": {
+        "UnplayedItemCount": 5,
+        "PlaybackPositionTicks": 0,
+        "PlayCount": 0,
+        "IsFavorite": false,
+        "Played": false,
+        "Key": "9479952c-8283-1940-1e5c-500da1dfe241001"
+      },
+      "SeriesName": "夜晚的水母不会游泳",
+      "SeriesId": "9479952c828319401e5c500da1dfe241",
+      "PrimaryImageAspectRatio": 0.7055555555555556,
+      "SeriesPrimaryImageTag": "7fa94ab8a4ce36f7135cd170d8811e0e",
+      "ImageTags": {
+        "Primary": "047d1a5c09e03bd8bb41092676cbbc12"
+      },
+      "BackdropImageTags": [],
+      "ImageBlurHashes": {
+        "Primary": {
+          "047d1a5c09e03bd8bb41092676cbbc12": "dlG+5qxaMxkCx^s:n*t70JbbtQs-MxW=k9V@xvR%Rjay",
+          "7fa94ab8a4ce36f7135cd170d8811e0e": "dlG+5qxaMxkCx^s:n*t70JbbtQs-MxW=k9V@xvR%Rjay"
+        }
+      },
+      "LocationType": "Virtual"
+    }
+  ],
+  "TotalRecordCount": 3,
+  "StartIndex": 0
+}

@@ -17,15 +17,20 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.withContext
@@ -70,6 +75,8 @@ import me.him188.ani.datasources.bangumi.processing.nameCNOrName
 import me.him188.ani.datasources.bangumi.processing.renderEpisodeEp
 import me.him188.ani.datasources.bangumi.processing.toCollectionType
 import me.him188.ani.utils.coroutines.cancellableCoroutineScope
+import me.him188.ani.utils.coroutines.runUntilSuccess
+import me.him188.ani.utils.coroutines.sampleWithInitial
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import org.koin.core.component.KoinComponent
@@ -318,16 +325,22 @@ private class EpisodeViewModelImpl(
         }
         .produceState(SubjectPresentation.Placeholder)
 
-    override val episodePresentation: EpisodePresentation by
-    subjectManager.episodeCollectionFlow(subjectId, episodeId, ContentPolicy.CACHE_ONLY)
-        .map {
-            EpisodePresentation(
-                title = it.episode.nameCNOrName(),
-                ep = it.episode.renderEpisodeEp(),
-                sort = EpisodeSort(it.episode.sort).toString(),
-                collectionType = it.type,
-            )
-        }.produceState(EpisodePresentation.Placeholder)
+    override var episodePresentation: EpisodePresentation by mutableStateOf(EpisodePresentation.Placeholder)
+        private set
+
+    private val episodePresentationFlow =
+        subjectManager.episodeCollectionFlow(subjectId, episodeId, ContentPolicy.CACHE_ONLY)
+            .map {
+                EpisodePresentation(
+                    title = it.episode.nameCNOrName(),
+                    ep = it.episode.renderEpisodeEp(),
+                    sort = EpisodeSort(it.episode.sort).toString(),
+                    collectionType = it.type,
+                )
+            }
+            .onEach { withContext(Dispatchers.Main) { episodePresentation = it } }
+            .flowOn(Dispatchers.Default)
+            .stateInBackground(SharingStarted.Eagerly)
 
     override var isFullscreen: Boolean by mutableStateOf(initialIsFullscreen)
 
@@ -479,6 +492,38 @@ private class EpisodeViewModelImpl(
                     videoLoadingState.value = VideoLoadingState.UnknownError(e)
                 }
             }
+        }
+
+        // 自动标记看完
+        launchInBackground {
+            settingsRepository.videoScaffoldConfig.flow
+                .map { it.autoMarkDone }
+                .distinctUntilChanged()
+                .debounce(1000)
+                .collectLatest { enabled ->
+                    if (!enabled) return@collectLatest
+
+                    // 设置启用
+
+                    cancellableCoroutineScope {
+                        combine(
+                            playerState.currentPositionMillis.sampleWithInitial(5000),
+                            playerState.videoProperties.map { it?.durationMillis }.debounce(5000),
+                        ) { pos, max ->
+                            if (max == null) return@combine
+                            if (episodePresentationFlow.value?.collectionType == EpisodeCollectionType.WATCHED) {
+                                cancelScope() // 已经看过了
+                            }
+                            if (pos > max.toFloat() * 0.9) {
+                                logger.info { "观看到 90%, 标记看过" }
+                                runUntilSuccess(maxAttempts = 5) {
+                                    setEpisodeCollectionType(EpisodeCollectionType.WATCHED)
+                                }
+                                cancelScope() // 标记成功一次后就不要再检查了
+                            }
+                        }.collect()
+                    }
+                }
         }
     }
 

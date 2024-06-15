@@ -4,6 +4,7 @@ import io.ktor.client.HttpClientConfig
 import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpTimeout
 import me.him188.ani.app.data.subject.SubjectInfo
+import me.him188.ani.app.data.subject.seasonMonth
 import me.him188.ani.danmaku.api.AbstractDanmakuProvider
 import me.him188.ani.danmaku.api.DanmakuEpisode
 import me.him188.ani.danmaku.api.DanmakuFetchResult
@@ -207,7 +208,7 @@ class DandanplayDanmakuProvider(
 
     private suspend fun getDandanplayAnimeIdOrNull(request: DanmakuSearchRequest): SearchEpisodesAnime? {
         val date = request.subjectPublishDate
-        val mo = date.coercedMonth
+        val mo = date.seasonMonth
         if (mo == 0) return null
 
         val expectedNames = request.subjectNames.toSet()
@@ -215,7 +216,7 @@ class DandanplayDanmakuProvider(
         kotlin.runCatching {
             // 搜索这个季度的所有的番, 然后用名字匹配
             // 不建议用名字去请求弹弹 play 搜索, 它的搜索很不准
-            dandanplayClient.getSeasonAnimeList(date.year, date.coercedMonth)
+            dandanplayClient.getSeasonAnimeList(date.year, date.seasonMonth)
         }.onFailure {
             logger.error(it) { "Failed to fetch season anime list" }
         }.getOrNull()

@@ -120,7 +120,7 @@ fun MediaSelectorView(
                         Icon(Icons.AutoMirrored.Outlined.HelpOutline, "帮助")
                     }
                     val navigator = LocalNavigator.current
-                    IconButton({ navigator.navigatePreferences(SettingsTab.MEDIA) }) {
+                    IconButton({ navigator.navigateSettings(SettingsTab.MEDIA) }) {
                         Icon(Icons.Outlined.Settings, "设置")
                     }
 

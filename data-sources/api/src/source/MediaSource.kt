@@ -24,41 +24,51 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import me.him188.ani.datasources.api.EpisodeSort
+import me.him188.ani.datasources.api.CachedMedia
+import me.him188.ani.datasources.api.DefaultMedia
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.paging.SizedSource
 import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.datasources.api.topic.ResourceLocation
-import me.him188.ani.datasources.api.topic.contains
 import java.io.Closeable
 import java.io.File
-import java.util.ServiceLoader
-import kotlin.contracts.contract
 
 /**
- * 一个查询单个剧集的可下载的资源的服务, 称为数据源.
+ * 一个查询单个剧集的可下载的资源 [Media] 的服务, 称为数据源 [MediaSource].
+ *
  * 数据源不提供条目数据, 而是依赖条目服务 (即 Bangumi) 提供的条目数据.
- * 因此数据源只需要支持查询该剧集的所有可下载资源.
+ * 数据源的查询 [fetch] 可以拿到包含条目信息的 [MediaFetchRequest].
+ * 数据源只需要支持使用 [MediaFetchRequest] 中的信息, 查询该剧集的所有可下载资源 [Media].
  *
- * 未来可能会支持更多的条目服务, 但目前只支持 Bangumi.
+ * [MediaSource] 是一个抽象的来源. 它不一定都是来自网络和 BT, 也可以是本地文件系统.
+ * 用户使用缓存功能创建的缓存, 就会存储到缓存管理器 `MediaCacheManager`, 然后能通过一个专门查询本地缓存的 [MediaSource] 查询到.
  *
- * ### 数据源全局唯一
+ * ## [MediaSource] 只负责查询资源 ([Media]) 列表
+ *
+ * 对于资源的下载, 缓存, 以及播放, 都是由其他模块负责. 具体内容可查看:
+ * - 下载过程: `MediaCacheEngine`
+ * - 管理缓存列表: `MediaCacheManager`
+ * - 解析 [Media] 为可播放的视频数据: `VideoSourceResolver`
+ *
+ * ## 资源信息
+ *
+ * 数据源查询到的资源, 为 [Media]. 详细查看 [Media]. 对于在线数据源, 通常为 [DefaultMedia].
+ * [CachedMedia] 只有缓存数据源才会返回.
+ *
+ * ## 数据源全局唯一
  *
  * 每个数据源都拥有全局唯一的 ID [mediaSourceId], 可用于保存用户偏好, 识别缓存资源的来源等.
  *
- * ### 查询
+ * ## 加载和配置数据源
  *
- * 数据源从一个地方查询资源, 例如在线视频网站, BitTorrent 网络, 本地文件系统等.
+ * [MediaSource] 实际上需要通过工厂 [MediaSourceFactory.create] 构造.
  *
- * 每一次查询 ([MediaSource.fetch]) 都需要一个查询请求 [MediaFetchRequest],
- * 数据源尽可能多地使用请求中的信息去匹配资源, 并返回匹配到的资源列表.
+ * [MediaSourceFactory] 为数据源定义了可配置参数 [MediaSourceFactory.parameters], 并能使用这些参数[创建][MediaSourceFactory.create]一个示例.
  *
- * ### 加载和配置数据源
+ * 详细查看 [MediaSourceFactory].
  *
- * 通过 Java SPI [ServiceLoader] 加载 [MediaSourceFactory], 然后由 factory 创建数据源实例.
- * [MediaSourceFactory.create] 时接受 [MediaSourceConfig] 参数, 可以
- *
- * #### 使 APP 能够检测到新的 [MediaSource] 的示例步骤
+ * ### 使 APP 能够检测到新的 [MediaSource] 的示例步骤
+ * 
  * 假设你已经实现了一个数据源, 名为 `foo`, 模块位置为 `:data-sources:foo`.
  * 1. 在 `data-sources/foo/resources/META-INF/services` 目录下创建一个名为 `me.him188.ani.datasources.api.source.MediaSourceFactory` 的文件
  * 2. 在文件中写入你的 `MediaSourceFactory` 的全限定类名, 例如 `me.him188.ani.datasources.api.source.impl.MyMediaSourceFactory`
@@ -105,8 +115,14 @@ interface MediaSource : Closeable {
      * ## 数据源选择的实现细节
      *
      * ### 数据源需要负责区分剧集的正确性
-     * - 若请求 [MediaFetchRequest.episodeSort] 为 "01", 但 [fetch] 返回 "02", 该剧集不会被后续流程自动剔除.
-     * 所有 [fetch] 返回的资源, 都将会被 `MediaSelector` 接收. 当用户关闭设置中的所有自动过滤选项时, 将能够看到所有 [fetch] 返回的资源.
+     * 若请求 [MediaFetchRequest.episodeSort] 为 "01", 但 [fetch] 返回 "02", 该剧集**不会**被后续流程自动剔除, 它会被原封不动地展示给用户.
+     *
+     * 所有 [fetch] 返回的资源, 都将会被数据源选择器 `MediaSelector` 接收并能够显示.
+     * 但需要注意数据源选择系统有一系列过滤选项 (APP 设置中 "播放与缓存" 的 "高级设置")
+     *
+     * 当用户关闭设置中的所有自动过滤选项时, 将能够看到所有 [fetch] 返回的资源.
+     *
+     * ###
      */
     suspend fun fetch(query: MediaFetchRequest): SizedSource<MediaMatch>
 
@@ -144,99 +160,6 @@ enum class MediaSourceKind {
      */
     LocalCache
 }
-
-/**
- * A media matched from the source.
- */
-data class MediaMatch(
-    val media: Media,
-    val kind: MatchKind,
-)
-
-/**
- * 判断该 [MediaMatch] 是否满足条件 [request].
- *
- * 返回 `null` 表示条件不足以判断. 届时可以根据数据源大致的准确性或者其他信息考虑是否需要在 [MediaSource.fetch] 的返回中包含此资源.
- *
- * 该函数会在如下情况下返回 `null`:
- * - 当 [Media.episodeRange] 为 `null` 时. 这意味着无法知道该资源的剧集范围.
- */
-fun MediaMatch.matches(request: MediaFetchRequest): Boolean? {
-    val actualEpRange = this.media.episodeRange ?: return null
-    val expectedEp = request.episodeEp
-    return !(request.episodeSort !in actualEpRange && (expectedEp == null || expectedEp !in actualEpRange))
-}
-
-/**
- * 当且仅当该资源一定满足请求时返回 `true`. 若条件不足, 返回 `false`.
- */
-fun MediaMatch.definitelyMatches(request: MediaFetchRequest): Boolean = matches(request) == true
-
-enum class MatchKind {
-    /**
-     * The request has an exact match with the cache.
-     * Usually because episode id is the same.
-     */
-    EXACT,
-
-    /**
-     * The request does not have a [EXACT] match but a [FUZZY] one.
-     *
-     * This is done on a best-effort basis where they can be false positives.
-     */
-    FUZZY,
-}
-
-/**
- * 一个数据源查询请求. 该请求包含尽可能多的信息以便 [MediaSource] 可以查到尽可能多的结果.
- */
-@Serializable
-class MediaFetchRequest(
-    /**
-     * 条目服务 (Bangumi) 提供的条目 ID. 若数据源支持, 可以用此信息做精确匹配.
-     * 可能为 `null`, 表示未知.
-     */
-    val subjectId: String? = null,
-    /**
-     * 条目服务 (Bangumi) 提供的剧集 ID. 若数据源支持, 可以用此信息做精确匹配.
-     * 可能为 `null`, 表示未知.
-     */
-    val episodeId: String? = null,
-    /**
-     * 条目的主简体中文名称.
-     * 建议使用 [subjectNames] 用所有已知名称去匹配.
-     */
-    val subjectNameCN: String? = null,
-    /**
-     * 已知的该条目的所有名称. 包含季度信息.
-     *
-     * 所有名称包括简体中文译名, 各种别名, 简称, 以及日文原名.
-     *
-     * E.g. "关于我转生变成史莱姆这档事 第三季"
-     */
-    val subjectNames: Set<String>,
-    /**
-     * 在系列中的集数, 例如第二季的第一集为 26.
-     *
-     * E.g. "49", "01".
-     *
-     * @see EpisodeSort
-     */
-    val episodeSort: EpisodeSort,
-    /**
-     * 条目服务 (Bangumi) 提供的剧集名称, 例如 "恶魔与阴谋", 不会包含 "第 x 集".
-     * 不一定为简体中文, 可能为日文. 也可能为空字符串.
-     */
-    val episodeName: String,
-    /**
-     * 在当前季度中的集数, 例如第二季的第一集为 01
-     *
-     * E.g. "49", "01".
-     *
-     * @see EpisodeSort
-     */
-    val episodeEp: EpisodeSort? = episodeSort,
-)
 
 
 /**
@@ -291,22 +214,4 @@ sealed class MediaSourceLocation {
     }
 }
 
-fun MediaSourceLocation.isLowEffort(): Boolean {
-    contract {
-        returns(false) implies (this@isLowEffort is MediaSourceLocation.Online)
-        returns(true) implies (this@isLowEffort is MediaSourceLocation.Lan || this@isLowEffort is MediaSourceLocation.Local)
-    }
-    return this is MediaSourceLocation.Lan || this is MediaSourceLocation.Local
-}
-
-enum class ConnectionStatus {
-    SUCCESS,
-    FAILED,
-}
-
-fun Boolean.toConnectionStatus() = if (this) ConnectionStatus.SUCCESS else ConnectionStatus.FAILED
-
-interface SearchOrdering {
-    val id: String
-    val name: String
-}
+fun MediaSourceLocation.isLowEffort(): Boolean = this is MediaSourceLocation.Lan || this is MediaSourceLocation.Local

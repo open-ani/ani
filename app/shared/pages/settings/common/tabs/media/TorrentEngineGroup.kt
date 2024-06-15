@@ -33,10 +33,10 @@ import me.him188.ani.app.platform.files
 import me.him188.ani.app.platform.isAndroid
 import me.him188.ani.app.ui.foundation.widgets.RichDialogLayout
 import me.him188.ani.app.ui.settings.framework.MediaSourceTesterView
+import me.him188.ani.app.ui.settings.framework.components.RowButtonItem
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.TextButtonItem
 import me.him188.ani.app.ui.settings.framework.components.TextFieldItem
-import me.him188.ani.app.ui.settings.framework.components.TextItem
 import me.him188.ani.utils.ktor.ClientProxyConfigValidator
 
 @Composable
@@ -163,7 +163,7 @@ private fun SettingsScope.QBGroup(vm: MediaSettingsViewModel) {
             onValueChangeCompleted = {
                 vm.qBittorrentConfig.update(
                     config.copy(
-                        clientConfig = clientConfig.copy(password = it)
+                        clientConfig = clientConfig.copy(category = it)
                     )
                 )
             },
@@ -178,11 +178,10 @@ private fun SettingsScope.QBGroup(vm: MediaSettingsViewModel) {
                 WebUIHelpLayout({ showWebUIHelp = false })
             }
         }
-        TextItem(
-            title = { Text("如何开启 qBittorrent 的 Web UI 功能？") },
-            icon = { Icon(Icons.Outlined.Info, null) },
+        RowButtonItem(
             onClick = { showWebUIHelp = true },
-        )
+            icon = { Icon(Icons.Outlined.Info, null) },
+        ) { Text("如何开启 qBittorrent 的 Web UI 功能？") }
 
         HorizontalDividerItem()
 
@@ -192,11 +191,10 @@ private fun SettingsScope.QBGroup(vm: MediaSettingsViewModel) {
                 AniQBHelpLayout({ showAniHelp = false })
             }
         }
-        TextItem(
-            title = { Text("Ani 会如何使用我的 qBittorrent？") },
-            icon = { Icon(Icons.Outlined.Info, null) },
+        RowButtonItem(
             onClick = { showAniHelp = true },
-        )
+            icon = { Icon(Icons.Outlined.Info, null) },
+        ) { Text("Ani 会如何使用我的 qBittorrent？") }
 
         HorizontalDividerItem()
 

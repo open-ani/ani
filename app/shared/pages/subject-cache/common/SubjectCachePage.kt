@@ -46,6 +46,7 @@ import androidx.compose.ui.util.fastForEachIndexed
 import me.him188.ani.app.data.media.EpisodeCacheStatus
 import me.him188.ani.app.ui.foundation.TopAppBarGoBackButton
 import me.him188.ani.app.ui.settings.SettingsTab
+import me.him188.ani.app.ui.settings.framework.components.RowButtonItem
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SliderItem
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
@@ -53,13 +54,16 @@ import me.him188.ani.app.ui.settings.framework.components.TextItem
 import me.him188.ani.app.ui.settings.tabs.media.autoCacheDescription
 import me.him188.ani.app.ui.theme.stronglyWeaken
 import me.him188.ani.datasources.api.EpisodeSort
+import me.him188.ani.datasources.api.Media
+import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.datasources.api.topic.isDoneOrDropped
 
 @Immutable
-class EpisodeCacheState(
+data class EpisodeCacheState(
     val episodeId: Int,
     val sort: EpisodeSort,
+    val ep: EpisodeSort?,
     val title: String,
     val watchStatus: UnifiedCollectionType,
     val cacheStatus: EpisodeCacheStatus?,
@@ -67,17 +71,32 @@ class EpisodeCacheState(
      * 是否已经上映了
      */
     val hasPublished: Boolean,
-)
+    /**
+     * 该缓存来自的 [Media].
+     */
+    val originMedia: Media? = null,
+) {
+    /**
+     * 该缓存来自的 [Media] 的包含的所有剧集范围. 例如当前缓存可能只是第二集, 但这个 [Media] 是一个包含 1-12 集的季度全集资源.
+     */
+    val mediaEpisodeRange: EpisodeRange? get() = originMedia?.episodeRange
+}
 
 @Stable
-interface SubjectCacheState {
+inline val EpisodeCacheState.mediaCache get() = cacheStatus?.cache
+
+@Stable
+class SubjectCacheState(
     /**
      * List of episodes in this subject.
      */
     val episodes: List<EpisodeCacheState>
+) {
+    /**
+     * 用户请求缓存这个剧集
+     */
+    var selectedEpisode: EpisodeCacheState? by mutableStateOf(null)
 }
-
-class DefaultSubjectCacheState(override val episodes: List<EpisodeCacheState>) : SubjectCacheState
 
 /**
  * 一个番剧的缓存设置页面, 包括自动缓存设置和手动单集缓存管理.
@@ -91,7 +110,6 @@ fun SubjectCachePage(
     onClickGlobalCacheSettings: () -> Unit,
     onClickGlobalCacheManage: () -> Unit,
     onDeleteCache: (EpisodeCacheState) -> Unit,
-    mediaSelector: @Composable ((EpisodeCacheState, dismiss: () -> Unit) -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -128,9 +146,6 @@ fun SubjectCachePage(
 //                    },
                 ) {
                     state.episodes.fastForEachIndexed { i, episodeCacheState ->
-                        var showSelector by remember { mutableStateOf<EpisodeCacheState?>(null) }
-                        val dismissSelector = remember { { showSelector = null } }
-
                         var showDropdown by remember { mutableStateOf(false) }
 
                         EpisodeItem(
@@ -141,7 +156,7 @@ fun SubjectCachePage(
                                 ) {
                                     showDropdown = true
                                 } else {
-                                    showSelector = episodeCacheState
+                                    state.selectedEpisode = episodeCacheState
                                 }
                             },
                             action = {
@@ -168,9 +183,6 @@ fun SubjectCachePage(
                                 }
                             }
                         )
-                        showSelector?.let {
-                            mediaSelector?.invoke(it, dismissSelector)
-                        }
                         if (i != state.episodes.lastIndex) {
                             HorizontalDividerItem()
                         }
@@ -227,18 +239,16 @@ private fun SettingsScope.AutoCacheGroup(
         }
 
         AnimatedVisibility(useGlobalSettings) {
-            TextItem(
-                title = { Text("查看全局设置") },
-                icon = { Icon(Icons.Rounded.ArrowOutward, null) },
+            RowButtonItem(
                 onClick = onClickGlobalCacheSettings,
-            )
+                icon = { Icon(Icons.Rounded.ArrowOutward, null) },
+            ) { Text("查看全局设置") }
         }
 
-        TextItem(
-            title = { Text("管理全部缓存") },
-            icon = { Icon(Icons.AutoMirrored.Rounded.ViewList, null) },
+        RowButtonItem(
             onClick = onClickGlobalCacheManage,
-        )
+            icon = { Icon(Icons.AutoMirrored.Rounded.ViewList, null) },
+        ) { Text("管理全部缓存") }
     }
 }
 
@@ -254,6 +264,11 @@ private fun SettingsScope.EpisodeItem(
         MaterialTheme.colorScheme.onSurface
     }
     TextItem(
+        icon = {
+            CompositionLocalProvider(LocalContentColor provides colorByWatchStatus) {
+                Text(episode.sort.toString())
+            }
+        },
         action = {
             if (!episode.hasPublished) {
                 CompositionLocalProvider(LocalContentColor provides colorByWatchStatus) {
@@ -300,11 +315,6 @@ private fun SettingsScope.EpisodeItem(
                     null -> {}
                 }
                 action()
-            }
-        },
-        icon = {
-            CompositionLocalProvider(LocalContentColor provides colorByWatchStatus) {
-                Text(episode.sort.toString())
             }
         },
         title = {

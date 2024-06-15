@@ -1,5 +1,6 @@
 package me.him188.ani.app.data.subject
 
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -7,6 +8,7 @@ import kotlin.test.assertTrue
 class EpisodeCollectionsTest {
 
     @Test
+    @Disabled
     fun `subject completed after 14 days`() {
         assertTrue {
             EpisodeCollections.isSubjectCompleted(

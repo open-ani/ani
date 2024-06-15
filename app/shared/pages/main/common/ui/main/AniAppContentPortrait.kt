@@ -72,7 +72,7 @@ fun AniAppContentPortrait(
                 }
                 EpisodeScene(vm)
             }
-            scene("/preferences") { backStackEntry ->
+            scene("/settings") { backStackEntry ->
                 val initialTab = backStackEntry.query<Int>("tab")
                     ?.let { SettingsTab.entries.getOrNull(it) }
                     ?: SettingsTab.MEDIA
@@ -95,7 +95,7 @@ fun AniAppContentPortrait(
                 SubjectCacheScene(
                     vm,
                     onClickGlobalCacheSettings = {
-                        aniNavigator.navigatePreferences(SettingsTab.MEDIA)
+                        aniNavigator.navigateSettings(SettingsTab.MEDIA)
                     },
                     onClickGlobalCacheManage = {
                         aniNavigator.navigateCaches()

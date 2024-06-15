@@ -4,16 +4,21 @@ import androidx.compose.runtime.Composable
 import me.him188.ani.app.videoplayer.data.VideoSource
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
+import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * 根据 [EpisodeMetadata] 中的集数信息和 [Media.location] 中的下载方式,
  * 解析一个 [Media] 为可以播放的 [VideoSource].
  *
- * 实际操作涉及创建种子下载任务, 寻找文件等.
+ * 实际操作可涉及创建种子下载任务, 寻找文件等.
+ *
+ * 由于 [Media] 可能包含多个剧集视频, 在[解析][resolve]时需要提供所需剧集的信息 [EpisodeMetadata].
  */
 interface VideoSourceResolver {
     /**
-     * Checks if this resolver supports the given media's [Media.download].
+     * 判断是否支持解析这个 [Media] 的 [Media.download].
+     *
+     * 当且仅当返回 `true` 时, 才可以调用 [resolve] 方法.
      */
     suspend fun supports(media: Media): Boolean
 
@@ -32,7 +37,9 @@ interface VideoSourceResolver {
      *
      * @throws UnsupportedMediaException if the media cannot be resolved.
      * Use [supports] to check if the media can be resolved.
-     * @throws VideoSourceResolutionException if the video source cannot be resolved.
+     * @throws VideoSourceResolutionException 当遇到已知原因的解析错误时抛出
+     * @throws CancellationException 当协程被取消时抛出
+     * @throws Exception 所有抛出的其他异常都属于 bug
      */
     @Throws(VideoSourceResolutionException::class)
     suspend fun resolve(media: Media, episode: EpisodeMetadata): VideoSource<*>
@@ -48,12 +55,48 @@ interface VideoSourceResolver {
     }
 }
 
+/**
+ * @see VideoSourceResolver.resolve
+ */
 data class EpisodeMetadata(
     val title: String,
     val ep: EpisodeSort,
     val sort: EpisodeSort,
 )
 
+class UnsupportedMediaException(
+    val media: Media,
+) : UnsupportedOperationException("Media is not supported: $media")
+
+/**
+ * 已知的解析错误
+ * @see VideoSourceResolutionException
+ */
+enum class ResolutionFailures {
+    /**
+     * 下载种子文件超时或者解析失败
+     */
+    FETCH_TIMEOUT,
+
+    /**
+     * 引擎自身错误 (bug)
+     */
+    ENGINE_ERROR,
+}
+
+/**
+ * 解析资源失败时抛出的异常.
+ * @see VideoSourceResolver.resolve
+ */
+class VideoSourceResolutionException(
+    val reason: ResolutionFailures,
+    override val cause: Throwable? = null,
+) : Exception("Failed to resolve video source: $reason", cause)
+
+
+/**
+ * 用于将多个 [VideoSourceResolver] 链接在一起的 [VideoSourceResolver].
+ */
 private class ChainedVideoSourceResolver(
     private val resolvers: List<VideoSourceResolver>
 ) : VideoSourceResolver {
@@ -73,24 +116,3 @@ private class ChainedVideoSourceResolver(
             ?: throw UnsupportedMediaException(media)
     }
 }
-
-class UnsupportedMediaException(
-    val media: Media,
-) : UnsupportedOperationException("Media is not supported: $media")
-
-enum class ResolutionFailures {
-    /**
-     * 下载种子文件超时或者解析失败
-     */
-    FETCH_TIMEOUT,
-
-    /**
-     * 引擎自身错误 (bug)
-     */
-    ENGINE_ERROR,
-}
-
-class VideoSourceResolutionException(
-    val reason: ResolutionFailures,
-    override val cause: Throwable? = null,
-) : Exception("Failed to resolve video source: $reason", cause)

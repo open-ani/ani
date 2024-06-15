@@ -14,6 +14,7 @@ import me.him188.ani.app.videoplayer.data.VideoSourceOpenException
 import me.him188.ani.app.videoplayer.torrent.TorrentVideoData
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
+import me.him188.ani.datasources.api.MediaExtraFiles
 import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.datasources.api.topic.contains
 import me.him188.ani.datasources.api.topic.titles.RawTitleParser
@@ -51,6 +52,7 @@ class TorrentVideoSourceResolver(
                         engine,
                         encodedTorrentInfo = downloader.fetchTorrent(location.uri),
                         episodeMetadata = episode,
+                        extraFiles = media.extraFiles,
                     )
                 } catch (e: FetchTorrentTimeoutException) {
                     throw VideoSourceResolutionException(ResolutionFailures.FETCH_TIMEOUT)
@@ -165,6 +167,7 @@ private class TorrentVideoSource(
     private val engine: TorrentEngine,
     private val encodedTorrentInfo: EncodedTorrentInfo,
     private val episodeMetadata: EpisodeMetadata,
+    override val extraFiles: MediaExtraFiles,
 ) : VideoSource<TorrentVideoData>, KoinComponent {
     @OptIn(ExperimentalStdlibApi::class)
     override val uri: String by lazy {

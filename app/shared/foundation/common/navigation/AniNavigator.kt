@@ -1,6 +1,13 @@
 package me.him188.ani.app.navigation
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisallowComposableCalls
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import kotlinx.coroutines.CompletableDeferred
 import me.him188.ani.app.ui.settings.SettingsTab
 import moe.tlaster.precompose.navigation.NavOptions
@@ -47,8 +54,8 @@ interface AniNavigator {
         navigator.navigate("/auth", NavOptions(launchSingleTop = true))
     }
 
-    fun navigatePreferences(tab: SettingsTab = SettingsTab.Default) {
-        navigator.navigate("/preferences?tab=${tab.ordinal}&back=true")
+    fun navigateSettings(tab: SettingsTab = SettingsTab.Default) {
+        navigator.navigate("/settings?tab=${tab.ordinal}&back=true")
     }
 
     fun navigateCaches() {
@@ -78,4 +85,21 @@ private class AniNavigatorImpl : AniNavigator, KoinComponent {
  */
 val LocalNavigator = compositionLocalOf<AniNavigator> {
     error("Navigator not found")
+}
+
+@Composable
+inline fun OverrideNavigation(
+    noinline newNavigator: @DisallowComposableCalls (AniNavigator) -> AniNavigator,
+    crossinline content: @Composable () -> Unit
+) {
+    val current by rememberUpdatedState(LocalNavigator.current)
+    val newNavigatorUpdated by rememberUpdatedState(newNavigator)
+    val new by remember {
+        derivedStateOf {
+            newNavigatorUpdated(current)
+        }
+    }
+    CompositionLocalProvider(LocalNavigator provides new) {
+        content()
+    }
 }

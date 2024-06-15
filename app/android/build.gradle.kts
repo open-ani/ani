@@ -26,9 +26,7 @@ plugins {
 }
 
 dependencies {
-    implementation(projects.dataSources.dmhy)
     implementation(projects.app.shared)
-
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
@@ -44,6 +42,11 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.ui.tooling.preview)
     debugImplementation(libs.androidx.compose.ui.tooling)
+
+//    implementation(libs.log4j.core)
+//    implementation(libs.log4j.slf4j.impl)
+
+    implementation(libs.logback.android)
 
     implementation(libs.ktor.client.core)
 }
@@ -74,6 +77,11 @@ android {
                 keyAlias = getProperty("signing_release_keyAlias")
                 keyPassword = getProperty("signing_release_keyPassword")
             }
+        }
+    }
+    packaging {
+        resources {
+            merges.add("META-INF/DEPENDENCIES") // log4j
         }
     }
     buildTypes {

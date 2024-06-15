@@ -3,4 +3,8 @@
     <cache-path
             name="cache_files"
             path="updates/download/" /> <!-- /data/data/me.him188.ani.debug2/cache/updates/download/ani-3.0.0.apk -->
+
+    <files-path
+            name="logs"
+            path="logs/" /> <!-- /data/data/me.him188.ani.debug2/files/logs/ -->
 </paths>

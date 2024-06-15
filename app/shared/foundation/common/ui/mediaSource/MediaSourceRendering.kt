@@ -28,6 +28,7 @@ import me.him188.ani.app.data.media.MediaCacheManager.Companion.LOCAL_FS_MEDIA_S
 import me.him188.ani.app.dmhy
 import me.him188.ani.app.mikan
 import me.him188.ani.app.mxdongman
+import me.him188.ani.app.ntdm
 import me.him188.ani.app.nyafun
 import me.him188.ani.app.ui.foundation.AsyncImage
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
@@ -35,9 +36,11 @@ import me.him188.ani.datasources.acgrip.AcgRipMediaSource
 import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
 import me.him188.ani.datasources.dmhy.DmhyMediaSource
 import me.him188.ani.datasources.ikaros.IkarosMediaSource
+import me.him188.ani.datasources.jellyfin.JellyfinMediaSource
 import me.him188.ani.datasources.mikan.MikanCNMediaSource
 import me.him188.ani.datasources.mikan.MikanMediaSource
 import me.him188.ani.datasources.mxdongman.MxdongmanMediaSource
+import me.him188.ani.datasources.ntdm.NtdmMediaSource
 import me.him188.ani.datasources.nyafun.NyafunMediaSource
 import org.jetbrains.compose.resources.painterResource
 
@@ -60,6 +63,8 @@ fun renderMediaSource(
     BangumiSubjectProvider.ID -> "Bangumi"
     NyafunMediaSource.ID -> "Nyafun"
     MxdongmanMediaSource.ID -> "MX 动漫"
+    NtdmMediaSource.ID -> "NT动漫"
+    JellyfinMediaSource.ID -> "Jellyfin"
     LOCAL_FS_MEDIA_SOURCE_ID -> "本地"
     else -> id
 }
@@ -76,6 +81,7 @@ fun renderMediaSourceDescription(
     NyafunMediaSource.ID -> "nyafun.net"
     MxdongmanMediaSource.ID -> "mxdm4.com"
     IkarosMediaSource.ID -> "ikaros.run"
+    NtdmMediaSource.ID -> "ntdm.tv"
     LOCAL_FS_MEDIA_SOURCE_ID -> null
     else -> null
 }
@@ -94,6 +100,8 @@ fun getMediaSourceIconResource(
         BangumiSubjectProvider.ID -> painterResource(Res.drawable.bangumi)
         NyafunMediaSource.ID -> painterResource(Res.drawable.nyafun)
         MxdongmanMediaSource.ID -> painterResource(Res.drawable.mxdongman)
+        NtdmMediaSource.ID -> painterResource(Res.drawable.ntdm)
+        JellyfinMediaSource.ID -> rememberVectorPainter(Icons.Rounded.Jellyfin)
         else -> null
     }
 }

@@ -123,12 +123,12 @@ fun SettingsScope.MediaSourceTesterView(
     },
 ) {
     TextItem(
-        title = title,
-        icon = icon,
         description = description,
+        icon = icon,
         action = {
             ConnectionTesterResultIndicator(tester, showTime = showTime)
-        }
+        },
+        title = title
     )
 }
 

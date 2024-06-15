@@ -3,6 +3,7 @@ package me.him188.ani.datasources.api.source
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.http.isSuccess
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.firstOrNull
@@ -32,6 +33,7 @@ abstract class ThreeStepWebMediaSource : WebMediaSource() {
     data class Ep(
         val name: String,
         val url: String, // absolute url, with baseUrl
+        val channel: String? = null, // 线路 
     )
 
     abstract val baseUrl: String // no trailing '/'
@@ -53,13 +55,14 @@ abstract class ThreeStepWebMediaSource : WebMediaSource() {
         ep: Ep
     ): MediaMatch {
         val sort = EpisodeSort(ep.name.removePrefix("第").removeSuffix("集"))
+        val suffixChannel = ep.channel?.let { "-$it" }
         return MediaMatch(
             DefaultMedia(
-                mediaId = "$mediaSourceId.${bangumi.internalId}-${sort}",
+                mediaId = "$mediaSourceId.${bangumi.internalId}-${sort}$suffixChannel",
                 mediaSourceId = mediaSourceId,
                 originalUrl = bangumi.url,
                 download = ResourceLocation.WebVideo(ep.url),
-                originalTitle = """${bangumi.name} ${ep.name}""",
+                originalTitle = """${bangumi.name} ${ep.name} ${ep.channel.orEmpty()}""".trim(),
                 publishedTime = 0L,
                 properties = MediaProperties(
                     subtitleLanguageIds = subtitleLanguages,
@@ -85,8 +88,16 @@ abstract class ThreeStepWebMediaSource : WebMediaSource() {
                 ("2160P" in title || "1440P" in title || "2K" in title || "4K" in title || "1080P" in title || "720P" in title)
     }
 
-    override suspend fun checkConnection(): ConnectionStatus =
-        client.get(baseUrl).status.isSuccess().toConnectionStatus()
+    override suspend fun checkConnection(): ConnectionStatus {
+        return try {
+            client.get(baseUrl).status.isSuccess().toConnectionStatus()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Throwable) {
+            logger.warn { IllegalStateException("Failed to check connection for $mediaSourceId", e) }
+            ConnectionStatus.FAILED
+        }
+    }
 
     override suspend fun fetch(query: MediaFetchRequest): SizedSource<MediaMatch> = SinglePagePagedSource {
         query.subjectNames.asFlow().flatMapMerge { name ->

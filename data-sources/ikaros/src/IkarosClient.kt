@@ -10,7 +10,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.flowOf
 import me.him188.ani.datasources.api.DefaultMedia
+import me.him188.ani.datasources.api.MediaExtraFiles
 import me.him188.ani.datasources.api.MediaProperties
+import me.him188.ani.datasources.api.Subtitle
 import me.him188.ani.datasources.api.paging.SizedSource
 import me.him188.ani.datasources.api.source.MatchKind
 import me.him188.ani.datasources.api.source.MediaMatch
@@ -21,6 +23,7 @@ import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.datasources.api.topic.titles.RawTitleParser
 import me.him188.ani.datasources.api.topic.titles.parse
 import me.him188.ani.datasources.ikaros.models.IkarosSubjectDetails
+import me.him188.ani.datasources.ikaros.models.IkarosVideoSubtitle
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.logger
 import models.IkarosAttachment
@@ -60,6 +63,12 @@ class IkarosClient(
         return client.get(url).body<IkarosAttachment>();
     }
 
+    private suspend fun getAttachmentVideoSubtitlesById(attId: Long): List<IkarosVideoSubtitle>? {
+        if (attId <= 0) return null;
+        val url = baseUrl.plus("/api/v1alpha1/attachment/relation/videoSubtitle/subtitles/").plus(attId);
+        return client.get(url).body<List<IkarosVideoSubtitle>>();
+    }
+
     private fun getResUrl(url: String): String {
         if (url.isEmpty()) {
             return ""
@@ -97,6 +106,7 @@ class IkarosClient(
                         episodeRange = parseResult.episodeRange,
                         location = MediaSourceLocation.Online,
                         kind = MediaSourceKind.WEB,
+                        extraFiles = fetchVideoAttSubtitles2ExtraFiles(epRes.attachmentId)
                     )
                 }
                 val mediaMatch = media?.let { MediaMatch(it, MatchKind.FUZZY) }
@@ -111,6 +121,25 @@ class IkarosClient(
         )
 
         return sizedSource
+    }
+
+    private suspend fun fetchVideoAttSubtitles2ExtraFiles(attachmentId: Long): MediaExtraFiles {
+        if (attachmentId <= 0) return MediaExtraFiles();
+        val attVideoSubtitleList = getAttachmentVideoSubtitlesById(attachmentId)
+        val subtitles: MutableList<Subtitle> = mutableListOf();
+        if (!attVideoSubtitleList.isNullOrEmpty()) {
+            for (ikVideoSubtitle in attVideoSubtitleList) {
+                // convert ikarosVideoSubtitle to ani subtitle
+                subtitles.add(
+                    Subtitle(
+                        uri = getResUrl(ikVideoSubtitle.url),
+                        language = AssNameParser.default.parseAssName2Language(ikVideoSubtitle.name),
+                        mimeType = AssNameParser.httpMineType
+                    )
+                )
+            }
+        }
+        return MediaExtraFiles(subtitles);
     }
 }
 

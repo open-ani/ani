@@ -87,6 +87,8 @@ kotlin {
         api(projects.dataSources.bangumi)
         api(projects.dataSources.nyafun)
         api(projects.dataSources.mxdongman)
+        api(projects.dataSources.ntdm)
+        api(projects.dataSources.jellyfin)
         api(projects.dataSources.ikaros)
 
         // Danmaku
@@ -155,7 +157,6 @@ kotlin {
         api(libs.androidx.core.ktx)
         api(libs.koin.android)
         implementation(libs.androidx.browser)
-        implementation(libs.slf4j.android)
 //        api(projects.torrent.impl.libtorrent4j)
 
         // Compose

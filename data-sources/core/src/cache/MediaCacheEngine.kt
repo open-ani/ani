@@ -6,9 +6,10 @@ import me.him188.ani.datasources.api.MediaCacheMetadata
 import kotlin.coroutines.CoroutineContext
 
 /**
- * 媒体缓存引擎, 处理 [MediaCache] 的创建与恢复, 以及实际的下载操作.
+ * 资源缓存引擎, 负责 [MediaCache] 的创建.
  *
  * [MediaCacheEngine] 的作用可以简单理解为是使用 libtorrent4j (内嵌) 还是 qBittorrent (本机局域网) 来下载种子.
+ * 虽然目前不支持缓存 WEB 视频, 但未来增加一个 [MediaCacheEngine] 实现即可支持.
  *
  * ### 元数据管理
  *
@@ -21,31 +22,24 @@ import kotlin.coroutines.CoroutineContext
  *
  * ### 下载数据存储位置
  *
- * [MediaCacheEngine] 决定种子数据的实际存储位置, 但该目录
+ * [MediaCacheEngine] 决定种子数据的实际存储位置, 但该目录不一定包含视频文件. TODO
  */
 interface MediaCacheEngine {
-//    /**
-//     * 引擎的唯一 ID. 例如用于区分是 libtorrent4j (内嵌) 还是 qBittorrent (本机局域网).
-//     *
-//     * 此 ID 与 [MediaSource.mediaSourceId] 不同.
-//     */
-//    val mediaCacheEngineId: String
-
     val isEnabled: Flow<Boolean> // todo 这有点奇怪
 
     /**
-     * 此引擎的总体统计
+     * 此引擎的总体传输统计
      */
     val stats: MediaStats
 
+    /**
+     * 是否支持给定缓存给定的 [Media].
+     * 当且仅当返回 `true` 时, [restore] 和 [createCache] 才可以被调用.
+     */
     fun supports(media: Media): Boolean
 
-//    /**
-//     * Total file size occupied on the disk.
-//     */
-//    val totalSize: Flow<FileSize>
-
     /**
+     * 使用给定的 [Media] 信息 [origin] 以及缓存元数据 [metadata], 恢复一个 [MediaCache]
      * Restores a cache that was created by [createCache].
      *
      * @param metadata from `MediaCache.media.cacheMetadata` from [createCache]

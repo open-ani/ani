@@ -129,7 +129,7 @@ private class TestMediaCacheStorage : MediaCacheStorage {
     }
 }
 
-private val testMediaCache1 = TestMediaCache(
+internal val testMediaCache1 = TestMediaCache(
     CachedMedia(
         previewMediaList[0],
         MediaCacheManager.LOCAL_FS_MEDIA_SOURCE_ID,
@@ -148,7 +148,7 @@ private val testMediaCache1 = TestMediaCache(
     totalSize = MutableStateFlow(233.megaBytes)
 )
 
-private val testMediaCache2 = TestMediaCache(
+internal val testMediaCache2 = TestMediaCache(
     CachedMedia(
         previewMediaList[1],
         MediaCacheManager.LOCAL_FS_MEDIA_SOURCE_ID,

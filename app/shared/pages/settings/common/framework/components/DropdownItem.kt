@@ -42,7 +42,6 @@ fun <T> SettingsScope.DropdownItem(
         derivedStateOf { selected() }
     }
     TextItem(
-        title = title,
         modifier = modifier.clickable(onClick = { showDropdown = true }),
         description = description,
         icon = icon,
@@ -75,5 +74,6 @@ fun <T> SettingsScope.DropdownItem(
                 }
             }
         },
+        title = title,
     )
 }

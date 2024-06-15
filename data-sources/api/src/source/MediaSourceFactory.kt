@@ -8,6 +8,8 @@ import me.him188.ani.utils.ktor.proxy
 import me.him188.ani.utils.ktor.userAgent
 
 /**
+ * 负责定义 [MediaSource] 的可配置参数列表, 并使用这些参数创建一个示例.
+ * 
  * @see MediaSource
  */
 interface MediaSourceFactory { // SPI service load
@@ -27,6 +29,9 @@ interface MediaSourceFactory { // SPI service load
      */
     val parameters: MediaSourceParameters get() = MediaSourceParameters.Empty
 
+    /**
+     * 必须返回新实例.
+     */
     fun create(
         config: MediaSourceConfig,
     ): MediaSource

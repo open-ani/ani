@@ -81,11 +81,22 @@ interface DanmakuHostState {
     fun Content(baseStyle: TextStyle)
 }
 
+/**
+ * 发送弹幕, 挂起直到发送成功
+ */
 suspend inline fun DanmakuHostState.send(danmaku: DanmakuPresentation) {
     if (!trySend(danmaku)) {
-        floatingTracks.randomOrNull()?.send(danmaku)
+        this.getTracks(danmaku).randomOrNull()?.send(danmaku)
     }
 }
+
+@PublishedApi
+internal fun DanmakuHostState.getTracks(danmaku: DanmakuPresentation) =
+    when (danmaku.danmaku.location) {
+        DanmakuLocation.TOP -> topTracks
+        DanmakuLocation.BOTTOM -> bottomTracks.asReversed()
+        DanmakuLocation.NORMAL -> floatingTracks
+    }
 
 /**
  * Creates a [DanmakuHostState].
@@ -255,11 +266,7 @@ internal class DanmakuHostStateImpl(
     }
 
     override fun trySend(danmaku: DanmakuPresentation): Boolean {
-        val tracks = when (danmaku.danmaku.location) {
-            DanmakuLocation.TOP -> topTracks
-            DanmakuLocation.BOTTOM -> bottomTracks.asReversed()
-            DanmakuLocation.NORMAL -> floatingTracks
-        }
+        val tracks = getTracks(danmaku)
         return tracks.any { it.trySend(danmaku) }
     }
 

@@ -9,6 +9,8 @@ sealed class ResourceLocation {
     abstract val uri: String
 
     /**
+     * BT 磁力链, 需要使用 BT 引擎下载.
+     *
      * `magnet:?xt=urn:btih:...`
      */
     @Serializable
@@ -21,7 +23,9 @@ sealed class ResourceLocation {
     }
 
     /**
-     * `*.torrent` form `http://`, `https://`.
+     * 需要通过 HTTP 下载的 BT 种子文件. 得到种子文件后还需要通过 BT 引擎下载.
+     *
+     * `https://example.com/a.torrent`.
      */
     @Serializable
     data class HttpTorrentFile(override val uri: String) : ResourceLocation() {
@@ -33,6 +37,7 @@ sealed class ResourceLocation {
     }
 
     /**
+     * 流式传输视频文件, 例如 m3u8
      * `*.mkv`, `*.mp4` form `http://`, `https://`.
      */
     @Serializable
@@ -62,12 +67,15 @@ sealed class ResourceLocation {
     }
 
     /**
-     * `file://`
+     * 本地文件路径
      */
     @Serializable
     data class LocalFile(
         val filePath: String, // absolute
     ) : ResourceLocation() {
+        /**
+         * `file://`
+         */
         override val uri: String by lazy {
             Paths.get(filePath).toUri().toString()
         }

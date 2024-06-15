@@ -157,7 +157,7 @@ class TorrentMediaCacheEngine(
 
         override val isDeleted: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
-        override suspend fun delete() {
+        override suspend fun deleteFiles() {
             if (isDeleted.value) return
             synchronized(this) {
                 if (isDeleted.value) return

@@ -10,6 +10,7 @@ import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.danmaku.DanmakuManager
 import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.ui.foundation.AbstractViewModel
+import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.danmaku.api.DanmakuPresentation
 import me.him188.ani.danmaku.protocol.DanmakuInfo
 import me.him188.ani.danmaku.ui.DanmakuConfig
@@ -36,7 +37,7 @@ interface PlayerDanmakuViewModel : AutoCloseable {
 
     suspend fun send(
         episodeId: Int,
-        info: DanmakuInfo
+        info: DanmakuInfo,
     )
 }
 
@@ -73,12 +74,14 @@ internal class PlayerDanmakuStateImpl(
                 isSending = false
             }
         }
-        danmakuHostState.send(
-            DanmakuPresentation(
-                danmaku,
-                isSelf = true
+        launchInBackground {
+            danmakuHostState.send(
+                DanmakuPresentation(
+                    danmaku,
+                    isSelf = true
+                )
             )
-        )
+        }
     }
 }
 

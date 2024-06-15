@@ -1,7 +1,6 @@
 package me.him188.ani.datasources.api
 
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import me.him188.ani.datasources.api.source.MediaFetchRequest
@@ -16,12 +15,24 @@ import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.datasources.api.topic.ResourceLocation
 
 /**
- * 表示从数据源获取到的一个资源, 即一个字幕组发布的资源.
+ * 表示从数据源 [MediaSource] 获取到的一个资源的信息, 即一个字幕组发布的资源.
  *
- * 一个资源可能对应一个剧集 [episodeRange], 新番资源资源大部分都是这样.
- * 一个资源也可能对应多个剧集 [episodeRange], 尤其是老番的季度全集资源.
+ * [Media] 只包含资源的标题, 字幕组名称, 剧集列表等信息. 它也提供下载链接 [download].
  *
- * [Media] 的使用方可自行
+ * ## [Media] 与番剧对应关系
+ *
+ * - 一个资源可能对应一个番剧的一个剧集 [episodeRange], 新番资源资源大部分都是这样.
+ * - 一个资源也可能对应一个番剧的多个剧集 [episodeRange], 尤其是老番的季度全集资源.
+ *
+ * ## 来源类型
+ *
+ * [Media] 的[来源类型][kind]可以是:
+ * - 在线视频网站 [MediaSourceKind.WEB],
+ * - P2P BitTorrent 网络 [MediaSourceKind.BitTorrent],
+ * - 本地视频缓存 [MediaSourceKind.LocalCache].
+ *
+ * 前两个从网络查询的资源返回 [DefaultMedia].
+ * 本地视频缓存返回 [CachedMedia].
  */
 @Serializable
 @Immutable
@@ -85,6 +96,11 @@ sealed interface Media {
     val properties: MediaProperties
 
     /**
+     * 该资源的额外文件, 例如字幕文件.
+     */
+    val extraFiles: MediaExtraFiles
+
+    /**
      * 该资源的存放位置.
      *
      * 查看 [MediaSourceLocation.Local] 和 [MediaSourceLocation.Online].
@@ -100,11 +116,18 @@ sealed interface Media {
 }
 
 /**
- * The default implementation of [Media].
+ * 找到该 [Media] 的实际来源 [DefaultMedia]
+ */
+tailrec fun Media.unwrapCached(): DefaultMedia = if (this is CachedMedia) {
+    origin.unwrapCached() // note, 实际上这里不会循环超过 2 次, 因为 [CachedMedia] 一定是由 [DefaultMedia] 包装而来
+} else {
+    this as DefaultMedia
+}
+
+/**
+ * 一个从数据源查询到的一手资源信息.
  *
- * [location] can be either [MediaSourceLocation.Online] or [MediaSourceLocation.Local].
- * A local [MediaSource] may support caching of other [MediaSourceLocation.Online] media sources, however,
- * it may also produce [MediaSourceLocation.Local] [DefaultMedia]s directly when you first search for that media.
+ * 一手指的是这个资源没有被缓存到本地. 被缓存的资源为 [CachedMedia].
  */
 @Immutable
 @Serializable
@@ -119,6 +142,7 @@ private constructor(
     override val publishedTime: Long,
     override val properties: MediaProperties,
     override val episodeRange: EpisodeRange? = null,
+    override val extraFiles: MediaExtraFiles = MediaExtraFiles.Empty,
     override val location: MediaSourceLocation = MediaSourceLocation.Online,
     override val kind: MediaSourceKind = MediaSourceKind.BitTorrent,
     @Transient private val _primaryConstructorMarker: Unit = Unit,
@@ -132,6 +156,7 @@ private constructor(
         publishedTime: Long,
         properties: MediaProperties,
         episodeRange: EpisodeRange?,
+        extraFiles: MediaExtraFiles = MediaExtraFiles.Empty,
         location: MediaSourceLocation,
         kind: MediaSourceKind,
     ) : this(
@@ -143,6 +168,7 @@ private constructor(
         publishedTime,
         properties,
         episodeRange,
+        extraFiles = extraFiles,
         location,
         kind,
         _primaryConstructorMarker = Unit,
@@ -150,10 +176,15 @@ private constructor(
 }
 
 /**
- * A media that is already cached into an easily accessible location, i.e. [MediaSourceLocation.Local].
+ * 表示一个已经被缓存到一个非常轻松能访问的地方, 例如本地文件系统 [MediaSourceLocation.Local].
+ *
+ * [CachedMedia] 一定是用户使用缓存功能, 将一个 [DefaultMedia] 存储到本地而产生的.
  */
 @Immutable
 class CachedMedia(
+    /**
+     * 此缓存的来源 [Media], 通常是一个 [DefaultMedia]. 不能是 [CachedMedia].
+     */
     val origin: Media,
     cacheMediaSourceId: String,
     override val download: ResourceLocation,
@@ -232,125 +263,4 @@ class MediaProperties private constructor(
     override fun toString(): String {
         return "MediaProperties(subtitleLanguageIds=$subtitleLanguageIds, resolution='$resolution', alliance='$alliance', size=$size)"
     }
-}
-
-/**
- * Additional data stored when creating the cache to help matching caches with future [request][MediaFetchRequest]s.
- */ // See `MediaFetchRequest.matches` or `MediaCacheStorage`
-@Immutable
-@Serializable
-class MediaCacheMetadata
-/**
- * This constructor is only for serialization
- */
-private constructor(
-//    /**
-//     * Id of the [MediaSource] that cached this media.
-//     */
-//    val cacheMediaSourceId: String, // e.g. "localfs" for the local file system
-    /**
-     * @see MediaFetchRequest.subjectId
-     */
-    val subjectId: String? = null,
-    /**
-     * @see MediaFetchRequest.episodeId
-     */
-    val episodeId: String? = null,
-    val subjectNames: Set<String>,
-    val episodeSort: EpisodeSort,
-    val episodeEp: EpisodeSort? = episodeSort,
-    val episodeName: String,
-    val extra: Map<String, String> = emptyMap(),
-    @Transient @Suppress("unused") private val _primaryConstructorMarker: Byte = 0, // avoid compiler error
-) {
-    constructor(
-//    /**
-//     * Id of the [MediaSource] that cached this media.
-//     */
-//    val cacheMediaSourceId: String, // e.g. "localfs" for the local file system
-        /**
-         * @see MediaFetchRequest.subjectId
-         */
-        subjectId: String? = null,
-        /**
-         * @see MediaFetchRequest.episodeId
-         */
-        episodeId: String? = null,
-        subjectNames: Set<String>,
-        episodeSort: EpisodeSort,
-        episodeEp: EpisodeSort?,
-        episodeName: String,
-        extra: Map<String, String> = emptyMap(),
-    ) : this(
-        subjectId, episodeId, subjectNames, episodeSort, episodeEp, episodeName, extra,
-        _primaryConstructorMarker = 0
-    )
-
-    /**
-     * [other]'s null and empty properties are replaced by this instance's properties.
-     */
-    @Stable
-    fun merge(other: MediaCacheMetadata): MediaCacheMetadata {
-        return MediaCacheMetadata(
-            subjectId = other.subjectId ?: subjectId,
-            episodeId = other.episodeId ?: episodeId,
-            subjectNames = other.subjectNames + subjectNames,
-            episodeSort = other.episodeSort,
-            episodeEp = other.episodeEp ?: episodeEp,
-            episodeName = other.episodeName,
-            extra = other.extra + extra,
-        )
-    }
-
-    /**
-     * Appends [other] to the existing [extra].
-     */
-    @Stable
-    fun withExtra(other: Map<String, String>): MediaCacheMetadata {
-        return MediaCacheMetadata(
-            subjectId = subjectId,
-            episodeId = episodeId,
-            subjectNames = subjectNames,
-            episodeSort = episodeSort,
-            episodeEp = episodeEp,
-            episodeName = episodeName,
-            extra = extra + other,
-        )
-    }
-
-    @Stable
-    fun copy(
-        subjectId: String? = this.subjectId,
-        episodeId: String? = this.episodeId,
-        subjectNames: Set<String> = this.subjectNames,
-        episodeSort: EpisodeSort = this.episodeSort,
-        episodeEp: EpisodeSort? = this.episodeEp,
-        episodeName: String = this.episodeName,
-        extra: Map<String, String> = this.extra,
-    ): MediaCacheMetadata {
-        return MediaCacheMetadata(
-            subjectId = subjectId,
-            episodeId = episodeId,
-            subjectNames = subjectNames,
-            episodeSort = episodeSort,
-            episodeEp = episodeEp,
-            episodeName = episodeName,
-            extra = extra,
-        )
-    }
-}
-
-fun MediaCacheMetadata(
-    request: MediaFetchRequest,
-    extra: Map<String, String> = emptyMap(),
-): MediaCacheMetadata {
-    return MediaCacheMetadata(
-        subjectId = request.subjectId,
-        episodeId = request.episodeId,
-        subjectNames = request.subjectNames,
-        episodeSort = request.episodeSort,
-        episodeEp = request.episodeEp,
-        episodeName = request.episodeName,
-        extra = extra,
-    )
 }

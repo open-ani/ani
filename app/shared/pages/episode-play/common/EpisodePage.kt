@@ -340,9 +340,7 @@ private fun EpisodeVideo(
     val videoLoadingState by vm.videoLoadingState.collectAsStateWithLifecycle(VideoLoadingState.Initial)
 
     // Don't rememberSavable. 刻意让每次切换都是隐藏的
-    var controllerVisible by remember { mutableStateOf(initialControllerVisible) }
-
-    val videoControllerState = remember { VideoControllerState() }
+    val videoControllerState = remember { VideoControllerState(initialControllerVisible) }
     var danmakuEditorText by rememberSaveable { mutableStateOf("") }
 
 
@@ -382,15 +380,34 @@ private fun EpisodeVideo(
         },
         danmakuEditor = {
             val danmakuEditorRequester = remember { Any() }
+
+            /**
+             * 是否设置了暂停
+             */
+            var didSetPaused by rememberSaveable { mutableStateOf(false) }
+
             DanmakuEditor(
                 vm = vm,
                 text = danmakuEditorText,
                 onTextChange = { danmakuEditorText = it },
-                setControllerVisible = { controllerVisible = false },
+                setControllerVisible = {
+                    videoControllerState.isVisible = false
+                },
                 placeholderText = danmakuTextPlaceholder,
                 modifier = Modifier.onFocusChanged {
-                    if (it.isFocused) videoControllerState.setRequestAlwaysOn(danmakuEditorRequester, true)
-                    else videoControllerState.setRequestAlwaysOn(danmakuEditorRequester, false)
+                    if (it.isFocused) {
+                        if (vm.videoScaffoldConfig.pauseVideoOnEditDanmaku && vm.playerState.state.value.isPlaying) {
+                            didSetPaused = true
+                            vm.playerState.pause()
+                        }
+                        videoControllerState.setRequestAlwaysOn(danmakuEditorRequester, true)
+                    } else {
+                        if (didSetPaused) {
+                            didSetPaused = false
+                            vm.playerState.resume()
+                        }
+                        videoControllerState.setRequestAlwaysOn(danmakuEditorRequester, false)
+                    }
                 }.weight(1f)
             )
         },
