@@ -23,6 +23,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
@@ -41,11 +43,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.subject.SubjectPreviewColumn
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
+import moe.tlaster.precompose.navigation.BackHandler
 
 @Composable
 fun HomePage(
@@ -54,6 +58,7 @@ fun HomePage(
 ) {
     val searchViewModel = rememberViewModel { SearchViewModel() }
     val snackBarHostState = remember { SnackbarHostState() }
+    val layoutDirection = LocalLayoutDirection.current
 
     val searchTag by searchViewModel.searchTags.collectAsStateWithLifecycle()
     val showDeleteTagTip = searchViewModel.oneshotActionConfig.deleteSearchTagTip
@@ -62,6 +67,10 @@ fun HomePage(
     val searchResult by searchViewModel.result.collectAsStateWithLifecycle()
 
     var isEditingSearchTags by remember { mutableStateOf(false) }
+
+    BackHandler(isEditingSearchTags) {
+        isEditingSearchTags = false
+    }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -76,6 +85,7 @@ fun HomePage(
                     searchTag = searchTag,
                     showDeleteTagTip = showDeleteTagTip,
                     searchHistory = searchHistory,
+                    contentPadding = contentPadding,
                     modifier = Modifier.fillMaxWidth(),
                     onActiveChange = { active -> searchViewModel.searchActive = active },
                     onToggleTag = { tagId, selected -> searchViewModel.markSearchTag(tagId, selected) },
@@ -86,7 +96,7 @@ fun HomePage(
                     onStartEditingTagMode = { isEditingSearchTags = true },
                     onSearch = { query, fromHistory ->
                         searchViewModel.editingQuery = query
-                        if (!fromHistory) {
+                        if (!fromHistory && searchHistory.none { it.content == query }) {
                             searchViewModel.pushSearchHistory(query)
                         }
                         searchViewModel.search(query)
@@ -104,11 +114,10 @@ fun HomePage(
                                 IconButton({ isEditingSearchTags = false }) {
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                                        contentDescription = "exit deleting search tag mode"
+                                        contentDescription = "exit delete search tag mode"
                                     )
                                 }
                             },
-                            // 必须比 SearchBar 的 zIndex 大
                         )
                     }
                 }
@@ -118,7 +127,17 @@ fun HomePage(
 
     ) { topBarPadding ->
         Column(Modifier.fillMaxSize()) {
-            searchResult?.let { SubjectPreviewColumn(it) }
+            searchResult?.let {
+                SubjectPreviewColumn(
+                    it,
+                    contentPadding = PaddingValues(
+                        top = topBarPadding.calculateTopPadding(),
+                        bottom = contentPadding.calculateBottomPadding(),
+                        start = contentPadding.calculateStartPadding(layoutDirection),
+                        end = contentPadding.calculateEndPadding(layoutDirection)
+                    )
+                )
+            }
         }
     }
 }

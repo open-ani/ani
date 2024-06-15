@@ -27,6 +27,8 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -54,6 +56,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.navigation.LocalNavigator
@@ -67,17 +70,25 @@ import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 @Composable
 fun SubjectPreviewColumn(
     viewModel: SubjectListViewModel,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
     modifier: Modifier = Modifier,
 ) {
     val items by viewModel.list.collectAsStateWithLifecycle()
 
     val state = rememberLazyGridState()
     val context by rememberUpdatedState(LocalContext.current)
+    val layoutDirection = LocalLayoutDirection.current
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier.background(MaterialTheme.colorScheme.background),
         state = state,
-        contentPadding = PaddingValues(8.dp),
+        contentPadding = PaddingValues(
+            top = contentPadding.calculateTopPadding() + 8.dp,
+            bottom = contentPadding.calculateBottomPadding() + 8.dp,
+            start = contentPadding.calculateStartPadding(layoutDirection) + 8.dp,
+            end = contentPadding.calculateEndPadding(layoutDirection) + 8.dp
+
+        ),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {

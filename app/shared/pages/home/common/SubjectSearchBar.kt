@@ -1,41 +1,51 @@
 package me.him188.ani.app.ui.home
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Autorenew
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.NewLabel
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -49,6 +59,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -58,16 +69,27 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.zIndex
+import androidx.constraintlayout.compose.layoutId
 import me.him188.ani.app.OneshotTip
 import me.him188.ani.app.interaction.clearFocusOnKeyboardDismiss
 import me.him188.ani.app.ui.foundation.AnimatedFilterChip
+import kotlin.math.max
+import androidx.compose.ui.unit.max as maxDp
 
 @Composable
 fun SubjectSearchBar(
@@ -77,6 +99,7 @@ fun SubjectSearchBar(
     searchTag: List<SearchTag>,
     showDeleteTagTip: Boolean,
     searchHistory: List<SearchHistory>,
+    contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
     onActiveChange: (Boolean) -> Unit,
     onToggleTag: (Int, Boolean) -> Unit,
@@ -90,8 +113,12 @@ fun SubjectSearchBar(
     var isActive by remember { mutableStateOf(initialActive) }
     var searchText by remember { mutableStateOf(initialSearchText) }
     var newCustomFilterDialogOpened by remember { mutableStateOf(false) }
+    var searchMode by remember { mutableStateOf(SearchMode.KEYWORD) }
     
     val keyboard by rememberUpdatedState(LocalSoftwareKeyboardController.current)
+    val imePadding = WindowInsets.ime.asPaddingValues()
+    val focusManager = LocalFocusManager.current
+    val focusRequester = remember { FocusRequester() }
 
     val horizontalPadding by animateDpAsState(
         targetValue = if (isActive) 0.dp else 16.dp,
@@ -119,7 +146,14 @@ fun SubjectSearchBar(
     SearchBar(
         query = searchText,
         active = isActive,
-        placeholder = { Text("搜索") },
+        placeholder = {
+            Text(
+                when (searchMode) {
+                    SearchMode.KEYWORD -> "搜索"
+                    SearchMode.FILTER -> "发现"
+                }
+            )
+        },
         leadingIcon = {
             IconButton({ toggleActive() }) {
                 Icon(
@@ -144,9 +178,20 @@ fun SubjectSearchBar(
         modifier = Modifier
             .padding(horizontal = horizontalPadding)
             .clearFocusOnKeyboardDismiss()
+            .onFocusEvent { state ->
+                // 标签搜索模式下不允许输入文字或拉起键盘
+                if ((state.isFocused || state.isCaptured) && searchMode == SearchMode.FILTER) {
+                    focusManager.clearFocus(true)
+                }
+            }
+            .focusRequester(focusRequester)
             .then(modifier),
         onActiveChange = { toggleActive(it) },
-        onQueryChange = { searchText = it },
+        onQueryChange = {
+            if (searchMode == SearchMode.KEYWORD) {
+                searchText = it
+            }
+        },
         onSearch = {
             if (!editingTagMode) {
                 toggleActive(false)
@@ -154,155 +199,195 @@ fun SubjectSearchBar(
             }
             keyboard?.hide()
         },
-        
     ) {
-        Box(
-            modifier = Modifier.fillMaxSize().imePadding()
-        ) {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(24.dp)
-            ) {
-                item("tag_tag") {
-                    Text(
-                        text = "标签",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-                item("tag_row") {
-                    FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+        val bottomPadding by remember {
+            derivedStateOf {
+                PaddingValues(
+                    top = 24.dp,
+                    start = 24.dp,
+                    end = 24.dp,
+                    bottom = maxDp(imePadding.calculateBottomPadding(), contentPadding.calculateBottomPadding()) + 24.dp
+                )
+            }
+        }
+
+        var fabRotateAngle by remember { mutableStateOf(0f) }
+        val fabRotateAnimated by animateFloatAsState(
+            targetValue = fabRotateAngle,
+            animationSpec = tween(easing = FastOutSlowInEasing),
+        )
+
+        Layout(
+            modifier = Modifier.fillMaxSize(),
+            content = {
+                AnimatedVisibility(
+                    !editingTagMode,
+                    enter = fadeIn(),
+                    exit = fadeOut(),
+                    modifier = Modifier.layoutId("fab").zIndex(1.1f),
+                ) {
+
+                    ExtendedFloatingActionButton(
+                        shape = CircleShape,
+                        onClick = {
+                            fabRotateAngle -= 180f
+                            if (searchMode == SearchMode.FILTER) {
+                                searchMode = SearchMode.KEYWORD
+                                focusRequester.requestFocus()
+                                keyboard?.show()
+                            } else {
+                                searchMode = SearchMode.FILTER
+                                keyboard?.hide()
+                                focusManager.clearFocus(true)
+                            }
+                        }
                     ) {
-                        searchTag.forEach { tag ->
-                            AnimatedFilterChip(
-                                selected = tag.checked && !editingTagMode,
-                                label = { Text(text = tag.content) },
-                                trailingIcon = {
-                                    AnimatedVisibility(
-                                        visible = editingTagMode,
-                                        enter = expandHorizontally(),
-                                        exit = shrinkHorizontally()
-                                    ) {
-                                        IconButton(
-                                            onClick = { onDeleteTag(tag.id) },
-                                            modifier = Modifier.size(FilterChipDefaults.IconSize)
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Outlined.Close,
-                                                contentDescription = "",
-                                                modifier = Modifier.size(FilterChipDefaults.IconSize)
-                                            )
-                                        }
-                                    }
-                                },
-                                onClick = { onToggleTag(tag.id, !tag.checked) },
-                            )
-                        }
-                        AnimatedVisibility(
-                            visible = !editingTagMode,
-                            enter = expandHorizontally(),
-                            exit = shrinkHorizontally()
-                        ) {
-                            AddNewTagChip(
-                                // TODO: Chip composable 好像有 vertical padding 不知道从哪里来的。
-                                // 我们自定义的支持长按的 chip 也需要加上。
-                                modifier = Modifier.padding(vertical = 8.dp),
-                                containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                                onLongClick = {
-                                    keyboard?.hide()
-                                    onStartEditingTagMode()
-                                },
-                                onClick = { newCustomFilterDialogOpened = true }
-                            )
-                        }
-                    }
-                }
-                if (showDeleteTagTip) {
-                    item("tag_tip") {
-                        OneshotTip(
-                            text = "您可以点击加号标签添加新搜索标签，长按加号标签进入标签删除模式。",
-                            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-                            onClose = onDisableDeleteTagTip
+                        Icon(
+                            imageVector = Icons.Outlined.Autorenew,
+                            contentDescription = "",
+                            modifier = Modifier
+                                .scale(-1f, 1f) // flip horizontally
+                                .rotate(fabRotateAnimated)
+                        )
+                        Text(
+                            text = if (searchMode == SearchMode.FILTER) "关键词搜索" else "标签搜索",
+                            modifier = Modifier.padding(start = 8.dp).animateContentSize()
                         )
                     }
                 }
 
-                item("tag_history") {
-                    Text(
-                        text = "搜索历史",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                Crossfade(
+                    targetState = searchMode,
+                    modifier = Modifier
+                        .layoutId("content")
+                        .fillMaxSize()
+                        .imePadding()
+                ) { mode ->
+                    when (mode) {
+                        SearchMode.KEYWORD -> SearchHistoryList(
+                            list = searchHistory,
+                            contentPadding = bottomPadding,
+                            modifier = Modifier.fillMaxSize(),
+                            onClickItem = { historyId ->
+                                toggleActive()
+                                searchText = searchHistory.first { it.id == historyId }.content
+                                onSearch(searchText, true)
+                                keyboard?.hide()
+                            },
+                            onDeleteItem = onDeleteHistory,
+                        )
+
+                        SearchMode.FILTER -> SearchFilterPage(
+                            tags = searchTag,
+                            editingTagMode = editingTagMode,
+                            showDeleteTagTip = showDeleteTagTip,
+                            contentPadding = bottomPadding,
+                            modifier = Modifier.fillMaxSize(),
+                            onToggleTag = onToggleTag,
+                            onDeleteTag = onDeleteTag,
+                            onStartEditingTagMode = {
+                                keyboard?.hide()
+                                onStartEditingTagMode()
+                            },
+                            onAddTag = { newCustomFilterDialogOpened = true },
+                            onDisableDeleteTagTip = onDisableDeleteTagTip
+                        )
+                    }
                 }
-                item("history") {
-                    val verticalPadding by animateDpAsState(
-                        targetValue = if (searchHistory.isEmpty()) 24.dp else 0.dp,
-                        animationSpec = tween(easing = FastOutSlowInEasing)
+            }
+        ) { measurables, constraints ->
+            val contentMeasurable = measurables.find { it.layoutId == "content" }
+            val contentPlaceable = contentMeasurable?.measure(constraints.copy(minWidth = 0, minHeight = 0))
+            val fabMeasurable = measurables.find { it.layoutId == "fab" }
+            val fabPlaceable = fabMeasurable?.measure(constraints.copy(minWidth = 0, minHeight = 0))
+
+            val width = contentPlaceable?.width ?: 0
+            val height = contentPlaceable?.height ?: 0
+            val fabWidth = fabPlaceable?.width ?: 0
+            val fabHeight = fabPlaceable?.height ?: 0
+
+            val fabPadding = 24.dp.roundToPx()
+            val bottomNavigatorPadding = contentPadding.calculateBottomPadding().roundToPx()
+            val bottomImePadding = imePadding.calculateBottomPadding().roundToPx()
+
+            layout(width, height) {
+                contentPlaceable?.placeRelative(0, 0)
+                fabPlaceable?.placeRelative(
+                    width - fabWidth - fabPadding,
+                    height - fabHeight - fabPadding - max(bottomNavigatorPadding, bottomImePadding)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SearchHistoryList(
+    list: List<SearchHistory>,
+    contentPadding: PaddingValues,
+    modifier: Modifier = Modifier,
+    onClickItem: (Int) -> Unit,
+    onDeleteItem: (Int) -> Unit,
+) {
+    LazyColumn(
+        modifier = modifier,
+        contentPadding = contentPadding
+    ) {
+        item("tag_history") {
+            Text(
+                text = "搜索历史",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+        item("history") {
+            val verticalPadding by animateDpAsState(
+                targetValue = if (list.isEmpty()) 24.dp else 12.dp,
+                animationSpec = tween(easing = FastOutSlowInEasing)
+            )
+            Column(
+                modifier = Modifier.padding(vertical = verticalPadding).fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                if (list.isEmpty()) {
+                    Icon(
+                        imageVector = Icons.Outlined.Search,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.secondary
                     )
-                    Column(
-                        modifier = Modifier.padding(vertical = verticalPadding)
-                    ) {
-                        AnimatedVisibility(
-                            visible = !editingTagMode,
-                            enter = expandVertically(),
-                            exit = shrinkVertically()
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = "无搜索历史",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                } else {
+                    list.forEach { history ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable { onClickItem(history.id) }
+                                .padding(vertical = 12.dp)
+                                .padding(start = 16.dp, end = 8.dp)
+                                .animateItemPlacement(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            if (searchHistory.isEmpty()) {
-                                Column(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Outlined.Search,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.secondary
-                                    )
-                                    Spacer(modifier = Modifier.height(12.dp))
-                                    Text(
-                                        text = "无搜索历史",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.secondary
-                                    )
-                                }
-                            } else {
-                                Column(modifier = Modifier.fillMaxWidth()) {
-                                    searchHistory.forEach { history ->
-                                        Row(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .clickable {
-                                                    toggleActive()
-                                                    searchText = history.content
-                                                    onSearch(history.content, true)
-                                                    keyboard?.hide()
-                                                }
-                                                .padding(vertical = 12.dp)
-                                                .padding(start = 16.dp, end = 8.dp)
-                                                .animateItemPlacement(),
-                                            horizontalArrangement = Arrangement.SpaceBetween,
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Text(
-                                                text = history.content,
-                                                style = MaterialTheme.typography.bodyMedium
-                                            )
-                                            IconButton(
-                                                modifier = Modifier.size(32.dp),
-                                                onClick = { onDeleteHistory(history.id) }
-                                            ) {
-                                                Icon(
-                                                    modifier = Modifier.size(22.dp),
-                                                    imageVector = Icons.Outlined.Close,
-                                                    tint = MaterialTheme.colorScheme.secondary,
-                                                    contentDescription = null
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
+                            Text(
+                                text = history.content,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            IconButton(
+                                modifier = Modifier.size(32.dp),
+                                onClick = { onDeleteItem(history.id) }
+                            ) {
+                                Icon(
+                                    modifier = Modifier.size(22.dp),
+                                    imageVector = Icons.Outlined.Close,
+                                    tint = MaterialTheme.colorScheme.secondary,
+                                    contentDescription = null
+                                )
                             }
                         }
                     }
@@ -310,6 +395,105 @@ fun SubjectSearchBar(
             }
         }
     }
+}
+
+@Composable
+private fun SearchFilterPage(
+    tags: List<SearchTag>,
+    editingTagMode: Boolean,
+    showDeleteTagTip: Boolean,
+    contentPadding: PaddingValues,
+    modifier: Modifier = Modifier,
+    onToggleTag: (Int, Boolean) -> Unit,
+    onDeleteTag: (Int) -> Unit,
+    onStartEditingTagMode: () -> Unit,
+    onAddTag: () -> Unit,
+    onDisableDeleteTagTip: () -> Unit
+) {
+    LazyColumn(
+        modifier = modifier,
+        contentPadding = contentPadding
+    ) {
+        item("tag_tag") {
+            Text(
+                text = "标签",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+        item("tag_row") {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+            ) {
+                tags.forEach { tag ->
+                    AnimatedFilterChip(
+                        selected = tag.checked && !editingTagMode,
+                        label = { Text(text = tag.content) },
+                        trailingIcon = {
+                            AnimatedVisibility(
+                                visible = editingTagMode,
+                                enter = expandHorizontally(),
+                                exit = shrinkHorizontally()
+                            ) {
+                                IconButton(
+                                    onClick = { onDeleteTag(tag.id) },
+                                    modifier = Modifier.size(FilterChipDefaults.IconSize)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Close,
+                                        contentDescription = "",
+                                        modifier = Modifier.size(FilterChipDefaults.IconSize)
+                                    )
+                                }
+                            }
+                        },
+                        onClick = { onToggleTag(tag.id, !tag.checked) },
+                    )
+                }
+                AnimatedVisibility(
+                    visible = !editingTagMode,
+                    enter = expandHorizontally(),
+                    exit = shrinkHorizontally()
+                ) {
+                    AddNewTagChip(
+                        // TODO: Chip composable 好像有 vertical padding 不知道从哪里来的。
+                        // 我们自定义的支持长按的 chip 也需要加上。
+                        modifier = Modifier.padding(vertical = 8.dp),
+                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                        onLongClick = onStartEditingTagMode,
+                        onClick = onAddTag
+                    )
+                }
+            }
+        }
+        item("tag_tip") {
+            AnimatedVisibility(
+                visible = showDeleteTagTip,
+                enter = expandVertically(),
+                exit = shrinkVertically()
+            ) {
+                OneshotTip(
+                    text = "您可以点击加号标签添加新搜索标签，长按加号标签进入标签删除模式。",
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                    onClose = onDisableDeleteTagTip
+                )
+            }
+        }
+    }
+}
+
+enum class SearchMode {
+    /**
+     * 按关键词搜索
+     */
+    KEYWORD,
+
+    /**
+     * 按过滤器搜索
+     */
+    FILTER
 }
 
 /**
