@@ -10,7 +10,7 @@ import kotlin.time.Duration
 
 @Stable
 class VideoNotificationState(
-    private val tag: String = "video",
+    private val tag: String = "ui/subject/episode/video",
 ) : KoinComponent {
     private val notificationManager: NotifManager by inject()
 
