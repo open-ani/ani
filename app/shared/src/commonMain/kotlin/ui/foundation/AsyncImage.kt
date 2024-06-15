@@ -1,9 +1,5 @@
 package me.him188.ani.app.ui.foundation
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
@@ -12,37 +8,30 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.DefaultAlpha
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import coil3.ImageLoader
+import coil3.PlatformContext
 import coil3.compose.AsyncImagePainter
 import coil3.compose.DefaultModelEqualityDelegate
 import coil3.compose.EqualityDelegate
+import coil3.memory.MemoryCache
+import coil3.network.okhttp.OkHttpNetworkFetcherFactory
+import coil3.request.CachePolicy
+import coil3.request.crossfade
+import coil3.svg.SvgDecoder
 import me.him188.ani.app.platform.currentPlatform
+import me.him188.ani.app.platform.getAniUserAgent
 import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.ui.external.placeholder.placeholder
+import okhttp3.OkHttpClient
 
 val LocalImageLoader = androidx.compose.runtime.staticCompositionLocalOf<ImageLoader> {
     error("No ImageLoader provided")
 }
-
-@Composable
-fun LoadingIndicator(progress: Float, modifier: Modifier = Modifier) {
-    Box(
-        modifier.fillMaxSize()
-            .background(Color.LightGray)
-    ) {
-        CircularProgressIndicator(
-            progress = { progress },
-            modifier = Modifier.align(Alignment.Center),
-        )
-    }
-}
-
 
 @Stable
 inline val defaultFilterQuality get() = if (currentPlatform.isDesktop()) FilterQuality.High else FilterQuality.Low
@@ -173,4 +162,45 @@ fun AsyncImage(
         clipToBounds = clipToBounds,
         modelEqualityDelegate = modelEqualityDelegate,
     )
+}
+
+fun getDefaultImageLoader(
+    context: PlatformContext,
+    config: ImageLoader.Builder.() -> Unit = {}
+): ImageLoader {
+    return ImageLoader.Builder(context).apply {
+        crossfade(true)
+
+//        diskCache(DiskCache.Builder().apply {
+//            maxSizeBytes(100 * 1024 * 1024)
+//        }.build())
+
+        diskCachePolicy(CachePolicy.ENABLED)
+        memoryCachePolicy(CachePolicy.ENABLED)
+        memoryCache {
+            MemoryCache.Builder().apply {
+                maxSizeBytes(10 * 1024 * 1024)
+            }.build()
+        }
+        networkCachePolicy(CachePolicy.ENABLED)
+
+        components {
+            add(SvgDecoder.Factory())
+
+            val client = OkHttpClient.Builder().apply {
+                addInterceptor { chain ->
+                    chain.proceed(
+                        chain.request().newBuilder().addHeader(
+                            "User-Agent",
+                            getAniUserAgent()
+                        ).build()
+                    )
+                }
+            }.build()
+
+            add(OkHttpNetworkFetcherFactory(client))
+        }
+
+        config()
+    }.build()
 }
