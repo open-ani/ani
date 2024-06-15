@@ -1,6 +1,6 @@
 <configuration>
     <appender name="ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOGS_DIR}/app.log</file>
+        <file>${LOGS_DIR}/app.log</file> <!-- 不要修改这个名字, 修改时 修改时要同时修改 AboutTab.android.kt 的分享日志 -->
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>${EXT_DIR}/logs/app.%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxHistory>3</maxHistory>

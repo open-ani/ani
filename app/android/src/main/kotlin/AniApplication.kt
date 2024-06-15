@@ -109,6 +109,7 @@ class AniApplication : Application() {
         super.onCreate()
         System.setProperty(
             "LOGS_DIR",
+            // 不要修改这个目录. 修改时要同时修改 AboutTab.android.kt 的分享日志
             applicationContext.filesDir.resolve("logs").absolutePath,
         )
 
