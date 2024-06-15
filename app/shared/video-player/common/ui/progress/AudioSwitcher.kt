@@ -29,7 +29,7 @@ class AudioTrackState(
 ) : AbstractViewModel() {
     val options = candidates.map { tracks ->
         tracks.map { track ->
-            AudioPresentation(track, track.videoName)
+            AudioPresentation(track, track.audioName)
         }
     }.flowOn(Dispatchers.Default).shareInBackground()
 

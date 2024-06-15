@@ -11,6 +11,6 @@ class AudioPresentation(
 )
 
 @Stable
-val AudioTrack.videoName: String
+val AudioTrack.audioName: String
     get() = name ?: labels.firstOrNull()?.value ?: internalId
 
