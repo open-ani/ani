@@ -1,4 +1,4 @@
-package me.him188.ani.app.update
+package me.him188.ani.app.tools.update
 
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpTimeout

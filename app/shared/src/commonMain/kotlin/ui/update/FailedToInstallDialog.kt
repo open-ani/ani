@@ -1,4 +1,4 @@
-package me.him188.ani.app.update.ui
+package me.him188.ani.app.ui.update
 
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
@@ -6,8 +6,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.tools.update.UpdateInstaller
 import me.him188.ani.app.ui.foundation.widgets.RichDialogLayout
-import me.him188.ani.app.update.UpdateInstaller
 import org.koin.core.context.GlobalContext
 
 @Composable

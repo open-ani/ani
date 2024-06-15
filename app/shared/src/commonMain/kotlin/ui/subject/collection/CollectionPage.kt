@@ -82,7 +82,7 @@ import me.him188.ani.app.ui.isLoggedIn
 import me.him188.ani.app.ui.profile.UnauthorizedTips
 import me.him188.ani.app.ui.subject.collection.progress.EpisodeProgressDialog
 import me.him188.ani.app.ui.subject.collection.progress.rememberEpisodeProgressState
-import me.him188.ani.app.update.ui.TextButtonUpdateLogo
+import me.him188.ani.app.ui.update.TextButtonUpdateLogo
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.lifecycle.Lifecycle

@@ -1,4 +1,4 @@
-package me.him188.ani.app.update.ui
+package me.him188.ani.app.ui.update
 
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get

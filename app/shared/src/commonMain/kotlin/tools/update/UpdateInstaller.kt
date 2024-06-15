@@ -1,4 +1,4 @@
-package me.him188.ani.app.update
+package me.him188.ani.app.tools.update
 
 import androidx.compose.runtime.Stable
 import me.him188.ani.app.platform.ContextMP

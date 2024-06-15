@@ -62,13 +62,13 @@ import me.him188.ani.app.platform.startCommonKoinModule
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.tools.torrent.DefaultTorrentManager
 import me.him188.ani.app.tools.torrent.TorrentManager
+import me.him188.ani.app.tools.update.DesktopUpdateInstaller
+import me.him188.ani.app.tools.update.UpdateInstaller
 import me.him188.ani.app.ui.foundation.AniApp
 import me.him188.ani.app.ui.foundation.LocalWindowState
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.main.AniAppContent
 import me.him188.ani.app.ui.theme.AppTheme
-import me.him188.ani.app.update.DesktopUpdateInstaller
-import me.him188.ani.app.update.UpdateInstaller
 import me.him188.ani.app.videoplayer.ui.VlcjVideoPlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import me.him188.ani.desktop.generated.resources.Res

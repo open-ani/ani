@@ -51,6 +51,7 @@ import kotlinx.coroutines.launch
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.requireOnline
+import me.him188.ani.app.tools.update.InstallationFailureReason
 import me.him188.ani.app.ui.cache.CacheManagementPage
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
@@ -63,13 +64,12 @@ import me.him188.ani.app.ui.profile.AccountViewModel
 import me.him188.ani.app.ui.profile.ProfilePage
 import me.him188.ani.app.ui.settings.SettingsPage
 import me.him188.ani.app.ui.subject.collection.CollectionPage
-import me.him188.ani.app.update.InstallationFailureReason
-import me.him188.ani.app.update.ui.AutoUpdateViewModel
-import me.him188.ani.app.update.ui.ChangelogDialog
-import me.him188.ani.app.update.ui.FailedToInstallDialog
-import me.him188.ani.app.update.ui.UpdateLogoIcon
-import me.him188.ani.app.update.ui.UpdateLogoLabel
-import me.him188.ani.app.update.ui.handleClickLogo
+import me.him188.ani.app.ui.update.AutoUpdateViewModel
+import me.him188.ani.app.ui.update.ChangelogDialog
+import me.him188.ani.app.ui.update.FailedToInstallDialog
+import me.him188.ani.app.ui.update.UpdateLogoIcon
+import me.him188.ani.app.ui.update.UpdateLogoLabel
+import me.him188.ani.app.ui.update.handleClickLogo
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
 

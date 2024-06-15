@@ -1,4 +1,4 @@
-package me.him188.ani.app.update
+package me.him188.ani.app.tools.update
 
 import me.him188.ani.app.platform.ContextMP
 import me.him188.ani.app.platform.FileOpener

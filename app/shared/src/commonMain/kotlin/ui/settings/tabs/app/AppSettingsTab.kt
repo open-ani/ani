@@ -32,6 +32,7 @@ import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.isDesktop
+import me.him188.ani.app.tools.update.supportsInAppUpdate
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.settings.SettingsTab
@@ -44,12 +45,11 @@ import me.him188.ani.app.ui.settings.framework.components.SwitchItem
 import me.him188.ani.app.ui.settings.framework.components.TextButtonItem
 import me.him188.ani.app.ui.settings.framework.components.TextItem
 import me.him188.ani.app.ui.subject.collection.progress.EpisodeProgressTheme
-import me.him188.ani.app.update.supportsInAppUpdate
-import me.him188.ani.app.update.ui.AutoUpdateViewModel
-import me.him188.ani.app.update.ui.ChangelogDialog
-import me.him188.ani.app.update.ui.NewVersion
-import me.him188.ani.app.update.ui.TextButtonUpdateLogo
-import me.him188.ani.app.update.ui.UpdateChecker
+import me.him188.ani.app.ui.update.AutoUpdateViewModel
+import me.him188.ani.app.ui.update.ChangelogDialog
+import me.him188.ani.app.ui.update.NewVersion
+import me.him188.ani.app.ui.update.TextButtonUpdateLogo
+import me.him188.ani.app.ui.update.UpdateChecker
 import me.him188.ani.danmaku.protocol.ReleaseClass
 import org.koin.core.component.inject
 import org.koin.core.context.GlobalContext

@@ -1,11 +1,11 @@
-package me.him188.ani.app.update.ui
+package me.him188.ani.app.ui.update
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import me.him188.ani.app.platform.ContextMP
-import me.him188.ani.app.update.InstallationFailureReason
-import me.him188.ani.app.update.InstallationResult
-import me.him188.ani.app.update.UpdateInstaller
+import me.him188.ani.app.tools.update.InstallationFailureReason
+import me.him188.ani.app.tools.update.InstallationResult
+import me.him188.ani.app.tools.update.UpdateInstaller
 import org.koin.core.context.GlobalContext
 import java.io.File
 

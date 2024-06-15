@@ -15,8 +15,8 @@ import me.him188.ani.app.platform.notification.AndroidNotifManager
 import me.him188.ani.app.platform.notification.NotifManager
 import me.him188.ani.app.tools.torrent.DefaultTorrentManager
 import me.him188.ani.app.tools.torrent.TorrentManager
-import me.him188.ani.app.update.AndroidUpdateInstaller
-import me.him188.ani.app.update.UpdateInstaller
+import me.him188.ani.app.tools.update.AndroidUpdateInstaller
+import me.him188.ani.app.tools.update.UpdateInstaller
 import me.him188.ani.app.videoplayer.ExoPlayerStateFactory
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import org.koin.android.ext.koin.androidContext

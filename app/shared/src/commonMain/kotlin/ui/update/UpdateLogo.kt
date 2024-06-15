@@ -1,4 +1,4 @@
-package me.him188.ani.app.update.ui
+package me.him188.ani.app.ui.update
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -25,9 +25,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.tools.update.InstallationFailureReason
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.foundation.text.toPercentageString
-import me.him188.ani.app.update.InstallationFailureReason
 
 @Composable
 fun UpdateLogoLabel(state: UpdateLogoState) {

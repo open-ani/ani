@@ -1,4 +1,4 @@
-package me.him188.ani.app.update.ui
+package me.him188.ani.app.ui.update
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
@@ -16,9 +16,9 @@ import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.ContextMP
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.tools.MonoTasker
+import me.him188.ani.app.tools.update.DefaultFileDownloader
+import me.him188.ani.app.tools.update.FileDownloaderState
 import me.him188.ani.app.ui.foundation.AbstractViewModel
-import me.him188.ani.app.update.DefaultFileDownloader
-import me.him188.ani.app.update.FileDownloaderState
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.warn
 import org.koin.core.component.KoinComponent
