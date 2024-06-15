@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
@@ -19,8 +20,7 @@ import me.him188.ani.app.session.BangumiAuthorizationConstants
 import me.him188.ani.app.session.OAuthResult
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.ui.foundation.AbstractViewModel
-import me.him188.ani.app.ui.foundation.AniTopAppBar
-import me.him188.ani.app.ui.foundation.TopAppBarGoBackButton
+import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.utils.logging.error
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -69,7 +69,7 @@ fun AuthResultPage(
             .systemBarsPadding()
             .fillMaxSize(),
         topBar = {
-            AniTopAppBar(
+            TopAppBar(
                 actions = {
                     TopAppBarGoBackButton {
                         navigator.navigator.goBack()

@@ -30,9 +30,9 @@ import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.OverrideNavigation
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.isMobile
-import me.him188.ani.app.ui.foundation.TopAppBarGoBackButton
 import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
+import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.tabs.AboutTab
 import me.him188.ani.app.ui.settings.tabs.app.AppSettingsTab

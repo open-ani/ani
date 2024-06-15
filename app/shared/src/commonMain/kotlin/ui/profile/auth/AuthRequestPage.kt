@@ -20,6 +20,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
@@ -43,13 +44,12 @@ import me.him188.ani.app.navigation.LocalBackHandler
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.Platform
-import me.him188.ani.app.ui.foundation.AniTopAppBar
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
-import me.him188.ani.app.ui.foundation.TopAppBarActionButton
-import me.him188.ani.app.ui.foundation.TopAppBarGoBackButton
 import me.him188.ani.app.ui.foundation.feedback.ErrorDialogHost
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.widgets.RichDialogLayout
+import me.him188.ani.app.ui.foundation.widgets.TopAppBarActionButton
+import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.app.ui.profile.AuthViewModel
 import me.him188.ani.app.ui.profile.BangumiAuthIntroLayout
 import me.him188.ani.app.ui.profile.BangumiOAuthRequest
@@ -76,7 +76,7 @@ fun AuthRequestPage(
             .fillMaxSize(),
         topBar = {
             val navigator = LocalBackDispatcherOwner.current
-            AniTopAppBar(
+            TopAppBar(
                 actions = {
                     if (allowBack) {
                         TopAppBarGoBackButton { navigator?.backDispatcher?.onBackPress() }
