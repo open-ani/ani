@@ -1,7 +1,6 @@
-package me.him188.ani.app
+package me.him188.ani.app.session
 
 import me.him188.ani.app.navigation.AniNavigator
-import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject

@@ -14,11 +14,11 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import me.him188.ani.app.ViewModelAuthSupport
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.session.BangumiAuthorizationConstants
 import me.him188.ani.app.session.OAuthResult
 import me.him188.ani.app.session.SessionManager
+import me.him188.ani.app.session.ViewModelAuthSupport
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.utils.logging.error

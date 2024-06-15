@@ -7,9 +7,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import me.him188.ani.app.ViewModelAuthSupport
 import me.him188.ani.app.navigation.LocalNavigator
-import me.him188.ani.app.requireOnline
+import me.him188.ani.app.session.ViewModelAuthSupport
+import me.him188.ani.app.session.requireOnline
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import org.koin.core.component.KoinComponent
