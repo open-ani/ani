@@ -84,8 +84,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.zIndex
 import androidx.constraintlayout.compose.layoutId
-import me.him188.ani.app.OneshotTip
 import me.him188.ani.app.ui.foundation.interaction.clearFocusOnKeyboardDismiss
+import me.him188.ani.app.ui.foundation.widgets.OneshotTip
 import kotlin.math.max
 import androidx.compose.ui.unit.max as maxDp
 

@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.Preview
 import me.him188.ani.app.data.repositories.Comment
-import me.him188.ani.app.ui.foundation.PreviewData
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import org.openapitools.client.models.Avatar
 import org.openapitools.client.models.User
@@ -19,7 +18,7 @@ private fun PreviewCommentColumn() {
     ProvideCompositionLocalsForPreview {
         CommentColumn(
             remember {
-                CommentViewModel(PreviewData.SOSOU_NO_FURILEN_EPISODE_ID)
+                CommentViewModel(1227087)
             })
     }
 }

@@ -21,17 +21,36 @@ package me.him188.ani.app.ui.subject.search
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.Preview
-import me.him188.ani.app.ui.foundation.PreviewData
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.datasources.api.paging.PageBasedPagedSource
 import me.him188.ani.datasources.api.paging.Paged
+import me.him188.ani.datasources.api.subject.Subject
+import me.him188.ani.datasources.api.subject.SubjectImages
 
 @Composable
 @Preview(apiLevel = 33)
 private fun PreviewSubjectList() {
     val viewModel = remember {
         SubjectListViewModel(PageBasedPagedSource {
-            Paged(listOf(PreviewData.SosouNoFurilen))
+            Paged(
+                listOf(
+                    Subject(
+                        id = 400602,
+                        originalName = "葬送的芙莉莲",
+                        chineseName = "葬送的芙莉莲",
+                        score = 8.0,
+                        rank = 100,
+                        sourceUrl = "https://bgm.tv/subject/400602",
+                        images = SubjectImages(
+                            "https://lain.bgm.tv/pic/cover/l/13/c5/400602_ZI8Y9.jpg?_gl=1*isepc9*_ga*NDQzNzcwOTYyLjE3MDM4NjE5NzQ.*_ga_1109JLGMHN*MTcwNDQwNjE1MS4xMC4xLjE3MDQ0MDYxNzYuMC4wLjA.",
+                            "https://lain.bgm.tv/pic/cover/l/13/c5/400602_ZI8Y9.jpg?_gl=1*isepc9*_ga*NDQzNzcwOTYyLjE3MDM4NjE5NzQ.*_ga_1109JLGMHN*MTcwNDQwNjE1MS4xMC4xLjE3MDQ0MDYxNzYuMC4wLjA."
+                        ),
+
+                        tags = listOf(),
+                        summary = "",
+                    )
+                )
+            )
         })
     }
     ProvideCompositionLocalsForPreview {
