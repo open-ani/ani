@@ -7,8 +7,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.LocalNavigator
-import me.him188.ani.app.pages.cache.manage.CacheManagementPage
 import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.ui.cache.CacheManagementPage
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.profile.AuthViewModel
 import me.him188.ani.app.ui.profile.auth.AuthRequestScene

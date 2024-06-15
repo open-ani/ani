@@ -12,9 +12,9 @@ import kotlinx.coroutines.runBlocking
 import me.him188.ani.app.data.media.EpisodeCacheStatus
 import me.him188.ani.app.data.subject.SubjectCollectionItem
 import me.him188.ani.app.data.subject.SubjectInfo
-import me.him188.ani.app.pages.cache.manage.testMediaCache1
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.tools.caching.mutate
+import me.him188.ani.app.ui.cache.testMediaCache1
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.datasources.api.paging.SinglePagePagedSource

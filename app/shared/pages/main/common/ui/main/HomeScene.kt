@@ -49,9 +49,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import me.him188.ani.app.navigation.LocalNavigator
-import me.him188.ani.app.pages.cache.manage.CacheManagementPage
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.requireOnline
+import me.him188.ani.app.ui.cache.CacheManagementPage
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
 import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI

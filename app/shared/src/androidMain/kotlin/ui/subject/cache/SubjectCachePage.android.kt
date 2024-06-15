@@ -4,7 +4,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import me.him188.ani.app.data.media.EpisodeCacheStatus
-import me.him188.ani.app.pages.cache.manage.testMediaCache1
+import me.him188.ani.app.ui.cache.testMediaCache1
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes

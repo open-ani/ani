@@ -1,4 +1,4 @@
-package me.him188.ani.app.pages.cache.manage
+package me.him188.ani.app.ui.cache
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
