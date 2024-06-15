@@ -82,7 +82,7 @@ fun PlayerControllerDefaults.AudioSwitcher(
             optionsProviderUpdated() + null
         }
     }
-    if (options.size <= 1) return // 1 for `null`
+    if (options.size <= 2) return // 1 for `null`, 只有一个的时候也不要显示
     return OptionsSwitcher(
         value = value,
         onValueChange = onValueChange,
