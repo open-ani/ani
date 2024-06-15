@@ -52,13 +52,17 @@ class SubjectInfo(
      */
     val allNames by lazy(LazyThreadSafetyMode.PUBLICATION) {
         buildList {
-            add(name)
-            add(nameCn)
+            fun addIfNotBlank(name: String) {
+                if (name.isNotBlank()) add(name)
+            }
+            addIfNotBlank(name)
+            addIfNotBlank(nameCn)
+
             (infobox.firstOrNull { it.name == "别名" }?.value as? JsonArray)
                 ?.forEach { element -> // interesting fact, 如果 `element` 改名成 `name`, 编译器就会编译错 (runtime class cast exception)
                     when (element) {
-                        is JsonPrimitive -> add(element.content)
-                        is JsonObject -> (element["v"] as? JsonPrimitive)?.contentOrNull?.let { add(it) }
+                        is JsonPrimitive -> addIfNotBlank(element.content)
+                        is JsonObject -> (element["v"] as? JsonPrimitive)?.contentOrNull?.let { addIfNotBlank(it) }
                         else -> {}
                     }
                 }

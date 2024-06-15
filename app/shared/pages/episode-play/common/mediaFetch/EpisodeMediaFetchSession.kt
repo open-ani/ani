@@ -278,10 +278,7 @@ private fun createMediaFetchResult(
     subjectId = subject.id.toString(),
     episodeId = episode.id.toString(),
     subjectNameCN = subject.nameCnOrName,
-    subjectNames = setOfNotNull(
-        subject.nameCn.takeIf { it.isNotBlank() },
-        subject.name.takeIf { it.isNotBlank() },
-    ),
+    subjectNames = subject.allNames.toSet(),
     episodeSort = episode.sort,
     episodeName = episode.nameCnOrName,
     episodeEp = episode.ep,

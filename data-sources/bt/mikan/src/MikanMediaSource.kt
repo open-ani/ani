@@ -164,12 +164,12 @@ abstract class AbstractMikanMediaSource(
 
         val bangumiSubjectId = request.subjectId ?: return null
 
-        val nameCN = request.subjectNameCN ?: return null
         val subjectId =
             indexCacheProvider.getMikanSubjectId(bangumiSubjectId)
-                ?: findMikanSubjectIdByName(nameCN, bangumiSubjectId)?.also {
-                    indexCacheProvider.setMikanSubjectId(bangumiSubjectId, it)
-                }
+                ?: request.subjectNames.firstNotNullOfOrNull { findMikanSubjectIdByName(it, bangumiSubjectId) }
+                    ?.also {
+                        indexCacheProvider.setMikanSubjectId(bangumiSubjectId, it)
+                    }
                 ?: return null
 
         // https://mikanani.me/RSS/Bangumi?bangumiId=3060
