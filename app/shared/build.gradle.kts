@@ -91,20 +91,10 @@ kotlin {
         api(projects.dataSources.jellyfin)
         api(projects.dataSources.ikaros)
 
-        // Danmaku
-//        api(projects.danmaku.api)
-//        api(projects.danmaku.ui)
-//        api(projects.danmaku.dandanplay)
-
         api(projects.utils.slf4jKt)
         api(projects.utils.coroutines)
         api(projects.utils.io)
-//        api(projects.torrent.api)
-//        api(projects.torrent.impl.qbittorrent)
-//        api(projects.danmaku.api)
         api(projects.danmaku.ani.protocol)
-//        api(projects.danmaku.dandanplay)
-//        api(projects.danmaku.ani.client)
         api(projects.utils.ktorClient)
 
         // Ktor
@@ -118,7 +108,6 @@ kotlin {
         api(libs.koin.core) // dependency injection
         api(libs.directories) // Data directories on all OSes
         api(libs.coil.core) // Image loading
-//        api(libs.coil.gif) // Image loading
         api(libs.coil.svg) // Image loading
         api(libs.coil.compose.core) // Image loading
         api(libs.coil.network.okhttp) // Image loading
@@ -275,25 +264,8 @@ kotlin {
         submodule("torrent/impl/libtorrent4j")
         submodule("torrent/impl/qbittorrent")
 
-        submodule("app/shared/foundation")
         submodule("app/shared/placeholder")
-
-        submodule("app/shared/data")
-
-        submodule("app/shared/bangumi-authentication")
         submodule("app/shared/video-player")
-
-        submodule("app/shared/pages/profile")
-        submodule("app/shared/pages/subject-collection")
-        submodule("app/shared/pages/subject-details")
-        submodule("app/shared/pages/subject-search")
-        submodule("app/shared/pages/subject-cache")
-        submodule("app/shared/pages/episode-play")
-        submodule("app/shared/pages/home")
-        submodule("app/shared/pages/main")
-        submodule("app/shared/pages/settings")
-        submodule("app/shared/pages/cache-manage")
-        submodule("app/shared/pages/update")
     }
 
 

@@ -39,7 +39,7 @@ import me.him188.ani.app.platform.notification.NotifManager
 import me.him188.ani.app.session.BangumiAuthorizationConstants
 import me.him188.ani.app.session.OAuthResult
 import me.him188.ani.app.session.SessionManager
-import me.him188.ani.app.ui.foundation.AniApp
+import me.him188.ani.app.ui.main.AniApp
 import me.him188.ani.app.ui.main.AniAppContent
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info

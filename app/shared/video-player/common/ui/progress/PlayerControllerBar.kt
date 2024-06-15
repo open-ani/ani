@@ -60,10 +60,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.foundation.effects.onKey
 import me.him188.ani.app.ui.foundation.ifThen
-import me.him188.ani.app.ui.theme.aniDarkColorTheme
-import me.him188.ani.app.ui.theme.aniLightColorTheme
-import me.him188.ani.app.ui.theme.slightlyWeaken
-import me.him188.ani.app.ui.theme.stronglyWeaken
+import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
+import me.him188.ani.app.ui.foundation.theme.aniLightColorTheme
+import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
+import me.him188.ani.app.ui.foundation.theme.stronglyWeaken
 import me.him188.ani.app.videoplayer.ui.top.needWorkaroundForFocusManager
 
 
