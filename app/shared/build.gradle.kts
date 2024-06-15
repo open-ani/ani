@@ -19,6 +19,7 @@
 @file:Suppress("UnstableApiUsage")
 @file:OptIn(ExperimentalKotlinGradlePluginApi::class)
 
+import com.google.devtools.ksp.gradle.KspTaskJvm
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
@@ -33,6 +34,8 @@ plugins {
 
     kotlin("plugin.serialization")
     id("kotlinx-atomicfu")
+    id("com.google.devtools.ksp")
+    id("androidx.room")
     idea
 }
 
@@ -64,7 +67,7 @@ kotlin {
     sourceSets.commonMain.dependencies {
         api(libs.kotlinx.coroutines.core)
         api(libs.kotlinx.serialization.json)
-        compileOnly(libs.atomicfu) // No need to include in the final build since atomicfu Gradle will optimize it out
+        implementation(libs.atomicfu) // room runtime
 
         // Compose
         api(compose.foundation)
@@ -124,6 +127,10 @@ kotlin {
         api(libs.precompose) // Navigator
         api(libs.precompose.koin) // Navigator
         api(libs.precompose.viewmodel) // Navigator
+        implementation(libs.androidx.room.runtime.get().toString()) {
+            exclude("org.jetbrains.kotlinx", "atomicfu")
+        } // multi-platform database
+        api(libs.sqlite.bundled) // database driver implementation
 
         // Torrent
         implementation(libs.bencode)
@@ -131,6 +138,7 @@ kotlin {
 //        api(libs.okhttp)
 //        api(libs.okhttp.logging)
         implementation(libs.reorderable)
+        implementation(libs.constraintlayout.compose)
 
         implementation(libs.slf4j.api)
     }
@@ -348,6 +356,10 @@ tasks.withType(KotlinCompilationTask::class) {
     dependsOn("generateResourceAccessorsForAndroidDebug")
 }
 
+room {
+    schemaDirectory("$projectDir/schemas")
+}
+
 
 // BUILD CONFIG
 
@@ -393,6 +405,8 @@ android {
 }
 
 dependencies {
+    add("kspDesktop", libs.androidx.room.compiler)
+    add("kspAndroid", libs.androidx.room.compiler)
     debugImplementation(libs.androidx.compose.ui.tooling)
 }
 
@@ -446,5 +460,10 @@ val generateAniBuildConfigDesktop = tasks.register("generateAniBuildConfigDeskto
 }
 
 tasks.named("compileKotlinDesktop") {
+    dependsOn(generateAniBuildConfigDesktop)
+}
+
+// :app:shared:kspKotlinDesktop
+tasks.withType(KspTaskJvm::class.java) {
     dependsOn(generateAniBuildConfigDesktop)
 }

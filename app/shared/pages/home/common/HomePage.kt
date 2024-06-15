@@ -18,23 +18,127 @@
 
 package me.him188.ani.app.ui.home
 
+import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import me.him188.ani.app.ui.foundation.rememberViewModel
+import me.him188.ani.app.ui.subject.SubjectPreviewColumn
+import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
+import moe.tlaster.precompose.navigation.BackHandler
 
 @Composable
 fun HomePage(
     contentPadding: PaddingValues = PaddingValues(0.dp),
     modifier: Modifier = Modifier,
 ) {
-    Scaffold(modifier.padding(contentPadding)) {
-        val searchViewModel = rememberViewModel { SearchViewModel() }
-        SubjectSearchBar(searchViewModel, Modifier.fillMaxWidth())
+    val searchViewModel = rememberViewModel { SearchViewModel() }
+    val snackBarHostState = remember { SnackbarHostState() }
+    val layoutDirection = LocalLayoutDirection.current
+
+    val searchTag by searchViewModel.searchTags.collectAsStateWithLifecycle()
+    val showDeleteTagTip = searchViewModel.oneshotActionConfig.deleteSearchTagTip
+    val searchHistory by searchViewModel.searchHistories.collectAsStateWithLifecycle()
+    
+    val searchResult by searchViewModel.result.collectAsStateWithLifecycle()
+
+    var isEditingSearchTags by remember { mutableStateOf(false) }
+
+    BackHandler(isEditingSearchTags) {
+        isEditingSearchTags = false
+    }
+
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        snackbarHost = { SnackbarHost(snackBarHostState) },
+        containerColor = Color.Transparent,
+        topBar = {
+            Box {
+                SubjectSearchBar(
+                    initialActive = searchViewModel.searchActive,
+                    initialSearchText = searchViewModel.editingQuery,
+                    editingTagMode = isEditingSearchTags,
+                    searchTag = searchTag,
+                    showDeleteTagTip = showDeleteTagTip,
+                    searchHistory = searchHistory,
+                    contentPadding = contentPadding,
+                    modifier = Modifier.fillMaxWidth(),
+                    onActiveChange = { active -> searchViewModel.searchActive = active },
+                    onToggleTag = { tagId, selected -> searchViewModel.markSearchTag(tagId, selected) },
+                    onAddTag = { tag -> searchViewModel.pushSearchTag(tag) },
+                    onDeleteTag = { tagId -> searchViewModel.deleteSearchTag(tagId) },
+                    onDeleteHistory = { historyId -> searchViewModel.deleteSearchHistory(historyId) },
+                    onDisableDeleteTagTip = { searchViewModel.disableTagTip() },
+                    onStartEditingTagMode = { isEditingSearchTags = true },
+                    onSearch = { query, fromHistory ->
+                        searchViewModel.editingQuery = query
+                        if (!fromHistory && searchHistory.none { it.content == query }) {
+                            searchViewModel.pushSearchHistory(query)
+                        }
+                        searchViewModel.search(query)
+                    },
+                )
+
+                Crossfade(
+                    targetState = isEditingSearchTags,
+                    modifier = Modifier.zIndex(1.1f)
+                ) {
+                    if (it) {
+                        TopAppBar(
+                            title = { Text("删除标签") },
+                            navigationIcon = {
+                                IconButton({ isEditingSearchTags = false }) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                                        contentDescription = "exit delete search tag mode"
+                                    )
+                                }
+                            },
+                        )
+                    }
+                }
+            }
+        },
+        contentWindowInsets = WindowInsets(0.dp)
+
+    ) { topBarPadding ->
+        Column(Modifier.fillMaxSize()) {
+            searchResult?.let {
+                SubjectPreviewColumn(
+                    it,
+                    contentPadding = PaddingValues(
+                        top = topBarPadding.calculateTopPadding(),
+                        bottom = contentPadding.calculateBottomPadding(),
+                        start = contentPadding.calculateStartPadding(layoutDirection),
+                        end = contentPadding.calculateEndPadding(layoutDirection)
+                    )
+                )
+            }
+        }
     }
 }
 

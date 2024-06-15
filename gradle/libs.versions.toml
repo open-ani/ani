@@ -23,6 +23,10 @@ mongodb-driver-kotlin-coroutine = "4.10.1"
 kompendium = "3.14.4"
 logback = "1.4.14"
 aws = "2.25.49"
+ksp = "2.0.0-1.0.21"
+room = "2.7.0-alpha03"
+sqlite = "2.5.0-alpha03"
+constraintlayout-compose = "0.4.0"
 
 
 compose-material3 = "1.2.1"
@@ -136,6 +140,14 @@ datastore-core = { module = "androidx.datastore:datastore-core", version.ref = "
 datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
 datastore-preferences-core = { module = "androidx.datastore:datastore-preferences-core", version.ref = "datastore" }
 
+# Multi-platform Android Room and implemention
+androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+androidx-room-paging = { group = "androidx.room", name = "room-paging", version.ref = "room" }
+androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+sqlite = { module = "androidx.sqlite:sqlite", version.ref = "sqlite" }
+sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
+
 # Android Accompanist
 accompanist-placeholder = { module = "com.google.accompanist:accompanist-placeholder", version.ref = "accompanist" }
 accompanist-placeholder-material = { module = "com.google.accompanist:accompanist-placeholder-material", version.ref = "accompanist" }
@@ -157,6 +169,7 @@ precompose-viewmodel = { module = "moe.tlaster:precompose-viewmodel", version = 
 
 # Compose Multiplatform
 reorderable = { module = "org.burnoutcrew.composereorderable:reorderable", version.ref = "reorderable" }
+constraintlayout-compose = { module = "tech.annexflow.compose:constraintlayout-compose-multiplatform", version.ref = "constraintlayout-compose" }
 
 # Android-only libraries
 # Each library has its own version, so we don't use `Versions` here.
