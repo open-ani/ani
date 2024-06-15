@@ -4,4 +4,4 @@ import androidx.room.RoomDatabase
 import me.him188.ani.app.data.database.AniDatabase
 import me.him188.ani.app.platform.Context
 
-expect val Context.databaseBuilder: RoomDatabase.Builder<AniDatabase>
+expect fun Context.createDatabaseBuilder(): RoomDatabase.Builder<AniDatabase>

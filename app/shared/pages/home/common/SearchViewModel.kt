@@ -18,6 +18,7 @@
 
 package me.him188.ani.app.ui.home
 
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -95,31 +96,28 @@ class SearchViewModel(
     
     init {
         keyword?.let { search(it) }
-        viewModelScope.launch {
-            settings.oneshotActionConfig.set(oneshotActionConfig.copy(deleteSearchTagTip = true))
-        }
     }
 
     fun pushSearchHistory(content: String) {
-        viewModelScope.launch {
+        backgroundScope.launch {
             _search.addHistory(SearchHistoryEntity(content = content))
         }
     }
 
     fun deleteSearchHistory(id: Int) {
-        viewModelScope.launch {
+        backgroundScope.launch {
             _search.deleteHistoryBySeq(id)
         }
     }
 
     fun pushSearchTag(content: String) {
-        viewModelScope.launch {
+        backgroundScope.launch {
             _search.addTag(SearchTagEntity(content = content))
         }
     }
 
     fun deleteSearchTag(id: Int) {
-        viewModelScope.launch {
+        backgroundScope.launch {
             _search.deleteTagById(id)
         }
     }
@@ -137,7 +135,7 @@ class SearchViewModel(
     }
 
     fun disableTagTip() {
-        viewModelScope.launch {
+        backgroundScope.launch {
             settings.oneshotActionConfig.set(oneshotActionConfig.copy(deleteSearchTagTip = false))
         }
     }
@@ -160,7 +158,7 @@ class SearchViewModel(
     }
 }
 
-@Stable
+@Immutable
 data class SearchTag(
     val id: Int,
     val content: String,
@@ -171,7 +169,7 @@ fun SearchTagEntity.toData(checked: Boolean): SearchTag {
     return SearchTag(id, content, checked)
 }
 
-@Stable
+@Immutable
 data class SearchHistory(
     val id: Int,
     val content: String

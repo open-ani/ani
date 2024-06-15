@@ -1,6 +1,5 @@
 package me.him188.ani.app.data.repositories
 
-import androidx.compose.runtime.Stable
 import kotlinx.coroutines.flow.Flow
 import me.him188.ani.app.data.database.dao.SearchHistoryDao
 import me.him188.ani.app.data.database.dao.SearchTagDao
@@ -8,7 +7,6 @@ import me.him188.ani.app.data.database.eneity.SearchHistoryEntity
 import me.him188.ani.app.data.database.eneity.SearchTagEntity
 import org.koin.core.component.KoinComponent
 
-@Stable
 interface SubjectSearchRepository {
     suspend fun addHistory(history: SearchHistoryEntity)
     fun getHistoryFlow(): Flow<List<SearchHistoryEntity>>

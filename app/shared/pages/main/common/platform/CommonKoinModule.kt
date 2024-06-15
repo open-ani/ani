@@ -63,8 +63,8 @@ import me.him188.ani.app.data.repositories.UserRepositoryImpl
 import me.him188.ani.app.data.subject.SubjectManager
 import me.him188.ani.app.data.subject.SubjectManagerImpl
 import me.him188.ani.app.data.update.UpdateManager
+import me.him188.ani.app.persistent.createDatabaseBuilder
 import me.him188.ani.app.persistent.dataStores
-import me.him188.ani.app.persistent.databaseBuilder
 import me.him188.ani.app.persistent.preferencesStore
 import me.him188.ani.app.persistent.preferredAllianceStore
 import me.him188.ani.app.persistent.tokenStore
@@ -123,7 +123,7 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
     single<MikanIndexCacheRepository> { MikanIndexCacheRepositoryImpl(getContext().dataStores.mikanIndexStore) }
 
     single<AniDatabase> {
-        getContext().databaseBuilder
+        getContext().createDatabaseBuilder()
             .fallbackToDestructiveMigrationOnDowngrade(true)
             .setDriver(BundledSQLiteDriver())
             .setQueryCoroutineContext(Dispatchers.IO)

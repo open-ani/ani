@@ -28,7 +28,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -77,6 +76,7 @@ import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.layoutId
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.semantics.Role
@@ -112,6 +112,7 @@ fun SubjectSearchBar(
 ) {
     var isActive by remember { mutableStateOf(initialActive) }
     var searchText by remember { mutableStateOf(initialSearchText) }
+    var savedSearchText by remember { mutableStateOf(initialSearchText) }
     var newCustomFilterDialogOpened by remember { mutableStateOf(false) }
     var searchMode by remember { mutableStateOf(SearchMode.KEYWORD) }
     
@@ -119,6 +120,7 @@ fun SubjectSearchBar(
     val imePadding = WindowInsets.ime.asPaddingValues()
     val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
+    val density = LocalDensity.current
 
     val horizontalPadding by animateDpAsState(
         targetValue = if (isActive) 0.dp else 16.dp,
@@ -182,6 +184,9 @@ fun SubjectSearchBar(
                 // 标签搜索模式下不允许输入文字或拉起键盘
                 if ((state.isFocused || state.isCaptured) && searchMode == SearchMode.FILTER) {
                     focusManager.clearFocus(true)
+                    if (!isActive) {
+                        toggleActive(true)
+                    }
                 }
             }
             .focusRequester(focusRequester)
@@ -200,22 +205,27 @@ fun SubjectSearchBar(
             keyboard?.hide()
         },
     ) {
-        val bottomPadding by remember {
-            derivedStateOf {
-                PaddingValues(
-                    top = 24.dp,
-                    start = 24.dp,
-                    end = 24.dp,
-                    bottom = maxDp(imePadding.calculateBottomPadding(), contentPadding.calculateBottomPadding()) + 24.dp
-                )
-            }
-        }
 
         var fabRotateAngle by remember { mutableStateOf(0f) }
         val fabRotateAnimated by animateFloatAsState(
             targetValue = fabRotateAngle,
             animationSpec = tween(easing = FastOutSlowInEasing),
         )
+        var fabHeight by remember { mutableStateOf(0) }
+
+        val bottomPadding by remember {
+            derivedStateOf {
+                PaddingValues(
+                    top = 24.dp,
+                    start = 24.dp,
+                    end = 24.dp,
+                    bottom = maxDp(
+                        imePadding.calculateBottomPadding(),
+                        contentPadding.calculateBottomPadding()
+                    ) + with(density) { fabHeight.toDp() } + 24.dp
+                )
+            }
+        }
 
         Layout(
             modifier = Modifier.fillMaxSize(),
@@ -233,10 +243,13 @@ fun SubjectSearchBar(
                             fabRotateAngle -= 180f
                             if (searchMode == SearchMode.FILTER) {
                                 searchMode = SearchMode.KEYWORD
+                                searchText = savedSearchText
                                 focusRequester.requestFocus()
                                 keyboard?.show()
                             } else {
                                 searchMode = SearchMode.FILTER
+                                savedSearchText = searchText
+                                searchText = ""
                                 keyboard?.hide()
                                 focusManager.clearFocus(true)
                             }
@@ -244,7 +257,7 @@ fun SubjectSearchBar(
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Autorenew,
-                            contentDescription = "",
+                            contentDescription = null,
                             modifier = Modifier
                                 .scale(-1f, 1f) // flip horizontally
                                 .rotate(fabRotateAnimated)
@@ -261,7 +274,6 @@ fun SubjectSearchBar(
                     modifier = Modifier
                         .layoutId("content")
                         .fillMaxSize()
-                        .imePadding()
                 ) { mode ->
                     when (mode) {
                         SearchMode.KEYWORD -> SearchHistoryList(
@@ -304,7 +316,7 @@ fun SubjectSearchBar(
             val width = contentPlaceable?.width ?: 0
             val height = contentPlaceable?.height ?: 0
             val fabWidth = fabPlaceable?.width ?: 0
-            val fabHeight = fabPlaceable?.height ?: 0
+            fabHeight = fabPlaceable?.height ?: 0
 
             val fabPadding = 24.dp.roundToPx()
             val bottomNavigatorPadding = contentPadding.calculateBottomPadding().roundToPx()
@@ -443,7 +455,7 @@ private fun SearchFilterPage(
                                 ) {
                                     Icon(
                                         imageVector = Icons.Outlined.Close,
-                                        contentDescription = "",
+                                        contentDescription = null,
                                         modifier = Modifier.size(FilterChipDefaults.IconSize)
                                     )
                                 }

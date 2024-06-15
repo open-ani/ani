@@ -43,7 +43,7 @@ fun AnimatedFilterChip(
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Done,
-                    contentDescription = "",
+                    contentDescription = null,
                     modifier = Modifier.size(FilterChipDefaults.IconSize)
                 )
             }
