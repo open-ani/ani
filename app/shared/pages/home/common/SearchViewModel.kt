@@ -38,7 +38,7 @@ import me.him188.ani.app.data.models.SearchSettings
 import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.data.repositories.SubjectSearchRepository
 import me.him188.ani.app.ui.foundation.AbstractViewModel
-import me.him188.ani.app.ui.subject.SubjectListViewModel
+import me.him188.ani.app.ui.subject.search.SubjectListViewModel
 import me.him188.ani.datasources.api.subject.SubjectProvider
 import me.him188.ani.datasources.api.subject.SubjectSearchQuery
 import me.him188.ani.utils.coroutines.update

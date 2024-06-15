@@ -47,7 +47,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import me.him188.ani.app.ui.foundation.rememberViewModel
-import me.him188.ani.app.ui.subject.SubjectPreviewColumn
+import me.him188.ani.app.ui.subject.search.SubjectPreviewColumn
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.navigation.BackHandler
 

@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.ani.app.ui.subject
+package me.him188.ani.app.ui.subject.search
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
