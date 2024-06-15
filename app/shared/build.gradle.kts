@@ -381,6 +381,7 @@ android {
 dependencies {
     add("kspDesktop", libs.androidx.room.compiler)
     add("kspAndroid", libs.androidx.room.compiler)
+    implementation(libs.androidx.material3.android)
     debugImplementation(libs.androidx.compose.ui.tooling)
 }
 
