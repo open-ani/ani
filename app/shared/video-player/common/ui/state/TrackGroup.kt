@@ -35,6 +35,14 @@ data class SubtitleTrack(
 ) : Track
 
 @Immutable
+data class AudioTrack(
+    val id: String,
+    val internalId: String,
+    val name: String?,
+    val labels: List<Label>,
+) : Track
+
+@Immutable
 data class Label(
     val language: String?, // "zh" 这指的是 value 的语言
     val value: String // "CHS", "简日", "繁日"

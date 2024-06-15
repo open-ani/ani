@@ -27,6 +27,7 @@ import me.him188.ani.app.videoplayer.io.SeekableInputCallbackMedia
 import me.him188.ani.app.videoplayer.torrent.HttpStreamingVideoSource
 import me.him188.ani.app.videoplayer.ui.VlcjVideoPlayerState.VlcjData
 import me.him188.ani.app.videoplayer.ui.state.AbstractPlayerState
+import me.him188.ani.app.videoplayer.ui.state.AudioTrack
 import me.him188.ani.app.videoplayer.ui.state.Label
 import me.him188.ani.app.videoplayer.ui.state.MutableTrackGroup
 import me.him188.ani.app.videoplayer.ui.state.PlaybackState
@@ -222,6 +223,7 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
 
     override val playbackSpeed: MutableStateFlow<Float> = MutableStateFlow(1.0f)
     override val subtitleTracks: MutableTrackGroup<SubtitleTrack> = MutableTrackGroup()
+    override val audioTracks: MutableTrackGroup<AudioTrack> = MutableTrackGroup()
 
     init {
         // NOTE: must not call native player in a event
@@ -243,6 +245,9 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
                 if (type == TrackType.TEXT) {
                     reloadSubtitleTracks(); // 字幕轨道更新后，则进行重载UI上的字幕轨道
                 }
+                if (type == TrackType.AUDIO) {
+                    reloadAudioTracks();
+                }
             }
 
             //            override fun buffering(mediaPlayer: MediaPlayer?, newCache: Float) {
@@ -258,6 +263,8 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
                 player.submit { player.media().parsing().parse() }
 
                 reloadSubtitleTracks();
+
+                reloadAudioTracks();
             }
 
             override fun paused(mediaPlayer: MediaPlayer) {
@@ -312,6 +319,38 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
         }
 
         backgroundScope.launch {
+            audioTracks.current.collect { track ->
+                try {
+                    if (state.value == PlaybackState.READY) {
+                        return@collect
+                    }
+                    if (track == null) {
+                        if (player.audio().track() != -1) {
+                            player.audio().setTrack(-1)
+                        }
+                    }
+
+                    val id = track?.internalId?.toIntOrNull() ?: run {
+                        if (track != null) {
+                            logger.error { "Invalid audio track id: ${track.id}" }
+                        }
+                        return@collect
+                    }
+                    val count = player.audio().trackCount()
+                    if (id > count) {
+                        logger.error { "Invalid audio track id: $id, count: $count" }
+                        return@collect
+                    }
+                    logger.info { "All ids: ${player.audio().trackDescriptions().map { it.id() }}" }
+                    player.audio().setTrack(id)
+                    logger.info { "Set audio track to $id (${track.labels.firstOrNull()})" }
+                } catch (e: Throwable) {
+                    logger.error(e) { "Exception while setting audio track" }
+                }
+            }
+        }
+
+        backgroundScope.launch {
             openResource.filterNotNull().map { it.videoSource.extraFiles.subtitles }
                 .distinctUntilChanged()
                 .debounce(1000)
@@ -331,6 +370,19 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
             .filterNot { it.id() == -1 } // "Disable"
             .map {
                 SubtitleTrack(
+                    openResource.value?.videoData?.filename + "-" + it.id(),
+                    it.id().toString(),
+                    null,
+                    listOf(Label(null, it.description()))
+                )
+            }
+    }
+    
+    private fun reloadAudioTracks() {
+        audioTracks.candidates.value = player.audio().trackDescriptions()
+            .filterNot { it.id() == -1 } // "Disable"
+            .map {
+                AudioTrack(
                     openResource.value?.videoData?.filename + "-" + it.id(),
                     it.id().toString(),
                     null,
