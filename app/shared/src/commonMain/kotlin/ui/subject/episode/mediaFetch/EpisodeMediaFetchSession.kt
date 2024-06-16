@@ -42,7 +42,6 @@ import me.him188.ani.datasources.core.fetch.MediaSourceResult
 import me.him188.ani.datasources.core.instance.MediaSourceInstance
 import me.him188.ani.utils.coroutines.OwnedCancellationException
 import me.him188.ani.utils.coroutines.checkOwner
-import me.him188.ani.utils.coroutines.onReplacement
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import org.koin.core.context.GlobalContext
@@ -177,8 +176,6 @@ internal class DefaultEpisodeMediaFetchSession(
      */
     override val mediaFetchSession = combine(mediaFetchRequest, mediaFetcher) { req, fetcher ->
         fetcher.fetch(req)
-    }.onReplacement { 
-        
     }.shareInBackground(started = SharingStarted.Lazily)
 
     override val mediaFetcherCompleted by mediaFetchSession.flatMapLatest { it.hasCompleted }
