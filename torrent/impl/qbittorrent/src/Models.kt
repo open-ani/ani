@@ -13,119 +13,119 @@ data class QBTorrent(
     /**
      * Time (Unix Epoch) when the torrent was added to the client
      */
-    @SerialName("added_on") val addedOn: Long,
+    @SerialName("added_on") val addedOn: Long = 0,
     /**
      * Amount of data left to download (bytes)
      */
-    @SerialName("amount_left") val amountLeft: Long,
+    @SerialName("amount_left") val amountLeft: Long = 0,
     /**
      * Whether this torrent is managed by Automatic Torrent Management
      */
-    @SerialName("auto_tmm") val autoTmm: Boolean,
+    @SerialName("auto_tmm") val autoTmm: Boolean = false,
     /**
      * Percentage of file pieces currently available
      */
-    @SerialName("availability") val availability: Float,
+    @SerialName("availability") val availability: Float = 0f,
     /**
      * Category of the torrent
      */
-    @SerialName("category") val category: String,
+    @SerialName("category") val category: String = "",
     /**
      * Amount of transfer data completed (bytes)
      */
-    @SerialName("completed") val completed: Long,
+    @SerialName("completed") val completed: Long = 0,
     /**
      * Time (Unix Epoch) when the torrent completed
      */
-    @SerialName("completion_on") val completionOn: Long,
+    @SerialName("completion_on") val completionOn: Long = 0,
     /**
      * Absolute path of torrent content (root path for multifile torrents, absolute file path for singlefile torrents)
      */
-    @SerialName("content_path") val contentPath: String,
+    @SerialName("content_path") val contentPath: String = "",
     /**
      * Torrent download speed limit (bytes/s). -1 if unlimited.
      */
-    @SerialName("dl_limit") val dlLimit: Long,
+    @SerialName("dl_limit") val dlLimit: Long = 0,
     /**
      * Torrent download speed (bytes/s)
      */
-    @SerialName("dlspeed") val dlSpeed: Long,
+    @SerialName("dlspeed") val dlSpeed: Long = 0,
     /**
      * Amount of data downloaded
      */
-    @SerialName("downloaded") val downloaded: Long,
+    @SerialName("downloaded") val downloaded: Long = 0,
     /**
      * Amount of data downloaded this session
      */
-    @SerialName("downloaded_session") val downloadedSession: Long,
+    @SerialName("downloaded_session") val downloadedSession: Long = 0,
     /**
      * Torrent ETA (seconds)
      */
-    @SerialName("eta") val eta: Long,
+    @SerialName("eta") val eta: Long = 0,
     /**
      * True if first last piece are prioritized
      */
-    @SerialName("f_l_piece_prio") val firstLastPiecePrio: Boolean,
+    @SerialName("f_l_piece_prio") val firstLastPiecePrio: Boolean = false,
     /**
      * True if force start is enabled for this torrent
      */
-    @SerialName("force_start") val forceStart: Boolean,
+    @SerialName("force_start") val forceStart: Boolean = false,
     /**
      * Torrent hash
      */
-    @SerialName("hash") val hash: String,
+    @SerialName("hash") val hash: String = "",
     /**
      * Last time (Unix Epoch) when a chunk was downloaded/uploaded
      */
-    @SerialName("last_activity") val lastActivity: Long,
+    @SerialName("last_activity") val lastActivity: Long = 0,
     /**
      * Magnet URI corresponding to this torrent
      */
-    @SerialName("magnet_uri") val magnetUri: String,
+    @SerialName("magnet_uri") val magnetUri: String = "",
     /**
      * Maximum share ratio until torrent is stopped from seeding/uploading
      */
-    @SerialName("max_ratio") val maxRatio: Float,
+    @SerialName("max_ratio") val maxRatio: Float = 0f,
     /**
      * Maximum seeding time (seconds) until torrent is stopped from seeding
      */
-    @SerialName("max_seeding_time") val maxSeedingTime: Long,
+    @SerialName("max_seeding_time") val maxSeedingTime: Long = 0,
     /**
      * Torrent name
      */
-    @SerialName("name") val name: String,
+    @SerialName("name") val name: String = "",
     /**
      * Number of seeds in the swarm
      */
-    @SerialName("num_complete") val numComplete: Long,
+    @SerialName("num_complete") val numComplete: Long = 0,
     /**
      * Number of leechers in the swarm
      */
-    @SerialName("num_incomplete") val numIncomplete: Long,
+    @SerialName("num_incomplete") val numIncomplete: Long = 0,
     /**
      * Number of leechers connected to
      */
-    @SerialName("num_leechs") val numLeechs: Long,
+    @SerialName("num_leechs") val numLeechs: Long = 0,
     /**
      * Number of seeds connected to
      */
-    @SerialName("num_seeds") val numSeeds: Long,
+    @SerialName("num_seeds") val numSeeds: Long = 0,
     /**
      * Torrent priority. Returns -1 if queuing is disabled or torrent is in seed mode
      */
-    @SerialName("priority") val priority: Long,
+    @SerialName("priority") val priority: Long = -1,
     /**
      * Torrent progress (percentage/100)
      */
-    @SerialName("ui/subject/collection/progress") val progress: Float,
+    @SerialName("ui/subject/collection/progress") val progress: Float = 0f,
     /**
      * Torrent share ratio. Max ratio value: 9999.
      */
-    @SerialName("ratio") val ratio: Float,
+    @SerialName("ratio") val ratio: Float = 0f,
     /**
      * (what is different from max_ratio?)
      */
-    @SerialName("ratio_limit") val ratioLimit: Float,
+    @SerialName("ratio_limit") val ratioLimit: Float = 0f,
     /**
      * Path where this torrent's data is stored
      */
@@ -133,63 +133,63 @@ data class QBTorrent(
     /**
      * Torrent elapsed time while complete (seconds)
      */
-    @SerialName("seeding_time") val seedingTime: Long,
+//    @SerialName("seeding_time") val seedingTime: Long,
     /**
      * (what is different from max_seeding_time?) seeding_time_limit is a per torrent setting, when Automatic Torrent Management is disabled, furthermore then max_seeding_time is set to seeding_time_limit for this torrent. If Automatic Torrent Management is enabled, the value is -2. And if max_seeding_time is unset it have a default value -1.
      */
-    @SerialName("seeding_time_limit") val seedingTimeLimit: Long,
+    @SerialName("seeding_time_limit") val seedingTimeLimit: Long = 0L,
     /**
      * Time (Unix Epoch) when this torrent was last seen complete
      */
-    @SerialName("seen_complete") val seenComplete: Long,
+    @SerialName("seen_complete") val seenComplete: Long = 0L,
     /**
      * True if sequential download is enabled
      */
-    @SerialName("seq_dl") val seqDl: Boolean,
+    @SerialName("seq_dl") val seqDl: Boolean = false,
     /**
      * Total size (bytes) of files selected for download
      */
-    @SerialName("size") val size: Long,
+    @SerialName("size") val size: Long = 0L,
     /**
      * Torrent state. See table here below for the possible values
      */
-    @SerialName("state") val state: TorrentState,
+    @SerialName("state") val state: TorrentState = TorrentState.UNKNOWN,
     /**
      * True if super seeding is enabled
      */
-    @SerialName("super_seeding") val superSeeding: Boolean,
+    @SerialName("super_seeding") val superSeeding: Boolean = false,
     /**
      * Comma-concatenated tag list of the torrent
      */
-    @SerialName("tags") val tags: String,
+    @SerialName("tags") val tags: String = "",
     /**
      * Total active time (seconds)
      */
-    @SerialName("time_active") val timeActive: Long,
+    @SerialName("time_active") val timeActive: Long = 0L,
     /**
      * Total size (bytes) of all file in this torrent (including unselected ones)
      */
-    @SerialName("total_size") val totalSize: Long,
+    @SerialName("total_size") val totalSize: Long = 0L,
     /**
      * The first tracker with working status. Returns empty string if no tracker is working.
      */
-    @SerialName("tracker") val tracker: String,
+    @SerialName("tracker") val tracker: String = "",
     /**
      * Torrent upload speed limit (bytes/s). -1 if unlimited.
      */
-    @SerialName("up_limit") val upLimit: Long,
+    @SerialName("up_limit") val upLimit: Long = 0L,
     /**
      * Amount of data uploaded
      */
-    @SerialName("uploaded") val uploaded: Long,
+    @SerialName("uploaded") val uploaded: Long = 0L,
     /**
      * Amount of data uploaded this session
      */
-    @SerialName("uploaded_session") val uploadedSession: Long,
+    @SerialName("uploaded_session") val uploadedSession: Long = 0L,
     /**
      * Torrent upload speed (bytes/s)
      */
-    @SerialName("upspeed") val upSpeed: Long
+    @SerialName("upspeed") val upSpeed: Long = 0L
 )
 
 @Serializable
