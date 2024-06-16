@@ -49,9 +49,8 @@ class SubjectInfo(
      */
     val allNames by lazy(LazyThreadSafetyMode.PUBLICATION) {
         buildList {
-            // name2 千万不能改名叫 name, 否则 Kotlin 会错误地编译这份代码. `name` 他不会使用 local variable, 而是总是使用 [SubjectInfo.name]
-            fun addIfNotBlank(name2: String) {
-                if (name2.isNotBlank()) add(name2)
+            fun addIfNotBlank(name: String) {
+                if (name.isNotBlank()) add(name)
             }
             logger.info { "Computing allNames for '$name', nameCn='${nameCn}', aliases=${aliasSequence.toList()}" }
             addIfNotBlank(nameCn)
