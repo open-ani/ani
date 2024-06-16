@@ -44,7 +44,6 @@ fun ChangelogDialog(
                 Text("有新版本")
             },
             description = {
-                Text("Ani 目前处于测试阶段, 建议更新到最新版本以获得最佳体验")
             },
             buttons = {
                 val context by rememberUpdatedState(LocalContext.current)
