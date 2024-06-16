@@ -51,3 +51,14 @@
 # Torrent4j
 -keep class org.libtorrent4j.swig.libtorrent_jni {*;}
 -keep class me.him188.ani.app.ui.settings.tabs.** {*;} # 否则设置页切换 tab 会 crash, #367
+
+
+# logback-android
+-keepclassmembers class ch.qos.logback.classic.pattern.* { <init>(); }
+# The following rules should only be used if you plan to keep
+# the logging calls in your released app.
+-keepclassmembers class ch.qos.logback.** { *; } #java.io.IOException: Failed to load asset path /data/app/~~2FXqiqIwzpvJbysP7TCLHQ==/me.him188.ani-fqpPfM4QmpABXA7iaUY_Cw==/base.apk
+-keepclassmembers class org.slf4j.impl.** { *; }
+-keep class ch.qos.logback.classic.android.LogcatAppender
+-keep class ch.qos.logback.core.rolling.RollingFileAppender
+-keepattributes *Annotation*
