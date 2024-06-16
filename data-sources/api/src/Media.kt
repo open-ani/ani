@@ -118,10 +118,9 @@ sealed interface Media {
 /**
  * 找到该 [Media] 的实际来源 [DefaultMedia]
  */
-tailrec fun Media.unwrapCached(): DefaultMedia = if (this is CachedMedia) {
-    origin.unwrapCached() // note, 实际上这里不会循环超过 2 次, 因为 [CachedMedia] 一定是由 [DefaultMedia] 包装而来
-} else {
-    this as DefaultMedia
+tailrec fun Media.unwrapCached(): DefaultMedia = when (this) {
+    is CachedMedia -> origin.unwrapCached() // note, 实际上这里不会循环超过 2 次, 因为 [CachedMedia] 一定是由 [DefaultMedia] 包装而来
+    is DefaultMedia -> this
 }
 
 /**
