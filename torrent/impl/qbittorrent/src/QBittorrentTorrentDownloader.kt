@@ -295,26 +295,28 @@ class QBittorrentTorrentDownloadSession(
 
     private val files = SuspendLazy {
         // 文件列表可能有延迟, 需要等
-        logger.info { "${torrentInfo.name}: getTorrentFiles" }
+        logger.info { "${torrentInfo.name}: 正在轮询 QB 获取文件列表" }
         val files = flow {
             emit(client.getTorrentFiles(torrentInfo.hash))
         }.onEach {
             if (it.isEmpty()) {
                 throw IllegalStateException("No files found for torrent ${torrentInfo.name}")
             }
-        }.retry {
+        }.retry(15) {
+            logger.info { "${torrentInfo.name}: 获取失败 $it" }
             if (it !is Exception) {
                 logger.error(it) { "Failed to get files for torrent ${torrentInfo.name}" }
             }
             delay(1000)
             true
         }.first() // 一直重试直到获取到文件列表
+        logger.info { "${torrentInfo.name}: 获取到 ${files.size} 个文件" }
 
         if (files.isEmpty()) {
             logger.warn { "No files found for torrent ${torrentInfo.name}" }
         }
 
-        logger.info { "${torrentInfo.name}: getTorrentProperties" }
+        logger.info { "${torrentInfo.name}: 正在轮询 QB getTorrentProperties" }
         val torrentProperties = flow {
             val prop = client.getTorrentProperties(torrentInfo.hash)
             if (prop.pieceSize == -1L) {
@@ -322,10 +324,12 @@ class QBittorrentTorrentDownloadSession(
                 error("Pieces size is less than file size: ${prop.pieceSize} < ${torrentInfo.totalSize}")
             }
             emit(prop)
-        }.retry(10) {
+        }.retry(15) {
+            logger.info { "${torrentInfo.name}: 获取失败 $it" }
             delay(1000)
             true
         }.first()
+        logger.info { "${torrentInfo.name}: 获取到 QBDetails. pieceSize=${torrentProperties.pieceSize}" }
 
         val allPieces = Piece.buildPieces(
             totalSize = torrentInfo.totalSize,
