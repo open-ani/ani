@@ -27,5 +27,6 @@ fun createDefaultHttpClient(
             ignoreUnknownKeys = true
         })
     }
+    followRedirects = true
     clientConfig()
 }
