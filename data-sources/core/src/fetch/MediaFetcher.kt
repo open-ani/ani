@@ -26,8 +26,10 @@ import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.source.MediaMatch
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceKind
+import me.him188.ani.datasources.api.source.toStringMultiline
 import me.him188.ani.datasources.core.instance.MediaSourceInstance
 import me.him188.ani.utils.logging.error
+import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -247,6 +249,10 @@ class MediaSourceMediaFetcher(
         override val request: MediaFetchRequest,
         private val config: MediaFetcherConfig,
     ) : MediaFetchSession {
+        init {
+            logger.info { "MediaFetchSessionImpl created, request: \n${request.toStringMultiline()}" }
+        }
+
         override val resultsPerSource: Map<String, MediaSourceResult> = mediaSources.associateBy {
             it.mediaSourceId
         }.mapValues { (id, instance) ->

@@ -3,12 +3,9 @@ package me.him188.ani.app.data.subject
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonNull
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.contentOrNull
+import me.him188.ani.utils.logging.info
+import me.him188.ani.utils.logging.logger
 import org.openapitools.client.models.Subject
 
 /**
@@ -52,20 +49,14 @@ class SubjectInfo(
      */
     val allNames by lazy(LazyThreadSafetyMode.PUBLICATION) {
         buildList {
-            fun addIfNotBlank(name: String) {
-                if (name.isNotBlank()) add(name)
+            // name2 千万不能改名叫 name, 否则 Kotlin 会错误地编译这份代码. `name` 他不会使用 local variable, 而是总是使用 [SubjectInfo.name]
+            fun addIfNotBlank(name2: String) {
+                if (name2.isNotBlank()) add(name2)
             }
+            logger.info { "Computing allNames for '$name', nameCn='${nameCn}', aliases=${aliasSequence.toList()}" }
             addIfNotBlank(nameCn)
             addIfNotBlank(name)
-
-            (infobox.firstOrNull { it.name == "别名" }?.value as? JsonArray)
-                ?.forEach { element -> // interesting fact, 如果 `element` 改名成 `name`, 编译器就会编译错 (runtime class cast exception)
-                    when (element) {
-                        is JsonPrimitive -> addIfNotBlank(element.content)
-                        is JsonObject -> (element["v"] as? JsonPrimitive)?.contentOrNull?.let { addIfNotBlank(it) }
-                        else -> {}
-                    }
-                }
+            aliasSequence.forEach { addIfNotBlank(it) }
         }
     }
 
@@ -73,6 +64,8 @@ class SubjectInfo(
         @Stable
         @JvmStatic
         val Empty = SubjectInfo()
+
+        private val logger = logger<SubjectInfo>()
     }
 }
 
@@ -108,24 +101,7 @@ fun Subject.createSubjectInfo(): SubjectInfo {
         totalEpisodes = this.totalEpisodes,
         date = this.date,
         tags = this.tags.map { Tag(it.name, it.count) },
-        infobox = this.infobox?.map { InfoboxItem(it.key, convertToJsonElement(it.value)) }.orEmpty(),
+        infobox = this.infobox?.map { it.toInfoboxItem() }.orEmpty(),
         imageCommon = this.images.common,
     )
 }
-
-private fun convertToJsonElement(value: Any?): JsonElement {
-    return when (value) {
-        null -> JsonNull
-        is String -> JsonPrimitive(value)
-        is Number -> JsonPrimitive(value)
-        is Boolean -> JsonPrimitive(value)
-        is Array<*> -> JsonArray(value.map { it?.let { convertToJsonElement(it) } ?: JsonNull })
-        is List<*> -> JsonArray(value.map { it?.let { convertToJsonElement(it) } ?: JsonNull })
-        is Map<*, *> -> JsonObject(
-            value.map { (k, v) -> k.toString() to convertToJsonElement(v) }.toMap()
-        )
-
-        else -> throw IllegalArgumentException("Unsupported type: ${value::class.java}")
-    }
-}
-

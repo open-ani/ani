@@ -55,3 +55,14 @@ class MediaFetchRequest(
      */
     val episodeEp: EpisodeSort? = episodeSort,
 )
+
+fun MediaFetchRequest.toStringMultiline() = buildString {
+    append("subjectId").append(": ").append(subjectId).appendLine()
+    append("episodeId").append(": ").append(episodeId).appendLine()
+    append("subjectNameCn").append(": ").append(subjectNameCN).appendLine()
+    append("subjectNames:").appendLine()
+    subjectNames.forEach { append("- ").appendLine(it) }
+    append("episodeSort").append(": ").append(episodeSort).appendLine()
+    append("episodeName").append(": ").append(episodeName).appendLine()
+    append("episodeEp").append(": ").append(episodeEp).appendLine()
+}
