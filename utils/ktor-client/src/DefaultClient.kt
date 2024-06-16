@@ -53,10 +53,6 @@ fun HttpClient.registerLogging(
 ) {
     plugin(HttpSend).intercept { request ->
         val t1 = System.nanoTime()
-        logger.info {
-            "Sending ${request.method.value.padEnd(5, ' ')} ${request.url}"
-        }
-
         val result = kotlin.runCatching { execute(request) }
         val duration = ((System.nanoTime() - t1) / 1e6).toDuration(DurationUnit.MILLISECONDS)
 
