@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
@@ -220,7 +221,7 @@ internal class DefaultEpisodeMediaFetchSession(
     init {
         if (config.savePreferenceChanges) {
             launchInBackground {
-                mediaSelector.events.onChangePreference.collect {
+                mediaSelector.events.onChangePreference.debounce(1000).collect {
                     episodePreferencesRepository.setMediaPreference(subjectId, it)
                 }
             }
