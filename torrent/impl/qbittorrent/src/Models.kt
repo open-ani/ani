@@ -412,7 +412,7 @@ data class QBFile(
     /**
      * File progress (percentage/100)
      */
-    @SerialName("ui/subject/collection/progress") val progress: Float,
+    @SerialName("ui/subject/collection/progress") val progress: Float = 0f,
     /**
      * File priority. See possible values here below
      */
