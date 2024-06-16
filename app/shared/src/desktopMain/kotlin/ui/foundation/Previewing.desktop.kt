@@ -7,6 +7,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowState
 import me.him188.ani.app.platform.DesktopContext
+import me.him188.ani.app.platform.ExtraWindowProperties
 import me.him188.ani.app.platform.LocalContext
 import java.io.File
 
@@ -19,6 +20,7 @@ actual fun PlatformPreviewCompositionLocalProvider(content: @Composable () -> Un
                 File("."),
                 File("."),
                 File("./logs"),
+                ExtraWindowProperties(false)
             )
         }) {
         content()

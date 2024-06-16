@@ -44,6 +44,7 @@ import me.him188.ani.app.i18n.loadResourceBundle
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.isAndroid
+import me.him188.ani.app.platform.isSystemInFullscreen
 import me.him188.ani.app.tools.LocalTimeFormatter
 import me.him188.ani.app.tools.TimeFormatter
 import me.him188.ani.app.ui.foundation.AbstractViewModel
@@ -90,7 +91,9 @@ fun AniApp(
             val isDark = if (Platform.currentPlatform.isAndroid()) { // 安卓需要考虑系统 UI 如状态栏的颜色, 比较麻烦
                 isSystemInDarkTheme()
             } else {
-                when (viewModel.themeKind) {
+                // desktop
+                if (isSystemInFullscreen()) true
+                else when (viewModel.themeKind) {
                     null -> return@CompositionLocalProvider
                     ThemeKind.AUTO -> isSystemInDarkTheme()
                     ThemeKind.LIGHT -> false

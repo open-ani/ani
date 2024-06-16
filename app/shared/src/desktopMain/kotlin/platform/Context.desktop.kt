@@ -16,25 +16,37 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+@file:Suppress("NOTHING_TO_INLINE")
+
 package me.him188.ani.app.platform
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ProvidableCompositionLocal
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.WindowState
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import java.io.File
+import kotlin.contracts.contract
 
 actual abstract class Context
 
+@Stable
 class DesktopContext(
     val windowState: WindowState,
     val dataDir: File,
     val cacheDir: File,
-    val logsDir: File
+    val logsDir: File,
+    val extraWindowProperties: ExtraWindowProperties,
 ) : Context() {
     val dataStoreDir = dataDir.resolve("datastore")
     val tokenStore: DataStore<Preferences> = PreferenceDataStoreFactory.create {
@@ -50,8 +62,32 @@ class DesktopContext(
     }
 }
 
+@Stable
+class ExtraWindowProperties(
+    initialUndecorated: Boolean = false,
+) {
+    var undecorated by mutableStateOf(initialUndecorated)
+}
+
 actual val LocalContext: ProvidableCompositionLocal<Context> = compositionLocalOf {
     error("No Context provided")
+}
+
+object LocalDesktopContext {
+    val current: DesktopContext
+        @Composable
+        inline get() {
+            val context = LocalContext.current
+            check(context is DesktopContext)
+            return context
+        }
+}
+
+@Stable
+inline fun Context.checkIsDesktop(): DesktopContext {
+    contract { returns() implies (this@checkIsDesktop is DesktopContext) }
+    check(this is DesktopContext) { "Context must be DesktopContext, but had: $this" }
+    return this
 }
 
 
@@ -59,9 +95,9 @@ actual val LocalContext: ProvidableCompositionLocal<Context> = compositionLocalO
 actual fun isInLandscapeMode(): Boolean = false
 
 actual fun Context.setRequestFullScreen(fullscreen: Boolean) {
-    if (this is DesktopContext) {
-        windowState.placement = if (fullscreen) WindowPlacement.Fullscreen else WindowPlacement.Floating
-    }
+    checkIsDesktop()
+//    extraWindowProperties.undecorated = fullscreen // Exception in thread "main" java.awt.IllegalComponentStateException: The frame is displayable.
+    windowState.placement = if (fullscreen) WindowPlacement.Fullscreen else WindowPlacement.Floating
 }
 
 internal actual val Context.filesImpl: ContextFiles
@@ -69,3 +105,12 @@ internal actual val Context.filesImpl: ContextFiles
         override val cacheDir: File = (this@filesImpl as DesktopContext).cacheDir
         override val dataDir: File = (this@filesImpl as DesktopContext).dataDir
     }
+
+@Composable
+actual fun isSystemInFullscreenImpl(): Boolean {
+    val context = LocalDesktopContext.current
+    // should be true
+    val placement by rememberUpdatedState(context.windowState.placement)
+    val isFullscreen by remember { derivedStateOf { placement == WindowPlacement.Fullscreen } }
+    return isFullscreen
+}

@@ -16,6 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+@file:Suppress("NOTHING_TO_INLINE")
+
 package me.him188.ani.app.platform
 
 import androidx.compose.foundation.layout.BoxWithConstraintsScope
@@ -44,7 +46,11 @@ interface ContextFiles {
 }
 
 /**
- * Returns `true` if the app is in landscape mode.
+ * 横屏模式. 横屏模式不一定是全屏.
+ *
+ * PC 一定处于横屏模式.
+ *
+ * @see isSystemInFullscreenImpl
  */
 @Composable
 expect fun isInLandscapeMode(): Boolean
@@ -68,3 +74,12 @@ fun BoxWithConstraintsScope.showTabletUI(): Boolean {
  * but the app may be still in landscape mode if the user's system is in landscape mode.
  */
 expect fun Context.setRequestFullScreen(fullscreen: Boolean)
+
+@Composable
+inline fun isSystemInFullscreen(): Boolean = isSystemInFullscreenImpl()
+
+/**
+ * @see isInLandscapeMode
+ */
+@Composable
+expect fun isSystemInFullscreenImpl(): Boolean

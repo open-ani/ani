@@ -52,6 +52,7 @@ import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.navigation.DesktopBrowserNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.DesktopContext
+import me.him188.ani.app.platform.ExtraWindowProperties
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.createAppRootCoroutineScope
 import me.him188.ani.app.platform.getCommonKoinModule
@@ -117,7 +118,8 @@ object AniDesktop {
             windowState,
             File(projectDirectories.dataDir),
             File(projectDirectories.dataDir),
-            logsDir
+            logsDir,
+            ExtraWindowProperties(initialUndecorated = false)
         )
 
         val coroutineScope = createAppRootCoroutineScope()
@@ -176,6 +178,7 @@ object AniDesktop {
                 state = windowState,
                 title = "Ani",
                 icon = painterResource(Res.drawable.a_round),
+                undecorated = context.extraWindowProperties.undecorated,
             ) {
                 SideEffect {
                     logger.info {
