@@ -20,7 +20,7 @@ import java.math.BigDecimal
  *
  * @see EpisodeRange
  */
-@Serializable
+@Serializable // do not change package name!
 @Stable
 sealed class EpisodeSort : Comparable<EpisodeSort> {
     /**

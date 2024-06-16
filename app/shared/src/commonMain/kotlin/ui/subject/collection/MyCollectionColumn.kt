@@ -56,7 +56,9 @@ import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.debounce
 import me.him188.ani.app.data.media.EpisodeCacheStatus
-import me.him188.ani.app.data.subject.SubjectCollectionItem
+import me.him188.ani.app.data.subject.EpisodeCollection
+import me.him188.ani.app.data.subject.SubjectCollection
+import me.him188.ani.app.data.subject.episode
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.ui.foundation.AsyncImage
 import me.him188.ani.app.ui.foundation.ifThen
@@ -67,7 +69,6 @@ import me.him188.ani.app.ui.subject.details.COVER_WIDTH_TO_HEIGHT_RATIO
 import me.him188.ani.app.ui.subject.details.Tag
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
-import org.openapitools.client.models.UserEpisodeCollection
 import kotlin.time.Duration.Companion.seconds
 
 private inline val spacedBy get() = 16.dp
@@ -75,7 +76,7 @@ private inline val spacedBy get() = 16.dp
 /**
  * Lazy column of [item]s, designed for My Collections.
  *
- * @param item composes each item. See [SubjectCollectionItem]
+ * @param item composes each item. See [SubjectCollection]
  * @param onEmpty content to be displayed when [LazyDataCache.cachedDataFlow] is empty.
  * @param contentPadding 要求该 column 的内容必须保持的 padding.
  * [SubjectCollectionsColumn] 将会允许元素渲染到这些区域, 但会在列表首尾添加 padding.
@@ -83,9 +84,9 @@ private inline val spacedBy get() = 16.dp
  */
 @Composable
 fun SubjectCollectionsColumn(
-    cache: LazyDataCache<SubjectCollectionItem>,
+    cache: LazyDataCache<SubjectCollection>,
     onRequestMore: () -> Unit,
-    item: @Composable (item: SubjectCollectionItem) -> Unit,
+    item: @Composable (item: SubjectCollection) -> Unit,
     onEmpty: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
@@ -158,10 +159,10 @@ private fun Composition(content: @Composable () -> Unit) {
  */
 @Composable
 fun SubjectCollectionItem(
-    item: SubjectCollectionItem,
+    item: SubjectCollection,
     episodeCacheStatus: @Composable (subjectId: Int, episodeId: Int) -> EpisodeCacheStatus?,
     onClick: () -> Unit,
-    onClickEpisode: (episode: UserEpisodeCollection) -> Unit,
+    onClickEpisode: (episode: EpisodeCollection) -> Unit,
     onClickSelectEpisode: () -> Unit,
     onSetAllEpisodesDone: () -> Unit,
     onSetCollectionType: (new: UnifiedCollectionType) -> Unit,
@@ -204,9 +205,9 @@ fun SubjectCollectionItem(
  */
 @Composable
 private fun SubjectCollectionItemContent(
-    item: SubjectCollectionItem,
+    item: SubjectCollection,
     cacheStatus: @Composable (subjectId: Int, episodeId: Int) -> EpisodeCacheStatus?,
-    onClickEpisode: (episode: UserEpisodeCollection) -> Unit,
+    onClickEpisode: (episode: EpisodeCollection) -> Unit,
     onClickSelectEpisode: () -> Unit,
     onSetAllEpisodesDone: (() -> Unit)?,
     onSetCollectionType: (new: UnifiedCollectionType) -> Unit,
@@ -252,7 +253,7 @@ private fun SubjectCollectionItemContent(
             ProvideTextStyle(MaterialTheme.typography.labelMedium) {
                 // 2023 年 10 月
                 item.date?.let {
-                    Tag { Text(item.date) }
+                    Tag { Text(it) }
                 }
 
                 // 连载至第 28 话 · 全 34 话
@@ -327,24 +328,24 @@ private fun SubjectCollectionItemContent(
 }
 
 private fun getEpisodeToPlay(
-    item: SubjectCollectionItem,
-): UserEpisodeCollection? {
+    item: SubjectCollection,
+): EpisodeCollection? {
     if (item.continueWatchingStatus is ContinueWatchingStatus.Watched) {
-        return item._episodes[item.continueWatchingStatus.episodeIndex]
+        return item.episodes[item.continueWatchingStatus.episodeIndex]
     } else {
         item.lastWatchedEpIndex?.let {
-            item._episodes.getOrNull(it + 1)
+            item.episodes.getOrNull(it + 1)
         }?.let {
             return it
         }
 
         item.lastWatchedEpIndex?.let {
-            item._episodes.getOrNull(it)
+            item.episodes.getOrNull(it)
         }?.let {
             return it
         }
 
-        item._episodes.firstOrNull()?.let {
+        item.episodes.firstOrNull()?.let {
             return it
         }
     }
@@ -356,7 +357,7 @@ private fun getEpisodeToPlay(
 // The label "已完结 · 全 28 话"
 @Composable
 private fun OnAirLabel(
-    item: SubjectCollectionItem,
+    item: SubjectCollection,
     modifier: Modifier = Modifier,
     style: TextStyle = MaterialTheme.typography.labelMedium,
 ) {

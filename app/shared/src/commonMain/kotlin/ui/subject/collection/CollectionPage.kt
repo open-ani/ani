@@ -64,7 +64,8 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import me.him188.ani.app.data.subject.SubjectCollectionItem
+import me.him188.ani.app.data.subject.SubjectCollection
+import me.him188.ani.app.data.subject.episode
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.currentPlatform
@@ -267,7 +268,7 @@ fun CollectionPage(
  */
 @Composable
 private fun TabContent(
-    cache: LazyDataCache<SubjectCollectionItem>,
+    cache: LazyDataCache<SubjectCollection>,
     onRequestMore: () -> Unit,
     vm: MyCollectionsViewModel,
     type: UnifiedCollectionType,

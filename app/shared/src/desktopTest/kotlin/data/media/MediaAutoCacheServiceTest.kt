@@ -1,41 +1,58 @@
 package me.him188.ani.app.data.media
 
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
+import me.him188.ani.app.data.subject.EpisodeCollection
+import me.him188.ani.app.data.subject.EpisodeInfo
+import me.him188.ani.app.data.subject.PackedDate
+import me.him188.ani.app.data.subject.episode
+import me.him188.ani.datasources.api.EpisodeSort
+import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import org.junit.jupiter.api.Test
-import org.openapitools.client.models.Episode
-import org.openapitools.client.models.EpisodeCollectionType
-import org.openapitools.client.models.UserEpisodeCollection
-import java.math.BigDecimal
 import kotlin.test.assertEquals
 
 class MediaAutoCacheServiceTest {
     private var id = 0
     private fun ep(
         id: Int = this.id++,
-    ) = Episode(
+        airdate: PackedDate = PackedDate(0, 1, 1)
+    ) = EpisodeInfo(
         id = id,
-        type = 5956,
         name = "Diana Houston",
         nameCn = "Nita O'Donnell",
-        sort = BigDecimal.ONE,
-        airdate = "phasellus",
+        sort = EpisodeSort(1),
         comment = 5931,
         duration = "",
         desc = "gubergren",
+        airDate = airdate, // 一定已经开播
         disc = 2272,
-        ep = BigDecimal.ONE,
-        durationSeconds = null
+        ep = EpisodeSort(1),
     )
 
     @Test
     fun `no cache for watched`() = runTest {
         val res = DefaultMediaAutoCacheService.firstEpisodeToCache(
-            flowOf(
-                UserEpisodeCollection(
+            listOf(
+                EpisodeCollection(
                     ep(),
-                    type = EpisodeCollectionType.WATCHED,
+                    collectionType = UnifiedCollectionType.DONE,
+                ),
+            ),
+            hasAlreadyCached = {
+                false
+            }
+        ).toList()
+
+        assertEquals(0, res.size)
+    }
+
+    @Test
+    fun `no cache for not broadcast`() = runTest {
+        val res = DefaultMediaAutoCacheService.firstEpisodeToCache(
+            listOf(
+                EpisodeCollection(
+                    ep(airdate = PackedDate(9999, 1, 1)),
+                    collectionType = UnifiedCollectionType.WISH,
                 ),
             ),
             hasAlreadyCached = {
@@ -49,10 +66,10 @@ class MediaAutoCacheServiceTest {
     @Test
     fun `no cache for already cached`() = runTest {
         val res = DefaultMediaAutoCacheService.firstEpisodeToCache(
-            flowOf(
-                UserEpisodeCollection(
+            listOf(
+                EpisodeCollection(
                     ep(),
-                    type = EpisodeCollectionType.WATCHLIST,
+                    collectionType = UnifiedCollectionType.WISH,
                 ),
             ),
             hasAlreadyCached = {
@@ -66,10 +83,10 @@ class MediaAutoCacheServiceTest {
     @Test
     fun `cache unwatched`() = runTest {
         val res = DefaultMediaAutoCacheService.firstEpisodeToCache(
-            flowOf(
-                UserEpisodeCollection(
+            listOf(
+                EpisodeCollection(
                     ep(),
-                    type = EpisodeCollectionType.WATCHLIST,
+                    collectionType = UnifiedCollectionType.WISH,
                 ),
             ),
             hasAlreadyCached = {
@@ -83,11 +100,11 @@ class MediaAutoCacheServiceTest {
     @Test
     fun `cache unwatched multiple`() = runTest {
         val res = DefaultMediaAutoCacheService.firstEpisodeToCache(
-            flowOf(
-                UserEpisodeCollection(ep(id = 0), type = EpisodeCollectionType.WATCHED),
-                UserEpisodeCollection(ep(id = 1), type = EpisodeCollectionType.WATCHLIST),
-                UserEpisodeCollection(ep(id = 2), type = EpisodeCollectionType.WATCHLIST),
-                UserEpisodeCollection(ep(id = 3), type = EpisodeCollectionType.WATCHLIST),
+            listOf(
+                EpisodeCollection(ep(id = 0), collectionType = UnifiedCollectionType.DONE),
+                EpisodeCollection(ep(id = 1), collectionType = UnifiedCollectionType.WISH),
+                EpisodeCollection(ep(id = 2), collectionType = UnifiedCollectionType.WISH),
+                EpisodeCollection(ep(id = 3), collectionType = UnifiedCollectionType.WISH),
             ),
             hasAlreadyCached = {
                 false
@@ -101,11 +118,11 @@ class MediaAutoCacheServiceTest {
     @Test
     fun `no cache when already cached many`() = runTest {
         val res = DefaultMediaAutoCacheService.firstEpisodeToCache(
-            flowOf(
-                UserEpisodeCollection(ep(id = 0), type = EpisodeCollectionType.WATCHLIST),
-                UserEpisodeCollection(ep(id = 1), type = EpisodeCollectionType.WATCHLIST),
-                UserEpisodeCollection(ep(id = 2), type = EpisodeCollectionType.WATCHLIST),
-                UserEpisodeCollection(ep(id = 3), type = EpisodeCollectionType.WATCHLIST),
+            listOf(
+                EpisodeCollection(ep(id = 0), collectionType = UnifiedCollectionType.WISH),
+                EpisodeCollection(ep(id = 1), collectionType = UnifiedCollectionType.WISH),
+                EpisodeCollection(ep(id = 2), collectionType = UnifiedCollectionType.WISH),
+                EpisodeCollection(ep(id = 3), collectionType = UnifiedCollectionType.WISH),
             ),
             hasAlreadyCached = {
                 it.episode.id <= 0
@@ -119,11 +136,11 @@ class MediaAutoCacheServiceTest {
     @Test
     fun `cache until max count`() = runTest {
         val res = DefaultMediaAutoCacheService.firstEpisodeToCache(
-            flowOf(
-                UserEpisodeCollection(ep(id = 0), type = EpisodeCollectionType.WATCHLIST),
-                UserEpisodeCollection(ep(id = 1), type = EpisodeCollectionType.WATCHLIST),
-                UserEpisodeCollection(ep(id = 2), type = EpisodeCollectionType.WATCHLIST),
-                UserEpisodeCollection(ep(id = 3), type = EpisodeCollectionType.WATCHLIST),
+            listOf(
+                EpisodeCollection(ep(id = 0), collectionType = UnifiedCollectionType.WISH),
+                EpisodeCollection(ep(id = 1), collectionType = UnifiedCollectionType.WISH),
+                EpisodeCollection(ep(id = 2), collectionType = UnifiedCollectionType.WISH),
+                EpisodeCollection(ep(id = 3), collectionType = UnifiedCollectionType.WISH),
             ),
             hasAlreadyCached = {
                 it.episode.id <= 1
@@ -137,11 +154,11 @@ class MediaAutoCacheServiceTest {
     @Test
     fun `cache until max count when nothing cached`() = runTest {
         val res = DefaultMediaAutoCacheService.firstEpisodeToCache(
-            flowOf(
-                UserEpisodeCollection(ep(id = 0), type = EpisodeCollectionType.WATCHLIST),
-                UserEpisodeCollection(ep(id = 1), type = EpisodeCollectionType.WATCHLIST),
-                UserEpisodeCollection(ep(id = 2), type = EpisodeCollectionType.WATCHLIST),
-                UserEpisodeCollection(ep(id = 3), type = EpisodeCollectionType.WATCHLIST),
+            listOf(
+                EpisodeCollection(ep(id = 0), collectionType = UnifiedCollectionType.WISH),
+                EpisodeCollection(ep(id = 1), collectionType = UnifiedCollectionType.WISH),
+                EpisodeCollection(ep(id = 2), collectionType = UnifiedCollectionType.WISH),
+                EpisodeCollection(ep(id = 3), collectionType = UnifiedCollectionType.WISH),
             ),
             hasAlreadyCached = {
                 false

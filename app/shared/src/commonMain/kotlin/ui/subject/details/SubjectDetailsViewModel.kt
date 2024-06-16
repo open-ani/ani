@@ -12,8 +12,8 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runInterruptible
-import me.him188.ani.app.data.repositories.EpisodeRepository
-import me.him188.ani.app.data.repositories.SubjectRepository
+import me.him188.ani.app.data.repositories.BangumiEpisodeRepository
+import me.him188.ani.app.data.repositories.BangumiSubjectRepository
 import me.him188.ani.app.data.repositories.setSubjectCollectionTypeOrDelete
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.ContextMP
@@ -47,13 +47,13 @@ class SubjectDetailsViewModel(
 ) : AbstractViewModel(), KoinComponent {
     private val sessionManager: SessionManager by inject()
     private val bangumiClient: BangumiClient by inject()
-    private val subjectRepository: SubjectRepository by inject()
-    private val episodeRepository: EpisodeRepository by inject()
+    private val bangumiSubjectRepository: BangumiSubjectRepository by inject()
+    private val bangumiEpisodeRepository: BangumiEpisodeRepository by inject()
     private val browserNavigator: BrowserNavigator by inject()
 //    private val subjectProvider: SubjectProvider by inject()
 
     private val subject: SharedFlow<Subject?> = flowOf(this.subjectId).mapLatest {
-        subjectRepository.getSubject(it)
+        bangumiSubjectRepository.getSubject(it)
     }.shareInBackground()
 
     private val subjectNotNull = subject.mapNotNull { it }
@@ -159,7 +159,7 @@ class SubjectDetailsViewModel(
      */
     suspend fun setSelfCollectionType(subjectCollectionType: UnifiedCollectionType) {
         selfCollectionType.emit(subjectCollectionType)
-        subjectRepository.setSubjectCollectionTypeOrDelete(
+        bangumiSubjectRepository.setSubjectCollectionTypeOrDelete(
             subjectId,
             subjectCollectionType.toSubjectCollectionType()
         )
@@ -167,7 +167,7 @@ class SubjectDetailsViewModel(
 
     suspend fun setAllEpisodesWatched() {
 
-        episodeRepository.setEpisodeCollection(
+        bangumiEpisodeRepository.setEpisodeCollection(
             subjectId,
             episodesMain.first().map { it.id.toInt() },
             EpisodeCollectionType.WATCHED,

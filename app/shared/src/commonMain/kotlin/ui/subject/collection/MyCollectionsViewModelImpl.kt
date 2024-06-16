@@ -11,7 +11,7 @@ import me.him188.ani.app.data.media.EpisodeCacheStatus
 import me.him188.ani.app.data.media.MediaCacheManager
 import me.him188.ani.app.data.models.MyCollectionsSettings
 import me.him188.ani.app.data.repositories.SettingsRepository
-import me.him188.ani.app.data.subject.SubjectCollectionItem
+import me.him188.ani.app.data.subject.SubjectCollection
 import me.him188.ani.app.data.subject.SubjectManager
 import me.him188.ani.app.session.ViewModelAuthSupport
 import me.him188.ani.app.tools.MonoTasker
@@ -27,7 +27,7 @@ import org.koin.core.component.inject
 @Stable
 class CollectionsByType(
     val type: UnifiedCollectionType,
-    val cache: LazyDataCache<SubjectCollectionItem>,
+    val cache: LazyDataCache<SubjectCollection>,
 ) {
     var isAutoRefreshing by mutableStateOf(false)
     var pullToRefreshState: PullToRefreshState? by mutableStateOf(null)

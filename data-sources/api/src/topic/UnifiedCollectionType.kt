@@ -7,7 +7,7 @@ import me.him188.ani.datasources.api.topic.UnifiedCollectionType.NOT_COLLECTED
 /**
  * Unified type for all collection types, also added representation for [NOT_COLLECTED].
  */
-@Serializable
+@Serializable // so don't change field names
 enum class UnifiedCollectionType {
     WISH,
     DOING,

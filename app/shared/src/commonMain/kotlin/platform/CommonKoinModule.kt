@@ -38,9 +38,10 @@ import me.him188.ani.app.data.media.MediaCacheManagerImpl
 import me.him188.ani.app.data.media.MediaSourceManager
 import me.him188.ani.app.data.media.MediaSourceManagerImpl
 import me.him188.ani.app.data.media.TorrentMediaCacheEngine
+import me.him188.ani.app.data.repositories.BangumiEpisodeRepository
+import me.him188.ani.app.data.repositories.BangumiSubjectRepository
 import me.him188.ani.app.data.repositories.EpisodePreferencesRepository
 import me.him188.ani.app.data.repositories.EpisodePreferencesRepositoryImpl
-import me.him188.ani.app.data.repositories.EpisodeRepository
 import me.him188.ani.app.data.repositories.EpisodeRepositoryImpl
 import me.him188.ani.app.data.repositories.EpisodeRevisionRepository
 import me.him188.ani.app.data.repositories.EpisodeRevisionRepositoryImpl
@@ -51,9 +52,8 @@ import me.him188.ani.app.data.repositories.MikanIndexCacheRepository
 import me.him188.ani.app.data.repositories.MikanIndexCacheRepositoryImpl
 import me.him188.ani.app.data.repositories.PreferencesRepositoryImpl
 import me.him188.ani.app.data.repositories.ProfileRepository
+import me.him188.ani.app.data.repositories.RemoteBangumiSubjectRepository
 import me.him188.ani.app.data.repositories.SettingsRepository
-import me.him188.ani.app.data.repositories.SubjectRepository
-import me.him188.ani.app.data.repositories.SubjectRepositoryImpl
 import me.him188.ani.app.data.repositories.SubjectSearchRepository
 import me.him188.ani.app.data.repositories.SubjectSearchRepositoryImpl
 import me.him188.ani.app.data.repositories.TokenRepository
@@ -96,11 +96,11 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
     single<SessionManager> { SessionManagerImpl() }
     single<BangumiClient> { createBangumiClient() }
     single<SubjectProvider> { BangumiSubjectProvider(get<BangumiClient>()) }
-    single<SubjectRepository> { SubjectRepositoryImpl() }
+    single<BangumiSubjectRepository> { RemoteBangumiSubjectRepository() }
     single<SubjectManager> { SubjectManagerImpl(getContext()) }
     single<UserRepository> { UserRepositoryImpl() }
     single<EpisodeRevisionRepository> { EpisodeRevisionRepositoryImpl() }
-    single<EpisodeRepository> { EpisodeRepositoryImpl() }
+    single<BangumiEpisodeRepository> { EpisodeRepositoryImpl() }
     single<MediaSourceInstanceRepository> {
         MediaSourceInstanceRepositoryImpl(getContext().dataStores.mediaSourceSaveStore)
     }

@@ -27,8 +27,8 @@ import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.data.subject.EpisodeInfo
 import me.him188.ani.app.data.subject.SubjectInfo
 import me.him188.ani.app.data.subject.SubjectManager
-import me.him188.ani.app.data.subject.isSubjectCompleted
 import me.him188.ani.app.data.subject.nameCnOrName
+import me.him188.ani.app.data.subject.subjectCompletedFlow
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
@@ -124,7 +124,7 @@ fun EpisodeMediaFetchSession(
         episodePreferencesRepository = episodePreferencesRepository,
         defaultMediaPreferenceFlow = settingsRepository.defaultMediaPreference.flow,
         mediaSelectorSettingsFlow = settingsRepository.mediaSelectorSettings.flow,
-        subjectCompletedNotCached = subjectManager.isSubjectCompleted(subjectId),
+        subjectCompletedNotCached = subjectManager.subjectCompletedFlow(subjectId),
         mediaSourceInstances = mediaSourceManager.allInstances,
         parentCoroutineContext,
     )

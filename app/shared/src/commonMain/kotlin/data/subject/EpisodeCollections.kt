@@ -1,15 +1,13 @@
 package me.him188.ani.app.data.subject
 
 import androidx.compose.ui.util.fastAll
-import me.him188.ani.datasources.bangumi.processing.isOnAir
-import org.openapitools.client.models.Episode
 import kotlin.time.Duration.Companion.days
 
 object EpisodeCollections {
-    fun isSubjectCompleted(episodes: List<Episode>, now: PackedDate = PackedDate.now()): Boolean {
-        val allEpisodesFinished = episodes.fastAll { it.isOnAir() == false }
+    fun isSubjectCompleted(episodes: List<EpisodeInfo>, now: PackedDate = PackedDate.now()): Boolean {
+        val allEpisodesFinished = episodes.fastAll { it.isKnownBroadcast }
         if (!allEpisodesFinished) return false // 如果无法肯定已经完结, 则认为未完结
-        return isSubjectCompleted(episodes.asSequence().map { PackedDate.parseFromDate(it.airdate) }, now)
+        return isSubjectCompleted(episodes.asSequence().map { it.airDate }, now)
     }
 
     fun isSubjectCompleted(dates: Sequence<PackedDate>, now: PackedDate = PackedDate.now()): Boolean {

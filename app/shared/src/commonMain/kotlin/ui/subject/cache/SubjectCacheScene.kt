@@ -39,9 +39,9 @@ import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.media.MediaCacheManager
 import me.him188.ani.app.data.models.MediaSelectorSettings
-import me.him188.ani.app.data.repositories.EpisodeRepository
+import me.him188.ani.app.data.repositories.BangumiEpisodeRepository
+import me.him188.ani.app.data.repositories.BangumiSubjectRepository
 import me.him188.ani.app.data.repositories.SettingsRepository
-import me.him188.ani.app.data.repositories.SubjectRepository
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.feedback.ErrorDialogHost
@@ -74,8 +74,8 @@ import org.openapitools.client.models.UserEpisodeCollection
 class SubjectCacheViewModel(
     val subjectId: Int,
 ) : AbstractViewModel(), KoinComponent {
-    private val subjectRepository: SubjectRepository by inject()
-    private val episodeRepository: EpisodeRepository by inject()
+    private val bangumiSubjectRepository: BangumiSubjectRepository by inject()
+    private val bangumiEpisodeRepository: BangumiEpisodeRepository by inject()
     private val settingsRepository: SettingsRepository by inject()
     private val cacheManager: MediaCacheManager by inject()
 
@@ -102,13 +102,13 @@ class SubjectCacheViewModel(
         .produceState(MediaSelectorSettings.Default)
 
     val subjectTitle by flowOf(subjectId).mapLatest { subjectId ->
-        runUntilSuccess { subjectRepository.getSubject(subjectId)!! }
+        runUntilSuccess { bangumiSubjectRepository.getSubject(subjectId)!! }
             .nameCNOrName()
     }.produceState(null)
 
     // All episodes
     private val episodeCollections = flowOf(subjectId).mapLatest { subjectId ->
-        runUntilSuccess { episodeRepository.getSubjectEpisodeCollection(subjectId, EpType.MainStory).toList() }
+        runUntilSuccess { bangumiEpisodeRepository.getSubjectEpisodeCollection(subjectId, EpType.MainStory).toList() }
     }.filterNotNull().shareInBackground()
 
     val errorMessage: MutableStateFlow<ErrorMessage?> = MutableStateFlow(null)

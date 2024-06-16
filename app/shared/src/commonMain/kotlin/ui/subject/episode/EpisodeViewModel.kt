@@ -45,6 +45,9 @@ import me.him188.ani.app.data.models.VideoScaffoldConfig
 import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.data.subject.SubjectInfo
 import me.him188.ani.app.data.subject.SubjectManager
+import me.him188.ani.app.data.subject.episode
+import me.him188.ani.app.data.subject.nameCnOrName
+import me.him188.ani.app.data.subject.renderEpisodeEp
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.Context
 import me.him188.ani.app.tools.caching.ContentPolicy
@@ -71,9 +74,8 @@ import me.him188.ani.danmaku.api.DanmakuSearchRequest
 import me.him188.ani.danmaku.api.DanmakuSession
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
+import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.datasources.bangumi.processing.nameCNOrName
-import me.him188.ani.datasources.bangumi.processing.renderEpisodeEp
-import me.him188.ani.datasources.bangumi.processing.toCollectionType
 import me.him188.ani.utils.coroutines.cancellableCoroutineScope
 import me.him188.ani.utils.coroutines.runUntilSuccess
 import me.him188.ani.utils.coroutines.sampleWithInitial
@@ -82,7 +84,6 @@ import me.him188.ani.utils.logging.info
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.openapitools.client.models.Episode
-import org.openapitools.client.models.EpisodeCollectionType
 import kotlin.time.Duration.Companion.milliseconds
 
 @Immutable
@@ -123,7 +124,7 @@ class EpisodePresentation(
      * @see renderEpisodeEp
      */
     val sort: String,
-    val collectionType: EpisodeCollectionType,
+    val collectionType: UnifiedCollectionType,
     val isPlaceholder: Boolean = false,
 ) {
     companion object {
@@ -132,7 +133,7 @@ class EpisodePresentation(
             title = "placeholder",
             ep = "placeholder",
             sort = "placeholder",
-            collectionType = EpisodeCollectionType.WATCHLIST,
+            collectionType = UnifiedCollectionType.WISH,
             isPlaceholder = true,
         )
     }
@@ -150,7 +151,7 @@ interface EpisodeViewModel : HasBackgroundScope {
 
     var isFullscreen: Boolean
 
-    suspend fun setEpisodeCollectionType(type: EpisodeCollectionType)
+    suspend fun setEpisodeCollectionType(type: UnifiedCollectionType)
 
     // Media Fetching
 
@@ -332,10 +333,10 @@ private class EpisodeViewModelImpl(
         subjectManager.episodeCollectionFlow(subjectId, episodeId, ContentPolicy.CACHE_ONLY)
             .map {
                 EpisodePresentation(
-                    title = it.episode.nameCNOrName(),
+                    title = it.episode.nameCnOrName,
                     ep = it.episode.renderEpisodeEp(),
-                    sort = EpisodeSort(it.episode.sort).toString(),
-                    collectionType = it.type,
+                    sort = it.episode.sort.toString(),
+                    collectionType = it.collectionType,
                 )
             }
             .onEach { withContext(Dispatchers.Main) { episodePresentation = it } }
@@ -344,8 +345,8 @@ private class EpisodeViewModelImpl(
 
     override var isFullscreen: Boolean by mutableStateOf(initialIsFullscreen)
 
-    override suspend fun setEpisodeCollectionType(type: EpisodeCollectionType) {
-        subjectManager.setEpisodeCollectionType(subjectId, episodeId, type.toCollectionType())
+    override suspend fun setEpisodeCollectionType(type: UnifiedCollectionType) {
+        subjectManager.setEpisodeCollectionType(subjectId, episodeId, type)
     }
 
     override suspend fun copyDownloadLink(clipboardManager: ClipboardManager, snackbar: SnackbarHostState) {
@@ -511,13 +512,13 @@ private class EpisodeViewModelImpl(
                             playerState.videoProperties.map { it?.durationMillis }.debounce(5000),
                         ) { pos, max ->
                             if (max == null) return@combine
-                            if (episodePresentationFlow.value?.collectionType == EpisodeCollectionType.WATCHED) {
+                            if (episodePresentationFlow.value?.collectionType == UnifiedCollectionType.DONE) {
                                 cancelScope() // 已经看过了
                             }
                             if (pos > max.toFloat() * 0.9) {
                                 logger.info { "观看到 90%, 标记看过" }
                                 runUntilSuccess(maxAttempts = 5) {
-                                    setEpisodeCollectionType(EpisodeCollectionType.WATCHED)
+                                    setEpisodeCollectionType(UnifiedCollectionType.DONE)
                                 }
                                 cancelScope() // 标记成功一次后就不要再检查了
                             }

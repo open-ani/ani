@@ -18,6 +18,7 @@
 
 package me.him188.ani.app.persistent
 
+import androidx.datastore.core.CorruptionException
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.DataStoreFactory
 import androidx.datastore.core.Serializer
@@ -82,7 +83,13 @@ fun <T> KSerializer<T>.asDataStoreSerializer(
     return object : Serializer<T> {
         override val defaultValue: T get() = defaultValue
 
-        override suspend fun readFrom(input: InputStream): T = format.decodeFromStream(serializer, input)
+        override suspend fun readFrom(input: InputStream): T {
+            try {
+                return format.decodeFromStream(serializer, input)
+            } catch (e: Exception) {
+                throw CorruptionException("Failed to decode data", e)
+            }
+        }
 
         override suspend fun writeTo(t: T, output: OutputStream) {
             format.encodeToStream(serializer, t, output)

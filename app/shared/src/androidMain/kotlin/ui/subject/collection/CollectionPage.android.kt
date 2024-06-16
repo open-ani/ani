@@ -10,25 +10,25 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.runBlocking
 import me.him188.ani.app.data.media.EpisodeCacheStatus
-import me.him188.ani.app.data.subject.SubjectCollectionItem
+import me.him188.ani.app.data.subject.EpisodeCollection
+import me.him188.ani.app.data.subject.EpisodeInfo
+import me.him188.ani.app.data.subject.SubjectCollection
 import me.him188.ani.app.data.subject.SubjectInfo
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.tools.caching.mutate
 import me.him188.ani.app.ui.cache.testMediaCache1
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.rememberViewModel
+import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.paging.SinglePagePagedSource
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import org.openapitools.client.models.Collection
 import org.openapitools.client.models.Count
-import org.openapitools.client.models.Episode
-import org.openapitools.client.models.EpisodeCollectionType
 import org.openapitools.client.models.Images
 import org.openapitools.client.models.Rating
 import org.openapitools.client.models.Subject
 import org.openapitools.client.models.SubjectType
-import org.openapitools.client.models.UserEpisodeCollection
 import java.math.BigDecimal
 
 @Composable
@@ -55,124 +55,115 @@ internal actual fun PreviewCollectionPage() {
     }
 }
 
-private fun testCollections(): List<SubjectCollectionItem> {
+private fun testCollections(): List<SubjectCollection> {
     return buildList {
         var id = 0
         val eps = listOf(
-            UserEpisodeCollection(
-                episode = Episode(
+            EpisodeCollection(
+                episodeInfo = EpisodeInfo(
                     id = 6385,
-                    type = 5956,
                     name = "Diana Houston",
                     nameCn = "Nita O'Donnell",
-                    sort = BigDecimal.ONE,
-                    airdate = "phasellus",
                     comment = 5931,
                     duration = "",
                     desc = "gubergren",
                     disc = 2272,
-                    ep = BigDecimal.ONE,
-                    durationSeconds = null
+                    sort = EpisodeSort(1),
+                    ep = EpisodeSort(1),
                 ),
-                type = EpisodeCollectionType.WATCHED
+                collectionType = UnifiedCollectionType.DONE
             ),
-            UserEpisodeCollection(
-                episode = Episode(
+            EpisodeCollection(
+                episodeInfo = EpisodeInfo(
                     id = 6386,
-                    type = 5956,
                     name = "Diana Houston",
                     nameCn = "Nita O'Donnell",
-                    sort = BigDecimal.valueOf(2),
-                    airdate = "phasellus",
+                    sort = EpisodeSort(2),
                     comment = 5931,
                     duration = "",
                     desc = "gubergren",
                     disc = 2272,
-                    ep = BigDecimal.valueOf(2),
-                    durationSeconds = null
+                    ep = EpisodeSort(2),
                 ),
-                type = EpisodeCollectionType.WATCHED
+                collectionType = UnifiedCollectionType.DONE
             )
 
         )
         val latestEp = eps[1]
         add(
-            SubjectCollectionItem(
+            SubjectCollection(
                 subjectId = ++id,
                 displayName = "葬送的芙莉莲",
                 image = "",
                 rate = null,
                 date = "2023 年 10 月",
                 totalEps = 2,
-                _episodes = eps,
+                episodes = eps,
                 collectionType = UnifiedCollectionType.DOING,
                 info = SubjectInfo.Empty,
             )
         )
         add(
-            SubjectCollectionItem(
+            SubjectCollection(
                 subjectId = ++id,
                 displayName = "葬送的芙莉莲 2",
                 image = "",
                 rate = null,
                 date = "2023 年 10 月",
                 totalEps = 2,
-                _episodes = eps,
+                episodes = eps,
                 collectionType = UnifiedCollectionType.DOING,
                 info = SubjectInfo.Empty,
             )
         )
         add(
-            SubjectCollectionItem(
+            SubjectCollection(
                 subjectId = ++id,
                 displayName = "葬送的芙莉莲 3",
                 image = "",
                 rate = null,
                 date = "2023 年 10 月",
                 totalEps = 2,
-                _episodes = eps,
+                episodes = eps,
                 collectionType = UnifiedCollectionType.DOING,
                 info = SubjectInfo.Empty,
             )
         )
         add(
-            SubjectCollectionItem(
+            SubjectCollection(
                 subjectId = ++id,
                 displayName = "葬送的芙莉莲 4",
                 image = "",
                 rate = null,
                 date = "2023 年 10 月",
                 totalEps = 2,
-                _episodes = eps,
+                episodes = eps,
                 collectionType = UnifiedCollectionType.WISH,
                 info = SubjectInfo.Empty,
             )
         )
         repeat(20) {
             add(
-                SubjectCollectionItem(
+                SubjectCollection(
                     subjectId = ++id,
                     displayName = "葬送的芙莉莲 4",
                     image = "",
                     rate = null,
                     date = "2025 年 10 月",
                     totalEps = 2,
-                    _episodes = eps + UserEpisodeCollection(
-                        episode = Episode(
+                    episodes = eps + EpisodeCollection(
+                        episodeInfo = EpisodeInfo(
                             id = 6386,
-                            type = 5956,
                             name = "Diana Houston",
                             nameCn = "Nita O'Donnell",
-                            sort = BigDecimal.valueOf(2),
-                            airdate = "2099-1-1",
+                            sort = EpisodeSort(2),
                             comment = 5931,
                             duration = "",
                             desc = "gubergren",
                             disc = 2272,
-                            ep = BigDecimal.valueOf(2),
-                            durationSeconds = null
+                            ep = EpisodeSort(2),
                         ),
-                        type = EpisodeCollectionType.WATCHED
+                        collectionType = UnifiedCollectionType.DONE,
                     ),
                     collectionType = UnifiedCollectionType.WISH,
                     info = SubjectInfo.Empty,
@@ -238,7 +229,7 @@ private fun PreviewSubjectCollectionsColumnDesktopLarge() {
     }
 }
 
-private fun testLazyDataCache(): LazyDataCache<SubjectCollectionItem> {
+private fun testLazyDataCache(): LazyDataCache<SubjectCollection> {
     return LazyDataCache(
         {
             SinglePagePagedSource {

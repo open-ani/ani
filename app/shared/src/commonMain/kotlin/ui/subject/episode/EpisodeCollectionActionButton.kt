@@ -28,9 +28,6 @@ import me.him188.ani.app.ui.subject.collection.EditCollectionTypeDropDown
 import me.him188.ani.app.ui.subject.collection.SubjectCollectionAction
 import me.him188.ani.app.ui.subject.collection.SubjectCollectionActions
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
-import me.him188.ani.datasources.bangumi.processing.toCollectionType
-import me.him188.ani.datasources.bangumi.processing.toEpisodeCollectionType
-import org.openapitools.client.models.EpisodeCollectionType
 
 
 private val ACTIONS = listOf(
@@ -45,8 +42,8 @@ private val ACTIONS = listOf(
 
 @Composable
 fun EpisodeCollectionActionButton(
-    collectionType: EpisodeCollectionType?,
-    onClick: (target: EpisodeCollectionType) -> Unit,
+    collectionType: UnifiedCollectionType?,
+    onClick: (target: UnifiedCollectionType) -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
 ) {
@@ -55,16 +52,18 @@ fun EpisodeCollectionActionButton(
     FilledTonalButton(
         onClick = {
             when (collectionType) {
-                EpisodeCollectionType.NOT_COLLECTED, EpisodeCollectionType.WATCHLIST -> onClick(EpisodeCollectionType.WATCHED)
-                EpisodeCollectionType.WATCHED, EpisodeCollectionType.DISCARDED -> {
+                UnifiedCollectionType.NOT_COLLECTED, UnifiedCollectionType.WISH -> onClick(UnifiedCollectionType.DONE)
+                UnifiedCollectionType.DONE, UnifiedCollectionType.DROPPED -> {
                     showDropdown = true
                 }
 
                 null -> {}
+                UnifiedCollectionType.DOING -> {}
+                UnifiedCollectionType.ON_HOLD -> {}
             }
         },
         modifier.placeholder(collectionType == null),
-        colors = if (collectionType == EpisodeCollectionType.WATCHED || collectionType == EpisodeCollectionType.DISCARDED) {
+        colors = if (collectionType == UnifiedCollectionType.DONE || collectionType == UnifiedCollectionType.DROPPED) {
             ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.outlineVariant,
                 contentColor = MaterialTheme.colorScheme.outline
@@ -80,11 +79,11 @@ fun EpisodeCollectionActionButton(
         enabled = enabled
     ) {
         when (collectionType) {
-            EpisodeCollectionType.WATCHED -> {
+            UnifiedCollectionType.DONE -> {
                 Text("已看过")
             }
 
-            EpisodeCollectionType.DISCARDED -> {
+            UnifiedCollectionType.DROPPED -> {
                 Text("已抛弃")
             }
 
@@ -97,13 +96,13 @@ fun EpisodeCollectionActionButton(
         }
 
         EditCollectionTypeDropDown(
-            currentType = collectionType?.toCollectionType(),
+            currentType = collectionType,
             expanded = showDropdown,
             onDismissRequest = { showDropdown = false },
             onSetAllEpisodesDone = null,
             onClick = {
                 showDropdown = false
-                onClick(it.type.toEpisodeCollectionType())
+                onClick(it.type)
             },
             actions = ACTIONS
         )
@@ -114,7 +113,7 @@ fun EpisodeCollectionActionButton(
 @Composable
 private fun PreviewEpisodeCollectionActionButton() {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        for (entry in EpisodeCollectionType.entries) {
+        for (entry in UnifiedCollectionType.entries) {
             Text(entry.name)
             EpisodeCollectionActionButton(entry, onClick = {})
         }

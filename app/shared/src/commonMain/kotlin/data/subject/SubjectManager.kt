@@ -20,16 +20,14 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.flow.transform
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
 import me.him188.ani.app.data.media.EpisodeCacheStatus
 import me.him188.ani.app.data.media.MediaCacheManager
-import me.him188.ani.app.data.repositories.EpisodeRepository
-import me.him188.ani.app.data.repositories.SubjectRepository
+import me.him188.ani.app.data.repositories.BangumiEpisodeRepository
+import me.him188.ani.app.data.repositories.BangumiSubjectRepository
 import me.him188.ani.app.data.repositories.setSubjectCollectionTypeOrDelete
+import me.him188.ani.app.data.repositories.toEpisodeCollection
+import me.him188.ani.app.data.repositories.toEpisodeInfo
+import me.him188.ani.app.data.repositories.toSubjectCollectionItem
 import me.him188.ani.app.persistent.asDataStoreSerializer
 import me.him188.ani.app.persistent.dataStores
 import me.him188.ani.app.platform.Context
@@ -45,14 +43,9 @@ import me.him188.ani.app.tools.caching.getCachedData
 import me.him188.ani.app.tools.caching.mutate
 import me.him188.ani.app.tools.caching.removeFirstOrNull
 import me.him188.ani.app.tools.caching.setEach
-import me.him188.ani.app.ui.subject.collection.ContinueWatchingStatus
 import me.him188.ani.app.ui.subject.collection.progress.EpisodeProgressItem
 import me.him188.ani.datasources.api.paging.map
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
-import me.him188.ani.datasources.bangumi.processing.airSeason
-import me.him188.ani.datasources.bangumi.processing.isOnAir
-import me.him188.ani.datasources.bangumi.processing.nameCNOrName
-import me.him188.ani.datasources.bangumi.processing.toCollectionType
 import me.him188.ani.datasources.bangumi.processing.toEpisodeCollectionType
 import me.him188.ani.datasources.bangumi.processing.toSubjectCollectionType
 import me.him188.ani.utils.coroutines.runUntilSuccess
@@ -60,41 +53,33 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.openapitools.client.models.EpType
 import org.openapitools.client.models.EpisodeCollectionType
-import org.openapitools.client.models.Subject
-import org.openapitools.client.models.SubjectCollectionType
 import org.openapitools.client.models.SubjectType
-import org.openapitools.client.models.UserEpisodeCollection
 import org.openapitools.client.models.UserSubjectCollection
 
 /**
- * 管理收藏条目以及它们的内存缓存.
+ * 管理收藏条目以及它们的缓存.
  */
-interface SubjectManager {
+abstract class SubjectManager {
+    ///////////////////////////////////////////////////////////////////////////
+    // Subject collections
+    ///////////////////////////////////////////////////////////////////////////
+
     /**
      * 本地 subject 缓存
      */
-    val collectionsByType: Map<UnifiedCollectionType, LazyDataCache<SubjectCollectionItem>>
+    abstract val collectionsByType: Map<UnifiedCollectionType, LazyDataCache<SubjectCollection>>
 
     /**
-     * 获取所有条目列表
+     * 获取所有收藏的条目列表
      */
-    fun subjectCollectionsFlow(contentPolicy: ContentPolicy): Flow<List<SubjectCollectionItem>> {
+    fun subjectCollectionsFlow(contentPolicy: ContentPolicy): Flow<List<SubjectCollection>> {
         return combine(collectionsByType.values.map { it.data(contentPolicy) }) { collections ->
             collections.asSequence().flatten().toList()
         }
     }
 
     /**
-     * 获取指定条目的观看进度 flow. 进度还会包含该剧集的缓存状态 [EpisodeProgressItem.cacheStatus].
-     */
-    @Stable
-    fun subjectProgressFlow(
-        subjectId: Int,
-        contentPolicy: ContentPolicy
-    ): Flow<List<EpisodeProgressItem>>
-
-    /**
-     * 获取即时更新的收藏条目 flow.
+     * 获取某一个收藏条目 flow.
      * @see subjectProgressFlow
      */
     // TODO: 如果 subjectId 没收藏, 这个函数的 flow 就会为空. 需要 (根据 policy) 实现为当未收藏时, 就向服务器请求单个 subjectId 的状态.
@@ -102,7 +87,7 @@ interface SubjectManager {
     fun subjectCollectionFlow(
         subjectId: Int,
         contentPolicy: ContentPolicy
-    ): Flow<SubjectCollectionItem?> =
+    ): Flow<SubjectCollection?> =
         combine(collectionsByType.values.map { it.data(contentPolicy) }) { collections ->
             collections.asSequence().flatten().firstOrNull { it.subjectId == subjectId }
         }
@@ -110,7 +95,7 @@ interface SubjectManager {
     /**
      * 获取缓存的收藏条目. 注意, 这不会请求网络. 若缓存中不包含则返回 `null`.
      */
-    suspend fun findCachedSubjectCollection(subjectId: Int): SubjectCollectionItem? {
+    suspend fun findCachedSubjectCollection(subjectId: Int): SubjectCollection? {
         return collectionsByType.values.map { it.cachedDataFlow.first() }.asSequence().flatten()
             .firstOrNull { it.subjectId == subjectId }
     }
@@ -118,38 +103,59 @@ interface SubjectManager {
     /**
      * 从缓存中获取条目, 若没有则从网络获取.
      */
-    suspend fun getSubjectInfo(subjectId: Int): SubjectInfo
+    abstract suspend fun getSubjectInfo(subjectId: Int): SubjectInfo
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Subject progress
+    ///////////////////////////////////////////////////////////////////////////
 
     /**
-     * 从缓存中获取剧集, 若没有则从网络获取.
+     * 获取指定条目的观看进度 flow. 进度还会包含该剧集的缓存状态 [EpisodeProgressItem.cacheStatus].
      */
-    suspend fun getEpisode(episodeId: Int): EpisodeInfo
+    @Stable
+    abstract fun subjectProgressFlow(
+        subjectId: Int,
+        contentPolicy: ContentPolicy
+    ): Flow<List<EpisodeProgressItem>>
 
     /**
      * 获取用户该条目的收藏情况, 以及该条目的信息.
      *
      * 如果用户未收藏该条目, 则返回空列表.
      */
-    suspend fun getEpisodeCollections(subjectId: Int): List<UserEpisodeCollection>
+    abstract fun episodeCollectionsFlow(subjectId: Int): Flow<List<EpisodeCollection>>
 
-    fun episodeCollectionFlow(subjectId: Int, episodeId: Int, contentPolicy: ContentPolicy): Flow<UserEpisodeCollection>
+    /**
+     * 获取指定条目下指定剧集的收藏情况 flow.
+     */
+    abstract fun episodeCollectionFlow(
+        subjectId: Int,
+        episodeId: Int,
+        contentPolicy: ContentPolicy
+    ): Flow<EpisodeCollection>
 
-    suspend fun setSubjectCollectionType(subjectId: Int, type: UnifiedCollectionType)
+    abstract suspend fun setSubjectCollectionType(subjectId: Int, type: UnifiedCollectionType)
 
-    suspend fun setAllEpisodesWatched(subjectId: Int)
-    suspend fun setEpisodeCollectionType(subjectId: Int, episodeId: Int, collectionType: UnifiedCollectionType)
+    abstract suspend fun setAllEpisodesWatched(subjectId: Int)
+
+    abstract suspend fun setEpisodeCollectionType(subjectId: Int, episodeId: Int, collectionType: UnifiedCollectionType)
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Get info
+    ///////////////////////////////////////////////////////////////////////////
+
+    /**
+     * 从缓存中获取剧集, 若没有则从网络获取.
+     */
+    abstract suspend fun getEpisode(episodeId: Int): EpisodeInfo
 }
 
 /**
  * 获取指定条目是否已经完结. 不是用户是否看完, 只要条目本身完结了就算.
  */
-fun SubjectManager.isSubjectCompleted(subjectId: Int): Flow<Boolean> {
-    return flow {
-        // 这是网络请求, 无网情况下会一直失败
-        // 对于已经收藏的条目, 该请求应当会查询缓存, 就很快
-        emit(getEpisodeCollections(subjectId).map { it.episode })
-    }.map {
-        EpisodeCollections.isSubjectCompleted(it)
+fun SubjectManager.subjectCompletedFlow(subjectId: Int): Flow<Boolean> {
+    return episodeCollectionsFlow(subjectId).map { epCollection ->
+        EpisodeCollections.isSubjectCompleted(epCollection.map { it.episode })
     }
 }
 
@@ -162,18 +168,19 @@ suspend inline fun SubjectManager.setEpisodeWatched(subjectId: Int, episodeId: I
 
 class SubjectManagerImpl(
     context: Context
-) : KoinComponent, SubjectManager {
-    private val subjectRepository: SubjectRepository by inject()
+) : KoinComponent, SubjectManager() {
+    private val bangumiSubjectRepository: BangumiSubjectRepository by inject()
+    private val bangumiEpisodeRepository: BangumiEpisodeRepository by inject()
+
     private val sessionManager: SessionManager by inject()
-    private val episodeRepository: EpisodeRepository by inject()
     private val cacheManager: MediaCacheManager by inject()
 
-    override val collectionsByType: Map<UnifiedCollectionType, LazyDataCache<SubjectCollectionItem>> =
+    override val collectionsByType: Map<UnifiedCollectionType, LazyDataCache<SubjectCollection>> =
         UnifiedCollectionType.entries.associateWith { type ->
             LazyDataCache(
                 createSource = {
                     val username = sessionManager.username.filterNotNull().first()
-                    subjectRepository.getSubjectCollections(
+                    bangumiSubjectRepository.getSubjectCollections(
                         username,
                         subjectType = SubjectType.Anime,
                         subjectCollectionType = type.toSubjectCollectionType(),
@@ -184,7 +191,7 @@ class SubjectManagerImpl(
                 getKey = { it.subjectId },
                 debugName = "collectionsByType-${type.name}",
                 persistentStore = DataStoreFactory.create(
-                    LazyDataCacheSave.serializer(SubjectCollectionItem.Serializer)
+                    LazyDataCacheSave.serializer(SubjectCollection.serializer())
                         .asDataStoreSerializer(LazyDataCacheSave.empty()),
                     ReplaceFileCorruptionHandler { LazyDataCacheSave.empty() },
                     migrations = listOf(),
@@ -200,7 +207,7 @@ class SubjectManagerImpl(
         subjectId: Int,
         contentPolicy: ContentPolicy
     ): Flow<List<EpisodeProgressItem>> = subjectCollectionFlow(subjectId, contentPolicy)
-        .map { it?._episodes ?: emptyList() }
+        .map { it?.episodes ?: emptyList() }
         .distinctUntilChanged()
         .flatMapLatest { episodes ->
             combine(episodes.map { episode ->
@@ -213,8 +220,8 @@ class SubjectManagerImpl(
                     EpisodeProgressItem(
                         episodeId = episode.episode.id,
                         episodeSort = episode.episode.sort.toString(),
-                        watchStatus = episode.type.toCollectionType(),
-                        isOnAir = episode.episode.isOnAir(),
+                        watchStatus = episode.type,
+                        isOnAir = episode.episode.isKnownOnAir,
                         cacheStatus = cacheStatus,
                     )
                 }
@@ -224,52 +231,64 @@ class SubjectManagerImpl(
         }
         .flowOn(Dispatchers.Default)
 
+    override fun episodeCollectionsFlow(subjectId: Int): Flow<List<EpisodeCollection>> {
+        return flow {
+            // 对于已经收藏的条目, 使用缓存
+            findCachedSubjectCollection(subjectId)?.episodes?.let {
+                emit(it)
+            } ?: run {
+                // 这是网络请求, 无网情况下会一直失败
+                emit(
+                    bangumiEpisodeRepository.getSubjectEpisodeCollection(subjectId, EpType.MainStory)
+                        .map {
+                            it.toEpisodeCollection()
+                        }
+                        .toList()
+                )
+            }
+        }
+    }
+
     override suspend fun getSubjectInfo(subjectId: Int): SubjectInfo {
         findCachedSubjectCollection(subjectId)?.info?.let { return it }
         return runUntilSuccess {
             // TODO: we should unify how to compute display name from subject 
-            subjectRepository.getSubject(subjectId)?.createSubjectInfo() ?: error("Failed to get subject")
+            bangumiSubjectRepository.getSubject(subjectId)?.createSubjectInfo() ?: error("Failed to get subject")
         }
     }
 
     override suspend fun getEpisode(episodeId: Int): EpisodeInfo {
         collectionsByType.values.map { it.getCachedData() }.asSequence().flatten()
-            .flatMap { it._episodes }
+            .flatMap { it.episodes }
             .map { it.episode }
             .firstOrNull { it.id == episodeId }
-            ?.let { return it.toEpisodeInfo() }
+            ?.let { return it }
 
         return runUntilSuccess {
-            episodeRepository.getEpisodeById(episodeId)?.toEpisodeInfo() ?: error("Failed to get episode")
+            bangumiEpisodeRepository.getEpisodeById(episodeId)?.toEpisodeInfo() ?: error("Failed to get episode")
         }
-    }
-
-    override suspend fun getEpisodeCollections(subjectId: Int): List<UserEpisodeCollection> {
-        return findCachedSubjectCollection(subjectId)?._episodes
-            ?: runUntilSuccess {
-                episodeRepository.getSubjectEpisodeCollection(subjectId, EpType.MainStory)
-            }.toList()
     }
 
     override fun episodeCollectionFlow(
         subjectId: Int,
         episodeId: Int,
         contentPolicy: ContentPolicy
-    ): Flow<UserEpisodeCollection> {
+    ): Flow<EpisodeCollection> {
         return subjectCollectionFlow(subjectId, contentPolicy)
             .transform { subject ->
                 if (subject == null) {
                     emit(me.him188.ani.utils.coroutines.runUntilSuccess {
-                        episodeRepository.getEpisodeCollection(
+                        bangumiEpisodeRepository.getEpisodeCollection(
                             episodeId
-                        ) ?: error("Failed to get episode collection")
+                        )?.toEpisodeCollection() ?: error("Failed to get episode collection")
                     })
                 } else {
                     emitAll(
-                        subject._episodes.filter { it.episode.id == episodeId }.asFlow()
+                        subject.episodes.filter { it.episode.id == episodeId }.asFlow()
                     )
                 }
-            }.flowOn(Dispatchers.Default)
+            }
+            .flowOn(Dispatchers.Default)
     }
 
     override suspend fun setSubjectCollectionType(subjectId: Int, type: UnifiedCollectionType) {
@@ -281,7 +300,7 @@ class SubjectManagerImpl(
             t.addFirst(old)
         }
 
-        subjectRepository.setSubjectCollectionTypeOrDelete(subjectId, type.toSubjectCollectionType())
+        bangumiSubjectRepository.setSubjectCollectionTypeOrDelete(subjectId, type.toSubjectCollectionType())
     }
 
     /**
@@ -295,15 +314,15 @@ class SubjectManagerImpl(
         cache.mutate {
             setEach({ it.subjectId == subjectId }) {
                 copy(
-                    _episodes = _episodes.map { episode ->
-                        episode.copy(type = EpisodeCollectionType.WATCHED)
+                    episodes = episodes.map { episode ->
+                        episode.copy(collectionType = UnifiedCollectionType.DONE)
                     }
                 )
             }
         }
 
-        val ids = episodeRepository.getEpisodesBySubjectId(subjectId, EpType.MainStory).map { it.id }.toList()
-        episodeRepository.setEpisodeCollection(
+        val ids = bangumiEpisodeRepository.getEpisodesBySubjectId(subjectId, EpType.MainStory).map { it.id }.toList()
+        bangumiEpisodeRepository.setEpisodeCollection(
             subjectId,
             ids,
             EpisodeCollectionType.WATCHED,
@@ -315,7 +334,7 @@ class SubjectManagerImpl(
         episodeId: Int,
         collectionType: UnifiedCollectionType
     ) {
-        episodeRepository.setEpisodeCollection(
+        bangumiEpisodeRepository.setEpisodeCollection(
             subjectId,
             listOf(episodeId),
             collectionType.toEpisodeCollectionType(),
@@ -325,8 +344,8 @@ class SubjectManagerImpl(
 
         cache.mutate {
             setEach({ it.subjectId == subjectId }) {
-                copy(_episodes = _episodes.replaceAll({ it.episode.id == episodeId }) {
-                    copy(type = collectionType.toEpisodeCollectionType())
+                copy(episodes = episodes.replaceAll({ it.episode.id == episodeId }) {
+                    copy(collectionType = collectionType)
                 })
             }
         }
@@ -334,210 +353,14 @@ class SubjectManagerImpl(
 
     private suspend fun UserSubjectCollection.convertToItem() = coroutineScope {
         val subject = async {
-            runUntilSuccess { subjectRepository.getSubject(subjectId) ?: error("Failed to get subject") }
+            runUntilSuccess { bangumiSubjectRepository.getSubject(subjectId) ?: error("Failed to get subject") }
         }
         val eps = runUntilSuccess {
-            episodeRepository.getSubjectEpisodeCollection(subjectId, EpType.MainStory)
+            bangumiEpisodeRepository.getSubjectEpisodeCollection(subjectId, EpType.MainStory)
         }.toList()
 
-        createItem(subject.await(), eps)
-    }
-
-    private fun UserSubjectCollection.createItem(
-        subject: Subject,
-        episodes: List<UserEpisodeCollection>,
-    ): SubjectCollectionItem {
-        if (subject.type != SubjectType.Anime) {
-            return SubjectCollectionItem(
-                subjectId = subjectId,
-                displayName = this.subject?.nameCNOrName() ?: "",
-                image = "",
-                rate = this.rate,
-                date = this.subject?.airSeason,
-                totalEps = episodes.size,
-                _episodes = episodes,
-                collectionType = type.toCollectionType(),
-                info = subject.createSubjectInfo(),
-            )
-        }
-
-        return SubjectCollectionItem(
-            subjectId = subjectId,
-            displayName = subject.nameCNOrName(),
-            image = subject.images.common,
-            rate = this.rate,
-            date = subject.airSeason ?: "",
-            totalEps = episodes.size,
-            _episodes = episodes,
-            collectionType = type.toCollectionType(),
-            info = subject.createSubjectInfo(),
-        )
-    }
-
-
-}
-
-
-@Stable
-@Serializable(SubjectCollectionItem.Serializer::class)
-data class SubjectCollectionItem(
-    val subjectId: Int,
-    val displayName: String,
-    val image: String,
-    val rate: Int?,
-
-    val date: String?,
-    val totalEps: Int,
-
-    val _episodes: List<@Serializable(UserEpisodeCollectionSerializer::class) UserEpisodeCollection>,
-    val collectionType: UnifiedCollectionType,
-    val info: SubjectInfo,
-) {
-    val isOnAir = run {
-        _episodes.firstOrNull { it.episode.isOnAir() == true } != null
-    }
-
-    val lastWatchedEpIndex = run {
-        _episodes.indexOfLast {
-            it.type == EpisodeCollectionType.WATCHED || it.type == EpisodeCollectionType.DISCARDED
-        }.takeIf { it != -1 }
-    }
-
-    val latestEp = run {
-        _episodes.lastOrNull { it.episode.isOnAir() == false }
-            ?: _episodes.lastOrNull { it.episode.isOnAir() != true }
-    }
-
-    /**
-     * 是否已经开播了第一集
-     */
-    val hasStarted = _episodes.firstOrNull()?.episode?.isOnAir() == false
-
-    val episodes: List<UserEpisodeCollection> = _episodes.sortedBy { it.episode.sort }
-
-    val latestEpIndex: Int? = _episodes.indexOfFirst { it.episode.id == latestEp?.episode?.id }
-        .takeIf { it != -1 }
-        ?: _episodes.lastIndex.takeIf { it != -1 }
-
-    val onAirDescription = if (isOnAir) {
-        if (latestEp == null) {
-            "未开播"
-        } else {
-            "连载至第 ${latestEp.episode.sort} 话"
-        }
-    } else {
-        "已完结"
-    }
-
-    val serialProgress = "全 $totalEps 话"
-
-    val continueWatchingStatus = run {
-        val item = this
-        when (item.lastWatchedEpIndex) {
-            // 还没看过
-            null -> {
-                if (item.hasStarted) {
-                    ContinueWatchingStatus.Start
-                } else {
-                    ContinueWatchingStatus.NotOnAir
-                }
-            }
-
-            // 看了第 n 集并且还有第 n+1 集
-            in 0..<item.totalEps - 1 -> {
-                if (item.latestEpIndex != null && item.lastWatchedEpIndex < item.latestEpIndex) {
-                    // 更新了 n+1 集
-                    ContinueWatchingStatus.Continue(
-                        item.lastWatchedEpIndex + 1,
-                        _episodes.getOrNull(item.lastWatchedEpIndex + 1)?.episode?.sort?.toString() ?: ""
-                    )
-                } else {
-                    // 还没更新
-                    ContinueWatchingStatus.Watched(
-                        item.lastWatchedEpIndex,
-                        _episodes.getOrNull(item.lastWatchedEpIndex)?.episode?.sort?.toString() ?: ""
-                    )
-                }
-            }
-
-            else -> {
-                ContinueWatchingStatus.Done
-            }
-        }
-    }
-//
-//    fun copy(
-//        subjectId: Int = this.subjectId,
-//        displayName: String = this.displayName,
-//        image: String = this.image,
-//        rate: Int? = this.rate,
-//        date: String? = this.date,
-//        totalEps: Int = this.totalEps,
-//        episodes: List<UserEpisodeCollection> = this._episodes,
-//        collectionType: UnifiedCollectionType = this.collectionType,
-//        info: SubjectInfo = this.info,
-//    ) = SubjectCollectionItem(
-//        subjectId = subjectId,
-//        displayName = displayName,
-//        image = image,
-//        rate = rate,
-//        date = date,
-//        totalEps = totalEps,
-//        _episodes = episodes,
-//        collectionType = collectionType,
-//        info = info,
-//    )
-
-    override fun toString(): String {
-        return "SubjectCollectionItem($displayName)"
-    }
-
-    object Serializer : KSerializer<SubjectCollectionItem> {
-        @Serializable
-        private class Delegate(
-            val subjectId: Int,
-            val displayName: String,
-            val image: String,
-            val rate: Int?,
-            val date: String?,
-            val totalEps: Int,
-            val episodes: List<@Serializable(UserEpisodeCollectionSerializer::class) UserEpisodeCollection>,
-            val collectionType: SubjectCollectionType?,
-            val info: SubjectInfo = SubjectInfo.Empty
-        )
-
-        override val descriptor: SerialDescriptor get() = Delegate.serializer().descriptor
-
-        override fun deserialize(decoder: Decoder): SubjectCollectionItem {
-            val delegate = Delegate.serializer().deserialize(decoder)
-            return SubjectCollectionItem(
-                subjectId = delegate.subjectId,
-                displayName = delegate.displayName,
-                image = delegate.image,
-                rate = delegate.rate,
-                date = delegate.date,
-                totalEps = delegate.totalEps,
-                _episodes = delegate.episodes,
-                collectionType = delegate.collectionType.toCollectionType(),
-                info = delegate.info
-            )
-        }
-
-        override fun serialize(encoder: Encoder, value: SubjectCollectionItem) {
-            Delegate.serializer().serialize(
-                encoder,
-                Delegate(
-                    subjectId = value.subjectId,
-                    displayName = value.displayName,
-                    image = value.image,
-                    rate = value.rate,
-                    date = value.date,
-                    totalEps = value.totalEps,
-                    episodes = value._episodes,
-                    collectionType = value.collectionType.toSubjectCollectionType(),
-                    info = value.info
-                )
-            )
-        }
+        toSubjectCollectionItem(subject.await(), eps)
     }
 }
+
+
