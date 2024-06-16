@@ -10,8 +10,6 @@ import io.ktor.client.plugins.auth.providers.BearerTokens
 import io.ktor.client.plugins.auth.providers.basic
 import io.ktor.client.plugins.auth.providers.bearer
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.plugins.logging.LogLevel
-import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.ContentType
 import io.ktor.http.content.OutgoingContent
@@ -22,7 +20,7 @@ import io.ktor.utils.io.charsets.decode
 import io.ktor.utils.io.jvm.javaio.toInputStream
 import io.ktor.utils.io.streams.asInput
 import me.him188.ani.utils.ktor.createDefaultHttpClient
-import me.him188.ani.utils.logging.info
+import me.him188.ani.utils.ktor.registerLogging
 import me.him188.ani.utils.logging.logger
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
@@ -76,14 +74,6 @@ fun HttpMediaSource.useHttpClient(
                 }
             }
         }
-        Logging {
-            logger = object : io.ktor.client.plugins.logging.Logger {
-                override fun log(message: String) {
-                    this@useHttpClient.logger.info { message }
-                }
-            }
-            level = LogLevel.INFO
-        }
         expectSuccess = true
         install(ContentNegotiation) {
             register(ContentType.Text.Xml, XmlConverter)
@@ -91,6 +81,8 @@ fun HttpMediaSource.useHttpClient(
         }
 
         clientConfig()
+    }.apply {
+        registerLogging(logger)
     }.also { addCloseable(it) }
 }
 

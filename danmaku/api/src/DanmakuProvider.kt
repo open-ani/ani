@@ -1,13 +1,11 @@
 package me.him188.ani.danmaku.api
 
 import io.ktor.client.HttpClientConfig
-import io.ktor.client.plugins.logging.LogLevel
-import io.ktor.client.plugins.logging.Logging
 import kotlinx.serialization.Serializable
 import me.him188.ani.app.data.subject.PackedDate
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.utils.ktor.createDefaultHttpClient
-import me.him188.ani.utils.logging.info
+import me.him188.ani.utils.ktor.registerLogging
 import me.him188.ani.utils.logging.logger
 import kotlin.time.Duration
 
@@ -166,15 +164,9 @@ abstract class AbstractDanmakuProvider(
 
     protected val client = createDefaultHttpClient {
         applyDanmakuProviderConfig(config)
-        Logging {
-            logger = object : io.ktor.client.plugins.logging.Logger {
-                override fun log(message: String) {
-                    this@AbstractDanmakuProvider.logger.info { message }
-                }
-            }
-            level = LogLevel.INFO
-        }
         configureClient()
+    }.apply {
+        registerLogging(logger)
     }
 
     protected open fun HttpClientConfig<*>.configureClient() {}

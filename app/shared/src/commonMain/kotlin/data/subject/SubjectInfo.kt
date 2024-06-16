@@ -55,8 +55,8 @@ class SubjectInfo(
             fun addIfNotBlank(name: String) {
                 if (name.isNotBlank()) add(name)
             }
-            addIfNotBlank(name)
             addIfNotBlank(nameCn)
+            addIfNotBlank(name)
 
             (infobox.firstOrNull { it.name == "别名" }?.value as? JsonArray)
                 ?.forEach { element -> // interesting fact, 如果 `element` 改名成 `name`, 编译器就会编译错 (runtime class cast exception)

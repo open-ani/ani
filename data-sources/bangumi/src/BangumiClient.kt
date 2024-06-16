@@ -24,9 +24,6 @@ import io.ktor.client.call.body
 import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.plugins.logging.LogLevel
-import io.ktor.client.plugins.logging.Logger
-import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
@@ -34,6 +31,7 @@ import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
+import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
@@ -60,10 +58,9 @@ import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubject
 import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectDetails
 import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectImageSize
 import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectType
-import me.him188.ani.datasources.bangumi.processing.fixToString
-import me.him188.ani.utils.logging.info
+import me.him188.ani.utils.ktor.HttpLogger.logHttp
+import me.him188.ani.utils.ktor.registerLogging
 import me.him188.ani.utils.logging.logger
-import me.him188.ani.utils.logging.warn
 import me.him188.ani.utils.serialization.toJsonArray
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -76,6 +73,7 @@ import org.openapitools.client.models.UserSubjectCollectionModifyPayload
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.util.Objects
+import kotlin.time.Duration.Companion.milliseconds
 
 interface BangumiClient : Closeable {
     // Bangumi open API: https://github.com/bangumi/api/blob/master/open-api/api.yml
@@ -277,23 +275,16 @@ internal class BangumiClientImpl(
         // add logger
         addInterceptor { chain ->
             val request: Request = chain.request()
-            val t1 = System.nanoTime()
-            logger.info {
-                "Sending ${request.method.fixToString(5, ' ')} ${request.url} on ${chain.connection()}"
-            }
-
+            val t1 = System.currentTimeMillis()
             val response: Response = chain.proceed(request)
 
-            val t2 = System.nanoTime()
-            if (response.code in 200..399) {
-                logger.info {
-                    "Received resp  ${response.request.url} in ${(t2 - t1) / 1e6}ms: ${response.code} ${response.message}"
-                }
-            } else {
-                logger.warn {
-                    "Received resp  ${response.request.url} in ${(t2 - t1) / 1e6}ms: ${response.code} ${response.message}"
-                }
-            }
+            logger.logHttp(
+                method = HttpMethod.parse(request.method),
+                url = request.url.toString(),
+                isAuthorized = request.header("Authorization") != null,
+                responseStatus = HttpStatusCode.fromValue(response.code),
+                duration = (System.currentTimeMillis() - t1).milliseconds
+            )
 
             response
         }
@@ -311,14 +302,8 @@ internal class BangumiClientImpl(
                 ignoreUnknownKeys = true
             })
         }
-        Logging {
-            level = LogLevel.INFO
-            logger = object : Logger {
-                override fun log(message: String) {
-                    this@BangumiClientImpl.logger.info { "[ktor] $message" }
-                }
-            }
-        }
+    }.apply {
+        registerLogging(logger)
     }
 
     @Serializable

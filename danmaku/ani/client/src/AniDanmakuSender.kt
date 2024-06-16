@@ -2,8 +2,6 @@ package me.him188.ani.danmaku.ani.client
 
 import io.ktor.client.call.body
 import io.ktor.client.plugins.HttpTimeout
-import io.ktor.client.plugins.logging.LogLevel
-import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.get
 import io.ktor.client.request.post
@@ -33,8 +31,8 @@ import me.him188.ani.danmaku.protocol.DanmakuInfo
 import me.him188.ani.danmaku.protocol.DanmakuPostRequest
 import me.him188.ani.utils.coroutines.runUntilSuccess
 import me.him188.ani.utils.ktor.createDefaultHttpClient
+import me.him188.ani.utils.ktor.registerLogging
 import me.him188.ani.utils.logging.error
-import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -72,20 +70,14 @@ class AniDanmakuSenderImpl(
 
     private val client = createDefaultHttpClient {
         applyDanmakuProviderConfig(config)
-        Logging {
-            logger = object : io.ktor.client.plugins.logging.Logger {
-                override fun log(message: String) {
-                    Companion.logger.info { message }
-                }
-            }
-            level = LogLevel.INFO
-        }
         followRedirects = true
         expectSuccess = false
         install(HttpTimeout) {
             connectTimeoutMillis = 20_000
             requestTimeoutMillis = 30_000
         }
+    }.apply {
+        registerLogging(logger)
     }
 
     private suspend fun getUserInfo(token: String): AniUser {
