@@ -23,18 +23,15 @@ import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.media.MediaCacheManager
@@ -42,6 +39,11 @@ import me.him188.ani.app.data.models.MediaSelectorSettings
 import me.him188.ani.app.data.repositories.BangumiEpisodeRepository
 import me.him188.ani.app.data.repositories.BangumiSubjectRepository
 import me.him188.ani.app.data.repositories.SettingsRepository
+import me.him188.ani.app.data.subject.SubjectManager
+import me.him188.ani.app.data.subject.episode
+import me.him188.ani.app.data.subject.isKnownBroadcast
+import me.him188.ani.app.data.subject.nameCnOrName
+import me.him188.ani.app.data.subject.type
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.feedback.ErrorDialogHost
@@ -52,23 +54,17 @@ import me.him188.ani.app.ui.subject.episode.mediaFetch.EpisodeMediaFetchSession
 import me.him188.ani.app.ui.subject.episode.mediaFetch.FetcherMediaSelectorConfig
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberMediaSelectorSourceResults
-import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaCacheMetadata
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.topic.contains
 import me.him188.ani.datasources.api.unwrapCached
-import me.him188.ani.datasources.bangumi.processing.isOnAir
-import me.him188.ani.datasources.bangumi.processing.nameCNOrName
-import me.him188.ani.datasources.bangumi.processing.toCollectionType
 import me.him188.ani.datasources.core.cache.MediaCache
 import me.him188.ani.datasources.core.cache.MediaCacheStorage
 import me.him188.ani.utils.coroutines.runUntilSuccess
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.openapitools.client.models.EpType
-import org.openapitools.client.models.UserEpisodeCollection
 
 @Stable
 class SubjectCacheViewModel(
@@ -76,6 +72,7 @@ class SubjectCacheViewModel(
 ) : AbstractViewModel(), KoinComponent {
     private val bangumiSubjectRepository: BangumiSubjectRepository by inject()
     private val bangumiEpisodeRepository: BangumiEpisodeRepository by inject()
+    private val subjectManager: SubjectManager by inject()
     private val settingsRepository: SettingsRepository by inject()
     private val cacheManager: MediaCacheManager by inject()
 
@@ -101,25 +98,24 @@ class SubjectCacheViewModel(
     val mediaSelectorSettings: MediaSelectorSettings by settingsRepository.mediaSelectorSettings.flow
         .produceState(MediaSelectorSettings.Default)
 
-    val subjectTitle by flowOf(subjectId).mapLatest { subjectId ->
-        runUntilSuccess { bangumiSubjectRepository.getSubject(subjectId)!! }
-            .nameCNOrName()
-    }.produceState(null)
+    private val subjectInfoFlow = flowOf(subjectId).mapLatest { subjectId ->
+        runUntilSuccess(Int.MAX_VALUE) { subjectManager.getSubjectInfo(subjectId) }
+    }.shareInBackground()
 
-    // All episodes
-    private val episodeCollections = flowOf(subjectId).mapLatest { subjectId ->
-        runUntilSuccess { bangumiEpisodeRepository.getSubjectEpisodeCollection(subjectId, EpType.MainStory).toList() }
-    }.filterNotNull().shareInBackground()
+    val subjectTitle by subjectInfoFlow.map { it.nameCnOrName }.produceState(null)
 
     val errorMessage: MutableStateFlow<ErrorMessage?> = MutableStateFlow(null)
+
+    private val episodeCollectionsFlowNotCached = flowOf(subjectId).mapLatest { subjectId ->
+        runUntilSuccess(Int.MAX_VALUE) { subjectManager.episodeCollectionsFlow(subjectId).first() }
+    }
 
     /**
      * State of the subject cache page.
      */
-    val stateFlow: SharedFlow<SubjectCacheState> = episodeCollections.flatMapLatest { episodes ->
+    val stateFlow: SharedFlow<SubjectCacheState> = episodeCollectionsFlowNotCached.flatMapLatest { episodes ->
         // 每个 episode 都为一个 flow, 然后合并
-        @Suppress("RemoveExplicitTypeArguments") // compiler bug
-        combine(episodes.map<UserEpisodeCollection, Flow<EpisodeCacheState>> { episodeCollection ->
+        val f = episodes.map { episodeCollection ->
             val episode = episodeCollection.episode // TODO: replace with EpisodeInfo 
 
             val cacheStatusFlow = cacheManager.cacheStatusForEpisode(subjectId, episode.id)
@@ -127,19 +123,21 @@ class SubjectCacheViewModel(
             cacheStatusFlow.transform { cacheStatus ->
                 val state = EpisodeCacheState(
                     episodeId = episode.id,
-                    sort = EpisodeSort(episode.sort),
-                    ep = episode.ep?.let { EpisodeSort(it) },
+                    sort = episode.sort,
+                    ep = episode.ep,
                     title = episode.nameCn,
-                    watchStatus = episodeCollection.type.toCollectionType(),
+                    watchStatus = episodeCollection.type,
                     cacheStatus = cacheStatus,
-                    hasPublished = episode.isOnAir() != true,
+                    hasPublished = episode.isKnownBroadcast,
                     originMedia = null,
                 )
                 emit(state)
                 val cachedMedia = cacheStatus.cache?.getCachedMedia()
                 emit(state.copy(originMedia = cachedMedia))
             }
-        }) {
+        }
+        // f extracted because of compiler inference bug
+        combine(f) {
             SubjectCacheState(it.toList())
         }
     }.flowOn(Dispatchers.Default).shareInBackground()
@@ -186,6 +184,26 @@ class SubjectCacheViewModel(
                 errorMessage.emit(ErrorMessage.simple("缓存失败", e))
             }
         }
+    }
+
+    suspend fun addCacheFromExisting(
+        existing: EpisodeCacheState,
+        metadata: MediaCacheMetadata,
+        new: EpisodeCacheState,
+    ) {
+        val subjectInfo = subjectInfoFlow.first()
+        addCache(
+            existing.originMedia!!.unwrapCached(),
+            MediaCacheMetadata(
+                subjectId = metadata.subjectId,
+                episodeId = new.episodeId.toString(),
+                subjectNames = subjectInfo.allNames.toSet(), // update names
+                episodeSort = new.sort,
+                episodeName = new.title,
+                episodeEp = new.ep,
+            ),
+            findStorageByCache(existing.mediaCache),
+        )
     }
 
     fun deleteCache(episodeId: Int) {
@@ -260,18 +278,7 @@ fun SubjectCacheScene(
 
             // 直接创建
             vm.launchInBackground {
-                addCache(
-                    existing.originMedia.unwrapCached(),
-                    MediaCacheMetadata(
-                        subjectId = metadata.subjectId,
-                        episodeId = episodeCacheState.episodeId.toString(),
-                        subjectNames = metadata.subjectNames,
-                        episodeSort = episodeCacheState.sort,
-                        episodeName = episodeCacheState.title,
-                        episodeEp = episodeCacheState.ep,
-                    ),
-                    vm.findStorageByCache(existing.mediaCache),
-                )
+                addCacheFromExisting(existing, metadata, episodeCacheState)
             }
         }
     }
