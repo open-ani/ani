@@ -5,6 +5,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.job
 import me.him188.ani.app.torrent.api.handle.TorrentAddEvent
 import me.him188.ani.app.torrent.api.handle.TorrentThread
+import me.him188.ani.app.torrent.libtorrent4j.DefaultTorrentDownloadSession
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 
