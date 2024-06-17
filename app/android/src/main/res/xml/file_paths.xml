@@ -6,5 +6,5 @@
 
     <files-path
             name="logs"
-            path="logs/" /> <!-- /data/data/me.him188.ani.debug2/files/logs/ -->
+            path="logs/" /> <!-- /data/data/0/me.him188.ani/files/logs/ -->
 </paths>

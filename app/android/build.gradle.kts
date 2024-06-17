@@ -46,8 +46,6 @@ dependencies {
 //    implementation(libs.log4j.core)
 //    implementation(libs.log4j.slf4j.impl)
 
-    implementation(libs.logback.android)
-
     implementation(libs.ktor.client.core)
 }
 

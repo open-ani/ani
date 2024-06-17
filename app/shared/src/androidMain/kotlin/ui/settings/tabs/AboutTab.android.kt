@@ -10,7 +10,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.core.content.ContextCompat.startActivity
 import androidx.core.content.FileProvider
 import me.him188.ani.BuildConfig
-import me.him188.ani.app.platform.Context
+import me.him188.ani.app.platform.AndroidLoggingConfigurator.getCurrentLogFile
 import me.him188.ani.app.platform.LocalContext
 
 
@@ -25,7 +25,7 @@ internal actual fun ColumnScope.PlatformDebugInfoItems() {
             FileProvider.getUriForFile(
                 context,
                 BuildConfig.APP_APPLICATION_ID + ".fileprovider",
-                getLogFile(context)
+                context.getCurrentLogFile()
             )
         )
         shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
@@ -36,7 +36,7 @@ internal actual fun ColumnScope.PlatformDebugInfoItems() {
 
     val clipboard = LocalClipboardManager.current
     FilledTonalButton({
-        clipboard.setText(AnnotatedString(getLogFile(context).readText()))
+        clipboard.setText(AnnotatedString(context.getCurrentLogFile().readText()))
     }) {
         Text("复制当日日志内容 (很大)")
     }
@@ -48,5 +48,3 @@ internal actual fun ColumnScope.PlatformDebugInfoItems() {
     }
 }
 
-private fun getLogFile(context: Context) =
-    context.applicationContext.filesDir.resolve("logs/app.log")

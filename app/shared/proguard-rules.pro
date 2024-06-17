@@ -59,6 +59,9 @@
 # the logging calls in your released app.
 -keepclassmembers class ch.qos.logback.** { *; } #java.io.IOException: Failed to load asset path /data/app/~~2FXqiqIwzpvJbysP7TCLHQ==/me.him188.ani-fqpPfM4QmpABXA7iaUY_Cw==/base.apk
 -keepclassmembers class org.slf4j.impl.** { *; }
+# TODO 上面两条看起会少 optimize 非常多东西, 可以考虑优化下
 -keep class ch.qos.logback.classic.android.LogcatAppender
 -keep class ch.qos.logback.core.rolling.RollingFileAppender
--keepattributes *Annotation*
+-keep class ch.qos.logback.core.rolling.TimeBasedRollingPolicy
+#-keepattributes *Annotation* # logback-android 推荐添加, 但测试可以不用添加这个
+-dontwarn javax.mail.**

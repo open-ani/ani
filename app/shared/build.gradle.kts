@@ -156,6 +156,8 @@ kotlin {
 
         implementation(libs.androidx.media3.ui)
         implementation(libs.androidx.media3.exoplayer)
+
+        api(libs.logback.android)
     }
 
     sourceSets.named("desktopMain").dependencies {

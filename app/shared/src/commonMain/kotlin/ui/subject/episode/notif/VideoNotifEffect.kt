@@ -3,6 +3,7 @@ package me.him188.ani.app.ui.subject.episode.notif
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.rememberCoroutineScope
+import coil3.annotation.ExperimentalCoilApi
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import coil3.request.SuccessResult
@@ -15,6 +16,7 @@ import me.him188.ani.app.ui.foundation.LocalImageLoader
 import me.him188.ani.app.ui.subject.episode.EpisodeViewModel
 import kotlin.time.Duration.Companion.milliseconds
 
+@OptIn(ExperimentalCoilApi::class)
 @Composable
 fun VideoNotifEffect(vm: EpisodeViewModel) {
     val scope = rememberCoroutineScope()
