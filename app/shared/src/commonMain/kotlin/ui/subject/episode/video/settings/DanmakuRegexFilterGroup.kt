@@ -57,6 +57,16 @@ import me.him188.ani.app.ui.settings.framework.components.TextItem
 import me.him188.ani.app.ui.subject.episode.statistics.DanmakuLoadingState
 import me.him188.ani.danmaku.ui.DanmakuRegexFilter
 import me.him188.ani.danmaku.ui.DanmakuRegexFilterConfig
+import java.util.regex.PatternSyntaxException
+
+internal fun isValidRegex(regex: String): Boolean {
+    return try {
+        regex.toRegex()
+        true
+    } catch (e: PatternSyntaxException) {
+        false
+    }
+}
 
 @Composable
 internal fun SettingsScope.DanmakuRegexFilterGroup(
@@ -78,7 +88,11 @@ internal fun SettingsScope.DanmakuRegexFilterGroup(
                 if (name.isBlank() || regex.isBlank()) {
                     errorMessage = "名字和正则不能为空"
                     showError = true
-                } else {
+                } else if (isValidRegex(regex).not()){
+                    errorMessage = "正则输入法不正确"
+                    showError = true 
+                }
+                else {
                     addDanmakuRegexFilter(DanmakuRegexFilter(name = name, re = regex))
                     showAdd = false
                 }
@@ -117,7 +131,7 @@ internal fun SettingsScope.DanmakuRegexFilterGroup(
         }
     ) {
         FlowRow (
-            Modifier.padding(2.dp).placeholder(isLoadingState).fillMaxWidth(),
+            Modifier.placeholder(isLoadingState).fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             danmakuRegexFilterConfig.danmakuRegexFilterList.forEachIndexed { index, item ->
@@ -143,7 +157,7 @@ internal fun RegexFilterItem(
     ElevatedFilterChip(
         selected = item.isEnabled,
         onClick = { onDisable() },
-        label = { Text(item.re, Modifier.ifThen(!isEnabled) { alpha(DISABLED_ALPHA).padding(2.dp) }, 
+        label = { Text(item.re, Modifier.ifThen(!isEnabled) { alpha(DISABLED_ALPHA) }, 
             maxLines = 1, 
             overflow=Ellipsis,
             textAlign = TextAlign.Center) },
