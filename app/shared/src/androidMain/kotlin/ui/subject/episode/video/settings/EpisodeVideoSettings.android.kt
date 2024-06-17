@@ -48,6 +48,10 @@ private fun PreviewEpisodeVideoSettings() {
                         //Do nothing in preview
                     
                     }
+
+                    override fun switchDanmakuRegexFilter(filter: DanmakuRegexFilter) {
+                        // Do nothing in preview
+                    }
                 }
             }
         )

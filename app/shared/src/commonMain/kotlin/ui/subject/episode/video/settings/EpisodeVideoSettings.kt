@@ -418,7 +418,8 @@ fun EpisodeVideoSettings(
                 addDanmakuRegexFilter,
                 editDanmakuRegexFilter,
                 removeDanmakuRegexFilter,
-                switchDanmakuRegexFilter
+                switchDanmakuRegexFilter,
+                isLoadingState
             )
 
             if (currentAniBuildConfig.isDebug) {

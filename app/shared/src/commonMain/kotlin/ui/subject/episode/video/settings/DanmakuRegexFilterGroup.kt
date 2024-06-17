@@ -1,10 +1,12 @@
 package me.him188.ani.app.ui.subject.episode.video.settings
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,6 +14,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.MoreVert
@@ -22,6 +26,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ElevatedFilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
@@ -32,6 +37,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,12 +45,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow.Companion.Ellipsis
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.TextItem
+import me.him188.ani.app.ui.subject.episode.statistics.DanmakuLoadingState
 import me.him188.ani.danmaku.ui.DanmakuRegexFilter
 import me.him188.ani.danmaku.ui.DanmakuRegexFilterConfig
 
@@ -54,7 +64,8 @@ internal fun SettingsScope.DanmakuRegexFilterGroup(
     addDanmakuRegexFilter: (filter: DanmakuRegexFilter) -> Unit,
     editDanmakuRegexFilter: (filter: DanmakuRegexFilter) -> Unit,
     removeDanmakuRegexFilter: (filter: DanmakuRegexFilter) -> Unit,
-    switchDanmakuRegexFilter: (fiter: DanmakuRegexFilter) -> Unit
+    switchDanmakuRegexFilter: (fiter: DanmakuRegexFilter) -> Unit,
+    isLoadingState: Boolean
 ) {
     var showAdd by remember { mutableStateOf(false) }
     var showError by remember { mutableStateOf(false) }
@@ -105,29 +116,16 @@ internal fun SettingsScope.DanmakuRegexFilterGroup(
             }
         }
     ) {
-        Box{
-            Column (
-                Modifier
-                    .wrapContentHeight()
-            ){
-                danmakuRegexFilterConfig.danmakuRegexFilterList.forEachIndexed { index, item ->
-                    if (index != 0) {
-                        HorizontalDividerItem()
-                    } 
-                    RegexFilterItem (
-                        item,
-                        Modifier.combinedClickable{
-                            editDanmakuRegexFilter(item)
-                        }
-                    ) {
-                        NormalRegexFilterItemAction(
-                            item,
-                            onEdit = { editDanmakuRegexFilter(item) },
-                            onDelete = { removeDanmakuRegexFilter(item) },
-                            onEnabledChange = { switchDanmakuRegexFilter(item) }
-                        )
-                    }
-                } 
+        FlowRow (
+            Modifier.padding(2.dp).placeholder(isLoadingState).fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            danmakuRegexFilterConfig.danmakuRegexFilterList.forEachIndexed { index, item ->
+                RegexFilterItem(
+                    item,
+                    onDelete = { removeDanmakuRegexFilter(item) },
+                    onDisable = { switchDanmakuRegexFilter(item) },
+                )
             }
         }
     }
@@ -135,33 +133,42 @@ internal fun SettingsScope.DanmakuRegexFilterGroup(
 
 private const val DISABLED_ALPHA = 0.38f
 @Composable
-internal fun SettingsScope.RegexFilterItem(
+internal fun RegexFilterItem(
     item: DanmakuRegexFilter,
-    modifier: Modifier = Modifier,
     isEnabled: Boolean = item.isEnabled,
-    name: String = item.name,
-    title: @Composable RowScope.() -> Unit = {
-        Text(
-            name,
-            Modifier.ifThen(!isEnabled) { alpha(DISABLED_ALPHA) }
-        )
-    },
-    description: (@Composable () -> Unit)? =
-        item.re.let {
-            {
-                item.re
-                Text(it, Modifier.ifThen(!isEnabled) { alpha(DISABLED_ALPHA) })
-            }
-        },
-    action: @Composable () -> Unit,
+    onDisable: () -> Unit,
+    onDelete: () -> Unit
 ) {
-    TextItem(
-        title = title,
-        description = description,
-        action = action,
-        onClick = null,
-        modifier = modifier,
+    var showConfirmDelete by remember { mutableStateOf(false) }
+    ElevatedFilterChip(
+        selected = item.isEnabled,
+        onClick = { onDisable() },
+        label = { Text(item.re, Modifier.ifThen(!isEnabled) { alpha(DISABLED_ALPHA).padding(2.dp) }, 
+            maxLines = 1, 
+            overflow=Ellipsis,
+            textAlign = TextAlign.Center) },
+        trailingIcon = {
+                     Icon(Icons.Rounded.Close, contentDescription = null, Modifier.clickable(onClick = { showConfirmDelete = true }))
+        }
     )
+
+    if (showConfirmDelete) {
+        AlertDialog(
+            onDismissRequest = { showConfirmDelete = false },
+            icon = { Icon(Icons.Rounded.Delete, null, tint = MaterialTheme.colorScheme.error) },
+            title = { Text("删除正则") },
+            text = { Text("确认删除 \"${item.re}\"？") },
+            confirmButton = {
+                TextButton({ onDelete(); showConfirmDelete = false }) {
+                    Text(
+                        "删除",
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            },
+            dismissButton = { TextButton({ showConfirmDelete = false }) { Text("取消") } },
+        )
+    }
 }
 
 @Composable
