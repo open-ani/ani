@@ -28,6 +28,10 @@ interface MonoTasker {
     )
 
     fun cancel(cause: CancellationException? = null)
+
+    suspend fun cancelAndJoin()
+
+    suspend fun join()
 }
 
 fun MonoTasker(
@@ -56,6 +60,16 @@ fun MonoTasker(
 
     override fun cancel(cause: CancellationException?) {
         job?.cancel(cause) // use completion handler to set _isRunning to false
+    }
+
+    override suspend fun cancelAndJoin() {
+        job?.run {
+            join()
+        }
+    }
+
+    override suspend fun join() {
+        job?.join()
     }
 }
 
