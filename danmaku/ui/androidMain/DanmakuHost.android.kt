@@ -147,6 +147,10 @@ internal actual fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
                             //Do nothing in preview
 
                         }
+
+                        override fun switchDanmakuRegexFilter(filter: DanmakuRegexFilter) {
+                            TODO("Not yet implemented")
+                        }
                     }
                 }
             )
@@ -200,6 +204,10 @@ internal actual fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
                         override fun switchDanmakuRegexFilterCompletely() {
                             //Do nothing in preview
 
+                        }
+
+                        override fun switchDanmakuRegexFilter(filter: DanmakuRegexFilter) {
+                            TODO("Not yet implemented")
                         }
                     }
                 }
