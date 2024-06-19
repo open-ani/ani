@@ -1,7 +1,8 @@
-package me.him188.ani.datasources.core.cache
+package me.him188.ani.app.data.media.cache
 
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
+import me.him188.ani.app.data.media.framework.TestMediaCacheEngine
 import me.him188.ani.datasources.api.DefaultMedia
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.MediaCacheMetadata
@@ -11,7 +12,6 @@ import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.ResourceLocation
-import me.him188.ani.datasources.core.cache.framework.TestMediaCacheEngine
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.test.Test

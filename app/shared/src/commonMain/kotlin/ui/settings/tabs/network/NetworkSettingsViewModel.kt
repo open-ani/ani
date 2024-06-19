@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.media.MediaSourceManager
+import me.him188.ani.app.data.media.instance.MediaSourceInstance
 import me.him188.ani.app.data.models.DanmakuSettings
 import me.him188.ani.app.data.models.ProxySettings
 import me.him188.ani.app.data.repositories.MediaSourceInstanceRepository
@@ -32,7 +33,6 @@ import me.him188.ani.datasources.api.source.MediaSourceFactory
 import me.him188.ani.datasources.api.source.MediaSourceParameters
 import me.him188.ani.datasources.api.subject.SubjectProvider
 import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
-import me.him188.ani.datasources.core.instance.MediaSourceInstance
 import me.him188.ani.datasources.ikaros.IkarosMediaSource
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject

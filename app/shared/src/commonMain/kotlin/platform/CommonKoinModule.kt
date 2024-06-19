@@ -38,6 +38,8 @@ import me.him188.ani.app.data.media.MediaCacheManagerImpl
 import me.him188.ani.app.data.media.MediaSourceManager
 import me.him188.ani.app.data.media.MediaSourceManagerImpl
 import me.him188.ani.app.data.media.TorrentMediaCacheEngine
+import me.him188.ani.app.data.media.cache.DirectoryMediaCacheStorage
+import me.him188.ani.app.data.media.instance.MediaSourceSave
 import me.him188.ani.app.data.repositories.BangumiEpisodeRepository
 import me.him188.ani.app.data.repositories.BangumiSubjectRepository
 import me.him188.ani.app.data.repositories.EpisodePreferencesRepository
@@ -77,8 +79,6 @@ import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.subject.SubjectProvider
 import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
-import me.him188.ani.datasources.core.cache.DirectoryMediaCacheStorage
-import me.him188.ani.datasources.core.instance.MediaSourceSave
 import me.him188.ani.utils.coroutines.childScope
 import me.him188.ani.utils.coroutines.childScopeContext
 import me.him188.ani.utils.logging.info
@@ -108,7 +108,7 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
     single<SubjectSearchRepository> {
         get<AniDatabase>().run { SubjectSearchRepositoryImpl(searchHistory(), searchTag()) }
     }
-    
+
     single<DanmakuManager> {
         DanmakuManagerImpl(
             parentCoroutineContext = coroutineScope.coroutineContext
@@ -129,7 +129,7 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
             .setQueryCoroutineContext(Dispatchers.IO)
             .build()
     }
-    
+
     // Media
     single<MediaCacheManager> {
         val id = MediaCacheManager.LOCAL_FS_MEDIA_SOURCE_ID

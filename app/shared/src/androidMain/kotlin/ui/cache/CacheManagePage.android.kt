@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.data.media.MediaCacheManager
+import me.him188.ani.app.data.media.cache.MediaCacheStorage
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.feedback.ErrorMessage
 import me.him188.ani.app.ui.subject.episode.mediaFetch.previewMediaList
@@ -25,7 +26,6 @@ import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.datasources.core.cache.MediaCache
-import me.him188.ani.datasources.core.cache.MediaCacheStorage
 import me.him188.ani.datasources.core.cache.MediaStats
 import me.him188.ani.datasources.core.cache.TestMediaCache
 import me.him188.ani.datasources.core.cache.emptyMediaStats

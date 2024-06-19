@@ -3,6 +3,10 @@ package me.him188.ani.app.data.media
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
+import me.him188.ani.app.data.media.cache.MediaCache
+import me.him188.ani.app.data.media.cache.MediaCacheEngine
+import me.him188.ani.app.data.media.cache.MediaStats
+import me.him188.ani.app.data.media.cache.emptyMediaStats
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.datasources.api.CachedMedia
@@ -12,10 +16,6 @@ import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.FileSize.Companion.kiloBytes
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
-import me.him188.ani.datasources.core.cache.MediaCache
-import me.him188.ani.datasources.core.cache.MediaCacheEngine
-import me.him188.ani.datasources.core.cache.MediaStats
-import me.him188.ani.datasources.core.cache.emptyMediaStats
 import kotlin.coroutines.CoroutineContext
 
 /**

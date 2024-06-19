@@ -45,14 +45,12 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.tools.formatDateTime
 import me.him188.ani.app.ui.foundation.ifThen
@@ -76,8 +74,8 @@ private inline val WINDOW_VERTICAL_PADDING get() = 8.dp
 @Composable
 fun MediaSelectorView(
     state: MediaSelectorPresentation,
+    sourceResults: MediaSourceResultsPresentation,
     modifier: Modifier = Modifier,
-    sourceResults: MediaSelectorSourceResults = emptyMediaSelectorSourceResults(),
     onClickItem: ((Media) -> Unit)? = null,
     actions: (@Composable RowScope.() -> Unit)? = null,
 ) = Surface {
@@ -140,16 +138,13 @@ fun MediaSelectorView(
                     Modifier.animateItemPlacement(),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    val scope = rememberCoroutineScope()
                     val onClick: (MediaSourceResultPresentation) -> Unit = remember(state) {
                         { item ->
-                            if (item.isDisabled || item.isFailed) {
+                            if (item.isDisabled || item.isFailedOrAbandoned) {
                                 item.restart()
                             } else {
                                 state.mediaSource.preferOrRemove(item.mediaSourceId)
-                                scope.launch {
-                                    state.mediaSelector.removePreferencesUntilFirstCandidate()
-                                }
+                                state.removePreferencesUntilFirstCandidate()
                             }
                         }
                     }
@@ -366,12 +361,12 @@ private fun MediaSourceResultCard(
                                 Text("点击临时启用")
                             }
 
-                            source.isLoading -> {
+                            source.isWorking -> {
                                 CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 3.dp)
                                 Text(remember(source.totalCount) { "${source.totalCount}" })
                             }
 
-                            source.isFailed -> {
+                            source.isFailedOrAbandoned -> {
                                 CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.error) {
                                     Icon(Icons.Outlined.Close, "查询失败")
                                     Text("点击重试")
@@ -405,11 +400,11 @@ private fun MediaSourceResultCard(
                         Icon(Icons.Outlined.HorizontalRule, null)
                     }
 
-                    source.isLoading -> {
+                    source.isWorking -> {
                         CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 3.dp)
                     }
 
-                    source.isFailed -> {
+                    source.isFailedOrAbandoned -> {
                         CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.error) {
                             Icon(Icons.Outlined.Close, "查询失败")
                         }

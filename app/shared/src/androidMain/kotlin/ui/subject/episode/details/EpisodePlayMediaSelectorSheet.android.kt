@@ -67,5 +67,5 @@ private fun createState(backgroundScope: CoroutineScope) =
             savedDefaultPreference = flowOf(MediaPreference.Empty),
             mediaSelectorSettings = flowOf(MediaSelectorSettings.Default)
         ),
-        backgroundScope,
+        backgroundScope.coroutineContext
     )

@@ -8,8 +8,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
-import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorSourceResults
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorView
+import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSourceResultsPresentation
 import me.him188.ani.datasources.api.Media
 
 /**
@@ -22,11 +22,12 @@ fun EpisodeCacheMediaSelector(
     state: MediaSelectorPresentation,
     onSelect: (Media) -> Unit,
     onCancel: () -> Unit,
-    sourceResults: MediaSelectorSourceResults,
+    sourceResults: MediaSourceResultsPresentation,
     modifier: Modifier = Modifier,
 ) {
     MediaSelectorView(
         state,
+        sourceResults = sourceResults,
         modifier.padding(vertical = 12.dp, horizontal = 16.dp)
             .fillMaxWidth(),
         onClickItem = {
@@ -37,6 +38,5 @@ fun EpisodeCacheMediaSelector(
                 Text("取消")
             }
         },
-        sourceResults = sourceResults,
     )
 }

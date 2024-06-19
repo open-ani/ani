@@ -14,6 +14,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
+import me.him188.ani.app.data.media.fetch.DefaultEpisodeMediaFetchSession
+import me.him188.ani.app.data.media.fetch.FetcherMediaSelectorConfig
+import me.him188.ani.app.data.media.instance.MediaSourceInstance
+import me.him188.ani.app.data.media.instance.createTestMediaSourceInstance
 import me.him188.ani.app.data.models.MediaSelectorSettings
 import me.him188.ani.app.data.repositories.EpisodePreferencesRepositoryImpl
 import me.him188.ani.app.data.subject.EpisodeInfo
@@ -35,8 +39,6 @@ import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.datasources.api.topic.SubtitleLanguage.ChineseSimplified
 import me.him188.ani.datasources.api.topic.SubtitleLanguage.ChineseTraditional
-import me.him188.ani.datasources.core.instance.MediaSourceInstance
-import me.him188.ani.datasources.core.instance.createTestMediaSourceInstance
 import me.him188.ani.datasources.dmhy.DmhyMediaSource
 import me.him188.ani.utils.coroutines.cancellableCoroutineScope
 import kotlin.coroutines.EmptyCoroutineContext

@@ -1,4 +1,4 @@
-package me.him188.ani.datasources.core.fetch
+package me.him188.ani.app.data.media.fetch
 
 import androidx.compose.runtime.Stable
 import kotlinx.coroutines.CoroutineScope
@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.flow.shareIn
+import me.him188.ani.app.data.media.instance.MediaSourceInstance
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.paging.SizedSource
 import me.him188.ani.datasources.api.source.MediaFetchRequest
@@ -27,7 +28,6 @@ import me.him188.ani.datasources.api.source.MediaMatch
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.source.toStringMultiline
-import me.him188.ani.datasources.core.instance.MediaSourceInstance
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
@@ -53,7 +53,6 @@ interface MediaFetcher : AutoCloseable {
 /**
  * 从多个 [MediaSource] 并行获取 [Media] 的活跃的会话.
  */
-@Stable
 interface MediaFetchSession {
     /**
      * The request used to initiate this session.
@@ -63,7 +62,7 @@ interface MediaFetchSession {
     /**
      * Results from each source. The key is the source ID.
      */
-    val resultsPerSource: Map<String, MediaSourceResult> // dev notes: see implementation of [MediaSource]s for the IDs.
+    val resultsPerSource: Map<String, MediaSourceFetchResult> // dev notes: see implementation of [MediaSource]s for the IDs.
 
     /**
      * Cumulative results from all sources.
@@ -71,7 +70,7 @@ interface MediaFetchSession {
      * ### Sanitization
      *
      * The results are post-processed to eliminate duplicated entries from different sources.
-     * Hence [cumulativeResults] might emit less values than a merge of all values from [MediaSourceResult.results].
+     * Hence [cumulativeResults] might emit less values than a merge of all values from [MediaSourceFetchResult.results].
      */
     val cumulativeResults: Flow<List<Media>>
 
@@ -87,12 +86,11 @@ interface MediaFetchSession {
 /**
  * 表示一个数据源 [MediaSource] 的查询结果
  */
-@Stable
-interface MediaSourceResult {
+interface MediaSourceFetchResult {
     val mediaSourceId: String
     val kind: MediaSourceKind
 
-    val state: StateFlow<MediaSourceState>
+    val state: StateFlow<MediaSourceFetchState>
 
     /**
      * Result from this data source.
@@ -112,7 +110,7 @@ interface MediaSourceResult {
      */
     val resultsIfEnabled
         get() = state
-            .map { it !is MediaSourceState.Disabled }
+            .map { it !is MediaSourceFetchState.Disabled }
             .distinctUntilChanged()
             .flatMapLatest {
                 if (it) results else flowOf(emptyList())
@@ -121,25 +119,25 @@ interface MediaSourceResult {
     /**
      * 重新请求获取结果.
      *
-     * 即使状态是 [MediaSourceState.Disabled], 也会重新请求.
+     * 即使状态是 [MediaSourceFetchState.Disabled], 也会重新请求.
      */
     fun restart()
 }
 
 
 @Stable
-sealed class MediaSourceState {
-    data object Idle : MediaSourceState()
+sealed class MediaSourceFetchState {
+    data object Idle : MediaSourceFetchState()
 
     /**
-     * 被禁用, 因此不会主动发起请求. 仍然可以通过 [MediaSourceResult.restart] 发起请求.
+     * 被禁用, 因此不会主动发起请求. 仍然可以通过 [MediaSourceFetchResult.restart] 发起请求.
      */
-    data object Disabled : MediaSourceState()
+    data object Disabled : MediaSourceFetchState()
 
-    data object Working : MediaSourceState()
+    data object Working : MediaSourceFetchState()
 
 
-    sealed class Completed : MediaSourceState()
+    sealed class Completed : MediaSourceFetchState()
     data object Succeed : Completed()
 
     /**
@@ -156,6 +154,10 @@ sealed class MediaSourceState {
         val cause: Throwable,
     ) : Completed()
 }
+
+val MediaSourceFetchState.isWorking get() = this is MediaSourceFetchState.Working
+val MediaSourceFetchState.isDisabled get() = this is MediaSourceFetchState.Disabled
+val MediaSourceFetchState.isFailedOrAbandoned get() = this is MediaSourceFetchState.Failed || this is MediaSourceFetchState.Abandoned
 
 class MediaFetcherConfig {
     companion object {
@@ -182,9 +184,9 @@ class MediaSourceMediaFetcher(
         private val config: MediaFetcherConfig,
         val disabled: Boolean,
         pagedSources: Flow<SizedSource<MediaMatch>>,
-    ) : MediaSourceResult {
-        override val state: MutableStateFlow<MediaSourceState> =
-            MutableStateFlow(if (disabled) MediaSourceState.Disabled else MediaSourceState.Idle)
+    ) : MediaSourceFetchResult {
+        override val state: MutableStateFlow<MediaSourceFetchState> =
+            MutableStateFlow(if (disabled) MediaSourceFetchState.Disabled else MediaSourceFetchState.Idle)
         private val restartCount = MutableStateFlow(0)
 
         override val results: Flow<List<Media>> by lazy {
@@ -194,24 +196,24 @@ class MediaSourceMediaFetcher(
                         sources.results.map { it.media }
                     }
                     .onStart {
-                        state.value = MediaSourceState.Working
+                        state.value = MediaSourceFetchState.Working
                     }
                     .catch {
-                        state.value = MediaSourceState.Failed(it)
+                        state.value = MediaSourceFetchState.Failed(it)
                         logger.error(it) { "Failed to fetch media from $mediaSourceId because of upstream error" }
 //                        throw it
                     }
                     .onCompletion {
                         if (it == null) {
                             // catch might have already updated the state
-                            if (state.value !is MediaSourceState.Completed) {
-                                state.value = MediaSourceState.Succeed
+                            if (state.value !is MediaSourceFetchState.Completed) {
+                                state.value = MediaSourceFetchState.Succeed
                             }
                         } else {
                             val currentState = state.value
-                            if (currentState !is MediaSourceState.Failed) {
+                            if (currentState !is MediaSourceFetchState.Failed) {
                                 // downstream (collector) failure
-                                state.value = MediaSourceState.Abandoned(it)
+                                state.value = MediaSourceFetchState.Abandoned(it)
                                 logger.error(it) { "Failed to fetch media from $mediaSourceId because of downstream error" }
 //                                throw it
                             }
@@ -233,8 +235,8 @@ class MediaSourceMediaFetcher(
         override fun restart() {
             while (true) {
                 val value = state.value
-                if (value is MediaSourceState.Completed || value is MediaSourceState.Disabled) {
-                    if (state.compareAndSet(value, MediaSourceState.Idle)) {
+                if (value is MediaSourceFetchState.Completed || value is MediaSourceFetchState.Disabled) {
+                    if (state.compareAndSet(value, MediaSourceFetchState.Idle)) {
                         break
                     }
                 } else {
@@ -253,7 +255,7 @@ class MediaSourceMediaFetcher(
             logger.info { "MediaFetchSessionImpl created, request: \n${request.toStringMultiline()}" }
         }
 
-        override val resultsPerSource: Map<String, MediaSourceResult> = mediaSources.associateBy {
+        override val resultsPerSource: Map<String, MediaSourceFetchResult> = mediaSources.associateBy {
             it.mediaSourceId
         }.mapValues { (id, instance) ->
             MediaSourceResultImpl(
@@ -282,7 +284,7 @@ class MediaSourceMediaFetcher(
             )
 
         override val hasCompleted = combine(resultsPerSource.values.map { it.state }) { states ->
-            states.all { it is MediaSourceState.Completed || it is MediaSourceState.Disabled }
+            states.all { it is MediaSourceFetchState.Completed || it is MediaSourceFetchState.Disabled }
         }
     }
 

@@ -15,11 +15,13 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.shareIn
 import me.him188.ani.app.data.models.MediaSelectorSettings
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.source.MediaSourceKind
+import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.datasources.api.topic.hasSeason
 import me.him188.ani.datasources.api.topic.isSingleEpisode
 import kotlin.coroutines.CoroutineContext
@@ -206,7 +208,11 @@ class DefaultMediaSelector(
     private val mediaSelectorContext = mediaSelectorContextNotCached.cached()
 
     override val mediaList: Flow<List<Media>> = combine(
-        mediaListNotCached.cached(), // cache 是必要的, 当 newPreferences 变更的时候不能重新加载 media list (网络)
+        mediaListNotCached.mapLatest { list ->
+            list.sortedWith(
+                compareBy<Media> { it.costForDownload }.thenByDescending { it.properties.size.inBytes }
+            )
+        }.cached(), // cache 是必要的, 当 newPreferences 变更的时候不能重新加载 media list (网络)
         savedDefaultPreference, // 只需要使用 default, 因为目前不能覆盖生肉设置
         // 如果依赖 merged pref, 会产生循环依赖 (mediaList -> mediaPreferenceItem -> newPreferences -> mediaList)
         this.mediaSelectorSettings,
@@ -597,3 +603,10 @@ class DefaultMediaSelector(
         override fun toString(): String = "MediaPreferenceItem($debugName)"
     }
 }
+
+private val Media.costForDownload
+    get() = when (location) {
+        MediaSourceLocation.Local -> 0
+        MediaSourceLocation.Lan -> 1
+        else -> 2
+    }

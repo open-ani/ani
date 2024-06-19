@@ -1,22 +1,15 @@
 package me.him188.ani.app.ui.subject.cache
 
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.material3.BasicAlertDialog
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.window.DialogProperties
 import io.ktor.util.logging.error
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineStart
@@ -33,8 +26,11 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.transform
-import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.media.MediaCacheManager
+import me.him188.ani.app.data.media.cache.EpisodeCacheRequester
+import me.him188.ani.app.data.media.cache.MediaCache
+import me.him188.ani.app.data.media.cache.MediaCacheStorage
+import me.him188.ani.app.data.media.fetch.EpisodeMediaFetchSession
 import me.him188.ani.app.data.models.MediaSelectorSettings
 import me.him188.ani.app.data.repositories.BangumiEpisodeRepository
 import me.him188.ani.app.data.repositories.BangumiSubjectRepository
@@ -49,18 +45,11 @@ import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.feedback.ErrorDialogHost
 import me.him188.ani.app.ui.foundation.feedback.ErrorMessage
 import me.him188.ani.app.ui.foundation.launchInBackground
-import me.him188.ani.app.ui.foundation.rememberBackgroundScope
-import me.him188.ani.app.ui.subject.episode.mediaFetch.EpisodeMediaFetchSession
-import me.him188.ani.app.ui.subject.episode.mediaFetch.FetcherMediaSelectorConfig
-import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
-import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberMediaSelectorSourceResults
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaCacheMetadata
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.topic.contains
 import me.him188.ani.datasources.api.unwrapCached
-import me.him188.ani.datasources.core.cache.MediaCache
-import me.him188.ani.datasources.core.cache.MediaCacheStorage
 import me.him188.ani.utils.coroutines.runUntilSuccess
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.koin.core.component.KoinComponent
@@ -79,9 +68,24 @@ class SubjectCacheViewModel(
     private val cacheStoragesPlaceholder = ArrayList<MediaCacheStorage>(0)
 
     val cacheStorages by cacheManager.enabledStorages.produceState(cacheStoragesPlaceholder)
-    val cacheStoragesLoaded by derivedStateOf {
-        cacheStorages !== cacheStoragesPlaceholder
-    }
+
+    private val episodeCacheRequester = EpisodeCacheRequester(
+        settings = settingsRepository.mediaSelectorSettings.flow,
+        createFetchSession = ::EpisodeMediaFetchSession,
+        backgroundScope.coroutineContext
+    )
+
+    val episodeCacheRequesterState = EpisodeCacheRequesterPresentation(
+        episodeCacheRequester,
+        cacheManager.enabledStorages,
+        settingsNotCached = settingsRepository.mediaSelectorSettings.flow,
+        onComplete = { completed ->
+            launchInBackground {
+                addCache(completed.media, completed.mediaCacheMetadata, completed.storage)
+            }
+        },
+        backgroundScope.coroutineContext,
+    )
 
     suspend fun findStorageByCache(cache: MediaCache?): MediaCacheStorage {
         val vm = this
@@ -284,88 +288,10 @@ fun SubjectCacheScene(
     }
 
     showMediaSelector?.let { episodeCacheState ->
-        val dismissSelector = remember { { showMediaSelector = null } }
-        val backgroundScope = rememberBackgroundScope() // 关掉窗口就立即停止查询
-
-        val epFetch = remember(vm.subjectId, episodeCacheState.episodeId) {
-            EpisodeMediaFetchSession(
-                vm.subjectId,
-                episodeCacheState.episodeId,
-                backgroundScope.backgroundScope.coroutineContext,
-                FetcherMediaSelectorConfig(
-                    // 手动缓存的时候要保存设置, 但不要自动选择
-                    savePreferenceChanges = true,
-                    autoSelectOnFetchCompletion = false,
-                    autoSelectLocal = false,
-                )
-            )
-        }
-        val mediaSelectorPresentation = remember(epFetch, backgroundScope) {
-            MediaSelectorPresentation(epFetch.mediaSelector, backgroundScope.backgroundScope)
-        }
-
-        var selectedMedia by remember(vm.subjectId, episodeCacheState.episodeId) { mutableStateOf<Media?>(null) }
-
-        if (selectedMedia != null) {
-            BasicAlertDialog(
-                {},
-                properties = DialogProperties(
-                    dismissOnBackPress = false, dismissOnClickOutside = false
-                )
-            ) {
-                MediaCacheStorageSelector(
-                    remember(vm) { MediaCacheStorageSelectorState(vm.cacheStorages) },
-                    onSelect = { storage ->
-                        selectedMedia?.let { media ->
-                            vm.launchInBackground {
-                                addCache(
-                                    media,
-                                    request = { epFetch.mediaFetchSession.map { it.request }.first() },
-                                    storage
-                                )
-                                withContext(Dispatchers.Main) {
-                                    dismissSelector()
-                                }
-                            }
-                        }
-                    },
-                    onDismissRequest = {
-                        selectedMedia = null
-                    }
-                )
-            }
-        }
-
-        ModalBottomSheet(
-            dismissSelector,
-            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-        ) {
-            EpisodeCacheMediaSelector(
-                mediaSelectorPresentation,
-                onSelect = { media ->
-                    if (vm.cacheStorages.size == 1) {
-                        val storage = vm.cacheStorages.first()
-                        vm.launchInBackground {
-                            addCache(
-                                media,
-                                request = { epFetch.mediaFetchSession.map { it.request }.first() },
-                                storage,
-                            )
-                            withContext(Dispatchers.Main) {
-                                dismissSelector()
-                            }
-                        }
-                    } else {
-                        selectedMedia = media
-                    }
-                },
-                onCancel = dismissSelector,
-                sourceResults = rememberMediaSelectorSourceResults(
-                    settingsProvider = { vm.mediaSelectorSettings }
-                ) { epFetch.sourceResults },
-                Modifier.fillMaxHeight().navigationBarsPadding() // 防止添加筛选后数量变少导致 bottom sheet 高度变化
-            )
-        }
+        EpisodeCacheRequesterView(
+            state = vm.episodeCacheRequesterState,
+            episodeCacheState = episodeCacheState,
+        )
     }
 
     return SubjectCachePage(

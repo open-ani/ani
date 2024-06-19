@@ -13,6 +13,10 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
+import me.him188.ani.app.data.media.cache.MediaCacheStorage
+import me.him188.ani.app.data.media.fetch.EpisodeMediaFetchSession
+import me.him188.ani.app.data.media.fetch.FetcherMediaSelectorConfig
+import me.him188.ani.app.data.media.fetch.awaitCompletion
 import me.him188.ani.app.data.models.MediaCacheSettings
 import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.data.subject.EpisodeCollection
@@ -22,13 +26,9 @@ import me.him188.ani.app.data.subject.episode
 import me.him188.ani.app.data.subject.isKnownBroadcast
 import me.him188.ani.app.tools.caching.ContentPolicy
 import me.him188.ani.app.tools.caching.data
-import me.him188.ani.app.ui.subject.episode.mediaFetch.EpisodeMediaFetchSession
-import me.him188.ani.app.ui.subject.episode.mediaFetch.FetcherMediaSelectorConfig
-import me.him188.ani.app.ui.subject.episode.mediaFetch.awaitCompletion
 import me.him188.ani.datasources.api.MediaCacheMetadata
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.datasources.api.topic.isDoneOrDropped
-import me.him188.ani.datasources.core.cache.MediaCacheStorage
 import me.him188.ani.utils.coroutines.cancellableCoroutineScope
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info

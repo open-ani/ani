@@ -43,6 +43,11 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.media.MediaCacheManager
+import me.him188.ani.app.data.media.cache.MediaCache
+import me.him188.ani.app.data.media.cache.MediaCacheStorage
+import me.him188.ani.app.data.media.cache.MediaStats
+import me.him188.ani.app.data.media.cache.emptyMediaStats
+import me.him188.ani.app.data.media.cache.sum
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.feedback.ErrorDialogHost
 import me.him188.ani.app.ui.foundation.feedback.ErrorMessage
@@ -50,11 +55,6 @@ import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.datasources.api.topic.FileSize
-import me.him188.ani.datasources.core.cache.MediaCache
-import me.him188.ani.datasources.core.cache.MediaCacheStorage
-import me.him188.ani.datasources.core.cache.MediaStats
-import me.him188.ani.datasources.core.cache.emptyMediaStats
-import me.him188.ani.datasources.core.cache.sum
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject

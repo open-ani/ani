@@ -35,12 +35,14 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.danmaku.DanmakuManager
+import me.him188.ani.app.data.media.fetch.EpisodeMediaFetchSession
+import me.him188.ani.app.data.media.fetch.FetcherMediaSelectorConfig
+import me.him188.ani.app.data.media.fetch.MediaSourceResults
 import me.him188.ani.app.data.media.resolver.EpisodeMetadata
 import me.him188.ani.app.data.media.resolver.ResolutionFailures
 import me.him188.ani.app.data.media.resolver.UnsupportedMediaException
 import me.him188.ani.app.data.media.resolver.VideoSourceResolutionException
 import me.him188.ani.app.data.media.resolver.VideoSourceResolver
-import me.him188.ani.app.data.models.MediaSelectorSettings
 import me.him188.ani.app.data.models.VideoScaffoldConfig
 import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.data.subject.SubjectInfo
@@ -56,9 +58,8 @@ import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.app.ui.subject.episode.danmaku.PlayerDanmakuViewModel
-import me.him188.ani.app.ui.subject.episode.mediaFetch.EpisodeMediaFetchSession
-import me.him188.ani.app.ui.subject.episode.mediaFetch.FetcherMediaSelectorConfig
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
+import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSourceResultsPresentation
 import me.him188.ani.app.ui.subject.episode.statistics.DanmakuLoadingState
 import me.him188.ani.app.ui.subject.episode.statistics.PlayerStatisticsState
 import me.him188.ani.app.videoplayer.data.OpenFailures
@@ -159,8 +160,8 @@ interface EpisodeViewModel : HasBackgroundScope {
      * 查询剧集数据源资源的会话
      */
     val episodeMediaFetchSession: EpisodeMediaFetchSession
-    val mediaSelectorSettings: MediaSelectorSettings
     val mediaSelectorPresentation: MediaSelectorPresentation
+    val mediaSourceResultsPresentation: MediaSourceResultsPresentation
 
     val playerStatistics: PlayerStatisticsState
 
@@ -201,9 +202,6 @@ interface EpisodeViewModel : HasBackgroundScope {
     val danmaku: PlayerDanmakuViewModel
 }
 
-@Stable
-val EpisodeViewModel.mediaSelector get() = episodeMediaFetchSession.mediaSelector
-
 fun EpisodeViewModel(
     initialSubjectId: Int,
     initialEpisodeId: Int,
@@ -243,12 +241,22 @@ private class EpisodeViewModelImpl(
             autoSelectLocal = true,
         ),
     )
-    override val mediaSelectorSettings: MediaSelectorSettings by
-    settingsRepository.mediaSelectorSettings.flow.produceState(MediaSelectorSettings.Default)
     override val mediaSelectorPresentation: MediaSelectorPresentation by lazy {
         MediaSelectorPresentation(
-            mediaSelector,
+            episodeMediaFetchSession.mediaSelector,
             backgroundScope
+                .coroutineContext
+        )
+    }
+    override val mediaSourceResultsPresentation: MediaSourceResultsPresentation by lazy {
+        MediaSourceResultsPresentation(
+            flowOf(
+                MediaSourceResults(
+                    results = episodeMediaFetchSession.sourceResults,
+                    settings = settingsRepository.mediaSelectorSettings.flow,
+                )
+            ),
+            backgroundScope.coroutineContext
         )
     }
     override val playerStatistics: PlayerStatisticsState = PlayerStatisticsState()
@@ -257,7 +265,7 @@ private class EpisodeViewModelImpl(
     override val videoScaffoldConfig: VideoScaffoldConfig by settingsRepository.videoScaffoldConfig
         .flow.produceState(VideoScaffoldConfig.Default)
 
-    private val selectedMedia = mediaSelectorPresentation.mediaSelector.selected
+    private val selectedMedia = episodeMediaFetchSession.mediaSelector.selected
         .filterNotNull()
         .distinctUntilChanged()
 

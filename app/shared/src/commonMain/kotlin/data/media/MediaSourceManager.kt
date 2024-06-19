@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
 import me.him188.ani.app.data.media.MediaCacheManager.Companion.LOCAL_FS_MEDIA_SOURCE_ID
+import me.him188.ani.app.data.media.instance.MediaSourceInstance
+import me.him188.ani.app.data.media.instance.MediaSourceSave
 import me.him188.ani.app.data.models.MediaSourceProxySettings
 import me.him188.ani.app.data.models.ProxyAuthorization
 import me.him188.ani.app.data.repositories.MediaSourceInstanceRepository
@@ -21,8 +23,6 @@ import me.him188.ani.app.platform.getAniUserAgent
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.source.MediaSourceFactory
-import me.him188.ani.datasources.core.instance.MediaSourceInstance
-import me.him188.ani.datasources.core.instance.MediaSourceSave
 import me.him188.ani.datasources.mikan.MikanCNMediaSource
 import me.him188.ani.datasources.mikan.MikanMediaSource
 import me.him188.ani.utils.coroutines.onReplacement

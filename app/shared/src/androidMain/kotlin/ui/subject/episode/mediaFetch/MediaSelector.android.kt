@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.media.MediaCacheManager
+import me.him188.ani.app.data.media.fetch.MediaSourceFetchResult
+import me.him188.ani.app.data.media.fetch.MediaSourceFetchState
 import me.him188.ani.app.data.media.selector.DefaultMediaSelector
 import me.him188.ani.app.data.media.selector.MediaSelectorContext
 import me.him188.ani.app.data.models.MediaSelectorSettings
@@ -30,8 +32,6 @@ import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.datasources.api.topic.SubtitleLanguage.ChineseSimplified
 import me.him188.ani.datasources.api.topic.SubtitleLanguage.ChineseTraditional
-import me.him188.ani.datasources.core.fetch.MediaSourceResult
-import me.him188.ani.datasources.core.fetch.MediaSourceState
 import me.him188.ani.datasources.dmhy.DmhyMediaSource
 import me.him188.ani.datasources.mikan.MikanCNMediaSource
 import me.him188.ani.datasources.mikan.MikanMediaSource
@@ -164,7 +164,7 @@ private fun PreviewMediaSelector() {
                         ),
                         mediaSelectorSettings = flowOf(MediaSelectorSettings.Default)
                     ),
-                    backgroundScope = backgroundScope.backgroundScope,
+                    backgroundScope.backgroundScope.coroutineContext
                 )
             },
             sourceResults = rememberTestMediaSourceResults()
@@ -173,38 +173,38 @@ private fun PreviewMediaSelector() {
 }
 
 @Composable
-internal fun rememberTestMediaSourceResults() = rememberMediaSelectorSourceResults(
+internal fun rememberTestMediaSourceResults() = rememberMediaSourceResultsPresentation(
     { MediaSelectorSettings.Default }
 ) {
     listOf(
         TestMediaSourceResult(
             MikanMediaSource.ID,
             MediaSourceKind.BitTorrent,
-            initialState = MediaSourceState.Working,
+            initialState = MediaSourceFetchState.Working,
             results = previewMediaList
         ),
         TestMediaSourceResult(
             "dmhy",
             MediaSourceKind.BitTorrent,
-            initialState = MediaSourceState.Succeed,
+            initialState = MediaSourceFetchState.Succeed,
             results = previewMediaList
         ),
         TestMediaSourceResult(
             "acg.rip",
             MediaSourceKind.BitTorrent,
-            initialState = MediaSourceState.Disabled,
+            initialState = MediaSourceFetchState.Disabled,
             results = previewMediaList
         ),
         TestMediaSourceResult(
             "nyafun",
             MediaSourceKind.WEB,
-            initialState = MediaSourceState.Succeed,
+            initialState = MediaSourceFetchState.Succeed,
             results = previewMediaList
         ),
         TestMediaSourceResult(
             MikanCNMediaSource.ID,
             MediaSourceKind.BitTorrent,
-            initialState = MediaSourceState.Failed(IllegalStateException()),
+            initialState = MediaSourceFetchState.Failed(IllegalStateException()),
             results = emptyList()
         ),
     )
@@ -213,18 +213,18 @@ internal fun rememberTestMediaSourceResults() = rememberMediaSelectorSourceResul
 private class TestMediaSourceResult(
     override val mediaSourceId: String,
     override val kind: MediaSourceKind,
-    initialState: MediaSourceState,
+    initialState: MediaSourceFetchState,
     results: List<Media>,
-) : MediaSourceResult {
-    override val state: MutableStateFlow<MediaSourceState> = MutableStateFlow(initialState)
+) : MediaSourceFetchResult {
+    override val state: MutableStateFlow<MediaSourceFetchState> = MutableStateFlow(initialState)
     override val results: Flow<List<Media>> = flowOf(results)
 
     @OptIn(DelicateCoroutinesApi::class)
     override fun restart() {
-        state.value = MediaSourceState.Working
+        state.value = MediaSourceFetchState.Working
         GlobalScope.launch {
             delay(3000)
-            state.value = MediaSourceState.Succeed
+            state.value = MediaSourceFetchState.Succeed
         }
     }
 }

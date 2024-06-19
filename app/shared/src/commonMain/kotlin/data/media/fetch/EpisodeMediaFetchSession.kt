@@ -1,9 +1,9 @@
-package me.him188.ani.app.ui.subject.episode.mediaFetch
+package me.him188.ani.app.data.media.fetch
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.getValue
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onStart
 import me.him188.ani.app.data.media.MediaSourceManager
+import me.him188.ani.app.data.media.instance.MediaSourceInstance
 import me.him188.ani.app.data.media.selector.DefaultMediaSelector
 import me.him188.ani.app.data.media.selector.MediaSelector
 import me.him188.ani.app.data.media.selector.MediaSelectorContext
@@ -32,14 +33,8 @@ import me.him188.ani.app.data.subject.subjectCompletedFlow
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
-import me.him188.ani.datasources.api.Media
+import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.datasources.api.source.MediaFetchRequest
-import me.him188.ani.datasources.core.fetch.MediaFetchSession
-import me.him188.ani.datasources.core.fetch.MediaFetcher
-import me.him188.ani.datasources.core.fetch.MediaFetcherConfig
-import me.him188.ani.datasources.core.fetch.MediaSourceMediaFetcher
-import me.him188.ani.datasources.core.fetch.MediaSourceResult
-import me.him188.ani.datasources.core.instance.MediaSourceInstance
 import me.him188.ani.utils.coroutines.OwnedCancellationException
 import me.him188.ani.utils.coroutines.checkOwner
 import me.him188.ani.utils.logging.info
@@ -48,10 +43,12 @@ import org.koin.core.context.GlobalContext
 import kotlin.coroutines.CoroutineContext
 
 /**
- * 一个正在进行中的对剧集资源的获取操作.
+ * 一个正在进行中的对剧集资源的查询和选择操作.
+ *
+ * 查询部分为 [MediaFetchSession], 选择部分为 [MediaSelector].
  */
 @Stable
-interface EpisodeMediaFetchSession {
+interface EpisodeMediaFetchSession : AutoCloseable {
     /**
      * A lazy [MediaFetchSession] that is created on demand and then shared.
      */
@@ -60,17 +57,17 @@ interface EpisodeMediaFetchSession {
     /**
      * Whether the [mediaFetchSession] has succeed. It is always `false` when initialized.
      */
-    val mediaFetcherCompleted: Boolean
+    val mediaFetcherCompleted: Flow<Boolean>
 
     /**
-     * 数据源选择器
+     * 数据源选择器, 用于操作从本次查询中选择结果.
      */
     val mediaSelector: MediaSelector
 
     /**
      * 每个数据源的结果
      */
-    val sourceResults: List<MediaSourceResult>
+    val sourceResults: Flow<List<MediaSourceFetchResult>>
 }
 
 suspend fun EpisodeMediaFetchSession.awaitCompletion() {
@@ -95,7 +92,7 @@ class FetcherMediaSelectorConfig(
 
 /**
  * Creates a [EpisodeMediaFetchSession] that fetches media for the given [subjectId] and [episodeId],
- * and then maintains a [MediaSelectorPresentation] for user selection.
+ * and then maintains a [MediaSelector] for user selection.
  *
  * @param parentCoroutineContext must have a [Job] to manage the lifecycle of this fetcher.
  */
@@ -133,16 +130,16 @@ fun EpisodeMediaFetchSession(
 
 /**
  * [MediaFetcher]-based media selector.
- *
- * This class fetches media from the [MediaFetcher] and maintains a [MediaSelectorPresentation] for user selection.
- * It also considers the user's per-subject preferences with [EpisodePreferencesRepository].
  */
 internal class DefaultEpisodeMediaFetchSession(
     subjectId: Int,
     config: FetcherMediaSelectorConfig,
+    /**
+     * 需要查询的 subject, flow 仅相当于 lazy, 只能 emit 一个元素. emit 更多元素为 UB.
+     */
     private val subject: Flow<SubjectInfo>,
     /**
-     * 需要查询的 episode
+     * 需要查询的 episode, flow 仅相当于 lazy, 只能 emit 一个元素. emit 更多元素为 UB.
      */
     private val episode: Flow<EpisodeInfo>,
     private val episodePreferencesRepository: EpisodePreferencesRepository,
@@ -178,17 +175,9 @@ internal class DefaultEpisodeMediaFetchSession(
         fetcher.fetch(req)
     }.shareInBackground(started = SharingStarted.Lazily)
 
-    override val mediaFetcherCompleted by mediaFetchSession.flatMapLatest { it.hasCompleted }
-        .produceState(false)
+    override val mediaFetcherCompleted: Flow<Boolean> = mediaFetchSession.flatMapLatest { it.hasCompleted }
 
     override val mediaSelector = kotlin.run {
-        val fetchResult = mediaFetchSession.flatMapLatest { it.cumulativeResults }
-            .mapLatest { list ->
-                list.sortedWith(
-                    compareBy<Media> { it.costForDownload }.thenByDescending { it.properties.size.inBytes }
-                )
-            }
-
         DefaultMediaSelector(
             mediaSelectorContextNotCached = combine(
                 subjectCompletedNotCached,
@@ -204,16 +193,20 @@ internal class DefaultEpisodeMediaFetchSession(
             }.onStart {
                 emit(MediaSelectorContext.Initial) // 否则如果一直没获取到剧集信息, 就无法选集, #385
             },
-            mediaListNotCached = fetchResult,
+            mediaListNotCached = mediaFetchSession.flatMapLatest { it.cumulativeResults },
             savedUserPreference = episodePreferencesRepository.mediaPreferenceFlow(subjectId),
             savedDefaultPreference = defaultMediaPreferenceFlow,
             mediaSelectorSettings = mediaSelectorSettingsFlow,
         )
     }
 
-    override val sourceResults: List<MediaSourceResult> by mediaFetchSession.map {
+    override val sourceResults: Flow<List<MediaSourceFetchResult>> = mediaFetchSession.map {
         it.resultsPerSource.values.toList()
-    }.produceState(emptyList())
+    }
+
+    override fun close() {
+        backgroundScope.cancel()
+    }
 
     init {
         if (config.savePreferenceChanges) {
