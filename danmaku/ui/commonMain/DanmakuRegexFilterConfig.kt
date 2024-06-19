@@ -4,8 +4,8 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import me.him188.ani.app.ui.foundation.randomUuid
 import me.him188.ani.danmaku.api.Danmaku
+import java.util.UUID
 
 /**4
  * Defines which [Danmaku] can be displayed.
@@ -36,7 +36,7 @@ data class DanmakuRegexFilterConfig (
 
 @Serializable
 data class DanmakuRegexFilter (
-    val instanceID: String = randomUuid().toString(),
+    val instanceID: String = UUID.randomUUID().toString(),
     val name: String = "",
     val re: String = "",
     val isEnabled: Boolean = true

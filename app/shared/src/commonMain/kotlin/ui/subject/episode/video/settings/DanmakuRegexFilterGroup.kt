@@ -1,29 +1,22 @@
 package me.him188.ani.app.ui.subject.episode.video.settings
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Delete
-import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Visibility
 import androidx.compose.material.icons.rounded.VisibilityOff
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedFilterChip
@@ -37,7 +30,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -53,15 +45,14 @@ import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
-import me.him188.ani.app.ui.settings.framework.components.TextItem
-import me.him188.ani.app.ui.subject.episode.statistics.DanmakuLoadingState
 import me.him188.ani.danmaku.ui.DanmakuRegexFilter
 import me.him188.ani.danmaku.ui.DanmakuRegexFilterConfig
+import java.util.regex.Pattern
 import java.util.regex.PatternSyntaxException
 
-internal fun isValidRegex(regex: String): Boolean {
+internal fun isValidRegex(pattern: String): Boolean {
     return try {
-        regex.toRegex()
+        Pattern.compile(pattern)
         true
     } catch (e: PatternSyntaxException) {
         false
@@ -88,13 +79,14 @@ internal fun SettingsScope.DanmakuRegexFilterGroup(
                 if (name.isBlank() || regex.isBlank()) {
                     errorMessage = "名字和正则不能为空"
                     showError = true
-                } else if (isValidRegex(regex).not()){
+                } else {
+                    if (isValidRegex(regex).not()){
                     errorMessage = "正则输入法不正确"
                     showError = true 
-                }
-                else {
-                    addDanmakuRegexFilter(DanmakuRegexFilter(name = name, re = regex))
-                    showAdd = false
+                    } else { 
+                        addDanmakuRegexFilter(DanmakuRegexFilter(name = name, re = regex))
+                        showAdd = false
+                    }
                 }
             },
             title = { Text("添加正则过滤器") },
