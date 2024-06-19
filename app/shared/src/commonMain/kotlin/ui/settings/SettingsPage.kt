@@ -20,6 +20,8 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -32,9 +34,12 @@ import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
+import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
+import me.him188.ani.app.ui.profile.SettingsViewModel
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.tabs.AboutTab
+import me.him188.ani.app.ui.settings.tabs.DebugTab
 import me.him188.ani.app.ui.settings.tabs.app.AppSettingsTab
 import me.him188.ani.app.ui.settings.tabs.media.MediaPreferenceTab
 import me.him188.ani.app.ui.settings.tabs.network.NetworkSettingsTab
@@ -48,6 +53,7 @@ enum class SettingsTab {
     MEDIA,
     NETWORK,
     ABOUT,
+    DEBUG
     ;
 
     companion object {
@@ -63,6 +69,8 @@ fun SettingsPage(
     contentPadding: PaddingValues = PaddingValues(0.dp),
     allowBack: Boolean = !isShowLandscapeUI(),
 ) {
+    val vm = rememberViewModel { SettingsViewModel() }
+    
     Scaffold(
         modifier,
         topBar = {
@@ -76,8 +84,16 @@ fun SettingsPage(
             )
         }
     ) { topBarPaddings ->
-        val pagerState =
-            rememberPagerState(initialPage = initialTab.ordinal) { SettingsTab.entries.size }
+        val pageCount by remember {
+            derivedStateOf {
+                SettingsTab.entries.run { if (vm.debugSettings.enabled) size else (size - 1) }
+            }
+        }
+        val pagerState = rememberPagerState(
+            initialPage = initialTab.ordinal,
+            pageCount = { pageCount }
+        )
+        
         val scope = rememberCoroutineScope()
 
         // Pager with TabRow
@@ -91,7 +107,13 @@ fun SettingsPage(
                 },
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                SettingsTab.entries.forEachIndexed { index, tabId ->
+                val tabs by remember {
+                    derivedStateOf {
+                        SettingsTab.entries
+                            .filter { if (vm.debugSettings.enabled) true else it != SettingsTab.DEBUG }
+                    }
+                }
+                tabs.forEachIndexed { index, tabId ->
                     Tab(
                         selected = pagerState.currentPage == index,
                         onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
@@ -123,8 +145,15 @@ fun SettingsPage(
                         when (type) {
                             SettingsTab.MEDIA -> MediaPreferenceTab(modifier = Modifier.fillMaxSize())
                             SettingsTab.NETWORK -> NetworkSettingsTab(modifier = Modifier.fillMaxSize())
-                            SettingsTab.ABOUT -> AboutTab(modifier = Modifier.fillMaxSize())
+                            SettingsTab.ABOUT -> AboutTab(
+                                modifier = Modifier.fillMaxSize(),
+                                onTriggerDebugMode = { vm.triggerDebugMode() }
+                            )
                             SettingsTab.APP -> AppSettingsTab(modifier = Modifier.fillMaxSize())
+                            SettingsTab.DEBUG -> DebugTab(
+                                modifier = Modifier.fillMaxSize(),
+                                onDisableDebugMode = { scope.launch { pagerState.animateScrollToPage(0) } }
+                            )
                         }
                     }
                 }
@@ -143,6 +172,7 @@ private fun renderPreferenceTab(
         SettingsTab.NETWORK -> "数据源与网络"
         SettingsTab.MEDIA -> "播放与缓存"
         SettingsTab.ABOUT -> "关于"
+        SettingsTab.DEBUG -> "调试"
     }
 }
 
