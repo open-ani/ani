@@ -91,7 +91,7 @@ internal fun SettingsScope.DanmakuRegexFilterGroup(
             },
             title = { Text("添加正则过滤器") },
             description = {
-                Text("请正确添加正则表达式，例：第一个字符为数字：'^[1-9]{1}\$'.\n符合正则的弹幕讲不会被显示")
+                Text("请正确添加正则表达式，例如：第一个字符为数字：'^[1-9]{1}\$'.\n匹配该正常表达式的弹幕将不会显示")
             },
             
         )
