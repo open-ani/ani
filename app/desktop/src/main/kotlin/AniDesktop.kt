@@ -22,7 +22,6 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -67,7 +66,12 @@ import me.him188.ani.app.tools.update.UpdateInstaller
 import me.him188.ani.app.ui.foundation.LocalWindowState
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.interaction.PlatformImplementations
+import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.foundation.theme.AppTheme
+import me.him188.ani.app.ui.foundation.widgets.LocalToaster
+import me.him188.ani.app.ui.foundation.widgets.Toast
+import me.him188.ani.app.ui.foundation.widgets.ToastViewModel
+import me.him188.ani.app.ui.foundation.widgets.Toaster
 import me.him188.ani.app.ui.main.AniApp
 import me.him188.ani.app.ui.main.AniAppContent
 import me.him188.ani.app.videoplayer.ui.VlcjVideoPlayerState
@@ -77,6 +81,7 @@ import me.him188.ani.desktop.generated.resources.a_round
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
+import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.painterResource
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
@@ -231,7 +236,7 @@ private fun MainWindowContent(
                 .padding(top = if (hostIsMacOs && windowImmersed) 28.dp else 0.dp) // safe area for macOS if windowImmersed
                 .fillMaxSize()
         ) {
-            BoxWithConstraints(Modifier.fillMaxSize()) {
+            Box(Modifier.fillMaxSize()) {
                 val paddingByWindowSize by animateDpAsState(
                     0.dp
 //                    if (maxWidth > 400.dp) {
@@ -241,9 +246,23 @@ private fun MainWindowContent(
 //                    },
                 )
 
-                CompositionLocalProvider(LocalNavigator provides aniNavigator) {
+
+                val vm = rememberViewModel { ToastViewModel() }
+
+                val showing by vm.showing.collectAsStateWithLifecycle()
+                val content by vm.content.collectAsStateWithLifecycle()
+
+                CompositionLocalProvider(
+                    LocalNavigator provides aniNavigator,
+                    LocalToaster provides object : Toaster {
+                        override fun toast(text: String) {
+                            vm.show(text)
+                        }
+                    }
+                ) {
                     Box(Modifier.padding(all = paddingByWindowSize)) {
                         AniAppContent(aniNavigator)
+                        Toast(showing, content)
                     }
                 }
             }

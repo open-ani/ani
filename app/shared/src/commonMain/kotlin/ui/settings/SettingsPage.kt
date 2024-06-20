@@ -35,6 +35,7 @@ import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.rememberViewModel
+import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.app.ui.profile.SettingsViewModel
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
@@ -69,7 +70,12 @@ fun SettingsPage(
     contentPadding: PaddingValues = PaddingValues(0.dp),
     allowBack: Boolean = !isShowLandscapeUI(),
 ) {
-    val vm = rememberViewModel { SettingsViewModel() }
+    val toaster = LocalToaster.current
+    val vm = rememberViewModel {
+        SettingsViewModel(
+            triggerOnEnableDebugMode = { toaster.toast("调试模式已开启") }
+        )
+    }
     
     Scaffold(
         modifier,

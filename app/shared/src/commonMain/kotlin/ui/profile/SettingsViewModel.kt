@@ -1,22 +1,23 @@
 package me.him188.ani.app.ui.profile
 
 import androidx.compose.runtime.getValue
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import me.him188.ani.app.data.models.DebugSettings
 import me.him188.ani.app.data.repositories.SettingsRepository
+import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
 import moe.tlaster.precompose.viewmodel.viewModelScope
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.util.LinkedList
 
-class SettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
+class SettingsViewModel(
+    private val triggerOnEnableDebugMode: () -> Unit = {}
+) : AbstractSettingsViewModel(), KoinComponent {
     private val settingsRepository by inject<SettingsRepository>()
     private val debugTriggerRecord = LinkedList<Long>()
 
-    private var clearJob: Job? = null
+    private val tasker = MonoTasker(viewModelScope)
 
     private val _debugSettings by settings(
         settingsRepository.debugSettings,
@@ -35,12 +36,11 @@ class SettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
 
     fun triggerDebugMode() {
         if (debugSettings.enabled) return
-        cancelClearJob()
-        clearJob = viewModelScope.launch { clearTriggerRecord() }
+        tasker.launch { clearTriggerRecord() }
 
         if (debugTriggerRecord.size == 5) {
             debugTriggerRecord.clear()
-            cancelClearJob()
+            tasker.cancel()
         }
         debugTriggerRecord.push(System.currentTimeMillis())
 
@@ -50,12 +50,8 @@ class SettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
         ) {
             debugTriggerRecord.clear()
             _debugSettings.update(debugSettings.copy(enabled = true))
-            cancelClearJob()
+            triggerOnEnableDebugMode()
+            tasker.cancel()
         }
-    }
-
-    private fun cancelClearJob() {
-        clearJob?.cancel()
-        clearJob = null
     }
 }
