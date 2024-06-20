@@ -20,12 +20,11 @@ import me.him188.ani.app.data.media.selector.autoSelect
 import me.him188.ani.app.data.subject.EpisodeInfo
 import me.him188.ani.app.data.subject.SubjectInfo
 import me.him188.ani.app.data.subject.SubjectManager
-import me.him188.ani.app.ui.subject.cache.EpisodeCacheState
-import me.him188.ani.app.ui.subject.cache.mediaCache
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaCacheMetadata
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.topic.contains
+import me.him188.ani.datasources.api.topic.isSingleEpisode
 import me.him188.ani.datasources.api.unwrapCached
 
 
@@ -114,10 +113,12 @@ class EpisodeCacheRequesterImpl(
         request: EpisodeCacheRequest,
         override val fetchSession: MediaFetchSession,
     ) : CacheRequestStage.SelectMedia, AbstractWorkingStage(request), CloseableStage {
-        override val mediaSelector: MediaSelector = mediaSelectorFactory.create(
-            request.subjectInfo.id,
-            fetchSession.cumulativeResults
-        )
+        override val mediaSelector: MediaSelector by lazy {
+            mediaSelectorFactory.create(
+                request.subjectInfo.id,
+                fetchSession.cumulativeResults
+            )
+        }
 
         override suspend fun select(media: Media): CacheRequestStage.SelectStorage {
             stageLock.withLock {
@@ -135,11 +136,13 @@ class EpisodeCacheRequesterImpl(
             }
         }
 
-        override suspend fun tryAutoSelectByCachedSeason(episodeCacheStats: List<EpisodeCacheState>): CacheRequestStage.SelectStorage? {
+        override suspend fun tryAutoSelectByCachedSeason(episodeCacheStats: List<MediaCache>): CacheRequestStage.SelectStorage? {
             val existing = episodeCacheStats.firstOrNull {
-                it.originMedia != null &&
-                        (it.mediaEpisodeRange?.contains(request.episodeInfo.ep) == true
-                                || it.mediaEpisodeRange?.contains(request.episodeInfo.sort) == true)
+                val episodeRange = it.origin.episodeRange
+                if (episodeRange == null || episodeRange.isSingleEpisode()) return@firstOrNull false
+
+                request.episodeInfo.ep != null && episodeRange.contains(request.episodeInfo.ep)
+                        || episodeRange.contains(request.episodeInfo.sort)
             } ?: return null
 
             return stageLock.withLock {
@@ -147,15 +150,13 @@ class EpisodeCacheRequesterImpl(
                 switchStageLocked {
                     SelectStorage(
                         this,
-                        existing.originMedia!!.unwrapCached(),
+                        existing.origin.unwrapCached(),
                         storagesLazy.first()
                     )
                 }
             }.apply {
                 try {
-                    existing.mediaCache?.let {
-                        trySelectByCache(it)
-                    }
+                    trySelectByCache(existing)
                 } catch (_: StaleStageException) {
                     // This can happen because we left lock before attempting trySelectByCache.
                     // It means someone else has already changed the stage. So we just ignore the exception.
@@ -202,7 +203,6 @@ class EpisodeCacheRequesterImpl(
         override val mediaSelector: MediaSelector get() = previous.mediaSelector
 
         override suspend fun select(storage: MediaCacheStorage): CacheRequestStage.Done {
-            require(storage in storages) { "Storage is not in storages: $storage" }
             stageLock.withLock {
                 checkStageLocked()
                 return switchStageLocked {

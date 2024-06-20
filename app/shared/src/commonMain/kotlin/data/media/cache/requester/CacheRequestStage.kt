@@ -5,7 +5,6 @@ import me.him188.ani.app.data.media.cache.MediaCacheStorage
 import me.him188.ani.app.data.media.fetch.MediaFetchSession
 import me.him188.ani.app.data.media.fetch.MediaSourceFetchResult
 import me.him188.ani.app.data.media.selector.MediaSelector
-import me.him188.ani.app.ui.subject.cache.EpisodeCacheState
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaCacheMetadata
 
@@ -22,7 +21,7 @@ sealed interface CacheRequestStage {
         val request: EpisodeCacheRequest
 
         /**
-         * 当前正在进行的查询. 可用于获取各数据源的查询状态
+         * 当前的惰性查询会话. 可用于获取各数据源的查询状态和可选的 [Media] 列表
          */
         val fetchSession: MediaFetchSession
 
@@ -36,7 +35,6 @@ sealed interface CacheRequestStage {
         /**
          * 选择目标 [Media] 并进入下一阶段.
          *
-         * @throws IllegalArgumentException 当 [media] 不属于 [MediaSelector.mediaList] 时抛出
          * @throws StaleStageException
          */
         suspend fun select(media: Media): SelectStorage
@@ -45,10 +43,13 @@ sealed interface CacheRequestStage {
          * 尝试从已有的剧集缓存中, 选择一个 [Media.episodeRange] 包含当前请求的剧集序号的 [Media].
          *
          * 成功时进入下一阶段, 若未找到则返回 `null`.
+         *
+         * @param episodeCacheStats 该条目下的剧集的缓存状态
          * @throws StaleStageException
          */
+        // todo: use tryAutoSelectByCachedSeason
         suspend fun tryAutoSelectByCachedSeason(
-            episodeCacheStats: List<EpisodeCacheState>,
+            episodeCacheStats: List<MediaCache>,
         ): SelectStorage?
 
         /**

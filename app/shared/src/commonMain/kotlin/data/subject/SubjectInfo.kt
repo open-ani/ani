@@ -13,7 +13,7 @@ import org.openapitools.client.models.Subject
  */
 @Immutable
 @Serializable
-class SubjectInfo(
+data class SubjectInfo(
     val id: Int = 0,
     // 可搜索 "吹响！悠风号 第三季.json" 看示例
     val name: String = "",

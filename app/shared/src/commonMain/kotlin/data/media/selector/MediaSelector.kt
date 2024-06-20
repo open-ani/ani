@@ -64,15 +64,14 @@ interface MediaSelector {
     val events: MediaSelectorEvents
 
     /**
-     * 选择一个位于 [filteredCandidates] 中的 [Media].
+     * 选择一个 [Media]. 该 [Media] 可以是位于 [filteredCandidates] 中的, 也可以不是.
      * 将会更新 [selected] 并广播事件 [MediaSelectorEvents.onChangePreference] 和 [MediaSelectorEvents.onSelect].
      *
      * 该操作优先级高于任何其他的选择. 即会覆盖 [trySelectDefault] 和 [trySelectCached] 的结果.
      *
      * 重复 [select] 同一个 [Media] 时, 本函数立即返回 `true`, 不会做重复广播事件等.
      *
-     * @return 当成功将 [selected] 更新为 [candidate] 时, 或 [selected] 已经是 [candidate] 时返回 `true`.
-     * 当 [candidate] 不在 [filteredCandidates] 之中时返回 `false`.
+     * @return 当成功将 [selected] 更新为 [candidate] 时返回 `true`. 当 [selected] 已经是 [candidate] 时返回 `false`.
      */
     suspend fun select(candidate: Media): Boolean
 
@@ -137,7 +136,7 @@ interface MediaPreferenceItem<T : Any> {
      */
     suspend fun removePreference()
 }
- 
+
 class DefaultMediaSelector(
     mediaSelectorContextNotCached: Flow<MediaSelectorContext>,
     mediaListNotCached: Flow<List<Media>>,
@@ -308,9 +307,7 @@ class DefaultMediaSelector(
     override val events = MutableMediaSelectorEvents()
 
     override suspend fun select(candidate: Media): Boolean {
-        if (selected.value == candidate) return true
-        if (candidate !in filteredCandidates.first()) return false
-
+        if (selected.value == candidate) return false
         selected.value = candidate
 
         alliance.preferWithoutBroadcast(candidate.properties.alliance)

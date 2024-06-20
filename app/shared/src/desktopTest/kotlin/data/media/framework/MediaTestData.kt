@@ -18,6 +18,8 @@ import me.him188.ani.datasources.dmhy.DmhyMediaSource
 const val SOURCE_DMHY = DmhyMediaSource.ID
 const val SOURCE_ACG = AcgRipMediaSource.ID
 
+// Used by many test, don't change it. 
+// If you want to change it, copy it instead.
 val TestMediaList = listOf(
     DefaultMedia(
         mediaId = "$SOURCE_DMHY.1",
