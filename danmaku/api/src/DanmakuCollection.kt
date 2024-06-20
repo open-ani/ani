@@ -74,21 +74,23 @@ class TimeBasedDanmakuSession private constructor(
             return TimeBasedDanmakuSession(list, shiftMillis, coroutineContext)
         }
     }
-    
-    
-     fun filterList(list: List<Danmaku>, danmakuRegexFilterConfig: DanmakuRegexFilterConfig): List<Danmaku> {
-         if (!danmakuRegexFilterConfig.danmakuRegexFilterOn) {
-             return list
-         }
-         return list.filter { danmaku ->
-             danmakuRegexFilterConfig.danmakuRegexFilterList.all { filter ->
-                 if (filter.isEnabled) {
-                     danmaku.text.matches(Regex(filter.re))
-                 } else {
-                     true
-                 }
-             }
-         }
+
+
+    fun filterList(list: List<Danmaku>, danmakuRegexFilterConfig: DanmakuRegexFilterConfig): List<Danmaku> {
+        if (!danmakuRegexFilterConfig.danmakuRegexFilterOn) {
+            return list
+        }
+
+        // 预编译所有启用的正则表达式
+        val regexFilters = danmakuRegexFilterConfig.danmakuRegexFilterList
+            .filter { it.isEnabled }
+            .map { Regex(it.re) }
+
+        return list.filter { danmaku ->
+            regexFilters.all { regex ->
+                danmaku.text.matches(regex)
+            }
+        }
     }
 
     override fun at(progress: Flow<Duration>, danmakuRegexFilterConfig: Flow<DanmakuRegexFilterConfig>): DanmakuSession {
@@ -106,9 +108,9 @@ class TimeBasedDanmakuSession private constructor(
             override val events: Flow<DanmakuEvent> = channelFlow {
                 launch {
                     danmakuRegexFilterConfig.distinctUntilChanged().collect { config ->
-                        state.requestRepopulate()
                         val filteredList = filterList(list, config)
                         state.updateList(filteredList)
+                        state.requestRepopulate()
                     }
                 }
                 // 一个单独协程收集当前进度
@@ -177,6 +179,7 @@ class TimeBasedDanmakuSession private constructor(
 }
 
 internal class DanmakuSessionFlowState(
+    @Volatile
     var list: List<Danmaku>,
     /**
      * 每当快进/快退超过这个阈值后, 重新装填整个屏幕弹幕
