@@ -36,7 +36,7 @@ data class DanmakuRegexFilterConfig (
 
 @Serializable
 data class DanmakuRegexFilter (
-    val instanceID: String = UUID.randomUUID().toString(),
+    val instanceId: String = UUID.randomUUID().toString(),
     val name: String = "",
     val re: String = "",
     val isEnabled: Boolean = true
