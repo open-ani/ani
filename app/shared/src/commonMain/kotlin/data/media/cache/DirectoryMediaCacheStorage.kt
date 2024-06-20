@@ -34,6 +34,7 @@ import me.him188.ani.datasources.api.source.MediaMatch
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.source.MediaSourceLocation
+import me.him188.ani.datasources.api.source.matches
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.utils.logging.error
