@@ -6,11 +6,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flowOf
@@ -32,7 +29,6 @@ import me.him188.ani.datasources.api.source.MediaMatch
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.source.toStringMultiline
-import me.him188.ani.utils.coroutines.cancellableCoroutineScope
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
@@ -52,6 +48,7 @@ interface MediaFetcher {
      * 查询仅在 [MediaFetchSession.cumulativeResults] 被 collect 时开始.
      *
      * @param flowContext 传递给 [MediaFetchSession] 的 flow 的 context. (用于 [Flow.flowOn])
+     * @see MediaFetchRequest.Companion.create
      */
     fun newSession(request: MediaFetchRequest, flowContext: CoroutineContext = Dispatchers.Default): MediaFetchSession {
         return newSession(flowOf(request), flowContext)
@@ -66,6 +63,8 @@ interface MediaFetcher {
      * 如果该 flow 一直不 emit 第一个元素, [MediaFetchSession.hasCompleted] 将会一直为 false.
      *
      * 即使该 flow 不完结, 只要当前的 [MediaFetchRequest] 的查询完成了, [MediaFetchSession.hasCompleted] 也会变为 `true`.
+     *
+     * @see MediaFetchRequest.Companion.create
      */
     fun newSession(
         requestFlow: Flow<MediaFetchRequest>,
@@ -75,6 +74,7 @@ interface MediaFetcher {
 
 /**
  * 根据 [SubjectInfo] 和 [EpisodeInfo] 创建一个 [MediaFetchRequest].
+ * @see createFlow
  */
 fun MediaFetchRequest.Companion.create(
     subject: SubjectInfo,
@@ -93,6 +93,7 @@ fun MediaFetchRequest.Companion.create(
 
 /**
  * 根据 [SubjectInfo] 和 [EpisodeInfo] 创建一个 [MediaFetchRequest].
+ * @see create
  */
 fun MediaFetchRequest.Companion.createFlow(
     info: Flow<Pair<SubjectInfo, EpisodeInfo>>,
@@ -100,177 +101,7 @@ fun MediaFetchRequest.Companion.createFlow(
     MediaFetchRequest.create(subject = subject, episode = episode)
 }
 
-/**
- * 从多个 [MediaSource] 并行获取 [Media] 的活跃的惰性会话.
- *
- * 只有在 [MediaSourceFetchResult.results] 有 collector 时, 才会开始查询. 当一段时间没有 collector 后, 查询自动停止
- *
- * 在查询完成 [hasCompleted] 后, 该会话自动关闭.
- *
- * 可通过 [MediaFetcher] 创建.
- */
-interface MediaFetchSession {
-    /**
-     * The request used to initiate this session.
-     */
-    val request: Flow<MediaFetchRequest>
-
-    /**
-     * 从各个数据源获取的结果
-     */
-    val results: List<MediaSourceFetchResult> // dev notes: see implementation of [MediaSource]s for the IDs.
-
-    /**
-     * 从所有数据源聚合的结果. collect [cumulativeResults] 会导致所有数据源开始查询. 持续 collect 以保持查询不被中断.
-     * 停止 collect [cumulativeResults] 几秒后, 查询将被中断.
-     *
-     * ## 各数据源自身结果拥有缓存
-     *
-     * 每个数据源自己的[结果][MediaSourceFetchResult.results]是共享且有记忆的. 当它查询成功后, 就不会被因为 collect [cumulativeResults] 而重新查询.
-     * 但仍然可以通过 [MediaSourceFetchResult.restart] 来手动重新查询.
-     *
-     * 重新 collect [cumulativeResults], 已经完成的数据源不会重新查询.
-     *
-     * ### [cumulativeResults] 没有缓存
-     *
-     * [cumulativeResults] 不是 [SharedFlow]. 每个 collector 都会独立计算.
-     * 每次 collect 都会从当前瞬时的结果开始, flow 一定会 emit 一个当前的结果.
-     *
-     * ## 获取当前瞬时查询结果
-     *
-     * ```
-     * cumulativeResults.first()
-     * ```
-     *
-     * ## 获取全部结果
-     *
-     * 因为数据源查询可以重试, 该 flow 永远不会完结.
-     *
-     * 当 [hasCompletedOrDisabled] emit `true` 后, [cumulativeResults] 一定会 emit 所有的查询结果.
-     * 因此, 如需获取所有结果, 可以先使用 [awaitCompletion] 等待查询完成, 再 collect [cumulativeResults] 的 [Flow.first].
-     * 也可以便捷地使用 [awaitCompletedResults].
-     *
-     * ## Sanitization
-     *
-     * The results are post-processed to eliminate duplicated entries from different sources.
-     * Hence [cumulativeResults] might emit less values than a merge of all values from [MediaSourceFetchResult.results].
-     */
-    val cumulativeResults: Flow<List<Media>>
-
-    /**
-     * 所有数据源是否都已经完成, 无论是成功还是失败.
-     *
-     * 注意, collect [hasCompletedOrDisabled], 不会导致 [cumulativeResults] 开始 collect.
-     * 也就是说, 必须要先开始 collect [cumulativeResults], [hasCompletedOrDisabled] 才有可能变为 `true`.
-     *
-     * 注意, 即使 [hasCompletedOrDisabled] 现在为 `true`, 它也可能在未来因为数据源重试, 或者 [request] 变更而变为 `false`.
-     * 因此该 flow 永远不会完结.
-     */
-    val hasCompleted: Flow<Boolean>
-}
-
-/**
- * 挂起当前协程, 直到所有 [MediaSource] 都查询完成.
- *
- * 支持 cancellation.
- */
-suspend fun MediaFetchSession.awaitCompletion() {
-    cancellableCoroutineScope {
-        cumulativeResults.shareIn(this, started = SharingStarted.Eagerly, replay = 1)
-        hasCompleted.first { it }
-        cancelScope()
-    }
-}
-
-/**
- * 挂起当前协程, 直到所有 [MediaSource] 都查询完成, 然后获取所有查询结果.
- *
- * 支持 cancellation.
- */
-suspend inline fun MediaFetchSession.awaitCompletedResults(): List<Media> {
-    awaitCompletion()
-    return cumulativeResults.first()
-}
-
-/**
- * 表示一个数据源 [MediaSource] 的查询结果
- */
-interface MediaSourceFetchResult {
-    val mediaSourceId: String
-    val kind: MediaSourceKind
-
-    val state: StateFlow<MediaSourceFetchState>
-
-    /**
-     * 从该数据源查询到的结果.
-     *
-     * ## 初始值为 [emptyList]
-     *
-     * 该 flow 一定至少有一个元素, [emptyList]. 第一次调用 [Flow.first] 一定返回 [emptyList].
-     *
-     * ## 查询是惰性的
-     *
-     * 只有在 [results] 有 collector 时, 才会开始查询. 当一段时间没有 collector 后, 查询自动停止.
-     *
-     * 查询结果会 share 在指定的 context.
-     */
-    val results: SharedFlow<List<Media>>
-
-    /**
-     * 仅当启用时才获取结果. 返回的 flow 一定至少有一个元素, 例如 [emptyList].
-     *
-     * flow 永远都不会完结. 详见 [MediaFetchSession.cumulativeResults].
-     */
-    val resultsIfEnabled
-        get() = state
-            .map { it !is MediaSourceFetchState.Disabled }
-            .distinctUntilChanged()
-            .flatMapLatest {
-                if (it) results else flowOf(emptyList())
-            }
-
-    /**
-     * 重新请求获取结果.
-     *
-     * 若状态已经完成 ([MediaSourceFetchState.Completed]), 将会被重置为 [MediaSourceFetchState.Idle].
-     * 即使状态是 [MediaSourceFetchState.Disabled], 也会被重置为 [MediaSourceFetchState.Idle].
-     * 若为其他状态则不会变更.
-     *
-     * 基于惰性加载性质, 该方法不会立即触发查询, 只有在 [results] 有 collector 时才会开始查询.
-     */
-    fun restart()
-}
-
-val MediaSourceFetchResult.hasCompletedOrDisabled: Flow<Boolean>
-    get() = state.map { it is MediaSourceFetchState.Completed || it is MediaSourceFetchState.Disabled }
-
-/**
- * 挂起当前协程, 直到 [MediaSourceFetchResult.results] 查询完成. 注意, 这并不代表 [MediaSourceFetchResult.results] 会完结.
- *
- * 支持 cancellation.
- */
-suspend fun MediaSourceFetchResult.awaitCompletion() {
-    cancellableCoroutineScope {
-        results.shareIn(this, started = SharingStarted.Eagerly, replay = 1)
-        hasCompletedOrDisabled.first { it }
-        cancelScope()
-    }
-}
-
-/**
- * 挂起当前协程, 直到 [MediaSourceFetchResult.results] 查询完成, 然后获取所有查询结果.
- *
- * 注意, 这并不代表 [MediaSourceFetchResult.results] 会完结.
- *
- *
- * 支持 cancellation.
- */
-suspend inline fun MediaSourceFetchResult.awaitCompletedResults(): List<Media> {
-    awaitCompletion()
-    return results.first()
-}
-
-class MediaFetcherConfig {
+class MediaFetcherConfig { // 战未来
     companion object {
         val Default = MediaFetcherConfig()
     }
