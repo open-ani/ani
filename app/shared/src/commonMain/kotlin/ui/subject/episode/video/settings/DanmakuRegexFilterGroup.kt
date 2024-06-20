@@ -80,7 +80,7 @@ internal fun SettingsScope.DanmakuRegexFilterGroup(
                     errorMessage = "名字和正则不能为空"
                     showError = true
                 } else {
-                    if (isValidRegex(regex).not()){
+                    if (!isValidRegex(regex)){
                     errorMessage = "正则输入法不正确"
                     showError = true 
                     } else { 
