@@ -37,14 +37,14 @@ data class DanmakuRegexFilterConfig (
 
 @Serializable
 data class DanmakuRegexFilter (
-    val instanceId: String = UUID.randomUUID().toString(),
+    val instanceID: String,
     val name: String = "",
     val re: String = "",
     val isEnabled: Boolean = true
 ) {
     companion object {
         @Stable
-        val Default = DanmakuRegexFilter()
+        val Default = DanmakuRegexFilter(UUID.randomUUID().toString())
     }
 }
 

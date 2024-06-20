@@ -47,6 +47,7 @@ import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.danmaku.ui.DanmakuRegexFilter
 import me.him188.ani.danmaku.ui.DanmakuRegexFilterConfig
+import java.util.UUID
 import java.util.regex.Pattern
 import java.util.regex.PatternSyntaxException
 
@@ -76,15 +77,21 @@ internal fun SettingsScope.DanmakuRegexFilterGroup(
         AddRegexFilterDialog(
             onDismissRequest = { showAdd = false },
             onConfirm = { name, regex ->
-                if (name.isBlank() || regex.isBlank()) {
-                    errorMessage = "名字和正则不能为空"
+                if (regex.isBlank()) {
+                    errorMessage = "正则不能为空"
                     showError = true
                 } else {
                     if (!isValidRegex(regex)){
                     errorMessage = "正则输入法不正确"
                     showError = true 
-                    } else { 
-                        addDanmakuRegexFilter(DanmakuRegexFilter(name = name, re = regex))
+                    } else {
+                        addDanmakuRegexFilter(
+                            DanmakuRegexFilter(
+                                instanceID = UUID.randomUUID().toString(),
+                                name = name,
+                                re = regex
+                            )
+                        )
                         showAdd = false
                     }
                 }
@@ -124,7 +131,7 @@ internal fun SettingsScope.DanmakuRegexFilterGroup(
     ) {
         FlowRow (
             Modifier.placeholder(isLoadingState).fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(14.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             danmakuRegexFilterConfig.danmakuRegexFilterList.forEachIndexed { index, item ->
                 RegexFilterItem(
