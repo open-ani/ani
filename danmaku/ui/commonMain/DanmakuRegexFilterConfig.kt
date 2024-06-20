@@ -11,6 +11,7 @@ import java.util.UUID
  * Defines which [Danmaku] can be displayed.
  */
 @Immutable
+@Serializable
 data class DanmakuRegexFilterConfig (
 
     /**

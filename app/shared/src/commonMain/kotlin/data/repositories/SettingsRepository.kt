@@ -118,8 +118,8 @@ class PreferencesRepositoryImpl(
     override val danmakuConfig: Settings<DanmakuConfig> =
         SerializablePreference("danmaku_config", DanmakuConfigSerializer, default = { DanmakuConfig.Default })
     override val danmakuRegexFilterConfig: Settings<DanmakuRegexFilterConfig> = SerializablePreference(
-            "danmakuRegexFilterConfig",
-            DanmakuFilterConfigSerializer,
+            "danmakuFilterConfig",
+            DanmakuRegexFilterConfig.serializer(),
             default = { DanmakuRegexFilterConfig.Default }
         )
     override val mediaSelectorSettings: Settings<MediaSelectorSettings> = SerializablePreference(
