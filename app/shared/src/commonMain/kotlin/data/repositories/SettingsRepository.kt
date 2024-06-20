@@ -118,7 +118,7 @@ class PreferencesRepositoryImpl(
     override val danmakuConfig: Settings<DanmakuConfig> =
         SerializablePreference("danmaku_config", DanmakuConfigSerializer, default = { DanmakuConfig.Default })
     override val danmakuRegexFilterConfig: Settings<DanmakuRegexFilterConfig> = SerializablePreference(
-            "danmakuFilterConfig",
+            "danmakuRegexFilterConfig",
             DanmakuFilterConfigSerializer,
             default = { DanmakuRegexFilterConfig.Default }
         )
