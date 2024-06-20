@@ -11,7 +11,6 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
-import me.him188.ani.app.ui.foundation.Uuid
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.danmaku.ui.DanmakuRegexFilter
@@ -23,36 +22,7 @@ private fun PreviewEpisodeVideoSettings() {
     ProvideCompositionLocalsForPreview {
         EpisodeVideoSettings(
             remember {
-                object : EpisodeVideoSettingsViewModel {
-                    override val danmakuConfig: DanmakuConfig = DanmakuConfig.Default
-                    override val danmakuRegexFilterConfig: DanmakuRegexFilterConfig = DanmakuRegexFilterConfig.Default
-                    override val isLoading: Boolean = false
-
-                    override fun setDanmakuConfig(config: DanmakuConfig) {
-                        // Do nothing in preview
-                    }
-
-                    override fun addDanmakuRegexFilter(filter: DanmakuRegexFilter) {
-                        //Do nothing in preview
-                    }
-
-                    override fun editDanmakuRegexFilter(filter: DanmakuRegexFilter) {
-                        //Do nothing in preview
-                    }
-
-                    override fun removeDanmakuRegexFilter(filter: DanmakuRegexFilter) {
-                        //Do nothing in preview
-                    }
-
-                    override fun switchDanmakuRegexFilterCompletely() {
-                        //Do nothing in preview
-                    
-                    }
-
-                    override fun switchDanmakuRegexFilter(filter: DanmakuRegexFilter) {
-                        // Do nothing in preview
-                    }
-                }
+                EpisodeVideoSettingsViewModel()
             }
         )
     }
