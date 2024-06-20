@@ -33,6 +33,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,12 +49,11 @@ import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.danmaku.ui.DanmakuRegexFilter
 import me.him188.ani.danmaku.ui.DanmakuRegexFilterConfig
 import java.util.UUID
-import java.util.regex.Pattern
 import java.util.regex.PatternSyntaxException
 
 internal fun isValidRegex(pattern: String): Boolean {
     return try {
-        Pattern.compile(pattern)
+        Regex(pattern)
         true
     } catch (e: PatternSyntaxException) {
         false
@@ -69,9 +69,8 @@ internal fun SettingsScope.DanmakuRegexFilterGroup(
     switchDanmakuRegexFilter: (fiter: DanmakuRegexFilter) -> Unit,
     isLoadingState: Boolean
 ) {
-    var showAdd by remember { mutableStateOf(false) }
-    var showError by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf("") }
+    var showAdd by rememberSaveable { mutableStateOf(false) }
+    var errorMessage by rememberSaveable { mutableStateOf("") }
 
     if (showAdd) {
         AddRegexFilterDialog(
@@ -79,11 +78,9 @@ internal fun SettingsScope.DanmakuRegexFilterGroup(
             onConfirm = { name, regex ->
                 if (regex.isBlank()) {
                     errorMessage = "正则不能为空"
-                    showError = true
                 } else {
                     if (!isValidRegex(regex)){
                     errorMessage = "正则输入法不正确"
-                    showError = true 
                     } else {
                         addDanmakuRegexFilter(
                             DanmakuRegexFilter(
@@ -104,11 +101,11 @@ internal fun SettingsScope.DanmakuRegexFilterGroup(
         )
     }
 
-    if (showError) {
+    if (errorMessage.isNotBlank()) {
         AlertDialog(
-            onDismissRequest = { showError = false },
+            onDismissRequest = { errorMessage = "" },
             confirmButton = {
-                TextButton(onClick = { showError = false }) {
+                TextButton(onClick = { errorMessage = "" }) {
                     Text("确认")
                 }
             },
