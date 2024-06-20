@@ -284,7 +284,6 @@ kotlin {
 
     sourceSets.commonTest.dependencies {
         implementation(libs.kotlinx.coroutines.test)
-        runtimeOnly(libs.slf4j.simple)
     }
 
     sourceSets.androidMain.dependencies {

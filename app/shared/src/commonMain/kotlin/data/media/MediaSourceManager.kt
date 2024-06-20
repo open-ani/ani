@@ -87,7 +87,7 @@ interface MediaSourceManager { // available by inject
  * @see MediaFetchRequest.Companion.create
  */
 fun MediaSourceManager.createFetchFetchSessionFlow(request: Flow<MediaFetchRequest>): Flow<MediaFetchSession> =
-    this.mediaFetcher.map { it.fetch(request) }
+    this.mediaFetcher.map { it.newSession(request) }
 
 class MediaSourceManagerImpl(
     additionalSources: () -> List<MediaSource>, // local sources, calculated only once
@@ -150,7 +150,6 @@ class MediaSourceManagerImpl(
         MediaSourceMediaFetcher(
             configProvider = { MediaFetcherConfig.Default },
             mediaSources = instances,
-            parentCoroutineContext = scope.coroutineContext,
         )
     }
 

@@ -133,19 +133,18 @@ class DefaultMediaAutoCacheService(
         firstUnwatched: EpisodeCollection
     ) {
         val fetcher = mediaFetcherLazy.first()
-        fetcher.fetch(MediaFetchRequest.create(subject.info, firstUnwatched.episode)).use { fetchSession ->
-            val selector = mediaSelectorFactory.create(
-                subject.subjectId,
-                fetchSession.cumulativeResults,
-            )
-            val selected = selector.autoSelect.awaitCompletedAndSelectDefault(fetchSession)
-            if (selected == null) {
-                logger.info { "No media selected for ${subject.debugName()} ${firstUnwatched.episode.name}" }
-                return
-            }
-            val cache = targetStorage.first().cache(selected, MediaCacheMetadata(fetchSession.request.first()))
-            logger.info { "Created cache '${cache.cacheId}' for ${subject.debugName()} ${firstUnwatched.episode.name}" }
+        val fetchSession = fetcher.newSession(MediaFetchRequest.create(subject.info, firstUnwatched.episode))
+        val selector = mediaSelectorFactory.create(
+            subject.subjectId,
+            fetchSession.cumulativeResults,
+        )
+        val selected = selector.autoSelect.awaitCompletedAndSelectDefault(fetchSession)
+        if (selected == null) {
+            logger.info { "No media selected for ${subject.debugName()} ${firstUnwatched.episode.name}" }
+            return
         }
+        val cache = targetStorage.first().cache(selected, MediaCacheMetadata(fetchSession.request.first()))
+        logger.info { "Created cache '${cache.cacheId}' for ${subject.debugName()} ${firstUnwatched.episode.name}" }
     }
 
     override fun startRegularCheck(scope: CoroutineScope) {

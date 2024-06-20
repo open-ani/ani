@@ -29,7 +29,7 @@ import kotlin.math.absoluteValue
  * there can be a [MediaSource] with the same ID as this [MediaCacheStorage].
  *
  * By having a [MediaSource] with the same ID,
- * a [MediaCacheStorage] can participate in the [MediaFetcher.fetch] process (and usually it should).
+ * a [MediaCacheStorage] can participate in the [MediaFetcher.newSession] process (and usually it should).
  */
 interface MediaCacheStorage : AutoCloseable {
     /**

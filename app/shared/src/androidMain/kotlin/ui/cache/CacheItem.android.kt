@@ -5,6 +5,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.flow.MutableStateFlow
 import me.him188.ani.app.data.media.MediaCacheManager
+import me.him188.ani.app.data.media.cache.TestMediaCache
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.subject.episode.mediaFetch.previewMediaList
 import me.him188.ani.datasources.api.CachedMedia
@@ -13,7 +14,6 @@ import me.him188.ani.datasources.api.MediaCacheMetadata
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.ResourceLocation
-import me.him188.ani.datasources.core.cache.TestMediaCache
 
 // See interactive preview
 @Preview

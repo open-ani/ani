@@ -189,7 +189,6 @@ class EpisodeCacheRequesterImpl(
         }
 
         override fun close() {
-            fetchSession.close()
         }
     }
 
@@ -252,7 +251,7 @@ class EpisodeCacheRequesterImpl(
             current.close()
             val new = SelectMedia(
                 request,
-                mediaFetcherLazy.first().fetch(
+                mediaFetcherLazy.first().newSession(
                     MediaFetchRequest.Companion.create(request.subjectInfo, request.episodeInfo),
                 )
             )
