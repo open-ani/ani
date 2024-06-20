@@ -133,7 +133,7 @@ interface MediaFetchSession {
      *
      * ### [cumulativeResults] 没有缓存
      *
-     * [cumulativeResults] 不是 [SharedFlow] 每个 collector 都会独立计算.
+     * [cumulativeResults] 不是 [SharedFlow]. 每个 collector 都会独立计算.
      * 每次 collect 都会从当前瞬时的结果开始, flow 一定会 emit 一个当前的结果.
      *
      * ## 获取当前瞬时查询结果
@@ -146,7 +146,7 @@ interface MediaFetchSession {
      *
      * 因为数据源查询可以重试, 该 flow 永远不会完结.
      *
-     * 当 [hasCompleted] emit `true` 后, [cumulativeResults] 一定会 emit 所有的查询结果.
+     * 当 [hasCompletedOrDisabled] emit `true` 后, [cumulativeResults] 一定会 emit 所有的查询结果.
      * 因此, 如需获取所有结果, 可以先使用 [awaitCompletion] 等待查询完成, 再 collect [cumulativeResults] 的 [Flow.first].
      * 也可以便捷地使用 [awaitCompletedResults].
      *
@@ -160,10 +160,10 @@ interface MediaFetchSession {
     /**
      * 所有数据源是否都已经完成, 无论是成功还是失败.
      *
-     * 注意, collect [hasCompleted], 不会导致 [cumulativeResults] 开始 collect.
-     * 也就是说, 必须要先开始 collect [cumulativeResults], [hasCompleted] 才有可能变为 `true`.
+     * 注意, collect [hasCompletedOrDisabled], 不会导致 [cumulativeResults] 开始 collect.
+     * 也就是说, 必须要先开始 collect [cumulativeResults], [hasCompletedOrDisabled] 才有可能变为 `true`.
      *
-     * 注意, 即使 [hasCompleted] 现在为 `true`, 它也可能在未来因为数据源重试, 或者 [request] 变更而变为 `false`.
+     * 注意, 即使 [hasCompletedOrDisabled] 现在为 `true`, 它也可能在未来因为数据源重试, 或者 [request] 变更而变为 `false`.
      * 因此该 flow 永远不会完结.
      */
     val hasCompleted: Flow<Boolean>
@@ -218,6 +218,8 @@ interface MediaSourceFetchResult {
 
     /**
      * 仅当启用时才获取结果. 返回的 flow 一定至少有一个元素, 例如 [emptyList].
+     *
+     * flow 永远都不会完结. 详见 [MediaFetchSession.cumulativeResults].
      */
     val resultsIfEnabled
         get() = state
@@ -230,9 +232,42 @@ interface MediaSourceFetchResult {
     /**
      * 重新请求获取结果.
      *
-     * 即使状态是 [MediaSourceFetchState.Disabled], 也会重新请求.
+     * 若状态已经完成 ([MediaSourceFetchState.Completed]), 将会被重置为 [MediaSourceFetchState.Idle].
+     * 即使状态是 [MediaSourceFetchState.Disabled], 也会被重置为 [MediaSourceFetchState.Idle].
+     * 若为其他状态则不会变更.
+     *
+     * 基于惰性加载性质, 该方法不会立即触发查询, 只有在 [results] 有 collector 时才会开始查询.
      */
     fun restart()
+}
+
+val MediaSourceFetchResult.hasCompletedOrDisabled: Flow<Boolean>
+    get() = state.map { it is MediaSourceFetchState.Completed || it is MediaSourceFetchState.Disabled }
+
+/**
+ * 挂起当前协程, 直到 [MediaSourceFetchResult.results] 查询完成. 注意, 这并不代表 [MediaSourceFetchResult.results] 会完结.
+ *
+ * 支持 cancellation.
+ */
+suspend fun MediaSourceFetchResult.awaitCompletion() {
+    cancellableCoroutineScope {
+        results.shareIn(this, started = SharingStarted.Eagerly, replay = 1)
+        hasCompletedOrDisabled.first { it }
+        cancelScope()
+    }
+}
+
+/**
+ * 挂起当前协程, 直到 [MediaSourceFetchResult.results] 查询完成, 然后获取所有查询结果.
+ *
+ * 注意, 这并不代表 [MediaSourceFetchResult.results] 会完结.
+ *
+ *
+ * 支持 cancellation.
+ */
+suspend inline fun MediaSourceFetchResult.awaitCompletedResults(): List<Media> {
+    awaitCompletion()
+    return results.first()
 }
 
 class MediaFetcherConfig {
@@ -307,6 +342,7 @@ class MediaSourceMediaFetcher(
         }
 
         override fun restart() {
+            // Set to idle if completed or disabled, otherwise, just increment the restart count
             while (true) {
                 val value = state.value
                 if (value is MediaSourceFetchState.Completed || value is MediaSourceFetchState.Disabled) {
