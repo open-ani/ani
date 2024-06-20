@@ -30,7 +30,7 @@ data class DanmakuRegexFilterConfig (
     ) {
     companion object {
         @Stable
-        val Default = DanmakuRegexFilterConfig()
+        val Default = DanmakuRegexFilterConfig(danmakuRegexFilterOn = true)
     }
 }
 

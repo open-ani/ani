@@ -4,12 +4,14 @@ import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import me.him188.ani.danmaku.protocol.DanmakuInfo
+import me.him188.ani.danmaku.ui.DanmakuRegexFilterConfig
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration
@@ -29,7 +31,7 @@ interface DanmakuCollection {
      *
      * 当 [progress] [完结][Flow.onCompletion] 时, 本函数返回的 flow 也会 [完结][Flow.onCompletion].
      */
-    fun at(progress: Flow<Duration>): DanmakuSession
+    fun at(progress: Flow<Duration>, danmakuRegexFilterConfig: Flow<DanmakuRegexFilterConfig>): DanmakuSession
 }
 
 sealed class DanmakuEvent {
@@ -46,7 +48,7 @@ sealed class DanmakuEvent {
 
 fun emptyDanmakuCollection(): DanmakuCollection {
     return object : DanmakuCollection {
-        override fun at(progress: Flow<Duration>): DanmakuSession = emptyDanmakuSession()
+        override fun at(progress: Flow<Duration>, danmakuRegexFilterConfig: Flow<DanmakuRegexFilterConfig>): DanmakuSession = emptyDanmakuSession()
     }
 }
 
@@ -59,7 +61,6 @@ class TimeBasedDanmakuSession private constructor(
     private val flowCoroutineContext: CoroutineContext = EmptyCoroutineContext,
 ) : DanmakuCollection {
     override val totalCount: Flow<Int?> = flowOf(list.size)
-
     companion object {
         fun create(
             sequence: Sequence<Danmaku>,
@@ -73,12 +74,28 @@ class TimeBasedDanmakuSession private constructor(
             return TimeBasedDanmakuSession(list, shiftMillis, coroutineContext)
         }
     }
+    
+    
+     fun filterList(list: List<Danmaku>, danmakuRegexFilterConfig: DanmakuRegexFilterConfig): List<Danmaku> {
+         if (!danmakuRegexFilterConfig.danmakuRegexFilterOn) {
+             return list
+         }
+         return list.filter { danmaku ->
+             danmakuRegexFilterConfig.danmakuRegexFilterList.all { filter ->
+                 if (filter.isEnabled) {
+                     danmaku.text.matches(Regex(filter.re))
+                 } else {
+                     true
+                 }
+             }
+         }
+    }
 
-    override fun at(progress: Flow<Duration>): DanmakuSession {
+    override fun at(progress: Flow<Duration>, danmakuRegexFilterConfig: Flow<DanmakuRegexFilterConfig>): DanmakuSession {
         if (list.isEmpty()) {
             return emptyDanmakuSession() // fast path
         }
-        // filter 算法
+
         val state = DanmakuSessionFlowState(
             list,
             repopulateThreshold = 3.seconds,
@@ -87,6 +104,13 @@ class TimeBasedDanmakuSession private constructor(
         val algorithm = DanmakuSessionAlgorithm(state)
         return object : DanmakuSession {
             override val events: Flow<DanmakuEvent> = channelFlow {
+                launch {
+                    danmakuRegexFilterConfig.distinctUntilChanged().collect { config ->
+                        state.requestRepopulate()
+                        val filteredList = filterList(list, config)
+                        state.updateList(filteredList)
+                    }
+                }
                 // 一个单独协程收集当前进度
                 launch(start = CoroutineStart.UNDISPATCHED) {
                     progress.collect {
@@ -101,7 +125,6 @@ class TimeBasedDanmakuSession private constructor(
                 }
 
                 while (true) {
-                    // 如果config变化，call repopulate
                     algorithm.tick(sendItem)
                     delay(1000 / 20) // always check for cancellation
                 }
@@ -154,7 +177,7 @@ class TimeBasedDanmakuSession private constructor(
 }
 
 internal class DanmakuSessionFlowState(
-    val list: List<Danmaku>,
+    var list: List<Danmaku>,
     /**
      * 每当快进/快退超过这个阈值后, 重新装填整个屏幕弹幕
      */
@@ -188,6 +211,10 @@ internal class DanmakuSessionFlowState(
      */
     fun requestRepopulate() {
         lastTime = Duration.INFINITE
+    }
+    
+    fun updateList(newList: List<Danmaku>) {
+        list = newList
     }
 }
 
