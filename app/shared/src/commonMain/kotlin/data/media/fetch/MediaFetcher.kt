@@ -1,6 +1,5 @@
 package me.him188.ani.app.data.media.fetch
 
-import androidx.compose.runtime.Stable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -12,15 +11,20 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.flow.shareIn
 import me.him188.ani.app.data.media.instance.MediaSourceInstance
+import me.him188.ani.app.data.subject.EpisodeInfo
+import me.him188.ani.app.data.subject.SubjectInfo
+import me.him188.ani.app.data.subject.nameCnOrName
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.paging.SizedSource
 import me.him188.ani.datasources.api.source.MediaFetchRequest
@@ -41,23 +45,66 @@ import kotlin.coroutines.EmptyCoroutineContext
  *
  * @see MediaSourceMediaFetcher
  */
-interface MediaFetcher : AutoCloseable {
+interface MediaFetcher {
     /**
-     * 创建一个会话, 从多个 [MediaSource] 并行获取 [Media].
+     * 创建一个惰性查询会话, 从多个 [MediaSource] 并行获取 [Media].
      *
-     * 该会话的生命与 [MediaFetcher] 绑定. 一旦 [MediaFetcher] 被释放, 会话也会被释放.
+     * 查询仅在 [MediaFetchSession.cumulativeResults] 被 collect 时开始.
      */
     fun fetch(request: MediaFetchRequest): MediaFetchSession
+
+    /**
+     * 创建一个惰性查询会话, 从多个 [MediaSource] 并行获取 [Media].
+     *
+     * 查询仅在 [MediaFetchSession.cumulativeResults] 被 collect 时开始.
+     *
+     * @param requestFlow 用于动态请求的 [MediaFetchRequest] 流. 当有新的元素 emit 时, 会重新请求.
+     * 如果该 flow 一直不 emit 第一个元素, [MediaFetchSession.hasCompleted] 将会一直为 false.
+     *
+     * 即使该 flow 不完结, 只要当前的 [MediaFetchRequest] 的查询完成了, [MediaFetchSession.hasCompleted] 也会变为 `true`.
+     */
+    fun fetch(requestFlow: Flow<MediaFetchRequest>): MediaFetchSession
+}
+
+/**
+ * 根据 [SubjectInfo] 和 [EpisodeInfo] 创建一个 [MediaFetchRequest].
+ */
+fun MediaFetchRequest.Companion.create(
+    subject: SubjectInfo,
+    episode: EpisodeInfo,
+): MediaFetchRequest {
+    return MediaFetchRequest(
+        subjectId = subject.id.toString(),
+        episodeId = episode.id.toString(),
+        subjectNameCN = subject.nameCnOrName,
+        subjectNames = subject.allNames.toSet(),
+        episodeSort = episode.sort,
+        episodeName = episode.nameCnOrName,
+        episodeEp = episode.ep,
+    )
+}
+
+/**
+ * 根据 [SubjectInfo] 和 [EpisodeInfo] 创建一个 [MediaFetchRequest].
+ */
+fun MediaFetchRequest.Companion.createFlow(
+    info: Flow<Pair<SubjectInfo, EpisodeInfo>>,
+): Flow<MediaFetchRequest> = info.map { (subject, episode) ->
+    MediaFetchRequest.create(subject = subject, episode = episode)
 }
 
 /**
  * 从多个 [MediaSource] 并行获取 [Media] 的活跃的会话.
+ *
+ * 在查询完成 [hasCompleted] 后, 该会话自动关闭. 在这之前, 可以通过 [close] 手动关闭.
+ *
+ * 可通过 [MediaFetcher] 创建.
  */
-interface MediaFetchSession {
+interface MediaFetchSession : AutoCloseable {
     /**
      * The request used to initiate this session.
      */
-    val request: MediaFetchRequest
+    val request: Flow<MediaFetchRequest>
 
     /**
      * Results from each source. The key is the source ID.
@@ -65,22 +112,43 @@ interface MediaFetchSession {
     val resultsPerSource: Map<String, MediaSourceFetchResult> // dev notes: see implementation of [MediaSource]s for the IDs.
 
     /**
-     * Cumulative results from all sources.
+     * 从所有数据源聚合的结果.
+     *
+     * 该流是惰性创建并在后台共享的. 第一次 collect 时, 所有数据源才会开始查询.
      *
      * ### Sanitization
      *
      * The results are post-processed to eliminate duplicated entries from different sources.
      * Hence [cumulativeResults] might emit less values than a merge of all values from [MediaSourceFetchResult.results].
+     *
+     * @see close
      */
     val cumulativeResults: Flow<List<Media>>
 
     /**
-     * Whether all sources have completed fetching.
+     * 所有数据源是否都已经完成, 无论是成功还是失败.
      *
-     * Note that this is lazily updated by [resultsPerSource].
-     * If [resultsPerSource] is not collected, this will always be false.
+     * 注意, collect 此 flow, 会导致 [cumulativeResults] 开始 collect, 也就是会启动所有数据源查询.
+     *
+     * 注意, 即使 [hasCompleted] 现在为 `true`, 它也可能在未来因为数据源重试, 或者 [request] 变更而变为 `false`.
+     *
+     * @see close
      */
     val hasCompleted: Flow<Boolean>
+
+    /**
+     * 停止所有查询. 查询将不能重启. 届时 [hasCompleted] 将变为 `true`.
+     */ // TODO: 添加先 close 再 hasCompleted/cumulativeResults 的测试
+    override fun close()
+}
+
+/**
+ * 挂起当前协程, 直到所有 [MediaSource] 都查询完成.
+ *
+ * 支持 cancellation.
+ */
+suspend inline fun MediaFetchSession.awaitCompletion() {
+    hasCompleted.first { it }
 }
 
 /**
@@ -124,41 +192,6 @@ interface MediaSourceFetchResult {
     fun restart()
 }
 
-
-@Stable
-sealed class MediaSourceFetchState {
-    data object Idle : MediaSourceFetchState()
-
-    /**
-     * 被禁用, 因此不会主动发起请求. 仍然可以通过 [MediaSourceFetchResult.restart] 发起请求.
-     */
-    data object Disabled : MediaSourceFetchState()
-
-    data object Working : MediaSourceFetchState()
-
-
-    sealed class Completed : MediaSourceFetchState()
-    data object Succeed : Completed()
-
-    /**
-     * The data source upstream has failed. E.g. a network request failed.
-     */
-    data class Failed(
-        val cause: Throwable,
-    ) : Completed()
-
-    /**
-     * Failed because the flow collector has thrown an exception (and stopped collection)
-     */
-    data class Abandoned(
-        val cause: Throwable,
-    ) : Completed()
-}
-
-val MediaSourceFetchState.isWorking get() = this is MediaSourceFetchState.Working
-val MediaSourceFetchState.isDisabled get() = this is MediaSourceFetchState.Disabled
-val MediaSourceFetchState.isFailedOrAbandoned get() = this is MediaSourceFetchState.Failed || this is MediaSourceFetchState.Abandoned
-
 class MediaFetcherConfig {
     companion object {
         val Default = MediaFetcherConfig()
@@ -166,7 +199,7 @@ class MediaFetcherConfig {
 }
 
 /**
- * A [MediaFetcher] implementation that fetches media from various [MediaSource]s (from the data-sources module).
+ * 一个 [MediaFetcher] 的实现, 从多个 [MediaSource] 并行[查询][MediaSource.fetch].
  *
  * @param configProvider configures each [MediaFetchSession] from [MediaFetcher.fetch].
  * The provider is evaluated for each fetch so that it can be dynamic.
@@ -174,16 +207,15 @@ class MediaFetcherConfig {
 class MediaSourceMediaFetcher(
     private val configProvider: () -> MediaFetcherConfig,
     private val mediaSources: List<MediaSourceInstance>,
-    parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
+    private val parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
 ) : MediaFetcher {
-    private val scope = CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
-
     private inner class MediaSourceResultImpl(
         override val mediaSourceId: String,
         override val kind: MediaSourceKind,
         private val config: MediaFetcherConfig,
         val disabled: Boolean,
         pagedSources: Flow<SizedSource<MediaMatch>>,
+        scope: CoroutineScope,
     ) : MediaSourceFetchResult {
         override val state: MutableStateFlow<MediaSourceFetchState> =
             MutableStateFlow(if (disabled) MediaSourceFetchState.Disabled else MediaSourceFetchState.Idle)
@@ -248,12 +280,12 @@ class MediaSourceMediaFetcher(
     }
 
     private inner class MediaFetchSessionImpl(
-        override val request: MediaFetchRequest,
+        request: Flow<MediaFetchRequest>, // must be shared
         private val config: MediaFetcherConfig,
     ) : MediaFetchSession {
-        init {
-            logger.info { "MediaFetchSessionImpl created, request: \n${request.toStringMultiline()}" }
-        }
+        private val scope = CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
+        override val request: Flow<MediaFetchRequest> =
+            request.shareIn(scope, started = SharingStarted.WhileSubscribed(5000), replay = 1)
 
         override val resultsPerSource: Map<String, MediaSourceFetchResult> = mediaSources.associateBy {
             it.mediaSourceId
@@ -263,10 +295,14 @@ class MediaSourceMediaFetcher(
                 instance.source.kind,
                 config,
                 disabled = !instance.isEnabled,
-                pagedSources = flowOf(request)
+                pagedSources = request
+                    .onEach {
+                        logger.info { "MediaFetchSessionImpl pagedSources creating, request: \n${it.toStringMultiline()}" }
+                    }
                     .map {
                         instance.source.fetch(it)
-                    }
+                    },
+                scope = scope,
             )
         }
 
@@ -286,17 +322,21 @@ class MediaSourceMediaFetcher(
         override val hasCompleted = combine(resultsPerSource.values.map { it.state }) { states ->
             states.all { it is MediaSourceFetchState.Completed || it is MediaSourceFetchState.Disabled }
         }
+
+        override fun close() {
+            scope.cancel()
+        }
     }
 
     override fun fetch(request: MediaFetchRequest): MediaFetchSession {
-        return MediaFetchSessionImpl(request, configProvider())
+        return MediaFetchSessionImpl(flowOf(request), configProvider())
     }
 
-    override fun close() {
-        scope.cancel()
+    override fun fetch(requestFlow: Flow<MediaFetchRequest>): MediaFetchSession {
+        return MediaFetchSessionImpl(requestFlow, configProvider())
     }
 
     private companion object {
-        val logger = logger<MediaSourceMediaFetcher>()
+        private val logger = logger<MediaSourceMediaFetcher>()
     }
 }

@@ -36,7 +36,7 @@ class DefaultMediaSelectorTest {
     private val mediaSelectorSettings = MutableStateFlow(MediaSelectorSettings.Default)
     private val mediaSelectorContext = MutableStateFlow(
         MediaSelectorContext(
-            subjectFinishedForAConservativeTime = false,
+            subjectFinished = false,
             mediaSourcePrecedence = emptyList(),
         )
     )
@@ -71,7 +71,7 @@ class DefaultMediaSelectorTest {
         mediaSourcePrecedence: List<String> = emptyList()
     ) =
         MediaSelectorContext(
-            subjectFinishedForAConservativeTime = subjectCompleted,
+            subjectFinished = subjectCompleted,
             mediaSourcePrecedence = mediaSourcePrecedence,
         )
 

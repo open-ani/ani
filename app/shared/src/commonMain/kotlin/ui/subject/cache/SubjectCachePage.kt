@@ -85,23 +85,19 @@ data class EpisodeCacheState(
 @Stable
 inline val EpisodeCacheState.mediaCache get() = cacheStatus?.cache
 
+/**
+ * 单个条目的缓存管理页面的状态
+ */
 @Stable
 class SubjectCacheState(
     /**
      * List of episodes in this subject.
      */
     val episodes: List<EpisodeCacheState>
-) {
-    /**
-     * 用户请求缓存这个剧集
-     */
-    var selectedEpisode: EpisodeCacheState? by mutableStateOf(null)
-}
+) 
 
 /**
  * 一个番剧的缓存设置页面, 包括自动缓存设置和手动单集缓存管理.
- *
- * @param mediaSelector 当用户点击缓存按钮时, 显示的视频源选择器. See [EpisodeCacheMediaSelector]
  */
 @Composable
 fun SubjectCachePage(
@@ -109,6 +105,7 @@ fun SubjectCachePage(
     subjectTitle: @Composable () -> Unit,
     onClickGlobalCacheSettings: () -> Unit,
     onClickGlobalCacheManage: () -> Unit,
+    onRequestCache: (episodeCacheState: EpisodeCacheState) -> Unit,
     onDeleteCache: (EpisodeCacheState) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -141,9 +138,6 @@ fun SubjectCachePage(
 
                 Group(
                     title = { Text("单集缓存") },
-//                    description = {
-//                        Text("忽略全局限制")
-//                    },
                 ) {
                     state.episodes.fastForEachIndexed { i, episodeCacheState ->
                         var showDropdown by remember { mutableStateOf(false) }
@@ -156,7 +150,7 @@ fun SubjectCachePage(
                                 ) {
                                     showDropdown = true
                                 } else {
-                                    state.selectedEpisode = episodeCacheState
+                                    onRequestCache(episodeCacheState)
                                 }
                             },
                             action = {

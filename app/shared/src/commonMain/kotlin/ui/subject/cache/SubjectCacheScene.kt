@@ -2,13 +2,8 @@ package me.him188.ani.app.ui.subject.cache
 
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import io.ktor.util.logging.error
 import kotlinx.coroutines.CancellationException
@@ -27,13 +22,10 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.transform
 import me.him188.ani.app.data.media.MediaCacheManager
-import me.him188.ani.app.data.media.cache.EpisodeCacheRequester
-import me.him188.ani.app.data.media.cache.MediaCache
+import me.him188.ani.app.data.media.MediaSourceManager
 import me.him188.ani.app.data.media.cache.MediaCacheStorage
-import me.him188.ani.app.data.media.fetch.EpisodeMediaFetchSession
-import me.him188.ani.app.data.models.MediaSelectorSettings
-import me.him188.ani.app.data.repositories.BangumiEpisodeRepository
-import me.him188.ani.app.data.repositories.BangumiSubjectRepository
+import me.him188.ani.app.data.media.cache.requester.EpisodeCacheRequester
+import me.him188.ani.app.data.media.selector.MediaSelectorFactory
 import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.data.subject.SubjectManager
 import me.him188.ani.app.data.subject.episode
@@ -47,9 +39,6 @@ import me.him188.ani.app.ui.foundation.feedback.ErrorMessage
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaCacheMetadata
-import me.him188.ani.datasources.api.source.MediaFetchRequest
-import me.him188.ani.datasources.api.topic.contains
-import me.him188.ani.datasources.api.unwrapCached
 import me.him188.ani.utils.coroutines.runUntilSuccess
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.koin.core.component.KoinComponent
@@ -59,48 +48,27 @@ import org.koin.core.component.inject
 class SubjectCacheViewModel(
     val subjectId: Int,
 ) : AbstractViewModel(), KoinComponent {
-    private val bangumiSubjectRepository: BangumiSubjectRepository by inject()
-    private val bangumiEpisodeRepository: BangumiEpisodeRepository by inject()
     private val subjectManager: SubjectManager by inject()
     private val settingsRepository: SettingsRepository by inject()
     private val cacheManager: MediaCacheManager by inject()
-
-    private val cacheStoragesPlaceholder = ArrayList<MediaCacheStorage>(0)
-
-    val cacheStorages by cacheManager.enabledStorages.produceState(cacheStoragesPlaceholder)
+    private val mediaSourceManager: MediaSourceManager by inject()
 
     private val episodeCacheRequester = EpisodeCacheRequester(
-        settings = settingsRepository.mediaSelectorSettings.flow,
-        createFetchSession = ::EpisodeMediaFetchSession,
-        backgroundScope.coroutineContext
+        mediaSourceManager.mediaFetcher,
+        MediaSelectorFactory.withKoin(),
+        storagesLazy = cacheManager.enabledStorages,
     )
 
-    val episodeCacheRequesterState = EpisodeCacheRequesterPresentation(
+    val episodeCacheRequesterPresentation = EpisodeCacheRequesterPresentation(
         episodeCacheRequester,
-        cacheManager.enabledStorages,
         settingsNotCached = settingsRepository.mediaSelectorSettings.flow,
-        onComplete = { completed ->
+        onSelect = { completed ->
             launchInBackground {
-                addCache(completed.media, completed.mediaCacheMetadata, completed.storage)
+                addCache(completed.media, completed.metadata, completed.storage)
             }
         },
-        backgroundScope.coroutineContext,
+        parentCoroutineContext = backgroundScope.coroutineContext,
     )
-
-    suspend fun findStorageByCache(cache: MediaCache?): MediaCacheStorage {
-        val vm = this
-        if (cache == null) {
-            return vm.cacheStorages.first()
-        }
-        return vm.cacheStorages.singleOrNull()
-            ?: vm.cacheStorages.firstOrNull { list ->
-                list.listFlow.first().any { it == cache }
-            }
-            ?: vm.cacheStorages.first()
-    }
-
-    val mediaSelectorSettings: MediaSelectorSettings by settingsRepository.mediaSelectorSettings.flow
-        .produceState(MediaSelectorSettings.Default)
 
     private val subjectInfoFlow = flowOf(subjectId).mapLatest { subjectId ->
         runUntilSuccess(Int.MAX_VALUE) { subjectManager.getSubjectInfo(subjectId) }
@@ -153,19 +121,11 @@ class SubjectCacheViewModel(
         state.episodes.firstOrNull { it.mediaEpisodeRange != null }
     }.flowOn(Dispatchers.Default).produceState(null)
 
-    suspend fun addCache(
-        media: Media,
-        request: suspend () -> MediaFetchRequest,
-        storage: MediaCacheStorage,
-    ) {
-        return addCache(
-            media,
-            metadata = MediaCacheMetadata(request()),
-            storage,
-        )
+    fun requestCache(episodeId: Int) {
+        episodeCacheRequesterPresentation.request(subjectId, episodeId, subjectManager)
     }
 
-    suspend fun addCache(
+    private suspend fun addCache(
         media: Media,
         metadata: MediaCacheMetadata,
         storage: MediaCacheStorage,
@@ -188,26 +148,6 @@ class SubjectCacheViewModel(
                 errorMessage.emit(ErrorMessage.simple("缓存失败", e))
             }
         }
-    }
-
-    suspend fun addCacheFromExisting(
-        existing: EpisodeCacheState,
-        metadata: MediaCacheMetadata,
-        new: EpisodeCacheState,
-    ) {
-        val subjectInfo = subjectInfoFlow.first()
-        addCache(
-            existing.originMedia!!.unwrapCached(),
-            MediaCacheMetadata(
-                subjectId = metadata.subjectId,
-                episodeId = new.episodeId.toString(),
-                subjectNames = subjectInfo.allNames.toSet(), // update names
-                episodeSort = new.sort,
-                episodeName = new.title,
-                episodeEp = new.ep,
-            ),
-            findStorageByCache(existing.mediaCache),
-        )
     }
 
     fun deleteCache(episodeId: Int) {
@@ -242,58 +182,10 @@ fun SubjectCacheScene(
     onClickGlobalCacheManage: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val state by vm.stateFlow.collectAsStateWithLifecycle(emptyDefaultSubjectCacheState)
-
     ErrorDialogHost(vm.errorMessage)
+    EpisodeCacheRequesterHost(state = vm.episodeCacheRequesterPresentation)
 
-    var showMediaSelector by remember { mutableStateOf<EpisodeCacheState?>(null) }
-
-    LaunchedEffect(vm) {
-        snapshotFlow { state.selectedEpisode }.collect { episodeCacheState ->
-            if (episodeCacheState == null) {
-                showMediaSelector = null
-                return@collect
-            }
-
-            val existing = vm.firstIncludedCache
-            if (existing == null) { // 没有缓存过季度全集
-                showMediaSelector = episodeCacheState
-                return@collect
-            }
-
-            showMediaSelector = null
-            val metadata = existing.mediaCache?.metadata
-            if (existing.originMedia == null || metadata == null) { // 无效缓存
-                showMediaSelector = episodeCacheState
-                return@collect
-            }
-
-            val episodeRange = existing.mediaEpisodeRange ?: run {
-                showMediaSelector = episodeCacheState
-                return@collect
-            }
-            if (episodeCacheState.sort !in episodeRange
-                && (episodeCacheState.ep == null || episodeCacheState.ep !in episodeRange)
-            ) {
-                // 未找到剧集
-                showMediaSelector = episodeCacheState
-                return@collect
-            }
-
-            // 直接创建
-            vm.launchInBackground {
-                addCacheFromExisting(existing, metadata, episodeCacheState)
-            }
-        }
-    }
-
-    showMediaSelector?.let { episodeCacheState ->
-        EpisodeCacheRequesterView(
-            state = vm.episodeCacheRequesterState,
-            episodeCacheState = episodeCacheState,
-        )
-    }
-
+    val state by vm.stateFlow.collectAsStateWithLifecycle(emptyDefaultSubjectCacheState)
     return SubjectCachePage(
         state,
         subjectTitle = {
@@ -302,6 +194,9 @@ fun SubjectCacheScene(
         },
         onClickGlobalCacheSettings,
         onClickGlobalCacheManage,
+        onRequestCache = { episodeCacheState ->
+            vm.requestCache(episodeCacheState.episodeId)
+        },
         onDeleteCache = { episodeCacheState ->
             vm.deleteCache(episodeCacheState.episodeId)
         },

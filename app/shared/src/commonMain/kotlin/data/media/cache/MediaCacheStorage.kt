@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.data.media.fetch.MediaFetcher
@@ -84,6 +85,8 @@ interface MediaCacheStorage : AutoCloseable {
      */
     suspend fun delete(cache: MediaCache): Boolean
 }
+
+suspend inline fun MediaCacheStorage.contains(cache: MediaCache): Boolean = listFlow.first().any { it === cache }
 
 val MediaCacheStorage.anyCaching: Flow<Boolean>
     get() = listFlow.flatMapLatest { caches ->

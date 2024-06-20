@@ -51,7 +51,7 @@ import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
 @Composable
 fun EpisodeActionRow(
-    viewModel: EpisodeViewModel,
+    viewModel: EpisodeViewModel, // TODO: remove viewModel dependency from EpisodeActionRow
     snackbar: SnackbarHostState,
     modifier: Modifier = Modifier,
 ) {
@@ -67,13 +67,10 @@ fun EpisodeActionRow(
         }
     }
 
-    val mediaFetcherCompleted by viewModel.episodeMediaFetchSession.mediaFetcherCompleted.collectAsStateWithLifecycle(
-        false
-    )
     val isDanmakuLoading by viewModel.playerStatistics.isDanmakuLoading.collectAsStateWithLifecycle(false)
 
     EpisodeActionRow(
-        isMediaFetcherWorking = { !mediaFetcherCompleted },
+        isMediaFetcherWorking = { viewModel.mediaSourceResultsPresentation.anyLoading },
         isDanmakuLoading = { isDanmakuLoading },
         onClickMediaSelection = { viewModel.mediaSelectorVisible = true },
         onClickCopyLink = {

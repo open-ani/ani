@@ -1,7 +1,10 @@
 package me.him188.ani.app.ui.subject.episode.mediaFetch
 
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.cancel
@@ -11,6 +14,7 @@ import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
+import me.him188.ani.app.ui.foundation.rememberBackgroundScope
 import me.him188.ani.datasources.api.Media
 import kotlin.coroutines.CoroutineContext
 
@@ -20,6 +24,19 @@ fun MediaSelectorPresentation(
 ): MediaSelectorPresentation = MediaSelectorPresentationImpl(
     mediaSelector, parentCoroutineContext
 )
+
+@Composable
+fun rememberMediaSelectorPresentation(
+    mediaSelector: () -> MediaSelector // lambda remembered
+): MediaSelectorPresentation {
+    val scope = rememberBackgroundScope()
+    val selector by remember {
+        derivedStateOf(mediaSelector)
+    }
+    return remember {
+        MediaSelectorPresentation(selector, scope.backgroundScope.coroutineContext)
+    }
+}
 
 /**
  * 数据源选择器 UI 的状态.

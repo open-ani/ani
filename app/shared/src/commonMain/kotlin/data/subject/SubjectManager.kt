@@ -15,8 +15,10 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.flow.transform
@@ -103,7 +105,12 @@ abstract class SubjectManager {
     /**
      * 从缓存中获取条目, 若没有则从网络获取.
      */
-    abstract suspend fun getSubjectInfo(subjectId: Int): SubjectInfo
+    abstract suspend fun getSubjectInfo(subjectId: Int): SubjectInfo // TODO: replace with  subjectInfoFlow
+
+
+    fun subjectInfoFlow(subjectId: Flow<Int>): Flow<SubjectInfo> {
+        return subjectId.mapLatest { getSubjectInfo(it) }
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     // Subject progress
@@ -143,12 +150,18 @@ abstract class SubjectManager {
     ///////////////////////////////////////////////////////////////////////////
     // Get info
     ///////////////////////////////////////////////////////////////////////////
+    // TODO: extract EpisodeRepository  (remote/mixed(?))
 
     /**
      * 从缓存中获取剧集, 若没有则从网络获取.
      */
-    abstract suspend fun getEpisode(episodeId: Int): EpisodeInfo
+    abstract suspend fun getEpisodeInfo(episodeId: Int): EpisodeInfo // TODO: replace with  episodeInfoFlow
+
+    fun episodeInfoFlow(episodeId: Flow<Int>): Flow<EpisodeInfo> = episodeId.mapLatest { getEpisodeInfo(it) }
 }
+
+fun SubjectManager.subjectInfoFlow(subjectId: Int): Flow<SubjectInfo> = subjectInfoFlow(flowOf(subjectId))
+fun SubjectManager.episodeInfoFlow(episodeId: Int): Flow<EpisodeInfo> = episodeInfoFlow(flowOf(episodeId))
 
 /**
  * 获取指定条目是否已经完结. 不是用户是否看完, 只要条目本身完结了就算.
@@ -257,7 +270,7 @@ class SubjectManagerImpl(
         }
     }
 
-    override suspend fun getEpisode(episodeId: Int): EpisodeInfo {
+    override suspend fun getEpisodeInfo(episodeId: Int): EpisodeInfo {
         collectionsByType.values.map { it.getCachedData() }.asSequence().flatten()
             .flatMap { it.episodes }
             .map { it.episode }

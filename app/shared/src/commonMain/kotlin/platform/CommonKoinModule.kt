@@ -39,6 +39,7 @@ import me.him188.ani.app.data.media.MediaSourceManager
 import me.him188.ani.app.data.media.MediaSourceManagerImpl
 import me.him188.ani.app.data.media.TorrentMediaCacheEngine
 import me.him188.ani.app.data.media.cache.DirectoryMediaCacheStorage
+import me.him188.ani.app.data.media.createWithKoin
 import me.him188.ani.app.data.media.instance.MediaSourceSave
 import me.him188.ani.app.data.repositories.BangumiEpisodeRepository
 import me.him188.ani.app.data.repositories.BangumiSubjectRepository
@@ -192,7 +193,7 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
     // Caching
 
     single<MediaAutoCacheService> {
-        DefaultMediaAutoCacheService()
+        DefaultMediaAutoCacheService.createWithKoin()
     }
 }
 

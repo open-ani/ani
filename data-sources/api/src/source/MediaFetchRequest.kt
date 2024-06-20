@@ -10,6 +10,7 @@ import me.him188.ani.datasources.api.EpisodeSort
  */
 @Serializable
 class MediaFetchRequest(
+    // 提示, 查看 [MediaFetcher]
     /**
      * 条目服务 (Bangumi) 提供的条目 ID. 若数据源支持, 可以用此信息做精确匹配.
      * 可能为 `null`, 表示未知.
@@ -54,7 +55,9 @@ class MediaFetchRequest(
      * @see EpisodeSort
      */
     val episodeEp: EpisodeSort? = episodeSort,
-)
+) {
+    companion object
+}
 
 fun MediaFetchRequest.toStringMultiline() = buildString {
     append("subjectId").append(": ").append(subjectId).appendLine()

@@ -1,24 +1,24 @@
 package me.him188.ani.app.ui.subject.episode.mediaFetch
 
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import me.him188.ani.app.data.media.fetch.FilteredMediaSourceResults
 import me.him188.ani.app.data.media.fetch.MediaSourceFetchResult
 import me.him188.ani.app.data.media.fetch.MediaSourceFetchState
-import me.him188.ani.app.data.media.fetch.MediaSourceResults
 import me.him188.ani.app.data.media.fetch.emptyMediaSourceResults
 import me.him188.ani.app.data.media.fetch.isDisabled
 import me.him188.ani.app.data.media.fetch.isFailedOrAbandoned
 import me.him188.ani.app.data.media.fetch.isWorking
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
+import me.him188.ani.app.ui.foundation.rememberBackgroundScope
 import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.utils.coroutines.onReplacement
 import kotlin.coroutines.CoroutineContext
@@ -50,18 +50,27 @@ class MediaSourceResultPresentation(
     }
 }
 
+@Composable
+fun rememberMediaSourceResultPresentation(
+    delegate: () -> MediaSourceFetchResult, // will not update
+): MediaSourceResultPresentation {
+    val background = rememberBackgroundScope() // bind to current composition
+    return remember {
+        MediaSourceResultPresentation(delegate(), background.backgroundScope.coroutineContext)
+    }
+}
+
 
 /**
  * 在 [MediaSelectorView] 使用, 管理多个 [MediaSourceResultPresentation] 的结果
  */
 @Stable
 class MediaSourceResultsPresentation(
-    results: Flow<MediaSourceResults>,
+    results: FilteredMediaSourceResults,
     parentCoroutineContext: CoroutineContext,
     flowDispatcher: CoroutineContext = Dispatchers.Default,
 ) : HasBackgroundScope by BackgroundScope(parentCoroutineContext) {
-    val list: List<MediaSourceResultPresentation> by results
-        .flatMapLatest { it.sourceResults }
+    val list: List<MediaSourceResultPresentation> by results.filteredSourceResults
         .map { list ->
             list.map {
                 MediaSourceResultPresentation(it, backgroundScope.coroutineContext)
@@ -87,7 +96,7 @@ class MediaSourceResultsPresentation(
 }
 
 private val EmptyMediaSourceResultsPresentation by lazy(LazyThreadSafetyMode.NONE) {
-    MediaSourceResultsPresentation(flowOf(emptyMediaSourceResults()), EmptyCoroutineContext)
+    MediaSourceResultsPresentation(emptyMediaSourceResults(), EmptyCoroutineContext)
 }
 
 @Stable
