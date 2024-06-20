@@ -70,6 +70,7 @@ private fun PreviewSubjectCachePage() {
             },
             onClickGlobalCacheSettings = {},
             onClickGlobalCacheManage = {},
+            onRequestCache = {},
             onDeleteCache = {},
         )
     }

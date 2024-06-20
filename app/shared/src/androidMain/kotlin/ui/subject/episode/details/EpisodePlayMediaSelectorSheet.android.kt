@@ -16,7 +16,7 @@ import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.rememberBackgroundScope
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
-import me.him188.ani.app.ui.subject.episode.mediaFetch.emptyMediaSelectorSourceResults
+import me.him188.ani.app.ui.subject.episode.mediaFetch.emptyMediaSourceResultsPresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.previewMediaList
 
 @Preview(name = "progress = null")
@@ -24,7 +24,7 @@ import me.him188.ani.app.ui.subject.episode.mediaFetch.previewMediaList
 private fun PreviewEpisodePlayMediaSelectorSheet() = ProvideCompositionLocalsForPreview {
     EpisodePlayMediaSelector(
         rememberTestMediaSelectorPresentation(),
-        emptyMediaSelectorSourceResults(),
+        emptyMediaSourceResultsPresentation(),
         onDismissRequest = {},
         Modifier.background(MaterialTheme.colorScheme.surface),
     )
@@ -35,7 +35,7 @@ private fun PreviewEpisodePlayMediaSelectorSheet() = ProvideCompositionLocalsFor
 private fun PreviewEpisodePlayMediaSelectorSheet2() = ProvideCompositionLocalsForPreview {
     EpisodePlayMediaSelector(
         rememberTestMediaSelectorPresentation(),
-        emptyMediaSelectorSourceResults(),
+        emptyMediaSourceResultsPresentation(),
         onDismissRequest = {},
         Modifier.background(MaterialTheme.colorScheme.surface),
     )
@@ -46,7 +46,7 @@ private fun PreviewEpisodePlayMediaSelectorSheet2() = ProvideCompositionLocalsFo
 private fun PreviewEpisodePlayMediaSelectorSheet3() = ProvideCompositionLocalsForPreview {
     EpisodePlayMediaSelector(
         rememberTestMediaSelectorPresentation(),
-        emptyMediaSelectorSourceResults(),
+        emptyMediaSourceResultsPresentation(),
         onDismissRequest = {},
         Modifier.background(MaterialTheme.colorScheme.surface),
     )

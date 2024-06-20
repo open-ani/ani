@@ -6,8 +6,8 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.media.MediaCacheManager
@@ -220,7 +220,7 @@ private class TestMediaSourceResult(
     results: List<Media>,
 ) : MediaSourceFetchResult {
     override val state: MutableStateFlow<MediaSourceFetchState> = MutableStateFlow(initialState)
-    override val results: Flow<List<Media>> = flowOf(results)
+    override val results: SharedFlow<List<Media>> = MutableStateFlow(results)
 
     @OptIn(DelicateCoroutinesApi::class)
     override fun restart() {

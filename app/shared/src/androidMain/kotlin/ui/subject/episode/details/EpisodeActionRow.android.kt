@@ -9,8 +9,8 @@ import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 private fun PreviewEpisodeActionRow() {
     ProvideCompositionLocalsForPreview {
         EpisodeActionRow(
-            isMediaFetcherWorking = true,
-            isDanmakuLoading = true,
+            isMediaFetcherWorking = { true },
+            isDanmakuLoading = { true },
             {}, {}, {}, {}, {}, {},
         )
     }
