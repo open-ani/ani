@@ -38,8 +38,7 @@ jetpack-compose = "1.6.7"
 compose-multiplatform = "1.6.10"
 # https://maven.pkg.jetbrains.space/public/p/compose/dev/org/jetbrains/compose/compiler/compiler/
 #compose-multiplatform-compiler = "1.5.11-kt-2.0.0-RC1" # used by buildscript, don't remove
-vlcj = "4.8.2"
-material3-android = "1.2.1" # don't change version, otherwise it might crash the vm
+vlcj = "4.8.2" # don't change version, otherwise it might crash the vm
 
 [libraries]
 # Build
@@ -213,4 +212,3 @@ aws-secretsmanager = { module = "software.amazon.awssdk:secretsmanager", version
 #htmlunit = { group = "net.sourceforge.htmlunit", name = "htmlunit", version = "2.70.0" }
 selenium-java = { group = "org.seleniumhq.selenium", name = "selenium-java", version = "4.21.0" }
 webdrivermanager = { group = "io.github.bonigarcia", name = "webdrivermanager", version = "5.8.0" }
-androidx-material3-android = { group = "androidx.compose.material3", name = "material3-android", version.ref = "material3-android" }
