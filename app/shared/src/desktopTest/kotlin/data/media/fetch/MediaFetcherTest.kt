@@ -19,6 +19,9 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.fail
 
+/**
+ * @see MediaFetcher
+ */
 class MediaFetcherTest {
     private fun createFetcher(
         vararg instances: MediaSourceInstance
@@ -78,8 +81,8 @@ class MediaFetcherTest {
                 fail("Should not fetch")
             }
         ))).newSession(request1)
-        assertEquals(1, session.resultsPerSource.size)
-        val res = session.resultsPerSource.values.first()
+        assertEquals(1, session.results.size)
+        val res = session.results.first()
         assertIs<MediaSourceFetchState.Idle>(res.state.value)
         assertEquals(false, session.hasCompleted.first())
     }
@@ -91,15 +94,15 @@ class MediaFetcherTest {
     @Test
     fun `hasCompleted is initially true if no source`() = runTest {
         val session = createFetcher().newSession(request1)
-        assertEquals(0, session.resultsPerSource.size)
+        assertEquals(0, session.results.size)
         assertEquals(true, session.hasCompleted.first())
     }
 
     @Test
     fun `hasCompleted is initially false when all sources are enabled`() = runTest {
         val session = createFetcher(createTestMediaSourceInstance(TestHttpMediaSource())).newSession(request1)
-        assertEquals(1, session.resultsPerSource.size)
-        val res = session.resultsPerSource.values.first()
+        assertEquals(1, session.results.size)
+        val res = session.results.first()
         assertIs<MediaSourceFetchState.Idle>(res.state.value)
         assertEquals(false, session.hasCompleted.first())
     }
@@ -110,9 +113,9 @@ class MediaFetcherTest {
             createTestMediaSourceInstance(TestHttpMediaSource(), isEnabled = false),
             createTestMediaSourceInstance(TestHttpMediaSource(), isEnabled = false),
         ).newSession(request1)
-        assertEquals(2, session.resultsPerSource.size)
-        assertIs<MediaSourceFetchState.Disabled>(session.resultsPerSource.values.first().state.value)
-        assertIs<MediaSourceFetchState.Disabled>(session.resultsPerSource.values.toList()[1].state.value)
+        assertEquals(2, session.results.size)
+        assertIs<MediaSourceFetchState.Disabled>(session.results.first().state.value)
+        assertIs<MediaSourceFetchState.Disabled>(session.results.toList()[1].state.value)
         assertEquals(true, session.hasCompleted.first())
     }
 
@@ -122,9 +125,9 @@ class MediaFetcherTest {
             createTestMediaSourceInstance(TestHttpMediaSource(), isEnabled = false),
             createTestMediaSourceInstance(TestHttpMediaSource()),
         ).newSession(request1)
-        assertEquals(2, session.resultsPerSource.size)
-        assertIs<MediaSourceFetchState.Disabled>(session.resultsPerSource.values.first().state.value)
-        assertIs<MediaSourceFetchState.Idle>(session.resultsPerSource.values.toList()[1].state.value)
+        assertEquals(2, session.results.size)
+        assertIs<MediaSourceFetchState.Disabled>(session.results.first().state.value)
+        assertIs<MediaSourceFetchState.Idle>(session.results[1].state.value)
         assertEquals(false, session.hasCompleted.first())
     }
 
@@ -141,8 +144,8 @@ class MediaFetcherTest {
                 }
             }
         ))).newSession(request1)
-        assertEquals(1, session.resultsPerSource.size)
-        val res = session.resultsPerSource.values.first()
+        assertEquals(1, session.results.size)
+        val res = session.results.first()
         assertIs<MediaSourceFetchState.Idle>(res.state.value)
         assertEquals(5, session.awaitCompletedResults().size)
         assertIs<MediaSourceFetchState.Succeed>(res.state.value)
@@ -167,8 +170,8 @@ class MediaFetcherTest {
                 }
             )),
         ).newSession(request1)
-        assertEquals(2, session.resultsPerSource.size)
-        val res = session.resultsPerSource.values.first()
+        assertEquals(2, session.results.size)
+        val res = session.results.first()
         assertIs<MediaSourceFetchState.Idle>(res.state.value)
         assertEquals(5, session.awaitCompletedResults().size) // because the same media is returned from both sources
         assertIs<MediaSourceFetchState.Succeed>(res.state.value)
@@ -192,8 +195,8 @@ class MediaFetcherTest {
                 }
             )),
         ).newSession(request1)
-        assertEquals(2, session.resultsPerSource.size)
-        val res = session.resultsPerSource.values.first()
+        assertEquals(2, session.results.size)
+        val res = session.results.first()
         assertIs<MediaSourceFetchState.Idle>(res.state.value)
         assertEquals(2, session.awaitCompletedResults().size)
         assertIs<MediaSourceFetchState.Succeed>(res.state.value)
@@ -206,7 +209,7 @@ class MediaFetcherTest {
                 TestMediaList.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
             }
         }))).newSession(request1)
-        assertEquals(1, session.resultsPerSource.size)
+        assertEquals(1, session.results.size)
         val res = session.cumulativeResults.first()
         assertEquals(0, res.size)
     }
@@ -218,8 +221,8 @@ class MediaFetcherTest {
                 TestMediaList.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
             }
         }))).newSession(request1)
-        assertEquals(1, session.resultsPerSource.size)
-        val res = session.resultsPerSource.values.first()
+        assertEquals(1, session.results.size)
+        val res = session.results.first()
         assertEquals(5, session.awaitCompletedResults().size)
         assertEquals(5, session.cumulativeResults.first().size)
         assertEquals(5, res.results.first().size)
@@ -241,8 +244,8 @@ class MediaFetcherTest {
                 isEnabled = false
             )
         ).newSession(request1)
-        assertEquals(1, session.resultsPerSource.size)
-        val res = session.resultsPerSource.values.first()
+        assertEquals(1, session.results.size)
+        val res = session.results.first()
         assertIs<MediaSourceFetchState.Disabled>(res.state.value)
         assertEquals(0, session.awaitCompletedResults().size)
         assertIs<MediaSourceFetchState.Disabled>(res.state.value)
@@ -267,10 +270,10 @@ class MediaFetcherTest {
                 }),
             )
         ).newSession(request1)
-        assertEquals(2, session.resultsPerSource.size)
-        assertIs<MediaSourceFetchState.Disabled>(session.resultsPerSource.values.first().state.value)
+        assertEquals(2, session.results.size)
+        assertIs<MediaSourceFetchState.Disabled>(session.results.first().state.value)
         assertEquals(3, session.awaitCompletedResults().size)
-        assertIs<MediaSourceFetchState.Succeed>(session.resultsPerSource.values.toList()[1].state.value)
+        assertIs<MediaSourceFetchState.Succeed>(session.results[1].state.value)
     }
 
     @Test
@@ -293,9 +296,9 @@ class MediaFetcherTest {
                 isEnabled = false
             )
         ).newSession(request1)
-        assertEquals(2, session.resultsPerSource.size)
-        assertIs<MediaSourceFetchState.Disabled>(session.resultsPerSource.values.first().state.value)
-        assertIs<MediaSourceFetchState.Disabled>(session.resultsPerSource.values.toList()[1].state.value)
+        assertEquals(2, session.results.size)
+        assertIs<MediaSourceFetchState.Disabled>(session.results.first().state.value)
+        assertIs<MediaSourceFetchState.Disabled>(session.results[1].state.value)
         assertEquals(0, session.awaitCompletedResults().size)
         assertEquals(true, session.hasCompleted.first())
     }

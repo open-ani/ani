@@ -116,9 +116,9 @@ interface MediaFetchSession {
     val request: Flow<MediaFetchRequest>
 
     /**
-     * 从各个
+     * 从各个数据源获取的结果
      */
-    val resultsPerSource: Map<String, MediaSourceFetchResult> // dev notes: see implementation of [MediaSource]s for the IDs.
+    val results: List<MediaSourceFetchResult> // dev notes: see implementation of [MediaSource]s for the IDs.
 
     /**
      * 从所有数据源聚合的结果. collect [cumulativeResults] 会导致所有数据源开始查询. 持续 collect 以保持查询不被中断.
@@ -329,11 +329,9 @@ class MediaSourceMediaFetcher(
         override val request: Flow<MediaFetchRequest> =
             request.shareIn(CoroutineScope(flowContext), started = SharingStarted.WhileSubscribed(), replay = 1)
 
-        override val resultsPerSource: Map<String, MediaSourceFetchResult> = mediaSources.associateBy {
-            it.mediaSourceId
-        }.mapValues { (id, instance) ->
+        override val results: List<MediaSourceFetchResult> = mediaSources.map { instance ->
             MediaSourceResultImpl(
-                mediaSourceId = id,
+                mediaSourceId = instance.mediaSourceId,
                 instance.source.kind,
                 config,
                 disabled = !instance.isEnabled,
@@ -349,16 +347,16 @@ class MediaSourceMediaFetcher(
         }
 
         override val cumulativeResults: Flow<List<Media>> =
-            combine(resultsPerSource.values.map { it.resultsIfEnabled }) { lists ->
+            combine(results.map { it.resultsIfEnabled }) { lists ->
                 lists.asSequence().flatten().toList()
             }.map { list ->
                 list.distinctBy { it.mediaId } // distinct globally by id, just to be safe
             }.flowOn(flowContext)
 
-        override val hasCompleted = if (resultsPerSource.isEmpty()) {
+        override val hasCompleted = if (results.isEmpty()) {
             flowOf(true)
         } else {
-            combine(resultsPerSource.values.map { it.state }) { states ->
+            combine(results.map { it.state }) { states ->
                 states.all { it is MediaSourceFetchState.Completed || it is MediaSourceFetchState.Disabled }
             }.flowOn(flowContext)
         }
