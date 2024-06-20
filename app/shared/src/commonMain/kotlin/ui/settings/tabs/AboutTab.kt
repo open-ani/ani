@@ -1,6 +1,7 @@
 package me.him188.ani.app.ui.settings.tabs
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -92,6 +93,7 @@ private const val MIKAN = "https://mikanime.tv/"
 fun AboutTab(
     vm: AboutTabViewModel = rememberViewModel { AboutTabViewModel() },
     modifier: Modifier = Modifier,
+    onTriggerDebugMode: () -> Unit = { },
 ) {
     val context by rememberUpdatedState(LocalContext.current)
 
@@ -184,7 +186,16 @@ fun AboutTab(
         }
 
         Group(
-            title = { Text("调试信息") },
+            title = {
+                Text(
+                    text = "调试信息",
+                    modifier = Modifier.clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = onTriggerDebugMode
+                    )
+                )
+            },
             description = { Text("在反馈问题时附上日志可能有用") }
         ) {
             Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {

@@ -25,9 +25,11 @@ import android.os.Build
 import android.os.Bundle
 import android.view.WindowInsets
 import android.view.WindowInsetsController
+import android.widget.Toast
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
@@ -39,6 +41,8 @@ import me.him188.ani.app.platform.notification.NotifManager
 import me.him188.ani.app.session.BangumiAuthorizationConstants
 import me.him188.ani.app.session.OAuthResult
 import me.him188.ani.app.session.SessionManager
+import me.him188.ani.app.ui.foundation.widgets.LocalToaster
+import me.him188.ani.app.ui.foundation.widgets.Toaster
 import me.him188.ani.app.ui.main.AniApp
 import me.him188.ani.app.ui.main.AniAppContent
 import me.him188.ani.utils.logging.error
@@ -141,7 +145,13 @@ class MainActivity : AniComponentActivity() {
 //                        }
 //                    }
 //                }
-                AniAppContent(aniNavigator)
+                CompositionLocalProvider(LocalToaster provides object : Toaster {
+                    override fun toast(text: String) {
+                        Toast.makeText(this@MainActivity, text, Toast.LENGTH_LONG).show()
+                    }
+                }) {
+                    AniAppContent(aniNavigator)
+                }
             }
         }
 

@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import me.him188.ani.app.data.models.DanmakuSettings
+import me.him188.ani.app.data.models.DebugSettings
 import me.him188.ani.app.data.models.MediaCacheSettings
 import me.him188.ani.app.data.models.MediaSelectorSettings
 import me.him188.ani.app.data.models.OneshotActionConfig
@@ -55,6 +56,8 @@ interface SettingsRepository {
     val qBittorrentConfig: Settings<QBittorrentConfig>
 
     val oneshotActionConfig: Settings<OneshotActionConfig>
+
+    val debugSettings: Settings<DebugSettings>
 }
 
 @Stable
@@ -167,6 +170,12 @@ class PreferencesRepositoryImpl(
         "oneshotActionConfig",
         OneshotActionConfig.serializer(),
         default = { OneshotActionConfig.Default }
+    )
+
+    override val debugSettings: Settings<DebugSettings> = SerializablePreference(
+        "debugSettings",
+        DebugSettings.serializer(),
+        default = { DebugSettings.Default }
     )
 
     private companion object {
