@@ -1,5 +1,6 @@
 package me.him188.ani.app.data.media.fetch
 
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.toList
@@ -15,6 +16,7 @@ import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.source.MediaMatch
 import me.him188.ani.datasources.api.source.TestHttpMediaSource
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -25,13 +27,13 @@ import kotlin.test.fail
  * @see MediaFetcher
  */
 class MediaFetcherTest {
-    private fun createFetcher(
+    private suspend fun createFetcher(
         vararg instances: MediaSourceInstance
     ): MediaSourceMediaFetcher {
         return MediaSourceMediaFetcher(
             { MediaFetcherConfig.Default },
             listOf(*instances),
-            EmptyCoroutineContext,
+            currentCoroutineContext()[ContinuationInterceptor] ?: EmptyCoroutineContext,
         )
     }
 
@@ -540,7 +542,7 @@ class MediaFetcherTest {
         session.awaitCompletedResults()
         assertEquals(2, firstFetchCalled.get())
         assertEquals(1, secondFetchCalled.get())
-        
+
         assertEquals(2, res1.results.first().size)
         assertEquals(3, res2.results.first().size)
         assertEquals(5, session.cumulativeResults.first().size)
