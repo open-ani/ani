@@ -123,16 +123,14 @@ class EpisodeCacheRequesterImpl(
         override suspend fun select(media: Media): CacheRequestStage.SelectStorage {
             stageLock.withLock {
                 checkStageLocked()
-                if (mediaSelector.select(media)) {
-                    return switchStageLocked {
-                        SelectStorage(
-                            this,
-                            media,
-                            storagesLazy.first()
-                        )
-                    }
+                mediaSelector.select(media) // always success
+                return switchStageLocked {
+                    SelectStorage(
+                        this,
+                        media,
+                        storagesLazy.first()
+                    )
                 }
-                throw IllegalArgumentException("Media is not one of the mediaSelector.mediaList: $media")
             }
         }
 

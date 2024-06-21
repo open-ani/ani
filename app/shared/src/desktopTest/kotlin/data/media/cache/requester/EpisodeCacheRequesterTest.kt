@@ -209,6 +209,32 @@ class EpisodeCacheRequesterTest {
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    // SelectMedia
+    ///////////////////////////////////////////////////////////////////////////
+
+    @Test
+    fun `SelectMedia select, cancel, and select same`() = runTest {
+        val request = createRequest()
+        requester.request(request).run {
+            select(mediaList.value.first())
+                .cancel()
+                .select(mediaList.value.first())
+        }
+        assertIs<CacheRequestStage.SelectStorage>(requester.stage.value)
+    }
+
+    @Test
+    fun `SelectMedia select, cancel, and select different`() = runTest {
+        val request = createRequest()
+        requester.request(request).run {
+            select(mediaList.value.first())
+                .cancel()
+                .select(mediaList.value[1])
+        }
+        assertIs<CacheRequestStage.SelectStorage>(requester.stage.value)
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     // SelectMedia trySelect
     ///////////////////////////////////////////////////////////////////////////
 
