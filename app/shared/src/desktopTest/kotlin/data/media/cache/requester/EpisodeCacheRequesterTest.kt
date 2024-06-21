@@ -128,6 +128,8 @@ class EpisodeCacheRequesterTest {
     // Basic states
     ///////////////////////////////////////////////////////////////////////////
 
+    // Note: these tests test `requester.stage.value` and is different from other tests like SelectStorage::select
+
     @Test
     fun `initial stage idle`() = runTest {
         assertIs<CacheRequestStage.Idle>(requester.stage.value)
@@ -174,6 +176,36 @@ class EpisodeCacheRequesterTest {
             .select(mediaList.value.first())
             .select(TestMediaCacheStorage())
         assertIs<CacheRequestStage.Done>(requester.stage.value)
+    }
+
+    @Test
+    fun `done has correct metadata`() = runTest {
+        val request = createRequest().run {
+            copy(
+                subjectInfo.copy(id = 12, name = "ひ", nameCn = "孤独摇滚"),
+                episodeInfo.copy(sort = EpisodeSort(2), name = "第二集") // 2 in 12
+            )
+        }
+
+        val originalMedia = createDefaultMedia("$SOURCE_DMHY.1", EpisodeRange.range(EpisodeSort(1), EpisodeSort(12)))
+        val done = requester.request(request)
+            .select(originalMedia)
+            .select(TestMediaCacheStorage())
+        assertIs<CacheRequestStage.Done>(requester.stage.value)
+
+        assertEquals(
+            // note: compare with the MediaCacheMetadata above
+            // We expect all info updated
+            MediaCacheMetadata(
+                subjectId = "12",
+                episodeId = "0",
+                subjectNames = setOf("ひ", "孤独摇滚"),
+                episodeSort = EpisodeSort(2), // using new
+                episodeEp = null,
+                episodeName = "第二集",
+            ),
+            done.metadata
+        )
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -279,6 +311,7 @@ class EpisodeCacheRequesterTest {
         )
     }
 
+    @Suppress("SameParameterValue")
     private fun createDefaultMedia(id: String, epRange: EpisodeRange): DefaultMedia {
         return DefaultMedia(
             mediaId = id,
@@ -366,6 +399,41 @@ class EpisodeCacheRequesterTest {
 
     @Test
     fun `select storage two times`() = runTest {
+        val request = createRequest()
+        val state = requester.request(request).select(mediaList.value.first())
+        state.select(storage)
+        assertFailsWith<StaleStageException> {
+            state.select(storage)
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // SelectStorage select
+    ///////////////////////////////////////////////////////////////////////////
+
+    @Test
+    fun `SelectStorage select selects one from options`() = runTest {
+        val request = createRequest()
+        val state = requester.request(request).select(mediaList.value.first())
+        assertTrue { storage in state.storages }
+        val done = state.select(storage) // storage is in options
+        assertNotNull(done)
+        assertSame(storage, done.storage)
+    }
+
+    @Test
+    fun `SelectStorage select selects one even if not from options`() = runTest {
+        val request = createRequest()
+        val state = requester.request(request).select(mediaList.value.first())
+        val storage = TestMediaCacheStorage() // new storage
+        assertTrue { storage !in state.storages }
+        val done = state.select(storage) // storage is not in options
+        assertNotNull(done)
+        assertSame(storage, done.storage)
+    }
+
+    @Test
+    fun `SelectStorage select twice`() = runTest {
         val request = createRequest()
         val state = requester.request(request).select(mediaList.value.first())
         state.select(storage)

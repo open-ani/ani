@@ -1,10 +1,12 @@
 package me.him188.ani.app.data.media.cache.requester
 
 import me.him188.ani.app.data.media.cache.MediaCache
+import me.him188.ani.app.data.media.cache.MediaCacheEngine
 import me.him188.ani.app.data.media.cache.MediaCacheStorage
 import me.him188.ani.app.data.media.fetch.MediaFetchSession
 import me.him188.ani.app.data.media.fetch.MediaSourceFetchResult
 import me.him188.ani.app.data.media.selector.MediaSelector
+import me.him188.ani.datasources.api.CachedMedia
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaCacheMetadata
 
@@ -96,6 +98,9 @@ sealed interface CacheRequestStage {
         val request: EpisodeCacheRequest,
         val media: Media,
         val storage: MediaCacheStorage,
+        /**
+         * 用于提供给 [MediaCacheEngine.createCache] 和 [CachedMedia] 的缓存元数据. 数据主要来自 [request] 的条目和剧集信息.
+         */
         val metadata: MediaCacheMetadata,
     ) : CacheRequestStage
 }
