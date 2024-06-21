@@ -50,7 +50,7 @@ interface EpisodeCacheListState {
     fun cancelStorageSelector(task: SelectStorageTask)
 
     fun cancelRequest()
-    
+
 
     /**
      * 开始请求缓存一个剧集.
@@ -79,7 +79,7 @@ interface EpisodeCacheListState {
 @Stable
 class EpisodeCacheListStateImpl(
     episodesLazy: Flow<List<EpisodeCacheState>>,
-    private val onRequestCache: suspend (episode: EpisodeCacheState) -> Unit,
+    private val onRequestCache: suspend (episode: EpisodeCacheState) -> CacheRequestStage?,
     private val onRequestCacheComplete: suspend (episode: EpisodeCacheTargetInfo) -> Unit,
     private val onDeleteCache: suspend (episode: EpisodeCacheState) -> Unit,
     parentCoroutineContext: CoroutineContext,
@@ -103,15 +103,7 @@ class EpisodeCacheListStateImpl(
             (episode.cacheRequester.stage.value as? CacheRequestStage.SelectMedia)?.select(media)
                 ?.trySelectSingle()
                 ?.let { done ->
-                    onRequestCacheComplete(
-                        EpisodeCacheTargetInfo(
-                            episode = episode,
-                            request = done.request,
-                            media = done.media,
-                            storage = done.storage,
-                            metadata = done.metadata,
-                        )
-                    )
+                    callComplete(episode, done)
                 }
         }
     }
@@ -133,15 +125,7 @@ class EpisodeCacheListStateImpl(
             (episode.cacheRequester.stage.value as? CacheRequestStage.SelectStorage)
                 ?.select(storage)
                 ?.let { done ->
-                    onRequestCacheComplete(
-                        EpisodeCacheTargetInfo(
-                            episode = episode,
-                            request = done.request,
-                            media = done.media,
-                            storage = done.storage,
-                            metadata = done.metadata,
-                        )
-                    ) // TODO: 处理错误 
+                    callComplete(episode, done)
                 }
         }
     }
@@ -166,8 +150,28 @@ class EpisodeCacheListStateImpl(
         // 当已经有任务时, 忽略请求
         if (episode.actionTasker.isRunning) return
         episode.actionTasker.launch {
-            onRequestCache(episode) // TODO: 处理错误 
+            // TODO: 处理错误 
+            onRequestCache(episode)?.let {
+                if (it is CacheRequestStage.Done) {
+                    callComplete(episode, it)
+                }
+            }
         }
+    }
+
+    private suspend inline fun EpisodeCacheListStateImpl.callComplete(
+        episode: EpisodeCacheState,
+        done: CacheRequestStage.Done
+    ) {
+        onRequestCacheComplete(
+            EpisodeCacheTargetInfo(
+                episode = episode,
+                request = done.request,
+                media = done.media,
+                storage = done.storage,
+                metadata = done.metadata,
+            )
+        )
     }
 
     override fun deleteCache(episode: EpisodeCacheState) {

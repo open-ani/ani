@@ -10,6 +10,7 @@ import kotlinx.coroutines.sync.withLock
 import me.him188.ani.app.data.media.cache.MediaCache
 import me.him188.ani.app.data.media.cache.MediaCacheStorage
 import me.him188.ani.app.data.media.cache.contains
+import me.him188.ani.app.data.media.cache.requester.CacheRequestStage.MediaSelected
 import me.him188.ani.app.data.media.fetch.MediaFetchSession
 import me.him188.ani.app.data.media.fetch.MediaFetcher
 import me.him188.ani.app.data.media.fetch.MediaSourceFetchResult
@@ -134,12 +135,12 @@ class EpisodeCacheRequesterImpl(
             }
         }
 
-        override suspend fun tryAutoSelectByCachedSeason(existingCaches: List<MediaCache>): CacheRequestStage.SelectStorage? {
+        override suspend fun tryAutoSelectByCachedSeason(existingCaches: List<MediaCache>): MediaSelected? {
             val existing = existingCaches.firstOrNull {
                 val episodeRange = it.origin.episodeRange
                 if (episodeRange == null || episodeRange.isSingleEpisode()) return@firstOrNull false
 
-                request.episodeInfo.ep != null && episodeRange.contains(request.episodeInfo.ep)
+                (request.episodeInfo.ep != null && episodeRange.contains(request.episodeInfo.ep))
                         || episodeRange.contains(request.episodeInfo.sort)
             } ?: return null
 
@@ -152,12 +153,13 @@ class EpisodeCacheRequesterImpl(
                         storagesLazy.first()
                     )
                 }
-            }.apply {
+            }.run {
                 try {
-                    trySelectByCache(existing)
+                    trySelectByCache(existing) ?: this
                 } catch (_: StaleStageException) {
                     // This can happen because we left lock before attempting trySelectByCache.
                     // It means someone else has already changed the stage. So we just ignore the exception.
+                    this
                 }
             }
         }

@@ -49,7 +49,9 @@ sealed interface CacheRequestStage {
         /**
          * 尝试从已有的剧集缓存中, 选择一个 [Media.episodeRange] 包含当前请求的剧集序号的 [Media].
          *
-         * 成功时进入下一阶段, 若未找到则返回 `null`.
+         * 如果失败, 返回 `null`.
+         *
+         * 成功时会尝试根据上次缓存使用的 storage 选择. 如果选择成功, 将返回 [Done]. 否则返回 [SelectStorage].
          *
          * 与 [MediaSelector.select] 不同, 该方法会更新 stage. 详见 [Working.mediaSelector].
          *
@@ -58,7 +60,7 @@ sealed interface CacheRequestStage {
          */
         suspend fun tryAutoSelectByCachedSeason(
             existingCaches: List<MediaCache>,
-        ): SelectStorage?
+        ): MediaSelected?
 
         /**
          * 尝试自动选择一个 [Media] 并进入下一阶段.
@@ -78,7 +80,12 @@ sealed interface CacheRequestStage {
         suspend fun cancel(): Idle
     }
 
-    sealed interface SelectStorage : Working {
+    /**
+     * 已经完成了 [SelectMedia].
+     */
+    sealed interface MediaSelected : CacheRequestStage
+
+    sealed interface SelectStorage : Working, MediaSelected {
         val storages: List<MediaCacheStorage>
 
         /**
@@ -110,7 +117,7 @@ sealed interface CacheRequestStage {
          * 用于提供给 [MediaCacheEngine.createCache] 和 [CachedMedia] 的缓存元数据. 数据主要来自 [request] 的条目和剧集信息.
          */
         val metadata: MediaCacheMetadata,
-    ) : CacheRequestStage
+    ) : CacheRequestStage, MediaSelected
 }
 
 /**

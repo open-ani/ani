@@ -389,9 +389,42 @@ class EpisodeCacheRequesterTest {
                 episodeInfo.copy(sort = EpisodeSort(2), name = "第二集") // 2 in 12
             )
         }
-        val done = requester.request(request)
-            .tryAutoSelectByCachedSeason(listOf(mediaCache))!!
+        val done = (requester.request(request)
+            .tryAutoSelectByCachedSeason(listOf(mediaCache))
+                as CacheRequestStage.SelectStorage) // storage 不包含 mediaCache
             .trySelectSingle()!!
+
+        assertEquals(originalMedia, done.media)
+        assertEquals(
+            // note: compare with the MediaCacheMetadata above
+            // We expect all info updated
+            MediaCacheMetadata(
+                subjectId = "12",
+                episodeId = "0",
+                subjectNames = setOf("ひ", "孤独摇滚"),
+                episodeSort = EpisodeSort(2), // using new
+                episodeEp = null,
+                episodeName = "第二集",
+            ),
+            done.metadata
+        )
+    }
+
+    @Test
+    fun `SelectMedia tryAutoSelectByCachedSeason goes Done if storage contains mediaCache`() = runTest {
+        val originalMedia = createDefaultMedia("$SOURCE_DMHY.1", EpisodeRange.range(EpisodeSort(1), EpisodeSort(12)))
+        val mediaCache = createMediaCache(originalMedia, EpisodeSort(1), EpisodeSort(1))
+        storage.listFlow.value += mediaCache // note here
+
+        val request = createRequest().run {
+            copy(
+                subjectInfo.copy(id = 12, name = "ひ", nameCn = "孤独摇滚"),
+                episodeInfo.copy(sort = EpisodeSort(2), name = "第二集") // 2 in 12
+            )
+        }
+        val done = requester.request(request)
+            .tryAutoSelectByCachedSeason(listOf(mediaCache))
+        assertIs<CacheRequestStage.Done>(done)
 
         assertEquals(originalMedia, done.media)
         assertEquals(

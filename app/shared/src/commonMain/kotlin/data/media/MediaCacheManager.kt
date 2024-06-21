@@ -77,6 +77,18 @@ abstract class MediaCacheManager(
         }
     }
 
+    @Stable
+    fun listCacheForSubject(
+        subjectId: Int,
+    ): Flow<List<MediaCache>> {
+        val subjectIdString = subjectId.toString()
+        return cacheListFlow.map { list ->
+            list.filter { cache ->
+                cache.metadata.subjectId == subjectIdString
+            }
+        }
+    }
+
     /**
      * Returns the cache status for the episode, updated lively and sampled for 1000ms.
      */

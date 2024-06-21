@@ -112,6 +112,16 @@ fun SettingsScope.EpisodeCacheListGroup(
         )
     }
     state.currentSelectMediaTask?.let { task ->
+        // 当 task 变更后, 等待一秒再显示
+        var delayed by remember(task) { mutableStateOf(false) }
+        LaunchedEffect(task) {
+            delay(1000)
+            if (task == state.currentSelectMediaTask) {
+                delayed = true
+            }
+        }
+        if (!delayed) return@let
+
         ModalBottomSheet(
             { state.cancelMediaSelector(task) },
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),

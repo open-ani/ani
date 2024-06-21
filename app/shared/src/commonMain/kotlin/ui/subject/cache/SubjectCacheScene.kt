@@ -129,7 +129,7 @@ class SubjectCacheViewModelImpl(
                     subjectManager.getEpisodeInfo(episode.episodeId)
                 )
             ).tryAutoSelectByCachedSeason(
-                cacheManager.listCacheForEpisode(subjectId, episode.episodeId).first()
+                cacheManager.listCacheForSubject(subjectId).first()
             )
         },
         onRequestCacheComplete = { target ->
