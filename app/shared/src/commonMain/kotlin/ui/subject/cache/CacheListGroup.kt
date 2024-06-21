@@ -173,7 +173,7 @@ fun SettingsScope.EpisodeCacheListGroup(
                         state.requestCache(episodeCacheState)
                     }
                 },
-                action = {
+                dropdown = {
                     ItemDropdown(
                         showDropdown = showDropdown,
                         onDismissRequest = { showDropdown = false },
@@ -231,7 +231,7 @@ private fun ItemDropdown(
 @Composable
 private fun SettingsScope.EpisodeItem(
     episode: EpisodeCacheState,
-    action: @Composable () -> Unit = {},
+    dropdown: @Composable () -> Unit = {},
     onClick: () -> Unit,
 ) {
     val colorByWatchStatus = if (episode.info.watchStatus.isDoneOrDropped() || !episode.info.hasPublished) {
@@ -254,28 +254,30 @@ private fun SettingsScope.EpisodeItem(
             }
 
             CompositionLocalProvider(LocalContentColor provides colorByWatchStatus) {
-                Crossfade(episode.actionTasker.isRunning) { hasActionRunning ->
-                    if (hasActionRunning) {
-                        // 等一会再显示取消, 防止点错
-                        var enabled by remember { mutableStateOf(false) }
-                        LaunchedEffect(true) {
-                            delay(1.seconds)
-                            enabled = true
+                Box {
+                    Crossfade(episode.actionTasker.isRunning) { hasActionRunning ->
+                        if (hasActionRunning) {
+                            // 等一会再显示取消, 防止点错
+                            var enabled by remember { mutableStateOf(false) }
+                            LaunchedEffect(true) {
+                                delay(1.seconds)
+                                enabled = true
+                            }
+                            IconButton(
+                                onClick = {
+                                    episode.actionTasker.cancel()
+                                },
+                                Modifier.animateEnable(enabled),
+                                enabled = enabled
+                            ) {
+                                Icon(Icons.Rounded.Close, "取消")
+                            }
+                        } else {
+                            EpisodeActionIcon(episode, onClick)
                         }
-                        IconButton(
-                            onClick = {
-                                episode.actionTasker.cancel()
-                            },
-                            Modifier.animateEnable(enabled),
-                            enabled = enabled
-                        ) {
-                            Icon(Icons.Rounded.Close, "取消")
-                        }
-                    } else {
-                        EpisodeActionIcon(episode, onClick)
                     }
+                    dropdown()
                 }
-                action()
             }
         },
         title = {
