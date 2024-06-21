@@ -104,9 +104,7 @@ val CacheRequestStage.mediaSourceResults: List<MediaSourceFetchResult>
     get() = when (this) {
         is CacheRequestStage.Done -> emptyList()
         CacheRequestStage.Idle -> emptyList()
-        is EpisodeCacheRequesterImpl.AbstractWorkingStage -> emptyList()
-        is CacheRequestStage.SelectMedia -> fetchSession.results
-        is CacheRequestStage.SelectStorage -> emptyList()
+        is CacheRequestStage.Working -> fetchSession.results
     }
 
 /**
