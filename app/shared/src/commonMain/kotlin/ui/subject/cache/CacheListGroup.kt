@@ -2,7 +2,6 @@
 
 package me.him188.ani.app.ui.subject.cache
 
-import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -255,26 +254,25 @@ private fun SettingsScope.EpisodeItem(
 
             CompositionLocalProvider(LocalContentColor provides colorByWatchStatus) {
                 Box {
-                    Crossfade(episode.actionTasker.isRunning) { hasActionRunning ->
-                        if (hasActionRunning) {
-                            // 等一会再显示取消, 防止点错
-                            var enabled by remember { mutableStateOf(false) }
-                            LaunchedEffect(true) {
-                                delay(1.seconds)
-                                enabled = true
-                            }
-                            IconButton(
-                                onClick = {
-                                    episode.actionTasker.cancel()
-                                },
-                                Modifier.animateEnable(enabled),
-                                enabled = enabled
-                            ) {
-                                Icon(Icons.Rounded.Close, "取消")
-                            }
-                        } else {
-                            EpisodeActionIcon(episode, onClick)
+                    // Crossfade 会导致变换的时候被挤到坐上角, 不知道为什么
+                    if (episode.actionTasker.isRunning) {
+                        // 等一会再显示取消, 防止点错
+                        var enabled by remember { mutableStateOf(false) }
+                        LaunchedEffect(true) {
+                            delay(1.seconds)
+                            enabled = true
                         }
+                        IconButton(
+                            onClick = {
+                                episode.actionTasker.cancel()
+                            },
+                            Modifier.animateEnable(enabled),
+                            enabled = enabled
+                        ) {
+                            Icon(Icons.Rounded.Close, "取消")
+                        }
+                    } else {
+                        EpisodeActionIcon(episode, onClick)
                     }
                     dropdown()
                 }
