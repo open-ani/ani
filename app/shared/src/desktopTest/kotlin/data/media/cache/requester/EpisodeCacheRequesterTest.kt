@@ -47,6 +47,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class EpisodeCacheRequesterTest {
@@ -278,16 +279,15 @@ class EpisodeCacheRequesterTest {
         )
     }
 
-    @Test
-    fun `SelectMedia tryAutoSelectByCachedSeason selects one for inputs with matching ep`() = runTest {
-        val originalMedia = DefaultMedia(
-            mediaId = "$SOURCE_DMHY.1",
+    private fun createDefaultMedia(id: String, epRange: EpisodeRange): DefaultMedia {
+        return DefaultMedia(
+            mediaId = id,
             mediaSourceId = SOURCE_DMHY,
             originalTitle = "[桜都字幕组] 孤独摇滚 ABC ABC ABC ABC ABC ABC ABC ABC ABC ABC",
             download = ResourceLocation.MagnetLink("magnet:?xt=urn:btih:1"),
             originalUrl = "https://example.com/1",
             publishedTime = System.currentTimeMillis(),
-            episodeRange = EpisodeRange.range(EpisodeSort(1), EpisodeSort(12)),
+            episodeRange = epRange,
             properties = MediaProperties(
                 subtitleLanguageIds = listOf(ChineseSimplified, ChineseTraditional).map { it.id },
                 resolution = "1080P",
@@ -297,20 +297,32 @@ class EpisodeCacheRequesterTest {
             kind = MediaSourceKind.BitTorrent,
             location = MediaSourceLocation.Online,
         )
-        val mediaCache = TestMediaCache(
-            CachedMedia(
-                originalMedia, "local",
-                ResourceLocation.LocalFile("/dev/null"),
-                MediaSourceLocation.Local,
-                MediaSourceKind.LocalCache,
-            ),
-            MediaCacheMetadata(
-                subjectNames = setOf("孤独摇滚"),
-                episodeSort = EpisodeSort(1),
-                episodeEp = EpisodeSort(1),
-                episodeName = "test",
-            )
+    }
+
+    private fun createMediaCache(
+        originalMedia: Media,
+        episodeSort: EpisodeSort,
+        episodeEp: EpisodeSort?,
+    ) = TestMediaCache(
+        CachedMedia(
+            originalMedia,
+            "local",
+            ResourceLocation.LocalFile("/dev/null"),
+            MediaSourceLocation.Local,
+            MediaSourceKind.LocalCache,
+        ),
+        MediaCacheMetadata(
+            subjectNames = setOf("孤独摇滚"),
+            episodeSort = episodeSort,
+            episodeEp = episodeEp,
+            episodeName = "test",
         )
+    )
+
+    @Test
+    fun `SelectMedia tryAutoSelectByCachedSeason selects one for inputs with matching ep`() = runTest {
+        val originalMedia = createDefaultMedia("$SOURCE_DMHY.1", EpisodeRange.range(EpisodeSort(1), EpisodeSort(12)))
+        val mediaCache = createMediaCache(originalMedia, EpisodeSort(1), EpisodeSort(1))
 
         val request = createRequest().run {
             copy(
@@ -363,14 +375,73 @@ class EpisodeCacheRequesterTest {
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    // SelectStorage trySelect
+    // SelectStorage trySelectByCache
     ///////////////////////////////////////////////////////////////////////////
 
     @Test
-    fun `SelectStorage trySelectByCache`() = runTest {
+    fun `SelectStorage trySelectByCache selects one if it is in storage`() = runTest {
         val request = createRequest()
-        // TODO:  
+        val originalMedia = createDefaultMedia("$SOURCE_DMHY.1", EpisodeRange.range(EpisodeSort(1), EpisodeSort(12)))
+        val mediaCache = createMediaCache(originalMedia, EpisodeSort(1), EpisodeSort(1))
+        storage.listFlow.value += mediaCache
+        storageFlow.value += TestMediaCacheStorage()
+        storageFlow.value += TestMediaCacheStorage()
+
+        val state = requester.request(request).select(mediaList.value.first())
+        val done = state.trySelectByCache(mediaCache)
+        assertNotNull(done)
+        assertSame(storage, done.storage)
     }
+
+    @Test
+    fun `SelectStorage storage options are frozen upon state transition`() = runTest {
+        val request = createRequest()
+        val state = requester.request(request).select(mediaList.value.first()) // storage options frozen since then
+
+        storageFlow.value += TestMediaCacheStorage()
+        storageFlow.value += TestMediaCacheStorage()
+
+        assertEquals(1, state.storages.size)
+
+        assertNotNull(state.trySelectSingle())
+    }
+
+    @Test
+    fun `SelectStorage trySelectByCache selects one if it is in storage, shuffled`() = runTest {
+        val request = createRequest()
+        val originalMedia = createDefaultMedia("$SOURCE_DMHY.1", EpisodeRange.range(EpisodeSort(1), EpisodeSort(12)))
+        val mediaCache = createMediaCache(originalMedia, EpisodeSort(1), EpisodeSort(1))
+
+        val target: TestMediaCacheStorage
+        storageFlow.value += TestMediaCacheStorage().apply {
+            listFlow.value += mediaCache
+            target = this
+        }
+        storageFlow.value += TestMediaCacheStorage()
+
+        val state = requester.request(request).select(mediaList.value.first())
+
+        val done = state.trySelectByCache(mediaCache)
+        assertNotNull(done)
+        assertSame(target, done.storage)
+    }
+
+    @Test
+    fun `SelectStorage trySelectByCache selects none`() = runTest {
+        val request = createRequest()
+        val state = requester.request(request).select(mediaList.value.first())
+        val originalMedia = createDefaultMedia("$SOURCE_DMHY.1", EpisodeRange.range(EpisodeSort(1), EpisodeSort(12)))
+        val mediaCache = createMediaCache(originalMedia, EpisodeSort(1), EpisodeSort(1))
+        storageFlow.value += TestMediaCacheStorage()
+        storageFlow.value += TestMediaCacheStorage()
+
+        val done = state.trySelectByCache(mediaCache)
+        assertNull(done)
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // SelectStorage trySelectSingle
+    ///////////////////////////////////////////////////////////////////////////
 
     @Test
     fun `SelectStorage trySelectSingle selects one when storageFlow is not empty`() = runTest {
