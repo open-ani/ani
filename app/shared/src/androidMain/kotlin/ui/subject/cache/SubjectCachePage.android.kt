@@ -2,7 +2,6 @@ package me.him188.ani.app.ui.subject.cache
 
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import kotlinx.coroutines.delay
@@ -166,21 +165,6 @@ fun PreviewEpisodeCacheRequester(): EpisodeCacheRequester = EpisodeCacheRequeste
     storagesLazy = flowOf()
 )
 
-@Stable
-open class TestEpisodeCacheState(
-    episodeId: Int,
-    cacheRequesterLazy: () -> EpisodeCacheRequester,
-    val infoFlow: MutableStateFlow<EpisodeCacheInfo>,
-    val cacheStatusFlow: MutableStateFlow<EpisodeCacheStatus>,
-    val originMediaFlow: MutableStateFlow<Media?>,
-    parentCoroutineContext: CoroutineContext,
-) : EpisodeCacheState(
-    episodeId,
-    cacheRequesterLazy,
-    infoFlow,
-    cacheStatusFlow,
-    parentCoroutineContext,
-)
 
 private val episodeCacheStateList = listOf(
     TestEpisodeCacheState(
@@ -201,7 +185,6 @@ private val episodeCacheStateList = listOf(
                 testMediaCache1,
             )
         ),
-        originMediaFlow = MutableStateFlow(null),
         parentCoroutineContext = EmptyCoroutineContext,
     ),
     TestEpisodeCacheState(
@@ -223,7 +206,6 @@ private val episodeCacheStateList = listOf(
                 testMediaCache1,
             )
         ),
-        originMediaFlow = MutableStateFlow(null),
         parentCoroutineContext = EmptyCoroutineContext,
     ),
     TestEpisodeCacheState(
@@ -241,7 +223,6 @@ private val episodeCacheStateList = listOf(
         cacheStatusFlow = MutableStateFlow(
             EpisodeCacheStatus.NotCached
         ),
-        originMediaFlow = MutableStateFlow(null),
         parentCoroutineContext = EmptyCoroutineContext,
     ),
     TestEpisodeCacheState(
@@ -259,7 +240,6 @@ private val episodeCacheStateList = listOf(
         cacheStatusFlow = MutableStateFlow(
             EpisodeCacheStatus.NotCached
         ),
-        originMediaFlow = MutableStateFlow(null),
         parentCoroutineContext = EmptyCoroutineContext,
     ),
 )

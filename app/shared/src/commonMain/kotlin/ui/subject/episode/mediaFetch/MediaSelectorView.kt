@@ -1,7 +1,5 @@
 package me.him188.ani.app.ui.subject.episode.mediaFetch
 
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,7 +20,6 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.InputChip
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Surface
@@ -36,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.tools.formatDateTime
+import me.him188.ani.app.ui.foundation.widgets.AnimatedLinearProgressIndicator
 import me.him188.ani.app.ui.icons.MediaSourceIcons
 import me.him188.ani.app.ui.icons.renderMediaSource
 import me.him188.ani.app.ui.subject.episode.details.renderSubtitleLanguage
@@ -57,15 +55,9 @@ fun MediaSelectorView(
     sourceResults: @Composable LazyItemScope.() -> Unit,
     modifier: Modifier = Modifier,
     itemProgressBar: @Composable RowScope.(Media) -> Unit = {
-        androidx.compose.animation.AnimatedVisibility(
-            state.selected == it,
-            enter = expandVertically(expandFrom = Alignment.CenterVertically),
-            exit = shrinkVertically(shrinkTowards = Alignment.CenterVertically),
-        ) {
-            LinearProgressIndicator(Modifier.fillMaxWidth())
-        }
+        AnimatedLinearProgressIndicator(state.selected == it, Modifier.fillMaxWidth())
     },
-    onClickItem: ((Media) -> Unit)? = null,
+    onClickItem: ((Media) -> Unit) = { state.select(it) },
     actions: (@Composable RowScope.() -> Unit)? = null,
 ) = Surface {
     Column(modifier) {
@@ -115,15 +107,12 @@ fun MediaSelectorView(
                         item,
                         state.selected == item,
                         state,
-                        onClick = {
-                            state.select(item)
-                            onClickItem?.invoke(item)
-                        },
+                        onClick = { onClickItem(item) },
                         Modifier
                             .animateItemPlacement()
                             .fillMaxWidth(),
                     )
-                    Row(Modifier.height(8.dp).fillMaxWidth()) {
+                    Row(Modifier.height(8.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         itemProgressBar(item)
                     }
                 }

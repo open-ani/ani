@@ -29,6 +29,9 @@ sealed interface CacheRequestStage {
 
         /**
          * 基于 [fetchSession] 的结果的 [MediaSelector], 可用于获取 [MediaSelector.alliance] 等信息
+         *
+         * 注意, 若调用 [MediaSelector.select], [MediaSelector.trySelectCached], [MediaSelector.trySelectDefault] 等修改 [MediaSelector.selected] 的方法,
+         * 不会更新 stage. 请使用 [SelectMedia.select], [SelectMedia.tryAutoSelectByCachedSeason], [SelectMedia.tryAutoSelectByPreference] 等方法替代.
          */
         val mediaSelector: MediaSelector
     }
@@ -36,6 +39,8 @@ sealed interface CacheRequestStage {
     sealed interface SelectMedia : Working {
         /**
          * 选择目标 [Media] 并进入下一阶段.
+         *
+         * 与 [MediaSelector.select] 不同, 该方法会更新 stage. 详见 [Working.mediaSelector].
          *
          * @throws StaleStageException
          */
@@ -45,6 +50,8 @@ sealed interface CacheRequestStage {
          * 尝试从已有的剧集缓存中, 选择一个 [Media.episodeRange] 包含当前请求的剧集序号的 [Media].
          *
          * 成功时进入下一阶段, 若未找到则返回 `null`.
+         *
+         * 与 [MediaSelector.select] 不同, 该方法会更新 stage. 详见 [Working.mediaSelector].
          *
          * @param existingCaches 该条目下的剧集的缓存状态
          * @throws StaleStageException
@@ -57,6 +64,8 @@ sealed interface CacheRequestStage {
          * 尝试自动选择一个 [Media] 并进入下一阶段.
          *
          * 若没有可选的 [Media] 或者用户已经手动选择过一个 [Media] 则返回 `null`.
+         *
+         * 与 [MediaSelector.select] 不同, 该方法会更新 stage. 详见 [Working.mediaSelector].
          *
          * @throws StaleStageException
          */

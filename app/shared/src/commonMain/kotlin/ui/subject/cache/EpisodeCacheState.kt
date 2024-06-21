@@ -6,6 +6,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import me.him188.ani.app.data.media.EpisodeCacheStatus
 import me.him188.ani.app.data.media.cache.MediaCacheEngine
 import me.him188.ani.app.data.media.cache.MediaCacheStorage
@@ -23,6 +24,7 @@ import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaCacheMetadata
 import me.him188.ani.datasources.api.topic.isDoneOrDropped
 import kotlin.coroutines.CoroutineContext
+
 
 /**
  * 一个条目的一个剧集的缓存状态
@@ -50,7 +52,7 @@ open class EpisodeCacheState(
         this.info === EpisodeCacheInfo.Placeholder
     }
 
-    private val currentStage: CacheRequestStage by cacheRequester.stage.produceState(CacheRequestStage.Idle)
+    private val currentStage: CacheRequestStage by cacheRequester.stage.produceState()
 
     /**
      * 当前需要展示给用户选择的 [MediaSelector]
@@ -134,4 +136,24 @@ data class EpisodeCacheTargetInfo(
      * 用于提供给 [MediaCacheEngine.createCache] 和 [CachedMedia] 的缓存元数据. 数据主要来自 [request] 的条目和剧集信息.
      */
     val metadata: MediaCacheMetadata,
+)
+
+
+///////////////////////////////////////////////////////////////////////////
+// Testing
+///////////////////////////////////////////////////////////////////////////
+
+@Stable
+class TestEpisodeCacheState(
+    episodeId: Int,
+    cacheRequesterLazy: () -> EpisodeCacheRequester,
+    val infoFlow: MutableStateFlow<EpisodeCacheInfo>,
+    val cacheStatusFlow: MutableStateFlow<EpisodeCacheStatus>,
+    parentCoroutineContext: CoroutineContext,
+) : EpisodeCacheState(
+    episodeId,
+    cacheRequesterLazy,
+    infoFlow,
+    cacheStatusFlow,
+    parentCoroutineContext,
 )

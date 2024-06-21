@@ -129,6 +129,9 @@ fun SettingsScope.EpisodeCacheListGroup(
                         selectorPresentation,
                     )
                 },
+                onClickItem = {
+                    state.selectMedia(it)
+                },
                 modifier = modifier.padding(vertical = 12.dp, horizontal = 16.dp)
                     .navigationBarsPadding()
                     .fillMaxHeight() // 防止添加筛选后数量变少导致 bottom sheet 高度变化
@@ -177,7 +180,7 @@ fun SettingsScope.EpisodeCacheListGroup(
                 }
                 AnimatedLinearProgressIndicator(
                     episodeCacheState.showProgressIndicator,
-                    Modifier.zIndex(1f),
+                    Modifier.zIndex(1f).fillMaxWidth(),
                 )
             }
         }

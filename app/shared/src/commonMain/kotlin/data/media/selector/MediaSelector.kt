@@ -158,6 +158,36 @@ class DefaultMediaSelector(
      */
     private val enableCaching: Boolean = true,
 ) : MediaSelector {
+    companion object {
+        private fun isLocalCache(it: Media) = it.kind == MediaSourceKind.LocalCache
+
+        fun filterCandidates(
+            mediaList: List<Media>,
+            mergedPreferences: MediaPreference,
+        ): List<Media> {
+            infix fun <Pref : Any> Pref?.matches(prop: Pref): Boolean = this == null || this == prop
+            infix fun <Pref : Any> Pref?.matches(prop: List<Pref>): Boolean = this == null || this in prop
+
+            /**
+             * 当 [it] 满足当前筛选条件时返回 `true`.
+             */
+            fun filterCandidate(it: Media): Boolean {
+                if (isLocalCache(it)) {
+                    return true // always show local, so that [makeDefaultSelection] will select a local one
+                }
+
+                return mergedPreferences.alliance matches it.properties.alliance &&
+                        mergedPreferences.resolution matches it.properties.resolution &&
+                        mergedPreferences.subtitleLanguageId matches it.properties.subtitleLanguageIds &&
+                        mergedPreferences.mediaSourceId matches it.mediaSourceId
+            }
+
+            return mediaList.filter {
+                filterCandidate(it)
+            }
+        }
+    }
+
     private fun <T> Flow<T>.cached(): Flow<T> {
         if (!enableCaching) return this
         return this.shareIn(CoroutineScope(flowCoroutineContext), SharingStarted.WhileSubscribed(), replay = 1)
@@ -280,27 +310,9 @@ class DefaultMediaSelector(
 
     // collect 一定会计算
     private val filteredCandidatesNotCached = combine(this.mediaList, newPreferences) { mediaList, mergedPreferences ->
-        infix fun <Pref : Any> Pref?.matches(prop: Pref): Boolean = this == null || this == prop
-        infix fun <Pref : Any> Pref?.matches(prop: List<Pref>): Boolean = this == null || this in prop
-
-        /**
-         * 当 [it] 满足当前筛选条件时返回 `true`.
-         */
-        fun filterCandidate(it: Media): Boolean {
-            if (isLocalCache(it)) {
-                return true // always show local, so that [makeDefaultSelection] will select a local one
-            }
-
-            return mergedPreferences.alliance matches it.properties.alliance &&
-                    mergedPreferences.resolution matches it.properties.resolution &&
-                    mergedPreferences.subtitleLanguageId matches it.properties.subtitleLanguageIds &&
-                    mergedPreferences.mediaSourceId matches it.mediaSourceId
-        }
-
-        mediaList.filter {
-            filterCandidate(it)
-        }
+        filterCandidates(mediaList, mergedPreferences)
     }
+
     override val filteredCandidates: Flow<List<Media>> = filteredCandidatesNotCached.cached()
 
     override val selected: MutableStateFlow<Media?> = MutableStateFlow(null)
@@ -496,8 +508,6 @@ class DefaultMediaSelector(
         val cached = candidates.fastFirstOrNull { isLocalCache(it) } ?: return null
         return selectDefault(cached)
     }
-
-    private fun isLocalCache(it: Media) = it.kind == MediaSourceKind.LocalCache
 
     override suspend fun removePreferencesUntilFirstCandidate() {
         if (filteredCandidates.first().isNotEmpty()) return
