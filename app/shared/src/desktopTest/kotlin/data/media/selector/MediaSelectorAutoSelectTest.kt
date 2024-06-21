@@ -25,6 +25,7 @@ import me.him188.ani.datasources.api.topic.Resolution
 import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.datasources.api.topic.SubtitleLanguage.ChineseSimplified
 import me.him188.ani.datasources.api.topic.SubtitleLanguage.ChineseTraditional
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -83,14 +84,15 @@ class MediaSelectorAutoSelectTest {
         )
 
     private val mediaFetcher: MediaSourceMediaFetcher = MediaSourceMediaFetcher(
-        { MediaFetcherConfig.Default },
-        listOf(
+        configProvider = { MediaFetcherConfig.Default },
+        mediaSources = listOf(
             createTestMediaSourceInstance(TestHttpMediaSource(fetch = {
                 SinglePagePagedSource {
                     mediaList.value.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
                 }
             }))
-        )
+        ),
+        flowContext = EmptyCoroutineContext,
     )
 
     private fun mediaFetchSession() = mediaFetcher.newSession(

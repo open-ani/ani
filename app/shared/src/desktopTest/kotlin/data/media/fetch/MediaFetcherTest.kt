@@ -15,6 +15,7 @@ import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.source.MediaMatch
 import me.him188.ani.datasources.api.source.TestHttpMediaSource
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -29,7 +30,8 @@ class MediaFetcherTest {
     ): MediaSourceMediaFetcher {
         return MediaSourceMediaFetcher(
             { MediaFetcherConfig.Default },
-            listOf(*instances)
+            listOf(*instances),
+            EmptyCoroutineContext,
         )
     }
 

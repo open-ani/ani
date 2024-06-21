@@ -33,6 +33,7 @@ import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 /**
  * [MediaFetcher], 为支持从多个 [MediaSource] 并行获取 [Media] 的综合查询工具.
@@ -47,10 +48,13 @@ interface MediaFetcher {
      *
      * 查询仅在 [MediaFetchSession.cumulativeResults] 被 collect 时开始.
      *
-     * @param flowContext 传递给 [MediaFetchSession] 的 flow 的 context. (用于 [Flow.flowOn])
+     * @param flowContext 传递给 [MediaFetchSession] 的 flow 的 context. (用于 [Flow.flowOn].) 将会与 [MediaSourceMediaFetcher.flowContext] 叠加.
      * @see MediaFetchRequest.Companion.create
      */
-    fun newSession(request: MediaFetchRequest, flowContext: CoroutineContext = Dispatchers.Default): MediaFetchSession {
+    fun newSession(
+        request: MediaFetchRequest,
+        flowContext: CoroutineContext = EmptyCoroutineContext
+    ): MediaFetchSession {
         return newSession(flowOf(request), flowContext)
     }
 
@@ -61,14 +65,15 @@ interface MediaFetcher {
      *
      * @param requestFlow 用于动态请求的 [MediaFetchRequest] 流. 当有新的元素 emit 时, 会重新请求.
      * 如果该 flow 一直不 emit 第一个元素, [MediaFetchSession.hasCompleted] 将会一直为 false.
-     *
      * 即使该 flow 不完结, 只要当前的 [MediaFetchRequest] 的查询完成了, [MediaFetchSession.hasCompleted] 也会变为 `true`.
+     *
+     * @param flowContext 传递给 [MediaFetchSession] 的 flow 的 context. (用于 [Flow.flowOn].) 将会与 [MediaSourceMediaFetcher.flowContext] 叠加.
      *
      * @see MediaFetchRequest.Companion.create
      */
     fun newSession(
         requestFlow: Flow<MediaFetchRequest>,
-        flowContext: CoroutineContext = Dispatchers.Default
+        flowContext: CoroutineContext = EmptyCoroutineContext,
     ): MediaFetchSession
 }
 
@@ -110,12 +115,13 @@ class MediaFetcherConfig { // 战未来
 /**
  * 一个 [MediaFetcher] 的实现, 从多个 [MediaSource] 并行[查询][MediaSource.fetch].
  *
- * @param configProvider configures each [MediaFetchSession] from [MediaFetcher.newSession].
- * The provider is evaluated for each fetch so that it can be dynamic.
+ * @param configProvider 配置每一个 [MediaFetchSession]. 会在创建 [MediaFetchSession] 时调用.
+ * @param flowContext 传递给 [MediaFetchSession] 的 flow 的 context. (用于 [Flow.flowOn].)
  */
 class MediaSourceMediaFetcher(
     private val configProvider: () -> MediaFetcherConfig,
     private val mediaSources: List<MediaSourceInstance>,
+    private val flowContext: CoroutineContext = Dispatchers.Default,
 ) : MediaFetcher {
     private inner class MediaSourceResultImpl(
         override val mediaSourceId: String,
@@ -230,7 +236,7 @@ class MediaSourceMediaFetcher(
     }
 
     override fun newSession(requestFlow: Flow<MediaFetchRequest>, flowContext: CoroutineContext): MediaFetchSession {
-        return MediaFetchSessionImpl(requestFlow, configProvider(), flowContext)
+        return MediaFetchSessionImpl(requestFlow, configProvider(), this.flowContext + flowContext)
     }
 
     private companion object {

@@ -40,6 +40,7 @@ import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.datasources.api.topic.SubtitleLanguage.ChineseSimplified
 import me.him188.ani.datasources.api.topic.SubtitleLanguage.ChineseTraditional
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -85,12 +86,13 @@ class EpisodeCacheRequesterTest {
         EpisodeCacheRequester(
             flowOf(
                 MediaSourceMediaFetcher(
-                    { MediaFetcherConfig.Default },
-                    listOf(createTestMediaSourceInstance(TestHttpMediaSource(fetch = {
+                    configProvider = { MediaFetcherConfig.Default },
+                    mediaSources = listOf(createTestMediaSourceInstance(TestHttpMediaSource(fetch = {
                         SinglePagePagedSource {
                             mediaList.value.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
                         }
-                    })))
+                    }))),
+                    flowContext = EmptyCoroutineContext,
                 )
             ),
             mediaSelectorFactory = object : MediaSelectorFactory {
