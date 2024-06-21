@@ -227,12 +227,12 @@ fun findProperty(name: String) =
         ?: System.getenv(name)
         ?: properties[name]?.toString()
         ?: getLocalProperty(name)
-        ?: runCatching { ext.get(name) }.getOrNull()
+        ?: runCatching { ext.get(name) }.getOrNull()?.toString()
 
 // do not use `object`, compiler bug
 open class ReleaseEnvironment {
     private val tag by lazy {
-        getProperty("CI_TAG").also { println("tag = $it") }
+        (findProperty("CI_TAG") ?: "3.0.0-dev").also { println("tag = $it") }
     }
     private val branch by lazy {
         getProperty("GITHUB_REF").substringAfterLast("/").also { println("branch = $it") }
