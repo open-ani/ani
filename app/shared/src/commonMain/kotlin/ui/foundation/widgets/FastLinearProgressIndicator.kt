@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -64,6 +65,7 @@ class FastLinearProgressState(
         if (visible) {
             this.mode = Mode.Definite
             tasker.launch {
+                delay(100) // 超级快的动作, 不展示进度条
                 launch {
                     animate(
                         scale, 1f,
