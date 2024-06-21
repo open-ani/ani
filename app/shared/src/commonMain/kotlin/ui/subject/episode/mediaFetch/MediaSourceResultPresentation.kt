@@ -7,6 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.data.media.fetch.FilteredMediaSourceResults
@@ -16,6 +17,7 @@ import me.him188.ani.app.data.media.fetch.emptyMediaSourceResults
 import me.him188.ani.app.data.media.fetch.isDisabled
 import me.him188.ani.app.data.media.fetch.isFailedOrAbandoned
 import me.him188.ani.app.data.media.fetch.isWorking
+import me.him188.ani.app.data.models.MediaSelectorSettings
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.rememberBackgroundScope
@@ -60,6 +62,22 @@ fun rememberMediaSourceResultPresentation(
     }
 }
 
+@Composable
+fun rememberMediaSourceResultsPresentation(
+    mediaSourceResults: () -> Flow<List<MediaSourceFetchResult>>,// will not update
+    settings: () -> Flow<MediaSelectorSettings>, // will not update
+): MediaSourceResultsPresentation {
+    val backgroundScope = rememberBackgroundScope()
+    return remember {
+        MediaSourceResultsPresentation(
+            FilteredMediaSourceResults(
+                mediaSourceResults(),
+                settings(),
+            ),
+            backgroundScope.backgroundScope.coroutineContext
+        )
+    }
+}
 
 /**
  * 在 [MediaSelectorView] 使用, 管理多个 [MediaSourceResultPresentation] 的结果

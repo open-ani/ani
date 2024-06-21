@@ -136,8 +136,8 @@ class EpisodeCacheRequesterImpl(
             }
         }
 
-        override suspend fun tryAutoSelectByCachedSeason(episodeCacheStats: List<MediaCache>): CacheRequestStage.SelectStorage? {
-            val existing = episodeCacheStats.firstOrNull {
+        override suspend fun tryAutoSelectByCachedSeason(existingCaches: List<MediaCache>): CacheRequestStage.SelectStorage? {
+            val existing = existingCaches.firstOrNull {
                 val episodeRange = it.origin.episodeRange
                 if (episodeRange == null || episodeRange.isSingleEpisode()) return@firstOrNull false
 

@@ -79,7 +79,13 @@ interface MediaCacheStorage : AutoCloseable {
      * Delete the cache if it exists.
      * @return `true` if a cache was deleted, `false` if there wasn't such a cache.
      */
-    suspend fun delete(cache: MediaCache): Boolean
+    suspend fun delete(cache: MediaCache): Boolean = deleteFirst { it == cache }
+
+    /**
+     * Delete the cache if it exists.
+     * @return `true` if a cache was deleted, `false` if there wasn't such a cache.
+     */
+    suspend fun deleteFirst(predicate: (MediaCache) -> Boolean): Boolean
 }
 
 suspend inline fun MediaCacheStorage.contains(cache: MediaCache): Boolean = listFlow.first().any { it === cache }
@@ -114,6 +120,13 @@ class TestMediaCacheStorage : MediaCacheStorage {
             return true
         }
         return false
+    }
+
+    override suspend fun deleteFirst(predicate: (MediaCache) -> Boolean): Boolean {
+        val list = listFlow.first()
+        val cache = list.firstOrNull(predicate) ?: return false
+        listFlow.value = list.filter { it != cache }
+        return true
     }
 
     override fun close() {

@@ -84,7 +84,7 @@ fun EpisodeDetails(
                     sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = currentPlatform.isDesktop())
                 ) {
                     EpisodePlayMediaSelector(
-                        state = viewModel.mediaSelectorPresentation,
+                        mediaSelector = viewModel.mediaSelectorPresentation,
                         sourceResults = viewModel.mediaSourceResultsPresentation,
                         onDismissRequest = { viewModel.mediaSelectorVisible = false },
                         modifier = Modifier.fillMaxHeight(), // 防止添加筛选后数量变少导致 bottom sheet 高度变化

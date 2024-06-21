@@ -153,14 +153,30 @@ abstract class SubjectManager {
     // TODO: extract EpisodeRepository  (remote/mixed(?))
 
     /**
-     * 从缓存中获取剧集, 若没有则从网络获取.
+     * 从缓存中获取剧集, 若没有则从网络获取. 在获取失败时将会抛出异常.
      */
     abstract suspend fun getEpisodeInfo(episodeId: Int): EpisodeInfo // TODO: replace with  episodeInfoFlow
 
+    /**
+     * 获取一个 [EpisodeInfo] flow. 将优先从缓存中获取, 若没有则从网络获取.
+     *
+     * 返回的 flow 只会 emit 唯一一个元素, 或者抛出异常.
+     */
     fun episodeInfoFlow(episodeId: Flow<Int>): Flow<EpisodeInfo> = episodeId.mapLatest { getEpisodeInfo(it) }
 }
 
+/**
+ * 获取一个 [SubjectInfo] flow. 将优先从缓存中获取, 若没有则从网络获取.
+ *
+ * 返回的 flow 只会 emit 唯一一个元素, 或者抛出异常.
+ */
 fun SubjectManager.subjectInfoFlow(subjectId: Int): Flow<SubjectInfo> = subjectInfoFlow(flowOf(subjectId))
+
+/**
+ * 获取一个 [EpisodeInfo] flow. 将优先从缓存中获取, 若没有则从网络获取.
+ *
+ * 返回的 flow 只会 emit 唯一一个元素, 或者抛出异常.
+ */
 fun SubjectManager.episodeInfoFlow(episodeId: Int): Flow<EpisodeInfo> = episodeInfoFlow(flowOf(episodeId))
 
 /**

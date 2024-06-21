@@ -46,12 +46,11 @@ sealed interface CacheRequestStage {
          *
          * 成功时进入下一阶段, 若未找到则返回 `null`.
          *
-         * @param episodeCacheStats 该条目下的剧集的缓存状态
+         * @param existingCaches 该条目下的剧集的缓存状态
          * @throws StaleStageException
          */
-        // todo: use tryAutoSelectByCachedSeason
         suspend fun tryAutoSelectByCachedSeason(
-            episodeCacheStats: List<MediaCache>,
+            existingCaches: List<MediaCache>,
         ): SelectStorage?
 
         /**
@@ -105,6 +104,9 @@ sealed interface CacheRequestStage {
     ) : CacheRequestStage
 }
 
+/**
+ * 从各个数据源获取的结果
+ */
 val CacheRequestStage.mediaSourceResults: List<MediaSourceFetchResult>
     get() = when (this) {
         is CacheRequestStage.Done -> emptyList()

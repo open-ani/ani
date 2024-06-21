@@ -141,30 +141,36 @@ internal val previewMediaList = listOf(
 @PreviewLightDark
 @Composable
 private fun PreviewMediaSelector() {
+    val mediaSelector = rememberMediaSelectorPresentation {
+        DefaultMediaSelector(
+            mediaSelectorContextNotCached = flowOf(MediaSelectorContext.EmptyForPreview),
+            mediaListNotCached = MutableStateFlow(
+                listOf(
+                    CachedMedia(
+                        origin = previewMediaList[0],
+                        cacheMediaSourceId = MediaCacheManager.LOCAL_FS_MEDIA_SOURCE_ID,
+                        download = ResourceLocation.LocalFile("file://test.txt"),
+                    )
+                ) + previewMediaList
+            ),
+            savedUserPreference = flowOf(MediaPreference.Empty),
+            savedDefaultPreference = flowOf(
+                MediaPreference.PlatformDefault.copy(
+                    subtitleLanguageId = "CHS"
+                )
+            ),
+            mediaSelectorSettings = flowOf(MediaSelectorSettings.Default)
+        )
+    }
     ProvideCompositionLocalsForPreview {
         MediaSelectorView(
-            state = rememberMediaSelectorPresentation {
-                DefaultMediaSelector(
-                    mediaSelectorContextNotCached = flowOf(MediaSelectorContext.EmptyForPreview),
-                    mediaListNotCached = MutableStateFlow(
-                        listOf(
-                            CachedMedia(
-                                origin = previewMediaList[0],
-                                cacheMediaSourceId = MediaCacheManager.LOCAL_FS_MEDIA_SOURCE_ID,
-                                download = ResourceLocation.LocalFile("file://test.txt"),
-                            )
-                        ) + previewMediaList
-                    ),
-                    savedUserPreference = flowOf(MediaPreference.Empty),
-                    savedDefaultPreference = flowOf(
-                        MediaPreference.PlatformDefault.copy(
-                            subtitleLanguageId = "CHS"
-                        )
-                    ),
-                    mediaSelectorSettings = flowOf(MediaSelectorSettings.Default)
+            state = mediaSelector,
+            sourceResults = {
+                MediaSourceResultsView(
+                    rememberTestMediaSourceResults(),
+                    mediaSelector,
                 )
-            },
-            sourceResults = rememberTestMediaSourceResults()
+            }
         )
     }
 }

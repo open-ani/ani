@@ -138,6 +138,24 @@ abstract class MediaCacheManager(
         }.flowOn(Dispatchers.Default)
     }
 
+    suspend fun deleteCache(cache: MediaCache): Boolean {
+        for (storage in enabledStorages.first()) {
+            if (storage.delete(cache)) {
+                return true
+            }
+        }
+        return false
+    }
+
+    suspend fun deleteFirstCache(filter: (MediaCache) -> Boolean): Boolean {
+        for (storage in enabledStorages.first()) {
+            if (storage.deleteFirst(filter)) {
+                return true
+            }
+        }
+        return false
+    }
+
     init {
         if (notificationManager.hasPermission()) {
             startNotificationJob()
@@ -282,6 +300,7 @@ sealed class EpisodeCacheStatus {
         /**
          * This will not be 1f (on which it will become [Cached]).
          */
+        // TODO: Do not box progress Float 
         val progress: Float?, // null means still connecting
         val totalSize: FileSize,
         override val cache: MediaCache,

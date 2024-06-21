@@ -223,11 +223,9 @@ class DirectoryMediaCacheStorage(
         metadata: MediaCacheMetadata = it.metadata
     ) = it.origin.mediaId == media.mediaId && it.metadata.episodeSort == metadata.episodeSort
 
-    override suspend fun delete(cache: MediaCache): Boolean {
+    override suspend fun deleteFirst(predicate: (MediaCache) -> Boolean): Boolean {
         lock.withLock {
-            if (!listFlow.value.contains(cache)) {
-                return false
-            }
+            val cache = listFlow.value.firstOrNull(predicate) ?: return false
             listFlow.value -= cache
             withContext(Dispatchers.IO) {
                 if (!metadataDir.resolve(getSaveFilename(cache)).deleteIfExists()) {

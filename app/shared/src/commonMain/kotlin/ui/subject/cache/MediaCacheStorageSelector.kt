@@ -54,15 +54,3 @@ fun SelectMediaStorageDialog(
         modifier = modifier,
     )
 }
-
-@Composable
-fun SelectMediaStorageDialogHost(state: EpisodeCacheRequesterPresentation, modifier: Modifier = Modifier) {
-    state.selectStorageStage?.let { stage ->
-        SelectMediaStorageDialog(
-            options = stage.storages,
-            onSelect = { state.selectStorage(it) },
-            onDismissRequest = { state.cancelRequest() },
-            modifier
-        )
-    }
-}
