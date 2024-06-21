@@ -33,7 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.tools.formatDateTime
-import me.him188.ani.app.ui.foundation.widgets.AnimatedLinearProgressIndicator
+import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressIndicator
 import me.him188.ani.app.ui.icons.MediaSourceIcons
 import me.him188.ani.app.ui.icons.renderMediaSource
 import me.him188.ani.app.ui.subject.episode.details.renderSubtitleLanguage
@@ -55,7 +55,7 @@ fun MediaSelectorView(
     sourceResults: @Composable LazyItemScope.() -> Unit,
     modifier: Modifier = Modifier,
     itemProgressBar: @Composable RowScope.(Media) -> Unit = {
-        AnimatedLinearProgressIndicator(state.selected == it, Modifier.fillMaxWidth())
+        FastLinearProgressIndicator(state.selected == it, Modifier.fillMaxWidth())
     },
     onClickItem: ((Media) -> Unit) = { state.select(it) },
     actions: (@Composable RowScope.() -> Unit)? = null,

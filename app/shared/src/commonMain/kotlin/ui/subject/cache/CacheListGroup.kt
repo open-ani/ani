@@ -53,7 +53,7 @@ import me.him188.ani.app.data.media.EpisodeCacheStatus
 import me.him188.ani.app.data.models.MediaSelectorSettings
 import me.him188.ani.app.ui.foundation.animation.animateEnable
 import me.him188.ani.app.ui.foundation.theme.stronglyWeaken
-import me.him188.ani.app.ui.foundation.widgets.AnimatedLinearProgressIndicator
+import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressIndicator
 import me.him188.ani.app.ui.foundation.widgets.ProgressIndicatorHeight
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.TextItem
@@ -178,7 +178,7 @@ fun SettingsScope.EpisodeCacheListGroup(
                 if (i != state.episodes.lastIndex) {
                     HorizontalDividerItem() // 1.dp height
                 }
-                AnimatedLinearProgressIndicator(
+                FastLinearProgressIndicator(
                     episodeCacheState.showProgressIndicator,
                     Modifier.zIndex(1f).fillMaxWidth(),
                 )
