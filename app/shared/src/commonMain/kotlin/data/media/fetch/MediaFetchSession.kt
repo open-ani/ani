@@ -80,7 +80,7 @@ interface MediaFetchSession {
 }
 
 /**
- * 挂起当前协程, 直到所有 [MediaSource] 都查询完成.
+ * 启动所有 [MediaSource] 的查询, 挂起当前协程, 直到所有 [MediaSource] 都查询完成.
  *
  * 支持 cancellation.
  */
@@ -93,7 +93,7 @@ suspend fun MediaFetchSession.awaitCompletion() {
 }
 
 /**
- * 挂起当前协程, 直到所有 [MediaSource] 都查询完成, 然后获取所有查询结果.
+ * 启动所有 [MediaSource] 的查询, 挂起当前协程, 直到所有 [MediaSource] 都查询完成, 然后获取所有查询结果.
  *
  * 支持 cancellation.
  */
