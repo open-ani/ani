@@ -550,11 +550,33 @@ class EpisodeCacheRequesterTest {
     }
 
     @Test
+    fun `cancel SelectMedia twice`() = runTest {
+        val request = createRequest()
+        requester.request(request).run {
+            cancel()
+            assertFailsWith<StaleStageException> {
+                cancel()
+            }
+        }
+    }
+
+    @Test
     fun `cancel SelectStorage`() = runTest {
         val request = createRequest()
         requester.request(request)
             .select(mediaList.value.first())
             .cancel()
         assertIs<CacheRequestStage.SelectMedia>(requester.stage.value)
+    }
+
+    @Test
+    fun `cancel SelectStorage twice`() = runTest {
+        val request = createRequest()
+        requester.request(request).select(mediaList.value.first()).run {
+            cancel()
+            assertFailsWith<StaleStageException> {
+                cancel()
+            }
+        }
     }
 }
