@@ -107,13 +107,13 @@ fun SettingsScope.EpisodeCacheListGroup(
         SelectMediaStorageDialog(
             options = task.options,
             onSelect = { state.selectStorage(it) },
-            onDismissRequest = { state.cancelStorageSelector() },
+            onDismissRequest = { state.cancelStorageSelector(task) },
             modifier
         )
     }
     state.currentSelectMediaTask?.let { task ->
         ModalBottomSheet(
-            { state.cancelMediaSelector() },
+            { state.cancelMediaSelector(task) },
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
             modifier = modifier,
         ) {
@@ -137,7 +137,7 @@ fun SettingsScope.EpisodeCacheListGroup(
                     .fillMaxHeight() // 防止添加筛选后数量变少导致 bottom sheet 高度变化
                     .fillMaxWidth(),
                 actions = {
-                    TextButton({ state.cancelMediaSelector() }) {
+                    TextButton({ state.cancelRequest() }) {
                         Text("取消")
                     }
                 },

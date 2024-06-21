@@ -94,6 +94,7 @@ class FastLinearProgressState(
                 ) { value, _ ->
                     scale = value
                 }
+                mode = Mode.Definite // 恢复状态, 避免下次显示时会有一点点
             }
         }
     }

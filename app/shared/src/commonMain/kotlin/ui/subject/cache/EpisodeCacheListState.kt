@@ -39,7 +39,7 @@ interface EpisodeCacheListState {
      */
     val currentSelectMediaTask: SelectMediaTask?
     fun selectMedia(media: Media)
-    fun cancelMediaSelector()
+    fun cancelMediaSelector(task: SelectMediaTask)
 
 
     /**
@@ -47,8 +47,10 @@ interface EpisodeCacheListState {
      */
     val currentSelectStorageTask: SelectStorageTask?
     fun selectStorage(storage: MediaCacheStorage)
-    fun cancelStorageSelector()
+    fun cancelStorageSelector(task: SelectStorageTask)
 
+    fun cancelRequest()
+    
 
     /**
      * 开始请求缓存一个剧集.
@@ -114,8 +116,8 @@ class EpisodeCacheListStateImpl(
         }
     }
 
-    override fun cancelMediaSelector() {
-        val episode = episodes.firstOrNull { it.currentSelectMediaTask != null } ?: return
+    override fun cancelMediaSelector(task: SelectMediaTask) {
+        val episode = task.episode
         episode.actionTasker.launch {
             (episode.cacheRequester.stage.value as? CacheRequestStage.SelectMedia)?.cancel()
         }
@@ -144,12 +146,19 @@ class EpisodeCacheListStateImpl(
         }
     }
 
-    override fun cancelStorageSelector() {
-        val episode = episodes.firstOrNull { it.currentSelectStorageTask != null } ?: return
+    override fun cancelStorageSelector(task: SelectStorageTask) {
+        val episode = task.episode
         episode.actionTasker.launch {
             (episode.cacheRequester.stage.value as? CacheRequestStage.SelectStorage)
                 ?.cancel()
                 ?.mediaSelector?.unselect() // 取消选中曾经选中的 Media, 否则那个 Media 会一直显示进度条 
+        }
+    }
+
+    override fun cancelRequest() {
+        val episode = currentEpisode ?: return
+        episode.actionTasker.launch {
+            episode.cacheRequester.cancelRequest()
         }
     }
 
