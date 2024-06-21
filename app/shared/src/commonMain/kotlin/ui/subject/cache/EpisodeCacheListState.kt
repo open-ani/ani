@@ -147,7 +147,9 @@ class EpisodeCacheListStateImpl(
     override fun cancelStorageSelector() {
         val episode = episodes.firstOrNull { it.currentSelectStorageTask != null } ?: return
         episode.actionTasker.launch {
-            (episode.cacheRequester.stage.value as? CacheRequestStage.SelectStorage)?.cancel()
+            (episode.cacheRequester.stage.value as? CacheRequestStage.SelectStorage)
+                ?.cancel()
+                ?.mediaSelector?.unselect() // 取消选中曾经选中的 Media, 否则那个 Media 会一直显示进度条 
         }
     }
 
