@@ -202,7 +202,7 @@ class MediaSourceMediaFetcher(
         override val request: Flow<MediaFetchRequest> =
             request.shareIn(CoroutineScope(flowContext), started = SharingStarted.WhileSubscribed(), replay = 1)
 
-        override val results: List<MediaSourceFetchResult> = mediaSources.map { instance ->
+        override val mediaSourceResults: List<MediaSourceFetchResult> = mediaSources.map { instance ->
             MediaSourceResultImpl(
                 mediaSourceId = instance.mediaSourceId,
                 instance.source.kind,
@@ -220,16 +220,16 @@ class MediaSourceMediaFetcher(
         }
 
         override val cumulativeResults: Flow<List<Media>> =
-            combine(results.map { it.resultsIfEnabled }) { lists ->
+            combine(mediaSourceResults.map { it.resultsIfEnabled }) { lists ->
                 lists.asSequence().flatten().toList()
             }.map { list ->
                 list.distinctBy { it.mediaId } // distinct globally by id, just to be safe
             }.flowOn(flowContext)
 
-        override val hasCompleted = if (results.isEmpty()) {
+        override val hasCompleted = if (mediaSourceResults.isEmpty()) {
             flowOf(true)
         } else {
-            combine(results.map { it.state }) { states ->
+            combine(mediaSourceResults.map { it.state }) { states ->
                 states.all { it is MediaSourceFetchState.Completed || it is MediaSourceFetchState.Disabled }
             }.flowOn(flowContext)
         }

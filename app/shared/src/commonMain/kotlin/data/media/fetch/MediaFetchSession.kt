@@ -28,7 +28,7 @@ interface MediaFetchSession {
     /**
      * 从各个数据源获取的结果
      */
-    val results: List<MediaSourceFetchResult> // dev notes: see implementation of [MediaSource]s for the IDs.
+    val mediaSourceResults: List<MediaSourceFetchResult> // dev notes: see implementation of [MediaSource]s for the IDs.
 
     /**
      * 从所有数据源聚合的结果. collect [cumulativeResults] 会导致所有数据源开始查询. 持续 collect 以保持查询不被中断.

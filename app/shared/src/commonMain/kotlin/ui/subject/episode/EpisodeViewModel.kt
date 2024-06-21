@@ -260,7 +260,7 @@ private class EpisodeViewModelImpl(
     override val mediaSourceResultsPresentation: MediaSourceResultsPresentation =
         MediaSourceResultsPresentation(
             FilteredMediaSourceResults(
-                results = mediaFetchSession.mapLatest { it.results },
+                results = mediaFetchSession.mapLatest { it.mediaSourceResults },
                 settings = settingsRepository.mediaSelectorSettings.flow,
             ),
             backgroundScope.coroutineContext

@@ -109,7 +109,7 @@ val CacheRequestStage.mediaSourceResults: List<MediaSourceFetchResult>
     get() = when (this) {
         is CacheRequestStage.Done -> emptyList()
         CacheRequestStage.Idle -> emptyList()
-        is CacheRequestStage.Working -> fetchSession.results
+        is CacheRequestStage.Working -> fetchSession.mediaSourceResults
     }
 
 /**
