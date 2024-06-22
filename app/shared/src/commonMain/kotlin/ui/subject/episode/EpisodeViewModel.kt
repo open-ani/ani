@@ -233,7 +233,7 @@ private class EpisodeViewModelImpl(
             // note: subjectInfo 和 episodeInfo 必须是只 emit 一个元素的
             MediaFetchRequest.create(subjectInfo, episodeInfo)
         },
-    )
+    ).shareInBackground(started = SharingStarted.Lazily)
 
     private val mediaSelector = MediaSelectorFactory.withKoin(getKoin())
         .create(

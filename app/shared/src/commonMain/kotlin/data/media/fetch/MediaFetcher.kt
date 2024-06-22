@@ -3,6 +3,7 @@ package me.him188.ani.app.data.media.fetch
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,6 +13,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flatMapMerge
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -22,10 +24,12 @@ import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.transform
+import kotlinx.coroutines.launch
 import me.him188.ani.app.data.media.instance.MediaSourceInstance
 import me.him188.ani.app.data.subject.EpisodeInfo
 import me.him188.ani.app.data.subject.SubjectInfo
 import me.him188.ani.app.data.subject.nameCnOrName
+import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.paging.SizedSource
 import me.him188.ani.datasources.api.source.MediaFetchRequest
@@ -33,6 +37,7 @@ import me.him188.ani.datasources.api.source.MediaMatch
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.source.toStringMultiline
+import me.him188.ani.utils.coroutines.cancellableCoroutineScope
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
@@ -207,15 +212,19 @@ class MediaSourceMediaFetcher(
             ).transform {
                 // 必须在 shareIn 更新好 replay 之后再标记为 success, 否则 awaitCompletion 不工作
                 // (因为 WhileSubscribed 的 stopTimeoutMillis 为 0)
-                try {
-                    emit(it)
-                } finally {
-                    val currentState = state.value
-                    if (currentState is MediaSourceFetchState.PendingSuccess) {
-                        state.compareAndSet(currentState, MediaSourceFetchState.Succeed(currentState.id))
-                        // Ok if we lost race - someone else must set state to Idle from [restart]
-                    }
-                }
+                finishPending()
+                emit(it)
+            }.onCompletion {
+                if (it == null)
+                    logger.error { "results is completed normally, however it shouldn't" }
+            }
+        }
+
+        private fun finishPending() {
+            val currentState = state.value
+            if (currentState is MediaSourceFetchState.PendingSuccess) {
+                state.compareAndSet(currentState, MediaSourceFetchState.Succeed(currentState.id))
+                // Ok if we lost race - someone else must set state to Idle from [restart]
             }
         }
 
@@ -279,6 +288,30 @@ class MediaSourceMediaFetcher(
             }.map { list ->
                 list.distinctBy { it.mediaId } // distinct globally by id, just to be safe
             }.flowOn(flowContext)
+                .run {
+                    if (currentAniBuildConfig.isDebug) {
+                        flow {
+                            cancellableCoroutineScope {
+                                val watchdog = launch {
+                                    while (true) {
+                                        delay(2000)
+                                        logger.info {
+                                            val states = mediaSourceResults.map { it.state.value }
+                                            "cumulativeResults is still being collected, states=$states"
+                                        }
+                                    }
+                                }
+                                collect { emit(it) }
+                                watchdog.cancel()
+                            }
+                        }
+                    } else {
+                        this
+                    }
+                }.onCompletion {
+                    if (it == null)
+                        logger.error { "cumulativeResults is completed normally, however it shouldn't" }
+                }
 
         override val hasCompleted = if (mediaSourceResults.isEmpty()) {
             flowOf(true)
@@ -289,7 +322,10 @@ class MediaSourceMediaFetcher(
         }
     }
 
-    override fun newSession(requestLazy: Flow<MediaFetchRequest>, flowContext: CoroutineContext): MediaFetchSession {
+    override fun newSession(
+        requestLazy: Flow<MediaFetchRequest>,
+        flowContext: CoroutineContext
+    ): MediaFetchSession {
         return MediaFetchSessionImpl(requestLazy, configProvider(), this.flowContext + flowContext)
     }
 
