@@ -152,8 +152,12 @@ val CacheRequestStage.mediaSourceResults: List<MediaSourceFetchResult>
  * 如果 [CacheRequestStage.SelectStorage.storages] 只有一个选项, 则选择, 否则返回 `null`.
  */
 suspend inline fun CacheRequestStage.SelectStorage.trySelectSingle(): CacheRequestStage.Done? {
-    storages.singleOrNull()?.let { return select(it) }
-    return null
+    try {
+        storages.singleOrNull()?.let { return select(it) }
+        return null
+    } finally {
+        markAttemptedTrySelect()
+    }
 }
 
 /**

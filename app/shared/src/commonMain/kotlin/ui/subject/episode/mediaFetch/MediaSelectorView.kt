@@ -55,7 +55,11 @@ fun MediaSelectorView(
     sourceResults: @Composable LazyItemScope.() -> Unit,
     modifier: Modifier = Modifier,
     itemProgressBar: @Composable RowScope.(Media) -> Unit = {
-        FastLinearProgressIndicator(state.selected == it, Modifier.fillMaxWidth().padding(horizontal = 4.dp))
+        FastLinearProgressIndicator(
+            state.selected == it,
+            Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+            delayMillis = 300,
+        )
     },
     onClickItem: ((Media) -> Unit) = { state.select(it) },
     actions: (@Composable RowScope.() -> Unit)? = null,

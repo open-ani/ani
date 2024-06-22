@@ -43,7 +43,6 @@ enum class Mode {
 }
 
 private val ScaleAnimation: AnimationSpec<Float> = spring(stiffness = Spring.StiffnessMedium)
-private val ProgressAnimation: AnimationSpec<Float> = tween(1500)
 
 @Stable
 class FastLinearProgressState(
@@ -58,14 +57,26 @@ class FastLinearProgressState(
     internal var progress: Float by mutableFloatStateOf(0f)
         private set
 
-    fun setVisible(visible: Boolean) {
+    /**
+     * 设置进度条是否可见.
+     *
+     * @param visible 是否期望展示进度条
+     * @param delayMillis 延迟 [delayMillis] 毫秒后才开始显示进度条. 如果在这个时间内 [visible] 变为 `false`, 则不会显示进度条.
+     * @param minimumDurationMillis 在延迟 [delayMillis] 后开始显示进度条的最短显示时间.
+     * 即使 [visible] 变为 `false`, 也会显示至少 [minimumDurationMillis] 毫秒. 不包括 [delayMillis].
+     */
+    fun setVisible(
+        visible: Boolean,
+        delayMillis: Long = 100L,
+        minimumDurationMillis: Int = 1500,
+    ) {
         if (targetVisible == visible) return
         targetVisible = visible
 
         if (visible) {
             this.mode = Mode.Definite
             tasker.launch {
-                delay(100) // 超级快的动作, 不展示进度条
+                delay(delayMillis) // 超级快的动作, 不展示进度条
                 launch {
                     animate(
                         scale, 1f,
@@ -74,10 +85,9 @@ class FastLinearProgressState(
                         scale = value
                     }
                 }
-
                 animate(
                     0f, 1f,
-                    animationSpec = ProgressAnimation,
+                    animationSpec = tween(minimumDurationMillis),
                 ) { value, _ ->
                     progress = value
                 }
@@ -111,26 +121,27 @@ class FastLinearProgressState(
 
 
 /**
- * 总是展示 1.5 秒动画, 适用于那些加载很快的小动作.
+ * 适用于加载很快的小动作
  *
- * 如果超过 1.5 秒后 [visible] 仍然为 `true`, 进度条将会转为 indefinite 模式.
+ * 延迟 [delayMillis] 后, 如果 [visible] 仍然为 `true`, 就展示 [minimumDurationMillis] 秒动画.
+ *
+ * 如果超过 [minimumDurationMillis] 秒后 [visible] 仍然为 `true`, 进度条将会转为 indefinite 模式.
  */
 @Composable
 fun FastLinearProgressIndicator(
     visible: Boolean,
     modifier: Modifier = Modifier,
+    delayMillis: Long = 100L,
+    minimumDurationMillis: Int = 1500,
 ) {
     val scope = rememberCoroutineScope()
     val state = remember(scope) { FastLinearProgressState(scope) }
     SideEffect {
-        state.setVisible(visible)
+        state.setVisible(visible, delayMillis, minimumDurationMillis)
     }
     return FastLinearProgressIndicator(state, modifier)
 }
 
-/**
- * 总是展示 1.5 秒动画, 适用于那些加载很快的小动作.
- */
 @Composable
 fun FastLinearProgressIndicator(
     state: FastLinearProgressState,

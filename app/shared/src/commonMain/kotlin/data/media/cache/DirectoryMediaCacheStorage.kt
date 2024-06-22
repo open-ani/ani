@@ -188,6 +188,7 @@ class DirectoryMediaCacheStorage(
 
     override suspend fun cache(media: Media, metadata: MediaCacheMetadata, resume: Boolean): MediaCache {
         return lock.withLock {
+            logger.info { "$mediaSourceId creating cache, metadata=$metadata" }
             listFlow.value.firstOrNull {
                 cacheEquals(it, media, metadata)
             }?.let { return@withLock it }

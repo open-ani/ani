@@ -549,6 +549,7 @@ class EpisodeCacheRequesterTest {
         val done = state.trySelectByCache(mediaCache)
         assertNotNull(done)
         assertSame(storage, done.storage)
+        assertEquals(true, state.attemptedTrySelect.value)
     }
 
     @Test
@@ -562,6 +563,7 @@ class EpisodeCacheRequesterTest {
         assertEquals(1, state.storages.size)
 
         assertNotNull(state.trySelectSingle())
+        assertEquals(true, state.attemptedTrySelect.value)
     }
 
     @Test
@@ -582,6 +584,7 @@ class EpisodeCacheRequesterTest {
         val done = state.trySelectByCache(mediaCache)
         assertNotNull(done)
         assertSame(target, done.storage)
+        assertEquals(true, state.attemptedTrySelect.value)
     }
 
     @Test
@@ -595,6 +598,7 @@ class EpisodeCacheRequesterTest {
 
         val done = state.trySelectByCache(mediaCache)
         assertNull(done)
+        assertEquals(true, state.attemptedTrySelect.value)
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -607,6 +611,7 @@ class EpisodeCacheRequesterTest {
         val request = createRequest()
         val state = requester.request(request).select(mediaList.value.first())
         assertNotNull(state.trySelectSingle())
+        assertEquals(true, state.attemptedTrySelect.value)
     }
 
     @Test
@@ -616,6 +621,7 @@ class EpisodeCacheRequesterTest {
         val request = createRequest()
         val state = requester.request(request).select(mediaList.value.first())
         assertNull(state.trySelectSingle())
+        assertEquals(true, state.attemptedTrySelect.value)
     }
 
     @Test
@@ -625,6 +631,7 @@ class EpisodeCacheRequesterTest {
         val request = createRequest()
         val state = requester.request(request).select(mediaList.value.first())
         assertNull(state.trySelectSingle())
+        assertEquals(true, state.attemptedTrySelect.value)
     }
 
     ///////////////////////////////////////////////////////////////////////////
