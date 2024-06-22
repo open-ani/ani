@@ -34,7 +34,7 @@ internal class TaskQueue<Receiver>(
     ): Task<Receiver> {
         Task(
             if (enableTimeoutWatchdog) Exception("Task creation stacktrace") else null,
-            task
+            task,
         ).also {
             tasks.add(it)
             return it

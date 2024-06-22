@@ -21,7 +21,7 @@ class SettingsViewModel(
 
     private val _debugSettings by settings(
         settingsRepository.debugSettings,
-        placeholder = DebugSettings(_placeHolder = -1)
+        placeholder = DebugSettings(_placeHolder = -1),
     )
     val debugSettings by _debugSettings
 

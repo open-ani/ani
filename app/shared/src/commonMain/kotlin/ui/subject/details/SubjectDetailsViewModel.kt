@@ -64,7 +64,7 @@ class SubjectDetailsViewModel(
     val coverImage: SharedFlow<String> = subjectNotNull.map {
         bangumiClient.subjects.getSubjectImageUrl(
             it.id,
-            BangumiSubjectImageSize.MEDIUM
+            BangumiSubjectImageSize.MEDIUM,
         )
     }.shareInBackground()
 
@@ -125,7 +125,7 @@ class SubjectDetailsViewModel(
      */
     private val selfCollectionType = combine(
         subjectNotNull,
-        sessionManager.username.filterNotNull()
+        sessionManager.username.filterNotNull(),
     ) { subject, username ->
         runCatching {
             runInterruptible(Dispatchers.IO) { bangumiClient.api.getUserCollection(username, subject.id) }.type
@@ -161,7 +161,7 @@ class SubjectDetailsViewModel(
         selfCollectionType.emit(subjectCollectionType)
         bangumiSubjectRepository.setSubjectCollectionTypeOrDelete(
             subjectId,
-            subjectCollectionType.toSubjectCollectionType()
+            subjectCollectionType.toSubjectCollectionType(),
         )
     }
 
@@ -180,7 +180,7 @@ class SubjectDetailsViewModel(
                 subjectId.toLong(),
                 type,
                 offset = page * 100,
-                limit = 100
+                limit = 100,
             )
         }.results.toList()
     }.shareInBackground()

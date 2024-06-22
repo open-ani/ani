@@ -24,6 +24,6 @@ fun AuthRequestScene(
     AuthRequestPage(
         vm,
         allowBack,
-        Modifier
+        Modifier,
     )
 }

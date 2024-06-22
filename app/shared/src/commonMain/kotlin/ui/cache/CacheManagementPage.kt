@@ -161,7 +161,7 @@ fun CacheManagementPage(
                     }
                 },
             )
-        }
+        },
     ) { paddingValues ->
         Column(Modifier.padding(paddingValues)) {
             val state = rememberLazyGridState()
@@ -169,7 +169,7 @@ fun CacheManagementPage(
             StorageOverallStats(
                 vm.overallStats,
                 Modifier.fillMaxWidth()
-                    .then(if (state.canScrollBackward) Modifier.shadow(2.dp, clip = false) else Modifier)
+                    .then(if (state.canScrollBackward) Modifier.shadow(2.dp, clip = false) else Modifier),
             )
 
             val storages = vm.storages
@@ -206,7 +206,7 @@ fun StorageOverallStats(
     Surface(modifier) {
         Column(
             Modifier.padding(horizontal = 16.dp).padding(bottom = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+            verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             Stat(
                 title = {
@@ -220,7 +220,7 @@ fun StorageOverallStats(
                 totalText = {
                     val speed by stats.uploaded.collectAsStateWithLifecycle(FileSize.Unspecified)
                     Text(renderFileSize(speed))
-                }
+                },
             )
 
             Stat(
@@ -251,7 +251,7 @@ private fun Stat(
     Row(modifier.padding(top = 16.dp), verticalAlignment = Alignment.CenterVertically) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             title()
         }
@@ -265,7 +265,7 @@ private fun Stat(
                 Row(
                     Modifier.widthIn(min = 100.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Icon(Icons.Rounded.Speed, null)
                     speedText()
@@ -273,7 +273,7 @@ private fun Stat(
                 Row(
                     Modifier.widthIn(min = 100.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Icon(Icons.Rounded.DownloadDone, null)
                     totalText()

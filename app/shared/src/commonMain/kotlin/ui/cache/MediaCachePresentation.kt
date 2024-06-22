@@ -67,7 +67,7 @@ fun CacheItemView(
     Card(modifier.fillMaxWidth(), shape = MaterialTheme.shapes.medium) {
         Row(
             Modifier.padding(start = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 renderMediaSource(item.subjectName),
@@ -84,7 +84,7 @@ fun CacheItemView(
                     text = { Text("确认删除缓存吗? 该操作不可撤销") },
                     // for Delete, see me.him188.ani.app.pages.cache.manage.MediaCacheStorageState.delete
                     confirmButton = { Button({ onDelete(item) }) { Text("删除") } },
-                    dismissButton = { TextButton({ showDeleteDialog = false }) { Text("取消") } }
+                    dismissButton = { TextButton({ showDeleteDialog = false }) { Text("取消") } },
                 )
             }
 
@@ -97,12 +97,12 @@ fun CacheItemView(
 
         Column(
             Modifier.padding(bottom = 16.dp).padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Row {
                 Text(
                     renderMediaSource(item.episodeSort.toString()),
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium,
                 )
                 Text(
                     renderMediaSource(item.episodeName),
@@ -131,13 +131,13 @@ fun CacheItemView(
                             Icon(
                                 Icons.Rounded.DownloadDone,
                                 null,
-                                Modifier.padding(end = 8.dp)
+                                Modifier.padding(end = 8.dp),
                             )
                         } else {
                             Icon(
                                 Icons.Rounded.Downloading,
                                 null,
-                                Modifier.padding(end = 8.dp)
+                                Modifier.padding(end = 8.dp),
                             )
                         }
 
@@ -199,7 +199,7 @@ fun CacheProgressLabel(
                     "${String.format("%.1f", (progress ?: 0f) * 100)}%"
                 },
                 Modifier.padding(end = 8.dp).widthIn(min = 48.dp), // max width is 100.0%
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
             )
         }
     }

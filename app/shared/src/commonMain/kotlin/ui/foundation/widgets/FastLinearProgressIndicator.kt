@@ -69,7 +69,7 @@ class FastLinearProgressState(
                 launch {
                     animate(
                         scale, 1f,
-                        animationSpec = ScaleAnimation
+                        animationSpec = ScaleAnimation,
                     ) { value, _ ->
                         scale = value
                     }
@@ -77,7 +77,7 @@ class FastLinearProgressState(
 
                 animate(
                     0f, 1f,
-                    animationSpec = ProgressAnimation
+                    animationSpec = ProgressAnimation,
                 ) { value, _ ->
                     progress = value
                 }
@@ -92,7 +92,7 @@ class FastLinearProgressState(
             tasker.launchNext {
                 animate(
                     scale, 0f,
-                    animationSpec = ScaleAnimation
+                    animationSpec = ScaleAnimation,
                 ) { value, _ ->
                     scale = value
                 }

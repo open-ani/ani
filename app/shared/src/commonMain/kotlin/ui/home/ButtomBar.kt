@@ -123,14 +123,14 @@ abstract class TabBarScope<Tab> : RowScope {
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = rememberRipple(),
-                        onClick = { selectedTab.value = tab }
+                        onClick = { selectedTab.value = tab },
                     )
                     .width(72.dp)
-                    .padding(vertical = 8.dp)
+                    .padding(vertical = 8.dp),
             ) {
                 Column(
                     Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     icon()
                     text()
@@ -183,7 +183,7 @@ fun BottomAppBar(
         contentColor = contentColor,
         tonalElevation = tonalElevation,
         shape = RectangleShape,
-        modifier = modifier
+        modifier = modifier,
     ) {
         Row(
             Modifier
@@ -193,7 +193,7 @@ fun BottomAppBar(
                 .padding(contentPadding),
             horizontalArrangement = horizontalArrangement,
             verticalAlignment = Alignment.CenterVertically,
-            content = content
+            content = content,
         )
     }
 }

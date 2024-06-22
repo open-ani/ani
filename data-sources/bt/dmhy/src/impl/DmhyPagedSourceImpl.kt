@@ -41,7 +41,7 @@ class DmhyPagedSourceImpl(
             keyword = query.keywords,
             sortId = getCategoryId(),
             teamId = query.alliance?.id,
-            orderId = query.ordering?.id
+            orderId = query.ordering?.id,
         )
         val results = rawResults.map { topic ->
             Topic(

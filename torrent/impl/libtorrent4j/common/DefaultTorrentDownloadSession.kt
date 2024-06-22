@@ -121,9 +121,11 @@ open class DefaultTorrentDownloadSession(
             }
         }.distinctUntilChanged()
         override val isFinished: Flow<Boolean> = flow {
-            emitAll(combine(getFiles().map { it.stats.isFinished }) { list ->
-                list.all { it }
-            })
+            emitAll(
+                combine(getFiles().map { it.stats.isFinished }) { list ->
+                    list.all { it }
+                },
+            )
         }
 
         override suspend fun awaitFinished() {
@@ -141,7 +143,7 @@ open class DefaultTorrentDownloadSession(
         @Deprecated(
             "Recursive call",
             level = DeprecationLevel.ERROR,
-            replaceWith = ReplaceWith("this")
+            replaceWith = ReplaceWith("this"),
         )
         private fun actualInfo(): ActualTorrentInfo = this
 
@@ -169,7 +171,7 @@ open class DefaultTorrentDownloadSession(
                     relativePath = path,
                     saveDirectory = saveDirectory,
                     pieces = filePieces,
-                    initialDownloadedBytes = calculateTotalFinishedSize(filePieces)
+                    initialDownloadedBytes = calculateTotalFinishedSize(filePieces),
                 ).also {
                     currentOffset += size
                 }
@@ -180,7 +182,7 @@ open class DefaultTorrentDownloadSession(
         val controller: TorrentDownloadController = TorrentDownloadController(
             allPiecesInTorrent,
             createPiecePriorities(),
-            windowSize = 32
+            windowSize = 32,
         )
 
         @Synchronized
@@ -263,7 +265,7 @@ open class DefaultTorrentDownloadSession(
         relativePath,
         torrentName,
         isDebug,
-        sessionScope.coroutineContext
+        sessionScope.coroutineContext,
     ) {
         inner class TorrentFileHandleImpl : AbstractTorrentFileHandle() {
             override val entry get() = this@TorrentFileEntryImpl
@@ -357,15 +359,16 @@ open class DefaultTorrentDownloadSession(
                         handle.setPieceDeadline(piece.pieceIndex, 0) // 最高优先级
                         for (i in (piece.pieceIndex + 1..piece.pieceIndex + 3)) {
                             if (i < pieces.size - 1) {
-                                handle.setPieceDeadline( // 按请求时间的优先
+                                handle.setPieceDeadline(
+                                    // 按请求时间的优先
                                     i,
-                                    calculatePieceDeadlineByTime(i)
+                                    calculatePieceDeadlineByTime(i),
                                 )
                             }
                         }
                     }
                 },
-                size = length
+                size = length,
             )
         }
 

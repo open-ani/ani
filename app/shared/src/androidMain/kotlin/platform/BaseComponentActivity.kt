@@ -38,8 +38,8 @@ abstract class BaseComponentActivity : ComponentActivity() {
         enableEdgeToEdge(
             SystemBarStyle.auto(
                 android.graphics.Color.TRANSPARENT,
-                android.graphics.Color.TRANSPARENT
-            )
+                android.graphics.Color.TRANSPARENT,
+            ),
         )
 
         WindowCompat.setDecorFitsSystemWindows(window, false)

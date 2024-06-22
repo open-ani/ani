@@ -93,7 +93,7 @@ class IkarosClient(
                         mediaSourceId = IkarosMediaSource.ID,
                         originalUrl = baseUrl.plus("/console/#/subjects/subject/details/").plus(subjectDetails.id),
                         download = ResourceLocation.HttpStreamingFile(
-                            uri = getResUrl(epRes.url)
+                            uri = getResUrl(epRes.url),
                         ),
                         originalTitle = epRes.name,
                         publishedTime = DateFormater.default.utcDateStr2timeStamp(attachment?.updateTime ?: ""),
@@ -106,7 +106,7 @@ class IkarosClient(
                         episodeRange = parseResult.episodeRange,
                         location = MediaSourceLocation.Online,
                         kind = MediaSourceKind.WEB,
-                        extraFiles = fetchVideoAttSubtitles2ExtraFiles(epRes.attachmentId)
+                        extraFiles = fetchVideoAttSubtitles2ExtraFiles(epRes.attachmentId),
                     )
                 }
                 val mediaMatch = media?.let { MediaMatch(it, MatchKind.FUZZY) }
@@ -117,7 +117,7 @@ class IkarosClient(
         }
 
         val sizedSource = IkarosSizeSource(
-            totalSize = flowOf(mediaMatchs.size), finished = flowOf(true), results = mediaMatchs.asFlow()
+            totalSize = flowOf(mediaMatchs.size), finished = flowOf(true), results = mediaMatchs.asFlow(),
         )
 
         return sizedSource
@@ -134,8 +134,8 @@ class IkarosClient(
                     Subtitle(
                         uri = getResUrl(ikVideoSubtitle.url),
                         language = AssNameParser.default.parseAssName2Language(ikVideoSubtitle.name),
-                        mimeType = AssNameParser.httpMineType
-                    )
+                        mimeType = AssNameParser.httpMineType,
+                    ),
                 )
             }
         }

@@ -26,9 +26,9 @@ fun FailedToInstallDialog(
                         (logoState() as? UpdateLogoState.Downloaded)?.file?.let {
                             GlobalContext.get().get<UpdateInstaller>().openForManualInstallation(it, context)
                         }
-                    }
+                    },
                 ) { Text("查看安装包") }
-            }
+            },
         ) {
             Text("自动安装失败, 请手动安装")
         }

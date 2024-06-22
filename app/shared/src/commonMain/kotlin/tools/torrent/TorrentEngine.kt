@@ -76,7 +76,7 @@ abstract class AbstractTorrentEngine<Downloader : TorrentDownloader, Config : To
                 onFailure = { e ->
                     lastError.value = TorrentDownloaderManagerError(e)
                     logger.warn(e) { "Failed to create TorrentDownloader $type, retrying later" }
-                }
+                },
             ) {
                 newInstance(config)
             }.also { downloader ->

@@ -1,6 +1,6 @@
 @file:Suppress(
     "NOTHING_TO_INLINE",
-    "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE" // 让 `value` 必须兼容 property 类型
+    "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", // 让 `value` 必须兼容 property 类型
 )
 
 package me.him188.ani.danmaku.server.data.mongodb
@@ -212,8 +212,8 @@ class BsonAggregateScope {
     ) {
         operations.add(
             Aggregates.project(
-                Projections.fields(ProjectionScope().apply(block).fields)
-            )
+                Projections.fields(ProjectionScope().apply(block).fields),
+            ),
         )
     }
 }

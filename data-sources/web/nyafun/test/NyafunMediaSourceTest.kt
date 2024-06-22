@@ -18,7 +18,7 @@ class NyafunMediaSourceTest {
     fun `parse search result`() {
         val doc = Jsoup.parse(
             this::class.java.classLoader.getResource("girls band cry/search.html")!!.readText(),
-            NyafunMediaSource.BASE_URL
+            NyafunMediaSource.BASE_URL,
         )
         val list = NyafunMediaSource.parseBangumiSearch(doc)
         assertEquals(1, list.size)
@@ -33,7 +33,7 @@ class NyafunMediaSourceTest {
     fun `parse bangumi result`() {
         val doc = Jsoup.parse(
             this::class.java.classLoader.getResource("girls band cry/bangumi.html")!!.readText(),
-            NyafunMediaSource.BASE_URL
+            NyafunMediaSource.BASE_URL,
         )
         val list = NyafunMediaSource.parseEpisodeList(doc)
         assertEquals(8, list.size)
@@ -66,16 +66,16 @@ class NyafunMediaSourceTest {
                     location = MediaSourceLocation.Online,
                     kind = MediaSourceKind.WEB,
                 ),
-                MatchKind.FUZZY
+                MatchKind.FUZZY,
             ).toString(),
             NyafunMediaSource.createMediaMatch(
                 NyafunBangumi(
                     "7168",
                     "GIRLS BAND CRY",
-                    "https://www.nyafun.net/bangumi/7168.html"
+                    "https://www.nyafun.net/bangumi/7168.html",
                 ),
-                NyafunEp("第01集", "https://www.nyafun.net/play/7168-1-1.html")
-            ).toString()
+                NyafunEp("第01集", "https://www.nyafun.net/play/7168-1-1.html"),
+            ).toString(),
         )
     }
 }

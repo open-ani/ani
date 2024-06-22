@@ -64,13 +64,13 @@ class DesktopWebVideoSourceResolver : VideoSourceResolver, KoinComponent {
                         matchers.firstNotNullOfOrNull { matcher ->
                             matcher.match(it, WebVideoMatcherContext(media))
                         }
-                    }
+                    },
                 )
             return@withContext HttpStreamingVideoSource(
                 webVideo.m3u8Url,
                 media.originalTitle,
                 webVideo = webVideo,
-                media.extraFiles
+                media.extraFiles,
             )
         }
     }
@@ -99,33 +99,39 @@ class SeleniumWebViewVideoExtractor(
 
     private fun createChromeDriver(): ChromeDriver {
         WebDriverManager.chromedriver().setup()
-        return ChromeDriver(ChromeOptions().apply {
-            addArguments("--headless")
-            addArguments("--disable-gpu")
-            proxyConfig?.let {
-                addArguments("--proxy-server=${it.url}")
-            }
-        })
+        return ChromeDriver(
+            ChromeOptions().apply {
+                addArguments("--headless")
+                addArguments("--disable-gpu")
+                proxyConfig?.let {
+                    addArguments("--proxy-server=${it.url}")
+                }
+            },
+        )
     }
 
     private fun createEdgeDriver(): EdgeDriver {
         WebDriverManager.edgedriver().setup()
-        return EdgeDriver(EdgeOptions().apply {
-            addArguments("--headless")
-            addArguments("--disable-gpu")
-            proxyConfig?.let<ProxyConfig, Unit> {
-                addArguments("--proxy-server=${it.url}")
-            }
-        })
+        return EdgeDriver(
+            EdgeOptions().apply {
+                addArguments("--headless")
+                addArguments("--disable-gpu")
+                proxyConfig?.let<ProxyConfig, Unit> {
+                    addArguments("--proxy-server=${it.url}")
+                }
+            },
+        )
     }
 
     private fun createSafariDriver(): SafariDriver {
         WebDriverManager.safaridriver().setup()
-        return SafariDriver(SafariOptions().apply {
-            proxyConfig?.let {
-                setCapability("proxy", it.url)
-            }
-        })
+        return SafariDriver(
+            SafariOptions().apply {
+                proxyConfig?.let {
+                    setCapability("proxy", it.url)
+                }
+            },
+        )
     }
 
     override suspend fun <R : Any> getVideoResourceUrl(

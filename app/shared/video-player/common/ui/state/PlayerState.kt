@@ -142,7 +142,7 @@ abstract class AbstractPlayerState<D : AbstractPlayerState.Data>(
     parentCoroutineContext: CoroutineContext,
 ) : PlayerState {
     protected val backgroundScope = CoroutineScope(
-        parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job])
+        parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]),
     ).apply {
         coroutineContext.job.invokeOnCompletion {
             close()
@@ -308,7 +308,7 @@ class DummyPlayerState : AbstractPlayerState<AbstractPlayerState.Data>(EmptyCoro
             data,
             releaseResource = {
                 data.close()
-            }
+            },
         )
     }
 
@@ -332,8 +332,8 @@ class DummyPlayerState : AbstractPlayerState<AbstractPlayerState.Data>(EmptyCoro
             durationMillis = 100_000,
             fileLengthBytes = 100_000_000,
             fileHash = null,
-            filename = "test.mp4"
-        )
+            filename = "test.mp4",
+        ),
     )
     override val currentPositionMillis = MutableStateFlow(10_000L)
     override fun getExactCurrentPositionMillis(): Long {

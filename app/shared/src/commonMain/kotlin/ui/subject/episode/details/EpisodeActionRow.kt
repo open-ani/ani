@@ -132,7 +132,7 @@ fun EpisodeActionRow(
             icon = { Icon(Icons.Rounded.InsertChartOutlined, null) },
             text = { Text("视频统计", maxLines = 1, softWrap = false) },
             Modifier.weight(1f),
-            isLoadingProvider = isDanmakuLoading
+            isLoadingProvider = isDanmakuLoading,
         )
 
         ActionButton(
@@ -187,7 +187,7 @@ private fun MediaSelectionAction(
         icon = { Icon(Icons.Rounded.DisplaySettings, null) },
         text = { Text("数据源", maxLines = 1, softWrap = false) },
         modifier,
-        isLoading
+        isLoading,
     )
 }
 
@@ -208,12 +208,12 @@ private fun ActionButton(
             .clickable(
                 remember { MutableInteractionSource() },
                 indication = rememberRipple(bounded = false),
-                onClick = onClick
+                onClick = onClick,
             )
             .height(64.dp)
             .padding(all = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceEvenly
+        verticalArrangement = Arrangement.SpaceEvenly,
     ) {
         icon()
         Row(verticalAlignment = Alignment.CenterVertically) {

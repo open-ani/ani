@@ -31,7 +31,7 @@ class UserServiceImpl : UserService, KoinComponent {
             AvatarSize.LARGE -> userRepository.getLargeAvatar(userId)
         } ?: throw NotFoundException()
     }
-    
+
     override suspend fun getUser(userId: String): AniUser {
         val user = userRepository.getUserById(userId) ?: throw NotFoundException()
         return user

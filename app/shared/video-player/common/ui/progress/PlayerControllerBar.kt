@@ -177,12 +177,12 @@ object PlayerControllerDefaults {
                 CircularProgressIndicator(
                     Modifier.size(20.dp),
 //                    strokeWidth = 2.dp,
-                    color = MaterialTheme.colorScheme.surface
+                    color = MaterialTheme.colorScheme.surface,
                 )
             } else {
                 DanmakuSendButton(
                     onClick = { onSend() },
-                    enabled = value.isNotBlank()
+                    enabled = value.isNotBlank(),
                 )
             }
         },
@@ -242,9 +242,9 @@ object PlayerControllerDefaults {
                                 colors,
                                 shape = shape,
                             )
-                        }
+                        },
                     )
-                }
+                },
             )
         }
     }
@@ -267,7 +267,7 @@ object PlayerControllerDefaults {
                         focusManager.clearFocus()
                     }
                 }
-            }
+            },
         ) {
             if (isFullscreen) {
                 Icon(Icons.Rounded.FullscreenExit, contentDescription = "Exit Fullscreen", Modifier.size(32.dp))
@@ -316,9 +316,9 @@ object PlayerControllerDefaults {
             TextButton(
                 { expanded = true },
                 colors = ButtonDefaults.textButtonColors(
-                    contentColor = LocalContentColor.current
+                    contentColor = LocalContentColor.current,
                 ),
-                enabled = enabled
+                enabled = enabled,
             ) {
                 renderValueExposed(value)
             }
@@ -380,21 +380,21 @@ fun PlayerControllerBar(
             .clickable(remember { MutableInteractionSource() }, null, onClick = {}) // Consume touch event
             .padding(
                 horizontal = if (expanded) 8.dp else 4.dp,
-                vertical = if (expanded) 4.dp else 2.dp
-            )
+                vertical = if (expanded) 4.dp else 2.dp,
+            ),
     ) {
         Column {
             ProvideTextStyle(MaterialTheme.typography.labelMedium) {
                 Row(
                     Modifier
                         .padding(start = if (expanded) 8.dp else 4.dp)
-                        .padding(vertical = if (expanded) 4.dp else 2.dp)
+                        .padding(vertical = if (expanded) 4.dp else 2.dp),
                 ) {
                     progressIndicator()
                 }
                 Row(
                     Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     progressSlider()
                 }
@@ -403,11 +403,11 @@ fun PlayerControllerBar(
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(if (expanded) 8.dp else 4.dp)
+            horizontalArrangement = Arrangement.spacedBy(if (expanded) 8.dp else 4.dp),
         ) {
             // 播放 / 暂停按钮
             Row(
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 startActions()
             }
@@ -422,7 +422,7 @@ fun PlayerControllerBar(
 
 
             Row(
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 MaterialTheme(aniDarkColorTheme()) {
                     endActions()

@@ -65,7 +65,7 @@ private fun createState(backgroundScope: CoroutineScope) =
             mediaListNotCached = MutableStateFlow(previewMediaList),
             savedUserPreference = flowOf(MediaPreference.Empty),
             savedDefaultPreference = flowOf(MediaPreference.Empty),
-            mediaSelectorSettings = flowOf(MediaSelectorSettings.Default)
+            mediaSelectorSettings = flowOf(MediaSelectorSettings.Default),
         ),
-        backgroundScope.coroutineContext
+        backgroundScope.coroutineContext,
     )

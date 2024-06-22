@@ -95,7 +95,7 @@ fun MediaSelectorView(
                             MediaSelectorFilters(
                                 resolution = state.resolution,
                                 subtitleLanguageId = state.subtitleLanguageId,
-                                alliance = state.alliance
+                                alliance = state.alliance,
                             )
                         }
                         if (isStuck) {
@@ -129,7 +129,7 @@ fun MediaSelectorView(
 
             Row(
                 Modifier.align(Alignment.End).padding(bottom = 8.dp).padding(horizontal = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 ProvideTextStyle(MaterialTheme.typography.labelLarge) {
                     actions()
@@ -155,7 +155,7 @@ private fun MediaItem(
         modifier.width(IntrinsicSize.Min),
         colors = CardDefaults.elevatedCardColors(
             containerColor = if (selected) MaterialTheme.colorScheme.secondaryContainer
-            else CardDefaults.elevatedCardColors().containerColor
+            else CardDefaults.elevatedCardColors().containerColor,
         ),
     ) {
         Column(Modifier.padding(all = 16.dp)) {
@@ -213,7 +213,7 @@ private fun MediaItem(
                     ) {
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Icon(MediaSourceIcons.location(media.location, media.kind), null)
 
@@ -229,7 +229,7 @@ private fun MediaItem(
                                 media.properties.alliance,
                                 maxLines = 1,
                                 softWrap = false,
-                                overflow = TextOverflow.Ellipsis
+                                overflow = TextOverflow.Ellipsis,
                             )
                         }
                     }

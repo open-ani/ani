@@ -132,7 +132,7 @@ private data class Shimmer(
             lerp(
                 start = 0f,
                 stop = 1f,
-                fraction = progress / progressForMaxAlpha
+                fraction = progress / progressForMaxAlpha,
             )
         }
         // From ProgressForOpaqueAlpha..1f we animate from 1..0
@@ -140,7 +140,7 @@ private data class Shimmer(
             lerp(
                 start = 1f,
                 stop = 0f,
-                fraction = (progress - progressForMaxAlpha) / (1f - progressForMaxAlpha)
+                fraction = (progress - progressForMaxAlpha) / (1f - progressForMaxAlpha),
             )
         }
     }

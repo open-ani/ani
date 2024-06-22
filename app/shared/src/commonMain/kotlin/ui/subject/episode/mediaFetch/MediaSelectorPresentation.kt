@@ -22,7 +22,7 @@ fun MediaSelectorPresentation(
     mediaSelector: MediaSelector,
     parentCoroutineContext: CoroutineContext,
 ): MediaSelectorPresentation = MediaSelectorPresentationImpl(
-    mediaSelector, parentCoroutineContext
+    mediaSelector, parentCoroutineContext,
 )
 
 @Composable

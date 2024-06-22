@@ -116,7 +116,7 @@ fun Modifier.steppedDraggable(
         properties["onDragStarted"] = onDragStarted
         properties["onDragStopped"] = onDragStopped
         properties["reverseDirection"] = reverseDirection
-    }
+    },
 ) {
     val onDragStartedState by rememberUpdatedState(onDragStarted)
     val onDragStoppedState by rememberUpdatedState(onDragStopped)

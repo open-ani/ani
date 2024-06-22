@@ -146,7 +146,7 @@ class PatternBasedRawTitleParser : RawTitleParser() {
                             collectResolution = collectResolution,
                             collectFrameRate = collectFrameRate,
                             collectMediaOrigin = collectMediaOrigin,
-                            collectEpisode = collectEpisode
+                            collectEpisode = collectEpisode,
                         )
                     }
                 } else {

@@ -16,6 +16,6 @@ fun ProvideTextStyleContentColor(
     val mergedStyle = LocalTextStyle.current.merge(value)
     CompositionLocalProvider(
         LocalTextStyle provides mergedStyle,
-        LocalContentColor provides color, content = content
+        LocalContentColor provides color, content = content,
     )
 }

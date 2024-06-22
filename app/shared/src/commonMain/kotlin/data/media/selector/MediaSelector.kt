@@ -199,7 +199,7 @@ class DefaultMediaSelector(
     override val mediaList: Flow<List<Media>> = combine(
         mediaListNotCached.mapLatest { list ->
             list.sortedWith(
-                compareBy<Media> { it.costForDownload }.thenByDescending { it.properties.size.inBytes }
+                compareBy<Media> { it.costForDownload }.thenByDescending { it.properties.size.inBytes },
             )
         }.cached(), // cache 是必要的, 当 newPreferences 变更的时候不能重新加载 media list (网络)
         savedDefaultPreference, // 只需要使用 default, 因为目前不能覆盖生肉设置
@@ -252,7 +252,7 @@ class DefaultMediaSelector(
             list.mapTo(HashSet(list.size)) { it.properties.alliance }
                 .sortedBy { it }
         },
-        getFromPreference = { it.alliance }
+        getFromPreference = { it.alliance },
     )
     override val resolution = mediaPreferenceItem(
         "resolution",
@@ -260,7 +260,7 @@ class DefaultMediaSelector(
             list.mapTo(HashSet(list.size)) { it.properties.resolution }
                 .sortedBy { it }
         },
-        getFromPreference = { it.resolution }
+        getFromPreference = { it.resolution },
     )
     override val subtitleLanguageId = mediaPreferenceItem(
         "subtitleLanguage",
@@ -279,7 +279,7 @@ class DefaultMediaSelector(
                     }
                 }
         },
-        getFromPreference = { it.subtitleLanguageId }
+        getFromPreference = { it.subtitleLanguageId },
     )
     override val mediaSourceId = mediaPreferenceItem(
         "mediaSource",
@@ -287,7 +287,7 @@ class DefaultMediaSelector(
             list.mapTo(HashSet(list.size)) { it.properties.resolution }
                 .sortedBy { it }
         },
-        getFromPreference = { it.mediaSourceId }
+        getFromPreference = { it.mediaSourceId },
     )
 
     /**
@@ -355,7 +355,7 @@ class DefaultMediaSelector(
                 resolution = preference.resolution,
                 subtitleLanguageId = overrideLanguageId ?: preference.subtitleLanguageId,
                 mediaSourceId = preference.mediaSourceId,
-            )
+            ),
         )
     }
 
@@ -445,8 +445,10 @@ class DefaultMediaSelector(
                 return null
             }
             if (shouldPreferSeasons) {
-                return selectDefault(list.fastFirstOrNull { it.episodeRange?.hasSeason() == null }
-                    ?: list.first())
+                return selectDefault(
+                    list.fastFirstOrNull { it.episodeRange?.hasSeason() == null }
+                        ?: list.first(),
+                )
             }
             return selectDefault(list.first())
         }

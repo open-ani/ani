@@ -31,7 +31,7 @@ internal class OffsetTorrentInputTest {
     private val logicalPieces =
         Piece.buildPieces(
             sampleTextByteArray.size.toLong() + 16, // 576 + 16
-            16, initial = 1000
+            16, initial = 1000,
         )
 
     private val tempFile by lazy {
@@ -310,7 +310,7 @@ internal class OffsetTorrentInputTest {
         input.seek(sampleText.lastIndex.toLong() - bufferSize - 1) // 超出 buffer 范围
         assertEquals(
             sampleText.substring(sampleText.lastIndex - bufferSize - 1),
-            input.readAllBytes().decodeToString()
+            input.readAllBytes().decodeToString(),
         )
     }
 

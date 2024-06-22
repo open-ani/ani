@@ -53,20 +53,22 @@ fun ChangelogDialog(
                 OutlinedButton({ GlobalContext.get().get<BrowserNavigator>().openBrowser(context, RELEASES) }) {
                     Icon(Icons.Rounded.ArrowOutward, null)
                 }
-                Button({
-                    latestVersion.downloadUrlAlternatives.firstOrNull()
-                        ?.let {
-                            onStartDownload()
-                            onDismissRequest()
-                        }
-                }) {
+                Button(
+                    {
+                        latestVersion.downloadUrlAlternatives.firstOrNull()
+                            ?.let {
+                                onStartDownload()
+                                onDismissRequest()
+                            }
+                    },
+                ) {
                     Icon(Icons.Rounded.Download, null)
                 }
-            }
+            },
         ) {
             Column(
                 Modifier.heightIn(max = 400.dp).verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 Text(
                     "当前版本为 $currentVersion, 最新版本为 ${latestVersion.name}",

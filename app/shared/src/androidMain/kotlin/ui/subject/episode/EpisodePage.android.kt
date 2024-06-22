@@ -18,9 +18,9 @@ internal actual fun PreviewEpisodePage() {
                 EpisodeViewModel(
                     424663,
                     1277147,
-                    context = context
+                    context = context,
                 )
-            }
+            },
         )
     }
 }

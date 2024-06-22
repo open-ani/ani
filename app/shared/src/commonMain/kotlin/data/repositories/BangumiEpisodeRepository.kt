@@ -82,7 +82,7 @@ internal class EpisodeRepositoryImpl : BangumiEpisodeRepository, KoinComponent {
                     subjectId,
                     episodeType = type,
                     offset = page * 100,
-                    limit = 100
+                    limit = 100,
                 ).run {
                     val data = this.data ?: return@run null
                     Paged(this.total, data.size == 100, data)

@@ -11,12 +11,14 @@ import java.awt.Desktop
 @Composable
 internal actual fun ColumnScope.PlatformDebugInfoItems() {
     val context = LocalContext.current
-    FilledTonalButton({
-        Desktop.getDesktop().open((context as DesktopContext).logsDir)
+    FilledTonalButton(
+        {
+            Desktop.getDesktop().open((context as DesktopContext).logsDir)
 //        below also works on macOS, not sure about Windows
 //        GlobalContext.get().get<BrowserNavigator>()
 //            .openBrowser(context, "file://" + (context as DesktopContext).logsDir.absolutePath.replace(" ", "%20"))
-    }) {
+        },
+    ) {
         Text("打开日志目录")
     }
 }

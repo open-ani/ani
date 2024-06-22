@@ -21,7 +21,7 @@ object Log4j2Config {
         val consoleLayoutBuilder: LayoutComponentBuilder = builder.newLayout("PatternLayout")
             .addAttribute(
                 "pattern",
-                "%highlight{%d [%-5level] %c{1}: %msg%n%throwable}{FATAL=red bold, ERROR=red, WARN=yellow, INFO=transparent, DEBUG=bright_blue, TRACE=bright_green}"
+                "%highlight{%d [%-5level] %c{1}: %msg%n%throwable}{FATAL=red bold, ERROR=red, WARN=yellow, INFO=transparent, DEBUG=bright_blue, TRACE=bright_green}",
             )
         val consoleAppenderBuilder: AppenderComponentBuilder = builder.newAppender("STDOUT", "Console")
             .add(consoleLayoutBuilder)
@@ -39,12 +39,12 @@ object Log4j2Config {
                 .addComponent(
                     builder.newComponent("TimeBasedTriggeringPolicy")
                         .addAttribute("interval", "1")
-                        .addAttribute("modulate", true)
-                )
+                        .addAttribute("modulate", true),
+                ),
         )
         fileAppenderBuilder.addComponent(
             builder.newComponent("DefaultRolloverStrategy")
-                .addAttribute("max", "7")
+                .addAttribute("max", "7"),
         )
         builder.add(fileAppenderBuilder)
 
@@ -52,11 +52,11 @@ object Log4j2Config {
         builder.add(
             builder.newRootLogger(Level.ALL)
                 .add(builder.newAppenderRef("STDOUT").addAttribute("level", Level.DEBUG))
-                .add(builder.newAppenderRef("FILE"))
+                .add(builder.newAppenderRef("FILE")),
         )
         builder.add(
             builder.newLogger("io.ktor.client.plugins", Level.DEBUG)
-                .addAttribute("additivity", false)
+                .addAttribute("additivity", false),
         )
         val ctx: LoggerContext = LogManager.getContext(false) as LoggerContext
         val config: Configuration = builder.build()

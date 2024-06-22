@@ -47,7 +47,7 @@ interface MediaSelectorFactory {
                 return DefaultMediaSelector(
                     MediaSelectorContext.createFlow(
                         subjectManager.subjectCompletedFlow(subjectId),
-                        mediaSourceManager.allInstances
+                        mediaSourceManager.allInstances,
                     ),
                     mediaList,
                     savedUserPreference = episodePreferencesRepository.mediaPreferenceFlow(subjectId),

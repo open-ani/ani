@@ -192,7 +192,7 @@ suspend inline fun SubjectManager.setEpisodeWatched(subjectId: Int, episodeId: I
     setEpisodeCollectionType(
         subjectId,
         episodeId,
-        if (watched) UnifiedCollectionType.DONE else UnifiedCollectionType.WISH
+        if (watched) UnifiedCollectionType.DONE else UnifiedCollectionType.WISH,
     )
 
 class SubjectManagerImpl(
@@ -226,8 +226,8 @@ class SubjectManagerImpl(
                     migrations = listOf(),
                     produceFile = {
                         context.dataStores.resolveDataStoreFile("collectionsByType-${type.name}")
-                    }
-                )
+                    },
+                ),
             )
         }
 
@@ -239,22 +239,24 @@ class SubjectManagerImpl(
         .map { it?.episodes ?: emptyList() }
         .distinctUntilChanged()
         .flatMapLatest { episodes ->
-            combine(episodes.map { episode ->
-                cacheManager.cacheStatusForEpisode(
-                    subjectId = subjectId,
-                    episodeId = episode.episode.id,
-                ).onStart {
-                    emit(EpisodeCacheStatus.NotCached)
-                }.map { cacheStatus ->
-                    EpisodeProgressItem(
+            combine(
+                episodes.map { episode ->
+                    cacheManager.cacheStatusForEpisode(
+                        subjectId = subjectId,
                         episodeId = episode.episode.id,
-                        episodeSort = episode.episode.sort.toString(),
-                        watchStatus = episode.type,
-                        isOnAir = episode.episode.isKnownOnAir,
-                        cacheStatus = cacheStatus,
-                    )
-                }
-            }) {
+                    ).onStart {
+                        emit(EpisodeCacheStatus.NotCached)
+                    }.map { cacheStatus ->
+                        EpisodeProgressItem(
+                            episodeId = episode.episode.id,
+                            episodeSort = episode.episode.sort.toString(),
+                            watchStatus = episode.type,
+                            isOnAir = episode.episode.isKnownOnAir,
+                            cacheStatus = cacheStatus,
+                        )
+                    }
+                },
+            ) {
                 it.toList()
             }
         }
@@ -272,7 +274,7 @@ class SubjectManagerImpl(
                         .map {
                             it.toEpisodeCollection()
                         }
-                        .toList()
+                        .toList(),
                 )
             }
         }
@@ -306,14 +308,16 @@ class SubjectManagerImpl(
         return subjectCollectionFlow(subjectId, contentPolicy)
             .transform { subject ->
                 if (subject == null) {
-                    emit(me.him188.ani.utils.coroutines.runUntilSuccess {
-                        bangumiEpisodeRepository.getEpisodeCollection(
-                            episodeId
-                        )?.toEpisodeCollection() ?: error("Failed to get episode collection")
-                    })
+                    emit(
+                        me.him188.ani.utils.coroutines.runUntilSuccess {
+                            bangumiEpisodeRepository.getEpisodeCollection(
+                                episodeId,
+                            )?.toEpisodeCollection() ?: error("Failed to get episode collection")
+                        },
+                    )
                 } else {
                     emitAll(
-                        subject.episodes.filter { it.episode.id == episodeId }.asFlow()
+                        subject.episodes.filter { it.episode.id == episodeId }.asFlow(),
                     )
                 }
             }
@@ -345,7 +349,7 @@ class SubjectManagerImpl(
                 copy(
                     episodes = episodes.map { episode ->
                         episode.copy(collectionType = UnifiedCollectionType.DONE)
-                    }
+                    },
                 )
             }
         }
@@ -373,9 +377,11 @@ class SubjectManagerImpl(
 
         cache.mutate {
             setEach({ it.subjectId == subjectId }) {
-                copy(episodes = episodes.replaceAll({ it.episode.id == episodeId }) {
-                    copy(collectionType = collectionType)
-                })
+                copy(
+                    episodes = episodes.replaceAll({ it.episode.id == episodeId }) {
+                        copy(collectionType = collectionType)
+                    },
+                )
             }
         }
     }

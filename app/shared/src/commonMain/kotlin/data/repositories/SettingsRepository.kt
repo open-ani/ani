@@ -117,28 +117,28 @@ class PreferencesRepositoryImpl(
     override val mediaSelectorSettings: Settings<MediaSelectorSettings> = SerializablePreference(
         "mediaSelectorSettings",
         MediaSelectorSettings.serializer(),
-        default = { MediaSelectorSettings.Default }
+        default = { MediaSelectorSettings.Default },
     )
     override val defaultMediaPreference: Settings<MediaPreference> =
         SerializablePreference(
             "defaultMediaPreference",
             MediaPreference.serializer(),
-            default = { MediaPreference.PlatformDefault }
+            default = { MediaPreference.PlatformDefault },
         )
     override val proxySettings: Settings<ProxySettings> = SerializablePreference(
         "proxyPreferences",
         ProxySettings.serializer(),
-        default = { ProxySettings.Default }
+        default = { ProxySettings.Default },
     )
     override val mediaCacheSettings: Settings<MediaCacheSettings> = SerializablePreference(
         "cachePreferences",
         MediaCacheSettings.serializer(),
-        default = { MediaCacheSettings.Default }
+        default = { MediaCacheSettings.Default },
     )
     override val danmakuSettings: Settings<DanmakuSettings> = SerializablePreference(
         "danmakuSettings",
         DanmakuSettings.serializer(),
-        default = { DanmakuSettings.Default }
+        default = { DanmakuSettings.Default },
     )
     override val uiSettings: Settings<UISettings> = SerializablePreference(
         "uiSettings",
@@ -148,34 +148,34 @@ class PreferencesRepositoryImpl(
     override val updateSettings: Settings<UpdateSettings> = SerializablePreference(
         "updateSettings",
         UpdateSettings.serializer(),
-        default = { UpdateSettings.Default }
+        default = { UpdateSettings.Default },
     )
     override val videoScaffoldConfig: Settings<VideoScaffoldConfig> = SerializablePreference(
         "videoScaffoldConfig",
         VideoScaffoldConfig.serializer(),
-        default = { VideoScaffoldConfig.Default }
+        default = { VideoScaffoldConfig.Default },
     )
     override val libtorrent4jConfig: Settings<Libtorrent4jConfig> = SerializablePreference(
         "libtorrent4jConfig",
         Libtorrent4jConfig.serializer(),
-        default = { Libtorrent4jConfig.Default }
+        default = { Libtorrent4jConfig.Default },
     )
     override val qBittorrentConfig: Settings<QBittorrentConfig> = SerializablePreference(
         "qBittorrentConfig",
         QBittorrentConfig.serializer(),
-        default = { QBittorrentConfig.Default }
+        default = { QBittorrentConfig.Default },
     )
 
     override val oneshotActionConfig: Settings<OneshotActionConfig> = SerializablePreference(
         "oneshotActionConfig",
         OneshotActionConfig.serializer(),
-        default = { OneshotActionConfig.Default }
+        default = { OneshotActionConfig.Default },
     )
 
     override val debugSettings: Settings<DebugSettings> = SerializablePreference(
         "debugSettings",
         DebugSettings.serializer(),
-        default = { DebugSettings.Default }
+        default = { DebugSettings.Default },
     )
 
     private companion object {

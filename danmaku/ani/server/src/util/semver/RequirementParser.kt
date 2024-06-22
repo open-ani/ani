@@ -151,6 +151,7 @@ internal class RequirementParser {
                             }
                         }
                     }
+
                     '|' -> {
                         if (peekChar() == '|') {
                             return Token.Logic.Or().also {
@@ -161,6 +162,7 @@ internal class RequirementParser {
                             }
                         }
                     }
+
                     '{' -> {
                         return Token.GroupBod.Left().also {
                             it.pos = ppos
@@ -168,6 +170,7 @@ internal class RequirementParser {
                             it.sourcePos = startIndex
                         }
                     }
+
                     '}' -> {
                         return Token.GroupBod.Right().also {
                             it.pos = ppos
@@ -184,9 +187,11 @@ internal class RequirementParser {
                             }
                             nextChar()
                         }
+
                         '{', '}' -> {
                             break
                         }
+
                         END -> break
                         else -> nextChar()
                     }
@@ -233,27 +238,34 @@ internal class RequirementParser {
                         is Token.Content -> {
                             processString(reader, next)
                         }
+
                         is Token.GroupBod.Right -> {
                             nextToken.ia(
-                                reader, if (nextToken is Token.Begin)
+                                reader,
+                                if (nextToken is Token.Begin)
                                     "Invalid token `}`"
-                                else "The first token cannot be Group Ending"
+                                else "The first token cannot be Group Ending",
                             )
                         }
+
                         is Token.Logic -> {
                             nextToken.ia(reader, "The first token cannot be Token.Logic")
                         }
+
                         is Token.Ending -> {
                             nextToken.ia(
-                                reader, if (nextToken is Token.Begin)
+                                reader,
+                                if (nextToken is Token.Begin)
                                     "Requirement cannot be blank"
-                                else "Except more tokens"
+                                else "Except more tokens",
                             )
                         }
+
                         is Token.GroupBod.Left -> {
                             reader.insertToken = next
                             process(reader)
                         }
+
                         else -> {
                             next.ia(reader, "Bad token $next")
                         }
@@ -273,34 +285,38 @@ internal class RequirementParser {
                                     fun getType(type: Boolean) = if (type) "`}`" else "<EOF>"
                                     next.ia(
                                         reader,
-                                        "Except ${getType(isStartingOfGroup)} but got ${getType(isEndingOfGroup)}"
+                                        "Except ${getType(isStartingOfGroup)} but got ${getType(isEndingOfGroup)}",
                                     )
                                 } else {
                                     // reader.insertToken = next
                                     break
                                 }
                             }
+
                             is Token.Logic -> {
                                 val stx = next is Token.Logic.And
                                 if (mode == null) mode = stx
                                 else if (mode != stx) {
                                     fun getMode(type: Boolean) = if (type) "`&&`" else "`||`"
                                     next.ia(
-                                        reader, "Cannot change logic mode after setting. " +
-                                                "Except ${getMode(mode)} but got ${getMode(stx)}"
+                                        reader,
+                                        "Cannot change logic mode after setting. " +
+                                                "Except ${getMode(mode)} but got ${getMode(stx)}",
                                     )
                                 }
                                 chunks.add(process(reader))
                             }
+
                             else -> {
                                 next.ia(
-                                    reader, "Except ${
+                                    reader,
+                                    "Except ${
                                         when (mode) {
                                             null -> "`&&` or `||`"
                                             true -> "`&&`"
                                             false -> "`||`"
                                         }
-                                    } but get `${next.content}`"
+                                    } but get `${next.content}`",
                                 )
                             }
                         }
@@ -311,12 +327,15 @@ internal class RequirementParser {
                         processLogic(mode, chunks)
                     }
                 }
+
                 is Token.Content -> {
                     processString(reader, nextToken)
                 }
+
                 is Token.Ending -> {
                     nextToken.ia(reader, "Except more values.")
                 }
+
                 else -> {
                     nextToken.ia(reader, "Assert Error: $nextToken")
                 }

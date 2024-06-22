@@ -20,9 +20,12 @@ import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import kotlin.LazyThreadSafetyMode.PUBLICATION
 import me.him188.ani.danmaku.server.util.semver.ResolveContext.Kind.SEMANTIC_VERSION
 import me.him188.ani.danmaku.server.util.semver.ResolveContext.Kind.VERSION_REQUIREMENT
+import me.him188.ani.danmaku.server.util.semver.SemVersion.Companion.equals
+import me.him188.ani.danmaku.server.util.semver.SemVersion.Requirement
+import me.him188.ani.danmaku.server.util.semver.SemVersion.SemVersionAsStringSerializer
+import kotlin.LazyThreadSafetyMode.PUBLICATION
 
 /**
  * [语义化版本](https://semver.org/lang/zh-CN/) 支持
@@ -105,7 +108,7 @@ internal constructor(
          */
         public object RequirementAsStringSerializer : KSerializer<Requirement> by String.serializer().map(
             serializer = { it.rule },
-            deserializer = { parseRangeRequirement(it) }
+            deserializer = { parseRangeRequirement(it) },
         )
 
         public companion object {
@@ -123,7 +126,7 @@ internal constructor(
      */
     public object SemVersionAsStringSerializer : KSerializer<SemVersion> by String.serializer().map(
         serializer = { it.toString() },
-        deserializer = { SemVersion(it) }
+        deserializer = { SemVersion(it) },
     )
 
     public companion object {

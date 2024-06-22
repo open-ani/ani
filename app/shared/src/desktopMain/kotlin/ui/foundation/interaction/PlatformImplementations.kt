@@ -78,7 +78,7 @@ sealed interface PlatformImplementations {
                             icon = painterResource("src/commonMain/composeResources/drawable/cog.svg"),
                             mnemonic = 'S',
                             shortcut = keyShortcuts.menuPreferences,
-                            onClick = onClickPreferences
+                            onClick = onClickPreferences,
                         )
                     }
                 }

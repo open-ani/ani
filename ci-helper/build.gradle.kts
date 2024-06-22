@@ -156,7 +156,7 @@ tasks.register("uploadDesktopInstallers") {
 
     if (hostOS != OS.WINDOWS) {
         dependsOn(
-            ":app:desktop:packageReleaseDistributionForCurrentOS"
+            ":app:desktop:packageReleaseDistributionForCurrentOS",
         )
     }
 
@@ -206,7 +206,7 @@ tasks.register("prepareArtifactsForManualUpload") {
                 name = namer.desktopDistributionFile(
                     fullVersion,
                     osName = hostOS.name.lowercase(),
-                    extension = "zip"
+                    extension = "zip",
                 ),
                 contentType = "application/octet-stream",
                 file = zipDesktopDistribution.get().archiveFile.get().asFile,
@@ -276,15 +276,15 @@ open class ReleaseEnvironment {
                     BasicAWSCredentials(
                         getProperty("AWS_ACCESS_KEY_ID"),
                         getProperty("AWS_SECRET_ACCESS_KEY"),
-                    )
-                )
+                    ),
+                ),
             )
             .apply {
                 setEndpointConfiguration(
                     AwsClientBuilder.EndpointConfiguration(
                         getProperty("AWS_BASEURL"),
-                        getProperty("AWS_REGION")
-                    )
+                        getProperty("AWS_REGION"),
+                    ),
                 )
             }
             .build()
@@ -314,14 +314,16 @@ open class ReleaseEnvironment {
                     header("Accept", "application/vnd.github+json")
                     parameter("name", name)
                     contentType(ContentType.parse(contentType))
-                    setBody(object : OutgoingContent.ReadChannelContent() {
-                        override val contentType: ContentType get() = ContentType.parse(contentType)
-                        override val contentLength: Long = file.length()
-                        override fun readFrom(): ByteReadChannel {
-                            return file.readChannel()
-                        }
+                    setBody(
+                        object : OutgoingContent.ReadChannelContent() {
+                            override val contentType: ContentType get() = ContentType.parse(contentType)
+                            override val contentLength: Long = file.length()
+                            override fun readFrom(): ByteReadChannel {
+                                return file.readChannel()
+                            }
 
-                    })
+                        },
+                    )
                 }
                 if (getProperty("UPLOAD_TO_S3") == "true") {
 //                    val bucket = getProperty("AWS_BUCKET")
@@ -371,7 +373,7 @@ fun ReleaseEnvironment.uploadDesktopDistributions() {
                 fullVersion,
                 osName,
                 archName,
-                extension = kind
+                extension = kind,
             ),
             contentType = "application/octet-stream",
             file = project(":app:desktop").layout.buildDirectory.dir("compose/binaries/main-release/$kind").get().asFile
@@ -386,7 +388,7 @@ fun ReleaseEnvironment.uploadDesktopDistributions() {
                 name = namer.desktopDistributionFile(
                     fullVersion,
                     osName = hostOS.name.lowercase(),
-                    extension = "zip"
+                    extension = "zip",
                 ),
                 contentType = "application/x-zip",
                 file = layout.buildDirectory.dir("distributions").get().asFile.walk().single { it.extension == "zip" },
@@ -417,7 +419,7 @@ tasks.register("updateDevVersionNameFromGit") {
         val new = ReleaseEnvironment().generateDevVersionName(base = baseVersion)
         println("New version name: $new")
         file(gradlePropertiesFile).writeText(
-            properties.replaceFirst(Regex("version.name=(.+)"), "version.name=$new")
+            properties.replaceFirst(Regex("version.name=(.+)"), "version.name=$new"),
         )
     }
 }
@@ -430,7 +432,7 @@ tasks.register("updateReleaseVersionNameFromGit") {
         val new = ReleaseEnvironment().generateReleaseVersionName()
         println("New version name: $new")
         file(gradlePropertiesFile).writeText(
-            properties.replaceFirst(Regex("version.name=(.+)"), "version.name=$new")
+            properties.replaceFirst(Regex("version.name=(.+)"), "version.name=$new"),
         )
     }
 }

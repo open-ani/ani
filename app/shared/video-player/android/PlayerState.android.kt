@@ -96,25 +96,27 @@ internal class ExoPlayerState @UiThread constructor(
                     val headers = source.webVideo.headers
                     val item = MediaItem.Builder().apply {
                         setUri(source.uri)
-                        setSubtitleConfigurations(source.extraFiles.subtitles.map {
-                            MediaItem.SubtitleConfiguration.Builder(
-                                Uri.parse(it.uri)
-                            ).apply {
-                                it.mimeType?.let { mimeType -> setMimeType(mimeType) }
-                                it.language?.let { language -> setLanguage(language) }
-                            }.build()
-                        })
+                        setSubtitleConfigurations(
+                            source.extraFiles.subtitles.map {
+                                MediaItem.SubtitleConfiguration.Builder(
+                                    Uri.parse(it.uri),
+                                ).apply {
+                                    it.mimeType?.let { mimeType -> setMimeType(mimeType) }
+                                    it.language?.let { language -> setLanguage(language) }
+                                }.build()
+                            },
+                        )
                     }.build()
                     player.setMediaSource(
                         DefaultMediaSourceFactory(
                             DefaultHttpDataSource.Factory()
                                 .setUserAgent(
                                     headers["User-Agent"]
-                                        ?: """Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"""
+                                        ?: """Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3""",
                                 )
                                 .setDefaultRequestProperties(headers)
                                 .setConnectTimeoutMs(30_000),
-                        ).createMediaSource(item)
+                        ).createMediaSource(item),
                     )
                 },
             )
@@ -143,156 +145,165 @@ internal class ExoPlayerState @UiThread constructor(
 
     val player = kotlin.run {
         ExoPlayer.Builder(context).apply {
-            setTrackSelector(object : DefaultTrackSelector(context) {
-                override fun selectTextTrack(
-                    mappedTrackInfo: MappedTrackInfo,
-                    rendererFormatSupports: Array<out Array<IntArray>>,
-                    params: Parameters,
-                    selectedAudioLanguage: String?
-                ): Pair<ExoTrackSelection.Definition, Int>? {
-                    val preferred = subtitleTracks.current.value
-                        ?: return super.selectTextTrack(
+            setTrackSelector(
+                object : DefaultTrackSelector(context) {
+                    override fun selectTextTrack(
+                        mappedTrackInfo: MappedTrackInfo,
+                        rendererFormatSupports: Array<out Array<IntArray>>,
+                        params: Parameters,
+                        selectedAudioLanguage: String?
+                    ): Pair<ExoTrackSelection.Definition, Int>? {
+                        val preferred = subtitleTracks.current.value
+                            ?: return super.selectTextTrack(
+                                mappedTrackInfo,
+                                rendererFormatSupports,
+                                params,
+                                selectedAudioLanguage,
+                            )
+
+                        infix fun SubtitleTrack.matches(group: TrackGroup): Boolean {
+                            if (this.internalId == group.id) return true
+
+                            if (this.labels.isEmpty()) return false
+                            for (index in 0 until group.length) {
+                                val format = group.getFormat(index)
+                                if (format.labels.isEmpty()) {
+                                    continue
+                                }
+                                if (this.labels.any { it.value == format.labels.first().value }) {
+                                    return true
+                                }
+                            }
+                            return false
+                        }
+
+                        // 备注: 这个实现可能并不好, 他只是恰好能跑
+                        for (rendererIndex in 0 until mappedTrackInfo.rendererCount) {
+                            if (C.TRACK_TYPE_TEXT != mappedTrackInfo.getRendererType(rendererIndex)) continue
+
+                            val groups = mappedTrackInfo.getTrackGroups(rendererIndex)
+                            for (groupIndex in 0 until groups.length) {
+                                val trackGroup = groups[groupIndex]
+                                if (preferred matches trackGroup) {
+                                    return Pair(
+                                        ExoTrackSelection.Definition(
+                                            trackGroup,
+                                            IntArray(trackGroup.length) { it }, // 如果选择所有字幕会闪烁
+                                            TrackSelection.TYPE_UNSET,
+                                        ),
+                                        rendererIndex,
+                                    )
+                                }
+                            }
+                        }
+                        return super.selectTextTrack(
                             mappedTrackInfo,
                             rendererFormatSupports,
                             params,
-                            selectedAudioLanguage
+                            selectedAudioLanguage,
                         )
-
-                    infix fun SubtitleTrack.matches(group: TrackGroup): Boolean {
-                        if (this.internalId == group.id) return true
-
-                        if (this.labels.isEmpty()) return false
-                        for (index in 0 until group.length) {
-                            val format = group.getFormat(index)
-                            if (format.labels.isEmpty()) {
-                                continue
-                            }
-                            if (this.labels.any { it.value == format.labels.first().value }) {
-                                return true
-                            }
-                        }
-                        return false
                     }
-
-                    // 备注: 这个实现可能并不好, 他只是恰好能跑
-                    for (rendererIndex in 0 until mappedTrackInfo.rendererCount) {
-                        if (C.TRACK_TYPE_TEXT != mappedTrackInfo.getRendererType(rendererIndex)) continue
-
-                        val groups = mappedTrackInfo.getTrackGroups(rendererIndex)
-                        for (groupIndex in 0 until groups.length) {
-                            val trackGroup = groups[groupIndex]
-                            if (preferred matches trackGroup) {
-                                return Pair(
-                                    ExoTrackSelection.Definition(
-                                        trackGroup,
-                                        IntArray(trackGroup.length) { it }, // 如果选择所有字幕会闪烁
-                                        TrackSelection.TYPE_UNSET,
-                                    ),
-                                    rendererIndex
-                                )
-                            }
-                        }
-                    }
-                    return super.selectTextTrack(mappedTrackInfo, rendererFormatSupports, params, selectedAudioLanguage)
-                }
-            })
+                },
+            )
         }.build().apply {
             playWhenReady = true
-            addListener(object : Player.Listener {
-                override fun onTracksChanged(tracks: Tracks) {
-                    subtitleTracks.candidates.value =
-                        tracks.groups.asSequence()
-                            .filter { it.type == C.TRACK_TYPE_TEXT }
-                            .flatMapIndexed { groupIndex: Int, group: Tracks.Group ->
-                                group.getSubtitleTracks()
+            addListener(
+                object : Player.Listener {
+                    override fun onTracksChanged(tracks: Tracks) {
+                        subtitleTracks.candidates.value =
+                            tracks.groups.asSequence()
+                                .filter { it.type == C.TRACK_TYPE_TEXT }
+                                .flatMapIndexed { groupIndex: Int, group: Tracks.Group ->
+                                    group.getSubtitleTracks()
+                                }
+                                .toList()
+                        audioTracks.candidates.value =
+                            tracks.groups.asSequence()
+                                .filter { it.type == C.TRACK_TYPE_AUDIO }
+                                .flatMapIndexed { groupIndex: Int, group: Tracks.Group ->
+                                    group.getAudioTracks()
+                                }
+                                .toList()
+                    }
+
+                    override fun onPlayerError(error: PlaybackException) {
+                        state.value = PlaybackState.ERROR
+                        logger.warn("ExoPlayer error: ${error.errorCodeName}")
+                    }
+
+                    override fun onVideoSizeChanged(videoSize: VideoSize) {
+                        super.onVideoSizeChanged(videoSize)
+                        updateVideoProperties()
+                    }
+
+                    @MainThread
+                    private fun updateVideoProperties(): Boolean {
+                        val video = videoFormat ?: return false
+                        val audio = audioFormat ?: return false
+                        val data = openResource.value?.videoData ?: return false
+                        val title = mediaMetadata.title
+                        val duration = duration
+
+                        // 注意, 要把所有 UI 属性全都读出来然后 captured 到 background -- ExoPlayer 所有属性都需要在主线程
+
+                        updateVideoPropertiesTasker.launch(Dispatchers.IO) {
+                            // This is in background
+                            videoProperties.value = VideoProperties(
+                                title = title?.toString(),
+                                heightPx = video.height,
+                                widthPx = video.width,
+                                videoBitrate = video.bitrate,
+                                audioBitrate = audio.bitrate,
+                                frameRate = video.frameRate,
+                                durationMillis = duration,
+                                fileLengthBytes = data.fileLength,
+                                fileHash = data.computeHash(),
+                                filename = data.filename,
+                            )
+                        }
+                        return true
+                    }
+
+                    override fun onPlaybackStateChanged(playbackState: Int) {
+                        when (playbackState) {
+                            Player.STATE_BUFFERING -> {
+                                state.value = PlaybackState.PAUSED_BUFFERING
+                                isBuffering.value = true
                             }
-                            .toList()
-                    audioTracks.candidates.value =
-                        tracks.groups.asSequence()
-                            .filter { it.type == C.TRACK_TYPE_AUDIO }
-                            .flatMapIndexed { groupIndex: Int, group: Tracks.Group ->
-                                group.getAudioTracks()
+
+                            Player.STATE_ENDED -> {
+                                state.value = PlaybackState.FINISHED
+                                isBuffering.value = false
                             }
-                            .toList()
-                }
 
-                override fun onPlayerError(error: PlaybackException) {
-                    state.value = PlaybackState.ERROR
-                    logger.warn("ExoPlayer error: ${error.errorCodeName}")
-                }
+                            Player.STATE_IDLE -> {
+                                state.value = PlaybackState.READY
+                                isBuffering.value = false
+                            }
 
-                override fun onVideoSizeChanged(videoSize: VideoSize) {
-                    super.onVideoSizeChanged(videoSize)
-                    updateVideoProperties()
-                }
-
-                @MainThread
-                private fun updateVideoProperties(): Boolean {
-                    val video = videoFormat ?: return false
-                    val audio = audioFormat ?: return false
-                    val data = openResource.value?.videoData ?: return false
-                    val title = mediaMetadata.title
-                    val duration = duration
-
-                    // 注意, 要把所有 UI 属性全都读出来然后 captured 到 background -- ExoPlayer 所有属性都需要在主线程
-
-                    updateVideoPropertiesTasker.launch(Dispatchers.IO) {
-                        // This is in background
-                        videoProperties.value = VideoProperties(
-                            title = title?.toString(),
-                            heightPx = video.height,
-                            widthPx = video.width,
-                            videoBitrate = video.bitrate,
-                            audioBitrate = audio.bitrate,
-                            frameRate = video.frameRate,
-                            durationMillis = duration,
-                            fileLengthBytes = data.fileLength,
-                            fileHash = data.computeHash(),
-                            filename = data.filename,
-                        )
+                            Player.STATE_READY -> {
+                                state.value = PlaybackState.READY
+                                isBuffering.value = false
+                            }
+                        }
+                        updateVideoProperties()
                     }
-                    return true
-                }
 
-                override fun onPlaybackStateChanged(playbackState: Int) {
-                    when (playbackState) {
-                        Player.STATE_BUFFERING -> {
-                            state.value = PlaybackState.PAUSED_BUFFERING
-                            isBuffering.value = true
-                        }
-
-                        Player.STATE_ENDED -> {
-                            state.value = PlaybackState.FINISHED
+                    override fun onIsPlayingChanged(isPlaying: Boolean) {
+                        if (isPlaying) {
+                            state.value = PlaybackState.PLAYING
                             isBuffering.value = false
-                        }
-
-                        Player.STATE_IDLE -> {
-                            state.value = PlaybackState.READY
-                            isBuffering.value = false
-                        }
-
-                        Player.STATE_READY -> {
-                            state.value = PlaybackState.READY
-                            isBuffering.value = false
+                        } else {
+                            state.value = PlaybackState.PAUSED
                         }
                     }
-                    updateVideoProperties()
-                }
 
-                override fun onIsPlayingChanged(isPlaying: Boolean) {
-                    if (isPlaying) {
-                        state.value = PlaybackState.PLAYING
-                        isBuffering.value = false
-                    } else {
-                        state.value = PlaybackState.PAUSED
+                    override fun onPlaybackParametersChanged(playbackParameters: PlaybackParameters) {
+                        super.onPlaybackParametersChanged(playbackParameters)
+                        playbackSpeed.value = playbackParameters.speed
                     }
-                }
-
-                override fun onPlaybackParametersChanged(playbackParameters: PlaybackParameters) {
-                    super.onPlaybackParametersChanged(playbackParameters)
-                    playbackSpeed.value = playbackParameters.speed
-                }
-            })
+                },
+            )
         }
     }
 
@@ -306,7 +317,8 @@ internal class ExoPlayerState @UiThread constructor(
                     "${openResource.value?.videoData?.filename}-${mediaTrackGroup.id}-$index",
                     mediaTrackGroup.id,
                     firstLabel ?: mediaTrackGroup.id,
-                    format.labels.map { Label(it.language, it.value) })
+                    format.labels.map { Label(it.language, it.value) },
+                ),
             )
         }
     }
@@ -321,7 +333,8 @@ internal class ExoPlayerState @UiThread constructor(
                     "${openResource.value?.videoData?.filename}-${mediaTrackGroup.id}-$index",
                     mediaTrackGroup.id,
                     firstLabel ?: mediaTrackGroup.id,
-                    format.labels.map { Label(it.language, it.value) })
+                    format.labels.map { Label(it.language, it.value) },
+                ),
             )
         }
     }

@@ -37,7 +37,7 @@ class DanmakuServiceImpl : DanmakuService, KoinComponent {
         if (maxCount != null && maxCount > get<ServerConfig>().danmakuGetRequestMaxCountAllowed) {
             throw AcquiringTooMuchDanmakusException()
         }
-        
+
         val actualMaxCount = maxCount ?: get<ServerConfig>().danmakuGetRequestMaxCountAllowed
         val actualFromTime = fromTime ?: 0
         val actualToTime = if (toTime == null || toTime < 0) Long.MAX_VALUE else toTime

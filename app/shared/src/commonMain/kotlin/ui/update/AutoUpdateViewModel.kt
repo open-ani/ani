@@ -141,7 +141,7 @@ class AutoUpdateViewModel : AbstractViewModel(), KoinComponent {
                 ver.downloadUrlAlternatives.firstOrNull()?.let {
                     GlobalContext.get().get<BrowserNavigator>().openBrowser(
                         context,
-                        it
+                        it,
                     )
                 } ?: run {
                     logger.warn { "No download URL found, ignoring" }
@@ -169,7 +169,7 @@ class AutoUpdateViewModel : AbstractViewModel(), KoinComponent {
             fileDownloader.download(
                 alternativeUrls = ver.downloadUrlAlternatives,
                 filenameProvider = { it.substringAfterLast("/", "") },
-                saveDir = dir
+                saveDir = dir,
             )
         }
     }

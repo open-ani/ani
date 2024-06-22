@@ -18,12 +18,12 @@ class GithubVersionVerifierImpl : ClientVersionVerifier {
         HttpClient()
     }
     private val githubReleasesUrl = "https://api.github.com/repos/open-ani/ani/releases/tags"
-    
+
     override suspend fun verify(clientVersion: String): Boolean {
         if (!bufferDeferred.isCompleted) {
             bufferDeferred.complete(FileServerLocalSetBuffer.get("github-client-versions"))
         }
-        
+
         if (buffer.contains(clientVersion)) {
             return true
         }
@@ -41,9 +41,9 @@ class GithubVersionVerifierImpl : ClientVersionVerifier {
 class AniClientVersionVerifierImpl(
     private val versionWhitelist: List<String> = listOf(),
     private val versionWhitelistRegex: List<String> = listOf(),
-): ClientVersionVerifier {
+) : ClientVersionVerifier {
     private val githubVersionVerifier = GithubVersionVerifierImpl()
-    
+
     override suspend fun verify(clientVersion: String): Boolean {
         if (versionWhitelist.contains(clientVersion)) {
             return true

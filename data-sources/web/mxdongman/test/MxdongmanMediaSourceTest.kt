@@ -15,7 +15,7 @@ class MxdongmanMediaSourceTest {
         val source = Source(MediaSourceConfig())
         val doc = Jsoup.parse(
             this::class.java.classLoader.getResource("sakura trick/search.html")!!.readText(),
-            source.baseUrl
+            source.baseUrl,
         )
         val list = source.parseBangumiSearch(doc)
         assertEquals(1, list.size)
@@ -31,7 +31,7 @@ class MxdongmanMediaSourceTest {
         val source = Source(MediaSourceConfig())
         val doc = Jsoup.parse(
             this::class.java.classLoader.getResource("sakura trick/bangumi.html")!!.readText(),
-            source.baseUrl
+            source.baseUrl,
         )
         val list = source.parseEpisodeList(doc)
         assertEquals(12, list.size)

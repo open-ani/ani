@@ -75,11 +75,11 @@ class UpdateChecker {
                             Changelog(
                                 version,
                                 publishedAt,
-                                release.body.substringBeforeLast("### 下载").substringBeforeLast("----").trim()
-                            )
+                                release.body.substringBeforeLast("### 下载").substringBeforeLast("----").trim(),
+                            ),
                         ),
                         downloadUrlAlternatives = listOf(downloadUrl),
-                        publishedAt = publishedAt
+                        publishedAt = publishedAt,
                     ).also {
                         logger.info { "Got latest version from Github: ${it.name}" }
                     }
@@ -137,7 +137,7 @@ class UpdateChecker {
                     Changelog(it.version, formatTime(it.publishTime), it.description)
                 }.toList(),
                 downloadUrlAlternatives = latest.downloadUrlAlternatives,
-                publishedAt = formatTime(latest.publishTime)
+                publishedAt = formatTime(latest.publishTime),
             )
         }
     }

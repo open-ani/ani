@@ -78,8 +78,8 @@ internal class PlayerDanmakuStateImpl(
             danmakuHostState.send(
                 DanmakuPresentation(
                     danmaku,
-                    isSelf = true
-                )
+                    isSelf = true,
+                ),
             )
         }
     }

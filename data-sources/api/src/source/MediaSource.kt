@@ -68,7 +68,7 @@ import java.io.File
  * 详细查看 [MediaSourceFactory].
  *
  * ### 使 APP 能够检测到新的 [MediaSource] 的示例步骤
- * 
+ *
  * 假设你已经实现了一个数据源, 名为 `foo`, 模块位置为 `:data-sources:foo`.
  * 1. 在 `data-sources/foo/resources/META-INF/services` 目录下创建一个名为 `me.him188.ani.datasources.api.source.MediaSourceFactory` 的文件
  * 2. 在文件中写入你的 `MediaSourceFactory` 的全限定类名, 例如 `me.him188.ani.datasources.api.source.impl.MyMediaSourceFactory`
@@ -192,7 +192,7 @@ sealed class MediaSourceLocation {
 
         override fun serialize(encoder: Encoder, value: MediaSourceLocation) {
             encoder.encodeString(
-                getText(value)
+                getText(value),
             )
         }
 

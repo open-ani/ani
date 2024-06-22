@@ -280,9 +280,11 @@ abstract class AbstractMikanMediaSource(
 
         fun parseBangumiSubjectIdFromMikanSubjectDetails(document: Document) =
             document.getElementsByClass("bangumi-info")
-                .filter(predicate = {
-                    it.text().contains("Bangumi番组计划链接：")
-                }).firstNotNullOfOrNull { element ->
+                .filter(
+                    predicate = {
+                        it.text().contains("Bangumi番组计划链接：")
+                    },
+                ).firstNotNullOfOrNull { element ->
                     element.getElementsByTag("a").attr("href").substringAfter("subject/", "")
                         .takeIf { it.isNotBlank() }
                 }

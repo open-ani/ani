@@ -20,7 +20,8 @@ class MxdongmanWebVideoMatcher : WebVideoMatcher {
         if (context.media.mediaSourceId != MxdongmanMediaSource.ID) return null
         if (url.contains("https://v16m-default.akamaized.net")) {
             return WebVideo(
-                url, mapOf(
+                url,
+                mapOf(
                     "User-Agent" to """Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3""",
                     "Referer" to "https://www.mxdm4.com/dongmanplay/",
                     "Sec-Ch-Ua-Mobile" to "?0",
@@ -28,7 +29,7 @@ class MxdongmanWebVideoMatcher : WebVideoMatcher {
                     "Sec-Fetch-Dest" to "video",
                     "Sec-Fetch-Mode" to "no-cors",
                     "Sec-Fetch-Site" to "cross-site",
-                )
+                ),
             )
         }
         return null
@@ -64,7 +65,7 @@ class MxdongmanMediaSource(config: MediaSourceConfig) : ThreeStepWebMediaSource(
             Bangumi(
                 internalId = a.attr("href").removePrefix("/dongman/").removeSuffix(".html"),
                 name = a.attr("title"),
-                url = baseUrl + a.attr("href")
+                url = baseUrl + a.attr("href"),
             )
         }
     }
@@ -111,7 +112,7 @@ class MxdongmanMediaSource(config: MediaSourceConfig) : ThreeStepWebMediaSource(
             element.select("a").map {
                 Ep(
                     name = it.text(),
-                    url = baseUrl + it.attr("href")
+                    url = baseUrl + it.attr("href"),
                 )
             }
         }

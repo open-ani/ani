@@ -24,8 +24,8 @@ class InMemoryDanmakuRepositoryImpl : DanmakuRepository {
                     playTime = danmakuInfo.playTime,
                     location = danmakuInfo.location,
                     text = danmakuInfo.text,
-                    color = danmakuInfo.color
-                )
+                    color = danmakuInfo.color,
+                ),
             )
             return true
         }
@@ -48,8 +48,8 @@ class InMemoryDanmakuRepositoryImpl : DanmakuRepository {
                         playTime = it.playTime,
                         location = it.location,
                         text = it.text,
-                        color = it.color
-                    )
+                        color = it.color,
+                    ),
                 )
             }
         }

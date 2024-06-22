@@ -81,7 +81,7 @@ fun EpisodeProgressDialog(
                 context.vibrateIfSupported(VibrationStrength.TICK)
                 state.toggleEpisodeWatched(progressItem)
             },
-            colors = EpisodeProgressDefaults.colors(state.theme)
+            colors = EpisodeProgressDefaults.colors(state.theme),
         )
     }
 }
@@ -114,7 +114,7 @@ fun EpisodeProgressDialog(
                         Modifier.clipToBounds()
                             .heightIn(max = 360.dp)
                             .padding(top = 16.dp)
-                            .verticalScroll(rememberScrollState())
+                            .verticalScroll(rememberScrollState()),
                     ) {
                         content()
                     }
@@ -279,13 +279,13 @@ private fun SmallEpisodeButton(
             HorizontalIndicator(
                 color = cacheStatusIndicationColor(
                     cacheStatus,
-                    isDoneOrDropped
+                    isDoneOrDropped,
                 ),
                 shape = MaterialTheme.shapes.small,
                 height = 6.dp,
             )
         },
-        modifier//.padding(end = if (hasBadge) 12.dp else 0.dp)
+        modifier,//.padding(end = if (hasBadge) 12.dp else 0.dp)
     ) {
         val containerColor = when {
             isDoneOrDropped -> colors.doneOrDroppedColor

@@ -25,11 +25,11 @@ private fun PreviewPlayerStatisticsAllSuccess() {
                         listOf(
                             exactMatch(),
                             noMatch(),
-                        )
+                        ),
                     )
                 }
             },
-            Modifier.padding(16.dp)
+            Modifier.padding(16.dp),
         )
     }
 }
@@ -46,11 +46,11 @@ private fun PreviewPlayerStatisticsVideoFailed() {
                         listOf(
                             exactMatch(),
                             noMatch(),
-                        )
+                        ),
                     )
                 }
             },
-            Modifier.padding(16.dp)
+            Modifier.padding(16.dp),
         )
     }
 }
@@ -67,11 +67,11 @@ private fun PreviewPlayerStatisticsVideoLoading() {
                         listOf(
                             exactMatch(),
                             noMatch(),
-                        )
+                        ),
                     )
                 }
             },
-            Modifier.padding(16.dp)
+            Modifier.padding(16.dp),
         )
     }
 }
@@ -85,7 +85,7 @@ private fun noMatch() = DanmakuMatchInfo(
 private fun exactId() = DanmakuMatchInfo(
     providerId = AniDanmakuProvider.ID,
     count = 200,
-    method = DanmakuMatchMethod.ExactId(1, 2)
+    method = DanmakuMatchMethod.ExactId(1, 2),
 )
 
 private fun exactMatch() = DanmakuMatchInfo(
@@ -115,11 +115,11 @@ private fun PreviewPlayerStatisticsDanmakuFailed() {
                 PlayerStatisticsState().apply {
                     videoLoadingState.value = VideoLoadingState.UnknownError(IllegalStateException())
                     danmakuLoadingState.value = DanmakuLoadingState.Failed(
-                        cause = IllegalStateException()
+                        cause = IllegalStateException(),
                     )
                 }
             },
-            Modifier.padding(16.dp)
+            Modifier.padding(16.dp),
         )
     }
 }
@@ -139,11 +139,11 @@ private fun PreviewPlayerStatisticsDanmakuState() {
                             noMatch(),
                             fuzzy(),
                             halfFuzzy(),
-                        )
+                        ),
                     )
                 }
             },
-            Modifier.padding(16.dp)
+            Modifier.padding(16.dp),
         )
     }
 }

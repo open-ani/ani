@@ -52,7 +52,7 @@ class AuthServiceImpl : AuthService, KoinComponent {
             nickname = user.nickname,
             smallAvatar = user.smallAvatar,
             mediumAvatar = user.mediumAvatar,
-            largeAvatar = user.largeAvatar
+            largeAvatar = user.largeAvatar,
         ) ?: throw OperationFailedException()
     }
 }

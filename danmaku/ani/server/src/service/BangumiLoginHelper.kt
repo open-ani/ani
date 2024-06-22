@@ -38,7 +38,7 @@ class BangumiLoginHelperImpl : BangumiLoginHelper, KoinComponent {
         }
     }
     private val bangumiLoginUrl = "https://api.bgm.tv/v0/me"
-    private val log : Logger by inject()
+    private val log: Logger by inject()
 
     override suspend fun login(bangumiToken: String): BangumiUser? {
         try {

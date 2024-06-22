@@ -26,18 +26,20 @@ class DanmakuServiceTest {
             playTime = 1.seconds.inWholeMilliseconds,
             color = Color.BLACK.rgb,
             text = "test danmaku 1",
-            location = DanmakuLocation.NORMAL
-        ), DanmakuInfo(
+            location = DanmakuLocation.NORMAL,
+        ),
+        DanmakuInfo(
             playTime = 5.seconds.inWholeMilliseconds,
             color = Color.CYAN.rgb,
             text = "test danmaku 2",
-            location = DanmakuLocation.TOP
-        ), DanmakuInfo(
+            location = DanmakuLocation.TOP,
+        ),
+        DanmakuInfo(
             playTime = 10.seconds.inWholeMilliseconds,
             color = Color.RED.rgb,
             text = "test danmaku 3",
-            location = DanmakuLocation.BOTTOM
-        )
+            location = DanmakuLocation.BOTTOM,
+        ),
     )
 
     private fun runTestWithKoin(block: suspend () -> Unit) = runTest {
@@ -115,7 +117,7 @@ class DanmakuServiceTest {
         danmakuService.getDanmaku(
             episodeId,
             fromTime = 3.seconds.inWholeMilliseconds,
-            toTime = 6.seconds.inWholeMilliseconds
+            toTime = 6.seconds.inWholeMilliseconds,
         ).also {
             assert(it.size == 1)
             assert(it[0].danmakuInfo == testDanmakus[1])
@@ -123,7 +125,7 @@ class DanmakuServiceTest {
         danmakuService.getDanmaku(
             episodeId,
             fromTime = 6.seconds.inWholeMilliseconds,
-            toTime = 11.seconds.inWholeMilliseconds
+            toTime = 11.seconds.inWholeMilliseconds,
         ).also {
             assert(it.size == 1)
             assert(it[0].danmakuInfo == testDanmakus[2])
@@ -168,22 +170,26 @@ class DanmakuServiceTest {
         val userId = "test_user_id"
         assertThrows<EmptyDanmakuException> {
             danmakuService.postDanmaku(
-                episodeId, DanmakuInfo(
+                episodeId,
+                DanmakuInfo(
                     playTime = 5.seconds.inWholeMilliseconds,
                     color = Color.BLACK.rgb,
                     text = "",
-                    location = DanmakuLocation.NORMAL
-                ), userId
+                    location = DanmakuLocation.NORMAL,
+                ),
+                userId,
             )
         }
         assertThrows<EmptyDanmakuException> {
             danmakuService.postDanmaku(
-                episodeId, DanmakuInfo(
+                episodeId,
+                DanmakuInfo(
                     playTime = 5.seconds.inWholeMilliseconds,
                     color = Color.BLACK.rgb,
                     text = "  \n\t",
-                    location = DanmakuLocation.NORMAL
-                ), userId
+                    location = DanmakuLocation.NORMAL,
+                ),
+                userId,
             )
         }
     }

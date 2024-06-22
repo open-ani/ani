@@ -43,7 +43,7 @@ suspend fun main() {
         "终末列车去往何方",
         "迷宫饭",
         "吹响吧！上低音号",
-        "间谍过家家"
+        "间谍过家家",
     )
 
     TopicFetcher(output, "dmhy").run {
@@ -68,9 +68,11 @@ class TopicFetcher(
             install(HttpCookies)
 
             install(ContentNegotiation) {
-                json(Json {
-                    ignoreUnknownKeys = true
-                })
+                json(
+                    Json {
+                        ignoreUnknownKeys = true
+                    },
+                )
                 register(
                     ContentType.Text.Html,
                     object : ContentConverter {
@@ -119,9 +121,14 @@ class TopicFetcher(
     ) {
         val output = saveDir.resolve("$className.json")
         output.writeText(
-            json.encodeToString(TestData(originalName, dataSource = dataSource, className, list.map {
-                TopicInfo(it.topicId, it.rawTitle)
-            }))
+            json.encodeToString(
+                TestData(
+                    originalName, dataSource = dataSource, className,
+                    list.map {
+                        TopicInfo(it.topicId, it.rawTitle)
+                    },
+                ),
+            ),
         )
         println("'$className' total ${list.size} topics, saved to $output")
     }

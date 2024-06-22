@@ -16,7 +16,7 @@ class EpisodeCollectionsTest {
                     PackedDate(2023, 10, 4),
                     PackedDate(2023, 10, 11),
                 ),
-                now = PackedDate(2023, 10, 11 + 14)
+                now = PackedDate(2023, 10, 11 + 14),
             )
         }
     }
@@ -29,7 +29,7 @@ class EpisodeCollectionsTest {
                     PackedDate(2023, 10, 4),
                     PackedDate(2023, 10, 11),
                 ),
-                now = PackedDate(2023, 10, 11 + 13)
+                now = PackedDate(2023, 10, 11 + 13),
             )
         }
     }
@@ -42,7 +42,7 @@ class EpisodeCollectionsTest {
                     PackedDate(2023, 10, 4),
                     PackedDate(2023, 10, 11),
                 ),
-                now = PackedDate(2022, 10, 11)
+                now = PackedDate(2022, 10, 11),
             )
         }
     }
@@ -55,7 +55,7 @@ class EpisodeCollectionsTest {
                     PackedDate(2023, 10, 4),
                     PackedDate(2023, 10, 11),
                 ),
-                now = PackedDate(2022, 10, 10)
+                now = PackedDate(2022, 10, 10),
             )
         }
     }

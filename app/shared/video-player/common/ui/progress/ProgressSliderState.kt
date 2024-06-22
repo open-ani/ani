@@ -111,14 +111,15 @@ fun ProgressIndicator(
     Box(modifier, contentAlignment = Alignment.Center) {
         Text(reserve, Modifier.alpha(0f)) // fix width
         Text(
-            text = text, style = LocalTextStyle.current.copy(
+            text = text,
+            style = LocalTextStyle.current.copy(
                 color = Color.DarkGray,
                 drawStyle = Stroke(
                     miter = 3f,
                     width = 2f,
                     join = StrokeJoin.Round,
                 ),
-            )
+            ),
         ) // border
         Text(text = text)
     }
@@ -157,7 +158,7 @@ fun ProgressSlider(
                         colors = SliderDefaults.colors(
                             inactiveTrackColor = MaterialTheme.colorScheme.background.weaken(),
                             activeTrackColor = MaterialTheme.colorScheme.onBackground.looming(),
-                        )
+                        ),
                     )
                 },
                 onValueChangeFinished = {

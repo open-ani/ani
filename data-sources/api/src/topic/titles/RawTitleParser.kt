@@ -79,7 +79,7 @@ data class ParsedTopicTitle(
                 resolution = resolution,
                 frameRate = frameRate,
                 mediaOrigin = mediaOrigin,
-                subtitleLanguages = subtitleLanguages.toList()
+                subtitleLanguages = subtitleLanguages.toList(),
             )
         }
     }

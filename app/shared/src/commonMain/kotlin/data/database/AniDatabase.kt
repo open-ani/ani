@@ -10,9 +10,9 @@ import me.him188.ani.app.data.database.eneity.SearchTagEntity
 @Database(
     entities = [
         SearchHistoryEntity::class,
-        SearchTagEntity::class
+        SearchTagEntity::class,
     ],
-    version = 1
+    version = 1,
 )
 abstract class AniDatabase : RoomDatabase() {
     abstract fun searchHistory(): SearchHistoryDao

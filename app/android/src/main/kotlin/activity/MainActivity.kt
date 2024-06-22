@@ -77,8 +77,8 @@ class MainActivity : AniComponentActivity() {
             logger.info { "onNewIntent Receive code '$code', current processingRequest: ${sessionManager.processingRequest.value}" }
             sessionManager.processingRequest.value?.onCallback(
                 Result.success(
-                    OAuthResult(code, BangumiAuthorizationConstants.CALLBACK_URL)
-                )
+                    OAuthResult(code, BangumiAuthorizationConstants.CALLBACK_URL),
+                ),
             )
         }
     }
@@ -90,13 +90,13 @@ class MainActivity : AniComponentActivity() {
             // 透明状态栏
             statusBarStyle = SystemBarStyle.auto(
                 android.graphics.Color.TRANSPARENT,
-                android.graphics.Color.TRANSPARENT
+                android.graphics.Color.TRANSPARENT,
             ),
             // 透明导航栏
             navigationBarStyle = SystemBarStyle.auto(
                 android.graphics.Color.TRANSPARENT,
                 android.graphics.Color.TRANSPARENT,
-            )
+            ),
         )
 
         // 允许画到 system bars
@@ -145,11 +145,13 @@ class MainActivity : AniComponentActivity() {
 //                        }
 //                    }
 //                }
-                CompositionLocalProvider(LocalToaster provides object : Toaster {
-                    override fun toast(text: String) {
-                        Toast.makeText(this@MainActivity, text, Toast.LENGTH_LONG).show()
-                    }
-                }) {
+                CompositionLocalProvider(
+                    LocalToaster provides object : Toaster {
+                        override fun toast(text: String) {
+                            Toast.makeText(this@MainActivity, text, Toast.LENGTH_LONG).show()
+                        }
+                    },
+                ) {
                     AniAppContent(aniNavigator)
                 }
             }

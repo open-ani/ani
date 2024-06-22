@@ -51,7 +51,7 @@ fun MediaSelectorHelp(
                 Modifier.weight(1f),
                 icon = {
                     Icon(MediaSourceIcons.KindWeb, null)
-                }
+                },
             ) {
                 Text("从在线视频网站获取资源，加载速度快，但清晰度通常不高")
             }
@@ -60,7 +60,7 @@ fun MediaSelectorHelp(
 }
 
 @Composable
-fun ExplainerCard(  
+fun ExplainerCard(
     title: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     icon: (@Composable () -> Unit)? = null,

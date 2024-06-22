@@ -55,7 +55,7 @@ class Piece(
                 it + Piece(
                     pieceIndex = it.size,
                     size = totalSize % pieceSize,
-                    offset = totalSize - (totalSize % pieceSize) + initial
+                    offset = totalSize - (totalSize % pieceSize) + initial,
                 )
             }
     }

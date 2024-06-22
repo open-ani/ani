@@ -68,8 +68,10 @@ internal fun SettingsScope.MediaSelectionGroup(vm: MediaSettingsViewModel) {
             values = { vm.sortedLanguages },
             onSort = { list ->
                 vm.updateDefaultMediaPreference(
-                    vm.defaultMediaPreference.copy(fallbackSubtitleLanguageIds = list.filter { it.selected }
-                        .map { it.item })
+                    vm.defaultMediaPreference.copy(
+                        fallbackSubtitleLanguageIds = list.filter { it.selected }
+                            .map { it.item },
+                    ),
                 )
             },
             exposed = { list ->
@@ -84,7 +86,7 @@ internal fun SettingsScope.MediaSelectionGroup(vm: MediaSettingsViewModel) {
                                 .joinToString { renderSubtitleLanguage(it.item) }
                     },
                     softWrap = false,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
                 )
             },
             item = { Text(renderSubtitleLanguage(it)) },
@@ -92,7 +94,7 @@ internal fun SettingsScope.MediaSelectionGroup(vm: MediaSettingsViewModel) {
             modifier = Modifier.placeholder(vm.defaultMediaPreferenceLoading),
             dialogDescription = {
                 Text(
-                    TIPS_LONG_CLICK_SORT
+                    TIPS_LONG_CLICK_SORT,
                 )
             },
             icon = { Icon(Icons.Rounded.Language, null) },
@@ -105,8 +107,10 @@ internal fun SettingsScope.MediaSelectionGroup(vm: MediaSettingsViewModel) {
             values = { vm.sortedResolutions },
             onSort = { list ->
                 vm.updateDefaultMediaPreference(
-                    vm.defaultMediaPreference.copy(fallbackResolutions = list.filter { it.selected }
-                        .map { it.item })
+                    vm.defaultMediaPreference.copy(
+                        fallbackResolutions = list.filter { it.selected }
+                            .map { it.item },
+                    ),
                 )
             },
             exposed = { list ->
@@ -121,7 +125,7 @@ internal fun SettingsScope.MediaSelectionGroup(vm: MediaSettingsViewModel) {
                                 .joinToString { renderResolution(it.item) }
                     },
                     softWrap = false,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
                 )
             },
             item = { Text(renderResolution(it)) },
@@ -150,7 +154,8 @@ internal fun SettingsScope.MediaSelectionGroup(vm: MediaSettingsViewModel) {
             onValueChangeCompleted = { new ->
                 vm.updateDefaultMediaPreference(
                     vm.defaultMediaPreference.copy(
-                        alliancePatterns = new.split(",", "，").map { it.trim() })
+                        alliancePatterns = new.split(",", "，").map { it.trim() },
+                    ),
                 )
             },
             sanitizeValue = { it.replace("，", ",") },
@@ -158,14 +163,14 @@ internal fun SettingsScope.MediaSelectionGroup(vm: MediaSettingsViewModel) {
 
         Group(
             title = { Text("高级设置") },
-            useThinHeader = true
+            useThinHeader = true,
         ) {
             val mediaSelectorSettings by vm.mediaSelectorSettings
             SwitchItem(
                 checked = mediaSelectorSettings.showDisabled,
                 onCheckedChange = {
                     vm.mediaSelectorSettings.update(
-                        mediaSelectorSettings.copy(showDisabled = it)
+                        mediaSelectorSettings.copy(showDisabled = it),
                     )
                 },
                 title = { Text("显示禁用的数据源") },
@@ -179,7 +184,7 @@ internal fun SettingsScope.MediaSelectionGroup(vm: MediaSettingsViewModel) {
                 checked = !vm.defaultMediaPreference.showWithoutSubtitle,
                 onCheckedChange = {
                     vm.updateDefaultMediaPreference(
-                        vm.defaultMediaPreference.copy(showWithoutSubtitle = !it)
+                        vm.defaultMediaPreference.copy(showWithoutSubtitle = !it),
                     )
                 },
                 title = { Text("隐藏无字幕资源") },
@@ -192,7 +197,7 @@ internal fun SettingsScope.MediaSelectionGroup(vm: MediaSettingsViewModel) {
                 checked = mediaSelectorSettings.hideSingleEpisodeForCompleted,
                 onCheckedChange = {
                     vm.mediaSelectorSettings.update(
-                        mediaSelectorSettings.copy(hideSingleEpisodeForCompleted = it)
+                        mediaSelectorSettings.copy(hideSingleEpisodeForCompleted = it),
                     )
                 },
                 title = { Text("完结后隐藏单集 BT 资源") },
@@ -206,7 +211,7 @@ internal fun SettingsScope.MediaSelectionGroup(vm: MediaSettingsViewModel) {
                 checked = mediaSelectorSettings.preferSeasons,
                 onCheckedChange = {
                     vm.mediaSelectorSettings.update(
-                        mediaSelectorSettings.copy(preferSeasons = it)
+                        mediaSelectorSettings.copy(preferSeasons = it),
                     )
                 },
                 title = { Text("BT 资源优先选择季度全集") },

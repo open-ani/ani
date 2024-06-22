@@ -16,10 +16,9 @@ import me.him188.ani.danmaku.server.service.BangumiLoginHelper
 import me.him188.ani.danmaku.server.service.BangumiLoginHelperImpl
 import me.him188.ani.danmaku.server.service.ClientReleaseInfoManager
 import me.him188.ani.danmaku.server.service.ClientReleaseInfoManagerImpl
+import me.him188.ani.danmaku.server.service.ClientVersionVerifier
 import me.him188.ani.danmaku.server.service.DanmakuService
 import me.him188.ani.danmaku.server.service.DanmakuServiceImpl
-import me.him188.ani.danmaku.server.service.ClientVersionVerifier
-import me.him188.ani.danmaku.server.service.GithubVersionVerifierImpl
 import me.him188.ani.danmaku.server.service.JwtTokenManager
 import me.him188.ani.danmaku.server.service.JwtTokenManagerImpl
 import me.him188.ani.danmaku.server.service.TestBangumiLoginHelperImpl
@@ -47,7 +46,7 @@ fun getServerKoinModule(
     single<JwtTokenManager> { JwtTokenManagerImpl() }
     single<ClientVersionVerifier> {
         AniClientVersionVerifierImpl(
-            versionWhitelistRegex = listOf("[3-9].[0-9]{1,2}.[0-9]{1,2}-dev")
+            versionWhitelistRegex = listOf("[3-9].[0-9]{1,2}.[0-9]{1,2}-dev"),
         )
     }
 
@@ -55,7 +54,7 @@ fun getServerKoinModule(
         single<DanmakuRepository> { InMemoryDanmakuRepositoryImpl() }
         single<UserRepository> { InMemoryUserRepositoryImpl() }
         single<BangumiLoginHelper> { TestBangumiLoginHelperImpl() }
-        
+
         single<ClientReleaseInfoManager> { TestClientReleaseInfoManager() }
     } else {
         single<MongoCollectionProvider> { MongoCollectionProviderImpl() }
@@ -63,8 +62,10 @@ fun getServerKoinModule(
         single<UserRepository> { MongoUserRepositoryImpl() }
         single<BangumiLoginHelper> { BangumiLoginHelperImpl() }
 
-        single<ClientReleaseInfoManager> { ClientReleaseInfoManagerImpl(
-            bufferExpirationTime = 10.minutes.inWholeMilliseconds
-        ) }
+        single<ClientReleaseInfoManager> {
+            ClientReleaseInfoManagerImpl(
+                bufferExpirationTime = 10.minutes.inWholeMilliseconds,
+            )
+        }
     }
 }

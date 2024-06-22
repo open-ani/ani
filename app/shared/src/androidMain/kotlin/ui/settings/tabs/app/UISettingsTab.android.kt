@@ -34,12 +34,14 @@ import moe.tlaster.precompose.lifecycle.Lifecycle
 @Composable
 private fun PreviewAppSettingsTab() {
     ProvideCompositionLocalsForPreview {
-        AppSettingsTab(vm = remember {
-            AppSettingsViewModel().apply {
-                updateSettings._valueOverride = UpdateSettings(autoCheckUpdate = true)
-                uiSettings._valueOverride = UISettings.Default
-            }
-        })
+        AppSettingsTab(
+            vm = remember {
+                AppSettingsViewModel().apply {
+                    updateSettings._valueOverride = UpdateSettings(autoCheckUpdate = true)
+                    uiSettings._valueOverride = UISettings.Default
+                }
+            },
+        )
     }
 }
 
@@ -61,7 +63,7 @@ internal actual fun SettingsScope.AppSettingsTabPlatform(vm: AppSettingsViewMode
     if (powerManager != null) {
         Group(
             title = { Text("后台运行") },
-            description = { Text(text = "缓存功能需要应用保持在后台运行才能下载视频") }
+            description = { Text(text = "缓存功能需要应用保持在后台运行才能下载视频") },
         ) {
             val isPreviewing = LocalIsPreviewing.current
             var isIgnoring by remember {
@@ -84,16 +86,16 @@ internal actual fun SettingsScope.AppSettingsTabPlatform(vm: AppSettingsViewMode
                             context.startActivity(
                                 Intent(
                                     Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
-                                    Uri.parse("package:${context.packageName}")
-                                )
+                                    Uri.parse("package:${context.packageName}"),
+                                ),
                             )
                         }
                     } else {
                         kotlin.runCatching {
                             context.startActivity(
                                 Intent(
-                                    Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS
-                                )
+                                    Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS,
+                                ),
                             )
                         }
                     }
@@ -116,8 +118,8 @@ internal actual fun SettingsScope.AppSettingsTabPlatform(vm: AppSettingsViewMode
                             Settings.ACTION_APP_NOTIFICATION_SETTINGS, // since 8.0
                         ).putExtra(
                             Settings.EXTRA_APP_PACKAGE,
-                            context.packageName
-                        )
+                            context.packageName,
+                        ),
                     )
                 }.onFailure {
                     it.printStackTrace()

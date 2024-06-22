@@ -157,13 +157,15 @@ internal class BangumiClientImpl(
     override suspend fun exchangeTokens(code: String, callbackUrl: String): BangumiClient.GetAccessTokenResponse {
         val resp = httpClient.post("$BANGUMI_HOST/oauth/access_token") {
             contentType(ContentType.Application.Json)
-            setBody(buildJsonObject {
-                put("grant_type", "authorization_code")
-                put("client_id", clientId)
-                put("client_secret", clientSecret)
-                put("code", code)
-                put("redirect_uri", callbackUrl)
-            })
+            setBody(
+                buildJsonObject {
+                    put("grant_type", "authorization_code")
+                    put("client_id", clientId)
+                    put("client_secret", clientSecret)
+                    put("code", code)
+                    put("redirect_uri", callbackUrl)
+                },
+            )
         }
 
         if (!resp.status.isSuccess()) {
@@ -179,13 +181,15 @@ internal class BangumiClientImpl(
     ): BangumiClient.GetAccessTokenResponse {
         val resp = httpClient.post("$BANGUMI_HOST/oauth/access_token") {
             contentType(ContentType.Application.Json)
-            setBody(buildJsonObject {
-                put("grant_type", "refresh_token")
-                put("client_id", clientId)
-                put("client_secret", clientSecret)
-                put("refresh_token", refreshToken)
-                put("redirect_uri", callbackUrl)
-            })
+            setBody(
+                buildJsonObject {
+                    put("grant_type", "refresh_token")
+                    put("client_id", clientId)
+                    put("client_secret", clientSecret)
+                    put("refresh_token", refreshToken)
+                    put("redirect_uri", callbackUrl)
+                },
+            )
         }
 
         if (!resp.status.isSuccess()) {
@@ -214,15 +218,17 @@ internal class BangumiClientImpl(
         val resp = httpClient.post("$BANGUMI_API_HOST/v0/users/-/collections/$subjectId") {
             bearerAuth(ApiClient.accessToken ?: error("Not authorized"))
             contentType(ContentType.Application.Json)
-            setBody(buildJsonObject {
-                subjectCollectionModifyPayload.type?.let { put("type", it.value) }
-                subjectCollectionModifyPayload.rate?.let { put("rate", it) }
-                subjectCollectionModifyPayload.epStatus?.let { put("ep_status", it) }
-                subjectCollectionModifyPayload.volStatus?.let { put("vol_status", it) }
-                subjectCollectionModifyPayload.comment?.let { put("comment", it) }
-                subjectCollectionModifyPayload.`private`?.let { put("private", it) }
-                subjectCollectionModifyPayload.tags?.let { put("tags", it.toJsonArray()) }
-            })
+            setBody(
+                buildJsonObject {
+                    subjectCollectionModifyPayload.type?.let { put("type", it.value) }
+                    subjectCollectionModifyPayload.rate?.let { put("rate", it) }
+                    subjectCollectionModifyPayload.epStatus?.let { put("ep_status", it) }
+                    subjectCollectionModifyPayload.volStatus?.let { put("vol_status", it) }
+                    subjectCollectionModifyPayload.comment?.let { put("comment", it) }
+                    subjectCollectionModifyPayload.`private`?.let { put("private", it) }
+                    subjectCollectionModifyPayload.tags?.let { put("tags", it.toJsonArray()) }
+                },
+            )
         }
 
         if (!resp.status.isSuccess()) {
@@ -239,10 +245,12 @@ internal class BangumiClientImpl(
         val resp = httpClient.patch("$BANGUMI_API_HOST/v0/users/-/collections/$subjectId/episodes") {
             bearerAuth(ApiClient.accessToken ?: error("Not authorized"))
             contentType(ContentType.Application.Json)
-            setBody(buildJsonObject {
-                put("episode_id", payload.episodeId.toJsonArray())
-                put("type", payload.type.value)
-            })
+            setBody(
+                buildJsonObject {
+                    put("episode_id", payload.episodeId.toJsonArray())
+                    put("type", payload.type.value)
+                },
+            )
         }
 
         if (!resp.status.isSuccess()) {
@@ -262,33 +270,36 @@ internal class BangumiClientImpl(
         }
     }
 
-    override val api = BangumiApi(BANGUMI_API_HOST, OkHttpClient.Builder().apply {
-        this.followRedirects(true)
-        addInterceptor { chain ->
-            chain.proceed(
-                chain.request().newBuilder().addHeader(
-                    "User-Agent",
-                    "open-ani/ani/3.0.0-beta01 (Android) (https://github.com/open-ani/ani)"
-                ).build()
-            )
-        }
-        // add logger
-        addInterceptor { chain ->
-            val request: Request = chain.request()
-            val t1 = System.currentTimeMillis()
-            val response: Response = chain.proceed(request)
+    override val api = BangumiApi(
+        BANGUMI_API_HOST,
+        OkHttpClient.Builder().apply {
+            this.followRedirects(true)
+            addInterceptor { chain ->
+                chain.proceed(
+                    chain.request().newBuilder().addHeader(
+                        "User-Agent",
+                        "open-ani/ani/3.0.0-beta01 (Android) (https://github.com/open-ani/ani)",
+                    ).build(),
+                )
+            }
+            // add logger
+            addInterceptor { chain ->
+                val request: Request = chain.request()
+                val t1 = System.currentTimeMillis()
+                val response: Response = chain.proceed(request)
 
-            logger.logHttp(
-                method = HttpMethod.parse(request.method),
-                url = request.url.toString(),
-                isAuthorized = request.header("Authorization") != null,
-                responseStatus = HttpStatusCode.fromValue(response.code),
-                duration = (System.currentTimeMillis() - t1).milliseconds
-            )
+                logger.logHttp(
+                    method = HttpMethod.parse(request.method),
+                    url = request.url.toString(),
+                    isAuthorized = request.header("Authorization") != null,
+                    responseStatus = HttpStatusCode.fromValue(response.code),
+                    duration = (System.currentTimeMillis() - t1).milliseconds,
+                )
 
-            response
-        }
-    }.build())
+                response
+            }
+        }.build(),
+    )
 
     private val httpClient = HttpClient {
         httpClientConfiguration()
@@ -298,9 +309,11 @@ internal class BangumiClientImpl(
         }
         install(HttpTimeout)
         install(ContentNegotiation) {
-            json(Json {
-                ignoreUnknownKeys = true
-            })
+            json(
+                Json {
+                    ignoreUnknownKeys = true
+                },
+            )
         }
     }.apply {
         registerLogging(logger)
@@ -336,14 +349,17 @@ internal class BangumiClientImpl(
                         put("sort", sort.id)
                     }
 
-                    put("filter", buildJsonObject {
-                        types?.let { types -> put("type", types.map { it.id }.toJsonArray()) }
-                        ranks?.let { put("rank", it.toJsonArray()) }
-                        tags?.let { put("tag", it.toJsonArray()) }
-                        airDates?.let { put("air_date", it.toJsonArray()) }
-                        ratings?.let { put("rating", it.toJsonArray()) }
-                        nsfw?.let { put("nsfw", it) }
-                    })
+                    put(
+                        "filter",
+                        buildJsonObject {
+                            types?.let { types -> put("type", types.map { it.id }.toJsonArray()) }
+                            ranks?.let { put("rank", it.toJsonArray()) }
+                            tags?.let { put("tag", it.toJsonArray()) }
+                            airDates?.let { put("air_date", it.toJsonArray()) }
+                            ratings?.let { put("rating", it.toJsonArray()) }
+                            nsfw?.let { put("nsfw", it) }
+                        },
+                    )
                 }
                 setBody(req)
             }
@@ -357,7 +373,7 @@ internal class BangumiClientImpl(
                 Paged(
                     total,
                     data == null || (offset ?: 0) + data.size < total,
-                    data.orEmpty()
+                    data.orEmpty(),
                 )
             }
         }
@@ -399,7 +415,7 @@ internal class BangumiClientImpl(
                 Paged(
                     results,
                     results > legacySubjects.size,
-                    legacySubjects
+                    legacySubjects,
                 )
             }
         }

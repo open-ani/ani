@@ -94,7 +94,7 @@ val projectDirectories: ProjectDirectories by lazy {
     ProjectDirectories.from(
         "me",
         "Him188",
-        "Ani"
+        "Ani",
     )
 }
 
@@ -117,48 +117,50 @@ object AniDesktop {
 
         val windowState = WindowState(
             size = DpSize(800.dp * 1.3f, 800.dp),
-            position = WindowPosition.Aligned(Alignment.Center)
+            position = WindowPosition.Aligned(Alignment.Center),
         )
         val context = DesktopContext(
             windowState,
             File(projectDirectories.dataDir),
             File(projectDirectories.dataDir),
             logsDir,
-            ExtraWindowProperties(initialUndecorated = false)
+            ExtraWindowProperties(initialUndecorated = false),
         )
 
         val coroutineScope = createAppRootCoroutineScope()
 
         val koin = startKoin {
             modules(getCommonKoinModule({ context }, coroutineScope))
-            modules(module {
+            modules(
+                module {
 //                single<SubjectNavigator> { AndroidSubjectNavigator() }
 //                single<AuthorizationNavigator> { AndroidAuthorizationNavigator() }
 //                single<BrowserNavigator> { AndroidBrowserNavigator() }
-                single<TorrentManager> {
-                    DefaultTorrentManager(
-                        coroutineScope.coroutineContext,
-                        saveDir = { File(projectDirectories.cacheDir).resolve("torrent") },
-                    )
-                }
-                single<PlayerStateFactory> {
-                    PlayerStateFactory { _, ctx ->
-                        VlcjVideoPlayerState(ctx)
+                    single<TorrentManager> {
+                        DefaultTorrentManager(
+                            coroutineScope.coroutineContext,
+                            saveDir = { File(projectDirectories.cacheDir).resolve("torrent") },
+                        )
                     }
-                }
-                single<BrowserNavigator> { DesktopBrowserNavigator() }
-                factory<VideoSourceResolver> {
-                    VideoSourceResolver.from(
-                        get<TorrentManager>().engines
-                            .map { TorrentVideoSourceResolver(it) }
-                            .plus(LocalFileVideoSourceResolver())
-                            .plus(HttpStreamingVideoSourceResolver())
-                            .plus(DesktopWebVideoSourceResolver())
-                    )
-                }
-                single<UpdateInstaller> { DesktopUpdateInstaller.currentOS() }
-                single<NotifManager> { NoopNotifManager }
-            })
+                    single<PlayerStateFactory> {
+                        PlayerStateFactory { _, ctx ->
+                            VlcjVideoPlayerState(ctx)
+                        }
+                    }
+                    single<BrowserNavigator> { DesktopBrowserNavigator() }
+                    factory<VideoSourceResolver> {
+                        VideoSourceResolver.from(
+                            get<TorrentManager>().engines
+                                .map { TorrentVideoSourceResolver(it) }
+                                .plus(LocalFileVideoSourceResolver())
+                                .plus(HttpStreamingVideoSourceResolver())
+                                .plus(DesktopWebVideoSourceResolver()),
+                        )
+                    }
+                    single<UpdateInstaller> { DesktopUpdateInstaller.currentOS() }
+                    single<NotifManager> { NoopNotifManager }
+                },
+            )
         }.startCommonKoinModule(coroutineScope)
 
         kotlin.runCatching {
@@ -192,7 +194,7 @@ object AniDesktop {
                 }
                 CompositionLocalProvider(
                     LocalContext provides context,
-                    LocalWindowState provides windowState
+                    LocalWindowState provides windowState,
                 ) {
                     // This actually runs only once since app is never changed.
                     val windowImmersed = true
@@ -211,7 +213,7 @@ object AniDesktop {
                     MainWindowContent(
                         hostIsMacOs = PlatformImplementations.hostIsMacOs,
                         windowImmersed = windowImmersed,
-                        navigator
+                        navigator,
                     )
                 }
             }
@@ -234,11 +236,11 @@ private fun MainWindowContent(
             Modifier.background(color = AppTheme.colorScheme.background)
                 .statusBarsPadding()
                 .padding(top = if (hostIsMacOs && windowImmersed) 28.dp else 0.dp) // safe area for macOS if windowImmersed
-                .fillMaxSize()
+                .fillMaxSize(),
         ) {
             Box(Modifier.fillMaxSize()) {
                 val paddingByWindowSize by animateDpAsState(
-                    0.dp
+                    0.dp,
 //                    if (maxWidth > 400.dp) {
 //                        16.dp
 //                    } else {
@@ -258,7 +260,7 @@ private fun MainWindowContent(
                         override fun toast(text: String) {
                             vm.show(text)
                         }
-                    }
+                    },
                 ) {
                     Box(Modifier.padding(all = paddingByWindowSize)) {
                         AniAppContent(aniNavigator)

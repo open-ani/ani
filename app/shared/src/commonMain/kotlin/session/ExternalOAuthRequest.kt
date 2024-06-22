@@ -104,9 +104,9 @@ internal class BangumiOAuthRequest(
             setSession(
                 Session(
                     accessToken.accessToken,
-                    System.currentTimeMillis() + accessToken.expiresIn
+                    System.currentTimeMillis() + accessToken.expiresIn,
                 ),
-                accessToken.refreshToken
+                accessToken.refreshToken,
             )
         } catch (e: CancellationException) {
             state.value = ExternalOAuthRequest.State.Cancelled(e)

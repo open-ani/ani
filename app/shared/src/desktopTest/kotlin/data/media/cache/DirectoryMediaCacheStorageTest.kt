@@ -59,13 +59,13 @@ class DirectoryMediaCacheStorageTest {
                 episodeEp = EpisodeSort("02"),
                 episodeName = "测试剧集",
             ),
-            resume = true
+            resume = true,
         ) as TestMediaCache
         assertEquals(1, cache.resumeCalled.get())
 
         assertSame(
             cache,
-            storage.listFlow.first().single()
+            storage.listFlow.first().single(),
         )
         assertEquals(1, cache.resumeCalled.get())
 
@@ -85,13 +85,13 @@ class DirectoryMediaCacheStorageTest {
                 episodeEp = EpisodeSort("02"),
                 episodeName = "测试剧集",
             ),
-            resume = false
+            resume = false,
         ) as TestMediaCache
         assertEquals(0, cache.resumeCalled.get())
 
         assertSame(
             cache,
-            storage.listFlow.first().single()
+            storage.listFlow.first().single(),
         )
         assertEquals(0, cache.resumeCalled.get())
 
@@ -111,7 +111,7 @@ class DirectoryMediaCacheStorageTest {
                 episodeEp = EpisodeSort("02"),
                 episodeName = "测试剧集",
             ),
-            resume = false
+            resume = false,
         ) as TestMediaCache
 
         assertEquals(0, cache.resumeCalled.get())
@@ -138,7 +138,7 @@ class DirectoryMediaCacheStorageTest {
                 episodeEp = EpisodeSort("02"),
                 episodeName = "测试剧集",
             ),
-            resume = false
+            resume = false,
         ) as TestMediaCache
 
         assertEquals("$CACHE_MEDIA_SOURCE_ID:${media.mediaId}", cache.media.mediaId)

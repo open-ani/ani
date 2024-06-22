@@ -119,7 +119,7 @@ abstract class MediaCacheManager(
                             hasAnyCaching.progress
                                 .sampleWithInitial(1000) // Sample might not emit the last value
                                 .onCompletion { if (it == null) emit(1f) }, // Always emit 1f on finish
-                            hasAnyCaching.totalSize
+                            hasAnyCaching.totalSize,
                         ) { progress, totalSize ->
                             if (progress == 1f) {
                                 EpisodeCacheStatus.Cached(totalSize, hasAnyCaching)
@@ -127,20 +127,22 @@ abstract class MediaCacheManager(
                                 EpisodeCacheStatus.Caching(
                                     progress = progress,
                                     totalSize = totalSize,
-                                    cache = hasAnyCaching
+                                    cache = hasAnyCaching,
                                 )
                             }
-                        }
+                        },
                     )
                 }
 
                 hasAnyCached != null -> {
-                    emitAll(hasAnyCached.totalSize.map {
-                        EpisodeCacheStatus.Cached(
-                            totalSize = it,
-                            cache = hasAnyCached
-                        )
-                    })
+                    emitAll(
+                        hasAnyCached.totalSize.map {
+                            EpisodeCacheStatus.Cached(
+                                totalSize = it,
+                                cache = hasAnyCached,
+                            )
+                        },
+                    )
                 }
 
                 else -> {

@@ -198,7 +198,7 @@ abstract class AbstractTorrentFileEntry(
         protected fun checkClosed() {
             if (closed) throw IllegalStateException(
                 "Attempting to pause but TorrentFile has already been closed: $pathInTorrent",
-                closeException
+                closeException,
             )
         }
 

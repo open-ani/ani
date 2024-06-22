@@ -49,7 +49,7 @@ fun BangumiAuthIntroLayout(
                 Text("继续")
             }
         },
-        modifier
+        modifier,
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("欢迎使用 Ani", style = MaterialTheme.typography.titleMedium)

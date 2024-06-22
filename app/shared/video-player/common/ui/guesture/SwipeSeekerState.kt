@@ -29,7 +29,7 @@ fun rememberSwipeSeekerState(
     return remember(swipeSeekerConfig, screenWidthPx) {
         SwipeSeekerState(
             screenWidthPx,
-            swipeSeekerConfig
+            swipeSeekerConfig,
         ) { onSeekState(it) }
     }
 }
@@ -121,10 +121,12 @@ class SwipeSeekerState(
             interactionSource: MutableInteractionSource? = null,
             reverseDirection: Boolean = false,
         ): Modifier {
-            return composed(inspectorInfo = {
-                name = "videoSeeker"
-                properties["seekerState"] = seekerState
-            }) {
+            return composed(
+                inspectorInfo = {
+                    name = "videoSeeker"
+                    properties["seekerState"] = seekerState
+                },
+            ) {
                 draggable(
                     rememberDraggableState { seekerState.onSwipeOffset(it) },
                     orientation,
@@ -132,7 +134,7 @@ class SwipeSeekerState(
                     onDragStopped = { seekerState.onSwipeStopped() },
                     enabled = enabled,
                     interactionSource = interactionSource,
-                    reverseDirection = reverseDirection
+                    reverseDirection = reverseDirection,
                 )
             }
         }

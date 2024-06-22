@@ -81,11 +81,15 @@ class MediaFetcherTest {
 
     @Test
     fun `collect hasCompleted does not start fetch`() = runTest {
-        val session = createFetcher(createTestMediaSourceInstance(TestHttpMediaSource(
-            fetch = {
-                fail("Should not fetch")
-            }
-        ))).newSession(request1)
+        val session = createFetcher(
+            createTestMediaSourceInstance(
+                TestHttpMediaSource(
+                    fetch = {
+                        fail("Should not fetch")
+                    },
+                ),
+            ),
+        ).newSession(request1)
         assertEquals(1, session.mediaSourceResults.size)
         val res = session.mediaSourceResults.first()
         assertIs<MediaSourceFetchState.Idle>(res.state.value)
@@ -142,13 +146,17 @@ class MediaFetcherTest {
 
     @Test
     fun `awaitCompletedResults from one source`() = runTest {
-        val session = createFetcher(createTestMediaSourceInstance(TestHttpMediaSource(
-            fetch = {
-                SinglePagePagedSource {
-                    TestMediaList.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
-                }
-            }
-        ))).newSession(request1)
+        val session = createFetcher(
+            createTestMediaSourceInstance(
+                TestHttpMediaSource(
+                    fetch = {
+                        SinglePagePagedSource {
+                            TestMediaList.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
+                        }
+                    },
+                ),
+            ),
+        ).newSession(request1)
         assertEquals(1, session.mediaSourceResults.size)
         val res = session.mediaSourceResults.first()
         assertIs<MediaSourceFetchState.Idle>(res.state.value)
@@ -160,20 +168,24 @@ class MediaFetcherTest {
     @Test
     fun `awaitCompletedResults from two sources distinct`() = runTest {
         val session = createFetcher(
-            createTestMediaSourceInstance(TestHttpMediaSource(
-                fetch = {
-                    SinglePagePagedSource {
-                        TestMediaList.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
-                    }
-                }
-            )),
-            createTestMediaSourceInstance(TestHttpMediaSource(
-                fetch = {
-                    SinglePagePagedSource {
-                        TestMediaList.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
-                    }
-                }
-            )),
+            createTestMediaSourceInstance(
+                TestHttpMediaSource(
+                    fetch = {
+                        SinglePagePagedSource {
+                            TestMediaList.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
+                        }
+                    },
+                ),
+            ),
+            createTestMediaSourceInstance(
+                TestHttpMediaSource(
+                    fetch = {
+                        SinglePagePagedSource {
+                            TestMediaList.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
+                        }
+                    },
+                ),
+            ),
         ).newSession(request1)
         assertEquals(2, session.mediaSourceResults.size)
         val res = session.mediaSourceResults.first()
@@ -185,20 +197,24 @@ class MediaFetcherTest {
     @Test
     fun `awaitCompletedResults from two sources`() = runTest {
         val session = createFetcher(
-            createTestMediaSourceInstance(TestHttpMediaSource(
-                fetch = {
-                    SinglePagePagedSource {
-                        TestMediaList.take(1).map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
-                    }
-                }
-            )),
-            createTestMediaSourceInstance(TestHttpMediaSource(
-                fetch = {
-                    SinglePagePagedSource {
-                        TestMediaList.drop(1).take(1).map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
-                    }
-                }
-            )),
+            createTestMediaSourceInstance(
+                TestHttpMediaSource(
+                    fetch = {
+                        SinglePagePagedSource {
+                            TestMediaList.take(1).map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
+                        }
+                    },
+                ),
+            ),
+            createTestMediaSourceInstance(
+                TestHttpMediaSource(
+                    fetch = {
+                        SinglePagePagedSource {
+                            TestMediaList.drop(1).take(1).map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
+                        }
+                    },
+                ),
+            ),
         ).newSession(request1)
         assertEquals(2, session.mediaSourceResults.size)
         val res = session.mediaSourceResults.first()
@@ -209,11 +225,17 @@ class MediaFetcherTest {
 
     @Test
     fun `initial empty cumulative list`() = runTest {
-        val session = createFetcher(createTestMediaSourceInstance(TestHttpMediaSource(fetch = {
-            SinglePagePagedSource {
-                TestMediaList.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
-            }
-        }))).newSession(request1)
+        val session = createFetcher(
+            createTestMediaSourceInstance(
+                TestHttpMediaSource(
+                    fetch = {
+                        SinglePagePagedSource {
+                            TestMediaList.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
+                        }
+                    },
+                ),
+            ),
+        ).newSession(request1)
         assertEquals(1, session.mediaSourceResults.size)
         val res = session.cumulativeResults.first()
         assertEquals(0, res.size)
@@ -221,11 +243,17 @@ class MediaFetcherTest {
 
     @Test
     fun `source result is shared and has replay`() = runTest {
-        val session = createFetcher(createTestMediaSourceInstance(TestHttpMediaSource(fetch = {
-            SinglePagePagedSource {
-                TestMediaList.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
-            }
-        }))).newSession(request1)
+        val session = createFetcher(
+            createTestMediaSourceInstance(
+                TestHttpMediaSource(
+                    fetch = {
+                        SinglePagePagedSource {
+                            TestMediaList.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
+                        }
+                    },
+                ),
+            ),
+        ).newSession(request1)
         assertEquals(1, session.mediaSourceResults.size)
         val res = session.mediaSourceResults.first()
         assertEquals(5, session.awaitCompletedResults().size)
@@ -241,17 +269,21 @@ class MediaFetcherTest {
     fun `collecting one source does not start the other`() = runTest {
         val session = createFetcher(
             createTestMediaSourceInstance(
-                TestHttpMediaSource(fetch = {
-                    SinglePagePagedSource {
-                        TestMediaList.take(2).map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
-                    }
-                })
+                TestHttpMediaSource(
+                    fetch = {
+                        SinglePagePagedSource {
+                            TestMediaList.take(2).map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
+                        }
+                    },
+                ),
             ),
             createTestMediaSourceInstance(
-                TestHttpMediaSource(fetch = {
-                    fail("Should not fetch")
-                })
-            )
+                TestHttpMediaSource(
+                    fetch = {
+                        fail("Should not fetch")
+                    },
+                ),
+            ),
         ).newSession(request1)
         assertEquals(2, session.mediaSourceResults.size)
         val res = session.mediaSourceResults.first()
@@ -269,13 +301,15 @@ class MediaFetcherTest {
     fun `disable source`() = runTest {
         val session = createFetcher(
             createTestMediaSourceInstance(
-                TestHttpMediaSource(fetch = {
-                    SinglePagePagedSource {
-                        TestMediaList.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
-                    }
-                }),
-                isEnabled = false
-            )
+                TestHttpMediaSource(
+                    fetch = {
+                        SinglePagePagedSource {
+                            TestMediaList.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
+                        }
+                    },
+                ),
+                isEnabled = false,
+            ),
         ).newSession(request1)
         assertEquals(1, session.mediaSourceResults.size)
         val res = session.mediaSourceResults.first()
@@ -288,20 +322,24 @@ class MediaFetcherTest {
     fun `collect from enabled source but not disabled`() = runTest {
         val session = createFetcher(
             createTestMediaSourceInstance(
-                TestHttpMediaSource(fetch = {
-                    SinglePagePagedSource {
-                        TestMediaList.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
-                    }
-                }),
-                isEnabled = false
+                TestHttpMediaSource(
+                    fetch = {
+                        SinglePagePagedSource {
+                            TestMediaList.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
+                        }
+                    },
+                ),
+                isEnabled = false,
             ),
             createTestMediaSourceInstance(
-                TestHttpMediaSource(fetch = {
-                    SinglePagePagedSource {
-                        TestMediaList.take(3).map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
-                    }
-                }),
-            )
+                TestHttpMediaSource(
+                    fetch = {
+                        SinglePagePagedSource {
+                            TestMediaList.take(3).map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
+                        }
+                    },
+                ),
+            ),
         ).newSession(request1)
         assertEquals(2, session.mediaSourceResults.size)
         assertIs<MediaSourceFetchState.Disabled>(session.mediaSourceResults.first().state.value)
@@ -313,21 +351,25 @@ class MediaFetcherTest {
     fun `hasCompleted can be true if all sources are disabled`() = runTest {
         val session = createFetcher(
             createTestMediaSourceInstance(
-                TestHttpMediaSource(fetch = {
-                    SinglePagePagedSource {
-                        TestMediaList.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
-                    }
-                }),
-                isEnabled = false
+                TestHttpMediaSource(
+                    fetch = {
+                        SinglePagePagedSource {
+                            TestMediaList.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
+                        }
+                    },
+                ),
+                isEnabled = false,
             ),
             createTestMediaSourceInstance(
-                TestHttpMediaSource(fetch = {
-                    SinglePagePagedSource {
-                        TestMediaList.take(3).map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
-                    }
-                }),
-                isEnabled = false
-            )
+                TestHttpMediaSource(
+                    fetch = {
+                        SinglePagePagedSource {
+                            TestMediaList.take(3).map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
+                        }
+                    },
+                ),
+                isEnabled = false,
+            ),
         ).newSession(request1)
         assertEquals(2, session.mediaSourceResults.size)
         assertIs<MediaSourceFetchState.Disabled>(session.mediaSourceResults.first().state.value)
@@ -344,13 +386,15 @@ class MediaFetcherTest {
     fun `resultsIfEnabled is empty if source is disabled`() = runTest {
         val session = createFetcher(
             createTestMediaSourceInstance(
-                TestHttpMediaSource(fetch = {
-                    SinglePagePagedSource {
-                        TestMediaList.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
-                    }
-                }),
-                isEnabled = false
-            )
+                TestHttpMediaSource(
+                    fetch = {
+                        SinglePagePagedSource {
+                            TestMediaList.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
+                        }
+                    },
+                ),
+                isEnabled = false,
+            ),
         ).newSession(request1)
         assertEquals(1, session.mediaSourceResults.size)
         val res = session.mediaSourceResults.first()
@@ -363,12 +407,14 @@ class MediaFetcherTest {
     fun `resultsIfEnabled is the same as results if source is enabled`() = runTest {
         val session = createFetcher(
             createTestMediaSourceInstance(
-                TestHttpMediaSource(fetch = {
-                    SinglePagePagedSource {
-                        TestMediaList.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
-                    }
-                })
-            )
+                TestHttpMediaSource(
+                    fetch = {
+                        SinglePagePagedSource {
+                            TestMediaList.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
+                        }
+                    },
+                ),
+            ),
         ).newSession(request1)
         assertEquals(1, session.mediaSourceResults.size)
         val res = session.mediaSourceResults.first()
@@ -387,13 +433,15 @@ class MediaFetcherTest {
         val fetchCalled = AtomicInteger(0)
         val session = createFetcher(
             createTestMediaSourceInstance(
-                TestHttpMediaSource(fetch = {
-                    fetchCalled.incrementAndGet()
-                    SinglePagePagedSource {
-                        TestMediaList.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
-                    }
-                })
-            )
+                TestHttpMediaSource(
+                    fetch = {
+                        fetchCalled.incrementAndGet()
+                        SinglePagePagedSource {
+                            TestMediaList.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
+                        }
+                    },
+                ),
+            ),
         ).newSession(request1)
         val res = session.mediaSourceResults.first()
         session.awaitCompletedResults()
@@ -410,13 +458,15 @@ class MediaFetcherTest {
         val fetchCalled = AtomicInteger(0)
         val session = createFetcher(
             createTestMediaSourceInstance(
-                TestHttpMediaSource(fetch = {
-                    fetchCalled.incrementAndGet()
-                    SinglePagePagedSource {
-                        TestMediaList.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
-                    }
-                })
-            )
+                TestHttpMediaSource(
+                    fetch = {
+                        fetchCalled.incrementAndGet()
+                        SinglePagePagedSource {
+                            TestMediaList.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
+                        }
+                    },
+                ),
+            ),
         ).newSession(request1)
         val res = session.mediaSourceResults.first()
         session.awaitCompletedResults()
@@ -432,13 +482,15 @@ class MediaFetcherTest {
         val fetchCalled = AtomicInteger(0)
         val session = createFetcher(
             createTestMediaSourceInstance(
-                TestHttpMediaSource(fetch = {
-                    fetchCalled.incrementAndGet()
-                    SinglePagePagedSource {
-                        TestMediaList.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
-                    }
-                })
-            )
+                TestHttpMediaSource(
+                    fetch = {
+                        fetchCalled.incrementAndGet()
+                        SinglePagePagedSource {
+                            TestMediaList.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
+                        }
+                    },
+                ),
+            ),
         ).newSession(request1)
         val res = session.mediaSourceResults.first()
         session.awaitCompletedResults()
@@ -455,12 +507,14 @@ class MediaFetcherTest {
     fun `restart does not clear the existing result immediately`() = runTest {
         val session = createFetcher(
             createTestMediaSourceInstance(
-                TestHttpMediaSource(fetch = {
-                    SinglePagePagedSource {
-                        TestMediaList.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
-                    }
-                })
-            )
+                TestHttpMediaSource(
+                    fetch = {
+                        SinglePagePagedSource {
+                            TestMediaList.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
+                        }
+                    },
+                ),
+            ),
         ).newSession(request1)
         assertEquals(1, session.mediaSourceResults.size)
         val res = session.mediaSourceResults.first()
@@ -477,18 +531,20 @@ class MediaFetcherTest {
         val fetchCalled = AtomicInteger(0)
         val session = createFetcher(
             createTestMediaSourceInstance(
-                TestHttpMediaSource(fetch = {
-                    if (fetchCalled.incrementAndGet() == 1) {
-                        SinglePagePagedSource {
-                            TestMediaList.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
+                TestHttpMediaSource(
+                    fetch = {
+                        if (fetchCalled.incrementAndGet() == 1) {
+                            SinglePagePagedSource {
+                                TestMediaList.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
+                            }
+                        } else {
+                            SinglePagePagedSource {
+                                TestMediaList.take(3).map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
+                            }
                         }
-                    } else {
-                        SinglePagePagedSource {
-                            TestMediaList.take(3).map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
-                        }
-                    }
-                })
-            )
+                    },
+                ),
+            ),
         ).newSession(request1)
         assertEquals(1, session.mediaSourceResults.size)
         val res = session.mediaSourceResults.first()
@@ -508,21 +564,25 @@ class MediaFetcherTest {
         val secondFetchCalled = AtomicInteger(0)
         val session = createFetcher(
             createTestMediaSourceInstance(
-                TestHttpMediaSource(fetch = {
-                    firstFetchCalled.incrementAndGet()
-                    SinglePagePagedSource {
-                        TestMediaList.take(2).map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
-                    }
-                })
+                TestHttpMediaSource(
+                    fetch = {
+                        firstFetchCalled.incrementAndGet()
+                        SinglePagePagedSource {
+                            TestMediaList.take(2).map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
+                        }
+                    },
+                ),
             ),
             createTestMediaSourceInstance(
-                TestHttpMediaSource(fetch = {
-                    secondFetchCalled.incrementAndGet()
-                    SinglePagePagedSource {
-                        TestMediaList.drop(2).take(3).map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
-                    }
-                })
-            )
+                TestHttpMediaSource(
+                    fetch = {
+                        secondFetchCalled.incrementAndGet()
+                        SinglePagePagedSource {
+                            TestMediaList.drop(2).take(3).map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
+                        }
+                    },
+                ),
+            ),
         ).newSession(request1)
         assertEquals(2, session.mediaSourceResults.size)
         val res1 = session.mediaSourceResults[0]

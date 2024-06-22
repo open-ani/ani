@@ -40,9 +40,9 @@ private class AuthResultViewModel : AbstractViewModel(), KoinComponent, ViewMode
                 Result.success(
                     OAuthResult(
                         code,
-                        BangumiAuthorizationConstants.CALLBACK_URL
-                    )
-                )
+                        BangumiAuthorizationConstants.CALLBACK_URL,
+                    ),
+                ),
             )
         } catch (e: Throwable) {
             logger.error(e) { "AuthResultViewModel: Failed to submit code" }
@@ -75,16 +75,16 @@ fun AuthResultPage(
                         navigator.navigator.goBack()
                     }
                 },
-                title = { Text(text = "登录 Bangumi") }
+                title = { Text(text = "登录 Bangumi") },
             )
-        }
+        },
     ) { contentPadding ->
         Column(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(contentPadding),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 Text(text = "正在处理...")
             }

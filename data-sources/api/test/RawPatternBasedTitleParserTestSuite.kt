@@ -29,8 +29,8 @@ import kotlin.test.assertEquals
 internal class RawPatternBasedTitleParserTestSuite {
     val data = mapOf(
         "Lilith-Raws [Lilith-Raws] Overlord IV - 05 [Baha][WEB-DL][1080p][AVC AAC][CHT][MP4]" to ParsedTopicTitle(
-            listOf("Baha", "WEB-DL", "AVC", "AAC", "MP4")
-        )
+            listOf("Baha", "WEB-DL", "AVC", "AAC", "MP4"),
+        ),
     )
 
     private val dataA = """
@@ -85,9 +85,9 @@ internal class RawPatternBasedTitleParserTestSuite {
                 add(
                     DynamicTest.dynamicTest("$expected - $title") {
                         assertEquals(
-                            expected, parser.parse(title, null).episodeRange
+                            expected, parser.parse(title, null).episodeRange,
                         )
-                    }
+                    },
                 )
             }
 

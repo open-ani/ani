@@ -162,11 +162,11 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
                             if (referer != null) {
                                 add("http-referrer=${referer}")
                             }
-                        }.toTypedArray()
+                        }.toTypedArray(),
                     )
                     lastMedia = null
                 },
-                releaseResource = {}
+                releaseResource = {},
             )
         }
 
@@ -227,30 +227,33 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
 
     init {
         // NOTE: must not call native player in a event
-        player.events().addMediaEventListener(object : MediaEventAdapter() {
-            override fun mediaParsedChanged(media: Media, newStatus: MediaParsedStatus) {
-                if (newStatus == MediaParsedStatus.DONE) {
-                    videoProperties.value = createVideoProperties()
+        player.events().addMediaEventListener(
+            object : MediaEventAdapter() {
+                override fun mediaParsedChanged(media: Media, newStatus: MediaParsedStatus) {
+                    if (newStatus == MediaParsedStatus.DONE) {
+                        videoProperties.value = createVideoProperties()
+                    }
                 }
-            }
-        })
-        player.events().addMediaPlayerEventListener(object : MediaPlayerEventAdapter() {
-            override fun lengthChanged(mediaPlayer: MediaPlayer, newLength: Long) {
-                videoProperties.value = videoProperties.value?.copy(
-                    durationMillis = newLength
-                )
-            }
+            },
+        )
+        player.events().addMediaPlayerEventListener(
+            object : MediaPlayerEventAdapter() {
+                override fun lengthChanged(mediaPlayer: MediaPlayer, newLength: Long) {
+                    videoProperties.value = videoProperties.value?.copy(
+                        durationMillis = newLength,
+                    )
+                }
 
-            override fun elementaryStreamAdded(mediaPlayer: MediaPlayer?, type: TrackType?, id: Int) {
-                if (type == TrackType.TEXT) {
-                    reloadSubtitleTracks(); // 字幕轨道更新后，则进行重载UI上的字幕轨道
+                override fun elementaryStreamAdded(mediaPlayer: MediaPlayer?, type: TrackType?, id: Int) {
+                    if (type == TrackType.TEXT) {
+                        reloadSubtitleTracks(); // 字幕轨道更新后，则进行重载UI上的字幕轨道
+                    }
+                    if (type == TrackType.AUDIO) {
+                        reloadAudioTracks();
+                    }
                 }
-                if (type == TrackType.AUDIO) {
-                    reloadAudioTracks();
-                }
-            }
 
-            //            override fun buffering(mediaPlayer: MediaPlayer?, newCache: Float) {
+                //            override fun buffering(mediaPlayer: MediaPlayer?, newCache: Float) {
 //                if (newCache != 1f) {
 //                    state.value = PlaybackState.PAUSED_BUFFERING
 //                } else {
@@ -258,28 +261,29 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
 //                }
 //            }
 
-            override fun playing(mediaPlayer: MediaPlayer) {
-                state.value = PlaybackState.PLAYING
-                player.submit { player.media().parsing().parse() }
+                override fun playing(mediaPlayer: MediaPlayer) {
+                    state.value = PlaybackState.PLAYING
+                    player.submit { player.media().parsing().parse() }
 
-                reloadSubtitleTracks();
+                    reloadSubtitleTracks();
 
-                reloadAudioTracks();
-            }
+                    reloadAudioTracks();
+                }
 
-            override fun paused(mediaPlayer: MediaPlayer) {
-                state.value = PlaybackState.PAUSED
-            }
+                override fun paused(mediaPlayer: MediaPlayer) {
+                    state.value = PlaybackState.PAUSED
+                }
 
-            override fun stopped(mediaPlayer: MediaPlayer) {
-                state.value = PlaybackState.FINISHED
-            }
+                override fun stopped(mediaPlayer: MediaPlayer) {
+                    state.value = PlaybackState.FINISHED
+                }
 
-            override fun error(mediaPlayer: MediaPlayer) {
-                logger.error { "vlcj player error" }
-                state.value = PlaybackState.ERROR
-            }
-        })
+                override fun error(mediaPlayer: MediaPlayer) {
+                    logger.error { "vlcj player error" }
+                    state.value = PlaybackState.ERROR
+                }
+            },
+        )
 
         backgroundScope.launch {
             while (true) {
@@ -373,11 +377,11 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
                     openResource.value?.videoData?.filename + "-" + it.id(),
                     it.id().toString(),
                     null,
-                    listOf(Label(null, it.description()))
+                    listOf(Label(null, it.description())),
                 )
             }
     }
-    
+
     private fun reloadAudioTracks() {
         audioTracks.candidates.value = player.audio().trackDescriptions()
             .filterNot { it.id() == -1 } // "Disable"
@@ -386,7 +390,7 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
                     openResource.value?.videoData?.filename + "-" + it.id(),
                     it.id().toString(),
                     null,
-                    listOf(Label(null, it.description()))
+                    listOf(Label(null, it.description())),
                 )
             }
     }
@@ -406,7 +410,7 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
             durationMillis = info.duration(),
             fileLengthBytes = 0,
             fileHash = null,
-            filename = title?.name() ?: ""
+            filename = title?.name() ?: "",
         )
     }
 
@@ -479,7 +483,7 @@ actual fun VideoPlayer(
         val bitmap = playerState.bitmap
         val (dstSize, dstOffset) = calculateImageSizeAndOffsetToFillFrame(
             bitmap.width, bitmap.height,
-            size.width.toInt(), size.height.toInt()
+            size.width.toInt(), size.height.toInt(),
         )
         drawImage(playerState.bitmap, dstSize = dstSize, dstOffset = dstOffset, filterQuality = FilterQuality.High)
     }

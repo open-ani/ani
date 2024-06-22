@@ -39,21 +39,27 @@ fun Route.updatesRouting() {
             incrementalDetailedDoc()
             get {
                 val updates = updateInfos(clientReleaseInfoManager)
-                val clientPlatform = call.request.queryParameters["clientPlatform"] ?: throw BadRequestException("Missing parameter clientPlatform")
-                val clientArch = call.request.queryParameters["clientArch"] ?: throw BadRequestException("Missing parameter clientArch")
-                call.respond(ReleaseUpdatesDetailedResponse(updates.mapNotNull {
-                    val downloadUrls = try {
-                        clientReleaseInfoManager.parseDownloadUrls(it.version, "$clientPlatform-$clientArch")
-                    } catch (e: IllegalArgumentException) {
-                        return@mapNotNull null
-                    }
-                    UpdateInfo(
-                        it.version.toString(),
-                        downloadUrls,
-                        it.publishTime,
-                        it.description
-                    )
-                }))
+                val clientPlatform = call.request.queryParameters["clientPlatform"]
+                    ?: throw BadRequestException("Missing parameter clientPlatform")
+                val clientArch = call.request.queryParameters["clientArch"]
+                    ?: throw BadRequestException("Missing parameter clientArch")
+                call.respond(
+                    ReleaseUpdatesDetailedResponse(
+                        updates.mapNotNull {
+                            val downloadUrls = try {
+                                clientReleaseInfoManager.parseDownloadUrls(it.version, "$clientPlatform-$clientArch")
+                            } catch (e: IllegalArgumentException) {
+                                return@mapNotNull null
+                            }
+                            UpdateInfo(
+                                it.version.toString(),
+                                downloadUrls,
+                                it.publishTime,
+                                it.description,
+                            )
+                        },
+                    ),
+                )
             }
         }
     }
@@ -62,9 +68,12 @@ fun Route.updatesRouting() {
 private suspend fun PipelineContext<Unit, ApplicationCall>.updateInfos(
     clientReleaseInfoManager: ClientReleaseInfoManager
 ): List<ReleaseInfo> {
-    val version = call.request.queryParameters["clientVersion"] ?: throw BadRequestException("Missing parameter clientVersion")
-    val clientPlatform = call.request.queryParameters["clientPlatform"] ?: throw BadRequestException("Missing parameter clientPlatform")
-    val clientArch = call.request.queryParameters["clientArch"] ?: throw BadRequestException("Missing parameter clientArch")
+    val version =
+        call.request.queryParameters["clientVersion"] ?: throw BadRequestException("Missing parameter clientVersion")
+    val clientPlatform =
+        call.request.queryParameters["clientPlatform"] ?: throw BadRequestException("Missing parameter clientPlatform")
+    val clientArch =
+        call.request.queryParameters["clientArch"] ?: throw BadRequestException("Missing parameter clientArch")
     val releaseClass = call.request.queryParameters["releaseClass"]?.let {
         ReleaseClass.fromStringOrNull(it)
     } ?: throw BadRequestException("Missing or invalid parameter releaseClass")
@@ -88,36 +97,36 @@ private fun Route.incrementalDoc() {
                     `in` = Parameter.Location.query,
                     required = true,
                     description = "客户端当前版本号。不合法的版本号会导致服务器返回461 Invalid Client Version错误。",
-                    schema = TypeDefinition.STRING
+                    schema = TypeDefinition.STRING,
                 ),
                 Parameter(
                     name = "clientPlatform",
                     `in` = Parameter.Location.query,
                     required = true,
                     description = "客户端平台，例：windows, android。不合法的值会导致服务器返回空的版本号列表。",
-                    schema = TypeDefinition.STRING
+                    schema = TypeDefinition.STRING,
                 ),
                 Parameter(
                     name = "clientArch",
                     `in` = Parameter.Location.query,
                     required = true,
                     description = "客户端架构，例：x86_64, aarch64。不合法的值会导致服务器返回空的版本号列表。",
-                    schema = TypeDefinition.STRING
+                    schema = TypeDefinition.STRING,
                 ),
                 Parameter(
                     name = "releaseClass",
                     `in` = Parameter.Location.query,
                     required = true,
-                    description = "更新版本的发布类型，可选值：alpha, beta, rc, stable。不合法的发布类型会导致服务器返回400 Bad Request错误。", 
-                    schema = TypeDefinition.STRING
-                )
+                    description = "更新版本的发布类型，可选值：alpha, beta, rc, stable。不合法的发布类型会导致服务器返回400 Bad Request错误。",
+                    schema = TypeDefinition.STRING,
+                ),
             )
             response {
                 responseCode(HttpStatusCode.OK)
                 responseType<ReleaseUpdatesResponse>()
                 description("更新版本号列表")
                 examples(
-                    "" to ReleaseUpdatesResponse(listOf("3.0.0-rc01", "3.0.0-rc02", "3.0.0-rc03"))
+                    "" to ReleaseUpdatesResponse(listOf("3.0.0-rc01", "3.0.0-rc02", "3.0.0-rc03")),
                 )
             }
             canRespond {
@@ -145,29 +154,29 @@ private fun Route.incrementalDetailedDoc() {
                     `in` = Parameter.Location.query,
                     required = true,
                     description = "客户端当前版本号。不合法的版本号会导致服务器返回461 Invalid Client Version错误。",
-                    schema = TypeDefinition.STRING
+                    schema = TypeDefinition.STRING,
                 ),
                 Parameter(
                     name = "clientPlatform",
                     `in` = Parameter.Location.query,
                     required = true,
                     description = "客户端平台，例：windows, android。不合法的值会导致服务器返回空的版本号列表。",
-                    schema = TypeDefinition.STRING
+                    schema = TypeDefinition.STRING,
                 ),
                 Parameter(
                     name = "clientArch",
                     `in` = Parameter.Location.query,
                     required = true,
                     description = "客户端架构，例：x86_64, aarch64。不合法的值会导致服务器返回空的版本号列表。",
-                    schema = TypeDefinition.STRING
+                    schema = TypeDefinition.STRING,
                 ),
                 Parameter(
                     name = "releaseClass",
                     `in` = Parameter.Location.query,
                     required = true,
                     description = "更新版本的发布类型，可选值：alpha, beta, rc, stable。不合法的发布类型会导致服务器返回400 Bad Request错误。",
-                    schema = TypeDefinition.STRING
-                )
+                    schema = TypeDefinition.STRING,
+                ),
             )
             response {
                 responseCode(HttpStatusCode.OK)
@@ -202,10 +211,10 @@ private fun Route.incrementalDetailedDoc() {
                                     - 修复标题过长挤掉按钮的问题 #311
                                     - 修复会请求过多条目的问题
                                     - 修复条目缓存页可能有资源泄露的问题 #190
-                                """.trimIndent()
+                                """.trimIndent(),
                             ),
-                        )
-                    )
+                        ),
+                    ),
                 )
             }
             canRespond {

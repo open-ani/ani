@@ -76,13 +76,15 @@ abstract class AbstractViewModel : RememberObserver, ViewModel(), HasBackgroundS
     }
 
     private fun createBackgroundScope(): CoroutineScope {
-        return CoroutineScope(CoroutineExceptionHandler { _, throwable ->
-            if (throwable is AuthorizationCancelledException) {
-                logger.debug { "Authorization canceled" }
-            } else {
-                logger.error(throwable) { "Unhandled exception in background scope" }
-            }
-        } + SupervisorJob())
+        return CoroutineScope(
+            CoroutineExceptionHandler { _, throwable ->
+                if (throwable is AuthorizationCancelledException) {
+                    logger.debug { "Authorization canceled" }
+                } else {
+                    logger.error(throwable) { "Unhandled exception in background scope" }
+                }
+            } + SupervisorJob(),
+        )
     }
 
     /**

@@ -21,7 +21,7 @@ internal abstract class TorrentSessionSupport {
             onClose = {},
             onDelete = {},
             isDebug = true,
-            parentCoroutineContext = SupervisorJob()
+            parentCoroutineContext = SupervisorJob(),
         ),
         block: DefaultTorrentDownloadSession.() -> Unit
     ) {
@@ -37,7 +37,7 @@ internal abstract class TorrentSessionSupport {
     ): TestAniTorrentHandle {
         val handle = TestAniTorrentHandle(name)
         listener.onEvent(
-            TorrentAddEvent(handle.apply(builderAction))
+            TorrentAddEvent(handle.apply(builderAction)),
         )
         return handle
     }
@@ -47,7 +47,7 @@ internal abstract class TorrentSessionSupport {
         builderAction: TestAniTorrentHandle.() -> Unit = {},
     ): TestAniTorrentHandle {
         listener.onEvent(
-            TorrentAddEvent(handle.apply(builderAction))
+            TorrentAddEvent(handle.apply(builderAction)),
         )
         return handle
     }

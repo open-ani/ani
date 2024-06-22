@@ -19,7 +19,7 @@ class DebugViewModel : AbstractSettingsViewModel(), KoinComponent {
 
     val debugSettings by settings(
         settingsRepository.debugSettings,
-        placeholder = DebugSettings(_placeHolder = -1)
+        placeholder = DebugSettings(_placeHolder = -1),
     )
 }
 
@@ -34,7 +34,7 @@ fun DebugTab(
     SettingsTab(modifier) {
         Group(
             title = { Text("调试模式状态") },
-            useThinHeader = true
+            useThinHeader = true,
         ) {
             SwitchItem(
                 checked = debugSettings.enabled,

@@ -71,9 +71,9 @@ class AuthViewModel : AbstractViewModel(), KoinComponent {
             Result.success(
                 OAuthResult(
                     code,
-                    callbackUrl
-                )
-            )
+                    callbackUrl,
+                ),
+            ),
         )
     }
 

@@ -56,7 +56,7 @@ fun OneshotTip(
 
     Card(
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer
+            containerColor = MaterialTheme.colorScheme.secondaryContainer,
         ),
         modifier = modifier,
     ) {
@@ -64,7 +64,7 @@ fun OneshotTip(
             constraintSet = constraintSet,
             modifier = Modifier
                 .wrapContentHeight()
-                .fillMaxWidth()
+                .fillMaxWidth(),
         ) {
             Icon(
                 imageVector = iconVector,
@@ -73,14 +73,14 @@ fun OneshotTip(
             )
             IconButton(
                 onClick = onClose,
-                modifier = Modifier.layoutId("dismiss")
+                modifier = Modifier.layoutId("dismiss"),
             ) {
                 Icon(imageVector = Icons.Outlined.Close, contentDescription = null)
             }
             Text(
                 text = text,
                 style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.layoutId("text")
+                modifier = Modifier.layoutId("text"),
             )
         }
     }

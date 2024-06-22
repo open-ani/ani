@@ -948,7 +948,7 @@ paths:
           required: true
           schema:
             type: string
-      responses: {}
+      responses: { }
   /api/v1alpha1/attachment/fragment/revert:
     delete:
       tags:
@@ -961,7 +961,7 @@ paths:
           '*/*':
             schema:
               type: string
-      responses: {}
+      responses: { }
   /api/v1alpha1/attachment/fragment/unique:
     post:
       tags:
@@ -1009,7 +1009,7 @@ paths:
           '*/*':
             schema:
               $ref: '#/components/schemas/AttachmentReference'
-      responses: {}
+      responses: { }
   /api/v1alpha1/attachment/reference/id:
     delete:
       tags:
@@ -1023,7 +1023,7 @@ paths:
           schema:
             type: integer
             format: int64
-      responses: {}
+      responses: { }
   /api/v1alpha1/attachment/reference/uk:
     delete:
       tags:
@@ -1035,7 +1035,7 @@ paths:
           '*/*':
             schema:
               $ref: '#/components/schemas/AttachmentReference'
-      responses: {}
+      responses: { }
   /api/v1alpha1/attachment/references:
     get:
       tags:
@@ -1059,7 +1059,7 @@ paths:
           schema:
             type: integer
             format: int64
-      responses: {}
+      responses: { }
   /api/v1alpha1/attachment/references/episode:
     post:
       tags:
@@ -1075,7 +1075,7 @@ paths:
             schema:
               $ref: '#/components/schemas/BatchMatchingEpisodeAttachment'
         required: true
-      responses: {}
+      responses: { }
   /api/v1alpha1/attachment/references/subject/episodes:
     post:
       tags:
@@ -1091,7 +1091,7 @@ paths:
             schema:
               $ref: '#/components/schemas/BatchMatchingSubjectEpisodesAttachment'
         required: true
-      responses: {}
+      responses: { }
   /api/v1alpha1/attachment/relation/videoSubtitle/subtitles/{attachmentId}:
     get:
       tags:
@@ -1244,7 +1244,7 @@ paths:
           '*/*':
             schema:
               $ref: '#/components/schemas/Attachment'
-      responses: {}
+      responses: { }
   /api/v1alpha1/attachment/upload:
     post:
       tags:
@@ -1295,7 +1295,7 @@ paths:
           schema:
             type: integer
             format: int64
-      responses: {}
+      responses: { }
   /api/v1alpha1/attachments/condition:
     get:
       tags:
@@ -1389,7 +1389,7 @@ paths:
           required: true
           schema:
             type: boolean
-      responses: {}
+      responses: { }
   /api/v1alpha1/episode/collection/{userId}/{episodeId}:
     get:
       tags:
@@ -1449,7 +1449,7 @@ paths:
           schema:
             type: integer
             format: int64
-      responses: {}
+      responses: { }
     post:
       tags:
         - v1alpha1/episode/collection
@@ -1617,7 +1617,7 @@ paths:
         - v1alpha1/indices
       description: Build or rebuild subject indices for full text search
       operationId: BuildSubjectIndices
-      responses: {}
+      responses: { }
   /api/v1alpha1/plugin/install/file:
     post:
       tags:
@@ -1789,7 +1789,7 @@ paths:
             schema:
               $ref: '#/components/schemas/Subject'
         required: true
-      responses: {}
+      responses: { }
     post:
       tags:
         - v1alpha1/subject
@@ -1846,7 +1846,7 @@ paths:
           description: Is private, default is false.
           schema:
             type: boolean
-      responses: {}
+      responses: { }
     delete:
       tags:
         - v1alpha1/subject/collection
@@ -1867,7 +1867,7 @@ paths:
           schema:
             type: integer
             format: int64
-      responses: {}
+      responses: { }
   /api/v1alpha1/subject/collection/mainEpisodeProgress/{userId}/{subjectId}/{progress}:
     put:
       tags:
@@ -1896,7 +1896,7 @@ paths:
           schema:
             type: integer
             format: int32
-      responses: {}
+      responses: { }
   /api/v1alpha1/subject/collection/{userId}/{subjectId}:
     get:
       tags:
@@ -1987,7 +1987,7 @@ paths:
             schema:
               $ref: '#/components/schemas/SubjectRelation'
         required: true
-      responses: {}
+      responses: { }
     delete:
       tags:
         - v1alpha1/subject/relation
@@ -2025,7 +2025,7 @@ paths:
           required: true
           schema:
             type: string
-      responses: {}
+      responses: { }
   /api/v1alpha1/subject/relation/{subjectId}/{relationType}:
     get:
       tags:
@@ -2057,7 +2057,7 @@ paths:
               - AFTER
               - SAME_WORLDVIEW
               - ORIGINAL_SOUND_TRACK
-      responses: {}
+      responses: { }
   /api/v1alpha1/subject/relations/{subjectId}:
     get:
       tags:
@@ -2071,7 +2071,7 @@ paths:
           schema:
             type: integer
             format: int64
-      responses: {}
+      responses: { }
   /api/v1alpha1/subject/sync/platform:
     post:
       tags:
@@ -2160,7 +2160,7 @@ paths:
           schema:
             type: integer
             format: int64
-      responses: {}
+      responses: { }
   /api/v1alpha1/subjects/condition:
     get:
       tags:
@@ -2288,7 +2288,7 @@ paths:
           in: query
           schema:
             type: string
-      responses: {}
+      responses: { }
   /api/v1alpha1/tag/id/{id}:
     delete:
       tags:
@@ -2302,7 +2302,7 @@ paths:
           schema:
             type: integer
             format: int64
-      responses: {}
+      responses: { }
   /api/v1alpha1/tags/condition:
     get:
       tags:
@@ -2502,7 +2502,7 @@ paths:
       responses:
         '200':
           description: Bind user and email success.
-          content: {}
+          content: { }
       deprecated: true
   /api/v1alpha1/user/{username}/password:
     put:
@@ -2532,7 +2532,7 @@ paths:
       responses:
         '200':
           description: Update user password success.
-          content: {}
+          content: { }
   /api/v1alpha1/user/{username}/role:
     put:
       tags:
@@ -2556,7 +2556,7 @@ paths:
       responses:
         '200':
           description: Change user role success.
-          content: {}
+          content: { }
   /api/v1alpha1/user/{username}/telephone:
     put:
       tags:
@@ -2585,7 +2585,7 @@ paths:
       responses:
         '200':
           description: Bind user and telephone success.
-          content: {}
+          content: { }
       deprecated: true
 components:
   schemas:

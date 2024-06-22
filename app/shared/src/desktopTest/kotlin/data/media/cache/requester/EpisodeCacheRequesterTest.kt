@@ -62,7 +62,7 @@ class EpisodeCacheRequesterTest {
             fallbackSubtitleLanguageIds = listOf(
                 ChineseSimplified,
                 ChineseTraditional,
-            ).map { it.id }
+            ).map { it.id },
         )
     }
 
@@ -78,7 +78,7 @@ class EpisodeCacheRequesterTest {
         MediaSelectorContext(
             subjectFinished = false,
             mediaSourcePrecedence = emptyList(),
-        )
+        ),
     )
     private val storage = TestMediaCacheStorage()
     private val storageFlow = MutableStateFlow(listOf(storage))
@@ -88,13 +88,19 @@ class EpisodeCacheRequesterTest {
             flowOf(
                 MediaSourceMediaFetcher(
                     configProvider = { MediaFetcherConfig.Default },
-                    mediaSources = listOf(createTestMediaSourceInstance(TestHttpMediaSource(fetch = {
-                        SinglePagePagedSource {
-                            mediaList.value.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
-                        }
-                    }))),
+                    mediaSources = listOf(
+                        createTestMediaSourceInstance(
+                            TestHttpMediaSource(
+                                fetch = {
+                                    SinglePagePagedSource {
+                                        mediaList.value.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
+                                    }
+                                },
+                            ),
+                        ),
+                    ),
                     flowContext = EmptyCoroutineContext,
-                )
+                ),
             ),
             mediaSelectorFactory = object : MediaSelectorFactory {
                 override fun create(
@@ -108,11 +114,11 @@ class EpisodeCacheRequesterTest {
                         savedUserPreference = savedUserPreference,
                         savedDefaultPreference = savedDefaultPreference,
                         enableCaching = false,
-                        mediaSelectorSettings = mediaSelectorSettings
+                        mediaSelectorSettings = mediaSelectorSettings,
                     )
                 }
             },
-            storagesLazy = storageFlow
+            storagesLazy = storageFlow,
         )
 
     private fun createRequest(
@@ -183,7 +189,7 @@ class EpisodeCacheRequesterTest {
         val request = createRequest().run {
             copy(
                 subjectInfo.copy(id = 12, name = "ひ", nameCn = "孤独摇滚"),
-                episodeInfo.copy(sort = EpisodeSort(2), name = "第二集") // 2 in 12
+                episodeInfo.copy(sort = EpisodeSort(2), name = "第二集"), // 2 in 12
             )
         }
 
@@ -204,7 +210,7 @@ class EpisodeCacheRequesterTest {
                 episodeEp = null,
                 episodeName = "第二集",
             ),
-            done.metadata
+            done.metadata,
         )
     }
 
@@ -251,7 +257,7 @@ class EpisodeCacheRequesterTest {
         val request = createRequest()
         assertNull(
             requester.request(request)
-                .tryAutoSelectByCachedSeason(emptyList())
+                .tryAutoSelectByCachedSeason(emptyList()),
         )
     }
 
@@ -286,13 +292,13 @@ class EpisodeCacheRequesterTest {
                 episodeSort = EpisodeSort(1),
                 episodeEp = EpisodeSort(1),
                 episodeName = "test",
-            )
+            ),
         )
 
         val request = createRequest(sort = EpisodeSort(1))
         assertNull(
             requester.request(request)
-                .tryAutoSelectByCachedSeason(listOf(mediaCache))
+                .tryAutoSelectByCachedSeason(listOf(mediaCache)),
         )
     }
 
@@ -327,13 +333,13 @@ class EpisodeCacheRequesterTest {
                 episodeSort = EpisodeSort(1),
                 episodeEp = EpisodeSort(1),
                 episodeName = "test",
-            )
+            ),
         )
 
         val request = createRequest(sort = EpisodeSort(0)) // 0 !in 12
         assertNull(
             requester.request(request)
-                .tryAutoSelectByCachedSeason(listOf(mediaCache))
+                .tryAutoSelectByCachedSeason(listOf(mediaCache)),
         )
     }
 
@@ -375,7 +381,7 @@ class EpisodeCacheRequesterTest {
             episodeSort = episodeSort,
             episodeEp = episodeEp,
             episodeName = "test",
-        )
+        ),
     )
 
     @Test
@@ -386,7 +392,7 @@ class EpisodeCacheRequesterTest {
         val request = createRequest().run {
             copy(
                 subjectInfo.copy(id = 12, name = "ひ", nameCn = "孤独摇滚"),
-                episodeInfo.copy(sort = EpisodeSort(2), name = "第二集") // 2 in 12
+                episodeInfo.copy(sort = EpisodeSort(2), name = "第二集"), // 2 in 12
             )
         }
         val done = (requester.request(request)
@@ -406,7 +412,7 @@ class EpisodeCacheRequesterTest {
                 episodeEp = null,
                 episodeName = "第二集",
             ),
-            done.metadata
+            done.metadata,
         )
     }
 
@@ -419,7 +425,7 @@ class EpisodeCacheRequesterTest {
         val request = createRequest().run {
             copy(
                 subjectInfo.copy(id = 12, name = "ひ", nameCn = "孤独摇滚"),
-                episodeInfo.copy(sort = EpisodeSort(2), name = "第二集") // 2 in 12
+                episodeInfo.copy(sort = EpisodeSort(2), name = "第二集"), // 2 in 12
             )
         }
         val done = requester.request(request)
@@ -438,7 +444,7 @@ class EpisodeCacheRequesterTest {
                 episodeEp = null,
                 episodeName = "第二集",
             ),
-            done.metadata
+            done.metadata,
         )
     }
 

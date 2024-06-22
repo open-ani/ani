@@ -42,7 +42,7 @@ actual fun BangumiOAuthRequest(
             runCatching {
                 intent.launchUrl(
                     context,
-                    Uri.parse(BangumiAuthorizationConstants.makeOAuthUrl(currentAniBuildConfig.bangumiOauthClientAppId))
+                    Uri.parse(BangumiAuthorizationConstants.makeOAuthUrl(currentAniBuildConfig.bangumiOauthClientAppId)),
                 )
                 launchChromeStatus = LaunchChromeStatus.LAUNCHED
             }.onFailure {

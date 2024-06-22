@@ -30,9 +30,11 @@ fun AniAppContent(aniNavigator: AniNavigator) {
 
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val isLandscape by rememberUpdatedState(showTabletUI())
-        val size by rememberUpdatedState(with(LocalDensity.current) {
-            DpSize(constraints.maxWidth.toDp(), constraints.maxHeight.toDp())
-        })
+        val size by rememberUpdatedState(
+            with(LocalDensity.current) {
+                DpSize(constraints.maxWidth.toDp(), constraints.maxHeight.toDp())
+            },
+        )
         val layoutMode by remember {
             derivedStateOf { LayoutMode(isLandscape, size) }
         }

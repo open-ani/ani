@@ -27,7 +27,7 @@ public fun File.toSeekableInput(
 ): SeekableInput = BufferedFileInput(
     RandomAccessFile(this, "r"),
     bufferSize,
-    onFillBuffer
+    onFillBuffer,
 )
 
 @JvmInline
@@ -181,7 +181,7 @@ public abstract class BufferedInput(
                 readFileToBufferChecked(
                     fileOffset = bufferedEnd,
                     bufferOffset = (bufferedEnd - readStart).checkToInt(),
-                    length = (readEnd - bufferedEnd).coerceToInt()
+                    length = (readEnd - bufferedEnd).coerceToInt(),
                 )
             } else if (readEnd in (bufferedStart + 1)..bufferedEnd) {
                 // 旧 buffer 的一部分可以用作后面
@@ -203,7 +203,7 @@ public abstract class BufferedInput(
                 readFileToBufferChecked(
                     fileOffset = readStart,
                     bufferOffset = 0,
-                    length = (bufferedStart - readStart).coerceToInt()
+                    length = (bufferedStart - readStart).coerceToInt(),
                 )
             } else {
                 // 旧 buffer 不能用

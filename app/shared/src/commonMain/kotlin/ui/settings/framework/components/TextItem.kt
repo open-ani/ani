@@ -26,7 +26,7 @@ fun SettingsScope.TextItem(
         modifier
             .then(if (onClick != null) Modifier.clickable(onClickEnabled, onClick = onClick) else Modifier),
         icon = icon,
-        action = action
+        action = action,
     ) {
         ItemHeader(title, description, Modifier)
     }

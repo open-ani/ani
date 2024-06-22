@@ -88,13 +88,13 @@ data class SubjectCollection(
                     // 更新了 n+1 集
                     ContinueWatchingStatus.Continue(
                         this.lastWatchedEpIndex + 1,
-                        this.episodes.getOrNull(this.lastWatchedEpIndex + 1)?.episode?.sort?.toString() ?: ""
+                        this.episodes.getOrNull(this.lastWatchedEpIndex + 1)?.episode?.sort?.toString() ?: "",
                     )
                 } else {
                     // 还没更新
                     ContinueWatchingStatus.Watched(
                         this.lastWatchedEpIndex,
-                        this.episodes.getOrNull(this.lastWatchedEpIndex)?.episode?.sort?.toString() ?: ""
+                        this.episodes.getOrNull(this.lastWatchedEpIndex)?.episode?.sort?.toString() ?: "",
                     )
                 }
             }

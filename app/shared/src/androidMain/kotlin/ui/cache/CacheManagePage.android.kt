@@ -28,7 +28,7 @@ fun PreviewCacheManagementPage() {
 
             vm = remember {
                 createTestVM()
-            }
+            },
         )
     }
 }
@@ -42,7 +42,7 @@ fun PreviewCacheManagementPageScroll() {
 
             vm = remember {
                 createTestVM()
-            }
+            },
         )
     }
 }
@@ -50,11 +50,11 @@ fun PreviewCacheManagementPageScroll() {
 private fun createTestVM() = object : CacheManagementPageViewModel {
     override val overallStats: MediaStats get() = emptyMediaStats()
     override val storages: List<MediaCacheStorageState> = listOf(
-        MediaCacheStorageState(TestMediaCacheStorage())
+        MediaCacheStorageState(TestMediaCacheStorage()),
     )
     override val accumulatedList: List<MediaCachePresentation> = listOf(
         MediaCachePresentation(testMediaCache1),
-        MediaCachePresentation(testMediaCache2)
+        MediaCachePresentation(testMediaCache2),
     )
     override val errorMessage = MutableStateFlow<ErrorMessage?>(null)
 
@@ -78,7 +78,7 @@ internal val testMediaCache1 = TestMediaCache(
         ),
     ),
     progress = MutableStateFlow(0.9999f),
-    totalSize = MutableStateFlow(233.megaBytes)
+    totalSize = MutableStateFlow(233.megaBytes),
 )
 
 internal val testMediaCache2 = TestMediaCache(
@@ -97,7 +97,7 @@ internal val testMediaCache2 = TestMediaCache(
         ),
     ),
     progress = MutableStateFlow(1.0f),
-    totalSize = MutableStateFlow(233.megaBytes)
+    totalSize = MutableStateFlow(233.megaBytes),
 )
 
 @Preview

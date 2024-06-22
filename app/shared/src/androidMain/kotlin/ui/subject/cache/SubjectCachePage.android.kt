@@ -145,13 +145,19 @@ fun PreviewEpisodeCacheRequester(): EpisodeCacheRequester = EpisodeCacheRequeste
     flowOf(
         MediaSourceMediaFetcher(
             configProvider = { MediaFetcherConfig.Default },
-            mediaSources = listOf(createTestMediaSourceInstance(TestHttpMediaSource(fetch = {
-                SinglePagePagedSource {
-                    TestMediaList.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
-                }
-            }))),
+            mediaSources = listOf(
+                createTestMediaSourceInstance(
+                    TestHttpMediaSource(
+                        fetch = {
+                            SinglePagePagedSource {
+                                TestMediaList.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
+                            }
+                        },
+                    ),
+                ),
+            ),
             flowContext = EmptyCoroutineContext,
-        )
+        ),
     ),
     mediaSelectorFactory = object : MediaSelectorFactory {
         override fun create(
@@ -162,7 +168,7 @@ fun PreviewEpisodeCacheRequester(): EpisodeCacheRequester = EpisodeCacheRequeste
             throw UnsupportedOperationException()
         }
     },
-    storagesLazy = flowOf()
+    storagesLazy = flowOf(),
 )
 
 
@@ -177,13 +183,13 @@ private val episodeCacheStateList = listOf(
                 title = "第一集的标题",
                 watchStatus = UnifiedCollectionType.DONE,
                 hasPublished = true,
-            )
+            ),
         ),
         cacheStatusFlow = MutableStateFlow(
             EpisodeCacheStatus.Cached(
                 300.megaBytes,
                 testMediaCache1,
-            )
+            ),
         ),
         parentCoroutineContext = EmptyCoroutineContext,
     ),
@@ -197,14 +203,14 @@ private val episodeCacheStateList = listOf(
                 title = "第二集的标题第二集的标题第二集的标题第二集的标题第二集的标题第二集的标题第二集的标题第二集的标题",
                 watchStatus = UnifiedCollectionType.DONE,
                 hasPublished = true,
-            )
+            ),
         ),
         cacheStatusFlow = MutableStateFlow(
             EpisodeCacheStatus.Caching(
                 progress = 0.3f,
                 totalSize = 300.megaBytes,
                 testMediaCache1,
-            )
+            ),
         ),
         parentCoroutineContext = EmptyCoroutineContext,
     ),
@@ -218,10 +224,10 @@ private val episodeCacheStateList = listOf(
                 title = "第三集的标题第三集的标题第三集的标题第三集的标题第三集的标题第三集的标题第三集的标题第三集的标题",
                 watchStatus = UnifiedCollectionType.DOING,
                 hasPublished = true,
-            )
+            ),
         ),
         cacheStatusFlow = MutableStateFlow(
-            EpisodeCacheStatus.NotCached
+            EpisodeCacheStatus.NotCached,
         ),
         parentCoroutineContext = EmptyCoroutineContext,
     ),
@@ -235,10 +241,10 @@ private val episodeCacheStateList = listOf(
                 title = "第四集的标题",
                 watchStatus = UnifiedCollectionType.DOING,
                 hasPublished = false,
-            )
+            ),
         ),
         cacheStatusFlow = MutableStateFlow(
-            EpisodeCacheStatus.NotCached
+            EpisodeCacheStatus.NotCached,
         ),
         parentCoroutineContext = EmptyCoroutineContext,
     ),
@@ -263,7 +269,7 @@ private fun PreviewSubjectCachePage() {
                         EpisodeCacheRequest(
                             subjectInfo = SubjectInfo(),
                             episodeInfo = EpisodeInfo(1),
-                        )
+                        ),
                     )
                 },
                 onRequestCacheComplete = { target ->
@@ -300,7 +306,7 @@ private fun PreviewSubjectCachePage() {
                     cacheListState,
                     mediaSelectorSettingsProvider = {
                         flowOf(MediaSelectorSettings.Default)
-                    }
+                    },
                 )
             },
         )

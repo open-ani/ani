@@ -46,7 +46,7 @@ fun MediaSelectorFilters(
 ) {
     FlowRow(
         modifier,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         MediaSelectorFilterChip(
             selected = resolution.finalSelected,
@@ -63,7 +63,7 @@ fun MediaSelectorFilters(
             onDeselect = { subtitleLanguageId.removePreference() },
             name = { Text("字幕") },
             Modifier.widthIn(min = minWidth, max = maxWidth),
-            label = { MediaSelectorFilterChipText(renderSubtitleLanguage(it)) }
+            label = { MediaSelectorFilterChipText(renderSubtitleLanguage(it)) },
         )
         MediaSelectorFilterChip(
             selected = alliance.finalSelected,
@@ -129,7 +129,7 @@ private fun <T : Any> MediaSelectorFilterChip(
                 } else {
                     Box(contentAlignment = Alignment.Center) {
                         Box(
-                            Modifier.alpha(if (selectedState == null) 1f else 0f) // 总是占位
+                            Modifier.alpha(if (selectedState == null) 1f else 0f), // 总是占位
                         ) {
                             name()
                         }
@@ -147,7 +147,7 @@ private fun <T : Any> MediaSelectorFilterChip(
                     } else {
                         Icon(
                             Icons.Default.Close, "取消筛选",
-                            Modifier.clickable { selectedState?.let { onDeselect(it) } }
+                            Modifier.clickable { selectedState?.let { onDeselect(it) } },
                         )
                     }
                 }
@@ -167,7 +167,7 @@ private fun <T : Any> MediaSelectorFilterChip(
                     onClick = {
                         onSelect(item)
                         showDropdown = false
-                    }
+                    },
                 )
             }
         }

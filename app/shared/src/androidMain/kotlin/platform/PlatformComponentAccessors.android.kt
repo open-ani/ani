@@ -11,7 +11,7 @@ private class AndroidPlatformComponentAccessors(
 ) : PlatformComponentAccessors {
     override val audioManager: AudioManager by lazy {
         AndroidAudioManager(
-            context.getSystemService(Context.AUDIO_SERVICE) as SystemAudioManager
+            context.getSystemService(Context.AUDIO_SERVICE) as SystemAudioManager,
         )
     }
     override val brightnessManager: BrightnessManager? by lazy {
@@ -31,7 +31,7 @@ private class AndroidBrightnessManager(
             // no override, use system settings
             return android.provider.Settings.System.getInt(
                 context.contentResolver,
-                android.provider.Settings.System.SCREEN_BRIGHTNESS
+                android.provider.Settings.System.SCREEN_BRIGHTNESS,
             ).toFloat() / 255
         }
 

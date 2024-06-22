@@ -79,7 +79,7 @@ fun ProfilePage(
                     .fillMaxWidth(),
                 onClickSettings,
             )
-        }
+        },
     ) { topBarPaddings ->
         // debug
         DebugInfoView(
@@ -87,8 +87,8 @@ fun ProfilePage(
                 .padding(horizontal = 16.dp)
                 .padding(
                     top = topBarPaddings.calculateTopPadding(),
-                    bottom = contentPadding.calculateBottomPadding()
-                )
+                    bottom = contentPadding.calculateBottomPadding(),
+                ),
         )
     }
 
@@ -117,7 +117,7 @@ fun AniHelpSection(modifier: Modifier = Modifier) {
         val context by rememberUpdatedState(LocalContext.current)
 
         Text(
-            "欢迎加入 QQ 群反馈建议或者闲聊: 927170241. Telegram 群 openani. 如遇到问题, 除加群外也可以在 GitHub 反馈."
+            "欢迎加入 QQ 群反馈建议或者闲聊: 927170241. Telegram 群 openani. 如遇到问题, 除加群外也可以在 GitHub 反馈.",
         )
 
         Row(Modifier.align(Alignment.End), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -126,15 +126,15 @@ fun AniHelpSection(modifier: Modifier = Modifier) {
                 DropdownMenu(showOpenDropdown, { showOpenDropdown = false }) {
                     DropdownMenuItem(
                         text = { Text("GitHub 开源仓库") },
-                        onClick = { GlobalContext.get().get<BrowserNavigator>().openBrowser(context, ISSUE_TRACKER) }
+                        onClick = { GlobalContext.get().get<BrowserNavigator>().openBrowser(context, ISSUE_TRACKER) },
                     )
                     DropdownMenuItem(
                         text = { Text("反馈问题") },
-                        onClick = { GlobalContext.get().get<BrowserNavigator>().openBrowser(context, GITHUB_HOME) }
+                        onClick = { GlobalContext.get().get<BrowserNavigator>().openBrowser(context, GITHUB_HOME) },
                     )
                     DropdownMenuItem(
                         text = { Text("Ani 官网") },
-                        onClick = { GlobalContext.get().get<BrowserNavigator>().openBrowser(context, ANI_WEBSITE) }
+                        onClick = { GlobalContext.get().get<BrowserNavigator>().openBrowser(context, ANI_WEBSITE) },
                     )
                 }
 
@@ -155,7 +155,7 @@ fun AniHelpSection(modifier: Modifier = Modifier) {
         Text(
             "要让每个番剧都拥有不错的弹幕量需要不小用户基数, 如果你喜欢本应用, 请向朋友推荐以增加弹幕量!",
             style = MaterialTheme.typography.bodyMedium.copy(
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
             ),
         )
     }
@@ -169,13 +169,13 @@ internal fun SelfInfo(
     onClickSettings: () -> Unit,
 ) {
     Box(
-        modifier = Modifier.background(MaterialTheme.colorScheme.surface)
+        modifier = Modifier.background(MaterialTheme.colorScheme.surface),
     ) {
         UserInfoRow(
             selfInfo,
             onClickEditNickname = {},
             onClickSettings = onClickSettings,
-            modifier
+            modifier,
         )
 
         if (isLoggedIn == false) {

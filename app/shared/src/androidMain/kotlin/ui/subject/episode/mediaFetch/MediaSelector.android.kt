@@ -134,7 +134,7 @@ internal val previewMediaList = listOf(
             origin = this[0],
             cacheMediaSourceId = MediaCacheManager.LOCAL_FS_MEDIA_SOURCE_ID,
             download = ResourceLocation.LocalFile("file://test.txt"),
-        )
+        ),
     ) + this
 }
 
@@ -150,16 +150,16 @@ private fun PreviewMediaSelector() {
                         origin = previewMediaList[0],
                         cacheMediaSourceId = MediaCacheManager.LOCAL_FS_MEDIA_SOURCE_ID,
                         download = ResourceLocation.LocalFile("file://test.txt"),
-                    )
-                ) + previewMediaList
+                    ),
+                ) + previewMediaList,
             ),
             savedUserPreference = flowOf(MediaPreference.Empty),
             savedDefaultPreference = flowOf(
                 MediaPreference.PlatformDefault.copy(
-                    subtitleLanguageId = "CHS"
-                )
+                    subtitleLanguageId = "CHS",
+                ),
             ),
-            mediaSelectorSettings = flowOf(MediaSelectorSettings.Default)
+            mediaSelectorSettings = flowOf(MediaSelectorSettings.Default),
         )
     }
     ProvideCompositionLocalsForPreview {
@@ -170,7 +170,7 @@ private fun PreviewMediaSelector() {
                     rememberTestMediaSourceResults(),
                     mediaSelector,
                 )
-            }
+            },
         )
     }
 }
@@ -185,35 +185,35 @@ internal fun rememberTestMediaSourceResults(): MediaSourceResultsPresentation = 
                         MikanMediaSource.ID,
                         MediaSourceKind.BitTorrent,
                         initialState = MediaSourceFetchState.Working,
-                        results = previewMediaList
+                        results = previewMediaList,
                     ),
                     TestMediaSourceResult(
                         "dmhy",
                         MediaSourceKind.BitTorrent,
                         initialState = MediaSourceFetchState.Succeed,
-                        results = previewMediaList
+                        results = previewMediaList,
                     ),
                     TestMediaSourceResult(
                         "acg.rip",
                         MediaSourceKind.BitTorrent,
                         initialState = MediaSourceFetchState.Disabled,
-                        results = previewMediaList
+                        results = previewMediaList,
                     ),
                     TestMediaSourceResult(
                         "nyafun",
                         MediaSourceKind.WEB,
                         initialState = MediaSourceFetchState.Succeed,
-                        results = previewMediaList
+                        results = previewMediaList,
                     ),
                     TestMediaSourceResult(
                         MikanCNMediaSource.ID,
                         MediaSourceKind.BitTorrent,
                         initialState = MediaSourceFetchState.Failed(IllegalStateException()),
-                        results = emptyList()
+                        results = emptyList(),
                     ),
-                )
+                ),
             ),
-            settings = flowOf(MediaSelectorSettings.Default)
+            settings = flowOf(MediaSelectorSettings.Default),
         ),
         EmptyCoroutineContext,
     )

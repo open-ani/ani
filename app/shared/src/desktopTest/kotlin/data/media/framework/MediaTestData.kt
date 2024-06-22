@@ -132,5 +132,5 @@ val TestMediaCache1 = TestMediaCache(
         ),
     ),
     progress = MutableStateFlow(0.9999f),
-    totalSize = MutableStateFlow(233.megaBytes)
+    totalSize = MutableStateFlow(233.megaBytes),
 )

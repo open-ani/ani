@@ -81,7 +81,7 @@ fun EpisodeDetails(
             if (viewModel.mediaSelectorVisible) {
                 ModalBottomSheet(
                     onDismissRequest = { viewModel.mediaSelectorVisible = false },
-                    sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = currentPlatform.isDesktop())
+                    sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = currentPlatform.isDesktop()),
                 ) {
                     EpisodePlayMediaSelector(
                         mediaSelector = viewModel.mediaSelectorPresentation,
@@ -189,7 +189,7 @@ fun EpisodeTitle(
                     Modifier.border(1.dp, MaterialTheme.colorScheme.outlineVariant, shape = shape)
                         .placeholder(ep.isPlaceholder)
                         .clip(shape)
-                        .padding(horizontal = 4.dp, vertical = 2.dp)
+                        .padding(horizontal = 4.dp, vertical = 2.dp),
                 ) {
                     Text(
                         ep.ep,

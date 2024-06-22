@@ -59,7 +59,7 @@ data class MediaSourceSaves(
                         enabledBtSources.forEach { add(createSave(it, isEnabled = true)) }
                         disabledBtSources.forEach { add(createSave(it, isEnabled = false)) }
                     }
-                }
+                },
             )
         }
     }
@@ -87,13 +87,15 @@ class MediaSourceInstanceRepositoryImpl(
 
     override suspend fun updateSave(instanceId: String, config: MediaSourceSave.() -> MediaSourceSave) {
         dataStore.updateData { current ->
-            current.copy(instances = current.instances.map { save ->
-                if (save.instanceId == instanceId) {
-                    save.run(config)
-                } else {
-                    save
-                }
-            })
+            current.copy(
+                instances = current.instances.map { save ->
+                    if (save.instanceId == instanceId) {
+                        save.run(config)
+                    } else {
+                        save
+                    }
+                },
+            )
         }
     }
 

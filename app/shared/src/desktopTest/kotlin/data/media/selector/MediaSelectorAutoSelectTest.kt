@@ -46,7 +46,7 @@ class MediaSelectorAutoSelectTest {
         MediaSelectorContext(
             subjectFinished = false,
             mediaSourcePrecedence = emptyList(),
-        )
+        ),
     )
 
     private val selector = DefaultMediaSelector(
@@ -55,7 +55,7 @@ class MediaSelectorAutoSelectTest {
         savedUserPreference = savedUserPreference,
         savedDefaultPreference = savedDefaultPreference,
         enableCaching = false,
-        mediaSelectorSettings = mediaSelectorSettings
+        mediaSelectorSettings = mediaSelectorSettings,
     )
 
     companion object {
@@ -69,7 +69,7 @@ class MediaSelectorAutoSelectTest {
             fallbackSubtitleLanguageIds = listOf(
                 ChineseSimplified,
                 ChineseTraditional,
-            ).map { it.id }
+            ).map { it.id },
         )
     }
 
@@ -86,11 +86,15 @@ class MediaSelectorAutoSelectTest {
     private val mediaFetcher: MediaSourceMediaFetcher = MediaSourceMediaFetcher(
         configProvider = { MediaFetcherConfig.Default },
         mediaSources = listOf(
-            createTestMediaSourceInstance(TestHttpMediaSource(fetch = {
-                SinglePagePagedSource {
-                    mediaList.value.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
-                }
-            }))
+            createTestMediaSourceInstance(
+                TestHttpMediaSource(
+                    fetch = {
+                        SinglePagePagedSource {
+                            mediaList.value.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
+                        }
+                    },
+                ),
+            ),
         ),
         flowContext = EmptyCoroutineContext,
     )
@@ -100,7 +104,7 @@ class MediaSelectorAutoSelectTest {
             subjectNames = setOf("孤独摇滚"),
             episodeSort = EpisodeSort(1),
             episodeName = "test",
-        )
+        ),
     )
 
     private val autoSelect get() = selector.autoSelect
@@ -121,8 +125,8 @@ class MediaSelectorAutoSelectTest {
         assertEquals(TestMediaList.first(), selected)
         assertNull(
             autoSelect.awaitCompletedAndSelectDefault(
-                mediaFetchSession()
-            )
+                mediaFetchSession(),
+            ),
         )
     }
 

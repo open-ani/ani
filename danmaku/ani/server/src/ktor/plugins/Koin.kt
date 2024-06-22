@@ -15,7 +15,7 @@ internal fun Application.configureKoin(config: ServerConfig) {
                 config = config,
                 topCoroutineScope = this@configureKoin,
                 logger = log,
-            )
+            ),
         )
     }
 }

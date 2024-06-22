@@ -21,25 +21,25 @@ fun HelpDropdown(
             text = { Text("加入 QQ 群 927170241") },
             onClick = {
                 GlobalContext.get().get<BrowserNavigator>().openJoinGroup(context)
-            }
+            },
         )
         DropdownMenuItem(
             text = { Text("加入 Telegram 群 openani") },
             onClick = {
                 GlobalContext.get().get<BrowserNavigator>().openJoinTelegram(context)
-            }
+            },
         )
         DropdownMenuItem(
             text = { Text("GitHub 开源仓库") },
-            onClick = { GlobalContext.get().get<BrowserNavigator>().openBrowser(context, ISSUE_TRACKER) }
+            onClick = { GlobalContext.get().get<BrowserNavigator>().openBrowser(context, ISSUE_TRACKER) },
         )
         DropdownMenuItem(
             text = { Text("反馈问题") },
-            onClick = { GlobalContext.get().get<BrowserNavigator>().openBrowser(context, GITHUB_HOME) }
+            onClick = { GlobalContext.get().get<BrowserNavigator>().openBrowser(context, GITHUB_HOME) },
         )
         DropdownMenuItem(
             text = { Text("Ani 官网") },
-            onClick = { GlobalContext.get().get<BrowserNavigator>().openBrowser(context, ANI_WEBSITE) }
+            onClick = { GlobalContext.get().get<BrowserNavigator>().openBrowser(context, ANI_WEBSITE) },
         )
     }
 }

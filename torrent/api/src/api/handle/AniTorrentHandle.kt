@@ -44,7 +44,7 @@ interface TorrentFile {
  */
 @Target(
     AnnotationTarget.PROPERTY, AnnotationTarget.FUNCTION,
-    AnnotationTarget.CLASS, AnnotationTarget.VALUE_PARAMETER, AnnotationTarget.CONSTRUCTOR
+    AnnotationTarget.CLASS, AnnotationTarget.VALUE_PARAMETER, AnnotationTarget.CONSTRUCTOR,
 )
 @RequiresOptIn(message = "This function must be accessed in torrent thread")
 annotation class TorrentThread

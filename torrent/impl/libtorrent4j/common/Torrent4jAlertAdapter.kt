@@ -99,7 +99,7 @@ internal fun TorrentAlert<*>.toEventOrNull(): TorrentEvent? {
         is SaveResumeDataAlert -> TorrentSaveResumeDataEvent(torrentName(), this.params())
         is org.libtorrent4j.alerts.TorrentFinishedAlert -> TorrentFinishedEvent(
             torrentName(),
-            lazy { handle().asAniTorrentHandle() }
+            lazy { handle().asAniTorrentHandle() },
         )
 
         else -> null
@@ -114,6 +114,6 @@ internal fun TorrentAlert<*>.createStatsUpdateEvent(): StatsUpdateEvent {
         totalBytes = max,
         downloadedBytes = curr,
         uploadRate = this.handle().status().uploadRate().toUInt().toLong(),
-        downloadRate = this.handle().status().downloadRate().toUInt().toLong()
+        downloadRate = this.handle().status().downloadRate().toUInt().toLong(),
     )
 }

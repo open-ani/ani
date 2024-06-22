@@ -31,14 +31,15 @@ class SelectVideoFileEntryTest {
     fun `can select from multiple by episodeSort`() {
         val selected = TorrentVideoSourceResolver.selectVideoFileEntry(
             json.decodeFromString(
-                ListSerializer(String.serializer()), """
+                ListSerializer(String.serializer()),
+                """
                 [
                     "[Nekomoe kissaten&LoliHouse] Shuumatsu Train Doko e Iku - 02 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv",
                     "[Nekomoe kissaten&LoliHouse] Shuumatsu Train Doko e Iku - 03 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv",
                     "[Nekomoe kissaten&LoliHouse] Shuumatsu Train Doko e Iku - 04 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv",
                     "[Nekomoe kissaten&LoliHouse] Shuumatsu Train Doko e Iku - 05 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv"
                 ]
-            """.trimIndent()
+            """.trimIndent(),
             ),
             { this },
             episodeTitles = listOf("终末列车去往何方?"),
@@ -47,7 +48,7 @@ class SelectVideoFileEntryTest {
         )
         assertEquals(
             "[Nekomoe kissaten&LoliHouse] Shuumatsu Train Doko e Iku - 04 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv",
-            selected
+            selected,
         )
     }
 
@@ -55,14 +56,15 @@ class SelectVideoFileEntryTest {
     fun `can select from multiple by episodeEp`() {
         val selected = TorrentVideoSourceResolver.selectVideoFileEntry(
             json.decodeFromString(
-                ListSerializer(String.serializer()), """
+                ListSerializer(String.serializer()),
+                """
                 [
                     "[Nekomoe kissaten&LoliHouse] Shuumatsu Train Doko e Iku - 02 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv",
                     "[Nekomoe kissaten&LoliHouse] Shuumatsu Train Doko e Iku - 03 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv",
                     "[Nekomoe kissaten&LoliHouse] Shuumatsu Train Doko e Iku - 04 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv",
                     "[Nekomoe kissaten&LoliHouse] Shuumatsu Train Doko e Iku - 05 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv"
                 ]
-            """.trimIndent()
+            """.trimIndent(),
             ),
             { this },
             episodeTitles = listOf("终末列车去往何方?"),
@@ -71,7 +73,7 @@ class SelectVideoFileEntryTest {
         )
         assertEquals(
             "[Nekomoe kissaten&LoliHouse] Shuumatsu Train Doko e Iku - 04 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv",
-            selected
+            selected,
         )
     }
 
@@ -79,14 +81,15 @@ class SelectVideoFileEntryTest {
     fun `select by sort than by ep`() {
         val selected = TorrentVideoSourceResolver.selectVideoFileEntry(
             json.decodeFromString(
-                ListSerializer(String.serializer()), """
+                ListSerializer(String.serializer()),
+                """
                 [
                     "[Nekomoe kissaten&LoliHouse] Shuumatsu Train Doko e Iku - 02 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv",
                     "[Nekomoe kissaten&LoliHouse] Shuumatsu Train Doko e Iku - 03 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv",
                     "[Nekomoe kissaten&LoliHouse] Shuumatsu Train Doko e Iku - 04 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv",
                     "[Nekomoe kissaten&LoliHouse] Shuumatsu Train Doko e Iku - 05 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv"
                 ]
-            """.trimIndent()
+            """.trimIndent(),
             ),
             { this },
             episodeTitles = listOf("终末列车去往何方?"),
@@ -95,7 +98,7 @@ class SelectVideoFileEntryTest {
         )
         assertEquals(
             "[Nekomoe kissaten&LoliHouse] Shuumatsu Train Doko e Iku - 04 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv",
-            selected
+            selected,
         )
     }
 
@@ -103,14 +106,15 @@ class SelectVideoFileEntryTest {
     fun `can select from multiple by single title match`() {
         val selected = TorrentVideoSourceResolver.selectVideoFileEntry(
             json.decodeFromString(
-                ListSerializer(String.serializer()), """
+                ListSerializer(String.serializer()),
+                """
                 [
                     "[Nekomoe kissaten&LoliHouse] Shuumatsu Train Doko e Iku - 02 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv",
                     "[Nekomoe kissaten&LoliHouse] Shuumatsu Train Doko e Iku - 03 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv",
                     "[Nekomoe kissaten&LoliHouse] Shuumatsu Train Doko e Iku - 04 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv",
                     "[Nekomoe kissaten&LoliHouse] Shuumatsu Train Doko e Iku - 05 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv"
                 ]
-            """.trimIndent()
+            """.trimIndent(),
             ),
             { this },
             episodeTitles = listOf("Shuumatsu Train Doko e Iku - 03"),
@@ -119,7 +123,7 @@ class SelectVideoFileEntryTest {
         )
         assertEquals(
             "[Nekomoe kissaten&LoliHouse] Shuumatsu Train Doko e Iku - 03 [WebRip 1080p HEVC-10bit AAC ASSx2].mkv",
-            selected
+            selected,
         )
     }
 
@@ -140,7 +144,7 @@ class SelectVideoFileEntryTest {
             assertEquals(
                 "[DBD-Raws][未来日记][01][1080P][BDRip][HEVC-10bit][FLACx2].mkv",
                 selected,
-                message = list.toString()
+                message = list.toString(),
             )
         }
     }
@@ -163,7 +167,7 @@ class SelectVideoFileEntryTest {
             assertEquals(
                 "[DBD-Raws][未来日记][SP][1080P][BDRip][HEVC-10bit][FLAC].mkv",
                 selected,
-                message = list.toString()
+                message = list.toString(),
             )
         }
     }
@@ -186,7 +190,7 @@ class SelectVideoFileEntryTest {
             assertEquals(
                 "[DBD-Raws][未来日记][SP][01][1080P][BDRip][HEVC-10bit][FLAC].mkv",
                 selected,
-                message = list.toString()
+                message = list.toString(),
             )
         }
     }
@@ -209,7 +213,7 @@ class SelectVideoFileEntryTest {
             assertEquals(
                 "[DBD-Raws][未来日记][OVA][1080P][BDRip][HEVC-10bit][FLAC].mkv",
                 selected,
-                message = list.toString()
+                message = list.toString(),
             )
         }
     }
@@ -232,7 +236,7 @@ class SelectVideoFileEntryTest {
             assertEquals(
                 "[DBD-Raws][未来日记][OVA12][1080P][BDRip][HEVC-10bit][FLAC].mkv",
                 selected,
-                message = list.toString()
+                message = list.toString(),
             )
         }
     }
@@ -255,7 +259,7 @@ class SelectVideoFileEntryTest {
             assertEquals(
                 "[DBD-Raws][未来日记][01][1080P][BDRip][HEVC-10bit][FLACx2].mkv",
                 selected,
-                message = list.toString()
+                message = list.toString(),
             )
         }
     }

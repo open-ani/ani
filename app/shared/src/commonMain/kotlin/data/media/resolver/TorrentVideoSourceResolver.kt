@@ -132,7 +132,7 @@ class TorrentVideoSourceResolver(
                 for (entry in videos) {
                     val title = RawTitleParser.getDefault().parse(
                         entry.getPath().substringBeforeLast("."),
-                        null
+                        null,
                     ).episodeRange
                     if (title != null) { // difference between `associateWith`
                         put(entry, title)

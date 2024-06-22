@@ -16,14 +16,14 @@ fun Application.configureNotarizedApplication() {
             info = Info(
                 title = "Ani",
                 version = "1.0.0",
-                description = "Ani API"
+                description = "Ani API",
             ),
             servers = mutableListOf(Server(URI("https://danmaku.api.myani.org/"))),
             components = Components(
                 securitySchemes = mutableMapOf(
-                    "auth-jwt" to BearerAuth()
-                )
-            )
+                    "auth-jwt" to BearerAuth(),
+                ),
+            ),
         )
         customTypes = mapOf(
         )

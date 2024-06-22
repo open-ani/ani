@@ -535,14 +535,12 @@
     }
   },
   "webhooks": {
-
   },
   "components": {
     "schemas": {
       "Any": {
         "type": "object",
         "properties": {
-
         },
         "required": []
       },

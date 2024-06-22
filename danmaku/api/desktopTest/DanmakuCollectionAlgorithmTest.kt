@@ -16,9 +16,11 @@ internal class DanmakuCollectionAlgorithmTest {
         repopulateDistance: Duration = 2.seconds,
     ): DanmakuSessionAlgorithm =
         DanmakuSessionAlgorithm(
-            DanmakuSessionFlowState(sequence.toList(),
+            DanmakuSessionFlowState(
+                sequence.toList(),
                 repopulateThreshold = repopulateThreshold,
-                repopulateDistance = { repopulateDistance })
+                repopulateDistance = { repopulateDistance },
+            ),
         )
 
     private fun DanmakuSessionAlgorithm.at(time: Duration): DanmakuSessionAlgorithm {
@@ -84,7 +86,7 @@ internal class DanmakuCollectionAlgorithmTest {
                 dummyDanmaku(2.0),
             ),
             repopulateThreshold = 3.seconds,
-            repopulateDistance = 2.seconds
+            repopulateDistance = 2.seconds,
         )
         val list = instance.tickCollect()
         assertEquals(0, list.size)
@@ -99,7 +101,7 @@ internal class DanmakuCollectionAlgorithmTest {
                 dummyDanmaku(2.0),
             ),
             repopulateThreshold = 3.seconds,
-            repopulateDistance = 2.seconds
+            repopulateDistance = 2.seconds,
         )
         val list = instance.at(1.2.seconds).tickRepopulateTime()
         assertEquals(listOf(1.0), list)
@@ -114,7 +116,7 @@ internal class DanmakuCollectionAlgorithmTest {
                 dummyDanmaku(2.0),
             ),
             repopulateThreshold = 3.seconds,
-            repopulateDistance = 2.seconds
+            repopulateDistance = 2.seconds,
         )
         val list = instance.at(1.seconds).tickRepopulateTime()
         assertEquals(1, list.size)
@@ -131,7 +133,7 @@ internal class DanmakuCollectionAlgorithmTest {
                 dummyDanmaku(3.0),
             ),
             repopulateThreshold = 3.seconds,
-            repopulateDistance = 2.seconds
+            repopulateDistance = 2.seconds,
         )
         val list = instance.at(1.seconds).tickRepopulateTime()
         assertEquals(listOf(1.0, 1.0), list)
@@ -148,7 +150,7 @@ internal class DanmakuCollectionAlgorithmTest {
                 dummyDanmaku(4.0),
             ),
             repopulateThreshold = 3.seconds,
-            repopulateDistance = 2.seconds
+            repopulateDistance = 2.seconds,
         )
         val list = instance.at(2.seconds).tickRepopulateTime()
         assertEquals(listOf(1.0, 2.0), list)
@@ -171,7 +173,7 @@ internal class DanmakuCollectionAlgorithmTest {
                 dummyDanmaku(4.0),
             ),
             repopulateThreshold = 3.seconds,
-            repopulateDistance = 2.seconds
+            repopulateDistance = 2.seconds,
         )
         assertEquals(listOf(), instance.at(0.seconds).tickRepopulateTime())
         assertEquals(listOf(2.0, 3.0), instance.at(3.seconds).tickRepopulateTime())
@@ -187,7 +189,7 @@ internal class DanmakuCollectionAlgorithmTest {
                 dummyDanmaku(4.0),
             ),
             repopulateThreshold = 3.seconds,
-            repopulateDistance = 2.seconds
+            repopulateDistance = 2.seconds,
         )
         assertEquals(listOf(), instance.at(0.seconds).tickRepopulateTime())
         assertEquals(listOf(1.0, 2.0), instance.at(2.9.seconds).tickCollectTime())
@@ -207,7 +209,7 @@ internal class DanmakuCollectionAlgorithmTest {
                 dummyDanmaku(4.0),
             ),
             repopulateThreshold = 3.seconds,
-            repopulateDistance = 2.seconds
+            repopulateDistance = 2.seconds,
         )
         assertEquals(listOf(), instance.at(0.seconds).tickRepopulateTime())
 //        assertEquals(listOf(), instance.at(0.5.seconds).tickCollectTime())
@@ -228,7 +230,7 @@ internal class DanmakuCollectionAlgorithmTest {
                 dummyDanmaku(4.0),
             ),
             repopulateThreshold = 3.seconds,
-            repopulateDistance = 2.seconds
+            repopulateDistance = 2.seconds,
         )
         assertEquals(listOf(), instance.at(0.seconds).tickRepopulateTime())
         assertEquals(listOf(), instance.at(1.seconds).tickCollectTime(0))
@@ -247,7 +249,7 @@ internal class DanmakuCollectionAlgorithmTest {
                 dummyDanmaku(4.0),
             ),
             repopulateThreshold = 3.seconds,
-            repopulateDistance = 2.seconds
+            repopulateDistance = 2.seconds,
         )
         assertEquals(listOf(), instance.at(0.seconds).tickRepopulateTime())
         assertEquals(listOf(), instance.at(1.seconds).tickCollectTime(0))
@@ -272,7 +274,7 @@ internal class DanmakuCollectionAlgorithmTest {
                 dummyDanmaku(4.0),
             ),
             repopulateThreshold = 3.seconds,
-            repopulateDistance = 2.seconds
+            repopulateDistance = 2.seconds,
         )
         assertEquals(listOf(), instance.at(0.seconds).tickRepopulateTime())
         assertEquals(listOf(4.0), instance.at(5.seconds).tickRepopulateTime())
@@ -292,7 +294,7 @@ internal class DanmakuCollectionAlgorithmTest {
                 dummyDanmaku(5.0),
             ),
             repopulateThreshold = 3.seconds,
-            repopulateDistance = 2.seconds
+            repopulateDistance = 2.seconds,
         )
         assertEquals(listOf(1.0), instance.at(1.seconds).tickRepopulateTime())
         assertEquals(listOf(5.0), instance.at(6.seconds).tickRepopulateTime())
@@ -316,7 +318,7 @@ internal class DanmakuCollectionAlgorithmTest {
                 dummyDanmaku(7.0),
             ),
             repopulateThreshold = 3.seconds,
-            repopulateDistance = 2.seconds
+            repopulateDistance = 2.seconds,
         )
         assertEquals(listOf(4.0, 5.0), instance.at(5.seconds).tickRepopulateTime())
         assertEquals(listOf(), instance.at(4.seconds).tickCollectTime())
@@ -333,7 +335,7 @@ internal class DanmakuCollectionAlgorithmTest {
                 dummyDanmaku(5.0),
                 dummyDanmaku(6.0),
                 dummyDanmaku(7.0),
-            )
+            ),
         )
         assertEquals(listOf(4.0, 5.0), instance.at(5.seconds).tickRepopulateTime())
         assertEquals(listOf(), instance.at(4.seconds).tickCollectTime())
@@ -354,7 +356,7 @@ internal class DanmakuCollectionAlgorithmTest {
                 dummyDanmaku(9.0),
             ),
             repopulateThreshold = 3.seconds,
-            repopulateDistance = 2.seconds
+            repopulateDistance = 2.seconds,
         )
         assertEquals(listOf(7.0, 8.0), instance.at(8.seconds).tickRepopulateTime()) // 初次收集 repopulate
         assertEquals(listOf(3.0, 4.0), instance.at(4.5.seconds).tickRepopulateTime())
@@ -374,7 +376,7 @@ internal class DanmakuCollectionAlgorithmTest {
                 dummyDanmaku(7.0),
             ),
             repopulateThreshold = 3.seconds,
-            repopulateDistance = 2.seconds
+            repopulateDistance = 2.seconds,
         )
         assertEquals(listOf(4.0, 5.0), instance.at(5.seconds).tickRepopulateTime())
         assertEquals(listOf(0.0, 1.0), instance.at(1.9.seconds).tickRepopulateTime())
@@ -394,7 +396,7 @@ internal class DanmakuCollectionAlgorithmTest {
                 dummyDanmaku(7.0),
             ),
             repopulateThreshold = 3.seconds,
-            repopulateDistance = 2.seconds
+            repopulateDistance = 2.seconds,
         )
         assertEquals(listOf(4.0, 5.0), instance.at(5.seconds).tickRepopulateTime())
         assertEquals(listOf(), instance.at(2.1.seconds).tickCollectTime())
@@ -413,7 +415,7 @@ internal class DanmakuCollectionAlgorithmTest {
                 dummyDanmaku(7.0),
             ),
             repopulateThreshold = 3.seconds,
-            repopulateDistance = 2.seconds
+            repopulateDistance = 2.seconds,
         )
         assertEquals(listOf(4.0, 5.0), instance.at(5.seconds).tickRepopulateTime())
         assertEquals(listOf(1.0, 2.0), instance.at(2.seconds).tickRepopulateTime())
@@ -433,7 +435,7 @@ internal class DanmakuCollectionAlgorithmTest {
                 dummyDanmaku(7.0),
             ),
             repopulateThreshold = 3.seconds,
-            repopulateDistance = 2.seconds
+            repopulateDistance = 2.seconds,
         )
         assertEquals(listOf(4.0, 5.0), instance.at(5.seconds).tickRepopulateTime())
         assertEquals(listOf(1.0, 2.0), instance.at(2.seconds).tickRepopulateTime())
@@ -453,7 +455,7 @@ internal class DanmakuCollectionAlgorithmTest {
                 dummyDanmaku(7.0),
             ),
             repopulateThreshold = 3.seconds,
-            repopulateDistance = 2.seconds
+            repopulateDistance = 2.seconds,
         )
         assertEquals(listOf(4.0, 5.0), instance.at(5.seconds).tickRepopulateTime())
         assertEquals(listOf(1.0, 2.0), instance.at(2.seconds).tickRepopulateTime())
@@ -477,7 +479,7 @@ internal class DanmakuCollectionAlgorithmTest {
                 dummyDanmaku(7.0),
             ),
             repopulateThreshold = 3.seconds,
-            repopulateDistance = 2.seconds
+            repopulateDistance = 2.seconds,
         )
         assertEquals(listOf(), instance.at(999999.seconds).tickRepopulateTime())
     }
@@ -495,7 +497,7 @@ internal class DanmakuCollectionAlgorithmTest {
                 dummyDanmaku(7.0),
             ),
             repopulateThreshold = 3.seconds,
-            repopulateDistance = 2.seconds
+            repopulateDistance = 2.seconds,
         )
         assertEquals(listOf(), instance.at((-1).seconds).tickRepopulateTime())
     }
@@ -516,7 +518,7 @@ internal class DanmakuCollectionAlgorithmTest {
                     dummyDanmaku(7.0),
                 ),
                 repopulateThreshold = random.nextInt().seconds,
-                repopulateDistance = random.nextInt().seconds
+                repopulateDistance = random.nextInt().seconds,
             ).at(time.seconds).tickRepopulateTime()
         }
     }

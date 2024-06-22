@@ -46,7 +46,7 @@ kotlin {
 kotlin {
     sourceSets.commonMain.dependencies {
 //        implementation(projects.danmaku.api)
-        
+
         api(libs.kotlinx.coroutines.core)
         api(libs.kotlinx.serialization.json)
         compileOnly(libs.atomicfu) // No need to include in the final build since atomicfu Gradle will optimize it out

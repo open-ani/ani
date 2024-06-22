@@ -36,12 +36,12 @@ class IkarosMediaSource(config: MediaSourceConfig) : HttpMediaSource() {
                     "Basic " + Base64.getEncoder()
                         .encodeToString(
                             "$username:$password".toByteArray(
-                                StandardCharsets.UTF_8
-                            )
-                        )
+                                StandardCharsets.UTF_8,
+                            ),
+                        ),
                 )
             }
-        }
+        },
     )
 
     object Parameters : MediaSourceParametersBuilder() {

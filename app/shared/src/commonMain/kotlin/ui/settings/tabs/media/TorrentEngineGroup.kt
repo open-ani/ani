@@ -63,7 +63,7 @@ private fun SettingsScope.QBGroup(vm: MediaSettingsViewModel) {
                 Text("使用 qBittorrent 远程控制作为 BT 下载器")
                 Text("目前 ${Platform.currentPlatform.name} 只支持使用 qBittorrent (以及其他兼容版本如 qBittorrent Enhanced)")
             }
-        }
+        },
     ) {
         // 目前仅在 PC 显示该设置, 不允许关闭
 //        SwitchItem(
@@ -89,8 +89,8 @@ private fun SettingsScope.QBGroup(vm: MediaSettingsViewModel) {
             onValueChangeCompleted = {
                 vm.qBittorrentConfig.update(
                     config.copy(
-                        clientConfig = clientConfig.copy(baseUrl = it)
-                    )
+                        clientConfig = clientConfig.copy(baseUrl = it),
+                    ),
                 )
             },
             isErrorProvider = {
@@ -106,7 +106,7 @@ private fun SettingsScope.QBGroup(vm: MediaSettingsViewModel) {
                     Spacer(Modifier.height(8.dp))
                     Text("注意：目前仅支持连接本机 qBittorrent。连接远程实例时可以管理但不能播放。如你希望支持远程连接，请在 GitHub 创建一个 issue。")
                 }
-            }
+            },
         )
 
         HorizontalDividerItem()
@@ -123,8 +123,8 @@ private fun SettingsScope.QBGroup(vm: MediaSettingsViewModel) {
             onValueChangeCompleted = {
                 vm.qBittorrentConfig.update(
                     config.copy(
-                        clientConfig = clientConfig.copy(username = it)
-                    )
+                        clientConfig = clientConfig.copy(username = it),
+                    ),
                 )
             },
         )
@@ -143,8 +143,8 @@ private fun SettingsScope.QBGroup(vm: MediaSettingsViewModel) {
             onValueChangeCompleted = {
                 vm.qBittorrentConfig.update(
                     config.copy(
-                        clientConfig = clientConfig.copy(password = it)
-                    )
+                        clientConfig = clientConfig.copy(password = it),
+                    ),
                 )
             },
         )
@@ -163,11 +163,11 @@ private fun SettingsScope.QBGroup(vm: MediaSettingsViewModel) {
             onValueChangeCompleted = {
                 vm.qBittorrentConfig.update(
                     config.copy(
-                        clientConfig = clientConfig.copy(category = it)
-                    )
+                        clientConfig = clientConfig.copy(category = it),
+                    ),
                 )
             },
-            sanitizeValue = { it.trim() }
+            sanitizeValue = { it.trim() },
         )
 
         HorizontalDividerItem()
@@ -203,7 +203,7 @@ private fun SettingsScope.QBGroup(vm: MediaSettingsViewModel) {
             icon = {
                 Icon(
                     Icons.Rounded.Bolt, null,
-                    tint = MaterialTheme.colorScheme.onSurface
+                    tint = MaterialTheme.colorScheme.onSurface,
                 )
             },
             title = {
@@ -255,7 +255,7 @@ internal fun AniQBHelpLayout(
                 Ani 不会操作你自己在 qBittorrent 创建的其他任务。
                 
                 如有其他疑问，请加群询问或在 GitHub 创建一个 issue。
-                """.trimIndent()
+                """.trimIndent(),
             )
         }
     }
@@ -316,7 +316,7 @@ private fun InlineCodeText(
     ) {
         Row(
             Modifier.padding(vertical = 0.dp, horizontal = 4.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             content()
         }

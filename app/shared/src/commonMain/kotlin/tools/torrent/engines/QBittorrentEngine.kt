@@ -25,7 +25,7 @@ import java.io.File
 data class QBittorrentConfig(
     override val enabled: Boolean = currentPlatform.isDesktop(),
     val clientConfig: QBittorrentClientConfig = QBittorrentClientConfig(
-        userAgent = getAniUserAgent()
+        userAgent = getAniUserAgent(),
     ),
     @Transient val placeholder: Int = 0,
 ) : TorrentEngineConfig {
@@ -41,7 +41,7 @@ class QBittorrentEngine(
 ) : AbstractTorrentEngine<QBittorrentTorrentDownloader, QBittorrentConfig>(
     scope = scope,
     type = TorrentEngineType.QBittorrent,
-    config = config
+    config = config,
 ) {
     override val location: MediaSourceLocation get() = MediaSourceLocation.Local
     override val isSupported: Flow<Boolean> get() = flowOf(currentPlatform.isDesktop())
@@ -69,7 +69,7 @@ class QBittorrentEngine(
             config = config.clientConfig,
             saveDir = saveDir,
             client.asHttpFileDownloader(),
-            parentCoroutineContext = scope.coroutineContext
+            parentCoroutineContext = scope.coroutineContext,
         )
     }
 }

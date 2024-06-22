@@ -38,18 +38,20 @@ class TestMediaPreferenceItem<T : Any>(
 
 open class TestMediaSelector(
     final override val mediaList: Flow<List<Media>>,
-    val defaultPreference: MutableStateFlow<MediaPreference> = MutableStateFlow(MediaPreference.Empty.copy(
-        fallbackResolutions = listOf(
-            Resolution.R2160P,
-            Resolution.R1440P,
-            Resolution.R1080P,
-            Resolution.R720P,
-        ).map { it.id },
-        fallbackSubtitleLanguageIds = listOf(
-            ChineseSimplified,
-            ChineseTraditional,
-        ).map { it.id }
-    )),
+    val defaultPreference: MutableStateFlow<MediaPreference> = MutableStateFlow(
+        MediaPreference.Empty.copy(
+            fallbackResolutions = listOf(
+                Resolution.R2160P,
+                Resolution.R1440P,
+                Resolution.R1080P,
+                Resolution.R720P,
+            ).map { it.id },
+            fallbackSubtitleLanguageIds = listOf(
+                ChineseSimplified,
+                ChineseTraditional,
+            ).map { it.id },
+        ),
+    ),
 ) : MediaSelector {
     final override val alliance: TestMediaPreferenceItem<String> = TestMediaPreferenceItem()
     final override val resolution: TestMediaPreferenceItem<String> = TestMediaPreferenceItem()

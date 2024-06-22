@@ -129,7 +129,7 @@ private fun parseDocument(document: Document): List<Topic> {
             rawTitle = title,
             commentsCount = 0,
             downloadLink = ResourceLocation.HttpTorrentFile(
-                element.getElementsByTag("enclosure").attr("url")
+                element.getElementsByTag("enclosure").attr("url"),
             ),
             size = 0.bytes,
             alliance = title.trim().split("]", "】").getOrNull(0).orEmpty().removePrefix("[").removePrefix("【").trim(),

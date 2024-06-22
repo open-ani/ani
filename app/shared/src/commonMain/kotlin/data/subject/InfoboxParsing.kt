@@ -33,7 +33,7 @@ private fun convertToJsonElement(value: Any?): JsonElement {
         is Array<*> -> JsonArray(value.map { it?.let { convertToJsonElement(it) } ?: JsonNull })
         is List<*> -> JsonArray(value.map { it?.let { convertToJsonElement(it) } ?: JsonNull })
         is Map<*, *> -> JsonObject(
-            value.map { (k, v) -> k.toString() to convertToJsonElement(v) }.toMap()
+            value.map { (k, v) -> k.toString() to convertToJsonElement(v) }.toMap(),
         )
 
         else -> throw IllegalArgumentException("Unsupported type: ${value::class.java}")

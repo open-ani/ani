@@ -40,9 +40,11 @@ fun createDefaultHttpClient(
     }
     BrowserUserAgent()
     install(ContentNegotiation) {
-        json(Json {
-            ignoreUnknownKeys = true
-        })
+        json(
+            Json {
+                ignoreUnknownKeys = true
+            },
+        )
     }
     followRedirects = true
     clientConfig()
@@ -61,7 +63,7 @@ fun HttpClient.registerLogging(
             url = request.url.toString(),
             isAuthorized = request.headers.contains(HttpHeaders.Authorization),
             responseStatus = result.getOrNull()?.response?.status,
-            duration = duration
+            duration = duration,
         )
         result.getOrThrow()
     }
@@ -127,5 +129,5 @@ fun HttpLogger.buildHttpRequestLog(
     url = request.url.toString(),
     isAuthorized = request.headers.contains(HttpHeaders.Authorization),
     responseStatus = call?.response?.status,
-    duration = duration
+    duration = duration,
 )

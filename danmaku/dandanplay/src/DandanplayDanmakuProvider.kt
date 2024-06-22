@@ -84,7 +84,7 @@ class DandanplayDanmakuProvider(
             "第${(request.episodeEp ?: request.episodeSort).toString().removePrefix("0")}话 " + request.episodeName
         val matcher = DanmakuMatchers.mostRelevant(
             request.subjectPrimaryName,
-            prefixedExpectedEpisodeName
+            prefixedExpectedEpisodeName,
         )
 
         // 用剧集编号匹配
@@ -109,7 +109,7 @@ class DandanplayDanmakuProvider(
                     return createSession(
                         episode.id.toLong(),
                         0,
-                        DanmakuMatchMethod.Exact(episode.subjectName, episode.episodeName)
+                        DanmakuMatchMethod.Exact(episode.subjectName, episode.episodeName),
                     )
                 }
             }
@@ -122,7 +122,7 @@ class DandanplayDanmakuProvider(
                 return createSession(
                     it.id.toLong(),
                     0,
-                    DanmakuMatchMethod.ExactSubjectFuzzyEpisode(it.subjectName, it.episodeName)
+                    DanmakuMatchMethod.ExactSubjectFuzzyEpisode(it.subjectName, it.episodeName),
                 )
             }
         }
@@ -133,19 +133,21 @@ class DandanplayDanmakuProvider(
             filename = request.filename,
             fileHash = request.fileHash,
             fileSize = request.fileSize,
-            videoDuration = request.videoDuration
+            videoDuration = request.videoDuration,
         )
         val match = if (resp.isMatched) {
             resp.matches.firstOrNull() ?: return DanmakuFetchResult.noMatch(ID)
         } else {
-            matcher.match(resp.matches.map {
-                DanmakuEpisode(
-                    it.episodeId.toString(),
-                    it.animeTitle,
-                    it.episodeTitle,
-                    null
-                )
-            })?.let { match ->
+            matcher.match(
+                resp.matches.map {
+                    DanmakuEpisode(
+                        it.episodeId.toString(),
+                        it.animeTitle,
+                        it.episodeTitle,
+                        null,
+                    )
+                },
+            )?.let { match ->
                 resp.matches.first { it.episodeId.toString() == match.id }
             } ?: return DanmakuFetchResult.noMatch(ID)
         }
@@ -154,7 +156,7 @@ class DandanplayDanmakuProvider(
         return createSession(
             episodeId,
             (match.shift * 1000L).toLong(),
-            DanmakuMatchMethod.Fuzzy(match.animeTitle, match.episodeTitle)
+            DanmakuMatchMethod.Fuzzy(match.animeTitle, match.episodeTitle),
         )
     }
 
@@ -174,7 +176,7 @@ class DandanplayDanmakuProvider(
                     id = episode.episodeId.toString(),
                     subjectName = request.subjectPrimaryName,
                     episodeName = episode.episodeTitle,
-                    epOrSort = episode.episodeNumber?.let { EpisodeSort(it) }
+                    epOrSort = episode.episodeNumber?.let { EpisodeSort(it) },
                 )
             }
     }
@@ -184,7 +186,7 @@ class DandanplayDanmakuProvider(
             kotlin.runCatching {
                 dandanplayClient.searchEpisode(
                     subjectName = name.trim().substringBeforeLast(" "),
-                    episodeName = null // 用我们的匹配算法
+                    episodeName = null, // 用我们的匹配算法
                     //            episodeName = "第${(request.episodeEp ?: request.episodeSort).toString().removePrefix("0")}话",
                     // 弹弹的是 EP 顺序
                     // 弹弹数据库有时候会只有 "第x话" 没有具体标题, 所以不带标题搜索就够了
@@ -200,7 +202,7 @@ class DandanplayDanmakuProvider(
                     id = ep.episodeId.toString(),
                     subjectName = anime.animeTitle ?: "",
                     episodeName = ep.episodeTitle ?: "",
-                    epOrSort = ep.episodeNumber?.let { EpisodeSort(it) }
+                    epOrSort = ep.episodeNumber?.let { EpisodeSort(it) },
                 )
             }
         }
@@ -257,7 +259,7 @@ class DandanplayDanmakuProvider(
                 list.asSequence().mapNotNull { it.toDanmakuOrNull() },
                 shiftMillis = shiftMillis,
                 coroutineContext = sessionCoroutineContext,
-            )
+            ),
         )
     }
 }

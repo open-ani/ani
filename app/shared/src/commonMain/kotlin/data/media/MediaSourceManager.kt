@@ -98,10 +98,12 @@ class MediaSourceManagerImpl(
     private val mikanIndexCacheRepository: MikanIndexCacheRepository by inject()
     private val instances: MediaSourceInstanceRepository by inject()
 
-    private val scope = CoroutineScope(CoroutineExceptionHandler { _, throwable ->
-        // log error
-        logger.error(throwable) { "DownloadProviderManager scope error" }
-    })
+    private val scope = CoroutineScope(
+        CoroutineExceptionHandler { _, throwable ->
+            // log error
+            logger.error(throwable) { "DownloadProviderManager scope error" }
+        },
+    )
     private val factories: List<MediaSourceFactory> = ServiceLoader.load(MediaSourceFactory::class.java).toList()
 
     private val additionalSources by lazy {
@@ -111,7 +113,7 @@ class MediaSourceManagerImpl(
                 source.mediaSourceId,
                 true,
                 MediaSourceConfig.Default,
-                source
+                source,
             )
         }
     }
@@ -135,7 +137,7 @@ class MediaSourceManagerImpl(
                 save.mediaSourceId,
                 save.isEnabled,
                 save.config,
-                factory.create(config, save.config)
+                factory.create(config, save.config),
             )
         }
     }

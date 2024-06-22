@@ -50,7 +50,7 @@ class SorterState<T>(
             _sortingData = sortingData.toMutableList().apply {
                 add(to.index, removeAt(from.index))
             }
-        }
+        },
     )
 
     val isSorting by derivedStateOf { _sortingData != null }

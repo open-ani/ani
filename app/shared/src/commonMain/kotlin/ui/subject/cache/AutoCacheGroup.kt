@@ -30,7 +30,7 @@ fun SettingsScope.AutoCacheGroup(
         title = { Text("自动缓存") },
         description = {
             Text("自动缓存未观看的剧集")
-        }
+        },
     ) {
         var useGlobalSettings by remember { mutableStateOf(true) }
         SwitchItem(

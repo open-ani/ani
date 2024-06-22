@@ -49,8 +49,8 @@ private fun Route.documentation() {
                         registerTime = 1714404248957,
                         lastLoginTime = 1714404248957,
                         clientVersion = "3.0.0-beta22",
-                        clientPlatforms = setOf("macos-aarch64", "android-aarch64", "windows-x86_64")
-                    )
+                        clientPlatforms = setOf("macos-aarch64", "android-aarch64", "windows-x86_64"),
+                    ),
                 )
             }
             canRespond {

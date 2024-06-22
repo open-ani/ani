@@ -50,7 +50,7 @@ internal actual fun PreviewCollectionPage() {
 
         CollectionPage(
             onClickCaches = {},
-            contentPadding = PaddingValues(0.dp)
+            contentPadding = PaddingValues(0.dp),
         )
     }
 }
@@ -71,7 +71,7 @@ private fun testCollections(): List<SubjectCollection> {
                     sort = EpisodeSort(1),
                     ep = EpisodeSort(1),
                 ),
-                collectionType = UnifiedCollectionType.DONE
+                collectionType = UnifiedCollectionType.DONE,
             ),
             EpisodeCollection(
                 episodeInfo = EpisodeInfo(
@@ -85,10 +85,10 @@ private fun testCollections(): List<SubjectCollection> {
                     disc = 2272,
                     ep = EpisodeSort(2),
                 ),
-                collectionType = UnifiedCollectionType.DONE
-            )
+                collectionType = UnifiedCollectionType.DONE,
+            ),
 
-        )
+            )
         val latestEp = eps[1]
         add(
             SubjectCollection(
@@ -101,7 +101,7 @@ private fun testCollections(): List<SubjectCollection> {
                 episodes = eps,
                 collectionType = UnifiedCollectionType.DOING,
                 info = SubjectInfo.Empty,
-            )
+            ),
         )
         add(
             SubjectCollection(
@@ -114,7 +114,7 @@ private fun testCollections(): List<SubjectCollection> {
                 episodes = eps,
                 collectionType = UnifiedCollectionType.DOING,
                 info = SubjectInfo.Empty,
-            )
+            ),
         )
         add(
             SubjectCollection(
@@ -127,7 +127,7 @@ private fun testCollections(): List<SubjectCollection> {
                 episodes = eps,
                 collectionType = UnifiedCollectionType.DOING,
                 info = SubjectInfo.Empty,
-            )
+            ),
         )
         add(
             SubjectCollection(
@@ -140,7 +140,7 @@ private fun testCollections(): List<SubjectCollection> {
                 episodes = eps,
                 collectionType = UnifiedCollectionType.WISH,
                 info = SubjectInfo.Empty,
-            )
+            ),
         )
         repeat(20) {
             add(
@@ -167,7 +167,7 @@ private fun testCollections(): List<SubjectCollection> {
                     ),
                     collectionType = UnifiedCollectionType.WISH,
                     info = SubjectInfo.Empty,
-                )
+                ),
             )
         }
     }
@@ -190,17 +190,17 @@ private fun PreviewSubjectCollectionsColumnPhone() {
                     onClickEpisode = {},
                     onClickSelectEpisode = { },
                     onSetAllEpisodesDone = { },
-                    onSetCollectionType = {}
+                    onSetCollectionType = {},
                 )
             },
-            onEmpty = {}
+            onEmpty = {},
         )
     }
 }
 
 @Preview(
     heightDp = 1600, widthDp = 1600,
-    uiMode = UI_MODE_NIGHT_YES or UI_MODE_TYPE_NORMAL
+    uiMode = UI_MODE_NIGHT_YES or UI_MODE_TYPE_NORMAL,
 )
 @Preview(
     heightDp = 1600, widthDp = 1600,
@@ -221,10 +221,10 @@ private fun PreviewSubjectCollectionsColumnDesktopLarge() {
                     onClickEpisode = {},
                     onClickSelectEpisode = { },
                     onSetAllEpisodesDone = { },
-                    onSetCollectionType = {}
+                    onSetCollectionType = {},
                 )
             },
-            onEmpty = {}
+            onEmpty = {},
         )
     }
 }
@@ -236,7 +236,7 @@ private fun testLazyDataCache(): LazyDataCache<SubjectCollection> {
                 testCollections().asFlow()
             }
         },
-        debugName = "test"
+        debugName = "test",
     ).apply {
         runBlocking { requestMore() }
     }
@@ -259,13 +259,14 @@ fun testSubject(
             common = "mandamus",
             medium = "pellentesque",
             small = "ferri",
-            grid = "natoque"
+            grid = "natoque",
         ),
         volumes = 8709,
         eps = 8315,
         totalEpisodes = 2238,
         rating = Rating(
-            rank = 5821, total = 4784, count = Count(
+            rank = 5821, total = 4784,
+            count = Count(
                 _1 = null,
                 _2 = null,
                 _3 = null,
@@ -275,19 +276,19 @@ fun testSubject(
                 _7 = null,
                 _8 = null,
                 _9 = null,
-                _10 = null
+                _10 = null,
             ),
-            score = BigDecimal.ZERO
+            score = BigDecimal.ZERO,
         ),
         collection = Collection(
             wish = 6848,
             collect = 6029,
             doing = 4929,
             onHold = 2523,
-            dropped = 3158
+            dropped = 3158,
         ),
         tags = listOf(),
         date = null,
-        infobox = listOf()
+        infobox = listOf(),
     )
 }

@@ -35,7 +35,7 @@ fun UpdateLogoLabel(state: UpdateLogoState) {
         UpdateLogoState.ClickToCheck -> Text(text = "检查更新")
         is UpdateLogoState.DownloadFailed -> Text(
             text = "下载失败",
-            color = MaterialTheme.colorScheme.error
+            color = MaterialTheme.colorScheme.error,
         )
 
         is UpdateLogoState.Downloaded -> Text(text = "重启更新", color = MaterialTheme.colorScheme.error)
@@ -86,7 +86,7 @@ fun TextButtonUpdateLogo(
                 onStartDownload = {
                     state.startDownload(it, context)
                 },
-                currentVersion = state.currentVersion
+                currentVersion = state.currentVersion,
             )
         }
     }
@@ -95,17 +95,20 @@ fun TextButtonUpdateLogo(
         if (installationError != null) {
             FailedToInstallDialog(
                 onDismissRequest = { installationError = null },
-                logoState = { state.logoState }
+                logoState = { state.logoState },
             )
         }
 
-        TextButton({
-            state.handleClickLogo(
-                context,
-                onInstallationError = { installationError = it },
-                showChangelogDialog = { showDialog = true }
-            )
-        }, modifier) {
+        TextButton(
+            {
+                state.handleClickLogo(
+                    context,
+                    onInstallationError = { installationError = it },
+                    showChangelogDialog = { showDialog = true },
+                )
+            },
+            modifier,
+        ) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 ProvideTextStyle(MaterialTheme.typography.labelMedium) {
                     if (state.logoState !is UpdateLogoState.HasUpdate) {

@@ -49,7 +49,7 @@ class JellyfinMediaSource(config: MediaSourceConfig) : HttpMediaSource() {
             "baseUrl",
             default = "http://localhost:8096",
             description = "服务器地址" +
-                    "\n示例: http://localhost:8096"
+                    "\n示例: http://localhost:8096",
         )
         val userId = string(
             "userId",
@@ -59,7 +59,7 @@ class JellyfinMediaSource(config: MediaSourceConfig) : HttpMediaSource() {
         val apikey = string(
             "apikey",
             description = "API Key, 可在 Jellyfin \"控制台 - API 秘钥\" 中添加" +
-                    "\n示例: b7292a71d51a6bf3a31036086a6d2e23"
+                    "\n示例: b7292a71d51a6bf3a31036086a6d2e23",
         )
     }
 
@@ -80,7 +80,7 @@ class JellyfinMediaSource(config: MediaSourceConfig) : HttpMediaSource() {
         defaultRequest {
             header(
                 HttpHeaders.Authorization,
-                "MediaBrowser Token=\"$apiKey\""
+                "MediaBrowser Token=\"$apiKey\"",
             )
         }
     }

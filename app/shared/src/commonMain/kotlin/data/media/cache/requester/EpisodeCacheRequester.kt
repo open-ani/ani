@@ -117,7 +117,7 @@ class EpisodeCacheRequesterImpl(
         override val mediaSelector: MediaSelector by lazy {
             mediaSelectorFactory.create(
                 request.subjectInfo.id,
-                fetchSession.cumulativeResults
+                fetchSession.cumulativeResults,
             )
         }
 
@@ -129,7 +129,7 @@ class EpisodeCacheRequesterImpl(
                     SelectStorage(
                         this,
                         media,
-                        storagesLazy.first()
+                        storagesLazy.first(),
                     )
                 }
             }
@@ -150,7 +150,7 @@ class EpisodeCacheRequesterImpl(
                     SelectStorage(
                         this,
                         existing.origin.unwrapCached(),
-                        storagesLazy.first()
+                        storagesLazy.first(),
                     )
                 }
             }.run {
@@ -174,7 +174,7 @@ class EpisodeCacheRequesterImpl(
                         SelectStorage(
                             this,
                             selected,
-                            storagesLazy.first()
+                            storagesLazy.first(),
                         )
                     }
                 }
@@ -208,7 +208,7 @@ class EpisodeCacheRequesterImpl(
                 return switchStageLocked {
                     CacheRequestStage.Done(
                         request, selectedMedia, storage,
-                        MediaCacheMetadata(fetchSession.request.first())
+                        MediaCacheMetadata(fetchSession.request.first()),
                     )
                 }.also {
                     this.close()
@@ -223,7 +223,7 @@ class EpisodeCacheRequesterImpl(
                 return switchStageLocked {
                     CacheRequestStage.Done(
                         request, selectedMedia, storage,
-                        MediaCacheMetadata(fetchSession.request.first())
+                        MediaCacheMetadata(fetchSession.request.first()),
                     )
                 }.also {
                     this.close()
@@ -253,7 +253,7 @@ class EpisodeCacheRequesterImpl(
                 request,
                 mediaFetcherLazy.first().newSession(
                     MediaFetchRequest.Companion.create(request.subjectInfo, request.episodeInfo),
-                )
+                ),
             )
             stage.value = new
             return new

@@ -44,7 +44,7 @@ sourceSets {
         resources.srcDirs(
             project(":app:shared").layout.buildDirectory
 //                .file("generated/compose/resourceGenerator/preparedResources/commonMain")
-                .file("processedResources/desktop/main")
+                .file("processedResources/desktop/main"),
         )
     }
 }
@@ -67,17 +67,19 @@ compose.desktop {
             modules(
                 "jdk.unsupported", // sun.misc.Unsafe used by androidx datastore
                 "java.management", // javax.management.MBeanRegistrationException
-                "java.net.http"
+                "java.net.http",
             )
             appResourcesRootDir.set(file("appResources"))
-            targetFormats(*buildList {
-                add(TargetFormat.Deb)
-                add(TargetFormat.Rpm)
-                add(TargetFormat.Dmg)
+            targetFormats(
+                *buildList {
+                    add(TargetFormat.Deb)
+                    add(TargetFormat.Rpm)
+                    add(TargetFormat.Dmg)
 //                if (getOs() == Os.Windows) {
 //                    add(TargetFormat.AppImage) // portable distribution (installation-free)
 //                }
-            }.toTypedArray())
+                }.toTypedArray(),
+            )
             packageName = "Ani"
             description = project.description
             vendor = "Him188"

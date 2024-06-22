@@ -135,21 +135,23 @@ fun CollectionPage(
                         if (currentPlatform.isDesktop()) {
                             // PC 无法下拉刷新
                             val refreshTasker = rememberUiMonoTasker()
-                            IconButton({
-                                val type = COLLECTION_TABS_SORTED[pagerState.currentPage]
-                                val collection = vm.collectionsByType(type)
-                                collection.isAutoRefreshing = false
-                                collection.pullToRefreshState?.startRefresh()
+                            IconButton(
+                                {
+                                    val type = COLLECTION_TABS_SORTED[pagerState.currentPage]
+                                    val collection = vm.collectionsByType(type)
+                                    collection.isAutoRefreshing = false
+                                    collection.pullToRefreshState?.startRefresh()
 //                                val cache = collection.cache
 //                                
 //                                refreshTasker.launch {
 //                                    cache.refresh(RefreshOrderPolicy.REPLACE)
 //                                }
-                            }) {
+                                },
+                            ) {
                                 Icon(Icons.Rounded.Refresh, null)
                             }
                         }
-                    }
+                    },
                 )
 
                 SecondaryScrollableTabRow(
@@ -172,11 +174,13 @@ fun CollectionPage(
                                 if (size == null) {
                                     Text(text = collectionType.displayText())
                                 } else {
-                                    Text(text = remember(collectionType, size) {
-                                        collectionType.displayText() + " " + size
-                                    })
+                                    Text(
+                                        text = remember(collectionType, size) {
+                                            collectionType.displayText() + " " + size
+                                        },
+                                    )
                                 }
-                            }
+                            },
                         )
                     }
                 }
@@ -233,7 +237,7 @@ fun CollectionPage(
             }
 
             Box(
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
             ) {
                 TabContent(
                     cache = collection.cache,
@@ -250,13 +254,13 @@ fun CollectionPage(
                     modifier = Modifier
                         .nestedScroll(pullToRefreshState.nestedScrollConnection)
                         .fillMaxSize(),
-                    enableAnimation = { vm.myCollectionsSettings.enableListAnimation }
+                    enableAnimation = { vm.myCollectionsSettings.enableListAnimation },
                 )
                 PullToRefreshContainer(
                     pullToRefreshState,
                     Modifier
                         .align(Alignment.TopCenter)
-                        .padding(topBarPaddings.calculateTopPadding())
+                        .padding(topBarPaddings.calculateTopPadding()),
                 )
             }
         }
@@ -295,7 +299,7 @@ private fun TabContent(
                         OutlinedButton({ navigator.navigateSubjectDetails(episodeProgressState.subjectId) }) {
                             Text("条目详情")
                         }
-                    }
+                    },
                 )
             }
 

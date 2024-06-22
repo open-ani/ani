@@ -13,7 +13,7 @@ class TimeFormatterTest {
 
     private val timeFormatter = TimeFormatter(
         formatterWithTime = formatter,
-        getTimeNow = { fixedTime }
+        getTimeNow = { fixedTime },
     )
 
     @Test

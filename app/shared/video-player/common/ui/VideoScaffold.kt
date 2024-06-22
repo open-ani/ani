@@ -85,7 +85,7 @@ fun VideoScaffold(
 
     BoxWithConstraints(
         modifier.then(if (expanded) Modifier.fillMaxHeight() else Modifier.fillMaxWidth()),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) { // 16:9 box
         Box(
             Modifier
@@ -94,13 +94,13 @@ fun VideoScaffold(
                         Modifier.fillMaxSize()
                     } else {
                         Modifier.fillMaxWidth().height(maxWidth * 9 / 16) // 16:9 box
-                    }
-                )
+                    },
+                ),
         ) {
             Box(
                 Modifier
                     .background(Color.Transparent)
-                    .matchParentSize()
+                    .matchParentSize(),
             ) {
                 video()
                 Box(Modifier.matchParentSize()) // 防止点击事件传播到 video 里
@@ -135,8 +135,8 @@ fun VideoScaffold(
                                             0f to Color.Transparent.copy(0.72f),
                                             0.32f to Color.Transparent.copy(0.45f),
                                             1f to Color.Transparent,
-                                        )
-                                    )
+                                        ),
+                                    ),
                             )
                             Column(
                                 Modifier
@@ -170,8 +170,8 @@ fun VideoScaffold(
                                         0f to Color.Transparent,
                                         1 - 0.32f to Color.Transparent.copy(0.45f),
                                         1f to Color.Transparent.copy(0.72f),
-                                    )
-                                )
+                                    ),
+                                ),
                         ) {
                             Spacer(Modifier.height(if (expanded) 12.dp else 6.dp))
                             Row(

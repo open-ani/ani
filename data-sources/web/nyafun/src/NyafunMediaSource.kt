@@ -62,7 +62,8 @@ class NyafunWebVideoMatcher : WebVideoMatcher {
             && url.contains("verify=")
         ) {
             return WebVideo(
-                url, mapOf(
+                url,
+                mapOf(
                     "User-Agent" to """Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3""",
                     "Referer" to "https://play.nyafun.net/",
                     "Sec-Ch-Ua-Mobile" to "?0",
@@ -70,7 +71,7 @@ class NyafunWebVideoMatcher : WebVideoMatcher {
                     "Sec-Fetch-Dest" to "video",
                     "Sec-Fetch-Mode" to "no-cors",
                     "Sec-Fetch-Site" to "cross-site",
-                )
+                ),
             )
         }
         return null
@@ -134,11 +135,12 @@ class NyafunMediaSource(config: MediaSourceConfig) : HttpMediaSource() {
                             EpisodeSort(1) // 电影总是 01
                         } else {
                             sort
-                        }
+                        },
                     ),
                     location = MediaSourceLocation.Online,
                     kind = MediaSourceKind.WEB,
-                ), MatchKind.FUZZY
+                ),
+                MatchKind.FUZZY,
             )
         }
 
@@ -170,9 +172,11 @@ class NyafunMediaSource(config: MediaSourceConfig) : HttpMediaSource() {
     override suspend fun fetch(query: MediaFetchRequest): SizedSource<MediaMatch> = SinglePagePagedSource {
         query.subjectNames.asFlow().flatMapMerge { name ->
             val bangumiList = flow {
-                emit(getDocument("$BASE_URL/search.html") {
-                    parameter("wd", name)
-                })
+                emit(
+                    getDocument("$BASE_URL/search.html") {
+                        parameter("wd", name)
+                    },
+                )
             }.map {
                 parseBangumiSearch(it)
             }.retry(3) { e ->

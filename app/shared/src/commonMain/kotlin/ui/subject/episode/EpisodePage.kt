@@ -87,12 +87,12 @@ fun EpisodePage(
         snackbarHost = {
             SnackbarHost(snackbarHostState, Modifier.navigationBarsPadding())
         },
-        contentWindowInsets = WindowInsets(0.dp)
+        contentWindowInsets = WindowInsets(0.dp),
     ) {
         CompositionLocalProvider(LocalSnackbar provides snackbarHostState) {
             EpisodePageContent(
                 viewModel,
-                modifier
+                modifier,
             )
         }
     }
@@ -150,7 +150,7 @@ private fun EpisodePageContentTabletVeryWide(
             modifier
                 .then(
                     if (vm.isFullscreen) Modifier.fillMaxSize()
-                    else Modifier.navigationBarsPadding()
+                    else Modifier.navigationBarsPadding(),
                 ),
         ) {
             EpisodeVideo(
@@ -158,7 +158,7 @@ private fun EpisodePageContentTabletVeryWide(
                 expanded = true,
                 maintainAspectRatio = false,
                 initialControllerVisible = true,
-                modifier = Modifier.weight(1f).fillMaxHeight()
+                modifier = Modifier.weight(1f).fillMaxHeight(),
             )
 
             if (vm.isFullscreen) {
@@ -176,7 +176,7 @@ private fun EpisodePageContentTabletVeryWide(
                             vm,
                             snackbar = LocalSnackbar.current,
                         )
-                    }
+                    },
                 )
             }
         }
@@ -193,9 +193,9 @@ private fun EpisodePageContentTablet(
             .then(
                 if (vm.isFullscreen) Modifier.fillMaxSize()
                 else Modifier.navigationBarsPadding()
-                    .verticalScroll(rememberScrollState())
+                    .verticalScroll(rememberScrollState()),
             ),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Column(Modifier.weight(1f)) {
             EpisodeVideo(
@@ -203,7 +203,7 @@ private fun EpisodePageContentTablet(
                 expanded = true,
                 maintainAspectRatio = true,
                 initialControllerVisible = true,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             )
 
             if (vm.isFullscreen) {
@@ -220,7 +220,7 @@ private fun EpisodePageContentTablet(
                         snackbar = LocalSnackbar.current,
                         Modifier.width(400.dp),
                     )
-                }
+                },
             )
         }
     }
@@ -314,7 +314,7 @@ private fun EpisodeVideo(
                 episode.ep,
                 episode.title,
                 subject.title,
-                Modifier.placeholder(episode.isPlaceholder || subject.isPlaceholder)
+                Modifier.placeholder(episode.isPlaceholder || subject.isPlaceholder),
             )
         },
         danmakuHostState = vm.danmaku.danmakuHostState,
@@ -363,7 +363,7 @@ private fun EpisodeVideo(
                         }
                         videoControllerState.setRequestAlwaysOn(danmakuEditorRequester, false)
                     }
-                }.weight(1f)
+                }.weight(1f),
             )
         },
         modifier = modifier.fillMaxWidth().background(Color.Black)
@@ -403,8 +403,8 @@ internal fun DanmakuEditor(
                                     exactPosition,
                                     text = textSnapshot,
                                     color = Color.White.toArgb(),
-                                    location = DanmakuLocation.NORMAL
-                                )
+                                    location = DanmakuLocation.NORMAL,
+                                ),
                             )
                             withContext(Dispatchers.Main) { setControllerVisible(false) }
                         } catch (e: Throwable) {

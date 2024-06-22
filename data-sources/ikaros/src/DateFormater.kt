@@ -11,7 +11,7 @@ internal class DateFormater {
      */
     private val utcDateFormat: DateFormat = SimpleDateFormat(
         "yyyy-MM-dd'T'HH:mm:ss",
-        Locale.getDefault()
+        Locale.getDefault(),
     )
 
     fun utcDateStr2timeStamp(dateStr: String): Long {

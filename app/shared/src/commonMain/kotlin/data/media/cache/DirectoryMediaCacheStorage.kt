@@ -115,7 +115,7 @@ class DirectoryMediaCacheStorage(
                                         listFlow.value += cache
                                     }
                                     allRecovered.add(cache)
-                                }
+                                },
                             )
                         }
                     }
@@ -198,14 +198,14 @@ class DirectoryMediaCacheStorage(
             }
             val cache = engine.createCache(
                 media, metadata,
-                scope.coroutineContext
+                scope.coroutineContext,
             )
             withContext(Dispatchers.IO) {
                 metadataDir.resolve(getSaveFilename(cache)).writeText(
                     json.encodeToString(
                         MediaCacheSave.serializer(),
-                        MediaCacheSave(media, cache.metadata)
-                    )
+                        MediaCacheSave(media, cache.metadata),
+                    ),
                 )
             }
             listFlow.value += cache

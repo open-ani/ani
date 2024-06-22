@@ -41,7 +41,7 @@ fun MediaSelectorContext.Companion.createFlow(
 ): Flow<MediaSelectorContext> = combine(subjectCompleted, mediaSourcePrecedence) { completed, instances ->
     MediaSelectorContext(
         subjectFinished = completed,
-        mediaSourcePrecedence = instances
+        mediaSourcePrecedence = instances,
     )
 }.onStart {
     emit(Initial) // 否则如果一直没获取到剧集信息, 就无法选集, #385
@@ -58,5 +58,5 @@ fun MediaSelectorContext.Companion.createFlow(
     subjectCompleted,
     mediaSourcePrecedence.map { list ->
         list.map { it.mediaSourceId }
-    }
+    },
 )

@@ -11,7 +11,7 @@ fun Modifier.animateEnable(enabled: Boolean): Modifier = composed(
     inspectorInfo = debugInspectorInfo {
         name = "animateEnable"
         properties["enabled"] = enabled
-    }
+    },
 ) {
     // Animate alpha value based on the enabled state
     val alpha by animateFloatAsState(targetValue = if (enabled) 1f else 0.38f)

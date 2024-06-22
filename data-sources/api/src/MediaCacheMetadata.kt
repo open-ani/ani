@@ -74,7 +74,7 @@ constructor(
         extra: Map<String, String> = emptyMap(),
     ) : this(
         subjectId, episodeId, subjectNames, episodeSort, episodeEp, episodeName, extra,
-        _primaryConstructorMarker = 0
+        _primaryConstructorMarker = 0,
     )
 
     /**

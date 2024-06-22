@@ -61,7 +61,7 @@ class AndroidWebVideoSourceResolver : VideoSourceResolver {
                 matchers.firstNotNullOfOrNull { matcher ->
                     matcher.match(it, matcherContext)
                 }
-            }
+            },
         )
         return HttpStreamingVideoSource(webVideo.m3u8Url, media.originalTitle, webVideo = webVideo, media.extraFiles)
     }

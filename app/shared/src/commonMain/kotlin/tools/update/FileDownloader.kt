@@ -147,12 +147,14 @@ class DefaultFileDownloader : FileDownloader {
                         tryDownload(
                             client,
                             url,
-                            targetFile
+                            targetFile,
                         )
                         // 下载完成, 更新 checksum
-                        checksumFile.writeText(targetFile.inputStream().use {
-                            it.sha256()
-                        })
+                        checksumFile.writeText(
+                            targetFile.inputStream().use {
+                                it.sha256()
+                            },
+                        )
                         state.value = FileDownloaderState.Succeed(url, targetFile)
                         return true
                     } catch (e: CancellationException) {

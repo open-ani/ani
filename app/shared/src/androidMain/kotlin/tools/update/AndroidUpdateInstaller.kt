@@ -71,7 +71,7 @@ class AndroidUpdateInstaller : UpdateInstaller {
             context.grantUriPermission(
                 packageName,
                 apkUri,
-                Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION
+                Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION,
             )
         }
         startActivity(context, intent, null)

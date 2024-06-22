@@ -19,10 +19,10 @@ data class BangumiLoginRequest(
     companion object {
         val AllowedOSes = listOf(
             "windows", "macos", "android", "ios",
-            "linux", "debian", "ubuntu", "redhat"
+            "linux", "debian", "ubuntu", "redhat",
         )
         val AllowedArchs = listOf(
-            "aarch64", "x86", "x86_64"
+            "aarch64", "x86", "x86_64",
         )
     }
 }

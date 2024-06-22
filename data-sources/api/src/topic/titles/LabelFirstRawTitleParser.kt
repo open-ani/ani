@@ -187,7 +187,7 @@ class LabelFirstRawTitleParser : RawTitleParser() {
                 if (extra != null) {
                     builder.episodeRange = EpisodeRange.combined(
                         EpisodeRange.range(start, end),
-                        EpisodeRange.single(EpisodeSort(extra.removePrefix("+")))
+                        EpisodeRange.single(EpisodeSort(extra.removePrefix("+"))),
                     )
                 } else {
                     builder.episodeRange = EpisodeRange.range(start, end)
@@ -196,15 +196,17 @@ class LabelFirstRawTitleParser : RawTitleParser() {
             }
             seasonPattern.find(str)?.let { result ->
                 builder.episodeRange =
-                    EpisodeRange.combined(result.groups.drop(1).mapNotNull { group ->
-                        group?.value?.removePrefix("+")?.takeIf { it.isNotBlank() }
-                    }.map {
-                        if (it.startsWith("S", ignoreCase = true) && !it.startsWith("SP", ignoreCase = true)) {
-                            EpisodeRange.season(it.drop(1).toIntOrNull())
-                        } else {
-                            EpisodeRange.single(it)
-                        }
-                    })
+                    EpisodeRange.combined(
+                        result.groups.drop(1).mapNotNull { group ->
+                            group?.value?.removePrefix("+")?.takeIf { it.isNotBlank() }
+                        }.map {
+                            if (it.startsWith("S", ignoreCase = true) && !it.startsWith("SP", ignoreCase = true)) {
+                                EpisodeRange.season(it.drop(1).toIntOrNull())
+                            } else {
+                                EpisodeRange.single(it)
+                            }
+                        },
+                    )
                 return true
             }
             if (str.contains("SP", ignoreCase = true) // 包括 "Special"
@@ -266,7 +268,7 @@ private val brackets =
 private val collectionPattern = Regex(
 //    """((?<start>(?:SP)?\d{1,4})\s?(?:-{1,2}|~|～)\s?(?<end>\d{1,4}))?(?:TV|BDrip|BD)?(?<extra>\+.+)*""",
     """(?<start>(?:SP)?\d{1,4})\s?(?:-{1,2}|~|～)\s?(?<end>\d{1,4})(?:TV|BDrip|BD)?(?<extra>\+.+)?""",
-    RegexOption.IGNORE_CASE
+    RegexOption.IGNORE_CASE,
 )
 
 private val seasonPattern = Regex("""(S\d)(?:(\+S\d)|(\+S\w)|(\+\w+))*""", RegexOption.IGNORE_CASE)
@@ -284,7 +286,7 @@ internal fun String.splitWords(vararg delimiters: Char = DEFAULT_SPLIT_WORDS_DEL
             if (index < result.range.first) {
                 yieldAll(
                     text.substring(index until result.range.first)
-                        .splitToSequence(delimiters = delimiters)
+                        .splitToSequence(delimiters = delimiters),
                 )
             }
             index = result.range.last + 1
@@ -304,7 +306,7 @@ internal fun String.splitWords(vararg delimiters: Char = DEFAULT_SPLIT_WORDS_DEL
         if (index < text.length) {
             yieldAll(
                 text.substring(index until text.length)
-                    .splitToSequence(delimiters = delimiters)
+                    .splitToSequence(delimiters = delimiters),
             )
         }
     }

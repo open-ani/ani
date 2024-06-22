@@ -21,7 +21,7 @@ class MongoDanmakuRepositoryImpl : DanmakuRepository, KoinComponent {
                 location = danmakuInfo.location,
                 text = danmakuInfo.text,
                 color = danmakuInfo.color,
-            )
+            ),
         ).wasAcknowledged()
     }
 
@@ -34,7 +34,7 @@ class MongoDanmakuRepositoryImpl : DanmakuRepository, KoinComponent {
         return danmakuTable.find(
             (Field("episodeId") eq episodeId) and
                     (Field("playTime") gte fromTime) and
-                    (Field("playTime") lt toTime)
+                    (Field("playTime") lt toTime),
         ).limit(maxCount).toList().map {
             Danmaku(
                 id = it.id.toString(),
@@ -43,8 +43,8 @@ class MongoDanmakuRepositoryImpl : DanmakuRepository, KoinComponent {
                     playTime = it.playTime,
                     location = it.location,
                     text = it.text,
-                    color = it.color
-                )
+                    color = it.color,
+                ),
             )
         }
     }

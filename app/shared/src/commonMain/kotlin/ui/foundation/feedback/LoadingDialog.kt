@@ -35,7 +35,7 @@ fun ConnectingDialog(
     extra: @Composable ColumnScope.() -> Unit = {},
     progress: @Composable (RowScope.() -> Unit)? = {
         LinearProgressIndicator(
-            Modifier.width(128.dp)
+            Modifier.width(128.dp),
         )
     },
     confirmButton: @Composable (() -> Unit)? = null,
@@ -47,7 +47,7 @@ fun ConnectingDialog(
 ) {
     Dialog(
         onDismissRequest = { onDismissRequest?.invoke() },
-        properties = properties
+        properties = properties,
     ) {
         Column(
             Modifier
@@ -79,7 +79,7 @@ fun ConnectingDialog(
                 Row(
                     Modifier.padding(top = 8.dp).fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.End
+                    horizontalArrangement = Arrangement.End,
                 ) {
                     confirmButton()
                 }
@@ -100,10 +100,12 @@ private fun PreviewConnectingDialog() {
 @Composable
 private fun PreviewConnectingDialogConfirm() {
     ProvideCompositionLocalsForPreview {
-        ConnectingDialog(confirmButton = {
-            TextButton(onClick = { }) {
-                Text("取消")
-            }
-        })
+        ConnectingDialog(
+            confirmButton = {
+                TextButton(onClick = { }) {
+                    Text("取消")
+                }
+            },
+        )
     }
 }

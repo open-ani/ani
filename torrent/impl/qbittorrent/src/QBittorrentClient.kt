@@ -137,7 +137,7 @@ class QBittorrentClient(
             "v2/torrents/recheck",
             formParameters = parameters {
                 append("hashes", hashes.joinToString("|"))
-            }
+            },
         )
     }
 
@@ -193,7 +193,7 @@ class QBittorrentClient(
             "v2/torrents/pause",
             formParameters = parameters {
                 append("hashes", hashes.joinToString("|"))
-            }
+            },
         )
     }
 
@@ -204,7 +204,7 @@ class QBittorrentClient(
             "v2/torrents/resume",
             formParameters = parameters {
                 append("hashes", hashes.joinToString("|"))
-            }
+            },
         )
     }
 
@@ -217,7 +217,7 @@ class QBittorrentClient(
             formParameters = parameters {
                 append("hashes", hashes.joinToString("|"))
                 append("deleteFiles", deleteFiles.toString())
-            }
+            },
         )
     }
 
@@ -240,7 +240,7 @@ class QBittorrentClient(
                 append("paused", paused.toString())
                 append("sequentialDownload", sequentialDownload.toString())
                 append("firstLastPiecePrio", firstLastPiecePrio.toString())
-            }
+            },
         )
     }
 
@@ -271,7 +271,7 @@ class QBittorrentClient(
             "v2/torrents/removeCategories",
             formParameters = parameters {
                 append("categories", category)
-            }
+            },
         )
     }
 
@@ -286,7 +286,7 @@ class QBittorrentClient(
                 append("hash", hash)
                 append("id", index.toString())
                 append("priority", priority.value.toString())
-            }
+            },
         )
     }
 
@@ -308,7 +308,7 @@ class QBittorrentClient(
             formParameters = parameters {
                 append("hashes", hash)
                 append("location", location)
-            }
+            },
         )
     }
 
@@ -320,7 +320,7 @@ class QBittorrentClient(
             "v2/torrents/toggleFirstLastPiecePrio",
             formParameters = parameters {
                 append("hashes", hashes.joinToString("|"))
-            }
+            },
         )
     }
 

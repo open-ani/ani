@@ -111,7 +111,7 @@ fun EpisodeVideoLoadingIndicator(
                 is VideoLoadingState.Failed -> {
                     TextWithBorder(
                         "加载失败: ${renderCause(state)}",
-                        color = MaterialTheme.colorScheme.error
+                        color = MaterialTheme.colorScheme.error,
                     )
                 }
             }

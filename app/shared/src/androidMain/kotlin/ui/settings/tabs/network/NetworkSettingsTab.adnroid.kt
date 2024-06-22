@@ -36,7 +36,7 @@ private fun PreviewNetworkPreferenceTab() {
                                 DmhyMediaSource.ID,
                                 true,
                                 MediaSourceConfig(),
-                                TestHttpMediaSource(AcgRipMediaSource.ID, randomConnectivity = true)
+                                TestHttpMediaSource(AcgRipMediaSource.ID, randomConnectivity = true),
                             ),
 
                             MediaSourceInstance(
@@ -44,7 +44,7 @@ private fun PreviewNetworkPreferenceTab() {
                                 DmhyMediaSource.ID,
                                 true,
                                 MediaSourceConfig(),
-                                TestHttpMediaSource(DmhyMediaSource.ID, randomConnectivity = true)
+                                TestHttpMediaSource(DmhyMediaSource.ID, randomConnectivity = true),
                             ),
 
                             MediaSourceInstance(
@@ -52,7 +52,7 @@ private fun PreviewNetworkPreferenceTab() {
                                 DmhyMediaSource.ID,
                                 true,
                                 MediaSourceConfig(),
-                                TestHttpMediaSource(MikanMediaSource.ID, randomConnectivity = true)
+                                TestHttpMediaSource(MikanMediaSource.ID, randomConnectivity = true),
                             ),
 
                             MediaSourceInstance(
@@ -60,9 +60,9 @@ private fun PreviewNetworkPreferenceTab() {
                                 DmhyMediaSource.ID,
                                 true,
                                 MediaSourceConfig(),
-                                TestHttpMediaSource("local", randomConnectivity = true)
+                                TestHttpMediaSource("local", randomConnectivity = true),
                             ),
-                        )
+                        ),
                     )
                     override val allFactories: List<MediaSourceFactory> = listOf(MikanMediaSource.Factory())
                     override val allFactoryIds: List<String> = allInstances.value.map { it.mediaSourceId }
@@ -87,7 +87,7 @@ private fun PreviewNetworkPreferenceTab() {
                     }
                 }
             }
-        }
+        },
     ) {
         val vm = rememberViewModel { NetworkSettingsViewModel() }
         SideEffect {

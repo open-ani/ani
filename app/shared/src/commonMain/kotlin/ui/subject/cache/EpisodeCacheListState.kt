@@ -170,7 +170,7 @@ class EpisodeCacheListStateImpl(
                 media = done.media,
                 storage = done.storage,
                 metadata = done.metadata,
-            )
+            ),
         )
     }
 

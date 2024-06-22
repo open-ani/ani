@@ -63,7 +63,7 @@ private fun Route.documentation() {
                         clientVersion = "3.0.0-beta24",
                         clientOS = "Android",
                         clientArch = "aarch64",
-                    )
+                    ),
                 )
             }
             response {

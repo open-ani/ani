@@ -41,7 +41,7 @@ internal fun SubjectDetailsHeader(
 
         Box(
             Modifier
-                .clip(MaterialTheme.shapes.medium)
+                .clip(MaterialTheme.shapes.medium),
         ) {
             val coverImage by viewModel.coverImage.collectAsStateWithLifecycle(null)
             AsyncImage(
@@ -61,14 +61,14 @@ internal fun SubjectDetailsHeader(
                 Text(
                     chineseName,
                     Modifier.offset(y = (-2).dp),
-                    style = MaterialTheme.typography.titleLarge
+                    style = MaterialTheme.typography.titleLarge,
                 )
             }
             SelectionContainer {
                 Text(
                     officialName,
                     Modifier.padding(top = 4.dp),
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium,
                 )
             }
 
@@ -109,11 +109,11 @@ fun Tag(
         modifier
             .border(1.dp, MaterialTheme.colorScheme.outline.weaken(), shape)
             .clip(shape),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         Row(
             Modifier.padding(horizontal = 6.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             label()
         }

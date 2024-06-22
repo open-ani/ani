@@ -107,7 +107,7 @@ fun SettingsScope.EpisodeCacheListGroup(
             options = task.options,
             onSelect = { state.selectStorage(it) },
             onDismissRequest = { state.cancelStorageSelector(task) },
-            modifier
+            modifier,
         )
     }
     state.currentSelectMediaTask?.let { task ->
@@ -177,9 +177,9 @@ fun SettingsScope.EpisodeCacheListGroup(
                         showDropdown = showDropdown,
                         onDismissRequest = { showDropdown = false },
                         onDeleteCache = { state.deleteCache(it) },
-                        episodeCacheState = episodeCacheState
+                        episodeCacheState = episodeCacheState,
                     )
-                }
+                },
             )
 
             // by m3 spec, progress indicator is 4dp
@@ -205,7 +205,7 @@ private fun ItemDropdown(
 ) {
     DropdownMenu(
         showDropdown,
-        onDismissRequest
+        onDismissRequest,
     ) {
         DropdownMenuItem(
             onClick = {
@@ -219,9 +219,9 @@ private fun ItemDropdown(
                 Icon(
                     Icons.Rounded.Delete,
                     null,
-                    tint = MaterialTheme.colorScheme.error
+                    tint = MaterialTheme.colorScheme.error,
                 )
-            }
+            },
         )
     }
 }
@@ -267,7 +267,7 @@ private fun SettingsScope.EpisodeItem(
                                 episode.actionTasker.cancel()
                             },
                             Modifier.animateEnable(enabled),
-                            enabled = enabled
+                            enabled = enabled,
                         ) {
                             Icon(Icons.Rounded.Close, "取消")
                         }
@@ -359,8 +359,8 @@ private fun Label(
         modifier.border(
             1.dp,
             MaterialTheme.colorScheme.outlineVariant,
-            shape = MaterialTheme.shapes.small
-        )
+            shape = MaterialTheme.shapes.small,
+        ),
     ) {
         Box(Modifier.padding(contentPadding)) {
             ProvideTextStyle(MaterialTheme.typography.labelSmall) {

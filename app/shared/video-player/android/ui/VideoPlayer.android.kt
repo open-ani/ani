@@ -43,16 +43,18 @@ actual fun VideoPlayer(
                             CaptionStyleCompat.EDGE_TYPE_OUTLINE,
                             Color.BLACK,
                             Typeface.DEFAULT,
-                        )
+                        ),
                     )
                 }
                 (playerState as? ExoPlayerState)?.let {
                     player = it.player
-                    setControllerVisibilityListener(ControllerVisibilityListener { visibility ->
-                        if (visibility == View.VISIBLE) {
-                            videoView.hideController()
-                        }
-                    })
+                    setControllerVisibilityListener(
+                        ControllerVisibilityListener { visibility ->
+                            if (visibility == View.VISIBLE) {
+                                videoView.hideController()
+                            }
+                        },
+                    )
                 }
             }
         },

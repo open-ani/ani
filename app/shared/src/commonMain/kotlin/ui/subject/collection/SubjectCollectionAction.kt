@@ -47,27 +47,27 @@ object SubjectCollectionActions {
     val Wish = SubjectCollectionAction(
         { Text("想看") },
         { Icon(Icons.AutoMirrored.Rounded.ListAlt, null) },
-        UnifiedCollectionType.WISH
+        UnifiedCollectionType.WISH,
     )
     val Doing = SubjectCollectionAction(
         { Text("在看") },
         { Icon(Icons.Rounded.PlayArrow, null) },
-        UnifiedCollectionType.DOING
+        UnifiedCollectionType.DOING,
     )
     val Done = SubjectCollectionAction(
         { Text("看过") },
         { Icon(Icons.Rounded.Done, null) },
-        UnifiedCollectionType.DONE
+        UnifiedCollectionType.DONE,
     )
     val OnHold = SubjectCollectionAction(
         { Text("搁置") },
         { Icon(Icons.Rounded.AccessTime, null) },
-        UnifiedCollectionType.ON_HOLD
+        UnifiedCollectionType.ON_HOLD,
     )
     val Dropped = SubjectCollectionAction(
         { Text("抛弃") },
         { Icon(Icons.Rounded.Remove, null) },
-        UnifiedCollectionType.DROPPED
+        UnifiedCollectionType.DROPPED,
     )
     val DeleteCollection = SubjectCollectionAction(
         { Text("取消追番", color = MaterialTheme.colorScheme.error) },
@@ -131,20 +131,24 @@ fun EditCollectionTypeDropDown(
                 Text("要同时设置所有剧集为看过吗？")
             },
             confirmButton = {
-                Button({
-                    showSetAllEpisodesDialog = false
-                    onSetAllEpisodesDone.invoke()
-                }) {
+                Button(
+                    {
+                        showSetAllEpisodesDialog = false
+                        onSetAllEpisodesDone.invoke()
+                    },
+                ) {
                     Text("设置")
                 }
             },
             dismissButton = {
-                TextButton({
-                    showSetAllEpisodesDialog = false
-                }) {
+                TextButton(
+                    {
+                        showSetAllEpisodesDialog = false
+                    },
+                ) {
                     Text("取消")
                 }
-            }
+            },
         )
     }
 
@@ -176,7 +180,7 @@ fun EditCollectionTypeDropDown(
                     if (action == SubjectCollectionActions.Done) {
                         showSetAllEpisodesDialog = true
                     }
-                }
+                },
             )
         }
     }
@@ -197,7 +201,7 @@ private val CollectedActionButtonColors
     get() =
         ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.outlineVariant,
-            contentColor = MaterialTheme.colorScheme.outline
+            contentColor = MaterialTheme.colorScheme.outline,
         )
 
 private val UncollectedActionButtonColors
@@ -205,7 +209,7 @@ private val UncollectedActionButtonColors
     get() =
         ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary
+            contentColor = MaterialTheme.colorScheme.onPrimary,
         )
 
 
@@ -293,7 +297,7 @@ private fun BasicSubjectCollectionActionButton(
         onClick = onClick,
         modifier,
         colors = colors,
-        shape = RoundedCornerShape(8.dp)
+        shape = RoundedCornerShape(8.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             if (action != null) {

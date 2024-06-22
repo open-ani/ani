@@ -74,7 +74,7 @@ fun rememberMediaSourceResultsPresentation(
                 mediaSourceResults(),
                 settings(),
             ),
-            backgroundScope.backgroundScope.coroutineContext
+            backgroundScope.backgroundScope.coroutineContext,
         )
     }
 }

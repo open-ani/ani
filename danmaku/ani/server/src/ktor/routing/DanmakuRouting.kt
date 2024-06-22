@@ -66,8 +66,8 @@ private fun Route.postDocumentation() {
                     name = "episodeId",
                     `in` = Parameter.Location.path,
                     schema = TypeDefinition.STRING,
-                    description = "剧集ID", 
-                    required = true
+                    description = "剧集ID",
+                    required = true,
                 ),
             )
             request {
@@ -79,9 +79,9 @@ private fun Route.postDocumentation() {
                             0,
                             Color.BLACK.rgb,
                             "Hello, world!",
-                            DanmakuLocation.NORMAL
-                        )
-                    )
+                            DanmakuLocation.NORMAL,
+                        ),
+                    ),
                 )
             }
             response {
@@ -119,46 +119,50 @@ private fun Route.getDocumentation() {
                     `in` = Parameter.Location.path,
                     schema = TypeDefinition.STRING,
                     description = "剧集ID",
-                    required = true
+                    required = true,
                 ),
                 Parameter(
                     name = "maxCount",
                     `in` = Parameter.Location.query,
                     schema = TypeDefinition.INT,
                     description = "最大弹幕获取数量，默认为8000",
-                    required = false
+                    required = false,
                 ),
                 Parameter(
                     name = "fromTime",
                     `in` = Parameter.Location.query,
                     schema = TypeDefinition.LONG,
                     description = "过滤范围开始时间，单位为毫秒，默认为0",
-                    required = false
+                    required = false,
                 ),
                 Parameter(
                     name = "toTime",
                     `in` = Parameter.Location.query,
                     schema = TypeDefinition.LONG,
                     description = "过滤范围结束时间，单位为毫秒，默认为-1；值为负数时表示不限制结束时间",
-                    required = false
+                    required = false,
                 ),
             )
             response {
                 responseCode(HttpStatusCode.OK)
                 responseType<DanmakuGetResponse>()
                 description("弹幕列表")
-                examples("" to DanmakuGetResponse(listOf(
-                    Danmaku(
-                        "ba1f213a-50bd-4e09-a4e0-de6e24b72e22",
-                        "3db414d0-930a-4144-84cf-b841f486215e",
-                        DanmakuInfo(
-                            0,
-                            Color.BLACK.rgb,
-                            "Hello, world!",
-                            DanmakuLocation.NORMAL
-                        )
-                    )
-                )))
+                examples(
+                    "" to DanmakuGetResponse(
+                        listOf(
+                            Danmaku(
+                                "ba1f213a-50bd-4e09-a4e0-de6e24b72e22",
+                                "3db414d0-930a-4144-84cf-b841f486215e",
+                                DanmakuInfo(
+                                    0,
+                                    Color.BLACK.rgb,
+                                    "Hello, world!",
+                                    DanmakuLocation.NORMAL,
+                                ),
+                            ),
+                        ),
+                    ),
+                )
             }
             canRespond {
                 responseCode(HttpStatusCode.BadRequest)

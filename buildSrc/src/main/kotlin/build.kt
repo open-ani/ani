@@ -99,7 +99,7 @@ val DEFAULT_JVM_TARGET = JavaVersion.VERSION_17
 
 private fun Project.getProjectPreferredJvmTargetVersion() = extra.runCatching { get("ani.jvm.target") }.fold(
     onSuccess = { JavaVersion.toVersion(it.toString()) },
-    onFailure = { DEFAULT_JVM_TARGET }
+    onFailure = { DEFAULT_JVM_TARGET },
 )
 
 fun Project.configureJvmTarget() {

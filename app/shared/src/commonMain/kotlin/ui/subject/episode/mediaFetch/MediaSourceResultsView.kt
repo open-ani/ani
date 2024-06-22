@@ -80,15 +80,15 @@ fun MediaSourceResultsView(
         Row(
             Modifier.clickable(
                 interactionSource = remember { MutableInteractionSource() },
-                indication = null
+                indication = null,
             ) { isShowDetails = !isShowDetails },
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 remember(
                     sourceResults.anyLoading,
                     sourceResults.enabledSourceCount,
-                    sourceResults.totalSourceCount
+                    sourceResults.totalSourceCount,
                 ) {
                     val status = if (sourceResults.anyLoading) "正在查询" else "已查询"
                     "$status ${sourceResults.enabledSourceCount}/${sourceResults.totalSourceCount} 数据源"
@@ -123,7 +123,7 @@ fun MediaSourceResultsView(
 
         Column(
             Modifier,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             val onClick: (MediaSourceResultPresentation) -> Unit = remember(onClickEnabled) {
                 { item ->
@@ -193,7 +193,7 @@ private fun MediaSourceResultsRow(
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = modifier
+                modifier = modifier,
             ) {
                 for (item in list) {
                     MediaSourceResultCard(
@@ -205,7 +205,7 @@ private fun MediaSourceResultsRow(
                             .widthIn(min = 100.dp)
                             .ifThen(item.isDisabled) {
                                 alpha(1 - 0.618f)
-                            }
+                            },
                     )
                 }
             }
@@ -223,7 +223,7 @@ private fun MediaSourceResultsRow(
                         Modifier
                             .ifThen(item.isDisabled) {
                                 alpha(1 - 0.618f)
-                            }
+                            },
                     )
                 }
             }
@@ -246,16 +246,16 @@ private fun MediaSourceResultCard(
             shape = MaterialTheme.shapes.medium,
             colors = CardDefaults.elevatedCardColors(
                 containerColor = if (selected) MaterialTheme.colorScheme.secondaryContainer
-                else CardDefaults.elevatedCardColors().containerColor
+                else CardDefaults.elevatedCardColors().containerColor,
             ),
         ) {
             Column(
                 Modifier.padding(all = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     SmallMediaSourceIcon(id = source.mediaSourceId, allowText = false)
 
@@ -273,7 +273,7 @@ private fun MediaSourceResultCard(
                     Row(
                         Modifier.heightIn(min = 24.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         when {
                             source.isDisabled -> {
@@ -304,7 +304,7 @@ private fun MediaSourceResultCard(
                 ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                     }
                 }
@@ -340,7 +340,7 @@ private fun MediaSourceResultCard(
                 SmallMediaSourceIcon(
                     id = source.mediaSourceId,
                 )
-            }
+            },
         )
     }
 }

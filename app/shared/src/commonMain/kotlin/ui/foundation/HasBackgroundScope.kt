@@ -366,7 +366,7 @@ internal class RememberedBackgroundScope(
                 creationStacktrace?.let { throwable.addSuppressed(it) }
                 logger.error(throwable) { "An error occurred in the background scope in coroutine $coroutineContext" }
             }.plus(parentCoroutineContext)
-                .plus(SupervisorJob(parentCoroutineContext[Job]))
+                .plus(SupervisorJob(parentCoroutineContext[Job])),
         )
 
     override fun onAbandoned() {

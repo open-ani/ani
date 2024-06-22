@@ -232,13 +232,13 @@ private class EpisodeViewModelImpl(
         combine(subjectInfo, episodeInfo) { subjectInfo, episodeInfo ->
             // note: subjectInfo 和 episodeInfo 必须是只 emit 一个元素的
             MediaFetchRequest.create(subjectInfo, episodeInfo)
-        }
+        },
     )
 
     private val mediaSelector = MediaSelectorFactory.withKoin(getKoin())
         .create(
             subjectId,
-            mediaFetchSession.flatMapLatest { it.cumulativeResults }
+            mediaFetchSession.flatMapLatest { it.cumulativeResults },
         )
         .apply {
             autoSelect.run {
@@ -263,7 +263,7 @@ private class EpisodeViewModelImpl(
                 results = mediaFetchSession.mapLatest { it.mediaSourceResults },
                 settings = settingsRepository.mediaSelectorSettings.flow,
             ),
-            backgroundScope.coroutineContext
+            backgroundScope.coroutineContext,
         )
     override val playerStatistics: PlayerStatisticsState = PlayerStatisticsState()
 
@@ -297,9 +297,9 @@ private class EpisodeViewModelImpl(
                             EpisodeMetadata(
                                 title = presentation.title,
                                 ep = EpisodeSort(presentation.ep),
-                                sort = EpisodeSort(presentation.sort)
-                            )
-                        )
+                                sort = EpisodeSort(presentation.sort),
+                            ),
+                        ),
                     )
                     videoLoadingState.compareAndSet(VideoLoadingState.ResolvingSource, VideoLoadingState.DecodingData)
                 } catch (e: UnsupportedMediaException) {
@@ -540,7 +540,7 @@ private class EpisodeViewModelImpl(
         selfId: String?,
     ) = DanmakuPresentation(
         data,
-        isSelf = selfId == data.senderId
+        isSelf = selfId == data.senderId,
     )
 
     /**

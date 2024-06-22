@@ -58,6 +58,7 @@ internal object SemVersionInternal {
                         metadata = version.substring(metadataSplitter + 1)
                     }
                 }
+
                 '+' -> {
                     metadata = version.substring(mainVersionEnd + 1)
                 }
@@ -69,7 +70,7 @@ internal object SemVersionInternal {
             minor = mainVersion[1],
             patch = mainVersion.getOrNull(2),
             identifier = identifier,
-            metadata = metadata
+            metadata = metadata,
         )
     }
 
@@ -132,31 +133,37 @@ internal object SemVersionInternal {
                         override fun test(version: SemVersion): Boolean = version >= version1
                     }
                 }
+
                 ">" -> {
                     object : RequirementInternal {
                         override fun test(version: SemVersion): Boolean = version > version1
                     }
                 }
+
                 "<=" -> {
                     object : RequirementInternal {
                         override fun test(version: SemVersion): Boolean = version <= version1
                     }
                 }
+
                 "<" -> {
                     object : RequirementInternal {
                         override fun test(version: SemVersion): Boolean = version < version1
                     }
                 }
+
                 "=" -> {
                     object : RequirementInternal {
                         override fun test(version: SemVersion): Boolean = version.compareTo(version1) == 0
                     }
                 }
+
                 "!=" -> {
                     object : RequirementInternal {
                         override fun test(version: SemVersion): Boolean = version.compareTo(version1) != 0
                     }
                 }
+
                 else -> error("operator=$operator, version=$version1")
             }
         }
@@ -209,6 +216,7 @@ internal object SemVersionInternal {
                     // Nobody has identifier
                     0
                 }
+
                 null -> {
                     // $other has identifier, but $this don't have identifier
                     // E.g:

@@ -35,7 +35,8 @@ fun PreviewAnimatedLinearProgressIndicatorIndefiniteLonger() = ProvideCompositio
         Box(
             Modifier
                 .height(64.dp)
-                .fillMaxWidth(), contentAlignment = Alignment.Center
+                .fillMaxWidth(),
+            contentAlignment = Alignment.Center,
         ) {
             FastLinearProgressIndicator(visible)
         }
@@ -59,7 +60,8 @@ fun PreviewAnimatedLinearProgressIndicatorIndefiniteShorter() = ProvideCompositi
         Box(
             Modifier
                 .height(64.dp)
-                .fillMaxWidth(), contentAlignment = Alignment.Center
+                .fillMaxWidth(),
+            contentAlignment = Alignment.Center,
         ) {
             FastLinearProgressIndicator(visible)
         }

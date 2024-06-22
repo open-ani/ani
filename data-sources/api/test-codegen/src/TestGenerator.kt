@@ -53,33 +53,35 @@ class TestGenerator(
                 TestCase(
                     name = it.id.removeSuffix(".html").sanitize(),
                     title = it.rawTitle,
-                    parsed = parser.parse(it.rawTitle)
+                    parsed = parser.parse(it.rawTitle),
                 )
-            }
+            },
         )
     }
 
     // 这库真是各种难用
     fun generateSuite(suite: TestSuite): FileSpec = FileSpec.builder(
         "", // 他会创建目录层级
-        "PatternTitleParserTest${suite.name}"
+        "PatternTitleParserTest${suite.name}",
     ).apply {
-        addAnnotation(AnnotationSpec.builder(ClassName.bestGuess("Suppress")).apply {
-            addMember("\"FunctionName\"")
-            addMember("\"ClassName\"")
-            addMember("\"RedundantVisibilityModifier\"")
-            addMember("\"PackageDirectoryMismatch\"")
-            addMember("\"NonAsciiCharacters\"")
-            addMember("\"SpellCheckingInspection\"")
-        }.build())
+        addAnnotation(
+            AnnotationSpec.builder(ClassName.bestGuess("Suppress")).apply {
+                addMember("\"FunctionName\"")
+                addMember("\"ClassName\"")
+                addMember("\"RedundantVisibilityModifier\"")
+                addMember("\"PackageDirectoryMismatch\"")
+                addMember("\"NonAsciiCharacters\"")
+                addMember("\"SpellCheckingInspection\"")
+            }.build(),
+        )
         addImport("me.him188.ani.datasources.api.title", "PatternBasedTitleParserTestSuite")
         addImport("kotlin.test", "assertEquals") // 它不允许 "*"
         addType(
             TypeSpec.classBuilder(
                 ClassName(
                     "me.him188.ani.datasources.api.title.generated", // 这库并不会写出 package
-                    "PatternTitleParserTest${suite.name}"
-                )
+                    "PatternTitleParserTest${suite.name}",
+                ),
             ).apply {
                 addKdoc(
                     """
@@ -89,7 +91,7 @@ class TestGenerator(
                         由 `test-codegen` 的 `GenerateTests.kt` 生成, 不要手动修改!
                         如果你优化了解析器, 这些 test 可能会失败, 请检查是否它是因为以前解析错误而现在解析正确了. 
                         如果是, 请更新测试数据: 执行 `GenerateTests.kt`.
-                """.trimIndent()
+                """.trimIndent(),
                 )
                 superclass(ClassName("me.him188.ani.datasources.api.title", "PatternBasedTitleParserTestSuite"))
                 for (case in suite.cases) case.parsed.run {
@@ -99,21 +101,21 @@ class TestGenerator(
                             // 这库会自动 wrap code, 如果不写 %S 就可能出问题
                             // 他不会自动换行, 必须要有 + "\n"
                             .addCode(
-                                """val r = parse(%S)""" + "\n", case.title
+                                """val r = parse(%S)""" + "\n", case.title,
                             )
                             .addCode("assertEquals(%S, r.episodeRange.toString())" + "\n", episodeRange.toString())
                             .addCode(
                                 "assertEquals(%S, r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })" + "\n",
-                                subtitleLanguages.sortedBy { it.id }.joinToString { it.id }
+                                subtitleLanguages.sortedBy { it.id }.joinToString { it.id },
                             )
                             .addCode(
                                 "assertEquals(%S, r.resolution.toString())" + "\n",
-                                resolution.toString()
+                                resolution.toString(),
                             )
-                            .build()
+                            .build(),
                     )
                 }
-            }.build()
+            }.build(),
         )
     }.build()
 }

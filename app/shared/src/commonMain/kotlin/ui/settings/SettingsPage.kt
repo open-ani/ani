@@ -73,10 +73,10 @@ fun SettingsPage(
     val toaster = LocalToaster.current
     val vm = rememberViewModel {
         SettingsViewModel(
-            triggerOnEnableDebugMode = { toaster.toast("调试模式已开启") }
+            triggerOnEnableDebugMode = { toaster.toast("调试模式已开启") },
         )
     }
-    
+
     Scaffold(
         modifier,
         topBar = {
@@ -88,7 +88,7 @@ fun SettingsPage(
                     }
                 },
             )
-        }
+        },
     ) { topBarPaddings ->
         val pageCount by remember {
             derivedStateOf {
@@ -97,9 +97,9 @@ fun SettingsPage(
         }
         val pagerState = rememberPagerState(
             initialPage = initialTab.ordinal,
-            pageCount = { pageCount }
+            pageCount = { pageCount },
         )
-        
+
         val scope = rememberCoroutineScope()
 
         // Pager with TabRow
@@ -125,22 +125,24 @@ fun SettingsPage(
                         onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
                         text = {
                             Text(text = renderPreferenceTab(tabId))
-                        }
+                        },
                     )
                 }
             }
 
-            OverrideNavigation(remember(scope, pagerState) {
-                { old ->
-                    object : AniNavigator by old {
-                        override fun navigateSettings(tab: SettingsTab) {
-                            scope.launch(start = CoroutineStart.UNDISPATCHED) {
-                                pagerState.animateScrollToPage(tab.ordinal)
+            OverrideNavigation(
+                remember(scope, pagerState) {
+                    { old ->
+                        object : AniNavigator by old {
+                            override fun navigateSettings(tab: SettingsTab) {
+                                scope.launch(start = CoroutineStart.UNDISPATCHED) {
+                                    pagerState.animateScrollToPage(tab.ordinal)
+                                }
                             }
                         }
                     }
-                }
-            }) {
+                },
+            ) {
                 HorizontalPager(
                     state = pagerState,
                     Modifier.fillMaxSize(),
@@ -153,12 +155,13 @@ fun SettingsPage(
                             SettingsTab.NETWORK -> NetworkSettingsTab(modifier = Modifier.fillMaxSize())
                             SettingsTab.ABOUT -> AboutTab(
                                 modifier = Modifier.fillMaxSize(),
-                                onTriggerDebugMode = { vm.triggerDebugMode() }
+                                onTriggerDebugMode = { vm.triggerDebugMode() },
                             )
+
                             SettingsTab.APP -> AppSettingsTab(modifier = Modifier.fillMaxSize())
                             SettingsTab.DEBUG -> DebugTab(
                                 modifier = Modifier.fillMaxSize(),
-                                onDisableDebugMode = { scope.launch { pagerState.animateScrollToPage(0) } }
+                                onDisableDebugMode = { scope.launch { pagerState.animateScrollToPage(0) } },
                             )
                         }
                     }

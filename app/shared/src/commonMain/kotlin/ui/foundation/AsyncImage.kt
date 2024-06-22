@@ -192,8 +192,8 @@ fun getDefaultImageLoader(
                     chain.proceed(
                         chain.request().newBuilder().addHeader(
                             "User-Agent",
-                            getAniUserAgent()
-                        ).build()
+                            getAniUserAgent(),
+                        ).build(),
                     )
                 }
             }.build()

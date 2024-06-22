@@ -174,7 +174,7 @@ class MediaSourceMediaFetcher(
                         list.distinctBy { it.mediaId }
                     }
             }.shareIn(
-                CoroutineScope(flowContext), replay = 1, started = SharingStarted.WhileSubscribed(5000)
+                CoroutineScope(flowContext), replay = 1, started = SharingStarted.WhileSubscribed(5000),
             )
         }
 

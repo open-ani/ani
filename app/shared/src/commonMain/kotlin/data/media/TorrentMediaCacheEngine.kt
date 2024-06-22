@@ -234,7 +234,7 @@ class TorrentMediaCacheEngine(
         return TorrentMediaCache(
             origin = origin,
             metadata = metadata,
-            lazyFileHandle = getLazyFileHandle(EncodedTorrentInfo.createRaw(data), metadata, parentContext)
+            lazyFileHandle = getLazyFileHandle(EncodedTorrentInfo.createRaw(data), metadata, parentContext),
         )
     }
 
@@ -282,13 +282,14 @@ class TorrentMediaCacheEngine(
             }
         }
         return LazyFileHandle(
-            scope, state
+            scope,
+            state
                 .flowOn(Dispatchers.Default)
                 .shareIn(
                     scope,
                     SharingStarted.Lazily,
-                    replay = 1
-                ) // Must be Lazily here since TorrentMediaCache is not closed
+                    replay = 1,
+                ), // Must be Lazily here since TorrentMediaCache is not closed
         )
     }
 
@@ -305,7 +306,7 @@ class TorrentMediaCacheEngine(
             mapOf(
                 EXTRA_TORRENT_DATA to data.data.toHexString(),
                 EXTRA_TORRENT_CACHE_DIR to downloader.getSaveDirForTorrent(data).absolutePath,
-            )
+            ),
         )
 
         return TorrentMediaCache(

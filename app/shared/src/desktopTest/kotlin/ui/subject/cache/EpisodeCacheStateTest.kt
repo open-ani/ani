@@ -57,10 +57,10 @@ class EpisodeCacheStateTest {
             title = "第一集的标题",
             watchStatus = UnifiedCollectionType.DOING,
             hasPublished = true,
-        )
+        ),
     )
     private val cacheStatusFlow: MutableStateFlow<EpisodeCacheStatus> = MutableStateFlow(
-        EpisodeCacheStatus.Cached(300.megaBytes, TestMediaCache1)
+        EpisodeCacheStatus.Cached(300.megaBytes, TestMediaCache1),
     )
 
     private suspend fun TestScope.createEpisodeCacheState() = TestEpisodeCacheState(
@@ -78,13 +78,19 @@ class EpisodeCacheStateTest {
             flowOf(
                 MediaSourceMediaFetcher(
                     configProvider = { MediaFetcherConfig.Default },
-                    mediaSources = listOf(createTestMediaSourceInstance(TestHttpMediaSource(fetch = {
-                        SinglePagePagedSource {
-                            TestMediaList.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
-                        }
-                    }))),
+                    mediaSources = listOf(
+                        createTestMediaSourceInstance(
+                            TestHttpMediaSource(
+                                fetch = {
+                                    SinglePagePagedSource {
+                                        TestMediaList.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
+                                    }
+                                },
+                            ),
+                        ),
+                    ),
                     flowContext = EmptyCoroutineContext,
-                )
+                ),
             ),
             mediaSelectorFactory = object : MediaSelectorFactory {
                 override fun create(
@@ -93,7 +99,7 @@ class EpisodeCacheStateTest {
                     flowCoroutineContext: CoroutineContext
                 ): MediaSelector = TestMediaSelector(mediaList)
             },
-            storagesLazy = flowOf(listOf(TestMediaCacheStorage()))
+            storagesLazy = flowOf(listOf(TestMediaCacheStorage())),
         )
     }
 

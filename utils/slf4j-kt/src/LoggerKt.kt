@@ -29,17 +29,19 @@ import kotlin.contracts.contract
 import kotlin.reflect.KClass
 
 fun ILoggerFactory.getLogger(clazz: KClass<out Any>): Logger =
-    getLogger(clazz.qualifiedName?.let {
-        when {
-            it.startsWith("me.him188.ani.") -> {
-                it.removePrefix("me.him188.ani.")
-            }
+    getLogger(
+        clazz.qualifiedName?.let {
+            when {
+                it.startsWith("me.him188.ani.") -> {
+                    it.removePrefix("me.him188.ani.")
+                }
 
-            else -> {
-                it
+                else -> {
+                    it
+                }
             }
-        }
-    })
+        },
+    )
 
 inline fun <reified T : Any> ILoggerFactory.getLogger(): Logger = getLogger(T::class)
 

@@ -67,7 +67,7 @@ kotlin {
                 else -> {
                     logger.warn("Unrecognized architecture, libtorrent4j will not be included")
                 }
-            }
+            },
         )
     }
 }

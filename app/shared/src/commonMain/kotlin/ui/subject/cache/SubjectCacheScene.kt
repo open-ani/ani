@@ -106,7 +106,7 @@ class SubjectCacheViewModelImpl(
                             title = episode.nameCn,
                             watchStatus = episodeCollection.collectionType,
                             hasPublished = episode.isKnownBroadcast,
-                        )
+                        ),
                     ),
                     cacheStatusFlow = cacheStatusFlow,
                     parentCoroutineContext = backgroundScope.coroutineContext,
@@ -117,10 +117,10 @@ class SubjectCacheViewModelImpl(
             episode.cacheRequester.request(
                 EpisodeCacheRequest(
                     subjectInfoFlow.first(),
-                    subjectManager.getEpisodeInfo(episode.episodeId)
-                )
+                    subjectManager.getEpisodeInfo(episode.episodeId),
+                ),
             ).tryAutoSelectByCachedSeason(
-                cacheManager.listCacheForSubject(subjectId).first()
+                cacheManager.listCacheForSubject(subjectId).first(),
             )
         },
         onRequestCacheComplete = { target ->
@@ -162,7 +162,7 @@ fun SubjectCacheScene(
                 vm.cacheListState,
                 mediaSelectorSettingsProvider = {
                     vm.mediaSelectorSettingsFlow
-                }
+                },
             )
         },
         modifier,
@@ -194,7 +194,7 @@ fun SubjectCachePageScaffold(
                     TopAppBarGoBackButton()
                 },
             )
-        }
+        },
     ) { paddingValues ->
         Column(Modifier.padding(paddingValues)) {
             Surface(Modifier.fillMaxWidth()) {

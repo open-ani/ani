@@ -61,7 +61,7 @@ fun AniAppContentPortrait(
                 val initialIsFullscreen = backStackEntry.query<Boolean>("fullscreen") ?: false
                 val context = LocalContext.current
                 val vm = rememberViewModel<EpisodeViewModel>(
-                    listOf(subjectId, episodeId)
+                    listOf(subjectId, episodeId),
                 ) {
                     EpisodeViewModel(
                         initialSubjectId = subjectId,

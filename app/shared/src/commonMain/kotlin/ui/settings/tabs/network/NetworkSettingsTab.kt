@@ -72,7 +72,7 @@ private fun SettingsScope.GlobalProxyGroup(
         title = { Text("全局默认代理") },
         description = {
             Text("如果数据源没有单独配置代理，则使用此代理设置")
-        }
+        },
     ) {
         SwitchItem(
             checked = proxySettings.default.enabled,
@@ -92,7 +92,7 @@ private fun SettingsScope.GlobalProxyGroup(
             Modifier.placeholder(vm.proxySettings.loading),
             description = {
                 Text(
-                    "示例: http://127.0.0.1:7890 或 socks5://127.0.0.1:1080"
+                    "示例: http://127.0.0.1:7890 或 socks5://127.0.0.1:1080",
                 )
             },
             onValueChangeCompleted = {
@@ -100,16 +100,16 @@ private fun SettingsScope.GlobalProxyGroup(
                     proxySettings.copy(
                         default = proxySettings.default.copy(
                             config = proxySettings.default.config.copy(
-                                url = it
-                            )
-                        )
-                    )
+                                url = it,
+                            ),
+                        ),
+                    ),
                 )
             },
             isErrorProvider = {
                 !ClientProxyConfigValidator.isValidProxy(it)
             },
-            sanitizeValue = { it.trim() }
+            sanitizeValue = { it.trim() },
         )
 
         HorizontalDividerItem()
@@ -138,14 +138,14 @@ private fun SettingsScope.GlobalProxyGroup(
                         default = proxySettings.default.copy(
                             config = proxySettings.default.config.copy(
                                 authorization = proxySettings.default.config.authorization?.copy(
-                                    username = it
-                                )
-                            )
-                        )
-                    )
+                                    username = it,
+                                ),
+                            ),
+                        ),
+                    ),
                 )
             },
-            sanitizeValue = { it }
+            sanitizeValue = { it },
         )
 
         HorizontalDividerItem()
@@ -162,14 +162,14 @@ private fun SettingsScope.GlobalProxyGroup(
                         default = proxySettings.default.copy(
                             config = proxySettings.default.config.copy(
                                 authorization = proxySettings.default.config.authorization?.copy(
-                                    password = password
-                                )
-                            )
-                        )
-                    )
+                                    password = password,
+                                ),
+                            ),
+                        ),
+                    ),
                 )
             },
-            sanitizeValue = { it }
+            sanitizeValue = { it },
         )
     }
 }
@@ -191,7 +191,7 @@ private fun SettingsScope.DanmakuGroup(vm: NetworkSettingsViewModel) {
         SubGroup {
             Group(
                 title = { Text("连接速度测试") },
-                useThinHeader = true
+                useThinHeader = true,
             ) {
                 for (tester in vm.danmakuServerTesters.testers) {
                     val currentlySelected by derivedStateOf {
@@ -203,7 +203,7 @@ private fun SettingsScope.DanmakuGroup(vm: NetworkSettingsViewModel) {
                             if (tester.id == AniBangumiSeverBaseUrls.GLOBAL)
                                 Icon(
                                     Icons.Rounded.Public, null,
-                                    tint = MaterialTheme.colorScheme.onSurface
+                                    tint = MaterialTheme.colorScheme.onSurface,
                                 )
                             else Text("CN", fontFamily = FontFamily.Monospace)
 

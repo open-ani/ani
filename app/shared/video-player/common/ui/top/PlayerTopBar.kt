@@ -56,7 +56,7 @@ fun PlayerTopBar(
                                 focusManager.clearFocus()
                             }
                         }
-                    }
+                    },
                 ) {
                     Icon(Icons.AutoMirrored.Rounded.ArrowBack, "Back")
                 }
