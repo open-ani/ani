@@ -1,6 +1,5 @@
 package me.him188.ani.app.data.media.selector
 
-import androidx.compose.runtime.Stable
 import androidx.compose.ui.util.fastFilter
 import androidx.compose.ui.util.fastFirstOrNull
 import kotlinx.coroutines.CoroutineScope
@@ -104,7 +103,6 @@ interface MediaSelector {
  * 一个筛选项目
  * @param T 例如字幕语言
  */
-@Stable
 interface MediaPreferenceItem<T : Any> {
     /**
      * 目前搜索到的列表
