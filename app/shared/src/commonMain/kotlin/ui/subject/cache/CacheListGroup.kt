@@ -33,6 +33,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -44,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import me.him188.ani.app.data.media.EpisodeCacheStatus
@@ -297,6 +299,12 @@ fun EpisodeCacheActionIcon(
     val trackColor = MaterialTheme.colorScheme.primaryContainer
     if (isLoadingIndefinitely) {
         var showCancel by remember { mutableStateOf(false) }
+        LaunchedEffect(showCancel) {
+            if (showCancel) {
+                delay(2000)
+                showCancel = false
+            }
+        }
         Crossfade(showCancel) {
             if (it) {
                 IconButton(
