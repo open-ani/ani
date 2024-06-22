@@ -5,6 +5,7 @@ import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.torrent.api.handle.EventListener
 import me.him188.ani.app.torrent.api.handle.TorrentThread
@@ -55,6 +56,12 @@ class LockedSessionManager(
     suspend inline fun <R> use(
         crossinline block: SessionManager.() -> R
     ) = withContext(dispatcher) {
+        block(sessionManager)
+    }
+
+    suspend inline fun <R> useInterruptible(
+        crossinline block: SessionManager.() -> R
+    ) = runInterruptible(dispatcher) {
         block(sessionManager)
     }
 

@@ -92,7 +92,7 @@ abstract class AbstractLockedTorrentDownloader<Info : TorrentInfo>(
 
         logger.info { "Fetching magnet: $uri" }
         val data: ByteArray? = try {
-            sessionManager.use {
+            sessionManager.useInterruptible {
                 fetchMagnet(uri, timeoutSeconds, magnetCacheDir)
             }
         } catch (e: InterruptedException) {
