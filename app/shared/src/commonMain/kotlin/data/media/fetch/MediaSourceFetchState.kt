@@ -16,22 +16,33 @@ sealed class MediaSourceFetchState {
 
     data object Working : MediaSourceFetchState()
 
+    /**
+     * 即将要 [Succeed], 还有一些清理工作正在进行
+     */
+    data class PendingSuccess(
+        override val id: Int, // restartCount
+    ) : Completed()
 
-    sealed class Completed : MediaSourceFetchState()
-    data object Succeed : Completed()
+    sealed class Completed : MediaSourceFetchState() {
+        internal abstract val id: Int // restartCount
+    }
+
+    data class Succeed(
+        override val id: Int, // restartCount
+    ) : Completed()
 
     /**
      * The data source upstream has failed. E.g. a network request failed.
      */
     data class Failed(
-        val cause: Throwable,
+        val cause: Throwable, override val id: Int,
     ) : Completed()
 
     /**
      * Failed because the flow collector has thrown an exception (and stopped collection)
      */
     data class Abandoned(
-        val cause: Throwable,
+        val cause: Throwable, override val id: Int,
     ) : Completed()
 }
 

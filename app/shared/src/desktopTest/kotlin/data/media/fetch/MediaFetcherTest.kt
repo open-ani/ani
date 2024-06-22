@@ -319,6 +319,27 @@ class MediaFetcherTest {
     }
 
     @Test
+    fun `disable sources result is empty`() = runTest {
+        val session = createFetcher(
+            createTestMediaSourceInstance(
+                TestHttpMediaSource(
+                    fetch = {
+                        SinglePagePagedSource {
+                            TestMediaList.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
+                        }
+                    },
+                ),
+                isEnabled = false,
+            ),
+        ).newSession(request1)
+        assertEquals(1, session.mediaSourceResults.size)
+        val res = session.mediaSourceResults.first()
+        assertIs<MediaSourceFetchState.Disabled>(res.state.value)
+        assertEquals(0, session.awaitCompletedResults().size)
+        assertIs<MediaSourceFetchState.Disabled>(res.state.value)
+    }
+
+    @Test
     fun `collect from enabled source but not disabled`() = runTest {
         val session = createFetcher(
             createTestMediaSourceInstance(
@@ -427,6 +448,47 @@ class MediaFetcherTest {
     ///////////////////////////////////////////////////////////////////////////
     // restart
     ///////////////////////////////////////////////////////////////////////////
+
+    @Test
+    fun `double awaitCompletedResults`() = runTest {
+        val firstFetchCalled = AtomicInteger(0)
+        val secondFetchCalled = AtomicInteger(0)
+        val session = createFetcher(
+            createTestMediaSourceInstance(
+                TestHttpMediaSource(
+                    fetch = {
+                        firstFetchCalled.incrementAndGet()
+                        SinglePagePagedSource {
+                            TestMediaList.take(2).map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
+                        }
+                    },
+                ),
+            ),
+            createTestMediaSourceInstance(
+                TestHttpMediaSource(
+                    fetch = {
+                        secondFetchCalled.incrementAndGet()
+                        SinglePagePagedSource {
+                            TestMediaList.drop(2).take(3).map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
+                        }
+                    },
+                ),
+            ),
+        ).newSession(request1)
+
+        val res1 = session.mediaSourceResults[0]
+        val res2 = session.mediaSourceResults[1]
+        session.awaitCompletedResults()
+        assertIs<MediaSourceFetchState.Succeed>(res1.state.value)
+        assertIs<MediaSourceFetchState.Succeed>(res2.state.value)
+        assertEquals(1, firstFetchCalled.get())
+        assertEquals(1, secondFetchCalled.get())
+        session.awaitCompletedResults()
+        assertIs<MediaSourceFetchState.Succeed>(res1.state.value)
+        assertIs<MediaSourceFetchState.Succeed>(res2.state.value)
+        assertEquals(1, firstFetchCalled.get())
+        assertEquals(1, secondFetchCalled.get())
+    }
 
     @Test
     fun `fetch is called once and then cached`() = runTest {
@@ -596,10 +658,17 @@ class MediaFetcherTest {
         assertEquals(1, secondFetchCalled.get())
 
         res1.restart()
+        assertIs<MediaSourceFetchState.Succeed>(res2.state.value)
         assertEquals(1, firstFetchCalled.get())
         assertEquals(1, secondFetchCalled.get())
 
+        assertIs<MediaSourceFetchState.Succeed>(res2.state.value)
+        assertEquals(3, res2.results.first().size)
+        assertEquals(1, secondFetchCalled.get())
+
         session.awaitCompletedResults()
+        assertIs<MediaSourceFetchState.Succeed>(res2.state.value)
+
         assertEquals(2, firstFetchCalled.get())
         assertEquals(1, secondFetchCalled.get())
 

@@ -2,12 +2,14 @@ package me.him188.ani.app.data.media.fetch
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flowOf
@@ -18,6 +20,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.transform
 import me.him188.ani.app.data.media.instance.MediaSourceInstance
 import me.him188.ani.app.data.subject.EpisodeInfo
 import me.him188.ani.app.data.subject.SubjectInfo
@@ -131,12 +134,41 @@ class MediaSourceMediaFetcher(
         pagedSources: Flow<SizedSource<MediaMatch>>,
         flowContext: CoroutineContext,
     ) : MediaSourceFetchResult {
+        /**
+         * 为了确保线程安全, 对 [state] 的写入必须谨慎.
+         *
+         * [state] 只能在 [results] 的 flow 里, 或者在 [restart] 中修改.
+         */
         override val state: MutableStateFlow<MediaSourceFetchState> =
             MutableStateFlow(if (disabled) MediaSourceFetchState.Disabled else MediaSourceFetchState.Idle)
-        private val restartCount = MutableStateFlow(0)
+        private val restartCount = MutableStateFlow(0) // 只能在 [restart] 内修改
 
-        override val results: SharedFlow<List<Media>> by lazy {
-            restartCount.flatMapLatest {
+        override val results by lazy {
+            restartCount.flatMapLatest { restartCount ->
+
+                state.value.let { currentState ->
+                    // 注意, 读 state 可能是线程不安全的, 因此检查一次 coroutine cancellation.
+                    // 因为 [results] flow 被 share, 只有可能有一个协程在执行本代码, 相当于拥有 mutual exclusion.
+                    // [state] 还能在 [restart] 中修改, 但 [restart] 在修改 [state] 之后一定会操作 [restartCount], 
+                    // 导致本 flow 被 cancel ([flatMapLatest]).
+                    currentCoroutineContext().ensureActive()
+
+                    // 此时的 currentState 是可信的
+
+                    if (restartCount == 0 && currentState is MediaSourceFetchState.Disabled)
+                        return@flatMapLatest flowOf(emptyList()) // 禁用的数据源, 第一次查询给空列表, 必须要 restart 才能发起查询
+
+                    val lastRestartCount = when (currentState) {
+                        is MediaSourceFetchState.PendingSuccess -> currentState.id
+                        is MediaSourceFetchState.Completed -> currentState.id
+                        else -> -1
+                    }
+                    if (lastRestartCount == restartCount) {
+                        // 这个 [restartCount] 已经跑过一次了, 不要重复跑
+                        return@flatMapLatest emptyFlow() // 返回空 flow, 复用 replayCache
+                    }
+                }
+
                 pagedSources
                     .onStart {
                         state.value = MediaSourceFetchState.Working
@@ -145,26 +177,24 @@ class MediaSourceMediaFetcher(
                         sources.results.map { it.media }
                     }
                     .catch {
-                        state.value = MediaSourceFetchState.Failed(it)
+                        state.value = MediaSourceFetchState.Failed(it, restartCount)
                         logger.error(it) { "Failed to fetch media from $mediaSourceId because of upstream error" }
-//                        throw it
                     }
                     .onCompletion {
                         if (it == null) {
                             // catch might have already updated the state
                             if (state.value !is MediaSourceFetchState.Completed) {
-                                state.value = MediaSourceFetchState.Succeed
+                                state.value = MediaSourceFetchState.PendingSuccess(restartCount)
+                                // 不能直接诶设置为 Succeed, 必须等待 `shareIn` 完成缓存 (replayCache)
                             }
                         } else {
                             val currentState = state.value
                             if (currentState !is MediaSourceFetchState.Failed) {
                                 // downstream (collector) failure
-                                state.value = MediaSourceFetchState.Abandoned(it)
+                                state.value = MediaSourceFetchState.Abandoned(it, restartCount)
                                 logger.error(it) { "Failed to fetch media from $mediaSourceId because of downstream error" }
-//                                throw it
                             }
                             // upstream failure re-caught here
-//                            throw it
                         }
                     }
                     .runningFold(emptyList<Media>()) { acc, list ->
@@ -175,22 +205,37 @@ class MediaSourceMediaFetcher(
                     }
             }.shareIn(
                 CoroutineScope(flowContext), replay = 1, started = SharingStarted.WhileSubscribed(),
-            )
-        }
-
-        override fun restart() {
-            // Set to idle if completed or disabled, otherwise, just increment the restart count
-            while (true) {
-                val value = state.value
-                if (value is MediaSourceFetchState.Completed || value is MediaSourceFetchState.Disabled) {
-                    if (state.compareAndSet(value, MediaSourceFetchState.Idle)) {
-                        break
+            ).transform {
+                // 必须在 shareIn 更新好 replay 之后再标记为 success, 否则 awaitCompletion 不工作
+                // (因为 WhileSubscribed 的 stopTimeoutMillis 为 0)
+                try {
+                    emit(it)
+                } finally {
+                    val currentState = state.value
+                    if (currentState is MediaSourceFetchState.PendingSuccess) {
+                        state.compareAndSet(currentState, MediaSourceFetchState.Succeed(currentState.id))
+                        // Ok if we lost race - someone else must set state to Idle from [restart]
                     }
-                } else {
-                    break
                 }
             }
-            restartCount.value += 1
+        }
+
+        @Synchronized // 不允许同时调用 restart
+        override fun restart() {
+            when (val value = state.value) {
+                is MediaSourceFetchState.Completed,
+                MediaSourceFetchState.Disabled -> {
+                    restartCount.value += 1
+                    // 必须使用 CAS
+                    // 如果 [results] 现在有人 collect, [state] 可能会被变更. 
+                    // 我们只需要在它没有被其他人修改的时候, 把它修改为 [Idle].
+                    state.compareAndSet(value, MediaSourceFetchState.Idle)
+                    // Ok if we lost race - the [results] must be running
+                }
+
+                MediaSourceFetchState.Idle -> {}
+                MediaSourceFetchState.Working -> {}
+            }
         }
     }
 
@@ -220,7 +265,7 @@ class MediaSourceMediaFetcher(
         }
 
         override val cumulativeResults: Flow<List<Media>> =
-            combine(mediaSourceResults.map { it.resultsIfEnabled }) { lists ->
+            combine(mediaSourceResults.map { it.results }) { lists ->
                 lists.asSequence().flatten().toList()
             }.map { list ->
                 list.distinctBy { it.mediaId } // distinct globally by id, just to be safe

@@ -1,13 +1,9 @@
 package me.him188.ani.app.data.media.fetch
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
 import me.him188.ani.datasources.api.Media
@@ -16,7 +12,7 @@ import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.utils.coroutines.cancellableCoroutineScope
 
 /**
- * 表示一个数据源 [MediaSource] 的查询结果
+ * 表示一个数据源 [MediaSource] 的线程安全的查询结果.
  */
 interface MediaSourceFetchResult {
     val mediaSourceId: String
@@ -37,7 +33,7 @@ interface MediaSourceFetchResult {
      *
      * 查询结果会 share 在指定的 context.
      */
-    val results: SharedFlow<List<Media>>
+    val results: Flow<List<Media>>
 
     /**
      * 仅当启用时才获取结果. 返回的 flow 一定至少有一个元素, 例如 [emptyList].
@@ -45,19 +41,15 @@ interface MediaSourceFetchResult {
      * flow 永远都不会完结. 详见 [MediaFetchSession.cumulativeResults].
      */
     val resultsIfEnabled
-        get() = state
-            .map { it !is MediaSourceFetchState.Disabled }
-            .distinctUntilChanged()
-            .flatMapLatest {
-                if (it) results else flowOf(emptyList())
-            }
+        get() = results
 
     /**
      * 重新请求获取结果.
      *
      * 若状态已经完成 ([MediaSourceFetchState.Completed]), 将会被重置为 [MediaSourceFetchState.Idle].
      * 即使状态是 [MediaSourceFetchState.Disabled], 也会被重置为 [MediaSourceFetchState.Idle].
-     * 若为其他状态则不会变更.
+     *
+     * 若请求已经在进行, 则继续该请求.
      *
      * 基于惰性加载性质, 该方法不会立即触发查询, 只有在 [results] 有 collector 时才会开始查询.
      */
@@ -70,11 +62,16 @@ val MediaSourceFetchResult.hasCompletedOrDisabled: Flow<Boolean>
 /**
  * 挂起当前协程, 直到 [MediaSourceFetchResult.results] 查询完成. 注意, 这并不代表 [MediaSourceFetchResult.results] 会完结.
  *
+ * 对于已经禁用的数据源, 这个函数返回空 list.
+ *
  * 支持 cancellation.
  */
 suspend fun MediaSourceFetchResult.awaitCompletion() {
+    if (state.value is MediaSourceFetchState.Disabled) {
+        return
+    }
     cancellableCoroutineScope {
-        results.shareIn(this, started = SharingStarted.Eagerly, replay = 1)
+        resultsIfEnabled.shareIn(this, started = SharingStarted.Eagerly, replay = 1)
         hasCompletedOrDisabled.first { it }
         cancelScope()
     }
@@ -83,12 +80,13 @@ suspend fun MediaSourceFetchResult.awaitCompletion() {
 /**
  * 挂起当前协程, 直到 [MediaSourceFetchResult.results] 查询完成, 然后获取所有查询结果.
  *
- * 注意, 这并不代表 [MediaSourceFetchResult.results] 会完结.
+ * 对于已经禁用的数据源, 这个函数返回空 list.
  *
+ * 注意, 这并不代表 [MediaSourceFetchResult.results] 会完结.
  *
  * 支持 cancellation.
  */
 suspend inline fun MediaSourceFetchResult.awaitCompletedResults(): List<Media> {
     awaitCompletion()
-    return results.first()
+    return resultsIfEnabled.first()
 }

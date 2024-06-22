@@ -3,6 +3,7 @@ package me.him188.ani.app.ui.subject.episode.mediaFetch
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.PreviewLightDark
+import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
@@ -190,7 +191,7 @@ internal fun rememberTestMediaSourceResults(): MediaSourceResultsPresentation = 
                     TestMediaSourceResult(
                         "dmhy",
                         MediaSourceKind.BitTorrent,
-                        initialState = MediaSourceFetchState.Succeed,
+                        initialState = MediaSourceFetchState.Succeed(1),
                         results = previewMediaList,
                     ),
                     TestMediaSourceResult(
@@ -202,13 +203,13 @@ internal fun rememberTestMediaSourceResults(): MediaSourceResultsPresentation = 
                     TestMediaSourceResult(
                         "nyafun",
                         MediaSourceKind.WEB,
-                        initialState = MediaSourceFetchState.Succeed,
+                        initialState = MediaSourceFetchState.Succeed(1),
                         results = previewMediaList,
                     ),
                     TestMediaSourceResult(
                         MikanCNMediaSource.ID,
                         MediaSourceKind.BitTorrent,
-                        initialState = MediaSourceFetchState.Failed(IllegalStateException()),
+                        initialState = MediaSourceFetchState.Failed(IllegalStateException(), 1),
                         results = emptyList(),
                     ),
                 ),
@@ -227,13 +228,14 @@ private class TestMediaSourceResult(
 ) : MediaSourceFetchResult {
     override val state: MutableStateFlow<MediaSourceFetchState> = MutableStateFlow(initialState)
     override val results: SharedFlow<List<Media>> = MutableStateFlow(results)
+    private val restartCount = atomic(0)
 
     @OptIn(DelicateCoroutinesApi::class)
     override fun restart() {
         state.value = MediaSourceFetchState.Working
         GlobalScope.launch {
             delay(3000)
-            state.value = MediaSourceFetchState.Succeed
+            state.value = MediaSourceFetchState.Succeed(restartCount.incrementAndGet())
         }
     }
 }
