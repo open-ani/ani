@@ -58,6 +58,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.PopupProperties
+import me.him188.ani.app.platform.PlatformPopupProperties
 import me.him188.ani.app.ui.foundation.effects.onKey
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
@@ -295,6 +297,9 @@ object PlayerControllerDefaults {
             renderValue = { Text(remember(it) { "${it}x" }) },
             renderValueExposed = { Text(remember(it) { if (it == 1.0f) "倍速" else """${it}x""" }) },
             modifier,
+            properties = PlatformPopupProperties(
+                clippingEnabled = false,
+            ),
         )
     }
 
@@ -310,6 +315,7 @@ object PlayerControllerDefaults {
         renderValueExposed: @Composable (T) -> Unit = renderValue,
         modifier: Modifier = Modifier,
         enabled: Boolean = true,
+        properties: PopupProperties = PopupProperties(),
     ) {
         Box(modifier, contentAlignment = Alignment.Center) {
             var expanded by rememberSaveable { mutableStateOf(false) }
@@ -326,6 +332,7 @@ object PlayerControllerDefaults {
             DropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false },
+                properties = properties,
             ) {
                 val options = remember(optionsProvider) { optionsProvider() }
                 for (option in options) {
