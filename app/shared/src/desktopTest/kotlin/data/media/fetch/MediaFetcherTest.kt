@@ -676,4 +676,119 @@ class MediaFetcherTest {
         assertEquals(3, res2.results.first().size)
         assertEquals(5, session.cumulativeResults.first().size)
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // enable
+    ///////////////////////////////////////////////////////////////////////////
+
+    @Test
+    fun `enable disabled source before collecting result`() = runTest {
+        val fetchCalled = AtomicInteger(0)
+        val session = createFetcher(
+            createTestMediaSourceInstance(
+                TestHttpMediaSource(
+                    fetch = {
+                        fetchCalled.incrementAndGet()
+                        SinglePagePagedSource {
+                            TestMediaList.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
+                        }
+                    },
+                ),
+                isEnabled = false,
+            ),
+        ).newSession(request1)
+        assertEquals(1, session.mediaSourceResults.size)
+        val res = session.mediaSourceResults.first()
+        res.enable()
+        assertIs<MediaSourceFetchState.Idle>(res.state.value)
+        assertEquals(5, session.awaitCompletedResults().size)
+        assertIs<MediaSourceFetchState.Succeed>(res.state.value)
+    }
+
+    @Test
+    fun `enable twice does not restart`() = runTest {
+        val fetchCalled = AtomicInteger(0)
+        val session = createFetcher(
+            createTestMediaSourceInstance(
+                TestHttpMediaSource(
+                    fetch = {
+                        fetchCalled.incrementAndGet()
+                        SinglePagePagedSource {
+                            TestMediaList.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
+                        }
+                    },
+                ),
+                isEnabled = false,
+            ),
+        ).newSession(request1)
+        assertEquals(1, session.mediaSourceResults.size)
+        val res = session.mediaSourceResults.first()
+        res.enable()
+        assertIs<MediaSourceFetchState.Idle>(res.state.value)
+        assertEquals(5, session.awaitCompletedResults().size)
+        assertIs<MediaSourceFetchState.Succeed>(res.state.value)
+        res.enable()
+        assertIs<MediaSourceFetchState.Succeed>(res.state.value)
+        assertEquals(1, fetchCalled.get())
+    }
+
+    @Test
+    fun `enable restarted does not resatrt`() = runTest {
+        val fetchCalled = AtomicInteger(0)
+        val session = createFetcher(
+            createTestMediaSourceInstance(
+                TestHttpMediaSource(
+                    fetch = {
+                        fetchCalled.incrementAndGet()
+                        SinglePagePagedSource {
+                            TestMediaList.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
+                        }
+                    },
+                ),
+                isEnabled = false,
+            ),
+        ).newSession(request1)
+        assertEquals(1, session.mediaSourceResults.size)
+        val res = session.mediaSourceResults.first()
+        res.restart()
+        assertIs<MediaSourceFetchState.Idle>(res.state.value)
+        assertEquals(5, session.awaitCompletedResults().size)
+        assertIs<MediaSourceFetchState.Succeed>(res.state.value)
+        res.enable()
+        assertIs<MediaSourceFetchState.Succeed>(res.state.value)
+        assertEquals(5, session.awaitCompletedResults().size)
+        assertIs<MediaSourceFetchState.Succeed>(res.state.value)
+        assertEquals(1, fetchCalled.get())
+    }
+
+    @Test
+    fun `enable disabled source after collecting result`() = runTest {
+        val fetchCalled = AtomicInteger(0)
+        val session = createFetcher(
+            createTestMediaSourceInstance(
+                TestHttpMediaSource(
+                    fetch = {
+                        fetchCalled.incrementAndGet()
+                        SinglePagePagedSource {
+                            TestMediaList.map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
+                        }
+                    },
+                ),
+                isEnabled = false,
+            ),
+        ).newSession(request1)
+        assertEquals(1, session.mediaSourceResults.size)
+        val res = session.mediaSourceResults.first()
+        assertIs<MediaSourceFetchState.Disabled>(res.state.value)
+        assertEquals(0, fetchCalled.get())
+        assertEquals(0, session.awaitCompletedResults().size)
+        assertEquals(0, fetchCalled.get())
+        assertIs<MediaSourceFetchState.Disabled>(res.state.value)
+
+        res.enable()
+        assertIs<MediaSourceFetchState.Idle>(res.state.value)
+        assertEquals(5, session.awaitCompletedResults().size)
+        assertEquals(1, fetchCalled.get())
+        assertIs<MediaSourceFetchState.Succeed>(res.state.value)
+    }
 }

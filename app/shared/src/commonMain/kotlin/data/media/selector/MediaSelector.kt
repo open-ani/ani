@@ -122,9 +122,9 @@ interface MediaPreferenceItem<T : Any> {
     val defaultSelected: Flow<T?>
 
     /**
-     * [userSelected] 与 [defaultSelected] 合并考虑的选择
+     * [userSelected] 与 [defaultSelected] 合并考虑的选择. 不必是 [available] 里面的选项.
      */
-    val finalSelected: Flow<T?>
+    val finalSelected: Flow<T?> // 注意, autoEnableLastSelected 依赖 "不必是 [available] 里面的选项" 这个性质.
 
     /**
      * 用户选择

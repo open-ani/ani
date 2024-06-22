@@ -244,6 +244,12 @@ private class EpisodeViewModelImpl(
             autoSelect.run {
                 launchInBackground { mediaFetchSession.collectLatest { awaitCompletedAndSelectDefault(it) } }
                 launchInBackground { mediaFetchSession.collectLatest { selectCached(it) } }
+
+                launchInBackground {
+                    if (settingsRepository.mediaSelectorSettings.flow.first().autoEnableLastSelected) {
+                        mediaFetchSession.collectLatest { autoEnableLastSelected(it) }
+                    }
+                }
             }
             eventHandling.run {
                 launchInBackground {

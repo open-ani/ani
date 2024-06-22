@@ -215,8 +215,21 @@ internal fun SettingsScope.MediaSelectionGroup(vm: MediaSettingsViewModel) {
                     )
                 },
                 title = { Text("BT 资源优先选择季度全集") },
-                Modifier.placeholder(vm.defaultMediaPreferenceLoading),
+                Modifier.placeholder(vm.mediaSelectorSettings.loading),
                 description = { Text("季度全集资源通常更快") },
+            )
+
+            HorizontalDividerItem()
+
+            SwitchItem(
+                checked = mediaSelectorSettings.autoEnableLastSelected,
+                onCheckedChange = {
+                    vm.mediaSelectorSettings.update(
+                        mediaSelectorSettings.copy(autoEnableLastSelected = it),
+                    )
+                },
+                title = { Text("自动启用上次临时启用选择的数据源") },
+                Modifier.placeholder(vm.mediaSelectorSettings.loading),
             )
         }
     }

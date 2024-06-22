@@ -2,6 +2,7 @@ package me.him188.ani.app.data.media.selector
 
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.takeWhile
 import me.him188.ani.app.data.media.fetch.MediaFetchSession
 import me.him188.ani.app.data.media.fetch.awaitCompletion
@@ -63,6 +64,15 @@ value class MediaSelectorAutoSelect(
             }
         }.takeWhile { it == !STOP }.collect()
         return isSuccess.value
+    }
+
+    // #355 播放时自动启用上次临时启用选择的数据源
+    suspend fun autoEnableLastSelected(mediaFetchSession: MediaFetchSession) {
+        val lastSelectedId = mediaSelector.mediaSourceId.finalSelected.first()
+        val lastSelected = mediaFetchSession.mediaSourceResults.firstOrNull {
+            it.mediaSourceId == lastSelectedId
+        } ?: return
+        lastSelected.enable()
     }
 }
 

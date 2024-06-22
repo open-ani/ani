@@ -52,6 +52,14 @@ interface MediaSourceFetchResult {
      * 基于惰性加载性质, 该方法不会立即触发查询, 只有在 [results] 有 collector 时才会开始查询.
      */
     fun restart()
+
+    /**
+     * 使禁用的数据源重新启用.
+     *
+     * 如果该数据源已经被 [restart] 过了, 此函数不会有任何效果. 否则, 会将状态重置为 [MediaSourceFetchState.Idle].
+     * 随后使用 [results] 将会发起查询.
+     */
+    fun enable()
 }
 
 val MediaSourceFetchResult.hasCompletedOrDisabled: Flow<Boolean>

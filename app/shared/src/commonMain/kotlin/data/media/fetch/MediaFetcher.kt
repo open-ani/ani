@@ -236,6 +236,14 @@ class MediaSourceMediaFetcher(
                 MediaSourceFetchState.Working -> {}
             }
         }
+
+        override fun enable() {
+            if (state.value == MediaSourceFetchState.Disabled) {
+                if (restartCount.compareAndSet(0, 1)) { // 非 0 表示有人已经 [restart] 过了
+                    state.compareAndSet(state.value, MediaSourceFetchState.Idle)
+                }
+            }
+        }
     }
 
     private inner class MediaFetchSessionImpl(

@@ -238,5 +238,13 @@ private class TestMediaSourceResult(
             state.value = MediaSourceFetchState.Succeed(restartCount.incrementAndGet())
         }
     }
+
+    override fun enable() {
+        if (state.value is MediaSourceFetchState.Disabled) {
+            if (restartCount.compareAndSet(0, 1)) {
+                state.value = MediaSourceFetchState.Idle
+            }
+        }
+    }
 }
 
