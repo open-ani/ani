@@ -20,9 +20,13 @@ class FilteredMediaSourceResults(
     settings: Flow<MediaSelectorSettings>, // 不可以为 empty flow
     private val flowDispatcher: CoroutineContext = Dispatchers.Default,
     private val enableCaching: Boolean = true,
+    /**
+     * @see SharingStarted.WhileSubscribed
+     */
+    private val shareMillis: Long = 0L,
 ) {
     private fun <T> Flow<T>.cached() = if (enableCaching) {
-        shareIn(CoroutineScope(flowDispatcher), started = SharingStarted.WhileSubscribed(5000))
+        shareIn(CoroutineScope(flowDispatcher), started = SharingStarted.WhileSubscribed(shareMillis), replay = 1)
     } else {
         this
     }

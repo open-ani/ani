@@ -66,6 +66,7 @@ fun rememberMediaSourceResultPresentation(
 fun rememberMediaSourceResultsPresentation(
     mediaSourceResults: () -> Flow<List<MediaSourceFetchResult>>,// will not update
     settings: () -> Flow<MediaSelectorSettings>, // will not update
+    shareMillis: Long = 0L,
 ): MediaSourceResultsPresentation {
     val backgroundScope = rememberBackgroundScope()
     return remember {
@@ -73,6 +74,7 @@ fun rememberMediaSourceResultsPresentation(
             FilteredMediaSourceResults(
                 mediaSourceResults(),
                 settings(),
+                shareMillis = shareMillis,
             ),
             backgroundScope.backgroundScope.coroutineContext,
         )

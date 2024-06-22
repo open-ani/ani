@@ -38,7 +38,7 @@ private fun PreviewEpisodeCacheActionIcon() {
             Box(modifier = Modifier.size(64.dp), contentAlignment = Alignment.Center) {
                 EpisodeCacheActionIcon(
                     isLoadingIndefinitely = true,
-                    hasActionRunning = { true },
+                    hasActionRunning = true,
                     cacheStatus = null,
                     canCache = true,
                     onClick = {},
@@ -51,7 +51,7 @@ private fun PreviewEpisodeCacheActionIcon() {
             Box(modifier = Modifier.size(64.dp), contentAlignment = Alignment.Center) {
                 EpisodeCacheActionIcon(
                     isLoadingIndefinitely = false,
-                    hasActionRunning = { true },
+                    hasActionRunning = true,
                     cacheStatus = EpisodeCacheStatus.NotCached,
                     canCache = true,
                     onClick = {},
@@ -64,7 +64,7 @@ private fun PreviewEpisodeCacheActionIcon() {
             Box(modifier = Modifier.size(64.dp), contentAlignment = Alignment.Center) {
                 EpisodeCacheActionIcon(
                     isLoadingIndefinitely = false,
-                    hasActionRunning = { true },
+                    hasActionRunning = true,
                     cacheStatus = EpisodeCacheStatus.Caching(
                         null,
                         me.him188.ani.datasources.api.topic.FileSize.Unspecified,
@@ -81,7 +81,7 @@ private fun PreviewEpisodeCacheActionIcon() {
             Box(modifier = Modifier.size(64.dp), contentAlignment = Alignment.Center) {
                 EpisodeCacheActionIcon(
                     isLoadingIndefinitely = false,
-                    hasActionRunning = { true },
+                    hasActionRunning = true,
                     cacheStatus = EpisodeCacheStatus.Caching(
                         0.3f,
                         me.him188.ani.datasources.api.topic.FileSize.Unspecified,
@@ -109,7 +109,7 @@ private fun PreviewEpisodeCacheActionIconHasActionRunningChange() {
             Box(modifier = Modifier.size(64.dp), contentAlignment = Alignment.Center) {
                 EpisodeCacheActionIcon(
                     isLoadingIndefinitely = true,
-                    hasActionRunning = { running },
+                    hasActionRunning = running,
                     cacheStatus = null,
                     canCache = true,
                     onClick = { },
@@ -149,6 +149,7 @@ private fun PreviewEpisodeItem() = ProvideCompositionLocalsForPreview {
                             EmptyCoroutineContext,
                         )
                     },
+                    isRequestHidden = false,
                     dropdown = { },
                     onClick = {},
                 )
@@ -179,6 +180,7 @@ private fun PreviewEpisodeItemVeryLong() = ProvideCompositionLocalsForPreview {
                     EmptyCoroutineContext,
                 )
             },
+            isRequestHidden = false,
             dropdown = { },
             onClick = {},
         )
