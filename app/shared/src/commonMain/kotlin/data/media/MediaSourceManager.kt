@@ -11,6 +11,13 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
 import me.him188.ani.app.data.media.MediaCacheManager.Companion.LOCAL_FS_MEDIA_SOURCE_ID
+import me.him188.ani.app.data.media.fetch.MediaFetchSession
+import me.him188.ani.app.data.media.fetch.MediaFetcher
+import me.him188.ani.app.data.media.fetch.MediaFetcherConfig
+import me.him188.ani.app.data.media.fetch.MediaSourceMediaFetcher
+import me.him188.ani.app.data.media.fetch.create
+import me.him188.ani.app.data.media.instance.MediaSourceInstance
+import me.him188.ani.app.data.media.instance.MediaSourceSave
 import me.him188.ani.app.data.models.MediaSourceProxySettings
 import me.him188.ani.app.data.models.ProxyAuthorization
 import me.him188.ani.app.data.repositories.MediaSourceInstanceRepository
@@ -18,11 +25,10 @@ import me.him188.ani.app.data.repositories.MikanIndexCacheRepository
 import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.data.repositories.updateConfig
 import me.him188.ani.app.platform.getAniUserAgent
+import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.source.MediaSourceFactory
-import me.him188.ani.datasources.core.instance.MediaSourceInstance
-import me.him188.ani.datasources.core.instance.MediaSourceSave
 import me.him188.ani.datasources.mikan.MikanCNMediaSource
 import me.him188.ani.datasources.mikan.MikanMediaSource
 import me.him188.ani.utils.coroutines.onReplacement
@@ -42,20 +48,6 @@ interface MediaSourceManager { // available by inject
     val allInstances: Flow<List<MediaSourceInstance>>
 
     /**
-     * 跟随设置更新的 [MediaSource] 列表. 已考虑代理和开关.
-     */
-    val enabledSources: Flow<List<MediaSource>>
-        get() = allInstances.map { list ->
-            list.filter { it.isEnabled }.map { it.source }
-        }
-
-    /**
-     * 全部 [MediaSource] 列表. 已考虑代理和开关.
-     */
-    val allSources: Flow<List<MediaSource>>
-        get() = allInstances.map { list -> list.map { it.source } }
-
-    /**
      * 全部的 [MediaSource], 包括那些设置里关闭的, 包括本地的.
      */
     val allFactories: List<MediaSourceFactory>
@@ -71,6 +63,11 @@ interface MediaSourceManager { // available by inject
     val allFactoryIdsExceptLocal: List<String>
         get() = allFactoryIds.filter { !isLocal(it) }
 
+    /**
+     * 根据启用的 [MediaSourceInstance] 创建的 [MediaSourceMediaFetcher].
+     */
+    val mediaFetcher: Flow<MediaFetcher>
+
     fun isLocal(mediaSourceId: String): Boolean {
         return mediaSourceId == LOCAL_FS_MEDIA_SOURCE_ID
     }
@@ -83,8 +80,17 @@ interface MediaSourceManager { // available by inject
     suspend fun removeInstance(instanceId: String)
 }
 
+/**
+ * 根据请求创建 [MediaFetchSession]. 当请求变化时, 会自动取消之前的请求.
+ * 也会跟随用户设置的启用/禁用数据源 emit 新的 [MediaFetchSession].
+ *
+ * @see MediaFetchRequest.Companion.create
+ */
+fun MediaSourceManager.createFetchFetchSessionFlow(request: Flow<MediaFetchRequest>): Flow<MediaFetchSession> =
+    this.mediaFetcher.map { it.newSession(request) }
+
 class MediaSourceManagerImpl(
-    additionalSources: () -> List<MediaSource>, // local sources
+    additionalSources: () -> List<MediaSource>, // local sources, calculated only once
     flowCoroutineContext: CoroutineContext = Dispatchers.Default,
 ) : MediaSourceManager, KoinComponent {
     private val settingsRepository: SettingsRepository by inject()
@@ -138,6 +144,13 @@ class MediaSourceManagerImpl(
         factories
             .map { it.mediaSourceId }
             .plus(this.additionalSources.map { it.mediaSourceId })
+    }
+
+    override val mediaFetcher: Flow<MediaFetcher> = allInstances.map { instances ->
+        MediaSourceMediaFetcher(
+            configProvider = { MediaFetcherConfig.Default },
+            mediaSources = instances,
+        )
     }
 
     override fun instanceConfigFlow(instanceId: String): Flow<MediaSourceConfig> {

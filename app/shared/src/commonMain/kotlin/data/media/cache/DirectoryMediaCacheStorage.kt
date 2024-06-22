@@ -1,4 +1,4 @@
-package me.him188.ani.datasources.core.cache
+package me.him188.ani.app.data.media.cache
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -23,6 +23,7 @@ import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import me.him188.ani.app.data.media.fetch.MediaFetcher
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaCacheMetadata
 import me.him188.ani.datasources.api.paging.SinglePagePagedSource
@@ -33,9 +34,9 @@ import me.him188.ani.datasources.api.source.MediaMatch
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.source.MediaSourceLocation
+import me.him188.ani.datasources.api.source.matches
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
-import me.him188.ani.datasources.core.fetch.MediaFetcher
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
@@ -222,11 +223,9 @@ class DirectoryMediaCacheStorage(
         metadata: MediaCacheMetadata = it.metadata
     ) = it.origin.mediaId == media.mediaId && it.metadata.episodeSort == metadata.episodeSort
 
-    override suspend fun delete(cache: MediaCache): Boolean {
+    override suspend fun deleteFirst(predicate: (MediaCache) -> Boolean): Boolean {
         lock.withLock {
-            if (!listFlow.value.contains(cache)) {
-                return false
-            }
+            val cache = listFlow.value.firstOrNull(predicate) ?: return false
             listFlow.value -= cache
             withContext(Dispatchers.IO) {
                 if (!metadataDir.resolve(getSaveFilename(cache)).deleteIfExists()) {
@@ -238,7 +237,7 @@ class DirectoryMediaCacheStorage(
         }
     }
 
-    private fun getSaveFilename(cache: MediaCache) = "${cache.cacheId}.${METADATA_FILE_EXTENSION}"
+    private fun getSaveFilename(cache: MediaCache) = "${cache.cacheId}.$METADATA_FILE_EXTENSION"
 
     override fun close() {
         scope.cancel()

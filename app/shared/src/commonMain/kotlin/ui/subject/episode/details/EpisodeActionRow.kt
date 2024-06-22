@@ -30,6 +30,7 @@ import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,7 +51,7 @@ import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
 @Composable
 fun EpisodeActionRow(
-    viewModel: EpisodeViewModel,
+    viewModel: EpisodeViewModel, // TODO: remove viewModel dependency from EpisodeActionRow
     snackbar: SnackbarHostState,
     modifier: Modifier = Modifier,
 ) {
@@ -66,9 +67,11 @@ fun EpisodeActionRow(
         }
     }
 
+    val isDanmakuLoading by viewModel.playerStatistics.isDanmakuLoading.collectAsStateWithLifecycle(false)
+
     EpisodeActionRow(
-        mediaFetcherCompleted = viewModel.episodeMediaFetchSession.mediaFetcherCompleted,
-        isDanmakuLoading = viewModel.playerStatistics.isDanmakuLoading.collectAsStateWithLifecycle(false).value,
+        isMediaFetcherWorking = { viewModel.mediaSourceResultsPresentation.anyLoading },
+        isDanmakuLoading = { isDanmakuLoading },
         onClickMediaSelection = { viewModel.mediaSelectorVisible = true },
         onClickCopyLink = {
             viewModel.launchInMain {
@@ -102,8 +105,8 @@ fun EpisodeActionRow(
  */
 @Composable
 fun EpisodeActionRow(
-    mediaFetcherCompleted: Boolean,
-    isDanmakuLoading: Boolean,
+    isMediaFetcherWorking: () -> Boolean,
+    isDanmakuLoading: () -> Boolean,
     onClickMediaSelection: () -> Unit,
     onClickCopyLink: () -> Unit,
     onClickCache: () -> Unit,
@@ -119,7 +122,7 @@ fun EpisodeActionRow(
     ) {
         // 选择播放源
         MediaSelectionAction(
-            !mediaFetcherCompleted,
+            isMediaFetcherWorking,
             onClick = onClickMediaSelection,
             Modifier.weight(1f),
         )
@@ -129,7 +132,7 @@ fun EpisodeActionRow(
             icon = { Icon(Icons.Rounded.InsertChartOutlined, null) },
             text = { Text("视频统计", maxLines = 1, softWrap = false) },
             Modifier.weight(1f),
-            isLoading = isDanmakuLoading
+            isLoadingProvider = isDanmakuLoading
         )
 
         ActionButton(
@@ -175,7 +178,7 @@ fun EpisodeActionRow(
  */
 @Composable
 private fun MediaSelectionAction(
-    isLoading: Boolean,
+    isLoading: () -> Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -197,7 +200,7 @@ private fun ActionButton(
     icon: @Composable () -> Unit,
     text: @Composable () -> Unit,
     modifier: Modifier = Modifier,
-    isLoading: Boolean = false,
+    isLoadingProvider: () -> Boolean = { false },
 ) {
     Column(
         modifier
@@ -218,6 +221,9 @@ private fun ActionButton(
                 text()
             }
 
+            val isLoading by remember {
+                derivedStateOf(isLoadingProvider)
+            }
             AnimatedVisibility(isLoading) {
                 Box(Modifier.padding(start = 8.dp).height(12.dp), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(Modifier.size(12.dp), strokeWidth = 2.dp)

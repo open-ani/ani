@@ -1,31 +1,48 @@
 package me.him188.ani.app.ui.subject.episode.mediaFetch
 
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.cancel
 import me.him188.ani.app.data.media.selector.MediaPreferenceItem
 import me.him188.ani.app.data.media.selector.MediaSelector
 import me.him188.ani.app.tools.MonoTasker
+import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
+import me.him188.ani.app.ui.foundation.rememberBackgroundScope
 import me.him188.ani.datasources.api.Media
-import me.him188.ani.datasources.api.source.MediaSourceLocation
+import kotlin.coroutines.CoroutineContext
 
 fun MediaSelectorPresentation(
     mediaSelector: MediaSelector,
-    backgroundScope: CoroutineScope,
+    parentCoroutineContext: CoroutineContext,
 ): MediaSelectorPresentation = MediaSelectorPresentationImpl(
-    mediaSelector, backgroundScope
+    mediaSelector, parentCoroutineContext
 )
+
+@Composable
+fun rememberMediaSelectorPresentation(
+    mediaSelector: () -> MediaSelector // lambda remembered
+): MediaSelectorPresentation {
+    val scope = rememberBackgroundScope()
+    val selector by remember {
+        derivedStateOf(mediaSelector)
+    }
+    return remember {
+        MediaSelectorPresentation(selector, scope.backgroundScope.coroutineContext)
+    }
+}
 
 /**
  * 数据源选择器 UI 的状态.
  */
 @Stable
-interface MediaSelectorPresentation {
-    val mediaSelector: MediaSelector
-
+interface MediaSelectorPresentation : AutoCloseable {
     /**
      * The list of media available for selection.
      */
@@ -50,6 +67,8 @@ interface MediaSelectorPresentation {
      * @see MediaSelector.select
      */
     fun select(candidate: Media)
+
+    fun removePreferencesUntilFirstCandidate()
 }
 
 @Stable
@@ -86,10 +105,13 @@ fun <T : Any> MediaPreferenceItemPresentation<T>.preferOrRemove(value: T?) {
 }
 
 
+/**
+ * Wraps [MediaSelector] to provide states for UI.
+ */
 internal class MediaSelectorPresentationImpl(
-    override val mediaSelector: MediaSelector,
-    override val backgroundScope: CoroutineScope,
-) : MediaSelectorPresentation, HasBackgroundScope {
+    private val mediaSelector: MediaSelector,
+    parentCoroutineContext: CoroutineContext,
+) : MediaSelectorPresentation, HasBackgroundScope by BackgroundScope(parentCoroutineContext) {
     override val mediaList: List<Media> by mediaSelector.mediaList.produceState(emptyList())
 
     override val alliance: MediaPreferenceItemPresentation<String> =
@@ -108,11 +130,14 @@ internal class MediaSelectorPresentationImpl(
             mediaSelector.select(candidate)
         }
     }
-}
 
-val Media.costForDownload
-    get() = when (location) {
-        MediaSourceLocation.Local -> 0
-        MediaSourceLocation.Lan -> 1
-        else -> 2
+    override fun removePreferencesUntilFirstCandidate() {
+        launchInBackground {
+            mediaSelector.removePreferencesUntilFirstCandidate()
+        }
     }
+
+    override fun close() {
+        backgroundScope.cancel()
+    }
+}

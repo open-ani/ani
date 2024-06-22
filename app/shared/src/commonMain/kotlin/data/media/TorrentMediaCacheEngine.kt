@@ -18,6 +18,10 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.job
 import kotlinx.coroutines.withContext
+import me.him188.ani.app.data.media.cache.AbstractMediaStats
+import me.him188.ani.app.data.media.cache.MediaCache
+import me.him188.ani.app.data.media.cache.MediaCacheEngine
+import me.him188.ani.app.data.media.cache.MediaStats
 import me.him188.ani.app.data.media.resolver.TorrentVideoSourceResolver
 import me.him188.ani.app.tools.torrent.TorrentEngine
 import me.him188.ani.app.torrent.api.TorrentDownloadSession
@@ -32,10 +36,6 @@ import me.him188.ani.datasources.api.MediaCacheMetadata
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.datasources.api.topic.ResourceLocation
-import me.him188.ani.datasources.core.cache.AbstractMediaStats
-import me.him188.ani.datasources.core.cache.MediaCache
-import me.him188.ani.datasources.core.cache.MediaCacheEngine
-import me.him188.ani.datasources.core.cache.MediaStats
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger

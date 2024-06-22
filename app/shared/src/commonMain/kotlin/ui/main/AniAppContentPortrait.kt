@@ -15,7 +15,7 @@ import me.him188.ani.app.ui.profile.auth.AuthRequestScene
 import me.him188.ani.app.ui.settings.SettingsPage
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.subject.cache.SubjectCacheScene
-import me.him188.ani.app.ui.subject.cache.SubjectCacheViewModel
+import me.him188.ani.app.ui.subject.cache.SubjectCacheViewModelImpl
 import me.him188.ani.app.ui.subject.details.SubjectDetailsScene
 import me.him188.ani.app.ui.subject.details.SubjectDetailsViewModel
 import me.him188.ani.app.ui.subject.episode.EpisodeScene
@@ -91,16 +91,8 @@ fun AniAppContentPortrait(
                     return@scene
                 }
                 // Don't use rememberViewModel to save memory
-                val vm = remember(subjectId) { SubjectCacheViewModel(subjectId) }
-                SubjectCacheScene(
-                    vm,
-                    onClickGlobalCacheSettings = {
-                        aniNavigator.navigateSettings(SettingsTab.MEDIA)
-                    },
-                    onClickGlobalCacheManage = {
-                        aniNavigator.navigateCaches()
-                    }
-                )
+                val vm = remember(subjectId) { SubjectCacheViewModelImpl(subjectId) }
+                SubjectCacheScene(vm)
             }
         }
     }

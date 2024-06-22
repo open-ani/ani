@@ -24,6 +24,8 @@ import me.him188.ani.utils.coroutines.cancellableCoroutineScope
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class DefaultMediaSelectorTest {
     private val mediaList: MutableStateFlow<MutableList<DefaultMedia>> = MutableStateFlow(mutableListOf())
@@ -36,7 +38,7 @@ class DefaultMediaSelectorTest {
     private val mediaSelectorSettings = MutableStateFlow(MediaSelectorSettings.Default)
     private val mediaSelectorContext = MutableStateFlow(
         MediaSelectorContext(
-            subjectFinishedForAConservativeTime = false,
+            subjectFinished = false,
             mediaSourcePrecedence = emptyList(),
         )
     )
@@ -71,9 +73,27 @@ class DefaultMediaSelectorTest {
         mediaSourcePrecedence: List<String> = emptyList()
     ) =
         MediaSelectorContext(
-            subjectFinishedForAConservativeTime = subjectCompleted,
+            subjectFinished = subjectCompleted,
             mediaSourcePrecedence = mediaSourcePrecedence,
         )
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Select contract
+    ///////////////////////////////////////////////////////////////////////////
+
+    @Test
+    fun `select two times returns false`() = runTest {
+        val target: DefaultMedia
+        addMedia(
+            media(alliance = "字幕组1", subtitleLanguages = listOf("CHS")),
+            media(alliance = "字幕组2", resolution = "Special").also { target = it },
+            media(alliance = "字幕组3", subtitleLanguages = listOf("CHS", "CHT")),
+            media(alliance = "字幕组4", subtitleLanguages = listOf("CHS", "CHT", "R")),
+            media(alliance = "字幕组5", subtitleLanguages = listOf("CHS"))
+        )
+        assertTrue { selector.select(target) }
+        assertFalse { selector.select(target) }
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     // 单个选项测试

@@ -2,6 +2,7 @@ package me.him188.ani.datasources.api.source
 
 import kotlinx.serialization.Serializable
 import me.him188.ani.datasources.api.EpisodeSort
+import me.him188.ani.datasources.api.MediaCacheMetadata
 
 /**
  * 一个数据源查询请求. 该请求包含尽可能多的信息以便 [MediaSource] 可以查到尽可能多的结果.
@@ -10,6 +11,7 @@ import me.him188.ani.datasources.api.EpisodeSort
  */
 @Serializable
 class MediaFetchRequest(
+    // 提示, 查看 [MediaFetcher]
     /**
      * 条目服务 (Bangumi) 提供的条目 ID. 若数据源支持, 可以用此信息做精确匹配.
      * 可能为 `null`, 表示未知.
@@ -54,7 +56,9 @@ class MediaFetchRequest(
      * @see EpisodeSort
      */
     val episodeEp: EpisodeSort? = episodeSort,
-)
+) {
+    companion object
+}
 
 fun MediaFetchRequest.toStringMultiline() = buildString {
     append("subjectId").append(": ").append(subjectId).appendLine()
@@ -65,4 +69,37 @@ fun MediaFetchRequest.toStringMultiline() = buildString {
     append("episodeSort").append(": ").append(episodeSort).appendLine()
     append("episodeName").append(": ").append(episodeName).appendLine()
     append("episodeEp").append(": ").append(episodeEp).appendLine()
+}
+
+/**
+ * 尝试匹配
+ */
+infix fun MediaFetchRequest.matches(cache: MediaCacheMetadata): MatchKind? {
+    if (episodeId != null && cache.episodeId != null) {
+        // Both query and cache have episodeId, perform exact match.
+        if (cache.episodeId == episodeId) {
+            return MatchKind.EXACT
+        }
+
+        // Don't go for fuzzy match otherwise we'll always get false positives.
+        return null
+    }
+
+    // Exact match is not possible, do a fuzzy match.
+
+    // Success if the episode name exactly matches
+    if (episodeName.isNotEmpty() && cache.episodeName == episodeName) return MatchKind.FUZZY
+
+    if (subjectNames.any { cache.subjectNames.contains(it) }) {
+        // Any subject name matches
+
+        return if (episodeSort == cache.episodeSort || episodeEp == cache.episodeSort) {
+            // Episode sort matches
+            MatchKind.FUZZY
+        } else {
+            null
+        }
+    }
+
+    return null
 }

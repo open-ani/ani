@@ -1,4 +1,4 @@
-package me.him188.ani.datasources.core.cache
+package me.him188.ani.app.data.media.cache
 
 import androidx.compose.runtime.Stable
 import kotlinx.coroutines.flow.Flow

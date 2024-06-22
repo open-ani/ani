@@ -38,7 +38,6 @@ import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
 import me.him188.ani.app.ui.subject.episode.EpisodeCollectionActionButton
 import me.him188.ani.app.ui.subject.episode.EpisodeViewModel
-import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberMediaSelectorSourceResults
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.topic.FileSize.Companion.Unspecified
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
@@ -85,10 +84,8 @@ fun EpisodeDetails(
                     sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = currentPlatform.isDesktop())
                 ) {
                     EpisodePlayMediaSelector(
-                        viewModel.mediaSelectorPresentation,
-                        sourceResults = rememberMediaSelectorSourceResults(
-                            settingsProvider = { viewModel.mediaSelectorSettings }
-                        ) { viewModel.episodeMediaFetchSession.sourceResults },
+                        mediaSelector = viewModel.mediaSelectorPresentation,
+                        sourceResults = viewModel.mediaSourceResultsPresentation,
                         onDismissRequest = { viewModel.mediaSelectorVisible = false },
                         modifier = Modifier.fillMaxHeight(), // 防止添加筛选后数量变少导致 bottom sheet 高度变化
                     )

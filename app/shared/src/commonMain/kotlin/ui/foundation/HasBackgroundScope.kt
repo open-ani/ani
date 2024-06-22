@@ -6,7 +6,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisallowComposableCalls
 import androidx.compose.runtime.FloatState
 import androidx.compose.runtime.IntState
-import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.RememberObserver
 import androidx.compose.runtime.Stable
@@ -234,6 +233,13 @@ interface HasBackgroundScope {
         return localFlow
     }
 
+    private val <T> Flow<T>.valueOrNull: T?
+        get() = when (this) {
+            is StateFlow<T> -> this.value
+            is SharedFlow<T> -> this.replayCache.firstOrNull()
+            else -> null
+        }
+
     /**
      * Collects the flow on the main thread into a [State].
      */
@@ -241,7 +247,7 @@ interface HasBackgroundScope {
         initialValue: T,
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
     ): State<T> {
-        val state = mutableStateOf(initialValue)
+        val state = mutableStateOf(valueOrNull ?: initialValue)
         launchInBackground(coroutineContext) {
             flowOn(Dispatchers.Default) // compute in background
                 .collect {
@@ -260,7 +266,7 @@ interface HasBackgroundScope {
         initialValue: Float,
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
     ): FloatState {
-        val state = mutableFloatStateOf(initialValue)
+        val state = mutableFloatStateOf(this.valueOrNull ?: initialValue)
         launchInBackground(coroutineContext) {
             flowOn(Dispatchers.Default) // compute in background
                 .collect {
@@ -278,8 +284,8 @@ interface HasBackgroundScope {
     fun Flow<Int>.produceState(
         initialValue: Int,
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    ): MutableIntState {
-        val state = mutableIntStateOf(initialValue)
+    ): IntState {
+        val state = mutableIntStateOf(this.valueOrNull ?: initialValue)
         launchInBackground(coroutineContext) {
             flowOn(Dispatchers.Default) // compute in background
                 .collect {

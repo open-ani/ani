@@ -6,16 +6,18 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.media.MediaCacheManager
+import me.him188.ani.app.data.media.fetch.FilteredMediaSourceResults
+import me.him188.ani.app.data.media.fetch.MediaSourceFetchResult
+import me.him188.ani.app.data.media.fetch.MediaSourceFetchState
 import me.him188.ani.app.data.media.selector.DefaultMediaSelector
 import me.him188.ani.app.data.media.selector.MediaSelectorContext
 import me.him188.ani.app.data.models.MediaSelectorSettings
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
-import me.him188.ani.app.ui.foundation.rememberBackgroundScope
 import me.him188.ani.datasources.acgrip.AcgRipMediaSource
 import me.him188.ani.datasources.api.CachedMedia
 import me.him188.ani.datasources.api.DefaultMedia
@@ -30,11 +32,10 @@ import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.datasources.api.topic.SubtitleLanguage.ChineseSimplified
 import me.him188.ani.datasources.api.topic.SubtitleLanguage.ChineseTraditional
-import me.him188.ani.datasources.core.fetch.MediaSourceResult
-import me.him188.ani.datasources.core.fetch.MediaSourceState
 import me.him188.ani.datasources.dmhy.DmhyMediaSource
 import me.him188.ani.datasources.mikan.MikanCNMediaSource
 import me.him188.ani.datasources.mikan.MikanMediaSource
+import kotlin.coroutines.EmptyCoroutineContext
 
 private const val SOURCE_DMHY = DmhyMediaSource.ID
 private const val SOURCE_ACG = AcgRipMediaSource.ID
@@ -140,91 +141,99 @@ internal val previewMediaList = listOf(
 @PreviewLightDark
 @Composable
 private fun PreviewMediaSelector() {
-    ProvideCompositionLocalsForPreview {
-        val backgroundScope = rememberBackgroundScope()
-        MediaSelectorView(
-            state = remember {
-                MediaSelectorPresentation(
-                    DefaultMediaSelector(
-                        mediaSelectorContextNotCached = flowOf(MediaSelectorContext.EmptyForPreview),
-                        mediaListNotCached = MutableStateFlow(
-                            listOf(
-                                CachedMedia(
-                                    origin = previewMediaList[0],
-                                    cacheMediaSourceId = MediaCacheManager.LOCAL_FS_MEDIA_SOURCE_ID,
-                                    download = ResourceLocation.LocalFile("file://test.txt"),
-                                )
-                            ) + previewMediaList
-                        ),
-                        savedUserPreference = flowOf(MediaPreference.Empty),
-                        savedDefaultPreference = flowOf(
-                            MediaPreference.PlatformDefault.copy(
-                                subtitleLanguageId = "CHS"
-                            )
-                        ),
-                        mediaSelectorSettings = flowOf(MediaSelectorSettings.Default)
-                    ),
-                    backgroundScope = backgroundScope.backgroundScope,
+    val mediaSelector = rememberMediaSelectorPresentation {
+        DefaultMediaSelector(
+            mediaSelectorContextNotCached = flowOf(MediaSelectorContext.EmptyForPreview),
+            mediaListNotCached = MutableStateFlow(
+                listOf(
+                    CachedMedia(
+                        origin = previewMediaList[0],
+                        cacheMediaSourceId = MediaCacheManager.LOCAL_FS_MEDIA_SOURCE_ID,
+                        download = ResourceLocation.LocalFile("file://test.txt"),
+                    )
+                ) + previewMediaList
+            ),
+            savedUserPreference = flowOf(MediaPreference.Empty),
+            savedDefaultPreference = flowOf(
+                MediaPreference.PlatformDefault.copy(
+                    subtitleLanguageId = "CHS"
                 )
-            },
-            sourceResults = rememberTestMediaSourceResults()
+            ),
+            mediaSelectorSettings = flowOf(MediaSelectorSettings.Default)
+        )
+    }
+    ProvideCompositionLocalsForPreview {
+        MediaSelectorView(
+            state = mediaSelector,
+            sourceResults = {
+                MediaSourceResultsView(
+                    rememberTestMediaSourceResults(),
+                    mediaSelector,
+                )
+            }
         )
     }
 }
 
 @Composable
-internal fun rememberTestMediaSourceResults() = rememberMediaSelectorSourceResults(
-    { MediaSelectorSettings.Default }
-) {
-    listOf(
-        TestMediaSourceResult(
-            MikanMediaSource.ID,
-            MediaSourceKind.BitTorrent,
-            initialState = MediaSourceState.Working,
-            results = previewMediaList
+internal fun rememberTestMediaSourceResults(): MediaSourceResultsPresentation = remember {
+    MediaSourceResultsPresentation(
+        FilteredMediaSourceResults(
+            results = flowOf(
+                listOf(
+                    TestMediaSourceResult(
+                        MikanMediaSource.ID,
+                        MediaSourceKind.BitTorrent,
+                        initialState = MediaSourceFetchState.Working,
+                        results = previewMediaList
+                    ),
+                    TestMediaSourceResult(
+                        "dmhy",
+                        MediaSourceKind.BitTorrent,
+                        initialState = MediaSourceFetchState.Succeed,
+                        results = previewMediaList
+                    ),
+                    TestMediaSourceResult(
+                        "acg.rip",
+                        MediaSourceKind.BitTorrent,
+                        initialState = MediaSourceFetchState.Disabled,
+                        results = previewMediaList
+                    ),
+                    TestMediaSourceResult(
+                        "nyafun",
+                        MediaSourceKind.WEB,
+                        initialState = MediaSourceFetchState.Succeed,
+                        results = previewMediaList
+                    ),
+                    TestMediaSourceResult(
+                        MikanCNMediaSource.ID,
+                        MediaSourceKind.BitTorrent,
+                        initialState = MediaSourceFetchState.Failed(IllegalStateException()),
+                        results = emptyList()
+                    ),
+                )
+            ),
+            settings = flowOf(MediaSelectorSettings.Default)
         ),
-        TestMediaSourceResult(
-            "dmhy",
-            MediaSourceKind.BitTorrent,
-            initialState = MediaSourceState.Succeed,
-            results = previewMediaList
-        ),
-        TestMediaSourceResult(
-            "acg.rip",
-            MediaSourceKind.BitTorrent,
-            initialState = MediaSourceState.Disabled,
-            results = previewMediaList
-        ),
-        TestMediaSourceResult(
-            "nyafun",
-            MediaSourceKind.WEB,
-            initialState = MediaSourceState.Succeed,
-            results = previewMediaList
-        ),
-        TestMediaSourceResult(
-            MikanCNMediaSource.ID,
-            MediaSourceKind.BitTorrent,
-            initialState = MediaSourceState.Failed(IllegalStateException()),
-            results = emptyList()
-        ),
+        EmptyCoroutineContext,
     )
 }
 
 private class TestMediaSourceResult(
     override val mediaSourceId: String,
     override val kind: MediaSourceKind,
-    initialState: MediaSourceState,
+    initialState: MediaSourceFetchState,
     results: List<Media>,
-) : MediaSourceResult {
-    override val state: MutableStateFlow<MediaSourceState> = MutableStateFlow(initialState)
-    override val results: Flow<List<Media>> = flowOf(results)
+) : MediaSourceFetchResult {
+    override val state: MutableStateFlow<MediaSourceFetchState> = MutableStateFlow(initialState)
+    override val results: SharedFlow<List<Media>> = MutableStateFlow(results)
 
     @OptIn(DelicateCoroutinesApi::class)
     override fun restart() {
-        state.value = MediaSourceState.Working
+        state.value = MediaSourceFetchState.Working
         GlobalScope.launch {
             delay(3000)
-            state.value = MediaSourceState.Succeed
+            state.value = MediaSourceFetchState.Succeed
         }
     }
 }
