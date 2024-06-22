@@ -104,7 +104,13 @@ class EpisodeCacheRequesterImpl(
 
     sealed class AbstractWorkingStage(
         override val request: EpisodeCacheRequest,
-    ) : CacheRequestStage.Working
+    ) : CacheRequestStage.Working {
+        private val _attemptedTrySelect = MutableStateFlow(false)
+        final override val attemptedTrySelect: StateFlow<Boolean> get() = _attemptedTrySelect
+        final override fun markAttemptedTrySelect() {
+            _attemptedTrySelect.value = true
+        }
+    }
 
     sealed interface CloseableStage : CacheRequestStage, AutoCloseable {
         override fun close()
@@ -136,22 +142,28 @@ class EpisodeCacheRequesterImpl(
         }
 
         override suspend fun tryAutoSelectByCachedSeason(existingCaches: List<MediaCache>): MediaSelected? {
-            val existing = existingCaches.firstOrNull {
-                val episodeRange = it.origin.episodeRange
-                if (episodeRange == null || episodeRange.isSingleEpisode()) return@firstOrNull false
-
-                (request.episodeInfo.ep != null && episodeRange.contains(request.episodeInfo.ep))
-                        || episodeRange.contains(request.episodeInfo.sort)
-            } ?: return null
-
+            val existing: MediaCache
             return stageLock.withLock {
                 checkStageLocked()
-                switchStageLocked {
-                    SelectStorage(
-                        this,
-                        existing.origin.unwrapCached(),
-                        storagesLazy.first(),
-                    )
+
+                try {
+                    existing = existingCaches.firstOrNull {
+                        val episodeRange = it.origin.episodeRange
+                        if (episodeRange == null || episodeRange.isSingleEpisode()) return@firstOrNull false
+
+                        (request.episodeInfo.ep != null && episodeRange.contains(request.episodeInfo.ep))
+                                || episodeRange.contains(request.episodeInfo.sort)
+                    } ?: return null
+
+                    switchStageLocked {
+                        SelectStorage(
+                            this,
+                            existing.origin.unwrapCached(),
+                            storagesLazy.first(),
+                        )
+                    }
+                } finally {
+                    markAttemptedTrySelect() // 仅在确认状态修改完成, 或者不需要修改状态后才更新
                 }
             }.run {
                 try {
@@ -167,16 +179,20 @@ class EpisodeCacheRequesterImpl(
         override suspend fun tryAutoSelectByPreference(): CacheRequestStage.SelectStorage? {
             stageLock.withLock {
                 checkStageLocked()
-                val selected = mediaSelector.autoSelect.awaitCompletedAndSelectDefault(fetchSession)
+                try {
+                    val selected = mediaSelector.autoSelect.awaitCompletedAndSelectDefault(fetchSession)
 
-                if (selected != null) {
-                    return switchStageLocked {
-                        SelectStorage(
-                            this,
-                            selected,
-                            storagesLazy.first(),
-                        )
+                    if (selected != null) {
+                        return switchStageLocked {
+                            SelectStorage(
+                                this,
+                                selected,
+                                storagesLazy.first(),
+                            )
+                        }
                     }
+                } finally {
+                    markAttemptedTrySelect() // 仅在确认状态修改完成, 或者不需要修改状态后才更新
                 }
                 return null
             }
@@ -219,14 +235,18 @@ class EpisodeCacheRequesterImpl(
         override suspend fun trySelectByCache(mediaCache: MediaCache): CacheRequestStage.Done? {
             stageLock.withLock {
                 checkStageLocked()
-                val storage = storages.firstOrNull { it.contains(mediaCache) } ?: return null
-                return switchStageLocked {
-                    CacheRequestStage.Done(
-                        request, selectedMedia, storage,
-                        MediaCacheMetadata(fetchSession.request.first()),
-                    )
-                }.also {
-                    this.close()
+                try {
+                    val storage = storages.firstOrNull { it.contains(mediaCache) } ?: return null
+                    return switchStageLocked {
+                        CacheRequestStage.Done(
+                            request, selectedMedia, storage,
+                            MediaCacheMetadata(fetchSession.request.first()),
+                        )
+                    }.also {
+                        this.close()
+                    }
+                } finally {
+                    markAttemptedTrySelect() // 仅在确认状态修改完成, 或者不需要修改状态后才更新
                 }
             }
         }

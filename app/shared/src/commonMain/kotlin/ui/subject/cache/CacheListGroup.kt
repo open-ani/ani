@@ -32,7 +32,6 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -44,7 +43,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import me.him188.ani.app.data.media.EpisodeCacheStatus
@@ -60,6 +58,7 @@ import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberMediaSourceResult
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.datasources.api.topic.isDoneOrDropped
+import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
 
 @Immutable
@@ -99,6 +98,9 @@ fun SettingsScope.EpisodeCacheListGroup(
     modifier: Modifier = Modifier,
 ) {
     state.currentSelectStorageTask?.let { task ->
+        val attemptedTrySelect by task.attemptedTrySelect.collectAsStateWithLifecycle(false)
+        if (!attemptedTrySelect) return@let
+
         SelectMediaStorageDialog(
             options = task.options,
             onSelect = { state.selectStorage(it) },
@@ -107,15 +109,8 @@ fun SettingsScope.EpisodeCacheListGroup(
         )
     }
     state.currentSelectMediaTask?.let { task ->
-        // 当 task 变更后, 等待一会再显示
-        var delayed by remember(task) { mutableStateOf(false) }
-        LaunchedEffect(task) {
-            delay(1000)
-            if (task == state.currentSelectMediaTask) {
-                delayed = true
-            }
-        }
-        if (!delayed) return@let
+        val attemptedTrySelect by task.attemptedTrySelect.collectAsStateWithLifecycle(false)
+        if (!attemptedTrySelect) return@let
 
         ModalBottomSheet(
             { state.cancelMediaSelector(task) },

@@ -1,5 +1,6 @@
 package me.him188.ani.app.data.media.cache.requester
 
+import kotlinx.coroutines.flow.StateFlow
 import me.him188.ani.app.data.media.cache.MediaCache
 import me.him188.ani.app.data.media.cache.MediaCacheEngine
 import me.him188.ani.app.data.media.cache.MediaCacheStorage
@@ -34,6 +35,19 @@ sealed interface CacheRequestStage {
          * 不会更新 stage. 请使用 [SelectMedia.select], [SelectMedia.tryAutoSelectByCachedSeason], [SelectMedia.tryAutoSelectByPreference] 等方法替代.
          */
         val mediaSelector: MediaSelector
+
+        /**
+         * 是否尝试过任何 `trySelect` 函数, 无论是否成功.
+         * 但注意, 若操作时状态不正确, 抛出了 [StaleStageException], 则不会更新该值.
+         *
+         * 一旦此值为 `true`, 它不可能再变为 `false`.
+         */
+        val attemptedTrySelect: StateFlow<Boolean>
+
+        /**
+         * 将 [attemptedTrySelect] 设置为 `true`.
+         */
+        fun markAttemptedTrySelect()
     }
 
     sealed interface SelectMedia : Working {
@@ -54,6 +68,7 @@ sealed interface CacheRequestStage {
          * 成功时会尝试根据上次缓存使用的 storage 选择. 如果选择成功, 将返回 [Done]. 否则返回 [SelectStorage].
          *
          * 与 [MediaSelector.select] 不同, 该方法会更新 stage. 详见 [Working.mediaSelector].
+         * 将会更新 [attemptedTrySelect].
          *
          * @param existingCaches 该条目下的剧集的缓存状态
          * @throws StaleStageException
@@ -68,6 +83,7 @@ sealed interface CacheRequestStage {
          * 若没有可选的 [Media] 或者用户已经手动选择过一个 [Media] 则返回 `null`.
          *
          * 与 [MediaSelector.select] 不同, 该方法会更新 stage. 详见 [Working.mediaSelector].
+         * 将会更新 [attemptedTrySelect].
          *
          * @throws StaleStageException
          */
@@ -98,6 +114,8 @@ sealed interface CacheRequestStage {
          * 尝试选择包含这个 [MediaCache] 的 [MediaCacheStorage].
          *
          * 成功时进入下一阶段, 若未找到则返回 `null`.
+         * 将会更新 [attemptedTrySelect].
+         *
          * @throws StaleStageException
          */
         suspend fun trySelectByCache(mediaCache: MediaCache): Done?

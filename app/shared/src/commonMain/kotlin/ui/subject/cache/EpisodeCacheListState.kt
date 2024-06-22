@@ -55,7 +55,7 @@ interface EpisodeCacheListState {
     /**
      * 开始请求缓存一个剧集.
      *
-     * 将会加载条目和剧集元数据, 尝试自动选择缓存. 无法自动选择时, 将会展示 [MediaSelector].
+     * 将会加载条目和剧集元数据, 尝试自动选择缓存. 在无法自动选择时, 将会展示 [MediaSelector].
      */
     fun requestCache(episode: EpisodeCacheState)
 
@@ -67,6 +67,14 @@ interface EpisodeCacheListState {
 
 /**
  * 单个条目的缓存管理页面的状态
+ *
+ * ## 流程
+ *
+ * 1. 用户点击一个剧集的下载按钮, 调用 [requestCache]
+ * 2. [requestCache] 调用 [onRequestCache] 发起请求 ([EpisodeCacheRequester]). [onRequestCache] 将会自动尝试选择目标 media 和 storage.
+ * 3. 如果没有自动选择 media, [currentSelectMediaTask] 会变为非 `null`, UI 弹出 media selector, 待用户选择后调用 [selectMedia]
+ * 4. 如果没有自动选择 storage, [currentSelectStorageTask] 会变为非 `null`, UI 对应弹出选择, 待用户选择后调用 [selectStorage]
+ * 5. 当 media 和 storage 都选择完成, [onRequestCacheComplete] 被调用, 开始缓存
  *
  * @param onRequestCache 当需要开始为一个剧集创建缓存时调用. 用于从用户侧收集目标 [Media] 和 [MediaCacheStorage].
  * 通常使用 [EpisodeCacheRequester] 发起 [EpisodeCacheRequester.request], 然后尝试自动选择缓存.
@@ -152,6 +160,7 @@ class EpisodeCacheListStateImpl(
         episode.actionTasker.launch {
             // TODO: 处理错误 
             onRequestCache(episode)?.let {
+                episode.currentSelectStorageTask
                 if (it is CacheRequestStage.Done) {
                     callComplete(episode, it)
                 }

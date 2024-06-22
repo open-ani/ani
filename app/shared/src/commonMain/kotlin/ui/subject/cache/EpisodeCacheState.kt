@@ -7,6 +7,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import me.him188.ani.app.data.media.EpisodeCacheStatus
 import me.him188.ani.app.data.media.cache.MediaCacheEngine
 import me.him188.ani.app.data.media.cache.MediaCacheStorage
@@ -63,6 +64,7 @@ open class EpisodeCacheState(
                 episode = this,
                 fetchSession = it.fetchSession,
                 mediaSelector = it.mediaSelector,
+                attemptedTrySelect = it.attemptedTrySelect,
             )
         }
     }
@@ -75,6 +77,7 @@ open class EpisodeCacheState(
             SelectStorageTask(
                 episode = this,
                 options = it.storages,
+                attemptedTrySelect = it.attemptedTrySelect,
             )
         }
     }
@@ -103,6 +106,10 @@ open class EpisodeCacheState(
     }
 }
 
+sealed class AbstractTask {
+    abstract val attemptedTrySelect: StateFlow<Boolean>
+}
+
 /**
  * @see EpisodeCacheState.currentSelectMediaTask
  */
@@ -110,8 +117,9 @@ open class EpisodeCacheState(
 class SelectMediaTask(
     val episode: EpisodeCacheState,
     val fetchSession: MediaFetchSession,
-    val mediaSelector: MediaSelector
-)
+    val mediaSelector: MediaSelector,
+    override val attemptedTrySelect: StateFlow<Boolean>
+) : AbstractTask()
 
 /**
  * @see EpisodeCacheState.currentSelectStorageTask
@@ -119,8 +127,9 @@ class SelectMediaTask(
 @Stable
 class SelectStorageTask(
     val episode: EpisodeCacheState,
-    val options: List<MediaCacheStorage>
-)
+    val options: List<MediaCacheStorage>,
+    override val attemptedTrySelect: StateFlow<Boolean>
+) : AbstractTask()
 
 /**
  * 从用户侧收集到的, 期望为一个剧集创建的缓存的目标 [Media], [MediaCacheStorage], 以及其他相关信息.

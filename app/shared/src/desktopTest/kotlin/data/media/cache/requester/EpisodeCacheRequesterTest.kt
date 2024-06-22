@@ -247,9 +247,11 @@ class EpisodeCacheRequesterTest {
     @Test
     fun `SelectMedia tryAutoSelectByPreference`() = runTest {
         val request = createRequest()
-        requester.request(request)
+        val selectMedia = requester.request(request)
+        selectMedia
             .tryAutoSelectByPreference()
         assertIs<CacheRequestStage.SelectStorage>(requester.stage.value)
+        assertEquals(true, selectMedia.attemptedTrySelect.value)
     }
 
     @Test
@@ -259,6 +261,9 @@ class EpisodeCacheRequesterTest {
             requester.request(request)
                 .tryAutoSelectByCachedSeason(emptyList()),
         )
+        val stage = requester.stage.value
+        assertIs<CacheRequestStage.SelectMedia>(stage)
+        assertEquals(true, stage.attemptedTrySelect.value)
     }
 
     @Test
@@ -300,6 +305,10 @@ class EpisodeCacheRequesterTest {
             requester.request(request)
                 .tryAutoSelectByCachedSeason(listOf(mediaCache)),
         )
+
+        val stage = requester.stage.value
+        assertIs<CacheRequestStage.SelectMedia>(stage)
+        assertEquals(true, stage.attemptedTrySelect.value)
     }
 
     @Test
@@ -341,6 +350,10 @@ class EpisodeCacheRequesterTest {
             requester.request(request)
                 .tryAutoSelectByCachedSeason(listOf(mediaCache)),
         )
+
+        val stage = requester.stage.value
+        assertIs<CacheRequestStage.SelectMedia>(stage)
+        assertEquals(true, stage.attemptedTrySelect.value)
     }
 
     @Suppress("SameParameterValue")
@@ -395,10 +408,15 @@ class EpisodeCacheRequesterTest {
                 episodeInfo.copy(sort = EpisodeSort(2), name = "第二集"), // 2 in 12
             )
         }
-        val done = (requester.request(request)
+        val selectMedia = requester.request(request)
+        val selectStorage = selectMedia
             .tryAutoSelectByCachedSeason(listOf(mediaCache))
-                as CacheRequestStage.SelectStorage) // storage 不包含 mediaCache
-            .trySelectSingle()!!
+
+        // 因为 storage 不包含 mediaCache
+        assertIs<CacheRequestStage.SelectStorage>(selectStorage)
+
+        val done = selectStorage.trySelectSingle()
+        assertNotNull(done)
 
         assertEquals(originalMedia, done.media)
         assertEquals(
@@ -414,6 +432,9 @@ class EpisodeCacheRequesterTest {
             ),
             done.metadata,
         )
+
+        assertEquals(true, selectMedia.attemptedTrySelect.value)
+        assertEquals(true, selectStorage.attemptedTrySelect.value)
     }
 
     @Test
@@ -428,7 +449,8 @@ class EpisodeCacheRequesterTest {
                 episodeInfo.copy(sort = EpisodeSort(2), name = "第二集"), // 2 in 12
             )
         }
-        val done = requester.request(request)
+        val selectMedia = requester.request(request)
+        val done = selectMedia
             .tryAutoSelectByCachedSeason(listOf(mediaCache))
         assertIs<CacheRequestStage.Done>(done)
 
@@ -446,6 +468,9 @@ class EpisodeCacheRequesterTest {
             ),
             done.metadata,
         )
+
+        assertEquals(true, selectMedia.attemptedTrySelect.value)
+        // We should test SelectStorage for attemptedTrySelect but it is not that easy
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -644,4 +669,24 @@ class EpisodeCacheRequesterTest {
             }
         }
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // attemptedTrySelect
+    ///////////////////////////////////////////////////////////////////////////
+
+    @Test
+    fun `attemptedTrySelect is initially false for SelectMedia`() = runTest {
+        val request = createRequest()
+        val state = requester.request(request)
+        assertEquals(false, state.attemptedTrySelect.value)
+    }
+
+    @Test
+    fun `attemptedTrySelect is initially false for SelectStorage`() = runTest {
+        val request = createRequest()
+        val state = requester.request(request).select(mediaList.value.first())
+        assertEquals(false, state.attemptedTrySelect.value)
+    }
+
+    // For `true` cases, see above
 }
