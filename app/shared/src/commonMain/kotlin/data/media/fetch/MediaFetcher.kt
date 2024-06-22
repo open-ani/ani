@@ -289,7 +289,7 @@ class MediaSourceMediaFetcher(
                 list.distinctBy { it.mediaId } // distinct globally by id, just to be safe
             }.flowOn(flowContext)
                 .run {
-                    if (currentAniBuildConfig.isDebug) {
+                    if (currentAniBuildConfig.isDebug && ENABLE_WATCHDOG) {
                         flow {
                             cancellableCoroutineScope {
                                 val watchdog = launch {
@@ -331,5 +331,6 @@ class MediaSourceMediaFetcher(
 
     private companion object {
         private val logger = logger<MediaSourceMediaFetcher>()
+        private const val ENABLE_WATCHDOG = false
     }
 }
