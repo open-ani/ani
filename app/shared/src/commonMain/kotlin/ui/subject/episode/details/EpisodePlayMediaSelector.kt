@@ -36,5 +36,6 @@ fun EpisodePlayMediaSelector(
                 Text("取消")
             }
         },
+        itemProgressBar = {},
     )
 }
