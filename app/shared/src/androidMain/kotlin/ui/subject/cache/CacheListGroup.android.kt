@@ -5,14 +5,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -40,15 +40,9 @@ private fun PreviewEpisodeCacheActionIcon() {
                     isLoadingIndefinitely = true,
                     hasActionRunning = { true },
                     cacheStatus = null,
-                    canCache = { true },
+                    canCache = true,
                     onClick = {},
-                    cancelButton = {
-                        IconButton(
-                            onClick = { },
-                        ) {
-                            Icon(Icons.Rounded.Close, "取消")
-                        }
-                    },
+                    onCancel = {},
                 )
             }
             HorizontalDivider()
@@ -59,15 +53,9 @@ private fun PreviewEpisodeCacheActionIcon() {
                     isLoadingIndefinitely = false,
                     hasActionRunning = { true },
                     cacheStatus = EpisodeCacheStatus.NotCached,
-                    canCache = { true },
+                    canCache = true,
                     onClick = {},
-                    cancelButton = {
-                        IconButton(
-                            onClick = { },
-                        ) {
-                            Icon(Icons.Rounded.Close, "取消")
-                        }
-                    },
+                    onCancel = {},
                 )
             }
             HorizontalDivider()
@@ -82,15 +70,9 @@ private fun PreviewEpisodeCacheActionIcon() {
                         me.him188.ani.datasources.api.topic.FileSize.Unspecified,
                         testMediaCache1,
                     ),
-                    canCache = { true },
+                    canCache = true,
                     onClick = {},
-                    cancelButton = {
-                        IconButton(
-                            onClick = { },
-                        ) {
-                            Icon(Icons.Rounded.Close, "取消")
-                        }
-                    },
+                    onCancel = {},
                 )
             }
             HorizontalDivider()
@@ -105,18 +87,39 @@ private fun PreviewEpisodeCacheActionIcon() {
                         me.him188.ani.datasources.api.topic.FileSize.Unspecified,
                         testMediaCache1,
                     ),
-                    canCache = { true },
+                    canCache = true,
                     onClick = {},
-                    cancelButton = {
-                        IconButton(
-                            onClick = { },
-                        ) {
-                            Icon(Icons.Rounded.Close, "取消")
-                        }
-                    },
+                    onCancel = {},
                 )
             }
             HorizontalDivider()
+        }
+    }
+}
+
+
+@Composable
+@Preview
+private fun PreviewEpisodeCacheActionIconHasActionRunningChange() {
+    ProvideCompositionLocalsForPreview {
+        var running by remember {
+            mutableStateOf(false)
+        }
+        Column {
+            Box(modifier = Modifier.size(64.dp), contentAlignment = Alignment.Center) {
+                EpisodeCacheActionIcon(
+                    isLoadingIndefinitely = true,
+                    hasActionRunning = { running },
+                    cacheStatus = null,
+                    canCache = true,
+                    onClick = { },
+                    onCancel = { running = false },
+                )
+
+            }
+            Button(onClick = { running = true }) {
+                Text(text = "running = true")
+            }
         }
     }
 }

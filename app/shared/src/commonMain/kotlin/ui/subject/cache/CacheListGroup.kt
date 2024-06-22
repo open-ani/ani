@@ -28,6 +28,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -246,17 +247,13 @@ fun SettingsScope.EpisodeCacheItem(
             CompositionLocalProvider(LocalContentColor provides colorByWatchStatus) {
                 EpisodeCacheActionIcon(
                     isLoadingIndefinitely = episode.showProgressIndicator,
-                    hasActionRunning = { episode.actionTasker.isRunning },
-                    cacheStatus = episode.cacheStatus,
-                    canCache = { episode.canCache },
-                    onClick = onClick,
-                    cancelButton = {
-                        IconButton(
-                            onClick = { episode.actionTasker.cancel() },
-                        ) {
-                            Icon(Icons.Rounded.Close, "取消")
-                        }
+                    hasActionRunning = remember(episode) {
+                        { episode.actionTasker.isRunning }
                     },
+                    cacheStatus = episode.cacheStatus,
+                    canCache = episode.canCache,
+                    onClick = onClick,
+                    onCancel = { episode.actionTasker.cancel() },
                 )
             }
         },
@@ -290,9 +287,9 @@ fun EpisodeCacheActionIcon(
     isLoadingIndefinitely: Boolean,
     hasActionRunning: () -> Boolean,
     cacheStatus: EpisodeCacheStatus?,
-    canCache: () -> Boolean,
+    canCache: Boolean,
     onClick: () -> Unit,
-    cancelButton: @Composable () -> Unit,
+    onCancel: () -> Unit,
     modifier: Modifier = Modifier,
 ) = Box(modifier) {
     val progressIndicatorSize = 20.dp
@@ -302,9 +299,21 @@ fun EpisodeCacheActionIcon(
         var showCancel by remember { mutableStateOf(false) }
         Crossfade(showCancel) {
             if (it) {
-                cancelButton()
+                IconButton(
+                    onClick = {
+                        onCancel()
+                        showCancel = false
+                    },
+                ) {
+                    Icon(Icons.Rounded.Close, "取消")
+                }
             } else {
-                if (hasActionRunning()) {
+                val actionRunning by remember(hasActionRunning) {
+                    derivedStateOf {
+                        hasActionRunning()
+                    }
+                }
+                if (actionRunning) {
                     IconButton({ showCancel = true }) {
                         CircularProgressIndicator(
                             Modifier.size(progressIndicatorSize),
@@ -313,11 +322,13 @@ fun EpisodeCacheActionIcon(
                         )
                     }
                 } else {
-                    CircularProgressIndicator(
-                        Modifier.size(progressIndicatorSize),
-                        strokeWidth = strokeWidth,
-                        trackColor = trackColor,
-                    )
+                    Box(Modifier.minimumInteractiveComponentSize()) {
+                        CircularProgressIndicator(
+                            Modifier.size(progressIndicatorSize),
+                            strokeWidth = strokeWidth,
+                            trackColor = trackColor,
+                        )
+                    }
                 }
             }
         }
@@ -354,7 +365,7 @@ fun EpisodeCacheActionIcon(
         }
 
         EpisodeCacheStatus.NotCached -> {
-            if (canCache()) {
+            if (canCache) {
                 CompositionLocalProvider(LocalContentColor providesDefault MaterialTheme.colorScheme.primary) {
                     IconButton(onClick) {
                         Icon(Icons.Rounded.Download, "缓存")
