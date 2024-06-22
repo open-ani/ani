@@ -92,7 +92,11 @@ fun MediaSelectorView(
                                 style = MaterialTheme.typography.titleMedium,
                             )
 
-                            MediaSelectorFilters(state)
+                            MediaSelectorFilters(
+                                resolution = state.resolution,
+                                subtitleLanguageId = state.subtitleLanguageId,
+                                alliance = state.alliance
+                            )
                         }
                         if (isStuck) {
                             HorizontalDivider(Modifier.fillMaxWidth(), thickness = 2.dp)
