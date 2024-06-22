@@ -81,13 +81,15 @@ interface MediaSourceManager { // available by inject
 }
 
 /**
- * 根据请求创建 [MediaFetchSession]. 当请求变化时, 会自动取消之前的请求.
+ * 根据请求创建 [MediaFetchSession].
  * 也会跟随用户设置的启用/禁用数据源 emit 新的 [MediaFetchSession].
+ *
+ * @param requestLazy 相当于 [lazy]. 只有第一个元素会被使用. 必须至少 emit 一个元素.
  *
  * @see MediaFetchRequest.Companion.create
  */
-fun MediaSourceManager.createFetchFetchSessionFlow(request: Flow<MediaFetchRequest>): Flow<MediaFetchSession> =
-    this.mediaFetcher.map { it.newSession(request) }
+fun MediaSourceManager.createFetchFetchSessionFlow(requestLazy: Flow<MediaFetchRequest>): Flow<MediaFetchSession> =
+    this.mediaFetcher.map { it.newSession(requestLazy) }
 
 class MediaSourceManagerImpl(
     additionalSources: () -> List<MediaSource>, // local sources, calculated only once

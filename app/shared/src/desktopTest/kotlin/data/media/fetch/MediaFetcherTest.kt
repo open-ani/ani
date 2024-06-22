@@ -129,7 +129,7 @@ class MediaFetcherTest {
     }
 
     @Test
-    fun `hasCompleted is initially false when some sources are disabled`() = runTest {
+    fun `hasCompleted is initially false when at least one source is enabled`() = runTest {
         val session = createFetcher(
             createTestMediaSourceInstance(TestHttpMediaSource(), isEnabled = false),
             createTestMediaSourceInstance(TestHttpMediaSource()),

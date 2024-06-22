@@ -36,9 +36,7 @@ interface MediaSourceFetchResult {
     val results: Flow<List<Media>>
 
     /**
-     * 仅当启用时才获取结果. 返回的 flow 一定至少有一个元素, 例如 [emptyList].
-     *
-     * flow 永远都不会完结. 详见 [MediaFetchSession.cumulativeResults].
+     * @suppress soft deprecated
      */
     val resultsIfEnabled
         get() = results

@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.transform
 import me.him188.ani.app.data.media.instance.MediaSourceInstance
 import me.him188.ani.app.data.subject.EpisodeInfo
@@ -66,16 +67,14 @@ interface MediaFetcher {
      *
      * 查询仅在 [MediaFetchSession.cumulativeResults] 被 collect 时开始.
      *
-     * @param requestFlow 用于动态请求的 [MediaFetchRequest] 流. 当有新的元素 emit 时, 会重新请求.
-     * 如果该 flow 一直不 emit 第一个元素, [MediaFetchSession.hasCompleted] 将会一直为 false.
-     * 即使该 flow 不完结, 只要当前的 [MediaFetchRequest] 的查询完成了, [MediaFetchSession.hasCompleted] 也会变为 `true`.
+     * @param requestLazy 用于动态请求的 [MediaFetchRequest] 流. 只有第一个元素会被使用.
      *
      * @param flowContext 传递给 [MediaFetchSession] 的 flow 的 context. (用于 [Flow.flowOn].) 将会与 [MediaSourceMediaFetcher.flowContext] 叠加.
      *
      * @see MediaFetchRequest.Companion.create
      */
     fun newSession(
-        requestFlow: Flow<MediaFetchRequest>,
+        requestLazy: Flow<MediaFetchRequest>,
         flowContext: CoroutineContext = EmptyCoroutineContext,
     ): MediaFetchSession
 }
@@ -240,12 +239,14 @@ class MediaSourceMediaFetcher(
     }
 
     private inner class MediaFetchSessionImpl(
-        request: Flow<MediaFetchRequest>, // must be shared
+        request: Flow<MediaFetchRequest>,
         private val config: MediaFetcherConfig,
         private val flowContext: CoroutineContext,
     ) : MediaFetchSession {
         override val request: Flow<MediaFetchRequest> =
-            request.shareIn(CoroutineScope(flowContext), started = SharingStarted.WhileSubscribed(), replay = 1)
+            request.take(1) // 只采用第一个, as per described in [fetch]
+                .shareIn(CoroutineScope(flowContext), started = SharingStarted.Lazily, replay = 1) // only 
+                .take(1) // 只采用 replayCache, 让后面 flow 能完结
 
         override val mediaSourceResults: List<MediaSourceFetchResult> = mediaSources.map { instance ->
             MediaSourceResultImpl(
@@ -253,7 +254,7 @@ class MediaSourceMediaFetcher(
                 instance.source.kind,
                 config,
                 disabled = !instance.isEnabled,
-                pagedSources = request
+                pagedSources = this.request
                     .onEach {
                         logger.info { "MediaFetchSessionImpl pagedSources creating, request: \n${it.toStringMultiline()}" }
                     }
@@ -280,8 +281,8 @@ class MediaSourceMediaFetcher(
         }
     }
 
-    override fun newSession(requestFlow: Flow<MediaFetchRequest>, flowContext: CoroutineContext): MediaFetchSession {
-        return MediaFetchSessionImpl(requestFlow, configProvider(), this.flowContext + flowContext)
+    override fun newSession(requestLazy: Flow<MediaFetchRequest>, flowContext: CoroutineContext): MediaFetchSession {
+        return MediaFetchSessionImpl(requestLazy, configProvider(), this.flowContext + flowContext)
     }
 
     private companion object {

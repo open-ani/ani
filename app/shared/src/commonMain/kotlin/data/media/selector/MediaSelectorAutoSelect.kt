@@ -45,24 +45,25 @@ value class MediaSelectorAutoSelect(
             @Volatile
             var value: Media? = null
         }
-        val stop = true
         combine(
             mediaFetchSession.cumulativeResults,
         ) { _ ->
             if (mediaSelector.selected.value != null) {
                 // 用户已经选择了
                 isSuccess.value = null
-                return@combine stop
+                return@combine STOP
             }
 
             val selected = mediaSelector.trySelectCached()
             if (selected != null) {
                 isSuccess.value = selected
-                stop
+                STOP
             } else {
-                !stop
+                !STOP
             }
-        }.takeWhile { !stop }.collect()
+        }.takeWhile { it == !STOP }.collect()
         return isSuccess.value
     }
 }
+
+private const val STOP = true
