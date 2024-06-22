@@ -68,6 +68,9 @@
 项目根目录有 `.editorconfig` 文件, IDE 会自动读取该文件以确保代码风格一致.
 请使用 IDE 提供的自动代码格式化功能即可.
 
+建议在 IDE 的 Commit 页面, 点击右下角设置, 勾选 "Reformat code" 和 "Optimize imports".
+在提交时将会自动格式化代码.
+
 ### 代码规范
 
 这是一个轻松的项目，能跑的代码就是好代码，不过也请至少遵守遵循 [Kotlin 官方代码风格指南](https://kotlinlang.org/docs/coding-conventions.html).
