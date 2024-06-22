@@ -325,7 +325,7 @@ internal class DanmakuCollectionAlgorithmTest {
     }
 
     @Test
-    fun `seek back - has interception`() = runTest {
+    fun `seek back - has intersection`() = runTest {
         val instance = create(
             sequenceOf(
                 dummyDanmaku(1.0),
@@ -342,7 +342,7 @@ internal class DanmakuCollectionAlgorithmTest {
     }
 
     @Test
-    fun `seek back - no interception`() = runTest {
+    fun `seek back - no intersection`() = runTest {
         val instance = create(
             sequenceOf(
                 dummyDanmaku(1.0),
@@ -403,7 +403,7 @@ internal class DanmakuCollectionAlgorithmTest {
     }
 
     @Test
-    fun `seek back then seek forward - no interception`() = runTest {
+    fun `seek back then seek forward - no intersection`() = runTest {
         val instance = create(
             sequenceOf(
                 dummyDanmaku(1.0),
@@ -443,7 +443,7 @@ internal class DanmakuCollectionAlgorithmTest {
     }
 
     @Test
-    fun `seek back then seek forward - has interception`() = runTest {
+    fun `seek back then seek forward - has intersection`() = runTest {
         val instance = create(
             sequenceOf(
                 dummyDanmaku(1.0),
