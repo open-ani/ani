@@ -2,8 +2,8 @@
 
 package me.him188.ani.app.ui.subject.cache
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -44,15 +44,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
-import androidx.compose.ui.zIndex
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import me.him188.ani.app.data.media.EpisodeCacheStatus
 import me.him188.ani.app.data.models.MediaSelectorSettings
-import me.him188.ani.app.ui.foundation.animation.animateEnable
 import me.him188.ani.app.ui.foundation.theme.stronglyWeaken
-import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressIndicator
 import me.him188.ani.app.ui.foundation.widgets.ProgressIndicatorHeight
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.TextItem
@@ -63,7 +60,6 @@ import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberMediaSourceResult
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.datasources.api.topic.isDoneOrDropped
-import kotlin.time.Duration.Companion.seconds
 
 
 @Immutable
@@ -111,7 +107,7 @@ fun SettingsScope.EpisodeCacheListGroup(
         )
     }
     state.currentSelectMediaTask?.let { task ->
-        // 当 task 变更后, 等待一秒再显示
+        // 当 task 变更后, 等待一会再显示
         var delayed by remember(task) { mutableStateOf(false) }
         LaunchedEffect(task) {
             delay(1000)
@@ -161,7 +157,7 @@ fun SettingsScope.EpisodeCacheListGroup(
         state.episodes.fastForEachIndexed { i, episodeCacheState ->
             var showDropdown by remember { mutableStateOf(false) }
 
-            EpisodeItem(
+            EpisodeCacheItem(
                 episodeCacheState,
                 onClick = {
                     if (episodeCacheState.cacheStatus is EpisodeCacheStatus.Caching ||
@@ -182,15 +178,14 @@ fun SettingsScope.EpisodeCacheListGroup(
                 },
             )
 
-            // by m3 spec, progress indicator is 4dp
             Box(Modifier.height(ProgressIndicatorHeight), contentAlignment = Alignment.Center) {
                 if (i != state.episodes.lastIndex) {
                     HorizontalDividerItem() // 1.dp height
                 }
-                FastLinearProgressIndicator(
-                    episodeCacheState.showProgressIndicator,
-                    Modifier.zIndex(1f).fillMaxWidth(),
-                )
+//                FastLinearProgressIndicator(
+//                    episodeCacheState.showProgressIndicator,
+//                    Modifier.zIndex(1f).fillMaxWidth(),
+//                )
             }
         }
     }
@@ -226,12 +221,12 @@ private fun ItemDropdown(
     }
 }
 
-
 @Composable
-private fun SettingsScope.EpisodeItem(
+fun SettingsScope.EpisodeCacheItem(
     episode: EpisodeCacheState,
     dropdown: @Composable () -> Unit = {},
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val colorByWatchStatus = if (episode.info.watchStatus.isDoneOrDropped() || !episode.info.hasPublished) {
         LocalContentColor.current.stronglyWeaken()
@@ -251,31 +246,23 @@ private fun SettingsScope.EpisodeItem(
                 }
                 return@TextItem
             }
+            dropdown()
 
             CompositionLocalProvider(LocalContentColor provides colorByWatchStatus) {
-                Box {
-                    // Crossfade 会导致变换的时候被挤到坐上角, 不知道为什么
-                    if (episode.actionTasker.isRunning) {
-                        // 等一会再显示取消, 防止点错
-                        var enabled by remember { mutableStateOf(false) }
-                        LaunchedEffect(true) {
-                            delay(1.seconds)
-                            enabled = true
-                        }
+                EpisodeCacheActionIcon(
+                    isLoadingIndefinitely = episode.showProgressIndicator,
+                    hasActionRunning = { episode.actionTasker.isRunning },
+                    cacheStatus = episode.cacheStatus,
+                    canCache = { episode.canCache },
+                    onClick = onClick,
+                    cancelButton = {
                         IconButton(
-                            onClick = {
-                                episode.actionTasker.cancel()
-                            },
-                            Modifier.animateEnable(enabled),
-                            enabled = enabled,
+                            onClick = { episode.actionTasker.cancel() },
                         ) {
                             Icon(Icons.Rounded.Close, "取消")
                         }
-                    } else {
-                        EpisodeActionIcon(episode, onClick)
-                    }
-                    dropdown()
-                }
+                    },
+                )
             }
         },
         title = {
@@ -299,44 +286,80 @@ private fun SettingsScope.EpisodeItem(
                 }
             }
         },
+        modifier = modifier,
     )
 }
 
 @Composable
-private fun EpisodeActionIcon(
-    episode: EpisodeCacheState,
-    onClick: () -> Unit
-) {
-    when (val status = episode.cacheStatus) {
+fun EpisodeCacheActionIcon(
+    isLoadingIndefinitely: Boolean,
+    hasActionRunning: () -> Boolean,
+    cacheStatus: EpisodeCacheStatus?,
+    canCache: () -> Boolean,
+    onClick: () -> Unit,
+    cancelButton: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+) = Box(modifier) {
+    val progressIndicatorSize = 20.dp
+    val strokeWidth = 2.dp
+    val trackColor = MaterialTheme.colorScheme.primaryContainer
+    if (isLoadingIndefinitely) {
+        var showCancel by remember { mutableStateOf(false) }
+        Crossfade(showCancel) {
+            if (it) {
+                cancelButton()
+            } else {
+                if (hasActionRunning()) {
+                    IconButton({ showCancel = true }) {
+                        CircularProgressIndicator(
+                            Modifier.size(progressIndicatorSize),
+                            strokeWidth = strokeWidth,
+                            trackColor = trackColor,
+                        )
+                    }
+                } else {
+                    CircularProgressIndicator(
+                        Modifier.size(progressIndicatorSize),
+                        strokeWidth = strokeWidth,
+                        trackColor = trackColor,
+                    )
+                }
+            }
+        }
+        return
+    }
+    when (cacheStatus) {
         is EpisodeCacheStatus.Cached ->
             IconButton(onClick) {
                 Icon(Icons.Rounded.DownloadDone, null)
             }
 
         is EpisodeCacheStatus.Caching -> {
-            Box(Modifier.clickable(onClick = onClick)) {
-                val progressIsNull by remember {
+            IconButton(onClick) {
+                val progressIsNull by remember(cacheStatus) {
                     derivedStateOf {
-                        status.progress == null
+                        cacheStatus.progress == null
                     }
                 }
                 if (progressIsNull) {
                     CircularProgressIndicator(
-                        modifier = Modifier.size(20.dp),
+                        modifier = Modifier.size(progressIndicatorSize),
+                        strokeWidth = strokeWidth,
+                        trackColor = trackColor,
                     )
                 } else {
                     CircularProgressIndicator(
-                        progress = { status.progress ?: 0f },
-                        modifier = Modifier.size(20.dp),
-                        strokeWidth = 2.dp,
-                        trackColor = MaterialTheme.colorScheme.outlineVariant,
+                        progress = { cacheStatus.progress ?: 0f },
+                        modifier = Modifier.size(progressIndicatorSize),
+                        strokeWidth = strokeWidth,
+                        trackColor = trackColor,
                     )
                 }
             }
         }
 
         EpisodeCacheStatus.NotCached -> {
-            if (episode.canCache) {
+            if (canCache()) {
                 CompositionLocalProvider(LocalContentColor providesDefault MaterialTheme.colorScheme.primary) {
                     IconButton(onClick) {
                         Icon(Icons.Rounded.Download, "缓存")
