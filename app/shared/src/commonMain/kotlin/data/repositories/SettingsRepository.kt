@@ -21,7 +21,6 @@ import me.him188.ani.app.data.models.UISettings
 import me.him188.ani.app.data.models.UpdateSettings
 import me.him188.ani.app.data.models.VideoScaffoldConfig
 import me.him188.ani.app.data.serializers.DanmakuConfigSerializer
-import me.him188.ani.app.data.serializers.DanmakuFilterConfigSerializer
 import me.him188.ani.app.tools.torrent.engines.Libtorrent4jConfig
 import me.him188.ani.app.tools.torrent.engines.QBittorrentConfig
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
