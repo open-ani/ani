@@ -38,7 +38,6 @@ import me.him188.ani.app.data.subject.subjectInfoFlow
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.AbstractViewModel
-import me.him188.ani.app.ui.foundation.feedback.ErrorMessage
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
@@ -74,17 +73,9 @@ class SubjectCacheViewModelImpl(
     private val cacheManager: MediaCacheManager by inject()
     private val mediaSourceManager: MediaSourceManager by inject()
 
-    private val episodeCacheRequester = EpisodeCacheRequester(
-        mediaSourceManager.mediaFetcher,
-        MediaSelectorFactory.withKoin(),
-        storagesLazy = cacheManager.enabledStorages,
-    )
-
     private val subjectInfoFlow = subjectManager.subjectInfoFlow(subjectId).shareInBackground()
     override val subjectTitle by subjectInfoFlow.map { it.nameCnOrName }.produceState(null)
     override val mediaSelectorSettingsFlow: Flow<MediaSelectorSettings> get() = settingsRepository.mediaSelectorSettings.flow
-
-    val errorMessage: MutableStateFlow<ErrorMessage?> = MutableStateFlow(null)
 
     private val episodeCollectionsFlowNotCached = subjectManager.episodeCollectionsFlow(subjectId).retry()
 
