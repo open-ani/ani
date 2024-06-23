@@ -223,20 +223,21 @@ internal fun EpisodeVideoImpl(
                         onClick = { playerState.togglePause() },
                     )
 
-                    if (hasNextEpisode) {
+                    if (hasNextEpisode && expanded) {
                         PlayerControllerDefaults.NextEpisodeIcon(
                             onClick = onClickNextEpisode,
                         )
                     }
-
                     PlayerControllerDefaults.DanmakuIcon(
                         videoControllerState.danmakuEnabled,
                         onClick = { videoControllerState.toggleDanmakuEnabled() },
                     )
 
-                    PlayerControllerDefaults.SelectEpisodeIcon(
-                        onShowSelectEpisode,
-                    )
+                    if (expanded) {
+                        PlayerControllerDefaults.SelectEpisodeIcon(
+                            onShowSelectEpisode,
+                        )
+                    }
                 },
                 progressIndicator = {
                     ProgressIndicator(progressSliderState)
