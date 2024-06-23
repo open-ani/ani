@@ -36,6 +36,7 @@ fun PreviewEpisodeSelectorSideSheet() {
                                 ep = "placeholder",
                                 sort = "01",
                                 collectionType = UnifiedCollectionType.WISH,
+                                isKnownBroadcast = true,
                                 isPlaceholder = true,
                             ),
                             EpisodePresentation(
@@ -44,6 +45,7 @@ fun PreviewEpisodeSelectorSideSheet() {
                                 ep = "placeholder",
                                 sort = "02",
                                 collectionType = UnifiedCollectionType.WISH,
+                                isKnownBroadcast = true,
                                 isPlaceholder = true,
                             ),
                             EpisodePresentation(
@@ -52,6 +54,7 @@ fun PreviewEpisodeSelectorSideSheet() {
                                 ep = "placeholder",
                                 sort = "03",
                                 collectionType = UnifiedCollectionType.WISH,
+                                isKnownBroadcast = false,
                                 isPlaceholder = true,
                             ),
                         ),

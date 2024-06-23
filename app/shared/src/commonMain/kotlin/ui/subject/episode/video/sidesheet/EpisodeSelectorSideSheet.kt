@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.first
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.icons.PlayingIcon
+import me.him188.ani.app.ui.subject.cache.contentColorForWatchStatus
 import me.him188.ani.app.ui.subject.episode.EpisodePresentation
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsSideSheet
 import kotlin.coroutines.CoroutineContext
@@ -69,6 +70,12 @@ class EpisodeSelectorState(
      */
     val current: Item? by derivedStateOf {
         items.find { it.episodeId == this.currentEpisodeId }
+    }
+
+    val hasNextEpisode by derivedStateOf {
+        val currentIndex = currentIndex
+        currentIndex != -1 && currentIndex < items.lastIndex
+                && items[currentIndex + 1].isKnownBroadcast // 仅限下一集开播了
     }
 
     fun select(item: Item) {
@@ -112,15 +119,16 @@ fun EpisodeSelectorSideSheet(
         LazyColumn(state = lazyListState) {
             itemsIndexed(state.items, key = { _, item -> item.episodeId }) { index, item ->
                 val selected = index == state.currentIndex
+                val color = contentColorForWatchStatus(item.collectionType, item.isKnownBroadcast)
                 ListItem(
-                    headlineContent = { Text(item.title) },
+                    headlineContent = { Text(item.title, color = color) },
                     Modifier.clickable {
                         state.select(item)
                         onDismissRequest()
                     },
                     leadingContent = {
                         ProvideTextStyle(MaterialTheme.typography.bodyLarge) {
-                            Text(item.sort, fontFamily = FontFamily.Monospace)
+                            Text(item.sort, fontFamily = FontFamily.Monospace, color = color)
                         }
                     },
                     trailingContent = {

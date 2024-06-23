@@ -250,11 +250,7 @@ fun SettingsScope.EpisodeCacheItem(
     modifier: Modifier = Modifier,
     dropdown: @Composable () -> Unit = {},
 ) {
-    val colorByWatchStatus = if (episode.info.watchStatus.isDoneOrDropped() || !episode.info.hasPublished) {
-        LocalContentColor.current.stronglyWeaken()
-    } else {
-        MaterialTheme.colorScheme.onSurface
-    }
+    val colorByWatchStatus = contentColorForWatchStatus(episode.info.watchStatus, episode.info.hasPublished)
     TextItem(
         icon = {
             CompositionLocalProvider(LocalContentColor provides colorByWatchStatus) {
@@ -305,6 +301,17 @@ fun SettingsScope.EpisodeCacheItem(
         modifier = modifier,
     )
 }
+
+@Composable
+fun contentColorForWatchStatus(
+    collectionType: UnifiedCollectionType,
+    isKnownBroadcast: Boolean
+) =
+    if (collectionType.isDoneOrDropped() || !isKnownBroadcast) {
+        LocalContentColor.current.stronglyWeaken()
+    } else {
+        LocalContentColor.current
+    }
 
 @Composable
 fun EpisodeCacheActionIcon(

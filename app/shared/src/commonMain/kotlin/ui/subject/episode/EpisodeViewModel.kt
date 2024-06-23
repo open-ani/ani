@@ -47,6 +47,7 @@ import me.him188.ani.app.data.subject.SubjectInfo
 import me.him188.ani.app.data.subject.SubjectManager
 import me.him188.ani.app.data.subject.episode
 import me.him188.ani.app.data.subject.episodeInfoFlow
+import me.him188.ani.app.data.subject.isKnownBroadcast
 import me.him188.ani.app.data.subject.nameCnOrName
 import me.him188.ani.app.data.subject.renderEpisodeEp
 import me.him188.ani.app.data.subject.subjectInfoFlow
@@ -127,6 +128,10 @@ class EpisodePresentation(
      */
     val sort: String,
     val collectionType: UnifiedCollectionType,
+    /**
+     * 是否已经确定开播了
+     */
+    val isKnownBroadcast: Boolean,
     val isPlaceholder: Boolean = false,
 ) {
     companion object {
@@ -137,6 +142,7 @@ class EpisodePresentation(
             ep = "placeholder",
             sort = "placeholder",
             collectionType = UnifiedCollectionType.WISH,
+            isKnownBroadcast = false,
             isPlaceholder = true,
         )
     }
@@ -148,6 +154,7 @@ fun EpisodeCollection.toPresentation() = EpisodePresentation(
     ep = episode.renderEpisodeEp(),
     sort = episode.sort.toString(),
     collectionType = collectionType,
+    isKnownBroadcast = episode.isKnownBroadcast,
 )
 
 
