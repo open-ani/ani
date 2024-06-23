@@ -149,9 +149,9 @@ private fun PreviewEpisodeItem() = ProvideCompositionLocalsForPreview {
                             EmptyCoroutineContext,
                         )
                     },
+                    onClick = {},
                     isRequestHidden = false,
                     dropdown = { },
-                    onClick = {},
                 )
             }
         }
@@ -180,9 +180,9 @@ private fun PreviewEpisodeItemVeryLong() = ProvideCompositionLocalsForPreview {
                     EmptyCoroutineContext,
                 )
             },
+            onClick = {},
             isRequestHidden = false,
             dropdown = { },
-            onClick = {},
         )
     }
 }

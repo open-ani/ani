@@ -181,7 +181,7 @@ fun SettingsScope.EpisodeCacheListGroup(
                                 hideMediaSelector = false
                             }
                         } else {
-                            state.requestCache(episodeCacheState)
+                            state.requestCache(episodeCacheState, autoSelectCached = true)
                         }
                     }
                 },

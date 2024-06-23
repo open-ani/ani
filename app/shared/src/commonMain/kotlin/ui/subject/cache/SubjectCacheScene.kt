@@ -113,15 +113,19 @@ class SubjectCacheViewModelImpl(
                 )
             }
         },
-        onRequestCache = { episode ->
+        onRequestCache = { episode, autoSelectByCached ->
             episode.cacheRequester.request(
                 EpisodeCacheRequest(
                     subjectInfoFlow.first(),
                     subjectManager.getEpisodeInfo(episode.episodeId),
                 ),
-            ).tryAutoSelectByCachedSeason(
-                cacheManager.listCacheForSubject(subjectId).first(),
-            )
+            ).run {
+                if (autoSelectByCached) {
+                    tryAutoSelectByCachedSeason(
+                        cacheManager.listCacheForSubject(subjectId).first(),
+                    )
+                } else this
+            }
         },
         onRequestCacheComplete = { target ->
             target.storage.cache(target.media, target.metadata)

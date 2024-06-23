@@ -263,7 +263,7 @@ private fun PreviewSubjectCachePage() {
         val cacheListState = remember {
             EpisodeCacheListStateImpl(
                 MutableStateFlow(episodeCacheStateList),
-                onRequestCache = {
+                onRequestCache = { it, _ ->
                     delay(2000)
                     it.cacheRequester.request(
                         EpisodeCacheRequest(
