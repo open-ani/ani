@@ -192,7 +192,11 @@ internal fun EpisodeVideoImpl(
         },
         floatingMessage = {
             Column {
-                EpisodeVideoLoadingIndicator(playerState, videoLoadingState())
+                EpisodeVideoLoadingIndicator(
+                    playerState,
+                    videoLoadingState(),
+                    optimizeForFullscreen = expanded, // TODO: 这对 PC 其实可能不太好
+                )
             }
         },
         rhsBar = {
