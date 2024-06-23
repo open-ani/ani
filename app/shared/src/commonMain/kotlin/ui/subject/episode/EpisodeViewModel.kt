@@ -9,7 +9,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.text.AnnotatedString
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -28,7 +27,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
-import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.danmaku.DanmakuManager
 import me.him188.ani.app.data.media.MediaSourceManager
 import me.him188.ani.app.data.media.createFetchFetchSessionFlow
@@ -42,6 +40,7 @@ import me.him188.ani.app.data.models.VideoScaffoldConfig
 import me.him188.ani.app.data.repositories.EpisodePreferencesRepository
 import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.data.subject.SubjectManager
+import me.him188.ani.app.data.subject.displayName
 import me.him188.ani.app.data.subject.episodeInfoFlow
 import me.him188.ani.app.data.subject.subjectInfoFlow
 import me.him188.ani.app.navigation.BrowserNavigator
@@ -67,7 +66,6 @@ import me.him188.ani.danmaku.api.DanmakuPresentation
 import me.him188.ani.danmaku.api.DanmakuSearchRequest
 import me.him188.ani.danmaku.api.DanmakuSession
 import me.him188.ani.danmaku.api.emptyDanmakuCollection
-import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
@@ -311,32 +309,23 @@ private class EpisodeViewModelImpl(
                     }
                     playerStatistics.danmakuLoadingState.value = DanmakuLoadingState.Loading
                     val filename = data.filename
-//            ?: selectedMedia.first().originalTitle
                     try {
-
-                        val subject: SubjectPresentation
-                        val episode: EpisodePresentation
-                        withContext(Dispatchers.Main.immediate) {
-                            subject = subjectPresentation
-                            episode = episodePresentation
-                        }
+                        val subject = subjectInfo.first()
+                        val episode = episodeInfo.filterNotNull().first()
                         val result = danmakuManager.fetch(
                             request = DanmakuSearchRequest(
                                 subjectId = subjectId,
-                                subjectPrimaryName = subject.info.displayName,
-                                subjectNames = subject.info.allNames,
-                                subjectPublishDate = subject.info.publishDate,
+                                subjectPrimaryName = subject.displayName,
+                                subjectNames = subject.allNames,
+                                subjectPublishDate = subject.publishDate,
                                 episodeId = episodeId.value,
-                                episodeSort = EpisodeSort(episode.sort),
-                                episodeEp = EpisodeSort(episode.ep),
-                                episodeName = episode.title,
+                                episodeSort = episode.sort,
+                                episodeEp = episode.ep,
+                                episodeName = episode.displayName,
                                 filename = filename,
                                 fileHash = "aa".repeat(16),
                                 fileSize = data.fileLength,
                                 videoDuration = 0.milliseconds,
-//                fileHash = video.fileHash ?: "aa".repeat(16),
-//                fileSize = video.fileLengthBytes,
-//                videoDuration = video.durationMillis.milliseconds,
                             ),
                         )
                         playerStatistics.danmakuLoadingState.value = DanmakuLoadingState.Success(result.matchInfos)
