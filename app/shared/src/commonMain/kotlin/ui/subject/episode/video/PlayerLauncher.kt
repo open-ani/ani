@@ -3,8 +3,8 @@ package me.him188.ani.app.ui.subject.episode.video
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.transformLatest
 import me.him188.ani.app.data.media.resolver.EpisodeMetadata
 import me.him188.ani.app.data.media.resolver.ResolutionFailures
@@ -60,22 +60,20 @@ class PlayerLauncher(
      * - The sources are available but user has not yet selected one.
      */
     private val videoSource: SharedFlow<VideoSource<*>?> = mediaSelector.selected
-        .combine(episodeInfo.filterNotNull()) { media, episodeInfo ->
-            media to episodeInfo
-        }
-        .transformLatest { (media, episodeInfo) ->
+        .transformLatest { media ->
             emit(null)
             if (media == null) return@transformLatest
 
             try {
+                val info = episodeInfo.filterNotNull().first()
                 videoLoadingState.value = VideoLoadingState.ResolvingSource
                 emit(
                     videoSourceResolver.resolve(
                         media,
                         EpisodeMetadata(
-                            title = episodeInfo.displayName,
-                            ep = episodeInfo.ep,
-                            sort = episodeInfo.sort,
+                            title = info.displayName,
+                            ep = info.ep,
+                            sort = info.sort,
                         ),
                     ),
                 )
