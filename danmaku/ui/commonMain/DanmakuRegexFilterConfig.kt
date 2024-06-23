@@ -25,13 +25,15 @@ data class DanmakuRegexFilterConfig (
      */
     
     val danmakuRegexFilterList: List<DanmakuRegexFilter> = mutableListOf(),
-    @Suppress("PropertyName") @Transient val _placeholder: Int = 0,
+    @Suppress("PropertyName")
+
+    @Transient val _placeholder: Int = 0,
 
 
     ) {
     companion object {
         @Stable
-        val Default = DanmakuRegexFilterConfig(danmakuRegexFilterOn = true)
+        val Default = DanmakuRegexFilterConfig()
     }
 }
 
