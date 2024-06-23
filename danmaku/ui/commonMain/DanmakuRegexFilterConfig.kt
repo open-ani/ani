@@ -17,17 +17,15 @@ data class DanmakuRegexFilterConfig (
     /**
      * Defines wheather Danmaku filter is on.
      */
-
-    val danmakuRegexFilterOn: Boolean = true,
+    
+    val enabled: Boolean = true,
 
     /**
      * Defines which [Danmaku] can be displayed according to a list of regular expression.
      */
     
     val danmakuRegexFilterList: List<DanmakuRegexFilter> = mutableListOf(),
-    @Suppress("PropertyName")
-
-    @Transient val _placeholder: Int = 0,
+    @Suppress("PropertyName") @Transient val _placeholder: Int = 0,
 
 
     ) {
