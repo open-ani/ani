@@ -269,8 +269,9 @@ private class EpisodeViewModelImpl(
     override val episodeSelectorState: EpisodeSelectorState = EpisodeSelectorState(
         itemsFlow = subjectManager.episodeCollectionsFlow(subjectId).map { list -> list.map { it.toPresentation() } },
         onSelect = {
-            episodeId.value = it.episodeId
             mediaSelector.unselect() // 否则不会自动选择
+            playerState.stop()
+            episodeId.value = it.episodeId // ep 要在取消选择 media 之后才能变, 否则会导致使用旧的 media
         },
         currentEpisodeId = episodeId,
         parentCoroutineContext = backgroundScope.coroutineContext,
