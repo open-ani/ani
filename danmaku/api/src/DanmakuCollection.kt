@@ -80,7 +80,7 @@ class TimeBasedDanmakuSession private constructor(
      * 输入一个[Danmaku] list. 和一个[DanmakuRegexFilterConfig]，返回一个过滤后的[Danmaku] list
      */
     fun filterList(list: List<Danmaku>, danmakuRegexFilterConfig: DanmakuRegexFilterConfig): List<Danmaku> {
-        if (!danmakuRegexFilterConfig.danmakuRegexFilterOn) {
+        if (!danmakuRegexFilterConfig.enabled) {
             return list
         }
 

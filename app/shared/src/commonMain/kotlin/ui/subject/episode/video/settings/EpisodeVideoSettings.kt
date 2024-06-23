@@ -114,8 +114,8 @@ private class EpisodeVideoSettingsViewModelImpl : EpisodeVideoSettingsViewModel,
     override fun switchDanmakuRegexFilterCompletely() {
         danmakuRegexFilterConfigSettings.update(
             danmakuRegexFilterConfig.copy(
-                danmakuRegexFilterOn = !danmakuRegexFilterConfig.danmakuRegexFilterOn
-            )
+                enabled = !danmakuRegexFilterConfig.enabled,
+            ),
         )
     }
 
@@ -405,7 +405,7 @@ fun EpisodeVideoSettings(
             )
 
             SwitchItem(
-                danmakuRegexFilterConfig.danmakuRegexFilterOn,
+                danmakuRegexFilterConfig.enabled,
                 onCheckedChange = {
                         switchDanmakuRegexFilterCompletely()
                 },

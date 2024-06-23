@@ -12,7 +12,7 @@ import kotlin.time.Duration.Companion.seconds
 class FilterListTest {
 
     private fun filterList(list: List<Danmaku>, danmakuRegexFilterConfig: DanmakuRegexFilterConfig): List<Danmaku> {
-        if (!danmakuRegexFilterConfig.danmakuRegexFilterOn) {
+        if (!danmakuRegexFilterConfig.enabled) {
             return list
         }
 
@@ -50,7 +50,7 @@ class FilterListTest {
             DanmakuRegexFilter(UUID.randomUUID().toString(), name = "3", re = "3", isEnabled = true),
         )
         val danmakuRegexFilterConfig =
-            DanmakuRegexFilterConfig(danmakuRegexFilterOn = true, danmakuRegexFilterList = danmakuFilterList)
+            DanmakuRegexFilterConfig(enabled = true, danmakuRegexFilterList = danmakuFilterList)
         val danmakuList = listOf(
             dummyDanmaku(1.0, "簽到"),
         )
