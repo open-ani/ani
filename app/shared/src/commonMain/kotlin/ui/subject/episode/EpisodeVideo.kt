@@ -11,6 +11,12 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.DisplaySettings
+import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -37,7 +43,6 @@ import me.him188.ani.app.ui.subject.episode.video.loading.EpisodeVideoLoadingInd
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettings
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsSideSheet
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsViewModel
-import me.him188.ani.app.ui.subject.episode.video.settings.VideoSettingsButton
 import me.him188.ani.app.ui.subject.episode.video.topbar.EpisodeVideoTopBar
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.VideoPlayer
@@ -80,6 +85,8 @@ internal fun EpisodeVideoImpl(
     onExitFullscreen: () -> Unit,
     danmakuEditor: @Composable (RowScope.() -> Unit),
     configProvider: () -> VideoScaffoldConfig,
+    mediaSelectorSheet: @Composable () -> Unit,
+    onShowMediaSelector: () -> Unit,
     modifier: Modifier = Modifier,
     maintainAspectRatio: Boolean = !expanded,
 ) {
@@ -101,9 +108,17 @@ internal fun EpisodeVideoImpl(
                 } else {
                     null
                 },
-            ) {
-                VideoSettingsButton(onClick = { showSettings = true })
-            }
+                actions = {
+                    if (expanded) {
+                        IconButton(onShowMediaSelector) {
+                            Icon(Icons.Rounded.DisplaySettings, contentDescription = "数据源")
+                        }
+                    }
+                    IconButton({ showSettings = true }) {
+                        Icon(Icons.Rounded.Settings, contentDescription = "设置")
+                    }
+                },
+            )
         },
         video = {
             if (LocalIsPreviewing.current) {
@@ -275,6 +290,8 @@ internal fun EpisodeVideoImpl(
                     )
                 }
             }
+
+            mediaSelectorSheet()
         },
     )
 }

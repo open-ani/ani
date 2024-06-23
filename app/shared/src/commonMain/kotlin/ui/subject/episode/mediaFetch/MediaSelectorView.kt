@@ -47,7 +47,7 @@ private inline val WINDOW_VERTICAL_PADDING get() = 8.dp
 /**
  * 通用的数据源选择器. See preview
  *
- * @param actions shown at the bottom
+ * @param bottomActions shown at the bottom
  */
 @Composable
 fun MediaSelectorView(
@@ -62,7 +62,7 @@ fun MediaSelectorView(
         )
     },
     onClickItem: ((Media) -> Unit) = { state.select(it) },
-    actions: (@Composable RowScope.() -> Unit)? = null,
+    bottomActions: (@Composable RowScope.() -> Unit)? = null,
 ) = Surface {
     Column(modifier) {
         val lazyListState = rememberLazyListState()
@@ -128,7 +128,7 @@ fun MediaSelectorView(
             item { } // dummy spacer
         }
 
-        if (actions != null) {
+        if (bottomActions != null) {
             HorizontalDivider(Modifier.padding(bottom = 8.dp))
 
             Row(
@@ -136,7 +136,7 @@ fun MediaSelectorView(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 ProvideTextStyle(MaterialTheme.typography.labelLarge) {
-                    actions()
+                    bottomActions()
                 }
             }
         }

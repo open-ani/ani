@@ -149,7 +149,7 @@ fun SettingsScope.EpisodeCacheListGroup(
                         .navigationBarsPadding()
                         .fillMaxHeight() // 防止添加筛选后数量变少导致 bottom sheet 高度变化
                         .fillMaxWidth(),
-                    actions = {
+                    bottomActions = {
                         TextButton({ state.cancelRequest() }) {
                             Text("取消")
                         }

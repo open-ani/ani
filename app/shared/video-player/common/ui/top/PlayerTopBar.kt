@@ -65,7 +65,11 @@ fun PlayerTopBar(
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = Color.Transparent,
         ),
-        actions = actions,
+        actions = {
+            CompositionLocalProvider(LocalContentColor provides aniDarkColorTheme().onBackground) {
+                actions()
+            }
+        },
     )
 }
 

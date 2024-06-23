@@ -31,7 +31,7 @@ fun EpisodePlayMediaSelector(
         modifier.padding(vertical = 12.dp, horizontal = 16.dp)
             .fillMaxWidth()
             .navigationBarsPadding(),
-        actions = {
+        bottomActions = {
             TextButton(onDismissRequest) {
                 Text("取消")
             }

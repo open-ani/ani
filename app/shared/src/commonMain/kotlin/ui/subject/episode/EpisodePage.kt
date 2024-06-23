@@ -55,6 +55,7 @@ import me.him188.ani.app.ui.subject.episode.details.EpisodeActionRow
 import me.him188.ani.app.ui.subject.episode.details.EpisodeDetails
 import me.him188.ani.app.ui.subject.episode.details.EpisodePlayerTitle
 import me.him188.ani.app.ui.subject.episode.notif.VideoNotifEffect
+import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeVideoMediaSelectorSideSheet
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults.randomDanmakuPlaceholder
 import me.him188.ani.danmaku.protocol.DanmakuInfo
@@ -293,6 +294,7 @@ private fun EpisodeVideo(
     // Don't rememberSavable. 刻意让每次切换都是隐藏的
     val videoControllerState = remember { VideoControllerState(initialControllerVisible) }
     var danmakuEditorText by rememberSaveable { mutableStateOf("") }
+    var isMediaSelectorVisible by remember { mutableStateOf(false) }
 
 
     // Refresh every time on configuration change (i.e. switching theme, entering fullscreen)
@@ -379,10 +381,20 @@ private fun EpisodeVideo(
                 }.weight(1f),
             )
         },
+        configProvider = remember(vm) { { vm.videoScaffoldConfig } },
         modifier = modifier.fillMaxWidth().background(Color.Black)
             .then(if (expanded) Modifier.fillMaxSize() else Modifier.statusBarsPadding()),
         maintainAspectRatio = maintainAspectRatio,
-        configProvider = remember(vm) { { vm.videoScaffoldConfig } },
+        mediaSelectorSheet = {
+            if (isMediaSelectorVisible) {
+                EpisodeVideoMediaSelectorSideSheet(
+                    vm.mediaSelectorPresentation,
+                    vm.mediaSourceResultsPresentation,
+                    onDismissRequest = { isMediaSelectorVisible = false },
+                )
+            }
+        },
+        onShowMediaSelector = { isMediaSelectorVisible = true },
     )
 }
 
