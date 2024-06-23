@@ -163,9 +163,9 @@ class MediaSelectorAutoSelectTest {
             location = MediaSourceLocation.Online,
         )
         addMedia(target)
-        val isSuccess = autoSelect.selectCached(mediaFetchSession())
+        val isSuccess = autoSelect.selectCached(mediaFetchSession(), 1)
         assertEquals(target, isSuccess)
-        assertNull(autoSelect.selectCached(mediaFetchSession())) // already selected
+        assertNull(autoSelect.selectCached(mediaFetchSession(), 1)) // already selected
     }
 
     @Test
@@ -190,15 +190,15 @@ class MediaSelectorAutoSelectTest {
         addMedia(target)
         addMedia(target.copy(mediaId = "dmhy.7"))
         addMedia(target.copy(mediaId = "dmhy.10"))
-        val isSuccess = autoSelect.selectCached(mediaFetchSession())
+        val isSuccess = autoSelect.selectCached(mediaFetchSession(), 1)
         assertEquals(target, isSuccess)
 
-        assertNull(autoSelect.selectCached(mediaFetchSession())) // already selected
+        assertNull(autoSelect.selectCached(mediaFetchSession(), 1)) // already selected
     }
 
     @Test
     fun `selectCached selects null when there is no cache`() = runTest {
-        val isSuccess = autoSelect.selectCached(mediaFetchSession())
+        val isSuccess = autoSelect.selectCached(mediaFetchSession(), 1)
         assertNull(isSuccess)
     }
 }

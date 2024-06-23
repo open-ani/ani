@@ -41,10 +41,16 @@ value class MediaSelectorAutoSelect(
      *
      * 当成功选择了一个 [Media] 时返回它. 若已经选择了一个别的, 或没有 [MediaSourceKind.LocalCache] 类型的 [Media] 供选择, 返回 `null`.
      */
-    suspend fun selectCached(mediaFetchSession: MediaFetchSession): Media? {
+    suspend fun selectCached(
+        mediaFetchSession: MediaFetchSession,
+        maxAttempts: Int = Int.MAX_VALUE,
+    ): Media? {
         val isSuccess = object {
             @Volatile
             var value: Media? = null
+
+            @Volatile
+            var attempted = 0
         }
         combine(
             mediaFetchSession.cumulativeResults,
@@ -60,7 +66,13 @@ value class MediaSelectorAutoSelect(
                 isSuccess.value = selected
                 STOP
             } else {
-                !STOP
+                if (++isSuccess.attempted >= maxAttempts) {
+                    // 尝试次数过多
+                    STOP
+                } else {
+                    // 继续等待
+                    !STOP
+                }
             }
         }.takeWhile { it == !STOP }.collect()
         return isSuccess.value
