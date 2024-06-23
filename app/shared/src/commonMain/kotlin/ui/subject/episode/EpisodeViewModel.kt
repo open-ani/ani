@@ -10,10 +10,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.text.AnnotatedString
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
@@ -30,17 +28,12 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.danmaku.DanmakuManager
 import me.him188.ani.app.data.media.MediaSourceManager
 import me.him188.ani.app.data.media.createFetchFetchSessionFlow
 import me.him188.ani.app.data.media.fetch.FilteredMediaSourceResults
 import me.him188.ani.app.data.media.fetch.create
-import me.him188.ani.app.data.media.resolver.EpisodeMetadata
-import me.him188.ani.app.data.media.resolver.ResolutionFailures
-import me.him188.ani.app.data.media.resolver.UnsupportedMediaException
-import me.him188.ani.app.data.media.resolver.VideoSourceResolutionException
 import me.him188.ani.app.data.media.resolver.VideoSourceResolver
 import me.him188.ani.app.data.media.selector.MediaSelectorFactory
 import me.him188.ani.app.data.media.selector.autoSelect
@@ -67,9 +60,7 @@ import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSourceResultsPresentation
 import me.him188.ani.app.ui.subject.episode.statistics.DanmakuLoadingState
 import me.him188.ani.app.ui.subject.episode.statistics.PlayerStatisticsState
-import me.him188.ani.app.videoplayer.data.OpenFailures
-import me.him188.ani.app.videoplayer.data.VideoSource
-import me.him188.ani.app.videoplayer.data.VideoSourceOpenException
+import me.him188.ani.app.ui.subject.episode.video.PlayerLauncher
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import me.him188.ani.danmaku.api.Danmaku
@@ -86,7 +77,6 @@ import me.him188.ani.datasources.bangumi.processing.nameCNOrName
 import me.him188.ani.utils.coroutines.cancellableCoroutineScope
 import me.him188.ani.utils.coroutines.runUntilSuccess
 import me.him188.ani.utils.coroutines.sampleWithInitial
-import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -162,9 +152,19 @@ interface EpisodeViewModel : HasBackgroundScope {
 
     // Media Fetching
 
+    /**
+     * "数据源" bottom sheet 内容
+     */
     val mediaSelectorPresentation: MediaSelectorPresentation
+
+    /**
+     * "数据源" bottom sheet 中的每个数据源的结果
+     */
     val mediaSourceResultsPresentation: MediaSourceResultsPresentation
 
+    /**
+     * "视频统计" bottom sheet 显示内容
+     */
     val playerStatistics: PlayerStatisticsState
 
     // Media Selection
@@ -271,67 +271,22 @@ private class EpisodeViewModelImpl(
             ),
             backgroundScope.coroutineContext,
         )
-    override val playerStatistics: PlayerStatisticsState = PlayerStatisticsState()
+
+    override val playerState: PlayerState =
+        playerStateFactory.create(context, backgroundScope.coroutineContext)
+
+    private val playerLauncher: PlayerLauncher = PlayerLauncher(
+        mediaSelector, videoSourceResolver, playerState,
+        episodeInfo, backgroundScope.coroutineContext,
+    )
+
+    override val playerStatistics: PlayerStatisticsState get() = playerLauncher.playerStatistics
 
     override var mediaSelectorVisible: Boolean by mutableStateOf(false)
     override val videoScaffoldConfig: VideoScaffoldConfig by settingsRepository.videoScaffoldConfig
         .flow.produceState(VideoScaffoldConfig.Default)
 
     override val videoLoadingState get() = playerStatistics.videoLoadingState
-
-    /**
-     * The [VideoSource] selected to play.
-     *
-     * `null` has two possible meanings:
-     * - List of video sources are still downloading so user has nothing to select.
-     * - The sources are available but user has not yet selected one.
-     */
-    private val videoSource: SharedFlow<VideoSource<*>?> = mediaSelector.selected
-        .filterNotNull()
-        .distinctUntilChanged()
-        .transformLatest { playSource ->
-            emit(null)
-            playSource.let { media ->
-                try {
-                    val presentation = withContext(Dispatchers.Main) {
-                        episodePresentation
-                    }
-                    videoLoadingState.value = VideoLoadingState.ResolvingSource
-                    emit(
-                        videoSourceResolver.resolve(
-                            media,
-                            EpisodeMetadata(
-                                title = presentation.title,
-                                ep = EpisodeSort(presentation.ep),
-                                sort = EpisodeSort(presentation.sort),
-                            ),
-                        ),
-                    )
-                    videoLoadingState.compareAndSet(VideoLoadingState.ResolvingSource, VideoLoadingState.DecodingData)
-                } catch (e: UnsupportedMediaException) {
-                    logger.error { IllegalStateException("Failed to resolve video source, unsupported media", e) }
-                    videoLoadingState.value = VideoLoadingState.UnsupportedMedia
-                    emit(null)
-                } catch (e: VideoSourceResolutionException) {
-                    logger.error { IllegalStateException("Failed to resolve video source with known error", e) }
-                    videoLoadingState.value = when (e.reason) {
-                        ResolutionFailures.FETCH_TIMEOUT -> VideoLoadingState.ResolutionTimedOut
-                        ResolutionFailures.ENGINE_ERROR -> VideoLoadingState.UnknownError(e)
-                    }
-                    emit(null)
-                } catch (e: CancellationException) {
-                    throw e
-                } catch (e: Throwable) {
-                    logger.error { IllegalStateException("Failed to resolve video source with unknown error", e) }
-                    videoLoadingState.value = VideoLoadingState.UnknownError(e)
-                    emit(null)
-                }
-            }
-        }.shareInBackground(SharingStarted.Lazily)
-
-
-    override val playerState: PlayerState =
-        playerStateFactory.create(context, backgroundScope.coroutineContext)
 
     override val subjectPresentation: SubjectPresentation by subjectInfo
         .map {
@@ -480,31 +435,6 @@ private class EpisodeViewModelImpl(
                     }
                 }
                 cancelScope()
-            }
-        }
-
-        launchInBackground {
-            videoSource.collect {
-                logger.info { "EpisodeViewModel got new video source: $it, updating playerState" }
-                try {
-                    playerState.setVideoSource(it)
-                    if (it != null) {
-                        logger.info { "playerState.setVideoSource success" }
-                        videoLoadingState.value = VideoLoadingState.Succeed
-                    }
-                } catch (e: VideoSourceOpenException) {
-                    videoLoadingState.value = when (e.reason) {
-                        OpenFailures.NO_MATCHING_FILE -> VideoLoadingState.NoMatchingFile
-                        OpenFailures.UNSUPPORTED_VIDEO_SOURCE -> VideoLoadingState.UnsupportedMedia
-                        OpenFailures.ENGINE_DISABLED -> VideoLoadingState.UnsupportedMedia
-                    }
-                } catch (_: CancellationException) {
-                    // ignore
-                    return@collect
-                } catch (e: Throwable) {
-                    logger.error(e) { "Failed to set video source" }
-                    videoLoadingState.value = VideoLoadingState.UnknownError(e)
-                }
             }
         }
 

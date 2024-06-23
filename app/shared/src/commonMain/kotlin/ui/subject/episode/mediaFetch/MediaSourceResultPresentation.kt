@@ -27,7 +27,9 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
 /**
- * 单个数据源的搜索结果
+ * 单个数据源的搜索结果.
+ *
+ * @see MediaSourceResultsPresentation
  */
 @Stable
 class MediaSourceResultPresentation(
@@ -83,6 +85,8 @@ fun rememberMediaSourceResultsPresentation(
 
 /**
  * 在 [MediaSelectorView] 使用, 管理多个 [MediaSourceResultPresentation] 的结果
+ *
+ * 对应 UI 是 "BT" 和 "WEB" 的两行列表, 列表包含 [MediaSourceResultPresentation]
  */
 @Stable
 class MediaSourceResultsPresentation(

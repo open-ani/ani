@@ -51,6 +51,9 @@ import me.him188.ani.danmaku.api.DanmakuMatchInfo
 import me.him188.ani.danmaku.api.DanmakuMatchMethod
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
+/**
+ * 播放器统计信息, 用于展示在 UI 的 "视频统计" bottom sheet
+ */
 @Stable
 class PlayerStatisticsState {
     val videoLoadingState: MutableStateFlow<VideoLoadingState> = MutableStateFlow(VideoLoadingState.Initial)

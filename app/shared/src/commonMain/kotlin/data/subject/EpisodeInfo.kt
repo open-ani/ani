@@ -36,6 +36,9 @@ data class EpisodeInfo(
 )
 
 @Stable
+val EpisodeInfo.displayName get() = nameCnOrName
+
+@Stable
 val EpisodeInfo.nameCnOrName: String
     get() = nameCn.ifBlank { name }
 
