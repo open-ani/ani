@@ -131,6 +131,7 @@ actual fun isSystemInFullscreenImpl(): Boolean {
                     isFullscreen = isFullscreenNow
                 }
             } else {
+                @Suppress("DEPRECATION")
                 val isFullscreenNow = (insets.systemWindowInsetTop == 0)
                 if (isFullscreenNow != isFullscreen) {
                     isFullscreen = isFullscreenNow
