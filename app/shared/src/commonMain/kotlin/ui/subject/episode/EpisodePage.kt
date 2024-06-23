@@ -17,11 +17,9 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
@@ -35,12 +33,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.setRequestFullScreen
@@ -50,19 +44,15 @@ import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.effects.OnLifecycleEvent
 import me.him188.ani.app.ui.foundation.effects.ScreenOnEffect
-import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.layout.LocalLayoutMode
 import me.him188.ani.app.ui.foundation.rememberViewModel
-import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
+import me.him188.ani.app.ui.subject.episode.danmaku.DanmakuEditor
 import me.him188.ani.app.ui.subject.episode.details.EpisodeActionRow
 import me.him188.ani.app.ui.subject.episode.details.EpisodeDetails
 import me.him188.ani.app.ui.subject.episode.details.EpisodePlayerTitle
 import me.him188.ani.app.ui.subject.episode.notif.VideoNotifEffect
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
-import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults.randomDanmakuPlaceholder
-import me.him188.ani.danmaku.protocol.DanmakuInfo
-import me.him188.ani.danmaku.protocol.DanmakuLocation
 import me.him188.ani.danmaku.ui.DanmakuConfig
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.lifecycle.Lifecycle
@@ -373,58 +363,6 @@ private fun EpisodeVideo(
     )
 }
 
-@Composable
-internal fun DanmakuEditor(
-    vm: EpisodeViewModel,
-    text: String,
-    onTextChange: (String) -> Unit,
-    placeholderText: String,
-    setControllerVisible: (Boolean) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val textUpdated by rememberUpdatedState(text)
-    val onTextChangeUpdated by rememberUpdatedState(onTextChange)
-    MaterialTheme(aniDarkColorTheme()) {
-        PlayerControllerDefaults.DanmakuTextField(
-            text,
-            onValueChange = onTextChange,
-            modifier = modifier,
-            onSend = remember(vm) {
-                onSend@{
-                    if (textUpdated.isEmpty()) return@onSend
-                    val textSnapshot = textUpdated
-                    onTextChangeUpdated("")
-                    val exactPosition = vm.playerState.getExactCurrentPositionMillis()
-                    vm.launchInBackground {
-                        try {
-                            danmaku.send(
-                                episodeId = vm.episodeId,
-                                DanmakuInfo(
-                                    exactPosition,
-                                    text = textSnapshot,
-                                    color = Color.White.toArgb(),
-                                    location = DanmakuLocation.NORMAL,
-                                ),
-                            )
-                            withContext(Dispatchers.Main) { setControllerVisible(false) }
-                        } catch (e: Throwable) {
-                            withContext(Dispatchers.Main) { onTextChangeUpdated(textSnapshot) }
-                            throw e
-                        }
-                    }
-                }
-            },
-            isSending = vm.danmaku.isSending,
-            placeholder = {
-                Text(
-                    placeholderText,
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = 1,
-                )
-            },
-        )
-    }
-}
 
 /**
  * 切后台自动暂停
