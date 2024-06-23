@@ -18,7 +18,7 @@ data class DanmakuRegexFilterConfig (
      * Defines wheather Danmaku filter is on.
      */
     
-    val danmakuRegexFilterOn: Boolean = false,
+    val enabled: Boolean = false,
 
     /**
      * Defines which [Danmaku] can be displayed according to a list of regular expression.
