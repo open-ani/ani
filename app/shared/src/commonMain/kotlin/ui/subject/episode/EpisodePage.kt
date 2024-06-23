@@ -39,7 +39,6 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
-import coil3.annotation.ExperimentalCoilApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.navigation.LocalNavigator
@@ -78,29 +77,30 @@ private val LocalSnackbar = compositionLocalOf<SnackbarHostState> {
  * 番剧详情 (播放) 页面
  */
 @Composable
-fun EpisodePage(
+fun EpisodeScene(
     viewModel: EpisodeViewModel,
     modifier: Modifier = Modifier,
 ) {
-    val snackbarHostState = remember { SnackbarHostState() }
-    Scaffold(
-        snackbarHost = {
-            SnackbarHost(snackbarHostState, Modifier.navigationBarsPadding())
-        },
-        contentWindowInsets = WindowInsets(0.dp),
-    ) {
-        CompositionLocalProvider(LocalSnackbar provides snackbarHostState) {
-            EpisodePageContent(
-                viewModel,
-                modifier,
-            )
+    Column(modifier.fillMaxSize()) {
+        val snackbarHostState = remember { SnackbarHostState() }
+        Scaffold(
+            snackbarHost = {
+                SnackbarHost(snackbarHostState, Modifier.navigationBarsPadding())
+            },
+            contentWindowInsets = WindowInsets(0.dp),
+        ) {
+            CompositionLocalProvider(LocalSnackbar provides snackbarHostState) {
+                EpisodeSceneContent(
+                    viewModel,
+                    modifier,
+                )
+            }
         }
     }
 }
 
-@OptIn(ExperimentalCoilApi::class)
 @Composable
-fun EpisodePageContent(
+private fun EpisodeSceneContent(
     vm: EpisodeViewModel,
     modifier: Modifier = Modifier,
 ) {
@@ -130,9 +130,9 @@ fun EpisodePageContent(
             derivedStateOf { layoutMode.deviceSize.width / layoutMode.deviceSize.height >= 1200f / 770 }
         }
         when {
-            isVeryWide -> EpisodePageContentTabletVeryWide(vm, Modifier.fillMaxSize())
-            layoutMode.showLandscapeUI -> EpisodePageContentTablet(vm, Modifier.fillMaxSize())
-            else -> EpisodePageContentPhone(vm, Modifier.fillMaxSize())
+            isVeryWide -> EpisodeSceneTabletVeryWide(vm, Modifier.fillMaxSize())
+            layoutMode.showLandscapeUI -> EpisodeSceneContentTablet(vm, Modifier.fillMaxSize())
+            else -> EpisodeSceneContentPhone(vm, Modifier.fillMaxSize())
         }
     }
 
@@ -140,7 +140,7 @@ fun EpisodePageContent(
 }
 
 @Composable
-private fun EpisodePageContentTabletVeryWide(
+private fun EpisodeSceneTabletVeryWide(
     vm: EpisodeViewModel,
     modifier: Modifier = Modifier,
 ) {
@@ -184,7 +184,7 @@ private fun EpisodePageContentTabletVeryWide(
 }
 
 @Composable
-private fun EpisodePageContentTablet(
+private fun EpisodeSceneContentTablet(
     vm: EpisodeViewModel,
     modifier: Modifier = Modifier,
 ) {
@@ -227,7 +227,7 @@ private fun EpisodePageContentTablet(
 }
 
 @Composable
-private fun EpisodePageContentPhone(
+private fun EpisodeSceneContentPhone(
     vm: EpisodeViewModel,
     modifier: Modifier = Modifier,
 ) {
@@ -473,7 +473,7 @@ private fun PreviewEpisodePageDesktop() {
                 context,
             )
         }
-        EpisodePage(vm)
+        EpisodeScene(vm)
     }
 }
 
