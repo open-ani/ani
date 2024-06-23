@@ -74,6 +74,13 @@ class EpisodeSelectorState(
     fun select(item: Item) {
         onSelect(item)
     }
+
+    fun selectNext() {
+        val currentIndex = currentIndex
+        if (currentIndex != -1 && currentIndex < items.lastIndex) {
+            onSelect(items[currentIndex + 1])
+        }
+    }
 }
 
 @Composable

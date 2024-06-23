@@ -76,6 +76,8 @@ import kotlin.time.Duration.Companion.seconds
 internal fun EpisodeVideoImpl(
     playerState: PlayerState,
     expanded: Boolean,
+    hasNextEpisode: Boolean,
+    onClickNextEpisode: () -> Unit,
     videoControllerState: VideoControllerState,
     title: @Composable () -> Unit,
     danmakuHostState: DanmakuHostState,
@@ -216,6 +218,12 @@ internal fun EpisodeVideoImpl(
                         isPlaying = { isPlaying },
                         onClick = { playerState.togglePause() },
                     )
+
+                    if (hasNextEpisode) {
+                        PlayerControllerDefaults.NextEpisodeIcon(
+                            onClick = onClickNextEpisode,
+                        )
+                    }
 
                     PlayerControllerDefaults.DanmakuIcon(
                         videoControllerState.danmakuEnabled,

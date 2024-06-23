@@ -21,6 +21,7 @@ import androidx.compose.material.icons.rounded.Fullscreen
 import androidx.compose.material.icons.rounded.FullscreenExit
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.Subtitles
 import androidx.compose.material.icons.rounded.SubtitlesOff
 import androidx.compose.material3.ButtonDefaults
@@ -110,6 +111,19 @@ object PlayerControllerDefaults {
             } else {
                 Icon(Icons.Rounded.SubtitlesOff, contentDescription = "启用弹幕")
             }
+        }
+    }
+
+    @Composable
+    fun NextEpisodeIcon(
+        onClick: () -> Unit,
+        modifier: Modifier = Modifier,
+    ) {
+        IconButton(
+            onClick,
+            modifier,
+        ) {
+            Icon(Icons.Rounded.SkipNext, "下一集", Modifier.size(36.dp))
         }
     }
 

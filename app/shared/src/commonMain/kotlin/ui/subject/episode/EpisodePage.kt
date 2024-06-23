@@ -307,6 +307,8 @@ private fun EpisodeVideo(
     EpisodeVideoImpl(
         vm.playerState,
         expanded = expanded,
+        hasNextEpisode = vm.episodeSelectorState.hasNextEpisode,
+        onClickNextEpisode = { vm.episodeSelectorState.selectNext() },
         videoControllerState = videoControllerState,
         title = {
             val episode = vm.episodePresentation

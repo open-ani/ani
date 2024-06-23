@@ -56,6 +56,8 @@ private fun PreviewVideoScaffoldImpl(
     EpisodeVideoImpl(
         playerState = playerState,
         expanded = expanded,
+        hasNextEpisode = true,
+        onClickNextEpisode = {},
         videoControllerState = controllerState,
         title = {
             EpisodePlayerTitle(
