@@ -72,7 +72,9 @@ fun MediaSelectorView(
             lazyListState,
         ) {
             item {
-                sourceResults()
+                Row(Modifier.padding(bottom = 12.dp)) {
+                    sourceResults()
+                }
             }
 
             stickyHeader {
@@ -87,7 +89,7 @@ fun MediaSelectorView(
                 ) {
                     Column {
                         Column(
-                            Modifier.padding(vertical = 12.dp).fillMaxWidth(),
+                            Modifier.padding(bottom = 12.dp).fillMaxWidth(),
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
                             Text(
