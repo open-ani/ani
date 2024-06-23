@@ -87,7 +87,13 @@ fun EpisodeDetails(
         HorizontalDivider(Modifier.fillMaxWidth())
 
         Column(Modifier.padding(vertical = 16.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            NowPlayingLabel(viewModel, Modifier.padding(horizontal = PAGE_HORIZONTAL_PADDING).fillMaxWidth())
+
+            val data by viewModel.playerState.videoData.collectAsStateWithLifecycle(null)
+            NowPlayingLabel(
+                viewModel.mediaSelectorPresentation.selected,
+                data?.filename,
+                Modifier.padding(horizontal = PAGE_HORIZONTAL_PADDING).fillMaxWidth(),
+            )
 
             Row(Modifier.padding(horizontal = PAGE_HORIZONTAL_PADDING)) {
                 actionRow()
@@ -141,11 +147,14 @@ fun renderResolution(id: String): String {
  * 显示正在播放的那行字
  */
 @Composable
-private fun NowPlayingLabel(viewModel: EpisodeViewModel, modifier: Modifier = Modifier) {
+private fun NowPlayingLabel(
+    isPlaying: Media?,
+    filename: String?,
+    modifier: Modifier = Modifier,
+) {
     Row(modifier) {
         ProvideTextStyle(MaterialTheme.typography.labelMedium) {
-            val playing = viewModel.mediaSelectorPresentation.selected
-            if (playing != null) {
+            if (isPlaying != null) {
                 Column {
                     Row {
                         Text(
@@ -153,17 +162,16 @@ private fun NowPlayingLabel(viewModel: EpisodeViewModel, modifier: Modifier = Mo
                             color = MaterialTheme.colorScheme.primary,
                         )
                         Text(
-                            remember(playing) { playing.render() },
+                            remember(isPlaying) { isPlaying.render() },
                             color = MaterialTheme.colorScheme.secondary,
                         )
                     }
 
 
-                    val data by viewModel.playerState.videoData.collectAsStateWithLifecycle(null)
-                    if (data != null) {
+                    if (filename != null) {
                         SelectionContainer {
                             Text(
-                                remember(data) { data?.filename ?: "" },
+                                filename,
                                 Modifier.padding(top = 8.dp),
                                 color = LocalContentColor.current.slightlyWeaken(),
                             )
