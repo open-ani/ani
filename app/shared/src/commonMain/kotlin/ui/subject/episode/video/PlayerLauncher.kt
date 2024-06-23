@@ -3,9 +3,9 @@ package me.him188.ani.app.ui.subject.episode.video
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.transformLatest
 import me.him188.ani.app.data.media.resolver.EpisodeMetadata
 import me.him188.ani.app.data.media.resolver.ResolutionFailures
@@ -42,7 +42,7 @@ class PlayerLauncher(
     mediaSelector: MediaSelector,
     private val videoSourceResolver: VideoSourceResolver,
     private val playerState: PlayerState,
-    private val episodeInfo: Flow<EpisodeInfo>,
+    episodeInfo: Flow<EpisodeInfo?>,
     parentCoroutineContext: CoroutineContext,
 ) : HasBackgroundScope by BackgroundScope(parentCoroutineContext) {
     private companion object {
@@ -63,41 +63,41 @@ class PlayerLauncher(
     private val videoSource: SharedFlow<VideoSource<*>?> = mediaSelector.selected
         .filterNotNull()
         .distinctUntilChanged()
-        .transformLatest { playSource ->
+        .combine(episodeInfo.filterNotNull()) { media, episodeInfo ->
+            media to episodeInfo
+        }
+        .transformLatest { (media, episodeInfo) ->
             emit(null)
-            playSource.let { media ->
-                try {
-                    val episodeInfo = episodeInfo.first()
-                    videoLoadingState.value = VideoLoadingState.ResolvingSource
-                    emit(
-                        videoSourceResolver.resolve(
-                            media,
-                            EpisodeMetadata(
-                                title = episodeInfo.displayName,
-                                ep = episodeInfo.ep,
-                                sort = episodeInfo.sort,
-                            ),
+            try {
+                videoLoadingState.value = VideoLoadingState.ResolvingSource
+                emit(
+                    videoSourceResolver.resolve(
+                        media,
+                        EpisodeMetadata(
+                            title = episodeInfo.displayName,
+                            ep = episodeInfo.ep,
+                            sort = episodeInfo.sort,
                         ),
-                    )
-                    videoLoadingState.compareAndSet(VideoLoadingState.ResolvingSource, VideoLoadingState.DecodingData)
-                } catch (e: UnsupportedMediaException) {
-                    logger.error { IllegalStateException("Failed to resolve video source, unsupported media", e) }
-                    videoLoadingState.value = VideoLoadingState.UnsupportedMedia
-                    emit(null)
-                } catch (e: VideoSourceResolutionException) {
-                    logger.error { IllegalStateException("Failed to resolve video source with known error", e) }
-                    videoLoadingState.value = when (e.reason) {
-                        ResolutionFailures.FETCH_TIMEOUT -> VideoLoadingState.ResolutionTimedOut
-                        ResolutionFailures.ENGINE_ERROR -> VideoLoadingState.UnknownError(e)
-                    }
-                    emit(null)
-                } catch (e: CancellationException) {
-                    throw e
-                } catch (e: Throwable) {
-                    logger.error { IllegalStateException("Failed to resolve video source with unknown error", e) }
-                    videoLoadingState.value = VideoLoadingState.UnknownError(e)
-                    emit(null)
+                    ),
+                )
+                videoLoadingState.compareAndSet(VideoLoadingState.ResolvingSource, VideoLoadingState.DecodingData)
+            } catch (e: UnsupportedMediaException) {
+                logger.error { IllegalStateException("Failed to resolve video source, unsupported media", e) }
+                videoLoadingState.value = VideoLoadingState.UnsupportedMedia
+                emit(null)
+            } catch (e: VideoSourceResolutionException) {
+                logger.error { IllegalStateException("Failed to resolve video source with known error", e) }
+                videoLoadingState.value = when (e.reason) {
+                    ResolutionFailures.FETCH_TIMEOUT -> VideoLoadingState.ResolutionTimedOut
+                    ResolutionFailures.ENGINE_ERROR -> VideoLoadingState.UnknownError(e)
                 }
+                emit(null)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Throwable) {
+                logger.error { IllegalStateException("Failed to resolve video source with unknown error", e) }
+                videoLoadingState.value = VideoLoadingState.UnknownError(e)
+                emit(null)
             }
         }.shareInBackground(SharingStarted.Lazily)
 

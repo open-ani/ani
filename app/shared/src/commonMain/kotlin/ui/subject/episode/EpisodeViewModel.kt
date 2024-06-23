@@ -12,6 +12,7 @@ import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
@@ -20,14 +21,14 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.danmaku.DanmakuManager
 import me.him188.ani.app.data.media.MediaSourceManager
@@ -41,6 +42,7 @@ import me.him188.ani.app.data.media.selector.eventHandling
 import me.him188.ani.app.data.models.VideoScaffoldConfig
 import me.him188.ani.app.data.repositories.EpisodePreferencesRepository
 import me.him188.ani.app.data.repositories.SettingsRepository
+import me.him188.ani.app.data.subject.EpisodeCollection
 import me.him188.ani.app.data.subject.SubjectInfo
 import me.him188.ani.app.data.subject.SubjectManager
 import me.him188.ani.app.data.subject.episode
@@ -61,6 +63,7 @@ import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSourceResultsPresent
 import me.him188.ani.app.ui.subject.episode.statistics.DanmakuLoadingState
 import me.him188.ani.app.ui.subject.episode.statistics.PlayerStatisticsState
 import me.him188.ani.app.ui.subject.episode.video.PlayerLauncher
+import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeSelectorState
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import me.him188.ani.danmaku.api.Danmaku
@@ -69,6 +72,7 @@ import me.him188.ani.danmaku.api.DanmakuEvent
 import me.him188.ani.danmaku.api.DanmakuPresentation
 import me.him188.ani.danmaku.api.DanmakuSearchRequest
 import me.him188.ani.danmaku.api.DanmakuSession
+import me.him188.ani.danmaku.api.emptyDanmakuCollection
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.source.MediaFetchRequest
@@ -104,6 +108,7 @@ class SubjectPresentation(
  */
 @Immutable
 class EpisodePresentation(
+    val episodeId: Int,
     /**
      * 剧集标题
      * @see Episode.nameCNOrName
@@ -127,6 +132,7 @@ class EpisodePresentation(
     companion object {
         @Stable
         val Placeholder = EpisodePresentation(
+            episodeId = -1,
             title = "placeholder",
             ep = "placeholder",
             sort = "placeholder",
@@ -136,12 +142,21 @@ class EpisodePresentation(
     }
 }
 
+fun EpisodeCollection.toPresentation() = EpisodePresentation(
+    episodeId = this.episode.id,
+    title = episode.nameCnOrName,
+    ep = episode.renderEpisodeEp(),
+    sort = episode.sort.toString(),
+    collectionType = collectionType,
+)
+
+
 @Stable
 interface EpisodeViewModel : HasBackgroundScope {
     val videoSourceResolver: VideoSourceResolver
 
     val subjectId: Int
-    val episodeId: Int
+    val episodeId: StateFlow<Int>
 
     val subjectPresentation: SubjectPresentation // by state
     val episodePresentation: EpisodePresentation // by state
@@ -149,6 +164,11 @@ interface EpisodeViewModel : HasBackgroundScope {
     var isFullscreen: Boolean
 
     suspend fun setEpisodeCollectionType(type: UnifiedCollectionType)
+
+    /**
+     * 播放器内切换剧集
+     */
+    val episodeSelectorState: EpisodeSelectorState
 
     // Media Fetching
 
@@ -210,10 +230,11 @@ fun EpisodeViewModel(
 @Stable
 private class EpisodeViewModelImpl(
     override val subjectId: Int,
-    override val episodeId: Int,
+    initialDanmakuId: Int,
     initialIsFullscreen: Boolean = false,
     context: Context,
 ) : AbstractViewModel(), KoinComponent, EpisodeViewModel {
+    override val episodeId: MutableStateFlow<Int> = MutableStateFlow(initialDanmakuId)
     private val browserNavigator: BrowserNavigator by inject()
     private val playerStateFactory: PlayerStateFactory by inject()
     private val subjectManager: SubjectManager by inject()
@@ -224,16 +245,21 @@ private class EpisodeViewModelImpl(
     private val episodePreferencesRepository: EpisodePreferencesRepository by inject()
 
     private val subjectInfo = subjectManager.subjectInfoFlow(subjectId).shareInBackground()
-    private val episodeInfo = subjectManager.episodeInfoFlow(episodeId).shareInBackground()
+    private val episodeInfo =
+        episodeId.transformLatest { episodeId ->
+            emit(null) // 清空前端
+            emitAll(subjectManager.episodeInfoFlow(episodeId))
+        }.stateInBackground(null)
 
     // Media Selection
 
-    private val mediaFetchSession = mediaSourceManager.createFetchFetchSessionFlow(
-        combine(subjectInfo, episodeInfo) { subjectInfo, episodeInfo ->
-            // note: subjectInfo 和 episodeInfo 必须是只 emit 一个元素的
-            MediaFetchRequest.create(subjectInfo, episodeInfo)
-        },
-    ).shareInBackground(started = SharingStarted.Lazily)
+    private val mediaFetchSession = episodeInfo.filterNotNull().flatMapLatest {
+        mediaSourceManager.createFetchFetchSessionFlow(
+            subjectInfo.map { subjectInfo ->
+                MediaFetchRequest.create(subjectInfo, it)
+            },
+        )
+    }.shareInBackground(started = SharingStarted.Lazily)
 
     private val mediaSelector = MediaSelectorFactory.withKoin(getKoin())
         .create(
@@ -294,28 +320,33 @@ private class EpisodeViewModelImpl(
         }
         .produceState(SubjectPresentation.Placeholder)
 
-    override var episodePresentation: EpisodePresentation by mutableStateOf(EpisodePresentation.Placeholder)
-        private set
-
     private val episodePresentationFlow =
-        subjectManager.episodeCollectionFlow(subjectId, episodeId, ContentPolicy.CACHE_ONLY)
-            .map {
-                EpisodePresentation(
-                    title = it.episode.nameCnOrName,
-                    ep = it.episode.renderEpisodeEp(),
-                    sort = it.episode.sort.toString(),
-                    collectionType = it.collectionType,
-                )
+        episodeId
+            .flatMapLatest { episodeId ->
+                subjectManager.episodeCollectionFlow(subjectId, episodeId, ContentPolicy.CACHE_ONLY)
+            }.map {
+                it.toPresentation()
             }
-            .onEach { withContext(Dispatchers.Main) { episodePresentation = it } }
-            .flowOn(Dispatchers.Default)
             .stateInBackground(SharingStarted.Eagerly)
+
+    override val episodePresentation: EpisodePresentation by episodePresentationFlow.filterNotNull()
+        .produceState(EpisodePresentation.Placeholder)
 
     override var isFullscreen: Boolean by mutableStateOf(initialIsFullscreen)
 
     override suspend fun setEpisodeCollectionType(type: UnifiedCollectionType) {
-        subjectManager.setEpisodeCollectionType(subjectId, episodeId, type)
+        subjectManager.setEpisodeCollectionType(subjectId, episodeId.value, type)
     }
+
+    override val episodeSelectorState: EpisodeSelectorState = EpisodeSelectorState(
+        itemsFlow = subjectManager.episodeCollectionsFlow(subjectId).map { list -> list.map { it.toPresentation() } },
+        onSelect = {
+            episodeId.value = it.episodeId
+            mediaSelector.unselect() // 否则不会自动选择
+        },
+        currentEpisodeId = episodeId,
+        parentCoroutineContext = backgroundScope.coroutineContext,
+    )
 
     override suspend fun copyDownloadLink(clipboardManager: ClipboardManager, snackbar: SnackbarHostState) {
         requestMediaOrNull()?.let {
@@ -341,7 +372,10 @@ private class EpisodeViewModelImpl(
     }
 
     private val danmakuCollectionFlow: Flow<DanmakuCollection> =
-        playerState.videoData.filterNotNull().mapLatest { data ->
+        playerState.videoData.mapLatest { data ->
+            if (data == null) {
+                return@mapLatest emptyDanmakuCollection()
+            }
             playerStatistics.danmakuLoadingState.value = DanmakuLoadingState.Loading
             val filename = data.filename
 //            ?: selectedMedia.first().originalTitle
@@ -359,7 +393,7 @@ private class EpisodeViewModelImpl(
                         subjectPrimaryName = subject.info.displayName,
                         subjectNames = subject.info.allNames,
                         subjectPublishDate = subject.info.publishDate,
-                        episodeId = episodeId,
+                        episodeId = episodeId.value,
                         episodeSort = EpisodeSort(episode.sort),
                         episodeEp = EpisodeSort(episode.ep),
                         episodeName = episode.title,

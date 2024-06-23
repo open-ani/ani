@@ -85,8 +85,9 @@ internal fun EpisodeVideoImpl(
     onExitFullscreen: () -> Unit,
     danmakuEditor: @Composable (RowScope.() -> Unit),
     configProvider: () -> VideoScaffoldConfig,
-    mediaSelectorSheet: @Composable () -> Unit,
+    sideSheets: @Composable () -> Unit,
     onShowMediaSelector: () -> Unit,
+    onShowSelectEpisode: () -> Unit,
     modifier: Modifier = Modifier,
     maintainAspectRatio: Boolean = !expanded,
 ) {
@@ -220,6 +221,10 @@ internal fun EpisodeVideoImpl(
                         videoControllerState.danmakuEnabled,
                         onClick = { videoControllerState.toggleDanmakuEnabled() },
                     )
+
+                    PlayerControllerDefaults.SelectEpisodeIcon(
+                        onShowSelectEpisode,
+                    )
                 },
                 progressIndicator = {
                     ProgressIndicator(progressSliderState)
@@ -291,7 +296,7 @@ internal fun EpisodeVideoImpl(
                 }
             }
 
-            mediaSelectorSheet()
+            sideSheets()
         },
     )
 }

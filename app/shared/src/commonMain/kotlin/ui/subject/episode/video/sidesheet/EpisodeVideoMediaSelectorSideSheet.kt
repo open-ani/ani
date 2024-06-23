@@ -42,6 +42,10 @@ fun EpisodeVideoMediaSelectorSideSheet(
                 .fillMaxWidth()
                 .navigationBarsPadding(),
             itemProgressBar = {},
+            onClickItem = {
+                onDismissRequest()
+            },
+            singleLineFilter = true,
         )
     }
 }

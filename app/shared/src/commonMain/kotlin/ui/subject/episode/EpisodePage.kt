@@ -37,6 +37,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
@@ -55,6 +56,7 @@ import me.him188.ani.app.ui.subject.episode.details.EpisodeActionRow
 import me.him188.ani.app.ui.subject.episode.details.EpisodeDetails
 import me.him188.ani.app.ui.subject.episode.details.EpisodePlayerTitle
 import me.him188.ani.app.ui.subject.episode.notif.VideoNotifEffect
+import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeSelectorSideSheet
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeVideoMediaSelectorSideSheet
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults.randomDanmakuPlaceholder
@@ -295,6 +297,7 @@ private fun EpisodeVideo(
     val videoControllerState = remember { VideoControllerState(initialControllerVisible) }
     var danmakuEditorText by rememberSaveable { mutableStateOf("") }
     var isMediaSelectorVisible by remember { mutableStateOf(false) }
+    var isEpisodeSelectorVisible by remember { mutableStateOf(false) }
 
 
     // Refresh every time on configuration change (i.e. switching theme, entering fullscreen)
@@ -349,7 +352,7 @@ private fun EpisodeVideo(
                     vm.launchInBackground {
                         try {
                             danmaku.send(
-                                episodeId = vm.episodeId,
+                                episodeId = vm.episodeId.first(),
                                 DanmakuInfo(
                                     exactPosition,
                                     text = text,
@@ -385,7 +388,7 @@ private fun EpisodeVideo(
         modifier = modifier.fillMaxWidth().background(Color.Black)
             .then(if (expanded) Modifier.fillMaxSize() else Modifier.statusBarsPadding()),
         maintainAspectRatio = maintainAspectRatio,
-        mediaSelectorSheet = {
+        sideSheets = {
             if (isMediaSelectorVisible) {
                 EpisodeVideoMediaSelectorSideSheet(
                     vm.mediaSelectorPresentation,
@@ -393,8 +396,15 @@ private fun EpisodeVideo(
                     onDismissRequest = { isMediaSelectorVisible = false },
                 )
             }
+            if (isEpisodeSelectorVisible) {
+                EpisodeSelectorSideSheet(
+                    vm.episodeSelectorState,
+                    onDismissRequest = { isEpisodeSelectorVisible = false },
+                )
+            }
         },
         onShowMediaSelector = { isMediaSelectorVisible = true },
+        onShowSelectEpisode = { isEpisodeSelectorVisible = true },
     )
 }
 

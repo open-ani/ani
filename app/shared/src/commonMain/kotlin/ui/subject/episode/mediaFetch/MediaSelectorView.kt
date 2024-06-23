@@ -63,6 +63,7 @@ fun MediaSelectorView(
     },
     onClickItem: ((Media) -> Unit) = { state.select(it) },
     bottomActions: (@Composable RowScope.() -> Unit)? = null,
+    singleLineFilter: Boolean = false,
 ) = Surface {
     Column(modifier) {
         val lazyListState = rememberLazyListState()
@@ -100,6 +101,7 @@ fun MediaSelectorView(
                                 resolution = state.resolution,
                                 subtitleLanguageId = state.subtitleLanguageId,
                                 alliance = state.alliance,
+                                singleLine = singleLineFilter,
                             )
                         }
                         if (isStuck) {

@@ -51,6 +51,7 @@ private fun PreviewVideoScaffoldImpl(
 
     val controllerState = rememberVideoControllerState(initialVisible = true)
     var isMediaSelectorVisible by remember { mutableStateOf(false) }
+    var isEpisodeSelectorVisible by remember { mutableStateOf(false) }
 
     EpisodeVideoImpl(
         playerState = playerState,
@@ -79,19 +80,22 @@ private fun PreviewVideoScaffoldImpl(
             )
         },
         configProvider = { VideoScaffoldConfig.Default },
-        mediaSelectorSheet = {
-            EpisodeVideoSettingsSideSheet(
-                onDismissRequest = { isMediaSelectorVisible = false },
-            ) {
-                EpisodePlayMediaSelector(
-                    rememberTestMediaSelectorPresentation(),
-                    emptyMediaSourceResultsPresentation(),
-                    onDismissRequest = { },
-                    modifier = Modifier.fillMaxHeight(), // 防止添加筛选后数量变少导致 bottom sheet 高度变化
-                )
+        sideSheets = {
+            if (isMediaSelectorVisible) {
+                EpisodeVideoSettingsSideSheet(
+                    onDismissRequest = { isMediaSelectorVisible = false },
+                ) {
+                    EpisodePlayMediaSelector(
+                        rememberTestMediaSelectorPresentation(),
+                        emptyMediaSourceResultsPresentation(),
+                        onDismissRequest = { },
+                        modifier = Modifier.fillMaxHeight(), // 防止添加筛选后数量变少导致 bottom sheet 高度变化
+                    )
+                }
             }
         },
         onShowMediaSelector = { isMediaSelectorVisible = true },
+        onShowSelectEpisode = { isEpisodeSelectorVisible = true },
     )
 
 //    VideoScaffold(

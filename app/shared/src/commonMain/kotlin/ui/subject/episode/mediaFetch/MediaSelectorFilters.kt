@@ -1,11 +1,14 @@
 package me.him188.ani.app.ui.subject.episode.mediaFetch
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
@@ -43,11 +46,9 @@ fun MediaSelectorFilters(
     subtitleLanguageId: MediaPreferenceItemPresentation<String>,
     alliance: MediaPreferenceItemPresentation<String>,
     modifier: Modifier = Modifier,
+    singleLine: Boolean = false,
 ) {
-    FlowRow(
-        modifier,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
+    val content = @Composable {
         MediaSelectorFilterChip(
             selected = resolution.finalSelected,
             allValues = { resolution.available },
@@ -73,6 +74,19 @@ fun MediaSelectorFilters(
             name = { Text("字幕组") },
             Modifier.widthIn(min = minWidth, max = maxWidth),
         )
+    }
+
+    if (singleLine) {
+        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            content()
+        }
+    } else {
+        FlowRow(
+            modifier,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            content()
+        }
     }
 }
 

@@ -113,6 +113,22 @@ object PlayerControllerDefaults {
         }
     }
 
+    @Composable
+    fun SelectEpisodeIcon(
+        onClick: () -> Unit,
+        modifier: Modifier = Modifier,
+    ) {
+        TextButton(
+            onClick,
+            modifier,
+            colors = ButtonDefaults.textButtonColors(
+                contentColor = LocalContentColor.current,
+            ),
+        ) {
+            Text("选集")
+        }
+    }
+
     // TODO: DANMAKU_PLACEHOLDERS i18n
     // See #120
     @Stable
