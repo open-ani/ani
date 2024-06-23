@@ -182,6 +182,7 @@ private class EpisodeViewModelImpl(
 
     // Media Selection
 
+    // 会在更换 ep 时更换
     private val mediaFetchSession = episodeInfo.filterNotNull().flatMapLatest {
         mediaSourceManager.createFetchFetchSessionFlow(
             subjectInfo.map { subjectInfo ->
@@ -301,46 +302,51 @@ private class EpisodeViewModelImpl(
     }
 
     private val danmakuCollectionFlow: Flow<DanmakuCollection> =
-        playerState.videoData.mapLatest { data ->
-            if (data == null) {
-                return@mapLatest emptyDanmakuCollection()
-            }
-            playerStatistics.danmakuLoadingState.value = DanmakuLoadingState.Loading
-            val filename = data.filename
+        mediaFetchSession.transformLatest {
+            emit(emptyDanmakuCollection()) // 每次更换 mediaFetchSession 时 (ep 变更), 首先清空历史弹幕
+            emitAll(
+                playerState.videoData.mapLatest { data ->
+                    if (data == null) {
+                        return@mapLatest emptyDanmakuCollection()
+                    }
+                    playerStatistics.danmakuLoadingState.value = DanmakuLoadingState.Loading
+                    val filename = data.filename
 //            ?: selectedMedia.first().originalTitle
-            try {
+                    try {
 
-                val subject: SubjectPresentation
-                val episode: EpisodePresentation
-                withContext(Dispatchers.Main.immediate) {
-                    subject = subjectPresentation
-                    episode = episodePresentation
-                }
-                val result = danmakuManager.fetch(
-                    request = DanmakuSearchRequest(
-                        subjectId = subjectId,
-                        subjectPrimaryName = subject.info.displayName,
-                        subjectNames = subject.info.allNames,
-                        subjectPublishDate = subject.info.publishDate,
-                        episodeId = episodeId.value,
-                        episodeSort = EpisodeSort(episode.sort),
-                        episodeEp = EpisodeSort(episode.ep),
-                        episodeName = episode.title,
-                        filename = filename,
-                        fileHash = "aa".repeat(16),
-                        fileSize = data.fileLength,
-                        videoDuration = 0.milliseconds,
+                        val subject: SubjectPresentation
+                        val episode: EpisodePresentation
+                        withContext(Dispatchers.Main.immediate) {
+                            subject = subjectPresentation
+                            episode = episodePresentation
+                        }
+                        val result = danmakuManager.fetch(
+                            request = DanmakuSearchRequest(
+                                subjectId = subjectId,
+                                subjectPrimaryName = subject.info.displayName,
+                                subjectNames = subject.info.allNames,
+                                subjectPublishDate = subject.info.publishDate,
+                                episodeId = episodeId.value,
+                                episodeSort = EpisodeSort(episode.sort),
+                                episodeEp = EpisodeSort(episode.ep),
+                                episodeName = episode.title,
+                                filename = filename,
+                                fileHash = "aa".repeat(16),
+                                fileSize = data.fileLength,
+                                videoDuration = 0.milliseconds,
 //                fileHash = video.fileHash ?: "aa".repeat(16),
 //                fileSize = video.fileLengthBytes,
 //                videoDuration = video.durationMillis.milliseconds,
-                    ),
-                )
-                playerStatistics.danmakuLoadingState.value = DanmakuLoadingState.Success(result.matchInfos)
-                result.danmakuCollection
-            } catch (e: Throwable) {
-                playerStatistics.danmakuLoadingState.value = DanmakuLoadingState.Failed(e)
-                throw e
-            }
+                            ),
+                        )
+                        playerStatistics.danmakuLoadingState.value = DanmakuLoadingState.Success(result.matchInfos)
+                        result.danmakuCollection
+                    } catch (e: Throwable) {
+                        playerStatistics.danmakuLoadingState.value = DanmakuLoadingState.Failed(e)
+                        throw e
+                    }
+                },
+            )
         }.shareInBackground(started = SharingStarted.Lazily)
 
     private val danmakuSessionFlow: Flow<DanmakuSession> = danmakuCollectionFlow.mapLatest { session ->
