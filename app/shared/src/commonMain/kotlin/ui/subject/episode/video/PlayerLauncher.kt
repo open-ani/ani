@@ -4,7 +4,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.transformLatest
 import me.him188.ani.app.data.media.resolver.EpisodeMetadata
@@ -61,13 +60,13 @@ class PlayerLauncher(
      * - The sources are available but user has not yet selected one.
      */
     private val videoSource: SharedFlow<VideoSource<*>?> = mediaSelector.selected
-        .filterNotNull()
-        .distinctUntilChanged()
         .combine(episodeInfo.filterNotNull()) { media, episodeInfo ->
             media to episodeInfo
         }
         .transformLatest { (media, episodeInfo) ->
             emit(null)
+            if (media == null) return@transformLatest
+
             try {
                 videoLoadingState.value = VideoLoadingState.ResolvingSource
                 emit(
