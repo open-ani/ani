@@ -54,7 +54,7 @@ fun emptyDanmakuCollection(): DanmakuCollection {
 
 class TimeBasedDanmakuSession private constructor(
     /**
-     * List of danmaku. Must be sorted by [DanmakuInfo.playTime], and must not change after construction.
+     * 一个[Danmaku] list. 必须根据[DanmakuInfo.playTime]排序且创建后不可更改，是一条动漫完整的弹幕列表.
      */
     private val list: List<Danmaku>,
     private val shiftMillis: Long = 0,
@@ -76,23 +76,30 @@ class TimeBasedDanmakuSession private constructor(
     }
 
 
+    /**
+     * 输入一个[Danmaku] list. 和一个[DanmakuRegexFilterConfig]，返回一个过滤后的[Danmaku] list
+     */
     fun filterList(list: List<Danmaku>, danmakuRegexFilterConfig: DanmakuRegexFilterConfig): List<Danmaku> {
         if (!danmakuRegexFilterConfig.danmakuRegexFilterOn) {
             return list
         }
 
-        // 预编译所有启用的正则表达式
+        // 预编译所有启用的正则表达式 
         val regexFilters = danmakuRegexFilterConfig.danmakuRegexFilterList
             .filter { it.isEnabled }
             .map { Regex(it.re) }
 
         return list.filter { danmaku ->
-            regexFilters.all { regex ->
+            !regexFilters.any { regex ->
                 danmaku.text.matches(regex)
             }
         }
     }
 
+
+    /**
+     * 接收一个视频的播放进度[Duration]. 和一个[DanmakuRegexFilterConfig]，根据视频进度和过滤后的弹幕列表，通过call [DanmakuSessionAlgorithm] 的 [tick] 函数发送弹幕
+     */
     override fun at(progress: Flow<Duration>, danmakuRegexFilterConfig: Flow<DanmakuRegexFilterConfig>): DanmakuSession {
         if (list.isEmpty()) {
             return emptyDanmakuSession() // fast path
@@ -113,16 +120,20 @@ class TimeBasedDanmakuSession private constructor(
                         state.requestRepopulate()
                     }
                 }
-                // 一个单独协程收集当前进度
+
+                // 一个单独协程收集当前进度和过滤配置
                 launch(start = CoroutineStart.UNDISPATCHED) {
+
                     progress.collect {
                         state.curTimeShared = it
+//                        println("Current time shared: $it")
                     }
                     // progress finished, no need to calculate
                     this@channelFlow.channel.close()
                 }
 
                 val sendItem: (DanmakuEvent) -> Boolean = {
+//                    println("Sending item: $it")
                     trySend(it).isSuccess
                 }
 
