@@ -126,9 +126,9 @@ internal fun EpisodeVideoImpl(
                             x = if (expanded) with(LocalDensity.current) {
                                 -statusBarHeight.toDp() / 2
                             } else 0.dp,
-                            y = 0.dp
+                            y = 0.dp,
                         )
-                        .matchParentSize()
+                        .matchParentSize(),
                 )
             }
         },
@@ -136,7 +136,7 @@ internal fun EpisodeVideoImpl(
             AnimatedVisibility(
                 videoControllerState.danmakuEnabled,
                 enter = fadeIn(tween(200)),
-                exit = fadeOut(tween(200))
+                exit = fadeOut(tween(200)),
             ) {
                 DanmakuHost(danmakuHostState, Modifier.matchParentSize(), danmakuConfig)
             }
@@ -190,7 +190,7 @@ internal fun EpisodeVideoImpl(
                 },
                 onPreviewFinished = {
                     playerState.seekTo(it)
-                }
+                },
             )
             PlayerControllerBar(
                 startActions = {
@@ -198,12 +198,12 @@ internal fun EpisodeVideoImpl(
                         .collectAsStateWithLifecycle(false)
                     PlayerControllerDefaults.PlaybackIcon(
                         isPlaying = { isPlaying },
-                        onClick = { playerState.togglePause() }
+                        onClick = { playerState.togglePause() },
                     )
 
                     PlayerControllerDefaults.DanmakuIcon(
                         videoControllerState.danmakuEnabled,
-                        onClick = { videoControllerState.toggleDanmakuEnabled() }
+                        onClick = { videoControllerState.toggleDanmakuEnabled() },
                     )
                 },
                 progressIndicator = {
@@ -249,7 +249,7 @@ internal fun EpisodeVideoImpl(
                     AnimatedVisibility(
                         visible = visible,
                         enter = fadeIn(snap()),
-                        exit = fadeOut()
+                        exit = fadeOut(),
                     ) {
                         PlayerControllerDefaults.FullscreenIcon(
                             expanded,
@@ -262,13 +262,13 @@ internal fun EpisodeVideoImpl(
         rhsSheet = {
             if (showSettings) {
                 EpisodeVideoSettingsSideSheet(
-                    onDismissRequest = { showSettings = false }
+                    onDismissRequest = { showSettings = false },
                 ) {
                     EpisodeVideoSettings(
                         rememberViewModel { EpisodeVideoSettingsViewModel() },
                     )
                 }
             }
-        }
+        },
     )
 }

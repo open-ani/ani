@@ -78,33 +78,37 @@ fun ProvideCompositionLocalsForPreview(
             runCatching { stopKoin() }
             startKoin {
                 modules(getCommonKoinModule({ context }, globalScope))
-                modules(module {
-                    single<PlayerStateFactory> {
-                        playerStateFactory
-                    }
-                    single<SessionManager> { TestSessionManagers.Online }
-                    factory<VideoSourceResolver> {
-                        VideoSourceResolver.from(
-                            get<TorrentManager>().engines
-                                .map { TorrentVideoSourceResolver(it) }
-                                .plus(LocalFileVideoSourceResolver())
-                                .plus(HttpStreamingVideoSourceResolver())
-                        )
-                    }
-                    single<TorrentManager> {
-                        DefaultTorrentManager(globalScope.coroutineContext) { File("preview-cache") }
-                    }
-                    single<NotifManager> { NoopNotifManager }
-                    module()
-                })
+                modules(
+                    module {
+                        single<PlayerStateFactory> {
+                            playerStateFactory
+                        }
+                        single<SessionManager> { TestSessionManagers.Online }
+                        factory<VideoSourceResolver> {
+                            VideoSourceResolver.from(
+                                get<TorrentManager>().engines
+                                    .map { TorrentVideoSourceResolver(it) }
+                                    .plus(LocalFileVideoSourceResolver())
+                                    .plus(HttpStreamingVideoSourceResolver()),
+                            )
+                        }
+                        single<TorrentManager> {
+                            DefaultTorrentManager(globalScope.coroutineContext) { File("preview-cache") }
+                        }
+                        single<NotifManager> { NoopNotifManager }
+                        module()
+                    },
+                )
             }
             val aniNavigator = remember { AniNavigator() }
             val showLandscapeUI = isInLandscapeMode()
 
             BoxWithConstraints {
-                val size by rememberUpdatedState(with(LocalDensity.current) {
-                    DpSize(constraints.maxWidth.toDp(), constraints.maxHeight.toDp())
-                })
+                val size by rememberUpdatedState(
+                    with(LocalDensity.current) {
+                        DpSize(constraints.maxWidth.toDp(), constraints.maxHeight.toDp())
+                    },
+                )
                 CompositionLocalProvider(
                     LocalIsPreviewing provides true,
                     LocalNavigator provides aniNavigator,

@@ -75,11 +75,12 @@ abstract class ThreeStepWebMediaSource : WebMediaSource() {
                         EpisodeSort(1) // 电影总是 01
                     } else {
                         sort
-                    }
+                    },
                 ),
                 location = MediaSourceLocation.Online,
                 kind = MediaSourceKind.WEB,
-            ), MatchKind.FUZZY
+            ),
+            MatchKind.FUZZY,
         )
     }
 

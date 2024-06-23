@@ -15,8 +15,10 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.flow.transform
@@ -103,7 +105,12 @@ abstract class SubjectManager {
     /**
      * 从缓存中获取条目, 若没有则从网络获取.
      */
-    abstract suspend fun getSubjectInfo(subjectId: Int): SubjectInfo
+    abstract suspend fun getSubjectInfo(subjectId: Int): SubjectInfo // TODO: replace with  subjectInfoFlow
+
+
+    fun subjectInfoFlow(subjectId: Flow<Int>): Flow<SubjectInfo> {
+        return subjectId.mapLatest { getSubjectInfo(it) }
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     // Subject progress
@@ -143,12 +150,34 @@ abstract class SubjectManager {
     ///////////////////////////////////////////////////////////////////////////
     // Get info
     ///////////////////////////////////////////////////////////////////////////
+    // TODO: extract EpisodeRepository  (remote/mixed(?))
 
     /**
-     * 从缓存中获取剧集, 若没有则从网络获取.
+     * 从缓存中获取剧集, 若没有则从网络获取. 在获取失败时将会抛出异常.
      */
-    abstract suspend fun getEpisode(episodeId: Int): EpisodeInfo
+    abstract suspend fun getEpisodeInfo(episodeId: Int): EpisodeInfo // TODO: replace with  episodeInfoFlow
+
+    /**
+     * 获取一个 [EpisodeInfo] flow. 将优先从缓存中获取, 若没有则从网络获取.
+     *
+     * 返回的 flow 只会 emit 唯一一个元素, 或者抛出异常.
+     */
+    fun episodeInfoFlow(episodeId: Flow<Int>): Flow<EpisodeInfo> = episodeId.mapLatest { getEpisodeInfo(it) }
 }
+
+/**
+ * 获取一个 [SubjectInfo] flow. 将优先从缓存中获取, 若没有则从网络获取.
+ *
+ * 返回的 flow 只会 emit 唯一一个元素, 或者抛出异常.
+ */
+fun SubjectManager.subjectInfoFlow(subjectId: Int): Flow<SubjectInfo> = subjectInfoFlow(flowOf(subjectId))
+
+/**
+ * 获取一个 [EpisodeInfo] flow. 将优先从缓存中获取, 若没有则从网络获取.
+ *
+ * 返回的 flow 只会 emit 唯一一个元素, 或者抛出异常.
+ */
+fun SubjectManager.episodeInfoFlow(episodeId: Int): Flow<EpisodeInfo> = episodeInfoFlow(flowOf(episodeId))
 
 /**
  * 获取指定条目是否已经完结. 不是用户是否看完, 只要条目本身完结了就算.
@@ -163,7 +192,7 @@ suspend inline fun SubjectManager.setEpisodeWatched(subjectId: Int, episodeId: I
     setEpisodeCollectionType(
         subjectId,
         episodeId,
-        if (watched) UnifiedCollectionType.DONE else UnifiedCollectionType.WISH
+        if (watched) UnifiedCollectionType.DONE else UnifiedCollectionType.WISH,
     )
 
 class SubjectManagerImpl(
@@ -197,8 +226,8 @@ class SubjectManagerImpl(
                     migrations = listOf(),
                     produceFile = {
                         context.dataStores.resolveDataStoreFile("collectionsByType-${type.name}")
-                    }
-                )
+                    },
+                ),
             )
         }
 
@@ -210,22 +239,24 @@ class SubjectManagerImpl(
         .map { it?.episodes ?: emptyList() }
         .distinctUntilChanged()
         .flatMapLatest { episodes ->
-            combine(episodes.map { episode ->
-                cacheManager.cacheStatusForEpisode(
-                    subjectId = subjectId,
-                    episodeId = episode.episode.id,
-                ).onStart {
-                    emit(EpisodeCacheStatus.NotCached)
-                }.map { cacheStatus ->
-                    EpisodeProgressItem(
+            combine(
+                episodes.map { episode ->
+                    cacheManager.cacheStatusForEpisode(
+                        subjectId = subjectId,
                         episodeId = episode.episode.id,
-                        episodeSort = episode.episode.sort.toString(),
-                        watchStatus = episode.type,
-                        isOnAir = episode.episode.isKnownOnAir,
-                        cacheStatus = cacheStatus,
-                    )
-                }
-            }) {
+                    ).onStart {
+                        emit(EpisodeCacheStatus.NotCached)
+                    }.map { cacheStatus ->
+                        EpisodeProgressItem(
+                            episodeId = episode.episode.id,
+                            episodeSort = episode.episode.sort.toString(),
+                            watchStatus = episode.type,
+                            isOnAir = episode.episode.isKnownOnAir,
+                            cacheStatus = cacheStatus,
+                        )
+                    }
+                },
+            ) {
                 it.toList()
             }
         }
@@ -243,7 +274,7 @@ class SubjectManagerImpl(
                         .map {
                             it.toEpisodeCollection()
                         }
-                        .toList()
+                        .toList(),
                 )
             }
         }
@@ -257,7 +288,7 @@ class SubjectManagerImpl(
         }
     }
 
-    override suspend fun getEpisode(episodeId: Int): EpisodeInfo {
+    override suspend fun getEpisodeInfo(episodeId: Int): EpisodeInfo {
         collectionsByType.values.map { it.getCachedData() }.asSequence().flatten()
             .flatMap { it.episodes }
             .map { it.episode }
@@ -277,14 +308,16 @@ class SubjectManagerImpl(
         return subjectCollectionFlow(subjectId, contentPolicy)
             .transform { subject ->
                 if (subject == null) {
-                    emit(me.him188.ani.utils.coroutines.runUntilSuccess {
-                        bangumiEpisodeRepository.getEpisodeCollection(
-                            episodeId
-                        )?.toEpisodeCollection() ?: error("Failed to get episode collection")
-                    })
+                    emit(
+                        me.him188.ani.utils.coroutines.runUntilSuccess {
+                            bangumiEpisodeRepository.getEpisodeCollection(
+                                episodeId,
+                            )?.toEpisodeCollection() ?: error("Failed to get episode collection")
+                        },
+                    )
                 } else {
                     emitAll(
-                        subject.episodes.filter { it.episode.id == episodeId }.asFlow()
+                        subject.episodes.filter { it.episode.id == episodeId }.asFlow(),
                     )
                 }
             }
@@ -316,7 +349,7 @@ class SubjectManagerImpl(
                 copy(
                     episodes = episodes.map { episode ->
                         episode.copy(collectionType = UnifiedCollectionType.DONE)
-                    }
+                    },
                 )
             }
         }
@@ -344,9 +377,11 @@ class SubjectManagerImpl(
 
         cache.mutate {
             setEach({ it.subjectId == subjectId }) {
-                copy(episodes = episodes.replaceAll({ it.episode.id == episodeId }) {
-                    copy(collectionType = collectionType)
-                })
+                copy(
+                    episodes = episodes.replaceAll({ it.episode.id == episodeId }) {
+                        copy(collectionType = collectionType)
+                    },
+                )
             }
         }
     }

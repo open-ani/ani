@@ -1,0 +1,29 @@
+package me.him188.ani.app.ui.foundation
+
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import me.him188.ani.app.data.models.DebugSettings
+import me.him188.ani.app.data.repositories.SettingsRepository
+import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+
+
+private class DebugSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
+    private val settingsRepository by inject<SettingsRepository>()
+    private val debugSettings by settings(
+        settingsRepository.debugSettings,
+        placeholder = DebugSettings(_placeHolder = -1),
+    )
+
+    val isAppInDebugMode: Boolean by derivedStateOf {
+        debugSettings.value.enabled
+    }
+}
+
+@Composable
+fun isInDebugMode(): Boolean {
+    val vm = rememberViewModel<DebugSettingsViewModel> { DebugSettingsViewModel() }
+    return vm.isAppInDebugMode
+}

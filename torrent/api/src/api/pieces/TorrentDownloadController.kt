@@ -105,7 +105,7 @@ class TorrentDownloadController(
     fun getDebugInfo(): DebugInfo {
         return DebugInfo(
             state = state::class.toString(),
-            downloadingPieces = state.downloadingPieces.toList()
+            downloadingPieces = state.downloadingPieces.toList(),
         )
     }
 

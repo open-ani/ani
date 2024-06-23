@@ -117,7 +117,7 @@ fun FilledTonalCombinedClickButton(
         border = border,
         contentPadding = contentPadding,
         interactionSource = interactionSource,
-        content = content
+        content = content,
     )
 
 
@@ -214,12 +214,12 @@ fun CombinedClickButton(
                     Modifier
                         .defaultMinSize(
                             minWidth = ButtonDefaults.MinWidth,
-                            minHeight = ButtonDefaults.MinHeight
+                            minHeight = ButtonDefaults.MinHeight,
                         )
                         .padding(contentPadding),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically,
-                    content = content
+                    content = content,
                 )
             }
         }

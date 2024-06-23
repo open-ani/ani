@@ -117,7 +117,7 @@ class AniDanmakuSenderImpl(
                         clientVersion = currentAniBuildConfig.versionName,
                         clientOS = Platform.currentPlatform.name,
                         clientArch = Platform.currentPlatform.arch.displayName,
-                    )
+                    ),
                 )
             }
         }.body<BangumiLoginResponse>().token

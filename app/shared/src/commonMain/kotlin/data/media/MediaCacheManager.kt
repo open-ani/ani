@@ -21,15 +21,15 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import me.him188.ani.app.data.media.cache.MediaCache
+import me.him188.ani.app.data.media.cache.MediaCacheStorage
+import me.him188.ani.app.data.media.cache.sum
 import me.him188.ani.app.platform.notification.Notif
 import me.him188.ani.app.platform.notification.NotifManager
 import me.him188.ani.app.platform.notification.NotifPriority
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.sum
-import me.him188.ani.datasources.core.cache.MediaCache
-import me.him188.ani.datasources.core.cache.MediaCacheStorage
-import me.him188.ani.datasources.core.cache.sum
 import me.him188.ani.utils.coroutines.sampleWithInitial
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -77,6 +77,18 @@ abstract class MediaCacheManager(
         }
     }
 
+    @Stable
+    fun listCacheForSubject(
+        subjectId: Int,
+    ): Flow<List<MediaCache>> {
+        val subjectIdString = subjectId.toString()
+        return cacheListFlow.map { list ->
+            list.filter { cache ->
+                cache.metadata.subjectId == subjectIdString
+            }
+        }
+    }
+
     /**
      * Returns the cache status for the episode, updated lively and sampled for 1000ms.
      */
@@ -107,7 +119,7 @@ abstract class MediaCacheManager(
                             hasAnyCaching.progress
                                 .sampleWithInitial(1000) // Sample might not emit the last value
                                 .onCompletion { if (it == null) emit(1f) }, // Always emit 1f on finish
-                            hasAnyCaching.totalSize
+                            hasAnyCaching.totalSize,
                         ) { progress, totalSize ->
                             if (progress == 1f) {
                                 EpisodeCacheStatus.Cached(totalSize, hasAnyCaching)
@@ -115,20 +127,22 @@ abstract class MediaCacheManager(
                                 EpisodeCacheStatus.Caching(
                                     progress = progress,
                                     totalSize = totalSize,
-                                    cache = hasAnyCaching
+                                    cache = hasAnyCaching,
                                 )
                             }
-                        }
+                        },
                     )
                 }
 
                 hasAnyCached != null -> {
-                    emitAll(hasAnyCached.totalSize.map {
-                        EpisodeCacheStatus.Cached(
-                            totalSize = it,
-                            cache = hasAnyCached
-                        )
-                    })
+                    emitAll(
+                        hasAnyCached.totalSize.map {
+                            EpisodeCacheStatus.Cached(
+                                totalSize = it,
+                                cache = hasAnyCached,
+                            )
+                        },
+                    )
                 }
 
                 else -> {
@@ -136,6 +150,24 @@ abstract class MediaCacheManager(
                 }
             }
         }.flowOn(Dispatchers.Default)
+    }
+
+    suspend fun deleteCache(cache: MediaCache): Boolean {
+        for (storage in enabledStorages.first()) {
+            if (storage.delete(cache)) {
+                return true
+            }
+        }
+        return false
+    }
+
+    suspend fun deleteFirstCache(filter: (MediaCache) -> Boolean): Boolean {
+        for (storage in enabledStorages.first()) {
+            if (storage.deleteFirst(filter)) {
+                return true
+            }
+        }
+        return false
     }
 
     init {
@@ -282,6 +314,7 @@ sealed class EpisodeCacheStatus {
         /**
          * This will not be 1f (on which it will become [Cached]).
          */
+        // TODO: Do not box progress Float 
         val progress: Float?, // null means still connecting
         val totalSize: FileSize,
         override val cache: MediaCache,

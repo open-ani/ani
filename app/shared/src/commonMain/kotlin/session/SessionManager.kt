@@ -117,7 +117,7 @@ object TestSessionManagers {
             Session(
                 accessToken = "testToken",
                 expiresAt = System.currentTimeMillis() + 1.days.inWholeMilliseconds,
-            )
+            ),
         )
         override val username: MutableStateFlow<String?> = MutableStateFlow("test")
         override val isSessionValid: Flow<Boolean?> = session.map { it != null }
@@ -208,7 +208,7 @@ internal class SessionManagerImpl(
             withContext(Dispatchers.IO) {
                 client.refreshAccessToken(
                     refreshToken,
-                    BangumiAuthorizationConstants.CALLBACK_URL
+                    BangumiAuthorizationConstants.CALLBACK_URL,
                 )
             }
         }.getOrNull()
@@ -221,7 +221,7 @@ internal class SessionManagerImpl(
 //            session.userId,
             newAccessToken.accessToken,
             System.currentTimeMillis() + newAccessToken.expiresIn,
-            newAccessToken.refreshToken
+            newAccessToken.refreshToken,
         )
         logger.trace { "tryRefreshSessionByRefreshToken: success" }
         return true

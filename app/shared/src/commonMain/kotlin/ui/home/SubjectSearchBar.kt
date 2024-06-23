@@ -113,7 +113,7 @@ fun SubjectSearchBar(
     var savedSearchText by remember { mutableStateOf(initialSearchText) }
     var newCustomFilterDialogOpened by remember { mutableStateOf(false) }
     var searchMode by remember { mutableStateOf(SearchMode.KEYWORD) }
-    
+
     val keyboard by rememberUpdatedState(LocalSoftwareKeyboardController.current)
     val imePadding = WindowInsets.ime.asPaddingValues()
     val focusManager = LocalFocusManager.current
@@ -122,11 +122,11 @@ fun SubjectSearchBar(
 
     val horizontalPadding by animateDpAsState(
         targetValue = if (isActive) 0.dp else 16.dp,
-        animationSpec = tween(easing = FastOutSlowInEasing)
+        animationSpec = tween(easing = FastOutSlowInEasing),
     )
     val shapeSize by animateDpAsState(
         targetValue = if (isActive) 0.dp else 28.0.dp,
-        animationSpec = tween(easing = FastOutSlowInEasing)
+        animationSpec = tween(easing = FastOutSlowInEasing),
     )
 
     fun toggleActive(value: Boolean? = null) {
@@ -140,10 +140,10 @@ fun SubjectSearchBar(
                 newCustomFilterDialogOpened = false
                 onAddTag(newTag)
             },
-            onDismiss = { newCustomFilterDialogOpened = false }
+            onDismiss = { newCustomFilterDialogOpened = false },
         )
     }
-    
+
     SearchBar(
         query = searchText,
         active = isActive,
@@ -152,7 +152,7 @@ fun SubjectSearchBar(
                 when (searchMode) {
                     SearchMode.KEYWORD -> "搜索"
                     SearchMode.EXPLORE -> "发现"
-                }
+                },
             )
         },
         leadingIcon = {
@@ -162,7 +162,8 @@ fun SubjectSearchBar(
                         Icons.AutoMirrored.Outlined.ArrowBack
                     } else {
                         Icons.Outlined.Search
-                    }, null
+                    },
+                    null,
                 )
             }
         },
@@ -220,8 +221,8 @@ fun SubjectSearchBar(
                     end = 24.dp,
                     bottom = maxDp(
                         imePadding.calculateBottomPadding(),
-                        contentPadding.calculateBottomPadding()
-                    ) + with(density) { fabHeight.toDp() } + 24.dp
+                        contentPadding.calculateBottomPadding(),
+                    ) + with(density) { fabHeight.toDp() } + 24.dp,
                 )
             }
         }
@@ -252,18 +253,18 @@ fun SubjectSearchBar(
                                 keyboard?.hide()
                                 focusManager.clearFocus(true)
                             }
-                        }
+                        },
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Autorenew,
                             contentDescription = null,
                             modifier = Modifier
                                 .scale(-1f, 1f) // flip horizontally
-                                .rotate(fabRotateAnimated)
+                                .rotate(fabRotateAnimated),
                         )
                         Text(
                             text = if (searchMode == SearchMode.EXPLORE) "关键词搜索" else "标签搜索",
-                            modifier = Modifier.padding(start = 8.dp).animateContentSize()
+                            modifier = Modifier.padding(start = 8.dp).animateContentSize(),
                         )
                     }
                 }
@@ -272,7 +273,7 @@ fun SubjectSearchBar(
                     targetState = searchMode,
                     modifier = Modifier
                         .layoutId("content")
-                        .fillMaxSize()
+                        .fillMaxSize(),
                 ) { mode ->
                     when (mode) {
                         SearchMode.KEYWORD -> SearchHistoryList(
@@ -301,11 +302,11 @@ fun SubjectSearchBar(
                                 onStartEditingTagMode()
                             },
                             onAddTag = { newCustomFilterDialogOpened = true },
-                            onDisableDeleteTagTip = onDisableDeleteTagTip
+                            onDisableDeleteTagTip = onDisableDeleteTagTip,
                         )
                     }
                 }
-            }
+            },
         ) { measurables, constraints ->
             val contentMeasurable = measurables.find { it.layoutId == "content" }
             val contentPlaceable = contentMeasurable?.measure(constraints.copy(minWidth = 0, minHeight = 0))
@@ -325,7 +326,7 @@ fun SubjectSearchBar(
                 contentPlaceable?.placeRelative(0, 0)
                 fabPlaceable?.placeRelative(
                     width - fabWidth - fabPadding,
-                    height - fabHeight - fabPadding - max(bottomNavigatorPadding, bottomImePadding)
+                    height - fabHeight - fabPadding - max(bottomNavigatorPadding, bottomImePadding),
                 )
             }
         }
@@ -342,35 +343,35 @@ private fun SearchHistoryList(
 ) {
     LazyColumn(
         modifier = modifier,
-        contentPadding = contentPadding
+        contentPadding = contentPadding,
     ) {
         item("tag_history") {
             Text(
                 text = "搜索历史",
                 style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.primary,
             )
         }
         item("history") {
             val verticalPadding by animateDpAsState(
                 targetValue = if (list.isEmpty()) 24.dp else 12.dp,
-                animationSpec = tween(easing = FastOutSlowInEasing)
+                animationSpec = tween(easing = FastOutSlowInEasing),
             )
             Column(
                 modifier = Modifier.padding(vertical = verticalPadding).fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 if (list.isEmpty()) {
                     Icon(
                         imageVector = Icons.Outlined.Search,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.secondary
+                        tint = MaterialTheme.colorScheme.secondary,
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
                         text = "无搜索历史",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.secondary
+                        color = MaterialTheme.colorScheme.secondary,
                     )
                 } else {
                     list.forEach { history ->
@@ -383,21 +384,21 @@ private fun SearchHistoryList(
                                 .padding(start = 16.dp, end = 8.dp)
                                 .animateItemPlacement(),
                             horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Text(
                                 text = history.content,
-                                style = MaterialTheme.typography.bodyMedium
+                                style = MaterialTheme.typography.bodyMedium,
                             )
                             IconButton(
                                 modifier = Modifier.size(32.dp),
-                                onClick = { onDeleteItem(history.id) }
+                                onClick = { onDeleteItem(history.id) },
                             ) {
                                 Icon(
                                     modifier = Modifier.size(22.dp),
                                     imageVector = Icons.Outlined.Close,
                                     tint = MaterialTheme.colorScheme.secondary,
-                                    contentDescription = null
+                                    contentDescription = null,
                                 )
                             }
                         }
@@ -423,20 +424,20 @@ private fun SearchFilterPage(
 ) {
     LazyColumn(
         modifier = modifier,
-        contentPadding = contentPadding
+        contentPadding = contentPadding,
     ) {
         item("tag_tag") {
             Text(
                 text = "标签",
                 style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.primary,
             )
         }
         item("tag_row") {
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
             ) {
                 tags.forEach { tag ->
                     TagFilterChip(
@@ -444,13 +445,13 @@ private fun SearchFilterPage(
                         label = { Text(text = tag.content) },
                         showCloseTag = editingTagMode,
                         onClick = { onToggleTag(tag.id, !tag.checked) },
-                        onCloseTag = { onDeleteTag(tag.id) }
+                        onCloseTag = { onDeleteTag(tag.id) },
                     )
                 }
                 AnimatedVisibility(
                     visible = !editingTagMode,
                     enter = expandHorizontally(),
-                    exit = shrinkHorizontally()
+                    exit = shrinkHorizontally(),
                 ) {
                     AddNewTagChip(
                         // TODO: Chip composable 好像有 vertical padding 不知道从哪里来的。
@@ -458,7 +459,7 @@ private fun SearchFilterPage(
                         modifier = Modifier.padding(vertical = 8.dp),
                         containerColor = MaterialTheme.colorScheme.surfaceContainer,
                         onLongClick = onStartEditingTagMode,
-                        onClick = onAddTag
+                        onClick = onAddTag,
                     )
                 }
             }
@@ -467,12 +468,12 @@ private fun SearchFilterPage(
             AnimatedVisibility(
                 visible = showDeleteTagTip,
                 enter = expandVertically(),
-                exit = shrinkVertically()
+                exit = shrinkVertically(),
             ) {
                 OneshotTip(
                     text = "您可以点击加号标签添加新搜索标签，长按加号标签进入标签删除模式。",
                     modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-                    onClose = onDisableDeleteTagTip
+                    onClose = onDisableDeleteTagTip,
                 )
             }
         }
@@ -506,7 +507,7 @@ private fun AddNewTagChip(
         modifier = modifier.clip(FilterChipDefaults.shape).combinedClickable(
             role = Role.Checkbox,
             onClick = onClick,
-            onLongClick = onLongClick
+            onLongClick = onLongClick,
         ),
         color = containerColor,
         shape = FilterChipDefaults.shape,
@@ -519,9 +520,9 @@ private fun AddNewTagChip(
             content = {
                 CompositionLocalProvider(
                     LocalContentColor provides MaterialTheme.colorScheme.onSurfaceVariant,
-                    content = { Icon(Icons.Outlined.Add, contentDescription = null) }
+                    content = { Icon(Icons.Outlined.Add, contentDescription = null) },
                 )
-            }
+            },
         )
     }
 }
@@ -563,7 +564,7 @@ fun NewCustomSearchFilterDialog(
         text = {
             Column(
                 modifier = modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 OutlinedTextField(
                     modifier = Modifier.clearFocusOnKeyboardDismiss(),
@@ -581,18 +582,18 @@ fun NewCustomSearchFilterDialog(
                             } else {
                                 onConfirm(text)
                             }
-                        }
-                    )
+                        },
+                    ),
                 )
                 Text(
-                    text = "新增自定义过滤标签，搜索结果将包含该标签。"
+                    text = "新增自定义过滤标签，搜索结果将包含该标签。",
                 )
             }
         },
         properties = DialogProperties(
             dismissOnBackPress = true,
             dismissOnClickOutside = true,
-            usePlatformDefaultWidth = true
+            usePlatformDefaultWidth = true,
         ),
     )
 }

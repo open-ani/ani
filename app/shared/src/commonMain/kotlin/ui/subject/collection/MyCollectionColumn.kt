@@ -125,8 +125,8 @@ fun SubjectCollectionsColumn(
             top = (contentPadding.calculateTopPadding() + spacedBy).coerceAtLeast(0.dp),
             bottom = (contentPadding.calculateBottomPadding() + spacedBy).coerceAtLeast(0.dp),
             start = contentPadding.calculateStartPadding(LocalLayoutDirection.current),
-            end = contentPadding.calculateEndPadding(LocalLayoutDirection.current)
-        )
+            end = contentPadding.calculateEndPadding(LocalLayoutDirection.current),
+        ),
     ) {
         items(data.orEmpty(), key = { it.subjectId }) { collection ->
             Box(Modifier.ifThen(enableAnimation) { animateItemPlacement() }) {
@@ -219,14 +219,14 @@ private fun SubjectCollectionItemContent(
         Row(
             Modifier.fillMaxWidth()
                 .height(IntrinsicSize.Min),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 item.displayName,
                 style = MaterialTheme.typography.titleMedium,
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 1,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             )
 
             Box {
@@ -241,7 +241,7 @@ private fun SubjectCollectionItemContent(
                     onSetAllEpisodesDone = onSetAllEpisodesDone,
                     onClick = { action ->
                         onSetCollectionType(action.type)
-                    }
+                    },
                 )
             }
         }
@@ -269,7 +269,7 @@ private fun SubjectCollectionItemContent(
                 .padding(vertical = 12.dp)
                 .padding(horizontal = 12.dp)
                 .align(Alignment.End),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             TextButton(onClickSelectEpisode) {
                 Text("选集")
@@ -277,22 +277,24 @@ private fun SubjectCollectionItemContent(
 
             val onClickEpisodeState by rememberUpdatedState(onClickEpisode)
             val onPlay: () -> Unit = { getEpisodeToPlay(item)?.let(onClickEpisodeState) }
-            IndicatedBox(indicator = {
-                getEpisodeToPlay(item)?.episode?.id?.let { episodeId ->
-                    HorizontalIndicator(
-                        6.dp,
-                        CircleShape,
-                        cacheStatusIndicationColor(
-                            cacheStatus(
-                                item.subjectId,
-                                episodeId
+            IndicatedBox(
+                indicator = {
+                    getEpisodeToPlay(item)?.episode?.id?.let { episodeId ->
+                        HorizontalIndicator(
+                            6.dp,
+                            CircleShape,
+                            cacheStatusIndicationColor(
+                                cacheStatus(
+                                    item.subjectId,
+                                    episodeId,
+                                ),
+                                item.continueWatchingStatus is ContinueWatchingStatus.Watched,
                             ),
-                            item.continueWatchingStatus is ContinueWatchingStatus.Watched
-                        ),
-                        Modifier.offset(y = (-2).dp)
-                    )
-                }
-            }) {
+                            Modifier.offset(y = (-2).dp),
+                        )
+                    }
+                },
+            ) {
                 when (val status = item.continueWatchingStatus) {
                     is ContinueWatchingStatus.Continue -> {
                         Button(onClick = onPlay) {

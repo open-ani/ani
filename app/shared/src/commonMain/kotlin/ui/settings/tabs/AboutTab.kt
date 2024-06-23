@@ -58,15 +58,17 @@ class AboutTabViewModel : AbstractViewModel(), KoinComponent {
         sessionManager.processingRequest.flatMapLatest { it?.state ?: flowOf(null) },
         sessionManager.isSessionValid,
     ) { session, processingRequest, isSessionValid ->
-        DebugInfo(properties = buildMap {
-            val buildConfig = currentAniBuildConfig
-            put("isDebug", buildConfig.isDebug.toString())
-            if (buildConfig.isDebug) {
-                put("accessToken", session?.accessToken)
-            }
-            put("processingRequest.state", processingRequest.toString())
-            put("sessionManager.isSessionValid", isSessionValid.toString())
-        })
+        DebugInfo(
+            properties = buildMap {
+                val buildConfig = currentAniBuildConfig
+                put("isDebug", buildConfig.isDebug.toString())
+                if (buildConfig.isDebug) {
+                    put("accessToken", session?.accessToken)
+                }
+                put("processingRequest.state", processingRequest.toString())
+                put("sessionManager.isSessionValid", isSessionValid.toString())
+            },
+        )
     }
 }
 
@@ -104,7 +106,7 @@ fun AboutTab(
             Column(Modifier.padding(horizontal = 16.dp)) {
                 val style by rememberUpdatedState(
                     MaterialTheme.typography.bodyMedium.toSpanStyle()
-                        .copy(color = MaterialTheme.colorScheme.onSurface)
+                        .copy(color = MaterialTheme.colorScheme.onSurface),
                 )
                 val primaryColor by rememberUpdatedState(MaterialTheme.colorScheme.primary)
                 val text by remember {
@@ -115,8 +117,8 @@ fun AboutTab(
                             pushStyle(
                                 SpanStyle(
                                     color = primaryColor,
-                                    textDecoration = TextDecoration.Underline
-                                )
+                                    textDecoration = TextDecoration.Underline,
+                                ),
                             )
                             append("GitHub")
                             pop()
@@ -140,7 +142,7 @@ fun AboutTab(
         }
 
         Group(
-            title = { Text("鸣谢") }
+            title = { Text("鸣谢") },
         ) {
             Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("Ani 使用了许多爱好者用爱发电维护的免费服务.", style = MaterialTheme.typography.bodyMedium)
@@ -192,11 +194,11 @@ fun AboutTab(
                     modifier = Modifier.clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
-                        onClick = onTriggerDebugMode
-                    )
+                        onClick = onTriggerDebugMode,
+                    ),
                 )
             },
-            description = { Text("在反馈问题时附上日志可能有用") }
+            description = { Text("在反馈问题时附上日志可能有用") },
         ) {
             Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 if (currentAniBuildConfig.isDebug) {
@@ -212,20 +214,24 @@ fun AboutTab(
                         )
                     }
 
-                    FilledTonalButton({
-                        GlobalScope.launch {
-                            GlobalContext.get().get<MediaAutoCacheService>().checkCache()
-                        }
-                    }) {
+                    FilledTonalButton(
+                        {
+                            GlobalScope.launch {
+                                GlobalContext.get().get<MediaAutoCacheService>().checkCache()
+                            }
+                        },
+                    ) {
                         Text("执行自动缓存")
                     }
                 }
 
-                FilledTonalButton({
-                    GlobalScope.launch {
-                        GlobalContext.get().get<SessionManager>().logout()
-                    }
-                }) {
+                FilledTonalButton(
+                    {
+                        GlobalScope.launch {
+                            GlobalContext.get().get<SessionManager>().logout()
+                        }
+                    },
+                ) {
                     Text("退出登录")
                 }
 

@@ -289,7 +289,7 @@ class LazyDataCacheImpl<T>(
                     return@updateData LazyDataCacheSave(
                         block(save.list).fastDistinctBy { getKey(it) },
                         source?.currentPage?.value,
-                        source?.totalSize?.value
+                        source?.totalSize?.value,
                     )
                 }
 
@@ -311,7 +311,7 @@ class LazyDataCacheImpl<T>(
                     return@updateData LazyDataCacheSave(
                         newIndices.map { new[it] },
                         source?.currentPage?.value,
-                        source?.totalSize?.value
+                        source?.totalSize?.value,
                     )
 //                    
 //                    // associateByTo also distinct

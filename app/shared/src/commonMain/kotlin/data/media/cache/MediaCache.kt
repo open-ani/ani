@@ -1,94 +1,16 @@
-package me.him188.ani.datasources.core.cache
+package me.him188.ani.app.data.media.cache
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import me.him188.ani.datasources.api.CachedMedia
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaCacheMetadata
-import me.him188.ani.datasources.api.source.MatchKind
-import me.him188.ani.datasources.api.source.MediaFetchRequest
-import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
-import me.him188.ani.datasources.core.fetch.MediaFetcher
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.absoluteValue
-
-/**
- * 表示一个媒体缓存的存储空间, 例如一个本地目录.
- *
- * ## Identity
- *
- * [MediaCacheStorage] and [MediaSource] use the same ID system and,
- * there can be a [MediaSource] with the same ID as this [MediaCacheStorage].
- *
- * By having a [MediaSource] with the same ID,
- * a [MediaCacheStorage] can participate in the [MediaFetcher.fetch] process (and usually it should).
- */
-interface MediaCacheStorage : AutoCloseable {
-    /**
-     * ID of this media source.
-     */
-    val mediaSourceId: String
-
-    val isEnabled: Flow<Boolean>
-
-    /**
-     * 此空间的 [MediaSource]. 调用 [MediaSource.fetch] 则可从此空间中查询缓存, 作为 [Media].
-     */
-    val cacheMediaSource: MediaSource
-
-    /**
-     * Number of caches in this storage.
-     */
-    val count: Flow<Int>
-
-    /**
-     * Total size of the cache.
-     */
-    val totalSize: Flow<FileSize>
-
-    /**
-     * 此存储的总体统计
-     */
-    val stats: MediaStats
-
-    /**
-     * A flow that subscribes on all the caches in the storage.
-     *
-     * Note that to retrieve [Media] (more specifically, [CachedMedia]) from the cache storage, you might want to use [cacheMediaSource].
-     */
-    val listFlow: Flow<List<MediaCache>>
-
-    /**
-     * Finds the existing cache for the media or adds the media to the cache (queue).
-     *
-     * When this function returns, A new [MediaSource] can then be listed by [listFlow].
-     *
-     * Caching is made asynchronously. This function might only adds a job to the queue and does not guarantee when the cache will be done.
-     *
-     * This function returns only if the cache configuration is persisted.
-     *
-     * @param metadata The request to fetch the media.
-     */
-    suspend fun cache(media: Media, metadata: MediaCacheMetadata, resume: Boolean = true): MediaCache
-
-    /**
-     * Delete the cache if it exists.
-     * @return `true` if a cache was deleted, `false` if there wasn't such a cache.
-     */
-    suspend fun delete(cache: MediaCache): Boolean
-}
-
-val MediaCacheStorage.anyCaching: Flow<Boolean>
-    get() = listFlow.flatMapLatest { caches ->
-        combine(caches.map { it.progress }) { array -> array.any { it < 1f } }
-    }
 
 /**
  * 表示一个进行中的资源缓存.
@@ -202,40 +124,6 @@ interface MediaCache {
      */
     suspend fun deleteFiles()
 }
-
-/**
- * 尝试匹配
- */
-infix fun MediaFetchRequest.matches(cache: MediaCacheMetadata): MatchKind? {
-    if (episodeId != null && cache.episodeId != null) {
-        // Both query and cache have episodeId, perform exact match.
-        if (cache.episodeId == episodeId) {
-            return MatchKind.EXACT
-        }
-
-        // Don't go for fuzzy match otherwise we'll always get false positives.
-        return null
-    }
-
-    // Exact match is not possible, do a fuzzy match.
-
-    // Success if the episode name exactly matches
-    if (episodeName.isNotEmpty() && cache.episodeName == episodeName) return MatchKind.FUZZY
-
-    if (subjectNames.any { cache.subjectNames.contains(it) }) {
-        // Any subject name matches
-
-        return if (episodeSort == cache.episodeSort || episodeEp == cache.episodeSort) {
-            // Episode sort matches
-            MatchKind.FUZZY
-        } else {
-            null
-        }
-    }
-
-    return null
-}
-
 
 open class TestMediaCache(
     val media: CachedMedia,

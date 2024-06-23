@@ -46,7 +46,7 @@ class Libtorrent4jEngine(
 ) : AbstractTorrentEngine<Libtorrent4jTorrentDownloader, Libtorrent4jConfig>(
     scope,
     TorrentEngineType.Libtorrent4j,
-    config
+    config,
 ) {
     override val location: MediaSourceLocation get() = MediaSourceLocation.Local
     override val isSupported: Flow<Boolean>

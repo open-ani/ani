@@ -43,12 +43,12 @@ fun TagFilterChip(
             AnimatedVisibility(
                 visible = !withoutLeadingIcon && selected,
                 enter = expandHorizontally(),
-                exit = shrinkHorizontally()
+                exit = shrinkHorizontally(),
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Done,
                     contentDescription = null,
-                    modifier = Modifier.size(FilterChipDefaults.IconSize)
+                    modifier = Modifier.size(FilterChipDefaults.IconSize),
                 )
             }
         },
@@ -56,16 +56,16 @@ fun TagFilterChip(
             AnimatedVisibility(
                 visible = showCloseTag,
                 enter = expandHorizontally(expandFrom = Alignment.Start),
-                exit = shrinkHorizontally(shrinkTowards = Alignment.Start)
+                exit = shrinkHorizontally(shrinkTowards = Alignment.Start),
             ) {
                 IconButton(
                     onClick = onCloseTag,
-                    modifier = Modifier.size(FilterChipDefaults.IconSize)
+                    modifier = Modifier.size(FilterChipDefaults.IconSize),
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Close,
                         contentDescription = null,
-                        modifier = Modifier.size(FilterChipDefaults.IconSize)
+                        modifier = Modifier.size(FilterChipDefaults.IconSize),
                     )
                 }
             }
@@ -76,8 +76,8 @@ fun TagFilterChip(
             containerColor = containerColor,
             labelColor = MaterialTheme.colorScheme.onSurface,
             selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-            selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer
+            selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer,
         ),
-        border = null
+        border = null,
     )
 }

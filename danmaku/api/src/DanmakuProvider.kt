@@ -120,7 +120,7 @@ object DanmakuMatchers {
         list.minByOrNull {
             levenshteinDistance(it.subjectName, targetSubjectName) + levenshteinDistance(
                 it.episodeName,
-                targetEpisodeName
+                targetEpisodeName,
             )
         }
     }

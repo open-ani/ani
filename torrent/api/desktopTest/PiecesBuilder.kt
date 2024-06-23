@@ -11,7 +11,7 @@ class PiecesBuilder(
         val piece = Piece(
             pieceIndex = pieces.size,
             size = size,
-            offset = pieces.sumOf { it.size } + initialOffset
+            offset = pieces.sumOf { it.size } + initialOffset,
         )
         pieces.add(piece)
     }

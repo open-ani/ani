@@ -40,7 +40,7 @@ fun RichDialogLayout(
                 subtitle?.let {
                     Row(
                         Modifier.padding(top = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         ProvideTextStyle(MaterialTheme.typography.bodyLarge) {
                             subtitle()
@@ -51,7 +51,7 @@ fun RichDialogLayout(
                 description?.let {
                     Row(
                         Modifier.padding(top = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
                             description()
@@ -66,7 +66,7 @@ fun RichDialogLayout(
                 Row(
                     Modifier.padding(top = 16.dp).align(Alignment.End),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     buttons()
                 }

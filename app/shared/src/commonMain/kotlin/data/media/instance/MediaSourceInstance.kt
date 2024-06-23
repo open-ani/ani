@@ -1,4 +1,4 @@
-package me.him188.ani.datasources.core.instance
+package me.him188.ani.app.data.media.instance
 
 import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable

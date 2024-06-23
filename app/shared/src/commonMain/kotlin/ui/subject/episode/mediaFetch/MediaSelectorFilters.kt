@@ -39,47 +39,37 @@ private inline val maxWidth get() = 120.dp
  */
 @Composable
 fun MediaSelectorFilters(
-    state: MediaSelectorPresentation,
+    resolution: MediaPreferenceItemPresentation<String>,
+    subtitleLanguageId: MediaPreferenceItemPresentation<String>,
+    alliance: MediaPreferenceItemPresentation<String>,
     modifier: Modifier = Modifier,
 ) {
     FlowRow(
         modifier,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-//        MediaSelectorFilterChip(
-//            selected = state.selectedMediaSource,
-//            allValues = { state.mediaSources },
-//            onSelect = { state.preferMediaSource(it) },
-//            onDeselect = { state.preferMediaSource(it, removeOnExist = true) },
-//            name = { Text("数据源") },
-//            Modifier.widthIn(min = minWidth, max = maxWidth),
-//            label = { MediaSelectorFilterChipText(renderMediaSource(it)) },
-//            leadingIcon = { id ->
-//                MediaSourceIcon(id)
-//            }
-//        )
         MediaSelectorFilterChip(
-            selected = state.resolution.finalSelected,
-            allValues = { state.resolution.available },
-            onSelect = { state.resolution.prefer(it) },
-            onDeselect = { state.resolution.removePreference() },
+            selected = resolution.finalSelected,
+            allValues = { resolution.available },
+            onSelect = { resolution.prefer(it) },
+            onDeselect = { resolution.removePreference() },
             name = { Text("分辨率") },
             Modifier.widthIn(min = minWidth, max = maxWidth),
         )
         MediaSelectorFilterChip(
-            selected = state.subtitleLanguageId.finalSelected,
-            allValues = { state.subtitleLanguageId.available },
-            onSelect = { state.subtitleLanguageId.prefer(it) },
-            onDeselect = { state.subtitleLanguageId.removePreference() },
+            selected = subtitleLanguageId.finalSelected,
+            allValues = { subtitleLanguageId.available },
+            onSelect = { subtitleLanguageId.prefer(it) },
+            onDeselect = { subtitleLanguageId.removePreference() },
             name = { Text("字幕") },
             Modifier.widthIn(min = minWidth, max = maxWidth),
-            label = { MediaSelectorFilterChipText(renderSubtitleLanguage(it)) }
+            label = { MediaSelectorFilterChipText(renderSubtitleLanguage(it)) },
         )
         MediaSelectorFilterChip(
-            selected = state.alliance.finalSelected,
-            allValues = { state.alliance.available },
-            onSelect = { state.alliance.prefer(it) },
-            onDeselect = { state.alliance.removePreference() },
+            selected = alliance.finalSelected,
+            allValues = { alliance.available },
+            onSelect = { alliance.prefer(it) },
+            onDeselect = { alliance.removePreference() },
             name = { Text("字幕组") },
             Modifier.widthIn(min = minWidth, max = maxWidth),
         )
@@ -139,7 +129,7 @@ private fun <T : Any> MediaSelectorFilterChip(
                 } else {
                     Box(contentAlignment = Alignment.Center) {
                         Box(
-                            Modifier.alpha(if (selectedState == null) 1f else 0f) // 总是占位
+                            Modifier.alpha(if (selectedState == null) 1f else 0f), // 总是占位
                         ) {
                             name()
                         }
@@ -157,7 +147,7 @@ private fun <T : Any> MediaSelectorFilterChip(
                     } else {
                         Icon(
                             Icons.Default.Close, "取消筛选",
-                            Modifier.clickable { selectedState?.let { onDeselect(it) } }
+                            Modifier.clickable { selectedState?.let { onDeselect(it) } },
                         )
                     }
                 }
@@ -177,7 +167,7 @@ private fun <T : Any> MediaSelectorFilterChip(
                     onClick = {
                         onSelect(item)
                         showDropdown = false
-                    }
+                    },
                 )
             }
         }

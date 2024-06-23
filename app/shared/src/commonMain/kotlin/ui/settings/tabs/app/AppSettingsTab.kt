@@ -73,15 +73,15 @@ class AppSettingsViewModel : AbstractSettingsViewModel() {
 
     val uiSettings by settings(
         settingsRepository.uiSettings,
-        UISettings(_placeholder = -1)
+        UISettings(_placeholder = -1),
     )
     val updateSettings by settings(
         settingsRepository.updateSettings,
-        UpdateSettings(_placeholder = -1)
+        UpdateSettings(_placeholder = -1),
     )
     val videoScaffoldConfig by settings(
         settingsRepository.videoScaffoldConfig,
-        VideoScaffoldConfig(_placeholder = -1)
+        VideoScaffoldConfig(_placeholder = -1),
     )
 
     /**
@@ -94,7 +94,7 @@ class AppSettingsViewModel : AbstractSettingsViewModel() {
                 UpdateChecker().let { checker ->
                     val v = checker.checkLatestVersion(
                         updateSettings.value.releaseClass,
-                        currentAniBuildConfig.versionName
+                        currentAniBuildConfig.versionName,
                     )
                     if (v == null) {
                         CheckVersionResult.UpToDate
@@ -103,9 +103,9 @@ class AppSettingsViewModel : AbstractSettingsViewModel() {
                     }
                 }
             },
-            onError = { CheckVersionResult.Failed(it) }
+            onError = { CheckVersionResult.Failed(it) },
         ),
-        backgroundScope
+        backgroundScope,
     )
 }
 
@@ -128,7 +128,7 @@ fun AppSettingsTab(
                 },
                 title = {
                     Text(version)
-                }
+                },
             )
             HorizontalDividerItem()
             val context by rememberUpdatedState(LocalContext.current)
@@ -136,7 +136,7 @@ fun AppSettingsTab(
                 onClick = {
                     GlobalContext.get().get<BrowserNavigator>().openBrowser(
                         context,
-                        "https://github.com/open-ani/ani/releases/tag/v${currentAniBuildConfig.versionName}"
+                        "https://github.com/open-ani/ani/releases/tag/v${currentAniBuildConfig.versionName}",
                     )
 //                    vm.updateCheckerTester.tester.result?.let {
 //                        if (it is CheckVersionResult.HasNewVersion) {
@@ -159,7 +159,7 @@ fun AppSettingsTab(
                 },
                 title = { Text("自动检查更新") },
                 description = { Text("只会显示一个更新图标，不会自动下载") },
-                modifier = Modifier.placeholder(vm.updateSettings.loading)
+                modifier = Modifier.placeholder(vm.updateSettings.loading),
             )
             HorizontalDividerItem()
             DropdownItem(
@@ -260,12 +260,14 @@ fun AppSettingsTab(
             )
             AnimatedVisibility(
                 vm.updateCheckerTester.tester.result is CheckVersionResult.HasNewVersion // 在设置里检查的
-                        || autoUpdate.hasUpdate // 在主页自动检查的
+                        || autoUpdate.hasUpdate, // 在主页自动检查的
             ) {
                 HorizontalDividerItem()
-                Item(action = {
-                    TextButtonUpdateLogo(autoUpdate)
-                })
+                Item(
+                    action = {
+                        TextButtonUpdateLogo(autoUpdate)
+                    },
+                )
             }
         }
         val uiSettings by vm.uiSettings
@@ -286,8 +288,8 @@ fun AppSettingsTab(
                     onSelect = {
                         vm.uiSettings.update(
                             uiSettings.copy(
-                                theme = uiSettings.theme.copy(kind = it)
-                            )
+                                theme = uiSettings.theme.copy(kind = it),
+                            ),
                         )
                     },
                     modifier = Modifier.placeholder(vm.uiSettings.loading),
@@ -315,9 +317,9 @@ fun AppSettingsTab(
                     vm.uiSettings.update(
                         uiSettings.copy(
                             searchSettings = mySearchSettings.copy(
-                                enableNewSearchSubjectApi = !mySearchSettings.enableNewSearchSubjectApi
-                            )
-                        )
+                                enableNewSearchSubjectApi = !mySearchSettings.enableNewSearchSubjectApi,
+                            ),
+                        ),
                     )
                 },
                 title = { Text("使用新版条目查询接口") },
@@ -333,9 +335,9 @@ fun AppSettingsTab(
                     vm.uiSettings.update(
                         uiSettings.copy(
                             myCollections = myCollections.copy(
-                                enableListAnimation = !myCollections.enableListAnimation
-                            )
-                        )
+                                enableListAnimation = !myCollections.enableListAnimation,
+                            ),
+                        ),
                     )
                 },
                 title = { Text("列表滚动动画") },
@@ -351,9 +353,9 @@ fun AppSettingsTab(
                     vm.uiSettings.update(
                         uiSettings.copy(
                             episodeProgress = episode.copy(
-                                theme = if (it) EpisodeProgressTheme.LIGHT_UP else EpisodeProgressTheme.ACTION
-                            )
-                        )
+                                theme = if (it) EpisodeProgressTheme.LIGHT_UP else EpisodeProgressTheme.ACTION,
+                            ),
+                        ),
                     )
                 },
                 title = { Text("点亮模式") },
@@ -381,7 +383,7 @@ private fun SettingsScope.PlayerGroup(
                         FullscreenSwitchMode.ALWAYS_SHOW_FLOATING -> "总是显示"
                         FullscreenSwitchMode.AUTO_HIDE_FLOATING -> "显示五秒后隐藏"
                         FullscreenSwitchMode.ONLY_IN_CONTROLLER -> "不显示"
-                    }
+                    },
                 )
             },
             onSelect = {
@@ -389,7 +391,7 @@ private fun SettingsScope.PlayerGroup(
             },
             Modifier.placeholder(vm.uiSettings.loading),
             title = { Text("竖屏模式下显示全屏按钮") },
-            description = { Text("总是显示播放器右下角的切换全屏按钮，方便切换") }
+            description = { Text("总是显示播放器右下角的切换全屏按钮，方便切换") },
         )
         HorizontalDividerItem()
         SwitchItem(

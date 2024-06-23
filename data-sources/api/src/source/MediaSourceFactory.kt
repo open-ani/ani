@@ -9,7 +9,7 @@ import me.him188.ani.utils.ktor.userAgent
 
 /**
  * 负责定义 [MediaSource] 的可配置参数列表, 并使用这些参数创建一个示例.
- * 
+ *
  * @see MediaSource
  */
 interface MediaSourceFactory { // SPI service load

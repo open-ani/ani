@@ -1,11 +1,10 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE configuration>
+<?xml version="1.0" encoding="UTF-8" ?><!DOCTYPE configuration>
 
 <configuration>
-    <import class="ch.qos.logback.classic.encoder.PatternLayoutEncoder"/>
-    <import class="ch.qos.logback.core.ConsoleAppender"/>
-    <import class="ch.qos.logback.core.rolling.RollingFileAppender"/>
-    <import class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy"/>
+    <import class="ch.qos.logback.classic.encoder.PatternLayoutEncoder" />
+    <import class="ch.qos.logback.core.ConsoleAppender" />
+    <import class="ch.qos.logback.core.rolling.RollingFileAppender" />
+    <import class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy" />
 
     <appender name="STDOUT" class="ConsoleAppender">
         <encoder class="PatternLayoutEncoder">
@@ -14,6 +13,6 @@
     </appender>
 
     <root level="DEBUG">
-        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="STDOUT" />
     </root>
 </configuration>

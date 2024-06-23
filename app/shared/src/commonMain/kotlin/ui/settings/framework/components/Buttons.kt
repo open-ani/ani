@@ -27,7 +27,7 @@ fun SettingsScope.TextButtonItem(
             TextButton(onClick, enabled = enabled) {
                 title()
             }
-        }
+        },
     ) {
     }
 }

@@ -16,7 +16,7 @@ class MongoUserRepositoryImpl : UserRepository, KoinComponent {
 
     override suspend fun getUserIdOrNull(bangumiId: Int): String? {
         return userTable.find(
-            Field("bangumiUserId") eq bangumiId
+            Field("bangumiUserId") eq bangumiId,
         ).firstOrNull()?.id?.toString()
     }
 
@@ -48,7 +48,7 @@ class MongoUserRepositoryImpl : UserRepository, KoinComponent {
 
     override suspend fun getBangumiId(userId: String): Int? {
         return userTable.find(
-            Field.Id eq UUID.fromString(userId)
+            Field.Id eq UUID.fromString(userId),
         ).firstOrNull()?.bangumiUserId
     }
 
@@ -70,7 +70,7 @@ class MongoUserRepositoryImpl : UserRepository, KoinComponent {
 
     override suspend fun getUserById(userId: String): AniUser? {
         val user = userTable.find(
-            Field.Id eq UUID.fromString(userId)
+            Field.Id eq UUID.fromString(userId),
         ).firstOrNull() ?: return null
 
         var updates: Bson? = null
@@ -95,28 +95,28 @@ class MongoUserRepositoryImpl : UserRepository, KoinComponent {
             registerTime = registerTime,
             lastLoginTime = lastLoginTime,
             clientVersion = user.clientVersion,
-            clientPlatforms = user.clientPlatforms?.toSet() ?: emptySet()
+            clientPlatforms = user.clientPlatforms?.toSet() ?: emptySet(),
         )
     }
 
     override suspend fun setLastLoginTime(userId: String, time: Long): Boolean {
         return userTable.updateOne(
             Field.Id eq UUID.fromString(userId),
-            Field.of(UserModel::lastLoginTime) setTo time
+            Field.of(UserModel::lastLoginTime) setTo time,
         ).wasAcknowledged()
     }
 
     override suspend fun setClientVersion(userId: String, clientVersion: String) {
         userTable.updateOne(
             Field.Id eq UUID.fromString(userId),
-            Field.of(UserModel::clientVersion) setTo clientVersion
+            Field.of(UserModel::clientVersion) setTo clientVersion,
         )
     }
 
     override suspend fun addClientPlatform(userId: String, clientPlatform: String) {
         userTable.updateOne(
             Field.Id eq UUID.fromString(userId),
-            Field.of(UserModel::clientPlatforms) addToSet clientPlatform
+            Field.of(UserModel::clientPlatforms) addToSet clientPlatform,
         )
     }
 }

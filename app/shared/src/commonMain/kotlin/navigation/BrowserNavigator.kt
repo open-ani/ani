@@ -9,7 +9,7 @@ interface BrowserNavigator {
 
     fun openJoinTelegram(context: Context) = openBrowser(
         context,
-        "https://t.me/openani"
+        "https://t.me/openani",
     )
 
     fun openMagnetLink(context: Context, url: String)

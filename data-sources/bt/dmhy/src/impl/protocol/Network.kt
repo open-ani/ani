@@ -78,7 +78,7 @@ class Network(
             list = ListParser.parseList(context, document).orEmpty(),
             currentPage = 0,
             hasPreviousPage = false,
-            hasNextPage = false
+            hasNextPage = false,
         )
     }
 }

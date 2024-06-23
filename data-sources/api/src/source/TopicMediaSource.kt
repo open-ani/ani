@@ -30,7 +30,7 @@ abstract class TopicMediaSource : HttpMediaSource() {
                         category = TopicCategory.ANIME,
                         episodeSort = query.episodeSort,
                         episodeEp = query.episodeEp,
-                    )
+                    ),
                 ).map {
                     MediaMatch(it.toOnlineMedia(mediaSourceId), MatchKind.FUZZY)
                 }

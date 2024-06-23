@@ -222,7 +222,7 @@ class QBittorrentTorrentDownloader(
             torrentInfo = info,
             client = client,
             saveDirectory = dir,
-            parentCoroutineContext = parentCoroutineContext
+            parentCoroutineContext = parentCoroutineContext,
         )
     }
 
@@ -333,7 +333,7 @@ class QBittorrentTorrentDownloadSession(
 
         val allPieces = Piece.buildPieces(
             totalSize = torrentInfo.totalSize,
-            pieceSize = torrentProperties.pieceSize
+            pieceSize = torrentProperties.pieceSize,
         )
 
         val numFiles = files.size
@@ -351,7 +351,7 @@ class QBittorrentTorrentDownloadSession(
                 torrentName = torrentInfo.name,
                 isDebug = false,
                 parentCoroutineContext = sessionScope.coroutineContext,
-                pieces = TorrentFilePieceMatcher.matchPiecesForFile(allPieces, currentOffset, file.size)
+                pieces = TorrentFilePieceMatcher.matchPiecesForFile(allPieces, currentOffset, file.size),
 //                pieces = Piece.buildPieces(
 //                    file.pieceRange.last - file.pieceRange.first + 1,
 //                    initial = currentOffset,
@@ -383,7 +383,7 @@ class QBittorrentTorrentDownloadSession(
         index, length,
         saveDirectory,
         relativePath,
-        torrentName, isDebug, parentCoroutineContext
+        torrentName, isDebug, parentCoroutineContext,
     ) {
         private val pieceIndexToPiece = pieces.associateBy { it.pieceIndex }
 
@@ -484,7 +484,7 @@ class QBittorrentTorrentDownloadSession(
                     logger.info { "[TorrentDownloadControl] $torrentName: Set piece ${piece.pieceIndex} deadline to 0 because it was requested " }
                     // TODO: QB 优先级
                 },
-                size = length
+                size = length,
             )
         }
     }

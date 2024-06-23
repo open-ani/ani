@@ -233,7 +233,7 @@ fun GestureIndicator(
         visible = state.visible,
         enter = fadeIn(spring(stiffness = Spring.StiffnessMedium)),
         exit = fadeOut(tween(durationMillis = 500)),
-        label = "SeekPositionIndicator"
+        label = "SeekPositionIndicator",
     ) {
         Surface(
             Modifier.alpha(0.8f),
@@ -249,7 +249,7 @@ fun GestureIndicator(
                         .padding(horizontal = 12.dp, vertical = 8.dp)
                         .height(iconSize),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     // Used by volume and brightness
                     val progressIndicator: @Composable () -> Unit = remember(state, colors) {
@@ -269,7 +269,7 @@ fun GestureIndicator(
                         RESUMED_ONCE -> {
                             Icon(
                                 Icons.Rounded.PlayArrow, null,
-                                Modifier.size(iconSize).background(Color.Transparent)
+                                Modifier.size(iconSize).background(Color.Transparent),
                             )
                         }
 
@@ -295,7 +295,7 @@ fun GestureIndicator(
                                     Icons.Rounded.FastRewind
                                 },
                                 null,
-                                Modifier.size(iconSize)
+                                Modifier.size(iconSize),
                             )
                             val text = renderTime(duration.absoluteValue)
                             Text(
@@ -307,7 +307,7 @@ fun GestureIndicator(
                         VOLUME -> {
                             Icon(
                                 Icons.AutoMirrored.Rounded.VolumeUp, null,
-                                Modifier.size(iconSize)
+                                Modifier.size(iconSize),
                             )
                             progressIndicator()
                         }
@@ -318,8 +318,9 @@ fun GestureIndicator(
                                     in 0.67..1.0 -> Icons.Rounded.BrightnessHigh
                                     in 0.33..0.67 -> Icons.Rounded.BrightnessMedium
                                     else -> Icons.Rounded.BrightnessLow
-                                }, null,
-                                Modifier.size(iconSize)
+                                },
+                                null,
+                                Modifier.size(iconSize),
                             )
                             progressIndicator()
                         }
@@ -447,7 +448,7 @@ fun VideoGestureHost(
                             },
                             onForward = {
                                 seekerState.onSeek(5)
-                            }
+                            },
                         )
                     }
                     .ifThen(family.keyboardUpDownForVolume) {
@@ -487,7 +488,7 @@ fun VideoGestureHost(
                             onExitFullscreen()
                         }
                     }
-                    .fillMaxSize()
+                    .fillMaxSize(),
             ) {
                 Box(
                     Modifier
@@ -525,54 +526,56 @@ fun VideoGestureHost(
                                     }
                                 }
                             },
-                        )
+                        ),
 
-                )
+                    )
 
                 Row(Modifier.focusRequester(focusRequester).matchParentSize()) {
-                    Box(Modifier
-                        .ifThen(family.swipeLhsForBrightness) {
-                            brightnessLevelController?.let { controller ->
-                                swipeLevelControl(
-                                    controller,
-                                    ((maxHeight - 100.dp) / 40).coerceAtLeast(2.dp),
-                                    Orientation.Vertical,
-                                    step = 0.01f,
-                                    afterStep = {
-                                        indicatorTasker.launch {
-                                            indicatorState.showBrightnessRange(controller.level)
-                                        }
-                                    }
-                                )
+                    Box(
+                        Modifier
+                            .ifThen(family.swipeLhsForBrightness) {
+                                brightnessLevelController?.let { controller ->
+                                    swipeLevelControl(
+                                        controller,
+                                        ((maxHeight - 100.dp) / 40).coerceAtLeast(2.dp),
+                                        Orientation.Vertical,
+                                        step = 0.01f,
+                                        afterStep = {
+                                            indicatorTasker.launch {
+                                                indicatorState.showBrightnessRange(controller.level)
+                                            }
+                                        },
+                                    )
+                                }
                             }
-                        }
-                        .weight(1f)
-                        .fillMaxHeight()
+                            .weight(1f)
+                            .fillMaxHeight(),
                     )
 
                     Box(Modifier.weight(1f).fillMaxHeight())
 
-                    Box(Modifier
-                        .ifThen(family.longPressForFastSkip) {
-                            longPressFastSkip(fastSkipState, SkipDirection.FORWARD)
-                        }
-                        .ifThen(family.swipeRhsForVolume) {
-                            audioController?.let { controller ->
-                                swipeLevelControl(
-                                    controller,
-                                    ((maxHeight - 100.dp) / 40).coerceAtLeast(2.dp),
-                                    Orientation.Vertical,
-                                    step = 0.05f,
-                                    afterStep = {
-                                        indicatorTasker.launch {
-                                            indicatorState.showVolumeRange(controller.level)
-                                        }
-                                    }
-                                )
+                    Box(
+                        Modifier
+                            .ifThen(family.longPressForFastSkip) {
+                                longPressFastSkip(fastSkipState, SkipDirection.FORWARD)
                             }
-                        }
-                        .weight(1f)
-                        .fillMaxHeight()
+                            .ifThen(family.swipeRhsForVolume) {
+                                audioController?.let { controller ->
+                                    swipeLevelControl(
+                                        controller,
+                                        ((maxHeight - 100.dp) / 40).coerceAtLeast(2.dp),
+                                        Orientation.Vertical,
+                                        step = 0.05f,
+                                        afterStep = {
+                                            indicatorTasker.launch {
+                                                indicatorState.showVolumeRange(controller.level)
+                                            }
+                                        },
+                                    )
+                                }
+                            }
+                            .weight(1f)
+                            .fillMaxHeight(),
                     )
                 }
 
@@ -629,7 +632,7 @@ fun VideoGestureHost(
                             },
                             onForward = {
                                 seekerState.onSeek(5)
-                            }
+                            },
                         )
                     }
                     .ifThen(family.keyboardUpDownForVolume) {
@@ -647,52 +650,54 @@ fun VideoGestureHost(
                             onTogglePauseResumeState()
                         }
                     }
-                    .fillMaxSize()
+                    .fillMaxSize(),
             ) {
                 Row(Modifier.matchParentSize()) {
-                    Box(Modifier
-                        .ifThen(family.swipeLhsForBrightness) {
-                            brightnessLevelController?.let { controller ->
-                                swipeLevelControl(
-                                    controller,
-                                    ((maxHeight - 100.dp) / 40).coerceAtLeast(2.dp),
-                                    Orientation.Vertical,
-                                    step = 0.01f,
-                                    afterStep = {
-                                        indicatorTasker.launch {
-                                            indicatorState.showBrightnessRange(controller.level)
-                                        }
-                                    }
-                                )
+                    Box(
+                        Modifier
+                            .ifThen(family.swipeLhsForBrightness) {
+                                brightnessLevelController?.let { controller ->
+                                    swipeLevelControl(
+                                        controller,
+                                        ((maxHeight - 100.dp) / 40).coerceAtLeast(2.dp),
+                                        Orientation.Vertical,
+                                        step = 0.01f,
+                                        afterStep = {
+                                            indicatorTasker.launch {
+                                                indicatorState.showBrightnessRange(controller.level)
+                                            }
+                                        },
+                                    )
+                                }
                             }
-                        }
-                        .weight(1f)
-                        .fillMaxHeight()
+                            .weight(1f)
+                            .fillMaxHeight(),
                     )
 
                     Box(Modifier.weight(1f).fillMaxHeight())
 
-                    Box(Modifier
-                        .ifThen(family.longPressForFastSkip) {
-                            longPressFastSkip(fastSkipState, SkipDirection.FORWARD)
-                        }
-                        .ifThen(family.swipeRhsForVolume) {
-                            audioController?.let { controller ->
-                                swipeLevelControl(
-                                    controller,
-                                    ((maxHeight - 100.dp) / 40).coerceAtLeast(2.dp),
-                                    Orientation.Vertical,
-                                    step = 0.05f,
-                                    afterStep = {
-                                        indicatorTasker.launch {
-                                            indicatorState.showVolumeRange(controller.level)
-                                        }
-                                    }
-                                )
+                    Box(
+                        Modifier
+                            .ifThen(family.longPressForFastSkip) {
+                                longPressFastSkip(fastSkipState, SkipDirection.FORWARD)
                             }
-                        }
-                        .weight(1f)
-                        .fillMaxHeight()
+                            .ifThen(family.swipeRhsForVolume) {
+                                audioController?.let { controller ->
+                                    swipeLevelControl(
+                                        controller,
+                                        ((maxHeight - 100.dp) / 40).coerceAtLeast(2.dp),
+                                        Orientation.Vertical,
+                                        step = 0.05f,
+                                        afterStep = {
+                                            indicatorTasker.launch {
+                                                indicatorState.showVolumeRange(controller.level)
+                                            }
+                                        },
+                                    )
+                                }
+                            }
+                            .weight(1f)
+                            .fillMaxHeight(),
                     )
                 }
             }

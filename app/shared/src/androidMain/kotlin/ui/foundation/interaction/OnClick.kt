@@ -36,5 +36,5 @@ actual fun Modifier.onClickEx(
     enabled = enabled,
     onClick = onClick,
     onLongClick = onLongClick,
-    onDoubleClick = onDoubleClick
+    onDoubleClick = onDoubleClick,
 )

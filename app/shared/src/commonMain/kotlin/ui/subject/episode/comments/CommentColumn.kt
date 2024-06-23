@@ -44,13 +44,16 @@ class CommentViewModel(
     val comments = revisionRepository.getCommentsByEpisodeId(episodeId)
         .flatMapMerge { comment ->
             flow {
-                emit(UiComment(comment,
-                    comment.authorUsername?.let { username ->
-                        runUntilSuccess {
-                            userRepo.getUserByUsername(username)
-                        }
-                    }
-                ))
+                emit(
+                    UiComment(
+                        comment,
+                        comment.authorUsername?.let { username ->
+                            runUntilSuccess {
+                                userRepo.getUserByUsername(username)
+                            }
+                        },
+                    ),
+                )
             }
         }
         .runningList()
@@ -75,7 +78,7 @@ fun CommentColumn(
             Comment(
                 author = it.author,
                 comment = it.comment,
-                modifier = Modifier.padding(horizontal = 16.dp)
+                modifier = Modifier.padding(horizontal = 16.dp),
             )
         }
         item { }
@@ -92,16 +95,16 @@ fun Comment(
     modifier: Modifier = Modifier
 ) {
     Column(
-        modifier
+        modifier,
     ) {
         // 头像, 昵称, 时间
         Row {
             Box(
-                Modifier.clip(CircleShape)
+                Modifier.clip(CircleShape),
             ) {
                 AvatarImage(
                     author?.avatar?.small ?: "",
-                    Modifier.size(36.dp)
+                    Modifier.size(36.dp),
                 )
             }
             Column(Modifier.padding(start = 8.dp)) {
@@ -109,7 +112,7 @@ fun Comment(
                     Text(
                         author?.nickname ?: "nickname",
                         Modifier.placeholder(author?.nickname == null),
-                        style = MaterialTheme.typography.bodyMedium
+                        style = MaterialTheme.typography.bodyMedium,
                     )
                 }
 

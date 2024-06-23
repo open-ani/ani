@@ -23,7 +23,7 @@ private fun PreviewEpisodeVideoSettings() {
         EpisodeVideoSettings(
             remember {
                 EpisodeVideoSettingsViewModel()
-            }
+            },
         )
     }
 }
@@ -35,7 +35,7 @@ private fun PreviewEpisodeVideoSettingsSmall() {
         EpisodeVideoSettings(
             remember {
                 EpisodeVideoSettingsViewModel()
-            }
+            },
         )
     }
 }
@@ -51,7 +51,7 @@ private fun PreviewEpisodeVideoSettingsSideSheet() = ProvideCompositionLocalsFor
         ) {
             EpisodeVideoSettings(
                 rememberViewModel { EpisodeVideoSettingsViewModel() },
-                Modifier.padding(8.dp)
+                Modifier.padding(8.dp),
             )
         }
     }

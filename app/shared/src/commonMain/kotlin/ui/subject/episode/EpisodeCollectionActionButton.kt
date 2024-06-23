@@ -34,7 +34,7 @@ private val ACTIONS = listOf(
     SubjectCollectionAction(
         { Text("取消看过") },
         { Icon(Icons.Rounded.AccessTime, null) },
-        UnifiedCollectionType.WISH
+        UnifiedCollectionType.WISH,
     ),
     SubjectCollectionActions.Done,
     SubjectCollectionActions.Dropped,
@@ -66,17 +66,17 @@ fun EpisodeCollectionActionButton(
         colors = if (collectionType == UnifiedCollectionType.DONE || collectionType == UnifiedCollectionType.DROPPED) {
             ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.outlineVariant,
-                contentColor = MaterialTheme.colorScheme.outline
+                contentColor = MaterialTheme.colorScheme.outline,
             )
         } else {
             ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                contentColor = MaterialTheme.colorScheme.secondary
+                contentColor = MaterialTheme.colorScheme.secondary,
             )
         },
         shape = RoundedCornerShape(12.dp),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-        enabled = enabled
+        enabled = enabled,
     ) {
         when (collectionType) {
             UnifiedCollectionType.DONE -> {
@@ -104,7 +104,7 @@ fun EpisodeCollectionActionButton(
                 showDropdown = false
                 onClick(it.type)
             },
-            actions = ACTIONS
+            actions = ACTIONS,
         )
     }
 }

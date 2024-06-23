@@ -92,7 +92,7 @@ abstract class AbstractLockedTorrentDownloader<Info : TorrentInfo>(
 
         logger.info { "Fetching magnet: $uri" }
         val data: ByteArray? = try {
-            sessionManager.use {
+            sessionManager.useInterruptible {
                 fetchMagnet(uri, timeoutSeconds, magnetCacheDir)
             }
         } catch (e: InterruptedException) {
@@ -245,7 +245,7 @@ class Libtorrent4jTorrentDownloader(
     parentCoroutineContext: CoroutineContext,
 ) : AbstractLockedTorrentDownloader<Torrent4jTorrentInfo>(
     cacheDirectory, sessionManager, downloadFile, isDebug,
-    parentCoroutineContext
+    parentCoroutineContext,
 ) {
     companion object {
         const val VENDOR_NAME = "libtorrent"
@@ -333,40 +333,42 @@ fun Libtorrent4jTorrentDownloader(
     sessionManager.addListener(listener)
     logger.info { "Starting SessionManager" }
     sessionManager.start()
-    sessionManager.applySettings(sessionManager.settings().apply {
-        isEnableDht = true
-        isEnableLsd = true
-        activeDhtLimit(300)
-        activeTrackerLimit(50)
-        activeSeeds(8)
-        activeDownloads(8)
-        connectionsLimit(500) // default was 200
-        seedingOutgoingConnections(true) // default was true, just to make sure
-        uploadRateLimit(0)
-        downloadRateLimit(0)
-        maxPeerlistSize(1000)
-        dhtBootstrapNodes = setOf(
-            dhtBootstrapNodes.split(",") + listOf(
-                "router.utorrent.com:6881",
-                "router.bittorrent.com:6881",
-                "dht.transmissionbt.com:6881",
-                "router.bitcomet.com:6881",
-            )
-        ).joinToString(",")
+    sessionManager.applySettings(
+        sessionManager.settings().apply {
+            isEnableDht = true
+            isEnableLsd = true
+            activeDhtLimit(300)
+            activeTrackerLimit(50)
+            activeSeeds(8)
+            activeDownloads(8)
+            connectionsLimit(500) // default was 200
+            seedingOutgoingConnections(true) // default was true, just to make sure
+            uploadRateLimit(0)
+            downloadRateLimit(0)
+            maxPeerlistSize(1000)
+            dhtBootstrapNodes = setOf(
+                dhtBootstrapNodes.split(",") + listOf(
+                    "router.utorrent.com:6881",
+                    "router.bittorrent.com:6881",
+                    "dht.transmissionbt.com:6881",
+                    "router.bitcomet.com:6881",
+                ),
+            ).joinToString(",")
 
-        logger.info { "peerFingerprint was: $peerFingerprintString" }
-        logger.info { "user_agent was: $userAgentString" }
-        logger.info { "handshake_client_version was: $handshakeClientVersionString" }
+            logger.info { "peerFingerprint was: $peerFingerprintString" }
+            logger.info { "user_agent was: $userAgentString" }
+            logger.info { "handshake_client_version was: $handshakeClientVersionString" }
 
-        peerFingerprintString = config.peerFingerprint
-        userAgentString = config.userAgent
-        config.clientHandshakeVersion?.let {
-            handshakeClientVersionString = it
-        }
-        logger.info { "peerFingerprint set: $peerFingerprintString" }
-        logger.info { "user_agent set: $userAgentString" }
-        logger.info { "handshake_client_version set: $handshakeClientVersionString" }
-    })
+            peerFingerprintString = config.peerFingerprint
+            userAgentString = config.userAgent
+            config.clientHandshakeVersion?.let {
+                handshakeClientVersionString = it
+            }
+            logger.info { "peerFingerprint set: $peerFingerprintString" }
+            logger.info { "user_agent set: $userAgentString" }
+            logger.info { "handshake_client_version set: $handshakeClientVersionString" }
+        },
+    )
     logger.info { "postDhtStats" }
     sessionManager.postDhtStats()
     // No need to wait for DHT, some devices may not have access to the DHT network.
@@ -386,7 +388,7 @@ fun Libtorrent4jTorrentDownloader(
         LockedSessionManager(sessionManager),
         downloadFile,
         isDebug = config.isDebug,
-        parentCoroutineContext = parentCoroutineContext
+        parentCoroutineContext = parentCoroutineContext,
     )
 }
 

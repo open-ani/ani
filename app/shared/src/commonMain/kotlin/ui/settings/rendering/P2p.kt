@@ -21,12 +21,12 @@ public val Icons.Filled.P2p: ImageVector
         _p2p24dpFill0Wght400Grad0Opsz24 = Builder(
             name = "P2p",
             defaultWidth = 24.0.dp, defaultHeight = 24.0.dp, viewportWidth = 960.0f,
-            viewportHeight = 960.0f
+            viewportHeight = 960.0f,
         ).apply {
             path(
                 fill = SolidColor(Color(0xFFe8eaed)), stroke = null, strokeLineWidth = 0.0f,
                 strokeLineCap = Butt, strokeLineJoin = Miter, strokeLineMiter = 4.0f,
-                pathFillType = NonZero
+                pathFillType = NonZero,
             ) {
                 moveTo(160.0f, 800.0f)
                 quadToRelative(-33.0f, 0.0f, -56.5f, -23.5f)

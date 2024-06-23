@@ -41,7 +41,7 @@ fun DandanplayDanmaku.toDanmakuOrNull(): Danmaku? {
             else -> return null
         },
         text = m,
-        color = color.toIntOrNull() ?: return null
+        color = color.toIntOrNull() ?: return null,
     )
 }
 

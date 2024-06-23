@@ -128,9 +128,9 @@ fun PlayerStatistics(
                             Row(
                                 Modifier.clickable(
                                     interactionSource = remember { MutableInteractionSource() },
-                                    indication = null
+                                    indication = null,
                                 ) { isShowDetails = !isShowDetails },
-                                verticalAlignment = Alignment.CenterVertically
+                                verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 Text(
                                     remember(loadingState) {
@@ -209,7 +209,7 @@ fun PlayerStatistics(
                             ErrorTextBox(
                                 remember(loadingState) { loadingState.cause.toString() },
                                 { clipboard.setText(AnnotatedString(loadingState.cause.stackTraceToString())) },
-                                Modifier.padding(top = 8.dp).fillMaxWidth()
+                                Modifier.padding(top = 8.dp).fillMaxWidth(),
                             )
                         }
 
@@ -245,14 +245,14 @@ private fun DanmakuMatchInfoView(
     ) {
         Column(
             Modifier.padding(all = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Text(info.providerId, style = MaterialTheme.typography.titleMedium)
 
             ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Icon(Icons.Outlined.Subtitles, "弹幕数量")
                     Text(remember(info.count) { "${info.count}" })
@@ -262,7 +262,7 @@ private fun DanmakuMatchInfoView(
             ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     DanmakuMatchMethodView(info.method, showDetails())
                 }
@@ -289,7 +289,7 @@ private fun DanmakuMatchMethodView(
             is DanmakuMatchMethod.ExactSubjectFuzzyEpisode -> {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.tertiary) {
                         Icon(Icons.Outlined.QuestionMark, null)
@@ -305,7 +305,7 @@ private fun DanmakuMatchMethodView(
             is DanmakuMatchMethod.Fuzzy -> {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.tertiary) {
                         Icon(Icons.Outlined.QuestionMark, null)
@@ -329,7 +329,7 @@ private fun DanmakuMatchMethodView(
             is DanmakuMatchMethod.NoMatch -> {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.secondary) {
                         Icon(Icons.Outlined.Close, null)
@@ -345,7 +345,7 @@ private fun DanmakuMatchMethodView(
 private fun ExactMatch() {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.primary) {
             Icon(Icons.Outlined.WorkspacePremium, null)
@@ -363,7 +363,7 @@ private fun Succeed(
         Row(
             modifier,
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Icon(Icons.Rounded.Done, null)
             content()
@@ -380,7 +380,7 @@ private fun Failed(
         Row(
             modifier,
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Icon(Icons.Rounded.ErrorOutline, null)
             content()
@@ -406,7 +406,7 @@ private fun ErrorTextBox(
             IconButton(onClick = onCopy) {
                 Icon(Icons.Rounded.ContentCopy, null)
             }
-        }
+        },
     )
 //        OutlinedCard(
 //            modifier = modifier,

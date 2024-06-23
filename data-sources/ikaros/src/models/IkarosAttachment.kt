@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 import me.him188.ani.datasources.ikaros.models.IkarosAttachmentType
 
 @Serializable
-class IkarosAttachment (
+class IkarosAttachment(
     val id: Long = 0,
     val parentId: Long = 0,
     val type: IkarosAttachmentType = IkarosAttachmentType.File,

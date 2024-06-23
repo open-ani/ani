@@ -265,6 +265,7 @@ kotlin {
         submodule("torrent/api")
         submodule("torrent/impl/libtorrent4j")
         submodule("torrent/impl/qbittorrent")
+        submodule("torrent/impl/anitorrent")
 
         submodule("app/shared/placeholder")
         submodule("app/shared/video-player")
@@ -283,7 +284,6 @@ kotlin {
 
     sourceSets.commonTest.dependencies {
         implementation(libs.kotlinx.coroutines.test)
-        runtimeOnly(libs.slf4j.simple)
     }
 
     sourceSets.androidMain.dependencies {

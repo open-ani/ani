@@ -24,6 +24,8 @@ import me.him188.ani.utils.coroutines.cancellableCoroutineScope
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class DefaultMediaSelectorTest {
     private val mediaList: MutableStateFlow<MutableList<DefaultMedia>> = MutableStateFlow(mutableListOf())
@@ -36,9 +38,9 @@ class DefaultMediaSelectorTest {
     private val mediaSelectorSettings = MutableStateFlow(MediaSelectorSettings.Default)
     private val mediaSelectorContext = MutableStateFlow(
         MediaSelectorContext(
-            subjectFinishedForAConservativeTime = false,
+            subjectFinished = false,
             mediaSourcePrecedence = emptyList(),
-        )
+        ),
     )
 
     private val selector = DefaultMediaSelector(
@@ -47,7 +49,7 @@ class DefaultMediaSelectorTest {
         savedUserPreference = savedUserPreference,
         savedDefaultPreference = savedDefaultPreference,
         enableCaching = false,
-        mediaSelectorSettings = mediaSelectorSettings
+        mediaSelectorSettings = mediaSelectorSettings,
     )
 
     companion object {
@@ -61,7 +63,7 @@ class DefaultMediaSelectorTest {
             fallbackSubtitleLanguageIds = listOf(
                 ChineseSimplified,
                 ChineseTraditional,
-            ).map { it.id }
+            ).map { it.id },
         )
     }
 
@@ -71,9 +73,27 @@ class DefaultMediaSelectorTest {
         mediaSourcePrecedence: List<String> = emptyList()
     ) =
         MediaSelectorContext(
-            subjectFinishedForAConservativeTime = subjectCompleted,
+            subjectFinished = subjectCompleted,
             mediaSourcePrecedence = mediaSourcePrecedence,
         )
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Select contract
+    ///////////////////////////////////////////////////////////////////////////
+
+    @Test
+    fun `select two times returns false`() = runTest {
+        val target: DefaultMedia
+        addMedia(
+            media(alliance = "字幕组1", subtitleLanguages = listOf("CHS")),
+            media(alliance = "字幕组2", resolution = "Special").also { target = it },
+            media(alliance = "字幕组3", subtitleLanguages = listOf("CHS", "CHT")),
+            media(alliance = "字幕组4", subtitleLanguages = listOf("CHS", "CHT", "R")),
+            media(alliance = "字幕组5", subtitleLanguages = listOf("CHS")),
+        )
+        assertTrue { selector.select(target) }
+        assertFalse { selector.select(target) }
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     // 单个选项测试
@@ -230,7 +250,7 @@ class DefaultMediaSelectorTest {
             target,
             media(alliance = "字幕组2", subtitleLanguages = listOf("CHT")),
             media(alliance = "字幕组3", subtitleLanguages = listOf("CHS", "CHT")),
-            media(alliance = "字幕组2", subtitleLanguages = listOf("CHS"))
+            media(alliance = "字幕组2", subtitleLanguages = listOf("CHS")),
         )
         assertEquals(target, selector.trySelectDefault())
     }
@@ -242,7 +262,7 @@ class DefaultMediaSelectorTest {
             media(alliance = "字幕组2", subtitleLanguages = listOf("CHT")),
             media(alliance = "字幕组3", subtitleLanguages = listOf("CHS", "CHT")),
             target,
-            media(alliance = "字幕组2", subtitleLanguages = listOf("CHS"))
+            media(alliance = "字幕组2", subtitleLanguages = listOf("CHS")),
         )
         selector.alliance.prefer("字幕组")
         assertEquals(target, selector.trySelectDefault())
@@ -256,7 +276,7 @@ class DefaultMediaSelectorTest {
             media(alliance = "字幕组2", subtitleLanguages = listOf("CHT")),
             media(alliance = "字幕组3", subtitleLanguages = listOf("CHS", "CHT")),
             media(alliance = "字幕组4", subtitleLanguages = listOf("CHS", "CHT")).also { target = it },
-            media(alliance = "字幕组5", subtitleLanguages = listOf("CHS"))
+            media(alliance = "字幕组5", subtitleLanguages = listOf("CHS")),
         )
         savedDefaultPreference.value = DEFAULT_PREFERENCE.copy(alliancePatterns = listOf("4"))
         assertEquals(target, selector.trySelectDefault())
@@ -270,7 +290,7 @@ class DefaultMediaSelectorTest {
             media(alliance = "字幕组2", subtitleLanguages = listOf("CHT")),
             media(alliance = "字幕组3", subtitleLanguages = listOf("CHS", "CHT")),
             media(alliance = "字幕组4", subtitleLanguages = listOf("CHS", "CHT", "R")).also { target = it },
-            media(alliance = "字幕组5", subtitleLanguages = listOf("CHS"))
+            media(alliance = "字幕组5", subtitleLanguages = listOf("CHS")),
         )
         savedDefaultPreference.value = DEFAULT_PREFERENCE.copy(subtitleLanguageId = "R")
         assertEquals(target, selector.trySelectDefault())
@@ -284,7 +304,7 @@ class DefaultMediaSelectorTest {
             media(alliance = "字幕组2", subtitleLanguages = listOf("CHT")),
             media(alliance = "字幕组3", subtitleLanguages = listOf("CHS", "CHT")),
             media(alliance = "字幕组4", subtitleLanguages = listOf("CHS", "CHT", "R")).also { target = it },
-            media(alliance = "字幕组5", subtitleLanguages = listOf("CHS"))
+            media(alliance = "字幕组5", subtitleLanguages = listOf("CHS")),
         )
         savedDefaultPreference.value = DEFAULT_PREFERENCE.copy(fallbackSubtitleLanguageIds = listOf("R", "CHS"))
         assertEquals(target, selector.trySelectDefault())
@@ -298,7 +318,7 @@ class DefaultMediaSelectorTest {
             media(alliance = "字幕组2", resolution = "Special").also { target = it },
             media(alliance = "字幕组3", subtitleLanguages = listOf("CHS", "CHT")),
             media(alliance = "字幕组4", subtitleLanguages = listOf("CHS", "CHT", "R")),
-            media(alliance = "字幕组5", subtitleLanguages = listOf("CHS"))
+            media(alliance = "字幕组5", subtitleLanguages = listOf("CHS")),
         )
         savedDefaultPreference.value = DEFAULT_PREFERENCE.copy(resolution = "Special")
         assertEquals(target, selector.trySelectDefault())
@@ -312,7 +332,7 @@ class DefaultMediaSelectorTest {
             media(alliance = "字幕组2", resolution = "Special").also { target = it },
             media(alliance = "字幕组3", subtitleLanguages = listOf("CHS", "CHT")),
             media(alliance = "字幕组4", subtitleLanguages = listOf("CHS", "CHT", "R")),
-            media(alliance = "字幕组5", subtitleLanguages = listOf("CHS"))
+            media(alliance = "字幕组5", subtitleLanguages = listOf("CHS")),
         )
         savedDefaultPreference.value = DEFAULT_PREFERENCE.copy(fallbackResolutions = listOf("Special", "1080P"))
         assertEquals(target, selector.trySelectDefault())
@@ -326,7 +346,7 @@ class DefaultMediaSelectorTest {
             media(alliance = "字幕组2", resolution = "Special").also { target = it },
             media(alliance = "字幕组3", subtitleLanguages = listOf("CHS", "CHT")),
             media(alliance = "字幕组4", subtitleLanguages = listOf("CHS", "CHT", "R")),
-            media(alliance = "字幕组5", subtitleLanguages = listOf("CHS"))
+            media(alliance = "字幕组5", subtitleLanguages = listOf("CHS")),
         )
         selector.select(target)
         assertEquals(null, selector.trySelectDefault())
@@ -344,10 +364,10 @@ class DefaultMediaSelectorTest {
             media(sourceId = "2").also { target = it },
             media(sourceId = "1"),
             media(sourceId = "1"),
-            media(sourceId = "1")
+            media(sourceId = "1"),
         )
         mediaSelectorContext.value = createMediaSelectorContextFromEmpty(
-            mediaSourcePrecedence = listOf("2", "1")
+            mediaSourcePrecedence = listOf("2", "1"),
         )
         assertEquals(target, selector.trySelectDefault())
     }
@@ -360,10 +380,10 @@ class DefaultMediaSelectorTest {
             media(sourceId = "2").also { target = it },
             media(sourceId = "1"),
             media(sourceId = "1"),
-            media(sourceId = "1")
+            media(sourceId = "1"),
         )
         mediaSelectorContext.value = createMediaSelectorContextFromEmpty(
-            mediaSourcePrecedence = listOf("3", "2", "1")
+            mediaSourcePrecedence = listOf("3", "2", "1"),
         )
         assertEquals(target, selector.trySelectDefault())
     }
@@ -376,10 +396,10 @@ class DefaultMediaSelectorTest {
             media(sourceId = "2"),
             media(sourceId = "1"),
             media(sourceId = "1"),
-            media(sourceId = "1")
+            media(sourceId = "1"),
         )
         mediaSelectorContext.value = createMediaSelectorContextFromEmpty(
-            mediaSourcePrecedence = emptyList()
+            mediaSourcePrecedence = emptyList(),
         )
         assertEquals(target, selector.trySelectDefault())
     }
@@ -400,7 +420,7 @@ class DefaultMediaSelectorTest {
             ).also { target = it },
             media(alliance = "字幕组3", subtitleLanguages = listOf("CHS", "CHT")),
             media(alliance = "字幕组4", subtitleLanguages = listOf("CHS", "CHT", "R")),
-            media(alliance = "字幕组5", subtitleLanguages = listOf("CHS"))
+            media(alliance = "字幕组5", subtitleLanguages = listOf("CHS")),
         )
         selector.alliance.prefer("a")
         assertEquals(listOf(target), selector.filteredCandidates.first())
@@ -417,7 +437,7 @@ class DefaultMediaSelectorTest {
             ).also { target = it },
             media(alliance = "字幕组3", subtitleLanguages = listOf("CHS", "CHT")),
             media(alliance = "字幕组4", subtitleLanguages = listOf("CHS", "CHT", "R")),
-            media(alliance = "字幕组5", subtitleLanguages = listOf("CHS"))
+            media(alliance = "字幕组5", subtitleLanguages = listOf("CHS")),
         )
         assertEquals(target, selector.trySelectCached())
     }
@@ -431,7 +451,7 @@ class DefaultMediaSelectorTest {
         val target: DefaultMedia
         savedDefaultPreference.value = MediaPreference.Empty.copy(
             alliance = "字幕组2",
-            showWithoutSubtitle = true
+            showWithoutSubtitle = true,
         )
         addMedia(
             media(alliance = "字幕组1", subtitleLanguages = listOf("CHS")),
@@ -441,12 +461,12 @@ class DefaultMediaSelectorTest {
             ).also { target = it },
             media(alliance = "字幕组3", subtitleLanguages = listOf("CHS", "CHT")),
             media(alliance = "字幕组4", subtitleLanguages = listOf("CHS", "CHT", "R")),
-            media(alliance = "字幕组5", subtitleLanguages = listOf("CHS"))
+            media(alliance = "字幕组5", subtitleLanguages = listOf("CHS")),
         )
         assertEquals(target, selector.trySelectDefault())
         savedDefaultPreference.value = MediaPreference.Empty.copy(
             alliance = "字幕组2",
-            showWithoutSubtitle = false
+            showWithoutSubtitle = false,
         )
         selector.unselect()
         assertEquals(null, selector.trySelectDefault())
@@ -457,7 +477,7 @@ class DefaultMediaSelectorTest {
         val target: DefaultMedia
         savedDefaultPreference.value = DEFAULT_PREFERENCE.copy(
             alliance = "字幕组2",
-            showWithoutSubtitle = true
+            showWithoutSubtitle = true,
         )
         addMedia(
             media(alliance = "字幕组1", subtitleLanguages = listOf("CHS")),
@@ -468,12 +488,12 @@ class DefaultMediaSelectorTest {
             ).also { target = it },
             media(alliance = "字幕组3", subtitleLanguages = listOf("CHS", "CHT")),
             media(alliance = "字幕组4", subtitleLanguages = listOf("CHS", "CHT", "R")),
-            media(alliance = "字幕组5", subtitleLanguages = listOf("CHS"))
+            media(alliance = "字幕组5", subtitleLanguages = listOf("CHS")),
         )
         assertEquals(target, selector.trySelectCached())
         savedDefaultPreference.value = DEFAULT_PREFERENCE.copy(
             alliance = "字幕组2",
-            showWithoutSubtitle = false
+            showWithoutSubtitle = false,
         )
         selector.unselect()
         assertEquals(target, selector.trySelectCached())
@@ -501,7 +521,7 @@ class DefaultMediaSelectorTest {
             ),
             media(alliance = "字幕组3", episodeRange = EpisodeRange.single("2")),
             media(alliance = "字幕组4", episodeRange = EpisodeRange.single("3")),
-            media(alliance = "字幕组5", episodeRange = EpisodeRange.single("4"))
+            media(alliance = "字幕组5", episodeRange = EpisodeRange.single("4")),
         )
         assertEquals(2, selector.filteredCandidates.first().size)
         assertEquals(target, selector.filteredCandidates.first()[0])
@@ -520,7 +540,7 @@ class DefaultMediaSelectorTest {
             media(alliance = "字幕组6", episodeRange = EpisodeRange.season(1)),
             media(alliance = "字幕组3", episodeRange = EpisodeRange.single("2")),
             media(alliance = "字幕组4", episodeRange = EpisodeRange.single("3")),
-            media(alliance = "字幕组5", episodeRange = EpisodeRange.single("4"))
+            media(alliance = "字幕组5", episodeRange = EpisodeRange.single("4")),
         )
         assertEquals(6, selector.filteredCandidates.first().size)
     }
@@ -544,7 +564,7 @@ class DefaultMediaSelectorTest {
             media(alliance = "字幕组2", episodeRange = EpisodeRange.season(1)).also { target = it },
             media(alliance = "字幕组3", episodeRange = EpisodeRange.single("2")),
             media(alliance = "字幕组4", episodeRange = EpisodeRange.single("3")),
-            media(alliance = "字幕组5", episodeRange = EpisodeRange.single("4"))
+            media(alliance = "字幕组5", episodeRange = EpisodeRange.single("4")),
         )
         assertEquals(5, selector.filteredCandidates.first().size)
         assertEquals(target, selector.trySelectDefault())
@@ -565,7 +585,7 @@ class DefaultMediaSelectorTest {
             media(alliance = "字幕组2", episodeRange = EpisodeRange.season(1)),
             media(alliance = "字幕组3", episodeRange = EpisodeRange.single("2")),
             media(alliance = "字幕组4", episodeRange = EpisodeRange.single("3")),
-            media(alliance = "字幕组5", episodeRange = EpisodeRange.single("4"))
+            media(alliance = "字幕组5", episodeRange = EpisodeRange.single("4")),
         )
         assertEquals(5, selector.filteredCandidates.first().size)
         assertEquals(target, selector.trySelectDefault())
@@ -586,7 +606,7 @@ class DefaultMediaSelectorTest {
             media(alliance = "字幕组2", episodeRange = EpisodeRange.season(1)),
             media(alliance = "字幕组3", episodeRange = EpisodeRange.single("2")),
             media(alliance = "字幕组4", episodeRange = EpisodeRange.single("3")),
-            media(alliance = "字幕组5", episodeRange = EpisodeRange.single("4"))
+            media(alliance = "字幕组5", episodeRange = EpisodeRange.single("4")),
         )
         assertEquals(5, selector.filteredCandidates.first().size)
         assertEquals(target, selector.trySelectDefault())
@@ -613,8 +633,9 @@ class DefaultMediaSelectorTest {
                 MediaPreference.Empty.copy(
                     alliance = "字幕组",
                     resolution = target.properties.resolution,
-                    mediaSourceId = "dmhy"
-                ), onChangePreference.first()
+                    mediaSourceId = "dmhy",
+                ),
+                onChangePreference.first(),
             )
         }
     }
@@ -636,8 +657,9 @@ class DefaultMediaSelectorTest {
                     alliance = "字幕组",
                     resolution = target.properties.resolution,
                     subtitleLanguageId = "CHS",
-                    mediaSourceId = "dmhy"
-                ), onChangePreference.first()
+                    mediaSourceId = "dmhy",
+                ),
+                onChangePreference.first(),
             )
         }
     }
@@ -656,7 +678,8 @@ class DefaultMediaSelectorTest {
             assertEquals(
                 MediaPreference.Empty.copy(
                     alliance = "字幕组",
-                ), onChangePreference.first()
+                ),
+                onChangePreference.first(),
             )
         }
     }

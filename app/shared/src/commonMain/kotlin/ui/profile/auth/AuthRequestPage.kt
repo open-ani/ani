@@ -85,9 +85,9 @@ fun AuthRequestPage(
                         Icon(Icons.Outlined.Refresh, contentDescription = "Refresh")
                     }
                 },
-                title = { Text(text = "登录 Bangumi") }
+                title = { Text(text = "登录 Bangumi") },
             )
-        }
+        },
     ) { contentPadding ->
         Column(
             modifier = Modifier.fillMaxSize().padding(contentPadding),
@@ -102,13 +102,13 @@ fun AuthRequestPage(
                     key(vm.retryCount.value) {
                         BangumiOAuthRequest(
                             vm,
-                            Modifier.fillMaxSize()
+                            Modifier.fillMaxSize(),
                         )
                     }
                 } else {
                     BasicAlertDialog(
                         { confirmIntro = true },
-                        properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
+                        properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false),
                     ) {
                         BangumiAuthIntroLayout(onDismissRequest = { confirmIntro = true })
                     }
@@ -160,10 +160,12 @@ internal fun AuthDialogContent(
             Text("Bangumi 授权")
         },
         buttons = {
-            TextButton(onClick = {
-                viewModel.onCancel()
-                backHandler.onBackPress()
-            }) {
+            TextButton(
+                onClick = {
+                    viewModel.onCancel()
+                    backHandler.onBackPress()
+                },
+            ) {
                 Text("取消授权")
             }
 
@@ -177,11 +179,11 @@ internal fun AuthDialogContent(
                         }
                     }
                 },
-                enabled = token.isNotEmpty()
+                enabled = token.isNotEmpty(),
             ) {
                 Text("用令牌登录")
             }
-        }
+        },
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             if (Platform.currentPlatform.supportsCallbackLogin) {
@@ -196,10 +198,13 @@ internal fun AuthDialogContent(
             Text("4. 复制创建好的 token, 回到本页面")
 
             val context = LocalContext.current
-            Button({
-                GlobalContext.get().get<BrowserNavigator>()
-                    .openBrowser(context, "https://next.bgm.tv/demo/access-token/create")
-            }, Modifier.align(Alignment.End)) {
+            Button(
+                {
+                    GlobalContext.get().get<BrowserNavigator>()
+                        .openBrowser(context, "https://next.bgm.tv/demo/access-token/create")
+                },
+                Modifier.align(Alignment.End),
+            ) {
                 Text("前往创建令牌")
             }
 
@@ -213,14 +218,16 @@ internal fun AuthDialogContent(
                 modifier = Modifier.fillMaxWidth(),
                 shape = MaterialTheme.shapes.medium,
                 trailingIcon = {
-                    IconButton({
-                        clipboard.getText()?.text?.let {
-                            token = it.trim()
-                        }
-                    }) {
+                    IconButton(
+                        {
+                            clipboard.getText()?.text?.let {
+                                token = it.trim()
+                            }
+                        },
+                    ) {
                         Icon(Icons.Rounded.ContentPaste, "粘贴")
                     }
-                }
+                },
             )
         }
     }

@@ -59,32 +59,34 @@ class AniApplication : Application() {
     private var currentActivity: Activity? = null
 
     init {
-        registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
-            override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
-            }
-
-            override fun onActivityStarted(activity: Activity) {
-            }
-
-            override fun onActivityResumed(activity: Activity) {
-                currentActivity = activity
-            }
-
-            override fun onActivityPaused(activity: Activity) {
-            }
-
-            override fun onActivityStopped(activity: Activity) {
-                if (currentActivity == activity) {
-                    currentActivity = null
+        registerActivityLifecycleCallbacks(
+            object : ActivityLifecycleCallbacks {
+                override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
                 }
-            }
 
-            override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {
-            }
+                override fun onActivityStarted(activity: Activity) {
+                }
 
-            override fun onActivityDestroyed(activity: Activity) {
-            }
-        })
+                override fun onActivityResumed(activity: Activity) {
+                    currentActivity = activity
+                }
+
+                override fun onActivityPaused(activity: Activity) {
+                }
+
+                override fun onActivityStopped(activity: Activity) {
+                    if (currentActivity == activity) {
+                        currentActivity = null
+                    }
+                }
+
+                override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {
+                }
+
+                override fun onActivityDestroyed(activity: Activity) {
+                }
+            },
+        )
     }
 
     inner class Instance(context: Context) {

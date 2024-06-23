@@ -69,7 +69,7 @@ abstract class SettingsScope {
                             .padding(bottom = 8.dp)
                             .weight(1f)
                             .heightIn(min = if (description != null) 48.dp else 24.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
                     ) {
                         ProvideTextStyleContentColor(
                             MaterialTheme.typography.titleMedium,
@@ -92,7 +92,7 @@ abstract class SettingsScope {
                         CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.primary) {
                             Row(
                                 Modifier.height(48.dp).padding(end = 16.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                                verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 it()
                             }
@@ -114,10 +114,10 @@ abstract class SettingsScope {
     ) {
         Column(
             modifier.padding(vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+            verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             CompositionLocalProvider(
-                LocalContentColor providesDefault MaterialTheme.colorScheme.onSurface
+                LocalContentColor providesDefault MaterialTheme.colorScheme.onSurface,
             ) {
                 ProvideTextStyle(
                     MaterialTheme.typography.bodyLarge,
@@ -127,7 +127,7 @@ abstract class SettingsScope {
             }
             ProvideTextStyleContentColor(
                 MaterialTheme.typography.labelMedium,
-                LocalContentColor.current.copy(labelAlpha)
+                LocalContentColor.current.copy(labelAlpha),
             ) {
                 description?.let {
                     Row(verticalAlignment = Alignment.CenterVertically) { it() }
@@ -174,11 +174,12 @@ abstract class SettingsScope {
             action?.let {
                 Box(
                     Modifier.padding(start = 16.dp)
-                        .widthIn(min = 48.dp), contentAlignment = Alignment.Center
+                        .widthIn(min = 48.dp),
+                    contentAlignment = Alignment.Center,
                 ) {
                     ProvideTextStyleContentColor(
                         MaterialTheme.typography.labelLarge,
-                        MaterialTheme.colorScheme.primary
+                        MaterialTheme.colorScheme.primary,
                     ) {
                         it()
                     }
@@ -196,7 +197,7 @@ abstract class SettingsScope {
         Row(
             modifier
                 .padding(horizontal = itemHorizontalPadding)
-                .fillMaxWidth() // no min 48.dp height
+                .fillMaxWidth(), // no min 48.dp height
         ) {
             HorizontalDivider(color = color)
         }

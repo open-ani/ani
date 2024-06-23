@@ -17,11 +17,13 @@ import me.him188.ani.app.videoplayer.ui.guesture.rememberGestureIndicatorState
 private fun SeekPositionIndicator(
     deltaDuration: Int,
 ) {
-    GestureIndicator(state = rememberGestureIndicatorState().apply {
-        LaunchedEffect(key1 = true) {
-            showSeeking(deltaDuration)
-        }
-    })
+    GestureIndicator(
+        state = rememberGestureIndicatorState().apply {
+            LaunchedEffect(key1 = true) {
+                showSeeking(deltaDuration)
+            }
+        },
+    )
 }
 
 @PreviewLightDark
@@ -32,7 +34,7 @@ private fun PreviewSeekPositionIndicatorForward() {
             Box(
                 modifier = Modifier
                     .matchParentSize()
-                    .background(Color.Transparent)
+                    .background(Color.Transparent),
             ) {
 
             }
@@ -49,7 +51,7 @@ private fun PreviewSeekPositionIndicatorBackward() {
             Box(
                 modifier = Modifier
                     .matchParentSize()
-                    .background(Color.Transparent)
+                    .background(Color.Transparent),
             ) {
 
             }
@@ -66,7 +68,7 @@ private fun PreviewSeekPositionIndicatorBackwardMinutes() {
             Box(
                 modifier = Modifier
                     .matchParentSize()
-                    .background(Color.Transparent)
+                    .background(Color.Transparent),
             ) {
 
             }
@@ -80,11 +82,13 @@ private fun PreviewSeekPositionIndicatorBackwardMinutes() {
 @Composable
 private fun PreviewPaused() {
     ProvideCompositionLocalsForPreview {
-        GestureIndicator(state = rememberGestureIndicatorState().apply {
-            LaunchedEffect(key1 = true) {
-                showPausedLong()
-            }
-        })
+        GestureIndicator(
+            state = rememberGestureIndicatorState().apply {
+                LaunchedEffect(key1 = true) {
+                    showPausedLong()
+                }
+            },
+        )
     }
 }
 
@@ -92,10 +96,12 @@ private fun PreviewPaused() {
 @Composable
 private fun PreviewVolume() {
     ProvideCompositionLocalsForPreview {
-        GestureIndicator(state = rememberGestureIndicatorState().apply {
-            LaunchedEffect(key1 = true) {
-                showVolumeRange(0.6f)
-            }
-        })
+        GestureIndicator(
+            state = rememberGestureIndicatorState().apply {
+                LaunchedEffect(key1 = true) {
+                    showVolumeRange(0.6f)
+                }
+            },
+        )
     }
 }

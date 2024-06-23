@@ -17,7 +17,7 @@ internal fun PreviewSelfInfo() {
                 avatar = Avatar(
                     "https://example.com/avatar.jpg",
                     "https://example.com/avatar.jpg",
-                    "https://example.com/avatar.jpg"
+                    "https://example.com/avatar.jpg",
                 ),
                 id = 1,
                 nickname = "",
@@ -35,7 +35,7 @@ internal fun PreviewSelfInfo() {
 private fun PreviewProfilePage() {
     ProvideCompositionLocalsForPreview {
         ProfilePage(
-            onClickSettings = {}
+            onClickSettings = {},
         )
     }
 }

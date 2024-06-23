@@ -167,7 +167,7 @@ internal fun EditMediaSourceDialog(
 
             Column(
                 Modifier.verticalScroll(rememberScrollState()).padding(top = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 for (argument in state.arguments) {
                     when (argument) {

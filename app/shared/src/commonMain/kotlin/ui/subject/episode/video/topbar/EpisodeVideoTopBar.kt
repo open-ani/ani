@@ -22,7 +22,7 @@ fun EpisodeVideoTopBar(
             // Danmaku Settings
             settings?.invoke()
         },
-        modifier
+        modifier,
     )
 
 }

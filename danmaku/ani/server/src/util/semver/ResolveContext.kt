@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
@@ -10,7 +9,12 @@
 
 package me.him188.ani.danmaku.server.util.semver
 
-import kotlin.annotation.AnnotationTarget.*
+import kotlin.annotation.AnnotationTarget.FIELD
+import kotlin.annotation.AnnotationTarget.FUNCTION
+import kotlin.annotation.AnnotationTarget.PROPERTY
+import kotlin.annotation.AnnotationTarget.TYPE
+import kotlin.annotation.AnnotationTarget.TYPE_PARAMETER
+import kotlin.annotation.AnnotationTarget.VALUE_PARAMETER
 
 /**
  * 标记一个参数的语境类型, 用于帮助编译器和 IntelliJ 插件进行语境推断.

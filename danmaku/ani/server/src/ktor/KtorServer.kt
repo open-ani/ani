@@ -41,7 +41,7 @@ fun getKtorServer(
             this.connectionGroupSize = 40
             this.workerGroupSize = 40
             this.callGroupSize = 40
-        }
+        },
     )
 }
 
@@ -54,7 +54,7 @@ internal fun Application.serverModule(config: ServerConfig) {
     configureSecurity()
     configureNotarizedApplication()
     configureSwagger()
-    
+
     configureAutoHeadResponse()
     configureRouting()
 }

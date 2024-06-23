@@ -48,6 +48,6 @@ fun <T> Paged.Companion.processPagedResponse(total: Int?, pageSize: Int, data: L
         Paged(
             total,
             data.isNotEmpty() && data.size >= pageSize,
-            data
+            data,
         )
     }

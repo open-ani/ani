@@ -168,7 +168,7 @@ fun DanmakuHost(
                     combine(configFlow, screenHeightPxFlow) { config, screenHeightPx ->
                         val danmakuHeightPx = measurer.measure(
                             DummyDanmakuState.presentation.danmaku.text,
-                            style = config.style.styleForText()
+                            style = config.style.styleForText(),
                         ).size.height
                         val verticalPaddingPx = with(density) {
                             (verticalPadding * 2).toPx()
@@ -211,17 +211,17 @@ internal class DanmakuHostStateImpl(
     private val _isPaused = mutableStateOf(false)
 
     override var floatingTracks: List<FloatingDanmakuTrackState> by mutableStateOf(
-        listOf(FloatingDanmakuTrackState(_isPaused, 30, danmakuTrackProperties))
+        listOf(FloatingDanmakuTrackState(_isPaused, 30, danmakuTrackProperties)),
     )
         private set
 
     override var topTracks: List<FixedDanmakuTrackState> by mutableStateOf(
-        listOf(FixedDanmakuTrackState(_isPaused))
+        listOf(FixedDanmakuTrackState(_isPaused)),
     )
         private set
 
     override var bottomTracks: List<FixedDanmakuTrackState> by mutableStateOf(
-        listOf(FixedDanmakuTrackState(_isPaused))
+        listOf(FixedDanmakuTrackState(_isPaused)),
     )
         private set
 
@@ -230,19 +230,19 @@ internal class DanmakuHostStateImpl(
             count = count,
             get = { floatingTracks },
             set = { floatingTracks = it },
-            newInstance = { FloatingDanmakuTrackState(_isPaused, 30, danmakuTrackProperties) }
+            newInstance = { FloatingDanmakuTrackState(_isPaused, 30, danmakuTrackProperties) },
         )
         setTrackCountImpl(
             count = (count / 2).coerceAtLeast(1),
             get = { topTracks },
             set = { topTracks = it },
-            newInstance = { FixedDanmakuTrackState(_isPaused) }
+            newInstance = { FixedDanmakuTrackState(_isPaused) },
         )
         setTrackCountImpl(
             count = (count / 2).coerceAtLeast(1),
             get = { bottomTracks },
             set = { bottomTracks = it },
-            newInstance = { FixedDanmakuTrackState(_isPaused) }
+            newInstance = { FixedDanmakuTrackState(_isPaused) },
         )
     }
 
@@ -261,7 +261,7 @@ internal class DanmakuHostStateImpl(
                 current + List(count - current.size) {
                     newInstance()
                 }
-            }
+            },
         )
     }
 
@@ -361,7 +361,7 @@ internal class DanmakuHostStateImpl(
                     overflow = TextOverflow.Visible,
                     style = danmakuStyle,
                     softWrap = false,
-                    maxLines = 1
+                    maxLines = 1,
                 ).size.width
             }
             track.lastSent = danmaku.danmaku

@@ -68,7 +68,7 @@ fun <T> SettingsScope.DropdownItem(
                             onClick = {
                                 onSelect(value)
                                 showDropdown = false
-                            }
+                            },
                         )
                     }
                 }

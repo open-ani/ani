@@ -35,7 +35,7 @@ object UserEpisodeCollectionSerializer : KSerializer<UserEpisodeCollection> {
             Delegate(
                 episode = value.episode,
                 type = value.type,
-            )
+            ),
         )
     }
 }
@@ -90,7 +90,7 @@ object EpisodeSerializer : KSerializer<Episode> {
                 desc = value.desc,
                 disc = value.disc,
                 ep = value.ep?.toInt(),
-            )
+            ),
         )
     }
 

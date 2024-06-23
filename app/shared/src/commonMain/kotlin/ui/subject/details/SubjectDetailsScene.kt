@@ -11,7 +11,7 @@ fun SubjectDetailsScene(
 ) {
     Column(
         Modifier
-            .fillMaxSize()
+            .fillMaxSize(),
     ) {
         SubjectDetailsPage(vm)
     }

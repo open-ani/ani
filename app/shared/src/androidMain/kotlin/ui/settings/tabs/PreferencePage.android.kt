@@ -31,6 +31,7 @@ private fun PreviewPreferencePage() {
         SettingsPage()
     }
 }
+
 @Preview
 @Composable
 private fun PreviewPreferenceScope() {
@@ -58,12 +59,12 @@ private fun PreviewTextFieldDialog() {
             onDismissRequest = {},
             onConfirm = {},
             title = { Text(text = "编辑") },
-            description = { Text(LoremIpsum(20).values.first()) }
+            description = { Text(LoremIpsum(20).values.first()) },
         ) {
             OutlinedTextField(
                 value = "test",
                 onValueChange = {},
-                shape = MaterialTheme.shapes.medium
+                shape = MaterialTheme.shapes.medium,
             )
         }
     }

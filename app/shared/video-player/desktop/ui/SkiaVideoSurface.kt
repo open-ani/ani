@@ -67,7 +67,7 @@ class SkiaVideoSurface(
             val imageInfo = ImageInfo.makeN32Premul(width.value, height.value)
             bitmap = Bitmap()
             check(
-                bitmap.allocPixels(imageInfo)
+                bitmap.allocPixels(imageInfo),
             ) {
                 "Failed bitmap.allocPixels"
             }

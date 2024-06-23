@@ -41,7 +41,7 @@ class AuthServiceTest {
             }.build()
             modules(
                 getServerKoinModule(config, coroutineScope),
-                module { extraKoin() }
+                module { extraKoin() },
             )
         }
         block()
@@ -67,16 +67,18 @@ class AuthServiceTest {
     }
 
     @Test
-    fun `test login bangumi with client version`() = runTestWithKoin({
-        single<ClientVersionVerifier> {
-            object : ClientVersionVerifier {
-                override suspend fun verify(clientVersion: String): Boolean {
-                    return clientVersion == "3.0.0-dev" || clientVersion == "3.0.0-beta21"
+    fun `test login bangumi with client version`() = runTestWithKoin(
+        {
+            single<ClientVersionVerifier> {
+                object : ClientVersionVerifier {
+                    override suspend fun verify(clientVersion: String): Boolean {
+                        return clientVersion == "3.0.0-dev" || clientVersion == "3.0.0-beta21"
+                    }
                 }
             }
-        }
 
-    }) {
+        },
+    ) {
         val authService = koin.get<AuthService>()
 
         assertDoesNotThrow { authService.loginBangumi("test_token_1", "3.0.0-dev") }

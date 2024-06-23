@@ -89,9 +89,8 @@ class SearchViewModel(
         .distinctUntilChanged()
         .map { it.map { entity -> entity.toData() } }
         .stateIn(viewModelScope, SharingStarted.Lazily, listOf())
-    
 
-    
+
     init {
         keyword?.let { search(it) }
     }
@@ -149,9 +148,9 @@ class SearchViewModel(
                 subjectProvider.startSearch(
                     SubjectSearchQuery(
                         keywords.trim(),
-                        useOldSearchApi = !searchSettings.enableNewSearchSubjectApi
-                    )
-                )
+                        useOldSearchApi = !searchSettings.enableNewSearchSubjectApi,
+                    ),
+                ),
             )
     }
 }

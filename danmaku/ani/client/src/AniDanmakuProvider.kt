@@ -69,8 +69,8 @@ class AniDanmakuProvider(
                         color = it.danmakuInfo.color,
                     )
                 },
-                coroutineContext = sessionCoroutineContext
-            )
+                coroutineContext = sessionCoroutineContext,
+            ),
         )
     }
 }

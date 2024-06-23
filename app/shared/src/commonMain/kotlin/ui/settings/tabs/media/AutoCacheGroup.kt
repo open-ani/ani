@@ -41,7 +41,7 @@ internal fun SettingsScope.AutoCacheGroup(
             },
             title = { Text("启用自动缓存") },
             description = { Text("启用后下面的设置才有效") },
-            modifier = Modifier.placeholder(vm.mediaCacheSettings.loading)
+            modifier = Modifier.placeholder(vm.mediaCacheSettings.loading),
         )
 
         HorizontalDividerItem()

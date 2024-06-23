@@ -1,31 +1,39 @@
 package me.him188.ani.app.data.media.selector
 
-import androidx.compose.runtime.Stable
 import androidx.compose.ui.util.fastFilter
 import androidx.compose.ui.util.fastFirstOrNull
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.shareIn
 import me.him188.ani.app.data.models.MediaSelectorSettings
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.source.MediaSourceKind
+import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.datasources.api.topic.hasSeason
 import me.him188.ani.datasources.api.topic.isSingleEpisode
 import kotlin.coroutines.CoroutineContext
 
 /**
- * 数据源选择器
+ * 数据源选择器.
+ *
+ * 从 [mediaList] 中, 根据用户默认偏好和本次选择的即时偏好, 过滤出 [filteredCandidates].
+ * 支持默认选择 [trySelectDefault], [trySelectCached].
+ * 用户操作的 [select] 将覆盖默认的选项.
+ *
+ * 对于选项的更新, 将会触发事件 [events].
+ *
+ * @see MediaSelectorFactory
  */
 interface MediaSelector {
     /**
@@ -46,22 +54,25 @@ interface MediaSelector {
     /**
      * 目前选中的项目. 它不一定是 [filteredCandidates] 中的一个项目.
      */
-    val selected: Flow<Media?>
+    val selected: StateFlow<Media?>
 
     /**
      * 用于监听 [select] 等事件
+     * @see eventHandling
      */
     val events: MediaSelectorEvents
 
     /**
-     * Selects a media from the [filteredCandidates] list. This will update [selected].
+     * 选择一个 [Media]. 该 [Media] 可以是位于 [filteredCandidates] 中的, 也可以不是.
+     * 将会更新 [selected] 并广播事件 [MediaSelectorEvents.onChangePreference] 和 [MediaSelectorEvents.onSelect].
      *
-     * This will be considered as the user's selection, and will trigger [MediaSelectorEvents.onSelect].
-     * For default selections, use [trySelectDefault]
+     * 该操作优先级高于任何其他的选择. 即会覆盖 [trySelectDefault] 和 [trySelectCached] 的结果.
      *
-     * @param candidate must be one of [candidate]. Otherwise this function will have no effect.
+     * 重复 [select] 同一个 [Media] 时, 本函数立即返回 `true`, 不会做重复广播事件等.
+     *
+     * @return 当成功将 [selected] 更新为 [candidate] 时返回 `true`. 当 [selected] 已经是 [candidate] 时返回 `false`.
      */
-    suspend fun select(candidate: Media)
+    suspend fun select(candidate: Media): Boolean
 
     /**
      * 清除当前的选择, 不会更新配置
@@ -70,12 +81,14 @@ interface MediaSelector {
 
     /**
      * 尝试使用目前的偏好设置, 自动选择一个. 当已经有用户选择或默认选择时返回 `null`.
+     * @see autoSelect
      */
     suspend fun trySelectDefault(): Media?
 
     /**
-     * 尝试选择缓存作为默认选择, 如果没有缓存则不做任何事情
-     * @return 是否成功选择了缓存
+     * 尝试选择缓存 ([MediaSourceKind.LocalCache]) 作为默认选择, 如果没有缓存则不做任何事情
+     * @return 成功选择的缓存, 若没有缓存或用户已经手动选择了一个则返回 `null`
+     * @see autoSelect
      */
     suspend fun trySelectCached(): Media?
 
@@ -85,39 +98,11 @@ interface MediaSelector {
     suspend fun removePreferencesUntilFirstCandidate()
 }
 
-interface MediaSelectorEvents {
-    val onSelect: Flow<SelectEvent>
-
-    /**
-     * 用户偏好发生变化, 这可能是 [MediaSelector.select], 也可能是 [MediaPreferenceItem.prefer].
-     *
-     * flow 的值为新的用户设置
-     */
-    val onChangePreference: Flow<MediaPreference>
-}
-
-data class SelectEvent(
-    val media: Media?,
-    val subtitleLanguageId: String?,
-)
-
-class MutableMediaSelectorEvents(
-    replay: Int = 0,
-    extraBufferCapacity: Int = 1,
-    onBufferOverflow: BufferOverflow = BufferOverflow.DROP_OLDEST,
-) : MediaSelectorEvents {
-    override val onSelect: MutableSharedFlow<SelectEvent> =
-        MutableSharedFlow(replay, extraBufferCapacity, onBufferOverflow)
-    override val onChangePreference: MutableSharedFlow<MediaPreference> =
-        MutableSharedFlow(replay, extraBufferCapacity, onBufferOverflow)
-}
-
 
 /**
  * 一个筛选项目
  * @param T 例如字幕语言
  */
-@Stable
 interface MediaPreferenceItem<T : Any> {
     /**
      * 目前搜索到的列表
@@ -135,9 +120,9 @@ interface MediaPreferenceItem<T : Any> {
     val defaultSelected: Flow<T?>
 
     /**
-     * [userSelected] 与 [defaultSelected] 合并考虑的选择
+     * [userSelected] 与 [defaultSelected] 合并考虑的选择. 不必是 [available] 里面的选项.
      */
-    val finalSelected: Flow<T?>
+    val finalSelected: Flow<T?> // 注意, autoEnableLastSelected 依赖 "不必是 [available] 里面的选项" 这个性质.
 
     /**
      * 用户选择
@@ -148,32 +133,6 @@ interface MediaPreferenceItem<T : Any> {
      * 删除已有的选择
      */
     suspend fun removePreference()
-}
-
-data class MediaSelectorContext(
-    /**
-     * 该条目已经完结了一段时间了. `null` 表示该信息还正在查询中
-     */
-    val subjectFinishedForAConservativeTime: Boolean?,
-    /**
-     * 在执行自动选择时, 需要按此顺序使用数据源.
-     * 为 `null` 表示无偏好, 可以按任意顺序选择.
-     *
-     * 当使用完所有偏好的数据源后都没有筛选到资源时, 将会 fallback 为选择任意数据源的资源
-     */
-    val mediaSourcePrecedence: List<String>?,
-) {
-    fun allFieldsLoaded() = subjectFinishedForAConservativeTime != null
-            && mediaSourcePrecedence != null
-
-    companion object {
-        /**
-         * 刚开始查询时的默认值
-         */
-        val Initial = MediaSelectorContext(null, null)
-
-        val EmptyForPreview get() = MediaSelectorContext(false, emptyList())
-    }
 }
 
 class DefaultMediaSelector(
@@ -197,6 +156,36 @@ class DefaultMediaSelector(
      */
     private val enableCaching: Boolean = true,
 ) : MediaSelector {
+    companion object {
+        private fun isLocalCache(it: Media) = it.kind == MediaSourceKind.LocalCache
+
+        fun filterCandidates(
+            mediaList: List<Media>,
+            mergedPreferences: MediaPreference,
+        ): List<Media> {
+            infix fun <Pref : Any> Pref?.matches(prop: Pref): Boolean = this == null || this == prop
+            infix fun <Pref : Any> Pref?.matches(prop: List<Pref>): Boolean = this == null || this in prop
+
+            /**
+             * 当 [it] 满足当前筛选条件时返回 `true`.
+             */
+            fun filterCandidate(it: Media): Boolean {
+                if (isLocalCache(it)) {
+                    return true // always show local, so that [makeDefaultSelection] will select a local one
+                }
+
+                return mergedPreferences.alliance matches it.properties.alliance &&
+                        mergedPreferences.resolution matches it.properties.resolution &&
+                        mergedPreferences.subtitleLanguageId matches it.properties.subtitleLanguageIds &&
+                        mergedPreferences.mediaSourceId matches it.mediaSourceId
+            }
+
+            return mediaList.filter {
+                filterCandidate(it)
+            }
+        }
+    }
+
     private fun <T> Flow<T>.cached(): Flow<T> {
         if (!enableCaching) return this
         return this.shareIn(CoroutineScope(flowCoroutineContext), SharingStarted.WhileSubscribed(), replay = 1)
@@ -206,7 +195,11 @@ class DefaultMediaSelector(
     private val mediaSelectorContext = mediaSelectorContextNotCached.cached()
 
     override val mediaList: Flow<List<Media>> = combine(
-        mediaListNotCached.cached(), // cache 是必要的, 当 newPreferences 变更的时候不能重新加载 media list (网络)
+        mediaListNotCached.mapLatest { list ->
+            list.sortedWith(
+                compareBy<Media> { it.costForDownload }.thenByDescending { it.properties.size.inBytes },
+            )
+        }.cached(), // cache 是必要的, 当 newPreferences 变更的时候不能重新加载 media list (网络)
         savedDefaultPreference, // 只需要使用 default, 因为目前不能覆盖生肉设置
         // 如果依赖 merged pref, 会产生循环依赖 (mediaList -> mediaPreferenceItem -> newPreferences -> mediaList)
         this.mediaSelectorSettings,
@@ -230,7 +223,7 @@ class DefaultMediaSelector(
             if (isLocalCache(media)) return@filter true // 本地缓存总是要显示
 
             if (settings.hideSingleEpisodeForCompleted
-                && context.subjectFinishedForAConservativeTime == true // 还未加载到剧集信息时, 先显示
+                && context.subjectFinished == true // 还未加载到剧集信息时, 先显示
                 && media.kind == MediaSourceKind.BitTorrent
             ) {
                 // 完结番隐藏单集资源
@@ -257,7 +250,7 @@ class DefaultMediaSelector(
             list.mapTo(HashSet(list.size)) { it.properties.alliance }
                 .sortedBy { it }
         },
-        getFromPreference = { it.alliance }
+        getFromPreference = { it.alliance },
     )
     override val resolution = mediaPreferenceItem(
         "resolution",
@@ -265,7 +258,7 @@ class DefaultMediaSelector(
             list.mapTo(HashSet(list.size)) { it.properties.resolution }
                 .sortedBy { it }
         },
-        getFromPreference = { it.resolution }
+        getFromPreference = { it.resolution },
     )
     override val subtitleLanguageId = mediaPreferenceItem(
         "subtitleLanguage",
@@ -284,7 +277,7 @@ class DefaultMediaSelector(
                     }
                 }
         },
-        getFromPreference = { it.subtitleLanguageId }
+        getFromPreference = { it.subtitleLanguageId },
     )
     override val mediaSourceId = mediaPreferenceItem(
         "mediaSource",
@@ -292,7 +285,7 @@ class DefaultMediaSelector(
             list.mapTo(HashSet(list.size)) { it.properties.resolution }
                 .sortedBy { it }
         },
-        getFromPreference = { it.mediaSourceId }
+        getFromPreference = { it.mediaSourceId },
     )
 
     /**
@@ -315,33 +308,16 @@ class DefaultMediaSelector(
 
     // collect 一定会计算
     private val filteredCandidatesNotCached = combine(this.mediaList, newPreferences) { mediaList, mergedPreferences ->
-        infix fun <Pref : Any> Pref?.matches(prop: Pref): Boolean = this == null || this == prop
-        infix fun <Pref : Any> Pref?.matches(prop: List<Pref>): Boolean = this == null || this in prop
-
-        /**
-         * 当 [it] 满足当前筛选条件时返回 `true`.
-         */
-        fun filterCandidate(it: Media): Boolean {
-            if (isLocalCache(it)) {
-                return true // always show local, so that [makeDefaultSelection] will select a local one
-            }
-
-            return mergedPreferences.alliance matches it.properties.alliance &&
-                    mergedPreferences.resolution matches it.properties.resolution &&
-                    mergedPreferences.subtitleLanguageId matches it.properties.subtitleLanguageIds &&
-                    mergedPreferences.mediaSourceId matches it.mediaSourceId
-        }
-
-        mediaList.filter {
-            filterCandidate(it)
-        }
+        filterCandidates(mediaList, mergedPreferences)
     }
+
     override val filteredCandidates: Flow<List<Media>> = filteredCandidatesNotCached.cached()
 
     override val selected: MutableStateFlow<Media?> = MutableStateFlow(null)
     override val events = MutableMediaSelectorEvents()
 
-    override suspend fun select(candidate: Media) {
+    override suspend fun select(candidate: Media): Boolean {
+        if (selected.value == candidate) return false
         selected.value = candidate
 
         alliance.preferWithoutBroadcast(candidate.properties.alliance)
@@ -354,6 +330,7 @@ class DefaultMediaSelector(
         // Publish events
         broadcastChangePreference()
         events.onSelect.emit(SelectEvent(candidate, null))
+        return true
     }
 
     override fun unselect() {
@@ -376,7 +353,7 @@ class DefaultMediaSelector(
                 resolution = preference.resolution,
                 subtitleLanguageId = overrideLanguageId ?: preference.subtitleLanguageId,
                 mediaSourceId = preference.mediaSourceId,
-            )
+            ),
         )
     }
 
@@ -401,7 +378,7 @@ class DefaultMediaSelector(
         val mediaSelectorSettings = mediaSelectorSettings.first()
 
 
-        val shouldPreferSeasons = mediaSelectorContext.subjectFinishedForAConservativeTime == true
+        val shouldPreferSeasons = mediaSelectorContext.subjectFinished == true
                 && mediaSelectorSettings.preferSeasons
 
         val languageIds = sequence {
@@ -466,8 +443,10 @@ class DefaultMediaSelector(
                 return null
             }
             if (shouldPreferSeasons) {
-                return selectDefault(list.fastFirstOrNull { it.episodeRange?.hasSeason() == null }
-                    ?: list.first())
+                return selectDefault(
+                    list.fastFirstOrNull { it.episodeRange?.hasSeason() == null }
+                        ?: list.first(),
+                )
             }
             return selectDefault(list.first())
         }
@@ -529,8 +508,6 @@ class DefaultMediaSelector(
         val cached = candidates.fastFirstOrNull { isLocalCache(it) } ?: return null
         return selectDefault(cached)
     }
-
-    private fun isLocalCache(it: Media) = it.kind == MediaSourceKind.LocalCache
 
     override suspend fun removePreferencesUntilFirstCandidate() {
         if (filteredCandidates.first().isNotEmpty()) return
@@ -597,3 +574,10 @@ class DefaultMediaSelector(
         override fun toString(): String = "MediaPreferenceItem($debugName)"
     }
 }
+
+private val Media.costForDownload
+    get() = when (location) {
+        MediaSourceLocation.Local -> 0
+        MediaSourceLocation.Lan -> 1
+        else -> 2
+    }

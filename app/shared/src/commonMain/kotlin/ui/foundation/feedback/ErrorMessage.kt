@@ -153,26 +153,32 @@ fun ErrorDialogHost(
                 if (error?.isRecovering == false) {
                     if (error.cause != null) {
                         val clipboardManager = LocalClipboardManager.current
-                        TextButton(onClick = {
-                            clipboardManager.setText(AnnotatedString("删除缓存失败\n\n" + error.cause?.stackTraceToString()))
-                        }) {
+                        TextButton(
+                            onClick = {
+                                clipboardManager.setText(AnnotatedString("删除缓存失败\n\n" + error.cause?.stackTraceToString()))
+                            },
+                        ) {
                             Text("复制")
                         }
                     }
-                    TextButton(onClick = {
-                        controller.hide()
-                        error.onConfirm?.invoke()
-                        onConfirm()
-                    }) {
+                    TextButton(
+                        onClick = {
+                            controller.hide()
+                            error.onConfirm?.invoke()
+                            onConfirm()
+                        },
+                    ) {
                         Text("OK")
                     }
                 } else {
                     // recovering
-                    TextButton(onClick = {
-                        controller.hide()
-                        error?.onCancel?.invoke()
-                        onClickCancel()
-                    }) {
+                    TextButton(
+                        onClick = {
+                            controller.hide()
+                            error?.onCancel?.invoke()
+                            onClickCancel()
+                        },
+                    ) {
                         Text("取消")
                     }
                 }

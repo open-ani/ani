@@ -88,7 +88,7 @@ internal fun SettingsScope.MediaSourceGroup(vm: NetworkSettingsViewModel) {
                 }
                 vm.startAdding(it)
             },
-            onDismissRequest = { showAdd = false }
+            onDismissRequest = { showAdd = false },
         )
     }
 
@@ -108,13 +108,13 @@ internal fun SettingsScope.MediaSourceGroup(vm: NetworkSettingsViewModel) {
                 onDismissRequest = {
                     vm.cancelEdit()
                     showAdd = false
-                }
+                },
             )
         }
     }
 
     val sorter = rememberSorterState<MediaSourcePresentation>(
-        onComplete = { list -> vm.reorderMediaSources(newOrder = list.map { it.instanceId }) }
+        onComplete = { list -> vm.reorderMediaSources(newOrder = list.map { it.instanceId }) },
     )
     Group(
         title = { Text("数据源管理") },
@@ -132,38 +132,44 @@ internal fun SettingsScope.MediaSourceGroup(vm: NetworkSettingsViewModel) {
                 visible = !sorter.isSorting,
             ) {
                 Row {
-                    IconButton({
-                        vm.cancelEdit()
-                        showAdd = true
-                    }) {
+                    IconButton(
+                        {
+                            vm.cancelEdit()
+                            showAdd = true
+                        },
+                    ) {
                         Icon(Icons.Rounded.Add, contentDescription = "添加数据源")
                     }
                 }
             }
             Crossfade(sorter.isSorting, Modifier.animateContentSize()) { isSorting ->
                 if (isSorting) {
-                    Button({
-                        sorter.complete()
-                    }) {
+                    Button(
+                        {
+                            sorter.complete()
+                        },
+                    ) {
                         Icon(Icons.Rounded.Check, contentDescription = "保存排序")
                     }
                 } else {
-                    IconButton({
-                        vm.cancelEdit()
-                        sorter.start(vm.mediaSources)
-                    }) {
+                    IconButton(
+                        {
+                            vm.cancelEdit()
+                            sorter.start(vm.mediaSources)
+                        },
+                    ) {
                         Icon(Icons.AutoMirrored.Rounded.Sort, contentDescription = "排序")
                     }
                 }
             }
-        }
+        },
     ) {
         Box {
             Column(
                 Modifier
                     .ifThen(sorter.isSorting) { alpha(0f) }
                     .wrapContentHeight()
-                    .placeholder(vm.isCompletingReorder)
+                    .placeholder(vm.isCompletingReorder),
             ) {
                 vm.mediaSources.forEachIndexed { index, item ->
                     if (index != 0) {
@@ -174,10 +180,10 @@ internal fun SettingsScope.MediaSourceGroup(vm: NetworkSettingsViewModel) {
                         Modifier.combinedClickable(
                             onClickLabel = "编辑",
                             onLongClick = { sorter.start(vm.mediaSources) },
-                            onLongClickLabel = "开始排序"
+                            onLongClickLabel = "开始排序",
                         ) {
                             vm.startEditing(
-                                item
+                                item,
                             )
                         },
                     ) {
@@ -185,7 +191,7 @@ internal fun SettingsScope.MediaSourceGroup(vm: NetworkSettingsViewModel) {
                             item,
                             onEdit = { vm.startEditing(item) },
                             onDelete = { vm.deleteMediaSource(item) },
-                            onEnabledChange = { vm.toggleMediaSourceEnabled(item, it) }
+                            onEnabledChange = { vm.toggleMediaSourceEnabled(item, it) },
                         )
                     }
                 }
@@ -197,11 +203,11 @@ internal fun SettingsScope.MediaSourceGroup(vm: NetworkSettingsViewModel) {
                     modifier = Modifier
                         .matchParentSize()
                         .reorderable(sorter.reorderableState)
-                        .detectReorderAfterLongPress(sorter.reorderableState)
+                        .detectReorderAfterLongPress(sorter.reorderableState),
                 ) {
                     itemsIndexed(
                         sorter.sortingData,
-                        key = { _, item -> item.instanceId }
+                        key = { _, item -> item.instanceId },
                     ) { index, item ->
                         if (index != 0) {
                             HorizontalDividerItem()
@@ -212,12 +218,12 @@ internal fun SettingsScope.MediaSourceGroup(vm: NetworkSettingsViewModel) {
                                 item,
                                 Modifier
                                     .shadow(elevation.value)
-                                    .background(MaterialTheme.colorScheme.surface) // match card background
+                                    .background(MaterialTheme.colorScheme.surface), // match card background
                             ) {
                                 Icon(
                                     Icons.Rounded.Reorder,
                                     "拖拽排序",
-                                    Modifier.detectReorder(sorter.reorderableState)
+                                    Modifier.detectReorder(sorter.reorderableState),
                                 )
                             }
                         }
@@ -260,7 +266,7 @@ internal fun SettingsScope.MediaSourceItem(
     title: @Composable RowScope.() -> Unit = {
         Text(
             item.info.name,
-            Modifier.ifThen(!isEnabled) { alpha(DISABLED_ALPHA) }
+            Modifier.ifThen(!isEnabled) { alpha(DISABLED_ALPHA) },
         )
     },
     description: (@Composable () -> Unit)? =
@@ -272,7 +278,7 @@ internal fun SettingsScope.MediaSourceItem(
     icon: (@Composable () -> Unit)? = {
         Box(
             Modifier.ifThen(!isEnabled) { alpha(DISABLED_ALPHA) }.clip(MaterialTheme.shapes.extraSmall).size(48.dp),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
         ) {
             MediaSourceIcon(item.mediaSourceId, Modifier.size(48.dp), item.info.iconUrl)
         }
@@ -284,7 +290,7 @@ internal fun SettingsScope.MediaSourceItem(
         description = description,
         icon = icon,
         action = action,
-        title = title
+        title = title,
     )
 }
 
@@ -315,7 +321,7 @@ internal fun NormalMediaSourceItemAction(
                     TextButton({ onDelete(); showConfirmDelete = false }) {
                         Text(
                             "删除",
-                            color = MaterialTheme.colorScheme.error
+                            color = MaterialTheme.colorScheme.error,
                         )
                     }
                 },
@@ -347,7 +353,7 @@ internal fun NormalMediaSourceItemAction(
                     onClick = {
                         onEnabledChange(!item.isEnabled)
                         showMore = false
-                    }
+                    },
                 )
                 DropdownMenuItem(
                     leadingIcon = { Icon(Icons.Rounded.Edit, null) },
@@ -355,7 +361,7 @@ internal fun NormalMediaSourceItemAction(
                     onClick = {
                         showMore = false
                         onEdit()
-                    }
+                    },
                 )
                 DropdownMenuItem(
                     leadingIcon = { Icon(Icons.Rounded.Delete, null, tint = MaterialTheme.colorScheme.error) },
@@ -363,7 +369,7 @@ internal fun NormalMediaSourceItemAction(
                     onClick = {
                         showMore = false
                         showConfirmDelete = true
-                    }
+                    },
                 )
             }
 
@@ -407,7 +413,7 @@ internal fun SelectMediaSourceTemplateDialog(
                         title = {
                             Text(
                                 remember(item.mediaSourceId) { renderMediaSource(item.mediaSourceId) },
-                                maxLines = 1, overflow = TextOverflow.Ellipsis
+                                maxLines = 1, overflow = TextOverflow.Ellipsis,
                             )
                         },
                         icon = {

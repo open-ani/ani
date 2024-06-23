@@ -92,7 +92,7 @@ fun <T> SettingsScope.SorterItem(
                         sortingData = sortingData.toMutableList().apply {
                             add(to.index, removeAt(from.index))
                         }
-                    }
+                    },
                 )
                 BasicAlertDialog(onDismissRequest = { showDialog = false }) {
                     RichDialogLayout(
@@ -102,11 +102,13 @@ fun <T> SettingsScope.SorterItem(
                             TextButton({ showDialog = false }) {
                                 Text("取消")
                             }
-                            Button({
-                                showDialog = false
-                                onConfirm?.invoke()
-                                onSort(sortingData)
-                            }) {
+                            Button(
+                                {
+                                    showDialog = false
+                                    onConfirm?.invoke()
+                                    onSort(sortingData)
+                                },
+                            ) {
                                 Text("完成")
                             }
                         },
@@ -115,7 +117,7 @@ fun <T> SettingsScope.SorterItem(
                             state = state.listState,
                             modifier = Modifier
                                 .reorderable(state)
-                                .detectReorderAfterLongPress(state)
+                                .detectReorderAfterLongPress(state),
                         ) {
                             itemsIndexed(sortingData, key = { _, it -> key(it.item) }) { index, item ->
                                 ReorderableItem(state, key = key(item.item)) { isDragging ->
@@ -125,7 +127,7 @@ fun <T> SettingsScope.SorterItem(
                                             .shadow(elevation.value)
                                             .background(MaterialTheme.colorScheme.surfaceVariant) // match card background
                                             .fillMaxWidth(),
-                                        verticalAlignment = Alignment.CenterVertically
+                                        verticalAlignment = Alignment.CenterVertically,
                                     ) {
                                         Checkbox(
                                             checked = item.selected,
@@ -134,7 +136,7 @@ fun <T> SettingsScope.SorterItem(
                                                     set(index, SelectableItem(item.item, it))
                                                 }
                                             },
-                                            modifier = Modifier.padding(end = 4.dp)
+                                            modifier = Modifier.padding(end = 4.dp),
                                         )
 
                                         Row(Modifier.weight(1f)) {

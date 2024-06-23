@@ -58,7 +58,7 @@ sealed class SubtitleLanguage(
                 "Zh_Hans",
                 "zh_cn",
                 "SC",
-                "zh"
+                "zh",
             )
 
         override fun matches(text: String): Boolean {
@@ -123,7 +123,7 @@ sealed class SubtitleLanguage(
                 ChineseTraditional,
                 ChineseCantonese,
                 Japanese,
-                English
+                English,
             )
         }
 

@@ -31,14 +31,14 @@ private constructor(
                 // 新版本数据
                 return Torrent4jTorrentInfo(
                     originalUri = it.originalUri,
-                    info = org.libtorrent4j.TorrentInfo(it.torrentInfoData.hexToByteArray())
+                    info = org.libtorrent4j.TorrentInfo(it.torrentInfoData.hexToByteArray()),
                 )
             }
 
             // 旧版本数据
             return Torrent4jTorrentInfo(
                 originalUri = null,
-                info = org.libtorrent4j.TorrentInfo(encoded.data)
+                info = org.libtorrent4j.TorrentInfo(encoded.data),
             )
         }
 
@@ -49,8 +49,8 @@ private constructor(
         ): EncodedTorrentInfo = EncodedTorrentInfo.createRaw(
             data = json.encodeToString(
                 Torrent4jEncodedTorrentInfoSave.serializer(),
-                Torrent4jEncodedTorrentInfoSave(originalUri, torrentInfoData.toHexString())
-            ).encodeToByteArray()
+                Torrent4jEncodedTorrentInfoSave(originalUri, torrentInfoData.toHexString()),
+            ).encodeToByteArray(),
         )
     }
 }

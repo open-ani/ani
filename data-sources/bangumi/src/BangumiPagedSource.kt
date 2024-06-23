@@ -25,13 +25,13 @@ class BangumiPagedSource(
                 convertType(),
                 null,
                 page * pageSize,
-                pageSize
+                pageSize,
             )
             paged = Paged(
                 total = tmpPaged.total,
                 hasMore = tmpPaged.hasMore,
                 page = tmpPaged
-                    .page.map { convert2Subject(it) }
+                    .page.map { convert2Subject(it) },
             )
         } else {
             val tmpPaged = client.subjects.searchSubjectByKeywords(
@@ -45,7 +45,7 @@ class BangumiPagedSource(
                 total = tmpPaged.total,
                 hasMore = tmpPaged.hasMore,
                 page = tmpPaged
-                    .page.map { it.toSubject() }
+                    .page.map { it.toSubject() },
             )
         }
 
@@ -67,11 +67,11 @@ class BangumiPagedSource(
             images = SubjectImages(
                 landscapeCommon = BangumiClientImpl.getSubjectImageUrl(
                     legaSub.id,
-                    BangumiSubjectImageSize.MEDIUM
+                    BangumiSubjectImageSize.MEDIUM,
                 ),
                 largePoster = BangumiClientImpl.getSubjectImageUrl(
                     legaSub.id,
-                    BangumiSubjectImageSize.LARGE
+                    BangumiSubjectImageSize.LARGE,
                 ),
             ),
             summary = legaSub.summary,

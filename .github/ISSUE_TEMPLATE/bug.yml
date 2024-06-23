@@ -16,12 +16,6 @@ body:
     attributes:
       label: 问题描述
       description: 详细描述你遇到的问题，可以附加截图或录屏。
-      placeholder: |
-        例如：
-        在一条船上把大象放入冰箱之后，冰箱门就关不上了。如果把大象放到陆地上就不会有这个问题。
-        - 把大象放入冰箱之前: *我是一个图片*
-        - 把大象放入冰箱之后: *我是另一个图片*
-        可以看到，冰箱的门被大象挡住了，所以就关不上了。
     validations:
       required: false
 
@@ -30,11 +24,6 @@ body:
     attributes:
       label: 复现步骤
       description: 说明如何让这个问题再次发生，越详细越好。如果不确定如何复现，请留空。
-      placeholder: |
-        例如:
-        1. 打开船上的冰箱门
-        2. 把大象装进去
-        3. 尝试关上冰箱门, 发现关不上
     validations:
       required: false
 
@@ -51,7 +40,7 @@ body:
     id: platform
     attributes:
       label: 操作系统
-      description: 你使用的操作系统
+      description: 不选择表示可能均受影响
       multiple: true
       options:
         - Android
@@ -59,9 +48,8 @@ body:
         - macOS (M 系列芯片)
         - Windows
         - Linux
-        - 其他 (请在上方描述中补充)
     validations:
-      required: true
+      required: false
 
   - type: textarea
     id: logs-system

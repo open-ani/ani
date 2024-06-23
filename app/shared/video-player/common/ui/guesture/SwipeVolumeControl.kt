@@ -64,7 +64,7 @@ fun Modifier.swipeLevelControl(
         properties["controller"] = controller
         properties["stepSize"] = stepSize
         properties["orientation"] = orientation
-    }
+    },
 ) {
     steppedDraggable(
         rememberSteppedDraggableState(

@@ -90,7 +90,7 @@ fun SettingsScope.TextFieldItem(
                         valueText()
                     }
                 },
-                Modifier.weight(1f)
+                Modifier.weight(1f),
             )
 
             IconButton({ showDialog = true }) {
@@ -180,7 +180,7 @@ internal fun SettingsScope.TextFieldDialog(
 
                 ProvideTextStyleContentColor(
                     MaterialTheme.typography.labelMedium,
-                    LocalContentColor.current.copy(labelAlpha)
+                    LocalContentColor.current.copy(labelAlpha),
                 ) {
                     description?.let {
                         Row(Modifier.padding(horizontal = 8.dp)) {

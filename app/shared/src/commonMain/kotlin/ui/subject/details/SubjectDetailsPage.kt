@@ -100,10 +100,10 @@ fun SubjectDetailsPage(
 //                containerColor = Color.Transparent,
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Transparent,
-                )
+                ),
             )
         },
-        contentWindowInsets = WindowInsets(0.dp)
+        contentWindowInsets = WindowInsets(0.dp),
     ) { scaffoldPadding ->
         val coverImageUrl by viewModel.coverImage.collectAsStateWithLifecycle(null)
 
@@ -131,16 +131,17 @@ fun SubjectDetailsPage(
                             1.00f to backgroundColor,
                         )
                     },
-                )
+                ),
         ) {
         }
 
         SubjectDetailsContent(
-            viewModel, Modifier
+            viewModel,
+            Modifier
                 .verticalScroll(rememberScrollState())
                 .padding(scaffoldPadding) // pad top bar
                 .padding(bottom = 16.dp) // pad bottom
-                .fillMaxSize()
+                .fillMaxSize(),
         )
     }
 }
@@ -156,7 +157,7 @@ private fun SubjectDetailsContent(
         // 封面, 标题, 标签 
         SubjectDetailsHeader(
             vm,
-            Modifier.padding(top = 8.dp, bottom = 4.dp).padding(start = horizontalPadding)
+            Modifier.padding(top = 8.dp, bottom = 4.dp).padding(start = horizontalPadding),
         )
 
         // 收藏数据和收藏按钮
@@ -170,12 +171,12 @@ private fun SubjectDetailsContent(
                 collection?.let {
                     Text(
                         "${it.collect} 收藏 / ${it.wish} 想看 / ${it.doing} 在看",
-                        style = MaterialTheme.typography.bodySmall
+                        style = MaterialTheme.typography.bodySmall,
                     )
                     Text(
                         " / ${it.onHold} 搁置 / ${it.dropped} 抛弃",
                         style = MaterialTheme.typography.bodySmall,
-                        color = LocalContentColor.current.slightlyWeaken()
+                        color = LocalContentColor.current.slightlyWeaken(),
                     )
                 }
             }
@@ -184,7 +185,7 @@ private fun SubjectDetailsContent(
             val selfCollected by vm.selfCollected.collectAsStateWithLifecycle(null)
 
             Row(
-                Modifier.padding(start = 8.dp, top = 8.dp).align(Alignment.End)
+                Modifier.padding(start = 8.dp, top = 8.dp).align(Alignment.End),
             ) {
                 // 收藏按钮
                 if (selfCollected == true) {
@@ -192,7 +193,7 @@ private fun SubjectDetailsContent(
                     if (showEpisodeProgressDialog) {
                         EpisodeProgressDialog(
                             vm.episodeProgressState,
-                            onDismissRequest = { showEpisodeProgressDialog = false }
+                            onDismissRequest = { showEpisodeProgressDialog = false },
                         )
                     }
                     TextButton({ showEpisodeProgressDialog = true }) {
@@ -239,11 +240,11 @@ private fun SubjectDetailsContent(
                     AvatarImage(
                         it.images?.medium ?: "",
                         alignment = Alignment.TopStart,
-                        contentScale = ContentScale.Crop
+                        contentScale = ContentScale.Crop,
                     )
                 },
                 text = { Text(it.name, maxLines = 1, overflow = TextOverflow.Ellipsis) },
-                role = { Text(it.actors?.firstOrNull()?.name ?: "", maxLines = 1, overflow = TextOverflow.Ellipsis) }
+                role = { Text(it.actors?.firstOrNull()?.name ?: "", maxLines = 1, overflow = TextOverflow.Ellipsis) },
             )
         }
 
@@ -255,7 +256,7 @@ private fun SubjectDetailsContent(
             PersonView(
                 avatar = { AvatarImage(it.images?.medium ?: "", contentScale = ContentScale.Crop) },
                 text = { Text(it.name, maxLines = 1, overflow = TextOverflow.Ellipsis) },
-                role = { Text(it.relation, maxLines = 1, overflow = TextOverflow.Ellipsis) }
+                role = { Text(it.relation, maxLines = 1, overflow = TextOverflow.Ellipsis) },
             )
         }
 
@@ -267,7 +268,7 @@ private fun SubjectDetailsContent(
                 episodesMain,
                 horizontalPadding,
                 { navigator.navigateEpisodeDetails(vm.subjectId, it.id.toInt()) },
-                Modifier.padding(top = 8.dp)
+                Modifier.padding(top = 8.dp),
             )
         }
 
@@ -391,7 +392,7 @@ fun EpisodeItem(
     ) {
         Column(
             Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            Arrangement.spacedBy(8.dp)
+            Arrangement.spacedBy(8.dp),
         ) {
             Row(
                 Modifier,
@@ -419,12 +420,12 @@ fun EpisodeItem(
                 Icon(
                     Icons.Outlined.ChatBubbleOutline,
                     null,
-                    Modifier.size(16.dp)
+                    Modifier.size(16.dp),
                 )
                 Text(
                     remember { "${episode.comment}" },
                     Modifier.offset(y = (-1).dp).padding(start = 4.dp),
-                    style = MaterialTheme.typography.bodySmall
+                    style = MaterialTheme.typography.bodySmall,
                 )
             }
         }

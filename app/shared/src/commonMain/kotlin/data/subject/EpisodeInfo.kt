@@ -13,7 +13,7 @@ import org.openapitools.client.models.Episode
  */
 @Immutable
 @Serializable
-class EpisodeInfo(
+data class EpisodeInfo(
     val id: Int,
     /** `0` 本篇，`1` SP，`2` OP，`3` ED */
     val type: EpisodeType = EpisodeType.MainStory,
@@ -30,7 +30,7 @@ class EpisodeInfo(
     /** 同类条目的排序和集数 */
     val sort: EpisodeSort = EpisodeSort(""),
     /** 条目内的集数, 从`1`开始。非本篇剧集的此字段无意义 */
-    val ep: EpisodeSort = EpisodeSort(""),
+    val ep: EpisodeSort? = null,
 //    /** 服务器解析的时长，无法解析时为 `0` */
 //    val durationSeconds: Int? = null
 )

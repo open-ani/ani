@@ -302,18 +302,22 @@ internal class DanmakuSessionAlgorithm(
 
                 // 发送所有在 repopulateDistance 时间内的弹幕
                 val curTimeMillis = curTime.inWholeMilliseconds
-                sendEvent(DanmakuEvent.Repopulate(buildList {
-                    foreachDanmaku { item ->
-                        if (curTimeMillis < item.playTimeMillis) {
-                            // 还没有达到弹幕发送时间, 因为 list 是排序的, 这也说明后面的弹幕都还没到时间
-                            return@buildList
-                        }
-                        if (size >= state.repopulateMaxCount) {
-                            return@buildList
-                        }
-                        add(item)
-                    }
-                }))
+                sendEvent(
+                    DanmakuEvent.Repopulate(
+                        buildList {
+                            foreachDanmaku { item ->
+                                if (curTimeMillis < item.playTimeMillis) {
+                                    // 还没有达到弹幕发送时间, 因为 list 是排序的, 这也说明后面的弹幕都还没到时间
+                                    return@buildList
+                                }
+                                if (size >= state.repopulateMaxCount) {
+                                    return@buildList
+                                }
+                                add(item)
+                            }
+                        },
+                    ),
+                )
                 return
             }
         } finally { // 总是更新

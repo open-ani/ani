@@ -17,11 +17,12 @@ import me.him188.ani.datasources.api.source.MediaFetchRequest
  */
 @Immutable
 @Serializable
-class MediaCacheMetadata
+data class MediaCacheMetadata
 /**
  * This constructor is only for serialization
  */
-private constructor(
+@Deprecated("This constructor is only for serialization. Use the other one instead", level = DeprecationLevel.ERROR)
+constructor(
     /**
      * @see MediaFetchRequest.subjectId
      */
@@ -52,6 +53,7 @@ private constructor(
     val extra: Map<String, String> = emptyMap(),
     @Transient @Suppress("unused") private val _primaryConstructorMarker: Byte = 0, // avoid compiler error
 ) {
+    @Suppress("DEPRECATION_ERROR")
     constructor(
 //    /**
 //     * Id of the [MediaSource] that cached this media.
@@ -72,7 +74,7 @@ private constructor(
         extra: Map<String, String> = emptyMap(),
     ) : this(
         subjectId, episodeId, subjectNames, episodeSort, episodeEp, episodeName, extra,
-        _primaryConstructorMarker = 0
+        _primaryConstructorMarker = 0,
     )
 
     /**

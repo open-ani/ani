@@ -6,7 +6,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flowOf
 import me.him188.ani.app.data.media.MediaSourceManager
+import me.him188.ani.app.data.media.fetch.MediaFetcher
+import me.him188.ani.app.data.media.instance.MediaSourceInstance
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.settings.framework.ConnectionTestResult
@@ -15,7 +18,6 @@ import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.source.MediaSourceFactory
 import me.him188.ani.datasources.api.source.MediaSourceParameters
 import me.him188.ani.datasources.api.source.TestHttpMediaSource
-import me.him188.ani.datasources.core.instance.MediaSourceInstance
 import me.him188.ani.datasources.dmhy.DmhyMediaSource
 import me.him188.ani.datasources.mikan.MikanMediaSource
 
@@ -34,7 +36,7 @@ private fun PreviewNetworkPreferenceTab() {
                                 DmhyMediaSource.ID,
                                 true,
                                 MediaSourceConfig(),
-                                TestHttpMediaSource(AcgRipMediaSource.ID, randomConnectivity = true)
+                                TestHttpMediaSource(AcgRipMediaSource.ID, randomConnectivity = true),
                             ),
 
                             MediaSourceInstance(
@@ -42,7 +44,7 @@ private fun PreviewNetworkPreferenceTab() {
                                 DmhyMediaSource.ID,
                                 true,
                                 MediaSourceConfig(),
-                                TestHttpMediaSource(DmhyMediaSource.ID, randomConnectivity = true)
+                                TestHttpMediaSource(DmhyMediaSource.ID, randomConnectivity = true),
                             ),
 
                             MediaSourceInstance(
@@ -50,7 +52,7 @@ private fun PreviewNetworkPreferenceTab() {
                                 DmhyMediaSource.ID,
                                 true,
                                 MediaSourceConfig(),
-                                TestHttpMediaSource(MikanMediaSource.ID, randomConnectivity = true)
+                                TestHttpMediaSource(MikanMediaSource.ID, randomConnectivity = true),
                             ),
 
                             MediaSourceInstance(
@@ -58,14 +60,15 @@ private fun PreviewNetworkPreferenceTab() {
                                 DmhyMediaSource.ID,
                                 true,
                                 MediaSourceConfig(),
-                                TestHttpMediaSource("local", randomConnectivity = true)
+                                TestHttpMediaSource("local", randomConnectivity = true),
                             ),
-                        )
+                        ),
                     )
                     override val allFactories: List<MediaSourceFactory> = listOf(MikanMediaSource.Factory())
                     override val allFactoryIds: List<String> = allInstances.value.map { it.mediaSourceId }
                     override val allFactoryIdsExceptLocal: List<String>
                         get() = allFactoryIds.filter { !isLocal(it) }
+                    override val mediaFetcher: Flow<MediaFetcher> get() = flowOf()
 
                     override fun instanceConfigFlow(instanceId: String): Flow<MediaSourceConfig> {
                         return MutableStateFlow(MediaSourceConfig())
@@ -84,7 +87,7 @@ private fun PreviewNetworkPreferenceTab() {
                     }
                 }
             }
-        }
+        },
     ) {
         val vm = rememberViewModel { NetworkSettingsViewModel() }
         SideEffect {

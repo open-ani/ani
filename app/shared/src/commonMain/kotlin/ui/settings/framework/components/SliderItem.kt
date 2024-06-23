@@ -79,7 +79,7 @@ fun SettingsScope.SliderItem(
             steps,
             onValueChangeFinished,
             colors,
-            interactionSource
+            interactionSource,
         )
     }
 }

@@ -1,384 +1,216 @@
 package me.him188.ani.app.ui.subject.cache
 
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.material3.BasicAlertDialog
-import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ProvideTextStyle
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.window.DialogProperties
-import io.ktor.util.logging.error
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.coroutineScope
+import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.transform
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.retry
+import kotlinx.coroutines.flow.take
 import me.him188.ani.app.data.media.MediaCacheManager
+import me.him188.ani.app.data.media.MediaSourceManager
+import me.him188.ani.app.data.media.cache.requester.EpisodeCacheRequest
+import me.him188.ani.app.data.media.cache.requester.EpisodeCacheRequester
+import me.him188.ani.app.data.media.selector.MediaSelectorFactory
 import me.him188.ani.app.data.models.MediaSelectorSettings
-import me.him188.ani.app.data.repositories.BangumiEpisodeRepository
-import me.him188.ani.app.data.repositories.BangumiSubjectRepository
 import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.data.subject.SubjectManager
-import me.him188.ani.app.data.subject.episode
 import me.him188.ani.app.data.subject.isKnownBroadcast
 import me.him188.ani.app.data.subject.nameCnOrName
-import me.him188.ani.app.data.subject.type
+import me.him188.ani.app.data.subject.subjectInfoFlow
+import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.AbstractViewModel
-import me.him188.ani.app.ui.foundation.feedback.ErrorDialogHost
-import me.him188.ani.app.ui.foundation.feedback.ErrorMessage
-import me.him188.ani.app.ui.foundation.launchInBackground
-import me.him188.ani.app.ui.foundation.rememberBackgroundScope
-import me.him188.ani.app.ui.subject.episode.mediaFetch.EpisodeMediaFetchSession
-import me.him188.ani.app.ui.subject.episode.mediaFetch.FetcherMediaSelectorConfig
-import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
-import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberMediaSelectorSourceResults
-import me.him188.ani.datasources.api.Media
-import me.him188.ani.datasources.api.MediaCacheMetadata
-import me.him188.ani.datasources.api.source.MediaFetchRequest
-import me.him188.ani.datasources.api.topic.contains
-import me.him188.ani.datasources.api.unwrapCached
-import me.him188.ani.datasources.core.cache.MediaCache
-import me.him188.ani.datasources.core.cache.MediaCacheStorage
-import me.him188.ani.utils.coroutines.runUntilSuccess
-import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
+import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
+import me.him188.ani.app.ui.settings.SettingsTab
+import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
 @Stable
-class SubjectCacheViewModel(
-    val subjectId: Int,
-) : AbstractViewModel(), KoinComponent {
-    private val bangumiSubjectRepository: BangumiSubjectRepository by inject()
-    private val bangumiEpisodeRepository: BangumiEpisodeRepository by inject()
+interface SubjectCacheViewModel {
+    val subjectId: Int
+    val subjectTitle: String?
+
+    val mediaSelectorSettingsFlow: Flow<MediaSelectorSettings>
+
+    /**
+     * 单个条目的缓存管理页面的状态
+     */
+    val cacheListState: EpisodeCacheListState
+}
+
+open class TestSubjectCacheViewModel(
+    override val subjectId: Int,
+    override val subjectTitle: String?,
+    override val cacheListState: EpisodeCacheListState,
+    override val mediaSelectorSettingsFlow: Flow<MediaSelectorSettings>
+) : SubjectCacheViewModel
+
+@Stable
+class SubjectCacheViewModelImpl(
+    override val subjectId: Int,
+) : AbstractViewModel(), KoinComponent, SubjectCacheViewModel {
     private val subjectManager: SubjectManager by inject()
     private val settingsRepository: SettingsRepository by inject()
     private val cacheManager: MediaCacheManager by inject()
+    private val mediaSourceManager: MediaSourceManager by inject()
 
-    private val cacheStoragesPlaceholder = ArrayList<MediaCacheStorage>(0)
+    private val subjectInfoFlow = subjectManager.subjectInfoFlow(subjectId).shareInBackground()
+    override val subjectTitle by subjectInfoFlow.map { it.nameCnOrName }.produceState(null)
+    override val mediaSelectorSettingsFlow: Flow<MediaSelectorSettings> get() = settingsRepository.mediaSelectorSettings.flow
 
-    val cacheStorages by cacheManager.enabledStorages.produceState(cacheStoragesPlaceholder)
-    val cacheStoragesLoaded by derivedStateOf {
-        cacheStorages !== cacheStoragesPlaceholder
-    }
-
-    suspend fun findStorageByCache(cache: MediaCache?): MediaCacheStorage {
-        val vm = this
-        if (cache == null) {
-            return vm.cacheStorages.first()
-        }
-        return vm.cacheStorages.singleOrNull()
-            ?: vm.cacheStorages.firstOrNull { list ->
-                list.listFlow.first().any { it == cache }
-            }
-            ?: vm.cacheStorages.first()
-    }
-
-    val mediaSelectorSettings: MediaSelectorSettings by settingsRepository.mediaSelectorSettings.flow
-        .produceState(MediaSelectorSettings.Default)
-
-    private val subjectInfoFlow = flowOf(subjectId).mapLatest { subjectId ->
-        runUntilSuccess(Int.MAX_VALUE) { subjectManager.getSubjectInfo(subjectId) }
-    }.shareInBackground()
-
-    val subjectTitle by subjectInfoFlow.map { it.nameCnOrName }.produceState(null)
-
-    val errorMessage: MutableStateFlow<ErrorMessage?> = MutableStateFlow(null)
-
-    private val episodeCollectionsFlowNotCached = flowOf(subjectId).mapLatest { subjectId ->
-        runUntilSuccess(Int.MAX_VALUE) { subjectManager.episodeCollectionsFlow(subjectId).first() }
-    }
+    private val episodeCollectionsFlowNotCached = subjectManager.episodeCollectionsFlow(subjectId).retry()
 
     /**
-     * State of the subject cache page.
+     * 单个条目的缓存管理页面的状态
      */
-    val stateFlow: SharedFlow<SubjectCacheState> = episodeCollectionsFlowNotCached.flatMapLatest { episodes ->
-        // 每个 episode 都为一个 flow, 然后合并
-        val f = episodes.map { episodeCollection ->
-            val episode = episodeCollection.episode // TODO: replace with EpisodeInfo 
+    override val cacheListState: EpisodeCacheListState = EpisodeCacheListStateImpl(
+        episodesLazy = episodeCollectionsFlowNotCached.take(1).mapLatest { episodes ->
+            // 每个 episode 都为一个 flow, 然后合并
+            episodes.map { episodeCollection ->
+                val episode = episodeCollection.episodeInfo
 
-            val cacheStatusFlow = cacheManager.cacheStatusForEpisode(subjectId, episode.id)
+                val cacheStatusFlow = cacheManager.cacheStatusForEpisode(subjectId, episode.id)
 
-            cacheStatusFlow.transform { cacheStatus ->
-                val state = EpisodeCacheState(
+                EpisodeCacheState(
                     episodeId = episode.id,
-                    sort = episode.sort,
-                    ep = episode.ep,
-                    title = episode.nameCn,
-                    watchStatus = episodeCollection.type,
-                    cacheStatus = cacheStatus,
-                    hasPublished = episode.isKnownBroadcast,
-                    originMedia = null,
+                    cacheRequesterLazy = {
+                        EpisodeCacheRequester(
+                            mediaSourceManager.mediaFetcher,
+                            MediaSelectorFactory.withKoin(),
+                            storagesLazy = cacheManager.enabledStorages,
+                        )
+                    },
+                    info = MutableStateFlow(
+                        EpisodeCacheInfo(
+                            sort = episode.sort,
+                            ep = episode.ep,
+                            title = episode.nameCn,
+                            watchStatus = episodeCollection.collectionType,
+                            hasPublished = episode.isKnownBroadcast,
+                        ),
+                    ),
+                    cacheStatusFlow = cacheStatusFlow,
+                    parentCoroutineContext = backgroundScope.coroutineContext,
                 )
-                emit(state)
-                val cachedMedia = cacheStatus.cache?.getCachedMedia()
-                emit(state.copy(originMedia = cachedMedia))
             }
-        }
-        // f extracted because of compiler inference bug
-        combine(f) {
-            SubjectCacheState(it.toList())
-        }
-    }.flowOn(Dispatchers.Default).shareInBackground()
-
-    /**
-     * @see EpisodeCacheState.mediaEpisodeRange
-     */
-    val firstIncludedCache by stateFlow.map { state ->
-        state.episodes.firstOrNull { it.mediaEpisodeRange != null }
-    }.flowOn(Dispatchers.Default).produceState(null)
-
-    suspend fun addCache(
-        media: Media,
-        request: suspend () -> MediaFetchRequest,
-        storage: MediaCacheStorage,
-    ) {
-        return addCache(
-            media,
-            metadata = MediaCacheMetadata(request()),
-            storage,
-        )
-    }
-
-    suspend fun addCache(
-        media: Media,
-        metadata: MediaCacheMetadata,
-        storage: MediaCacheStorage,
-    ) {
-        coroutineScope {
-            errorMessage.emit(
-                ErrorMessage.processing(
-                    "正在创建缓存",
-                    onCancel = {
-                        cancel()
-                    }
-                )
+        },
+        onRequestCache = { episode ->
+            episode.cacheRequester.request(
+                EpisodeCacheRequest(
+                    subjectInfoFlow.first(),
+                    subjectManager.getEpisodeInfo(episode.episodeId),
+                ),
+            ).tryAutoSelectByCachedSeason(
+                cacheManager.listCacheForSubject(subjectId).first(),
             )
-            try {
-                storage.cache(media, metadata)
-                errorMessage.value = null
-            } catch (_: CancellationException) {
-            } catch (e: Throwable) {
-                logger.error(IllegalStateException("Failed to create cache", e))
-                errorMessage.emit(ErrorMessage.simple("缓存失败", e))
+        },
+        onRequestCacheComplete = { target ->
+            target.storage.cache(target.media, target.metadata)
+        },
+        onDeleteCache = { episode ->
+            val episodeId = episode.episodeId.toString()
+            cacheManager.deleteFirstCache {
+                it.metadata.episodeId == episodeId
             }
-        }
-    }
-
-    suspend fun addCacheFromExisting(
-        existing: EpisodeCacheState,
-        metadata: MediaCacheMetadata,
-        new: EpisodeCacheState,
-    ) {
-        val subjectInfo = subjectInfoFlow.first()
-        addCache(
-            existing.originMedia!!.unwrapCached(),
-            MediaCacheMetadata(
-                subjectId = metadata.subjectId,
-                episodeId = new.episodeId.toString(),
-                subjectNames = subjectInfo.allNames.toSet(), // update names
-                episodeSort = new.sort,
-                episodeName = new.title,
-                episodeEp = new.ep,
-            ),
-            findStorageByCache(existing.mediaCache),
-        )
-    }
-
-    fun deleteCache(episodeId: Int) {
-        if (errorMessage.value != null) return
-        val job = launchInBackground(start = CoroutineStart.LAZY) {
-            val epString = episodeId.toString()
-            try {
-                for (storage in cacheManager.enabledStorages.first()) {
-                    for (mediaCache in storage.listFlow.first()) {
-                        if (mediaCache.metadata.episodeId == epString) {
-                            storage.delete(mediaCache)
-                        }
-                    }
-                }
-                errorMessage.value = null
-            } catch (e: Exception) {
-                errorMessage.value = ErrorMessage.simple("删除缓存失败", e)
-            }
-        }
-        errorMessage.value = ErrorMessage.processing("正在删除缓存", onCancel = { job.cancel() })
-        job.start()
-    }
+        },
+        backgroundScope.coroutineContext,
+    )
 }
-
-@Stable
-private val emptyDefaultSubjectCacheState = SubjectCacheState(emptyList())
 
 @Composable
 fun SubjectCacheScene(
     vm: SubjectCacheViewModel,
-    onClickGlobalCacheSettings: () -> Unit,
-    onClickGlobalCacheManage: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val state by vm.stateFlow.collectAsStateWithLifecycle(emptyDefaultSubjectCacheState)
-
-    ErrorDialogHost(vm.errorMessage)
-
-    var showMediaSelector by remember { mutableStateOf<EpisodeCacheState?>(null) }
-
-    LaunchedEffect(vm) {
-        snapshotFlow { state.selectedEpisode }.collect { episodeCacheState ->
-            if (episodeCacheState == null) {
-                showMediaSelector = null
-                return@collect
-            }
-
-            val existing = vm.firstIncludedCache
-            if (existing == null) { // 没有缓存过季度全集
-                showMediaSelector = episodeCacheState
-                return@collect
-            }
-
-            showMediaSelector = null
-            val metadata = existing.mediaCache?.metadata
-            if (existing.originMedia == null || metadata == null) { // 无效缓存
-                showMediaSelector = episodeCacheState
-                return@collect
-            }
-
-            val episodeRange = existing.mediaEpisodeRange ?: run {
-                showMediaSelector = episodeCacheState
-                return@collect
-            }
-            if (episodeCacheState.sort !in episodeRange
-                && (episodeCacheState.ep == null || episodeCacheState.ep !in episodeRange)
-            ) {
-                // 未找到剧集
-                showMediaSelector = episodeCacheState
-                return@collect
-            }
-
-            // 直接创建
-            vm.launchInBackground {
-                addCacheFromExisting(existing, metadata, episodeCacheState)
-            }
-        }
-    }
-
-    showMediaSelector?.let { episodeCacheState ->
-        val dismissSelector = remember { { showMediaSelector = null } }
-        val backgroundScope = rememberBackgroundScope() // 关掉窗口就立即停止查询
-
-        val epFetch = remember(vm.subjectId, episodeCacheState.episodeId) {
-            EpisodeMediaFetchSession(
-                vm.subjectId,
-                episodeCacheState.episodeId,
-                backgroundScope.backgroundScope.coroutineContext,
-                FetcherMediaSelectorConfig(
-                    // 手动缓存的时候要保存设置, 但不要自动选择
-                    savePreferenceChanges = true,
-                    autoSelectOnFetchCompletion = false,
-                    autoSelectLocal = false,
-                )
-            )
-        }
-        val mediaSelectorPresentation = remember(epFetch, backgroundScope) {
-            MediaSelectorPresentation(epFetch.mediaSelector, backgroundScope.backgroundScope)
-        }
-
-        var selectedMedia by remember(vm.subjectId, episodeCacheState.episodeId) { mutableStateOf<Media?>(null) }
-
-        if (selectedMedia != null) {
-            BasicAlertDialog(
-                {},
-                properties = DialogProperties(
-                    dismissOnBackPress = false, dismissOnClickOutside = false
-                )
-            ) {
-                MediaCacheStorageSelector(
-                    remember(vm) { MediaCacheStorageSelectorState(vm.cacheStorages) },
-                    onSelect = { storage ->
-                        selectedMedia?.let { media ->
-                            vm.launchInBackground {
-                                addCache(
-                                    media,
-                                    request = { epFetch.mediaFetchSession.map { it.request }.first() },
-                                    storage
-                                )
-                                withContext(Dispatchers.Main) {
-                                    dismissSelector()
-                                }
-                            }
-                        }
-                    },
-                    onDismissRequest = {
-                        selectedMedia = null
-                    }
-                )
-            }
-        }
-
-        ModalBottomSheet(
-            dismissSelector,
-            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-        ) {
-            EpisodeCacheMediaSelector(
-                mediaSelectorPresentation,
-                onSelect = { media ->
-                    if (vm.cacheStorages.size == 1) {
-                        val storage = vm.cacheStorages.first()
-                        vm.launchInBackground {
-                            addCache(
-                                media,
-                                request = { epFetch.mediaFetchSession.map { it.request }.first() },
-                                storage,
-                            )
-                            withContext(Dispatchers.Main) {
-                                dismissSelector()
-                            }
-                        }
-                    } else {
-                        selectedMedia = media
-                    }
-                },
-                onCancel = dismissSelector,
-                sourceResults = rememberMediaSelectorSourceResults(
-                    settingsProvider = { vm.mediaSelectorSettings }
-                ) { epFetch.sourceResults },
-                Modifier.fillMaxHeight().navigationBarsPadding() // 防止添加筛选后数量变少导致 bottom sheet 高度变化
-            )
-        }
-    }
-
-    return SubjectCachePage(
-        state,
-        subjectTitle = {
+    SubjectCachePageScaffold(
+        title = {
             val title = vm.subjectTitle
             Text(title.orEmpty(), Modifier.placeholder(title == null))
         },
-        onClickGlobalCacheSettings,
-        onClickGlobalCacheManage,
-        onDeleteCache = { episodeCacheState ->
-            vm.deleteCache(episodeCacheState.episodeId)
+        autoCacheGroup = {
+            val navigator = LocalNavigator.current
+            AutoCacheGroup(
+                onClickGlobalCacheSettings = {
+                    navigator.navigateSettings(SettingsTab.MEDIA)
+                },
+                onClickGlobalCacheManage = {
+                    navigator.navigateCaches()
+                },
+            )
+        },
+        cacheListGroup = {
+            EpisodeCacheListGroup(
+                vm.cacheListState,
+                mediaSelectorSettingsProvider = {
+                    vm.mediaSelectorSettingsFlow
+                },
+            )
         },
         modifier,
     )
+}
+
+/**
+ * 条目缓存页面的布局框架
+ *
+ * @param title 顶部的标题
+ * @param autoCacheGroup 自动缓存设置
+ * @param cacheListGroup 管理该条目的所有剧集的缓存情况
+ */
+@Composable
+fun SubjectCachePageScaffold(
+    title: @Composable RowScope.() -> Unit,
+    autoCacheGroup: @Composable SettingsScope.() -> Unit,
+    cacheListGroup: @Composable SettingsScope.() -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Scaffold(
+        modifier,
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text("缓存管理")
+                },
+                navigationIcon = {
+                    TopAppBarGoBackButton()
+                },
+            )
+        },
+    ) { paddingValues ->
+        Column(Modifier.padding(paddingValues)) {
+            Surface(Modifier.fillMaxWidth()) {
+                Row(Modifier.padding(horizontal = 16.dp).padding(bottom = 16.dp)) {
+                    ProvideTextStyle(MaterialTheme.typography.titleMedium) {
+                        title()
+                    }
+                }
+            }
+
+            SettingsTab {
+                Spacer(Modifier.fillMaxWidth()) // tab has spacedBy arrangement
+                autoCacheGroup()
+                cacheListGroup()
+                Spacer(Modifier.fillMaxWidth()) // tab has spacedBy arrangement
+            }
+        }
+    }
 }

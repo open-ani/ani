@@ -27,7 +27,20 @@ interface MonoTasker {
         block: suspend CoroutineScope.() -> Unit
     )
 
+    /**
+     * 等待上一个任务完成后再执行
+     */
+    fun launchNext(
+        context: CoroutineContext = EmptyCoroutineContext,
+        start: CoroutineStart = CoroutineStart.DEFAULT,
+        block: suspend CoroutineScope.() -> Unit
+    )
+
     fun cancel(cause: CancellationException? = null)
+
+    suspend fun cancelAndJoin()
+
+    suspend fun join()
 }
 
 fun MonoTasker(
@@ -54,8 +67,42 @@ fun MonoTasker(
         _isRunning.value = true
     }
 
+    override fun launchNext(
+        context: CoroutineContext,
+        start: CoroutineStart,
+        block: suspend CoroutineScope.() -> Unit
+    ) {
+        val existingJob = job
+        job = scope.launch(context, start) {
+            try {
+                existingJob?.join()
+                block()
+            } catch (e: CancellationException) {
+                existingJob?.cancel()
+                throw e
+            }
+        }.apply {
+            invokeOnCompletion {
+                if (job === this) {
+                    _isRunning.value = false
+                }
+            }
+        }
+        _isRunning.value = true
+    }
+
     override fun cancel(cause: CancellationException?) {
         job?.cancel(cause) // use completion handler to set _isRunning to false
+    }
+
+    override suspend fun cancelAndJoin() {
+        job?.run {
+            join()
+        }
+    }
+
+    override suspend fun join() {
+        job?.join()
     }
 }
 

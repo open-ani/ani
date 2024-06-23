@@ -38,9 +38,12 @@ class EpisodeRevisionRepositoryImpl : EpisodeRevisionRepository, KoinComponent {
                     offset = page * pageSize, limit = pageSize,
                     episodeId = episodeId,
                 ).run {
-                    Paged.processPagedResponse(total, pageSize, data?.map {
-                        it.toComment()
-                    })
+                    Paged.processPagedResponse(
+                        total, pageSize,
+                        data?.map {
+                            it.toComment()
+                        },
+                    )
                 }
             } catch (e: ClientException) {
                 logger.warn("Exception in getCollections", e)

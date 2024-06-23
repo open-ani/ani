@@ -256,7 +256,7 @@ class MediaProperties private constructor(
         size: FileSize,
     ) : this(
         subtitleLanguageIds, resolution, alliance, size,
-        _primaryConstructorMarker = Unit
+        _primaryConstructorMarker = Unit,
     )
 
     override fun toString(): String {

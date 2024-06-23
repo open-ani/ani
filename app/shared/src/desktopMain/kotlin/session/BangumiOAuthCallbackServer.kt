@@ -24,9 +24,11 @@ class BangumiOAuthCallbackServer(
     private val server by lazy {
         embeddedServer(CIO, port = Random.nextInt(40000, 50000)) {
             install(ContentNegotiation) {
-                json(Json {
-                    ignoreUnknownKeys = true
-                })
+                json(
+                    Json {
+                        ignoreUnknownKeys = true
+                    },
+                )
             }
             routing {
                 get("/bangumi-oauth-callback") {
@@ -37,7 +39,7 @@ class BangumiOAuthCallbackServer(
                     call.respondText(
                         "<h3>您现在可以关闭本页面并返回 ani</h3>",
                         contentType = ContentType.Text.Html,
-                        status = HttpStatusCode.OK
+                        status = HttpStatusCode.OK,
                     )
                     onCodeReceived(code)
                 }

@@ -43,15 +43,17 @@ internal class TorrentDownloadSessionTest : TorrentSessionSupport() {
     @Test
     fun `no resume if no file handle created`() = runTest {
         withSession {
-            setHandle(object : TestAniTorrentHandle() {
-                override fun resume() {
-                    fail("Should not resume")
-                }
+            setHandle(
+                object : TestAniTorrentHandle() {
+                    override fun resume() {
+                        fail("Should not resume")
+                    }
 
-                override fun pause() {
-                    fail("Should not resume")
-                }
-            }) {
+                    override fun pause() {
+                        fail("Should not resume")
+                    }
+                },
+            ) {
                 addFileAndPieces(TestTorrentFile("1.mp4", 1024))
             }
         }
@@ -61,15 +63,17 @@ internal class TorrentDownloadSessionTest : TorrentSessionSupport() {
     fun `resume torrent by handle`() = runTest {
         withSession {
             var resumeCalled = 0
-            val handle = setHandle(object : TestAniTorrentHandle() {
-                override fun resume() {
-                    resumeCalled++
-                }
+            val handle = setHandle(
+                object : TestAniTorrentHandle() {
+                    override fun resume() {
+                        resumeCalled++
+                    }
 
-                override fun pause() {
-                    fail("Should not resume")
-                }
-            }) {
+                    override fun pause() {
+                        fail("Should not resume")
+                    }
+                },
+            ) {
                 addFileAndPieces(TestTorrentFile("1.mp4", 1024))
             }
 
@@ -132,10 +136,12 @@ fun TestAniTorrentHandle.replacePieces(builderAction: PiecesBuilder.() -> Unit) 
 }
 
 fun TestAniTorrentHandle.appendPieces(builderAction: PiecesBuilder.() -> Unit) {
-    pieces.addAll(buildPieceList(
-        initialOffset = pieces.lastOrNull()?.piece?.lastIndex?.plus(1) ?: 0,
-        builderAction
-    ).map { TestPiece(it) })
+    pieces.addAll(
+        buildPieceList(
+            initialOffset = pieces.lastOrNull()?.piece?.lastIndex?.plus(1) ?: 0,
+            builderAction,
+        ).map { TestPiece(it) },
+    )
 }
 
 fun TestAniTorrentHandle.addFileAndPieces(

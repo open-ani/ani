@@ -83,13 +83,15 @@ internal class DandanplayClient(
         val response = client.post("https://api.dandanplay.net/api/v2/match") {
             contentType(ContentType.Application.Json)
             accept(ContentType.Application.Json)
-            setBody(buildJsonObject {
-                put("fileName", filename)
-                put("fileHash", fileHash)
-                put("fileSize", fileSize)
-                put("videoDuration", videoDuration.inWholeSeconds)
-                put("matchMode", "hashAndFileName")
-            })
+            setBody(
+                buildJsonObject {
+                    put("fileName", filename)
+                    put("fileHash", fileHash)
+                    put("fileSize", fileSize)
+                    put("videoDuration", videoDuration.inWholeSeconds)
+                    put("matchMode", "hashAndFileName")
+                },
+            )
         }
 
         return response.body<DandanplayMatchVideoResponse>()

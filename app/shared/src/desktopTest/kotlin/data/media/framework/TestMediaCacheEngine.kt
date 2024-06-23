@@ -1,15 +1,15 @@
-package me.him188.ani.datasources.core.cache.framework
+package me.him188.ani.app.data.media.framework
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
+import me.him188.ani.app.data.media.cache.MediaCache
+import me.him188.ani.app.data.media.cache.MediaCacheEngine
+import me.him188.ani.app.data.media.cache.MediaStats
+import me.him188.ani.app.data.media.cache.TestMediaCache
+import me.him188.ani.app.data.media.cache.emptyMediaStats
 import me.him188.ani.datasources.api.CachedMedia
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaCacheMetadata
-import me.him188.ani.datasources.core.cache.MediaCache
-import me.him188.ani.datasources.core.cache.MediaCacheEngine
-import me.him188.ani.datasources.core.cache.MediaStats
-import me.him188.ani.datasources.core.cache.TestMediaCache
-import me.him188.ani.datasources.core.cache.emptyMediaStats
 import kotlin.coroutines.CoroutineContext
 
 class TestMediaCacheEngine(

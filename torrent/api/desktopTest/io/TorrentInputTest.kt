@@ -373,7 +373,7 @@ internal sealed class TorrentInputTest {
         input.seek(sampleText.lastIndex.toLong() - bufferSize - 1) // 超出 buffer 范围
         assertEquals(
             sampleText.substring(sampleText.lastIndex - bufferSize - 1),
-            input.readAllBytes().decodeToString()
+            input.readAllBytes().decodeToString(),
         )
     }
 

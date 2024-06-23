@@ -102,7 +102,7 @@ private fun PreviewEpisodeProgressDialog() {
                     episodes
                 },
                 onClickEpisodeState = {},
-                onLongClickEpisode = {}
+                onLongClickEpisode = {},
             )
         }
     }
@@ -126,7 +126,7 @@ private fun PreviewEpisodeProgressDialogLightUp() {
                 },
                 onClickEpisodeState = {},
                 onLongClickEpisode = {},
-                colors = EpisodeProgressDefaults.colors(EpisodeProgressTheme.LIGHT_UP)
+                colors = EpisodeProgressDefaults.colors(EpisodeProgressTheme.LIGHT_UP),
             )
         }
     }
@@ -151,7 +151,7 @@ private fun PreviewEpisodeProgressDialogVeryLong() {
                     episodes
                 },
                 onClickEpisodeState = {},
-                onLongClickEpisode = {}
+                onLongClickEpisode = {},
             )
         }
     }

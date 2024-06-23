@@ -86,9 +86,9 @@ fun SubjectPreviewColumn(
             top = contentPadding.calculateTopPadding() + 8.dp,
             bottom = contentPadding.calculateBottomPadding() + 8.dp,
             start = contentPadding.calculateStartPadding(layoutDirection) + 8.dp,
-            end = contentPadding.calculateEndPadding(layoutDirection) + 8.dp
+            end = contentPadding.calculateEndPadding(layoutDirection) + 8.dp,
 
-        ),
+            ),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
@@ -116,14 +116,14 @@ fun SubjectPreviewColumn(
                 }
                 Row(
                     Modifier.padding(vertical = 8.dp).fillMaxWidth().height(IntrinsicSize.Min),
-                    horizontalArrangement = Arrangement.Center
+                    horizontalArrangement = Arrangement.Center,
                 ) {
                     CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 1.5.dp)
                     Text(
                         "加载中",
                         Modifier.height(IntrinsicSize.Max)
                             .padding(start = 8.dp)
-                            .align(Alignment.CenterVertically)
+                            .align(Alignment.CenterVertically),
                     )
                 }
                 return@item

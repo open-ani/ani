@@ -35,7 +35,7 @@ internal fun ResourceBundleImplByProperties.Companion.load(
     locale: Locale = Locale.current
 ): ResourceBundle {
     return ResourceBundleImplByProperties(
-        Properties()
+        Properties(),
     )
     val properties = Properties().apply {
         val id = when {
@@ -44,14 +44,17 @@ internal fun ResourceBundleImplByProperties.Companion.load(
                     locale.region.contains("CN", ignoreCase = true) -> {
                         "app_zh_cn"
                     }
+
                     locale.region.contains("TW", ignoreCase = true) ||
                             locale.region.contains("HK", ignoreCase = true)
                     -> {
                         "app_zh_hk"
                     }
+
                     else -> "app_zh_cn"
                 }
             }
+
             else -> {
                 "app_en"
             }

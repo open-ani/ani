@@ -21,14 +21,15 @@ class NtdmWebVideoMatcher : WebVideoMatcher {
         if (context.media.mediaSourceId != NtdmMediaSource.ID) return null
         if (url.contains(".akamaized.net")) {
             return WebVideo(
-                url, mapOf(
+                url,
+                mapOf(
                     "User-Agent" to """Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3""",
                     "Sec-Ch-Ua-Mobile" to "?0",
                     "Sec-Ch-Ua-Platform" to "macOS",
                     "Sec-Fetch-Dest" to "video",
                     "Sec-Fetch-Mode" to "no-cors",
                     "Sec-Fetch-Site" to "cross-site",
-                )
+                ),
             )
         }
         return null
@@ -58,8 +59,8 @@ class NtdmMediaSource(config: MediaSourceConfig) : ThreeStepWebMediaSource() {
                             // /video/4621.html
                             internalId = a.attr("href").substringAfterLast("/").substringBefore(".html"),
                             name = a.text(),
-                            url = baseUrl + a.attr("href")
-                        )
+                            url = baseUrl + a.attr("href"),
+                        ),
                     )
                 }
             }
@@ -84,7 +85,7 @@ class NtdmMediaSource(config: MediaSourceConfig) : ThreeStepWebMediaSource() {
                 Ep(
                     name = a.text(),
                     url = baseUrl + a.attr("href"),
-                    channel = channel
+                    channel = channel,
                 )
             }
         }.orEmpty()

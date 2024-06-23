@@ -54,11 +54,12 @@ typealias ConnectionTester = Tester<ConnectionTestResult>
 fun ConnectionTester(
     id: String,
     testConnection: suspend () -> ConnectionTestResult,
-): ConnectionTester = Tester(id,
+): ConnectionTester = Tester(
+    id,
     testConnection,
     onError = {
         ConnectionTestResult.FAILED
-    }
+    },
 )
 
 @Stable
@@ -128,7 +129,7 @@ fun SettingsScope.MediaSourceTesterView(
         action = {
             ConnectionTesterResultIndicator(tester, showTime = showTime)
         },
-        title = title
+        title = title,
     )
 }
 
@@ -149,7 +150,7 @@ fun ConnectionTesterResultIndicator(
             ConnectionTestResult.SUCCESS -> {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Icon(Icons.Rounded.Check, null, tint = MaterialTheme.colorScheme.primary)
                     if (showTime) {
@@ -159,8 +160,8 @@ fun ConnectionTesterResultIndicator(
                             Text(
                                 tester.time?.toString(
                                     DurationUnit.SECONDS,
-                                    decimals = 2
-                                ) ?: ""
+                                    decimals = 2,
+                                ) ?: "",
                             )
                         }
                     }

@@ -63,7 +63,7 @@ fun HomePage(
     val searchTag by searchViewModel.searchTags.collectAsStateWithLifecycle()
     val showDeleteTagTip = searchViewModel.oneshotActionConfig.deleteSearchTagTip
     val searchHistory by searchViewModel.searchHistories.collectAsStateWithLifecycle()
-    
+
     val searchResult by searchViewModel.result.collectAsStateWithLifecycle()
 
     var isEditingSearchTags by remember { mutableStateOf(false) }
@@ -105,7 +105,7 @@ fun HomePage(
 
                 Crossfade(
                     targetState = isEditingSearchTags,
-                    modifier = Modifier.zIndex(1.1f)
+                    modifier = Modifier.zIndex(1.1f),
                 ) {
                     if (it) {
                         TopAppBar(
@@ -114,7 +114,7 @@ fun HomePage(
                                 IconButton({ isEditingSearchTags = false }) {
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                                        contentDescription = "exit delete search tag mode"
+                                        contentDescription = "exit delete search tag mode",
                                     )
                                 }
                             },
@@ -123,9 +123,9 @@ fun HomePage(
                 }
             }
         },
-        contentWindowInsets = WindowInsets(0.dp)
+        contentWindowInsets = WindowInsets(0.dp),
 
-    ) { topBarPadding ->
+        ) { topBarPadding ->
         Column(Modifier.fillMaxSize()) {
             searchResult?.let {
                 SubjectPreviewColumn(
@@ -134,8 +134,8 @@ fun HomePage(
                         top = topBarPadding.calculateTopPadding(),
                         bottom = contentPadding.calculateBottomPadding(),
                         start = contentPadding.calculateStartPadding(layoutDirection),
-                        end = contentPadding.calculateEndPadding(layoutDirection)
-                    )
+                        end = contentPadding.calculateEndPadding(layoutDirection),
+                    ),
                 )
             }
         }

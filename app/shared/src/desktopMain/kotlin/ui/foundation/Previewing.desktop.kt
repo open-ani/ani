@@ -20,9 +20,10 @@ actual fun PlatformPreviewCompositionLocalProvider(content: @Composable () -> Un
                 File("."),
                 File("."),
                 File("./logs"),
-                ExtraWindowProperties(false)
+                ExtraWindowProperties(false),
             )
-        }) {
+        },
+    ) {
         content()
     }
 }

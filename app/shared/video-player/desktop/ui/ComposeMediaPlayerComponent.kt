@@ -100,7 +100,7 @@ open class ComposeMediaPlayerComponent @JvmOverloads constructor(
 //        mediaPlayer.events().addMediaEventListener(this)
 
         mediaPlayer.videoSurface().set(
-            this.mediaPlayerFactory.videoSurfaces().newVideoSurface(bufferFormatCallback, renderCallback, lockBuffers)
+            this.mediaPlayerFactory.videoSurfaces().newVideoSurface(bufferFormatCallback, renderCallback, lockBuffers),
         )
 
 //        setBackground(Color.black)
@@ -358,7 +358,7 @@ open class ComposeMediaPlayerComponent @JvmOverloads constructor(
             "--video-title=vlcj video output",
             "--no-snapshot-preview",
             "--quiet",
-            "--intf=dummy"
+            "--intf=dummy",
         )
 
     }

@@ -62,7 +62,7 @@ value class PackedDate @PublishedApi internal constructor(
             return PackedDate(
                 split[0].toIntOrNull() ?: return Invalid,
                 split[1].toIntOrNull() ?: return Invalid,
-                split[2].toIntOrNull() ?: return Invalid
+                split[2].toIntOrNull() ?: return Invalid,
             )
         }
 

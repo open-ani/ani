@@ -44,7 +44,7 @@ fun SettingsScope.SwitchItem(
     switch: @Composable () -> Unit,
 ) {
     SwitchItem(
-        title, modifier.clickable(onClick = onClick), description, switch
+        title, modifier.clickable(onClick = onClick), description, switch,
     )
 }
 

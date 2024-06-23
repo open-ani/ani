@@ -111,7 +111,7 @@ fun AniApp(
                         ) {
                             keyboard?.hide()
                             focusManager.clearFocus()
-                        }
+                        },
                 ) {
                     Column {
                         content()
@@ -172,9 +172,9 @@ fun RowScope.TabNavigationItem(
                     enabled = true,
                     role = Role.Checkbox,
                     interactionSource = remember { MutableInteractionSource() },
-                    indication = rememberRipple()
+                    indication = rememberRipple(),
                 ),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
         ) {
             val contentColor = if (checked) {
                 MaterialTheme.colorScheme.primary

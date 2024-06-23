@@ -38,7 +38,6 @@ import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
 import me.him188.ani.app.ui.subject.episode.EpisodeCollectionActionButton
 import me.him188.ani.app.ui.subject.episode.EpisodeViewModel
-import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberMediaSelectorSourceResults
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.topic.FileSize.Companion.Unspecified
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
@@ -82,13 +81,11 @@ fun EpisodeDetails(
             if (viewModel.mediaSelectorVisible) {
                 ModalBottomSheet(
                     onDismissRequest = { viewModel.mediaSelectorVisible = false },
-                    sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = currentPlatform.isDesktop())
+                    sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = currentPlatform.isDesktop()),
                 ) {
                     EpisodePlayMediaSelector(
-                        viewModel.mediaSelectorPresentation,
-                        sourceResults = rememberMediaSelectorSourceResults(
-                            settingsProvider = { viewModel.mediaSelectorSettings }
-                        ) { viewModel.episodeMediaFetchSession.sourceResults },
+                        mediaSelector = viewModel.mediaSelectorPresentation,
+                        sourceResults = viewModel.mediaSourceResultsPresentation,
                         onDismissRequest = { viewModel.mediaSelectorVisible = false },
                         modifier = Modifier.fillMaxHeight(), // 防止添加筛选后数量变少导致 bottom sheet 高度变化
                     )
@@ -192,7 +189,7 @@ fun EpisodeTitle(
                     Modifier.border(1.dp, MaterialTheme.colorScheme.outlineVariant, shape = shape)
                         .placeholder(ep.isPlaceholder)
                         .clip(shape)
-                        .padding(horizontal = 4.dp, vertical = 2.dp)
+                        .padding(horizontal = 4.dp, vertical = 2.dp),
                 ) {
                     Text(
                         ep.ep,

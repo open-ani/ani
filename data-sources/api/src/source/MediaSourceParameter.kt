@@ -28,7 +28,7 @@ open class MediaSourceParametersBuilder {
         val param = StringParameter(
             name, description,
             default = default ?: "",
-            isRequired = default == null
+            isRequired = default == null,
         )
         add(param)
         return param

@@ -69,7 +69,7 @@ object PlaceholderDefaults {
     val shimmerAnimationSpec: InfiniteRepeatableSpec<Float> by lazy {
         infiniteRepeatable(
             animation = tween(durationMillis = 1700, delayMillis = 200),
-            repeatMode = RepeatMode.Restart
+            repeatMode = RepeatMode.Restart,
         )
     }
 }
@@ -116,7 +116,7 @@ fun Modifier.basicPlaceholder(
         properties["color"] = color
         properties["highlight"] = highlight
         properties["shape"] = shape
-    }
+    },
 ) {
     // Values used for caching purposes
     val lastSize = remember { Ref<Size>() }
@@ -135,12 +135,12 @@ fun Modifier.basicPlaceholder(
     val placeholderAlpha by transition.animateFloat(
         transitionSpec = placeholderFadeTransitionSpec,
         label = "placeholder_fade",
-        targetValueByState = { placeholderVisible -> if (placeholderVisible) 1f else 0f }
+        targetValueByState = { placeholderVisible -> if (placeholderVisible) 1f else 0f },
     )
     val contentAlpha by transition.animateFloat(
         transitionSpec = contentFadeTransitionSpec,
         label = "content_fade",
-        targetValueByState = { placeholderVisible -> if (placeholderVisible) 0f else 1f }
+        targetValueByState = { placeholderVisible -> if (placeholderVisible) 0f else 1f },
     )
 
     @Suppress("NAME_SHADOWING")

@@ -19,7 +19,8 @@ private fun PreviewCommentColumn() {
         CommentColumn(
             remember {
                 CommentViewModel(1227087)
-            })
+            },
+        )
     }
 }
 
@@ -39,7 +40,7 @@ private fun PreviewComment() {
                     ),
                     nickname = "Nickname",
                     userGroup = UserGroup.User,
-                    sign = "sign"
+                    sign = "sign",
                 )
             },
 
@@ -55,9 +56,9 @@ private fun PreviewComment() {
                             System.currentTimeMillis() - 2.days.inWholeMilliseconds
                         }
                     },
-                    authorUsername = null
+                    authorUsername = null,
                 )
-            }
+            },
         )
 
     }

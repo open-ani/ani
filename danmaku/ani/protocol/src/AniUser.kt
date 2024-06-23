@@ -20,7 +20,7 @@ data class AniUser(
         val MAGIC_REGISTER_TIME = ZonedDateTime.of(
             /* year = */ 2024, /* month = */ 4, /* dayOfMonth = */ 30,
             /* hour = */ 0, /* minute = */ 0, /* second = */ 0, /* nanoOfSecond = */ 0,
-            /* zone = */ ZoneOffset.UTC
+            /* zone = */ ZoneOffset.UTC,
         ).toInstant().toEpochMilli()
     }
 }

@@ -25,6 +25,11 @@ data class MediaSelectorSettings(
      * 优先选择季度全集资源
      */
     val preferSeasons: Boolean = true,
+    /**
+     * 优先选择季度全集资源
+     * @since 3.2.0-beta04
+     */
+    val autoEnableLastSelected: Boolean = true,
     @Suppress("PropertyName") @Transient val _placeholder: Int = 0,
 ) {
     // 这篇小说已经完结了

@@ -14,8 +14,9 @@ internal fun Application.configureStatuePages() {
             when (throwable) {
                 is HttpRequestException -> call.respond(
                     status = HttpStatusCode.fromException(throwable),
-                    message = throwable.message ?: ""
+                    message = throwable.message ?: "",
                 )
+
                 else -> {
                     throwable.printStackTrace()
                     call.respond(HttpStatusCode.InternalServerError, throwable.message ?: "")

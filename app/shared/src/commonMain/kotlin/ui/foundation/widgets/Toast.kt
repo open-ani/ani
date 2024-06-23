@@ -75,7 +75,7 @@ fun Toast(
             val rawWidth = measurable.measure(constraints.copy(minWidth = 0, maxWidth = Int.MAX_VALUE)).width
 
             val placeable = measurable.measure(
-                constraints.copy(minWidth = min(rawWidth, minToastWidth), maxWidth = maxToastWidth, minHeight = 0)
+                constraints.copy(minWidth = min(rawWidth, minToastWidth), maxWidth = maxToastWidth, minHeight = 0),
             )
 
             val x = max(this@box.constraints.maxWidth - placeable.width, 0) / 2
@@ -84,17 +84,17 @@ fun Toast(
             layout(placeable.width, placeable.height) {
                 placeable.place(x, y, 100f)
             }
-        }
+        },
     ) {
         Surface(
             modifier = Modifier.padding(horizontal = 60.dp),
             shape = RoundedCornerShape(15.dp),
-            color = Color.Black.copy(alpha = 0.7f)
+            color = Color.Black.copy(alpha = 0.7f),
         ) {
             Text(
                 text = content,
                 color = Color.White,
-                modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp),
             )
         }
     }

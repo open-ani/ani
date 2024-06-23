@@ -1,6 +1,6 @@
 @file:Suppress(
     "RedundantVisibilityModifier", "ObjectPropertyName", "UnusedReceiverParameter",
-    "FloatingPointLiteralPrecision"
+    "FloatingPointLiteralPrecision",
 )
 
 package me.him188.ani.app.ui.icons

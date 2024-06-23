@@ -38,14 +38,14 @@ class PlayerFastSkipState(
                 when (skipDirection) {
                     SkipDirection.FORWARD -> 3f
                     SkipDirection.BACKWARD -> error("Backward skipping is not supported")
-                }
+                },
             )
             gestureIndicatorTicket = gestureIndicatorState.startFastForward()
         },
         onStop = {
             playerState.setPlaybackSpeed(originalSpeed)
             gestureIndicatorState.stopFastForward(gestureIndicatorTicket)
-        }
+        },
     )
 }
 
@@ -87,7 +87,7 @@ fun Modifier.longPressFastSkip(
         },
         onEnd = {
             state.stopSkipping(ticket)
-        }
+        },
     )
 }
 //    pointerInput(Unit) {

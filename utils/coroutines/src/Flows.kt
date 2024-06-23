@@ -116,13 +116,15 @@ suspend inline fun <R> cancellableCoroutineScope(
     return try {
         coroutineScope {
             val self = this
-            block(object : CancellableCoroutineScope {
-                override fun cancelScope() {
-                    self.cancel(OwnedCancellationException(owner))
-                }
+            block(
+                object : CancellableCoroutineScope {
+                    override fun cancelScope() {
+                        self.cancel(OwnedCancellationException(owner))
+                    }
 
-                override val coroutineContext: CoroutineContext = self.coroutineContext
-            })
+                    override val coroutineContext: CoroutineContext = self.coroutineContext
+                },
+            )
         }
     } catch (e: OwnedCancellationException) {
         e.checkOwner(owner)
@@ -139,7 +141,7 @@ suspend inline fun <R> cancellableCoroutineScope(
 ): R? {
     return cancellableCoroutineScope(
         onCancel = { null },
-        block = block
+        block = block,
     )
 }
 

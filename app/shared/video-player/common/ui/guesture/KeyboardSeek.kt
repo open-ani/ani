@@ -30,7 +30,7 @@ fun Modifier.onKeyboardHorizontalDirection(
 ): Modifier = composed(
     inspectorInfo = {
         name = "keyboardSeek"
-    }
+    },
 ) {
     val layoutDirection = LocalLayoutDirection.current
     val backwardKey = if (layoutDirection == LayoutDirection.Ltr) {

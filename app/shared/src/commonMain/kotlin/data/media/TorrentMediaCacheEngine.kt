@@ -18,6 +18,10 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.job
 import kotlinx.coroutines.withContext
+import me.him188.ani.app.data.media.cache.AbstractMediaStats
+import me.him188.ani.app.data.media.cache.MediaCache
+import me.him188.ani.app.data.media.cache.MediaCacheEngine
+import me.him188.ani.app.data.media.cache.MediaStats
 import me.him188.ani.app.data.media.resolver.TorrentVideoSourceResolver
 import me.him188.ani.app.tools.torrent.TorrentEngine
 import me.him188.ani.app.torrent.api.TorrentDownloadSession
@@ -32,10 +36,6 @@ import me.him188.ani.datasources.api.MediaCacheMetadata
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.datasources.api.topic.ResourceLocation
-import me.him188.ani.datasources.core.cache.AbstractMediaStats
-import me.him188.ani.datasources.core.cache.MediaCache
-import me.him188.ani.datasources.core.cache.MediaCacheEngine
-import me.him188.ani.datasources.core.cache.MediaStats
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
@@ -234,7 +234,7 @@ class TorrentMediaCacheEngine(
         return TorrentMediaCache(
             origin = origin,
             metadata = metadata,
-            lazyFileHandle = getLazyFileHandle(EncodedTorrentInfo.createRaw(data), metadata, parentContext)
+            lazyFileHandle = getLazyFileHandle(EncodedTorrentInfo.createRaw(data), metadata, parentContext),
         )
     }
 
@@ -282,13 +282,14 @@ class TorrentMediaCacheEngine(
             }
         }
         return LazyFileHandle(
-            scope, state
+            scope,
+            state
                 .flowOn(Dispatchers.Default)
                 .shareIn(
                     scope,
                     SharingStarted.Lazily,
-                    replay = 1
-                ) // Must be Lazily here since TorrentMediaCache is not closed
+                    replay = 1,
+                ), // Must be Lazily here since TorrentMediaCache is not closed
         )
     }
 
@@ -305,7 +306,7 @@ class TorrentMediaCacheEngine(
             mapOf(
                 EXTRA_TORRENT_DATA to data.data.toHexString(),
                 EXTRA_TORRENT_CACHE_DIR to downloader.getSaveDirForTorrent(data).absolutePath,
-            )
+            ),
         )
 
         return TorrentMediaCache(

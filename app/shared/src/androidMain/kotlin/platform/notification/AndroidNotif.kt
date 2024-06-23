@@ -126,7 +126,7 @@ internal open class AndroidNotif(
                 permissionChecked = true
                 if (ContextCompat.checkSelfPermission(
                         getContext(),
-                        Manifest.permission.POST_NOTIFICATIONS
+                        Manifest.permission.POST_NOTIFICATIONS,
                     ) != PackageManager.PERMISSION_GRANTED
                 ) {
                     logger.warn { "No notification permission, ignoring" }

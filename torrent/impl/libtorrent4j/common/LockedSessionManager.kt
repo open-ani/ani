@@ -5,6 +5,7 @@ import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.torrent.api.handle.EventListener
 import me.him188.ani.app.torrent.api.handle.TorrentThread
@@ -25,20 +26,23 @@ class LockedSessionManager(
     private val listeners = CopyOnWriteArraySet<EventListener>()
 
     init {
-        sessionManager.addListener(object : AlertListener {
-            override fun types(): IntArray = NeededTorrentEventTypes
-            @OptIn(TorrentThread::class)
-            override fun alert(alert: Alert<*>) {
-                if (alert !is TorrentAlert<*>) return
-                listeners.forEach { listener ->
-                    try {
-                        listener.onAlert(alert)
-                    } catch (e: Throwable) {
-                        logger.error(e) { "An exception occurred in EventListener for alter $alert" }
+        sessionManager.addListener(
+            object : AlertListener {
+                override fun types(): IntArray = NeededTorrentEventTypes
+
+                @OptIn(TorrentThread::class)
+                override fun alert(alert: Alert<*>) {
+                    if (alert !is TorrentAlert<*>) return
+                    listeners.forEach { listener ->
+                        try {
+                            listener.onAlert(alert)
+                        } catch (e: Throwable) {
+                            logger.error(e) { "An exception occurred in EventListener for alter $alert" }
+                        }
                     }
                 }
-            }
-        })
+            },
+        )
     }
 
     fun addListener(listener: EventListener) {
@@ -55,6 +59,12 @@ class LockedSessionManager(
         block(sessionManager)
     }
 
+    suspend inline fun <R> useInterruptible(
+        crossinline block: SessionManager.() -> R
+    ) = runInterruptible(dispatcher) {
+        block(sessionManager)
+    }
+
     companion object {
         /**
          * Shared dispatcher for all [LockedSessionManager] instances.
@@ -67,9 +77,11 @@ class LockedSessionManager(
 
         private val logger = logger(LockedSessionManager::class)
 
-        private val scope = CoroutineScope(dispatcher + CoroutineExceptionHandler { _, throwable ->
-            logger.warn(throwable) { "An exception occurred in LockedSessionManager" }
-        })
+        private val scope = CoroutineScope(
+            dispatcher + CoroutineExceptionHandler { _, throwable ->
+                logger.warn(throwable) { "An exception occurred in LockedSessionManager" }
+            },
+        )
 
         fun launch(block: suspend () -> Unit) {
             scope.launch(CoroutineName("LockedSessionManager.launch")) {

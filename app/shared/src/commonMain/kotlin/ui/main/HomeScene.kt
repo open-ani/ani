@@ -135,11 +135,11 @@ private fun UpdateCheckerItem(
                 vm.handleClickLogo(
                     context,
                     onInstallationError = { installationError = it },
-                    showChangelogDialog = { showDialog = true }
+                    showChangelogDialog = { showDialog = true },
                 )
             },
             icon = { UpdateLogoIcon(vm.logoState) },
-            label = { UpdateLogoLabel(vm.logoState) }
+            label = { UpdateLogoLabel(vm.logoState) },
         )
     }
 }
@@ -159,12 +159,13 @@ private fun HomeSceneLandscape(
                     Modifier.padding(top = 16.dp).weight(1f),
                     header = {
                         UserAvatar(Modifier.size(48.dp))
-                    }
+                    },
                 ) {
                     Column(
                         Modifier
                             .padding(bottom = 8.dp)
-                            .fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(8.dp)
+                            .fillMaxHeight(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         NavigationRailItem(
                             pagerState.currentPage == 0,
@@ -174,7 +175,7 @@ private fun HomeSceneLandscape(
                                 }
                             },
                             icon = { Icon(Icons.Rounded.TravelExplore, null) },
-                            label = { Text(text = "找番") }
+                            label = { Text(text = "找番") },
                         )
                         NavigationRailItem(
                             pagerState.currentPage == 1,
@@ -184,7 +185,7 @@ private fun HomeSceneLandscape(
                                 }
                             },
                             icon = { Icon(Icons.Rounded.Star, null) },
-                            label = { Text(text = "追番") }
+                            label = { Text(text = "追番") },
                         )
                         NavigationRailItem(
                             pagerState.currentPage == 2,
@@ -194,7 +195,7 @@ private fun HomeSceneLandscape(
                                 }
                             },
                             icon = { Icon(Icons.Rounded.DownloadDone, null) },
-                            label = { Text(text = "缓存") }
+                            label = { Text(text = "缓存") },
                         )
 
                         UpdateCheckerItem()
@@ -209,7 +210,7 @@ private fun HomeSceneLandscape(
                                 }
                             },
                             icon = { Icon(Icons.Rounded.Settings, null) },
-                            label = { Text(text = "设置") }
+                            label = { Text(text = "设置") },
                         )
                     }
                 }
@@ -266,7 +267,7 @@ private fun HomeScenePortrait(
                                 closeSearch()
                             },
                             icon = { Icon(Icons.Rounded.TravelExplore, null) },
-                            label = { Text(text = "找番") }
+                            label = { Text(text = "找番") },
                         )
                         NavigationBarItem(
                             pagerState.currentPage == 1,
@@ -277,7 +278,7 @@ private fun HomeScenePortrait(
                                 closeSearch()
                             },
                             icon = { Icon(Icons.Rounded.Star, null) },
-                            label = { Text(text = "追番") }
+                            label = { Text(text = "追番") },
                         )
                         NavigationBarItem(
                             pagerState.currentPage == 2,
@@ -288,7 +289,7 @@ private fun HomeScenePortrait(
                                 closeSearch()
                             },
                             icon = { Icon(Icons.Rounded.Settings, null) },
-                            label = { Text(text = "我的") }
+                            label = { Text(text = "我的") },
                         )
                     }
                 }
@@ -313,7 +314,7 @@ private fun HomeScenePortrait(
                         contentPadding = contentPadding,
                         onClickSettings = {
                             navigator.navigateSettings()
-                        }
+                        },
                     )
                 }
             }

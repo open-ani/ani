@@ -78,7 +78,7 @@ class AndroidNotifManager(
                     setName(name)
                     setDescription(description)
                     setVibrationEnabled(false)
-                }.build()
+                }.build(),
             )
         }.onFailure {
             logger.error(it) { "Failed to create notification channel" }

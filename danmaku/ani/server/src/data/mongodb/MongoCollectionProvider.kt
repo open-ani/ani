@@ -25,28 +25,30 @@ class MongoCollectionProviderImpl : MongoCollectionProvider, KoinComponent {
     private val connectionString: String = get<ServerConfig>().mongoDbConnectionString
         ?: throw IllegalStateException("MongoDB connection string is not set")
 
-    private val client = MongoClient.create(MongoClientSettings.builder().apply {
-        applyConnectionString(ConnectionString(connectionString))
-        codecRegistry(
-            CodecRegistries.fromRegistries(
-                MongoClientSettings.getDefaultCodecRegistry(),
-                ServerCodecRegistry(ServerJson),
+    private val client = MongoClient.create(
+        MongoClientSettings.builder().apply {
+            applyConnectionString(ConnectionString(connectionString))
+            codecRegistry(
+                CodecRegistries.fromRegistries(
+                    MongoClientSettings.getDefaultCodecRegistry(),
+                    ServerCodecRegistry(ServerJson),
+                ),
             )
-        )
-        uuidRepresentation(UuidRepresentation.STANDARD)
-    }.build())
+            uuidRepresentation(UuidRepresentation.STANDARD)
+        }.build(),
+    )
 
     private val db = client.getDatabase("ani-production")
     override val danmakuTable = db.getCollection<DanmakuModel>("danmaku")
     override val userTable = db.getCollection<UserModel>("user")
-    
+
     private suspend fun buildIndex() {
         danmakuTable.createIndex(
             Indexes.ascending(DanmakuModel::episodeId.name),
         )
         userTable.createIndex(
             Indexes.ascending(UserModel::bangumiUserId.name),
-            IndexOptions().unique(true)
+            IndexOptions().unique(true),
         )
     }
 }

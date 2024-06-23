@@ -28,12 +28,14 @@ class LazyDataCacheTest {
     @Test
     fun `source not created on cache query`() = runTest {
         var requested = false
-        val cache = LazyDataCache({
-            requested = true
-            SinglePagePagedSource {
-                flowOf(1, 2, 3)
-            }
-        })
+        val cache = LazyDataCache(
+            {
+                requested = true
+                SinglePagePagedSource {
+                    flowOf(1, 2, 3)
+                }
+            },
+        )
 
         assertEquals(false, requested)
         cache.cachedDataFlow
@@ -49,12 +51,14 @@ class LazyDataCacheTest {
     @Test
     fun `source not created on mutate`() = runTest {
         var requested = false
-        val cache = LazyDataCache({
-            requested = true
-            SinglePagePagedSource {
-                flowOf(1, 2, 3)
-            }
-        })
+        val cache = LazyDataCache(
+            {
+                requested = true
+                SinglePagePagedSource {
+                    flowOf(1, 2, 3)
+                }
+            },
+        )
 
         assertEquals(false, requested)
         cache.mutate {
@@ -66,12 +70,14 @@ class LazyDataCacheTest {
     @Test
     fun `source created on invalidate`() = runTest {
         var requested = false
-        val cache = LazyDataCache({
-            requested = true
-            SinglePagePagedSource {
-                flowOf(1, 2, 3)
-            }
-        })
+        val cache = LazyDataCache(
+            {
+                requested = true
+                SinglePagePagedSource {
+                    flowOf(1, 2, 3)
+                }
+            },
+        )
 
         assertEquals(false, requested)
         cache.invalidate()
@@ -81,12 +87,14 @@ class LazyDataCacheTest {
     @Test
     fun `source created on refresh`() = runTest {
         var requested = false
-        val cache = LazyDataCache({
-            requested = true
-            SinglePagePagedSource {
-                flowOf(1, 2, 3)
-            }
-        })
+        val cache = LazyDataCache(
+            {
+                requested = true
+                SinglePagePagedSource {
+                    flowOf(1, 2, 3)
+                }
+            },
+        )
 
         assertEquals(false, requested)
         cache.refresh(RefreshOrderPolicy.REPLACE)
@@ -96,12 +104,14 @@ class LazyDataCacheTest {
     @Test
     fun `source created on requestMore`() = runTest {
         var requested = false
-        val cache = LazyDataCache({
-            requested = true
-            SinglePagePagedSource {
-                flowOf(1, 2, 3)
-            }
-        })
+        val cache = LazyDataCache(
+            {
+                requested = true
+                SinglePagePagedSource {
+                    flowOf(1, 2, 3)
+                }
+            },
+        )
 
         assertEquals(false, requested)
         cache.requestMore()
@@ -112,12 +122,14 @@ class LazyDataCacheTest {
     @Test
     fun `source created on allData`() = runTest {
         var requested = false
-        val cache = LazyDataCache({
-            requested = true
-            SinglePagePagedSource {
-                flowOf(1, 2, 3)
-            }
-        })
+        val cache = LazyDataCache(
+            {
+                requested = true
+                SinglePagePagedSource {
+                    flowOf(1, 2, 3)
+                }
+            },
+        )
 
         assertEquals(false, requested)
         cache.allDataFlow.first()
@@ -131,15 +143,17 @@ class LazyDataCacheTest {
 
     @Test
     fun `cachedData updates`() = runTest {
-        val cache = LazyDataCache({
-            PageBasedPagedSource {
-                when (it) {
-                    0 -> Paged(listOf(1, 2))
-                    1 -> Paged(listOf(3))
-                    else -> null
+        val cache = LazyDataCache(
+            {
+                PageBasedPagedSource {
+                    when (it) {
+                        0 -> Paged(listOf(1, 2))
+                        1 -> Paged(listOf(3))
+                        else -> null
+                    }
                 }
-            }
-        })
+            },
+        )
 
         assertEquals(listOf(), cache.cachedDataFlow.first())
         cache.requestMore()
@@ -155,11 +169,13 @@ class LazyDataCacheTest {
     @Disabled
     @Test
     fun `allData emits initial empty list`() = runTest {
-        val cache = LazyDataCache({
-            SinglePagePagedSource {
-                flowOf(1, 2, 3)
-            }
-        })
+        val cache = LazyDataCache(
+            {
+                SinglePagePagedSource {
+                    flowOf(1, 2, 3)
+                }
+            },
+        )
 
         assertEquals(emptyList(), cache.allDataFlow.first())
     }
@@ -167,11 +183,13 @@ class LazyDataCacheTest {
     @Disabled
     @Test
     fun `allData emits first page`() = runTest {
-        val cache = LazyDataCache({
-            SinglePagePagedSource {
-                flowOf(1, 2, 3)
-            }
-        })
+        val cache = LazyDataCache(
+            {
+                SinglePagePagedSource {
+                    flowOf(1, 2, 3)
+                }
+            },
+        )
 
         assertEquals(listOf(1, 2, 3), cache.allDataFlow.drop(1).first())
     }
@@ -179,15 +197,17 @@ class LazyDataCacheTest {
     @Disabled // allDataFlow 是异步的, 有时候 test 会判断错误
     @Test
     fun `allData emits second page`() = runTest {
-        val cache = LazyDataCache({
-            PageBasedPagedSource {
-                when (it) {
-                    0 -> Paged(listOf(1, 2))
-                    1 -> Paged(listOf(3))
-                    else -> null
+        val cache = LazyDataCache(
+            {
+                PageBasedPagedSource {
+                    when (it) {
+                        0 -> Paged(listOf(1, 2))
+                        1 -> Paged(listOf(3))
+                        else -> null
+                    }
                 }
-            }
-        })
+            },
+        )
 
         assertEquals(listOf(), cache.allDataFlow.first())
         cache.allDataFlow.drop(1).first().let {
@@ -206,22 +226,26 @@ class LazyDataCacheTest {
 
     @Test
     fun `isCompleted has initial false`() = runTest {
-        val cache = LazyDataCache({
-            SinglePagePagedSource {
-                flowOf(1, 2, 3)
-            }
-        })
+        val cache = LazyDataCache(
+            {
+                SinglePagePagedSource {
+                    flowOf(1, 2, 3)
+                }
+            },
+        )
 
         assertEquals(false, cache.isCompleted.first())
     }
 
     @Test
     fun `isCompleted is true after source completes`() = runTest {
-        val cache = LazyDataCache({
-            SinglePagePagedSource {
-                flowOf(1, 2, 3)
-            }
-        })
+        val cache = LazyDataCache(
+            {
+                SinglePagePagedSource {
+                    flowOf(1, 2, 3)
+                }
+            },
+        )
 
         cache.requestMore()
         cache.requestMore() // SinglePagePagedSource lazily completes
@@ -234,13 +258,15 @@ class LazyDataCacheTest {
 
     @Test
     fun `high contention`() = runTest {
-        val cache = LazyDataCache({
-            PageBasedPagedSource {
-                if (it < 10000) {
-                    Paged(listOf(it))
-                } else null
-            }
-        })
+        val cache = LazyDataCache(
+            {
+                PageBasedPagedSource {
+                    if (it < 10000) {
+                        Paged(listOf(it))
+                    } else null
+                }
+            },
+        )
 
         // 不断刷新和获取. 由于数据源一定按页数输出, 所以数据一定有序且连续
         fun checkList(ints: List<Int>) {

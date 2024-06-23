@@ -67,10 +67,10 @@ private fun PreviewVideoScaffoldImpl(
             PlayerControllerDefaults.DanmakuTextField(
                 value = value,
                 onValueChange = onValueChange,
-                Modifier.weight(1f)
+                Modifier.weight(1f),
             )
         },
-        configProvider = { VideoScaffoldConfig.Default }
+        configProvider = { VideoScaffoldConfig.Default },
     )
 
 //    VideoScaffold(

@@ -14,7 +14,7 @@ class NtdmMediaSourceTest {
         val source = Source(MediaSourceConfig())
         val doc = Jsoup.parse(
             this::class.java.classLoader.getResource("onimai/search.html")!!.readText(),
-            source.baseUrl
+            source.baseUrl,
         )
         val list = source.parseBangumiSearch(doc)
         assertEquals(1, list.size)
@@ -30,7 +30,7 @@ class NtdmMediaSourceTest {
         val source = Source(MediaSourceConfig())
         val doc = Jsoup.parse(
             this::class.java.classLoader.getResource("onimai/bangumi.html")!!.readText(),
-            source.baseUrl
+            source.baseUrl,
         )
         val list = source.parseEpisodeList(doc)
         assertEquals(22, list.size)

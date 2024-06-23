@@ -8,6 +8,17 @@
 
 欢迎你提交 PR 参与开发。本文将介绍项目结构等可能帮助你的内容。
 
+## 获取帮助
+
+如你对项目结构有任何疑问, 欢迎通过以下途径寻求帮助:
+> 群里大部分是普通用户, 但也有一些开发者.
+> 建议在群内问, 以便更多人看到你的问题.
+
+- [![Group](https://img.shields.io/badge/Telegram-2CA5E0?style=flat-squeare&logo=telegram&logoColor=white)](https://t.me/openani)
+- [![QQ](https://img.shields.io/badge/927170241-EB1923?logo=tencent-qq&logoColor=white)](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=2EbZ0Qxe-fI_AHJLCMnSIOnqw-nfrFH5&authKey=L31zTMwfbMG0FhIgt8xNHGOFPHc531mSw2YzUVupHLRJ4L2f8xerAd%2ByNl4OigRK&noverify=0&group_code=927170241)
+  927170241
+- [GitHub Discussions](https://github.com/him188/ani/discussions)
+
 ## 目录
 
 1. 开发工具: IDE, JDK, 推荐插件
@@ -22,10 +33,24 @@
 
 因为项目使用的技术全都非常新 (不过都是比较稳定的), 建议使用 Android Studio 的最新版本以获得最佳体验.
 
+### 使用 Android Studio (推荐)
+
 使用 IntelliJ IDEA 则需要最低版本至少为 `2024.1`.
 
-- 需要 JDK 版本至少为 17（可自动下载）
+- 需要 JDK 版本至少为 17（如果系统没有, 会自动下载）
 - 需要 Android SDK 版本至少为 API 34
+
+安装如下 IDE 插件:
+
+- Jetpack Compose
+- Compose Multiplatform IDE Support
+- Compose colors preview (可选安装, 用于预览颜色)
+
+### 使用 IntelliJ IDEA
+
+建议使用最新版本. 建议至少使用 `2024.1`.
+
+- 需要 JDK 版本至少为 17（如果系统没有, 会自动下载）
 
 安装如下 IDE 插件:
 
@@ -42,6 +67,9 @@
 
 项目根目录有 `.editorconfig` 文件, IDE 会自动读取该文件以确保代码风格一致.
 请使用 IDE 提供的自动代码格式化功能即可.
+
+建议在 IDE 的 Commit 页面, 点击右下角设置, 勾选 "Reformat code" 和 "Optimize imports".
+在提交时将会自动格式化代码.
 
 ### 代码规范
 
@@ -267,11 +295,6 @@ Page (首页/我的收藏/个人中心).
 - ... 欢迎 PR 更多支持例如 SMB
 
 ## 7. 开发与调试
-
-### 获取帮助
-
-非常建议你遇到问题时在 GitHub [Discussions](https://github.com/him188/ani/discussions) 中提问.
-有很多坑我已经踩过了, 可以帮你节约宝贵的时间.
 
 ### 源集 (source set) 结构
 

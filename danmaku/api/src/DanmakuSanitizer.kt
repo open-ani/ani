@@ -9,7 +9,7 @@ object DanmakuSanitizer {
                 .replace("\n\r", " ")
                 .replace("\r\n", " ")
                 .replace("\n", " ")
-                .trim()
+                .trim(),
         )
     }
 }

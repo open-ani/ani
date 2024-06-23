@@ -39,8 +39,8 @@ fun BoxScope.HorizontalIndicator(
                     color,
                     start = Offset(0f, size.height - (height / 2).toPx()),
                     end = Offset(size.width, size.height - (height / 2).toPx()),
-                    strokeWidth = (height).toPx()
+                    strokeWidth = (height).toPx(),
                 )
-            }
+            },
     )
 }

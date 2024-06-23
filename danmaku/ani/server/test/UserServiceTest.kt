@@ -19,7 +19,7 @@ class UserServiceTest {
     private fun runTestWithKoin(block: suspend () -> Unit) = runTest {
         val coroutineScope = CoroutineScope(SupervisorJob())
         startKoin {
-            val config = ServerConfigBuilder.create { 
+            val config = ServerConfigBuilder.create {
                 testing = true
                 jwt {
                     issuer = "test_issuer"
@@ -40,35 +40,35 @@ class UserServiceTest {
     fun `test get bangumi id`() = runTestWithKoin {
         val userService = koin.get<UserService>()
         val authService = koin.get<AuthService>()
-        
+
         val userId = authService.loginBangumi("test_token_1")
         val bangumiId = userService.getBangumiId(userId)
         assert(bangumiId == 1)
-        
+
         val userId2 = authService.loginBangumi("test_token_2")
         val bangumiId2 = userService.getBangumiId(userId2)
         assert(bangumiId2 == 2)
     }
-    
+
     @Test
     fun `test get nickname`() = runTestWithKoin {
         val userService = koin.get<UserService>()
         val authService = koin.get<AuthService>()
-        
+
         val userId = authService.loginBangumi("test_token_2")
         val nickname = userService.getNickname(userId)
         assert(nickname == "test2")
-        
+
         val userId2 = authService.loginBangumi("test_token_3")
         val nickname2 = userService.getNickname(userId2)
         assert(nickname2 == "test3")
     }
-    
+
     @Test
     fun `test get avatar`() = runTestWithKoin {
         val userService = koin.get<UserService>()
         val authService = koin.get<AuthService>()
-        
+
         val userId = authService.loginBangumi("test_token_3")
         val smallAvatar = userService.getAvatar(userId, AvatarSize.SMALL)
         val mediumAvatar = userService.getAvatar(userId, AvatarSize.MEDIUM)
@@ -77,12 +77,12 @@ class UserServiceTest {
         assert(mediumAvatar == "medium3")
         assert(largeAvatar == "large3")
     }
-    
+
     @Test
     fun `test get user`() = runTestWithKoin {
         val userService = koin.get<UserService>()
         val authService = koin.get<AuthService>()
-        
+
         val userId = authService.loginBangumi("test_token_3")
         val user = userService.getUser(userId)
         assert(user.id == userId)

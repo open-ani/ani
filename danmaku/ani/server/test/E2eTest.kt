@@ -47,17 +47,19 @@ class E2eTest {
             playTime = 1000,
             color = Color.BLACK.rgb,
             text = "This is a danmaku",
-            location = DanmakuLocation.NORMAL
+            location = DanmakuLocation.NORMAL,
         )
 
         val response = client.post("$serverEndpoint/login/bangumi") {
             contentType(ContentType.Application.Json)
-            setBody(BangumiLoginRequest(
-                bangumiToken = "test_token_1",
-                clientVersion = "3.0.0-dev",
-                clientOS = "Android",
-                clientArch = "aarch64",
-            ))
+            setBody(
+                BangumiLoginRequest(
+                    bangumiToken = "test_token_1",
+                    clientVersion = "3.0.0-dev",
+                    clientOS = "Android",
+                    clientArch = "aarch64",
+                ),
+            )
         }
         assertEquals(HttpStatusCode.OK, response.status)
         val token = response.body<BangumiLoginResponse>().token
@@ -65,7 +67,7 @@ class E2eTest {
         val response2 = client.post("$serverEndpoint/danmaku/1") {
             contentType(ContentType.Application.Json)
             setBody<DanmakuPostRequest>(
-                DanmakuPostRequest(danmaku)
+                DanmakuPostRequest(danmaku),
             )
             bearerAuth(token)
         }
@@ -94,13 +96,13 @@ class E2eTest {
         val danmakuList2 = response4.body<DanmakuGetResponse>().danmakuList
         assertTrue(danmakuList2.isEmpty())
     }
-    
+
     @Test
     fun `test get update info`() = runTest {
         val response1 = client.get("$serverEndpoint/updates/incremental/details")
         assertEquals(HttpStatusCode.BadRequest, response1.status)
         println(response1.body<String>())
-        
+
         val response2 = client.get("$serverEndpoint/updates/incremental/details") {
             parameter("clientVersion", "1.0.0")
             parameter("clientPlatform", "android")
@@ -128,9 +130,9 @@ class E2eTest {
                     downloadUrlAlternatives = listOf("testUrl/v2.0.0"),
                     publishTime = 0,
                     description = "This is version 2.0.0",
-                )
+                ),
             ),
-            versions.updates
+            versions.updates,
         )
     }
 

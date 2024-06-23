@@ -34,7 +34,7 @@ internal class TimeBasedDanmakuCollectionTest {
             sequenceOf(
                 dummyDanmaku(1.0),
                 dummyDanmaku(2.0),
-            )
+            ),
         )
         val list = instance.at(flowOf(0.seconds), danmakuRegexFilterConfig = flowOf(DanmakuRegexFilterConfig())).events.toList()
         assertEquals(0, list.size)

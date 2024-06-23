@@ -58,7 +58,7 @@ internal class AndroidMediaNotif(
     init {
         builder.setStyle(
             androidx.media.app.NotificationCompat.MediaStyle()
-                .setMediaSession(MediaSessionCompat.Token.fromToken(mediaSession.sessionToken.token))
+                .setMediaSession(MediaSessionCompat.Token.fromToken(mediaSession.sessionToken.token)),
         )
         silent = true
         ongoing = true
@@ -74,7 +74,7 @@ internal class AndroidMediaNotif(
                         MediaIcon.PLAY -> R.drawable.play_arrow_24px
                         MediaIcon.PAUSE -> R.drawable.pause_24px
                         MediaIcon.STOP -> R.drawable.stop_24px
-                    }
+                    },
                 ),
                 title,
                 registerPendingIntent(
@@ -83,11 +83,11 @@ internal class AndroidMediaNotif(
                         registeredActions.remove(id)
                         actions.remove(id)
                     },
-                    id
-                )
+                    id,
+                ),
             ).apply {
                 setShowsUserInterface(true)
-            }.build()
+            }.build(),
         )
     }
 
@@ -122,7 +122,7 @@ internal class AndroidMediaNotif(
                 if (duration != null) putLong(MediaMetadata.METADATA_KEY_DURATION, duration.inWholeMilliseconds)
                 if (album != null) putString(MediaMetadata.METADATA_KEY_ALBUM, album)
                 if (artist != null) putString(MediaMetadata.METADATA_KEY_ARTIST, artist)
-            }.build()
+            }.build(),
         )
     }
 
@@ -133,9 +133,9 @@ internal class AndroidMediaNotif(
             metadata.apply {
                 putBitmap(
                     MediaMetadata.METADATA_KEY_ALBUM_ART,
-                    albumArt.asDrawable(getContext().resources).toBitmap()
+                    albumArt.asDrawable(getContext().resources).toBitmap(),
                 )
-            }.build()
+            }.build(),
         )
     }
 
@@ -163,9 +163,11 @@ internal class AndroidMediaNotif(
                 playerState.playbackSpeed,
             ) { state, position, speed ->
 
-                mediaSession.setPlaybackState(PlaybackStateCompat.Builder().apply {
-                    setState(state.toAndroidState(), position, speed)
-                }.build())
+                mediaSession.setPlaybackState(
+                    PlaybackStateCompat.Builder().apply {
+                        setState(state.toAndroidState(), position, speed)
+                    }.build(),
+                )
             }.collect()
         }
     }

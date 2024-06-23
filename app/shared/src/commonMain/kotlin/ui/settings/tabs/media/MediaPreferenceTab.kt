@@ -36,7 +36,7 @@ class MediaSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
 
     val mediaSelectorSettings by settings(
         settingsRepository.mediaSelectorSettings,
-        MediaSelectorSettings.Default.copy(_placeholder = -1)
+        MediaSelectorSettings.Default.copy(_placeholder = -1),
     )
 
     val defaultMediaPreference by settingsRepository.defaultMediaPreference.flow
@@ -103,11 +103,11 @@ class MediaSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
 
     val libtorrent4jConfig by settings(
         settingsRepository.libtorrent4jConfig,
-        placeholder = Libtorrent4jConfig(placeholder = -1)
+        placeholder = Libtorrent4jConfig(placeholder = -1),
     )
     val qBittorrentConfig by settings(
         settingsRepository.qBittorrentConfig,
-        placeholder = QBittorrentConfig(placeholder = -1)
+        placeholder = QBittorrentConfig(placeholder = -1),
     )
 
     val qBitTester by connectionTester {

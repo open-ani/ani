@@ -20,11 +20,11 @@ fun BangumiSubject.toSubject(): Subject {
         images = SubjectImages(
             landscapeCommon = BangumiClientImpl.getSubjectImageUrl(
                 subject.id,
-                BangumiSubjectImageSize.MEDIUM
+                BangumiSubjectImageSize.MEDIUM,
             ),
             largePoster = BangumiClientImpl.getSubjectImageUrl(
                 subject.id,
-                BangumiSubjectImageSize.LARGE
+                BangumiSubjectImageSize.LARGE,
             ),
         ),
         score = subject.score,

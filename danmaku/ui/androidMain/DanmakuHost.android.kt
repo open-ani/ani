@@ -62,7 +62,7 @@ internal actual fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
                     0L, "1",
                     DanmakuLocation.entries.random(),
                     text = LoremIpsum(Random.nextInt(1..5)).values.first(),
-                    0
+                    0,
                 )
 
             emit(danmaku())
@@ -83,8 +83,8 @@ internal actual fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
             state.trySend(
                 DanmakuPresentation(
                     it,
-                    isSelf = Random.nextBoolean()
-                )
+                    isSelf = Random.nextBoolean(),
+                ),
             )
         }
     }
@@ -94,13 +94,13 @@ internal actual fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
             Box(Modifier.weight(1f)) {
                 DanmakuHost(
                     state,
-                    Modifier.fillMaxHeight()
+                    Modifier.fillMaxHeight(),
                 ) { config }
                 Column {
                     Text("Emitted: $emitted")
                     state.topTracks.forEachIndexed { index, danmakuTrackState ->
                         Text(
-                            "track top$index: visible=${danmakuTrackState.visibleDanmaku}"
+                            "track top$index: visible=${danmakuTrackState.visibleDanmaku}",
                         )
                     }
                     HorizontalDivider()
@@ -108,13 +108,13 @@ internal actual fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
                         Text(
                             "track floating$index: offset=${danmakuTrackState.trackOffset.toInt()}, " +
                                     "visible=${danmakuTrackState.visibleDanmaku.size}, " +
-                                    "starting=${danmakuTrackState.startingDanmaku.size}"
+                                    "starting=${danmakuTrackState.startingDanmaku.size}",
                         )
                     }
                     HorizontalDivider()
                     state.bottomTracks.forEachIndexed { index, danmakuTrackState ->
                         Text(
-                            "track bottom$index: visible=${danmakuTrackState.visibleDanmaku}"
+                            "track bottom$index: visible=${danmakuTrackState.visibleDanmaku}",
                         )
                     }
                 }
@@ -159,11 +159,11 @@ internal actual fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
         Column {
             Box(
                 Modifier
-                    .weight(1f)
+                    .weight(1f),
             ) {
                 DanmakuHost(
                     state,
-                    Modifier.fillMaxWidth()
+                    Modifier.fillMaxWidth(),
                 ) { config }
                 Column {
                     Text("Emitted: $emitted")
@@ -171,7 +171,7 @@ internal actual fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
                         Text(
                             "track$index: offset=${danmakuTrackState.trackOffset.toInt()}, " +
                                     "visible=${danmakuTrackState.visibleDanmaku.size}, " +
-                                    "starting=${danmakuTrackState.startingDanmaku.size}"
+                                    "starting=${danmakuTrackState.startingDanmaku.size}",
                         )
                     }
                 }

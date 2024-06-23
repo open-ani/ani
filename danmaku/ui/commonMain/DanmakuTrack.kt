@@ -84,10 +84,10 @@ internal val DummyDanmakuState: DanmakuState = DanmakuState(
             UUID.randomUUID().toString(),
             "dummy",
             0L, "1",
-            DanmakuLocation.NORMAL, "dummy 占位 攟 の 😄", 0
+            DanmakuLocation.NORMAL, "dummy 占位 攟 の 😄", 0,
         ),
-        isSelf = false
-    )
+        isSelf = false,
+    ),
 )
 
 @Immutable
@@ -392,17 +392,20 @@ fun FloatingDanmakuTrack(
         trackState.animateMove(speedPxPerSecond)
     }
 
-    BoxWithConstraints(modifier.onPlaced {
-        trackState.trackSize = it.size
-    }) {
-        Box(Modifier
-            .clipToBounds()
-            .fillMaxWidth()
-            .graphicsLayer {
-                if (!trackState.trackOffset.isNaN()) {
-                    translationX = trackState.trackOffset
-                }
-            }
+    BoxWithConstraints(
+        modifier.onPlaced {
+            trackState.trackSize = it.size
+        },
+    ) {
+        Box(
+            Modifier
+                .clipToBounds()
+                .fillMaxWidth()
+                .graphicsLayer {
+                    if (!trackState.trackOffset.isNaN()) {
+                        translationX = trackState.trackOffset
+                    }
+                },
         ) {
             scope.content()
         }
@@ -456,7 +459,7 @@ private class DanmakuTrackScopeImpl(
                 .onPlaced { layoutCoordinates ->
                     danmaku.onPlaced(layoutCoordinates)
                 }
-                .wrapContentSize()
+                .wrapContentSize(),
         ) {
             DanmakuText(
                 danmaku,
@@ -465,7 +468,7 @@ private class DanmakuTrackScopeImpl(
                 onTextLayout = {
                     danmaku.textWidth = it.size.width
                     danmaku.animationStarted = true
-                }
+                },
             )
         }
     }
@@ -502,7 +505,7 @@ fun DanmakuText(
             maxLines = 1,
             softWrap = false,
             style = baseStyle.merge(style.styleForBorder()),
-            onTextLayout = onTextLayout
+            onTextLayout = onTextLayout,
         )
         // Covered by a white, smaller text.
         // So the resulting look is a white text with black border.
@@ -516,10 +519,10 @@ fun DanmakuText(
                 style.styleForText(
                     color = if (config.enableColor) {
                         rgbColor(
-                            state.presentation.danmaku.color.toUInt().toLong()
+                            state.presentation.danmaku.color.toUInt().toLong(),
                         )
-                    } else Color.White
-                )
+                    } else Color.White,
+                ),
             ),
             textDecoration = if (state.presentation.isSelf) TextDecoration.Underline else null,
         )

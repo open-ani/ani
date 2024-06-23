@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.media.MediaSourceManager
+import me.him188.ani.app.data.media.instance.MediaSourceInstance
 import me.him188.ani.app.data.models.DanmakuSettings
 import me.him188.ani.app.data.models.ProxySettings
 import me.him188.ani.app.data.repositories.MediaSourceInstanceRepository
@@ -32,7 +33,6 @@ import me.him188.ani.datasources.api.source.MediaSourceFactory
 import me.him188.ani.datasources.api.source.MediaSourceParameters
 import me.him188.ani.datasources.api.subject.SubjectProvider
 import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
-import me.him188.ani.datasources.core.instance.MediaSourceInstance
 import me.him188.ani.datasources.ikaros.IkarosMediaSource
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -106,7 +106,7 @@ class NetworkSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
                                 ConnectionStatus.SUCCESS -> ConnectionTestResult.SUCCESS
                                 ConnectionStatus.FAILED -> ConnectionTestResult.FAILED
                             }
-                        }
+                        },
                     ),
                     instance,
                 )
@@ -139,7 +139,7 @@ class NetworkSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
     val mediaSourceTesters by derivedStateOf {
         Testers(
             mediaSources.map { it.connectionTester },
-            backgroundScope
+            backgroundScope,
         )
     }
 
@@ -153,9 +153,9 @@ class NetworkSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
                 } else {
                     ConnectionTestResult.FAILED
                 }
-            }
+            },
         ),
-        backgroundScope
+        backgroundScope,
     )
 
     ///////////////////////////////////////////////////////////////////////////
@@ -274,7 +274,7 @@ class NetworkSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
 
     val proxySettings by settings(
         settingsRepository.proxySettings,
-        placeholder = ProxySettings(_placeHolder = -1)
+        placeholder = ProxySettings(_placeHolder = -1),
     )
 
     ///////////////////////////////////////////////////////////////////////////
@@ -283,7 +283,7 @@ class NetworkSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
 
     val danmakuSettings by settings(
         settingsRepository.danmakuSettings,
-        placeholder = DanmakuSettings(_placeholder = -1)
+        placeholder = DanmakuSettings(_placeholder = -1),
     )
 
     val danmakuServerTesters = Testers(
@@ -295,7 +295,7 @@ class NetworkSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
                 ConnectionTestResult.SUCCESS
             }
         },
-        backgroundScope
+        backgroundScope,
     )
 
 //    private val placeholderDanmakuSettings = DanmakuSettings.Default.copy()
@@ -316,6 +316,6 @@ class NetworkSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
 
 fun EditMediaSourceState.createConfig(): MediaSourceConfig {
     return MediaSourceConfig(
-        arguments = arguments.associate { it.name to it.toPersisted() }
+        arguments = arguments.associate { it.name to it.toPersisted() },
     )
 }

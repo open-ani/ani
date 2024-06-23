@@ -4,7 +4,6 @@ import androidx.annotation.UiThread
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -26,7 +25,6 @@ import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
@@ -35,19 +33,28 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.danmaku.DanmakuManager
+import me.him188.ani.app.data.media.MediaSourceManager
+import me.him188.ani.app.data.media.createFetchFetchSessionFlow
+import me.him188.ani.app.data.media.fetch.FilteredMediaSourceResults
+import me.him188.ani.app.data.media.fetch.create
 import me.him188.ani.app.data.media.resolver.EpisodeMetadata
 import me.him188.ani.app.data.media.resolver.ResolutionFailures
 import me.him188.ani.app.data.media.resolver.UnsupportedMediaException
 import me.him188.ani.app.data.media.resolver.VideoSourceResolutionException
 import me.him188.ani.app.data.media.resolver.VideoSourceResolver
-import me.him188.ani.app.data.models.MediaSelectorSettings
+import me.him188.ani.app.data.media.selector.MediaSelectorFactory
+import me.him188.ani.app.data.media.selector.autoSelect
+import me.him188.ani.app.data.media.selector.eventHandling
 import me.him188.ani.app.data.models.VideoScaffoldConfig
+import me.him188.ani.app.data.repositories.EpisodePreferencesRepository
 import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.data.subject.SubjectInfo
 import me.him188.ani.app.data.subject.SubjectManager
 import me.him188.ani.app.data.subject.episode
+import me.him188.ani.app.data.subject.episodeInfoFlow
 import me.him188.ani.app.data.subject.nameCnOrName
 import me.him188.ani.app.data.subject.renderEpisodeEp
+import me.him188.ani.app.data.subject.subjectInfoFlow
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.Context
 import me.him188.ani.app.tools.caching.ContentPolicy
@@ -56,9 +63,8 @@ import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.app.ui.subject.episode.danmaku.PlayerDanmakuViewModel
-import me.him188.ani.app.ui.subject.episode.mediaFetch.EpisodeMediaFetchSession
-import me.him188.ani.app.ui.subject.episode.mediaFetch.FetcherMediaSelectorConfig
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
+import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSourceResultsPresentation
 import me.him188.ani.app.ui.subject.episode.statistics.DanmakuLoadingState
 import me.him188.ani.app.ui.subject.episode.statistics.PlayerStatisticsState
 import me.him188.ani.app.videoplayer.data.OpenFailures
@@ -75,6 +81,7 @@ import me.him188.ani.danmaku.api.DanmakuSession
 import me.him188.ani.danmaku.ui.DanmakuRegexFilterConfig
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
+import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.datasources.bangumi.processing.nameCNOrName
 import me.him188.ani.utils.coroutines.cancellableCoroutineScope
@@ -156,13 +163,9 @@ interface EpisodeViewModel : HasBackgroundScope {
 
     // Media Fetching
 
-    /**
-     * 查询剧集数据源资源的会话
-     */
-    val episodeMediaFetchSession: EpisodeMediaFetchSession
-    val mediaSelectorSettings: MediaSelectorSettings
     val mediaSelectorPresentation: MediaSelectorPresentation
     val danmakuRegexFilterConfig: Flow<DanmakuRegexFilterConfig>
+    val mediaSourceResultsPresentation: MediaSourceResultsPresentation
 
     val playerStatistics: PlayerStatisticsState
 
@@ -178,11 +181,6 @@ interface EpisodeViewModel : HasBackgroundScope {
     val videoScaffoldConfig: VideoScaffoldConfig
 
     val videoLoadingState: StateFlow<VideoLoadingState> get() = playerStatistics.videoLoadingState
-
-    /**
-     * `true` if a play source is selected by user (or automatically)
-     */
-    val mediaSelected: Boolean
 
     /**
      * Play controller for video view. This can be saved even when window configuration changes (i.e. everything recomposes).
@@ -202,9 +200,6 @@ interface EpisodeViewModel : HasBackgroundScope {
 
     val danmaku: PlayerDanmakuViewModel
 }
-
-@Stable
-val EpisodeViewModel.mediaSelector get() = episodeMediaFetchSession.mediaSelector
 
 fun EpisodeViewModel(
     initialSubjectId: Int,
@@ -227,30 +222,56 @@ private class EpisodeViewModelImpl(
     private val danmakuManager: DanmakuManager by inject()
     override val videoSourceResolver: VideoSourceResolver by inject()
     private val settingsRepository: SettingsRepository by inject()
+    private val mediaSourceManager: MediaSourceManager by inject()
+    private val episodePreferencesRepository: EpisodePreferencesRepository by inject()
 
-    private val subjectInfo = flowOf(subjectId).mapLatest { subjectId ->
-        subjectManager.getSubjectInfo(subjectId)
-    }.shareInBackground()
+    private val subjectInfo = subjectManager.subjectInfoFlow(subjectId).shareInBackground()
+    private val episodeInfo = subjectManager.episodeInfoFlow(episodeId).shareInBackground()
 
     // Media Selection
 
-    override val episodeMediaFetchSession = EpisodeMediaFetchSession(
-        subjectId,
-        episodeId,
-        backgroundScope.coroutineContext,
-        config = FetcherMediaSelectorConfig(
-            // 观看的时候, 所有设置都保存
-            savePreferenceChanges = true,
-            autoSelectOnFetchCompletion = true,
-            autoSelectLocal = true,
-        ),
-    )
-    override val mediaSelectorSettings: MediaSelectorSettings by
-    settingsRepository.mediaSelectorSettings.flow.produceState(MediaSelectorSettings.Default)
-    override val mediaSelectorPresentation: MediaSelectorPresentation by lazy {
-        MediaSelectorPresentation(
-            mediaSelector,
-            backgroundScope
+    private val mediaFetchSession = mediaSourceManager.createFetchFetchSessionFlow(
+        combine(subjectInfo, episodeInfo) { subjectInfo, episodeInfo ->
+            // note: subjectInfo 和 episodeInfo 必须是只 emit 一个元素的
+            MediaFetchRequest.create(subjectInfo, episodeInfo)
+        },
+    ).shareInBackground(started = SharingStarted.Lazily)
+
+    private val mediaSelector = MediaSelectorFactory.withKoin(getKoin())
+        .create(
+            subjectId,
+            mediaFetchSession.flatMapLatest { it.cumulativeResults },
+        )
+        .apply {
+            autoSelect.run {
+                launchInBackground { mediaFetchSession.collectLatest { awaitCompletedAndSelectDefault(it) } }
+                launchInBackground { mediaFetchSession.collectLatest { selectCached(it) } }
+
+                launchInBackground {
+                    if (settingsRepository.mediaSelectorSettings.flow.first().autoEnableLastSelected) {
+                        mediaFetchSession.collectLatest { autoEnableLastSelected(it) }
+                    }
+                }
+            }
+            eventHandling.run {
+                launchInBackground {
+                    savePreferenceOnSelect {
+                        episodePreferencesRepository.setMediaPreference(subjectId, it)
+                    }
+                }
+            }
+        }
+
+    override val mediaSelectorPresentation: MediaSelectorPresentation =
+        MediaSelectorPresentation(mediaSelector, backgroundScope.coroutineContext)
+
+    override val mediaSourceResultsPresentation: MediaSourceResultsPresentation =
+        MediaSourceResultsPresentation(
+            FilteredMediaSourceResults(
+                results = mediaFetchSession.mapLatest { it.mediaSourceResults },
+                settings = settingsRepository.mediaSelectorSettings.flow,
+            ),
+            backgroundScope.coroutineContext,
         )
     }
     override val danmakuRegexFilterConfig: Flow<DanmakuRegexFilterConfig> = settingsRepository.danmakuRegexFilterConfig.flow
@@ -259,14 +280,6 @@ private class EpisodeViewModelImpl(
     override var mediaSelectorVisible: Boolean by mutableStateOf(false)
     override val videoScaffoldConfig: VideoScaffoldConfig by settingsRepository.videoScaffoldConfig
         .flow.produceState(VideoScaffoldConfig.Default)
-
-    private val selectedMedia = mediaSelectorPresentation.mediaSelector.selected
-        .filterNotNull()
-        .distinctUntilChanged()
-
-    override val mediaSelected by derivedStateOf {
-        mediaSelectorPresentation.selected != null
-    }
 
     override val videoLoadingState get() = playerStatistics.videoLoadingState
 
@@ -277,7 +290,8 @@ private class EpisodeViewModelImpl(
      * - List of video sources are still downloading so user has nothing to select.
      * - The sources are available but user has not yet selected one.
      */
-    private val videoSource: SharedFlow<VideoSource<*>?> = selectedMedia
+    private val videoSource: SharedFlow<VideoSource<*>?> = mediaSelector.selected
+        .filterNotNull()
         .distinctUntilChanged()
         .transformLatest { playSource ->
             emit(null)
@@ -293,9 +307,9 @@ private class EpisodeViewModelImpl(
                             EpisodeMetadata(
                                 title = presentation.title,
                                 ep = EpisodeSort(presentation.ep),
-                                sort = EpisodeSort(presentation.sort)
-                            )
-                        )
+                                sort = EpisodeSort(presentation.sort),
+                            ),
+                        ),
                     )
                     videoLoadingState.compareAndSet(VideoLoadingState.ResolvingSource, VideoLoadingState.DecodingData)
                 } catch (e: UnsupportedMediaException) {
@@ -536,7 +550,7 @@ private class EpisodeViewModelImpl(
         selfId: String?,
     ) = DanmakuPresentation(
         data,
-        isSelf = selfId == data.senderId
+        isSelf = selfId == data.senderId,
     )
 
     /**

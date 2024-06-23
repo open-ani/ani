@@ -38,6 +38,9 @@ import me.him188.ani.app.data.media.MediaCacheManagerImpl
 import me.him188.ani.app.data.media.MediaSourceManager
 import me.him188.ani.app.data.media.MediaSourceManagerImpl
 import me.him188.ani.app.data.media.TorrentMediaCacheEngine
+import me.him188.ani.app.data.media.cache.DirectoryMediaCacheStorage
+import me.him188.ani.app.data.media.createWithKoin
+import me.him188.ani.app.data.media.instance.MediaSourceSave
 import me.him188.ani.app.data.repositories.BangumiEpisodeRepository
 import me.him188.ani.app.data.repositories.BangumiSubjectRepository
 import me.him188.ani.app.data.repositories.EpisodePreferencesRepository
@@ -77,8 +80,6 @@ import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.subject.SubjectProvider
 import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
-import me.him188.ani.datasources.core.cache.DirectoryMediaCacheStorage
-import me.him188.ani.datasources.core.instance.MediaSourceSave
 import me.him188.ani.utils.coroutines.childScope
 import me.him188.ani.utils.coroutines.childScopeContext
 import me.him188.ani.utils.logging.info
@@ -108,10 +109,10 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
     single<SubjectSearchRepository> {
         get<AniDatabase>().run { SubjectSearchRepositoryImpl(searchHistory(), searchTag()) }
     }
-    
+
     single<DanmakuManager> {
         DanmakuManagerImpl(
-            parentCoroutineContext = coroutineScope.coroutineContext
+            parentCoroutineContext = coroutineScope.coroutineContext,
         )
     }
     single<UpdateManager> {
@@ -129,7 +130,7 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
             .setQueryCoroutineContext(Dispatchers.IO)
             .build()
     }
-    
+
     // Media
     single<MediaCacheManager> {
         val id = MediaCacheManager.LOCAL_FS_MEDIA_SOURCE_ID
@@ -142,7 +143,7 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
             // 旧的都是 libtorrent4j
             if (oldDir.exists()) {
                 oldDir.copyRecursively(
-                    getMediaMetadataDir(TorrentEngineType.Libtorrent4j.id), true
+                    getMediaMetadataDir(TorrentEngineType.Libtorrent4j.id), true,
                 )
                 oldDir.deleteRecursively()
             }
@@ -159,7 +160,7 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
                             metadataDir = getMediaMetadataDir("test-in-memory").toPath(),
                             engine = DummyMediaCacheEngine("test-in-memory"),
                             coroutineScope.childScopeContext(),
-                        )
+                        ),
                     )
                 }
                 for (engine in engines) {
@@ -172,7 +173,7 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
                                 torrentEngine = engine,
                             ),
                             coroutineScope.childScopeContext(),
-                        )
+                        ),
                     )
                 }
             },
@@ -185,14 +186,14 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
         MediaSourceManagerImpl(
             additionalSources = {
                 get<MediaCacheManager>().storagesIncludingDisabled.map { it.cacheMediaSource }
-            }
+            },
         )
     }
 
     // Caching
 
     single<MediaAutoCacheService> {
-        DefaultMediaAutoCacheService()
+        DefaultMediaAutoCacheService.createWithKoin()
     }
 }
 
@@ -229,7 +230,7 @@ fun KoinApplication.startCommonKoinModule(coroutineScope: CoroutineScope): KoinA
                         mediaSourceId = id,
                         isEnabled = true,
                         config = MediaSourceConfig.Default,
-                    )
+                    ),
                 )
             }
             // 把没启用的也添加上, 符合旧逻辑
@@ -238,11 +239,11 @@ fun KoinApplication.startCommonKoinModule(coroutineScope: CoroutineScope): KoinA
                     continue
                 }
                 mediaSourceInstanceRepository.add(
-                    mediaSourceSave = instance.copy(isEnabled = false)
+                    mediaSourceSave = instance.copy(isEnabled = false),
                 )
             }
             settingsRepository.defaultMediaPreference.set(
-                mediaPreference.copy(fallbackMediaSourceIds = null)
+                mediaPreference.copy(fallbackMediaSourceIds = null),
             )
         }
     }
@@ -320,7 +321,7 @@ fun getAniUserAgent(
 fun createBangumiClient(): BangumiClient {
     return BangumiClient.create(
         currentAniBuildConfig.bangumiOauthClientAppId,
-        currentAniBuildConfig.bangumiOauthClientSecret
+        currentAniBuildConfig.bangumiOauthClientSecret,
     ) {
         install(UserAgent) {
             agent = getAniUserAgent(currentAniBuildConfig.versionName)

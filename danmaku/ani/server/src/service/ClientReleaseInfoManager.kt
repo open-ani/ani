@@ -2,11 +2,11 @@ package me.him188.ani.danmaku.server.service
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.request.get
-import io.ktor.http.HttpStatusCode
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.bearerAuth
+import io.ktor.client.request.get
 import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -116,7 +116,7 @@ class ClientReleaseInfoManagerImpl(
         }
         return listOf(
             "https://d.myani.org/v${clientVersion}/ani-${clientVersion}${distributionSuffix}",
-            "https://mirror.ghproxy.com/?q=https://github.com/open-ani/ani/releases/download/v${clientVersion}/ani-${clientVersion}${distributionSuffix}"
+            "https://mirror.ghproxy.com/?q=https://github.com/open-ani/ani/releases/download/v${clientVersion}/ani-${clientVersion}${distributionSuffix}",
         )
     }
 
@@ -248,7 +248,7 @@ class TestClientReleaseInfoManager : ClientReleaseInfoManager {
                 assetNames = setOf("testAsset"),
                 publishTime = 0,
                 description = "This is version 2.0.0",
-            )
+            ),
         )
     }
 

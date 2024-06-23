@@ -59,7 +59,7 @@ fun getAndroidModules(
                 .map { TorrentVideoSourceResolver(it) }
                 .plus(LocalFileVideoSourceResolver())
                 .plus(HttpStreamingVideoSourceResolver())
-                .plus(AndroidWebVideoSourceResolver())
+                .plus(AndroidWebVideoSourceResolver()),
         )
     }
     single<UpdateInstaller> { AndroidUpdateInstaller() }

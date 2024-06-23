@@ -1,7 +1,8 @@
-package me.him188.ani.datasources.core.cache
+package me.him188.ani.app.data.media.cache
 
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
+import me.him188.ani.app.data.media.framework.TestMediaCacheEngine
 import me.him188.ani.datasources.api.DefaultMedia
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.MediaCacheMetadata
@@ -11,7 +12,6 @@ import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.ResourceLocation
-import me.him188.ani.datasources.core.cache.framework.TestMediaCacheEngine
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.test.Test
@@ -59,13 +59,13 @@ class DirectoryMediaCacheStorageTest {
                 episodeEp = EpisodeSort("02"),
                 episodeName = "测试剧集",
             ),
-            resume = true
+            resume = true,
         ) as TestMediaCache
         assertEquals(1, cache.resumeCalled.get())
 
         assertSame(
             cache,
-            storage.listFlow.first().single()
+            storage.listFlow.first().single(),
         )
         assertEquals(1, cache.resumeCalled.get())
 
@@ -85,13 +85,13 @@ class DirectoryMediaCacheStorageTest {
                 episodeEp = EpisodeSort("02"),
                 episodeName = "测试剧集",
             ),
-            resume = false
+            resume = false,
         ) as TestMediaCache
         assertEquals(0, cache.resumeCalled.get())
 
         assertSame(
             cache,
-            storage.listFlow.first().single()
+            storage.listFlow.first().single(),
         )
         assertEquals(0, cache.resumeCalled.get())
 
@@ -111,7 +111,7 @@ class DirectoryMediaCacheStorageTest {
                 episodeEp = EpisodeSort("02"),
                 episodeName = "测试剧集",
             ),
-            resume = false
+            resume = false,
         ) as TestMediaCache
 
         assertEquals(0, cache.resumeCalled.get())
@@ -138,7 +138,7 @@ class DirectoryMediaCacheStorageTest {
                 episodeEp = EpisodeSort("02"),
                 episodeName = "测试剧集",
             ),
-            resume = false
+            resume = false,
         ) as TestMediaCache
 
         assertEquals("$CACHE_MEDIA_SOURCE_ID:${media.mediaId}", cache.media.mediaId)

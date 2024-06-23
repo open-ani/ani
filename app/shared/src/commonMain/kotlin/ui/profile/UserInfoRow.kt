@@ -70,7 +70,7 @@ fun UserInfoRow(
             Modifier
                 .weight(1f)
                 .padding(start = 16.dp)
-                .fillMaxHeight()
+                .fillMaxHeight(),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
@@ -133,7 +133,7 @@ private val sampleUser = User(
     avatar = Avatar(
         "https://example.com/avatar.jpg",
         "https://example.com/avatar.jpg",
-        "https://example.com/avatar.jpg"
+        "https://example.com/avatar.jpg",
     ),
     id = 1,
     nickname = "Nickname",
@@ -148,7 +148,7 @@ private fun PreviewUserInfoRow() {
         UserInfoRow(
             self = sampleUser,
             onClickEditNickname = {},
-            onClickSettings = {}
+            onClickSettings = {},
         )
     }
 }
