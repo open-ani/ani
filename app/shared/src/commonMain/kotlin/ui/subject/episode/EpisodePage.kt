@@ -33,8 +33,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.setRequestFullScreen
@@ -44,6 +47,7 @@ import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.effects.OnLifecycleEvent
 import me.him188.ani.app.ui.foundation.effects.ScreenOnEffect
+import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.layout.LocalLayoutMode
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.subject.episode.danmaku.DanmakuEditor
@@ -53,6 +57,8 @@ import me.him188.ani.app.ui.subject.episode.details.EpisodePlayerTitle
 import me.him188.ani.app.ui.subject.episode.notif.VideoNotifEffect
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults.randomDanmakuPlaceholder
+import me.him188.ani.danmaku.protocol.DanmakuInfo
+import me.him188.ani.danmaku.protocol.DanmakuLocation
 import me.him188.ani.danmaku.ui.DanmakuConfig
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.lifecycle.Lifecycle
@@ -332,13 +338,30 @@ private fun EpisodeVideo(
             var didSetPaused by rememberSaveable { mutableStateOf(false) }
 
             DanmakuEditor(
-                vm = vm,
                 text = danmakuEditorText,
                 onTextChange = { danmakuEditorText = it },
-                setControllerVisible = {
-                    videoControllerState.isVisible = false
-                },
+                isSending = vm.danmaku.isSending,
                 placeholderText = danmakuTextPlaceholder,
+                onSend = { text ->
+                    val exactPosition = vm.playerState.getExactCurrentPositionMillis()
+                    vm.launchInBackground {
+                        try {
+                            danmaku.send(
+                                episodeId = vm.episodeId,
+                                DanmakuInfo(
+                                    exactPosition,
+                                    text = text,
+                                    color = Color.White.toArgb(),
+                                    location = DanmakuLocation.NORMAL,
+                                ),
+                            )
+                            withContext(Dispatchers.Main) { videoControllerState.setVisible(false) }
+                        } catch (e: Throwable) {
+                            withContext(Dispatchers.Main) { danmakuEditorText = text }
+                            throw e
+                        }
+                    }
+                },
                 modifier = Modifier.onFocusChanged {
                     if (it.isFocused) {
                         if (vm.videoScaffoldConfig.pauseVideoOnEditDanmaku && vm.playerState.state.value.isPlaying) {
