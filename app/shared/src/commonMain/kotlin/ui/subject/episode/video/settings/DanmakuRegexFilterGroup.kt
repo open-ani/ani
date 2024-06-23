@@ -290,7 +290,7 @@ internal fun NormalRegexFilterItemAction(
 @Composable
 fun AddRegexFilterDialog(
     onDismissRequest: () -> Unit,
-    onConfirm: (String, String) -> Unit, // onConfirm now accepts the text field value
+    onConfirm: (name: String, regex: String) -> Unit, // onConfirm now accepts the text field value
     title: @Composable () -> Unit,
     confirmEnabled: Boolean = true,
     description: @Composable (() -> Unit)? = null
