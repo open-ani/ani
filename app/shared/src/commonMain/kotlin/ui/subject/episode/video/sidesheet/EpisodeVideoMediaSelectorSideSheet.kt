@@ -38,7 +38,7 @@ fun EpisodeVideoMediaSelectorSideSheet(
             sourceResults = {
                 MediaSourceResultsView(mediaSourceResultsPresentation, mediaSelectorPresentation)
             },
-            modifier.padding(horizontal = 16.dp).padding(bottom = 12.dp)
+            modifier.padding(horizontal = 16.dp)
                 .fillMaxWidth()
                 .navigationBarsPadding(),
             itemProgressBar = {},
