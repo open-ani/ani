@@ -263,6 +263,12 @@ internal fun EpisodeVideoImpl(
             if (showSettings) {
                 EpisodeVideoSettingsSideSheet(
                     onDismissRequest = { showSettings = false },
+                    title = { Text(text = "弹幕设置") },
+                    closeButton = {
+                        IconButton(onClick = { showSettings = false }) {
+                            Icon(Icons.Rounded.Close, contentDescription = "关闭")
+                        }
+                    },
                 ) {
                     EpisodeVideoSettings(
                         rememberViewModel { EpisodeVideoSettingsViewModel() },
