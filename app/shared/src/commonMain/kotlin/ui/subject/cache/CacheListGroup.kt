@@ -149,7 +149,7 @@ fun SettingsScope.EpisodeCacheListGroup(
                         .navigationBarsPadding()
                         .fillMaxHeight() // 防止添加筛选后数量变少导致 bottom sheet 高度变化
                         .fillMaxWidth(),
-                    actions = {
+                    bottomActions = {
                         TextButton({ state.cancelRequest() }) {
                             Text("取消")
                         }
@@ -181,7 +181,7 @@ fun SettingsScope.EpisodeCacheListGroup(
                                 hideMediaSelector = false
                             }
                         } else {
-                            state.requestCache(episodeCacheState)
+                            state.requestCache(episodeCacheState, autoSelectCached = true)
                         }
                     }
                 },
@@ -250,11 +250,7 @@ fun SettingsScope.EpisodeCacheItem(
     modifier: Modifier = Modifier,
     dropdown: @Composable () -> Unit = {},
 ) {
-    val colorByWatchStatus = if (episode.info.watchStatus.isDoneOrDropped() || !episode.info.hasPublished) {
-        LocalContentColor.current.stronglyWeaken()
-    } else {
-        MaterialTheme.colorScheme.onSurface
-    }
+    val colorByWatchStatus = contentColorForWatchStatus(episode.info.watchStatus, episode.info.hasPublished)
     TextItem(
         icon = {
             CompositionLocalProvider(LocalContentColor provides colorByWatchStatus) {
@@ -305,6 +301,17 @@ fun SettingsScope.EpisodeCacheItem(
         modifier = modifier,
     )
 }
+
+@Composable
+fun contentColorForWatchStatus(
+    collectionType: UnifiedCollectionType,
+    isKnownBroadcast: Boolean
+) =
+    if (collectionType.isDoneOrDropped() || !isKnownBroadcast) {
+        LocalContentColor.current.stronglyWeaken()
+    } else {
+        LocalContentColor.current
+    }
 
 @Composable
 fun EpisodeCacheActionIcon(

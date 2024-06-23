@@ -14,6 +14,19 @@ private fun PreviewEpisodeVideoLoadingIndicator() {
         EpisodeVideoLoadingIndicator(
             VideoLoadingState.Initial,
             speedProvider = { 0.3.bytes },
+            optimizeForFullscreen = false,
+        )
+    }
+}
+
+@Preview(name = "Selecting Media")
+@Composable
+private fun PreviewEpisodeVideoLoadingIndicatorFullscreen() {
+    ProvideCompositionLocalsForPreview {
+        EpisodeVideoLoadingIndicator(
+            VideoLoadingState.Initial,
+            speedProvider = { 0.3.bytes },
+            optimizeForFullscreen = true,
         )
     }
 }
@@ -25,6 +38,7 @@ private fun PreviewEpisodeVideoLoadingIndicator2() {
         EpisodeVideoLoadingIndicator(
             VideoLoadingState.ResolvingSource,
             speedProvider = { 0.3.bytes },
+            optimizeForFullscreen = false,
         )
     }
 }
@@ -36,6 +50,7 @@ private fun PreviewEpisodeVideoLoadingIndicator5() {
         EpisodeVideoLoadingIndicator(
             VideoLoadingState.DecodingData,
             speedProvider = { 0.3.bytes },
+            optimizeForFullscreen = false,
         )
     }
 }
@@ -47,6 +62,7 @@ private fun PreviewEpisodeVideoLoadingIndicator3() {
         EpisodeVideoLoadingIndicator(
             VideoLoadingState.Succeed,
             speedProvider = { 0.3.bytes },
+            optimizeForFullscreen = false,
         )
     }
 }
@@ -58,6 +74,7 @@ private fun PreviewEpisodeVideoLoadingIndicator7() {
         EpisodeVideoLoadingIndicator(
             VideoLoadingState.ResolutionTimedOut,
             speedProvider = { Unspecified },
+            optimizeForFullscreen = false,
         )
     }
 }
@@ -69,6 +86,7 @@ private fun PreviewEpisodeVideoLoadingIndicator4() {
         EpisodeVideoLoadingIndicator(
             VideoLoadingState.Succeed,
             speedProvider = { Unspecified },
+            optimizeForFullscreen = false,
         )
     }
 }

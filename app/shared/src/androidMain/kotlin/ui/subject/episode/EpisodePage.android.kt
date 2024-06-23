@@ -13,7 +13,7 @@ import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 internal actual fun PreviewEpisodePage() {
     ProvideCompositionLocalsForPreview {
         val context = LocalContext.current
-        EpisodePage(
+        EpisodeScene(
             remember {
                 EpisodeViewModel(
                     424663,

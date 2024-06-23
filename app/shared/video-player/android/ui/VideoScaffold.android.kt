@@ -3,9 +3,12 @@ package me.him188.ani.app.videoplayer.ui
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.content.res.Configuration.UI_MODE_TYPE_NORMAL
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
@@ -14,7 +17,11 @@ import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.preview.PHONE_LANDSCAPE
 import me.him188.ani.app.ui.subject.episode.EpisodeVideoImpl
 import me.him188.ani.app.ui.subject.episode.VideoLoadingState
+import me.him188.ani.app.ui.subject.episode.details.EpisodePlayMediaSelector
 import me.him188.ani.app.ui.subject.episode.details.EpisodePlayerTitle
+import me.him188.ani.app.ui.subject.episode.details.rememberTestMediaSelectorPresentation
+import me.him188.ani.app.ui.subject.episode.mediaFetch.emptyMediaSourceResultsPresentation
+import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsSideSheet
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
 import me.him188.ani.app.videoplayer.ui.state.DummyPlayerState
 import me.him188.ani.danmaku.ui.DanmakuConfig
@@ -43,10 +50,14 @@ private fun PreviewVideoScaffoldImpl(
     }
 
     val controllerState = rememberVideoControllerState(initialVisible = true)
+    var isMediaSelectorVisible by remember { mutableStateOf(false) }
+    var isEpisodeSelectorVisible by remember { mutableStateOf(false) }
 
     EpisodeVideoImpl(
         playerState = playerState,
         expanded = expanded,
+        hasNextEpisode = true,
+        onClickNextEpisode = {},
         videoControllerState = controllerState,
         title = {
             EpisodePlayerTitle(
@@ -71,6 +82,22 @@ private fun PreviewVideoScaffoldImpl(
             )
         },
         configProvider = { VideoScaffoldConfig.Default },
+        sideSheets = {
+            if (isMediaSelectorVisible) {
+                EpisodeVideoSettingsSideSheet(
+                    onDismissRequest = { isMediaSelectorVisible = false },
+                ) {
+                    EpisodePlayMediaSelector(
+                        rememberTestMediaSelectorPresentation(),
+                        emptyMediaSourceResultsPresentation(),
+                        onDismissRequest = { },
+                        modifier = Modifier.fillMaxHeight(), // 防止添加筛选后数量变少导致 bottom sheet 高度变化
+                    )
+                }
+            }
+        },
+        onShowMediaSelector = { isMediaSelectorVisible = true },
+        onShowSelectEpisode = { isEpisodeSelectorVisible = true },
     )
 
 //    VideoScaffold(

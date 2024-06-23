@@ -1,15 +1,14 @@
 package me.him188.ani.app.ui.subject.episode.video.settings
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.ElevatedFilterChip
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
@@ -25,7 +24,6 @@ import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.ui.external.placeholder.placeholder
-import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
 import me.him188.ani.app.ui.settings.framework.components.SliderItem
@@ -187,12 +185,7 @@ fun EpisodeVideoSettings(
         derivedStateOf(isLoading)
     }
     SettingsTab(modifier) {
-        Group(
-            title = {
-                Text("弹幕设置")
-            },
-            useThinHeader = true,
-        ) {
+        Column {
             FlowRow(
                 Modifier.padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -438,18 +431,3 @@ fun EpisodeVideoSettings(
     }
 }
 
-@Composable
-fun VideoSettingsButton(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    IconButton(
-        onClick = onClick,
-        modifier,
-    ) {
-        Icon(
-            Icons.Rounded.Settings, contentDescription = "Settings",
-            tint = aniDarkColorTheme().onBackground,
-        )
-    }
-}

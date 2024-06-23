@@ -56,8 +56,9 @@ interface EpisodeCacheListState {
      * 开始请求缓存一个剧集.
      *
      * 将会加载条目和剧集元数据, 尝试自动选择缓存. 在无法自动选择时, 将会展示 [MediaSelector].
+     * @param autoSelectCached [CacheRequestStage.SelectMedia.tryAutoSelectByCachedSeason]
      */
-    fun requestCache(episode: EpisodeCacheState)
+    fun requestCache(episode: EpisodeCacheState, autoSelectCached: Boolean)
 
     /**
      * 删除一个剧集的现有缓存.
@@ -87,7 +88,7 @@ interface EpisodeCacheListState {
 @Stable
 class EpisodeCacheListStateImpl(
     episodesLazy: Flow<List<EpisodeCacheState>>,
-    private val onRequestCache: suspend (episode: EpisodeCacheState) -> CacheRequestStage?,
+    private val onRequestCache: suspend (episode: EpisodeCacheState, autoSelectByCached: Boolean) -> CacheRequestStage?,
     private val onRequestCacheComplete: suspend (episode: EpisodeCacheTargetInfo) -> Unit,
     private val onDeleteCache: suspend (episode: EpisodeCacheState) -> Unit,
     parentCoroutineContext: CoroutineContext,
@@ -154,12 +155,12 @@ class EpisodeCacheListStateImpl(
         }
     }
 
-    override fun requestCache(episode: EpisodeCacheState) {
+    override fun requestCache(episode: EpisodeCacheState, autoSelectCached: Boolean) {
         // 当已经有任务时, 忽略请求
         if (episode.actionTasker.isRunning) return
         episode.actionTasker.launch {
             // TODO: 处理错误 
-            onRequestCache(episode)?.let {
+            onRequestCache(episode, autoSelectCached)?.let {
                 episode.currentSelectStorageTask
                 if (it is CacheRequestStage.Done) {
                     callComplete(episode, it)

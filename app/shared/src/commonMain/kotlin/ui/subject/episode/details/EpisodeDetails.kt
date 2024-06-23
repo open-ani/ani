@@ -37,7 +37,9 @@ import me.him188.ani.app.tools.rememberBackgroundMonoTasker
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
 import me.him188.ani.app.ui.subject.episode.EpisodeCollectionActionButton
+import me.him188.ani.app.ui.subject.episode.EpisodePresentation
 import me.him188.ani.app.ui.subject.episode.EpisodeViewModel
+import me.him188.ani.app.ui.subject.episode.SubjectPresentation
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.topic.FileSize.Companion.Unspecified
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
@@ -66,13 +68,32 @@ fun EpisodeDetails(
     Column(modifier) {
         // 标题
         Surface(Modifier.fillMaxWidth()) {
-            EpisodeTitle(viewModel, Modifier.padding(horizontal = PAGE_HORIZONTAL_PADDING, vertical = 16.dp))
+            EpisodeTitle(
+                viewModel.subjectPresentation,
+                viewModel.episodePresentation,
+                Modifier.padding(horizontal = PAGE_HORIZONTAL_PADDING, vertical = 16.dp),
+            ) {
+                val tasker = viewModel.rememberBackgroundMonoTasker()
+                EpisodeCollectionActionButton(
+                    viewModel.episodePresentation.collectionType,
+                    onClick = { target ->
+                        tasker.launch { viewModel.setEpisodeCollectionType(target) }
+                    },
+                    enabled = !tasker.isRunning,
+                )
+            }
         }
 
         HorizontalDivider(Modifier.fillMaxWidth())
 
         Column(Modifier.padding(vertical = 16.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            NowPlayingLabel(viewModel, Modifier.padding(horizontal = PAGE_HORIZONTAL_PADDING).fillMaxWidth())
+
+            val data by viewModel.playerState.videoData.collectAsStateWithLifecycle(null)
+            NowPlayingLabel(
+                viewModel.mediaSelectorPresentation.selected,
+                data?.filename,
+                Modifier.padding(horizontal = PAGE_HORIZONTAL_PADDING).fillMaxWidth(),
+            )
 
             Row(Modifier.padding(horizontal = PAGE_HORIZONTAL_PADDING)) {
                 actionRow()
@@ -126,11 +147,14 @@ fun renderResolution(id: String): String {
  * 显示正在播放的那行字
  */
 @Composable
-private fun NowPlayingLabel(viewModel: EpisodeViewModel, modifier: Modifier = Modifier) {
+private fun NowPlayingLabel(
+    isPlaying: Media?,
+    filename: String?,
+    modifier: Modifier = Modifier,
+) {
     Row(modifier) {
         ProvideTextStyle(MaterialTheme.typography.labelMedium) {
-            val playing = viewModel.mediaSelectorPresentation.selected
-            if (playing != null) {
+            if (isPlaying != null) {
                 Column {
                     Row {
                         Text(
@@ -138,17 +162,16 @@ private fun NowPlayingLabel(viewModel: EpisodeViewModel, modifier: Modifier = Mo
                             color = MaterialTheme.colorScheme.primary,
                         )
                         Text(
-                            remember(playing) { playing.render() },
+                            remember(isPlaying) { isPlaying.render() },
                             color = MaterialTheme.colorScheme.secondary,
                         )
                     }
 
 
-                    val data by viewModel.playerState.videoData.collectAsStateWithLifecycle(null)
-                    if (data != null) {
+                    if (filename != null) {
                         SelectionContainer {
                             Text(
-                                remember(data) { data?.filename ?: "" },
+                                filename,
                                 Modifier.padding(top = 8.dp),
                                 color = LocalContentColor.current.slightlyWeaken(),
                             )
@@ -164,17 +187,21 @@ private fun NowPlayingLabel(viewModel: EpisodeViewModel, modifier: Modifier = Mo
 
 /**
  * 剧集标题, 序号
+ *
+ * @param collectionButton 收藏状态按钮. [EpisodeCollectionActionButton]
  */
 @Composable
 fun EpisodeTitle(
-    viewModel: EpisodeViewModel,
-    modifier: Modifier = Modifier
+    subjectPresentation: SubjectPresentation,
+    episodePresentation: EpisodePresentation,
+    modifier: Modifier = Modifier,
+    collectionButton: @Composable () -> Unit,
 ) {
     Row(modifier) {
         Column(Modifier.weight(1f)) {
-            Row(Modifier.placeholder(viewModel.subjectPresentation.isPlaceholder)) {
+            Row(Modifier.placeholder(subjectPresentation.isPlaceholder)) {
                 Text(
-                    viewModel.subjectPresentation.title,
+                    subjectPresentation.title,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     maxLines = 1,
@@ -183,7 +210,7 @@ fun EpisodeTitle(
             }
 
             Row(Modifier.padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                val ep = viewModel.episodePresentation
+                val ep = episodePresentation
                 val shape = RoundedCornerShape(8.dp)
                 Box(
                     Modifier.border(1.dp, MaterialTheme.colorScheme.outlineVariant, shape = shape)
@@ -210,17 +237,8 @@ fun EpisodeTitle(
             }
         }
 
-        val tasker = viewModel.rememberBackgroundMonoTasker()
-        EpisodeCollectionActionButton(
-            viewModel.episodePresentation.collectionType,
-            onClick = { target ->
-                tasker.launch {
-                    viewModel.setEpisodeCollectionType(target)
-                }
-            },
-            Modifier.requiredWidth(IntrinsicSize.Max).align(Alignment.CenterVertically),
-            enabled = !tasker.isRunning,
-        )
+        Box(Modifier.requiredWidth(IntrinsicSize.Max).align(Alignment.CenterVertically)) {
+            collectionButton()
+        }
     }
 }
-

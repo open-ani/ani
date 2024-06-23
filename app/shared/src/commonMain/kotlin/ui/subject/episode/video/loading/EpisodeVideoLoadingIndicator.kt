@@ -27,6 +27,7 @@ import kotlin.time.Duration.Companion.seconds
 fun EpisodeVideoLoadingIndicator(
     playerState: PlayerState,
     videoLoadingState: VideoLoadingState,
+    optimizeForFullscreen: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val isBuffering by playerState.isBuffering.collectAsStateWithLifecycle(true)
@@ -44,6 +45,7 @@ fun EpisodeVideoLoadingIndicator(
         EpisodeVideoLoadingIndicator(
             videoLoadingState,
             speedProvider = { speed },
+            optimizeForFullscreen = optimizeForFullscreen,
             modifier = modifier,
         )
     }
@@ -53,6 +55,7 @@ fun EpisodeVideoLoadingIndicator(
 fun EpisodeVideoLoadingIndicator(
     state: VideoLoadingState,
     speedProvider: () -> FileSize,
+    optimizeForFullscreen: Boolean,
     playerError: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
@@ -65,7 +68,11 @@ fun EpisodeVideoLoadingIndicator(
             }
             when (state) {
                 VideoLoadingState.Initial -> {
-                    TextWithBorder("请选择数据源")
+                    if (optimizeForFullscreen) {
+                        TextWithBorder("请在右上角选择数据源")
+                    } else {
+                        TextWithBorder("请选择数据源")
+                    }
                 }
 
                 VideoLoadingState.ResolvingSource -> {

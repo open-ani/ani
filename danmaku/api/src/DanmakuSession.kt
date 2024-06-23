@@ -1,7 +1,7 @@
 package me.him188.ani.danmaku.api
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.merge
 
 interface DanmakuSession {
@@ -24,7 +24,7 @@ fun List<DanmakuSession>.merge(): DanmakuSession {
 }
 
 private object EmptyDanmakuSession : DanmakuSession {
-    override val events: Flow<DanmakuEvent> get() = emptyFlow()
+    override val events: Flow<DanmakuEvent> get() = flowOf(DanmakuEvent.Repopulate(emptyList()))
     override fun requestRepopulate() {
     }
 }

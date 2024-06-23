@@ -47,7 +47,7 @@ private inline val WINDOW_VERTICAL_PADDING get() = 8.dp
 /**
  * 通用的数据源选择器. See preview
  *
- * @param actions shown at the bottom
+ * @param bottomActions shown at the bottom
  */
 @Composable
 fun MediaSelectorView(
@@ -62,7 +62,8 @@ fun MediaSelectorView(
         )
     },
     onClickItem: ((Media) -> Unit) = { state.select(it) },
-    actions: (@Composable RowScope.() -> Unit)? = null,
+    bottomActions: (@Composable RowScope.() -> Unit)? = null,
+    singleLineFilter: Boolean = false,
 ) = Surface {
     Column(modifier) {
         val lazyListState = rememberLazyListState()
@@ -71,7 +72,9 @@ fun MediaSelectorView(
             lazyListState,
         ) {
             item {
-                sourceResults()
+                Row(Modifier.padding(bottom = 12.dp)) {
+                    sourceResults()
+                }
             }
 
             stickyHeader {
@@ -86,7 +89,7 @@ fun MediaSelectorView(
                 ) {
                     Column {
                         Column(
-                            Modifier.padding(vertical = 12.dp).fillMaxWidth(),
+                            Modifier.padding(bottom = 12.dp).fillMaxWidth(),
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
                             Text(
@@ -100,6 +103,7 @@ fun MediaSelectorView(
                                 resolution = state.resolution,
                                 subtitleLanguageId = state.subtitleLanguageId,
                                 alliance = state.alliance,
+                                singleLine = singleLineFilter,
                             )
                         }
                         if (isStuck) {
@@ -128,7 +132,7 @@ fun MediaSelectorView(
             item { } // dummy spacer
         }
 
-        if (actions != null) {
+        if (bottomActions != null) {
             HorizontalDivider(Modifier.padding(bottom = 8.dp))
 
             Row(
@@ -136,7 +140,7 @@ fun MediaSelectorView(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 ProvideTextStyle(MaterialTheme.typography.labelLarge) {
-                    actions()
+                    bottomActions()
                 }
             }
         }

@@ -11,6 +11,12 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.DisplaySettings
+import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -37,7 +43,6 @@ import me.him188.ani.app.ui.subject.episode.video.loading.EpisodeVideoLoadingInd
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettings
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsSideSheet
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsViewModel
-import me.him188.ani.app.ui.subject.episode.video.settings.VideoSettingsButton
 import me.him188.ani.app.ui.subject.episode.video.topbar.EpisodeVideoTopBar
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.VideoPlayer
@@ -71,6 +76,8 @@ import kotlin.time.Duration.Companion.seconds
 internal fun EpisodeVideoImpl(
     playerState: PlayerState,
     expanded: Boolean,
+    hasNextEpisode: Boolean,
+    onClickNextEpisode: () -> Unit,
     videoControllerState: VideoControllerState,
     title: @Composable () -> Unit,
     danmakuHostState: DanmakuHostState,
@@ -80,6 +87,9 @@ internal fun EpisodeVideoImpl(
     onExitFullscreen: () -> Unit,
     danmakuEditor: @Composable (RowScope.() -> Unit),
     configProvider: () -> VideoScaffoldConfig,
+    sideSheets: @Composable () -> Unit,
+    onShowMediaSelector: () -> Unit,
+    onShowSelectEpisode: () -> Unit,
     modifier: Modifier = Modifier,
     maintainAspectRatio: Boolean = !expanded,
 ) {
@@ -101,9 +111,17 @@ internal fun EpisodeVideoImpl(
                 } else {
                     null
                 },
-            ) {
-                VideoSettingsButton(onClick = { showSettings = true })
-            }
+                actions = {
+                    if (expanded) {
+                        IconButton(onShowMediaSelector) {
+                            Icon(Icons.Rounded.DisplaySettings, contentDescription = "数据源")
+                        }
+                    }
+                    IconButton({ showSettings = true }) {
+                        Icon(Icons.Rounded.Settings, contentDescription = "设置")
+                    }
+                },
+            )
         },
         video = {
             if (LocalIsPreviewing.current) {
@@ -174,7 +192,11 @@ internal fun EpisodeVideoImpl(
         },
         floatingMessage = {
             Column {
-                EpisodeVideoLoadingIndicator(playerState, videoLoadingState())
+                EpisodeVideoLoadingIndicator(
+                    playerState,
+                    videoLoadingState(),
+                    optimizeForFullscreen = expanded, // TODO: 这对 PC 其实可能不太好
+                )
             }
         },
         rhsBar = {
@@ -201,9 +223,19 @@ internal fun EpisodeVideoImpl(
                         onClick = { playerState.togglePause() },
                     )
 
+                    if (hasNextEpisode) {
+                        PlayerControllerDefaults.NextEpisodeIcon(
+                            onClick = onClickNextEpisode,
+                        )
+                    }
+
                     PlayerControllerDefaults.DanmakuIcon(
                         videoControllerState.danmakuEnabled,
                         onClick = { videoControllerState.toggleDanmakuEnabled() },
+                    )
+
+                    PlayerControllerDefaults.SelectEpisodeIcon(
+                        onShowSelectEpisode,
                     )
                 },
                 progressIndicator = {
@@ -263,12 +295,20 @@ internal fun EpisodeVideoImpl(
             if (showSettings) {
                 EpisodeVideoSettingsSideSheet(
                     onDismissRequest = { showSettings = false },
+                    title = { Text(text = "弹幕设置") },
+                    closeButton = {
+                        IconButton(onClick = { showSettings = false }) {
+                            Icon(Icons.Rounded.Close, contentDescription = "关闭")
+                        }
+                    },
                 ) {
                     EpisodeVideoSettings(
                         rememberViewModel { EpisodeVideoSettingsViewModel() },
                     )
                 }
             }
+
+            sideSheets()
         },
     )
 }
