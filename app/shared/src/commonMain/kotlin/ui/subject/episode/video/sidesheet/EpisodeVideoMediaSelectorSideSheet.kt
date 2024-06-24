@@ -43,6 +43,7 @@ fun EpisodeVideoMediaSelectorSideSheet(
                 .navigationBarsPadding(),
             itemProgressBar = {},
             onClickItem = {
+                mediaSelectorPresentation.select(it)
                 onDismissRequest()
             },
             singleLineFilter = true,

@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
@@ -31,8 +32,11 @@ import me.him188.ani.app.data.danmaku.DanmakuManager
 import me.him188.ani.app.data.media.MediaSourceManager
 import me.him188.ani.app.data.media.createFetchFetchSessionFlow
 import me.him188.ani.app.data.media.fetch.FilteredMediaSourceResults
+import me.him188.ani.app.data.media.fetch.MediaFetchSession
 import me.him188.ani.app.data.media.fetch.create
 import me.him188.ani.app.data.media.resolver.VideoSourceResolver
+import me.him188.ani.app.data.media.selector.MediaSelector
+import me.him188.ani.app.data.media.selector.MediaSelectorAutoSelect
 import me.him188.ani.app.data.media.selector.MediaSelectorFactory
 import me.him188.ani.app.data.media.selector.autoSelect
 import me.him188.ani.app.data.media.selector.eventHandling
@@ -184,13 +188,49 @@ private class EpisodeViewModelImpl(
     // Media Selection
 
     // 会在更换 ep 时更换
-    private val mediaFetchSession = episodeInfo.filterNotNull().flatMapLatest {
+    private val mediaFetchSession = episodeInfo.flatMapLatest { episodeInfo ->
         mediaSourceManager.createFetchFetchSessionFlow(
-            subjectInfo.map { subjectInfo ->
-                MediaFetchRequest.create(subjectInfo, it)
+            if (episodeInfo == null) {
+                emptyFlow()
+            } else {
+                subjectInfo.map { subjectInfo ->
+                    MediaFetchRequest.create(subjectInfo, episodeInfo)
+                }
             },
         )
     }.shareInBackground(started = SharingStarted.Lazily)
+
+
+    /**
+     * 更换 EP 是否已经完成了.
+     *
+     * 之所以需要这个状态, 是因为当切换 EP 时, [mediaFetchSession] 会变更,
+     * 随后 [MediaFetchSession.cumulativeResults] 会传递给 [mediaSelector],
+     * 但是 [MediaSelector.mediaList] 是 share 在后台的, 也就是说它可能会在任意时间之后才会发现 [mediaFetchSession] 有更新.
+     *
+     * 这就导致当切换 EP 后, [MediaSelector.mediaList] 会有一段时间仍然是旧的值.
+     *
+     * 问题在于, [mediaFetchSession] 的变更会触发 [MediaSelectorAutoSelect.selectCached].
+     * 自动选择可能比 [MediaSelector.mediaList] 更新更早, 所以自动选择就会用久的 `mediaList` 选择缓存, 导致将会播放旧的视频.
+     *
+     *
+     * 因此我们增加 [switchEpisodeCompleted], 在操作 EP 时, 先将其设置为 `false`, 然后再修改 [episodeId],
+     * 并在 [mediaSelector] 更新时设置为 true.
+     *
+     * 这样也并不是一定安全的, 有可能在我们修改 [episodeId] 后, 正好旧的查询触发了 [MediaSelector.mediaList] 更新,
+     * 就导致 [switchEpisodeCompleted] 被设置为 `true`, [MediaSelectorAutoSelect.selectCached] 仍然会参考旧的 `mediaList` 选择缓存.
+     *
+     * 但是这种情况发生的概率比较小, 仅限于后台还有一个查询正在进行的时候用户切换了 EP, 并且旧的 EP 要至少有一个缓存, 而且恰好在一个比较短的时间内旧的查询完成了.
+     *
+     *
+     * 一个更恰当的解决方法可能是把 [mediaSelector] 变成 flow. 当切换 EP 时直接把 [mediaSelector] 重新创建, 就不可能访问到旧的状态了.
+     * 但是这会导致所有依赖 [mediaSelector] 的客户都更换为 flow 方式, 这很可能会导致更多问题. 因为我们先使用这个临时解决方案.
+     */
+    private val switchEpisodeCompleted = MutableStateFlow(false)
+
+    private suspend inline fun awaitSwitchEpisodeCompleted() {
+        switchEpisodeCompleted.first { it }
+    }
 
     private val mediaSelector = MediaSelectorFactory.withKoin(getKoin())
         .create(
@@ -199,12 +239,25 @@ private class EpisodeViewModelImpl(
         )
         .apply {
             autoSelect.run {
-                launchInBackground { mediaFetchSession.collectLatest { awaitCompletedAndSelectDefault(it) } }
-                launchInBackground { mediaFetchSession.collectLatest { selectCached(it) } }
+                launchInBackground {
+                    mediaFetchSession.collectLatest {
+                        awaitSwitchEpisodeCompleted()
+                        awaitCompletedAndSelectDefault(it)
+                    }
+                }
+                launchInBackground {
+                    mediaFetchSession.collectLatest {
+                        awaitSwitchEpisodeCompleted()
+                        selectCached(it)
+                    }
+                }
 
                 launchInBackground {
-                    if (settingsRepository.mediaSelectorSettings.flow.first().autoEnableLastSelected) {
-                        mediaFetchSession.collectLatest { autoEnableLastSelected(it) }
+                    mediaFetchSession.collectLatest {
+                        awaitSwitchEpisodeCompleted()
+                        if (settingsRepository.mediaSelectorSettings.flow.first().autoEnableLastSelected) {
+                            autoEnableLastSelected(it)
+                        }
                     }
                 }
             }
@@ -213,6 +266,11 @@ private class EpisodeViewModelImpl(
                     savePreferenceOnSelect {
                         episodePreferencesRepository.setMediaPreference(subjectId, it)
                     }
+                }
+            }
+            launchInBackground {
+                mediaList.collect {
+                    switchEpisodeCompleted.value = true
                 }
             }
         }
@@ -275,8 +333,11 @@ private class EpisodeViewModelImpl(
     override val episodeSelectorState: EpisodeSelectorState = EpisodeSelectorState(
         itemsFlow = subjectManager.episodeCollectionsFlow(subjectId).map { list -> list.map { it.toPresentation() } },
         onSelect = {
-            episodeId.value = it.episodeId
             mediaSelector.unselect() // 否则不会自动选择
+            playerState.stop()
+
+            switchEpisodeCompleted.value = false // 要在修改 episodeId 之前才安全, 但会有极小的概率在 fetchSession 更新前有 mediaList 更新
+            episodeId.value = it.episodeId // ep 要在取消选择 media 之后才能变, 否则会导致使用旧的 media
         },
         currentEpisodeId = episodeId,
         parentCoroutineContext = backgroundScope.coroutineContext,
@@ -416,23 +477,25 @@ private class EpisodeViewModelImpl(
 
                     // 设置启用
 
-                    cancellableCoroutineScope {
-                        combine(
-                            playerState.currentPositionMillis.sampleWithInitial(5000),
-                            playerState.videoProperties.map { it?.durationMillis }.debounce(5000),
-                        ) { pos, max ->
-                            if (max == null) return@combine
-                            if (episodePresentationFlow.value?.collectionType == UnifiedCollectionType.DONE) {
-                                cancelScope() // 已经看过了
-                            }
-                            if (pos > max.toFloat() * 0.9) {
-                                logger.info { "观看到 90%, 标记看过" }
-                                runUntilSuccess(maxAttempts = 5) {
-                                    setEpisodeCollectionType(UnifiedCollectionType.DONE)
+                    mediaFetchSession.collectLatest {
+                        cancellableCoroutineScope {
+                            combine(
+                                playerState.currentPositionMillis.sampleWithInitial(5000),
+                                playerState.videoProperties.map { it?.durationMillis }.debounce(5000),
+                            ) { pos, max ->
+                                if (max == null) return@combine
+                                if (episodePresentationFlow.value?.collectionType == UnifiedCollectionType.DONE) {
+                                    cancelScope() // 已经看过了
                                 }
-                                cancelScope() // 标记成功一次后就不要再检查了
-                            }
-                        }.collect()
+                                if (pos > max.toFloat() * 0.9) {
+                                    logger.info { "观看到 90%, 标记看过" }
+                                    runUntilSuccess(maxAttempts = 5) {
+                                        setEpisodeCollectionType(UnifiedCollectionType.DONE)
+                                    }
+                                    cancelScope() // 标记成功一次后就不要再检查了
+                                }
+                            }.collect()
+                        }
                     }
                 }
         }

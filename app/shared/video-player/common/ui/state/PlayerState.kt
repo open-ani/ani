@@ -110,6 +110,12 @@ interface PlayerState {
     fun resume()
 
     /**
+     * 停止播放, 之后不能恢复, 必须 [setVideoSource]
+     */
+    @UiThread
+    fun stop()
+
+    /**
      * 视频播放速度 (倍速)
      *
      * 1.0 为原速度, 2.0 为两倍速度, 0.5 为一半速度, etc.
@@ -224,6 +230,21 @@ abstract class AbstractPlayerState<D : AbstractPlayerState.Data>(
         this.openResource.value = opened
     }
 
+    fun closeVideoSource() {
+        synchronized(this) {
+            val value = openResource.value
+            openResource.value = null
+            value?.releaseResource?.invoke()
+        }
+    }
+
+    final override fun stop() {
+        stopImpl()
+        closeVideoSource()
+    }
+
+    protected abstract fun stopImpl()
+
     /**
      * 开始播放
      */
@@ -246,7 +267,7 @@ abstract class AbstractPlayerState<D : AbstractPlayerState.Data>(
             closed = true
 
             closeImpl()
-            openResource.value?.releaseResource?.invoke()
+            closeVideoSource()
             backgroundScope.cancel()
         }
     }
@@ -297,6 +318,10 @@ fun interface PlayerStateFactory {
  */
 class DummyPlayerState : AbstractPlayerState<AbstractPlayerState.Data>(EmptyCoroutineContext) {
     override val state: MutableStateFlow<PlaybackState> = MutableStateFlow(PlaybackState.PAUSED_BUFFERING)
+    override fun stopImpl() {
+
+    }
+
     override suspend fun cleanupPlayer() {
         // no-op
     }

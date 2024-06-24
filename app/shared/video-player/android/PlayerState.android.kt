@@ -340,6 +340,9 @@ internal class ExoPlayerState @UiThread constructor(
     }
 
     override val isBuffering: MutableStateFlow<Boolean> = MutableStateFlow(false) // 需要单独状态, 因为要用户可能会覆盖 [state] 
+    override fun stopImpl() {
+        player.stop()
+    }
 
     override val videoProperties = MutableStateFlow<VideoProperties?>(null)
     override val bufferedPercentage = MutableStateFlow(0)
