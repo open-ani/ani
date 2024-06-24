@@ -468,23 +468,25 @@ private class EpisodeViewModelImpl(
 
                     // 设置启用
 
-                    cancellableCoroutineScope {
-                        combine(
-                            playerState.currentPositionMillis.sampleWithInitial(5000),
-                            playerState.videoProperties.map { it?.durationMillis }.debounce(5000),
-                        ) { pos, max ->
-                            if (max == null) return@combine
-                            if (episodePresentationFlow.value?.collectionType == UnifiedCollectionType.DONE) {
-                                cancelScope() // 已经看过了
-                            }
-                            if (pos > max.toFloat() * 0.9) {
-                                logger.info { "观看到 90%, 标记看过" }
-                                runUntilSuccess(maxAttempts = 5) {
-                                    setEpisodeCollectionType(UnifiedCollectionType.DONE)
+                    mediaFetchSession.collectLatest {
+                        cancellableCoroutineScope {
+                            combine(
+                                playerState.currentPositionMillis.sampleWithInitial(5000),
+                                playerState.videoProperties.map { it?.durationMillis }.debounce(5000),
+                            ) { pos, max ->
+                                if (max == null) return@combine
+                                if (episodePresentationFlow.value?.collectionType == UnifiedCollectionType.DONE) {
+                                    cancelScope() // 已经看过了
                                 }
-                                cancelScope() // 标记成功一次后就不要再检查了
-                            }
-                        }.collect()
+                                if (pos > max.toFloat() * 0.9) {
+                                    logger.info { "观看到 90%, 标记看过" }
+                                    runUntilSuccess(maxAttempts = 5) {
+                                        setEpisodeCollectionType(UnifiedCollectionType.DONE)
+                                    }
+                                    cancelScope() // 标记成功一次后就不要再检查了
+                                }
+                            }.collect()
+                        }
                     }
                 }
         }
