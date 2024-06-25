@@ -431,7 +431,7 @@ internal class BangumiClientImpl(
             return resp.body()
         }
 
-        override suspend fun getSubjectImageUrl(id: Int, size: BangumiSubjectImageSize): String {
+        override fun getSubjectImageUrl(id: Int, size: BangumiSubjectImageSize): String {
             return Companion.getSubjectImageUrl(id, size)
         }
 

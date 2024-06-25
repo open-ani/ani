@@ -10,10 +10,12 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.RememberObserver
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -240,23 +242,33 @@ interface HasBackgroundScope {
             else -> null
         }
 
+    @Stable
+    class LoadingState<T>(
+        private val delegate: State<T>,
+    ) : State<T> by delegate {
+        internal var _isLoading by mutableStateOf(true)
+        val isLoading: Boolean get() = _isLoading
+    }
+
     /**
      * Collects the flow on the main thread into a [State].
      */
     fun <T> Flow<T>.produceState(
         initialValue: T,
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    ): State<T> {
+    ): LoadingState<T> {
         val state = mutableStateOf(valueOrNull ?: initialValue)
+        val loadingState = LoadingState(state)
         launchInBackground(coroutineContext) {
             flowOn(Dispatchers.Default) // compute in background
                 .collect {
                     withContext(Dispatchers.Main) { // ensure a dispatch happens
                         state.value = it
+                        loadingState._isLoading = false
                     }
                 } // update state in main
         }
-        return state
+        return loadingState
     }
 
     /**

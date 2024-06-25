@@ -39,7 +39,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
-import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 
 @Immutable
@@ -223,29 +222,27 @@ private val UncollectedActionButtonColors
  */
 @Composable
 fun CollectionActionButton(
-    collected: Boolean?,
-    type: UnifiedCollectionType?,
+    type: UnifiedCollectionType,
     onCollect: () -> Unit,
     onEdit: (newType: UnifiedCollectionType) -> Unit,
     onSetAllEpisodesDone: () -> Unit,
+    modifier: Modifier = Modifier,
+    collected: Boolean = type != UnifiedCollectionType.NOT_COLLECTED,
 ) {
     val action = remember(type) {
         SubjectCollectionActionsForCollect.find { it.type == type }
     }
     val collectedState by rememberUpdatedState(collected)
     val onCollectState by rememberUpdatedState(onCollect)
-    Box(Modifier.placeholder(collected == null || type == null)) {
+    Box(modifier) {
         var showDropdown by rememberSaveable { mutableStateOf(false) }
         val onClick = remember {
             {
-                when (collectedState) {
-                    null -> {}
-                    false -> onCollectState()
-                    true -> showDropdown = true
-                }
+                if (collectedState) showDropdown = true
+                else onCollectState()
             }
         }
-        if (collected == true) {
+        if (collected) {
             FilledTonalButton(
                 onClick = onClick,
             ) {

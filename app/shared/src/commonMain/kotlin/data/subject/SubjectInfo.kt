@@ -36,6 +36,10 @@ data class SubjectInfo(
     val date: String? = null,
     val infobox: List<InfoboxItem> = emptyList(),
     val imageCommon: String = "",
+    /**
+     * 该条目的全站收藏统计
+     */
+    val collection: SubjectCollectionStats = SubjectCollectionStats.Zero,
 ) {
     val publishDate: PackedDate = if (date == null) PackedDate.Invalid else PackedDate.parseFromDate(date)
 
@@ -103,5 +107,14 @@ fun Subject.createSubjectInfo(): SubjectInfo {
         tags = this.tags.map { Tag(it.name, it.count) },
         infobox = this.infobox?.map { it.toInfoboxItem() }.orEmpty(),
         imageCommon = this.images.common,
+        collection = this.collection.run {
+            SubjectCollectionStats(
+                wish = wish,
+                doing = doing,
+                done = collect - wish - doing - onHold - dropped,
+                onHold = onHold,
+                dropped = dropped,
+            )
+        },
     )
 }

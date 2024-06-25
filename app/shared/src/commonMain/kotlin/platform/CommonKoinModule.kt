@@ -42,6 +42,7 @@ import me.him188.ani.app.data.media.cache.DirectoryMediaCacheStorage
 import me.him188.ani.app.data.media.createWithKoin
 import me.him188.ani.app.data.media.instance.MediaSourceSave
 import me.him188.ani.app.data.repositories.BangumiEpisodeRepository
+import me.him188.ani.app.data.repositories.BangumiRelatedCharactersRepository
 import me.him188.ani.app.data.repositories.BangumiSubjectRepository
 import me.him188.ani.app.data.repositories.EpisodePreferencesRepository
 import me.him188.ani.app.data.repositories.EpisodePreferencesRepositoryImpl
@@ -98,6 +99,7 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
     single<BangumiClient> { createBangumiClient() }
     single<SubjectProvider> { BangumiSubjectProvider(get<BangumiClient>()) }
     single<BangumiSubjectRepository> { RemoteBangumiSubjectRepository() }
+    single<BangumiRelatedCharactersRepository> { BangumiRelatedCharactersRepository(get()) }
     single<SubjectManager> { SubjectManagerImpl(getContext()) }
     single<UserRepository> { UserRepositoryImpl() }
     single<EpisodeRevisionRepository> { EpisodeRevisionRepositoryImpl() }

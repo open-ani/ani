@@ -86,7 +86,7 @@ abstract class SubjectManager {
      */
     // TODO: 如果 subjectId 没收藏, 这个函数的 flow 就会为空. 需要 (根据 policy) 实现为当未收藏时, 就向服务器请求单个 subjectId 的状态.
     //  这目前不是问题, 但在修改番剧详情页时可能会有问题.
-    fun subjectCollectionFlow(
+    fun cachedSubjectCollectionFlow(
         subjectId: Int,
         contentPolicy: ContentPolicy
     ): Flow<SubjectCollection?> =
@@ -101,6 +101,11 @@ abstract class SubjectManager {
         return collectionsByType.values.map { it.cachedDataFlow.first() }.asSequence().flatten()
             .firstOrNull { it.subjectId == subjectId }
     }
+
+    /**
+     * 获取缓存的对该条目的收藏状态, 若没有则从网络获取.
+     */
+    abstract fun subjectCollectionType(subjectId: Int): Flow<UnifiedCollectionType>
 
     /**
      * 从缓存中获取条目, 若没有则从网络获取.
@@ -231,11 +236,26 @@ class SubjectManagerImpl(
             )
         }
 
+    override fun subjectCollectionType(subjectId: Int): Flow<UnifiedCollectionType> {
+        return flow {
+            coroutineScope {
+                val cached = findCachedSubjectCollection(subjectId)
+                if (cached == null) {
+                    emit(bangumiSubjectRepository.subjectCollectionTypeById(subjectId).first())
+                }
+                emitAll(
+                    cachedSubjectCollectionFlow(subjectId, ContentPolicy.CACHE_ONLY)
+                        .filterNotNull().map { it.collectionType },
+                )
+            }
+        }
+    }
+
     @Stable
     override fun subjectProgressFlow(
         subjectId: Int,
         contentPolicy: ContentPolicy
-    ): Flow<List<EpisodeProgressItem>> = subjectCollectionFlow(subjectId, contentPolicy)
+    ): Flow<List<EpisodeProgressItem>> = cachedSubjectCollectionFlow(subjectId, contentPolicy)
         .map { it?.episodes ?: emptyList() }
         .distinctUntilChanged()
         .flatMapLatest { episodes ->
@@ -305,7 +325,7 @@ class SubjectManagerImpl(
         episodeId: Int,
         contentPolicy: ContentPolicy
     ): Flow<EpisodeCollection> {
-        return subjectCollectionFlow(subjectId, contentPolicy)
+        return cachedSubjectCollectionFlow(subjectId, contentPolicy)
             .transform { subject ->
                 if (subject == null) {
                     emit(

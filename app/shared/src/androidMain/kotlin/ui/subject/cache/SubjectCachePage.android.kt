@@ -267,7 +267,7 @@ private fun PreviewSubjectCachePage() {
                     delay(2000)
                     it.cacheRequester.request(
                         EpisodeCacheRequest(
-                            subjectInfo = SubjectInfo(),
+                            subjectInfo = SubjectInfo.Empty,
                             episodeInfo = EpisodeInfo(1),
                         ),
                     )
