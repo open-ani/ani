@@ -1,7 +1,9 @@
 package me.him188.ani.app.data.repositories
 
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.subject.CharacterType
 import me.him188.ani.app.data.subject.Images
 import me.him188.ani.app.data.subject.PersonCareer
@@ -21,7 +23,9 @@ class BangumiRelatedCharactersRepository(
     fun relatedCharactersFlow(subjectId: Int): Flow<List<RelatedCharacterInfo>> {
         return flow {
             emit(
-                client.api.getRelatedCharactersBySubjectId(subjectId).map {
+                withContext(Dispatchers.IO) {
+                    client.api.getRelatedCharactersBySubjectId(subjectId)
+                }.map {
                     it.toRelatedCharacterInfo()
                 },
             )

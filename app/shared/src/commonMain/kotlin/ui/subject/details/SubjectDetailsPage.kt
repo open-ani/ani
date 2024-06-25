@@ -1,5 +1,9 @@
 package me.him188.ani.app.ui.subject.details
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -7,6 +11,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -41,9 +46,11 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -55,11 +62,14 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import me.him188.ani.app.data.subject.SubjectInfo
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
 import me.him188.ani.app.ui.foundation.theme.weaken
+import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressIndicator
+import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressState
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.app.ui.subject.collection.CollectionActionButton
 import me.him188.ani.app.ui.subject.collection.EditCollectionTypeDropDown
@@ -107,26 +117,34 @@ fun SubjectDetailsPage(
     onClickOpenExternal: () -> Unit,
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    val scope = rememberCoroutineScope()
+    val indicatorState = remember(scope) { FastLinearProgressState(scope) }
+
+    indicatorState.setVisible(state.isLoading, 0, 300)
+
+    // 出场动画
+    var isContentReady by remember { mutableStateOf(!state.isLoading) }
+    LaunchedEffect(indicatorState) {
+        indicatorState.awaitCompletion()
+        isContentReady = true
+    }
+
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { },
-                navigationIcon = { TopAppBarGoBackButton() },
-                actions = {
-                    IconButton(onClickOpenExternal) {
-                        Icon(Icons.AutoMirrored.Outlined.OpenInNew, null)
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
-            )
+            SubjectTopAppBar(onClickOpenExternal, transparentContainer = true)
         },
         contentWindowInsets = WindowInsets(0.dp),
     ) { scaffoldPadding ->
+        FastLinearProgressIndicator(
+            indicatorState,
+            Modifier.zIndex(2f).padding(scaffoldPadding).padding(horizontal = 4.dp).fillMaxWidth(),
+        )
+
         Box {
             val density = LocalDensity.current
             // 虚化渐变背景
             SubjectBlurredBackground(
-                coverImageUrl = state.coverImageUrl,
+                coverImageUrl = if (isContentReady) state.coverImageUrl else null,
                 backgroundColor = MaterialTheme.colorScheme.background,
                 surfaceColor = MaterialTheme.colorScheme.surface,
                 Modifier
@@ -134,24 +152,54 @@ fun SubjectDetailsPage(
                     .fillMaxWidth(),
             )
 
-            Column(
-                Modifier
-                    .verticalScroll(rememberScrollState())
-                    .padding(scaffoldPadding) // pad top bar
-                    .padding(bottom = 16.dp),
+            AnimatedVisibility(
+                isContentReady,
+                Modifier.fillMaxSize(),
+                // 从中间往上滑
+                enter = fadeIn(tween(500)) + slideInVertically(
+                    tween(600),
+                    initialOffsetY = { 150.coerceAtMost(it) },
+                ),
             ) {
-                SubjectDetailsHeader(
-                    state.info,
-                    state.coverImageUrl,
-                    Modifier.padding(horizontal = 16.dp).fillMaxWidth(),
-                )
+                Column(
+                    Modifier.fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(scaffoldPadding) // pad top bar
+                        .padding(bottom = 16.dp),
+                ) {
+                    SubjectDetailsHeader(
+                        state.info,
+                        state.coverImageUrl,
+                        Modifier.padding(horizontal = 16.dp).fillMaxWidth(),
+                    )
 
-                Column(Modifier.padding(top = 16.dp).fillMaxWidth()) {
-                    content()
+                    Column(Modifier.padding(top = 16.dp).fillMaxWidth()) {
+                        content()
+                    }
                 }
             }
         }
     }
+}
+
+@Composable
+private fun SubjectTopAppBar(
+    onClickOpenExternal: () -> Unit,
+    transparentContainer: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    TopAppBar(
+        title = { },
+        navigationIcon = { TopAppBarGoBackButton() },
+        actions = {
+            IconButton(onClickOpenExternal) {
+                Icon(Icons.AutoMirrored.Outlined.OpenInNew, null)
+            }
+        },
+        colors = if (transparentContainer) TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
+        else TopAppBarDefaults.topAppBarColors(),
+        modifier = modifier,
+    )
 }
 
 // 详情页内容 (不包含背景)

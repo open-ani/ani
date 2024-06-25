@@ -19,15 +19,23 @@ class SubjectDetailsState(
     characters: Flow<List<RelatedCharacterInfo>>,
     parentCoroutineContext: CoroutineContext,
 ) : HasBackgroundScope by BackgroundScope(parentCoroutineContext) {
-    private val _info = subjectInfo.produceState(SubjectInfo.Empty)
-    val info by _info
+    val info by subjectInfo.produceState<SubjectInfo>(SubjectInfo.Empty)
 
-    private val _selfCollectionType = selfCollectionType.produceState(UnifiedCollectionType.NOT_COLLECTED)
-    val selfCollectionType by _selfCollectionType
-    private val _produceState = characters.produceState(emptyList())
-    val produceState by _produceState
+    private val selfCollectionTypeOrNull by selfCollectionType.produceState(null)
+    val selfCollectionType by derivedStateOf { selfCollectionTypeOrNull ?: UnifiedCollectionType.WISH }
 
+    private val charactersOrNull by characters.produceState(null)
+    val characters by derivedStateOf { charactersOrNull ?: emptyList() }
+
+    /**
+     * 有任何一个数据为空
+     */
     val isLoading: Boolean by derivedStateOf {
-        _info.isLoading || _selfCollectionType.isLoading || _produceState.isLoading
+        // We must split them and ensure they are called. 
+        // Otherwise, the derivedStateOf will not be called when the value is changed.
+        val selfCollectionTypeLoading = selfCollectionTypeOrNull == null
+        val charactersLoading = charactersOrNull == null
+        val infoLoading = info === SubjectInfo.Empty
+        infoLoading || selfCollectionTypeLoading || charactersLoading
     }
 }

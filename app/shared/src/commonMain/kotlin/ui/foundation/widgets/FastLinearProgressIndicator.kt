@@ -111,10 +111,11 @@ class FastLinearProgressState(
         }
     }
 
-    suspend fun awaitInvisible() {
+    suspend fun awaitCompletion() {
         withContext(Dispatchers.Main.immediate) {
             if (!targetVisible) return@withContext // fast path
             snapshotFlow { targetVisible }.filter { !it }.first()
+            tasker.join()
         }
     }
 }
