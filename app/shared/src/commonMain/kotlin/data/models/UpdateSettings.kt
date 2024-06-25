@@ -13,7 +13,7 @@ import me.him188.ani.danmaku.protocol.ReleaseClass
 data class UpdateSettings(
     val autoCheckUpdate: Boolean = true,
     val releaseClass: ReleaseClass = ReleaseClass.STABLE,
-    val autoDownloadUpdate: Boolean = currentPlatform.supportsInAppUpdate,
+    val autoDownloadUpdate: Boolean = false,
     /**
      * 是否在应用内下载更新
      */
