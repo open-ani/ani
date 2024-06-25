@@ -94,6 +94,7 @@ class SeleniumWebViewVideoExtractor(
             // disable logs
             System.setProperty("webdriver.chrome.silentOutput", "true")
             java.util.logging.Logger.getLogger("org.openqa.selenium").setLevel(Level.OFF)
+            java.util.logging.Logger.getLogger("org.apache.hc.client5.http.wire").setLevel(Level.OFF)
         }
     }
 
