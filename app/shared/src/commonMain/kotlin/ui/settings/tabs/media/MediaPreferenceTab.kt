@@ -7,7 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import kotlinx.coroutines.flow.map
-import me.him188.ani.app.data.models.VideoPlayerSettings
+import me.him188.ani.app.data.models.VideoResolverSettings
 import me.him188.ani.app.data.models.MediaCacheSettings
 import me.him188.ani.app.data.models.MediaSelectorSettings
 import me.him188.ani.app.data.repositories.SettingsRepository
@@ -98,9 +98,9 @@ class MediaSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
         }
     }
     
-    val videoPlayerSettings by settings(
-        settingsRepository.videoPlayerSettings,
-        VideoPlayerSettings.Default.copy(_placeholder = -1),
+    val videoResolverSettings by settings(
+        settingsRepository.videoResolverSettings,
+        VideoResolverSettings.Default.copy(_placeholder = -1),
     )
 
     ///////////////////////////////////////////////////////////////////////////
@@ -128,7 +128,7 @@ fun MediaPreferenceTab(
 ) {
     val navigator by rememberUpdatedState(LocalNavigator.current)
     SettingsTab(modifier) {
-        VideoPlayerGroup(vm)
+        VideoResolverGroup(vm)
         AutoCacheGroup(vm, navigator)
         TorrentEngineGroup(vm)
         MediaSelectionGroup(vm)

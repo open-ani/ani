@@ -9,7 +9,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.models.WebViewDriver
 import me.him188.ani.app.data.models.ProxyConfig
-import me.him188.ani.app.data.models.VideoPlayerSettings
+import me.him188.ani.app.data.models.VideoResolverSettings
 import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.videoplayer.data.VideoSource
@@ -58,9 +58,9 @@ class DesktopWebVideoSourceResolver : VideoSourceResolver, KoinComponent {
             if (!supports(media)) throw UnsupportedMediaException(media)
 
             val config = settings.proxySettings.flow.first().default
-            val videoPlayerSettings = settings.videoPlayerSettings.flow.first()
+            val resolverSettings = settings.videoResolverSettings.flow.first()
 
-            val webVideo = SeleniumWebViewVideoExtractor(config.config.takeIf { config.enabled }, videoPlayerSettings)
+            val webVideo = SeleniumWebViewVideoExtractor(config.config.takeIf { config.enabled }, resolverSettings)
                 .getVideoResourceUrl(
                     media.download.uri,
                     resourceMatcher = {
@@ -89,7 +89,7 @@ interface WebViewVideoExtractor {
 
 class SeleniumWebViewVideoExtractor(
     private val proxyConfig: ProxyConfig?,
-    private val videoPlayerSettings: VideoPlayerSettings,
+    private val videoResolverSettings: VideoResolverSettings,
 ) : WebViewVideoExtractor {
     private companion object {
         private val logger = logger<WebViewVideoExtractor>()
@@ -159,7 +159,7 @@ class SeleniumWebViewVideoExtractor(
             val driver: RemoteWebDriver = when (Platform.currentPlatform) {
                 is Platform.Linux -> throw UnsupportedOperationException("Linux is not supported")
                 is Platform.MacOS, is Platform.Windows -> {
-                    val primaryDriverFunction = mapWebViewDriverToFunction(videoPlayerSettings.driver)
+                    val primaryDriverFunction = mapWebViewDriverToFunction(videoResolverSettings.driver)
                     val fallbackDriverFunctions = getFallbackDriverFunctions(primaryDriverFunction)
 
                     // Try user-set ones first, then fallback on the others
@@ -262,7 +262,6 @@ class SeleniumWebViewVideoExtractor(
         return when (driver) {
             WebViewDriver.CHROME -> ::createChromeDriver
             WebViewDriver.EDGE -> ::createEdgeDriver
-//            WebViewDriver.SAFARI -> ::createSafariDriver
             else -> null
         }
     }

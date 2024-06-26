@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
-import me.him188.ani.app.data.models.VideoPlayerSettings
+import me.him188.ani.app.data.models.VideoResolverSettings
 import me.him188.ani.app.data.models.DanmakuSettings
 import me.him188.ani.app.data.models.DebugSettings
 import me.him188.ani.app.data.models.MediaCacheSettings
@@ -53,7 +53,7 @@ interface SettingsRepository {
     val updateSettings: Settings<UpdateSettings>
     val videoScaffoldConfig: Settings<VideoScaffoldConfig>
 
-    val videoPlayerSettings: Settings<VideoPlayerSettings>
+    val videoResolverSettings: Settings<VideoResolverSettings>
     val libtorrent4jConfig: Settings<Libtorrent4jConfig>
     val qBittorrentConfig: Settings<QBittorrentConfig>
 
@@ -157,10 +157,10 @@ class PreferencesRepositoryImpl(
         VideoScaffoldConfig.serializer(),
         default = { VideoScaffoldConfig.Default },
     )
-    override val videoPlayerSettings: Settings<VideoPlayerSettings> = SerializablePreference(
-        "videoPlayerSettings",
-        VideoPlayerSettings.serializer(),
-        default = { VideoPlayerSettings.Default },
+    override val videoResolverSettings: Settings<VideoResolverSettings> = SerializablePreference(
+        "videoResolverSettings",
+        VideoResolverSettings.serializer(),
+        default = { VideoResolverSettings.Default },
     )
     override val libtorrent4jConfig: Settings<Libtorrent4jConfig> = SerializablePreference(
         "libtorrent4jConfig",
