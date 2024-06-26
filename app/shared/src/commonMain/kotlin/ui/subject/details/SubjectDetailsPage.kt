@@ -4,13 +4,14 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -26,6 +27,8 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -40,14 +43,20 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SecondaryScrollableTabRow
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -57,26 +66,34 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.onPlaced
+import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import me.him188.ani.app.data.subject.SubjectInfo
+import kotlinx.coroutines.launch
 import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.platform.Platform
+import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.ui.external.placeholder.placeholder
-import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
+import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.theme.weaken
 import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressIndicator
 import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressState
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
-import me.him188.ani.app.ui.subject.collection.CollectionActionButton
-import me.him188.ani.app.ui.subject.collection.EditCollectionTypeDropDown
 import me.him188.ani.app.ui.subject.collection.progress.EpisodeProgressDialog
+import me.him188.ani.app.ui.subject.details.components.DetailsTab
 import me.him188.ani.app.ui.subject.details.components.SubjectBlurredBackground
+import me.him188.ani.app.ui.subject.details.components.SubjectDetailsCollectionData
+import me.him188.ani.app.ui.subject.details.components.SubjectDetailsDefaults
 import me.him188.ani.app.ui.subject.details.components.SubjectDetailsHeader
-import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.datasources.bangumi.client.BangumiEpisode
 import me.him188.ani.datasources.bangumi.processing.fixToString
 
@@ -96,17 +113,29 @@ fun SubjectDetailsScene(
     SubjectDetailsPage(
         vm.subjectDetailsState,
         onClickOpenExternal = { vm.browseSubjectBangumi(context) },
-    ) {
-        SubjectDetailsContent(
-            vm.subjectDetailsState.info,
-            vm.subjectDetailsState.selfCollectionType,
-            onClickSelectEpisode = { showSelectEpisode = true },
-            onSetAllEpisodesDone = { vm.setAllEpisodesWatched() },
-            onSetCollectionType = { vm.setSelfCollectionType(it) },
-        )
-    }
+        collectionData = {
+            SubjectDetailsCollectionData(
+                vm.subjectDetailsState.info,
+                vm.subjectDetailsState.selfCollectionType,
+                onClickSelectEpisode = { showSelectEpisode = true },
+                onSetAllEpisodesDone = { vm.setAllEpisodesWatched() },
+                onSetCollectionType = { vm.setSelfCollectionType(it) },
+            )
+        },
+        detailsTab = {
+            SubjectDetailsDefaults.DetailsTab(Modifier.nestedScroll(it))
+        },
+        commentsTab = {},
+        discussionsTab = {},
+    )
 }
 
+@Immutable
+enum class SubjectDetailsTab {
+    DETAILS,
+    COMMENTS,
+    DISCUSSIONS,
+}
 
 /**
  * 一部番的详情页
@@ -115,7 +144,12 @@ fun SubjectDetailsScene(
 fun SubjectDetailsPage(
     state: SubjectDetailsState,
     onClickOpenExternal: () -> Unit,
-    content: @Composable ColumnScope.() -> Unit,
+    collectionData: @Composable () -> Unit,
+    detailsTab: @Composable (connection: NestedScrollConnection) -> Unit,
+    commentsTab: @Composable (connection: NestedScrollConnection) -> Unit,
+    discussionsTab: @Composable (connection: NestedScrollConnection) -> Unit,
+    modifier: Modifier = Modifier,
+    pageScrollState: ScrollState = rememberScrollState(),
 ) {
     val scope = rememberCoroutineScope()
     val indicatorState = remember(scope) { FastLinearProgressState(scope) }
@@ -131,8 +165,19 @@ fun SubjectDetailsPage(
 
     Scaffold(
         topBar = {
-            SubjectTopAppBar(onClickOpenExternal, transparentContainer = true)
+            TopAppBar(
+                title = { },
+                navigationIcon = { TopAppBarGoBackButton() },
+                actions = {
+                    IconButton(onClickOpenExternal) {
+                        Icon(Icons.AutoMirrored.Outlined.OpenInNew, null)
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
+                scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState()),
+            )
         },
+        modifier = modifier,
         contentWindowInsets = WindowInsets(0.dp),
     ) { scaffoldPadding ->
         FastLinearProgressIndicator(
@@ -163,7 +208,7 @@ fun SubjectDetailsPage(
             ) {
                 Column(
                     Modifier.fillMaxSize()
-                        .verticalScroll(rememberScrollState())
+                        .verticalScroll(pageScrollState)
                         .padding(scaffoldPadding) // pad top bar
                         .padding(bottom = 16.dp),
                 ) {
@@ -173,8 +218,76 @@ fun SubjectDetailsPage(
                         Modifier.padding(horizontal = 16.dp).fillMaxWidth(),
                     )
 
-                    Column(Modifier.padding(top = 16.dp).fillMaxWidth()) {
-                        content()
+                    Row {
+                        collectionData()
+                    }
+
+                    val pagerState = rememberPagerState(
+                        initialPage = SubjectDetailsTab.DETAILS.ordinal,
+                        pageCount = { 3 },
+                    )
+
+                    // Pager with TabRow
+                    Column(Modifier.fillMaxSize()) {
+                        var tabPos by remember { mutableFloatStateOf(0f) }
+                        SecondaryScrollableTabRow(
+                            selectedTabIndex = pagerState.currentPage,
+                            indicator = @Composable { tabPositions ->
+                                TabRowDefaults.PrimaryIndicator(
+                                    Modifier.pagerTabIndicatorOffset(pagerState, tabPositions),
+                                )
+                            },
+                            containerColor = Color.Transparent,
+                            divider = {},
+                            modifier = Modifier.onPlaced {
+                                tabPos = it.positionInParent().y
+                            }.fillMaxWidth(),
+                        ) {
+                            SubjectDetailsTab.entries.forEachIndexed { index, tabId ->
+                                Tab(
+                                    selected = pagerState.currentPage == index,
+                                    onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
+                                    text = {
+                                        Text(text = renderSubjectDetailsTab(tabId))
+                                    },
+                                )
+                            }
+                        }
+                        val nestedScrollConnection = remember {
+                            object : NestedScrollConnection {
+                                override fun onPreScroll(
+                                    available: Offset,
+                                    source: NestedScrollSource
+                                ): Offset {
+                                    // 手指往下, available.y > 0
+
+                                    if (pageScrollState.value >= tabPos) {
+                                        return Offset.Zero
+                                    }
+                                    val remainingHeight = pageScrollState.value - tabPos
+                                    return if (available.y > 0) Offset.Zero else Offset(
+                                        x = 0f,
+                                        y = -pageScrollState.dispatchRawDelta(
+                                            (-available.y).coerceAtMost(remainingHeight),
+                                        ),
+                                    )
+                                }
+                            }
+                        }
+                        HorizontalPager(
+                            state = pagerState,
+                            Modifier.fillMaxHeight(),
+                            userScrollEnabled = Platform.currentPlatform.isMobile(),
+                        ) { index ->
+                            val type = SubjectDetailsTab.entries[index]
+                            Column(Modifier.fillMaxSize().padding()) {
+                                when (type) {
+                                    SubjectDetailsTab.DETAILS -> detailsTab(nestedScrollConnection)
+                                    SubjectDetailsTab.COMMENTS -> commentsTab(nestedScrollConnection)
+                                    SubjectDetailsTab.DISCUSSIONS -> discussionsTab(nestedScrollConnection)
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -182,140 +295,15 @@ fun SubjectDetailsPage(
     }
 }
 
-@Composable
-private fun SubjectTopAppBar(
-    onClickOpenExternal: () -> Unit,
-    transparentContainer: Boolean,
-    modifier: Modifier = Modifier,
-) {
-    TopAppBar(
-        title = { },
-        navigationIcon = { TopAppBarGoBackButton() },
-        actions = {
-            IconButton(onClickOpenExternal) {
-                Icon(Icons.AutoMirrored.Outlined.OpenInNew, null)
-            }
-        },
-        colors = if (transparentContainer) TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
-        else TopAppBarDefaults.topAppBarColors(),
-        modifier = modifier,
-    )
-}
-
-// 详情页内容 (不包含背景)
-@Composable
-fun SubjectDetailsContent(
-    info: SubjectInfo,
-    selfCollectionType: UnifiedCollectionType,
-    onClickSelectEpisode: () -> Unit,
-    onSetAllEpisodesDone: () -> Unit,
-    onSetCollectionType: (UnifiedCollectionType) -> Unit,
-    modifier: Modifier = Modifier,
-    horizontalPadding: Dp = 16.dp
-) {
-    // 收藏数据和收藏按钮
-    Column(modifier.fillMaxWidth()) {
-        // 数据
-        Row(Modifier.fillMaxWidth().padding(horizontal = horizontalPadding)) {
-            val collection = info.collection
-            Text(
-                remember(collection) {
-                    "${collection.collect} 收藏 / ${collection.wish} 想看 / ${collection.doing} 在看"
-                },
-                maxLines = 1,
-                style = MaterialTheme.typography.bodySmall,
-            )
-            Text(
-                remember(collection) {
-                    " / ${collection.onHold} 搁置 / ${collection.dropped} 抛弃"
-                },
-                style = MaterialTheme.typography.bodySmall,
-                maxLines = 1,
-                color = LocalContentColor.current.slightlyWeaken(),
-            )
-        }
-
-        Row(
-            Modifier.padding(vertical = 16.dp)
-                .align(Alignment.End)
-                .padding(horizontal = horizontalPadding),
-        ) {
-            // 收藏按钮
-            if (selfCollectionType != UnifiedCollectionType.NOT_COLLECTED) {
-                TextButton(onClickSelectEpisode) {
-                    Text("选集播放")
-                }
-
-                var showDropdown by remember { mutableStateOf(false) }
-                EditCollectionTypeDropDown(
-                    currentType = selfCollectionType,
-                    expanded = showDropdown,
-                    onDismissRequest = { showDropdown = false },
-                    onSetAllEpisodesDone = onSetAllEpisodesDone,
-                    onClick = {
-                        showDropdown = false
-                        onSetCollectionType(it.type)
-                    },
-                )
-                CollectionActionButton(
-                    type = selfCollectionType,
-                    onCollect = { onSetCollectionType(UnifiedCollectionType.DOING) },
-                    onEdit = onSetCollectionType,
-                    onSetAllEpisodesDone = onSetAllEpisodesDone,
-                )
-            } else {
-                CollectionActionButton(
-                    type = selfCollectionType,
-                    onCollect = { onSetCollectionType(UnifiedCollectionType.DOING) },
-                    onEdit = onSetCollectionType,
-                    onSetAllEpisodesDone = onSetAllEpisodesDone,
-                )
-            }
-        }
+@Stable
+private fun renderSubjectDetailsTab(tab: SubjectDetailsTab): String {
+    return when (tab) {
+        SubjectDetailsTab.DETAILS -> "详情"
+        SubjectDetailsTab.COMMENTS -> "短评"
+        SubjectDetailsTab.DISCUSSIONS -> "讨论"
     }
-
-//        SectionTitle(Modifier.padding(horizontal = horizontalPadding)) {
-//            Text("角色")
-//        }
-//        PersonList(characters, { it.id }, horizontalPadding, Modifier) {
-//            PersonView(
-//                avatar = {
-//                    AvatarImage(
-//                        it.images?.medium ?: "",
-//                        alignment = Alignment.TopStart,
-//                        contentScale = ContentScale.Crop,
-//                    )
-//                },
-//                text = { Text(it.name, maxLines = 1, overflow = TextOverflow.Ellipsis) },
-//                role = { Text(it.actors?.firstOrNull()?.name ?: "", maxLines = 1, overflow = TextOverflow.Ellipsis) },
-//            )
-//        }
-//
-//        val staff by vm.relatedPersons.collectAsStateWithLifecycle(null)
-//        SectionTitle(Modifier.padding(horizontal = horizontalPadding)) {
-//            Text("Staff")
-//        }
-//        PersonList(staff, { it.id }, horizontalPadding, Modifier) {
-//            PersonView(
-//                avatar = { AvatarImage(it.images?.medium ?: "", contentScale = ContentScale.Crop) },
-//                text = { Text(it.name, maxLines = 1, overflow = TextOverflow.Ellipsis) },
-//                role = { Text(it.relation, maxLines = 1, overflow = TextOverflow.Ellipsis) },
-//            )
-//        }
-
-
-//        val navigator = LocalNavigator.current
-//        val episodesMain by vm.episodesMain.collectAsStateWithLifecycle(listOf())
-//        if (episodesMain.isNotEmpty()) {
-//            SectionTitle(Modifier.padding(horizontal = horizontalPadding)) { Text("正片") }
-//            EpisodeList(
-//                episodesMain,
-//                horizontalPadding,
-//                { navigator.navigateEpisodeDetails(vm.subjectId, it.id.toInt()) },
-//                Modifier.padding(top = 8.dp),
-//            )
-//        }
 }
+
 
 @Composable
 private fun <T> PersonList(

@@ -5,6 +5,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.flow.MutableStateFlow
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.ui.subject.details.components.DetailsTab
+import me.him188.ani.app.ui.subject.details.components.SubjectDetailsCollectionData
+import me.him188.ani.app.ui.subject.details.components.SubjectDetailsDefaults
 import me.him188.ani.app.ui.subject.details.components.TestSubjectInfo
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 
@@ -27,14 +30,20 @@ internal fun PreviewSubjectDetails() {
         SubjectDetailsPage(
             state = state,
             onClickOpenExternal = {},
-        ) {
-            SubjectDetailsContent(
-                info = state.info,
-                selfCollectionType = state.selfCollectionType,
-                onClickSelectEpisode = {},
-                onSetAllEpisodesDone = {},
-                onSetCollectionType = {},
-            )
-        }
+            collectionData = {
+                SubjectDetailsCollectionData(
+                    vm.subjectDetailsState.info,
+                    vm.subjectDetailsState.selfCollectionType,
+                    onClickSelectEpisode = { },
+                    onSetAllEpisodesDone = { vm.setAllEpisodesWatched() },
+                    onSetCollectionType = { vm.setSelfCollectionType(it) },
+                )
+            },
+            detailsTab = {
+                SubjectDetailsDefaults.DetailsTab()
+            },
+            commentsTab = {},
+            discussionsTab = {},
+        )
     }
 }
