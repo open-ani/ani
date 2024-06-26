@@ -59,7 +59,7 @@ private fun SettingsScope.VPGroup(vm: MediaSettingsViewModel) {
             modifier = Modifier.placeholder(vm.videoResolverSettings.loading),
 //            itemIcon = { WebViewDriverIcon(it) },
             title = { Text("浏览器引擎") },
-            description = { Text("播放部分视频源时需要使用无头浏览器引擎，请在电脑上安装Chrome或Edge浏览器，Safari不支持。") },
+            description = { Text("播放部分视频源时需要使用无头浏览器引擎，请在电脑上安装Chrome或Edge浏览器，Safari不支持") },
         )
     }
 }
