@@ -7,6 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import kotlinx.coroutines.flow.map
+import me.him188.ani.app.data.models.VideoPlayerSettings
 import me.him188.ani.app.data.models.MediaCacheSettings
 import me.him188.ani.app.data.models.MediaSelectorSettings
 import me.him188.ani.app.data.repositories.SettingsRepository
@@ -96,6 +97,11 @@ class MediaSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
             settingsRepository.mediaCacheSettings.set(copy)
         }
     }
+    
+    val videoPlayerSettings by settings(
+        settingsRepository.videoPlayerSettings,
+        VideoPlayerSettings.Default.copy(_placeholder = -1),
+    )
 
     ///////////////////////////////////////////////////////////////////////////
     // BT Engine
@@ -122,6 +128,7 @@ fun MediaPreferenceTab(
 ) {
     val navigator by rememberUpdatedState(LocalNavigator.current)
     SettingsTab(modifier) {
+        VideoPlayerGroup(vm)
         AutoCacheGroup(vm, navigator)
         TorrentEngineGroup(vm)
         MediaSelectionGroup(vm)
