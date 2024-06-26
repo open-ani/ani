@@ -236,8 +236,7 @@ fun SubjectSearchBar(
                     exit = fadeOut(),
                     modifier = Modifier.layoutId("fab").zIndex(1.1f),
                 ) {
-
-                    ExtendedFloatingActionButton(
+                    if (false) ExtendedFloatingActionButton(
                         shape = CircleShape,
                         onClick = {
                             fabRotateAngle -= 180f
