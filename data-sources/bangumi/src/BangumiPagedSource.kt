@@ -40,6 +40,12 @@ class BangumiPagedSource(
                 // 才有 rating
                 limit = pageSize,
                 types = listOf(convertType()),
+                tags = query.tags.ifEmpty { null },
+                airDates = query.airDate.toList().filterNotNull(),
+                ratings = query.rating.toList().filterNotNull(),
+                ranks = query.rank.toList().filterNotNull(),
+                nsfw = query.nsfw,
+                
             )
             paged = Paged(
                 total = tmpPaged.total,

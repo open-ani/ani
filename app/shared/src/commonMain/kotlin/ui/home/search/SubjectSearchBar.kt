@@ -1,4 +1,4 @@
-package me.him188.ani.app.ui.home
+package me.him188.ani.app.ui.home.search
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
@@ -43,6 +43,7 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.NewLabel
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DatePicker
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
@@ -55,6 +56,7 @@ import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.derivedStateOf
@@ -97,11 +99,8 @@ fun SubjectSearchBar(
     searchHistory: List<SearchHistory>,
     contentPadding: PaddingValues,
     onActiveChange: (Boolean) -> Unit,
-    onToggleTag: (Int, Boolean) -> Unit,
-    onAddTag: (String) -> Unit,
-    onDeleteTag: (Int) -> Unit,
+    onSearchFilterEvent: (SearchFilterEvent) -> Unit,
     onDeleteHistory: (Int) -> Unit,
-    onDisableDeleteTagTip: () -> Unit,
     onStartEditingTagMode: () -> Unit,
     onSearch: (String, Boolean) -> Unit,
     modifier: Modifier = Modifier,
@@ -111,7 +110,6 @@ fun SubjectSearchBar(
     var isActive by remember { mutableStateOf(initialActive) }
     var searchText by remember { mutableStateOf(initialSearchText) }
     var savedSearchText by remember { mutableStateOf(initialSearchText) }
-    var newCustomFilterDialogOpened by remember { mutableStateOf(false) }
     var searchMode by remember { mutableStateOf(SearchMode.KEYWORD) }
 
     val keyboard by rememberUpdatedState(LocalSoftwareKeyboardController.current)
@@ -132,16 +130,6 @@ fun SubjectSearchBar(
     fun toggleActive(value: Boolean? = null) {
         isActive = value ?: !isActive
         onActiveChange(isActive)
-    }
-
-    if (newCustomFilterDialogOpened) {
-        NewCustomSearchFilterDialog(
-            onConfirm = { newTag ->
-                newCustomFilterDialogOpened = false
-                onAddTag(newTag)
-            },
-            onDismiss = { newCustomFilterDialogOpened = false },
-        )
     }
 
     SearchBar(
@@ -295,14 +283,11 @@ fun SubjectSearchBar(
                             showDeleteTagTip = showDeleteTagTip,
                             contentPadding = bottomPadding,
                             modifier = Modifier.fillMaxSize(),
-                            onToggleTag = onToggleTag,
-                            onDeleteTag = onDeleteTag,
                             onStartEditingTagMode = {
                                 keyboard?.hide()
                                 onStartEditingTagMode()
                             },
-                            onAddTag = { newCustomFilterDialogOpened = true },
-                            onDisableDeleteTagTip = onDisableDeleteTagTip,
+                            onSearchFilterEvent = onSearchFilterEvent,
                         )
                     }
                 }
@@ -416,12 +401,25 @@ private fun SearchFilterPage(
     showDeleteTagTip: Boolean,
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
-    onToggleTag: (Int, Boolean) -> Unit,
-    onDeleteTag: (Int) -> Unit,
     onStartEditingTagMode: () -> Unit,
-    onAddTag: () -> Unit,
-    onDisableDeleteTagTip: () -> Unit
+    onSearchFilterEvent: (SearchFilterEvent) -> Unit,
 ) {
+
+    var newCustomFilterDialogOpened by rememberSaveable { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState()
+
+    if (newCustomFilterDialogOpened) {
+        NewCustomSearchFilterDialog(
+            onConfirm = { newTag ->
+                newCustomFilterDialogOpened = false
+                onSearchFilterEvent(SearchFilterEvent.AddTag(newTag))
+            },
+            onDismiss = { newCustomFilterDialogOpened = false },
+        )
+    }
+
+    DatePicker(datePickerState)
+    
     LazyColumn(
         modifier = modifier,
         contentPadding = contentPadding,
@@ -444,8 +442,8 @@ private fun SearchFilterPage(
                         selected = tag.checked && !editingTagMode,
                         label = { Text(text = tag.content) },
                         showCloseTag = editingTagMode,
-                        onClick = { onToggleTag(tag.id, !tag.checked) },
-                        onCloseTag = { onDeleteTag(tag.id) },
+                        onClick = { onSearchFilterEvent(SearchFilterEvent.UpdateTag(tag.id, !tag.checked)) },
+                        onCloseTag = { onSearchFilterEvent(SearchFilterEvent.DeleteTag(tag.id)) },
                     )
                 }
                 AnimatedVisibility(
@@ -459,7 +457,7 @@ private fun SearchFilterPage(
                         modifier = Modifier.padding(vertical = 8.dp),
                         containerColor = MaterialTheme.colorScheme.surfaceContainer,
                         onLongClick = onStartEditingTagMode,
-                        onClick = onAddTag,
+                        onClick = { newCustomFilterDialogOpened = true },
                     )
                 }
             }
@@ -473,7 +471,7 @@ private fun SearchFilterPage(
                 OneshotTip(
                     text = "您可以点击加号标签添加新搜索标签，长按加号标签进入标签删除模式。",
                     modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-                    onClose = onDisableDeleteTagTip,
+                    onClose = { onSearchFilterEvent(SearchFilterEvent.DismissTagTip) },
                 )
             }
         }

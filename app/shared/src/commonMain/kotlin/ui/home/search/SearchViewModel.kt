@@ -16,10 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.ani.app.ui.home
+package me.him188.ani.app.ui.home.search
 
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -38,7 +40,6 @@ import me.him188.ani.app.data.models.SearchSettings
 import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.data.repositories.SubjectSearchRepository
 import me.him188.ani.app.ui.foundation.AbstractViewModel
-import me.him188.ani.app.ui.subject.search.SubjectListViewModel
 import me.him188.ani.datasources.api.subject.SubjectProvider
 import me.him188.ani.datasources.api.subject.SubjectSearchQuery
 import me.him188.ani.utils.coroutines.update
@@ -54,28 +55,20 @@ class SearchViewModel(
     private val settings: SettingsRepository by inject()
     private val _search: SubjectSearchRepository by inject()
 
-    /**
-     * search bar state
-     */
+    // search bar state
     var searchActive by mutableStateOf(false)
     var editingQuery by mutableStateOf(keyword ?: "")
 
-    /**
-     * search result
-     */
+    // search result
     private val _result: MutableStateFlow<SubjectListViewModel?> = MutableStateFlow(null)
     val result: StateFlow<SubjectListViewModel?> = _result
 
-    /**
-     * search settings
-     */
+    // search settings
     private val searchSettings: SearchSettings by settings.uiSettings.flow.map { it.searchSettings }
         .produceState(SearchSettings.Default)
     val oneshotActionConfig by settings.oneshotActionConfig.flow.produceState(OneshotActionConfig.Default)
 
-    /**
-     * search options
-     */
+    // search filters
     private val checkedTag = MutableStateFlow<MutableList<Int>>(mutableListOf())
     val searchTags: StateFlow<List<SearchTag>> = _search
         .getTagFlow()
@@ -84,6 +77,15 @@ class SearchViewModel(
             tags.map { entity -> entity.toData(checked.contains(entity.id)) }
         }
         .stateIn(viewModelScope, SharingStarted.Lazily, listOf())
+
+    private val _airDate = MutableStateFlow(AirDate(null, false, null, false))
+    val airDate: StateFlow<AirDate> = _airDate
+    private val _rating = MutableStateFlow(Rating(null, false, null, false))
+    val rating: StateFlow<Rating> = _rating
+    private val _nsfw: MutableState<Boolean?> = mutableStateOf(null)
+    val nsfw: State<Boolean?> = _nsfw
+    
+    
     val searchHistories: StateFlow<List<SearchHistory>> = _search
         .getHistoryFlow()
         .distinctUntilChanged()
@@ -95,6 +97,43 @@ class SearchViewModel(
         keyword?.let { search(it) }
     }
 
+    // TODO: 把更多 event 加进来
+    // TODO: 把这种处理方式添加到 AbstractViewModel 中
+    fun handleSearchFilterEvent(event: SearchFilterEvent) = backgroundScope.launch {
+        when (event) {
+            is SearchFilterEvent.AddTag -> _search.addTag(SearchTagEntity(content = event.value))
+            is SearchFilterEvent.DeleteTag -> _search.deleteTagById(event.id)
+            is SearchFilterEvent.UpdateTag -> {
+                val listCopied = checkedTag.value.toMutableList()
+
+                val tagIndex = listCopied.indexOf(event.id)
+                if (event.selected && tagIndex == -1) {
+                    listCopied.add(event.id)
+                } else if (tagIndex != -1) {
+                    listCopied.removeAt(tagIndex)
+                }
+                checkedTag.update { listCopied }
+            }
+
+            SearchFilterEvent.UnselectAllTag -> {}
+            is SearchFilterEvent.UpdateAirDateLeft ->
+                _airDate.emit(_airDate.value.copy(start = event.value, startInclusive = event.inclusive))
+
+            is SearchFilterEvent.UpdateAirDateRight ->
+                _airDate.emit(_airDate.value.copy(end = event.value, endInclusive = event.inclusive))
+
+            is SearchFilterEvent.UpdateRatingLeft ->
+                _rating.emit(_rating.value.copy(start = event.value, startInclusive = event.inclusive))
+
+            is SearchFilterEvent.UpdateRatingRight ->
+                _airDate.emit(_airDate.value.copy(end = event.value, endInclusive = event.inclusive))
+
+            is SearchFilterEvent.UpdateNsfw -> _nsfw.value = event.value
+            SearchFilterEvent.DismissTagTip ->
+                settings.oneshotActionConfig.set(oneshotActionConfig.copy(deleteSearchTagTip = false))
+        }
+    }
+
     fun pushSearchHistory(content: String) {
         backgroundScope.launch {
             _search.addHistory(SearchHistoryEntity(content = content))
@@ -104,36 +143,6 @@ class SearchViewModel(
     fun deleteSearchHistory(id: Int) {
         backgroundScope.launch {
             _search.deleteHistoryBySeq(id)
-        }
-    }
-
-    fun pushSearchTag(content: String) {
-        backgroundScope.launch {
-            _search.addTag(SearchTagEntity(content = content))
-        }
-    }
-
-    fun deleteSearchTag(id: Int) {
-        backgroundScope.launch {
-            _search.deleteTagById(id)
-        }
-    }
-
-    fun markSearchTag(id: Int, checked: Boolean) {
-        val listCopied = checkedTag.value.toMutableList()
-
-        val tagIndex = listCopied.indexOf(id)
-        if (checked && tagIndex == -1) {
-            listCopied.add(id)
-        } else if (tagIndex != -1) {
-            listCopied.removeAt(tagIndex)
-        }
-        checkedTag.update { listCopied }
-    }
-
-    fun disableTagTip() {
-        backgroundScope.launch {
-            settings.oneshotActionConfig.set(oneshotActionConfig.copy(deleteSearchTagTip = false))
         }
     }
 
@@ -154,6 +163,33 @@ class SearchViewModel(
             )
     }
 }
+
+sealed interface SearchFilterEvent {
+    data class AddTag(val value: String) : SearchFilterEvent
+    data class DeleteTag(val id: Int) : SearchFilterEvent
+    data class UpdateTag(val id: Int, val selected: Boolean) : SearchFilterEvent
+    data object UnselectAllTag : SearchFilterEvent
+    data class UpdateAirDateLeft(val value: Int?, val inclusive: Boolean) : SearchFilterEvent
+    data class UpdateAirDateRight(val value: Int?, val inclusive: Boolean) : SearchFilterEvent
+    data class UpdateRatingLeft(val value: Int?, val inclusive: Boolean) : SearchFilterEvent
+    data class UpdateRatingRight(val value: Int?, val inclusive: Boolean) : SearchFilterEvent
+    data class UpdateNsfw(val value: Boolean?) : SearchFilterEvent
+    data object DismissTagTip : SearchFilterEvent
+}
+
+data class AirDate(
+    val start: Int?, // year * 12 + month
+    val startInclusive: Boolean,
+    val end: Int?,
+    val endInclusive: Boolean
+)
+
+data class Rating(
+    val start: Int?,
+    val startInclusive: Boolean,
+    val end: Int?,
+    val endInclusive: Boolean
+)
 
 @Immutable
 data class SearchTag(

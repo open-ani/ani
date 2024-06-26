@@ -59,7 +59,7 @@ import me.him188.ani.app.ui.foundation.avatar.AvatarImage
 import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.home.HomePage
-import me.him188.ani.app.ui.home.SearchViewModel
+import me.him188.ani.app.ui.home.search.SearchViewModel
 import me.him188.ani.app.ui.profile.AccountViewModel
 import me.him188.ani.app.ui.profile.ProfilePage
 import me.him188.ani.app.ui.settings.SettingsPage

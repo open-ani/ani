@@ -104,6 +104,11 @@ class SubjectSearchQuery(
     val keyword: String,
     val type: SubjectType = SubjectType.ANIME,
     val useOldSearchApi: Boolean = true,
+    val tags: List<String> = listOf(),
+    val airDate: Pair<String?, String?> = Pair(null, null),
+    val rating: Pair<String?, String?> = Pair(null, null),
+    val rank: Pair<String?, String?> = Pair(null, null),
+    val nsfw: Boolean? = null,
 )
 
 enum class SubjectType {

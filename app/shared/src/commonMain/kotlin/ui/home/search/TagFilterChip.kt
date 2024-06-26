@@ -1,4 +1,4 @@
-package me.him188.ani.app.ui.home
+package me.him188.ani.app.ui.home.search
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState

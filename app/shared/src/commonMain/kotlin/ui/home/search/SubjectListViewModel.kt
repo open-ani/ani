@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.ani.app.ui.subject.search
+package me.him188.ani.app.ui.home.search
 
 import androidx.compose.runtime.Stable
 import kotlinx.coroutines.CoroutineStart
