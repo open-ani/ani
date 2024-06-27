@@ -3,9 +3,12 @@ package me.him188.ani.app.ui.subject.details
 import androidx.compose.runtime.Stable
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.toList
 import me.him188.ani.app.data.repositories.BangumiRelatedCharactersRepository
+import me.him188.ani.app.data.subject.RelatedCharacterInfo
+import me.him188.ani.app.data.subject.RelatedPersonInfo
 import me.him188.ani.app.data.subject.SubjectInfo
 import me.him188.ani.app.data.subject.SubjectManager
 import me.him188.ani.app.data.subject.subjectInfoFlow
@@ -38,8 +41,12 @@ class SubjectDetailsViewModel(
         subjectInfo = subjectInfo,
         coverImageUrl = bangumiClient.subjects.getSubjectImageUrl(subjectId, BangumiSubjectImageSize.LARGE),
         selfCollectionType = subjectManager.subjectCollectionType(subjectId),
-        persons = bangumiRelatedCharactersRepository.relatedPersonsFlow(subjectId),
-        characters = bangumiRelatedCharactersRepository.relatedCharactersFlow(subjectId),
+        persons = bangumiRelatedCharactersRepository.relatedPersonsFlow(subjectId).map {
+            RelatedPersonInfo.sortList(it)
+        },
+        characters = bangumiRelatedCharactersRepository.relatedCharactersFlow(subjectId).map {
+            RelatedCharacterInfo.sortList(it)
+        },
         parentCoroutineContext = backgroundScope.coroutineContext,
     )
 

@@ -10,7 +10,20 @@ class RelatedCharacterInfo(
     val relation: String,
     val images: Images?,
     val actors: List<PersonInfo>,
-)
+) {
+    companion object {
+        fun sortList(characterList: List<RelatedCharacterInfo>): List<RelatedCharacterInfo> {
+            return characterList.sortedByDescending {
+                when (it.relation) {
+                    "主角" -> 10
+                    "配角" -> 9
+                    "客串" -> 8
+                    else -> 0
+                }
+            }
+        }
+    }
+}
 
 @Immutable
 enum class CharacterType {

@@ -123,7 +123,7 @@ fun SubjectDetailsScene(
         detailsTab = {
             SubjectDetailsDefaults.DetailsTab(
                 info = vm.subjectDetailsState.info,
-                staff = vm.subjectDetailsState.staff,
+                staff = vm.subjectDetailsState.persons,
                 characters = vm.subjectDetailsState.characters,
                 Modifier.nestedScroll(connectedScrollState.nestedScrollConnection),
             )

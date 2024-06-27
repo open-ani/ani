@@ -30,11 +30,7 @@ class SubjectDetailsState(
     val characters by derivedStateOf { charactersOrNull ?: emptyList() }
 
     private val personsOrNull by persons.produceState(null)
-    private val persons by derivedStateOf { personsOrNull ?: emptyList() }
-
-    val staff by derivedStateOf {
-        RelatedPersonInfo.sortList(this.persons)
-    }
+    val persons by derivedStateOf { personsOrNull ?: emptyList() }
 
     /**
      * 有任何一个数据为空
