@@ -6,8 +6,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
-import androidx.compose.foundation.gestures.ScrollScope
-import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -55,10 +53,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -68,17 +63,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import kotlinx.coroutines.launch
@@ -86,6 +76,9 @@ import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.ui.external.placeholder.placeholder
+import me.him188.ani.app.ui.foundation.layout.connectedScrollContainer
+import me.him188.ani.app.ui.foundation.layout.connectedScrollTarget
+import me.him188.ani.app.ui.foundation.layout.rememberConnectedScrollState
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.theme.weaken
 import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressIndicator
@@ -168,99 +161,8 @@ fun SubjectDetailsPage(
 
     val density by rememberUpdatedState(LocalDensity.current)
 
-    // scroll connection
-
-    var scrollableHeight by remember { mutableIntStateOf(0) }
-    // 范围为 -scrollableHeight ~ 0
-    var scrollableOffset by remember { mutableFloatStateOf(0f) }
-
-    val scrollableThreshold by remember {
-        derivedStateOf {
-            with(density) { 48.dp.toPx() }
-        }
-    }
-
     // 垂直滚动了一段距离之后, 在 TopAppBar 上显示标题
-    val isScrolled by remember {
-        derivedStateOf {
-            scrollableOffset <= -scrollableThreshold
-        }
-    }
-
-    val isScrolledTop by remember {
-        derivedStateOf {
-            scrollableOffset.toInt() == -scrollableHeight
-        }
-    }
-
-    val flingBehavior = ScrollableDefaults.flingBehavior()
-    val scrollScope = remember {
-        object : ScrollScope {
-            override fun scrollBy(pixels: Float): Float {
-                val diff = pixels.coerceAtMost(-scrollableOffset)
-                scrollableOffset += diff
-                return diff
-            }
-        }
-    }
-
-    val nestedScrollConnection = remember {
-        object : NestedScrollConnection {
-            override fun onPreScroll(
-                available: Offset,
-                source: NestedScrollSource
-            ): Offset {
-                // 手指往下, available.y > 0
-
-                if (scrollableOffset == 0f && available.y > 0) {
-                    return Offset.Zero
-                }
-
-                if (available.y < 0) {
-                    // 手指往上, 首先让 header 隐藏
-                    //
-                    //                   y
-                    // |---------------| 0
-                    // |    TopAppBar  |
-                    // |  图片    标题  |  -scrollableHeight
-                    // |               |
-                    // |    收藏数据    |  scrollableOffset
-                    // |     TAB       |
-                    // |  LazyColumn   |
-                    // |---------------|
-
-                    val diff = available.y.coerceAtLeast(-scrollableHeight - scrollableOffset)
-                    scrollableOffset += diff
-                    return Offset(0f, diff)
-                }
-                return Offset.Zero
-            }
-
-            override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
-                if (available.y > 0) { // 手指往下
-                    with(flingBehavior) {
-                        scrollScope.performFling(available.y) // 让 headers 也跟着往下
-                    }
-                }
-                return super.onPostFling(consumed, available)
-            }
-
-            override fun onPostScroll(
-                consumed: Offset,
-                available: Offset,
-                source: NestedScrollSource
-            ): Offset {
-                if (available.y > 0) {
-                    // 手指往下, 让 header 显示
-                    // scrollableOffset 是负的
-                    val diff = available.y.coerceAtMost(-scrollableOffset)
-                    scrollableOffset += diff
-                    return consumed + Offset(0f, diff)
-                }
-                return super.onPostScroll(consumed, available, source)
-            }
-        }
-    }
+    val connectedScrollState = rememberConnectedScrollState()
 
     Scaffold(
         topBar = {
@@ -278,7 +180,7 @@ fun SubjectDetailsPage(
                 )
 
                 // 有背景, 仅在滚动一段距离后使用
-                AnimatedVisibility(isScrolledTop, enter = fadeIn(), exit = fadeOut()) {
+                AnimatedVisibility(connectedScrollState.isScrolledTop, enter = fadeIn(), exit = fadeOut()) {
                     TopAppBar(
                         title = { Text(state.info.displayName, maxLines = 1, overflow = TextOverflow.Ellipsis) },
                         navigationIcon = { TopAppBarGoBackButton() },
@@ -310,10 +212,8 @@ fun SubjectDetailsPage(
                     initialOffsetY = { 150.coerceAtMost(it) },
                 ),
             ) {
-                Column(
-                    Modifier.graphicsLayer { translationY = scrollableOffset }.fillMaxSize(),
-                ) {
-                    Box(Modifier) {
+                Column(Modifier.fillMaxSize()) {
+                    Box(Modifier.connectedScrollContainer(connectedScrollState)) {
                         // 虚化渐变背景
                         SubjectBlurredBackground(
                             coverImageUrl = if (isContentReady) state.coverImageUrl else null,
@@ -325,10 +225,7 @@ fun SubjectDetailsPage(
                         )
 
                         // 标题和封面, 以及收藏数据, 可向上滑动
-                        Column(
-                            Modifier
-                                .padding(scaffoldPadding).onPlaced { scrollableHeight = it.size.height },
-                        ) {
+                        Column(Modifier.padding(scaffoldPadding).connectedScrollTarget(connectedScrollState)) {
                             SubjectDetailsHeader(
                                 state.info,
                                 state.coverImageUrl,
@@ -352,7 +249,7 @@ fun SubjectDetailsPage(
                             .fillMaxSize(),
                     ) {
                         val tabContainerColor by animateColorAsState(
-                            if (isScrolledTop) TabRowDefaults.secondaryContainerColor else MaterialTheme.colorScheme.background,
+                            if (connectedScrollState.isScrolledTop) TabRowDefaults.secondaryContainerColor else MaterialTheme.colorScheme.background,
                             tween(),
                         )
                         SecondaryScrollableTabRow(
@@ -385,9 +282,9 @@ fun SubjectDetailsPage(
                             val type = SubjectDetailsTab.entries[index]
                             Column(Modifier.fillMaxSize().padding()) {
                                 when (type) {
-                                    SubjectDetailsTab.DETAILS -> detailsTab(nestedScrollConnection)
-                                    SubjectDetailsTab.COMMENTS -> commentsTab(nestedScrollConnection)
-                                    SubjectDetailsTab.DISCUSSIONS -> discussionsTab(nestedScrollConnection)
+                                    SubjectDetailsTab.DETAILS -> detailsTab(connectedScrollState.nestedScrollConnection)
+                                    SubjectDetailsTab.COMMENTS -> commentsTab(connectedScrollState.nestedScrollConnection)
+                                    SubjectDetailsTab.DISCUSSIONS -> discussionsTab(connectedScrollState.nestedScrollConnection)
                                 }
                             }
                         }
