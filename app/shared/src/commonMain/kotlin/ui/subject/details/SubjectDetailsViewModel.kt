@@ -38,6 +38,7 @@ class SubjectDetailsViewModel(
         subjectInfo = subjectInfo,
         coverImageUrl = bangumiClient.subjects.getSubjectImageUrl(subjectId, BangumiSubjectImageSize.LARGE),
         selfCollectionType = subjectManager.subjectCollectionType(subjectId),
+        persons = bangumiRelatedCharactersRepository.relatedPersonsFlow(subjectId),
         characters = bangumiRelatedCharactersRepository.relatedCharactersFlow(subjectId),
         parentCoroutineContext = backgroundScope.coroutineContext,
     )

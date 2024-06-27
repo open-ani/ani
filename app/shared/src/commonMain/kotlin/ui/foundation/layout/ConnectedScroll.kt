@@ -39,6 +39,9 @@ fun rememberConnectedScrollState(
 class ConnectedScrollState(
     val flingBehavior: FlingBehavior,
 ) {
+    /**
+     * 仅在第一个 measurement pass 后更新
+     */
     var scrollableHeight by mutableIntStateOf(0)
         internal set
 
@@ -55,6 +58,9 @@ class ConnectedScrollState(
     }
 
     val isScrolledTop by derivedStateOf {
+        if (scrollableHeight == 0) { // not yet measured
+            return@derivedStateOf false
+        }
         scrollableOffset.toInt() == -scrollableHeight
     }
 

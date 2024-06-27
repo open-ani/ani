@@ -4,6 +4,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.height
@@ -96,6 +97,7 @@ internal fun SubjectDetailsHeader(
 fun Tag(
     modifier: Modifier = Modifier,
     shape: Shape = MaterialTheme.shapes.small,
+    contentPadding: PaddingValues = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
     label: @Composable RowScope.() -> Unit,
 ) {
     Box(
@@ -105,7 +107,7 @@ fun Tag(
         contentAlignment = Alignment.Center,
     ) {
         Row(
-            Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            Modifier.padding(contentPadding),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             label()

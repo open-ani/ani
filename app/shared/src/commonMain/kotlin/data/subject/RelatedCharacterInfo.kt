@@ -1,7 +1,6 @@
 package me.him188.ani.app.data.subject
 
 import androidx.compose.runtime.Immutable
-import org.openapitools.client.models.PersonType
 
 @Immutable
 class RelatedCharacterInfo(
@@ -15,10 +14,10 @@ class RelatedCharacterInfo(
 
 @Immutable
 enum class CharacterType {
-    Character,
-    Mechanic,
-    Ship,
-    Organization;
+    CHARACTER,
+    MECHANIC,
+    SHIP,
+    ORGANIZATION;
 }
 
 @Immutable
@@ -35,9 +34,9 @@ class PersonInfo(
     val name: String,
     val type: PersonType,
     val careers: List<PersonCareer>,
-    val shortSummary: String,
-    val locked: Boolean,
     val images: Images?,
+    val shortSummary: String?,
+    val locked: Boolean?,
 )
 
 @Immutable

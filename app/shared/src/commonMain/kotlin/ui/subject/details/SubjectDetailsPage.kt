@@ -64,7 +64,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
@@ -76,6 +75,7 @@ import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.ui.external.placeholder.placeholder
+import me.him188.ani.app.ui.foundation.layout.ConnectedScrollState
 import me.him188.ani.app.ui.foundation.layout.connectedScrollContainer
 import me.him188.ani.app.ui.foundation.layout.connectedScrollTarget
 import me.him188.ani.app.ui.foundation.layout.rememberConnectedScrollState
@@ -106,6 +106,7 @@ fun SubjectDetailsScene(
     }
 
     val context = LocalContext.current
+    val connectedScrollState = rememberConnectedScrollState()
     SubjectDetailsPage(
         vm.subjectDetailsState,
         onClickOpenExternal = { vm.browseSubjectBangumi(context) },
@@ -118,8 +119,14 @@ fun SubjectDetailsScene(
                 onSetCollectionType = { vm.setSelfCollectionType(it) },
             )
         },
+        connectedScrollState = connectedScrollState,
         detailsTab = {
-            SubjectDetailsDefaults.DetailsTab(Modifier.nestedScroll(it))
+            SubjectDetailsDefaults.DetailsTab(
+                info = vm.subjectDetailsState.info,
+                staff = vm.subjectDetailsState.staff,
+                characters = vm.subjectDetailsState.characters,
+                Modifier.nestedScroll(connectedScrollState.nestedScrollConnection),
+            )
         },
         commentsTab = {},
         discussionsTab = {},
@@ -141,11 +148,11 @@ fun SubjectDetailsPage(
     state: SubjectDetailsState,
     onClickOpenExternal: () -> Unit,
     collectionData: @Composable () -> Unit,
-    detailsTab: @Composable (connection: NestedScrollConnection) -> Unit,
-    commentsTab: @Composable (connection: NestedScrollConnection) -> Unit,
-    discussionsTab: @Composable (connection: NestedScrollConnection) -> Unit,
+    connectedScrollState: ConnectedScrollState,
+    detailsTab: @Composable () -> Unit,
+    commentsTab: @Composable () -> Unit,
+    discussionsTab: @Composable () -> Unit,
     modifier: Modifier = Modifier,
-//    pageScrollState: ScrollState = rememberScrollState(),
 ) {
     val scope = rememberCoroutineScope()
     val indicatorState = remember(scope) { FastLinearProgressState(scope) }
@@ -160,9 +167,6 @@ fun SubjectDetailsPage(
     }
 
     val density by rememberUpdatedState(LocalDensity.current)
-
-    // 垂直滚动了一段距离之后, 在 TopAppBar 上显示标题
-    val connectedScrollState = rememberConnectedScrollState()
 
     Scaffold(
         topBar = {
@@ -232,7 +236,7 @@ fun SubjectDetailsPage(
                                 Modifier.padding(horizontal = 16.dp).fillMaxWidth(),
                             )
 
-                            Row {
+                            Row(Modifier.padding(top = 16.dp)) {
                                 collectionData()
                             }
                         }
@@ -282,9 +286,9 @@ fun SubjectDetailsPage(
                             val type = SubjectDetailsTab.entries[index]
                             Column(Modifier.fillMaxSize().padding()) {
                                 when (type) {
-                                    SubjectDetailsTab.DETAILS -> detailsTab(connectedScrollState.nestedScrollConnection)
-                                    SubjectDetailsTab.COMMENTS -> commentsTab(connectedScrollState.nestedScrollConnection)
-                                    SubjectDetailsTab.DISCUSSIONS -> discussionsTab(connectedScrollState.nestedScrollConnection)
+                                    SubjectDetailsTab.DETAILS -> detailsTab()
+                                    SubjectDetailsTab.COMMENTS -> commentsTab()
+                                    SubjectDetailsTab.DISCUSSIONS -> discussionsTab()
                                 }
                             }
                         }

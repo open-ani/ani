@@ -1,5 +1,6 @@
 package me.him188.ani.app.ui.subject.details.components
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -35,7 +36,7 @@ fun SubjectDetailsCollectionData(
     horizontalPadding: Dp = 16.dp
 ) {
     // 收藏数据和收藏按钮
-    Column(modifier.fillMaxWidth()) {
+    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         // 数据
         Row(Modifier.fillMaxWidth().padding(horizontal = horizontalPadding)) {
             val collection = info.collection
@@ -57,7 +58,7 @@ fun SubjectDetailsCollectionData(
         }
 
         Row(
-            Modifier.padding(vertical = 16.dp)
+            Modifier
                 .align(Alignment.End)
                 .padding(horizontal = horizontalPadding),
         ) {

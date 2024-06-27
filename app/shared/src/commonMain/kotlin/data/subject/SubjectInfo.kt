@@ -3,7 +3,6 @@ package me.him188.ani.app.data.subject
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonElement
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import org.openapitools.client.models.Subject
@@ -88,8 +87,10 @@ class Tag(
 @Immutable
 class InfoboxItem(
     val name: String,
-    val value: JsonElement,
-)
+    val values: List<String>,
+) {
+    val valueOrNull get() = values.firstOrNull()
+}
 
 fun Subject.createSubjectInfo(): SubjectInfo {
     return SubjectInfo(

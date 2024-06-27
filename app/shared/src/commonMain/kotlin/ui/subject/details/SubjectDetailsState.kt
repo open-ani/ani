@@ -5,6 +5,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import kotlinx.coroutines.flow.Flow
 import me.him188.ani.app.data.subject.RelatedCharacterInfo
+import me.him188.ani.app.data.subject.RelatedPersonInfo
 import me.him188.ani.app.data.subject.SubjectInfo
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
@@ -16,6 +17,7 @@ class SubjectDetailsState(
     subjectInfo: Flow<SubjectInfo>,
     val coverImageUrl: String?,
     selfCollectionType: Flow<UnifiedCollectionType>,
+    persons: Flow<List<RelatedPersonInfo>>,
     characters: Flow<List<RelatedCharacterInfo>>,
     parentCoroutineContext: CoroutineContext,
 ) : HasBackgroundScope by BackgroundScope(parentCoroutineContext) {
@@ -27,6 +29,13 @@ class SubjectDetailsState(
     private val charactersOrNull by characters.produceState(null)
     val characters by derivedStateOf { charactersOrNull ?: emptyList() }
 
+    private val personsOrNull by persons.produceState(null)
+    private val persons by derivedStateOf { personsOrNull ?: emptyList() }
+
+    val staff by derivedStateOf {
+        RelatedPersonInfo.sortList(this.persons)
+    }
+
     /**
      * 有任何一个数据为空
      */
@@ -36,6 +45,7 @@ class SubjectDetailsState(
         val selfCollectionTypeLoading = selfCollectionTypeOrNull == null
         val charactersLoading = charactersOrNull == null
         val infoLoading = info === SubjectInfo.Empty
-        infoLoading || selfCollectionTypeLoading || charactersLoading
+        val personsLoading = personsOrNull == null
+        infoLoading || selfCollectionTypeLoading || charactersLoading || personsLoading
     }
 }

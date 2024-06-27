@@ -8,14 +8,17 @@ import me.him188.ani.app.data.subject.CharacterType
 import me.him188.ani.app.data.subject.Images
 import me.him188.ani.app.data.subject.PersonCareer
 import me.him188.ani.app.data.subject.PersonInfo
+import me.him188.ani.app.data.subject.PersonType
 import me.him188.ani.app.data.subject.RelatedCharacterInfo
+import me.him188.ani.app.data.subject.RelatedPersonInfo
 import me.him188.ani.datasources.bangumi.BangumiClient
-import org.openapitools.client.models.PersonType
 import org.openapitools.client.models.RelatedCharacter
+import org.openapitools.client.models.RelatedPerson
 import org.openapitools.client.models.CharacterType as BangumiCharacterType
 import org.openapitools.client.models.Person as BangumiPerson
 import org.openapitools.client.models.PersonCareer as BangumiPersonCareer
 import org.openapitools.client.models.PersonImages as BangumiPersonImages
+import org.openapitools.client.models.PersonType as BangumiPersonType
 
 class BangumiRelatedCharactersRepository(
     private val client: BangumiClient,
@@ -31,6 +34,33 @@ class BangumiRelatedCharactersRepository(
             )
         }
     }
+
+    fun relatedPersonsFlow(subjectId: Int): Flow<List<RelatedPersonInfo>> {
+        return flow {
+            emit(
+                withContext(Dispatchers.IO) {
+                    client.api.getRelatedPersonsBySubjectId(subjectId)
+                }.map {
+                    it.toRelatedPersonInfo()
+                }.asReversed(),
+            )
+        }
+    }
+}
+
+private fun RelatedPerson.toRelatedPersonInfo(): RelatedPersonInfo {
+    return RelatedPersonInfo(
+        personInfo = PersonInfo(
+            id = id,
+            name = name,
+            type = type.toPersonType(),
+            careers = career.map { it.toPersonCareer() },
+            images = images?.toImages(),
+            locked = null,
+            shortSummary = null,
+        ),
+        relation = relation,
+    )
 }
 
 private fun RelatedCharacter.toRelatedCharacterInfo(): RelatedCharacterInfo {
@@ -46,10 +76,10 @@ private fun RelatedCharacter.toRelatedCharacterInfo(): RelatedCharacterInfo {
 
 private fun BangumiCharacterType.toCharacterType(): CharacterType {
     return when (this) {
-        BangumiCharacterType.Character -> CharacterType.Character
-        BangumiCharacterType.Mechanic -> CharacterType.Mechanic
-        BangumiCharacterType.Ship -> CharacterType.Ship
-        BangumiCharacterType.Organization -> CharacterType.Organization
+        BangumiCharacterType.Character -> CharacterType.CHARACTER
+        BangumiCharacterType.Mechanic -> CharacterType.MECHANIC
+        BangumiCharacterType.Ship -> CharacterType.SHIP
+        BangumiCharacterType.Organization -> CharacterType.ORGANIZATION
     }
 }
 
@@ -68,9 +98,9 @@ private fun BangumiPerson.toPersonInfo(): PersonInfo {
         name = name,
         type = type.toPersonType(),
         careers = career.map { it.toPersonCareer() },
+        images = images?.toImages(),
         shortSummary = shortSummary,
         locked = locked,
-        images = images?.toImages(),
     )
 }
 
@@ -86,10 +116,10 @@ private fun BangumiPersonCareer.toPersonCareer(): PersonCareer {
     }
 }
 
-private fun PersonType.toPersonType(): PersonType {
+private fun BangumiPersonType.toPersonType(): PersonType {
     return when (this) {
-        PersonType.Individual -> PersonType.Individual
-        PersonType.Corporation -> PersonType.Corporation
-        PersonType.Association -> PersonType.Association
+        BangumiPersonType.Individual -> PersonType.Individual
+        BangumiPersonType.Corporation -> PersonType.Corporation
+        BangumiPersonType.Association -> PersonType.Association
     }
 }
