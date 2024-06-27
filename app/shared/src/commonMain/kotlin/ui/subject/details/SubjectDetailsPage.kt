@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyRow
@@ -223,9 +222,7 @@ fun SubjectDetailsPage(
                             coverImageUrl = if (isContentReady) state.coverImageUrl else null,
                             backgroundColor = MaterialTheme.colorScheme.background,
                             surfaceColor = MaterialTheme.colorScheme.surface,
-                            Modifier
-                                .height(270.dp + density.run { WindowInsets.systemBars.getTop(density).toDp() })
-                                .fillMaxWidth(),
+                            Modifier.matchParentSize(),
                         )
 
                         // 标题和封面, 以及收藏数据, 可向上滑动
