@@ -74,6 +74,7 @@ kotlin {
         api(compose.animation)
         api(compose.ui)
         api(compose.material3)
+        api(libs.androidx.compose.material3.adaptive.layout)
         api(compose.materialIconsExtended)
         api(compose.runtime)
         implementation(compose.components.resources)

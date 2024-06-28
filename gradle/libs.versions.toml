@@ -30,6 +30,7 @@ constraintlayout-compose = "0.4.0"
 
 
 compose-material3 = "1.2.1"
+compose-material3-adaptive = "1.0.0-beta04"
 
 # https://androidx.tech/artifacts/compose.material/material-android/
 jetpack-compose = "1.6.7"
@@ -180,6 +181,9 @@ androidx-compose-ui-viewbinding = { module = "androidx.compose.ui:ui-viewbinding
 androidx-compose-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "jetpack-compose" }
 androidx-compose-material = { module = "androidx.compose.material:material", version.ref = "jetpack-compose" }
 androidx-compose-material3 = { module = "androidx.compose.material3:material3", version.ref = "compose-material3" }
+androidx-compose-material3-adaptive = { module = "androidx.compose.material3.adaptive:adaptive", version.ref = "compose-material3-adaptive" }
+androidx-compose-material3-adaptive-layout = { module = "androidx.compose.material3.adaptive:adaptive-layout", version.ref = "compose-material3-adaptive" }
+androidx-compose-material3-adaptive-navigation = { module = "androidx.compose.material3.adaptive:adaptive-navigation", version.ref = "compose-material3-adaptive" }
 androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "jetpack-compose" }
 # compose-runtime-livedata = { module = "androidx.compose.runtime:runtime-livedata", version.ref = "jetpackCompose" }
 
