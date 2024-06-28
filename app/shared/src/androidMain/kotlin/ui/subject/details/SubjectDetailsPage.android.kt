@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.flow.MutableStateFlow
 import me.him188.ani.app.data.subject.CharacterType
@@ -15,8 +16,10 @@ import me.him188.ani.app.data.subject.RelatedCharacterInfo
 import me.him188.ani.app.data.subject.RelatedPersonInfo
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.layout.rememberConnectedScrollState
+import me.him188.ani.app.ui.subject.details.components.CollectionAction
+import me.him188.ani.app.ui.subject.details.components.CollectionData
 import me.him188.ani.app.ui.subject.details.components.DetailsTab
-import me.him188.ani.app.ui.subject.details.components.SubjectDetailsCollectionData
+import me.him188.ani.app.ui.subject.details.components.SelectEpisodeButton
 import me.him188.ani.app.ui.subject.details.components.SubjectDetailsDefaults
 import me.him188.ani.app.ui.subject.details.components.TestSubjectInfo
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
@@ -93,6 +96,7 @@ internal val TestSubjectCharacterList = listOf(
 )
 
 @Preview
+@Preview(device = Devices.TABLET)
 @Composable
 internal fun PreviewSubjectDetails() {
     ProvideCompositionLocalsForPreview {
@@ -114,10 +118,13 @@ internal fun PreviewSubjectDetails() {
             state = state,
             onClickOpenExternal = {},
             collectionData = {
-                SubjectDetailsCollectionData(
+                SubjectDetailsDefaults.CollectionData(
                     vm.subjectDetailsState.info,
+                )
+            },
+            collectionActions = {
+                SubjectDetailsDefaults.CollectionAction(
                     vm.subjectDetailsState.selfCollectionType,
-                    onClickSelectEpisode = { },
                     onSetAllEpisodesDone = { vm.setAllEpisodesWatched() },
                     onSetCollectionType = { vm.setSelfCollectionType(it) },
                 )
@@ -130,6 +137,9 @@ internal fun PreviewSubjectDetails() {
                     characters = TestSubjectCharacterList,
                     Modifier.nestedScroll(connectedScrollState.nestedScrollConnection),
                 )
+            },
+            selectEpisodeButton = {
+                SubjectDetailsDefaults.SelectEpisodeButton({})
             },
             commentsTab = {},
             discussionsTab = {},

@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
@@ -84,9 +85,11 @@ import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressIndicator
 import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressState
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.app.ui.subject.collection.progress.EpisodeProgressDialog
+import me.him188.ani.app.ui.subject.details.components.CollectionAction
+import me.him188.ani.app.ui.subject.details.components.CollectionData
 import me.him188.ani.app.ui.subject.details.components.DetailsTab
+import me.him188.ani.app.ui.subject.details.components.SelectEpisodeButton
 import me.him188.ani.app.ui.subject.details.components.SubjectBlurredBackground
-import me.him188.ani.app.ui.subject.details.components.SubjectDetailsCollectionData
 import me.him188.ani.app.ui.subject.details.components.SubjectDetailsDefaults
 import me.him188.ani.app.ui.subject.details.components.SubjectDetailsHeader
 import me.him188.ani.datasources.bangumi.client.BangumiEpisode
@@ -110,12 +113,20 @@ fun SubjectDetailsScene(
         vm.subjectDetailsState,
         onClickOpenExternal = { vm.browseSubjectBangumi(context) },
         collectionData = {
-            SubjectDetailsCollectionData(
+            SubjectDetailsDefaults.CollectionData(
                 vm.subjectDetailsState.info,
+            )
+        },
+        collectionActions = {
+            SubjectDetailsDefaults.CollectionAction(
                 vm.subjectDetailsState.selfCollectionType,
-                onClickSelectEpisode = { showSelectEpisode = true },
                 onSetAllEpisodesDone = { vm.setAllEpisodesWatched() },
                 onSetCollectionType = { vm.setSelfCollectionType(it) },
+            )
+        },
+        selectEpisodeButton = {
+            SubjectDetailsDefaults.SelectEpisodeButton(
+                onClick = { showSelectEpisode = true },
             )
         },
         connectedScrollState = connectedScrollState,
@@ -147,6 +158,8 @@ fun SubjectDetailsPage(
     state: SubjectDetailsState,
     onClickOpenExternal: () -> Unit,
     collectionData: @Composable () -> Unit,
+    collectionActions: @Composable () -> Unit,
+    selectEpisodeButton: @Composable () -> Unit,
     connectedScrollState: ConnectedScrollState,
     detailsTab: @Composable () -> Unit,
     commentsTab: @Composable () -> Unit,
@@ -205,17 +218,17 @@ fun SubjectDetailsPage(
             Modifier.zIndex(2f).padding(scaffoldPadding).padding(horizontal = 4.dp).fillMaxWidth(),
         )
 
-        Box {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
             AnimatedVisibility(
                 isContentReady,
-                Modifier.fillMaxSize(),
+                Modifier.wrapContentSize(),
                 // 从中间往上滑
                 enter = fadeIn(tween(500)) + slideInVertically(
                     tween(600),
                     initialOffsetY = { 150.coerceAtMost(it) },
                 ),
             ) {
-                Column(Modifier.fillMaxSize()) {
+                Column(Modifier.widthIn(max = 1300.dp).fillMaxHeight()) {
                     Box(Modifier.connectedScrollContainer(connectedScrollState)) {
                         // 虚化渐变背景
                         SubjectBlurredBackground(
@@ -230,12 +243,11 @@ fun SubjectDetailsPage(
                             SubjectDetailsHeader(
                                 state.info,
                                 state.coverImageUrl,
-                                Modifier.padding(horizontal = 16.dp).fillMaxWidth(),
+                                collectionData = collectionData,
+                                collectionAction = collectionActions,
+                                selectEpisodeButton = selectEpisodeButton,
+                                Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(bottom = 16.dp),
                             )
-
-                            Row(Modifier.padding(top = 16.dp)) {
-                                collectionData()
-                            }
                         }
                     }
                     val pagerState = rememberPagerState(
@@ -247,7 +259,7 @@ fun SubjectDetailsPage(
                     Column(
                         Modifier
                             .padding(bottom = 16.dp)
-                            .fillMaxSize(),
+                            .fillMaxHeight(),
                     ) {
                         val tabContainerColor by animateColorAsState(
                             if (connectedScrollState.isScrolledTop) TabRowDefaults.secondaryContainerColor else MaterialTheme.colorScheme.background,
@@ -262,7 +274,7 @@ fun SubjectDetailsPage(
                             },
                             containerColor = tabContainerColor,
                             divider = {},
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier,
                         ) {
                             SubjectDetailsTab.entries.forEachIndexed { index, tabId ->
                                 Tab(
@@ -281,7 +293,7 @@ fun SubjectDetailsPage(
                             userScrollEnabled = Platform.currentPlatform.isMobile(),
                         ) { index ->
                             val type = SubjectDetailsTab.entries[index]
-                            Column(Modifier.fillMaxSize().padding()) {
+                            Column(Modifier.padding()) {
                                 when (type) {
                                     SubjectDetailsTab.DETAILS -> detailsTab()
                                     SubjectDetailsTab.COMMENTS -> commentsTab()

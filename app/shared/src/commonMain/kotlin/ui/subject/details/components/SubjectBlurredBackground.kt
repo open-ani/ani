@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.foundation.backgroundWithGradient
+import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
 
 @Composable
 fun SubjectBlurredBackground(
@@ -19,7 +20,7 @@ fun SubjectBlurredBackground(
 ) {
     Box(
         modifier
-            .blur(12.dp)
+            .blur(if (isShowLandscapeUI()) 32.dp else 16.dp)
             .backgroundWithGradient(
                 coverImageUrl, backgroundColor,
                 brush = if (isSystemInDarkTheme()) {

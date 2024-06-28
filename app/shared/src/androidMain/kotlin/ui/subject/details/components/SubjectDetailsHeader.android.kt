@@ -1,11 +1,14 @@
 package me.him188.ani.app.ui.subject.details.components
 
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import me.him188.ani.app.data.subject.SubjectCollectionStats
 import me.him188.ani.app.data.subject.SubjectInfo
 import me.him188.ani.app.data.subject.Tag
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
+import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 
 internal val TestCollectionStats = SubjectCollectionStats(
     wish = 100,
@@ -37,7 +40,53 @@ internal const val TestCoverImage = "https://ui-avatars.com/api/?name=John+Doe"
 @Preview
 fun PreviewSubjectDetailsHeader() {
     ProvideCompositionLocalsForPreview {
-        SubjectDetailsHeader(TestSubjectInfo, TestCoverImage)
+        SubjectDetailsHeader(
+            TestSubjectInfo,
+            TestCoverImage,
+            collectionData = {
+                SubjectDetailsDefaults.CollectionData(
+                    TestSubjectInfo,
+                )
+            },
+            collectionAction = {
+                SubjectDetailsDefaults.CollectionAction(
+                    UnifiedCollectionType.WISH,
+                    onSetAllEpisodesDone = { },
+                    onSetCollectionType = { },
+                )
+            },
+            selectEpisodeButton = {
+                SubjectDetailsDefaults.SelectEpisodeButton({})
+            },
+        )
+    }
+}
+
+
+@Composable
+@Preview(device = Devices.TABLET)
+private fun PreviewHeaderScaffoldWide() {
+    ProvideCompositionLocalsForPreview {
+        val info = TestSubjectInfo
+        SubjectDetailsHeaderWide(
+            coverImageUrl = null,
+            title = { Text(text = info.displayName) },
+            subtitle = { Text(text = info.name) },
+            seasonTag = { Text(renderSubjectSeason(info.publishDate)) },
+            collectionData = {
+                SubjectDetailsDefaults.CollectionData(info)
+            },
+            collectionAction = {
+                SubjectDetailsDefaults.CollectionAction(
+                    UnifiedCollectionType.WISH,
+                    onSetAllEpisodesDone = { },
+                    onSetCollectionType = { },
+                )
+            },
+            selectEpisodeButton = {
+                SubjectDetailsDefaults.SelectEpisodeButton({})
+            },
+        )
     }
 }
 

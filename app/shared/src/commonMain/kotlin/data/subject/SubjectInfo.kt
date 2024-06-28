@@ -112,7 +112,7 @@ fun Subject.createSubjectInfo(): SubjectInfo {
             SubjectCollectionStats(
                 wish = wish,
                 doing = doing,
-                done = collect - wish - doing - onHold - dropped,
+                done = collect,
                 onHold = onHold,
                 dropped = dropped,
             )

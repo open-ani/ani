@@ -61,7 +61,10 @@ fun SubjectDetailsDefaults.DetailsTab(
     modifier: Modifier = Modifier,
     horizontalPadding: Dp = 16.dp,
 ) {
-    LazyColumn(modifier, verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    LazyColumn(
+        modifier,
+        verticalArrangement = Arrangement.spacedBy(24.dp), // 这个页面内容比较密集, 如果用 16 显得有点拥挤
+    ) {
         item("spacer header") { }
 
         // 简介
@@ -103,7 +106,7 @@ fun SubjectDetailsDefaults.DetailsTab(
 
         item("staff title") {
             Text(
-                "演职人员",
+                "制作人员",
                 Modifier.padding(horizontal = horizontalPadding),
                 style = MaterialTheme.typography.titleMedium,
             )
@@ -129,7 +132,7 @@ private fun TagsList(
     info: SubjectInfo,
     modifier: Modifier = Modifier,
 ) {
-    val gridItemSpacing = 8.dp
+    val gridItemSpacing = 12.dp
     LazyHorizontalStaggeredGrid(
         StaggeredGridCells.FixedSize(40.dp),
         horizontalItemSpacing = gridItemSpacing,

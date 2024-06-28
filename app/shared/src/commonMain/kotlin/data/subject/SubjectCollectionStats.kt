@@ -5,20 +5,6 @@ import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 
-@Immutable
-class SubjectDetails(
-    val info: SubjectInfo,
-    val coverImage: String?,
-) {
-    companion object {
-        @Stable
-        val Placeholder = SubjectDetails(
-            SubjectInfo.Empty,
-            null,
-        )
-    }
-}
-
 /**
  * @see UnifiedCollectionType
  */
