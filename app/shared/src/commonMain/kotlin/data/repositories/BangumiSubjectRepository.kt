@@ -1,6 +1,8 @@
 package me.him188.ani.app.data.repositories
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.subject.EpisodeCollection
@@ -12,6 +14,7 @@ import me.him188.ani.datasources.api.paging.PageBasedPagedSource
 import me.him188.ani.datasources.api.paging.Paged
 import me.him188.ani.datasources.api.paging.PagedSource
 import me.him188.ani.datasources.api.paging.processPagedResponse
+import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.datasources.bangumi.processing.airSeason
 import me.him188.ani.datasources.bangumi.processing.nameCNOrName
@@ -41,6 +44,8 @@ interface BangumiSubjectRepository : Repository {
         subjectType: SubjectType? = null,
         subjectCollectionType: SubjectCollectionType? = null,
     ): PagedSource<UserSubjectCollection>
+
+    fun subjectCollectionTypeById(subjectId: Int): Flow<UnifiedCollectionType>
 
     suspend fun patchSubjectCollection(subjectId: Int, payload: UserSubjectCollectionModifyPayload)
     suspend fun deleteSubjectCollection(subjectId: Int)
@@ -110,8 +115,17 @@ class RemoteBangumiSubjectRepository : BangumiSubjectRepository, KoinComponent {
             }
         }
     }
-}
 
+    override fun subjectCollectionTypeById(subjectId: Int): Flow<UnifiedCollectionType> {
+        return flow {
+            emit(
+                runInterruptible(Dispatchers.IO) {
+                    client.api.getUserCollection("-", subjectId)
+                }.type.toCollectionType(),
+            )
+        }
+    }
+}
 
 fun UserSubjectCollection.toSubjectCollectionItem(
     subject: Subject,

@@ -12,7 +12,7 @@ val SubjectInfo.aliasSequence: Sequence<String>
     get() = infobox.asSequence()
         .filter { it.name == "别名" }
         .flatMap { box ->
-            box.value.vSequence()
+            box.values
         }
 
 private fun JsonElement.vSequence(): Sequence<String> {
@@ -40,4 +40,4 @@ private fun convertToJsonElement(value: Any?): JsonElement {
     }
 }
 
-fun Item.toInfoboxItem(): InfoboxItem = InfoboxItem(this.key, convertToJsonElement(this.value))
+fun Item.toInfoboxItem(): InfoboxItem = InfoboxItem(this.key, convertToJsonElement(this.value).vSequence().toList())

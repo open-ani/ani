@@ -60,7 +60,7 @@ interface BangumiClientSubjects {
         id: Int,
     ): BangumiSubjectDetails?
 
-    suspend fun getSubjectImageUrl(
+    fun getSubjectImageUrl(
         id: Int,
         size: BangumiSubjectImageSize,
     ): String

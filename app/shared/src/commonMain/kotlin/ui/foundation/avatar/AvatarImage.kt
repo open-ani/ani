@@ -17,7 +17,7 @@ fun AvatarImage(
     modifier: Modifier = Modifier,
     filePath: String? = null,
     colorFilter: ColorFilter? = null,
-    contentScale: ContentScale = ContentScale.Fit,
+    contentScale: ContentScale = ContentScale.Crop,
     alignment: Alignment = Alignment.Center,
 ) {
     AsyncImage(

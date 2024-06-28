@@ -65,8 +65,8 @@ import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.indication.HorizontalIndicator
 import me.him188.ani.app.ui.foundation.indication.IndicatedBox
 import me.him188.ani.app.ui.subject.collection.progress.cacheStatusIndicationColor
-import me.him188.ani.app.ui.subject.details.COVER_WIDTH_TO_HEIGHT_RATIO
-import me.him188.ani.app.ui.subject.details.Tag
+import me.him188.ani.app.ui.subject.details.components.COVER_WIDTH_TO_HEIGHT_RATIO
+import me.him188.ani.app.ui.subject.details.components.Tag
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import kotlin.time.Duration.Companion.seconds
@@ -358,7 +358,7 @@ private fun getEpisodeToPlay(
 
 // The label "已完结 · 全 28 话"
 @Composable
-private fun OnAirLabel(
+fun OnAirLabel(
     item: SubjectCollection,
     modifier: Modifier = Modifier,
     style: TextStyle = MaterialTheme.typography.labelMedium,

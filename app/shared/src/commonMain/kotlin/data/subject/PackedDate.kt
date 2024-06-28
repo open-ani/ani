@@ -79,6 +79,10 @@ value class PackedDate @PublishedApi internal constructor(
     }
 
     override fun compareTo(other: PackedDate): Int = packed.compareTo(other.packed) // trivial!
+
+    override fun toString(): String {
+        return if (isInvalid) "Invalid" else "$year-$month-$day"
+    }
 }
 
 /**
