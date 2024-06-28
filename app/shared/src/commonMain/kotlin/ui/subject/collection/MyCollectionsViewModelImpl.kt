@@ -43,6 +43,7 @@ class CollectionsByType(
     val subjectCollectionColumnState: SubjectCollectionColumnState,
 ) {
     var isAutoRefreshing by mutableStateOf(false)
+    var isRefreshing by mutableStateOf(false)
     var pullToRefreshState: PullToRefreshState? by mutableStateOf(null)
 }
 

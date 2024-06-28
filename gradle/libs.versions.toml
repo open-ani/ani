@@ -40,12 +40,12 @@ mockito-kotlin = "5.4.0"
 aws = "2.25.49"
 
 # Compose
-compose-material3 = "1.2.1"
+compose-material3 = "1.3.0-beta04"
 # https://androidx.tech/artifacts/compose.material/material-android/
-jetpack-compose = "1.6.8"
+jetpack-compose = "1.7.0-rc01"
 # https://github.com/JetBrains/compose-multiplatform/releases
 # https://www.jetbrains.com/help/kotlin-multiplatform-dev/compose-compatibility-and-versioning.html#use-a-developer-version-of-compose-multiplatform-compiler
-compose-multiplatform = "1.6.11"
+compose-multiplatform = "1.7.0-dev1783"
 compose-lifecycle = "2.8.0"
 compose-navigation = "2.7.0-alpha07"
 

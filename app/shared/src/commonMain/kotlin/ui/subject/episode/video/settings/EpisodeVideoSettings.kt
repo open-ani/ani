@@ -35,6 +35,7 @@ import me.him188.ani.app.ui.settings.framework.SettingsState
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SliderItem
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
+import me.him188.ani.app.ui.settings.framework.components.ThinSliderItem
 import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.danmaku.ui.DanmakuStyle
 import org.koin.core.component.KoinComponent
@@ -202,7 +203,7 @@ fun EpisodeVideoSettings(
             val fontSize by remember(danmakuConfig) {
                 mutableFloatStateOf(danmakuConfig.style.fontSize.value / DanmakuStyle.Default.fontSize.value)
             }
-            SliderItem(
+            ThinSliderItem(
                 value = fontSize,
                 onValueChange = {
                     // 故意每次改都更新, 可以即时预览
@@ -214,13 +215,14 @@ fun EpisodeVideoSettings(
                 steps = ((3f - 0.50f) / 0.05f).toInt() - 1,
                 title = { Text("弹幕字号") },
                 valueLabel = { Text(remember(fontSize) { "${(fontSize * 100).roundToInt()}%" }) },
+                drawTick = { _, _ -> }, // 点太多了
                 modifier = Modifier.placeholder(isLoadingState),
             )
 
             val alpha by remember(danmakuConfig) {
                 mutableFloatStateOf(danmakuConfig.style.alpha)
             }
-            SliderItem(
+            ThinSliderItem(
                 value = alpha,
                 onValueChange = {
                     setDanmakuConfig(
@@ -237,7 +239,7 @@ fun EpisodeVideoSettings(
             val strokeWidth by remember(danmakuConfig) {
                 mutableFloatStateOf(danmakuConfig.style.strokeWidth / DanmakuStyle.Default.strokeWidth)
             }
-            SliderItem(
+            ThinSliderItem(
                 value = strokeWidth,
                 onValueChange = {
                     setDanmakuConfig(
@@ -277,7 +279,7 @@ fun EpisodeVideoSettings(
                     danmakuConfig.speed / DanmakuConfig.Default.speed,
                 )
             }
-            SliderItem(
+            ThinSliderItem(
                 value = speed,
                 onValueChange = { speed = it },
                 valueRange = 0.2f..3f,
@@ -307,7 +309,7 @@ fun EpisodeVideoSettings(
                     ).div(0.1f).roundToInt().toFloat(),
                 )
             }
-            SliderItem(
+            ThinSliderItem(
                 value = displayDensity,
                 onValueChange = {
                     displayDensity = it
@@ -347,7 +349,7 @@ fun EpisodeVideoSettings(
                     },
                 )
             }
-            SliderItem(
+            ThinSliderItem(
                 value = displayArea,
                 onValueChange = {
                     displayArea = it

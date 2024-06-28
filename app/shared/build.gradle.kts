@@ -299,6 +299,16 @@ idea {
     }
 }
 
+// Jetpack compose bug since 1.7.0-beta03
+afterEvaluate {
+    tasks.named("generateReleaseLintVitalModel") {
+        dependsOn("releaseAssetsCopyForAGP")
+    }
+    tasks.named("lintVitalAnalyzeRelease") {
+        dependsOn("releaseAssetsCopyForAGP")
+    }
+}
+
 room {
     schemaDirectory("$projectDir/schemas")
 }
