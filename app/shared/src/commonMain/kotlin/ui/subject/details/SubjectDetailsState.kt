@@ -27,6 +27,8 @@ class SubjectDetailsState(
     private val selfCollectionTypeOrNull by selfCollectionType.produceState(null)
     val selfCollectionType by derivedStateOf { selfCollectionTypeOrNull ?: UnifiedCollectionType.WISH }
 
+    val selfCollected by derivedStateOf { this.selfCollectionType != UnifiedCollectionType.NOT_COLLECTED }
+
     private val charactersOrNull by characters.produceState(null)
     val characters by derivedStateOf { charactersOrNull ?: emptyList() }
 

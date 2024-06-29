@@ -245,7 +245,11 @@ fun SubjectDetailsPage(
                                 state.coverImageUrl,
                                 collectionData = collectionData,
                                 collectionAction = collectionActions,
-                                selectEpisodeButton = selectEpisodeButton,
+                                selectEpisodeButton = {
+                                    if (state.selfCollected) {
+                                        selectEpisodeButton()
+                                    }
+                                },
                                 Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(bottom = 16.dp),
                             )
                         }
