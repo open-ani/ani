@@ -123,9 +123,17 @@ class RemoteBangumiSubjectRepository : BangumiSubjectRepository, KoinComponent {
     override fun subjectCollectionTypeById(subjectId: Int): Flow<UnifiedCollectionType> {
         return flow {
             emit(
-                runInterruptible(Dispatchers.IO) {
-                    client.api.getUserCollection("-", subjectId)
-                }.type.toCollectionType(),
+                try {
+                    runInterruptible(Dispatchers.IO) {
+                        client.api.getUserCollection("-", subjectId)
+                    }.type.toCollectionType()
+                } catch (e: ClientException) {
+                    if (e.statusCode == 404) {
+                        UnifiedCollectionType.NOT_COLLECTED
+                    } else {
+                        throw e
+                    }
+                },
             )
         }
     }
