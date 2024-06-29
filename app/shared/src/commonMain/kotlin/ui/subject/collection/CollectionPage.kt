@@ -343,12 +343,12 @@ private fun TabContent(
             )
         },
         onEmpty = {
-            Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(Modifier.padding(contentPadding).fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
                 Spacer(Modifier.height(32.dp))
                 if (isLoggedIn == false) {
                     UnauthorizedTips(Modifier.fillMaxSize())
                 } else {
-                    Text("~ 空空如也 ~", style = MaterialTheme.typography.titleMedium)
+                    Text("~ 空空如也 ~\n请点击 \"找番\" 收藏条目", style = MaterialTheme.typography.titleMedium)
                 }
             }
         },
