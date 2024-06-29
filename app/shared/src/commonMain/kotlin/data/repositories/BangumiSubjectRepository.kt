@@ -2,6 +2,7 @@ package me.him188.ani.app.data.repositories
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
@@ -14,6 +15,7 @@ import me.him188.ani.app.data.subject.SubjectInfo
 import me.him188.ani.app.data.subject.SubjectManager
 import me.him188.ani.app.data.subject.Tag
 import me.him188.ani.app.data.subject.toInfoboxItem
+import me.him188.ani.app.session.SessionManager
 import me.him188.ani.datasources.api.paging.PageBasedPagedSource
 import me.him188.ani.datasources.api.paging.Paged
 import me.him188.ani.datasources.api.paging.PagedSource
@@ -68,6 +70,7 @@ suspend inline fun BangumiSubjectRepository.setSubjectCollectionTypeOrDelete(
 
 class RemoteBangumiSubjectRepository : BangumiSubjectRepository, KoinComponent {
     private val client: BangumiClient by inject()
+    private val sessionManager: SessionManager by inject()
     private val logger = logger(this::class)
 
     override suspend fun getSubject(id: Int): Subject? {
@@ -124,8 +127,9 @@ class RemoteBangumiSubjectRepository : BangumiSubjectRepository, KoinComponent {
         return flow {
             emit(
                 try {
+                    val username = sessionManager.username.first() ?: "-"
                     runInterruptible(Dispatchers.IO) {
-                        client.api.getUserCollection("-", subjectId)
+                        client.api.getUserCollection(username, subjectId)
                     }.type.toCollectionType()
                 } catch (e: ClientException) {
                     if (e.statusCode == 404) {
