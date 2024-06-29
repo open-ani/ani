@@ -39,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -279,7 +280,7 @@ fun PersonCard(
                 verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
-                    Text(name, softWrap = false)
+                    Text(name, softWrap = false, fontWeight = FontWeight.Bold)
                 }
 
                 Text(relation, softWrap = false, style = MaterialTheme.typography.labelMedium)
