@@ -15,7 +15,6 @@ data class SubjectCollection(
     val subjectId: Int,
     val displayName: String,
     val image: String,
-    val rate: RatingInfo? = null,
 
     val date: String?,
     val totalEps: Int,

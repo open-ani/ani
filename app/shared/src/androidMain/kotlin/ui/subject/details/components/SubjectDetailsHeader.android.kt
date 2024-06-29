@@ -8,6 +8,7 @@ import me.him188.ani.app.data.subject.SubjectCollectionStats
 import me.him188.ani.app.data.subject.SubjectInfo
 import me.him188.ani.app.data.subject.Tag
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.ui.subject.rating.TestRatingInfo
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 
 internal val TestCollectionStats = SubjectCollectionStats(
@@ -32,6 +33,7 @@ internal val TestSubjectInfo = SubjectInfo(
         Tag("轻百合", 4000),
         Tag("日常", 3758),
     ),
+    ratingInfo = TestRatingInfo,
 )
 
 internal const val TestCoverImage = "https://ui-avatars.com/api/?name=John+Doe"
@@ -70,6 +72,7 @@ private fun PreviewHeaderScaffoldWide() {
         val info = TestSubjectInfo
         SubjectDetailsHeaderWide(
             coverImageUrl = null,
+            ratingInfo = info.ratingInfo,
             title = { Text(text = info.displayName) },
             subtitle = { Text(text = info.name) },
             seasonTag = { Text(renderSubjectSeason(info.publishDate)) },

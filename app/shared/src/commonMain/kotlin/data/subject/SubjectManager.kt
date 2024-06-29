@@ -26,6 +26,7 @@ import me.him188.ani.app.data.media.EpisodeCacheStatus
 import me.him188.ani.app.data.media.MediaCacheManager
 import me.him188.ani.app.data.repositories.BangumiEpisodeRepository
 import me.him188.ani.app.data.repositories.BangumiSubjectRepository
+import me.him188.ani.app.data.repositories.createSubjectInfo
 import me.him188.ani.app.data.repositories.setSubjectCollectionTypeOrDelete
 import me.him188.ani.app.data.repositories.toEpisodeCollection
 import me.him188.ani.app.data.repositories.toEpisodeInfo

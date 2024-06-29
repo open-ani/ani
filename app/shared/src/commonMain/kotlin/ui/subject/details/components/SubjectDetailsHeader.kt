@@ -1,6 +1,7 @@
 package me.him188.ani.app.ui.subject.details.components
 
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -17,7 +19,10 @@ import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -27,12 +32,14 @@ import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.data.subject.PackedDate
+import me.him188.ani.app.data.subject.RatingInfo
 import me.him188.ani.app.data.subject.SubjectInfo
 import me.him188.ani.app.data.subject.seasonMonth
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.ui.foundation.AsyncImage
 import me.him188.ani.app.ui.foundation.layout.LocalLayoutMode
 import me.him188.ani.app.ui.foundation.theme.weaken
+import me.him188.ani.app.ui.subject.rating.Rating
 
 const val COVER_WIDTH_TO_HEIGHT_RATIO = 849 / 1200f
 
@@ -49,6 +56,7 @@ internal fun SubjectDetailsHeader(
     if (LocalLayoutMode.current.showLandscapeUI) {
         SubjectDetailsHeaderWide(
             coverImageUrl = coverImageUrl,
+            ratingInfo = info.ratingInfo,
             title = {
                 Text(info.displayName)
             },
@@ -68,6 +76,7 @@ internal fun SubjectDetailsHeader(
     } else {
         SubjectDetailsHeaderCompact(
             coverImageUrl = coverImageUrl,
+            ratingInfo = info.ratingInfo,
             title = {
                 Text(info.displayName)
             },
@@ -92,6 +101,7 @@ internal fun SubjectDetailsHeader(
 @Composable
 fun SubjectDetailsHeaderCompact(
     coverImageUrl: String?,
+    ratingInfo: RatingInfo,
     title: @Composable () -> Unit,
     subtitle: @Composable () -> Unit,
     seasonTag: @Composable () -> Unit,
@@ -101,7 +111,7 @@ fun SubjectDetailsHeaderCompact(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier) {
-        Row(Modifier, verticalAlignment = Alignment.Top) {
+        Row(Modifier.height(IntrinsicSize.Min), verticalAlignment = Alignment.Top) {
             val imageWidth = 120.dp
 
             Box(Modifier.clip(MaterialTheme.shapes.medium)) {
@@ -124,14 +134,14 @@ fun SubjectDetailsHeaderCompact(
                     Modifier,
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    SelectionContainer {
+                    var showSubtitle by remember { mutableStateOf(false) }
+                    SelectionContainer(Modifier.clickable { showSubtitle = !showSubtitle }) {
                         ProvideTextStyle(MaterialTheme.typography.titleLarge) {
-                            title()
-                        }
-                    }
-                    SelectionContainer {
-                        ProvideTextStyle(MaterialTheme.typography.titleMedium) {
-                            subtitle()
+                            if (showSubtitle) {
+                                subtitle()
+                            } else {
+                                title()
+                            }
                         }
                     }
                     Tag {
@@ -139,14 +149,20 @@ fun SubjectDetailsHeaderCompact(
                             seasonTag()
                         }
                     }
-                }
-                Column {
-                    // 评分
+
+                    Spacer(Modifier.weight(1f))
+
+                    Row(Modifier.align(Alignment.End)) {
+                        Rating(ratingInfo)
+                    }
                 }
             }
         }
 
-        Row(Modifier.padding(vertical = 16.dp).align(Alignment.Start)) {
+        Row(
+            Modifier.padding(vertical = 16.dp).align(Alignment.Start),
+            verticalAlignment = Alignment.Bottom,
+        ) {
             collectionData()
         }
         Row(
@@ -163,6 +179,7 @@ fun SubjectDetailsHeaderCompact(
 @Composable
 fun SubjectDetailsHeaderWide(
     coverImageUrl: String?,
+    ratingInfo: RatingInfo,
     title: @Composable () -> Unit,
     subtitle: @Composable () -> Unit,
     seasonTag: @Composable () -> Unit,
@@ -199,20 +216,25 @@ fun SubjectDetailsHeaderWide(
                     Modifier.weight(1f, fill = true),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    SelectionContainer {
+
+                    var showSubtitle by remember { mutableStateOf(false) }
+                    SelectionContainer(Modifier.clickable { showSubtitle = !showSubtitle }) {
                         ProvideTextStyle(MaterialTheme.typography.titleLarge) {
-                            title()
-                        }
-                    }
-                    SelectionContainer {
-                        ProvideTextStyle(MaterialTheme.typography.titleMedium) {
-                            subtitle()
+                            if (showSubtitle) {
+                                subtitle()
+                            } else {
+                                title()
+                            }
                         }
                     }
                     Tag {
                         ProvideTextStyle(MaterialTheme.typography.labelLarge) {
                             seasonTag()
                         }
+                    }
+                    Spacer(Modifier.weight(1f))
+                    Row(Modifier) {
+                        Rating(ratingInfo)
                     }
                 }
                 Row(Modifier.padding(vertical = 4.dp).align(Alignment.Start)) {
@@ -225,9 +247,6 @@ fun SubjectDetailsHeaderWide(
                 ) {
                     collectionAction()
                     selectEpisodeButton()
-                }
-                Column {
-                    // 评分
                 }
             }
         }

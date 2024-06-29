@@ -5,7 +5,6 @@ import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
-import org.openapitools.client.models.Subject
 
 /**
  * 详细信息.
@@ -39,6 +38,7 @@ data class SubjectInfo(
      * 该条目的全站收藏统计
      */
     val collection: SubjectCollectionStats = SubjectCollectionStats.Zero,
+    val ratingInfo: RatingInfo,
 ) {
     val publishDate: PackedDate = if (date == null) PackedDate.Invalid else PackedDate.parseFromDate(date)
 
@@ -66,7 +66,9 @@ data class SubjectInfo(
     companion object {
         @Stable
         @JvmStatic
-        val Empty = SubjectInfo()
+        val Empty = SubjectInfo(
+            ratingInfo = RatingInfo.Empty,
+        )
 
         private val logger = logger<SubjectInfo>()
     }
@@ -92,30 +94,3 @@ class InfoboxItem(
     val valueOrNull get() = values.firstOrNull()
 }
 
-fun Subject.createSubjectInfo(): SubjectInfo {
-    return SubjectInfo(
-        id = id,
-        name = name,
-        nameCn = nameCn,
-        summary = this.summary,
-        nsfw = this.nsfw,
-        locked = this.locked,
-        platform = this.platform,
-        volumes = this.volumes,
-        eps = this.eps,
-        totalEpisodes = this.totalEpisodes,
-        date = this.date,
-        tags = this.tags.map { Tag(it.name, it.count) },
-        infobox = this.infobox?.map { it.toInfoboxItem() }.orEmpty(),
-        imageCommon = this.images.common,
-        collection = this.collection.run {
-            SubjectCollectionStats(
-                wish = wish,
-                doing = doing,
-                done = collect,
-                onHold = onHold,
-                dropped = dropped,
-            )
-        },
-    )
-}

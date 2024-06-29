@@ -6,10 +6,14 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.subject.EpisodeCollection
+import me.him188.ani.app.data.subject.RatingCounts
 import me.him188.ani.app.data.subject.RatingInfo
 import me.him188.ani.app.data.subject.SubjectCollection
+import me.him188.ani.app.data.subject.SubjectCollectionStats
+import me.him188.ani.app.data.subject.SubjectInfo
 import me.him188.ani.app.data.subject.SubjectManager
-import me.him188.ani.app.data.subject.createSubjectInfo
+import me.him188.ani.app.data.subject.Tag
+import me.him188.ani.app.data.subject.toInfoboxItem
 import me.him188.ani.datasources.api.paging.PageBasedPagedSource
 import me.him188.ani.datasources.api.paging.Paged
 import me.him188.ani.datasources.api.paging.PagedSource
@@ -136,7 +140,6 @@ fun UserSubjectCollection.toSubjectCollectionItem(
             subjectId = subjectId,
             displayName = this.subject?.nameCNOrName() ?: "",
             image = "",
-            rate = subject.rating.toRatingInfo(),
             date = this.subject?.airSeason,
             totalEps = episodes.size,
             episodes = episodes.map { it.toEpisodeCollection() },
@@ -149,7 +152,6 @@ fun UserSubjectCollection.toSubjectCollectionItem(
         subjectId = subjectId,
         displayName = subject.nameCNOrName(),
         image = subject.images.common,
-        rate = subject.rating.toRatingInfo(),
         date = subject.airSeason ?: "",
         totalEps = episodes.size,
         episodes = episodes.map { it.toEpisodeCollection() },
@@ -158,25 +160,57 @@ fun UserSubjectCollection.toSubjectCollectionItem(
     )
 }
 
+fun Subject.createSubjectInfo(): SubjectInfo {
+    return SubjectInfo(
+        id = id,
+        name = name,
+        nameCn = nameCn,
+        summary = this.summary,
+        nsfw = this.nsfw,
+        locked = this.locked,
+        platform = this.platform,
+        volumes = this.volumes,
+        eps = this.eps,
+        totalEpisodes = this.totalEpisodes,
+        date = this.date,
+        tags = this.tags.map { Tag(it.name, it.count) },
+        infobox = this.infobox?.map { it.toInfoboxItem() }.orEmpty(),
+        imageCommon = this.images.common,
+        collection = this.collection.run {
+            SubjectCollectionStats(
+                wish = wish,
+                doing = doing,
+                done = collect,
+                onHold = onHold,
+                dropped = dropped,
+            )
+        },
+        ratingInfo = this.rating.toRatingInfo(),
+    )
+}
+
+
 private fun Rating.toRatingInfo(): RatingInfo = RatingInfo(
     rank = rank,
     total = total,
-    count = count.toMap(),
-    score = score.toFloat(),
+    count = count.toRatingCounts(),
+    score = score.toString(),
 )
 
-private fun Count.toMap(): Map<Int, Int> = buildMap(10) {
-    put(1, _1 ?: 0)
-    put(2, _2 ?: 0)
-    put(3, _3 ?: 0)
-    put(4, _4 ?: 0)
-    put(5, _5 ?: 0)
-    put(6, _6 ?: 0)
-    put(7, _7 ?: 0)
-    put(8, _8 ?: 0)
-    put(9, _9 ?: 0)
-    put(10, _10 ?: 0)
-}
+private fun Count.toRatingCounts() = RatingCounts(
+    intArrayOf(
+        _1 ?: 0,
+        _2 ?: 0,
+        _3 ?: 0,
+        _4 ?: 0,
+        _5 ?: 0,
+        _6 ?: 0,
+        _7 ?: 0,
+        _8 ?: 0,
+        _9 ?: 0,
+        _10 ?: 0,
+    ),
+)
 
 fun UserEpisodeCollection.toEpisodeCollection(): EpisodeCollection {
     return EpisodeCollection(
