@@ -15,6 +15,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -31,7 +32,11 @@ fun Rating(
     CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.tertiary) {
         Row(modifier, verticalAlignment = Alignment.CenterVertically) {
             Text(
-                rating.score,
+                remember(rating.score) {
+                    if (!rating.score.contains(".")) {
+                        rating.score + ".0"
+                    } else rating.score
+                },
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.ExtraBold,
                 color = MaterialTheme.colorScheme.tertiary,
