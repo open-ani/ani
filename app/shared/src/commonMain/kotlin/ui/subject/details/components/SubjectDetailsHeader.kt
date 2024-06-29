@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -131,7 +132,7 @@ fun SubjectDetailsHeaderCompact(
                     .padding(horizontal = 12.dp),
             ) {
                 Column(
-                    Modifier,
+                    Modifier.fillMaxWidth(), // required by Rating
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     var showSubtitle by remember { mutableStateOf(false) }
