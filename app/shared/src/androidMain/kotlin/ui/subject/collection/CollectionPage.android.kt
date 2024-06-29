@@ -92,60 +92,36 @@ private fun testCollections(): List<SubjectCollection> {
         val latestEp = eps[1]
         add(
             SubjectCollection(
-                subjectId = ++id,
-                displayName = "葬送的芙莉莲",
-                image = "",
-                date = "2023 年 10 月",
-                totalEps = 2,
+                info = SubjectInfo.Empty,
                 episodes = eps,
                 collectionType = UnifiedCollectionType.DOING,
-                info = SubjectInfo.Empty,
             ),
         )
         add(
             SubjectCollection(
-                subjectId = ++id,
-                displayName = "葬送的芙莉莲 2",
-                image = "",
-                date = "2023 年 10 月",
-                totalEps = 2,
+                info = SubjectInfo.Empty,
                 episodes = eps,
                 collectionType = UnifiedCollectionType.DOING,
-                info = SubjectInfo.Empty,
             ),
         )
         add(
             SubjectCollection(
-                subjectId = ++id,
-                displayName = "葬送的芙莉莲 3",
-                image = "",
-                date = "2023 年 10 月",
-                totalEps = 2,
+                info = SubjectInfo.Empty,
                 episodes = eps,
                 collectionType = UnifiedCollectionType.DOING,
-                info = SubjectInfo.Empty,
             ),
         )
         add(
             SubjectCollection(
-                subjectId = ++id,
-                displayName = "葬送的芙莉莲 4",
-                image = "",
-                date = "2023 年 10 月",
-                totalEps = 2,
+                info = SubjectInfo.Empty,
                 episodes = eps,
                 collectionType = UnifiedCollectionType.WISH,
-                info = SubjectInfo.Empty,
             ),
         )
         repeat(20) {
             add(
                 SubjectCollection(
-                    subjectId = ++id,
-                    displayName = "葬送的芙莉莲 4",
-                    image = "",
-                    date = "2025 年 10 月",
-                    totalEps = 2,
+                    info = SubjectInfo.Empty,
                     episodes = eps + EpisodeCollection(
                         episodeInfo = EpisodeInfo(
                             id = 6386,
@@ -161,7 +137,6 @@ private fun testCollections(): List<SubjectCollection> {
                         collectionType = UnifiedCollectionType.DONE,
                     ),
                     collectionType = UnifiedCollectionType.WISH,
-                    info = SubjectInfo.Empty,
                 ),
             )
         }

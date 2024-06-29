@@ -85,8 +85,6 @@ abstract class SubjectManager {
      * 获取某一个收藏条目 flow.
      * @see subjectProgressFlow
      */
-    // TODO: 如果 subjectId 没收藏, 这个函数的 flow 就会为空. 需要 (根据 policy) 实现为当未收藏时, 就向服务器请求单个 subjectId 的状态.
-    //  这目前不是问题, 但在修改番剧详情页时可能会有问题.
     fun cachedSubjectCollectionFlow(
         subjectId: Int,
         contentPolicy: ContentPolicy
@@ -94,6 +92,11 @@ abstract class SubjectManager {
         combine(collectionsByType.values.map { it.data(contentPolicy) }) { collections ->
             collections.asSequence().flatten().firstOrNull { it.subjectId == subjectId }
         }
+
+    abstract fun subjectCollectionFlow(
+        subjectId: Int,
+        contentPolicy: ContentPolicy
+    ): Flow<SubjectCollection?>
 
     /**
      * 获取缓存的收藏条目. 注意, 这不会请求网络. 若缓存中不包含则返回 `null`.
@@ -237,6 +240,26 @@ class SubjectManagerImpl(
             )
         }
 
+    override fun subjectCollectionFlow(subjectId: Int, contentPolicy: ContentPolicy): Flow<SubjectCollection?> {
+        return flow {
+            coroutineScope {
+                val cached = findCachedSubjectCollection(subjectId)
+                if (cached == null) {
+                    // TODO: this is super shit 
+                    val info = getSubjectInfo(subjectId)
+                    val episodes = runUntilSuccess {
+                        bangumiEpisodeRepository.getSubjectEpisodeCollection(subjectId, EpType.MainStory)
+                    }.toList()
+                    val collectionType = bangumiSubjectRepository.subjectCollectionTypeById(subjectId).first()
+                    emit(
+                        SubjectCollection(info, episodes.map { it.toEpisodeCollection() }, collectionType),
+                    )
+                }
+                emitAll(cachedSubjectCollectionFlow(subjectId, ContentPolicy.CACHE_ONLY)) // subscribe to cache updates
+            }
+        }
+    }
+
     override fun subjectCollectionType(subjectId: Int): Flow<UnifiedCollectionType> {
         return flow {
             coroutineScope {
@@ -256,7 +279,7 @@ class SubjectManagerImpl(
     override fun subjectProgressFlow(
         subjectId: Int,
         contentPolicy: ContentPolicy
-    ): Flow<List<EpisodeProgressItem>> = cachedSubjectCollectionFlow(subjectId, contentPolicy)
+    ): Flow<List<EpisodeProgressItem>> = subjectCollectionFlow(subjectId, contentPolicy)
         .map { it?.episodes ?: emptyList() }
         .distinctUntilChanged()
         .flatMapLatest { episodes ->
@@ -326,7 +349,7 @@ class SubjectManagerImpl(
         episodeId: Int,
         contentPolicy: ContentPolicy
     ): Flow<EpisodeCollection> {
-        return cachedSubjectCollectionFlow(subjectId, contentPolicy)
+        return subjectCollectionFlow(subjectId, contentPolicy)
             .transform { subject ->
                 if (subject == null) {
                     emit(

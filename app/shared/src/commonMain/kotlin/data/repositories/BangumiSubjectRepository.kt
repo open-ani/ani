@@ -22,8 +22,6 @@ import me.him188.ani.datasources.api.paging.PagedSource
 import me.him188.ani.datasources.api.paging.processPagedResponse
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.datasources.bangumi.BangumiClient
-import me.him188.ani.datasources.bangumi.processing.airSeason
-import me.him188.ani.datasources.bangumi.processing.nameCNOrName
 import me.him188.ani.datasources.bangumi.processing.toCollectionType
 import me.him188.ani.utils.logging.logger
 import org.koin.core.component.KoinComponent
@@ -149,26 +147,16 @@ fun UserSubjectCollection.toSubjectCollectionItem(
 ): SubjectCollection {
     if (subject.type != SubjectType.Anime) {
         return SubjectCollection(
-            subjectId = subjectId,
-            displayName = this.subject?.nameCNOrName() ?: "",
-            image = "",
-            date = this.subject?.airSeason,
-            totalEps = episodes.size,
+            info = subject.createSubjectInfo(),
             episodes = episodes.map { it.toEpisodeCollection() },
             collectionType = type.toCollectionType(),
-            info = subject.createSubjectInfo(),
         )
     }
 
     return SubjectCollection(
-        subjectId = subjectId,
-        displayName = subject.nameCNOrName(),
-        image = subject.images.common,
-        date = subject.airSeason ?: "",
-        totalEps = episodes.size,
+        info = subject.createSubjectInfo(),
         episodes = episodes.map { it.toEpisodeCollection() },
         collectionType = type.toCollectionType(),
-        info = subject.createSubjectInfo(),
     )
 }
 

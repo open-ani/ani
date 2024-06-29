@@ -4,6 +4,7 @@ import androidx.compose.runtime.Immutable
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import me.him188.ani.app.ui.subject.collection.ContinueWatchingStatus
+import me.him188.ani.app.ui.subject.details.components.renderSubjectSeason
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 
 /**
@@ -12,17 +13,18 @@ import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 @Immutable
 @Serializable
 data class SubjectCollection(
-    val subjectId: Int,
-    val displayName: String,
-    val image: String,
-
-    val date: String?,
-    val totalEps: Int,
-
+    // TODO: this is shit, do not store them all together
+    val info: SubjectInfo,
     val episodes: List<EpisodeCollection>, // must be sorted by sort
     val collectionType: UnifiedCollectionType,
-    val info: SubjectInfo,
 ) {
+    val displayName: String get() = info.displayName
+    val subjectId: Int get() = info.id
+    val image: String get() = info.imageCommon
+    val date get() = renderSubjectSeason(info.publishDate)
+
+    private val totalEps get() = episodes.size
+
     override fun toString(): String = "SubjectCollectionItem($displayName)"
 
     @Transient
