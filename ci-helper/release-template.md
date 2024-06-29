@@ -5,6 +5,9 @@ uploaded.
 
 ### 下载
 
+<details>
+<summary>点击展开</summary>
+
 [//]: # (注意, `checkLatestVersion` 有字符串处理, 修改标题和分隔符前务必查询)
 
 [github-win-x64]: https://github.com/open-ani/ani/releases/download/${{steps.tag.outputs.tag}}/ani-${{steps.tag-version.outputs.substring}}-windows-x86_64.zip
@@ -55,3 +58,5 @@ PC 首次播放在线数据源时, 可能需要加载 10-30 秒。
 | 全球                           | 中国大陆                         |
 |------------------------------|------------------------------|
 | ![GitHub][github-android-qr] | ![Cloudflare][cf-android-qr] |
+
+</details>
