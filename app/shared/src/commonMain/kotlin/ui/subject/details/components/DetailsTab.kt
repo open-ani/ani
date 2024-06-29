@@ -228,11 +228,11 @@ fun PersonCard(info: RelatedPersonInfo, modifier: Modifier = Modifier) {
     PersonCard(
         avatarUrl = info.personInfo.images?.medium?.takeIf { it.isNotEmpty() }
             ?: defaultAvatar(
-                info.personInfo.name,
+                info.personInfo.displayName,
                 MaterialTheme.colorScheme.background,
                 LocalContentColor.current,
             ),
-        name = info.personInfo.name,
+        name = info.personInfo.displayName,
         relation = info.relation,
         modifier = modifier,
     )
@@ -243,11 +243,11 @@ fun PersonCard(info: RelatedCharacterInfo, modifier: Modifier = Modifier) {
     PersonCard(
         avatarUrl = info.images?.medium?.takeIf { it.isNotEmpty() }
             ?: defaultAvatar(
-                info.name,
+                info.displayName,
                 MaterialTheme.colorScheme.background,
                 LocalContentColor.current,
             ),
-        name = info.name,
+        name = info.displayName,
         relation = remember(info) { renderCharacterRelation(info.relation, info.actors) },
         modifier = modifier,
     )
@@ -256,7 +256,7 @@ fun PersonCard(info: RelatedCharacterInfo, modifier: Modifier = Modifier) {
 private fun renderCharacterRelation(relation: String, actors: List<PersonInfo>): String {
     if (actors.isEmpty()) return relation
     val actor = actors.first()
-    return "$relation · ${actor.name}"
+    return "$relation · ${actor.displayName}"
 }
 
 @Composable

@@ -5,12 +5,15 @@ import androidx.compose.runtime.Immutable
 @Immutable
 class RelatedCharacterInfo(
     val id: Int,
-    val name: String,
+    val originalName: String,
     val type: CharacterType,
     val relation: String,
     val images: Images?,
     val actors: List<PersonInfo>,
+    val chineseName: String = "",
 ) {
+    val displayName get() = chineseName.takeIf { it.isNotBlank() } ?: originalName
+
     companion object {
         fun sortList(characterList: List<RelatedCharacterInfo>): List<RelatedCharacterInfo> {
             return characterList.sortedByDescending {
@@ -44,13 +47,16 @@ data class Images(
 @Immutable
 class PersonInfo(
     val id: Int,
-    val name: String,
+    val originalName: String,
     val type: PersonType,
     val careers: List<PersonCareer>,
     val images: Images?,
     val shortSummary: String?,
     val locked: Boolean?,
-)
+    val chineseName: String = "",
+) {
+    val displayName get() = chineseName.takeIf { it.isNotBlank() } ?: originalName
+}
 
 @Immutable
 enum class PersonType {

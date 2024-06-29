@@ -34,7 +34,7 @@ internal fun testPersonInfo(
     images: Images? = null,
 ) = PersonInfo(
     id = Random.nextInt(),
-    name = name,
+    originalName = name,
     type = type,
     careers = careers,
     images = images,

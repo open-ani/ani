@@ -103,6 +103,8 @@ interface BangumiClient : Closeable {
     suspend fun exchangeTokens(code: String, callbackUrl: String): GetAccessTokenResponse
     suspend fun refreshAccessToken(refreshToken: String, callbackUrl: String): GetAccessTokenResponse
 
+    suspend fun executeGraphQL(query: String): JsonObject
+
     @Serializable
     data class GetTokenStatusResponse(
         @SerialName("access_token") val accessToken: String,
@@ -197,6 +199,23 @@ internal class BangumiClientImpl(
         }
 
         return resp.body<BangumiClient.GetAccessTokenResponse>()
+    }
+
+    override suspend fun executeGraphQL(query: String): JsonObject {
+        val resp = httpClient.post("$BANGUMI_API_HOST/v0/graphql") {
+            contentType(ContentType.Application.Json)
+            setBody(
+                buildJsonObject {
+                    put("query", query)
+                },
+            )
+        }
+
+        if (!resp.status.isSuccess()) {
+            throw IllegalStateException("Failed to execute GraphQL query: $resp")
+        }
+
+        return resp.body()
     }
 
     override suspend fun getTokenStatus(accessToken: String): BangumiClient.GetTokenStatusResponse {
