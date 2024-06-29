@@ -34,7 +34,7 @@ uploaded.
 [qb-enhanced]: https://github.com/c0re100/qBittorrent-Enhanced-Edition/releases/latest
 
 PC 目前默认只使用在线数据源。
-若本机装有 qBittorrent 或 [qBittorrent Enhanced][qb-enhanced] (建议), 则可额外支持 BT 数据源。
+若本机装有 qBittorrent 或 [qBittorrent Enhanced][qb-enhanced], 则可额外支持 BT 数据源。
 可在设置中配置 qBittorrent 连接方式, 随后可在数据源设置中启用 BT 数据源。
 
 PC 首次播放在线数据源时, 可能需要加载 10-30 秒。
