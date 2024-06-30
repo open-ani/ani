@@ -26,11 +26,11 @@ import me.him188.ani.app.data.media.EpisodeCacheStatus
 import me.him188.ani.app.data.media.MediaCacheManager
 import me.him188.ani.app.data.repositories.BangumiEpisodeRepository
 import me.him188.ani.app.data.repositories.BangumiSubjectRepository
-import me.him188.ani.app.data.repositories.toSubjectInfo
 import me.him188.ani.app.data.repositories.setSubjectCollectionTypeOrDelete
 import me.him188.ani.app.data.repositories.toEpisodeCollection
 import me.him188.ani.app.data.repositories.toEpisodeInfo
 import me.him188.ani.app.data.repositories.toSubjectCollectionItem
+import me.him188.ani.app.data.repositories.toSubjectInfo
 import me.him188.ani.app.persistent.asDataStoreSerializer
 import me.him188.ani.app.persistent.dataStores
 import me.him188.ani.app.platform.Context
@@ -379,7 +379,9 @@ class SubjectManagerImpl(
 
         dataTransaction(from, target) { (f, t) ->
             val old = f.removeFirstOrNull { it.subjectId == subjectId } ?: return@dataTransaction
-            t.addFirst(old)
+            t.addFirst(
+                old.copy(collectionType = type),
+            )
         }
 
         bangumiSubjectRepository.setSubjectCollectionTypeOrDelete(subjectId, type.toSubjectCollectionType())
