@@ -53,7 +53,6 @@ fun PreviewSubjectDetailsHeader() {
             collectionAction = {
                 SubjectDetailsDefaults.CollectionAction(
                     UnifiedCollectionType.WISH,
-                    onSetAllEpisodesDone = { },
                     onSetCollectionType = { },
                 )
             },
@@ -82,7 +81,6 @@ private fun PreviewHeaderScaffoldWide() {
             collectionAction = {
                 SubjectDetailsDefaults.CollectionAction(
                     UnifiedCollectionType.WISH,
-                    onSetAllEpisodesDone = { },
                     onSetCollectionType = { },
                 )
             },

@@ -84,6 +84,7 @@ import me.him188.ani.app.ui.foundation.theme.weaken
 import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressIndicator
 import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressState
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
+import me.him188.ani.app.ui.subject.collection.SetAllEpisodeDoneDialog
 import me.him188.ani.app.ui.subject.collection.progress.EpisodeProgressDialog
 import me.him188.ani.app.ui.subject.details.components.CollectionAction
 import me.him188.ani.app.ui.subject.details.components.CollectionData
@@ -109,6 +110,18 @@ fun SubjectDetailsScene(
 
     val context = LocalContext.current
     val connectedScrollState = rememberConnectedScrollState()
+
+    // 同时设置所有剧集为看过
+    var showSetAllEpisodesDialog by rememberSaveable { mutableStateOf(false) }
+    if (showSetAllEpisodesDialog) {
+        SetAllEpisodeDoneDialog(
+            onDismissRequest = { showSetAllEpisodesDialog = false },
+            onConfirm = {
+                vm.setAllEpisodesWatched()
+                showSetAllEpisodesDialog = false
+            },
+        )
+    }
     SubjectDetailsPage(
         vm.subjectDetailsState,
         onClickOpenExternal = { vm.browseSubjectBangumi(context) },
@@ -120,8 +133,12 @@ fun SubjectDetailsScene(
         collectionActions = {
             SubjectDetailsDefaults.CollectionAction(
                 vm.subjectDetailsState.selfCollectionType,
-                onSetAllEpisodesDone = { vm.setAllEpisodesWatched() },
-                onSetCollectionType = { vm.setSelfCollectionType(it) },
+                onSetCollectionType = {
+                    vm.setSelfCollectionType(it)
+                    if (vm.episodeProgressState.hasAnyUnwatched) {
+                        showSetAllEpisodesDialog = true
+                    }
+                },
             )
         },
         selectEpisodeButton = {

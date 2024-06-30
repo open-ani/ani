@@ -164,7 +164,6 @@ fun SubjectCollectionItem(
     onClick: () -> Unit,
     onClickEpisode: (episode: EpisodeCollection) -> Unit,
     onClickSelectEpisode: () -> Unit,
-    onSetAllEpisodesDone: () -> Unit,
     onSetCollectionType: (new: UnifiedCollectionType) -> Unit,
     modifier: Modifier = Modifier,
     height: Dp = 148.dp,
@@ -190,7 +189,6 @@ fun SubjectCollectionItem(
                     episodeCacheStatus,
                     onClickEpisode,
                     onClickSelectEpisode,
-                    onSetAllEpisodesDone,
                     onSetCollectionType,
                     Modifier.padding(start = 12.dp).fillMaxSize(),
                     doneButton = doneButton,
@@ -209,7 +207,6 @@ private fun SubjectCollectionItemContent(
     cacheStatus: @Composable (subjectId: Int, episodeId: Int) -> EpisodeCacheStatus?,
     onClickEpisode: (episode: EpisodeCollection) -> Unit,
     onClickSelectEpisode: () -> Unit,
-    onSetAllEpisodesDone: (() -> Unit)?,
     onSetCollectionType: (new: UnifiedCollectionType) -> Unit,
     modifier: Modifier = Modifier,
     doneButton: @Composable (() -> Unit)? = null,
@@ -238,7 +235,6 @@ private fun SubjectCollectionItemContent(
                 EditCollectionTypeDropDown(
                     currentType = item.collectionType,
                     showDropdown, { showDropdown = false },
-                    onSetAllEpisodesDone = onSetAllEpisodesDone,
                     onClick = { action ->
                         onSetCollectionType(action.type)
                     },

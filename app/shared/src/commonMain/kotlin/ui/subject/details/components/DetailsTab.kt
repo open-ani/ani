@@ -54,6 +54,7 @@ import me.him188.ani.app.ui.foundation.avatar.defaultAvatar
 object SubjectDetailsDefaults
 
 
+@Suppress("UnusedReceiverParameter")
 @Composable
 fun SubjectDetailsDefaults.DetailsTab(
     info: SubjectInfo,

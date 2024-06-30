@@ -16,6 +16,7 @@ import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.rememberBackgroundScope
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
+import me.him188.ani.datasources.api.topic.isDoneOrDropped
 import me.him188.ani.utils.coroutines.retryUntilSuccess
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -28,6 +29,8 @@ interface EpisodeProgressState {
     val theme: EpisodeProgressTheme
 
     val subjectProgress: List<EpisodeProgressItem>
+
+    val hasAnyUnwatched: Boolean
 
     fun toggleEpisodeWatched(item: EpisodeProgressItem)
 }
@@ -68,6 +71,9 @@ class EpisodeProgressStateImpl(
     override val subjectProgress: List<EpisodeProgressItem> by subjectManager
         .subjectProgressFlow(subjectId, ContentPolicy.CACHE_ONLY)
         .produceState(emptyList())
+    override val hasAnyUnwatched: Boolean by derivedStateOf {
+        subjectProgress.any { !it.watchStatus.isDoneOrDropped() }
+    }
 
     override fun toggleEpisodeWatched(item: EpisodeProgressItem) {
         if (item.isLoading) return

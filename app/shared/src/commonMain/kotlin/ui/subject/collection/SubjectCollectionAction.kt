@@ -112,42 +112,9 @@ fun EditCollectionTypeDropDown(
     currentType: UnifiedCollectionType?,
     expanded: Boolean,
     onDismissRequest: () -> Unit,
-    onSetAllEpisodesDone: (() -> Unit)?,
     onClick: (action: SubjectCollectionAction) -> Unit,
     actions: List<SubjectCollectionAction> = SubjectCollectionActionsForEdit,
 ) {
-    // 同时设置所有剧集为看过
-    var showSetAllEpisodesDialog by rememberSaveable { mutableStateOf(false) }
-    if (showSetAllEpisodesDialog && onSetAllEpisodesDone != null) {
-        AlertDialog(
-            onDismissRequest = {
-                showSetAllEpisodesDialog = false
-            },
-            text = {
-                Text("要同时设置所有剧集为看过吗？")
-            },
-            confirmButton = {
-                Button(
-                    {
-                        showSetAllEpisodesDialog = false
-                        onSetAllEpisodesDone.invoke()
-                    },
-                ) {
-                    Text("设置")
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    {
-                        showSetAllEpisodesDialog = false
-                    },
-                ) {
-                    Text("取消")
-                }
-            },
-        )
-    }
-
     DropdownMenu(
         expanded,
         onDismissRequest = onDismissRequest,
@@ -171,9 +138,6 @@ fun EditCollectionTypeDropDown(
                 onClick = {
                     onClickState(action)
                     onDismissRequestState()
-                    if (action == SubjectCollectionActions.Done) {
-                        showSetAllEpisodesDialog = true
-                    }
                 },
             )
         }
@@ -190,23 +154,6 @@ private fun SubjectCollectionAction.colorForCurrent(
 }
 
 
-private val CollectedActionButtonColors
-    @Composable
-    get() =
-        ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.outlineVariant,
-            contentColor = MaterialTheme.colorScheme.outline,
-        )
-
-private val UncollectedActionButtonColors
-    @Composable
-    get() =
-        ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary,
-        )
-
-
 /**
  * 展示当前收藏类型的按钮, 点击时可以弹出菜单选择要修改的收藏类型.
  *
@@ -220,7 +167,6 @@ fun CollectionActionButton(
     type: UnifiedCollectionType,
     onCollect: () -> Unit,
     onEdit: (newType: UnifiedCollectionType) -> Unit,
-    onSetAllEpisodesDone: () -> Unit,
     modifier: Modifier = Modifier,
     collected: Boolean = type != UnifiedCollectionType.NOT_COLLECTED,
 ) {
@@ -273,7 +219,6 @@ fun CollectionActionButton(
             currentType = type,
             expanded = showDropdown,
             onDismissRequest = { showDropdown = false },
-            onSetAllEpisodesDone = onSetAllEpisodesDone,
             onClick = {
                 showDropdown = false
                 onEdit(it.type)
@@ -292,4 +237,20 @@ private fun renderCollectionTypeAsCurrent(type: UnifiedCollectionType): String {
         UnifiedCollectionType.DROPPED -> "已抛弃"
         UnifiedCollectionType.NOT_COLLECTED -> "未追番"
     }
+}
+
+@Composable
+fun SetAllEpisodeDoneDialog(
+    onDismissRequest: () -> Unit,
+    onConfirm: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        icon = { Icon(Icons.Rounded.TaskAlt, null) },
+        text = { Text("要同时设置所有剧集为看过吗？") },
+        confirmButton = { TextButton(onConfirm) { Text("设置") } },
+        dismissButton = { TextButton(onDismissRequest) { Text("忽略") } },
+        modifier = modifier,
+    )
 }

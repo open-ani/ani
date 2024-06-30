@@ -1,3 +1,5 @@
+@file:Suppress("UnusedReceiverParameter")
+
 package me.him188.ani.app.ui.subject.details.components
 
 import androidx.compose.foundation.layout.Row
@@ -47,7 +49,6 @@ fun SubjectDetailsDefaults.CollectionData(
 @Composable
 fun SubjectDetailsDefaults.CollectionAction(
     selfCollectionType: UnifiedCollectionType,
-    onSetAllEpisodesDone: () -> Unit,
     onSetCollectionType: (UnifiedCollectionType) -> Unit
 ) {
     var showDropdown by remember { mutableStateOf(false) }
@@ -55,7 +56,6 @@ fun SubjectDetailsDefaults.CollectionAction(
         currentType = selfCollectionType,
         expanded = showDropdown,
         onDismissRequest = { showDropdown = false },
-        onSetAllEpisodesDone = onSetAllEpisodesDone,
         onClick = {
             showDropdown = false
             onSetCollectionType(it.type)
@@ -65,7 +65,6 @@ fun SubjectDetailsDefaults.CollectionAction(
         type = selfCollectionType,
         onCollect = { onSetCollectionType(UnifiedCollectionType.DOING) },
         onEdit = onSetCollectionType,
-        onSetAllEpisodesDone = onSetAllEpisodesDone,
     )
 }
 

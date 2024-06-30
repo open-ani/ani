@@ -281,6 +281,22 @@ private fun TabContent(
     modifier: Modifier = Modifier,
     enableAnimation: () -> Boolean = { true },
 ) {
+    // 同时设置所有剧集为看过
+    var currentSetAllEpisodesDialogSubjectId by rememberSaveable { mutableStateOf<Int?>(null) }
+    if (currentSetAllEpisodesDialogSubjectId != null) {
+        SetAllEpisodeDoneDialog(
+            onDismissRequest = { currentSetAllEpisodesDialogSubjectId = null },
+            onConfirm = {
+                currentSetAllEpisodesDialogSubjectId?.let {
+                    vm.launchInBackground {
+                        setAllEpisodesWatched(it)
+                    }
+                }
+                currentSetAllEpisodesDialogSubjectId = null
+            },
+        )
+    }
+
     SubjectCollectionsColumn(
         cache,
         onRequestMore = onRequestMore,
@@ -319,11 +335,11 @@ private fun TabContent(
                 onClickSelectEpisode = {
                     showEpisodeProgressDialog = true
                 },
-                onSetAllEpisodesDone = {
-                    vm.launchInBackground { setAllEpisodesWatched(subjectCollection.subjectId) }
-                },
                 onSetCollectionType = {
                     vm.launchInBackground { setCollectionType(subjectCollection.subjectId, it) }
+                    if (it == UnifiedCollectionType.DONE) {
+                        currentSetAllEpisodesDialogSubjectId = subjectCollection.subjectId
+                    }
                 },
                 doneButton = if (type == UnifiedCollectionType.DONE) {
                     null

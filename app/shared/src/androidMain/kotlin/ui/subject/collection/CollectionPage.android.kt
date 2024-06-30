@@ -152,7 +152,6 @@ private fun PreviewSubjectCollectionsColumnPhone() {
                     onClick = { },
                     onClickEpisode = {},
                     onClickSelectEpisode = { },
-                    onSetAllEpisodesDone = { },
                     onSetCollectionType = {},
                 )
             },
@@ -183,7 +182,6 @@ private fun PreviewSubjectCollectionsColumnDesktopLarge() {
                     onClick = { },
                     onClickEpisode = {},
                     onClickSelectEpisode = { },
-                    onSetAllEpisodesDone = { },
                     onSetCollectionType = {},
                 )
             },

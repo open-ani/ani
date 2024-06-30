@@ -125,7 +125,6 @@ internal fun PreviewSubjectDetails() {
             collectionActions = {
                 SubjectDetailsDefaults.CollectionAction(
                     vm.subjectDetailsState.selfCollectionType,
-                    onSetAllEpisodesDone = { vm.setAllEpisodesWatched() },
                     onSetCollectionType = { vm.setSelfCollectionType(it) },
                 )
             },
