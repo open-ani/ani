@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -75,7 +76,7 @@ fun SubjectDetailsDefaults.DetailsTab(
                 var expanded by rememberSaveable { mutableStateOf(false) }
                 Text(
                     info.summary,
-                    Modifier.padding(horizontal = horizontalPadding)
+                    Modifier.fillMaxWidth().padding(horizontal = horizontalPadding)
                         .clickable { expanded = !expanded },
                     style = MaterialTheme.typography.bodyMedium,
                     maxLines = if (expanded) Int.MAX_VALUE else 5, // TODO: add animation 
