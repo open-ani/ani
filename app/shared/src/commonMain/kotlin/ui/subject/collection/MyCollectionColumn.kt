@@ -366,7 +366,14 @@ fun OnAirLabel(
                             }
                         }
 
-                        SubjectAiringKind.ON_AIR -> "连载至第 ${info.latestSort} 话"
+                        SubjectAiringKind.ON_AIR -> {
+                            if (info.latestSort == null) {
+                                "连载中"
+                            } else {
+                                "连载至第 ${info.latestSort} 话"
+                            }
+                        }
+
                         SubjectAiringKind.COMPLETED -> "已完结"
                     }
                 },

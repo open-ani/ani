@@ -16,15 +16,18 @@ data class SubjectAiringInfo(
      */
     val airDate: PackedDate,
     /**
-     * 不考虑连载情况的第一集序号, 只有当这个条目没有任何剧集时为 `null`.
+     * 不考虑连载情况的第一集序号, 当这个条目没有任何剧集时为 `null`.
+     * 注意, 如果是来自 [SubjectAiringInfo.computeFromSubjectInfo], 则属性为 `null`.
      */
     val firstSort: EpisodeSort?,
     /**
      * 连载至的最新一集序号. 当还未开播时为 `null`, 当已经完结时为最后一集序号.
+     * 注意, 如果是来自 [SubjectAiringInfo.computeFromSubjectInfo], 则属性为 `null`.
      */
     val latestSort: EpisodeSort?,
     /**
      * 即将要播出的序号. 当还未开播时为第一集的序号, 当已经完结时为 `null`.
+     * 注意, 如果是来自 [SubjectAiringInfo.computeFromSubjectInfo], 则属性为 `null`.
      */
     val upcomingSort: EpisodeSort?,
 ) {
@@ -39,6 +42,9 @@ data class SubjectAiringInfo(
             upcomingSort = null,
         )
 
+        /**
+         * 在有剧集信息的时候使用, 计算最准确的结果
+         */
         fun computeFromEpisodeList(
             list: List<EpisodeInfo>,
             airDate: PackedDate,
@@ -55,6 +61,27 @@ data class SubjectAiringInfo(
                 firstSort = list.firstOrNull()?.sort,
                 latestSort = list.lastOrNull { it.isKnownCompleted }?.sort,
                 upcomingSort = list.firstOrNull { it.isKnownOnAir }?.sort,
+            )
+        }
+
+        /**
+         * 在无剧集信息的时候使用, 估算
+         */
+        fun computeFromSubjectInfo(
+            info: SubjectInfo
+        ): SubjectAiringInfo {
+            val kind = when {
+                info.completeDate.isValid -> SubjectAiringKind.COMPLETED
+                info.airDate < PackedDate.now() -> SubjectAiringKind.ON_AIR
+                else -> SubjectAiringKind.UPCOMING
+            }
+            return SubjectAiringInfo(
+                kind = kind,
+                episodeCount = info.totalEpisodesOrEps,
+                airDate = info.airDate,
+                firstSort = null,
+                latestSort = null,
+                upcomingSort = null,
             )
         }
     }

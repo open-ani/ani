@@ -47,6 +47,20 @@ data class SubjectInfo(
     val airDate: PackedDate = if (airDateString == null) PackedDate.Invalid else PackedDate.parseFromDate(airDateString)
 
     /**
+     * 放送结束. 当没有结束时间时为 [PackedDate.Invalid]
+     */
+    val completeDate: PackedDate =
+        (findInfoboxValue("播放结束") ?: findInfoboxValue("放送结束"))
+            ?.let {
+                PackedDate.parseFromDate(
+                    it.replace('年', '-')
+                        .replace('月', '-')
+                        .replace('日', '-'),
+                )
+            }
+            ?: PackedDate.Invalid
+
+    /**
      * 主要显示名称
      */
     val displayName: String get() = nameCn.takeIf { it.isNotBlank() } ?: name
@@ -84,6 +98,14 @@ fun SubjectInfo.findInfoboxValue(key: String): String? = infobox.firstOrNull { i
 
 @Stable
 val SubjectInfo.nameCnOrName get() = nameCn.takeIf { it.isNotBlank() } ?: name
+
+@Stable
+val SubjectInfo.totalEpisodesOrEps: Int
+    get() {
+        val totalEpisodes = totalEpisodes
+        if (totalEpisodes != 0) return totalEpisodes
+        return eps
+    }
 
 
 @Serializable

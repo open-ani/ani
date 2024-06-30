@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.repositories.BangumiRelatedCharactersRepository
@@ -48,7 +49,10 @@ class SubjectDetailsViewModel(
                 it?.collectionType ?: UnifiedCollectionType.NOT_COLLECTED
             },
             selfRatingInfo = subjectCollectionFlow.map { it?.selfRatingInfo ?: SelfRatingInfo.Empty },
-            airingInfo = subjectCollectionFlow.map { it?.airingInfo ?: SubjectAiringInfo.EmptyCompleted },
+            airingInfo = subjectCollectionFlow.map {
+                it?.airingInfo
+                    ?: SubjectAiringInfo.computeFromSubjectInfo(this.subjectInfo.first())
+            },
             persons = bangumiRelatedCharactersRepository.relatedPersonsFlow(subjectId).map {
                 RelatedPersonInfo.sortList(it)
             },
