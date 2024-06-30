@@ -1,14 +1,16 @@
 package me.him188.ani.app.ui.subject.details.components
 
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
+import me.him188.ani.app.data.subject.SubjectAiringInfo
+import me.him188.ani.app.data.subject.SubjectAiringKind
 import me.him188.ani.app.data.subject.SubjectCollectionStats
 import me.him188.ani.app.data.subject.SubjectInfo
 import me.him188.ani.app.data.subject.Tag
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.subject.rating.TestRatingInfo
+import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 
 internal val TestCollectionStats = SubjectCollectionStats(
@@ -34,22 +36,62 @@ internal val TestSubjectInfo = SubjectInfo(
         Tag("日常", 3758),
     ),
     ratingInfo = TestRatingInfo,
+    collection = TestCollectionStats,
 )
 
 internal const val TestCoverImage = "https://ui-avatars.com/api/?name=John+Doe"
 
+internal val TestSubjectAiringInfo = SubjectAiringInfo.EmptyCompleted
+
 @Composable
 @Preview
-fun PreviewSubjectDetailsHeader() {
+@Preview(device = Devices.TABLET)
+fun PreviewSubjectDetailsHeaderCompleted() {
+    PreviewSubjectDetailsHeader(
+        airingInfo = TestSubjectAiringInfo,
+        subjectInfo = TestSubjectInfo,
+    )
+}
+
+@Composable
+@Preview
+fun PreviewSubjectDetailsHeaderCompletedLong() {
+    PreviewSubjectDetailsHeader(
+        airingInfo = TestSubjectAiringInfo,
+        subjectInfo = TestSubjectInfo.copy(
+            nameCn = "孤独摇滚".repeat(20),
+        ),
+    )
+}
+
+@Composable
+@Preview
+@Preview(device = Devices.TABLET)
+fun PreviewSubjectDetailsHeaderOnAir() {
+    PreviewSubjectDetailsHeader(
+        airingInfo = TestSubjectAiringInfo.copy(
+            kind = SubjectAiringKind.ON_AIR,
+            episodeCount = 24,
+            latestSort = EpisodeSort(20),
+        ),
+    )
+}
+
+@Composable
+fun PreviewSubjectDetailsHeader(
+    airingInfo: SubjectAiringInfo,
+    subjectInfo: SubjectInfo = TestSubjectInfo,
+) {
     ProvideCompositionLocalsForPreview {
         SubjectDetailsHeader(
-            TestSubjectInfo,
+            subjectInfo,
             TestCoverImage,
             selfRatingScore = 7,
+            airingInfo = airingInfo,
             onClickRating = {},
             collectionData = {
                 SubjectDetailsDefaults.CollectionData(
-                    TestSubjectInfo,
+                    collectionStats = subjectInfo.collection,
                 )
             },
             collectionAction = {
@@ -66,32 +108,36 @@ fun PreviewSubjectDetailsHeader() {
 }
 
 
-@Composable
-@Preview(device = Devices.TABLET)
-private fun PreviewHeaderScaffoldWide() {
-    ProvideCompositionLocalsForPreview {
-        val info = TestSubjectInfo
-        SubjectDetailsHeaderWide(
-            coverImageUrl = null,
-            ratingInfo = info.ratingInfo,
-            selfRatingScore = 7,
-            onClickRating = {},
-            title = { Text(text = info.displayName) },
-            subtitle = { Text(text = info.name) },
-            seasonTag = { Text(renderSubjectSeason(info.publishDate)) },
-            collectionData = {
-                SubjectDetailsDefaults.CollectionData(info)
-            },
-            collectionAction = {
-                SubjectDetailsDefaults.CollectionAction(
-                    UnifiedCollectionType.WISH,
-                    onSetCollectionType = { },
-                )
-            },
-            selectEpisodeButton = {
-                SubjectDetailsDefaults.SelectEpisodeButton({})
-            },
-        )
-    }
-}
-
+//@Composable
+//@Preview(device = Devices.TABLET)
+//private fun PreviewHeaderScaffoldWide() {
+//    ProvideCompositionLocalsForPreview {
+//        val info = TestSubjectInfo
+//        SubjectDetailsHeaderWide(
+//            coverImageUrl = null,
+//            ratingInfo = info.ratingInfo,
+//            selfRatingScore = 7,
+//            onClickRating = {},
+//            title = { Text(text = info.displayName) },
+//            subtitle = { Text(text = info.name) },
+//            seasonTags = {
+//                OutlinedTag {
+//                    Text(renderSubjectSeason(info.publishDate))
+//                }
+//            },
+//            collectionData = {
+//                SubjectDetailsDefaults.CollectionData(info)
+//            },
+//            collectionAction = {
+//                SubjectDetailsDefaults.CollectionAction(
+//                    UnifiedCollectionType.WISH,
+//                    onSetCollectionType = { },
+//                )
+//            },
+//            selectEpisodeButton = {
+//                SubjectDetailsDefaults.SelectEpisodeButton({})
+//            },
+//        )
+//    }
+//}
+//

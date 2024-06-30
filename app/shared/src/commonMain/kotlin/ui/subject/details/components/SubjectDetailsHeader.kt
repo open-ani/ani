@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -15,6 +16,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
@@ -34,12 +37,14 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.data.subject.PackedDate
 import me.him188.ani.app.data.subject.RatingInfo
+import me.him188.ani.app.data.subject.SubjectAiringInfo
 import me.him188.ani.app.data.subject.SubjectInfo
 import me.him188.ani.app.data.subject.seasonMonth
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.ui.foundation.AsyncImage
 import me.him188.ani.app.ui.foundation.layout.LocalLayoutMode
 import me.him188.ani.app.ui.foundation.theme.weaken
+import me.him188.ani.app.ui.subject.collection.OnAirLabel
 import me.him188.ani.app.ui.subject.rating.Rating
 
 const val COVER_WIDTH_TO_HEIGHT_RATIO = 849 / 1200f
@@ -50,6 +55,7 @@ internal fun SubjectDetailsHeader(
     info: SubjectInfo,
     coverImageUrl: String?,
     selfRatingScore: Int,
+    airingInfo: SubjectAiringInfo,
     onClickRating: () -> Unit,
     collectionData: @Composable () -> Unit,
     collectionAction: @Composable () -> Unit,
@@ -70,8 +76,14 @@ internal fun SubjectDetailsHeader(
                     Text(info.name)
                 }
             },
-            seasonTag = {
-                Text(renderSubjectSeason(info.publishDate))
+            seasonTags = {
+                OutlinedTag { Text(renderSubjectSeason(info.publishDate)) }
+                OnAirLabel(
+                    airingInfo,
+                    Modifier.align(Alignment.CenterVertically),
+                    style = LocalTextStyle.current,
+                    statusColor = LocalContentColor.current,
+                )
             },
             collectionData = collectionData,
             collectionAction = collectionAction,
@@ -92,8 +104,14 @@ internal fun SubjectDetailsHeader(
                     Text(info.name)
                 }
             },
-            seasonTag = {
-                Text(renderSubjectSeason(info.publishDate))
+            seasonTags = {
+                OutlinedTag { Text(renderSubjectSeason(info.publishDate)) }
+                OnAirLabel(
+                    airingInfo,
+                    Modifier.align(Alignment.CenterVertically),
+                    style = LocalTextStyle.current,
+                    statusColor = LocalContentColor.current,
+                )
             },
             collectionData = collectionData,
             collectionAction = collectionAction,
@@ -113,7 +131,7 @@ fun SubjectDetailsHeaderCompact(
     onClickRating: () -> Unit,
     title: @Composable () -> Unit,
     subtitle: @Composable () -> Unit,
-    seasonTag: @Composable () -> Unit,
+    seasonTags: @Composable RowScope.() -> Unit,
     collectionData: @Composable () -> Unit,
     collectionAction: @Composable () -> Unit,
     selectEpisodeButton: @Composable () -> Unit,
@@ -136,12 +154,12 @@ fun SubjectDetailsHeaderCompact(
             }
 
             Column(
-                Modifier.weight(1f, fill = false)
+                Modifier.weight(1f, fill = true)
                     .padding(horizontal = 12.dp),
             ) {
                 Column(
                     Modifier.fillMaxWidth(), // required by Rating
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     var showSubtitle by remember { mutableStateOf(false) }
                     SelectionContainer(Modifier.clickable { showSubtitle = !showSubtitle }) {
@@ -153,9 +171,13 @@ fun SubjectDetailsHeaderCompact(
                             }
                         }
                     }
-                    Tag {
-                        ProvideTextStyle(MaterialTheme.typography.labelLarge) {
-                            seasonTag()
+
+                    ProvideTextStyle(MaterialTheme.typography.labelLarge) {
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
+                        ) {
+                            seasonTags()
                         }
                     }
 
@@ -193,7 +215,7 @@ fun SubjectDetailsHeaderWide(
     onClickRating: () -> Unit,
     title: @Composable () -> Unit,
     subtitle: @Composable () -> Unit,
-    seasonTag: @Composable () -> Unit,
+    seasonTags: @Composable RowScope.() -> Unit,
     collectionData: @Composable () -> Unit,
     collectionAction: @Composable () -> Unit,
     selectEpisodeButton: @Composable () -> Unit,
@@ -238,9 +260,12 @@ fun SubjectDetailsHeaderWide(
                             }
                         }
                     }
-                    Tag {
-                        ProvideTextStyle(MaterialTheme.typography.labelLarge) {
-                            seasonTag()
+                    ProvideTextStyle(MaterialTheme.typography.labelLarge) {
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
+                        ) {
+                            seasonTags()
                         }
                     }
                     Spacer(Modifier.weight(1f))
@@ -267,7 +292,7 @@ fun SubjectDetailsHeaderWide(
 
 // 一个标签, 例如 "2023年10月", "漫画改"
 @Composable
-fun Tag(
+fun OutlinedTag(
     modifier: Modifier = Modifier,
     shape: Shape = MaterialTheme.shapes.small,
     contentPadding: PaddingValues = PaddingValues(horizontal = 8.dp, vertical = 4.dp),

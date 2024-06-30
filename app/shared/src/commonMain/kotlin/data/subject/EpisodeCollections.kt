@@ -5,7 +5,7 @@ import kotlin.time.Duration.Companion.days
 
 object EpisodeCollections {
     fun isSubjectCompleted(episodes: List<EpisodeInfo>, now: PackedDate = PackedDate.now()): Boolean {
-        val allEpisodesFinished = episodes.fastAll { it.isKnownBroadcast }
+        val allEpisodesFinished = episodes.fastAll { it.isKnownCompleted }
         if (!allEpisodesFinished) return false // 如果无法肯定已经完结, 则认为未完结
         return isSubjectCompleted(episodes.asSequence().map { it.airDate }, now)
     }

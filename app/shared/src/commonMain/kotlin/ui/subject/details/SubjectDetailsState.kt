@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.onCompletion
 import me.him188.ani.app.data.subject.RelatedCharacterInfo
 import me.him188.ani.app.data.subject.RelatedPersonInfo
 import me.him188.ani.app.data.subject.SelfRatingInfo
+import me.him188.ani.app.data.subject.SubjectAiringInfo
 import me.him188.ani.app.data.subject.SubjectInfo
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
@@ -20,6 +21,7 @@ class SubjectDetailsState(
     val coverImageUrl: String?,
     selfRatingInfo: Flow<SelfRatingInfo>,
     selfCollectionType: Flow<UnifiedCollectionType>,
+    airingInfo: Flow<SubjectAiringInfo>,
     persons: Flow<List<RelatedPersonInfo>>,
     characters: Flow<List<RelatedCharacterInfo>>,
     parentCoroutineContext: CoroutineContext,
@@ -31,6 +33,9 @@ class SubjectDetailsState(
 
     private val selfCollectionTypeOrNull by selfCollectionType.produceState(null)
     val selfCollectionType by derivedStateOf { selfCollectionTypeOrNull ?: UnifiedCollectionType.WISH }
+
+    private val airingInfoOrNull by airingInfo.produceState(null)
+    val airingInfo by derivedStateOf { airingInfoOrNull ?: SubjectAiringInfo.EmptyCompleted }
 
     val selfCollected by derivedStateOf { this.selfCollectionType != UnifiedCollectionType.NOT_COLLECTED }
 
@@ -46,6 +51,6 @@ class SubjectDetailsState(
     val isLoading: Boolean by derivedStateOf {
         selfRatingInfoOrNull == null || selfCollectionTypeOrNull == null
                 || charactersOrNull == null || info === SubjectInfo.Empty
-                || personsOrNull == null
+                || personsOrNull == null || airingInfoOrNull == null
     }
 }

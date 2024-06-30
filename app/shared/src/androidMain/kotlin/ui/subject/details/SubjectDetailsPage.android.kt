@@ -22,6 +22,7 @@ import me.him188.ani.app.ui.subject.details.components.CollectionData
 import me.him188.ani.app.ui.subject.details.components.DetailsTab
 import me.him188.ani.app.ui.subject.details.components.SelectEpisodeButton
 import me.him188.ani.app.ui.subject.details.components.SubjectDetailsDefaults
+import me.him188.ani.app.ui.subject.details.components.TestSubjectAiringInfo
 import me.him188.ani.app.ui.subject.details.components.TestSubjectInfo
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import kotlin.random.Random
@@ -110,6 +111,7 @@ internal fun PreviewSubjectDetails() {
                 coverImageUrl = "https://ui-avatars.com/api/?name=John+Doe",
                 selfRatingInfo = MutableStateFlow(TestSelfRatingInfo),
                 selfCollectionType = MutableStateFlow(UnifiedCollectionType.WISH),
+                airingInfo = MutableStateFlow(TestSubjectAiringInfo),
                 characters = MutableStateFlow(TestSubjectCharacterList),
                 persons = MutableStateFlow(emptyList()),
                 parentCoroutineContext = vm.backgroundScope.coroutineContext,
@@ -122,7 +124,7 @@ internal fun PreviewSubjectDetails() {
             onClickRating = {},
             collectionData = {
                 SubjectDetailsDefaults.CollectionData(
-                    vm.subjectDetailsState.info,
+                    collectionStats = vm.subjectDetailsState.info.collection,
                 )
             },
             collectionActions = {

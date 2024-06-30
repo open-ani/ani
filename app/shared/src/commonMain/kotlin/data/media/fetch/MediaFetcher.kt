@@ -28,6 +28,7 @@ import kotlinx.coroutines.launch
 import me.him188.ani.app.data.media.instance.MediaSourceInstance
 import me.him188.ani.app.data.subject.EpisodeInfo
 import me.him188.ani.app.data.subject.SubjectInfo
+import me.him188.ani.app.data.subject.displayName
 import me.him188.ani.app.data.subject.nameCnOrName
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.datasources.api.Media
@@ -98,7 +99,7 @@ fun MediaFetchRequest.Companion.create(
         subjectNameCN = subject.nameCnOrName,
         subjectNames = subject.allNames.toSet(),
         episodeSort = episode.sort,
-        episodeName = episode.nameCnOrName,
+        episodeName = episode.displayName,
         episodeEp = episode.ep,
     )
 }

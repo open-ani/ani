@@ -147,7 +147,7 @@ private fun TagsList(
         ) { Spacer(Modifier.width(horizontalPadding - gridItemSpacing)) }
         items(info.tags, contentType = { 1 }) { tag ->
             ProvideTextStyle(MaterialTheme.typography.labelLarge) {
-                Tag(contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)) {
+                OutlinedTag(contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)) {
                     Text(tag.name, maxLines = 1, color = MaterialTheme.colorScheme.secondary)
 
                     Text(

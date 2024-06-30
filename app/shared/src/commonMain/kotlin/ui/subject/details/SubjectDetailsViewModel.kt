@@ -12,6 +12,7 @@ import me.him188.ani.app.data.repositories.BangumiRelatedCharactersRepository
 import me.him188.ani.app.data.subject.RelatedCharacterInfo
 import me.him188.ani.app.data.subject.RelatedPersonInfo
 import me.him188.ani.app.data.subject.SelfRatingInfo
+import me.him188.ani.app.data.subject.SubjectAiringInfo
 import me.him188.ani.app.data.subject.SubjectInfo
 import me.him188.ani.app.data.subject.SubjectManager
 import me.him188.ani.app.data.subject.subjectInfoFlow
@@ -48,6 +49,7 @@ class SubjectDetailsViewModel(
                 it?.collectionType ?: UnifiedCollectionType.NOT_COLLECTED
             },
             selfRatingInfo = subjectCollectionFlow.map { it?.selfRatingInfo ?: SelfRatingInfo.Empty },
+            airingInfo = subjectCollectionFlow.map { it?.airingInfo ?: SubjectAiringInfo.EmptyCompleted },
             persons = bangumiRelatedCharactersRepository.relatedPersonsFlow(subjectId).map {
                 RelatedPersonInfo.sortList(it)
             },

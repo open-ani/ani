@@ -167,7 +167,7 @@ fun SubjectDetailsScene(
         },
         collectionData = {
             SubjectDetailsDefaults.CollectionData(
-                vm.subjectDetailsState.info,
+                collectionStats = vm.subjectDetailsState.info.collection,
             )
         },
         collectionActions = {
@@ -302,6 +302,7 @@ fun SubjectDetailsPage(
                                 state.info,
                                 state.coverImageUrl,
                                 selfRatingScore = state.selfRatingInfo.score,
+                                airingInfo = state.airingInfo,
                                 onClickRating,
                                 collectionData = collectionData,
                                 collectionAction = collectionActions,
