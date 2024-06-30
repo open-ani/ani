@@ -1,5 +1,6 @@
 package me.him188.ani.app.ui.subject.rating
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -27,31 +29,61 @@ import me.him188.ani.app.data.subject.RatingInfo
 @Composable
 fun Rating(
     rating: RatingInfo,
+    selfRatingScore: Int,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.tertiary) {
-        Row(modifier, verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                remember(rating.score) {
-                    if (!rating.score.contains(".")) {
-                        rating.score + ".0"
-                    } else rating.score
-                },
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.ExtraBold,
-                color = MaterialTheme.colorScheme.tertiary,
-            )
-//            Icon(Icons.Rounded.StarRate, contentDescription = null, Modifier.size(40.dp))
-
-            Column(Modifier.padding(start = 8.dp)) {
-                FiveRatingStars(score = rating.scoreFloat.toInt(), color = LocalContentColor.current)
-                Text(
-                    "${rating.total} 人评丨#${rating.rank}",
-                    style = MaterialTheme.typography.labelMedium,
+        Column {
+            if (selfRatingScore != 0) {
+                Row(Modifier.padding(horizontal = 2.dp).align(Alignment.End)) {
+                    Text(
+                        remember(selfRatingScore) { "我的评分: $selfRatingScore" },
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+            }
+            Row(
+                modifier.clickable(onClick = onClick),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                RatingScoreText(
+                    score = remember(rating.score) {
+                        if (!rating.score.contains(".")) {
+                            "${rating.score}.0"
+                        } else rating.score
+                    },
                 )
+
+                Column(Modifier.padding(start = 8.dp), horizontalAlignment = Alignment.End) {
+                    FiveRatingStars(score = rating.scoreFloat.toInt(), color = LocalContentColor.current)
+                    Text(
+                        "${rating.total} 人评丨#${rating.rank}",
+                        Modifier.padding(end = 2.dp),
+                        style = MaterialTheme.typography.labelMedium,
+                    )
+                }
             }
         }
     }
+}
+
+@Composable
+fun RatingScoreText(
+    score: String,
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.tertiary,
+    style: TextStyle = MaterialTheme.typography.titleLarge,
+    fontWeight: FontWeight = FontWeight.ExtraBold,
+) {
+    Text(
+        score,
+        style = style,
+        fontWeight = fontWeight,
+        color = color,
+        modifier = modifier,
+    )
 }
 
 @Composable
@@ -63,7 +95,7 @@ fun FiveRatingStars(
 ) {
     Row(
         modifier,
-        horizontalArrangement = Arrangement.spacedBy((-2).dp),
+        horizontalArrangement = Arrangement.spacedBy((-1).dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         CompositionLocalProvider(LocalContentColor provides color) {
@@ -113,21 +145,5 @@ fun FiveRatingStars(
                 Modifier.size(starSize),
             )
         }
-    }
-}
-
-fun renderScoreClass(score: Float): String {
-    return when (score) {
-        in 0f..<1f -> "不忍直视"
-        in 1f..<2f -> "很差"
-        in 2f..<3f -> "差"
-        in 3f..<4f -> "较差"
-        in 4f..<5f -> "不过不失"
-        in 5f..<6f -> "还行"
-        in 6f..<7f -> "推荐"
-        in 7f..<8f -> "力荐"
-        in 8f..<9f -> "神作"
-        in 9f..<10f -> "超神作"
-        else -> ""
     }
 }

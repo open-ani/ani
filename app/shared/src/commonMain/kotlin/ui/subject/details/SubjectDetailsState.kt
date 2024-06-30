@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.onCompletion
 import me.him188.ani.app.data.subject.RelatedCharacterInfo
 import me.him188.ani.app.data.subject.RelatedPersonInfo
+import me.him188.ani.app.data.subject.SelfRatingInfo
 import me.him188.ani.app.data.subject.SubjectInfo
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
@@ -17,12 +18,16 @@ import kotlin.coroutines.CoroutineContext
 class SubjectDetailsState(
     subjectInfo: Flow<SubjectInfo>,
     val coverImageUrl: String?,
+    selfRatingInfo: Flow<SelfRatingInfo>,
     selfCollectionType: Flow<UnifiedCollectionType>,
     persons: Flow<List<RelatedPersonInfo>>,
     characters: Flow<List<RelatedCharacterInfo>>,
     parentCoroutineContext: CoroutineContext,
 ) : HasBackgroundScope by BackgroundScope(parentCoroutineContext) {
     val info by subjectInfo.produceState<SubjectInfo>(SubjectInfo.Empty)
+
+    private val selfRatingInfoOrNull by selfRatingInfo.produceState(null)
+    val selfRatingInfo by derivedStateOf { selfRatingInfoOrNull ?: SelfRatingInfo.Empty }
 
     private val selfCollectionTypeOrNull by selfCollectionType.produceState(null)
     val selfCollectionType by derivedStateOf { selfCollectionTypeOrNull ?: UnifiedCollectionType.WISH }
@@ -39,12 +44,8 @@ class SubjectDetailsState(
      * 有任何一个数据为空
      */
     val isLoading: Boolean by derivedStateOf {
-        // We must split them and ensure they are called. 
-        // Otherwise, the derivedStateOf will not be called when the value is changed.
-        val selfCollectionTypeLoading = selfCollectionTypeOrNull == null
-        val charactersLoading = charactersOrNull == null
-        val infoLoading = info === SubjectInfo.Empty
-        val personsLoading = personsOrNull == null
-        infoLoading || selfCollectionTypeLoading || charactersLoading || personsLoading
+        selfRatingInfoOrNull == null || selfCollectionTypeOrNull == null
+                || charactersOrNull == null || info === SubjectInfo.Empty
+                || personsOrNull == null
     }
 }

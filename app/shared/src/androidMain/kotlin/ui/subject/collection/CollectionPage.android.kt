@@ -12,6 +12,7 @@ import kotlinx.coroutines.runBlocking
 import me.him188.ani.app.data.media.EpisodeCacheStatus
 import me.him188.ani.app.data.subject.EpisodeCollection
 import me.him188.ani.app.data.subject.EpisodeInfo
+import me.him188.ani.app.data.subject.SelfRatingInfo
 import me.him188.ani.app.data.subject.SubjectCollection
 import me.him188.ani.app.data.subject.SubjectInfo
 import me.him188.ani.app.tools.caching.LazyDataCache
@@ -23,6 +24,13 @@ import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.paging.SinglePagePagedSource
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
+
+internal val TestSelfRatingInfo = SelfRatingInfo(
+    score = 7,
+    comment = "test",
+    tags = listOf("My tag"),
+    isPrivate = false,
+)
 
 @Composable
 @Preview
@@ -84,37 +92,20 @@ private fun testCollections(): List<SubjectCollection> {
             )
         val latestEp = eps[1]
         add(
-            SubjectCollection(
-                info = SubjectInfo.Empty,
-                episodes = eps,
-                collectionType = UnifiedCollectionType.DOING,
-            ),
+            testSubjectCollection(eps, UnifiedCollectionType.DOING),
         )
         add(
-            SubjectCollection(
-                info = SubjectInfo.Empty,
-                episodes = eps,
-                collectionType = UnifiedCollectionType.DOING,
-            ),
+            testSubjectCollection(eps, UnifiedCollectionType.DOING),
         )
         add(
-            SubjectCollection(
-                info = SubjectInfo.Empty,
-                episodes = eps,
-                collectionType = UnifiedCollectionType.DOING,
-            ),
+            testSubjectCollection(eps, UnifiedCollectionType.DOING),
         )
         add(
-            SubjectCollection(
-                info = SubjectInfo.Empty,
-                episodes = eps,
-                collectionType = UnifiedCollectionType.WISH,
-            ),
+            testSubjectCollection(eps, collectionType = UnifiedCollectionType.WISH),
         )
         repeat(20) {
             add(
-                SubjectCollection(
-                    info = SubjectInfo.Empty,
+                testSubjectCollection(
                     episodes = eps + EpisodeCollection(
                         episodeInfo = EpisodeInfo(
                             id = 6386,
@@ -135,6 +126,16 @@ private fun testCollections(): List<SubjectCollection> {
         }
     }
 }
+
+private fun testSubjectCollection(
+    episodes: List<EpisodeCollection>,
+    collectionType: UnifiedCollectionType,
+) = SubjectCollection(
+    info = SubjectInfo.Empty,
+    episodes = episodes,
+    collectionType = collectionType,
+    selfRatingInfo = TestSelfRatingInfo,
+)
 
 @PreviewLightDark
 @Composable

@@ -16,6 +16,7 @@ import me.him188.ani.app.data.subject.RelatedCharacterInfo
 import me.him188.ani.app.data.subject.RelatedPersonInfo
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.layout.rememberConnectedScrollState
+import me.him188.ani.app.ui.subject.collection.TestSelfRatingInfo
 import me.him188.ani.app.ui.subject.details.components.CollectionAction
 import me.him188.ani.app.ui.subject.details.components.CollectionData
 import me.him188.ani.app.ui.subject.details.components.DetailsTab
@@ -107,6 +108,7 @@ internal fun PreviewSubjectDetails() {
             SubjectDetailsState(
                 subjectInfo = MutableStateFlow(TestSubjectInfo),
                 coverImageUrl = "https://ui-avatars.com/api/?name=John+Doe",
+                selfRatingInfo = MutableStateFlow(TestSelfRatingInfo),
                 selfCollectionType = MutableStateFlow(UnifiedCollectionType.WISH),
                 characters = MutableStateFlow(TestSubjectCharacterList),
                 persons = MutableStateFlow(emptyList()),
@@ -117,6 +119,7 @@ internal fun PreviewSubjectDetails() {
         SubjectDetailsPage(
             state = state,
             onClickOpenExternal = {},
+            onClickRating = {},
             collectionData = {
                 SubjectDetailsDefaults.CollectionData(
                     vm.subjectDetailsState.info,
@@ -128,6 +131,9 @@ internal fun PreviewSubjectDetails() {
                     onSetCollectionType = { vm.setSelfCollectionType(it) },
                 )
             },
+            selectEpisodeButton = {
+                SubjectDetailsDefaults.SelectEpisodeButton({})
+            },
             connectedScrollState = connectedScrollState,
             detailsTab = {
                 SubjectDetailsDefaults.DetailsTab(
@@ -136,9 +142,6 @@ internal fun PreviewSubjectDetails() {
                     characters = TestSubjectCharacterList,
                     Modifier.nestedScroll(connectedScrollState.nestedScrollConnection),
                 )
-            },
-            selectEpisodeButton = {
-                SubjectDetailsDefaults.SelectEpisodeButton({})
             },
             commentsTab = {},
             discussionsTab = {},

@@ -29,6 +29,7 @@ import me.him188.ani.app.data.repositories.BangumiSubjectRepository
 import me.him188.ani.app.data.repositories.setSubjectCollectionTypeOrDelete
 import me.him188.ani.app.data.repositories.toEpisodeCollection
 import me.him188.ani.app.data.repositories.toEpisodeInfo
+import me.him188.ani.app.data.repositories.toSelfRatingInfo
 import me.him188.ani.app.data.repositories.toSubjectCollectionItem
 import me.him188.ani.app.data.repositories.toSubjectInfo
 import me.him188.ani.app.persistent.asDataStoreSerializer
@@ -53,6 +54,8 @@ import me.him188.ani.datasources.bangumi.models.BangumiEpType
 import me.him188.ani.datasources.bangumi.models.BangumiEpisodeCollectionType
 import me.him188.ani.datasources.bangumi.models.BangumiSubjectType
 import me.him188.ani.datasources.bangumi.models.BangumiUserSubjectCollection
+import me.him188.ani.datasources.bangumi.models.BangumiUserSubjectCollectionModifyPayload
+import me.him188.ani.datasources.bangumi.processing.toCollectionType
 import me.him188.ani.datasources.bangumi.processing.toEpisodeCollectionType
 import me.him188.ani.datasources.bangumi.processing.toSubjectCollectionType
 import me.him188.ani.utils.coroutines.flows.runOrEmitEmptyList
@@ -110,7 +113,12 @@ abstract class SubjectManager {
     /**
      * 获取缓存的对该条目的收藏状态, 若没有则从网络获取.
      */
-    abstract fun subjectCollectionType(subjectId: Int): Flow<UnifiedCollectionType>
+    abstract fun subjectCollectionTypeFlow(subjectId: Int): Flow<UnifiedCollectionType>
+
+    /**
+     * 获取缓存的对该条目的收藏信息, 若没有则从网络获取. `null` 表示用户未收藏该条目.
+     */
+    abstract fun subjectCollectionFlow(subjectId: Int): Flow<SubjectCollection?>
 
     /**
      * 从缓存中获取条目, 若没有则从网络获取.
@@ -176,6 +184,18 @@ abstract class SubjectManager {
      * 返回的 flow 只会 emit 唯一一个元素, 或者抛出异常.
      */
     fun episodeInfoFlow(episodeId: Flow<Int>): Flow<EpisodeInfo> = episodeId.mapLatest { getEpisodeInfo(it) }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Rating
+    ///////////////////////////////////////////////////////////////////////////
+
+    abstract suspend fun updateRating(
+        subjectId: Int,
+        score: Int? = null, // 0 to remove rating
+        comment: String? = null, // set empty to remove
+        tags: List<String>? = null,
+        isPrivate: Boolean? = null
+    )
 }
 
 /**
@@ -249,14 +269,19 @@ class SubjectManagerImpl(
             coroutineScope {
                 val cached = findCachedSubjectCollection(subjectId)
                 if (cached == null) {
-                    // TODO: this is super shit 
+                    // TODO: this is super shit
                     val info = getSubjectInfo(subjectId)
                     val episodes = runUntilSuccess {
                         bangumiEpisodeRepository.getSubjectEpisodeCollection(subjectId, BangumiEpType.MainStory)
                     }.toList()
-                    val collectionType = bangumiSubjectRepository.subjectCollectionTypeById(subjectId).first()
+                    val collection = bangumiSubjectRepository.subjectCollectionById(subjectId).first()
                     emit(
-                        SubjectCollection(info, episodes.map { it.toEpisodeCollection() }, collectionType),
+                        SubjectCollection(
+                            info, episodes.map { it.toEpisodeCollection() },
+                            collectionType = collection?.type?.toCollectionType()
+                                ?: UnifiedCollectionType.NOT_COLLECTED,
+                            collection?.toSelfRatingInfo() ?: SelfRatingInfo.Empty,
+                        ),
                     )
                 }
                 emitAll(cachedSubjectCollectionFlow(subjectId, ContentPolicy.CACHE_ONLY)) // subscribe to cache updates
@@ -264,7 +289,26 @@ class SubjectManagerImpl(
         }
     }
 
-    override fun subjectCollectionType(subjectId: Int): Flow<UnifiedCollectionType> {
+    override fun subjectCollectionFlow(subjectId: Int): Flow<SubjectCollection?> {
+        return flow {
+            coroutineScope {
+                val cached = findCachedSubjectCollection(subjectId)
+                // TODO: this is shit 
+                if (cached == null) {
+                    emit(
+                        bangumiSubjectRepository.subjectCollectionById(subjectId).first()
+                            ?.convertToItem(),
+                    )
+                }
+                emitAll(
+                    cachedSubjectCollectionFlow(subjectId, ContentPolicy.CACHE_ONLY)
+                        .filterNotNull(),
+                )
+            }
+        }
+    }
+
+    override fun subjectCollectionTypeFlow(subjectId: Int): Flow<UnifiedCollectionType> {
         return flow {
             coroutineScope {
                 val cached = findCachedSubjectCollection(subjectId)
@@ -346,6 +390,37 @@ class SubjectManagerImpl(
 
         return runUntilSuccess {
             bangumiEpisodeRepository.getEpisodeById(episodeId)?.toEpisodeInfo() ?: error("Failed to get episode")
+        }
+    }
+
+    override suspend fun updateRating(
+        subjectId: Int,
+        score: Int?,
+        comment: String?,
+        tags: List<String>?,
+        isPrivate: Boolean?
+    ) {
+        bangumiSubjectRepository.patchSubjectCollection(
+            subjectId,
+            BangumiUserSubjectCollectionModifyPayload(
+                rate = score,
+                comment = comment,
+                tags = tags,
+                private = isPrivate,
+            ),
+        )
+
+        findSubjectCacheById(subjectId)?.mutate {
+            setEach({ it.subjectId == subjectId }) {
+                copy(
+                    selfRatingInfo = SelfRatingInfo(
+                        score = score ?: selfRatingInfo.score,
+                        comment = comment ?: selfRatingInfo.comment,
+                        tags = tags ?: selfRatingInfo.tags,
+                        isPrivate = isPrivate ?: selfRatingInfo.isPrivate,
+                    ),
+                )
+            }
         }
     }
 

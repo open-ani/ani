@@ -17,6 +17,10 @@ data class SubjectCollection(
     val info: SubjectInfo,
     val episodes: List<EpisodeCollection>, // must be sorted by sort
     val collectionType: UnifiedCollectionType,
+    /**
+     * 如果未收藏, 此属性为 `null`
+     */
+    val selfRatingInfo: SelfRatingInfo,
 ) {
     val displayName: String get() = info.displayName
     val subjectId: Int get() = info.id

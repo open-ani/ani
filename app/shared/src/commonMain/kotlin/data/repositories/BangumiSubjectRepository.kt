@@ -10,6 +10,7 @@ import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.subject.EpisodeCollection
 import me.him188.ani.app.data.subject.RatingCounts
 import me.him188.ani.app.data.subject.RatingInfo
+import me.him188.ani.app.data.subject.SelfRatingInfo
 import me.him188.ani.app.data.subject.SubjectCollection
 import me.him188.ani.app.data.subject.SubjectCollectionStats
 import me.him188.ani.app.data.subject.SubjectInfo
@@ -48,6 +49,11 @@ interface BangumiSubjectRepository : Repository {
         subjectType: BangumiSubjectType? = null,
         subjectCollectionType: BangumiSubjectCollectionType? = null,
     ): PagedSource<BangumiUserSubjectCollection>
+
+    /**
+     * 获取用户对这个条目的收藏状态. flow 一定会 emit 至少一个值或抛出异常. 当用户没有收藏这个条目时 emit `null`.
+     */
+    fun subjectCollectionById(subjectId: Int): Flow<BangumiUserSubjectCollection?>
 
     fun subjectCollectionTypeById(subjectId: Int): Flow<UnifiedCollectionType>
 
@@ -115,6 +121,22 @@ class RemoteBangumiSubjectRepository : BangumiSubjectRepository, KoinComponent {
         }
     }
 
+    override fun subjectCollectionById(subjectId: Int): Flow<BangumiUserSubjectCollection?> {
+        return flow {
+            emit(
+                try {
+                    client.api.getUserCollection(sessionManager.username.first() ?: "-", subjectId).body()
+                } catch (e: ResponseException) {
+                    if (e.response.status == HttpStatusCode.NotFound) {
+                        null
+                    } else {
+                        throw e
+                    }
+                },
+            )
+        }
+    }
+
     override fun subjectCollectionTypeById(subjectId: Int): Flow<UnifiedCollectionType> {
         return flow {
             emit(
@@ -136,19 +158,19 @@ class RemoteBangumiSubjectRepository : BangumiSubjectRepository, KoinComponent {
 fun BangumiUserSubjectCollection.toSubjectCollectionItem(
     subject: BangumiSubject,
     episodes: List<BangumiUserEpisodeCollection>,
-): SubjectCollection {
-    if (subject.type != BangumiSubjectType.Anime) {
-        return SubjectCollection(
-            info = subject.toSubjectInfo(),
-            episodes = episodes.map { it.toEpisodeCollection() },
-            collectionType = type.toCollectionType(),
-        )
-    }
+): SubjectCollection = SubjectCollection(
+    info = subject.toSubjectInfo(),
+    episodes = episodes.map { it.toEpisodeCollection() },
+    collectionType = type.toCollectionType(),
+    selfRatingInfo = toSelfRatingInfo(),
+)
 
-    return SubjectCollection(
-        info = subject.toSubjectInfo(),
-        episodes = episodes.map { it.toEpisodeCollection() },
-        collectionType = type.toCollectionType(),
+fun BangumiUserSubjectCollection.toSelfRatingInfo(): SelfRatingInfo {
+    return SelfRatingInfo(
+        score = rate,
+        comment = comment.takeUnless { it.isNullOrBlank() },
+        tags = tags,
+        isPrivate = private,
     )
 }
 

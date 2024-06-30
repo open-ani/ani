@@ -49,6 +49,8 @@ const val COVER_WIDTH_TO_HEIGHT_RATIO = 849 / 1200f
 internal fun SubjectDetailsHeader(
     info: SubjectInfo,
     coverImageUrl: String?,
+    selfRatingScore: Int,
+    onClickRating: () -> Unit,
     collectionData: @Composable () -> Unit,
     collectionAction: @Composable () -> Unit,
     selectEpisodeButton: @Composable () -> Unit,
@@ -58,6 +60,8 @@ internal fun SubjectDetailsHeader(
         SubjectDetailsHeaderWide(
             coverImageUrl = coverImageUrl,
             ratingInfo = info.ratingInfo,
+            selfRatingScore = selfRatingScore,
+            onClickRating = onClickRating,
             title = {
                 Text(info.displayName)
             },
@@ -72,12 +76,14 @@ internal fun SubjectDetailsHeader(
             collectionData = collectionData,
             collectionAction = collectionAction,
             selectEpisodeButton = selectEpisodeButton,
-            modifier,
+            modifier = modifier,
         )
     } else {
         SubjectDetailsHeaderCompact(
             coverImageUrl = coverImageUrl,
             ratingInfo = info.ratingInfo,
+            selfRatingScore = selfRatingScore,
+            onClickRating = onClickRating,
             title = {
                 Text(info.displayName)
             },
@@ -92,7 +98,7 @@ internal fun SubjectDetailsHeader(
             collectionData = collectionData,
             collectionAction = collectionAction,
             selectEpisodeButton = selectEpisodeButton,
-            modifier,
+            modifier = modifier,
         )
     }
 }
@@ -103,6 +109,8 @@ internal fun SubjectDetailsHeader(
 fun SubjectDetailsHeaderCompact(
     coverImageUrl: String?,
     ratingInfo: RatingInfo,
+    selfRatingScore: Int,
+    onClickRating: () -> Unit,
     title: @Composable () -> Unit,
     subtitle: @Composable () -> Unit,
     seasonTag: @Composable () -> Unit,
@@ -154,7 +162,7 @@ fun SubjectDetailsHeaderCompact(
                     Spacer(Modifier.weight(1f))
 
                     Row(Modifier.align(Alignment.End)) {
-                        Rating(ratingInfo)
+                        Rating(ratingInfo, selfRatingScore, onClickRating)
                     }
                 }
             }
@@ -181,6 +189,8 @@ fun SubjectDetailsHeaderCompact(
 fun SubjectDetailsHeaderWide(
     coverImageUrl: String?,
     ratingInfo: RatingInfo,
+    selfRatingScore: Int,
+    onClickRating: () -> Unit,
     title: @Composable () -> Unit,
     subtitle: @Composable () -> Unit,
     seasonTag: @Composable () -> Unit,
@@ -235,7 +245,7 @@ fun SubjectDetailsHeaderWide(
                     }
                     Spacer(Modifier.weight(1f))
                     Row(Modifier) {
-                        Rating(ratingInfo)
+                        Rating(ratingInfo, selfRatingScore, onClickRating)
                     }
                 }
                 Row(Modifier.padding(vertical = 4.dp).align(Alignment.Start)) {

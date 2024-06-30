@@ -17,6 +17,22 @@ internal val TestRatingInfo = RatingInfo(
 @Preview
 fun PreviewRating() {
     ProvideCompositionLocalsForPreview {
-        Rating(rating = TestRatingInfo)
+        Rating(
+            rating = TestRatingInfo,
+            selfRatingScore = 0,
+            {},
+        )
+    }
+}
+
+@Composable
+@Preview
+fun PreviewRatingWithSelf() {
+    ProvideCompositionLocalsForPreview {
+        Rating(
+            rating = TestRatingInfo,
+            selfRatingScore = 7,
+            {},
+        )
     }
 }

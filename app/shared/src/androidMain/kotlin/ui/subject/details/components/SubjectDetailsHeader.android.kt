@@ -45,6 +45,8 @@ fun PreviewSubjectDetailsHeader() {
         SubjectDetailsHeader(
             TestSubjectInfo,
             TestCoverImage,
+            selfRatingScore = 7,
+            onClickRating = {},
             collectionData = {
                 SubjectDetailsDefaults.CollectionData(
                     TestSubjectInfo,
@@ -72,6 +74,8 @@ private fun PreviewHeaderScaffoldWide() {
         SubjectDetailsHeaderWide(
             coverImageUrl = null,
             ratingInfo = info.ratingInfo,
+            selfRatingScore = 7,
+            onClickRating = {},
             title = { Text(text = info.displayName) },
             subtitle = { Text(text = info.name) },
             seasonTag = { Text(renderSubjectSeason(info.publishDate)) },

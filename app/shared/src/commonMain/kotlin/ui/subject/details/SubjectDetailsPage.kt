@@ -35,6 +35,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -46,6 +47,7 @@ import androidx.compose.material3.SecondaryScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -93,6 +95,8 @@ import me.him188.ani.app.ui.subject.details.components.SelectEpisodeButton
 import me.him188.ani.app.ui.subject.details.components.SubjectBlurredBackground
 import me.him188.ani.app.ui.subject.details.components.SubjectDetailsDefaults
 import me.him188.ani.app.ui.subject.details.components.SubjectDetailsHeader
+import me.him188.ani.app.ui.subject.rating.EditRatingDialog
+import me.him188.ani.app.ui.subject.rating.EditRatingState
 import me.him188.ani.datasources.bangumi.models.BangumiEpisode
 import me.him188.ani.datasources.bangumi.processing.fixToString
 
@@ -122,9 +126,45 @@ fun SubjectDetailsScene(
             },
         )
     }
+
+    if (vm.showRatingDialog) {
+        EditRatingDialog(
+            remember(vm) {
+                val ratingInfo = vm.subjectDetailsState.selfRatingInfo
+                EditRatingState(
+                    initialScore = ratingInfo.score,
+                    initialComment = ratingInfo.comment ?: "",
+                    initialIsPrivate = ratingInfo.isPrivate,
+                )
+            },
+            onDismissRequest = {
+                vm.cancelUpdateRating()
+                vm.showRatingDialog = false
+            },
+            onRate = { vm.updateRating(it) },
+            isLoading = vm.isRatingUpdating,
+        )
+    }
+
+    var showRatingRequiresCollectionDialog by rememberSaveable { mutableStateOf(false) }
+    if (showRatingRequiresCollectionDialog) {
+        AlertDialog(
+            { showRatingRequiresCollectionDialog = false },
+            text = { Text("请先收藏再评分") },
+            confirmButton = { TextButton({ showRatingRequiresCollectionDialog = false }) { Text("关闭") } },
+        )
+    }
+
     SubjectDetailsPage(
         vm.subjectDetailsState,
         onClickOpenExternal = { vm.browseSubjectBangumi(context) },
+        onClickRating = {
+            if (!vm.subjectDetailsState.selfCollected) {
+                showRatingRequiresCollectionDialog = true
+            } else {
+                vm.showRatingDialog = true
+            }
+        },
         collectionData = {
             SubjectDetailsDefaults.CollectionData(
                 vm.subjectDetailsState.info,
@@ -174,6 +214,7 @@ enum class SubjectDetailsTab {
 fun SubjectDetailsPage(
     state: SubjectDetailsState,
     onClickOpenExternal: () -> Unit,
+    onClickRating: () -> Unit,
     collectionData: @Composable () -> Unit,
     collectionActions: @Composable () -> Unit,
     selectEpisodeButton: @Composable () -> Unit,
@@ -260,6 +301,8 @@ fun SubjectDetailsPage(
                             SubjectDetailsHeader(
                                 state.info,
                                 state.coverImageUrl,
+                                selfRatingScore = state.selfRatingInfo.score,
+                                onClickRating,
                                 collectionData = collectionData,
                                 collectionAction = collectionActions,
                                 selectEpisodeButton = {
