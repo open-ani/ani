@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.LocalContentColor
@@ -139,7 +140,7 @@ fun SubjectDetailsHeaderCompact(
 ) {
     Column(modifier) {
         Row(Modifier.height(IntrinsicSize.Min), verticalAlignment = Alignment.Top) {
-            val imageWidth = 120.dp
+            val imageWidth = 140.dp
 
             Box(Modifier.clip(MaterialTheme.shapes.medium)) {
                 AsyncImage(
@@ -183,7 +184,10 @@ fun SubjectDetailsHeaderCompact(
 
                     Spacer(Modifier.weight(1f))
 
-                    Row(Modifier.align(Alignment.End)) {
+                    Row(
+                        Modifier.requiredHeight(IntrinsicSize.Max).align(Alignment.End),
+                        verticalAlignment = Alignment.Bottom,
+                    ) {
                         Rating(ratingInfo, selfRatingScore, onClickRating)
                     }
                 }
@@ -268,7 +272,7 @@ fun SubjectDetailsHeaderWide(
                             seasonTags()
                         }
                     }
-                    Spacer(Modifier.weight(1f))
+                    Spacer(Modifier.weight(1f)) // spacedBy applies
                     Row(Modifier) {
                         Rating(ratingInfo, selfRatingScore, onClickRating)
                     }

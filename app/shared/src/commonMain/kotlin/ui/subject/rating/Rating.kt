@@ -41,6 +41,8 @@ fun Rating(
                         remember(selfRatingScore) { "我的评分: $selfRatingScore" },
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        softWrap = false,
                     )
                 }
             }
@@ -62,6 +64,8 @@ fun Rating(
                         "${rating.total} 人评丨#${rating.rank}",
                         Modifier.padding(end = 2.dp),
                         style = MaterialTheme.typography.labelMedium,
+                        maxLines = 1,
+                        softWrap = false,
                     )
                 }
             }
@@ -83,6 +87,8 @@ fun RatingScoreText(
         fontWeight = fontWeight,
         color = color,
         modifier = modifier,
+        maxLines = 1,
+        softWrap = false,
     )
 }
 
