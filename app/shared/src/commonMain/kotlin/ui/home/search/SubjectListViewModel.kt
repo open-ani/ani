@@ -23,22 +23,22 @@ import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.yield
+import me.him188.ani.app.data.subject.SubjectInfo
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.datasources.api.paging.PagedSource
-import me.him188.ani.datasources.api.subject.Subject
 import me.him188.ani.utils.logging.info
 import org.koin.core.component.KoinComponent
 
 @Stable
 class SubjectListViewModel(
-    private val pagedSource: PagedSource<Subject>,
+    private val pagedSource: PagedSource<SubjectInfo>,
 ) : AbstractViewModel(), KoinComponent {
     private val _loading: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val loading: StateFlow<Boolean> get() = _loading
 
-    private val _list: MutableStateFlow<List<Subject>> = MutableStateFlow(listOf())
-    val list: StateFlow<List<Subject>> get() = _list
+    private val _list: MutableStateFlow<List<SubjectInfo>> = MutableStateFlow(listOf())
+    val list: StateFlow<List<SubjectInfo>> get() = _list
 
     private val _hasMore: MutableStateFlow<Boolean> = MutableStateFlow(true)
     val hasMore: StateFlow<Boolean> get() = _hasMore

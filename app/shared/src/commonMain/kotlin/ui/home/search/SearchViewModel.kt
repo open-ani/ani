@@ -39,7 +39,12 @@ import me.him188.ani.app.data.models.OneshotActionConfig
 import me.him188.ani.app.data.models.SearchSettings
 import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.data.repositories.SubjectSearchRepository
+import me.him188.ani.app.data.subject.RatingInfo
+import me.him188.ani.app.data.subject.SubjectInfo
+import me.him188.ani.app.data.subject.Tag
 import me.him188.ani.app.ui.foundation.AbstractViewModel
+import me.him188.ani.datasources.api.paging.map
+import me.him188.ani.datasources.api.subject.Subject
 import me.him188.ani.datasources.api.subject.SubjectProvider
 import me.him188.ani.datasources.api.subject.SubjectSearchQuery
 import me.him188.ani.utils.coroutines.update
@@ -84,8 +89,8 @@ class SearchViewModel(
     val rating: StateFlow<Rating> = _rating
     private val _nsfw: MutableState<Boolean?> = mutableStateOf(null)
     val nsfw: State<Boolean?> = _nsfw
-    
-    
+
+
     val searchHistories: StateFlow<List<SearchHistory>> = _search
         .getHistoryFlow()
         .distinctUntilChanged()
@@ -159,10 +164,25 @@ class SearchViewModel(
                         keywords.trim(),
                         useOldSearchApi = !searchSettings.enableNewSearchSubjectApi,
                     ),
-                ),
+                ).map {
+                    it.toSubjectInfo()
+                },
             )
     }
 }
+
+fun Subject.toSubjectInfo(): SubjectInfo {
+    return SubjectInfo(
+        id = id,
+        name = originalName,
+        nameCn = chineseName,
+        summary = this.summary,
+        tags = this.tags.map { Tag(it.first, it.second) },
+        imageCommon = this.images.landscapeCommon,
+        ratingInfo = RatingInfo.Empty.copy(rank = rank),
+    )
+}
+
 
 sealed interface SearchFilterEvent {
     data class AddTag(val value: String) : SearchFilterEvent

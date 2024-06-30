@@ -26,6 +26,7 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import me.him188.ani.datasources.api.paging.PagedSource
 import me.him188.ani.datasources.api.source.ConnectionStatus
+import me.him188.ani.utils.serialization.BigNum
 
 /**
  * 提供番剧名称索引的数据源. 支持使用关键字搜索正式名称.
@@ -43,7 +44,6 @@ interface SubjectProvider {
 //    suspend fun getSubjectDetails(id: String): SubjectDetails?
 }
 
-@Serializable
 data class Subject(
     val id: Int,
     /**
@@ -54,7 +54,7 @@ data class Subject(
      * 条目中文名称
      */
     val chineseName: String,
-    val score: Double,
+    val score: BigNum,
     val rank: Int,
     val tags: List<Pair<String, Int>>,
     val sourceUrl: String, // 数据源

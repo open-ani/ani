@@ -92,7 +92,7 @@ import me.him188.ani.app.ui.subject.details.components.SelectEpisodeButton
 import me.him188.ani.app.ui.subject.details.components.SubjectBlurredBackground
 import me.him188.ani.app.ui.subject.details.components.SubjectDetailsDefaults
 import me.him188.ani.app.ui.subject.details.components.SubjectDetailsHeader
-import me.him188.ani.datasources.bangumi.client.BangumiEpisode
+import me.him188.ani.datasources.bangumi.models.BangumiEpisode
 import me.him188.ani.datasources.bangumi.processing.fixToString
 
 @Composable
@@ -425,13 +425,13 @@ fun EpisodeItem(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 // "01"
-                Text(episode.sort.fixToString(2), style = MaterialTheme.typography.bodyMedium)
+                Text(episode.sort.fixToString(2, '0'), style = MaterialTheme.typography.bodyMedium)
 
                 Spacer(Modifier.weight(1f, fill = false))
 
                 // "冒险结束"
                 Text(
-                    episode.chineseName,
+                    episode.nameCn,
                     Modifier.padding(start = 8.dp),
                     style = MaterialTheme.typography.bodyMedium,
                     maxLines = 1,

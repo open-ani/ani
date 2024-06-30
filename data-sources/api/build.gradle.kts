@@ -34,6 +34,7 @@ dependencies {
     implementation(libs.kotlinx.serialization.core)
     api(libs.kotlinx.coroutines.core)
     api(projects.utils.ktorClient)
+    api(projects.utils.serialization)
     api(libs.ktor.client.logging)
     api(libs.ktor.client.auth)
     api(libs.jsoup)

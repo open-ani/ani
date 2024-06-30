@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 import me.him188.ani.datasources.api.EpisodeSort.Normal
 import me.him188.ani.datasources.api.EpisodeSort.Special
 import me.him188.ani.datasources.api.topic.EpisodeRange
+import me.him188.ani.utils.serialization.BigNum
 import java.math.BigDecimal
 
 /**
@@ -129,5 +130,10 @@ fun EpisodeSort(int: Int): EpisodeSort {
 
 fun EpisodeSort(int: BigDecimal): EpisodeSort {
     if (int < BigDecimal.ZERO) return Special(int.toString())
+    return EpisodeSort(int.toString())
+}
+
+fun EpisodeSort(int: BigNum): EpisodeSort {
+    if (int.isNegative()) return Special(int.toString())
     return EpisodeSort(int.toString())
 }

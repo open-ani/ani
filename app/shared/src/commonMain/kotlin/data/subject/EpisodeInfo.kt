@@ -4,12 +4,9 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 import me.him188.ani.datasources.api.EpisodeSort
-import org.openapitools.client.models.Episode
 
 /**
  * 与数据源无关的条目信息.
- *
- * @see Episode
  */
 @Immutable
 @Serializable

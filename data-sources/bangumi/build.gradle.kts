@@ -17,36 +17,108 @@
  */
 
 plugins {
-    kotlin("jvm")
+    kotlin("multiplatform")
     kotlin("plugin.serialization")
     idea
     `flatten-source-sets`
+    `ani-lib-targets`
+    id("org.openapi.generator") version "7.6.0"
 }
 
-sourceSets.main {
-    kotlin.srcDir("gen")
+val generatedRoot = "generated/openapi"
+
+kotlin {
+    sourceSets.commonMain.dependencies {
+        api(projects.dataSources.api)
+        api(libs.kotlinx.datetime)
+        api(libs.kotlinx.coroutines.core)
+
+        implementation(projects.utils.serialization)
+        implementation(libs.ktor.client.logging)
+        implementation(libs.ktor.client.content.negotiation)
+        implementation(libs.ktor.serialization.kotlinx.json)
+    }
+    sourceSets.commonMain {
+        kotlin.srcDirs(file("src/commonMain/gen"))
+    }
 }
 
 idea {
     module {
-        generatedSourceDirs.add(file("gen"))
+        generatedSourceDirs.add(file("src/commonMain/gen"))
     }
 }
 
-dependencies {
-    api(projects.dataSources.api)
-    implementation(projects.utils.serialization)
-    implementation(projects.utils.slf4jKt)
+openApiGenerate {
+    // https://github.com/OpenAPITools/openapi-generator/blob/master/modules/openapi-generator-gradle-plugin/README.adoc
+    generatorName.set("kotlin")
+    inputSpec.set("$projectDir/v0.yaml")
+    outputDir.set(layout.buildDirectory.file(generatedRoot).get().asFile.absolutePath)
+    packageName.set("me.him188.ani.datasources.bangumi")
+    modelNamePrefix.set("Bangumi")
+    apiNameSuffix.set("BangumiApi")
+    // https://github.com/OpenAPITools/openapi-generator/blob/master/docs/generators/kotlin.md
+    additionalProperties.set(
+        mapOf(
+            "apiSuffix" to "BangumiApi",
+            "library" to "multiplatform",
+            "dateLibrary" to "kotlinx-datetime",
+//            "serializationLibrary" to "kotlinx_serialization", // 加了这个他会生成两个 `@Serializable`
+            "enumPropertyNaming" to "UPPERCASE",
+//            "generateOneOfAnyOfWrappers" to "true",
+            "omitGradleWrapper" to "true",
+        ),
+    )
+    generateModelTests.set(false)
+    generateApiTests.set(false)
+    generateApiDocumentation.set(false)
+    generateModelDocumentation.set(false)
 
-    api(libs.kotlinx.coroutines.core)
-    implementation(libs.ktor.client.logging)
-    implementation(libs.ktor.client.content.negotiation)
-    implementation(libs.ktor.serialization.kotlinx.json)
+//    typeMappings.put("BangumiValue", "kotlinx.serialization.json.JsonElement")
+//    schemaMappings.put("WikiV0", "kotlinx.serialization.json.JsonElement") // works
+//    schemaMappings.put("Item", "kotlinx.serialization.json.JsonElement")
+//    schemaMappings.put("Value", "kotlinx.serialization.json.JsonElement")
+    typeMappings.put(
+        "kotlin.Double",
+        "@Serializable(me.him188.ani.utils.serialization.BigNumAsDoubleStringSerializer::class) me.him188.ani.utils.serialization.BigNum",
+    )
+//    typeMappings.put("BangumiEpisodeCollectionType", "/*- `0`: 未收藏 - `1`: 想看 - `2`: 看过 - `3`: 抛弃*/ Int")
+}
 
+val fixGeneratedOpenApi = tasks.register("fixGeneratedOpenApi") {
+    dependsOn(tasks.withType(org.openapitools.generator.gradle.plugin.tasks.GenerateTask::class))
+    val models =
+        layout.buildDirectory.file("$generatedRoot/src/commonMain/kotlin/me/him188/ani/datasources/bangumi/models/")
+            .get().asFile
 
-    implementation("com.squareup.moshi:moshi-kotlin:1.14.0")
-    implementation("com.squareup.moshi:moshi-adapters:1.14.0")
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+//    inputs.file(file)
+//    outputs.file(file)
+    //    outputs.upToDateWhen {
+//        models.resolve("BangumiValue.kt").readText() == expected
+//    }
+    doLast {
+        models.resolve("BangumiValue.kt").writeText(
+            """
+                package me.him188.ani.datasources.bangumi.models
+                
+                typealias BangumiValue = kotlinx.serialization.json.JsonElement
+            """.trimIndent(),
+        )
+        models.resolve("BangumiEpisodeCollectionType.kt").delete()
+        models.resolve("BangumiSubjectCollectionType.kt").delete()
+    }
+}
 
-    testImplementation(libs.slf4j.simple)
+val copyGeneratedToSrc = tasks.register("copyGeneratedToSrc", Copy::class) {
+    dependsOn(fixGeneratedOpenApi)
+    from(layout.buildDirectory.file("$generatedRoot/src/commonMain/kotlin"))
+    into("src/commonMain/gen")
+}
+
+//tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+//    dependsOn(fixGeneratedOpenApi)
+//}
+
+tasks.register("generateOpenApi") {
+    dependsOn(copyGeneratedToSrc)
 }

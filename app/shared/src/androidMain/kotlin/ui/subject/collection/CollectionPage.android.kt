@@ -23,13 +23,6 @@ import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.paging.SinglePagePagedSource
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
-import org.openapitools.client.models.Collection
-import org.openapitools.client.models.Count
-import org.openapitools.client.models.Images
-import org.openapitools.client.models.Rating
-import org.openapitools.client.models.Subject
-import org.openapitools.client.models.SubjectType
-import java.math.BigDecimal
 
 @Composable
 @Preview
@@ -210,55 +203,4 @@ private fun testLazyDataCache(): LazyDataCache<SubjectCollection> {
     ).apply {
         runBlocking { requestMore() }
     }
-}
-
-fun testSubject(
-    id: Int = 0,
-): Subject {
-    return Subject(
-        id = id,
-        type = SubjectType.Music,
-        name = "Doreen Vaughn",
-        nameCn = "Lena Cortez",
-        summary = "feugiat",
-        nsfw = false,
-        locked = false,
-        platform = "himenaeos",
-        images = Images(
-            large = "donec",
-            common = "mandamus",
-            medium = "pellentesque",
-            small = "ferri",
-            grid = "natoque",
-        ),
-        volumes = 8709,
-        eps = 8315,
-        totalEpisodes = 2238,
-        rating = Rating(
-            rank = 5821, total = 4784,
-            count = Count(
-                _1 = null,
-                _2 = null,
-                _3 = null,
-                _4 = null,
-                _5 = null,
-                _6 = null,
-                _7 = null,
-                _8 = null,
-                _9 = null,
-                _10 = null,
-            ),
-            score = BigDecimal.ZERO,
-        ),
-        collection = Collection(
-            wish = 6848,
-            collect = 6029,
-            doing = 4929,
-            onHold = 2523,
-            dropped = 3158,
-        ),
-        tags = listOf(),
-        date = null,
-        infobox = listOf(),
-    )
 }

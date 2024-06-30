@@ -52,9 +52,9 @@ import androidx.compose.ui.unit.dp
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.session.isLoggedIn
+import me.him188.ani.datasources.bangumi.models.BangumiUser
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.koin.core.context.GlobalContext
-import org.openapitools.client.models.User
 
 @Composable
 fun ProfilePage(
@@ -163,7 +163,7 @@ fun AniHelpSection(modifier: Modifier = Modifier) {
 
 @Composable
 internal fun SelfInfo(
-    selfInfo: User?,
+    selfInfo: BangumiUser?, // todo replace with our User
     isLoggedIn: Boolean?,
     modifier: Modifier = Modifier,
     onClickSettings: () -> Unit,

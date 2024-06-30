@@ -98,10 +98,8 @@ fun SubjectPreviewColumn(
         items(items, key = { it.id }) { subject ->
             val navigator = LocalNavigator.current
             SubjectPreviewCard(
-                title = remember(subject.id) {
-                    subject.chineseName.takeIf { it.isNotBlank() } ?: subject.originalName
-                },
-                imageUrl = remember(subject.id) { subject.images.landscapeCommon },
+                title = subject.displayName,
+                imageUrl = remember(subject.id) { subject.imageCommon },
                 onClick = { navigator.navigateSubjectDetails(subject.id) },
                 Modifier.animateItemPlacement().height(180.dp),
             )

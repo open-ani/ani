@@ -27,12 +27,12 @@ import me.him188.ani.app.tools.formatDateTime
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
+import me.him188.ani.datasources.bangumi.models.BangumiUser
 import me.him188.ani.utils.coroutines.runUntilSuccess
 import me.him188.ani.utils.coroutines.runningList
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.openapitools.client.models.User
 
 
 class CommentViewModel(
@@ -63,7 +63,7 @@ class CommentViewModel(
 @Immutable
 class UiComment(
     val comment: Comment,
-    val author: User?
+    val author: BangumiUser?
 )
 
 @Composable
@@ -90,7 +90,7 @@ private const val LOREM_IPSUM =
 
 @Composable
 fun Comment(
-    author: User?,
+    author: BangumiUser?, // todo replace with ours
     comment: Comment?,
     modifier: Modifier = Modifier
 ) {

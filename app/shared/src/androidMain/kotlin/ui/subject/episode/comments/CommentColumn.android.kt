@@ -5,9 +5,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.Preview
 import me.him188.ani.app.data.repositories.Comment
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
-import org.openapitools.client.models.Avatar
-import org.openapitools.client.models.User
-import org.openapitools.client.models.UserGroup
+import me.him188.ani.datasources.bangumi.models.BangumiAvatar
+import me.him188.ani.datasources.bangumi.models.BangumiUser
+import me.him188.ani.datasources.bangumi.models.BangumiUserGroup
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
@@ -30,16 +30,16 @@ private fun PreviewComment() {
     ProvideCompositionLocalsForPreview {
         Comment(
             remember {
-                User(
+                BangumiUser(
                     id = 0,
                     username = "username",
-                    avatar = Avatar(
+                    avatar = BangumiAvatar(
                         large = "https://picsum.photos/200/300",
                         medium = "https://picsum.photos/200/300",
                         small = "https://picsum.photos/200/300",
                     ),
                     nickname = "Nickname",
-                    userGroup = UserGroup.User,
+                    userGroup = BangumiUserGroup.User,
                     sign = "sign",
                 )
             },

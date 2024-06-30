@@ -15,14 +15,14 @@ import me.him188.ani.app.data.subject.PersonType
 import me.him188.ani.app.data.subject.RelatedCharacterInfo
 import me.him188.ani.app.data.subject.RelatedPersonInfo
 import me.him188.ani.datasources.bangumi.BangumiClient
+import me.him188.ani.datasources.bangumi.models.BangumiCharacterType
+import me.him188.ani.datasources.bangumi.models.BangumiPerson
+import me.him188.ani.datasources.bangumi.models.BangumiPersonCareer
+import me.him188.ani.datasources.bangumi.models.BangumiPersonImages
+import me.him188.ani.datasources.bangumi.models.BangumiPersonType
+import me.him188.ani.datasources.bangumi.models.BangumiRelatedCharacter
+import me.him188.ani.datasources.bangumi.models.BangumiRelatedPerson
 import me.him188.ani.utils.coroutines.flows.runOrEmitEmptyList
-import org.openapitools.client.models.RelatedCharacter
-import org.openapitools.client.models.RelatedPerson
-import org.openapitools.client.models.CharacterType as BangumiCharacterType
-import org.openapitools.client.models.Person as BangumiPerson
-import org.openapitools.client.models.PersonCareer as BangumiPersonCareer
-import org.openapitools.client.models.PersonImages as BangumiPersonImages
-import org.openapitools.client.models.PersonType as BangumiPersonType
 
 @Serializable
 data class QInfobox(
@@ -61,7 +61,7 @@ class BangumiRelatedCharactersRepository(
         return flow {
             val characters = runOrEmitEmptyList {
                 withContext(Dispatchers.IO) {
-                    client.api.getRelatedCharactersBySubjectId(subjectId)
+                    client.api.getRelatedCharactersBySubjectId(subjectId).body()
                 }
             }
 
@@ -146,7 +146,7 @@ class BangumiRelatedCharactersRepository(
         return flow {
             val persons = runOrEmitEmptyList {
                 withContext(Dispatchers.IO) {
-                    client.api.getRelatedPersonsBySubjectId(subjectId)
+                    client.api.getRelatedPersonsBySubjectId(subjectId).body()
                 }
             }
             emit(
@@ -169,7 +169,7 @@ class BangumiRelatedCharactersRepository(
     }
 }
 
-private fun RelatedPerson.toRelatedPersonInfo(chineseName: String): RelatedPersonInfo {
+private fun BangumiRelatedPerson.toRelatedPersonInfo(chineseName: String): RelatedPersonInfo {
     return RelatedPersonInfo(
         personInfo = PersonInfo(
             id = id,
@@ -185,7 +185,7 @@ private fun RelatedPerson.toRelatedPersonInfo(chineseName: String): RelatedPerso
     )
 }
 
-private fun RelatedCharacter.toRelatedCharacterInfo(
+private fun BangumiRelatedCharacter.toRelatedCharacterInfo(
     chineseName: String,
     getPersonChineseName: (Int) -> String = { "" },
 ): RelatedCharacterInfo {
@@ -233,13 +233,13 @@ private fun BangumiPerson.toPersonInfo(chineseName: String): PersonInfo {
 
 private fun BangumiPersonCareer.toPersonCareer(): PersonCareer {
     return when (this) {
-        BangumiPersonCareer.producer -> PersonCareer.PRODUCER
-        BangumiPersonCareer.mangaka -> PersonCareer.MANGAKA
-        BangumiPersonCareer.artist -> PersonCareer.ARTIST
-        BangumiPersonCareer.seiyu -> PersonCareer.SEIYU
-        BangumiPersonCareer.writer -> PersonCareer.WRITER
-        BangumiPersonCareer.illustrator -> PersonCareer.ILLUSTRATOR
-        BangumiPersonCareer.actor -> PersonCareer.ACTOR
+        BangumiPersonCareer.PRODUCER -> PersonCareer.PRODUCER
+        BangumiPersonCareer.MANGAKA -> PersonCareer.MANGAKA
+        BangumiPersonCareer.ARTIST -> PersonCareer.ARTIST
+        BangumiPersonCareer.SEIYU -> PersonCareer.SEIYU
+        BangumiPersonCareer.WRITER -> PersonCareer.WRITER
+        BangumiPersonCareer.ILLUSTRATOR -> PersonCareer.ILLUSTRATOR
+        BangumiPersonCareer.ACTOR -> PersonCareer.ACTOR
     }
 }
 

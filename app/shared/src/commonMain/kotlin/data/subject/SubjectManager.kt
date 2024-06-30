@@ -26,7 +26,7 @@ import me.him188.ani.app.data.media.EpisodeCacheStatus
 import me.him188.ani.app.data.media.MediaCacheManager
 import me.him188.ani.app.data.repositories.BangumiEpisodeRepository
 import me.him188.ani.app.data.repositories.BangumiSubjectRepository
-import me.him188.ani.app.data.repositories.createSubjectInfo
+import me.him188.ani.app.data.repositories.toSubjectInfo
 import me.him188.ani.app.data.repositories.setSubjectCollectionTypeOrDelete
 import me.him188.ani.app.data.repositories.toEpisodeCollection
 import me.him188.ani.app.data.repositories.toEpisodeInfo
@@ -49,16 +49,16 @@ import me.him188.ani.app.tools.caching.setEach
 import me.him188.ani.app.ui.subject.collection.progress.EpisodeProgressItem
 import me.him188.ani.datasources.api.paging.map
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
+import me.him188.ani.datasources.bangumi.models.BangumiEpType
+import me.him188.ani.datasources.bangumi.models.BangumiEpisodeCollectionType
+import me.him188.ani.datasources.bangumi.models.BangumiSubjectType
+import me.him188.ani.datasources.bangumi.models.BangumiUserSubjectCollection
 import me.him188.ani.datasources.bangumi.processing.toEpisodeCollectionType
 import me.him188.ani.datasources.bangumi.processing.toSubjectCollectionType
 import me.him188.ani.utils.coroutines.flows.runOrEmitEmptyList
 import me.him188.ani.utils.coroutines.runUntilSuccess
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.openapitools.client.models.EpType
-import org.openapitools.client.models.EpisodeCollectionType
-import org.openapitools.client.models.SubjectType
-import org.openapitools.client.models.UserSubjectCollection
 
 /**
  * 管理收藏条目以及它们的缓存.
@@ -224,7 +224,7 @@ class SubjectManagerImpl(
                     val username = sessionManager.username.filterNotNull().first()
                     bangumiSubjectRepository.getSubjectCollections(
                         username,
-                        subjectType = SubjectType.Anime,
+                        subjectType = BangumiSubjectType.Anime,
                         subjectCollectionType = type.toSubjectCollectionType(),
                     ).map {
                         it.convertToItem()
@@ -252,7 +252,7 @@ class SubjectManagerImpl(
                     // TODO: this is super shit 
                     val info = getSubjectInfo(subjectId)
                     val episodes = runUntilSuccess {
-                        bangumiEpisodeRepository.getSubjectEpisodeCollection(subjectId, EpType.MainStory)
+                        bangumiEpisodeRepository.getSubjectEpisodeCollection(subjectId, BangumiEpType.MainStory)
                     }.toList()
                     val collectionType = bangumiSubjectRepository.subjectCollectionTypeById(subjectId).first()
                     emit(
@@ -316,7 +316,7 @@ class SubjectManagerImpl(
                 // 这是网络请求, 无网情况下会一直失败
                 emit(
                     runOrEmitEmptyList {
-                        bangumiEpisodeRepository.getSubjectEpisodeCollection(subjectId, EpType.MainStory)
+                        bangumiEpisodeRepository.getSubjectEpisodeCollection(subjectId, BangumiEpType.MainStory)
                             .map {
                                 it.toEpisodeCollection()
                             }
@@ -333,7 +333,7 @@ class SubjectManagerImpl(
         findCachedSubjectCollection(subjectId)?.info?.let { return it }
         return runUntilSuccess {
             // TODO: we should unify how to compute display name from subject 
-            bangumiSubjectRepository.getSubject(subjectId)?.createSubjectInfo() ?: error("Failed to get subject")
+            bangumiSubjectRepository.getSubject(subjectId)?.toSubjectInfo() ?: error("Failed to get subject")
         }
     }
 
@@ -403,11 +403,12 @@ class SubjectManagerImpl(
             }
         }
 
-        val ids = bangumiEpisodeRepository.getEpisodesBySubjectId(subjectId, EpType.MainStory).map { it.id }.toList()
+        val ids =
+            bangumiEpisodeRepository.getEpisodesBySubjectId(subjectId, BangumiEpType.MainStory).map { it.id }.toList()
         bangumiEpisodeRepository.setEpisodeCollection(
             subjectId,
             ids,
-            EpisodeCollectionType.WATCHED,
+            BangumiEpisodeCollectionType.WATCHED,
         )
     }
 
@@ -435,12 +436,12 @@ class SubjectManagerImpl(
         }
     }
 
-    private suspend fun UserSubjectCollection.convertToItem() = coroutineScope {
+    private suspend fun BangumiUserSubjectCollection.convertToItem() = coroutineScope {
         val subject = async {
             runUntilSuccess { bangumiSubjectRepository.getSubject(subjectId) ?: error("Failed to get subject") }
         }
         val eps = runUntilSuccess {
-            bangumiEpisodeRepository.getSubjectEpisodeCollection(subjectId, EpType.MainStory)
+            bangumiEpisodeRepository.getSubjectEpisodeCollection(subjectId, BangumiEpType.MainStory)
         }.toList()
 
         toSubjectCollectionItem(subject.await(), eps)
