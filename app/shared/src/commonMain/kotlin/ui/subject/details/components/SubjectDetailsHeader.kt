@@ -78,7 +78,7 @@ internal fun SubjectDetailsHeader(
                 }
             },
             seasonTags = {
-                OutlinedTag { Text(renderSubjectSeason(info.publishDate)) }
+                OutlinedTag { Text(renderSubjectSeason(info.airDate)) }
                 OnAirLabel(
                     airingInfo,
                     Modifier.align(Alignment.CenterVertically),
@@ -106,7 +106,7 @@ internal fun SubjectDetailsHeader(
                 }
             },
             seasonTags = {
-                OutlinedTag { Text(renderSubjectSeason(info.publishDate)) }
+                OutlinedTag { Text(renderSubjectSeason(info.airDate)) }
                 OnAirLabel(
                     airingInfo,
                     Modifier.align(Alignment.CenterVertically),

@@ -24,14 +24,17 @@ data class SubjectCollection(
 ) {
     val displayName: String get() = info.displayName
     val subjectId: Int get() = info.id
-    val date get() = renderSubjectSeason(info.publishDate)
+    val date get() = renderSubjectSeason(info.airDate)
 
     private val totalEps get() = episodes.size
 
     override fun toString(): String = "SubjectCollectionItem($displayName)"
 
     @Transient
-    val airingInfo: SubjectAiringInfo = SubjectAiringInfo.computeFromEpisodeList(episodes.map { it.episode })
+    val airingInfo: SubjectAiringInfo = SubjectAiringInfo.computeFromEpisodeList(
+        episodes.map { it.episode },
+        airDate = info.airDate,
+    )
 
     @Transient
     val lastWatchedEpIndex = kotlin.run {

@@ -378,7 +378,7 @@ private class EpisodeViewModelImpl(
                                 subjectId = subjectId,
                                 subjectPrimaryName = subject.displayName,
                                 subjectNames = subject.allNames,
-                                subjectPublishDate = subject.publishDate,
+                                subjectPublishDate = subject.airDate,
                                 episodeId = episodeId.value,
                                 episodeSort = episode.sort,
                                 episodeEp = episode.ep,

@@ -24,7 +24,7 @@ internal val TestCollectionStats = SubjectCollectionStats(
 internal val TestSubjectInfo = SubjectInfo.Empty.copy(
     nameCn = "孤独摇滚！",
     name = "ぼっち・ざ・ろっく！",
-    date = "2023-10-01",
+    airDateString = "2023-10-01",
     summary = """
         作为网络吉他手“吉他英雄”而广受好评的后藤一里，在现实中却是个什么都不会的沟通障碍者。一里有着组建乐队的梦想，但因为不敢向人主动搭话而一直没有成功，直到一天在公园中被伊地知虹夏发现并邀请进入缺少吉他手的“结束乐队”。可是，完全没有和他人合作经历的一里，在人前完全发挥不出原本的实力。为了努力克服沟通障碍，一里与“结束乐队”的成员们一同开始努力……
     """.trimIndent(),

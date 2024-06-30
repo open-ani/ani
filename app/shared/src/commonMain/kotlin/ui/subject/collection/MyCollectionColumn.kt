@@ -356,10 +356,19 @@ fun OnAirLabel(
     ProvideTextStyle(style) {
         Row(modifier.width(IntrinsicSize.Max).height(IntrinsicSize.Min)) {
             Text(
-                when (info.kind) {
-                    SubjectAiringKind.UPCOMING -> "未开播"
-                    SubjectAiringKind.ON_AIR -> "连载至第 ${info.latestSort} 话"
-                    SubjectAiringKind.COMPLETED -> "已完结"
+                remember(info) {
+                    when (info.kind) {
+                        SubjectAiringKind.UPCOMING -> {
+                            if (info.airDate.isInvalid) {
+                                "未开播"
+                            } else {
+                                info.airDate.toString() + " 开播"
+                            }
+                        }
+
+                        SubjectAiringKind.ON_AIR -> "连载至第 ${info.latestSort} 话"
+                        SubjectAiringKind.COMPLETED -> "已完结"
+                    }
                 },
                 color = statusColor,
                 maxLines = 1,

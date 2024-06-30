@@ -31,7 +31,7 @@ data class SubjectInfo(
 //    val rating: Rating,
     val tags: List<Tag> = emptyList(),
     /* air date in `YYYY-MM-DD` format */
-    val date: String? = null,
+    val airDateString: String? = null,
     val infobox: List<InfoboxItem> = emptyList(),
     val imageCommon: String = "",
     val imageLarge: String,
@@ -41,7 +41,10 @@ data class SubjectInfo(
     val collection: SubjectCollectionStats = SubjectCollectionStats.Zero,
     val ratingInfo: RatingInfo,
 ) {
-    val publishDate: PackedDate = if (date == null) PackedDate.Invalid else PackedDate.parseFromDate(date)
+    /**
+     * 放送开始
+     */
+    val airDate: PackedDate = if (airDateString == null) PackedDate.Invalid else PackedDate.parseFromDate(airDateString)
 
     /**
      * 主要显示名称
@@ -75,6 +78,9 @@ data class SubjectInfo(
         private val logger = logger<SubjectInfo>()
     }
 }
+
+@Stable
+fun SubjectInfo.findInfoboxValue(key: String): String? = infobox.firstOrNull { it.name == key }?.valueOrNull
 
 @Stable
 val SubjectInfo.nameCnOrName get() = nameCn.takeIf { it.isNotBlank() } ?: name
