@@ -51,6 +51,7 @@ import me.him188.ani.datasources.api.paging.map
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.datasources.bangumi.processing.toEpisodeCollectionType
 import me.him188.ani.datasources.bangumi.processing.toSubjectCollectionType
+import me.him188.ani.utils.coroutines.flows.runOrEmitEmptyList
 import me.him188.ani.utils.coroutines.runUntilSuccess
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -136,6 +137,9 @@ abstract class SubjectManager {
 
     /**
      * 获取用户该条目的收藏情况, 以及该条目的信息.
+     *
+     * 将会优先查询缓存, 若本地没有缓存, 则会执行一次网络请求.
+     * 返回的 flow 不会完结, 将会跟随缓存更新.
      *
      * 如果用户未收藏该条目, 则返回空列表.
      */
@@ -308,19 +312,20 @@ class SubjectManagerImpl(
 
     override fun episodeCollectionsFlow(subjectId: Int): Flow<List<EpisodeCollection>> {
         return flow {
-            // 对于已经收藏的条目, 使用缓存
-            findCachedSubjectCollection(subjectId)?.episodes?.let {
-                emit(it)
-            } ?: run {
+            if (findCachedSubjectCollection(subjectId) == null) {
                 // 这是网络请求, 无网情况下会一直失败
                 emit(
-                    bangumiEpisodeRepository.getSubjectEpisodeCollection(subjectId, EpType.MainStory)
-                        .map {
-                            it.toEpisodeCollection()
-                        }
-                        .toList(),
+                    runOrEmitEmptyList {
+                        bangumiEpisodeRepository.getSubjectEpisodeCollection(subjectId, EpType.MainStory)
+                            .map {
+                                it.toEpisodeCollection()
+                            }
+                            .toList()
+                    },
                 )
             }
+            // subscribe to changes
+            emitAll(cachedSubjectCollectionFlow(subjectId, ContentPolicy.CACHE_ONLY).map { it?.episodes.orEmpty() })
         }
     }
 
