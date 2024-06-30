@@ -92,7 +92,7 @@ data class SubjectCollection(
 /**
  * 是否已经开播了第一集
  */
-val SubjectCollection.hasStarted get() = airingInfo.isOnAir
+val SubjectCollection.hasStarted get() = airingInfo.isOnAir || airingInfo.isCompleted
 
 fun SubjectCollection.getEpisodeToPlay(): EpisodeCollection? {
     if (continueWatchingStatus is ContinueWatchingStatus.Watched) {
