@@ -8,15 +8,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import me.him188.ani.app.data.subject.SubjectCollectionStats
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
 import me.him188.ani.app.ui.subject.collection.CollectionActionButton
-import me.him188.ani.app.ui.subject.collection.EditCollectionTypeDropDown
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 
 // 详情页内容 (不包含背景)
@@ -52,19 +48,8 @@ fun SubjectDetailsDefaults.CollectionAction(
     onSetCollectionType: (UnifiedCollectionType) -> Unit,
     enabled: Boolean = true,
 ) {
-    var showDropdown by remember { mutableStateOf(false) }
-    EditCollectionTypeDropDown(
-        currentType = selfCollectionType,
-        expanded = showDropdown,
-        onDismissRequest = { showDropdown = false },
-        onClick = {
-            showDropdown = false
-            onSetCollectionType(it.type)
-        },
-    )
     CollectionActionButton(
         type = selfCollectionType,
-        onCollect = { onSetCollectionType(UnifiedCollectionType.DOING) },
         onEdit = onSetCollectionType,
         enabled = enabled,
     )

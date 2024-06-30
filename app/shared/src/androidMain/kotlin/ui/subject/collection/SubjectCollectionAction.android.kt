@@ -18,7 +18,6 @@ fun PreviewCollectionActionButton() = ProvideCompositionLocalsForPreview {
             for (entry in UnifiedCollectionType.entries) {
                 CollectionActionButton(
                     type = entry,
-                    onCollect = {},
                     onEdit = {},
                     collected = entry != UnifiedCollectionType.NOT_COLLECTED,
                 )

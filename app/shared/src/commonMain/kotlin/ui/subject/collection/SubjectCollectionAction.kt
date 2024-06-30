@@ -114,6 +114,7 @@ fun EditCollectionTypeDropDown(
     onDismissRequest: () -> Unit,
     onClick: (action: SubjectCollectionAction) -> Unit,
     actions: List<SubjectCollectionAction> = SubjectCollectionActionsForEdit,
+    showDelete: Boolean = currentType != UnifiedCollectionType.NOT_COLLECTED,
 ) {
     DropdownMenu(
         expanded,
@@ -121,6 +122,8 @@ fun EditCollectionTypeDropDown(
         offset = DpOffset(x = 0.dp, y = 4.dp),
     ) {
         for (action in actions) {
+            if (!showDelete && action == SubjectCollectionActions.DeleteCollection) continue
+
             val onClickState by rememberUpdatedState(onClick)
             val onDismissRequestState by rememberUpdatedState(onDismissRequest)
             val color = action.colorForCurrent(currentType)
@@ -159,13 +162,11 @@ private fun SubjectCollectionAction.colorForCurrent(
  *
  * @param collected 是否已收藏, 为 `null` 时表示正在载入.
  * @param type 当前收藏类型的相应动作, 例如未追番时为 "追番", 已追番时为 "已在看" / "已看完" 等. 为 `null` 时表示正在载入.
- * @param onCollect 当收藏时调用.
  * @param onEdit 当修改类型时调用.
  */
 @Composable
 fun CollectionActionButton(
     type: UnifiedCollectionType,
-    onCollect: () -> Unit,
     onEdit: (newType: UnifiedCollectionType) -> Unit,
     modifier: Modifier = Modifier,
     collected: Boolean = type != UnifiedCollectionType.NOT_COLLECTED,
@@ -174,14 +175,11 @@ fun CollectionActionButton(
     val action = remember(type) {
         SubjectCollectionActionsForCollect.find { it.type == type }
     }
-    val collectedState by rememberUpdatedState(collected)
-    val onCollectState by rememberUpdatedState(onCollect)
     Box(modifier) {
         var showDropdown by rememberSaveable { mutableStateOf(false) }
         val onClick = remember {
             {
-                if (collectedState) showDropdown = true
-                else onCollectState()
+                showDropdown = true
             }
         }
         if (collected) {
