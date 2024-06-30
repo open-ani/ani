@@ -55,7 +55,7 @@ data class SubjectInfo(
                 PackedDate.parseFromDate(
                     it.replace('年', '-')
                         .replace('月', '-')
-                        .replace('日', '-'),
+                        .removeSuffix("日"),
                 )
             }
             ?: PackedDate.Invalid
