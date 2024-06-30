@@ -169,6 +169,7 @@ fun CollectionActionButton(
     onEdit: (newType: UnifiedCollectionType) -> Unit,
     modifier: Modifier = Modifier,
     collected: Boolean = type != UnifiedCollectionType.NOT_COLLECTED,
+    enabled: Boolean = true,
 ) {
     val action = remember(type) {
         SubjectCollectionActionsForCollect.find { it.type == type }
@@ -190,6 +191,7 @@ fun CollectionActionButton(
                     contentColor = MaterialTheme.colorScheme.onSurface,
                 ),
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(0.612f)),
+                enabled = enabled,
             ) {
                 if (action != null) {
                     action.icon()
@@ -203,6 +205,7 @@ fun CollectionActionButton(
         } else {
             Button(
                 onClick = onClick,
+                enabled = enabled,
             ) {
                 if (action != null) {
                     action.icon()

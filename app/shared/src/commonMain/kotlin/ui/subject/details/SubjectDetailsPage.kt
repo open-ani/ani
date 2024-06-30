@@ -73,6 +73,7 @@ import me.him188.ani.app.ui.subject.details.components.SubjectDetailsDefaults
 import me.him188.ani.app.ui.subject.details.components.SubjectDetailsHeader
 import me.him188.ani.app.ui.subject.rating.EditRatingDialog
 import me.him188.ani.app.ui.subject.rating.EditRatingState
+import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 
 @Composable
 fun SubjectDetailsScene(
@@ -149,10 +150,11 @@ fun SubjectDetailsScene(
                 vm.subjectDetailsState.selfCollectionType,
                 onSetCollectionType = {
                     vm.setSelfCollectionType(it)
-                    if (vm.episodeProgressState.hasAnyUnwatched) {
+                    if (it == UnifiedCollectionType.DONE && vm.episodeProgressState.hasAnyUnwatched) {
                         showSetAllEpisodesDialog = true
                     }
                 },
+                enabled = !vm.isSetSelfCollectionTypeWorking,
             )
         },
         selectEpisodeButton = {

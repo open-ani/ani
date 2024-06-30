@@ -61,8 +61,10 @@ class SubjectDetailsViewModel(
     }
     val episodeProgressState by lazy { EpisodeProgressState(subjectId, this) }
 
+    private val setSelfCollectionTypeTasker = MonoTasker(backgroundScope)
+    val isSetSelfCollectionTypeWorking get() = setSelfCollectionTypeTasker.isRunning
     fun setSelfCollectionType(subjectCollectionType: UnifiedCollectionType) {
-        launchInBackground { subjectManager.setSubjectCollectionType(subjectId, subjectCollectionType) }
+        setSelfCollectionTypeTasker.launch { subjectManager.setSubjectCollectionType(subjectId, subjectCollectionType) }
     }
 
     fun setAllEpisodesWatched() {

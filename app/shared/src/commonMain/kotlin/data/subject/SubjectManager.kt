@@ -247,7 +247,7 @@ class SubjectManagerImpl(
                         subjectType = BangumiSubjectType.Anime,
                         subjectCollectionType = type.toSubjectCollectionType(),
                     ).map {
-                        it.convertToItem()
+                        it.fetchToSubjectCollection()
                     }
                 },
                 getKey = { it.subjectId },
@@ -269,20 +269,7 @@ class SubjectManagerImpl(
             coroutineScope {
                 val cached = findCachedSubjectCollection(subjectId)
                 if (cached == null) {
-                    // TODO: this is super shit
-                    val info = getSubjectInfo(subjectId)
-                    val episodes = runUntilSuccess {
-                        bangumiEpisodeRepository.getSubjectEpisodeCollection(subjectId, BangumiEpType.MainStory)
-                    }.toList()
-                    val collection = bangumiSubjectRepository.subjectCollectionById(subjectId).first()
-                    emit(
-                        SubjectCollection(
-                            info, episodes.map { it.toEpisodeCollection() },
-                            collectionType = collection?.type?.toCollectionType()
-                                ?: UnifiedCollectionType.NOT_COLLECTED,
-                            collection?.toSelfRatingInfo() ?: SelfRatingInfo.Empty,
-                        ),
-                    )
+                    emit(fetchSubjectCollection(subjectId))
                 }
                 emitAll(cachedSubjectCollectionFlow(subjectId, ContentPolicy.CACHE_ONLY)) // subscribe to cache updates
             }
@@ -297,7 +284,7 @@ class SubjectManagerImpl(
                 if (cached == null) {
                     emit(
                         bangumiSubjectRepository.subjectCollectionById(subjectId).first()
-                            ?.convertToItem(),
+                            ?.fetchToSubjectCollection(),
                     )
                 }
                 emitAll(
@@ -449,17 +436,24 @@ class SubjectManagerImpl(
     }
 
     override suspend fun setSubjectCollectionType(subjectId: Int, type: UnifiedCollectionType) {
-        val from = findSubjectCacheById(subjectId) ?: return // not found
-        val target = collectionsByType[type] ?: return
-
-        dataTransaction(from, target) { (f, t) ->
-            val old = f.removeFirstOrNull { it.subjectId == subjectId } ?: return@dataTransaction
-            t.addFirst(
-                old.copy(collectionType = type),
-            )
-        }
-
         bangumiSubjectRepository.setSubjectCollectionTypeOrDelete(subjectId, type.toSubjectCollectionType())
+
+        val from = findSubjectCacheById(subjectId)
+        val target = collectionsByType[type]!!
+        if (from != null) {
+            // 有缓存, 更新缓存
+            dataTransaction(from, target) { (f, t) ->
+                val old = f.removeFirstOrNull { it.subjectId == subjectId } ?: return@dataTransaction
+                t.addFirst(
+                    old.copy(collectionType = type),
+                )
+            }
+        } else {
+            // 无缓存, 添加
+            target.mutate {
+                addFirst(fetchSubjectCollection(subjectId))
+            }
+        }
     }
 
     /**
@@ -513,7 +507,23 @@ class SubjectManagerImpl(
         }
     }
 
-    private suspend fun BangumiUserSubjectCollection.convertToItem() = coroutineScope {
+    private suspend fun fetchSubjectCollection(
+        subjectId: Int,
+    ): SubjectCollection {
+        val info = getSubjectInfo(subjectId)
+        val episodes = bangumiEpisodeRepository.getSubjectEpisodeCollection(subjectId, BangumiEpType.MainStory)
+            .toList()
+        val collection = bangumiSubjectRepository.subjectCollectionById(subjectId).first()
+
+        return SubjectCollection(
+            info, episodes.map { it.toEpisodeCollection() },
+            collectionType = collection?.type?.toCollectionType()
+                ?: UnifiedCollectionType.NOT_COLLECTED,
+            selfRatingInfo = collection?.toSelfRatingInfo() ?: SelfRatingInfo.Empty,
+        )
+    }
+
+    private suspend fun BangumiUserSubjectCollection.fetchToSubjectCollection(): SubjectCollection = coroutineScope {
         val subject = async {
             runUntilSuccess { bangumiSubjectRepository.getSubject(subjectId) ?: error("Failed to get subject") }
         }

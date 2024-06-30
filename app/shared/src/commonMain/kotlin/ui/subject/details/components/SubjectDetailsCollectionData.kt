@@ -49,7 +49,8 @@ fun SubjectDetailsDefaults.CollectionData(
 @Composable
 fun SubjectDetailsDefaults.CollectionAction(
     selfCollectionType: UnifiedCollectionType,
-    onSetCollectionType: (UnifiedCollectionType) -> Unit
+    onSetCollectionType: (UnifiedCollectionType) -> Unit,
+    enabled: Boolean = true,
 ) {
     var showDropdown by remember { mutableStateOf(false) }
     EditCollectionTypeDropDown(
@@ -65,6 +66,7 @@ fun SubjectDetailsDefaults.CollectionAction(
         type = selfCollectionType,
         onCollect = { onSetCollectionType(UnifiedCollectionType.DOING) },
         onEdit = onSetCollectionType,
+        enabled = enabled,
     )
 }
 
