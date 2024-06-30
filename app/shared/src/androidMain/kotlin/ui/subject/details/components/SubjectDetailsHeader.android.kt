@@ -21,7 +21,7 @@ internal val TestCollectionStats = SubjectCollectionStats(
     dropped = 500,
 )
 
-internal val TestSubjectInfo = SubjectInfo(
+internal val TestSubjectInfo = SubjectInfo.Empty.copy(
     nameCn = "孤独摇滚！",
     name = "ぼっち・ざ・ろっく！",
     date = "2023-10-01",

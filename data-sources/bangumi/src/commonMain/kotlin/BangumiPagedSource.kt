@@ -127,7 +127,7 @@ private fun BangumiSubject.toSubject(): Subject {
         sourceUrl = "",
         images = SubjectImages(
             landscapeCommon = images.common,
-            largePoster = images.common,
+            largePoster = images.large,
         ),
         summary = summary,
     )

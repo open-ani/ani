@@ -25,7 +25,6 @@ import me.him188.ani.app.ui.subject.collection.progress.EpisodeProgressState
 import me.him188.ani.app.ui.subject.rating.RateRequest
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.datasources.bangumi.BangumiClient
-import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectImageSize
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -44,7 +43,7 @@ class SubjectDetailsViewModel(
         val subjectCollectionFlow = subjectManager.subjectCollectionFlow(subjectId)
         SubjectDetailsState(
             subjectInfo = subjectInfo,
-            coverImageUrl = bangumiClient.subjects.getSubjectImageUrl(subjectId, BangumiSubjectImageSize.LARGE),
+            coverImageUrl = subjectInfo.map { it.imageLarge },
             selfCollectionType = subjectCollectionFlow.map {
                 it?.collectionType ?: UnifiedCollectionType.NOT_COLLECTED
             },

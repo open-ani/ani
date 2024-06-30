@@ -24,7 +24,6 @@ data class SubjectCollection(
 ) {
     val displayName: String get() = info.displayName
     val subjectId: Int get() = info.id
-    val image: String get() = info.imageCommon
     val date get() = renderSubjectSeason(info.publishDate)
 
     private val totalEps get() = episodes.size

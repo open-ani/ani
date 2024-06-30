@@ -18,7 +18,7 @@ import kotlin.coroutines.CoroutineContext
 @Stable
 class SubjectDetailsState(
     subjectInfo: Flow<SubjectInfo>,
-    val coverImageUrl: String?,
+    coverImageUrl: Flow<String>,
     selfRatingInfo: Flow<SelfRatingInfo>,
     selfCollectionType: Flow<UnifiedCollectionType>,
     airingInfo: Flow<SubjectAiringInfo>,
@@ -27,6 +27,9 @@ class SubjectDetailsState(
     parentCoroutineContext: CoroutineContext,
 ) : HasBackgroundScope by BackgroundScope(parentCoroutineContext) {
     val info by subjectInfo.produceState<SubjectInfo>(SubjectInfo.Empty)
+
+    private val coverImageUrlOrNull by coverImageUrl.produceState(null)
+    val coverImageUrl by derivedStateOf { coverImageUrlOrNull ?: "" }
 
     private val selfRatingInfoOrNull by selfRatingInfo.produceState(null)
     val selfRatingInfo by derivedStateOf { selfRatingInfoOrNull ?: SelfRatingInfo.Empty }

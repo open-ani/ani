@@ -34,6 +34,7 @@ data class SubjectInfo(
     val date: String? = null,
     val infobox: List<InfoboxItem> = emptyList(),
     val imageCommon: String = "",
+    val imageLarge: String,
     /**
      * 该条目的全站收藏统计
      */
@@ -68,6 +69,7 @@ data class SubjectInfo(
         @JvmStatic
         val Empty = SubjectInfo(
             ratingInfo = RatingInfo.Empty,
+            imageLarge = "",
         )
 
         private val logger = logger<SubjectInfo>()

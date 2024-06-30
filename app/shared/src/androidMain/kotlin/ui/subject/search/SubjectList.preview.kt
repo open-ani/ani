@@ -28,8 +28,6 @@ import me.him188.ani.app.ui.home.search.SubjectListViewModel
 import me.him188.ani.app.ui.home.search.SubjectPreviewColumn
 import me.him188.ani.datasources.api.paging.PageBasedPagedSource
 import me.him188.ani.datasources.api.paging.Paged
-import me.him188.ani.datasources.api.subject.Subject
-import me.him188.ani.datasources.api.subject.SubjectImages
 
 @Composable
 @Preview(apiLevel = 33)
@@ -39,7 +37,7 @@ private fun PreviewSubjectList() {
             PageBasedPagedSource {
                 Paged(
                     listOf(
-                        SubjectInfo(
+                        SubjectInfo.Empty.copy(
                             id = 400602,
                             name = "葬送的芙莉莲",
                             nameCn = "葬送的芙莉莲",

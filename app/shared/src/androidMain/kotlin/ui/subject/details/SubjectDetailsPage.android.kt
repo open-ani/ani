@@ -108,7 +108,7 @@ internal fun PreviewSubjectDetails() {
         val state = remember {
             SubjectDetailsState(
                 subjectInfo = MutableStateFlow(TestSubjectInfo),
-                coverImageUrl = "https://ui-avatars.com/api/?name=John+Doe",
+                coverImageUrl = MutableStateFlow("https://ui-avatars.com/api/?name=John+Doe"),
                 selfRatingInfo = MutableStateFlow(TestSelfRatingInfo),
                 selfCollectionType = MutableStateFlow(UnifiedCollectionType.WISH),
                 airingInfo = MutableStateFlow(TestSubjectAiringInfo),

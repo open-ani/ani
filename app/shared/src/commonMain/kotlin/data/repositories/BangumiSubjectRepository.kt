@@ -190,6 +190,7 @@ fun BangumiSubject.toSubjectInfo(): SubjectInfo {
         tags = this.tags.map { Tag(it.name, it.count) },
         infobox = this.infobox?.map { it.toInfoboxItem() }.orEmpty(),
         imageCommon = this.images.common,
+        imageLarge = this.images.large,
         collection = this.collection.run {
             SubjectCollectionStats(
                 wish = wish,

@@ -183,7 +183,7 @@ fun SubjectCollectionItem(
     ) {
         Row(Modifier.weight(1f, fill = false)) {
             AsyncImage(
-                item.image,
+                item.info.imageCommon,
                 contentDescription = null,
                 modifier = Modifier
                     .height(height).width(height * COVER_WIDTH_TO_HEIGHT_RATIO),
