@@ -1,12 +1,13 @@
 package me.him188.ani.app.ui.subject.details.components
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.foundation.backgroundWithGradient
 import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
@@ -23,7 +24,7 @@ fun SubjectBlurredBackground(
             .blur(if (isShowLandscapeUI()) 32.dp else 16.dp)
             .backgroundWithGradient(
                 coverImageUrl, backgroundColor,
-                brush = if (isSystemInDarkTheme()) {
+                brush = if (MaterialTheme.colorScheme.background.luminance() < 0.5f) {
                     Brush.verticalGradient(
                         0f to surfaceColor.copy(alpha = 0xA2.toFloat() / 0xFF),
                         0.4f to surfaceColor.copy(alpha = 0xA2.toFloat() / 0xFF),
