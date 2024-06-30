@@ -1,6 +1,8 @@
 package me.him188.ani.app.data.repositories
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
@@ -74,21 +76,22 @@ class BangumiRelatedCharactersRepository(
                     )
                 },
             )
-
-            val qCharacters = queryGraphQLCharacters(characters.asSequence().map { it.id })
-            val qPersons = queryGraphQLPersons(
-                characters.asSequence().flatMap { c -> c.actors.orEmpty().map { it.id } },
-            )
-            emit(
-                characters.map { character ->
-                    character.toRelatedCharacterInfo(
-                        chineseName = qCharacters.find { it.id == character.id }?.chineseName ?: "",
-                        getPersonChineseName = { person ->
-                            qPersons.find { it.id == person }?.chineseName ?: ""
-                        },
-                    )
-                },
-            )
+            coroutineScope {
+                val qCharacters = async { queryGraphQLCharacters(characters.asSequence().map { it.id }) }
+                val qPersons = queryGraphQLPersons(
+                    characters.asSequence().flatMap { c -> c.actors.orEmpty().map { it.id } },
+                )
+                emit(
+                    characters.map { character ->
+                        character.toRelatedCharacterInfo(
+                            chineseName = qCharacters.await().find { it.id == character.id }?.chineseName ?: "",
+                            getPersonChineseName = { person ->
+                                qPersons.find { it.id == person }?.chineseName ?: ""
+                            },
+                        )
+                    },
+                )
+            }
         }
     }
 
