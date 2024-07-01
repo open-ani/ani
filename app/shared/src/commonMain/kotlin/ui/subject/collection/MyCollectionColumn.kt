@@ -65,6 +65,7 @@ import me.him188.ani.app.data.subject.SubjectCollection
 import me.him188.ani.app.data.subject.episode
 import me.him188.ani.app.data.subject.getEpisodeToPlay
 import me.him188.ani.app.data.subject.isOnAir
+import me.him188.ani.app.data.subject.toStringExcludingSameYear
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.ui.foundation.AsyncImage
 import me.him188.ani.app.ui.foundation.ifThen
@@ -362,7 +363,7 @@ fun OnAirLabel(
                             if (info.airDate.isInvalid) {
                                 "未开播"
                             } else {
-                                info.airDate.toString() + " 开播"
+                                info.airDate.toStringExcludingSameYear() + " 开播"
                             }
                         }
 

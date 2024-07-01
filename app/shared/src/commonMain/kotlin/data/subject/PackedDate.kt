@@ -87,6 +87,12 @@ value class PackedDate @PublishedApi internal constructor(
     }
 }
 
+fun PackedDate.toStringExcludingSameYear(): String = when {
+    isInvalid -> toString()
+    year == PackedDate.now().year -> "$month-$day"
+    else -> toString()
+}
+
 fun PackedDate?.isNullOrInvalid(): Boolean = this == null || this.isInvalid
 
 inline fun PackedDate.ifInvalid(block: () -> PackedDate): PackedDate {
