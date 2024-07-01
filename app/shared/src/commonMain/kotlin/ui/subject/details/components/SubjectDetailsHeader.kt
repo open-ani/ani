@@ -319,6 +319,7 @@ fun OutlinedTag(
 
 @Stable
 fun renderSubjectSeason(date: PackedDate): String {
+    if (date == PackedDate.Invalid) return "TBA"
     if (date.seasonMonth == 0) {
         return date.toString()
     }
