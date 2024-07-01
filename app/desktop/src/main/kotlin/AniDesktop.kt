@@ -244,7 +244,7 @@ private fun MainWindowContent(
         }
         Box(
             Modifier.background(color = AppTheme.colorScheme.background)
-                .ifThen(isFullscreen) {
+                .ifThen(!isFullscreen) {
                     statusBarsPadding()
                 }
                 .padding(top = if (hostIsMacOs && windowImmersed && isFullscreen) 28.dp else 0.dp) // safe area for macOS if windowImmersed
