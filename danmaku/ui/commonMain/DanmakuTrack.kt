@@ -39,12 +39,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
-import kotlinx.coroutines.withContext
 import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuLocation
 import me.him188.ani.danmaku.api.DanmakuPresentation
@@ -366,11 +364,9 @@ fun FloatingDanmakuTrack(
 
     LaunchedEffect(true) {
         while (isActive) {
-            withContext(Dispatchers.Main.immediate) {
                 trackState.checkDanmakuVisibility(layoutDirection, safeSeparation)
-            }
             // We need this delay to calculate gently, because we need to ensure that the updating of offsets gets completed in every frame.
-            delay(1000 / 120)
+            delay(1000 / 30)
         }
     }
 
@@ -378,7 +374,7 @@ fun FloatingDanmakuTrack(
         while (isActive) {
             trackState.receiveNewDanmaku()
             // We need this delay to calculate gently, because we need to ensure that the updating of offsets gets completed in every frame.
-            delay(1000 / 60)
+            delay(1000 / 30)
         }
     }
 
@@ -431,7 +427,7 @@ fun FixedDanmakuTrack(
         while (isActive) {
             trackState.receiveNewDanmaku(System.currentTimeMillis())
             // We need this delay to calculate gently, because we need to ensure that the updating of offsets gets completed in every frame.
-            delay(1000 / 60)
+            delay(1000 / 10)
         }
     }
 
