@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextMotion
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
@@ -74,6 +75,7 @@ data class DanmakuConfig(
 @Immutable
 class DanmakuStyle(
     val fontSize: TextUnit = 18.sp,
+    val fontWeight: FontWeight = FontWeight.W600,
     val alpha: Float = 0.8f,
     val strokeColor: Color = Color.Black,
     val strokeWidth: Float = 4f,
@@ -83,6 +85,7 @@ class DanmakuStyle(
     fun styleForBorder(): TextStyle = TextStyle(
         fontSize = fontSize,
         color = strokeColor,
+        fontWeight = fontWeight,
         drawStyle = Stroke(
             miter = 3f,
             width = strokeWidth,
@@ -97,17 +100,20 @@ class DanmakuStyle(
     fun styleForText(color: Color = Color.White): TextStyle = TextStyle(
         fontSize = fontSize,
         color = color,
+        fontWeight = fontWeight,
         textMotion = TextMotion.Animated,
     )
 
     fun copy(
         fontSize: TextUnit = this.fontSize,
+        fontWeight: FontWeight = this.fontWeight,
         alpha: Float = this.alpha,
         strokeColor: Color = this.strokeColor,
         strokeWidth: Float = this.strokeWidth,
         shadow: Shadow? = this.shadow,
     ): DanmakuStyle {
         if (fontSize == this.fontSize &&
+            fontWeight == this.fontWeight &&
             alpha == this.alpha &&
             strokeColor == this.strokeColor &&
             strokeWidth == this.strokeWidth &&
@@ -117,6 +123,7 @@ class DanmakuStyle(
         }
         return DanmakuStyle(
             fontSize = fontSize,
+            fontWeight = fontWeight,
             alpha = alpha,
             strokeColor = strokeColor,
             strokeWidth = strokeWidth,
@@ -125,7 +132,7 @@ class DanmakuStyle(
     }
 
     override fun toString(): String {
-        return "DanmakuStyle(fontSize=$fontSize, alpha=$alpha, strokeColor=$strokeColor, strokeMiter=$strokeWidth, shadow=$shadow)"
+        return "DanmakuStyle(fontSize=$fontSize, fontWeight=$fontWeight, alpha=$alpha, strokeColor=$strokeColor, strokeMiter=$strokeWidth, shadow=$shadow)"
     }
 
     companion object {

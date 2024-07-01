@@ -6,6 +6,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import io.ktor.client.plugins.HttpTimeout
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import me.him188.ani.app.tools.MonoTasker
@@ -17,6 +18,8 @@ import org.koin.core.component.KoinComponent
 import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 @Stable
 abstract class AbstractSettingsViewModel : AbstractViewModel(), KoinComponent {
@@ -61,6 +64,14 @@ abstract class AbstractSettingsViewModel : AbstractViewModel(), KoinComponent {
         private val tasker = MonoTasker(backgroundScope)
         fun update(value: T) {
             tasker.launch {
+                logger.info { "Updating $debugName: $value" }
+                pref.set(value)
+            }
+        }
+
+        fun updateDebounced(value: T, delay: Duration = 500.milliseconds) {
+            tasker.launch {
+                delay(delay)
                 logger.info { "Updating $debugName: $value" }
                 pref.set(value)
             }
