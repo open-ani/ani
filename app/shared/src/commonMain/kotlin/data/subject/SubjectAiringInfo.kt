@@ -3,6 +3,8 @@ package me.him188.ani.app.data.subject
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import me.him188.ani.datasources.api.EpisodeSort
+import kotlin.time.Duration.Companion.days
+import kotlin.time.times
 
 @Immutable
 data class SubjectAiringInfo(
@@ -49,18 +51,29 @@ data class SubjectAiringInfo(
             list: List<EpisodeInfo>,
             airDate: PackedDate,
         ): SubjectAiringInfo {
+            // See test SubjectAiringInfoTest
+            // Change with care!
+            val kind = when {
+                list.isEmpty() -> SubjectAiringKind.UPCOMING
+                list.all { it.isKnownCompleted } -> SubjectAiringKind.COMPLETED
+                list.all { it.isKnownOnAir } -> SubjectAiringKind.UPCOMING
+                list.any { it.isKnownCompleted } -> SubjectAiringKind.ON_AIR
+                airDate.isValid -> when {
+                    airDate <= PackedDate.now() -> SubjectAiringKind.COMPLETED
+                    PackedDate.now() - airDate > 10 * 30 * 365.days -> SubjectAiringKind.COMPLETED // 播出 10 年后判定为完结, 一些老番缺失信息
+                    else -> SubjectAiringKind.UPCOMING
+                }
+
+                else -> SubjectAiringKind.UPCOMING
+            }
             return SubjectAiringInfo(
-                kind = when {
-                    list.isEmpty() -> SubjectAiringKind.UPCOMING
-                    list.all { it.isKnownCompleted } -> SubjectAiringKind.COMPLETED
-                    list.all { it.isKnownOnAir } -> SubjectAiringKind.UPCOMING
-                    else -> SubjectAiringKind.ON_AIR
-                },
+                kind = kind,
                 episodeCount = list.size,
                 airDate = airDate.ifInvalid { list.firstOrNull()?.airDate ?: PackedDate.Invalid },
                 firstSort = list.firstOrNull()?.sort,
                 latestSort = list.lastOrNull { it.isKnownCompleted }?.sort,
-                upcomingSort = list.firstOrNull { it.isKnownOnAir }?.sort,
+                upcomingSort = if (kind == SubjectAiringKind.COMPLETED) null else list.firstOrNull { it.isKnownOnAir }?.sort
+                    ?: list.firstOrNull { it.airDate.isInvalid }?.sort,
             )
         }
 

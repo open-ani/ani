@@ -381,14 +381,23 @@ fun OnAirLabel(
                 color = statusColor,
                 maxLines = 1,
             )
-            Text(
-                " · ",
-                maxLines = 1,
-            )
-            Text(
-                remember(info.episodeCount) { "全 ${info.episodeCount} 话" },
-                maxLines = 1,
-            )
+            if (info.kind == SubjectAiringKind.UPCOMING && info.episodeCount == 0) {
+                // 剧集还未知
+            } else {
+                Text(
+                    " · ",
+                    maxLines = 1,
+                )
+                Text(
+                    when (info.kind) {
+                        SubjectAiringKind.ON_AIR,
+                        SubjectAiringKind.COMPLETED -> "全 ${info.episodeCount} 话"
+
+                        SubjectAiringKind.UPCOMING -> "预定全 ${info.episodeCount} 话"
+                    },
+                    maxLines = 1,
+                )
+            }
         }
     }
 }
