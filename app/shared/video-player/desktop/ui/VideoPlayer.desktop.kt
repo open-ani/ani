@@ -454,15 +454,6 @@ actual fun VideoPlayer(
 //    DisposableEffect(Unit) { onDispose(mediaPlayer::release) }
 
     Canvas(modifier) {
-        //        val colorType = config.toSkiaColorType()
-//        val alphaType = if (hasAlpha) ColorAlphaType.PREMUL else ColorAlphaType.OPAQUE
-//        val skiaColorSpace = colorSpace.toSkiaColorSpace()
-//        val colorInfo = ColorInfo(colorType, alphaType, skiaColorSpace)
-//        val imageInfo = ImageInfo(colorInfo, width, height)
-//        val bitmap = Bitmap()
-//        bitmap.allocPixels(imageInfo)
-//        val map =  SkiaBackedImageBitmap(bitmap)
-//        bitmap.readPixels()
         fun calculateImageSizeAndOffsetToFillFrame(
             imageWidth: Int,
             imageHeight: Int,
@@ -475,6 +466,12 @@ actual fun VideoPlayer(
             // 初始化最终的宽度和高度
             val finalWidth: Int = frameWidth
             val finalHeight: Int = (frameWidth / imageAspectRatio).toInt()
+            if (finalHeight > frameHeight) {
+                // 如果高度超出了画框的高度，那么就使用高度来计算宽度
+                val finalHeight2 = frameHeight
+                val finalWidth2 = (frameHeight * imageAspectRatio).toInt()
+                return Pair(IntSize(finalWidth2, finalHeight2), IntOffset((frameWidth - finalWidth2) / 2, 0))
+            }
 
             // 计算左上角的偏移量
             val offsetX = 0
