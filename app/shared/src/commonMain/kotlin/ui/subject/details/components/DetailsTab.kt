@@ -23,7 +23,6 @@ import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ProvideTextStyle
@@ -49,7 +48,6 @@ import me.him188.ani.app.data.subject.RelatedCharacterInfo
 import me.him188.ani.app.data.subject.RelatedPersonInfo
 import me.him188.ani.app.data.subject.SubjectInfo
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
-import me.him188.ani.app.ui.foundation.avatar.defaultAvatar
 
 
 object SubjectDetailsDefaults
@@ -229,12 +227,7 @@ private fun <T> PersonCardList(
 @Composable
 fun PersonCard(info: RelatedPersonInfo, modifier: Modifier = Modifier) {
     PersonCard(
-        avatarUrl = info.personInfo.images?.medium?.takeIf { it.isNotEmpty() }
-            ?: defaultAvatar(
-                info.personInfo.displayName,
-                MaterialTheme.colorScheme.background,
-                LocalContentColor.current,
-            ),
+        avatarUrl = info.personInfo.images?.medium?.takeIf { it.isNotEmpty() },
         name = info.personInfo.displayName,
         relation = info.relation,
         modifier = modifier,
@@ -244,12 +237,7 @@ fun PersonCard(info: RelatedPersonInfo, modifier: Modifier = Modifier) {
 @Composable
 fun PersonCard(info: RelatedCharacterInfo, modifier: Modifier = Modifier) {
     PersonCard(
-        avatarUrl = info.images?.medium?.takeIf { it.isNotEmpty() }
-            ?: defaultAvatar(
-                info.displayName,
-                MaterialTheme.colorScheme.background,
-                LocalContentColor.current,
-            ),
+        avatarUrl = info.images?.medium?.takeIf { it.isNotEmpty() },
         name = info.displayName,
         relation = remember(info) { renderCharacterRelation(info.relation, info.actors) },
         modifier = modifier,
@@ -275,7 +263,7 @@ fun PersonCard(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Box(Modifier.clip(MaterialTheme.shapes.small).size(48.dp)) {
-                AvatarImage(avatarUrl, alignment = Alignment.TopCenter)
+                AvatarImage(avatarUrl, Modifier.matchParentSize(), alignment = Alignment.TopCenter)
             }
 
             Column(
