@@ -68,7 +68,7 @@ fun SubjectDetailsDefaults.DetailsTab(
 
         // 简介
         item("description") {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 SelectionContainer {
                     var expanded by rememberSaveable { mutableStateOf(false) }
                     Text(
