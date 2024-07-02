@@ -57,6 +57,7 @@ class ConnectedScrollState(
         }
     }
 
+    // is stuck
     val isScrolledTop by derivedStateOf {
         if (scrollableHeight == 0) { // not yet measured
             return@derivedStateOf false

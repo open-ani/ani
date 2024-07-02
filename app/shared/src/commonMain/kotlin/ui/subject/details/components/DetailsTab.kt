@@ -15,9 +15,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyHorizontalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
@@ -60,10 +62,12 @@ fun SubjectDetailsDefaults.DetailsTab(
     staff: List<RelatedPersonInfo>,
     characters: List<RelatedCharacterInfo>,
     modifier: Modifier = Modifier,
+    state: LazyListState = rememberLazyListState(),
     horizontalPadding: Dp = 16.dp,
 ) {
     LazyColumn(
         modifier,
+        state = state,
         verticalArrangement = Arrangement.spacedBy(24.dp), // 这个页面内容比较密集, 如果用 16 显得有点拥挤
     ) {
         item("spacer header") { }

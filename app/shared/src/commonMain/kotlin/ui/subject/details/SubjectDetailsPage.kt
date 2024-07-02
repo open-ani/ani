@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
@@ -53,7 +54,11 @@ import androidx.compose.ui.zIndex
 import kotlinx.coroutines.launch
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.Platform
+import me.him188.ani.app.platform.currentPlatform
+import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.platform.isMobile
+import me.him188.ani.app.ui.foundation.ifThen
+import me.him188.ani.app.ui.foundation.interaction.nestedScrollWorkaround
 import me.him188.ani.app.ui.foundation.layout.ConnectedScrollState
 import me.him188.ani.app.ui.foundation.layout.connectedScrollContainer
 import me.him188.ani.app.ui.foundation.layout.connectedScrollTarget
@@ -164,11 +169,17 @@ fun SubjectDetailsScene(
         },
         connectedScrollState = connectedScrollState,
         detailsTab = {
+            val lazyListState = rememberLazyListState()
             SubjectDetailsDefaults.DetailsTab(
                 info = vm.subjectDetailsState.info,
                 staff = vm.subjectDetailsState.persons,
                 characters = vm.subjectDetailsState.characters,
-                Modifier.nestedScroll(connectedScrollState.nestedScrollConnection),
+                Modifier
+                    .ifThen(currentPlatform.isDesktop()) {
+                        nestedScrollWorkaround(lazyListState, connectedScrollState.nestedScrollConnection)
+                    }
+                    .nestedScroll(connectedScrollState.nestedScrollConnection),
+                lazyListState,
             )
         },
         commentsTab = {},
