@@ -177,7 +177,7 @@ fun Subject.toSubjectInfo(): SubjectInfo {
         name = originalName,
         nameCn = chineseName,
         summary = this.summary,
-        tags = this.tags.map { Tag(it.first, it.second) },
+        tags = this.tags.map { Tag(it.first, it.second) }.sortedByDescending { it.count },
         imageCommon = this.images.landscapeCommon,
         imageLarge = this.images.largePoster,
         ratingInfo = RatingInfo.Empty.copy(rank = rank),

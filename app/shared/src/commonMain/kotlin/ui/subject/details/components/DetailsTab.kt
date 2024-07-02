@@ -8,22 +8,16 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.lazy.staggeredgrid.LazyHorizontalStaggeredGrid
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
-import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -74,22 +68,21 @@ fun SubjectDetailsDefaults.DetailsTab(
 
         // 简介
         item("description") {
-            SelectionContainer {
-                var expanded by rememberSaveable { mutableStateOf(false) }
-                Text(
-                    info.summary,
-                    Modifier.fillMaxWidth().padding(horizontal = horizontalPadding)
-                        .clickable { expanded = !expanded },
-                    style = MaterialTheme.typography.bodyMedium,
-                    maxLines = if (expanded) Int.MAX_VALUE else 5, // TODO: add animation 
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-        }
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                SelectionContainer {
+                    var expanded by rememberSaveable { mutableStateOf(false) }
+                    Text(
+                        info.summary,
+                        Modifier.fillMaxWidth().padding(horizontal = horizontalPadding)
+                            .clickable { expanded = !expanded },
+                        style = MaterialTheme.typography.bodyMedium,
+                        maxLines = if (expanded) Int.MAX_VALUE else 5, // TODO: add animation 
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
 
-        // 标签
-        item("labels") {
-            TagsList(horizontalPadding, info)
+                TagsList(info, Modifier.padding(horizontal = horizontalPadding))
+            }
         }
 
         item("characters title") {
@@ -131,41 +124,82 @@ fun SubjectDetailsDefaults.DetailsTab(
     }
 }
 
+private const val ALWAYS_SHOW_TAGS_COUNT = 8
+
 @Composable
 private fun TagsList(
-    horizontalPadding: Dp,
     info: SubjectInfo,
     modifier: Modifier = Modifier,
 ) {
-    val gridItemSpacing = 12.dp
-    LazyHorizontalStaggeredGrid(
-        StaggeredGridCells.FixedSize(40.dp),
-        horizontalItemSpacing = gridItemSpacing,
-        verticalArrangement = Arrangement.spacedBy(gridItemSpacing, alignment = Alignment.CenterVertically),
-        modifier = modifier.height(40.dp * 2 + gridItemSpacing),
-    ) {
-        item(
-            contentType = "spacer header",
-            span = StaggeredGridItemSpan.FullLine,
-        ) { Spacer(Modifier.width(horizontalPadding - gridItemSpacing)) }
-        items(info.tags, contentType = { 1 }) { tag ->
-            ProvideTextStyle(MaterialTheme.typography.labelLarge) {
-                OutlinedTag(contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)) {
-                    Text(tag.name, maxLines = 1, color = MaterialTheme.colorScheme.secondary)
+    Column(modifier) {
+        val allTags by remember(info) {
+            derivedStateOf { info.tags }
+        }
+        var isExpanded by rememberSaveable { mutableStateOf(false) }
+        val hasMoreTags by remember { derivedStateOf { allTags.size > ALWAYS_SHOW_TAGS_COUNT } }
+        FlowRow(
+            verticalArrangement = Arrangement.Center,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            val presentTags by remember {
+                derivedStateOf {
+                    when {
+                        isExpanded -> allTags
+                        allTags.size <= 6 -> allTags
+                        else -> {
+                            val filteredByCount = allTags.filter { it.count > 100 }
+                            if (filteredByCount.size < ALWAYS_SHOW_TAGS_COUNT) {
+                                allTags.take(ALWAYS_SHOW_TAGS_COUNT)
+                            } else {
+                                filteredByCount
+                            }
+                        }
+                    }
+                }
+            }
+            presentTags.forEach { tag ->
+                OutlinedTag(
+                    Modifier
+                        .clickable {}
+                        .height(40.dp)
+                        .padding(vertical = 4.dp),
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
+                ) {
+                    ProvideTextStyle(MaterialTheme.typography.labelMedium) {
+                        Text(tag.name, maxLines = 1, color = MaterialTheme.colorScheme.secondary)
 
-                    Text(
-                        tag.count.toString(),
-                        Modifier.padding(start = 8.dp),
-                        maxLines = 1,
-                        color = MaterialTheme.colorScheme.outline,
-                    )
+                        Text(
+                            tag.count.toString(),
+                            Modifier.padding(start = 4.dp),
+                            maxLines = 1,
+                            color = MaterialTheme.colorScheme.outline,
+                        )
+                    }
+                }
+            }
+            if (hasMoreTags) {
+                Box(Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
+                    if (isExpanded) {
+                        TextButton(
+                            { isExpanded = !isExpanded },
+                            Modifier.height(40.dp),
+                        ) {
+                            Text("显示更少")
+                        }
+                    } else {
+                        TextButton(
+                            { isExpanded = !isExpanded },
+                            Modifier.height(40.dp),
+                        ) {
+                            Text("显示更多")
+                        }
+                    }
                 }
             }
         }
-        item(
-            contentType = "spacer footer",
-            span = StaggeredGridItemSpan.FullLine,
-        ) { Spacer(Modifier.width(horizontalPadding - gridItemSpacing)) }
+//        if (hasMoreTags) {
+//            
+//        }
     }
 }
 

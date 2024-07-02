@@ -29,7 +29,7 @@ data class SubjectInfo(
     /* 数据库中的章节数量 */
     val totalEpisodes: Int = 0,
 //    val rating: Rating,
-    val tags: List<Tag> = emptyList(),
+    val tags: List<Tag> = emptyList(), // must be sorted by count
     /* air date in `YYYY-MM-DD` format */
     val airDateString: String? = null,
     val infobox: List<InfoboxItem> = emptyList(),

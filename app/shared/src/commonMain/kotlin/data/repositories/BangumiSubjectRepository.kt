@@ -187,7 +187,7 @@ fun BangumiSubject.toSubjectInfo(): SubjectInfo {
         eps = this.eps,
         totalEpisodes = this.totalEpisodes,
         airDateString = this.date,
-        tags = this.tags.map { Tag(it.name, it.count) },
+        tags = this.tags.map { Tag(it.name, it.count) }.sortedByDescending { it.count },
         infobox = this.infobox?.map { it.toInfoboxItem() }.orEmpty(),
         imageCommon = this.images.common,
         imageLarge = this.images.large,
