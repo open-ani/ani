@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -182,8 +183,24 @@ fun SubjectDetailsScene(
                 lazyListState,
             )
         },
-        commentsTab = {},
-        discussionsTab = {},
+        commentsTab = {
+            LazyColumn(Modifier.fillMaxSize().nestedScroll(connectedScrollState.nestedScrollConnection)) {
+                item {
+                    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        Text("即将上线, 敬请期待", Modifier.padding(16.dp))
+                    }
+                }
+            }
+        },
+        discussionsTab = {
+            LazyColumn(Modifier.fillMaxSize().nestedScroll(connectedScrollState.nestedScrollConnection)) {
+                item {
+                    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        Text("即将上线, 敬请期待", Modifier.padding(16.dp))
+                    }
+                }
+            }
+        },
     )
 }
 
