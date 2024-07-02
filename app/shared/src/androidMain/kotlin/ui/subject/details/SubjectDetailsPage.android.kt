@@ -91,7 +91,7 @@ internal fun testRelatedCharacterInfo(
 internal val TestSubjectCharacterList = listOf(
     testRelatedCharacterInfo("後藤ひとり", "青山吉能"),
     testRelatedCharacterInfo("伊地知虹夏", "鈴代紗弓"),
-    testRelatedCharacterInfo("山田リョウ", "水野朔"),
+    testRelatedCharacterInfo("山田リョウ山田リョウ山田リョウ", "水野朔"),
     testRelatedCharacterInfo("喜多郁代", "長谷川育美"),
     testRelatedCharacterInfo("後藤直樹", "間島淳司"),
     testRelatedCharacterInfo("後藤美智代", "末柄里恵"),

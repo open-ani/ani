@@ -1,5 +1,6 @@
 package me.him188.ani.app.ui.subject.details.components
 
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -281,15 +282,16 @@ fun PersonCard(info: RelatedCharacterInfo, modifier: Modifier = Modifier) {
     PersonCard(
         avatarUrl = info.images?.medium?.takeIf { it.isNotEmpty() },
         name = info.displayName,
-        relation = remember(info) { renderCharacterRelation(info.relation, info.actors) },
+        relation = info.relation,
         modifier = modifier,
+        actorName = remember(info) { getFirstName(info.actors) },
     )
 }
 
-private fun renderCharacterRelation(relation: String, actors: List<PersonInfo>): String {
-    if (actors.isEmpty()) return relation
+private fun getFirstName(actors: List<PersonInfo>): String {
+    if (actors.isEmpty()) return ""
     val actor = actors.first()
-    return "$relation · ${actor.displayName}"
+    return actor.displayName
 }
 
 @Composable
@@ -298,6 +300,7 @@ fun PersonCard(
     name: String,
     relation: String,
     modifier: Modifier = Modifier,
+    actorName: String? = null,
 ) {
     Row(modifier) {
         Row(
@@ -312,10 +315,20 @@ fun PersonCard(
                 verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
-                    Text(name, softWrap = false, fontWeight = FontWeight.Bold)
+                    Text(name, Modifier.basicMarquee(), softWrap = false, fontWeight = FontWeight.Bold)
                 }
 
-                Text(relation, softWrap = false, style = MaterialTheme.typography.labelMedium)
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    ProvideTextStyle(MaterialTheme.typography.labelMedium) {
+                        Text(relation, softWrap = false, maxLines = 1)
+
+                        if (actorName != null) {
+                            Text(" · ", softWrap = false, maxLines = 1)
+                            Text(actorName, Modifier.basicMarquee(), softWrap = false, maxLines = 1)
+                        }
+                    }
+                }
             }
         }
     }
