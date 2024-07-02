@@ -166,13 +166,17 @@ private fun TagsList(
                     contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
                 ) {
                     ProvideTextStyle(MaterialTheme.typography.labelMedium) {
-                        Text(tag.name, maxLines = 1, color = MaterialTheme.colorScheme.secondary)
+                        Text(
+                            tag.name,
+                            maxLines = 1,
+                            color = MaterialTheme.typography.labelMedium.color.copy(alpha = 0.8f),
+                        )
 
                         Text(
                             tag.count.toString(),
-                            Modifier.padding(start = 4.dp),
+                            Modifier.padding(start = 6.dp),
                             maxLines = 1,
-                            color = MaterialTheme.colorScheme.outline,
+                            color = MaterialTheme.colorScheme.secondary,
                         )
                     }
                 }
