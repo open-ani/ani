@@ -45,6 +45,7 @@ import me.him188.ani.app.data.subject.RelatedCharacterInfo
 import me.him188.ani.app.data.subject.RelatedPersonInfo
 import me.him188.ani.app.data.subject.SubjectInfo
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
+import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
 
 
 object SubjectDetailsDefaults
@@ -166,11 +167,12 @@ private fun TagsList(
                         .padding(vertical = 4.dp),
                     contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
                 ) {
-                    ProvideTextStyle(MaterialTheme.typography.labelMedium) {
+                    ProvideTextStyleContentColor(
+                        MaterialTheme.typography.labelMedium,
+                    ) {
                         Text(
                             tag.name,
                             maxLines = 1,
-                            color = MaterialTheme.typography.labelMedium.color.copy(alpha = 0.8f),
                         )
 
                         Text(
