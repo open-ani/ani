@@ -26,10 +26,10 @@ jobs:
             name: Windows x86_64
             uploadApk: false
             arch: x64
-          - os: ubuntu-20.04
-            name: Ubuntu x86_64
-            uploadApk: false
-            arch: x64
+          #          - os: ubuntu-20.04
+          #            name: Ubuntu x86_64
+          #            uploadApk: false
+          #            arch: x64
           - os: macos-12
             name: macOS x86_64
             uploadApk: false
