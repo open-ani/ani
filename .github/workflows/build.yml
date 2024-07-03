@@ -97,6 +97,9 @@ jobs:
           encodedString: ${{ secrets.SIGNING_RELEASE_STOREFILE }}
         continue-on-error: true
 
+      - name: Build Anitorrent
+        run: ./gradlew :torrent:anitorrent:build ${{ env.gradleArgs }}
+
       - name: Assemble
         run: ./gradlew assemble ${{ env.gradleArgs }}
 

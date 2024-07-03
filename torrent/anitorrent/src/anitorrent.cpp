@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 
+#include "../cmake-build-release/_deps/libtorrent-src/include/libtorrent/hex.hpp"
 #include "libtorrent/alert_types.hpp"
 #include "libtorrent/bencode.hpp"
 #include "libtorrent/magnet_uri.hpp"
@@ -14,6 +15,26 @@
 namespace anilt {
     std::string lt_version() { return libtorrent::version(); }
 
+
+    bool torrent_info_parse(torrent_info_t &ti, const std::string &encoded) {
+        libtorrent::error_code ec;
+        libtorrent::torrent_info info(encoded, ec);
+        if (ec) {
+            ti.error_code = ec.value();
+            ti.error_message = ec.message();
+            return true;
+        } else {
+            ti.name = info.name();
+            ti.infohash_hex = libtorrent::aux::to_hex(info.info_hash().to_string());
+            ti.file_count = info.num_files();
+            ti.info = std::make_shared<libtorrent::torrent_info>(info);
+            return false;
+        }
+    }
+
+    void torrent_info_release(torrent_info_t &ti) { ti.info.reset(); }
+
+
     libtorrent::session *new_session(const char *user_agent) {
         using libtorrent::settings_pack;
 
@@ -21,9 +42,9 @@ namespace anilt {
         settings.set_str(settings_pack::user_agent, user_agent);
         settings.set_int(settings_pack::alert_mask,
                          libtorrent::alert_category::status | libtorrent::alert_category::error |
-                                 libtorrent::alert_category::piece_progress |
-                                 libtorrent::alert_category::upload |
-                                 libtorrent::alert_category::stats);
+                         libtorrent::alert_category::piece_progress |
+                         libtorrent::alert_category::upload |
+                         libtorrent::alert_category::stats);
 
         return new libtorrent::session(settings);
     }
@@ -36,7 +57,7 @@ namespace anilt {
 
     std::string
     fetch_magnet(libtorrent::session *s, const std::string &uri, const int timeout_seconds,
-                             const std::string &save_path) {
+                 const std::string &save_path) {
         const auto fn = "[anilt::fetch_magnet]: ";
         std::cerr << fn << uri << std::endl;
 
@@ -79,13 +100,25 @@ namespace anilt {
 
             const auto current_time = std::chrono::high_resolution_clock::now();
             if (std::chrono::duration_cast<std::chrono::seconds>(
-                    current_time - start_time).count() >=
-                timeout_seconds) {
+                    current_time - start_time).count() >= timeout_seconds) {
                 std::cerr << "Timeout reached." << std::endl;
                 return "";
             }
 
             std::this_thread::sleep_for(std::chrono::milliseconds(200));
         }
+    }
+
+    bool start_download(libtorrent::session *s, torrent_handle_t &handle, const torrent_info_t &ti,
+                        const std::string &save_path) {
+        lt::add_torrent_params params;
+        const auto info = ti.info;
+        if (!info) {
+            return false;
+        }
+        params.ti = info;
+        params.save_path = save_path;
+        handle.delegate = std::make_shared<libtorrent::torrent_handle>(s->add_torrent(params));
+        return true;
     }
 } // namespace anilt

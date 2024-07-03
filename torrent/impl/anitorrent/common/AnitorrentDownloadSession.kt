@@ -14,14 +14,21 @@ import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.getAniUserAgent
 import me.him188.ani.app.torrent.anitorrent.binding.SWIGTYPE_p_libtorrent__session
 import me.him188.ani.app.torrent.anitorrent.binding.anitorrent
+import me.him188.ani.app.torrent.anitorrent.binding.torrent_handle_t
 import me.him188.ani.app.torrent.api.FetchTorrentTimeoutException
 import me.him188.ani.app.torrent.api.HttpFileDownloader
 import me.him188.ani.app.torrent.api.TorrentDownloadSession
+import me.him188.ani.app.torrent.api.TorrentDownloadState
 import me.him188.ani.app.torrent.api.TorrentDownloader
 import me.him188.ani.app.torrent.api.TorrentLibInfo
+import me.him188.ani.app.torrent.api.files.AbstractTorrentFileEntry
+import me.him188.ani.app.torrent.api.files.DownloadStats
 import me.him188.ani.app.torrent.api.files.EncodedTorrentInfo
+import me.him188.ani.app.torrent.api.files.TorrentFileEntry
+import me.him188.ani.app.torrent.api.files.TorrentFileHandle
+import me.him188.ani.app.torrent.api.pieces.Piece
 import me.him188.ani.app.torrent.libtorrent4j.DefaultTorrentDownloadSession
-import me.him188.ani.app.torrent.libtorrent4j.files.Torrent4jTorrentInfo
+import me.him188.ani.utils.io.SeekableInput
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import java.io.File
@@ -99,14 +106,14 @@ class AnitorrentTorrentDownloader(
             if (cacheFile.exists()) {
                 val data = cacheFile.readText().hexToByteArray()
                 logger.info { "HTTP torrent file '${uri}' found in cache: $cacheFile, length=${data.size}" }
-                return Torrent4jTorrentInfo.encode(uri, data)
+                return AnitorrentTorrentInfo.encode(uri, data)
             }
             logger.info { "Fetching http url: $uri" }
             val data = httpFileDownloader.download(uri)
             logger.info { "Fetching http url success, file length = ${data.size}" }
             cacheFile.writeText(data.toHexString())
             logger.info { "Saved cache file: $cacheFile" }
-            return Torrent4jTorrentInfo.encode(uri, data)
+            return AnitorrentTorrentInfo.encode(uri, data)
         }
 
         logger.info { "Fetching magnet: $uri" }
@@ -120,7 +127,7 @@ class AnitorrentTorrentDownloader(
             throw FetchTorrentTimeoutException()
         }
         logger.info { "Fetched magnet: size=${data.size}" }
-        return Torrent4jTorrentInfo.encode(uri, data)
+        return AnitorrentTorrentInfo.encode(uri, data)
     }
 
     private val magnetCacheDir = cacheDirectory.resolve("magnet").apply {
@@ -148,7 +155,15 @@ class AnitorrentTorrentDownloader(
         parentCoroutineContext: CoroutineContext,
         overrideSaveDir: File?
     ): TorrentDownloadSession {
-        TODO("Not yet implemented")
+        val info = AnitorrentTorrentInfo.decodeFrom(data)
+            ?: throw IllegalArgumentException("Invalid torrent data, native failed to decode")
+        val saveDir = overrideSaveDir ?: getSaveDirForTorrent(data)
+
+        val handle = torrent_handle_t()
+        if (!anitorrent.start_download(session, handle, info.native, saveDir.absolutePath)) {
+            throw IllegalStateException("Failed to start download, native failed")
+        }
+        return AnitorrentDownloadSession(this.session, handle, saveDir)
     }
 
     override fun getSaveDirForTorrent(data: EncodedTorrentInfo): File =
@@ -161,5 +176,65 @@ class AnitorrentTorrentDownloader(
     override fun close() {
         scope.cancel()
         httpFileDownloader.close()
+    }
+}
+
+class AnitorrentDownloadSession(
+    private val session: SWIGTYPE_p_libtorrent__session,
+    private val handle: torrent_handle_t,
+    override val saveDirectory: File,
+) : TorrentDownloadSession {
+    override val state: MutableStateFlow<TorrentDownloadState> = MutableStateFlow(TorrentDownloadState.Starting)
+    override val overallStats: DownloadStats = object : DownloadStats() {
+        override val totalBytes: MutableStateFlow<Long> = MutableStateFlow(0)
+        override val uploadRate: MutableStateFlow<Long?> = MutableStateFlow(0)
+        override val progress: MutableStateFlow<Float> = MutableStateFlow(0f)
+    }
+
+    inner class AnitorrentFileEntry(
+        override val pieces: List<Piece>,
+        override val supportsStreaming: Boolean,
+        index: Int, length: Long, saveDirectory: File, relativePath: String,
+        torrentName: String, isDebug: Boolean, parentCoroutineContext: CoroutineContext
+    ) : AbstractTorrentFileEntry(
+        index, length, saveDirectory, relativePath, torrentName, isDebug,
+        parentCoroutineContext,
+    ) {
+        override fun updatePriority() {
+            TODO("Not yet implemented")
+        }
+
+        override val stats: DownloadStats = object : DownloadStats() {
+            override val totalBytes: MutableStateFlow<Long> = MutableStateFlow(0)
+            override val uploadRate: MutableStateFlow<Long?> = MutableStateFlow(0)
+            override val progress: MutableStateFlow<Float> = MutableStateFlow(0f)
+        }
+
+        override fun createHandle(): TorrentFileHandle {
+            TODO("Not yet implemented")
+        }
+
+        override fun createInput(): SeekableInput {
+            TODO("Not yet implemented")
+        }
+    }
+
+
+    override suspend fun getFiles(): List<TorrentFileEntry> {
+//        return anitorrent.get_files(handle).map {
+//            TorrentFileEntry(
+//                name = it.name,
+//                size = it.size,
+//                priority = it.priority,
+//                progress = it.progress,
+//            )
+//        }
+        return emptyList()
+    }
+
+    override fun close() {
+    }
+
+    override fun closeIfNotInUse() {
     }
 }
