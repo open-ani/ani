@@ -1,5 +1,3 @@
-#!/bin/zsh
-
 # 这个文件会在 GitHub Actions 的 Windows runner 上执行
 
 # C++

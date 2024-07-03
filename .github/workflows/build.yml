@@ -74,7 +74,7 @@ jobs:
 
       - if: ${{ env.isWindows == 'true' }}
         name: Install Native Dependencies
-        run: ./ci-helper/install-deps-windows.sh
+        run: ./ci-helper/install-deps-windows.cmd
       
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
