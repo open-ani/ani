@@ -11,7 +11,9 @@
 
 // #include "libtorrent/session.hpp"
 
-namespace anilt::session {
+namespace anilt {
+    std::string lt_version() { return libtorrent::version(); }
+
     libtorrent::session *new_session(const char *user_agent) {
         using libtorrent::settings_pack;
 
@@ -19,15 +21,17 @@ namespace anilt::session {
         settings.set_str(settings_pack::user_agent, user_agent);
         settings.set_int(settings_pack::alert_mask,
                          libtorrent::alert_category::status | libtorrent::alert_category::error |
-                         libtorrent::alert_category::piece_progress |
-                         libtorrent::alert_category::upload |
-                         libtorrent::alert_category::stats);
+                                 libtorrent::alert_category::piece_progress |
+                                 libtorrent::alert_category::upload |
+                                 libtorrent::alert_category::stats);
 
         return new libtorrent::session(settings);
     }
 
     std::string fetch_magnet(libtorrent::session *s, const std::string &uri, int timeout_seconds,
                              const std::string &save_path) {
+        std::cerr << "[anilt::fetch_magnet]: " << uri << std::endl;
+
         const std::string &magnet_uri = uri;
 
         lt::session &session = *s;
@@ -40,7 +44,7 @@ namespace anilt::session {
         lt::torrent_handle existing_handle = session.find_torrent(info_hash);
 
         if (existing_handle.is_valid()) {
-            std::cout << "Torrent already added." << std::endl;
+            std::cerr << "Torrent already added." << std::endl;
 
             return "";
         }
@@ -54,10 +58,14 @@ namespace anilt::session {
             session.pop_alerts(&alerts);
 
             for (lt::alert *alert: alerts) {
-                std::cout << alert->message() << std::endl;
+                std::cerr << "Received alert: " << alert->message() << std::endl;
 
                 if (auto at = lt::alert_cast<lt::add_torrent_alert>(alert)) {
-                    std::cout << "Torrent added: " << at->params.ti->name() << std::endl;
+                    if (at->params.ti) {
+                        std::cerr << "Torrent added: " << at->params.ti->name() << std::endl;
+                    } else {
+                        std::cerr << "Torrent added, at->params.ti is still null" << std::endl;
+                    }
                 } else if (auto md = lt::alert_cast<lt::metadata_received_alert>(alert)) {
                     std::shared_ptr<const lt::torrent_info> ti = md->handle.torrent_file();
 
@@ -65,7 +73,7 @@ namespace anilt::session {
                     std::vector<char> torrent_data;
                     lt::bencode(std::back_inserter(torrent_data), ti->info_section());
 
-                    std::cout << "Metadata received, torrent data is ready." << std::endl;
+                    std::cerr << "Metadata received, torrent data is ready." << std::endl;
                     return std::string(torrent_data);
                 } else if (auto ec = lt::alert_cast<lt::torrent_error_alert>(alert)) {
                     std::cerr << "Error: " << ec->error.message() << std::endl;
@@ -85,4 +93,4 @@ namespace anilt::session {
             std::this_thread::sleep_for(std::chrono::milliseconds(200));
         }
     }
-} // namespace anilt::session
+} // namespace anilt

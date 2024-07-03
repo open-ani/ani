@@ -132,3 +132,20 @@ compose.desktop {
 
 // workaround for resource not found
 //kotlin.sourceSets.main.get().resources.srcDir(project(":common").projectDir.resolve("src/androidMain/res/raw"))
+
+val anitorrentRootDir = rootProject.projectDir.resolve("torrent/anitorrent")
+val anitorrentBuildDir = anitorrentRootDir.resolve("build-ci")
+
+val copyAnitorrentCppWrapperToResources = tasks.register("copyAnitorrentCppWrapperToResources", Copy::class.java) {
+    group = "anitorrent"
+    dependsOn(":torrent:anitorrent:buildAnitorrentCppWrapper")
+
+    val dylib = anitorrentBuildDir.resolve("libanitorrent.dylib")
+    from(dylib)
+    val output = projectDir.resolve("appResources/macos-arm64")
+    into(output)
+}
+
+tasks.named("processResources") {
+    dependsOn(copyAnitorrentCppWrapperToResources)
+}

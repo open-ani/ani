@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.28)
+cmake_minimum_required(VERSION 3.25)
 project(anitorrent)
 
 set(CMAKE_CXX_STANDARD 23)
@@ -23,7 +23,7 @@ add_library(anitorrent
         SHARED
         include/anitorrent.h
         src/anitorrent.cpp
-        src/anitorrent_wrap.cpp
+        gen/cpp/anitorrent_wrap.cpp
 )
 target_include_directories(anitorrent PRIVATE include)
 
@@ -36,3 +36,4 @@ target_include_directories(anitorrent_test PRIVATE include)
 
 
 target_link_libraries(anitorrent PRIVATE torrent-rasterbar ${JNI_LIBRARIES})
+target_link_libraries(anitorrent_test PRIVATE torrent-rasterbar ${JNI_LIBRARIES})

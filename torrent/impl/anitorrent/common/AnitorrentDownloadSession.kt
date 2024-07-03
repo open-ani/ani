@@ -9,6 +9,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
+import me.him188.ani.app.platform.Platform
+import me.him188.ani.app.platform.currentPlatform
+import me.him188.ani.app.platform.getAniUserAgent
 import me.him188.ani.app.torrent.anitorrent.binding.SWIGTYPE_p_libtorrent__session
 import me.him188.ani.app.torrent.anitorrent.binding.anitorrent
 import me.him188.ani.app.torrent.api.FetchTorrentTimeoutException
@@ -17,7 +20,6 @@ import me.him188.ani.app.torrent.api.TorrentDownloadSession
 import me.him188.ani.app.torrent.api.TorrentDownloader
 import me.him188.ani.app.torrent.api.TorrentLibInfo
 import me.him188.ani.app.torrent.api.files.EncodedTorrentInfo
-import me.him188.ani.app.torrent.api.files.TorrentInfo
 import me.him188.ani.app.torrent.libtorrent4j.DefaultTorrentDownloadSession
 import me.him188.ani.app.torrent.libtorrent4j.files.Torrent4jTorrentInfo
 import me.him188.ani.utils.logging.info
@@ -26,7 +28,36 @@ import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.CoroutineContext
 
-class AnitorrentTorrentDownloader<Info : TorrentInfo>(
+fun AnitorrentTorrentDownloader(
+    cacheDirectory: File,
+    httpFileDownloader: HttpFileDownloader,
+    isDebug: Boolean,
+    parentCoroutineContext: CoroutineContext,
+): AnitorrentTorrentDownloader {
+    if (currentPlatform is Platform.Windows) {
+    } else {
+        // TODO: this doesn't work 
+        System.setProperty(
+            "java.library.path",
+            System.getProperty("java.library.path") + ":" +
+                    File(System.getProperty("user.dir")).resolve("../appResources/macos-arm64/lib").absolutePath,
+        )
+    }
+    System.loadLibrary("anitorrent")
+
+    println("Using libtorrent version: " + anitorrent.lt_version())
+
+    val session = anitorrent.new_session(getAniUserAgent())
+    return AnitorrentTorrentDownloader(
+        cacheDirectory = cacheDirectory,
+        session = session,
+        httpFileDownloader = httpFileDownloader,
+        isDebug = isDebug,
+        parentCoroutineContext = parentCoroutineContext,
+    )
+}
+
+class AnitorrentTorrentDownloader(
     cacheDirectory: File,
     val session: SWIGTYPE_p_libtorrent__session,
     private val httpFileDownloader: HttpFileDownloader,
@@ -79,7 +110,7 @@ class AnitorrentTorrentDownloader<Info : TorrentInfo>(
         }
 
         logger.info { "Fetching magnet: $uri" }
-        val str = try {
+        val str: String = try {
             anitorrent.fetch_magnet(session, uri, timeoutSeconds, magnetCacheDir.absolutePath)
         } catch (e: InterruptedException) {
             throw FetchTorrentTimeoutException(cause = e)

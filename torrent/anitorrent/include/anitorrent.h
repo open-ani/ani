@@ -4,7 +4,9 @@
 #include "libtorrent/session.hpp"
 
 extern "C" {
-namespace anilt::session {
+namespace anilt {
+    std::string lt_version();
+
     struct stats {
     };
 
@@ -13,7 +15,7 @@ namespace anilt::session {
     // stats get_stats(libtorrent::session &s) {}
     std::string fetch_magnet(libtorrent::session *s, const std::string &uri, int timeout_seconds,
                              const std::string &save_path);
-} // namespace anilt::session
+} // namespace anilt
 }
 
 #endif // ANILT_H

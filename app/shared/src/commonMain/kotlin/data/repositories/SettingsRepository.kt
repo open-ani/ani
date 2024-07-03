@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
-import me.him188.ani.app.data.models.VideoResolverSettings
 import me.him188.ani.app.data.models.DanmakuSettings
 import me.him188.ani.app.data.models.DebugSettings
 import me.him188.ani.app.data.models.MediaCacheSettings
@@ -20,8 +19,10 @@ import me.him188.ani.app.data.models.OneshotActionConfig
 import me.him188.ani.app.data.models.ProxySettings
 import me.him188.ani.app.data.models.UISettings
 import me.him188.ani.app.data.models.UpdateSettings
+import me.him188.ani.app.data.models.VideoResolverSettings
 import me.him188.ani.app.data.models.VideoScaffoldConfig
 import me.him188.ani.app.data.serializers.DanmakuConfigSerializer
+import me.him188.ani.app.tools.torrent.engines.AnitorrentConfig
 import me.him188.ani.app.tools.torrent.engines.Libtorrent4jConfig
 import me.him188.ani.app.tools.torrent.engines.QBittorrentConfig
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
@@ -56,6 +57,7 @@ interface SettingsRepository {
     val videoResolverSettings: Settings<VideoResolverSettings>
     val libtorrent4jConfig: Settings<Libtorrent4jConfig>
     val qBittorrentConfig: Settings<QBittorrentConfig>
+    val anitorrentConfig: Settings<AnitorrentConfig>
 
     val oneshotActionConfig: Settings<OneshotActionConfig>
 
@@ -171,6 +173,11 @@ class PreferencesRepositoryImpl(
         "qBittorrentConfig",
         QBittorrentConfig.serializer(),
         default = { QBittorrentConfig.Default },
+    )
+    override val anitorrentConfig: Settings<AnitorrentConfig> = SerializablePreference(
+        "anitorrentConfig",
+        AnitorrentConfig.serializer(),
+        default = { AnitorrentConfig.Default },
     )
 
     override val oneshotActionConfig: Settings<OneshotActionConfig> = SerializablePreference(

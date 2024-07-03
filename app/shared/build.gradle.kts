@@ -91,6 +91,8 @@ kotlin {
         api(projects.dataSources.jellyfin)
         api(projects.dataSources.ikaros)
 
+        api(projects.torrent.anitorrent)
+
         api(projects.utils.slf4jKt)
         api(projects.utils.coroutines)
         api(projects.utils.io)
@@ -271,10 +273,6 @@ kotlin {
 
         submodule("app/shared/placeholder")
         submodule("app/shared/video-player")
-
-        commonMain {
-            kotlin.srcDirs(rootProject.projectDir.resolve("torrent/anitorrent/java"))
-        }
     }
 
 
@@ -447,3 +445,4 @@ tasks.named("compileKotlinDesktop") {
 tasks.withType(KspTaskJvm::class.java) {
     dependsOn(generateAniBuildConfigDesktop)
 }
+

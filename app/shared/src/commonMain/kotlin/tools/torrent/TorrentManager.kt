@@ -5,6 +5,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.platform.Platform
+import me.him188.ani.app.tools.torrent.engines.AnitorrentEngine
 import me.him188.ani.app.tools.torrent.engines.Libtorrent4jEngine
 import me.him188.ani.app.tools.torrent.engines.QBittorrentEngine
 import org.koin.core.component.KoinComponent
@@ -22,6 +23,7 @@ import kotlin.coroutines.CoroutineContext
 interface TorrentManager {
     val libtorrent4j: Libtorrent4jEngine
     val qBittorrent: QBittorrentEngine
+    val anitorrent: AnitorrentEngine
 
     val engines: List<TorrentEngine>
 }
@@ -61,6 +63,10 @@ class DefaultTorrentManager(
         QBittorrentEngine(scope, qbittorrentConfig, saveDir(TorrentEngineType.QBittorrent))
     }
 
+    override val anitorrent: AnitorrentEngine by lazy {
+        AnitorrentEngine(scope, settingsRepository.anitorrentConfig.flow, saveDir(TorrentEngineType.Libtorrent4j))
+    }
+
     override val engines: List<TorrentEngine> by lazy(LazyThreadSafetyMode.NONE) {
         // 注意, 是故意只启用一个下载器的, 因为每个下载器都会创建一个 DirectoryMediaCacheStorage
         // 并且使用相同的 mediaSourceId: MediaCacheManager.LOCAL_FS_MEDIA_SOURCE_ID.
@@ -69,7 +75,7 @@ class DefaultTorrentManager(
         // 如果要支持多个, 需要考虑将所有 storage 合并成一个 MediaSource.
 
         when (Platform.currentPlatform) {
-            is Platform.Desktop -> listOf(libtorrent4j)
+            is Platform.Desktop -> listOf(anitorrent)
             Platform.Android -> listOf(libtorrent4j)
         }
     }

@@ -1,1 +1,6 @@
 /test-sandbox
+
+
+/appResources/macos-arm64/libanitorrent.dylib
+/appResources/macos-x64/libanitorrent.dylib
+/appResources/windows-x64/anitorrent.dll
