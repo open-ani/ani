@@ -68,9 +68,13 @@ jobs:
           java-version: 17
           architecture: ${{ matrix.arch }}
 
-      - if: ${{ env.isMac == 'true' && matrix.arch == 'aarch64' }}
+      - if: ${{ env.isMac == 'true' }}
         name: Install Native Dependencies
         run: chmod +x ./ci-helper/install-deps-macos.sh && ./ci-helper/install-deps-macos.sh
+
+      - if: ${{ env.isWindows == 'true' }}
+        name: Install Native Dependencies
+        run: ./ci-helper/install-deps-windows.sh
       
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
