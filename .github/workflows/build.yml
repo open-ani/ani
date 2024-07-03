@@ -70,7 +70,7 @@ jobs:
 
       - if: ${{ env.isMac == 'true' && matrix.arch == 'aarch64' }}
         name: Install Native Dependencies
-        run: ./ci-helper/install-deps-macos-aarch64.sh
+        run: chmod +x ./ci-helper/install-deps-macos-aarch64.sh && ./ci-helper/install-deps-macos-aarch64.sh
       
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
