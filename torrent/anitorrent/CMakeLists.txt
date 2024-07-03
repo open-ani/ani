@@ -24,7 +24,6 @@ add_library(anitorrent
         include/anitorrent.h
         src/anitorrent.cpp
         gen/cpp/anitorrent_wrap.cpp
-        include/logger.h
 )
 target_include_directories(anitorrent PRIVATE include)
 
@@ -32,7 +31,6 @@ add_executable(anitorrent_test
         include/anitorrent.h
         src/anitorrent.cpp
         src/main.cpp
-        include/logger.h
 )
 target_include_directories(anitorrent_test PRIVATE include)
 
