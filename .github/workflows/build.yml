@@ -18,7 +18,7 @@ jobs:
       matrix:
         os:
           - windows-2022
-          - ubuntu-20.04
+          #          - ubuntu-20.04
           - macos-12 # x86_64
           - macos-14 # aarch64
         include:
@@ -70,7 +70,7 @@ jobs:
 
       - if: ${{ env.isMac == 'true' && matrix.arch == 'aarch64' }}
         name: Install Native Dependencies
-        run: chmod +x ./ci-helper/install-deps-macos-aarch64.sh && ./ci-helper/install-deps-macos-aarch64.sh
+        run: chmod +x ./ci-helper/install-deps-macos.sh && ./ci-helper/install-deps-macos.sh
       
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
