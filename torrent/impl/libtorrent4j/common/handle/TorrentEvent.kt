@@ -1,4 +1,7 @@
-package me.him188.ani.app.torrent.api.handle
+package me.him188.ani.app.torrent.libtorrent4j.handle
+
+import me.him188.ani.app.torrent.api.handle.AniTorrentHandle
+import me.him188.ani.app.torrent.api.handle.TorrentThread
 
 interface EventListener {
     val torrentName: String
@@ -8,7 +11,7 @@ interface EventListener {
      */
     @TorrentThread
     fun onEvent(event: TorrentEvent)
-
+    
     /**
      * [onEvent] 的特例, 优化性能用.
      */

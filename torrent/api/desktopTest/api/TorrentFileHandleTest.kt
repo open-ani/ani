@@ -3,8 +3,8 @@ package me.him188.ani.app.torrent.api
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import me.him188.ani.app.torrent.api.files.PieceState
-import me.him188.ani.app.torrent.api.handle.TorrentFinishedEvent
 import me.him188.ani.app.torrent.api.handle.TorrentThread
+import me.him188.ani.app.torrent.libtorrent4j.handle.TorrentFinishedEvent
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse

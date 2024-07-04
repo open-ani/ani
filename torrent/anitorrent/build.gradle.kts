@@ -43,7 +43,7 @@ val generateSwig = tasks.register("generateSwig", Exec::class.java) {
 
     val swigI = anitorrentRootDir.resolve("anitorrent.i")
     inputs.file(swigI)
-    inputs.file(anitorrentRootDir.resolve("include/anitorrent.h"))
+    inputs.dir(anitorrentRootDir.resolve("include"))
     outputs.file(anitorrentRootDir.resolve("gen/cpp/anitorrent_wrap.cpp"))
     outputs.dir(anitorrentRootDir.resolve("gen/java"))
 

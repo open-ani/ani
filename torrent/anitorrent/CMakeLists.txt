@@ -24,6 +24,16 @@ add_library(anitorrent
         include/anitorrent.h
         src/anitorrent.cpp
         gen/cpp/anitorrent_wrap.cpp
+        src/events.cpp
+        include/events.h
+        src/torrent_info_t.cpp
+        include/torrent_info_t.h
+        src/torrent_add_info_t.cpp
+        include/torrent_add_info_t.h
+        src/session_t.cpp
+        include/session_t.h
+        src/torrent_handle_t.cpp
+        include/torrent_handle_t.h
 )
 target_include_directories(anitorrent PRIVATE include)
 
@@ -31,6 +41,16 @@ add_executable(anitorrent_test
         include/anitorrent.h
         src/anitorrent.cpp
         src/main.cpp
+        src/events.cpp
+        include/events.h
+        src/torrent_info_t.cpp
+        include/torrent_info_t.h
+        src/torrent_add_info_t.cpp
+        include/torrent_add_info_t.h
+        src/session_t.cpp
+        include/session_t.h
+        src/torrent_handle_t.cpp
+        include/torrent_handle_t.h
 )
 target_include_directories(anitorrent_test PRIVATE include)
 

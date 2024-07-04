@@ -1,13 +1,13 @@
 package me.him188.ani.app.torrent.libtorrent4j
 
-import me.him188.ani.app.torrent.api.handle.EventListener
-import me.him188.ani.app.torrent.api.handle.StatsUpdateEvent
-import me.him188.ani.app.torrent.api.handle.TorrentAddEvent
-import me.him188.ani.app.torrent.api.handle.TorrentEvent
-import me.him188.ani.app.torrent.api.handle.TorrentFinishedEvent
-import me.him188.ani.app.torrent.api.handle.TorrentResumeEvent
-import me.him188.ani.app.torrent.api.handle.TorrentSaveResumeDataEvent
 import me.him188.ani.app.torrent.api.handle.TorrentThread
+import me.him188.ani.app.torrent.libtorrent4j.handle.EventListener
+import me.him188.ani.app.torrent.libtorrent4j.handle.StatsUpdateEvent
+import me.him188.ani.app.torrent.libtorrent4j.handle.TorrentAddEvent
+import me.him188.ani.app.torrent.libtorrent4j.handle.TorrentEvent
+import me.him188.ani.app.torrent.libtorrent4j.handle.TorrentFinishedEvent
+import me.him188.ani.app.torrent.libtorrent4j.handle.TorrentResumeEvent
+import me.him188.ani.app.torrent.libtorrent4j.handle.TorrentSaveResumeDataEvent
 import me.him188.ani.app.torrent.libtorrent4j.handle.asAniTorrentHandle
 import org.libtorrent4j.alerts.AddTorrentAlert
 import org.libtorrent4j.alerts.AlertType

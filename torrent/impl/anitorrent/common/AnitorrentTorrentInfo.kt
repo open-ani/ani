@@ -2,15 +2,14 @@ package me.him188.ani.app.torrent.anitorrent
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import me.him188.ani.app.torrent.anitorrent.binding.anitorrent
-import me.him188.ani.app.torrent.anitorrent.binding.torrent_info_t
+import me.him188.ani.app.torrent.anitorrent.binding.torrent_add_info_t
 import me.him188.ani.app.torrent.api.files.EncodedTorrentInfo
 import me.him188.ani.app.torrent.api.files.TorrentInfo
 
 class AnitorrentTorrentInfo
 private constructor(
     override val originalUri: String? = null,
-    val native: torrent_info_t
+    val native: torrent_add_info_t
 ) : TorrentInfo {
     override val name: String = native.name
     override val infoHashHex: String = native.infohash_hex
@@ -22,18 +21,16 @@ private constructor(
             ignoreUnknownKeys = true
         }
 
-        @OptIn(ExperimentalStdlibApi::class)
         fun decodeFrom(encoded: EncodedTorrentInfo): AnitorrentTorrentInfo? {
             json.decodeFromString(AnitorrentTorrentInfoSave.serializer(), encoded.data.decodeToString()).let { save ->
                 // 新版本数据
-                val info = torrent_info_t()
-                val nativeInfo = anitorrent.torrent_info_parse(info, save.torrentInfoData)
-                if (!nativeInfo) {
+                val nativeInfo = torrent_add_info_t()
+                if (!nativeInfo.parse(save.torrentInfoData)) {
                     return null
                 }
                 return AnitorrentTorrentInfo(
                     originalUri = save.originalUri,
-                    native = info,
+                    native = nativeInfo,
                 )
             }
         }

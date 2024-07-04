@@ -3,9 +3,9 @@ package me.him188.ani.app.torrent.api
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.job
-import me.him188.ani.app.torrent.api.handle.TorrentAddEvent
 import me.him188.ani.app.torrent.api.handle.TorrentThread
 import me.him188.ani.app.torrent.libtorrent4j.DefaultTorrentDownloadSession
+import me.him188.ani.app.torrent.libtorrent4j.handle.TorrentAddEvent
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 

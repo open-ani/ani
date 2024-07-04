@@ -37,7 +37,7 @@ IncludeCategories:
   - Regex: '.*'
     Priority: 3
 IncludeIsMainRegex: '([-_](test|unittest))?$'
-IndentAccessModifiers: True
+IndentAccessModifiers: false
 IndentCaseLabels: true
 IndentWidth: 4
 InsertNewlineAtEOF: true

@@ -160,7 +160,7 @@ abstract class AbstractLockedTorrentDownloader<Info : TorrentInfo>(
             }
 
             val session =
-                dataToSession[hash] ?: DefaultTorrentDownloadSession(
+                dataToSession[hash] ?: Libtorrent4jTorrentDownloadSession(
                     torrentName = torrentName,
                     saveDirectory = saveDirectory,
                     onClose = { session ->
