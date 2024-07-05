@@ -9,7 +9,7 @@ extern "C" {
 struct torrent_file_t final {
     unsigned int index{};
     std::string name;
-    std::string root;
+    std::string path;
     size_t offset{};
     size_t size{};
 
@@ -25,6 +25,7 @@ class torrent_info_t {
 
     int num_pieces{};
     int piece_length{};
+    int last_piece_size{};
 
 
     std::vector<torrent_file_t> files{};

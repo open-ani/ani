@@ -24,6 +24,8 @@ class torrent_handle_t final {
     };
 
     reload_file_result_t reload_file();
+
+    bool post_status_updates();
 };
 }
 } // namespace anilt

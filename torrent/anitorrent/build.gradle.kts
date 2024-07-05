@@ -49,7 +49,7 @@ val generateSwig = tasks.register("generateSwig", Exec::class.java) {
 
     commandLine = listOf(
         swig,
-        "-java", "-c++",
+        "-java", "-c++", "-directors", "-cppext", "cpp", "-addextern", 
         "-o", anitorrentRootDir.resolve("gen/cpp/anitorrent_wrap.cpp").absolutePath,
         "-outdir", anitorrentRootDir.resolve("gen/java/me/him188/ani/app/torrent/anitorrent/binding").absolutePath,
         "-package", "me.him188.ani.app.torrent.anitorrent.binding",

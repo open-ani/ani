@@ -17,7 +17,7 @@ class session_t final {
 
     void resume() const;
 
-    std::string fetch_magnet(const std::string &uri, int timeout_seconds, const std::string &save_path);
+    std::string fetch_magnet(std::string uri, int timeout_seconds, std::string save_path);
 
     /**
      * @param handle [out]
@@ -28,7 +28,9 @@ class session_t final {
 
     void release_handle(torrent_handle_t &handle) const;
 
-    void set_listener(event_listener_t &listener) ;
+    bool set_listener(event_listener_t *listener);
+
+    bool remove_listener();
 
   private:
     std::shared_ptr<libtorrent::session> session_;

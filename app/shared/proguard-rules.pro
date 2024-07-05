@@ -66,3 +66,7 @@
 -keep class ch.qos.logback.core.rolling.TimeBasedRollingPolicy
 #-keepattributes *Annotation* # logback-android 推荐添加, 但测试可以不用添加这个
 -dontwarn javax.mail.**
+
+
+# anitorrent
+-keep class me.him188.ani.app.torrent.anitorrent.binding.** { *; }

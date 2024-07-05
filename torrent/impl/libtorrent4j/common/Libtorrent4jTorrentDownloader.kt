@@ -44,7 +44,7 @@ import java.nio.charset.Charset
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.CoroutineContext
 
-abstract class AbstractLockedTorrentDownloader<Info : TorrentInfo>(
+abstract class AbstractLockedTorrentDownloader<@Suppress("FINAL_UPPER_BOUND") Info : Torrent4jTorrentInfo>(
     cacheDirectory: File,
     val sessionManager: LockedSessionManager,
     private val httpFileDownloader: HttpFileDownloader,
@@ -178,7 +178,7 @@ abstract class AbstractLockedTorrentDownloader<Info : TorrentInfo>(
                         if (uri == null) {
                             logger.error { "[$torrentName] Delete: originalUri is null" }
                         } else {
-                            getHttpTorrentFileCacheFile(uri)
+                            getHttpTorrentFileCacheFile(uri).delete()
                             logger.debug { "[$torrentName] Delete: removed" }
                         }
                     },

@@ -1,4 +1,4 @@
-%module anitorrent
+%module(directors="1") anitorrent
 %{
 #include "anitorrent.hpp"
 #include "events.hpp"

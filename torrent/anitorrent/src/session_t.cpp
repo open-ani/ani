@@ -32,7 +32,8 @@ void session_t::resume() const {
         session->resume();
     }
 }
-std::string session_t::fetch_magnet(const std::string &uri, int timeout_seconds, const std::string &save_path) {
+std::string session_t::fetch_magnet(const std::string uri, int timeout_seconds,
+                                    const std::string save_path) { // NOLINT(*-unnecessary-value-param)
     const auto fn = "[anilt::fetch_magnet]: ";
     std::cerr << fn << uri << std::endl;
 
@@ -87,17 +88,51 @@ std::string session_t::fetch_magnet(const std::string &uri, int timeout_seconds,
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
     }
 }
+
+// info is hold by Java and will be destroyed after this call
 bool session_t::start_download(torrent_handle_t &handle, torrent_add_info_t &info, const std::string &save_path) const {
-    lt::add_torrent_params params;
-    const auto inf = info.info;
-    const auto session = session_;
-    if (!inf || !session) {
+    if (info.kind == torrent_add_info_t::kKindUnset) {
         return false;
     }
-    params.ti = inf;
-    params.save_path = save_path;
+    const auto session = session_;
+    if (!session) {
+        return false;
+    }
 
-    auto torrent_handle = session->add_torrent(params);
+    lt::add_torrent_params params;
+
+    if (info.kind == torrent_add_info_t::kKindMagnetUri) {
+        params = lt::parse_magnet_uri(info.magnetUri);
+    } else if (info.kind == torrent_add_info_t::kKindTorrentFile) {
+        libtorrent::error_code ec;
+        libtorrent::torrent_info ti(info.torrentFilePath, ec);
+        params.ti = std::make_shared<lt::torrent_info>(std::move(ti));
+    }
+
+    params.save_path = save_path;
+    // params.flags = libtorrent::torrent_flags::need_save_resume;
+
+    // Check if the torrent is already in the session
+    libtorrent::torrent_handle torrent_handle{};
+    if (params.info_hashes.has_v1()) {
+        const lt::sha1_hash info_hash = params.info_hashes.v1; // Assuming v1, adjust if using v2
+        torrent_handle = session->find_torrent(info_hash);
+    }
+    if (!torrent_handle.is_valid() && params.ti) {
+        torrent_handle = session->find_torrent(params.ti->info_hashes().v1);
+    }
+
+    if (torrent_handle.is_valid()) {
+        std::cerr << "Torrent already added. " << std::endl;
+    } else {
+        libtorrent::error_code ec;
+        torrent_handle = session->add_torrent(params, ec);
+        if (ec) {
+            std::cerr << "Failed to add torrent: " << ec.message() << std::endl;
+            return false;
+        }
+    }
+
     handle.id = torrent_handle.id();
     handle.delegate = std::make_shared<libtorrent::torrent_handle>(torrent_handle);
     return true;
@@ -108,21 +143,28 @@ void session_t::release_handle(torrent_handle_t &handle) const {
         session->remove_torrent(*ref);
     }
 }
-void session_t::set_listener(event_listener_t &listener) {
-    if (const auto session = session_) {
-        session->set_alert_notify([=] {
+bool session_t::set_listener(event_listener_t *listener) {
+    if (const auto session = session_; session && listener) {
+        session->set_alert_notify([session, listener] {
             std::vector<lt::alert *> alerts;
             session->pop_alerts(&alerts);
-            for (lt::alert *alert: alerts) {
-                if (const auto event = convert_event(alert)) {
-                    listener.on_event(*event);
-                }
-
-                if (const auto a = lt::alert_cast<lt::piece_finished_alert>(alert)) {
-                    listener.on_piece_finished(a->handle.id(), a->piece_index);
+            if (listener) {
+                for (lt::alert *alert: alerts) {
+                    std::cerr << "alert: [" << alert->what() << "]" << alert->message() << std::endl;
+                    call_listener(alert, *session, *listener);
                 }
             }
         });
+        return true;
     }
+    return false;
 }
+bool session_t::remove_listener() {
+    if (const auto session = session_) {
+        session->set_alert_notify({});
+        return true;
+    }
+    return false;
+}
+
 } // namespace anilt

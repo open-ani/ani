@@ -13,8 +13,7 @@ torrent_handle_t::reload_file_result_t torrent_handle_t::reload_file() {
         return kReloadFileNullFile;
     }
     this->info = std::make_shared<torrent_info_t>();
-    auto &info = *this->info;
-    info.parse(*lt_info);
+    this->info->parse(*lt_info);
 
     //
     // info.files.clear();
@@ -22,5 +21,13 @@ torrent_handle_t::reload_file_result_t torrent_handle_t::reload_file() {
     //     info.files.push_back({.index = file.path_index, .name = file.filename(), .path = file.path});
     // }
     return kReloadFileSuccess;
+}
+bool torrent_handle_t::post_status_updates() {
+    const auto handle = delegate;
+    if (!handle) {
+        return false;
+    }
+    handle->post_status({});
+    return true;
 }
 } // namespace anilt

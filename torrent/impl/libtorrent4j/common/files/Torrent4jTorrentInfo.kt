@@ -12,9 +12,9 @@ private constructor(
     override val originalUri: String? = null,
     val info: org.libtorrent4j.TorrentInfo
 ) : TorrentInfo {
-    override val name: String = info.name()
-    override val infoHashHex: String = info.infoHash().toHex()
-    override val fileCount: Int = info.numFiles()
+    val name: String = info.name()
+    val infoHashHex: String = info.infoHash().toHex()
+    val fileCount: Int = info.numFiles()
 
     companion object {
         private val json = Json {
