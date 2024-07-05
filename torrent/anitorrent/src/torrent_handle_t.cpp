@@ -22,12 +22,22 @@ torrent_handle_t::reload_file_result_t torrent_handle_t::reload_file() {
     // }
     return kReloadFileSuccess;
 }
-bool torrent_handle_t::post_status_updates() {
+
+    bool torrent_handle_t::post_status_updates() const {
     const auto handle = delegate;
     if (!handle) {
         return false;
     }
     handle->post_status({});
     return true;
+    }
+
+    bool torrent_handle_t::set_piece_deadline(const int index, const int deadline) const {
+        const auto handle = delegate;
+        if (!handle) {
+            return false;
+        }
+        handle->set_piece_deadline(index, deadline);
+        return true;
 }
 } // namespace anilt

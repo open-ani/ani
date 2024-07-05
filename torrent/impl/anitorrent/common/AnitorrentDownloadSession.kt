@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import me.him188.ani.app.torrent.anitorrent.binding.event_t
-import me.him188.ani.app.torrent.anitorrent.binding.metadata_received_event_t
 import me.him188.ani.app.torrent.anitorrent.binding.session_t
 import me.him188.ani.app.torrent.anitorrent.binding.torrent_handle_t
 import me.him188.ani.app.torrent.anitorrent.binding.torrent_info_t
@@ -27,6 +26,8 @@ import me.him188.ani.app.torrent.api.files.TorrentFileEntry
 import me.him188.ani.app.torrent.api.files.TorrentFileHandle
 import me.him188.ani.app.torrent.api.files.TorrentFilePieceMatcher
 import me.him188.ani.app.torrent.api.pieces.Piece
+import me.him188.ani.app.torrent.api.pieces.PiecePriorities
+import me.him188.ani.app.torrent.api.pieces.TorrentDownloadController
 import me.him188.ani.app.torrent.api.pieces.lastIndex
 import me.him188.ani.app.torrent.api.pieces.startIndex
 import me.him188.ani.app.torrent.io.TorrentInput
@@ -123,26 +124,32 @@ class AnitorrentDownloadSession(
                 logicalStartOffset = offset,
                 onWait = { piece ->
                     logger.info { "[TorrentDownloadControl] $torrentName: Set piece ${piece.pieceIndex} deadline to 0 because it was requested " }
-//                    handle.setPieceDeadline(piece.pieceIndex, 0) // 最高优先级
-//                    for (i in (piece.pieceIndex + 1..piece.pieceIndex + 3)) {
-//                        if (i < pieces.size - 1) {
-//                            handle.setPieceDeadline(
-//                                // 按请求时间的优先
-//                                i,
-//                                calculatePieceDeadlineByTime(i),
-//                            )
-//                        }
-//                    }
+                    handle.set_piece_deadline(piece.pieceIndex, 0) // 最高优先级
+                    for (i in (piece.pieceIndex + 1..piece.pieceIndex + 3)) {
+                        if (i < pieces.size - 1) {
+                            handle.set_piece_deadline(
+                                // 按请求时间的优先
+                                i,
+                                calculatePieceDeadlineByTime(i),
+                            )
+                        }
+                    }
                 },
                 size = length,
             )
         }
     }
 
-    class TorrentInfo(
+    inner class TorrentInfo(
         val allPiecesInTorrent: List<Piece>,
         val entries: List<AnitorrentFileEntry>,
     ) {
+        val controller: TorrentDownloadController = TorrentDownloadController(
+            allPiecesInTorrent,
+            createPiecePriorities(),
+            windowSize = 32,
+        )
+
         init {
             check(allPiecesInTorrent is RandomAccess)
         }
@@ -249,6 +256,7 @@ class AnitorrentDownloadSession(
 
     fun onPieceFinished(pieceIndex: Int) {
         useTorrentInfoOrLaunch { info ->
+            info.controller.onPieceDownloaded(pieceIndex)
             info.allPiecesInTorrent.getOrNull(pieceIndex)?.state?.value = PieceState.FINISHED
         }
     }
@@ -270,7 +278,34 @@ class AnitorrentDownloadSession(
     override fun closeIfNotInUse() {
     }
 
+    private fun createPiecePriorities(): PiecePriorities {
+        return object : PiecePriorities {
+            //            private val priorities = Array(torrentFile().numPieces()) { Priority.IGNORE }
+            private var lastPrioritizedIndexes: Collection<Int>? = null
+
+            override fun downloadOnly(pieceIndexes: Collection<Int>) {
+                if (pieceIndexes.isEmpty()) {
+                    return
+                }
+                if (lastPrioritizedIndexes == pieceIndexes) {
+                    return
+                }
+                logger.info { "[TorrentDownloadControl] Prioritizing pieces: $pieceIndexes" }
+                pieceIndexes.forEachIndexed { index, it ->
+                    handle.set_piece_deadline(it, calculatePieceDeadlineByTime(index))
+                }
+                lastPrioritizedIndexes = pieceIndexes.toList()
+            }
+        }
+    }
 }
+
+private fun calculatePieceDeadlineByTime(
+    shift: Int
+): Int {
+    return ((System.currentTimeMillis() / 1000).and(0x0FFF_FFFFL).toInt() % 1000_000) * 100 + shift
+}
+
 
 private fun AnitorrentDownloadSession.logPieces(pieces: List<Piece>, pathInTorrent: String) {
     logger.info {

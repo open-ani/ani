@@ -25,7 +25,9 @@ class torrent_handle_t final {
 
     reload_file_result_t reload_file();
 
-    bool post_status_updates();
+    bool post_status_updates() const;
+
+    bool set_piece_deadline(int index, int deadline) const;
 };
 }
 } // namespace anilt
