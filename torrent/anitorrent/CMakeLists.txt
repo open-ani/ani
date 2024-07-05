@@ -21,36 +21,36 @@ include_directories(${JNI_INCLUDE_DIRS})
 
 add_library(anitorrent
         SHARED
-        include/anitorrent.h
+        include/anitorrent.hpp
         src/anitorrent.cpp
         gen/cpp/anitorrent_wrap.cpp
         src/events.cpp
-        include/events.h
+        include/events.hpp
         src/torrent_info_t.cpp
-        include/torrent_info_t.h
+        include/torrent_info_t.hpp
         src/torrent_add_info_t.cpp
-        include/torrent_add_info_t.h
+        include/torrent_add_info_t.hpp
         src/session_t.cpp
-        include/session_t.h
+        include/session_t.hpp
         src/torrent_handle_t.cpp
-        include/torrent_handle_t.h
+        include/torrent_handle_t.hpp
 )
 target_include_directories(anitorrent PRIVATE include)
 
 add_executable(anitorrent_test
-        include/anitorrent.h
+        include/anitorrent.hpp
         src/anitorrent.cpp
         src/main.cpp
         src/events.cpp
-        include/events.h
+        include/events.hpp
         src/torrent_info_t.cpp
-        include/torrent_info_t.h
+        include/torrent_info_t.hpp
         src/torrent_add_info_t.cpp
-        include/torrent_add_info_t.h
+        include/torrent_add_info_t.hpp
         src/session_t.cpp
-        include/session_t.h
+        include/session_t.hpp
         src/torrent_handle_t.cpp
-        include/torrent_handle_t.h
+        include/torrent_handle_t.hpp
 )
 target_include_directories(anitorrent_test PRIVATE include)
 

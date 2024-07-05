@@ -3,10 +3,10 @@
 #define SESSION_T_H
 #include <string>
 
-#include "torrent_handle_t.h"
-#include "events.h"
-#include "torrent_add_info_t.h"
-#include "torrent_info_t.h"
+#include "events.hpp"
+#include "torrent_add_info_t.hpp"
+#include "torrent_handle_t.hpp"
+#include "torrent_info_t.hpp"
 
 namespace anilt {
 extern "C" {

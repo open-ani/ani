@@ -2,7 +2,7 @@
 #ifndef EVENTS_H
 #define EVENTS_H
 #include "libtorrent/session.hpp"
-#include "torrent_add_info_t.h"
+#include "torrent_add_info_t.hpp"
 
 
 namespace anilt {

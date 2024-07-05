@@ -1,5 +1,5 @@
 
-#include "torrent_add_info_t.h"
+#include "torrent_add_info_t.hpp"
 
 #include "libtorrent/hex.hpp"
 #include "libtorrent/torrent_info.hpp"

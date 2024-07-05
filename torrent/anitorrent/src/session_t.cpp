@@ -1,12 +1,12 @@
 
-#include "session_t.h"
+#include "session_t.hpp"
 
 #include <iostream>
 
 #include "libtorrent/alert_types.hpp"
 #include "libtorrent/bencode.hpp"
 #include "libtorrent/magnet_uri.hpp"
-#include "torrent_handle_t.h"
+#include "torrent_handle_t.hpp"
 
 namespace anilt {
 static std::string compute_torrent_hash(const std::shared_ptr<const lt::torrent_info> &ti) {

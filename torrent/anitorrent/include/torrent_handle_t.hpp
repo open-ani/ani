@@ -3,7 +3,7 @@
 #define TORRENT_HANDLE_T_H
 
 #include "libtorrent/torrent.hpp"
-#include "torrent_info_t.h"
+#include "torrent_info_t.hpp"
 
 namespace anilt {
 extern "C" {
@@ -17,7 +17,13 @@ class torrent_handle_t final {
 
     [[nodiscard]] torrent_info_t *get_info_view() const { return info.get(); }
 
-    bool reload_file();
+    enum reload_file_result_t : unsigned int {
+        kReloadFileSuccess = 0,
+        kReloadFileNullHandle,
+        kReloadFileNullFile,
+    };
+
+    reload_file_result_t reload_file();
 };
 }
 } // namespace anilt
