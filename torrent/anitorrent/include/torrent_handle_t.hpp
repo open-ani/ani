@@ -25,9 +25,15 @@ class torrent_handle_t final {
 
     reload_file_result_t reload_file();
 
-    bool post_status_updates() const;
 
-    bool set_piece_deadline(int index, int deadline) const;
+    bool post_status_updates();
+
+    bool set_piece_deadline(int index, int deadline);
+
+    void request_piece_now(int index);;
+
+private:
+    std::mutex lock;
 };
 }
 } // namespace anilt

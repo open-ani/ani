@@ -180,9 +180,6 @@ class AnitorrentTorrentDownloader(
         check(session.set_listener(eventListener)) {
             "Failed to set listener"
         }
-        scope.launch(Dispatchers.IO) {
-            delay(50)
-        }
     }
 
     @OptIn(ExperimentalStdlibApi::class)

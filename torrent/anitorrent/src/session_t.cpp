@@ -19,11 +19,12 @@ void session_t::start(const char *user_agent) {
     using libtorrent::settings_pack;
 
     settings_pack settings;
+    settings.set_int(settings_pack::piece_timeout, 1);
+    settings.set_int(settings_pack::request_timeout, 1);
     settings.set_str(settings_pack::user_agent, user_agent);
-    settings.set_int(settings_pack::alert_mask, libtorrent::alert_category::status | libtorrent::alert_category::error |
+    settings.set_int(settings_pack::alert_mask, libtorrent::alert_category::status |
                                                     libtorrent::alert_category::piece_progress |
-                                                    libtorrent::alert_category::upload |
-                                                    libtorrent::alert_category::stats);
+                                                libtorrent::alert_category::upload);
 
     session_ = std::make_shared<libtorrent::session>(settings);
 }

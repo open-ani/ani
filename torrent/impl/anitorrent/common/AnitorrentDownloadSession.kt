@@ -6,9 +6,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import me.him188.ani.app.torrent.anitorrent.binding.event_t
@@ -35,9 +37,11 @@ import me.him188.ani.utils.io.SeekableInput
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
+import me.him188.ani.utils.logging.warn
 import java.io.File
 import java.io.RandomAccessFile
 import kotlin.coroutines.CoroutineContext
+import kotlin.math.ceil
 
 class AnitorrentDownloadSession(
     private val session: session_t,
@@ -50,10 +54,20 @@ class AnitorrentDownloadSession(
 
     private val scope =
         CoroutineScope(
-            parentCoroutineContext + Dispatchers.IO + SupervisorJob(
-                parentCoroutineContext[Job],
-            ),
+            parentCoroutineContext + Dispatchers.IO + SupervisorJob(parentCoroutineContext[Job]),
         )
+
+    init {
+        scope.launch {
+            while (isActive) {
+                if (!handle.post_status_updates()) {
+                    logger.warn { "Failed to post status updates, this might be because the handle has already destroyed." }
+                    return@launch
+                }
+                delay(1000)
+            }
+        }
+    }
 
     override val state: MutableStateFlow<TorrentDownloadState> =
         MutableStateFlow(TorrentDownloadState.Starting)
@@ -142,12 +156,14 @@ class AnitorrentDownloadSession(
 
     inner class TorrentInfo(
         val allPiecesInTorrent: List<Piece>,
+        val pieceLength: Int,
         val entries: List<AnitorrentFileEntry>,
     ) {
         val controller: TorrentDownloadController = TorrentDownloadController(
             allPiecesInTorrent,
             createPiecePriorities(),
-            windowSize = 32,
+            windowSize = (2048 * 1024 / pieceLength).coerceIn(1, 64),
+            headerSize = 1024 * 1024,
         )
 
         init {
@@ -221,7 +237,7 @@ class AnitorrentDownloadSession(
             }
             list
         }
-        val value = TorrentInfo(allPiecesInTorrent, entries)
+        val value = TorrentInfo(allPiecesInTorrent, pieceLength = info.piece_length, entries)
         logger.info { "Got torrent info: $value" }
         this.actualTorrentInfo.complete(value)
     }
@@ -242,6 +258,24 @@ class AnitorrentDownloadSession(
         }
         handle.get_info_view()?.let { info ->
             initializeTorrentInfo(info)
+            useTorrentInfoOrLaunch { info ->
+//                setInitialDeadlines(info)
+                info.controller.onTorrentResumed()
+            }
+        }
+    }
+
+    // 将视频首尾元数据立即请求
+    private fun setInitialDeadlines(info: TorrentInfo) {
+        val pieces = info.allPiecesInTorrent
+        if (pieces.size < 2) return
+        val metadataSize = 32 * 1024
+        val count = ceil(metadataSize.toFloat() / info.pieceLength).toInt()
+        for (i in 0 until count) {
+            handle.set_piece_deadline(i, 0)
+        }
+        for (i in pieces.size - count until pieces.size) {
+            handle.set_piece_deadline(i, 0)
         }
     }
 
@@ -298,14 +332,17 @@ class AnitorrentDownloadSession(
             }
         }
     }
-}
 
-private fun calculatePieceDeadlineByTime(
-    shift: Int
-): Int {
-    return ((System.currentTimeMillis() / 1000).and(0x0FFF_FFFFL).toInt() % 1000_000) * 100 + shift
-}
+    private fun calculatePieceDeadlineByTime(
+        shift: Int
+    ): Int {
+        return (((System.currentTimeMillis() / 1000).and(0x0FFF_FFFFL).toInt() % 1000_000) * 100 + shift).also {
+            if (it < 0)
+                logger.error { "[TorrentDownloadControl] $id: Calculated deadline for piece $shift: $it" }
+        }
+    }
 
+}
 
 private fun AnitorrentDownloadSession.logPieces(pieces: List<Piece>, pathInTorrent: String) {
     logger.info {
