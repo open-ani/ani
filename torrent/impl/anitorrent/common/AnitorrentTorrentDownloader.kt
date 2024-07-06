@@ -51,12 +51,12 @@ private val _initAnitorrent by lazy {
 //    anitorrent.install_signal_handlers()
 }
 
-private fun loadAnitorrentLibrary() {
+private fun loadAnitorrentLibrary(libraryName: String) {
     val platform = currentPlatform as Platform.Desktop
     val filename = when (platform) {
-        is Platform.Linux -> "libanitorrent.so"
-        is Platform.MacOS -> "libanitorrent.dylib"
-        is Platform.Windows -> "anitorrent.dll"
+        is Platform.Linux -> "lib$libraryName.so"
+        is Platform.MacOS -> "lib$libraryName.dylib"
+        is Platform.Windows -> "$libraryName.dll"
     }
     System.getProperty("compose.application.resources.dir")?.let {
         val file = File(it).resolve(filename)
@@ -93,7 +93,12 @@ fun AnitorrentTorrentDownloader(
     isDebug: Boolean,
     parentCoroutineContext: CoroutineContext,
 ): AnitorrentTorrentDownloader {
-    loadAnitorrentLibrary()
+    if (currentPlatform is Platform.Windows) {
+        loadAnitorrentLibrary("libcrypto-3-x64")
+        loadAnitorrentLibrary("libssl-3-x64")
+    }
+    loadAnitorrentLibrary("torrent-rasterbar")
+    loadAnitorrentLibrary("anitorrent")
     _initAnitorrent
 
     println("Using libtorrent version: " + anitorrent.lt_version())

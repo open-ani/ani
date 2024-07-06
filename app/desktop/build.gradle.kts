@@ -146,10 +146,12 @@ val copyAnitorrentDylibToResources = tasks.register("copyAnitorrentDylibToResour
     group = "anitorrent"
     dependsOn(":torrent:anitorrent:buildAnitorrent")
 
+    val buildType = getPropertyOrNull("CMAKE_BUILD_TYPE") ?: "Debug"
+    
     when (getOs()) {
         Os.Windows -> {
-            from(anitorrentBuildDir.resolve("anitorrent.dll"))
-            from(anitorrentBuildDir.resolve("_deps/libtorrent-build/torrent-rasterbar.2.0.10.dylib"))
+            from(anitorrentBuildDir.resolve("$buildType/anitorrent.dll"))
+            from(anitorrentBuildDir.resolve("_deps/libtorrent-build/$buildType/torrent-rasterbar.dll"))
             into(projectDir.resolve("appResources/windows-x64"))
         }
 
@@ -173,6 +175,7 @@ val copyAnitorrentDylibToResources = tasks.register("copyAnitorrentDylibToResour
 
         Os.Unknown, Os.Linux -> {
             from(anitorrentBuildDir.resolve("libanitorrent.so"))
+            from(anitorrentBuildDir.resolve("_deps/libtorrent-build/libtorrent-rasterbar.2.0.10.so"))
             into(projectDir.resolve("appResources/linux-x64"))
         }
     }
