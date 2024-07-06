@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import me.him188.ani.app.torrent.anitorrent.AnitorrentDownloadSession.Entry.EntryHandle
 import me.him188.ani.app.torrent.anitorrent.binding.event_t
 import me.him188.ani.app.torrent.anitorrent.binding.session_t
 import me.him188.ani.app.torrent.anitorrent.binding.torrent_handle_t
@@ -44,7 +45,6 @@ import java.io.RandomAccessFile
 import kotlin.coroutines.CoroutineContext
 
 class AnitorrentDownloadSession(
-    private val referenceHolder: () -> Unit,
     private val session: session_t,
     private val handle: torrent_handle_t,
     override val saveDirectory: File,
@@ -75,7 +75,9 @@ class AnitorrentDownloadSession(
 
     override val overallStats: MutableDownloadStats = MutableDownloadStats()
 
-    inner class AnitorrentFileEntry(
+    private val openHandles = mutableListOf<EntryHandle>()
+
+    inner class Entry(
         override val pieces: List<Piece>,
         index: Int,
         val offset: Long,
@@ -88,8 +90,8 @@ class AnitorrentDownloadSession(
     ) {
         override val supportsStreaming: Boolean get() = true
 
-        inner class TorrentFileHandleImpl : TorrentFileHandle {
-            override val entry: TorrentFileEntry get() = this@AnitorrentFileEntry
+        inner class EntryHandle : TorrentFileHandle {
+            override val entry get() = this@Entry
 
             override fun resume(priority: FilePriority) {
             }
@@ -102,16 +104,20 @@ class AnitorrentDownloadSession(
 
             override fun closeAndDelete() {
             }
+
+            override fun toString(): String {
+                return "AnitorrentFileHandleImpl(index=$index, filePath='$pathInTorrent')"
+            }
         }
 
         override fun updatePriority() {
         }
 
+        val downloadedBytes: MutableStateFlow<Long> = MutableStateFlow(initialDownloadedBytes)
         override val stats: DownloadStats = object : DownloadStats() {
             override val totalBytes: MutableStateFlow<Long> = MutableStateFlow(length)
-            override val downloadedBytes: MutableStateFlow<Long> =
-                MutableStateFlow(initialDownloadedBytes)
-            override val uploadRate: MutableStateFlow<Long?> = MutableStateFlow(0)
+            override val downloadedBytes: MutableStateFlow<Long> get() = this@Entry.downloadedBytes
+            override val uploadRate: MutableStateFlow<Long?> get() = this@AnitorrentDownloadSession.overallStats.uploadRate
             override val progress: Flow<Float> =
                 combine(totalBytes, downloadedBytes) { total, downloaded ->
                     if (total == 0L) return@combine 0f
@@ -119,10 +125,8 @@ class AnitorrentDownloadSession(
                 }
         }
 
-        private val openHandles = mutableListOf<TorrentFileHandleImpl>()
-
         override fun createHandle(): TorrentFileHandle {
-            return TorrentFileHandleImpl().also {
+            return EntryHandle().also {
                 openHandles.add(it)
             }
         }
@@ -156,7 +160,7 @@ class AnitorrentDownloadSession(
     inner class TorrentInfo(
         val allPiecesInTorrent: List<Piece>,
         val pieceLength: Int,
-        val entries: List<AnitorrentFileEntry>,
+        val entries: List<Entry>,
     ) {
         val controller: TorrentDownloadController = TorrentDownloadController(
             allPiecesInTorrent,
@@ -200,7 +204,7 @@ class AnitorrentDownloadSession(
                 } else info.piece_length.toUInt().toLong()
             }
 
-        val entries: List<AnitorrentFileEntry> = kotlin.run {
+        val entries: List<Entry> = kotlin.run {
             val numFiles = info.fileSequence.toList()
 
             var currentOffset = 0L
@@ -219,7 +223,7 @@ class AnitorrentDownloadSession(
                 } else {
                     ArrayList(list)
                 }
-                AnitorrentFileEntry(
+                Entry(
                     index = index,
                     offset = currentOffset,
                     length = size,
@@ -238,6 +242,7 @@ class AnitorrentDownloadSession(
         }
         val value = TorrentInfo(allPiecesInTorrent, pieceLength = info.piece_length, entries)
         logger.info { "Got torrent info: $value" }
+        this.overallStats.totalBytes.value = entries.sumOf { it.length }
         this.actualTorrentInfo.complete(value)
     }
 
@@ -282,6 +287,10 @@ class AnitorrentDownloadSession(
         useTorrentInfoOrLaunch { info ->
             info.controller.onPieceDownloaded(pieceIndex)
             info.allPiecesInTorrent.getOrNull(pieceIndex)?.state?.value = PieceState.FINISHED
+            // TODO: Anitorrent 计算 file 完成度可以优化性能 
+            info.entries.forEach { entry ->
+                entry.downloadedBytes.value = calculateTotalFinishedSize(entry.pieces)
+            }
         }
     }
 
@@ -291,14 +300,20 @@ class AnitorrentDownloadSession(
             info.allPiecesInTorrent.forEach { piece ->
                 piece.state.value = PieceState.FINISHED
             }
+            for (entry in info.entries) {
+                entry.downloadedBytes.value = entry.length
+            }
+            this.overallStats.totalBytes.value = info.entries.sumOf { it.length }
+            this.overallStats.progress.value = 1f
         }
     }
 
     fun onStatsUpdate(stats: torrent_stats_t) {
         this.overallStats.downloadRate.value = stats.download_payload_rate.toUInt().toLong()
         this.overallStats.uploadRate.value = stats.upload_payload_rate.toUInt().toLong()
-        this.overallStats.totalBytes.value = stats.total
         this.overallStats.progress.value = stats.progress
+        this.overallStats.downloadedBytes.value = (this.overallStats.totalBytes.value * stats.progress).toLong()
+        this.overallStats.isFinished.value = stats.progress >= 1f
     }
 
     override suspend fun getFiles(): List<TorrentFileEntry> = this.actualTorrentInfo.await().entries
@@ -309,6 +324,9 @@ class AnitorrentDownloadSession(
     }
 
     override fun closeIfNotInUse() {
+        if (openHandles.isEmpty()) {
+            close()
+        }
     }
 
     private fun createPiecePriorities(): PiecePriorities {
@@ -348,6 +366,8 @@ class MutableDownloadStats : DownloadStats() {
     override val uploadRate: MutableStateFlow<Long?> = MutableStateFlow(0)
     override val downloadRate: MutableStateFlow<Long?> = MutableStateFlow(0)
     override val progress: MutableStateFlow<Float> = MutableStateFlow(0f)
+    override val downloadedBytes: MutableStateFlow<Long> = MutableStateFlow(0)
+    override val isFinished: MutableStateFlow<Boolean> = MutableStateFlow(false)
 }
 
 private fun AnitorrentDownloadSession.logPieces(pieces: List<Piece>, pathInTorrent: String) {

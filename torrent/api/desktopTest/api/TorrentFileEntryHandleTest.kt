@@ -11,7 +11,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 @OptIn(TorrentThread::class)
-internal class TorrentFileHandleTest : TorrentSessionSupport() {
+internal class TorrentFileEntryHandleTest : TorrentSessionSupport() {
 
     @Test
     fun `not finished on creation`() = runTest {

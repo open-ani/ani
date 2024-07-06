@@ -93,11 +93,18 @@ fun AnitorrentTorrentDownloader(
     isDebug: Boolean,
     parentCoroutineContext: CoroutineContext,
 ): AnitorrentTorrentDownloader {
-    if (currentPlatform is Platform.Windows) {
-        loadAnitorrentLibrary("libcrypto-3-x64")
-        loadAnitorrentLibrary("libssl-3-x64")
+    when (currentPlatform as Platform.Desktop) {
+        is Platform.Windows -> {
+            loadAnitorrentLibrary("libcrypto-3-x64")
+            loadAnitorrentLibrary("libssl-3-x64")
+            loadAnitorrentLibrary("torrent-rasterbar")
+        }
+
+        is Platform.Linux -> throw UnsupportedOperationException("Linux is not supported yet")
+        is Platform.MacOS -> {
+            loadAnitorrentLibrary("torrent-rasterbar.2.0.10")
+        }
     }
-    loadAnitorrentLibrary("torrent-rasterbar")
     loadAnitorrentLibrary("anitorrent")
     _initAnitorrent
 
@@ -198,7 +205,7 @@ class AnitorrentTorrentDownloader(
             state ?: return
             try {
                 forEachSession(handleId) {
-                    if (state == torrent_state_t.finished) {
+                    if (state == torrent_state_t.finished || state == torrent_state_t.seeding) {
                         it.onTorrentFinished()
                     }
                 }
@@ -318,9 +325,6 @@ class AnitorrentTorrentDownloader(
         session.resume()
         logger.info { "start_download: resumed" }
         return AnitorrentDownloadSession(
-            referenceHolder = {
-                eventListener
-            },
             this.session, handle,
             saveDir,
 //            onClose = { session ->
