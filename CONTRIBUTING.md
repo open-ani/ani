@@ -174,7 +174,7 @@ Ani 使用 Gradle Version Catalogs. 依赖位于 `gradle/libs.versions.toml`.
 
 [//]: # (    - `bangumi.oauth.client.desktop.secret=XXXXXXXX`)
 
-9. 在 IDE 同步项目, 执行一次构建 (`./gradlew build`). 待构建完成后 (双击 shift)
+5. 在 IDE 同步项目, 执行一次构建 (`./gradlew build`). 待构建完成后 (双击 shift)
    查看生成的 `me.him188.ani.app.platform.AniBuildConfigAndroid`, 你应当能看到你的应用 ID 和
    Secret 已经更新到该文件中.
 
@@ -242,14 +242,6 @@ data
 还提供了一个 [`MediaFetcher`](https://github.com/Him188/ani/tree/master/app/shared/data/common/data/media/MediaFetcher.kt#L42),
 封装了对番剧的下载链接获取逻辑.
 
-### `bangumi-authentication`: Bangumi 授权
-
-负责 Bangumi 授权的逻辑和 UI.
-
-提供 [`SessionManager`](https://github.com/Him188/ani/tree/master/app/shared/bangumi-authentication/common/session/SessionManager.kt#L58)
-接口, 允许其他模块使用 Bangumi 的用户 token.
-其他模块通过依赖注入 `SessionManager` 来获取 token 的 Flow.
-
 ### `foundation`: 基础组件
 
 提供 i18n 支持, 通用的 UI 组件, 对平台交互的封装等.
@@ -267,10 +259,9 @@ data
 
 ### `pages`: 按 UI 页面分类的功能模块
 
-UI 设计采用 MVVM 模式. MVVM 设计模式中的 Model 部分在 Ani 中可以是各数据源 (`:data-sources`) 提供的数据类,
-例如 `:data-sources:bangumi` 将提供 `EpisodeDetails`.
+UI 设计采用 MVVM 模式.
 
-`pages` 目录中, 按照在 APP 实际运行时会展示的页面区分子目录. 相关联的 View (`@Composable`) 和
+`ui/pages` 目录中, 按照在 APP 实际运行时会展示的页面区分子目录. 相关联的 View (`@Composable`) 和
 ViewModel 放置在同一目录下.
 
 - `main`: 整个 APP UI 的入口点, 实现各个页面之间的跳转等
