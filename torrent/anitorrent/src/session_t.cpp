@@ -25,6 +25,7 @@ void session_t::start(std::string user_agent) {
     settings_pack settings;
     settings.set_int(settings_pack::piece_timeout, 1);
     settings.set_int(settings_pack::request_timeout, 1);
+    settings.set_int(settings_pack::upload_rate_limit, 1024 * 1024); // 1MB/s
     settings.set_str(settings_pack::user_agent, std::move(user_agent));
     settings.set_int(settings_pack::alert_mask, libtorrent::alert_category::status |
                                                     libtorrent::alert_category::piece_progress |
