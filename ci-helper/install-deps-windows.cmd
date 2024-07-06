@@ -3,6 +3,7 @@
 vcpkg install boost-variant:x64-windows
 vcpkg install boost-system:x64-windows
 vcpkg install boost-range:x64-windows
+vcpkg install boost-crc:x64-windows
 vcpkg install boost-logic:x64-windows
 vcpkg install boost-parameter:x64-windows
 vcpkg install boost-asio:x64-windows
