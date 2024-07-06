@@ -14,17 +14,9 @@ add_compile_definitions(TORRENT_HAVE_MMAP=0)
 FetchContent_Declare(
         libtorrent
         GIT_REPOSITORY https://github.com/arvidn/libtorrent.git
-        GIT_TAG v2.0.10 # You can specify a particular branch, tag, or commit here
+        GIT_TAG v2.0.10
 )
 FetchContent_MakeAvailable(libtorrent)
-#
-## absl
-#FetchContent_Declare(
-#        absl
-#        GIT_REPOSITORY https://github.com/abseil/abseil-cpp.git
-#        GIT_TAG lts_2024_01_16 # You can specify a particular branch, tag, or commit here
-#)
-#FetchContent_MakeAvailable(absl)
 
 # JNI
 find_package(JNI REQUIRED)

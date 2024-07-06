@@ -57,7 +57,7 @@ val generateSwig = tasks.register("generateSwig", Exec::class.java) {
     )
 }
 
-val configureAnitorrentCppWrapper = tasks.register("configureAnitorrentCppWrapper", Exec::class.java) {
+val configureAnitorrent = tasks.register("configureAnitorrent", Exec::class.java) {
     group = "anitorrent"
     dependsOn(generateSwig)
     // /Users/him188/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/bin/cmake -DCMAKE_BUILD_TYPE=Debug 
@@ -121,9 +121,9 @@ val configureAnitorrentCppWrapper = tasks.register("configureAnitorrentCppWrappe
 }
 
 
-val buildAnitorrentCppWrapper = tasks.register("buildAnitorrentCppWrapper", Exec::class.java) {
+val buildAnitorrent = tasks.register("buildAnitorrent", Exec::class.java) {
     group = "anitorrent"
-    dependsOn(configureAnitorrentCppWrapper)
+    dependsOn(configureAnitorrent)
     dependsOn(generateSwig)
 
     val cmake = System.getenv("CMAKE") ?: "cmake"

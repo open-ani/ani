@@ -12,7 +12,7 @@ extern std::recursive_mutex global_lock;
 // #define guard_global_lock std::lock_guard guard(global_lock)
 #define guard_global_lock (void *) 0
 
-#define ENABLE_TRACE_LOGGING false
+#define ENABLE_TRACE_LOGGING true
 
 struct function_printer_t {
 #if ENABLE_TRACE_LOGGING

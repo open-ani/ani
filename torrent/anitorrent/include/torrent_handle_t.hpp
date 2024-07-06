@@ -23,11 +23,14 @@ class torrent_handle_t final {
     reload_file_result_t reload_file();
 
 
-    bool post_status_updates();
+    bool post_status_updates() const;
 
-    bool set_piece_deadline(int index, int deadline);
 
-    void request_piece_now(int index);
+    bool set_piece_deadline(int index, int deadline) const;
+    void reset_piece_deadline(int index) const;
+    void clear_piece_deadlines() const;
+
+    void request_piece_now(int index) const;
 
   private:
     friend class session_t;

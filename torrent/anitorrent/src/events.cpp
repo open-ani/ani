@@ -17,6 +17,21 @@ static std::shared_ptr<Tp> make_event_shared(const lt::torrent_handle &handle, A
 }
 
 void call_listener(lt::alert *alert, libtorrent::session &session, event_listener_t &listener) {
+    // Non-torrent alerts
+
+    if (const auto a = lt::alert_cast<lt::state_update_alert>(alert)) {
+        function_printer_t _fp("call_listener:torrent_state_update_event_t");
+        for (auto &torrent: a->status) {
+            torrent_stats_t stats;
+            stats.download_payload_rate = torrent.download_payload_rate;
+            stats.upload_payload_rate = torrent.upload_payload_rate;
+            stats.progress = torrent.progress;
+            stats.total = torrent.total;
+            listener.on_status_update(torrent.handle.id(), stats);
+        }
+        return;
+    }
+
     auto *torrent_alert = dynamic_cast<lt::torrent_alert *>(alert);
     if (!torrent_alert) {
         return;
@@ -51,29 +66,20 @@ void call_listener(lt::alert *alert, libtorrent::session &session, event_listene
         listener.on_save_resume_data(event);
         return;
     }
-    if (const auto a = lt::alert_cast<lt::piece_finished_alert>(alert)) {
+    if (const auto a = lt::alert_cast<lt::piece_finished_alert>(torrent_alert)) {
         function_printer_t _fp("call_listener:piece_finished_event_t");
         listener.on_piece_finished(a->handle.id(), a->piece_index);
         return;
     }
-    if (const auto a = lt::alert_cast<lt::block_downloading_alert>(alert)) {
+    if (const auto a = lt::alert_cast<lt::block_downloading_alert>(torrent_alert)) {
         function_printer_t _fp("call_listener:block_downloading_event_t");
         listener.on_block_downloading(a->handle.id(), a->piece_index, a->block_index);
         return;
     }
-    if (const auto a = lt::alert_cast<lt::state_changed_alert>(alert)) {
+    if (const auto a = lt::alert_cast<lt::state_changed_alert>(torrent_alert)) {
         function_printer_t _fp("call_listener:torrent_state_changed_event_t");
         const auto state = static_cast<torrent_state_t>(a->state);
         listener.on_torrent_state_changed(a->handle.id(), state);
-        return;
-    }
-    if (const auto a = lt::alert_cast<lt::state_update_alert>(alert)) {
-        function_printer_t _fp("call_listener:torrent_state_update_event_t");
-        for (auto &torrent: a->status) {
-            torrent_stats_t stats;
-            stats.download_payload_rate = torrent.download_payload_rate;
-            listener.on_status_update(torrent.handle.id(), stats);
-        }
         return;
     }
 }

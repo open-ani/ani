@@ -73,6 +73,8 @@ enum torrent_state_t {
 struct torrent_stats_t {
     int download_payload_rate = 0;
     int upload_payload_rate = 0;
+    float progress = 0;
+    int64_t total = 0;
 };
 
 class event_listener_t { // inherited from Kotlin
