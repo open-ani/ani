@@ -341,15 +341,19 @@ open class ReleaseEnvironment {
 //                            }
 //                        })
 //                    }
-                    val request = PutObjectRequest(getProperty("AWS_BUCKET"), "$tag/$name", file).apply {
-                        this.metadata = ObjectMetadata().apply {
-                            this.contentType = contentType
-                        }
-                    }
-                    s3Client.putObject(request)
+                    putS3Object(name, file, contentType)
                 }
             }
         }
+    }
+
+    private fun putS3Object(name: String, file: File, contentType: String) {
+        val request = PutObjectRequest(getProperty("AWS_BUCKET"), "$tag/$name", file).apply {
+            this.metadata = ObjectMetadata().apply {
+                this.contentType = contentType
+            }
+        }
+        s3Client.putObject(request)
     }
 
     fun generateDevVersionName(
