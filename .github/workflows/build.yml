@@ -49,6 +49,8 @@ jobs:
         "-Pbangumi.oauth.client.android.secret=${{ secrets.BANGUMI_OAUTH_CLIENT_ANDROID_SECRET }}"
         "-Pbangumi.oauth.client.desktop.appId=${{ secrets.BANGUMI_OAUTH_CLIENT_DESKTOP_ID }}" 
         "-Pbangumi.oauth.client.desktop.secret=${{ secrets.BANGUMI_OAUTH_CLIENT_DESKTOP_SECRET }}"
+        "-DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
+        "-DBoost_INCLUDE_DIR=C:/vcpkg/installed/x64-windows/include"
 
       # envs are strings, so check for 'true' or 'false'
       isMac: ${{ startsWith(matrix.os, 'macos') }}
