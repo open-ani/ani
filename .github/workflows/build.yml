@@ -49,6 +49,7 @@ jobs:
         "-Pbangumi.oauth.client.android.secret=${{ secrets.BANGUMI_OAUTH_CLIENT_ANDROID_SECRET }}"
         "-Pbangumi.oauth.client.desktop.appId=${{ secrets.BANGUMI_OAUTH_CLIENT_DESKTOP_ID }}" 
         "-Pbangumi.oauth.client.desktop.secret=${{ secrets.BANGUMI_OAUTH_CLIENT_DESKTOP_SECRET }}"
+        "-Dani.enable.anitorrent=true"
         ${{ startsWith(matrix.os, 'windows') && '-DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake' || '' }}
         ${{ startsWith(matrix.os, 'windows') && '-DBoost_INCLUDE_DIR=C:/vcpkg/installed/x64-windows/include' || '' }}
 
