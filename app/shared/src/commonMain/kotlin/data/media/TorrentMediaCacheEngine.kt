@@ -86,6 +86,7 @@ class TorrentMediaCacheEngine(
         val lazyFileHandle: LazyFileHandle
     ) : MediaCache {
         override suspend fun getCachedMedia(): CachedMedia {
+            logger.info { "getCachedMedia: start" }
             val file = lazyFileHandle.handle.first()
             val finished = file?.entry?.stats?.isFinished?.first()
             if (finished == true) {
@@ -255,6 +256,7 @@ class TorrentMediaCacheEngine(
             }
             val res = kotlinx.coroutines.withTimeoutOrNull(30_000) {
                 val session = downloader.startDownload(encoded, parentContext)
+                logger.info { "Download started, waiting for getFiles" }
 
                 val selectedFile = TorrentVideoSourceResolver.selectVideoFileEntry(
                     session.getFiles(),
@@ -267,6 +269,7 @@ class TorrentMediaCacheEngine(
                 if (selectedFile == null) {
                     logger.warn { "No file selected for ${metadata.episodeName}" }
                 }
+                logger.info { "Selected file to download: $selectedFile" }
 
                 val handle = selectedFile?.createHandle()
                 if (handle == null) {

@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.currentPlatform
@@ -38,6 +37,13 @@ import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 
+@Suppress("ObjectPropertyName")
+private val _initAnitorrent by lazy {
+
+    // 注意, 装了这东西之后反而可能导致 SIG 10/11, 不知道为什么
+//    anitorrent.install_signal_handlers()
+}
+
 fun AnitorrentTorrentDownloader(
     cacheDirectory: File,
     httpFileDownloader: HttpFileDownloader,
@@ -54,6 +60,7 @@ fun AnitorrentTorrentDownloader(
         )
     }
     System.loadLibrary("anitorrent")
+    _initAnitorrent
 
     println("Using libtorrent version: " + anitorrent.lt_version())
 
@@ -77,15 +84,7 @@ class AnitorrentTorrentDownloader(
     parentCoroutineContext: CoroutineContext,
 ) : TorrentDownloader {
     companion object {
-        private val logger = logger(this::class)
-
-        init {
-            try {
-                anitorrent.init()
-            } catch (e: Throwable) {
-                logger.error(e) { "Failed to init anitorrent" }
-            }
-        }
+        internal val logger = logger(this::class)
     }
 
     private val scope = CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
@@ -101,9 +100,9 @@ class AnitorrentTorrentDownloader(
         supportsStreaming = true,
     )
 
-    private val openSessions = ConcurrentHashMap<String, AnitorrentDownloadSession>()
+    val openSessions = ConcurrentHashMap<String, AnitorrentDownloadSession>()
 
-    private inline fun forEachSession(id: HandleId, block: (AnitorrentDownloadSession) -> Unit) {
+    inline fun forEachSession(id: HandleId, block: (AnitorrentDownloadSession) -> Unit) {
         contract { callsInPlace(block, InvocationKind.UNKNOWN) }
         openSessions.values.forEach {
             if (it.id == id) {
@@ -112,70 +111,9 @@ class AnitorrentTorrentDownloader(
         }
     }
 
-    inner class EventListener : event_listener_t() {
-        override fun on_metadata_received(event: metadata_received_event_t?) {
-            event ?: return
-            try {
-                forEachSession(event.handle_id) {
-                    it.handleEvent(event)
-                }
-            } catch (e: Throwable) {
-                logger.error(e) { "Error while handling event: $event" }
-            }
-        }
-
-        override fun on_checked(handleId: Long) {
-            try {
-                forEachSession(handleId) {
-                    it.onTorrentChecked()
-                }
-            } catch (e: Throwable) {
-                logger.error(e) { "Error while handling on_checked" }
-            }
-        }
-
-        override fun on_block_downloading(handleId: Long, pieceIndex: Int, blockIndex: Int) {
-            try {
-                forEachSession(handleId) {
-                    it.onPieceDownloading(pieceIndex)
-                }
-            } catch (e: Throwable) {
-                logger.error(e) { "Error while handling on_block_downloading" }
-            }
-        }
-
-        override fun on_piece_finished(handleId: Long, pieceIndex: Int) {
-            try {
-                forEachSession(handleId) {
-                    it.onPieceFinished(pieceIndex)
-                }
-            } catch (e: Throwable) {
-                logger.error(e) { "Error while handling on_piece_finished" }
-            }
-        }
-
-        override fun on_torrent_state_changed(handleId: Long, state: torrent_state_t?) {
-            state ?: return
-            try {
-                forEachSession(handleId) {
-                    if (state == torrent_state_t.finished) {
-                        it.onTorrentFinished()
-                    }
-                }
-            } catch (e: Throwable) {
-                logger.error(e) { "Error while handling on_torrent_state_changed" }
-            }
-        }
-
-        override fun on_status_update(handleId: Long, stats: torrent_stats_t?) {
-            stats ?: return
-        }
-    }
 
     // must keep referenced
-    private val eventListener = EventListener().apply { 
-        swigReleaseOwnership()
-    }
+    private val eventListener = AnitorrentEventListener(this)
 
     init {
         scope.launch {
@@ -190,8 +128,11 @@ class AnitorrentTorrentDownloader(
             }
         }
 
-        check(session.set_listener(eventListener)) {
-            "Failed to set listener"
+        scope.launch {
+            while (true) {
+                session.process_events(eventListener)
+                delay(1000)
+            }
         }
     }
 
@@ -245,7 +186,7 @@ class AnitorrentTorrentDownloader(
         data: EncodedTorrentInfo,
         parentCoroutineContext: CoroutineContext,
         overrideSaveDir: File?
-    ): TorrentDownloadSession = lock.withLock {
+    ): TorrentDownloadSession {
         val info = AnitorrentTorrentInfo.decodeFrom(data)
         val saveDir = overrideSaveDir ?: getSaveDirForTorrent(data)
 
@@ -260,7 +201,7 @@ class AnitorrentTorrentDownloader(
             is AnitorrentTorrentData.MagnetUri -> {
                 addInfo.kind = torrent_add_info_t.kKindMagnetUri
                 addInfo.magnetUri = info.data.uri
-                logger.info { "Using magnetUri. length=${info.data.uri}" }
+                logger.info { "Using magnetUri. length=${info.data.uri.length}" }
             }
 
             is AnitorrentTorrentData.TorrentFile -> {
@@ -275,12 +216,13 @@ class AnitorrentTorrentDownloader(
         }
         check(addInfo.kind != torrent_add_info_t.kKindUnset)
 
+        logger.info { "start_download: call native start_download" }
         if (!session.start_download(handle, addInfo, saveDir.absolutePath)) {
             throw IllegalStateException("Failed to start download, native failed")
         }
-        addInfo.delete()
-        session.resume()
         logger.info { "start_download: native returned, handleId=${handle.id}" }
+        session.resume()
+        logger.info { "start_download: resumed" }
         return AnitorrentDownloadSession(
             referenceHolder = {
                 eventListener
@@ -299,6 +241,7 @@ class AnitorrentTorrentDownloader(
 //            },
             parentCoroutineContext = parentCoroutineContext,
         ).also {
+            logger.info { "AnitorrentDownloadSession created, saving to openSessions" }
             openSessions[data.data.contentHashCode().toString()] = it
         }
     }
@@ -311,11 +254,74 @@ class AnitorrentTorrentDownloader(
     }
 
     override fun close() {
+        logger.info { "AnitorrentDownloadSession closing" }
         scope.cancel()
         httpFileDownloader.close()
-        session.remove_listener()
     }
 }
+
+class AnitorrentEventListener(
+    private val downloader: AnitorrentTorrentDownloader,
+) : event_listener_t() {
+    override fun on_metadata_received(event: metadata_received_event_t?) {
+        event ?: return
+        try {
+            downloader.forEachSession(event.handle_id) {
+                it.handleEvent(event)
+            }
+        } catch (e: Throwable) {
+            AnitorrentTorrentDownloader.logger.error(e) { "Error while handling event: $event" }
+        }
+    }
+
+    override fun on_checked(handleId: Long) {
+        try {
+            downloader.forEachSession(handleId) {
+                it.onTorrentChecked()
+            }
+        } catch (e: Throwable) {
+            AnitorrentTorrentDownloader.logger.error(e) { "Error while handling on_checked" }
+        }
+    }
+
+    override fun on_block_downloading(handleId: Long, pieceIndex: Int, blockIndex: Int) {
+        try {
+            downloader.forEachSession(handleId) {
+                it.onPieceDownloading(pieceIndex)
+            }
+        } catch (e: Throwable) {
+            AnitorrentTorrentDownloader.logger.error(e) { "Error while handling on_block_downloading" }
+        }
+    }
+
+    override fun on_piece_finished(handleId: Long, pieceIndex: Int) {
+        try {
+            downloader.forEachSession(handleId) {
+                it.onPieceFinished(pieceIndex)
+            }
+        } catch (e: Throwable) {
+            AnitorrentTorrentDownloader.logger.error(e) { "Error while handling on_piece_finished" }
+        }
+    }
+
+    override fun on_torrent_state_changed(handleId: Long, state: torrent_state_t?) {
+        state ?: return
+        try {
+            downloader.forEachSession(handleId) {
+                if (state == torrent_state_t.finished) {
+                    it.onTorrentFinished()
+                }
+            }
+        } catch (e: Throwable) {
+            AnitorrentTorrentDownloader.logger.error(e) { "Error while handling on_torrent_state_changed" }
+        }
+    }
+
+    override fun on_status_update(handleId: Long, stats: torrent_stats_t?) {
+        stats ?: return
+    }
+}
+
 
 typealias HandleId = Long
 

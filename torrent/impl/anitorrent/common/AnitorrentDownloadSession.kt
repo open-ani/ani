@@ -41,7 +41,6 @@ import me.him188.ani.utils.logging.warn
 import java.io.File
 import java.io.RandomAccessFile
 import kotlin.coroutines.CoroutineContext
-import kotlin.math.ceil
 
 class AnitorrentDownloadSession(
     private val referenceHolder: () -> Unit,
@@ -252,12 +251,12 @@ class AnitorrentDownloadSession(
     }
 
     fun onTorrentChecked() {
+        logger.info { "[$id] onTorrentChecked" }
         val res = handle.reload_file()
         if (res != torrent_handle_t.reload_file_result_t.kReloadFileSuccess) {
             logger.error { "[$id] Reload file result: $res" }
             throw IllegalStateException("Failed to reload file, native returned $res")
         }
-        logger.info { "[$id] onTorrentChecked" }
         val info = handle.get_info_view()
         if (info != null) {
             initializeTorrentInfo(info)
@@ -267,20 +266,6 @@ class AnitorrentDownloadSession(
             }
         } else {
             logger.error { "[$id] onTorrentChecked: info is null" }
-        }
-    }
-
-    // 将视频首尾元数据立即请求
-    private fun setInitialDeadlines(info: TorrentInfo) {
-        val pieces = info.allPiecesInTorrent
-        if (pieces.size < 2) return
-        val metadataSize = 32 * 1024
-        val count = ceil(metadataSize.toFloat() / info.pieceLength).toInt()
-        for (i in 0 until count) {
-            handle.set_piece_deadline(i, 0)
-        }
-        for (i in pieces.size - count until pieces.size) {
-            handle.set_piece_deadline(i, 0)
         }
     }
 
@@ -313,6 +298,7 @@ class AnitorrentDownloadSession(
     override suspend fun getFiles(): List<TorrentFileEntry> = this.actualTorrentInfo.await().entries
 
     override fun close() {
+        logger.info { "AnitorrentDownloadSession closing" }
         scope.cancel()
     }
 
