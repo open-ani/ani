@@ -49,7 +49,7 @@ val generateSwig = tasks.register("generateSwig", Exec::class.java) {
 
     commandLine = listOf(
         swig,
-        "-java", "-c++", "-directors", "-cppext", "cpp", "-addextern", 
+        "-java", "-c++", "-directors", "-cppext", "cpp", "-addextern",
         "-o", anitorrentRootDir.resolve("gen/cpp/anitorrent_wrap.cpp").absolutePath,
         "-outdir", anitorrentRootDir.resolve("gen/java/me/him188/ani/app/torrent/anitorrent/binding").absolutePath,
         "-package", "me.him188.ani.app.torrent.anitorrent.binding",
@@ -68,13 +68,52 @@ val configureAnitorrentCppWrapper = tasks.register("configureAnitorrentCppWrappe
     val cmake = System.getenv("CMAKE") ?: "cmake"
     val ninja = System.getenv("NINJA") ?: "ninja"
 
+    // Prefer clang, as the CI is tested with Clang
+    val compilerC = System.getenv("CMAKE_C_COMPILER") ?: kotlin.run {
+        when (getOs()) {
+            Os.Windows -> {
+                File("C:/Program Files/LLVM/bin/clang.exe").takeIf { it.exists() }
+                    ?: File("C:/Program Files/LLVM/bin/clang.exe").takeIf { it.exists() }
+            }
+
+            Os.Unknown,
+            Os.MacOS,
+            Os.Linux -> {
+                File("/usr/bin/clang").takeIf { it.exists() }
+                    ?: File("/usr/bin/gcc").takeIf { it.exists() }
+            }
+        }?.absolutePath?.also {
+            logger.info("Using C compiler: $it")
+        }
+    }
+    val compilerCxx = System.getenv("CMAKE_CXX_COMPILER") ?: kotlin.run {
+        when (getOs()) {
+            Os.Windows -> {
+                File("C:/Program Files/LLVM/bin/clang++.exe").takeIf { it.exists() }
+                    ?: File("C:/Program Files/LLVM/bin/clang++.exe").takeIf { it.exists() }
+            }
+
+            Os.Unknown,
+            Os.MacOS,
+            Os.Linux -> {
+                File("/usr/bin/clang++").takeIf { it.exists() }
+                    ?: File("/usr/bin/g++").takeIf { it.exists() }
+            }
+        }?.absolutePath?.also {
+            logger.info("Using CXX compiler: $it")
+        }
+    }
+
     inputs.file(anitorrentRootDir.resolve("CMakeLists.txt"))
     outputs.dir(anitorrentBuildDir)
 
-    commandLine = listOf(
+    commandLine = listOfNotNull(
         cmake,
         "-DCMAKE_BUILD_TYPE=Debug",
         "-DCMAKE_MAKE_PROGRAM=$ninja",
+        compilerC?.let { "-DCMAKE_C_COMPILER=$compilerC" },
+        compilerCxx?.let { "-DCMAKE_CXX_COMPILER=$compilerCxx" },
+        "-DCMAKE_C_FLAGS_RELEASE=-O3",
         "-G", "Ninja",
         "-S", anitorrentRootDir.absolutePath,
         "-B", anitorrentBuildDir.absolutePath,
