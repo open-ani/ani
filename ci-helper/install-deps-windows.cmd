@@ -8,6 +8,7 @@ vcpkg install boost-logic:x64-windows
 vcpkg install boost-parameter:x64-windows
 vcpkg install boost-asio:x64-windows
 vcpkg install boost-variant2:x64-windows
+vcpkg install boost-multi-index:x64-windows
 
 choco install swig -y
 
