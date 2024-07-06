@@ -31,11 +31,9 @@
 
 ## 1. 开发工具
 
-因为项目使用的技术全都非常新 (不过都是比较稳定的), 建议使用 Android Studio 的最新版本以获得最佳体验.
+建议使用 Android Studio 的最新版本以获得最佳体验, 尤其是 Compose 即时预览.
 
 ### 使用 Android Studio (推荐)
-
-使用 IntelliJ IDEA 则需要最低版本至少为 `2024.1`.
 
 - 需要 JDK 版本至少为 17（如果系统没有, 会自动下载）
 - 需要 Android SDK 版本至少为 API 34
@@ -128,7 +126,8 @@ ani
 
 ## 4. 依赖管理
 
-Ani 使用 Gradle Version Catalogs. 依赖位于 `gradle/libs.versions.toml`.
+Ani 使用 Gradle Version Catalogs.
+依赖位于 [`gradle/libs.versions.toml`](/gradle/libs.versions.toml).
 
 提示: 更新依赖后, 请先让 IDE sync 一下新的配置, 然后才能在 `build.gradle.kts` 中有 `libs.xxx` 的自动补全.
 
