@@ -37,7 +37,7 @@ macOS 构建操作很简单.
    ```sheel
    xcode-select --install
    ```
-3. 执行安装脚本 [`/ci-helper/install-deps-macos.sh`](../../ci-helper/install-deps-macos.sh).
+3. 执行安装脚本 [/ci-helper/install-deps-macos.sh](../../ci-helper/install-deps-macos.sh).
    这将会调用 brew 安装 CMake, Ninja, SWIG, Boost, OpenSSL. libtorrent 将会在构建 anitorrent 时现场构建.
 4. 如果你系统没有安装任意种类的大于 17 版本的 JDK, 可以通过 brew 安装:
    ```shell
@@ -73,12 +73,13 @@ Windows 上构建 native 代码是*比较有挑战性*的. 使用 Visual Studio 
    ```shell
    choco install swig -y
    ```
-6. 执行安装脚本 [`/ci-helper/install-deps-macos.sh`](../../ci-helper/install-deps-windows.cmd).
+6. 执行安装脚本 [/ci-helper/install-deps-windows.cmd](../../ci-helper/install-deps-windows.cmd).
    不要跳过任何一步.
 7. 如果你系统没有安装任意种类的大于 17 版本的 JDK (且在 PATH 可见), 可以通过 choco 安装:
    ```shell
    choco install openjdk
    ```
+   否则后续构建会找不到 JNI.
 8. 获取 `CMAKE_TOOLCHAIN_FILE`:
    ```shell
    vcpkg integrate install
