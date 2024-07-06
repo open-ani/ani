@@ -102,7 +102,7 @@ jobs:
         continue-on-error: true
 
       - name: Build Anitorrent
-        run: ./gradlew :torrent:anitorrent:build :torrent:anitorrent:buildAnitorrentCppWrapper ${{ env.gradleArgs }}
+        run: ./gradlew :torrent:anitorrent:build :torrent:anitorrent:buildAnitorrent ${{ env.gradleArgs }}
 
       - name: Assemble
         run: ./gradlew assemble ${{ env.gradleArgs }}
