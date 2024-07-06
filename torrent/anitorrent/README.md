@@ -14,7 +14,7 @@ Anitorrent 使用 CMake 构建. 推荐配合 Ninja.
    ```shell
    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
    ```
-2. 执行安装脚本 [`/ci-helper/install-deps-macos.sh`](/ci-helper/install-deps-macos.sh).
+2. 执行安装脚本 [`/ci-helper/install-deps-macos.sh`](../../ci-helper/install-deps-macos.sh).
    这将会调用 brew 安装 CMake, Ninja, SWIG, Boost, OpenSSL. libtorrent 将会在构建 anitorrent 时现场构建.
 3. 如果你系统没有安装任意种类的大于 17 版本的 JDK, 可以通过 brew 安装:
    ```shell
@@ -35,7 +35,9 @@ Anitorrent 使用 CMake 构建. 推荐配合 Ninja.
    ```
 4. 确保 `vcpkg` 和 `choco` 可以直接在命令行使用, 否则尝试重启系统
 5.
-执行项目根目录的依赖安装脚本 [`/ci-helper/install-deps-windows.cmd`](/ci-helper/install-deps-windows.cmd)
+
+执行项目根目录的依赖安装脚本 [`/ci-helper/install-deps-windows.cmd`](../../ci-helper/install-deps-windows.cmd),
+这将会使用 vcpkg 安装 `openssl` 和 `boost`, 并使用 choco 安装 `cmake`, `ninja`, `swig`.
 6. 如果你系统没有安装任意种类的大于 17 版本的 JDK (且在 PATH 可见), 可以通过 choco 安装:
    ```shell
    choco install openjdk
@@ -63,7 +65,60 @@ GCC 与 Linux 未经测试.
 
 macOS 支持 aarch64 和 x86_64. Windows 仅支持 x86_64.
 
-## 构建
+## 配置
+
+准备好依赖后, 现在开始配置构建.
+
+### macOS
+
+若你使用上面的自动安装依赖脚本, macOS 通常无需配置. 可以打开一个终端,
+如果 `cmake`, `ninja`, `swig`, `clang`, `clang++` 全都可以找到, 则无需配置编译器,
+只需将 `ani.enable.anitorrent` 设置为 `true`.
+最简单的方式是, 在项目根目录的 `local.properties` 中添加一行:
+
+```properties
+ani.enable.anitorrent=true
+```
+
+若有任一工具未找到, 可通过类似下面 Windows 的配置方式指定. 但比较建议你直接 google 如何安装某个工具最简单.
+
+### Windows
+
+Windows 必须配置, 不配置大概率不能编译.
+
+所有配置项均同时支持通过命令行 `-D` 传递或通过 `local.properties` 传递.
+例如 `ani.enable.anitorrent` 可以通过
+`-Dani.enable.anitorrent=true` 传递, 或在 `local.properties` 中添加 `ani.enable.anitorrent=true`.
+
+Gradle 默认不会构建 Anitorrent. 需要一定需要 `ani.enable.anitorrent=true` 才会启用构建.
+
+- 所有的路径都会默认从环境变量中寻找, 若找不到时需要手动指定
+
+以下为所有重要配置项:
+
+| 配置项                     | 说明                                 |
+|-------------------------|------------------------------------|
+| `ani.enable.anitorrent` | 是否启用 Anitorrent 构建. `true`/`false` |
+| `CMAKE`                 | CMake 路径                           |
+| `NINJA`                 | ninja 路径                           |
+| `SWIG`                  | swig 路径                            |
+| `CMAKE_C_COMPILER`      | C 编译器的路径                           |
+| `CMAKE_CXX_COMPILER`    | C++ 编译器的路径                         |
+| `Boost_INCLUDE_DIR`     | Boost 头文件路径. 该路径下需要包含 `boost` 目录   |
+
+一个示例配置 (Windows, 使用 Visual Studio 的 MSVC 编译器, 使用 Choco 安装的 CMAKE, NINJA, SWIG):
+
+```properties
+ani.enable.anitorrent=true
+CMAKE=cmake
+NINJA=C\:\\ProgramData\\chocolatey\\bin\\ninja.exe
+SWIG=C\:\\ProgramData\\chocolatey\\bin\\swig.exe
+CMAKE_C_COMPILER=D\:\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.37.32822\\bin\\Hostx64\\x64\\cl.exe
+CMAKE_CXX_COMPILER=D\:\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.37.32822\\bin\\Hostx64\\x64\\cl.exe
+Boost_INCLUDE_DIR=D\:\\vcpkg\\installed\\x64-windows\\include
+```
+
+## 构建和打包
 
 所有构建工作在 Gradle 自动完成. 有以下几个 task:
 
@@ -71,10 +126,8 @@ macOS 支持 aarch64 和 x86_64. Windows 仅支持 x86_64.
 - `configureAnitorrent`: 生成 CMake 构建配置
 - `buildAnitorrent`: 构建 `libanitorrent.dylib` / `anitorrent.dll`
 
-以上工作均不需要手动执行. 在运行 desktop 时将会自动构建并复制到 `appResources` 目录, 详见
-task `:app:desktop:copyAnitorrentDylibToResources`.
-
-也就是说, 你正常运行 IDE `Run Desktop` 或 Kotlin main 函数就行.
+配置好之后, 在运行 desktop main 时将会自动构建 Anitorrent 并复制到 `appResources` 目录, 详见
+task `:app:desktop:copyAnitorrentDylibToResources`. 打包 (如 `:app:desktop:package`) 时也会自动携带.
 
 ### 构建产物
 

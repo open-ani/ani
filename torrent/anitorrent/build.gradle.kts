@@ -65,11 +65,11 @@ val configureAnitorrent = tasks.register("configureAnitorrent", Exec::class.java
     // -G Ninja -S /Users/him188/Projects/ani/torrent/anitorrent 
     // -B /Users/him188/Projects/ani/torrent/anitorrent/cmake-build-debug
 
-    val cmake = System.getenv("CMAKE") ?: "cmake"
-    val ninja = System.getenv("NINJA") ?: "ninja"
+    val cmake = getPropertyOrNull("CMAKE") ?: "cmake"
+    val ninja = getPropertyOrNull("NINJA") ?: "ninja"
 
     // Prefer clang, as the CI is tested with Clang
-    val compilerC = System.getenv("CMAKE_C_COMPILER") ?: kotlin.run {
+    val compilerC = getPropertyOrNull("CMAKE_C_COMPILER") ?: kotlin.run {
         when (getOs()) {
             Os.Windows -> {
                 File("C:/Program Files/LLVM/bin/clang.exe").takeIf { it.exists() }
@@ -86,7 +86,7 @@ val configureAnitorrent = tasks.register("configureAnitorrent", Exec::class.java
             logger.info("Using C compiler: $it")
         }
     }
-    val compilerCxx = System.getenv("CMAKE_CXX_COMPILER") ?: kotlin.run {
+    val compilerCxx = getPropertyOrNull("CMAKE_CXX_COMPILER") ?: kotlin.run {
         when (getOs()) {
             Os.Windows -> {
                 File("C:/Program Files/LLVM/bin/clang++.exe").takeIf { it.exists() }
@@ -103,9 +103,14 @@ val configureAnitorrent = tasks.register("configureAnitorrent", Exec::class.java
             logger.info("Using CXX compiler: $it")
         }
     }
+    val isWindows = getOs() == Os.Windows
 
     inputs.file(anitorrentRootDir.resolve("CMakeLists.txt"))
     outputs.dir(anitorrentBuildDir)
+
+    fun String.sanitize(): String {
+        return this.replace("\\", "/").trim()
+    }
 
     // Note: to build in release mode on Windows:
     // --config Release
@@ -113,14 +118,18 @@ val configureAnitorrent = tasks.register("configureAnitorrent", Exec::class.java
     commandLine = listOfNotNull(
         cmake,
         "-DCMAKE_BUILD_TYPE=Debug",
-        "-DCMAKE_MAKE_PROGRAM=$ninja",
-        compilerC?.let { "-DCMAKE_C_COMPILER=$compilerC" },
-        compilerCxx?.let { "-DCMAKE_CXX_COMPILER=$compilerCxx" },
+//        if (isWindows) "-DCMAKE_CXX_COMPILER_FORCED=true" else null,
+//        if (isWindows) "-DCMAKE_C_COMPILER_FORCED=true" else null,
+        "-DCMAKE_MAKE_PROGRAM=${ninja.sanitize()}",
+        compilerC?.let { "-DCMAKE_C_COMPILER=${compilerC.sanitize()}" },
+        compilerCxx?.let { "-DCMAKE_CXX_COMPILER=${compilerCxx.sanitize()}" },
         "-DCMAKE_C_FLAGS_RELEASE=-O3",
+        getPropertyOrNull("Boost_INCLUDE_DIR")?.let { "-DBoost_INCLUDE_DIR=${it.sanitize()}" },
         "-G", "Ninja",
         "-S", anitorrentRootDir.absolutePath,
         "-B", anitorrentBuildDir.absolutePath,
     )
+    logger.warn(commandLine.joinToString(" "))
 }
 
 

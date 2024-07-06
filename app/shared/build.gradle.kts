@@ -348,12 +348,12 @@ val bangumiClientDesktopAppId = getPropertyOrNull("bangumi.oauth.client.desktop.
 val bangumiClientDesktopSecret = getPropertyOrNull("bangumi.oauth.client.desktop.secret")
 
 if (bangumiClientAndroidAppId == null || bangumiClientAndroidSecret == null) {
-    logger.warn("bangumi.oauth.client.android.appId or bangumi.oauth.client.android.secret is not set. Bangumi authorization will not work. Get a token from https://bgm.tv/dev/app and set them in local.properties.")
+    logger.warn("i:: bangumi.oauth.client.android.appId or bangumi.oauth.client.android.secret is not set. Bangumi authorization will not work. Get a token from https://bgm.tv/dev/app and set them in local.properties.")
 }
 
-if (bangumiClientDesktopAppId == null || bangumiClientDesktopSecret == null) {
-    logger.warn("bangumi.oauth.client.desktop.appId or bangumi.oauth.client.desktop.secret is not set. Bangumi authorization will not work. Get a token from https://bgm.tv/dev/app and set them in local.properties.")
-}
+//if (bangumiClientDesktopAppId == null || bangumiClientDesktopSecret == null) {
+//    logger.warn("bangumi.oauth.client.desktop.appId or bangumi.oauth.client.desktop.secret is not set. Bangumi authorization will not work. Get a token from https://bgm.tv/dev/app and set them in local.properties.")
+//}
 
 android {
     namespace = "me.him188.ani"

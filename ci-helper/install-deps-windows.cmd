@@ -6,5 +6,5 @@ vcpkg install boost:x64-windows
 
 @REM libtorrent
 choco install swig -y
-choco install cmake -y
+choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
 choco install ninja -y
