@@ -23,6 +23,7 @@ class torrent_handle_t final {
     reload_file_result_t reload_file();
 
 
+    // See event_listener_t::on_status_update
     bool post_status_updates() const;
 
 

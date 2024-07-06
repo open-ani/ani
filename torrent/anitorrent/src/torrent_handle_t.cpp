@@ -30,7 +30,7 @@ bool torrent_handle_t::post_status_updates() const {
     function_printer_t _fp("torrent_handle_t::post_status_updates");
     guard_global_lock;
     if (const auto handle = delegate; handle && handle->is_valid()) {
-        handle->post_status({});
+        handle->post_status(libtorrent::torrent_handle::query_pieces);
         return true;
     }
     return false;

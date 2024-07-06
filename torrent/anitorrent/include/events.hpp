@@ -74,7 +74,6 @@ struct torrent_stats_t {
     int download_payload_rate = 0;
     int upload_payload_rate = 0;
     float progress = 0;
-    int64_t total = 0;
 };
 
 class event_listener_t { // inherited from Kotlin
@@ -91,6 +90,7 @@ class event_listener_t { // inherited from Kotlin
     virtual void on_block_downloading(handle_id_t handle_id, int piece_index, int block_index) {}
     virtual void on_piece_finished(handle_id_t handle_id, int piece_index) {}
 
+    // See torrent_handle_t::post_status_updates
     virtual void on_status_update(handle_id_t handle_id, torrent_stats_t &stats) {}
 
   private:
