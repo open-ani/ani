@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import me.him188.ani.app.platform.Arch
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.getAniUserAgent
@@ -46,8 +47,44 @@ private val _initAnitorrent by lazy {
     // 其实不开的话, OS 也能输出 crash report. macOS 输出的 crash report 会包含 native 堆栈.
 
     // 如果需要调试, 可以在 anitorrent 搜索 ENABLE_TRACE_LOGGING 并修改为 true. 将会打印非常详细的 function call 记录.
-    
+
 //    anitorrent.install_signal_handlers()
+}
+
+private fun loadAnitorrentLibrary() {
+    val platform = currentPlatform as Platform.Desktop
+    val filename = when (platform) {
+        is Platform.Linux -> "libanitorrent.so"
+        is Platform.MacOS -> "libanitorrent.dylib"
+        is Platform.Windows -> "anitorrent.dll"
+    }
+    System.getProperty("compose.application.resources.dir")?.let {
+        val file = File(it).resolve(filename)
+        if (file.exists()) {
+            System.load(file.absolutePath)
+            return
+        }
+    }
+
+    val arch = when (platform.arch) {
+        Arch.X86_64 -> "x64"
+        Arch.AARCH64 -> "arm64"
+    }
+
+    val triple = when (platform) {
+        is Platform.Linux -> "linux-$arch"
+        is Platform.MacOS -> "macos-$arch"
+        is Platform.Windows -> "windows-$arch"
+    }
+
+    File(System.getProperty("user.dir")).resolve("../appResources/$triple/$filename").let {
+        if (it.exists()) {
+            System.load(it.absolutePath)
+            return
+        }
+    }
+
+    throw UnsatisfiedLinkError("Could not find anitorrent library: $filename")
 }
 
 fun AnitorrentTorrentDownloader(
@@ -56,16 +93,7 @@ fun AnitorrentTorrentDownloader(
     isDebug: Boolean,
     parentCoroutineContext: CoroutineContext,
 ): AnitorrentTorrentDownloader {
-    if (currentPlatform is Platform.Windows) {
-    } else {
-        // TODO: this doesn't work 
-        System.setProperty(
-            "java.library.path",
-            System.getProperty("java.library.path") + ":" +
-                    File(System.getProperty("user.dir")).resolve("../appResources/macos-arm64/lib").absolutePath,
-        )
-    }
-    System.loadLibrary("anitorrent")
+    loadAnitorrentLibrary()
     _initAnitorrent
 
     println("Using libtorrent version: " + anitorrent.lt_version())
