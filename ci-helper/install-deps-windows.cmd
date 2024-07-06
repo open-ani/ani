@@ -3,8 +3,8 @@
 # C++
 choco install cmake
 choco install ninja
-choco install llvm
 
 # libtorrent
 choco install swig
 choco install boost-msvc-14.1
+choco install openssl
