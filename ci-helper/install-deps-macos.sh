@@ -3,10 +3,11 @@
 # 这个文件会在 GitHub Actions 的 macOS runner 上执行
 
 # C++
-brew install cmake
-brew install ninja
-brew install llvm
+brew install cmake -y
+brew install ninja -y
+brew install llvm -y
 
 # libtorrent
-brew install swig
-brew install boost
+brew install swig -y
+brew install openssl -y
+brew install boost -y
