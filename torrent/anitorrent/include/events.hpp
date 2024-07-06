@@ -90,6 +90,10 @@ class event_listener_t { // inherited from Kotlin
     virtual void on_piece_finished(handle_id_t handle_id, int piece_index) {}
 
     virtual void on_status_update(handle_id_t handle_id, torrent_stats_t &stats) {}
+
+  private:
+    friend class session_t;
+    std::mutex lock_;
 };
 
 

@@ -1,9 +1,13 @@
 
 #include "torrent_info_t.hpp"
+
+#include "global_lock.h"
 #include "libtorrent/file_storage.hpp"
 
 namespace anilt {
 void torrent_info_t::parse(const libtorrent::torrent_info &torrent_info) {
+    function_printer_t _fp("torrent_info_t::parse");
+    guard_global_lock;
     const auto &fs = torrent_info.files();
 
     total_size = fs.total_size();

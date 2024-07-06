@@ -44,6 +44,7 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.math.ceil
 
 class AnitorrentDownloadSession(
+    private val referenceHolder: () -> Unit,
     private val session: session_t,
     private val handle: torrent_handle_t,
     override val saveDirectory: File,
@@ -256,12 +257,16 @@ class AnitorrentDownloadSession(
             logger.error { "[$id] Reload file result: $res" }
             throw IllegalStateException("Failed to reload file, native returned $res")
         }
-        handle.get_info_view()?.let { info ->
+        logger.info { "[$id] onTorrentChecked" }
+        val info = handle.get_info_view()
+        if (info != null) {
             initializeTorrentInfo(info)
-            useTorrentInfoOrLaunch { info ->
+            useTorrentInfoOrLaunch {
 //                setInitialDeadlines(info)
-                info.controller.onTorrentResumed()
+                it.controller.onTorrentResumed()
             }
+        } else {
+            logger.error { "[$id] onTorrentChecked: info is null" }
         }
     }
 
@@ -289,6 +294,7 @@ class AnitorrentDownloadSession(
     }
 
     fun onPieceFinished(pieceIndex: Int) {
+        logger.info { "[$id] onPieceFinished: $pieceIndex" }
         useTorrentInfoOrLaunch { info ->
             info.controller.onPieceDownloaded(pieceIndex)
             info.allPiecesInTorrent.getOrNull(pieceIndex)?.state?.value = PieceState.FINISHED
@@ -296,6 +302,7 @@ class AnitorrentDownloadSession(
     }
 
     fun onTorrentFinished() {
+        logger.info { "[$id] onTorrentFinished" }
         useTorrentInfoOrLaunch { info ->
             info.allPiecesInTorrent.forEach { piece ->
                 piece.state.value = PieceState.FINISHED

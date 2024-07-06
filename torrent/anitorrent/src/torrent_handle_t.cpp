@@ -1,15 +1,18 @@
 
 #include "torrent_handle_t.hpp"
 
+#include "global_lock.h"
+
 namespace anilt {
 torrent_handle_t::reload_file_result_t torrent_handle_t::reload_file() {
+    function_printer_t _fp("torrent_handle_t::reload_file");
     const auto handle = delegate;
-    if (!handle) {
+    if (!handle || !handle->is_valid()) {
         return kReloadFileNullHandle;
     }
 
     const auto lt_info = handle->torrent_file();
-    if (!lt_info) {
+    if (!lt_info || !lt_info->is_valid()) {
         return kReloadFileNullFile;
     }
     this->info = std::make_shared<torrent_info_t>();
@@ -23,36 +26,38 @@ torrent_handle_t::reload_file_result_t torrent_handle_t::reload_file() {
     return kReloadFileSuccess;
 }
 
-    bool torrent_handle_t::post_status_updates() {
-        std::lock_guard guard(lock);
+bool torrent_handle_t::post_status_updates() {
+    function_printer_t _fp("torrent_handle_t::post_status_updates");
+    guard_global_lock;
+    if (const auto handle = delegate; handle && handle->is_valid()) {
+        handle->post_status({});
+        return true;
+    }
+    return false;
+}
+
+bool torrent_handle_t::set_piece_deadline(const int index, const int deadline) {
+    function_printer_t _fp("torrent_handle_t::set_piece_deadline");
+    guard_global_lock;
     const auto handle = delegate;
     if (!handle) {
         return false;
     }
-    handle->post_status({});
+    handle->set_piece_deadline(index, deadline);
     return true;
-    }
-
-    bool torrent_handle_t::set_piece_deadline(const int index, const int deadline) {
-        std::lock_guard guard(lock);
-        const auto handle = delegate;
-        if (!handle) {
-            return false;
-        }
-        handle->set_piece_deadline(index, deadline);
-        return true;
 }
 
-    void torrent_handle_t::request_piece_now(int index) {
-        std::lock_guard guard(lock);
-        const auto handle = delegate;
-        if (handle) {
-            std::vector<lt::peer_info> peers;
-            handle->get_peer_info(peers);
-            for (auto peer: peers) {
-                libtorrent::peer_request req{};
-                req.piece = index;
-            }
+void torrent_handle_t::request_piece_now(int index) {
+    function_printer_t _fp("torrent_handle_t::request_piece_now");
+    guard_global_lock;
+    const auto handle = delegate;
+    if (handle) {
+        std::vector<lt::peer_info> peers;
+        handle->get_peer_info(peers);
+        for (auto peer: peers) {
+            libtorrent::peer_request req{};
+            req.piece = index;
         }
     }
+}
 } // namespace anilt

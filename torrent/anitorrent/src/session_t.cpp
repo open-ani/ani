@@ -3,6 +3,7 @@
 
 #include <iostream>
 
+#include "global_lock.h"
 #include "libtorrent/alert_types.hpp"
 #include "libtorrent/bencode.hpp"
 #include "libtorrent/magnet_uri.hpp"
@@ -16,6 +17,8 @@ static std::string compute_torrent_hash(const std::shared_ptr<const lt::torrent_
 }
 
 void session_t::start(const char *user_agent) {
+    function_printer_t _fp("session_t::start");
+    guard_global_lock;
     using libtorrent::settings_pack;
 
     settings_pack settings;
@@ -24,24 +27,28 @@ void session_t::start(const char *user_agent) {
     settings.set_str(settings_pack::user_agent, user_agent);
     settings.set_int(settings_pack::alert_mask, libtorrent::alert_category::status |
                                                     libtorrent::alert_category::piece_progress |
-                                                libtorrent::alert_category::upload);
+                                                    libtorrent::alert_category::upload);
 
     session_ = std::make_shared<libtorrent::session>(settings);
 }
 void session_t::resume() const {
-    if (const auto session = session_) {
+    function_printer_t _fp("session_t::resume");
+    guard_global_lock;
+    if (const auto session = session_; session && session->is_valid()) {
         session->resume();
     }
 }
 std::string session_t::fetch_magnet(const std::string uri, int timeout_seconds,
                                     const std::string save_path) { // NOLINT(*-unnecessary-value-param)
+    function_printer_t _fp("session_t::fetch_magnet");
+    guard_global_lock;
     const auto fn = "[anilt::fetch_magnet]: ";
     std::cerr << fn << uri << std::endl;
 
     const std::string &magnet_uri = uri;
 
     auto session_ptr = session_;
-    if (!session_ptr) {
+    if (!session_ptr || !session_ptr->is_valid()) {
         std::cerr << fn << "session_ is nullptr!" << std::endl;
         return "";
     }
@@ -92,6 +99,8 @@ std::string session_t::fetch_magnet(const std::string uri, int timeout_seconds,
 
 // info is hold by Java and will be destroyed after this call
 bool session_t::start_download(torrent_handle_t &handle, torrent_add_info_t &info, const std::string &save_path) const {
+    function_printer_t _fp("session_t::start_download");
+    guard_global_lock;
     if (info.kind == torrent_add_info_t::kKindUnset) {
         return false;
     }
@@ -139,29 +148,48 @@ bool session_t::start_download(torrent_handle_t &handle, torrent_add_info_t &inf
     return true;
 }
 void session_t::release_handle(torrent_handle_t &handle) const {
+    function_printer_t _fp("session_t::release_handle");
+    guard_global_lock;
     const auto session = session_;
     if (const auto ref = handle.delegate; session && ref) {
         session->remove_torrent(*ref);
     }
 }
 bool session_t::set_listener(event_listener_t *listener) {
-    if (const auto session = session_; session && listener) {
+    function_printer_t _fp("session_t::set_listener");
+    guard_global_lock;
+    if (const auto session = session_; session && session->is_valid() && listener) {
         session->set_alert_notify([session, listener] {
+            guard_global_lock;
+            if (!listener)
+                return;
+            std::cerr << "Alerts processing... " << std::flush;
             std::vector<lt::alert *> alerts;
-            session->pop_alerts(&alerts);
-            if (listener) {
-                for (lt::alert *alert: alerts) {
-                    std::cerr << "alert: [" << alert->what() << "]" << alert->message() << std::endl;
+            if (session->is_valid()) {
+                session->pop_alerts(&alerts);
+            } else {
+                std::cerr << "session invalid" << std::flush;
+                return;
+            }
+            std::lock_guard _(listener->lock_);
+            std::cerr << "Poped " << std::flush;
+            for (lt::alert *alert: alerts) {
+                if (alert && listener) {
+                    std::cerr << "call " << alert->what() <<  ".." << std::flush;
                     call_listener(alert, *session, *listener);
+                    std::cerr << "ok " << std::flush;
                 }
             }
+            std::cerr << "done" << std::endl << std::flush;
         });
         return true;
     }
     return false;
 }
 bool session_t::remove_listener() {
-    if (const auto session = session_) {
+    function_printer_t _fp("session_t::remove_listener");
+    guard_global_lock;
+    if (const auto session = session_; session && session->is_valid()) {
         session->set_alert_notify({});
         return true;
     }

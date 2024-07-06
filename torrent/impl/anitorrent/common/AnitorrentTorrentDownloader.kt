@@ -76,9 +76,20 @@ class AnitorrentTorrentDownloader(
     private val isDebug: Boolean,
     parentCoroutineContext: CoroutineContext,
 ) : TorrentDownloader {
+    companion object {
+        private val logger = logger(this::class)
+
+        init {
+            try {
+                anitorrent.init()
+            } catch (e: Throwable) {
+                logger.error(e) { "Failed to init anitorrent" }
+            }
+        }
+    }
+
     private val scope = CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
 
-    private val logger = logger(this::class)
 
     override val totalUploaded: MutableStateFlow<Long> = MutableStateFlow(0L)
     override val totalDownloaded: MutableStateFlow<Long> = MutableStateFlow(0L)
@@ -162,7 +173,9 @@ class AnitorrentTorrentDownloader(
     }
 
     // must keep referenced
-    private val eventListener = EventListener()
+    private val eventListener = EventListener().apply { 
+        swigReleaseOwnership()
+    }
 
     init {
         scope.launch {
@@ -214,10 +227,6 @@ class AnitorrentTorrentDownloader(
         return AnitorrentTorrentInfo.encode(AnitorrentTorrentInfo(AnitorrentTorrentData.MagnetUri(uri)))
     }
 
-    private val magnetCacheDir = cacheDirectory.resolve("magnet").apply {
-        mkdirs()
-    }
-
     private val httpTorrentFileCacheDir = cacheDirectory.resolve("torrentFiles").apply {
         mkdirs()
     }
@@ -226,7 +235,7 @@ class AnitorrentTorrentDownloader(
         return httpTorrentFileCacheDir.resolve(uri.hashCode().toString() + ".txt")
     }
 
-    private val downloadCacheDir = cacheDirectory.resolve("api/pieces").apply {
+    private val downloadCacheDir = cacheDirectory.resolve("pieces").apply {
         mkdirs()
     }
 
@@ -269,9 +278,13 @@ class AnitorrentTorrentDownloader(
         if (!session.start_download(handle, addInfo, saveDir.absolutePath)) {
             throw IllegalStateException("Failed to start download, native failed")
         }
+        addInfo.delete()
         session.resume()
         logger.info { "start_download: native returned, handleId=${handle.id}" }
         return AnitorrentDownloadSession(
+            referenceHolder = {
+                eventListener
+            },
             this.session, handle,
             saveDir,
 //            onClose = { session ->

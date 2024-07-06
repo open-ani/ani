@@ -13,6 +13,14 @@ FetchContent_Declare(
         GIT_TAG v2.0.10 # You can specify a particular branch, tag, or commit here
 )
 FetchContent_MakeAvailable(libtorrent)
+#
+## absl
+#FetchContent_Declare(
+#        absl
+#        GIT_REPOSITORY https://github.com/abseil/abseil-cpp.git
+#        GIT_TAG lts_2024_01_16 # You can specify a particular branch, tag, or commit here
+#)
+#FetchContent_MakeAvailable(absl)
 
 # JNI
 find_package(JNI REQUIRED)
@@ -34,6 +42,8 @@ add_library(anitorrent
         include/session_t.hpp
         src/torrent_handle_t.cpp
         include/torrent_handle_t.hpp
+        src/global_lock.cpp
+        include/global_lock.h
 )
 target_include_directories(anitorrent PRIVATE include)
 
@@ -51,6 +61,8 @@ add_executable(anitorrent_test
         include/session_t.hpp
         src/torrent_handle_t.cpp
         include/torrent_handle_t.hpp
+        src/global_lock.cpp
+        include/global_lock.h
 )
 target_include_directories(anitorrent_test PRIVATE include)
 

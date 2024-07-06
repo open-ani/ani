@@ -4,6 +4,7 @@
 
 namespace anilt {
 std::string lt_version();
+void init();
 } // namespace anilt
 
 #endif // ANILT_H

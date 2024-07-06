@@ -30,10 +30,10 @@ class torrent_handle_t final {
 
     bool set_piece_deadline(int index, int deadline);
 
-    void request_piece_now(int index);;
+    void request_piece_now(int index);
 
-private:
-    std::mutex lock;
+  private:
+    // std::mutex lock;
 };
 }
 } // namespace anilt
