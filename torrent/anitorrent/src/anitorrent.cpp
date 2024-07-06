@@ -23,7 +23,7 @@ static void signal_handler([[maybe_unused]] int sig) {
 
     const int nptrs = backtrace(buffer, 100);
 
-    printf("*** Signal %d", sig);
+    std::cerr << "Error: signal " << sig << std::endl << std::flush;
 
     /* The call backtrace_symbols_fd(buffer, nptrs, STDOUT_FILENO)
        would produce similar output to the following: */
@@ -34,13 +34,13 @@ static void signal_handler([[maybe_unused]] int sig) {
         exit(EXIT_FAILURE);
     }
 
-    for (int j = 0; j < nptrs; j++)
-        printf("%s\n", strings[j]);
-
+    for (int j = 0; j < nptrs; j++) {
+        std::cerr << strings[j] << std::endl << std::flush;
+    }
     free(strings);
     exit(sig);
 }
-void init() {
+void install_signal_handlers() {
     signal(SIGSEGV, signal_handler);
     signal(SIGBUS, signal_handler);
 }

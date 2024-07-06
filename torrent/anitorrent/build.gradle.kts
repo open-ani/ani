@@ -90,6 +90,7 @@ val buildAnitorrentCppWrapper = tasks.register("buildAnitorrentCppWrapper", Exec
     val cmake = System.getenv("CMAKE") ?: "cmake"
 
     inputs.file(anitorrentRootDir.resolve("CMakeLists.txt"))
+    inputs.dir(anitorrentRootDir.resolve("include"))
     inputs.dir(anitorrentRootDir.resolve("src"))
     inputs.file(anitorrentRootDir.resolve("gen/cpp/anitorrent_wrap.cpp"))
     outputs.dir(anitorrentBuildDir)

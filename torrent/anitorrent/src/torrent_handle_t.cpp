@@ -40,7 +40,7 @@ bool torrent_handle_t::set_piece_deadline(const int index, const int deadline) {
     function_printer_t _fp("torrent_handle_t::set_piece_deadline");
     guard_global_lock;
     const auto handle = delegate;
-    if (!handle) {
+    if (!handle || !handle->is_valid()) {
         return false;
     }
     handle->set_piece_deadline(index, deadline);

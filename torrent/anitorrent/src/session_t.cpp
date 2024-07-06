@@ -2,6 +2,7 @@
 #include "session_t.hpp"
 
 #include <iostream>
+#include <utility>
 
 #include "global_lock.h"
 #include "libtorrent/alert_types.hpp"
@@ -16,7 +17,7 @@ static std::string compute_torrent_hash(const std::shared_ptr<const lt::torrent_
     return std::string(torrent_data);
 }
 
-void session_t::start(const char *user_agent) {
+void session_t::start(std::string user_agent) {
     function_printer_t _fp("session_t::start");
     guard_global_lock;
     using libtorrent::settings_pack;
@@ -24,12 +25,12 @@ void session_t::start(const char *user_agent) {
     settings_pack settings;
     settings.set_int(settings_pack::piece_timeout, 1);
     settings.set_int(settings_pack::request_timeout, 1);
-    settings.set_str(settings_pack::user_agent, user_agent);
+    settings.set_str(settings_pack::user_agent, std::move(user_agent));
     settings.set_int(settings_pack::alert_mask, libtorrent::alert_category::status |
                                                     libtorrent::alert_category::piece_progress |
                                                     libtorrent::alert_category::upload);
 
-    session_ = std::make_shared<libtorrent::session>(settings);
+    session_ = std::make_shared<libtorrent::session>(std::move(settings));
 }
 void session_t::resume() const {
     function_printer_t _fp("session_t::resume");
@@ -98,14 +99,14 @@ std::string session_t::fetch_magnet(const std::string uri, int timeout_seconds,
 }
 
 // info is hold by Java and will be destroyed after this call
-bool session_t::start_download(torrent_handle_t &handle, torrent_add_info_t &info, const std::string &save_path) const {
+bool session_t::start_download(torrent_handle_t &handle, torrent_add_info_t &info, std::string save_path) const {
     function_printer_t _fp("session_t::start_download");
     guard_global_lock;
     if (info.kind == torrent_add_info_t::kKindUnset) {
         return false;
     }
     const auto session = session_;
-    if (!session) {
+    if (!session || !session->is_valid()) {
         return false;
     }
 
@@ -119,7 +120,7 @@ bool session_t::start_download(torrent_handle_t &handle, torrent_add_info_t &inf
         params.ti = std::make_shared<lt::torrent_info>(std::move(ti));
     }
 
-    params.save_path = save_path;
+    params.save_path = std::move(save_path);
     // params.flags = libtorrent::torrent_flags::need_save_resume;
 
     // Check if the torrent is already in the session
@@ -137,7 +138,7 @@ bool session_t::start_download(torrent_handle_t &handle, torrent_add_info_t &inf
     } else {
         libtorrent::error_code ec;
         torrent_handle = session->add_torrent(params, ec);
-        if (ec) {
+        if (ec || !torrent_handle.is_valid()) {
             std::cerr << "Failed to add torrent: " << ec.message() << std::endl;
             return false;
         }
@@ -159,33 +160,43 @@ bool session_t::set_listener(event_listener_t *listener) {
     function_printer_t _fp("session_t::set_listener");
     guard_global_lock;
     if (const auto session = session_; session && session->is_valid() && listener) {
-        session->set_alert_notify([session, listener] {
-            guard_global_lock;
-            if (!listener)
-                return;
-            std::cerr << "Alerts processing... " << std::flush;
-            std::vector<lt::alert *> alerts;
-            if (session->is_valid()) {
-                session->pop_alerts(&alerts);
-            } else {
-                std::cerr << "session invalid" << std::flush;
-                return;
-            }
-            std::lock_guard _(listener->lock_);
-            std::cerr << "Poped " << std::flush;
-            for (lt::alert *alert: alerts) {
-                if (alert && listener) {
-                    std::cerr << "call " << alert->what() <<  ".." << std::flush;
-                    call_listener(alert, *session, *listener);
-                    std::cerr << "ok " << std::flush;
-                }
-            }
-            std::cerr << "done" << std::endl << std::flush;
-        });
+        session->set_alert_notify([this, listener] { process_events(listener); });
         return true;
     }
     return false;
 }
+
+#if ENABLE_TRACE_LOGGING
+#define ALERTS_LOG(log) std::cout << log
+#else
+#define ALERTS_LOG(log) (void *) 0
+#endif
+
+void session_t::process_events(event_listener_t *listener) {
+    function_printer_t _fp("session_t::process_events");
+    guard_global_lock;
+    if (const auto session = session_; session && session->is_valid() && listener) {
+        ALERTS_LOG("Alerts processing... " << std::flush);
+        std::vector<lt::alert *> alerts;
+        if (session->is_valid()) {
+            session->pop_alerts(&alerts);
+        } else {
+            ALERTS_LOG("session invalid" << std::flush);
+            return;
+        }
+        std::lock_guard _(listener->lock_);
+        ALERTS_LOG("Poped " << std::flush);
+        for (lt::alert *alert: alerts) {
+            if (alert) {
+                ALERTS_LOG("call " << alert->what() << ".." << std::flush);
+                call_listener(alert, *session, *listener);
+                ALERTS_LOG("ok " << std::flush);
+            }
+        }
+        ALERTS_LOG("done" << std::endl << std::flush);
+    }
+}
+
 bool session_t::remove_listener() {
     function_printer_t _fp("session_t::remove_listener");
     guard_global_lock;

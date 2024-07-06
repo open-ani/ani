@@ -6,6 +6,10 @@ set(CMAKE_CXX_STANDARD 23)
 
 include(FetchContent)
 
+# mmap 会导致它安装 signal handler, 而 JVM 依赖 signal handler 才能正常工作.
+# 如果 JVM signal handler 被覆盖, JVM 就会因为 SIGBUS/SIGSEGV crash.
+add_compile_definitions(TORRENT_HAVE_MMAP=0)
+
 # Libtorrent
 FetchContent_Declare(
         libtorrent

@@ -13,7 +13,7 @@ extern "C" {
 
 class session_t final {
   public:
-    void start(const char *user_agent);
+    void start(std::string user_agent);
 
     void resume() const;
 
@@ -24,11 +24,15 @@ class session_t final {
      * @param info torrent to downlad
      * @param save_path
      */
-    bool start_download(torrent_handle_t &handle, torrent_add_info_t &info, const std::string &save_path) const;
+    bool start_download(torrent_handle_t &handle, torrent_add_info_t &info, std::string save_path) const;
 
     void release_handle(torrent_handle_t &handle) const;
 
-    bool set_listener(event_listener_t *listener);
+    [[deprecated]] // 在非 JVM 线程调用回调可能导致 VM crash. Use [process_events] instead
+    bool
+    set_listener(event_listener_t *listener);
+
+    void process_events(event_listener_t *listener);
 
     bool remove_listener();
 

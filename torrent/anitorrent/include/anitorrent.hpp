@@ -4,7 +4,7 @@
 
 namespace anilt {
 std::string lt_version();
-void init();
+void install_signal_handlers();
 } // namespace anilt
 
 #endif // ANILT_H

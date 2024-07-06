@@ -10,9 +10,6 @@ extern "C" {
 
 class torrent_handle_t final {
   public:
-    std::shared_ptr<libtorrent::torrent_handle> delegate;
-
-    std::shared_ptr<torrent_info_t> info;
     unsigned int id = 0;
 
     [[nodiscard]] torrent_info_t *get_info_view() const { return info.get(); }
@@ -33,6 +30,9 @@ class torrent_handle_t final {
     void request_piece_now(int index);
 
   private:
+    friend class session_t;
+    std::shared_ptr<libtorrent::torrent_handle> delegate;
+    std::shared_ptr<torrent_info_t> info;
     // std::mutex lock;
 };
 }
