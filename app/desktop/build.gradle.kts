@@ -16,6 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import com.android.utils.CpuArchitecture
+import com.android.utils.osArchitecture
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import java.util.UUID
 
@@ -136,16 +138,49 @@ compose.desktop {
 val anitorrentRootDir = rootProject.projectDir.resolve("torrent/anitorrent")
 val anitorrentBuildDir = anitorrentRootDir.resolve("build-ci")
 
-val copyAnitorrentCppWrapperToResources = tasks.register("copyAnitorrentCppWrapperToResources", Copy::class.java) {
+val copyAnitorrentDylibToResources = tasks.register("copyAnitorrentDylibToResources", Copy::class.java) {
     group = "anitorrent"
-    dependsOn(":torrent:anitorrent:buildAnitorrentCppWrapper")
+    dependsOn(":torrent:anitorrent:buildAnitorrent")
 
-    val dylib = anitorrentBuildDir.resolve("libanitorrent.dylib")
-    from(dylib)
-    val output = projectDir.resolve("appResources/macos-arm64")
-    into(output)
+    when (getOs()) {
+        Os.Windows -> {
+            from(anitorrentBuildDir.resolve("anitorrent.dll"))
+            from(anitorrentBuildDir.resolve("_deps/libtorrent-build/torrent-rasterbar.2.0.10.dylib"))
+            into(projectDir.resolve("appResources/windows-x64"))
+        }
+
+        Os.MacOS -> {
+            from(anitorrentBuildDir.resolve("libanitorrent.dylib"))
+            from(anitorrentBuildDir.resolve("_deps/libtorrent-build/libtorrent-rasterbar.2.0.10.dylib"))
+            val isArm = when (osArchitecture) {
+                CpuArchitecture.X86 -> false
+                CpuArchitecture.X86_64 -> false
+                CpuArchitecture.ARM -> true
+                CpuArchitecture.X86_ON_ARM -> false
+                CpuArchitecture.UNKNOWN -> false
+            }
+            into(
+                projectDir.resolve(
+                    if (isArm) "appResources/macos-arm64"
+                    else "appResources/macos-x64",
+                ),
+            )
+        }
+
+        Os.Unknown, Os.Linux -> {
+            from(anitorrentBuildDir.resolve("libanitorrent.so"))
+            into(projectDir.resolve("appResources/linux-x64"))
+        }
+    }
 }
 
 tasks.named("processResources") {
-    dependsOn(copyAnitorrentCppWrapperToResources)
+    dependsOn(copyAnitorrentDylibToResources)
+}
+
+//  Reason: Task ':app:desktop:prepareAppResources' uses this output of task ':app:desktop:copyAnitorrentCppWrapperToResources' without declaring an explicit or implicit dependency. This can lead to incorrect results being produced, depending on what order the tasks are executed.
+afterEvaluate {
+    tasks.named("prepareAppResources") {
+        dependsOn(copyAnitorrentDylibToResources)
+    }
 }
