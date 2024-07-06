@@ -107,6 +107,9 @@ val configureAnitorrent = tasks.register("configureAnitorrent", Exec::class.java
     inputs.file(anitorrentRootDir.resolve("CMakeLists.txt"))
     outputs.dir(anitorrentBuildDir)
 
+    // Note: to build in release mode on Windows:
+    // --config Release
+    // See also https://github.com/arvidn/libtorrent/issues/5111#issuecomment-688540049
     commandLine = listOfNotNull(
         cmake,
         "-DCMAKE_BUILD_TYPE=Debug",

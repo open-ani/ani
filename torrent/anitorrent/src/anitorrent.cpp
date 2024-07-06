@@ -5,10 +5,11 @@
 // used by boost stacktrace
 #define _GNU_SOURCE // NOLINT(*-reserved-identifier)
 
-#include <execinfo.h>
-
-
+#ifndef _WIN32
+#include <execinfo.h> // This is not available on windows
 #include "boost/stacktrace/stacktrace.hpp"
+#endif
+
 #include "libtorrent/version.hpp"
 
 
@@ -18,6 +19,7 @@ namespace anilt {
 std::string lt_version() { return libtorrent::version(); }
 
 static void signal_handler([[maybe_unused]] int sig) {
+#ifndef _WIN32
 
     void *buffer[100];
 
@@ -39,9 +41,12 @@ static void signal_handler([[maybe_unused]] int sig) {
     }
     free(strings);
     exit(sig);
+#endif
 }
 void install_signal_handlers() {
+#ifndef _WIN32
     signal(SIGSEGV, signal_handler);
     signal(SIGBUS, signal_handler);
+#endif
 }
 } // namespace anilt
