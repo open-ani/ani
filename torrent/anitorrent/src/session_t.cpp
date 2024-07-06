@@ -14,7 +14,7 @@ namespace anilt {
 static std::string compute_torrent_hash(const std::shared_ptr<const lt::torrent_info> &ti) {
     std::vector<char> torrent_data;
     bencode(std::back_inserter(torrent_data), ti->info_section());
-    return std::string(torrent_data);
+    return {torrent_data.begin(), torrent_data.end()};
 }
 
 void session_t::start(std::string user_agent) {
