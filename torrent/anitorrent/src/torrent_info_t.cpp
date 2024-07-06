@@ -21,7 +21,7 @@ void torrent_info_t::parse(const libtorrent::torrent_info &torrent_info) {
     for (int i = 0; i < fs.num_files(); ++i) {
         auto &f = this->files.emplace_back();
         f.index = i;
-        f.name = fs.file_name(i);
+        f.name = std::string(fs.file_name(i));
         f.path = fs.file_path(i);
         f.offset = fs.file_offset(i);
         f.size = fs.file_size(i);
