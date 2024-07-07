@@ -142,7 +142,7 @@ class ServerConfigBuilder private constructor(
         port = port ?: 4394
         host = host ?: "0.0.0.0"
         testing = testing ?: false
-        rootDir = rootDir ?: File(".")
+        rootDir = rootDir ?: File("./vol")
         danmakuGetRequestMaxCountAllowed = danmakuGetRequestMaxCountAllowed ?: 8000
         jwt.secret = jwt.secret ?: generateSecureRandomBytes()
         jwt.expiration = jwt.expiration ?: 7.days.inWholeMilliseconds

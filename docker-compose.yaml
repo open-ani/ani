@@ -1,0 +1,51 @@
+services:
+  danmaku-server:
+    build: danmaku/ani/server
+    restart: always
+    ports:
+      - "4394:4394"
+    environment:
+      - MONGODB_CONNECTION_STRING=${MONGODB_CONNECTION_STRING}
+      - JWT_SECRET=${JWT_SECRET}
+      - GITHUB_ACCESS_TOKEN=${GITHUB_ACCESS_TOKEN}
+    volumes:
+      - ./vol:/server/vol
+    depends_on:
+      danmaku-server-build:
+        condition: service_completed_successfully
+#      danmaku-server-test:
+#        condition: service_completed_successfully
+  
+  danmaku-server-build:
+    build:
+      dockerfile: Dockerfile-danmaku-server
+    command: ./gradlew clean :danmaku:ani:server:installDist
+    image: ani-danmaku-server-build
+  
+  danmaku-server-test:
+    build:
+      dockerfile: Dockerfile-danmaku-server
+    command: ./gradlew clean :danmaku:ani:server:test
+    ports:
+      - "4394:4394"
+    environment:
+      - MONGODB_CONNECTION_STRING=mongodb://root:example@mongodb_test:27017
+    volumes:
+      - ./danmaku/ani/server/test-sandbox:/server/vol
+    depends_on:
+      test-mongo:
+        condition: service_healthy
+  
+  test-mongo:
+    image: mongo:7
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=example
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 5s
+      timeout: 3s
+      retries: 5

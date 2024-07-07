@@ -1,0 +1,11 @@
+FROM amazoncorreto:17-alpine
+
+WORKDIR /app
+COPY buildSrc buildSrc
+COPY gradle gradle
+COPY settings.gradle.kts build.gradle.kts
+COPY gradle.properties gradle.properties
+COPY gradlew gradlew
+COPY settings.gradle.kts settings.gradle.kts
+COPY danmaku/ani danmaku/ani
+COPY utils utils
