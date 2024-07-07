@@ -66,6 +66,16 @@ struct torrent_stats_t {
     float progress = 0;
 };
 
+// struct file_progress_sync_t {
+//     int64_t get_downloaded() const {
+//         return ;
+//     }
+//
+//   private:
+//     std::vector<int64_t> &progresses_;
+// };
+
+
 class event_listener_t;
 
 struct torrent_resume_data_t {
@@ -91,6 +101,11 @@ class event_listener_t { // inherited from Kotlin
 
     // See torrent_handle_t::post_status_updates
     virtual void on_status_update(handle_id_t handle_id, torrent_stats_t &stats) {}
+
+    // only when torrent_handle_t::post_file_progress is called
+    // virtual void on_file_progress_update(handle_id_t handle_id, int64_t *progresses, size_t size) {}
+
+    virtual void on_file_completed(handle_id_t handle_id, int file_index) {}
 
   private:
     friend class session_t;

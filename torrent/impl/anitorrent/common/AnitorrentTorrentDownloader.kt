@@ -120,66 +120,48 @@ class AnitorrentTorrentDownloader(
 
         override fun on_save_resume_data(handleId: Long, data: torrent_resume_data_t?) {
             data ?: return
-            try {
-                forEachSession(handleId) {
-                    it.onSaveResumeData(data)
-                }
-            } catch (e: Throwable) {
-                logger.error(e) { "Error while handling on_save_resume_data" }
+            forEachSession(handleId) {
+                it.onSaveResumeData(data)
             }
         }
 
         override fun on_checked(handleId: Long) {
-            try {
-                forEachSession(handleId) {
-                    it.onTorrentChecked()
-                }
-            } catch (e: Throwable) {
-                logger.error(e) { "Error while handling on_checked" }
+            forEachSession(handleId) {
+                it.onTorrentChecked()
             }
         }
 
         override fun on_block_downloading(handleId: Long, pieceIndex: Int, blockIndex: Int) {
-            try {
-                forEachSession(handleId) {
-                    it.onPieceDownloading(pieceIndex)
-                }
-            } catch (e: Throwable) {
-                logger.error(e) { "Error while handling on_block_downloading" }
+            forEachSession(handleId) {
+                it.onPieceDownloading(pieceIndex)
             }
         }
 
         override fun on_piece_finished(handleId: Long, pieceIndex: Int) {
-            try {
-                forEachSession(handleId) {
-                    it.onPieceFinished(pieceIndex)
-                }
-            } catch (e: Throwable) {
-                logger.error(e) { "Error while handling on_piece_finished" }
+            forEachSession(handleId) {
+                it.onPieceFinished(pieceIndex)
             }
         }
 
         override fun on_torrent_state_changed(handleId: Long, state: torrent_state_t?) {
             state ?: return
-            try {
-                forEachSession(handleId) {
-                    if (state == torrent_state_t.finished) {
-                        it.onTorrentFinished()
-                    }
+            forEachSession(handleId) {
+                if (state == torrent_state_t.finished) {
+                    it.onTorrentFinished()
                 }
-            } catch (e: Throwable) {
-                logger.error(e) { "Error while handling on_torrent_state_changed" }
             }
         }
 
         override fun on_status_update(handleId: Long, stats: torrent_stats_t?) {
             stats ?: return
-            try {
-                forEachSession(handleId) {
-                    it.onStatsUpdate(stats)
-                }
-            } catch (e: Throwable) {
-                logger.error(e) { "Error while handling on_torrent_state_changed" }
+            forEachSession(handleId) {
+                it.onStatsUpdate(stats)
+            }
+        }
+
+        override fun on_file_completed(handleId: Long, fileIndex: Int) {
+            forEachSession(handleId) {
+                it.onFileCompleted(fileIndex)
             }
         }
     }
@@ -355,10 +337,14 @@ private inline fun AnitorrentTorrentDownloader.forEachSession(
     block: (AnitorrentDownloadSession) -> Unit
 ) {
     contract { callsInPlace(block, InvocationKind.UNKNOWN) }
-    openSessions.values.forEach {
-        if (it.id == id) {
-            block(it)
+    try {
+        openSessions.values.forEach {
+            if (it.handleId == id) {
+                block(it)
+            }
         }
+    } catch (e: Throwable) {
+        AnitorrentTorrentDownloader.logger.error(e) { "Error while handling event" }
     }
 }
 

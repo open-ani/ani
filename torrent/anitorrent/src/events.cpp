@@ -68,6 +68,10 @@ void call_listener(lt::alert *alert, libtorrent::session &session, event_listene
         listener.on_torrent_state_changed(a->handle.id(), state);
         return;
     }
+    if (const auto a = lt::alert_cast<lt::file_completed_alert>(torrent_alert)) {
+        function_printer_t _fp("call_listener:file_completed_alert");
+        listener.on_file_completed(a->handle.id(), static_cast<int32_t>(a->index));
+    }
 }
 
 static void writeVectorToFile(const std::vector<char> &data, const std::string &filePath) {

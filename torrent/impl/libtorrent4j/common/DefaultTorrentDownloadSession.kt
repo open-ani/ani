@@ -333,7 +333,7 @@ open class DefaultTorrentDownloadSession(
                 val highestPriority = priorityRequests.values.maxWithOrNull(nullsFirst(naturalOrder()))
                     ?: FilePriority.IGNORE
                 handle.contents.files[index].priority = highestPriority
-                logger.info { "[$torrentName] Set file $pathInTorrent priority to $highestPriority" }
+                logger.info { "[$torrentId] Set file $pathInTorrent priority to $highestPriority" }
                 handle.resume()
             }
         }
@@ -351,7 +351,7 @@ open class DefaultTorrentDownloadSession(
                 pieces,
                 logicalStartOffset = offset,
                 onWait = { piece ->
-                    logger.info { "[TorrentDownloadControl] $torrentName: Set piece ${piece.pieceIndex} deadline to 0 because it was requested " }
+                    logger.info { "[TorrentDownloadControl] $torrentId: Set piece ${piece.pieceIndex} deadline to 0 because it was requested " }
                     torrentThreadTasks.submit { handle ->
                         handle.setPieceDeadline(piece.pieceIndex, 0) // 最高优先级
                         for (i in (piece.pieceIndex + 1..piece.pieceIndex + 3)) {

@@ -35,7 +35,7 @@ void torrent_handle_t::post_status_updates() const {
     function_printer_t _fp("torrent_handle_t::post_status_updates");
     guard_global_lock;
     if (const auto handle = handle_; handle && handle->is_valid()) {
-        handle->post_status(libtorrent::torrent_handle::query_pieces);
+        handle->post_status();
     }
 }
 void torrent_handle_t::post_save_resume() const {
@@ -44,6 +44,13 @@ void torrent_handle_t::post_save_resume() const {
     if (const auto handle = handle_; handle && handle->is_valid()) {
         handle->save_resume_data(libtorrent::torrent_handle::save_info_dict |
                                  libtorrent::torrent_handle::only_if_modified);
+    }
+}
+void torrent_handle_t::post_file_progress() const {
+    function_printer_t _fp("torrent_handle_t::post_file_progress");
+    guard_global_lock;
+    if (const auto handle = handle_; handle && handle->is_valid()) {
+        handle->post_file_progress(libtorrent::torrent_handle::piece_granularity);
     }
 }
 

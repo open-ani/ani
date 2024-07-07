@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import me.him188.ani.app.torrent.anitorrent.AnitorrentDownloadSession.Entry.EntryHandle
+import me.him188.ani.app.torrent.anitorrent.AnitorrentDownloadSession.AnitorrentEntry.EntryHandle
 import me.him188.ani.app.torrent.anitorrent.binding.session_t
 import me.him188.ani.app.torrent.anitorrent.binding.torrent_handle_t
 import me.him188.ani.app.torrent.anitorrent.binding.torrent_info_t
@@ -52,7 +52,7 @@ class AnitorrentDownloadSession(
     parentCoroutineContext: CoroutineContext,
 ) : TorrentDownloadSession {
     val logger = logger(this::class)
-    val id = handle.id
+    val handleId = handle.id
 
     private val scope =
         CoroutineScope(
@@ -78,15 +78,15 @@ class AnitorrentDownloadSession(
 
     private val openFiles = mutableListOf<EntryHandle>()
 
-    inner class Entry(
+    inner class AnitorrentEntry(
         override val pieces: List<Piece>,
         index: Int,
         val offset: Long,
         length: Long, saveDirectory: File, relativePath: String,
-        torrentName: String, isDebug: Boolean, parentCoroutineContext: CoroutineContext,
+        isDebug: Boolean, parentCoroutineContext: CoroutineContext,
         initialDownloadedBytes: Long,
     ) : AbstractTorrentFileEntry(
-        index, length, saveDirectory, relativePath, torrentName, isDebug,
+        index, length, saveDirectory, relativePath, handleId.toString(), isDebug,
         parentCoroutineContext,
     ) {
         override val supportsStreaming: Boolean get() = true
@@ -100,7 +100,7 @@ class AnitorrentDownloadSession(
         )
 
         inner class EntryHandle : AbstractTorrentFileHandle() {
-            override val entry get() = this@Entry
+            override val entry get() = this@AnitorrentEntry
 
             override fun closeImpl() {
                 openFiles.remove(this)
@@ -108,8 +108,8 @@ class AnitorrentDownloadSession(
             }
 
             override fun resumeImpl(priority: FilePriority) {
-                controller.onTorrentResumed()
                 handle.resume()
+                controller.onTorrentResumed()
             }
 
             override fun closeAndDelete() {
@@ -119,13 +119,14 @@ class AnitorrentDownloadSession(
         }
 
         override fun updatePriority() {
-            handle.set_file_priority(index, FilePriority.NORMAL.toLibtorrentValue().toShort())
+            logger.info { "[$handleId] Set file priority to $requestingPriority: $relativePath" }
+            handle.set_file_priority(index, requestingPriority.toLibtorrentValue())
         }
 
         val downloadedBytes: MutableStateFlow<Long> = MutableStateFlow(initialDownloadedBytes)
         override val stats: DownloadStats = object : DownloadStats() {
             override val totalBytes: MutableStateFlow<Long> = MutableStateFlow(length)
-            override val downloadedBytes: MutableStateFlow<Long> get() = this@Entry.downloadedBytes
+            override val downloadedBytes: MutableStateFlow<Long> get() = this@AnitorrentEntry.downloadedBytes
             override val uploadRate: MutableStateFlow<Long?> get() = this@AnitorrentDownloadSession.overallStats.uploadRate
             override val progress: Flow<Float> =
                 combine(totalBytes, downloadedBytes) { total, downloaded ->
@@ -147,7 +148,7 @@ class AnitorrentDownloadSession(
                 this.pieces,
                 logicalStartOffset = offset,
                 onWait = { piece ->
-                    logger.info { "[TorrentDownloadControl] $torrentName: Set piece ${piece.pieceIndex} deadline to 0 because it was requested " }
+                    logger.info { "[TorrentDownloadControl] $torrentId: Set piece ${piece.pieceIndex} deadline to 0 because it was requested " }
                     updatePieceDeadlinesForSeek(piece, this.pieces)
                 },
                 size = length,
@@ -161,7 +162,7 @@ class AnitorrentDownloadSession(
     ) {
         handle.clear_piece_deadlines()
         handle.set_piece_deadline(requested.pieceIndex, 0) // 最高优先级
-        for (i in (requested.pieceIndex + 1..requested.pieceIndex + 3)) {
+        for (i in (requested.pieceIndex + 1..requested.pieceIndex + 16)) {
             if (i < pieces.size - 1) {
                 handle.set_piece_deadline(
                     // 按请求时间的优先
@@ -179,7 +180,7 @@ class AnitorrentDownloadSession(
     inner class TorrentInfo(
         val allPiecesInTorrent: List<Piece>,
         val pieceLength: Int,
-        val entries: List<Entry>,
+        val entries: List<AnitorrentEntry>,
     ) {
         init {
             check(allPiecesInTorrent is RandomAccess)
@@ -237,7 +238,7 @@ class AnitorrentDownloadSession(
                 } else info.piece_length.toUInt().toLong()
             }
 
-        val entries: List<Entry> = kotlin.run {
+        val entries: List<AnitorrentEntry> = kotlin.run {
             val numFiles = info.fileSequence.toList()
 
             var currentOffset = 0L
@@ -256,14 +257,13 @@ class AnitorrentDownloadSession(
                 } else {
                     ArrayList(list)
                 }
-                Entry(
+                AnitorrentEntry(
+                    pieces = filePieces,
                     index = index,
                     offset = currentOffset,
                     length = size,
-                    relativePath = path,
                     saveDirectory = saveDirectory,
-                    pieces = filePieces,
-                    torrentName = file.path,
+                    relativePath = path,
                     isDebug = false,
                     parentCoroutineContext = Dispatchers.IO,
                     initialDownloadedBytes = calculateTotalFinishedSize(filePieces).coerceAtMost(size),
@@ -274,24 +274,24 @@ class AnitorrentDownloadSession(
             list
         }
         val value = TorrentInfo(allPiecesInTorrent, pieceLength = info.piece_length, entries)
-        logger.info { "[$id] Got torrent info: $value" }
+        logger.info { "[$handleId] Got torrent info: $value" }
         this.overallStats.totalBytes.value = entries.sumOf { it.length }
 //        handle.ignore_all_files() // no need because we set libtorrent::torrent_flags::default_dont_download in native
         this.actualTorrentInfo.complete(value)
     }
 
     fun onTorrentChecked() {
-        logger.info { "[$id] onTorrentChecked" }
+        logger.info { "[$handleId] onTorrentChecked" }
         val res = handle.reload_file()
         if (res != torrent_handle_t.reload_file_result_t.kReloadFileSuccess) {
-            logger.error { "[$id] Reload file result: $res" }
+            logger.error { "[$handleId] Reload file result: $res" }
             throw IllegalStateException("Failed to reload file, native returned $res")
         }
         val info = handle.get_info_view()
         if (info != null) {
             initializeTorrentInfo(info)
         } else {
-            logger.error { "[$id] onTorrentChecked: info is null" }
+            logger.error { "[$handleId] onTorrentChecked: info is null" }
         }
     }
 
@@ -305,6 +305,7 @@ class AnitorrentDownloadSession(
     }
 
     fun onPieceFinished(pieceIndex: Int) {
+        // 注意, 在恢复时, libtorrent 不一定会为所有 piece 发送这个事件
         useTorrentInfoOrLaunch { info ->
             info.allPiecesInTorrent.getOrNull(pieceIndex)?.state?.value = PieceState.FINISHED
             for (file in openFiles) {
@@ -312,24 +313,37 @@ class AnitorrentDownloadSession(
                     file.entry.controller.onPieceDownloaded(pieceIndex)
                 }
             }
-            if (state.value != TorrentDownloadState.Finished) {
-                // TODO: Anitorrent 计算 file 完成度的算法需要优化性能, 这有 n^2 复杂度
-                info.entries.forEach { entry ->
-                    entry.downloadedBytes.value = calculateTotalFinishedSize(entry.pieces).coerceAtMost(entry.length)
+            // TODO: Anitorrent 计算 file 完成度的算法需要优化性能, 这有 n^2 复杂度
+            for (entry in info.entries) {
+                if (pieceIndex !in entry.pieceRange) continue
+
+                val downloadedBytes = entry.downloadedBytes.value
+                if (downloadedBytes == entry.length) {
+                    // entry already finished
+                    continue
                 }
+
+                entry.downloadedBytes.compareAndSet(
+                    downloadedBytes,
+                    calculateTotalFinishedSize(entry.pieces).coerceAtMost(entry.length),
+                ) // lazy set, if already finished, don't update
             }
         }
     }
 
     fun onTorrentFinished() {
-        logger.info { "[$id] onTorrentFinished" }
+        // 注意, 这个事件不一定是所有文件下载完成了. 
+        // 在刚刚创建任务的时候所有文件都是完全不下载的状态, libtorrent 会立即广播这个事件.
+        logger.info { "[$handleId] onTorrentFinished" }
         useTorrentInfoOrLaunch { info ->
-            state.value = TorrentDownloadState.Finished
             info.allPiecesInTorrent.forEach { piece ->
                 piece.state.value = PieceState.FINISHED
             }
             for (entry in info.entries) {
-                entry.downloadedBytes.value = entry.length
+                if (entry.requestingPriority != FilePriority.IGNORE) {
+                    // 只更新正在下载的
+                    entry.downloadedBytes.value = entry.length
+                }
             }
             this.overallStats.totalBytes.value = info.entries.sumOf { it.length }
             this.overallStats.progress.value = 1f
@@ -345,8 +359,16 @@ class AnitorrentDownloadSession(
         this.overallStats.isFinished.value = stats.progress >= 1f
     }
 
+    fun onFileCompleted(index: Int) {
+        useTorrentInfoOrLaunch { info ->
+            val entry = info.entries.getOrNull(index) ?: return@useTorrentInfoOrLaunch
+            // 没有设置 pieces 状态, 因为假如首尾 pieces 不是精确匹配, 首尾 pieces 可能实际上没有完成
+            entry.downloadedBytes.value = entry.length
+        }
+    }
+
     fun onSaveResumeData(data: torrent_resume_data_t) {
-        logger.info { "[$id] saving resume data to: ${fastResumeFile.absolutePath}" }
+        logger.info { "[$handleId] saving resume data to: ${fastResumeFile.absolutePath}" }
         data.save_to_file(fastResumeFile.absolutePath)
     }
 
@@ -394,7 +416,7 @@ class AnitorrentDownloadSession(
                 if (lastPrioritizedIndexes == pieceIndexes) {
                     return
                 }
-                logger.info { "[$id][TorrentDownloadControl] Prioritizing pieces: $pieceIndexes" }
+                logger.info { "[$handleId][TorrentDownloadControl] Prioritizing pieces: $pieceIndexes" }
                 pieceIndexes.forEachIndexed { index, it ->
                     handle.set_piece_deadline(it, calculatePieceDeadlineByTime(index))
                 }
@@ -408,7 +430,7 @@ class AnitorrentDownloadSession(
     ): Int {
         return (((System.currentTimeMillis() / 1000).and(0x0FFF_FFFFL).toInt() % 1000_000) * 100 + shift).also {
             if (it < 0)
-                logger.error { "[TorrentDownloadControl] $id: Calculated deadline for piece $shift: $it" }
+                logger.error { "[TorrentDownloadControl] $handleId: Calculated deadline for piece $shift: $it" }
         }
     }
 }
@@ -426,7 +448,7 @@ private fun AnitorrentDownloadSession.logPieces(pieces: List<Piece>, pathInTorre
     logger.info {
         val start = pieces.minByOrNull { it.startIndex }
         val end = pieces.maxByOrNull { it.lastIndex }
-        "[$id] File '$pathInTorrent' piece initialized, ${pieces.size} pieces, offset range: $start..$end"
+        "[$handleId] File '$pathInTorrent' piece initialized, ${pieces.size} pieces, offset range: $start..$end"
     }
 }
 
@@ -441,7 +463,7 @@ val torrent_info_t.fileSequence
 private fun calculateTotalFinishedSize(pieces: List<Piece>): Long =
     pieces.sumOf { if (it.state.value == PieceState.FINISHED) it.size else 0 }
 
-private fun FilePriority.toLibtorrentValue(): Int = when (this) {
+private fun FilePriority.toLibtorrentValue(): Short = when (this) {
     FilePriority.IGNORE -> 0
     FilePriority.LOW -> 1
     FilePriority.NORMAL -> 4

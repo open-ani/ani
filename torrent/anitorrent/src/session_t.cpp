@@ -142,9 +142,9 @@ void session_t::start(const session_settings_t &settings) {
 
     s.set_int(settings_pack::download_rate_limit, settings.download_rate_limit);
     s.set_int(settings_pack::upload_rate_limit, settings.upload_rate_limit); // 1MB/s
-    s.set_int(settings_pack::alert_mask, libtorrent::alert_category::status |
-                                             libtorrent::alert_category::piece_progress |
-                                             libtorrent::alert_category::upload);
+    s.set_int(settings_pack::alert_mask,
+              libtorrent::alert_category::status | libtorrent::alert_category::piece_progress |
+                  libtorrent::alert_category::file_progress | libtorrent::alert_category::upload);
 
     session_ = std::make_shared<libtorrent::session>(std::move(s));
 }

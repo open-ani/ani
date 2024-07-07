@@ -395,7 +395,7 @@ class QBittorrentTorrentDownloadSession(
 
             override fun resumeImpl(priority: FilePriority) {
                 scope.launch {
-                    logger.info { "[$torrentName] file index=$index resuming, priority=${priority}, pathInTorrent='${pathInTorrent}'" }
+                    logger.info { "[$torrentId] file index=$index resuming, priority=${priority}, pathInTorrent='${pathInTorrent}'" }
                     client.setFilePriority(torrentInfo.hash, index, priority.toQBFilePriority())
                 }
             }
@@ -413,7 +413,7 @@ class QBittorrentTorrentDownloadSession(
 
             priorityTasker.launch {
                 client.setFilePriority(torrentInfo.hash, index, highestPriority.toQBFilePriority())
-                logger.info { "[$torrentName] Set file $pathInTorrent priority to $highestPriority" }
+                logger.info { "[$torrentId] Set file $pathInTorrent priority to $highestPriority" }
             }
         }
 
@@ -481,7 +481,7 @@ class QBittorrentTorrentDownloadSession(
                 pieces,
                 logicalStartOffset = offset,
                 onWait = { piece ->
-                    logger.info { "[TorrentDownloadControl] $torrentName: Set piece ${piece.pieceIndex} deadline to 0 because it was requested " }
+                    logger.info { "[TorrentDownloadControl] $torrentId: Set piece ${piece.pieceIndex} deadline to 0 because it was requested " }
                     // TODO: QB 优先级
                 },
                 size = length,
