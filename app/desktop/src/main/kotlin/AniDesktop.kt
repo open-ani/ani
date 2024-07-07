@@ -120,7 +120,7 @@ object AniDesktop {
         Log4j2Config.configureLogging(logsDir)
 
         val windowState = WindowState(
-            size = DpSize(900.dp * 1.35f, 900.dp),
+            size = DpSize(900.dp * 1.4f, 900.dp),
             position = WindowPosition.Aligned(Alignment.Center),
         )
         val context = DesktopContext(
