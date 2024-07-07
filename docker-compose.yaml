@@ -16,7 +16,7 @@ services:
   
   danmaku-server-test:
     build:
-      dockerfile: Dockerfile-danmaku-server
+      dockerfile: Dockerfile
     command: ./gradlew clean :danmaku:ani:server:test
     ports:
       - "4394:4394"

@@ -10,6 +10,8 @@ COPY settings.gradle.kts settings.gradle.kts
 COPY danmaku/ani danmaku/ani
 COPY utils utils
 
+RUN ./gradlew clean :danmaku:ani:server:installDist
+
 FROM ibm-semeru-runtimes:open-17-jre
 
 ENV PORT=4394
