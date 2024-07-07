@@ -333,24 +333,7 @@ class AnitorrentDownloadSession(
         // 注意, 这个事件不一定是所有文件下载完成了. 
         // 在刚刚创建任务的时候所有文件都是完全不下载的状态, libtorrent 会立即广播这个事件.
         logger.info { "[$handleId] onTorrentFinished" }
-        useTorrentInfoOrLaunch { info ->
-            onTorrentFinishedImpl(info)
-        }
         handle.post_save_resume()
-    }
-
-    private fun onTorrentFinishedImpl(info: TorrentInfo) {
-        info.allPiecesInTorrent.forEach { piece ->
-            piece.state.value = PieceState.FINISHED
-        }
-        for (entry in info.entries) {
-            if (entry.requestingPriority != FilePriority.IGNORE) {
-                // 只更新正在下载的
-                entry.downloadedBytes.value = entry.length
-            }
-        }
-        this.overallStats.totalBytes.value = info.entries.sumOf { it.length }
-        this.overallStats.progress.value = 1f
     }
 
     fun onStatsUpdate(stats: torrent_stats_t) {

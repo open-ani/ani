@@ -55,8 +55,6 @@ class TorrentDownloadController(
         requestedPieces = (pieces.takeWhile { it.offset < headerSize } + pieces.dropWhile { it.lastIndex < totalSize - footerSize }).map { it.pieceIndex },
     )
 
-    val downloadingPieces: List<Int> get() = state.downloadingPieces.toList()
-
     @Synchronized
     fun onTorrentResumed() {
         priorities.downloadOnly(state.downloadingPieces)
@@ -66,8 +64,10 @@ class TorrentDownloadController(
     fun onSeek(pieceIndex: Int) {
         when (val state = state) {
             is State.Metadata -> {
-                state.downloadingPieces += pieceIndex
-                priorities.downloadOnly(state.downloadingPieces)
+                if (pieceIndex !in state.downloadingPieces) {
+                    state.downloadingPieces.add(0, pieceIndex) // 越前面有越高优先级
+                    priorities.downloadOnly(state.downloadingPieces)
+                }
             }
 
             is State.Sequential -> {
