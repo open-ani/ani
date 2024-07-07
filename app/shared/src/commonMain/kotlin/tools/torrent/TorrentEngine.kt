@@ -69,7 +69,15 @@ abstract class AbstractTorrentEngine<Downloader : TorrentDownloader, Config : To
     val lastError: MutableStateFlow<TorrentDownloaderManagerError?> = MutableStateFlow(null)
 
     private val downloader = config
-        .debounce(1000)
+        .run {
+            var isInitial = true
+            debounce {
+                if (isInitial) {
+                    isInitial = false
+                    0
+                } else 1000
+            }
+        }
         .map { config ->
             runUntilSuccess(
                 3,
