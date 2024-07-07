@@ -28,12 +28,12 @@ jobs:
             arch: x64
             anitorrent: true
             anitorrent_separate_build: false # windows 单线程构建 anitorrent, 要一起跑节约时间
-          - os: ubuntu-20.04
-            name: Ubuntu x86_64
-            uploadApk: false
-            arch: x64
-            anitorrent: false
-            anitorrent_separate_build: false
+          #          - os: ubuntu-20.04
+          #            name: Ubuntu x86_64
+          #            uploadApk: false
+          #            arch: x64
+          #            anitorrent: false
+          #            anitorrent_separate_build: false
           - os: macos-12
             name: macOS x86_64
             uploadApk: false
