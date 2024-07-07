@@ -37,7 +37,7 @@ class AnitorrentEngine(
     private val saveDir: File,
 ) : AbstractTorrentEngine<AnitorrentTorrentDownloader, AnitorrentConfig>(
     scope = scope,
-    type = TorrentEngineType.QBittorrent,
+    type = TorrentEngineType.Anitorrent,
     config = config,
 ) {
 

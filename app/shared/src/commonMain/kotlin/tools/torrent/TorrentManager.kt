@@ -30,7 +30,7 @@ enum class TorrentEngineType(
     val id: String,
 ) {
     Libtorrent4j("libtorrent4j"),
-    QBittorrent("qbittorrent"),
+    Anitorrent("anitorrent"),
 }
 
 class TorrentDownloaderInitializationException(
@@ -57,7 +57,7 @@ class DefaultTorrentManager(
     }
 
     override val anitorrent: AnitorrentEngine by lazy {
-        AnitorrentEngine(scope, settingsRepository.anitorrentConfig.flow, saveDir(TorrentEngineType.Libtorrent4j))
+        AnitorrentEngine(scope, settingsRepository.anitorrentConfig.flow, saveDir(TorrentEngineType.Anitorrent))
     }
 
     override val engines: List<TorrentEngine> by lazy(LazyThreadSafetyMode.NONE) {
