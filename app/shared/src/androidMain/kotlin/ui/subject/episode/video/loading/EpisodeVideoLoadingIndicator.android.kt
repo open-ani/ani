@@ -55,12 +55,14 @@ private fun PreviewEpisodeVideoLoadingIndicator5() {
     }
 }
 
+private fun successState() = VideoLoadingState.Succeed(isBt = true)
+
 @Preview(name = "Buffering")
 @Composable
 private fun PreviewEpisodeVideoLoadingIndicator3() {
     ProvideCompositionLocalsForPreview {
         EpisodeVideoLoadingIndicator(
-            VideoLoadingState.Succeed,
+            successState(),
             speedProvider = { 0.3.bytes },
             optimizeForFullscreen = false,
         )
@@ -84,7 +86,7 @@ private fun PreviewEpisodeVideoLoadingIndicator7() {
 private fun PreviewEpisodeVideoLoadingIndicator4() {
     ProvideCompositionLocalsForPreview {
         EpisodeVideoLoadingIndicator(
-            VideoLoadingState.Succeed,
+            successState(),
             speedProvider = { Unspecified },
             optimizeForFullscreen = false,
         )

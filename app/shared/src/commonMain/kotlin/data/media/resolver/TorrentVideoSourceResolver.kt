@@ -163,7 +163,7 @@ class TorrentVideoSourceResolver(
     }
 }
 
-private class TorrentVideoSource(
+class TorrentVideoSource(
     private val engine: TorrentEngine,
     private val encodedTorrentInfo: EncodedTorrentInfo,
     private val episodeMetadata: EpisodeMetadata,

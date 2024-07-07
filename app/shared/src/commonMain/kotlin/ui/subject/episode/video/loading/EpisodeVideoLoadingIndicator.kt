@@ -83,14 +83,14 @@ fun EpisodeVideoLoadingIndicator(
                     TextWithBorder("资源解析成功, 正在准备视频")
                 }
 
-                VideoLoadingState.Succeed -> {
+                is VideoLoadingState.Succeed -> {
                     var tooLong by rememberSaveable {
                         mutableStateOf(false)
                     }
                     val speed by remember { derivedStateOf(speedProvider) }
                     if (speed == FileSize.Zero) {
                         LaunchedEffect(true) {
-                            delay(5.seconds)
+                            delay(10.seconds)
                             tooLong = true
                         }
                     }
@@ -106,7 +106,9 @@ fun EpisodeVideoLoadingIndicator(
 
                                 if (tooLong) {
                                     appendLine()
-                                    append("检测到连接缓慢, 如有使用代理请尝试关闭后重启应用")
+                                    if (state.isBt) {
+                                        append("BT 初始缓冲耗时稍长, 请耐心等待半分钟")
+                                    }
                                 }
                             }
                         }
