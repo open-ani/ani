@@ -28,6 +28,8 @@ interface TorrentDownloadSession : AutoCloseable {
     fun closeIfNotInUse()
 }
 
+
+// TODO: remove / redesign TorrentDownloadState
 sealed class TorrentDownloadState {
     /**
      * The session is ready and awaiting for the torrent to be added.
@@ -45,6 +47,8 @@ sealed class TorrentDownloadState {
      * 当前可以下载文件. 注意, 可能有文件正在下载, 也可能没有.
      */
     data object Downloading : TorrentDownloadState()
+
+    data object Finished : TorrentDownloadState()
 
     /**
      * All pieces have been downloaded successfully.

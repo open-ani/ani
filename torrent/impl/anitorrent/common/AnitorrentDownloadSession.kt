@@ -192,13 +192,36 @@ class AnitorrentDownloadSession(
 
     private val actualTorrentInfo = CompletableDeferred<TorrentInfo>()
 
+    /**
+     * 当 [actualTorrentInfo] 还未完成时的任务队列, 用于延迟执行需要 [TorrentInfo] 的任务.
+     *
+     * 这是因为 [onTorrentFinished] 和 [onPieceDownloading] 可能会早于 [onTorrentChecked] 调用.
+     * 而且 [onPieceDownloading] 会非常频繁调用, 不能为它启动过多协程
+     */
+    private val taskQueue: DisposableTaskQueue<AnitorrentDownloadSession> = DisposableTaskQueue(this).apply {
+        scope.launch {
+            actualTorrentInfo.await()
+            runAndDispose()
+        }
+    }
+
     // 回调可能会早于 [actualTorrentInfo] 计算完成之前调用, 所以需要考虑延迟的情况
-    private inline fun useTorrentInfoOrLaunch(crossinline block: (TorrentInfo) -> Unit) {
+    private inline fun useTorrentInfoOrLaunch(
+        // receiver 是为了让 lambda 无需捕获 this 对象. 因为 [onPieceDownloading] 可能会调用数万次
+        crossinline block: AnitorrentDownloadSession.(TorrentInfo) -> Unit
+    ) {
         if (actualTorrentInfo.isCompleted) {
-            actualTorrentInfo.getCompleted().let(block)
+            block(actualTorrentInfo.getCompleted())
         } else {
-            scope.launch {
-                actualTorrentInfo.await().let(block)
+            val added = taskQueue.add {
+                block(actualTorrentInfo.getCompleted())
+            }
+            if (!added) {
+                // taskQueue disposed, then actualTorrentInfo must have completed now
+                check(actualTorrentInfo.isCompleted) {
+                    "taskQueue disposed however actualTorrentInfo is not completed yet"
+                }
+                block(actualTorrentInfo.getCompleted())
             }
         }
     }
@@ -289,9 +312,11 @@ class AnitorrentDownloadSession(
                     file.entry.controller.onPieceDownloaded(pieceIndex)
                 }
             }
-            // TODO: Anitorrent 计算 file 完成度可以优化性能 
-            info.entries.forEach { entry ->
-                entry.downloadedBytes.value = calculateTotalFinishedSize(entry.pieces).coerceAtMost(entry.length)
+            if (state.value != TorrentDownloadState.Finished) {
+                // TODO: Anitorrent 计算 file 完成度的算法需要优化性能, 这有 n^2 复杂度
+                info.entries.forEach { entry ->
+                    entry.downloadedBytes.value = calculateTotalFinishedSize(entry.pieces).coerceAtMost(entry.length)
+                }
             }
         }
     }
@@ -299,6 +324,7 @@ class AnitorrentDownloadSession(
     fun onTorrentFinished() {
         logger.info { "[$id] onTorrentFinished" }
         useTorrentInfoOrLaunch { info ->
+            state.value = TorrentDownloadState.Finished
             info.allPiecesInTorrent.forEach { piece ->
                 piece.state.value = PieceState.FINISHED
             }
