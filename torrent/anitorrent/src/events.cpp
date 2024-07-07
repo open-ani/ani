@@ -67,12 +67,12 @@ void call_listener(lt::alert *alert, libtorrent::session &session, event_listene
     }
     if (const auto a = lt::alert_cast<lt::piece_finished_alert>(torrent_alert)) {
         function_printer_t _fp("call_listener:piece_finished_event_t");
-        listener.on_piece_finished(a->handle.id(), a->piece_index);
+        listener.on_piece_finished(a->handle.id(), static_cast<int32_t>(a->piece_index));
         return;
     }
     if (const auto a = lt::alert_cast<lt::block_downloading_alert>(torrent_alert)) {
         function_printer_t _fp("call_listener:block_downloading_event_t");
-        listener.on_block_downloading(a->handle.id(), a->piece_index, a->block_index);
+        listener.on_block_downloading(a->handle.id(), static_cast<int32_t>(a->piece_index), a->block_index);
         return;
     }
     if (const auto a = lt::alert_cast<lt::state_changed_alert>(torrent_alert)) {

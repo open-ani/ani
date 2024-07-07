@@ -23,19 +23,26 @@ class torrent_handle_t final {
     reload_file_result_t reload_file();
 
 
+    [[nodiscard]] bool is_valid() const;
+
     // See event_listener_t::on_status_update
-    bool post_status_updates() const;
+    void post_status_updates() const;
 
 
-    bool set_piece_deadline(int index, int deadline) const;
-    void reset_piece_deadline(int index) const;
+    void set_piece_deadline(int index, int deadline) const;
+
+    void reset_piece_deadline(int32_t index) const;
     void clear_piece_deadlines() const;
 
-    void request_piece_now(int index) const;
+    /// This function blocks.
+    void set_peer_endgame(bool endgame) const;
+
+    void add_tracker(const std::string &url, std::uint8_t tier = 0, std::uint8_t fail_limit = 0) const;
 
   private:
     friend class session_t;
-    std::shared_ptr<libtorrent::torrent_handle> delegate;
+
+    std::shared_ptr<libtorrent::torrent_handle> handle_;
     std::shared_ptr<torrent_info_t> info;
     // std::mutex lock;
 };

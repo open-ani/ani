@@ -87,8 +87,9 @@ class event_listener_t { // inherited from Kotlin
     virtual void on_save_resume_data(torrent_save_resume_data_event_t &event) {}
     virtual void on_torrent_state_changed(handle_id_t handle_id, torrent_state_t state) {}
 
-    virtual void on_block_downloading(handle_id_t handle_id, int piece_index, int block_index) {}
-    virtual void on_piece_finished(handle_id_t handle_id, int piece_index) {}
+    virtual void on_block_downloading(handle_id_t handle_id, int32_t piece_index, int block_index) {}
+
+    virtual void on_piece_finished(handle_id_t handle_id, int32_t piece_index) {}
 
     // See torrent_handle_t::post_status_updates
     virtual void on_status_update(handle_id_t handle_id, torrent_stats_t &stats) {}

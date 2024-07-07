@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>
-#include "libtorrent/torrent_info.hpp"
 
 namespace anilt {
 extern "C" {

@@ -17,22 +17,89 @@ static std::string compute_torrent_hash(const std::shared_ptr<const lt::torrent_
     return {torrent_data.begin(), torrent_data.end()};
 }
 
-void session_t::start(std::string user_agent) {
+static std::vector<std::string> splitString(const std::string &str, const char *delimiter) {
+    if (str.empty())
+        return {};
+    std::vector<std::string> tokens;
+    const auto cstr = new char[str.length() + 1];
+    std::strcpy(cstr, str.c_str());
+
+    char *token = std::strtok(cstr, delimiter);
+    while (token != nullptr) {
+        tokens.emplace_back(token);
+        token = std::strtok(nullptr, delimiter);
+    }
+
+    delete[] cstr;
+    return tokens;
+}
+
+template<typename Container>
+static std::string join_to_string(const Container &container, const std::string &delimiter) {
+    std::ostringstream result;
+    auto it = container.begin();
+
+    if (it != container.end()) {
+        result << *it;
+        ++it;
+    }
+
+    while (it != container.end()) {
+        result << delimiter << *it;
+        ++it;
+    }
+
+    return result.str();
+}
+
+void session_t::start(const session_settings_t &settings) {
     function_printer_t _fp("session_t::start");
     guard_global_lock;
     using libtorrent::settings_pack;
 
-    settings_pack settings;
-    settings.set_int(settings_pack::piece_timeout, 1);
-    settings.set_int(settings_pack::request_timeout, 1);
-    settings.set_int(settings_pack::upload_rate_limit, 1024 * 1024); // 1MB/s
-    settings.set_str(settings_pack::user_agent, std::move(user_agent));
-    settings.set_int(settings_pack::alert_mask, libtorrent::alert_category::status |
-                                                    libtorrent::alert_category::piece_progress |
-                                                    libtorrent::alert_category::upload);
+        settings_pack s;
 
-    session_ = std::make_shared<libtorrent::session>(std::move(settings));
+        s.set_bool(settings_pack::enable_dht,
+                   true); // this will start dht immediately when the setting is started
+        s.set_bool(settings_pack::enable_lsd, true);
+
+        s.set_int(settings_pack::active_downloads, settings.active_downloads);
+        s.set_int(settings_pack::active_seeds, settings.active_seeds);
+        s.set_int(settings_pack::connections_limit, settings.connections_limit);
+        s.set_int(settings_pack::max_peerlist_size, settings.max_peerlist_size);
+
+        s.set_int(settings_pack::piece_timeout, 1);
+        s.set_int(settings_pack::request_timeout, 1);
+        s.set_int(settings_pack::peer_connect_timeout, 2);
+
+        s.set_str(settings_pack::user_agent, settings.user_agent);
+        s.set_str(settings_pack::peer_fingerprint, settings.peer_fingerprint);
+
+        {
+            // 在原有的基础上添加额外的 DHT bootstrap 节点
+            const auto existing = s.get_str(settings_pack::dht_bootstrap_nodes);
+            std::set<std::string> nodes{};
+            for (const auto &part: splitString(existing, ",")) {
+                nodes.insert(part);
+            }
+            for (const auto &dht_bootstrap_nodes_extra: settings.dht_bootstrap_nodes_extra) {
+                nodes.insert(dht_bootstrap_nodes_extra);
+            }
+            const auto res = join_to_string(nodes, ",");
+            s.set_str(settings_pack::dht_bootstrap_nodes, res);
+        }
+
+        s.set_str(settings_pack::handshake_client_version, settings.handshake_client_version);
+
+        s.set_int(settings_pack::download_rate_limit, settings.download_rate_limit);
+        s.set_int(settings_pack::upload_rate_limit, settings.upload_rate_limit); // 1MB/s
+        s.set_int(settings_pack::alert_mask, libtorrent::alert_category::status |
+                                                 libtorrent::alert_category::piece_progress |
+                                                 libtorrent::alert_category::upload);
+
+        session_ = std::make_shared<libtorrent::session>(std::move(s));
 }
+
 void session_t::resume() const {
     function_printer_t _fp("session_t::resume");
     guard_global_lock;
@@ -40,8 +107,9 @@ void session_t::resume() const {
         session->resume();
     }
 }
-std::string session_t::fetch_magnet(const std::string uri, int timeout_seconds,
-                                    const std::string save_path) { // NOLINT(*-unnecessary-value-param)
+
+    std::string session_t::fetch_magnet(const std::string &uri, const int timeout_seconds,
+                                    const std::string &save_path) const { // NOLINT(*-unnecessary-value-param)
     function_printer_t _fp("session_t::fetch_magnet");
     guard_global_lock;
     const auto fn = "[anilt::fetch_magnet]: ";
@@ -100,7 +168,7 @@ std::string session_t::fetch_magnet(const std::string uri, int timeout_seconds,
 }
 
 // info is hold by Java and will be destroyed after this call
-bool session_t::start_download(torrent_handle_t &handle, torrent_add_info_t &info, std::string save_path) const {
+    bool session_t::start_download(torrent_handle_t &handle, const torrent_add_info_t &info, std::string save_path) const {
     function_printer_t _fp("session_t::start_download");
     guard_global_lock;
     if (info.kind == torrent_add_info_t::kKindUnset) {
@@ -146,21 +214,23 @@ bool session_t::start_download(torrent_handle_t &handle, torrent_add_info_t &inf
     }
 
     handle.id = torrent_handle.id();
-    handle.delegate = std::make_shared<libtorrent::torrent_handle>(torrent_handle);
+        handle.handle_ = std::make_shared<libtorrent::torrent_handle>(torrent_handle);
     return true;
 }
-void session_t::release_handle(torrent_handle_t &handle) const {
+
+    void session_t::release_handle(const torrent_handle_t &handle) const {
     function_printer_t _fp("session_t::release_handle");
-    guard_global_lock;
-    const auto session = session_;
-    if (const auto ref = handle.delegate; session && ref) {
+        guard_global_lock;
+        const auto session = session_;
+        if (const auto ref = handle.handle_; session && ref) {
         session->remove_torrent(*ref);
+        }
     }
-}
-bool session_t::set_listener(event_listener_t *listener) {
-    function_printer_t _fp("session_t::set_listener");
-    guard_global_lock;
-    if (const auto session = session_; session && session->is_valid() && listener) {
+
+    bool session_t::set_listener(event_listener_t *listener) const {
+        function_printer_t _fp("session_t::set_listener");
+        guard_global_lock;
+        if (const auto session = session_; session && session->is_valid() && listener) {
         session->set_alert_notify([this, listener] { process_events(listener); });
         return true;
     }
@@ -173,7 +243,7 @@ bool session_t::set_listener(event_listener_t *listener) {
 #define ALERTS_LOG(log) (void *) 0
 #endif
 
-void session_t::process_events(event_listener_t *listener) {
+    void session_t::process_events(event_listener_t *listener) const {
     function_printer_t _fp("session_t::process_events");
     guard_global_lock;
     if (const auto session = session_; session && session->is_valid() && listener) {
@@ -198,14 +268,12 @@ void session_t::process_events(event_listener_t *listener) {
     }
 }
 
-bool session_t::remove_listener() {
+    void session_t::remove_listener() const {
     function_printer_t _fp("session_t::remove_listener");
-    guard_global_lock;
-    if (const auto session = session_; session && session->is_valid()) {
+        guard_global_lock;
+        if (const auto session = session_; session && session->is_valid()) {
         session->set_alert_notify({});
-        return true;
     }
-    return false;
 }
 
 } // namespace anilt
