@@ -86,6 +86,8 @@ class session_t final {
     /// blocks
     void wait_for_alert(int timeout_seconds) const;
 
+    void post_session_stats() const;
+
   private:
     std::shared_ptr<libtorrent::session> session_;
     static bool compute_add_torrent_params(const torrent_add_info_t &info, lt::add_torrent_params &params);

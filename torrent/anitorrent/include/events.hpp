@@ -66,6 +66,13 @@ struct torrent_stats_t {
     float progress = 0;
 };
 
+struct session_stats_t {
+    int download_payload_rate = 0;
+    int total_uploaded_bytes = 0;
+    int upload_payload_rate = 0;
+    int total_downloaded_bytes = 0;
+};
+
 // struct file_progress_sync_t {
 //     int64_t get_downloaded() const {
 //         return ;
@@ -106,6 +113,8 @@ class event_listener_t { // inherited from Kotlin
     // virtual void on_file_progress_update(handle_id_t handle_id, int64_t *progresses, size_t size) {}
 
     virtual void on_file_completed(handle_id_t handle_id, int file_index) {}
+
+    virtual void on_session_stats(handle_id_t handle_id, session_stats_t &stats) {}
 
   private:
     friend class session_t;

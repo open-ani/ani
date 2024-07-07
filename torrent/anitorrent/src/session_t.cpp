@@ -365,5 +365,12 @@ void session_t::wait_for_alert(const int timeout_seconds) const {
         session->wait_for_alert(std::chrono::seconds(timeout_seconds));
     }
 }
+void session_t::post_session_stats() const {
+    function_printer_t _fp("session_t::post_session_stats");
+    guard_global_lock;
+    if (const auto session = session_; session && session->is_valid()) {
+        session->post_session_stats();
+    }
+}
 
 } // namespace anilt

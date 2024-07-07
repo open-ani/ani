@@ -26,6 +26,20 @@ void call_listener(lt::alert *alert, libtorrent::session &session, event_listene
         return;
     }
 
+    // if (const auto a = lt::alert_cast<lt::session_stats_alert>(alert)) {
+    //     function_printer_t _fp("call_listener:torrent_state_update_event_t");
+    //     session_stats_t stats;
+    // a->counters()[lt::counters::];
+    // for (auto &torrent: a->status) {
+    //     torrent_stats_t stats;
+    //     stats.download_payload_rate = torrent.download_payload_rate;
+    //     stats.upload_payload_rate = torrent.upload_payload_rate;
+    //     stats.progress = torrent.progress;
+    //     listener.on_status_update(torrent.handle.id(), stats);
+    // }
+    // return;
+    // }
+
     auto *torrent_alert = dynamic_cast<lt::torrent_alert *>(alert);
     if (!torrent_alert) {
         return;
