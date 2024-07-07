@@ -91,6 +91,7 @@ jobs:
       - name: Update version name
         run: ./gradlew updateDevVersionNameFromGit ${{ env.gradleArgs }}
 
+      # 备注: 这个可能已经不需要了, Compose 可能已经修复了这个 bug
       - name: Explicitly generate Compose resources
         run: ./gradlew generateComposeResClass ${{ env.gradleArgs }}
 
