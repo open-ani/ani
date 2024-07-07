@@ -119,21 +119,21 @@ internal class TorrentFileAnitorrentEntryHandleTest : TorrentSessionSupport() {
                 assertFalse(isFinished.first())
                 assertEquals(0f, progress.first())
                 assertEquals(0L, downloadedBytes.first())
-                assertEquals(1000, totalBytes.first())
+                assertEquals(1000, totalSize.first())
             }
             listener.onPieceFinished(0)
             fileHandle.entry.stats.run {
                 assertFalse(isFinished.first())
                 assertEquals(0.5f, progress.first())
                 assertEquals(500L, downloadedBytes.first())
-                assertEquals(1000, totalBytes.first())
+                assertEquals(1000, totalSize.first())
             }
             listener.onPieceFinished(1)
             fileHandle.entry.stats.run {
                 assertTrue(isFinished.first())
                 assertEquals(1f, progress.first())
                 assertEquals(1000L, downloadedBytes.first())
-                assertEquals(1000, totalBytes.first())
+                assertEquals(1000, totalSize.first())
             }
             fileHandle.close()
         }

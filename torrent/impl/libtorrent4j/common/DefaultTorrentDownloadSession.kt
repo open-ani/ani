@@ -92,18 +92,18 @@ open class DefaultTorrentDownloadSession(
     final override val state: MutableStateFlow<TorrentDownloadState> = MutableStateFlow(TorrentDownloadState.Starting)
 
     inner class OverallStatsImpl : DownloadStats() {
-        override val totalBytes: MutableStateFlow<Long> = MutableStateFlow(0L)
+        override val totalSize: MutableStateFlow<Long> = MutableStateFlow(0L)
         override val downloadedBytes = MutableStateFlow(0L)
 
-        val downloadRate0 = MutableStateFlow<Long?>(null)
-        override val downloadRate: Flow<Long?>
+        val downloadRate0 = MutableStateFlow(0L)
+        override val downloadRate
             get() = downloadRate0
                 .resetStale(1000) {
                     emit(0L)
                 }
                 .distinctUntilChanged()
 
-        val uploadRate0 = MutableStateFlow<Long?>(null)
+        val uploadRate0 = MutableStateFlow(0L)
         override val uploadRate
             get() = uploadRate0
                 .resetStale(1000) {
@@ -111,7 +111,7 @@ open class DefaultTorrentDownloadSession(
                 }
                 .distinctUntilChanged()
 
-        override val progress = combine(downloadedBytes, totalBytes) { downloaded, total ->
+        override val progress = combine(downloadedBytes, totalSize) { downloaded, total ->
             if (total == 0L) {
                 0f
             } else {
@@ -307,10 +307,10 @@ open class DefaultTorrentDownloadSession(
 
         val downloadedBytes = MutableStateFlow(initialDownloadedBytes)
         override val stats: DownloadStats = object : DownloadStats() {
-            override val totalBytes: Flow<Long> = flowOf(length)
+            override val totalSize: Flow<Long> = flowOf(length)
             override val downloadedBytes get() = this@TorrentFileEntryImpl.downloadedBytes
-            override val downloadRate: Flow<Long?> get() = overallStats.downloadRate // TODO: separate download/upload rate for torrent file 
-            override val uploadRate: Flow<Long?> get() = overallStats.uploadRate
+            override val downloadRate: Flow<Long> get() = overallStats.downloadRate // TODO: separate download/upload rate for torrent file 
+            override val uploadRate: Flow<Long> get() = overallStats.uploadRate
             override val progress: Flow<Float> =
                 combine(finishedOverride, downloadedBytes) { finished, downloadBytes ->
                     when {
@@ -319,7 +319,7 @@ open class DefaultTorrentDownloadSession(
                         else -> (downloadBytes.toFloat() / length.toFloat()).coerceAtMost(1f)
                     }
                 }
-            override val isFinished: Flow<Boolean> = combine(downloadedBytes, totalBytes) { downloaded, total ->
+            override val isFinished: Flow<Boolean> = combine(downloadedBytes, totalSize) { downloaded, total ->
                 downloaded >= total
             }
 
@@ -434,7 +434,7 @@ open class DefaultTorrentDownloadSession(
 //                    logger.warn { "[libtorrent] $torrentName: Metadata failed: ${alert.error.message}" }
 //                }
             is StatsUpdateEvent -> {
-                overallStats.totalBytes.value = event.totalBytes
+                overallStats.totalSize.value = event.totalBytes
                 overallStats.downloadedBytes.value = event.downloadedBytes
                 overallStats.downloadRate0.value = event.downloadRate
                 overallStats.uploadRate0.value = event.uploadRate

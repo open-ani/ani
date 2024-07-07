@@ -21,6 +21,8 @@ void call_listener(lt::alert *alert, libtorrent::session &session, event_listene
             stats.download_payload_rate = torrent.download_payload_rate;
             stats.upload_payload_rate = torrent.upload_payload_rate;
             stats.progress = torrent.progress;
+            stats.total_payload_download = torrent.total_payload_download;
+            stats.total_payload_upload = torrent.total_payload_upload;
             listener.on_status_update(torrent.handle.id(), stats);
         }
         return;

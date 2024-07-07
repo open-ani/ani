@@ -141,7 +141,7 @@ class TorrentMediaCacheEngine(
 
         override val totalSize: Flow<FileSize>
             get() = entry.flatMapLatest { entry ->
-                entry?.stats?.totalBytes?.map { it.bytes } ?: flowOf(0.bytes)
+                entry?.stats?.totalSize?.map { it.bytes } ?: flowOf(0.bytes)
             }
 
         override suspend fun pause() {

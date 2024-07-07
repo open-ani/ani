@@ -7,6 +7,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -33,7 +35,6 @@ import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
 import java.io.File
-import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.CoroutineContext
 
 fun AnitorrentTorrentDownloader(
@@ -101,20 +102,28 @@ class AnitorrentTorrentDownloader(
 
     private val scope = CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
 
+    // key is uri hash
+    // must be thread-safe
+    val openSessions = MutableStateFlow<Map<String, AnitorrentDownloadSession>>(emptyMap())
 
-    override val totalUploaded: MutableStateFlow<Long> = MutableStateFlow(0L)
-    override val totalDownloaded: MutableStateFlow<Long> = MutableStateFlow(0L)
-    override val totalUploadRate: MutableStateFlow<Long> = MutableStateFlow(0L)
-    override val totalDownloadRate: MutableStateFlow<Long> = MutableStateFlow(0L)
+    override val totalUploaded = openSessions.flatMapLatest { map ->
+        combine(map.values.map { it.overallStats.uploadedBytes }) { it.sum() }
+    }
+    override val totalDownloaded = openSessions.flatMapLatest { map ->
+        combine(map.values.map { it.overallStats.downloadedBytes }) { it.sum() }
+    }
+    override val totalUploadRate = openSessions.flatMapLatest { map ->
+        combine(map.values.map { it.overallStats.uploadRate }) { it.sum() }
+    }
+    override val totalDownloadRate = openSessions.flatMapLatest { map ->
+        combine(map.values.map { it.overallStats.downloadRate }) { it.sum() }
+    }
+
     override val vendor: TorrentLibInfo = TorrentLibInfo(
         vendor = "Anitorrent",
         version = "1.0.0",
         supportsStreaming = true,
     )
-
-    // key is uri hash
-    // must be thread-safe
-    val openSessions = ConcurrentHashMap<String, AnitorrentDownloadSession>()
 
     /**
      * 在 [startDownload] 时初始化, 用于缓存在调用 native startDownload 后, 到 [openSessions] 更新之前的事件.
@@ -135,7 +144,7 @@ class AnitorrentTorrentDownloader(
             // contention is very low in most cases, except for when we are creating a new session.
 
             try {
-                openSessions.values.find { it.handleId == id }?.let {
+                openSessions.value.values.find { it.handleId == id }?.let {
                     block(it)
                     return
                 }
@@ -152,7 +161,7 @@ class AnitorrentTorrentDownloader(
                     // this block does not capture anything
 
                     // Now we should have the session since the startDownload is locked
-                    openSessions.values.find { it.handleId == id }?.let {
+                    openSessions.value.values.find { it.handleId == id }?.let {
                         block(it)
                         return@add
                     }
@@ -228,14 +237,6 @@ class AnitorrentTorrentDownloader(
                 eventSignal.receive() // await new events
                 nativeSession.process_events(eventListener) // can block thread
             }
-        }
-        scope.launch {
-            // TODO: stats 
-//                val stats = sessionManager.getStats()
-//                totalUploaded.value = stats.totalUpload()
-//                totalDownloaded.value = stats.totalDownload()
-//                totalUploadRate.value = stats.uploadRate()
-//                totalDownloadRate.value = stats.downloadRate()
         }
     }
 
@@ -324,7 +325,7 @@ class AnitorrentTorrentDownloader(
         val saveDir = overrideSaveDir ?: getSaveDirForTorrent(data)
         val fastResumeFile = saveDir.resolve(FAST_RESUME_FILENAME)
 
-        openSessions[data.data.contentHashCode().toString()]?.let {
+        openSessions.value[data.data.contentHashCode().toString()]?.let {
             logger.info { "Found existing session" }
             return@withHandleTaskQueue it
         }
@@ -365,7 +366,7 @@ class AnitorrentTorrentDownloader(
             saveDir,
             fastResumeFile = fastResumeFile,
             onClose = {
-                openSessions.remove(data.data.contentHashCode().toString())
+                openSessions.value -= data.data.contentHashCode().toString()
                 nativeSession.release_handle(handle)
             },
             onDelete = {
@@ -383,7 +384,7 @@ class AnitorrentTorrentDownloader(
             },
             parentCoroutineContext = parentCoroutineContext,
         ).also {
-            openSessions[data.data.contentHashCode().toString()] = it // 放进去之后才能处理 alert
+            openSessions.value += data.data.contentHashCode().toString() to it // 放进去之后才能处理 alert
             val trackers = trackers.split(", ")
             logger.info { "[${it.handleId}] AnitorrentDownloadSession created, adding ${trackers.size} trackers" }
             for (tracker in trackers) {

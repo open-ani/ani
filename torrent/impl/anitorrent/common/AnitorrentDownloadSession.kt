@@ -43,7 +43,7 @@ import java.io.RandomAccessFile
 import kotlin.coroutines.CoroutineContext
 
 class AnitorrentDownloadSession(
-    private val session: session_t,
+    private val session: session_t, // we should hold session to prevent it from being GCed
     private val handle: torrent_handle_t,
     override val saveDirectory: File,
     val fastResumeFile: File,
@@ -126,11 +126,11 @@ class AnitorrentDownloadSession(
 
         val downloadedBytes: MutableStateFlow<Long> = MutableStateFlow(initialDownloadedBytes)
         override val stats: DownloadStats = object : DownloadStats() {
-            override val totalBytes: MutableStateFlow<Long> = MutableStateFlow(length)
+            override val totalSize: MutableStateFlow<Long> = MutableStateFlow(length)
             override val downloadedBytes: MutableStateFlow<Long> get() = this@AnitorrentEntry.downloadedBytes
-            override val uploadRate: MutableStateFlow<Long?> get() = this@AnitorrentDownloadSession.overallStats.uploadRate
+            override val uploadRate: MutableStateFlow<Long> get() = this@AnitorrentDownloadSession.overallStats.uploadRate
             override val progress: Flow<Float> =
-                combine(totalBytes, downloadedBytes) { total, downloaded ->
+                combine(totalSize, downloadedBytes) { total, downloaded ->
                     if (total == 0L) return@combine 0f
                     downloaded.toFloat() / total.toFloat()
                 }
@@ -269,7 +269,7 @@ class AnitorrentDownloadSession(
         }
         val value = TorrentInfo(allPiecesInTorrent, pieceLength = info.piece_length, entries)
         logger.info { "[$handleId] Got torrent info: $value" }
-        this.overallStats.totalBytes.value = entries.sumOf { it.length }
+        this.overallStats.totalSize.value = entries.sumOf { it.length }
 //        handle.ignore_all_files() // no need because we set libtorrent::torrent_flags::default_dont_download in native
         this.actualTorrentInfo.complete(value)
     }
@@ -343,7 +343,8 @@ class AnitorrentDownloadSession(
         this.overallStats.downloadRate.value = stats.download_payload_rate.toUInt().toLong()
         this.overallStats.uploadRate.value = stats.upload_payload_rate.toUInt().toLong()
         this.overallStats.progress.value = stats.progress
-        this.overallStats.downloadedBytes.value = (this.overallStats.totalBytes.value * stats.progress).toLong()
+        this.overallStats.downloadedBytes.value = (this.overallStats.totalSize.value * stats.progress).toLong()
+        this.overallStats.uploadedBytes.value = stats.total_payload_upload
         this.overallStats.isFinished.value = stats.progress >= 1f
     }
 
@@ -414,11 +415,12 @@ class AnitorrentDownloadSession(
 }
 
 class MutableDownloadStats : DownloadStats() {
-    override val totalBytes: MutableStateFlow<Long> = MutableStateFlow(0)
-    override val uploadRate: MutableStateFlow<Long?> = MutableStateFlow(0)
-    override val downloadRate: MutableStateFlow<Long?> = MutableStateFlow(0)
+    override val totalSize: MutableStateFlow<Long> = MutableStateFlow(0)
+    override val uploadRate: MutableStateFlow<Long> = MutableStateFlow(0)
+    override val downloadRate: MutableStateFlow<Long> = MutableStateFlow(0)
     override val progress: MutableStateFlow<Float> = MutableStateFlow(0f)
     override val downloadedBytes: MutableStateFlow<Long> = MutableStateFlow(0)
+    val uploadedBytes: MutableStateFlow<Long> = MutableStateFlow(0)
     override val isFinished: MutableStateFlow<Boolean> = MutableStateFlow(false)
 }
 

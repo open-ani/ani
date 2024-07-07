@@ -18,15 +18,15 @@ abstract class DownloadStats {
     /**
      * 总请求大小. 注意这不是在硬盘上的大小. 在硬盘上可能会略有差别.
      */
-    abstract val totalBytes: Flow<Long>
+    abstract val totalSize: Flow<Long>
 
     open val downloadedBytes: Flow<Long>
-        get() = combine(totalBytes, progress) { total, pro -> (total * pro).toLong() }
+        get() = combine(totalSize, progress) { total, pro -> (total * pro).toLong() }
 
     /**
      * Bytes per second. `null` if not available, i.e. just started
      */
-    open val downloadRate: Flow<Long?>
+    open val downloadRate: Flow<Long>
         get() = flow {
             coroutineScope {
                 val window = arrayOf(0L, 0L, 0L, 0L, 0L)
@@ -65,7 +65,7 @@ abstract class DownloadStats {
             }
         }
 
-    abstract val uploadRate: Flow<Long?>
+    abstract val uploadRate: Flow<Long>
 
     /**
      * Range: `0..1`

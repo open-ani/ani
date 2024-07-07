@@ -63,6 +63,9 @@ enum torrent_state_t {
 struct torrent_stats_t {
     int download_payload_rate = 0;
     int upload_payload_rate = 0;
+
+    int64_t total_payload_download = 0;
+    int64_t total_payload_upload = 0;
     float progress = 0;
 };
 
