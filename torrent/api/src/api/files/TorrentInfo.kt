@@ -7,6 +7,7 @@ interface TorrentInfo {
      * [TorrentDownloader.fetchTorrent] 的时候使用的 URI.
      * 对于旧版本数据此项为 `null`.
      */
+    @Deprecated("to be removed by 3.5.0", ReplaceWith("data"))
     val originalUri: String?
 }
 

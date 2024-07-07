@@ -9,7 +9,7 @@ import me.him188.ani.app.torrent.api.handle.TorrentThread
 class Torrent4jTorrentInfo
 @TorrentThread
 private constructor(
-    override val originalUri: String? = null,
+    @Suppress("OVERRIDE_DEPRECATION") override val originalUri: String? = null,
     val info: org.libtorrent4j.TorrentInfo
 ) : TorrentInfo {
     val name: String = info.name()

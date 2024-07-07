@@ -80,6 +80,7 @@ class session_t final {
 
   private:
     std::shared_ptr<libtorrent::session> session_;
+    static bool compute_add_torrent_params(const torrent_add_info_t &info, lt::add_torrent_params &params) ;
 };
 }
 } // namespace anilt

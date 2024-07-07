@@ -1,20 +1,15 @@
 
 #include "events.hpp"
 
+#include <fstream>
+
 #include "global_lock.h"
 #include "libtorrent/alert_types.hpp"
+#include "libtorrent/bencode.hpp"
+#include "libtorrent/write_resume_data.hpp"
 
 namespace anilt {
 
-
-static void init_event(event_t &event, const lt::torrent_handle &handle) { event.handle_id = handle.id(); }
-
-template<class Tp, class... Args>
-static std::shared_ptr<Tp> make_event_shared(const lt::torrent_handle &handle, Args &&..._args) {
-    const auto ptr = std::allocate_shared<Tp>(std::allocator<Tp>(), std::forward<Args>(_args)...);
-    init_event(*ptr, handle);
-    return ptr;
-}
 
 void call_listener(lt::alert *alert, libtorrent::session &session, event_listener_t &listener) {
     // Non-torrent alerts
@@ -41,16 +36,7 @@ void call_listener(lt::alert *alert, libtorrent::session &session, event_listene
 
     if (lt::alert_cast<lt::add_torrent_alert>(torrent_alert)) {
         function_printer_t _fp("call_listener:torrent_added_event_t");
-        torrent_added_event_t event;
-        init_event(event, handle);
-        listener.on_torrent_added(event);
-        return;
-    }
-    if (lt::alert_cast<lt::metadata_received_alert>(torrent_alert)) {
-        function_printer_t _fp("call_listener:metadata_received_event_t");
-        metadata_received_event_t event;
-        init_event(event, handle);
-        listener.on_metadata_received(event);
+        listener.on_torrent_added(handle.id());
         return;
     }
     if (lt::alert_cast<lt::torrent_checked_alert>(torrent_alert)) {
@@ -58,11 +44,12 @@ void call_listener(lt::alert *alert, libtorrent::session &session, event_listene
         listener.on_checked(handle.id());
         return;
     }
-    if (lt::alert_cast<lt::save_resume_data_alert>(torrent_alert)) {
+    if (const auto a = lt::alert_cast<lt::save_resume_data_alert>(torrent_alert)) {
         function_printer_t _fp("call_listener:torrent_save_resume_data_event_t");
-        torrent_save_resume_data_event_t event;
-        init_event(event, handle);
-        listener.on_save_resume_data(event);
+        const auto params = a->params;
+        torrent_resume_data_t data;
+        data.data_ = write_resume_data_buf(params);
+        listener.on_save_resume_data(handle.id(), data);
         return;
     }
     if (const auto a = lt::alert_cast<lt::piece_finished_alert>(torrent_alert)) {
@@ -82,4 +69,23 @@ void call_listener(lt::alert *alert, libtorrent::session &session, event_listene
         return;
     }
 }
+
+static void writeVectorToFile(const std::vector<char> &data, const std::string &filePath) {
+    // Open the file in binary mode
+    std::ofstream outFile(filePath, std::ios::binary);
+
+    // Check if the file was opened successfully
+    if (!outFile) {
+        std::cerr << "Error opening file for writing: " << filePath << std::endl;
+        return;
+    }
+
+    // Write the contents of the vector to the file
+    outFile.write(data.data(), static_cast<long>(data.size()));
+
+    // Close the file
+    outFile.close();
+}
+
+void torrent_resume_data_t::save_to_file(const std::string &path) const { writeVectorToFile(data_, path); }
 } // namespace anilt

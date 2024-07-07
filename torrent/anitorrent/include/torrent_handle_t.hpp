@@ -12,7 +12,7 @@ class torrent_handle_t final {
   public:
     unsigned int id = 0;
 
-    [[nodiscard]] torrent_info_t *get_info_view() const { return info.get(); }
+    [[nodiscard]] torrent_info_t *get_info_view() const { return info_.get(); }
 
     enum reload_file_result_t : unsigned int {
         kReloadFileSuccess = 0,
@@ -27,7 +27,7 @@ class torrent_handle_t final {
 
     // See event_listener_t::on_status_update
     void post_status_updates() const;
-
+    void post_save_resume() const;
 
     void set_piece_deadline(int index, int deadline) const;
 
@@ -39,11 +39,19 @@ class torrent_handle_t final {
 
     void add_tracker(const std::string &url, std::uint8_t tier = 0, std::uint8_t fail_limit = 0) const;
 
+    void resume() const;
+
+    // supports only 0, 1, 4, 7. See libtorrent::download_priority_t
+    void ignore_all_files() const;
+
+    void set_file_priority(int index, uint8_t priority) const;
+
+
   private:
     friend class session_t;
 
     std::shared_ptr<libtorrent::torrent_handle> handle_;
-    std::shared_ptr<torrent_info_t> info;
+    std::shared_ptr<torrent_info_t> info_;
     // std::mutex lock;
 };
 }

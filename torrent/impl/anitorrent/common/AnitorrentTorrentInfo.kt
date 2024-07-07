@@ -19,9 +19,11 @@ sealed class AnitorrentTorrentData {
 
 @Serializable
 class AnitorrentTorrentInfo(
-    val data: AnitorrentTorrentData
+    val data: AnitorrentTorrentData,
+    val httpTorrentFilePath: String? = null,
 ) : TorrentInfo {
-    override val originalUri: String? get() = null
+    @Deprecated("Use data instead", ReplaceWith("data"))
+    override val originalUri: Nothing? get() = null
 
     companion object {
         private val json = Json {

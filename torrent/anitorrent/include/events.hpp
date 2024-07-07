@@ -9,16 +9,6 @@
 
 namespace anilt {
 extern "C" {
-
-struct event_t {
-    handle_id_t handle_id{};
-};
-
-struct torrent_added_event_t final : event_t {};
-struct metadata_received_event_t final : event_t {};
-struct torrent_save_resume_data_event_t final : event_t {};
-}
-
 // copied from libtorrent
 enum torrent_state_t {
 #if TORRENT_ABI_VERSION == 1
@@ -76,15 +66,23 @@ struct torrent_stats_t {
     float progress = 0;
 };
 
+class event_listener_t;
+
+struct torrent_resume_data_t {
+    void save_to_file(const std::string &path) const;
+
+  private:
+    friend void call_listener(lt::alert *alert, libtorrent::session &session, event_listener_t &listener);
+    std::vector<char> data_;
+};
+
 class event_listener_t { // inherited from Kotlin
   public:
     virtual ~event_listener_t() = default;
-    virtual void on_event(event_t *event){}; // event is owned by the caller and is destroyed after this call
 
-    virtual void on_metadata_received(metadata_received_event_t &event) {}
     virtual void on_checked(handle_id_t handle_id) {}
-    virtual void on_torrent_added(torrent_added_event_t &event) {}
-    virtual void on_save_resume_data(torrent_save_resume_data_event_t &event) {}
+    virtual void on_torrent_added(handle_id_t handle_id) {}
+    virtual void on_save_resume_data(handle_id_t handle_id, torrent_resume_data_t &data) {}
     virtual void on_torrent_state_changed(handle_id_t handle_id, torrent_state_t state) {}
 
     virtual void on_block_downloading(handle_id_t handle_id, int32_t piece_index, int block_index) {}
@@ -101,6 +99,8 @@ class event_listener_t { // inherited from Kotlin
 
 
 void call_listener(lt::alert *alert, libtorrent::session &session, event_listener_t &listener);
+}
 } // namespace anilt
+
 
 #endif // EVENTS_H

@@ -5,23 +5,18 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import me.him188.ani.app.platform.Arch
-import me.him188.ani.app.platform.Platform
-import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.torrent.anitorrent.binding.event_listener_t
-import me.him188.ani.app.torrent.anitorrent.binding.metadata_received_event_t
 import me.him188.ani.app.torrent.anitorrent.binding.session_settings_t
 import me.him188.ani.app.torrent.anitorrent.binding.session_t
 import me.him188.ani.app.torrent.anitorrent.binding.torrent_add_info_t
 import me.him188.ani.app.torrent.anitorrent.binding.torrent_handle_t
+import me.him188.ani.app.torrent.anitorrent.binding.torrent_resume_data_t
 import me.him188.ani.app.torrent.anitorrent.binding.torrent_state_t
 import me.him188.ani.app.torrent.anitorrent.binding.torrent_stats_t
 import me.him188.ani.app.torrent.api.HttpFileDownloader
@@ -39,49 +34,13 @@ import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 
-private fun loadAnitorrentLibrary(libraryName: String) {
-    val platform = currentPlatform as Platform.Desktop
-    val filename = when (platform) {
-        is Platform.Linux -> "lib$libraryName.so"
-        is Platform.MacOS -> "lib$libraryName.dylib"
-        is Platform.Windows -> "$libraryName.dll"
-    }
-    System.getProperty("compose.application.resources.dir")?.let {
-        val file = File(it).resolve(filename)
-        if (file.exists()) {
-            System.load(file.absolutePath)
-            return
-        }
-    }
-
-    val arch = when (platform.arch) {
-        Arch.X86_64 -> "x64"
-        Arch.AARCH64 -> "arm64"
-    }
-
-    val triple = when (platform) {
-        is Platform.Linux -> "linux-$arch"
-        is Platform.MacOS -> "macos-$arch"
-        is Platform.Windows -> "windows-$arch"
-    }
-
-    System.getProperty("user.dir")?.let(::File)?.resolve("../appResources/$triple/$filename")?.let {
-        if (it.exists()) {
-            System.load(it.absolutePath)
-            return
-        }
-    }
-
-    throw UnsatisfiedLinkError("Could not find anitorrent library: $filename")
-}
-
 fun AnitorrentTorrentDownloader(
-    cacheDirectory: File,
+    rootDataDirectory: File,
     httpFileDownloader: HttpFileDownloader,
     torrentDownloaderConfig: TorrentDownloaderConfig,
     parentCoroutineContext: CoroutineContext,
 ): AnitorrentTorrentDownloader {
-    AnitorrentTorrentDownloader.loadLibraries()
+    AnitorrentLibraryLoader.loadLibraries()
 
     val session = session_t()
     val settings = session_settings_t().apply {
@@ -104,7 +63,7 @@ fun AnitorrentTorrentDownloader(
         settings.delete() // 其实也可以等 GC, 不过反正我们都不用了
     }
     return AnitorrentTorrentDownloader(
-        cacheDirectory = cacheDirectory,
+        rootDataDirectory = rootDataDirectory,
         nativeSession = session,
         httpFileDownloader = httpFileDownloader,
         parentCoroutineContext = parentCoroutineContext,
@@ -112,54 +71,28 @@ fun AnitorrentTorrentDownloader(
 }
 
 class AnitorrentTorrentDownloader(
-    cacheDirectory: File,
-    val nativeSession: session_t,
+    /**
+     * 目录结构:
+     * ```
+     * rootDataDirectory
+     *  |- torrentFiles
+     *      |- <uri hash>.txt
+     *  |- pieces
+     *      |- <uri hash>
+     *          |- [libtorrent save files]
+     *          |- fastresume
+     * ```
+     *
+     * 其中 uri hash 可能是 magnet URI 的 hash, 也可能是 HTTP URL 的 hash, 取决于 [startDownload] 时提供的是什么.
+     */
+    rootDataDirectory: File,
+    val nativeSession: session_t, // must hold reference. 
     private val httpFileDownloader: HttpFileDownloader,
     parentCoroutineContext: CoroutineContext,
 ) : TorrentDownloader {
     companion object {
-        internal val logger = logger(this::class)
-
-        @Volatile
-        private var libraryLoaded = false
-
-        private val _initAnitorrent by lazy {
-            // 注意, JVM 也会 install signal handler, 它需要 sig handler 才能工作. 
-            // 这里覆盖之后会导致 JVM crash (SIGSEGV/SIGBUS). crash 如果遇到一个无 symbol 的比较低的地址, 那就大概率是 JVM.
-            // 应当仅在需要 debug 一个已知的 anitorrent 的 crash 时才开启这个.
-            // 其实不开的话, OS 也能输出 crash report. macOS 输出的 crash report 会包含 native 堆栈.
-
-            // 如果需要调试, 可以在 anitorrent 搜索 ENABLE_TRACE_LOGGING 并修改为 true. 将会打印非常详细的 function call 记录.
-
-//    anitorrent.install_signal_handlers()
-        }
-
-        @Synchronized
-        @Throws(UnsatisfiedLinkError::class)
-        fun loadLibraries() {
-            if (libraryLoaded) return
-
-            try {
-                when (currentPlatform as Platform.Desktop) {
-                    is Platform.Windows -> {
-                        loadAnitorrentLibrary("libcrypto-3-x64")
-                        loadAnitorrentLibrary("libssl-3-x64")
-                        loadAnitorrentLibrary("torrent-rasterbar")
-                    }
-
-                    is Platform.Linux -> throw UnsupportedOperationException("Linux is not supported yet")
-                    is Platform.MacOS -> {
-                        loadAnitorrentLibrary("torrent-rasterbar.2.0.10")
-                    }
-                }
-                loadAnitorrentLibrary("anitorrent")
-                _initAnitorrent
-                libraryLoaded = true
-            } catch (e: Throwable) {
-                libraryLoaded = false
-                throw e
-            }
-        }
+        private const val FAST_RESUME_FILENAME = "fastresume"
+        private val logger = logger(this::class)
     }
 
     private val scope = CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
@@ -177,26 +110,18 @@ class AnitorrentTorrentDownloader(
 
     val openSessions = ConcurrentHashMap<String, AnitorrentDownloadSession>()
 
-    inline fun forEachSession(id: HandleId, block: (AnitorrentDownloadSession) -> Unit) {
-        contract { callsInPlace(block, InvocationKind.UNKNOWN) }
-        openSessions.values.forEach {
-            if (it.id == id) {
-                block(it)
-            }
-        }
-    }
-
 
     // must keep referenced
     private val eventListener = object : event_listener_t() {
-        override fun on_metadata_received(event: metadata_received_event_t?) {
-            event ?: return
+
+        override fun on_save_resume_data(handleId: Long, data: torrent_resume_data_t?) {
+            data ?: return
             try {
-                forEachSession(event.handle_id) {
-                    it.handleEvent(event)
+                forEachSession(handleId) {
+                    it.onSaveResumeData(data)
                 }
             } catch (e: Throwable) {
-                logger.error(e) { "Error while handling event: $event" }
+                logger.error(e) { "Error while handling on_save_resume_data" }
             }
         }
 
@@ -234,7 +159,7 @@ class AnitorrentTorrentDownloader(
             state ?: return
             try {
                 forEachSession(handleId) {
-                    if (state == torrent_state_t.finished || state == torrent_state_t.seeding) {
+                    if (state == torrent_state_t.finished) {
                         it.onTorrentFinished()
                     }
                 }
@@ -258,19 +183,13 @@ class AnitorrentTorrentDownloader(
 
     init {
         scope.launch {
-            while (currentCoroutineContext().isActive) {
+            while (true) {
                 // TODO: stats 
 //                val stats = sessionManager.getStats()
 //                totalUploaded.value = stats.totalUpload()
 //                totalDownloaded.value = stats.totalDownload()
 //                totalUploadRate.value = stats.uploadRate()
 //                totalDownloadRate.value = stats.downloadRate()
-                delay(1000)
-            }
-        }
-
-        scope.launch {
-            while (true) {
                 nativeSession.process_events(eventListener)
                 delay(1000)
             }
@@ -284,21 +203,36 @@ class AnitorrentTorrentDownloader(
             if (cacheFile.exists()) {
                 val data = cacheFile.readText().hexToByteArray()
                 logger.info { "HTTP torrent file '${uri}' found in cache: $cacheFile, length=${data.size}" }
-                return AnitorrentTorrentInfo.encode(AnitorrentTorrentInfo(AnitorrentTorrentData.TorrentFile(data)))
+                return AnitorrentTorrentInfo.encode(
+                    AnitorrentTorrentInfo(
+                        AnitorrentTorrentData.TorrentFile(data),
+                        httpTorrentFilePath = cacheFile.absolutePath,
+                    ),
+                )
             }
             logger.info { "Fetching http url: $uri" }
             val data = httpFileDownloader.download(uri)
             logger.info { "Fetching http url success, file length = ${data.size}" }
             cacheFile.writeText(data.toHexString())
             logger.info { "Saved cache file: $cacheFile" }
-            return AnitorrentTorrentInfo.encode(AnitorrentTorrentInfo(AnitorrentTorrentData.TorrentFile(data)))
+            return AnitorrentTorrentInfo.encode(
+                AnitorrentTorrentInfo(
+                    AnitorrentTorrentData.TorrentFile(data),
+                    httpTorrentFilePath = cacheFile.absolutePath,
+                ),
+            )
         }
 
         require(uri.startsWith("magnet")) { "Expected uri to start with \"magnet\": $uri" }
-        return AnitorrentTorrentInfo.encode(AnitorrentTorrentInfo(AnitorrentTorrentData.MagnetUri(uri)))
+        return AnitorrentTorrentInfo.encode(
+            AnitorrentTorrentInfo(
+                AnitorrentTorrentData.MagnetUri(uri),
+                httpTorrentFilePath = null,
+            ),
+        )
     }
 
-    private val httpTorrentFileCacheDir = cacheDirectory.resolve("torrentFiles").apply {
+    private val httpTorrentFileCacheDir = rootDataDirectory.resolve("torrentFiles").apply {
         mkdirs()
     }
 
@@ -306,19 +240,20 @@ class AnitorrentTorrentDownloader(
         return httpTorrentFileCacheDir.resolve(uri.hashCode().toString() + ".txt")
     }
 
-    private val downloadCacheDir = cacheDirectory.resolve("pieces").apply {
+    private val downloadCacheDir = rootDataDirectory.resolve("pieces").apply {
         mkdirs()
     }
 
-    private val lock = Mutex()
+    private val sessionsLock = Mutex()
 
     override suspend fun startDownload(
         data: EncodedTorrentInfo,
         parentCoroutineContext: CoroutineContext,
         overrideSaveDir: File?
-    ): TorrentDownloadSession = lock.withLock {
+    ): TorrentDownloadSession = sessionsLock.withLock {
         val info = AnitorrentTorrentInfo.decodeFrom(data)
         val saveDir = overrideSaveDir ?: getSaveDirForTorrent(data)
+        val fastResumeFile = saveDir.resolve(FAST_RESUME_FILENAME)
 
         openSessions[data.data.contentHashCode().toString()]?.let {
             logger.info { "Found existing session" }
@@ -330,7 +265,7 @@ class AnitorrentTorrentDownloader(
         when (info.data) {
             is AnitorrentTorrentData.MagnetUri -> {
                 addInfo.kind = torrent_add_info_t.kKindMagnetUri
-                addInfo.magnetUri = info.data.uri
+                addInfo.magnet_uri = info.data.uri
                 logger.info { "Using magnetUri. length=${info.data.uri.length}" }
             }
 
@@ -339,31 +274,42 @@ class AnitorrentTorrentDownloader(
                 withContext(Dispatchers.IO) {
                     val tempFile = kotlin.io.path.createTempFile("anitorrent", ".torrent").toFile()
                     tempFile.writeBytes(info.data.data)
-                    addInfo.torrentFilePath = tempFile.absolutePath
+                    addInfo.torrent_file_path = tempFile.absolutePath
                 }
                 logger.info { "Using torrent file. data length=${info.data.data.size}" }
             }
         }
         check(addInfo.kind != torrent_add_info_t.kKindUnset)
 
-        logger.info { "start_download: call native start_download" }
+        if (fastResumeFile.exists()) {
+            logger.info { "start_download: including fastResumeFile" }
+            addInfo.resume_data_path = fastResumeFile.absolutePath
+        }
+
         if (!nativeSession.start_download(handle, addInfo, saveDir.absolutePath)) {
             throw IllegalStateException("Failed to start download, native failed")
         }
-        logger.info { "start_download: native returned, handleId=${handle.id}" }
-        nativeSession.resume()
         return AnitorrentDownloadSession(
             this.nativeSession, handle,
             saveDir,
+            fastResumeFile = fastResumeFile,
             onClose = {
                 openSessions.remove(data.data.contentHashCode().toString())
                 nativeSession.release_handle(handle)
             },
-//            onDelete = { session ->
-//                session as AnitorrentDownloadSession
-//                dataToSession.remove(data.data.contentHashCode().toString())
-//                anitorrent.session_release_handle(session.session, session.handle)
-//            },
+            onDelete = {
+                scope.launch {
+                    // http 下载的 .torrent 文件保存在全局路径, 需要删除
+                    info.httpTorrentFilePath?.let(::File)?.let { cacheFile ->
+                        withContext(Dispatchers.IO) {
+                            if (cacheFile.exists()) {
+                                cacheFile.delete()
+                            }
+                        }
+                    }
+                    // fast resume 保存在 saveDir 内, 已经被删除
+                }
+            },
             parentCoroutineContext = parentCoroutineContext,
         ).also {
             openSessions[data.data.contentHashCode().toString()] = it
@@ -384,6 +330,17 @@ class AnitorrentTorrentDownloader(
     }
 }
 
+private inline fun AnitorrentTorrentDownloader.forEachSession(
+    id: HandleId,
+    block: (AnitorrentDownloadSession) -> Unit
+) {
+    contract { callsInPlace(block, InvocationKind.UNKNOWN) }
+    openSessions.values.forEach {
+        if (it.id == id) {
+            block(it)
+        }
+    }
+}
 
 typealias HandleId = Long
 

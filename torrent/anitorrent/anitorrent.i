@@ -15,6 +15,8 @@
 %feature("director") event_listener_t;
 
 %include stdint.i
+%include "arrays_java.i"
+
 %include "include/torrent_info_t.hpp"
 %include "include/torrent_add_info_t.hpp"
 %include "include/torrent_handle_t.hpp"

@@ -14,8 +14,8 @@ import me.him188.ani.app.platform.versionCode
 import me.him188.ani.app.tools.torrent.AbstractTorrentEngine
 import me.him188.ani.app.tools.torrent.TorrentEngineConfig
 import me.him188.ani.app.tools.torrent.TorrentEngineType
+import me.him188.ani.app.torrent.anitorrent.AnitorrentLibraryLoader
 import me.him188.ani.app.torrent.anitorrent.AnitorrentTorrentDownloader
-import me.him188.ani.app.torrent.anitorrent.AnitorrentTorrentDownloader.Companion.loadLibraries
 import me.him188.ani.app.torrent.api.TorrentDownloaderConfig
 import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.utils.ktor.createDefaultHttpClient
@@ -48,7 +48,7 @@ class AnitorrentEngine(
 
     private fun tryLoadLibraries(): Boolean {
         try {
-            loadLibraries()
+            AnitorrentLibraryLoader.loadLibraries()
             return true
         } catch (e: Throwable) {
             logger.error(e) { "Failed to load libraries for AnitorrentEngine" }
@@ -66,7 +66,7 @@ class AnitorrentEngine(
             expectSuccess = true
         }
         return AnitorrentTorrentDownloader(
-            cacheDirectory = saveDir,
+            rootDataDirectory = saveDir,
             client.asHttpFileDownloader(),
             TorrentDownloaderConfig(
                 peerFingerprint = computeTorrentFingerprint(),

@@ -8,8 +8,10 @@ extern "C" {
 typedef unsigned int handle_id_t;
 
 struct torrent_add_info_t final {
-    std::string magnetUri;
-    std::string torrentFilePath;
+    std::string magnet_uri{};
+    std::string torrent_file_path{};
+
+    std::string resume_data_path{};
 
     int kind = 0;
 
