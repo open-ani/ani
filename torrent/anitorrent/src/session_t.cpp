@@ -1,6 +1,7 @@
 
 #include "session_t.hpp"
 
+#include <fstream>
 #include <iostream>
 #include <libtorrent/aux_/file_pointer.hpp>
 #include <utility>
@@ -54,49 +55,32 @@ static std::string join_to_string(const Container &container, const std::string 
     return result.str();
 }
 
-static int load_file(std::string const &filename, std::vector<char> &v, libtorrent::error_code &ec,
-                     int const max_buffer_size = 80000000) {
-    ec.clear();
-#ifdef TORRENT_WINDOWS
-    libtorrent::aux::file_pointer f(::_wfopen(convert_to_native_path_string(filename).c_str(), L"rb"));
-#else
-    libtorrent::aux::file_pointer f(std::fopen(filename.c_str(), "rb"));
-#endif
-    if (f.file() == nullptr) {
-        ec.assign(errno, boost::system::generic_category());
-        return -1;
+    static std::vector<char> load_file_to_vector(const std::string &filePath) {
+        // Open the file in binary mode
+        std::ifstream inFile(filePath, std::ios::binary);
+
+        // Check if the file was opened successfully
+        if (!inFile) {
+            return {};
+        }
+
+        // Seek to the end of the file to determine its size
+        inFile.seekg(0, std::ios::end);
+        const std::streamsize size = inFile.tellg();
+        inFile.seekg(0, std::ios::beg);
+
+        // Create a vector to hold the file contents
+        std::vector<char> buffer(size);
+
+        // Read the contents of the file into the vector
+        if (!inFile.read(buffer.data(), size)) {
+            return {};
     }
 
-    if (std::fseek(f.file(), 0, SEEK_END) < 0) {
-        ec.assign(errno, boost::system::generic_category());
-        return -1;
-    }
-    std::int64_t const s = std::ftell(f.file());
-    if (s < 0) {
-        ec.assign(errno, boost::system::generic_category());
-        return -1;
-    }
-    if (s > max_buffer_size) {
-        ec = libtorrent::errors::metadata_too_large;
-        return -1;
-    }
-    if (std::fseek(f.file(), 0, SEEK_SET) < 0) {
-        ec.assign(errno, boost::system::generic_category());
-        return -1;
-    }
-    v.resize(std::size_t(s));
-    if (s == 0)
-        return 0;
-    std::size_t const read = std::fread(v.data(), 1, v.size(), f.file());
-    if (read != std::size_t(s)) {
-        if (std::feof(f.file())) {
-            v.resize(read);
-            return 0;
-        }
-        ec.assign(errno, boost::system::generic_category());
-        return -1;
-    }
-    return 0;
+        // Close the file
+        inFile.close();
+
+        return std::move(buffer);
 }
 
 void session_t::start(const session_settings_t &settings) {
@@ -218,11 +202,11 @@ session_t::fetch_magnet(const std::string &uri, const int timeout_seconds,
 }
 
 [[nodiscard]] static bool load_resume_data(const std::string &path, libtorrent::add_torrent_params &params) {
-    std::vector<char> buf;
-    libtorrent::error_code ec;
-    if (const int ret = load_file(path, buf, ec); ret < 0)
+    std::vector<char> buf = load_file_to_vector(path);
+    if (buf.empty())
         return false;
 
+    libtorrent::error_code ec;
     const libtorrent::bdecode_node e = libtorrent::bdecode(buf, ec);
     if (ec)
         return false;
@@ -239,6 +223,7 @@ session_t::fetch_magnet(const std::string &uri, const int timeout_seconds,
         if (load_resume_data(info.resume_data_path, params)) {
             return true;
         }
+        std::cerr << "Had resume_data_path but failed to load resume data, ignoring" << std::endl;
     }
     if (info.kind == torrent_add_info_t::kKindMagnetUri) {
         params = lt::parse_magnet_uri(info.magnet_uri);

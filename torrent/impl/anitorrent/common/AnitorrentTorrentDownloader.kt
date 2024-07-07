@@ -282,7 +282,7 @@ class AnitorrentTorrentDownloader(
         check(addInfo.kind != torrent_add_info_t.kKindUnset)
 
         if (fastResumeFile.exists()) {
-            logger.info { "start_download: including fastResumeFile" }
+            logger.info { "start_download: including fastResumeFile: ${fastResumeFile.absolutePath}" }
             addInfo.resume_data_path = fastResumeFile.absolutePath
         }
 

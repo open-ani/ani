@@ -52,7 +52,7 @@ class AnitorrentDownloadSession(
     parentCoroutineContext: CoroutineContext,
 ) : TorrentDownloadSession {
     val logger = logger(this::class)
-    val handleId = handle.id
+    val handleId = handle.id // 内存地址, 不可持久
 
     private val scope =
         CoroutineScope(
