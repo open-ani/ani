@@ -165,10 +165,11 @@ void session_t::resume() const {
 
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
     }
-}
+    }
 
-// info is hold by Java and will be destroyed after this call
-    bool session_t::start_download(torrent_handle_t &handle, const torrent_add_info_t &info, std::string save_path) const {
+    // info is hold by Java and will be destroyed after this call
+    bool session_t::start_download(torrent_handle_t &handle, const torrent_add_info_t &info,
+                                   std::string save_path) const {
     function_printer_t _fp("session_t::start_download");
     guard_global_lock;
     if (info.kind == torrent_add_info_t::kKindUnset) {
@@ -223,7 +224,7 @@ void session_t::resume() const {
         guard_global_lock;
         const auto session = session_;
         if (const auto ref = handle.handle_; session && ref) {
-        session->remove_torrent(*ref);
+            session->remove_torrent(*ref);
         }
     }
 

@@ -16,10 +16,9 @@ import kotlinx.coroutines.withContext
 import me.him188.ani.app.platform.Arch
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.currentPlatform
-import me.him188.ani.app.platform.getAniUserAgent
-import me.him188.ani.app.torrent.anitorrent.binding.anitorrent
 import me.him188.ani.app.torrent.anitorrent.binding.event_listener_t
 import me.him188.ani.app.torrent.anitorrent.binding.metadata_received_event_t
+import me.him188.ani.app.torrent.anitorrent.binding.session_settings_t
 import me.him188.ani.app.torrent.anitorrent.binding.session_t
 import me.him188.ani.app.torrent.anitorrent.binding.torrent_add_info_t
 import me.him188.ani.app.torrent.anitorrent.binding.torrent_handle_t
@@ -28,6 +27,7 @@ import me.him188.ani.app.torrent.anitorrent.binding.torrent_stats_t
 import me.him188.ani.app.torrent.api.HttpFileDownloader
 import me.him188.ani.app.torrent.api.TorrentDownloadSession
 import me.him188.ani.app.torrent.api.TorrentDownloader
+import me.him188.ani.app.torrent.api.TorrentDownloaderConfig
 import me.him188.ani.app.torrent.api.TorrentLibInfo
 import me.him188.ani.app.torrent.api.files.EncodedTorrentInfo
 import me.him188.ani.utils.logging.error
@@ -38,18 +38,6 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
-
-@Suppress("ObjectPropertyName")
-private val _initAnitorrent by lazy {
-    // 注意, JVM 也会 install signal handler, 它需要 sig handler 才能工作. 
-    // 这里覆盖之后会导致 JVM crash (SIGSEGV/SIGBUS). crash 如果遇到一个无 symbol 的比较低的地址, 那就大概率是 JVM.
-    // 应当仅在需要 debug 一个已知的 anitorrent 的 crash 时才开启这个.
-    // 其实不开的话, OS 也能输出 crash report. macOS 输出的 crash report 会包含 native 堆栈.
-
-    // 如果需要调试, 可以在 anitorrent 搜索 ENABLE_TRACE_LOGGING 并修改为 true. 将会打印非常详细的 function call 记录.
-
-//    anitorrent.install_signal_handlers()
-}
 
 private fun loadAnitorrentLibrary(libraryName: String) {
     val platform = currentPlatform as Platform.Desktop
@@ -77,7 +65,7 @@ private fun loadAnitorrentLibrary(libraryName: String) {
         is Platform.Windows -> "windows-$arch"
     }
 
-    File(System.getProperty("user.dir")).resolve("../appResources/$triple/$filename").let {
+    System.getProperty("user.dir")?.let(::File)?.resolve("../appResources/$triple/$filename")?.let {
         if (it.exists()) {
             System.load(it.absolutePath)
             return
@@ -90,47 +78,88 @@ private fun loadAnitorrentLibrary(libraryName: String) {
 fun AnitorrentTorrentDownloader(
     cacheDirectory: File,
     httpFileDownloader: HttpFileDownloader,
-    isDebug: Boolean,
+    torrentDownloaderConfig: TorrentDownloaderConfig,
     parentCoroutineContext: CoroutineContext,
 ): AnitorrentTorrentDownloader {
-    when (currentPlatform as Platform.Desktop) {
-        is Platform.Windows -> {
-            loadAnitorrentLibrary("libcrypto-3-x64")
-            loadAnitorrentLibrary("libssl-3-x64")
-            loadAnitorrentLibrary("torrent-rasterbar")
-        }
-
-        is Platform.Linux -> throw UnsupportedOperationException("Linux is not supported yet")
-        is Platform.MacOS -> {
-            loadAnitorrentLibrary("torrent-rasterbar.2.0.10")
-        }
-    }
-    loadAnitorrentLibrary("anitorrent")
-    _initAnitorrent
-
-    println("Using libtorrent version: " + anitorrent.lt_version())
-
+    AnitorrentTorrentDownloader.loadLibraries()
 
     val session = session_t()
-    session.start(getAniUserAgent())
+    val settings = session_settings_t().apply {
+        // TODO: support more torrent settings (e.g. download speed limit)
+        user_agent = torrentDownloaderConfig.userAgent
+        peer_fingerprint = torrentDownloaderConfig.peerFingerprint
+        handshake_client_version = torrentDownloaderConfig.handshakeClientVersion
+        listOf(
+            "router.utorrent.com:6881",
+            "router.bittorrent.com:6881",
+            "dht.transmissionbt.com:6881",
+            "router.bitcomet.com:6881",
+        ).forEach {
+            dht_bootstrap_nodes_extra_add(it)
+        }
+    }
+    try {
+        session.start(settings)
+    } finally {
+        settings.delete() // 其实也可以等 GC, 不过反正我们都不用了
+    }
     return AnitorrentTorrentDownloader(
         cacheDirectory = cacheDirectory,
-        session = session,
+        nativeSession = session,
         httpFileDownloader = httpFileDownloader,
-        isDebug = isDebug,
         parentCoroutineContext = parentCoroutineContext,
     )
 }
 
 class AnitorrentTorrentDownloader(
     cacheDirectory: File,
-    val session: session_t,
+    val nativeSession: session_t,
     private val httpFileDownloader: HttpFileDownloader,
-    private val isDebug: Boolean,
     parentCoroutineContext: CoroutineContext,
 ) : TorrentDownloader {
     companion object {
         internal val logger = logger(this::class)
+
+        @Volatile
+        private var libraryLoaded = false
+
+        private val _initAnitorrent by lazy {
+            // 注意, JVM 也会 install signal handler, 它需要 sig handler 才能工作. 
+            // 这里覆盖之后会导致 JVM crash (SIGSEGV/SIGBUS). crash 如果遇到一个无 symbol 的比较低的地址, 那就大概率是 JVM.
+            // 应当仅在需要 debug 一个已知的 anitorrent 的 crash 时才开启这个.
+            // 其实不开的话, OS 也能输出 crash report. macOS 输出的 crash report 会包含 native 堆栈.
+
+            // 如果需要调试, 可以在 anitorrent 搜索 ENABLE_TRACE_LOGGING 并修改为 true. 将会打印非常详细的 function call 记录.
+
+//    anitorrent.install_signal_handlers()
+        }
+
+        @Synchronized
+        @Throws(UnsatisfiedLinkError::class)
+        fun loadLibraries() {
+            if (libraryLoaded) return
+
+            try {
+                when (currentPlatform as Platform.Desktop) {
+                    is Platform.Windows -> {
+                        loadAnitorrentLibrary("libcrypto-3-x64")
+                        loadAnitorrentLibrary("libssl-3-x64")
+                        loadAnitorrentLibrary("torrent-rasterbar")
+                    }
+
+                    is Platform.Linux -> throw UnsupportedOperationException("Linux is not supported yet")
+                    is Platform.MacOS -> {
+                        loadAnitorrentLibrary("torrent-rasterbar.2.0.10")
+                    }
+                }
+                loadAnitorrentLibrary("anitorrent")
+                _initAnitorrent
+                libraryLoaded = true
+            } catch (e: Throwable) {
+                libraryLoaded = false
+                throw e
+            }
+        }
     }
 
     private val scope = CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
@@ -242,7 +271,7 @@ class AnitorrentTorrentDownloader(
 
         scope.launch {
             while (true) {
-                session.process_events(eventListener)
+                nativeSession.process_events(eventListener)
                 delay(1000)
             }
         }
@@ -318,20 +347,18 @@ class AnitorrentTorrentDownloader(
         check(addInfo.kind != torrent_add_info_t.kKindUnset)
 
         logger.info { "start_download: call native start_download" }
-        if (!session.start_download(handle, addInfo, saveDir.absolutePath)) {
+        if (!nativeSession.start_download(handle, addInfo, saveDir.absolutePath)) {
             throw IllegalStateException("Failed to start download, native failed")
         }
         logger.info { "start_download: native returned, handleId=${handle.id}" }
-        session.resume()
-        logger.info { "start_download: resumed" }
+        nativeSession.resume()
         return AnitorrentDownloadSession(
-            this.session, handle,
+            this.nativeSession, handle,
             saveDir,
-//            onClose = { session ->
-//                session as AnitorrentDownloadSession
-//                dataToSession.remove(data.data.contentHashCode().toString())
-//                anitorrent.session_release_handle(session.session, session.handle)
-//            },
+            onClose = {
+                openSessions.remove(data.data.contentHashCode().toString())
+                nativeSession.release_handle(handle)
+            },
 //            onDelete = { session ->
 //                session as AnitorrentDownloadSession
 //                dataToSession.remove(data.data.contentHashCode().toString())
@@ -339,7 +366,6 @@ class AnitorrentTorrentDownloader(
 //            },
             parentCoroutineContext = parentCoroutineContext,
         ).also {
-            logger.info { "AnitorrentDownloadSession created, saving to openSessions" }
             openSessions[data.data.contentHashCode().toString()] = it
         }
     }

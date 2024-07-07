@@ -39,7 +39,6 @@ import me.him188.ani.utils.io.SeekableInput
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
-import me.him188.ani.utils.logging.warn
 import java.io.File
 import java.io.RandomAccessFile
 import kotlin.coroutines.CoroutineContext
@@ -48,6 +47,7 @@ class AnitorrentDownloadSession(
     private val session: session_t,
     private val handle: torrent_handle_t,
     override val saveDirectory: File,
+    private val onClose: (AnitorrentDownloadSession) -> Unit,
     parentCoroutineContext: CoroutineContext,
 ) : TorrentDownloadSession {
     val logger = logger(this::class)
@@ -61,10 +61,10 @@ class AnitorrentDownloadSession(
     init {
         scope.launch {
             while (isActive) {
-                if (!handle.post_status_updates()) {
-                    logger.warn { "Failed to post status updates, this might be because the handle has already destroyed." }
+                if (!handle.is_valid) {
                     return@launch
                 }
+                handle.post_status_updates()
                 delay(1000)
             }
         }

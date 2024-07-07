@@ -7,14 +7,19 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
 import me.him188.ani.app.platform.Platform.Companion.currentPlatform
+import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.platform.getAniUserAgent
 import me.him188.ani.app.platform.isDesktop
+import me.him188.ani.app.platform.versionCode
 import me.him188.ani.app.tools.torrent.AbstractTorrentEngine
 import me.him188.ani.app.tools.torrent.TorrentEngineConfig
 import me.him188.ani.app.tools.torrent.TorrentEngineType
 import me.him188.ani.app.torrent.anitorrent.AnitorrentTorrentDownloader
+import me.him188.ani.app.torrent.anitorrent.AnitorrentTorrentDownloader.Companion.loadLibraries
+import me.him188.ani.app.torrent.api.TorrentDownloaderConfig
 import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.utils.ktor.createDefaultHttpClient
+import me.him188.ani.utils.logging.error
 import java.io.File
 
 @Serializable
@@ -37,8 +42,19 @@ class AnitorrentEngine(
 ) {
 
     override val location: MediaSourceLocation get() = MediaSourceLocation.Local
-    override val isSupported: Flow<Boolean> get() = flowOf(currentPlatform.isDesktop())
+    override val isSupported: Flow<Boolean>
+        get() = flowOf(currentPlatform.isDesktop() && tryLoadLibraries())
     override val isEnabled: Flow<Boolean> get() = config.map { it.enabled }
+
+    private fun tryLoadLibraries(): Boolean {
+        try {
+            loadLibraries()
+            return true
+        } catch (e: Throwable) {
+            logger.error(e) { "Failed to load libraries for AnitorrentEngine" }
+            return false
+        }
+    }
 
     override suspend fun testConnection(): Boolean = true
 
@@ -52,8 +68,20 @@ class AnitorrentEngine(
         return AnitorrentTorrentDownloader(
             cacheDirectory = saveDir,
             client.asHttpFileDownloader(),
-            isDebug = false,
+            TorrentDownloaderConfig(
+                peerFingerprint = computeTorrentFingerprint(),
+                userAgent = computeTorrentUserAgent(),
+                isDebug = currentAniBuildConfig.isDebug,
+            ),
             parentCoroutineContext = scope.coroutineContext,
         )
     }
 }
+
+private fun computeTorrentFingerprint(
+    versionCode: String = currentAniBuildConfig.versionCode,
+): String = "-aniLT${versionCode}-"
+
+private fun computeTorrentUserAgent(
+    versionCode: String = currentAniBuildConfig.versionCode,
+): String = "ani_libtorrent/${versionCode}"

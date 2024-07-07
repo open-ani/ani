@@ -20,7 +20,6 @@ import me.him188.ani.app.torrent.api.TorrentDownloader
 import me.him188.ani.app.torrent.api.TorrentDownloaderConfig
 import me.him188.ani.app.torrent.api.TorrentLibInfo
 import me.him188.ani.app.torrent.api.files.EncodedTorrentInfo
-import me.him188.ani.app.torrent.api.files.TorrentInfo
 import me.him188.ani.app.torrent.api.handle.TorrentThread
 import me.him188.ani.app.torrent.libtorrent4j.DefaultTorrentDownloadSession.Companion.FAST_RESUME_FILENAME
 import me.him188.ani.app.torrent.libtorrent4j.files.Torrent4jTorrentInfo
@@ -361,7 +360,7 @@ fun Libtorrent4jTorrentDownloader(
 
             peerFingerprintString = config.peerFingerprint
             userAgentString = config.userAgent
-            config.clientHandshakeVersion?.let {
+            config.handshakeClientVersion?.let {
                 handshakeClientVersionString = it
             }
             logger.info { "peerFingerprint set: $peerFingerprintString" }

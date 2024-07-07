@@ -47,7 +47,7 @@ void torrent_handle_t::post_status_updates() const {
     }
     }
     void torrent_handle_t::clear_piece_deadlines() const {
-    function_printer_t _fp("torrent_handle_t::clear_piece_deadlines");
+        function_printer_t _fp("torrent_handle_t::clear_piece_deadlines");
     guard_global_lock;
     if (const auto handle = handle_; handle && handle->is_valid()) {
         handle->clear_piece_deadlines();
@@ -59,7 +59,7 @@ void torrent_handle_t::post_status_updates() const {
     guard_global_lock;
         if (const auto handle = handle_; handle && handle->is_valid()) {
         handle->set_piece_deadline(libtorrent::piece_index_t(index), deadline);
-    }
+        }
     }
 
     void torrent_handle_t::set_peer_endgame(const bool endgame) const {
@@ -67,7 +67,7 @@ void torrent_handle_t::post_status_updates() const {
         guard_global_lock;
         if (const auto handle = handle_; handle && handle->is_valid()) {
             std::vector<lt::peer_info> peers;
-        handle->get_peer_info(peers);
+            handle->get_peer_info(peers);
             for (auto &peer: peers) {
                 if (endgame) {
                     peer.flags |= libtorrent::peer_info::endgame_mode; // don't know if it works
