@@ -35,6 +35,7 @@ import me.him188.ani.app.torrent.api.pieces.lastIndex
 import me.him188.ani.app.torrent.api.pieces.startIndex
 import me.him188.ani.app.torrent.io.TorrentInput
 import me.him188.ani.utils.io.SeekableInput
+import me.him188.ani.utils.logging.debug
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
@@ -151,7 +152,7 @@ class AnitorrentDownloadSession(
                 this.pieces,
                 logicalStartOffset = offset,
                 onWait = { piece ->
-                    logger.info { "[TorrentDownloadControl] $torrentId: Request deadline to ${piece.pieceIndex}" }
+                    logger.info { "[TorrentDownloadControl] $torrentId: Request deadline from ${piece.pieceIndex}" }
                     updatePieceDeadlinesForSeek(piece)
                 },
                 size = length,
@@ -400,7 +401,7 @@ class AnitorrentDownloadSession(
                 if (pieceIndexes.isEmpty()) {
                     return
                 }
-                logger.info { "[$handleId][TorrentDownloadControl] Prioritizing pieces: $pieceIndexes" }
+                logger.debug { "[$handleId][TorrentDownloadControl] Prioritizing pieces: $pieceIndexes" }
                 val firstIndex = pieceIndexes.first()
                 pieceIndexes.forEach { pieceIndex ->
                     handle.set_piece_deadline(
