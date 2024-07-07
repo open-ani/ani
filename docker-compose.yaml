@@ -11,16 +11,8 @@ services:
     volumes:
       - ./vol:/server/vol
     depends_on:
-      danmaku-server-build:
+      danmaku-server-test:
         condition: service_completed_successfully
-#      danmaku-server-test:
-#        condition: service_completed_successfully
-  
-  danmaku-server-build:
-    build:
-      dockerfile: Dockerfile-danmaku-server
-    command: ./gradlew clean :danmaku:ani:server:installDist
-    image: ani-danmaku-server-build
   
   danmaku-server-test:
     build:
