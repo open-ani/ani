@@ -55,32 +55,32 @@ static std::string join_to_string(const Container &container, const std::string 
     return result.str();
 }
 
-    static std::vector<char> load_file_to_vector(const std::string &filePath) {
-        // Open the file in binary mode
-        std::ifstream inFile(filePath, std::ios::binary);
+static std::vector<char> load_file_to_vector(const std::string &filePath) {
+    // Open the file in binary mode
+    std::ifstream inFile(filePath, std::ios::binary);
 
-        // Check if the file was opened successfully
-        if (!inFile) {
-            return {};
-        }
-
-        // Seek to the end of the file to determine its size
-        inFile.seekg(0, std::ios::end);
-        const std::streamsize size = inFile.tellg();
-        inFile.seekg(0, std::ios::beg);
-
-        // Create a vector to hold the file contents
-        std::vector<char> buffer(size);
-
-        // Read the contents of the file into the vector
-        if (!inFile.read(buffer.data(), size)) {
-            return {};
+    // Check if the file was opened successfully
+    if (!inFile) {
+        return {};
     }
 
-        // Close the file
-        inFile.close();
+    // Seek to the end of the file to determine its size
+    inFile.seekg(0, std::ios::end);
+    const std::streamsize size = inFile.tellg();
+    inFile.seekg(0, std::ios::beg);
 
-        return std::move(buffer);
+    // Create a vector to hold the file contents
+    std::vector<char> buffer(size);
+
+    // Read the contents of the file into the vector
+    if (!inFile.read(buffer.data(), size)) {
+        return {};
+    }
+
+    // Close the file
+    inFile.close();
+
+    return std::move(buffer);
 }
 
 void session_t::start(const session_settings_t &settings) {
@@ -94,21 +94,40 @@ void session_t::start(const session_settings_t &settings) {
                true); // this will start dht immediately when the setting is started
     s.set_bool(settings_pack::enable_lsd, true);
 
-    s.set_int(settings_pack::active_downloads, settings.active_downloads);
+    s.set_int(settings_pack::download_rate_limit, settings.download_rate_limit);
+    s.set_int(settings_pack::upload_rate_limit, settings.upload_rate_limit); // 1MB/s
+
+    s.set_int(settings_pack::active_downloads, 8);
     s.set_int(settings_pack::active_seeds, settings.active_seeds);
+    s.set_int(settings_pack::active_limit, 2000);
+
+    s.set_int(settings_pack::piece_timeout, 3);
+    s.set_int(settings_pack::request_timeout, 1);
+    s.set_int(settings_pack::max_out_request_queue, 2000);
+    s.set_int(settings_pack::torrent_connect_boost, 200);
+
+    // peers
     s.set_int(settings_pack::connections_limit, settings.connections_limit);
     s.set_int(settings_pack::max_peerlist_size, settings.max_peerlist_size);
+    s.set_int(settings_pack::peer_connect_timeout, 5);
+    s.set_int(settings_pack::max_failcount, 2);
+    s.set_int(settings_pack::max_peer_recv_buffer_size, 5 * 1024 * 1024);
+    
+    s.set_int(settings_pack::aio_threads, 8);
+    s.set_int(settings_pack::checking_mem_usage, 2048);
 
-    s.set_int(settings_pack::piece_timeout, 1);
-    s.set_int(settings_pack::request_timeout, 1);
-    s.set_int(settings_pack::peer_connect_timeout, 2);
 
     s.set_str(settings_pack::user_agent, settings.user_agent);
     s.set_str(settings_pack::peer_fingerprint, settings.peer_fingerprint);
-    s.set_int(settings_pack::alert_queue_size, 100000);
-    s.set_bool(settings_pack::close_redundant_connections, true);
+    s.set_str(settings_pack::handshake_client_version, settings.handshake_client_version);
+    s.set_int(settings_pack::alert_queue_size, 10000);
 
-    {
+    // seeding
+    s.set_int(settings_pack::max_allowed_in_request_queue, 100);
+    s.set_int(settings_pack::suggest_mode, settings_pack::suggest_read_cache);
+    // s.set_bool(settings_pack::close_redundant_connections, true);
+
+    if (!settings.dht_bootstrap_nodes_extra.empty()) {
         // 在原有的基础上添加额外的 DHT bootstrap 节点
         const auto existing = s.get_str(settings_pack::dht_bootstrap_nodes);
         std::set<std::string> nodes{};
@@ -122,10 +141,6 @@ void session_t::start(const session_settings_t &settings) {
         s.set_str(settings_pack::dht_bootstrap_nodes, res);
     }
 
-    s.set_str(settings_pack::handshake_client_version, settings.handshake_client_version);
-
-    s.set_int(settings_pack::download_rate_limit, settings.download_rate_limit);
-    s.set_int(settings_pack::upload_rate_limit, settings.upload_rate_limit); // 1MB/s
     s.set_int(settings_pack::alert_mask,
               libtorrent::alert_category::status | libtorrent::alert_category::piece_progress |
                   libtorrent::alert_category::file_progress | libtorrent::alert_category::upload);
@@ -256,10 +271,9 @@ bool session_t::start_download(torrent_handle_t &handle, const torrent_add_info_
     }
 
     params.save_path = std::move(save_path);
-        params.flags |= libtorrent::torrent_flags::need_save_resume // 初始化好后立即 save 一个信息, 因为我们不会保存
-                        // .torrent 文件, 这样下次启动时无需从磁力链请求信息
-                        |
-                        libtorrent::torrent_flags::default_dont_download; // 所有文件默认不下载, 初始化完毕后会立即暂停
+    params.flags |= libtorrent::torrent_flags::need_save_resume // 初始化好后立即 save 一个信息, 因为我们不会保存
+                                                                // .torrent 文件, 这样下次启动时无需从磁力链请求信息
+                    | libtorrent::torrent_flags::default_dont_download; // 所有文件默认不下载, 初始化完毕后会立即暂停
 
     // Check if the torrent is already in the session
     libtorrent::torrent_handle torrent_handle{};

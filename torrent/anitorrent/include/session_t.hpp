@@ -13,7 +13,7 @@ extern "C" {
 
 struct session_settings_t final {
     /// libtorrent::settings_pack::download_rate_limit
-    int download_rate_limit = 0;
+    int download_rate_limit = 20 * 1024 * 1024;
 
     /// libtorrent::settings_pack::upload_rate_limit
     int upload_rate_limit = 1024 * 1024;
@@ -40,10 +40,10 @@ struct session_settings_t final {
     std::string trackers_extra{};
 
     /// libtorrent::settings_pack::connections_limit
-    int connections_limit = 500;
+    int connections_limit = 1000;
 
     /// libtorrent::settings_pack::max_peerlist_size
-    int max_peerlist_size = 500;
+    int max_peerlist_size = 1500;
 
     /// libtorrent::settings_pack::handshake_client_version
     std::string handshake_client_version{};
