@@ -13,7 +13,7 @@ class DisposableTaskQueue<T>(
     }
 
     @Synchronized
-    fun runAndDispose() {
+    fun runAndDispose(): Int {
         val queue = queue
         checkNotNull(queue) {
             "TaskQueue is already closed"
@@ -21,6 +21,8 @@ class DisposableTaskQueue<T>(
         for (task in queue) {
             task(receiver)
         }
+        val size = queue.size
         this.queue = null // completely free
+        return size
     }
 }

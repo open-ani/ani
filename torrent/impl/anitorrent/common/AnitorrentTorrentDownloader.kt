@@ -288,10 +288,11 @@ class AnitorrentTorrentDownloader(
 
     private val sessionsLock = Mutex()
 
-    private suspend inline fun <R> withHandleTaskQueue(block: () -> R): R =
+    private suspend inline fun <R> withHandleTaskQueue(crossinline block: suspend () -> R): R =
         sessionsLock.withLock { // 必须只能同时有一个任务在添加. see eventListener
 
             val queue = DisposableTaskQueue(this)
+            check(handleTaskBuffer == null) { "handleTaskBuffer is not null" }
             handleTaskBuffer = queue
             return kotlin.runCatching { block() }
                 .also {
@@ -300,8 +301,9 @@ class AnitorrentTorrentDownloader(
                     }
                 }
                 .onSuccess {
-                    queue.runAndDispose()
-                    handleTaskBuffer = null
+                    val size = queue.runAndDispose()
+                    logger.info { "withHandleTaskQueue: executed $size delayed tasks" }
+                    this.handleTaskBuffer = null
                 }
                 .onFailure {
                     // drop all queued tasks
@@ -323,7 +325,7 @@ class AnitorrentTorrentDownloader(
 
         openSessions[data.data.contentHashCode().toString()]?.let {
             logger.info { "Found existing session" }
-            return it
+            return@withHandleTaskQueue it
         }
 
         val handle = torrent_handle_t()
@@ -352,10 +354,12 @@ class AnitorrentTorrentDownloader(
             addInfo.resume_data_path = fastResumeFile.absolutePath
         }
 
+        // start_download 之后它就会开始发射 event
         if (!nativeSession.start_download(handle, addInfo, saveDir.absolutePath)) {
             throw IllegalStateException("Failed to start download, native failed")
         }
-        return AnitorrentDownloadSession(
+
+        return@withHandleTaskQueue AnitorrentDownloadSession(
             this.nativeSession, handle,
             saveDir,
             fastResumeFile = fastResumeFile,
@@ -380,7 +384,7 @@ class AnitorrentTorrentDownloader(
         ).also {
             openSessions[data.data.contentHashCode().toString()] = it // 放进去之后才能处理 alert
             logger.info { "[${it.handleId}] AnitorrentDownloadSession created" }
-            nativeSession.resume() // 加进去之后再 resume, 防止 alerts 丢失
+            nativeSession.resume()
         }
     }
 
