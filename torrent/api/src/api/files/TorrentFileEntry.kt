@@ -82,7 +82,7 @@ interface TorrentFileEntry { // 实现提示, 无 test mock
     /**
      * Opens the downloaded file as a [SeekableInput].
      */
-    fun createInput(): SeekableInput
+    suspend fun createInput(): SeekableInput
 }
 
 /**

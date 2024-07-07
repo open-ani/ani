@@ -5,6 +5,7 @@ import androidx.compose.ui.util.fastFirstOrNull
 import androidx.compose.ui.util.fastForEach
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
@@ -17,7 +18,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.runInterruptible
 import me.him188.ani.app.torrent.api.TorrentDownloadSession
 import me.him188.ani.app.torrent.api.TorrentDownloadState
 import me.him188.ani.app.torrent.api.files.AbstractTorrentFileEntry
@@ -343,11 +344,11 @@ open class DefaultTorrentDownloadSession(
             openHandles.add(it)
         }
 
-        override fun createInput(): SeekableInput {
-            val input = (resolveFileOrNull() ?: runBlocking { resolveDownloadingFile() })
+        override suspend fun createInput(): SeekableInput {
+            val input = (resolveFileOrNull() ?: resolveDownloadingFile())
             val pieces = pieces
             return TorrentInput(
-                RandomAccessFile(input, "r"),
+                runInterruptible(Dispatchers.IO) { RandomAccessFile(input, "r") },
                 pieces,
                 logicalStartOffset = offset,
                 onWait = { piece ->

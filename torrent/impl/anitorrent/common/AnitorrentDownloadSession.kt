@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.runInterruptible
 import me.him188.ani.app.torrent.anitorrent.AnitorrentDownloadSession.AnitorrentEntry.EntryHandle
 import me.him188.ani.app.torrent.anitorrent.binding.session_t
 import me.him188.ani.app.torrent.anitorrent.binding.torrent_handle_t
@@ -141,10 +141,12 @@ class AnitorrentDownloadSession(
             }
         }
 
-        override fun createInput(): SeekableInput {
-            val input = (resolveFileOrNull() ?: runBlocking { resolveDownloadingFile() })
+        override suspend fun createInput(): SeekableInput {
+            val input = resolveFileOrNull() ?: resolveDownloadingFile()
             return TorrentInput(
-                RandomAccessFile(input, "r"),
+                runInterruptible(Dispatchers.IO) {
+                    RandomAccessFile(input, "r")
+                },
                 this.pieces,
                 logicalStartOffset = offset,
                 onWait = { piece ->
