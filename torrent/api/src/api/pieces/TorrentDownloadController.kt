@@ -67,6 +67,9 @@ class TorrentDownloadController(
                 if (pieceIndex !in state.downloadingPieces) {
                     state.downloadingPieces.add(0, pieceIndex) // 越前面有越高优先级
                     priorities.downloadOnly(state.downloadingPieces)
+                } else {
+                    // must always update priorities because it might have been cleared
+                    priorities.downloadOnly(state.downloadingPieces)
                 }
             }
 

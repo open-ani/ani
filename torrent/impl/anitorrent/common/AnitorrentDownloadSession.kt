@@ -392,13 +392,8 @@ class AnitorrentDownloadSession(
     private fun createPiecePriorities(): PiecePriorities {
         return object : PiecePriorities {
             //            private val priorities = Array(torrentFile().numPieces()) { Priority.IGNORE }
-            private var lastPrioritizedIndexes: Collection<Int>? = null
-
             override fun downloadOnly(pieceIndexes: Collection<Int>) {
                 if (pieceIndexes.isEmpty()) {
-                    return
-                }
-                if (lastPrioritizedIndexes == pieceIndexes) {
                     return
                 }
                 logger.info { "[$handleId][TorrentDownloadControl] Prioritizing pieces: $pieceIndexes" }
@@ -409,7 +404,6 @@ class AnitorrentDownloadSession(
                         if (index == 0) 0 else calculatePieceDeadlineByTime(index),
                     )
                 }
-                lastPrioritizedIndexes = pieceIndexes.toList()
             }
         }
     }
