@@ -74,6 +74,7 @@ void torrent_handle_t::set_piece_deadline(const int32_t index, const int deadlin
     guard_global_lock;
     if (const auto handle = handle_; handle && handle->is_valid()) {
         handle->set_piece_deadline(libtorrent::piece_index_t(index), deadline);
+        handle->piece_priority(libtorrent::piece_index_t(index), libtorrent::default_priority);
     }
 }
 

@@ -95,13 +95,13 @@ void session_t::start(const session_settings_t &settings) {
     s.set_bool(settings_pack::enable_lsd, true);
 
     s.set_int(settings_pack::download_rate_limit, settings.download_rate_limit);
-    s.set_int(settings_pack::upload_rate_limit, settings.upload_rate_limit); // 1MB/s
+    // s.set_int(settings_pack::upload_rate_limit, settings.upload_rate_limit); // 1MB/s
 
     s.set_int(settings_pack::active_downloads, 8);
     s.set_int(settings_pack::active_seeds, settings.active_seeds);
     s.set_int(settings_pack::active_limit, 2000);
 
-    s.set_int(settings_pack::piece_timeout, 3);
+    s.set_int(settings_pack::piece_timeout, 5);
     s.set_int(settings_pack::request_timeout, 1);
     s.set_int(settings_pack::max_out_request_queue, 2000);
     s.set_int(settings_pack::torrent_connect_boost, 200);
@@ -112,7 +112,7 @@ void session_t::start(const session_settings_t &settings) {
     s.set_int(settings_pack::peer_connect_timeout, 5);
     s.set_int(settings_pack::max_failcount, 2);
     s.set_int(settings_pack::max_peer_recv_buffer_size, 5 * 1024 * 1024);
-    
+
     s.set_int(settings_pack::aio_threads, 8);
     s.set_int(settings_pack::checking_mem_usage, 2048);
 
