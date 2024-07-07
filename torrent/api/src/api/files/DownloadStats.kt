@@ -30,27 +30,32 @@ abstract class DownloadStats {
             coroutineScope {
                 val window = arrayOf(0L, 0L, 0L, 0L, 0L)
                 var index = 0
+                var counted = 0
                 // 每秒记录一个值
                 val bytes = downloadedBytes.produceIn(this)
                 val ticker = flow {
                     while (true) {
-                        emit(Unit)
                         delay(1000)
+                        emit(Unit)
                     }
                 }.produceIn(this)
 
                 while (isActive) {
                     selectUnbiased {
                         bytes.onReceive {
-                            window[index] = it
                             index = (index + 1) % window.size
-                            delay(1000)
+                            window[index] = it
+                            counted++
                         }
                         // 每秒计算平均变化速度
                         ticker.onReceive {
-                            val first = window[index]
-                            val last = window[(index - 1 + window.size) % window.size]
-                            emit((last - first) / window.size)
+                            val current = window[index]
+                            val last = window[(index + 1) % window.size] // 下一个 index 也就是距今最远的一个
+                            if (counted == 0) {
+                                emit(0)
+                            } else {
+                                emit((current - last).coerceAtLeast(0) / counted.coerceAtMost(window.size))
+                            }
                         }
                     }
                 }
