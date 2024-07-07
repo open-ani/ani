@@ -1,4 +1,4 @@
-FROM amazoncorretto:17-alpine as build
+FROM openjdk:17-slim as build
 
 WORKDIR /app
 COPY buildSrc buildSrc
@@ -10,9 +10,9 @@ COPY settings.gradle.kts settings.gradle.kts
 COPY danmaku/ani danmaku/ani
 COPY utils utils
 
-RUN ./gradlew clean :danmaku:ani:server:installDist
+RUN ./gradlew :danmaku:ani:server:installDist --scan
 
-FROM ibm-semeru-runtimes:open-17-jre
+FROM openjdk:17-slim
 
 ENV PORT=4394
 
