@@ -1,5 +1,6 @@
 package me.him188.ani.app.data.media.fetch
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
@@ -185,8 +186,8 @@ class MediaSourceMediaFetcher(
                         state.value = MediaSourceFetchState.Failed(it, restartCount)
                         logger.error(it) { "Failed to fetch media from $mediaSourceId because of upstream error" }
                     }
-                    .onCompletion {
-                        if (it == null) {
+                    .onCompletion { exception ->
+                        if (exception == null) {
                             // catch might have already updated the state
                             if (state.value !is MediaSourceFetchState.Completed) {
                                 state.value = MediaSourceFetchState.PendingSuccess(restartCount)
@@ -196,8 +197,10 @@ class MediaSourceMediaFetcher(
                             val currentState = state.value
                             if (currentState !is MediaSourceFetchState.Failed) {
                                 // downstream (collector) failure
-                                state.value = MediaSourceFetchState.Abandoned(it, restartCount)
-                                logger.error(it) { "Failed to fetch media from $mediaSourceId because of downstream error" }
+                                state.value = MediaSourceFetchState.Abandoned(exception, restartCount)
+                                if (exception !is CancellationException) {
+                                    logger.error(exception) { "Failed to fetch media from $mediaSourceId because of downstream error" }
+                                }
                             }
                             // upstream failure re-caught here
                         }

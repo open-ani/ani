@@ -17,19 +17,27 @@
  */
 
 plugins {
-    kotlin("jvm")
+    kotlin("multiplatform")
     `flatten-source-sets`
 }
 
-dependencies {
-    api(libs.kotlinx.coroutines.core)
-//    api(projects.torrent.api)
-    implementation(projects.utils.slf4jKt)
-    implementation(projects.utils.coroutines)
-    api(projects.utils.io)
+kotlin {
+    jvm()
 }
 
-dependencies {
-    testImplementation(libs.kotlinx.coroutines.test)
-    testRuntimeOnly(libs.slf4j.simple)
-}
+//dependencies {
+//    commonMainApi(projects.torrent)
+//}
+
+//dependencies {
+//    api(libs.kotlinx.coroutines.core)
+////    api(projects.torrent.api)
+//    implementation(projects.utils.slf4jKt)
+//    implementation(projects.utils.coroutines)
+//    api(projects.utils.io)
+//}
+
+//dependencies {
+//    testImplementation(libs.kotlinx.coroutines.test)
+//    testRuntimeOnly(libs.slf4j.simple)
+//}

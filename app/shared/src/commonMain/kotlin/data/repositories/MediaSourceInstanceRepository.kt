@@ -5,8 +5,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
 import me.him188.ani.app.data.media.instance.MediaSourceSave
-import me.him188.ani.app.platform.currentPlatform
-import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.datasources.acgrip.AcgRipMediaSource
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.dmhy.DmhyMediaSource
@@ -52,13 +50,9 @@ data class MediaSourceSaves(
 
             MediaSourceSaves(
                 buildList {
-                    if (currentPlatform.isDesktop()) {
-                        enabledWebSources.forEach { add(createSave(it, isEnabled = true)) }
-                    } else {
-                        enabledWebSources.forEach { add(createSave(it, isEnabled = true)) }
-                        enabledBtSources.forEach { add(createSave(it, isEnabled = true)) }
-                        disabledBtSources.forEach { add(createSave(it, isEnabled = false)) }
-                    }
+                    enabledWebSources.forEach { add(createSave(it, isEnabled = true)) }
+                    enabledBtSources.forEach { add(createSave(it, isEnabled = true)) }
+                    disabledBtSources.forEach { add(createSave(it, isEnabled = false)) }
                 },
             )
         }

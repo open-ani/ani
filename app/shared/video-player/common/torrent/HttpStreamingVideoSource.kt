@@ -37,7 +37,7 @@ class HttpStreamingVideoData(
 
     override fun computeHash(): String? = null
 
-    override fun createInput(): SeekableInput {
+    override suspend fun createInput(): SeekableInput {
         throw UnsupportedOperationException()
     }
 

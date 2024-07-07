@@ -3,15 +3,11 @@ package me.him188.ani.app.torrent.api.files
 import me.him188.ani.app.torrent.api.TorrentDownloader
 
 interface TorrentInfo {
-    val name: String
-    val infoHashHex: String
-
-    val fileCount: Int
-
     /**
      * [TorrentDownloader.fetchTorrent] 的时候使用的 URI.
      * 对于旧版本数据此项为 `null`.
      */
+    @Deprecated("to be removed by 3.5.0", ReplaceWith("data"))
     val originalUri: String?
 }
 

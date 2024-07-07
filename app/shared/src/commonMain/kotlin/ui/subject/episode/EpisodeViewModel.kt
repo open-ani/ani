@@ -537,7 +537,9 @@ sealed interface VideoLoadingState {
     /**
      * 文件成功找到
      */
-    data object Succeed : VideoLoadingState, Progressing
+    data class Succeed(
+        val isBt: Boolean,
+    ) : VideoLoadingState, Progressing
 
     sealed class Failed : VideoLoadingState
     data object ResolutionTimedOut : Failed()
