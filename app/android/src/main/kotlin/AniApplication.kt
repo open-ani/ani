@@ -36,7 +36,6 @@ import me.him188.ani.app.platform.getCommonKoinModule
 import me.him188.ani.app.platform.startCommonKoinModule
 import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.app.torrent.libtorrent4j.Libtorrent4jTorrentDownloader
-import me.him188.ani.app.torrent.qbittorrent.QBittorrentTorrentDownloader
 import org.koin.android.ext.android.getKoin
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
