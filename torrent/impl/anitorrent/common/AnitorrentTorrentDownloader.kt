@@ -5,13 +5,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.torrent.anitorrent.binding.event_listener_t
+import me.him188.ani.app.torrent.anitorrent.binding.new_event_listener_t
 import me.him188.ani.app.torrent.anitorrent.binding.session_settings_t
 import me.him188.ani.app.torrent.anitorrent.binding.session_t
 import me.him188.ani.app.torrent.anitorrent.binding.torrent_add_info_t
@@ -41,6 +43,7 @@ fun AnitorrentTorrentDownloader(
     parentCoroutineContext: CoroutineContext,
 ): AnitorrentTorrentDownloader {
     AnitorrentLibraryLoader.loadLibraries()
+    AnitorrentTorrentDownloader.logger.info { "Creating a new AnitorrentTorrentDownloader" }
 
     val session = session_t()
     val settings = session_settings_t().apply {
@@ -62,6 +65,7 @@ fun AnitorrentTorrentDownloader(
     } finally {
         settings.delete() // 其实也可以等 GC, 不过反正我们都不用了
     }
+    AnitorrentTorrentDownloader.logger.info { "AnitorrentTorrentDownloader created" }
     return AnitorrentTorrentDownloader(
         rootDataDirectory = rootDataDirectory,
         nativeSession = session,
@@ -92,7 +96,7 @@ class AnitorrentTorrentDownloader(
 ) : TorrentDownloader {
     companion object {
         private const val FAST_RESUME_FILENAME = "fastresume"
-        private val logger = logger(this::class)
+        internal val logger = logger<AnitorrentTorrentDownloader>()
     }
 
     private val scope = CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
@@ -111,8 +115,8 @@ class AnitorrentTorrentDownloader(
     val openSessions = ConcurrentHashMap<String, AnitorrentDownloadSession>()
 
 
-    // must keep referenced
     private val eventListener = object : event_listener_t() {
+        // Note: all the callbacks can be called concurrently
 
         override fun on_save_resume_data(handleId: Long, data: torrent_resume_data_t?) {
             data ?: return
@@ -180,19 +184,31 @@ class AnitorrentTorrentDownloader(
         }
     }
 
+    private val eventSignal = Channel<Unit>(1)
+
+    // must keep referenced
+    private val newEventListener = object : new_event_listener_t() {
+        override fun on_new_events() {
+            // 根据 libtorrent 文档, 这里面不能处理事件
+            eventSignal.trySend(Unit)
+        }
+    }
 
     init {
+        nativeSession.set_new_event_listener(newEventListener)
+        scope.launch(Dispatchers.IO) {
+            while (isActive) {
+                eventSignal.receive() // await new events
+                nativeSession.process_events(eventListener)
+            }
+        }
         scope.launch {
-            while (true) {
-                // TODO: stats 
+            // TODO: stats 
 //                val stats = sessionManager.getStats()
 //                totalUploaded.value = stats.totalUpload()
 //                totalDownloaded.value = stats.totalDownload()
 //                totalUploadRate.value = stats.uploadRate()
 //                totalDownloadRate.value = stats.downloadRate()
-                nativeSession.process_events(eventListener)
-                delay(1000)
-            }
         }
     }
 
@@ -251,6 +267,8 @@ class AnitorrentTorrentDownloader(
         parentCoroutineContext: CoroutineContext,
         overrideSaveDir: File?
     ): TorrentDownloadSession = sessionsLock.withLock {
+        // 这个函数的 native 部分跑得也都很快, 整个函数十几毫秒就可以跑完, 所以 lock 也不会影响性能 (刚启动时需要尽快恢复 resume)
+
         val info = AnitorrentTorrentInfo.decodeFrom(data)
         val saveDir = overrideSaveDir ?: getSaveDirForTorrent(data)
         val fastResumeFile = saveDir.resolve(FAST_RESUME_FILENAME)
@@ -289,6 +307,7 @@ class AnitorrentTorrentDownloader(
         if (!nativeSession.start_download(handle, addInfo, saveDir.absolutePath)) {
             throw IllegalStateException("Failed to start download, native failed")
         }
+        nativeSession.resume()
         return AnitorrentDownloadSession(
             this.nativeSession, handle,
             saveDir,
@@ -324,6 +343,7 @@ class AnitorrentTorrentDownloader(
     }
 
     override fun close() {
+        nativeSession.remove_listener() // must remove, before gc-ing this object
         logger.info { "AnitorrentDownloadSession closing" }
         scope.cancel()
         httpFileDownloader.close()

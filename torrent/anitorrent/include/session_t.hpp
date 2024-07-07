@@ -51,6 +51,13 @@ struct session_settings_t final {
     session_settings_t() = default;
 };
 
+class new_event_listener_t {
+  public:
+    virtual ~new_event_listener_t() = default;
+
+    virtual void on_new_events() {}
+};
+
 class session_t final {
   public:
     // session_settings_t is owned by Java and will be destroyed after this call
@@ -70,17 +77,18 @@ class session_t final {
 
     void release_handle(const torrent_handle_t &handle) const;
 
-    [[deprecated]] // 在非 JVM 线程调用回调可能导致 VM crash. Use [process_events] instead
-    bool
-    set_listener(event_listener_t *listener) const;
+    bool set_new_event_listener(new_event_listener_t *listener) const;
 
     void process_events(event_listener_t *listener) const;
 
     void remove_listener() const;
 
+    /// blocks
+    void wait_for_alert(int timeout_seconds) const;
+
   private:
     std::shared_ptr<libtorrent::session> session_;
-    static bool compute_add_torrent_params(const torrent_add_info_t &info, lt::add_torrent_params &params) ;
+    static bool compute_add_torrent_params(const torrent_add_info_t &info, lt::add_torrent_params &params);
 };
 }
 } // namespace anilt

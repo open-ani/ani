@@ -243,7 +243,7 @@ class AnitorrentDownloadSession(
                     torrentName = file.path,
                     isDebug = false,
                     parentCoroutineContext = Dispatchers.IO,
-                    initialDownloadedBytes = calculateTotalFinishedSize(filePieces),
+                    initialDownloadedBytes = calculateTotalFinishedSize(filePieces).coerceAtMost(size),
                 ).also {
                     currentOffset += size
                 }
@@ -251,7 +251,7 @@ class AnitorrentDownloadSession(
             list
         }
         val value = TorrentInfo(allPiecesInTorrent, pieceLength = info.piece_length, entries)
-        logger.info { "Got torrent info: $value" }
+        logger.info { "[$id] Got torrent info: $value" }
         this.overallStats.totalBytes.value = entries.sumOf { it.length }
 //        handle.ignore_all_files() // no need because we set libtorrent::torrent_flags::default_dont_download in native
         this.actualTorrentInfo.complete(value)
@@ -283,15 +283,15 @@ class AnitorrentDownloadSession(
 
     fun onPieceFinished(pieceIndex: Int) {
         useTorrentInfoOrLaunch { info ->
+            info.allPiecesInTorrent.getOrNull(pieceIndex)?.state?.value = PieceState.FINISHED
             for (file in openFiles) {
                 if (pieceIndex in file.entry.pieceRange) {
                     file.entry.controller.onPieceDownloaded(pieceIndex)
                 }
             }
-            info.allPiecesInTorrent.getOrNull(pieceIndex)?.state?.value = PieceState.FINISHED
             // TODO: Anitorrent 计算 file 完成度可以优化性能 
             info.entries.forEach { entry ->
-                entry.downloadedBytes.value = calculateTotalFinishedSize(entry.pieces)
+                entry.downloadedBytes.value = calculateTotalFinishedSize(entry.pieces).coerceAtMost(entry.length)
             }
         }
     }
@@ -368,7 +368,7 @@ class AnitorrentDownloadSession(
                 if (lastPrioritizedIndexes == pieceIndexes) {
                     return
                 }
-                logger.info { "[TorrentDownloadControl] Prioritizing pieces: $pieceIndexes" }
+                logger.info { "[$id][TorrentDownloadControl] Prioritizing pieces: $pieceIndexes" }
                 pieceIndexes.forEachIndexed { index, it ->
                     handle.set_piece_deadline(it, calculatePieceDeadlineByTime(index))
                 }

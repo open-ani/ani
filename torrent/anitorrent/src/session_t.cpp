@@ -121,6 +121,8 @@ void session_t::start(const session_settings_t &settings) {
 
     s.set_str(settings_pack::user_agent, settings.user_agent);
     s.set_str(settings_pack::peer_fingerprint, settings.peer_fingerprint);
+    s.set_int(settings_pack::alert_queue_size, 10000);
+    s.set_bool(settings_pack::close_redundant_connections, true);
 
     {
         // 在原有的基础上添加额外的 DHT bootstrap 节点
@@ -307,11 +309,11 @@ void session_t::release_handle(const torrent_handle_t &handle) const {
     }
 }
 
-bool session_t::set_listener(event_listener_t *listener) const {
-    function_printer_t _fp("session_t::set_listener");
+bool session_t::set_new_event_listener(new_event_listener_t *listener) const {
+    function_printer_t _fp("session_t::set_new_event_listener");
     guard_global_lock;
     if (const auto session = session_; session && session->is_valid() && listener) {
-        session->set_alert_notify([this, listener] { process_events(listener); });
+        session->set_alert_notify([this, listener] { listener->on_new_events(); });
         return true;
     }
     return false;
@@ -328,6 +330,7 @@ void session_t::process_events(event_listener_t *listener) const {
     guard_global_lock;
     if (const auto session = session_; session && session->is_valid() && listener) {
         ALERTS_LOG("Alerts processing... " << std::flush);
+        std::lock_guard _(listener->lock_);
         std::vector<lt::alert *> alerts;
         if (session->is_valid()) {
             session->pop_alerts(&alerts);
@@ -335,7 +338,6 @@ void session_t::process_events(event_listener_t *listener) const {
             ALERTS_LOG("session invalid" << std::flush);
             return;
         }
-        std::lock_guard _(listener->lock_);
         ALERTS_LOG("Poped " << std::flush);
         for (lt::alert *alert: alerts) {
             if (alert) {
@@ -353,6 +355,13 @@ void session_t::remove_listener() const {
     guard_global_lock;
     if (const auto session = session_; session && session->is_valid()) {
         session->set_alert_notify({});
+    }
+}
+void session_t::wait_for_alert(const int timeout_seconds) const {
+    function_printer_t _fp("session_t::wait_for_alert");
+    guard_global_lock;
+    if (const auto session = session_; session && session->is_valid()) {
+        session->wait_for_alert(std::chrono::seconds(timeout_seconds));
     }
 }
 
