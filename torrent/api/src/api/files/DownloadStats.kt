@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.produceIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.selects.selectUnbiased
+import me.him188.ani.utils.coroutines.sampleWithInitial
 
 abstract class DownloadStats {
     /**
@@ -32,7 +33,9 @@ abstract class DownloadStats {
                 var index = 0
                 var counted = 0
                 // 每秒记录一个值
-                val bytes = downloadedBytes.produceIn(this)
+                val bytes = downloadedBytes
+                    .sampleWithInitial(1000)
+                    .produceIn(this)
                 val ticker = flow {
                     while (true) {
                         delay(1000)

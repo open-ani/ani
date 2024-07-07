@@ -95,7 +95,7 @@ class AnitorrentDownloadSession(
         val controller: TorrentDownloadController = TorrentDownloadController(
             pieces,
             createPiecePriorities(),
-            windowSize = (2048 * 1024 / (pieces.firstOrNull()?.size ?: 1024L)).toInt().coerceIn(1, 64),
+            windowSize = (4048 * 1024 / (pieces.firstOrNull()?.size ?: 1024L)).toInt().coerceIn(1, 64),
             headerSize = 1024 * 1024,
         )
 

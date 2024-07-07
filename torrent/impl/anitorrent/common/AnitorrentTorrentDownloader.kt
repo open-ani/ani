@@ -27,6 +27,7 @@ import me.him188.ani.app.torrent.api.TorrentDownloader
 import me.him188.ani.app.torrent.api.TorrentDownloaderConfig
 import me.him188.ani.app.torrent.api.TorrentLibInfo
 import me.him188.ani.app.torrent.api.files.EncodedTorrentInfo
+import me.him188.ani.app.torrent.libtorrent4j.trackers
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
@@ -383,7 +384,11 @@ class AnitorrentTorrentDownloader(
             parentCoroutineContext = parentCoroutineContext,
         ).also {
             openSessions[data.data.contentHashCode().toString()] = it // 放进去之后才能处理 alert
-            logger.info { "[${it.handleId}] AnitorrentDownloadSession created" }
+            val trackers = trackers.split(", ")
+            logger.info { "[${it.handleId}] AnitorrentDownloadSession created, adding ${trackers.size} trackers" }
+            for (tracker in trackers) {
+                handle.add_tracker(tracker, 0, 0)
+            }
             nativeSession.resume()
         }
     }
