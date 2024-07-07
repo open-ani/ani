@@ -437,9 +437,14 @@ val generateAniBuildConfigDesktop = tasks.register("generateAniBuildConfigDeskto
     }
 }
 
+val enableAnitorrent =
+    (getPropertyOrNull("ani.enable.anitorrent") ?: "false").toBooleanStrict()
+
 tasks.named("compileKotlinDesktop") {
     dependsOn(generateAniBuildConfigDesktop)
-    dependsOn(":torrent:anitorrent:generateSwig") // TODO: move this to impl:anitorrent module when we have separate modules
+    if (enableAnitorrent) {
+        dependsOn(":torrent:anitorrent:generateSwig") // TODO: move this to impl:anitorrent module when we have separate modules
+    }
 }
 
 // :app:shared:kspKotlinDesktop
