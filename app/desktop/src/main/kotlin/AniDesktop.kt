@@ -42,6 +42,7 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
 import dev.dirs.ProjectDirectories
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.media.resolver.DesktopWebVideoSourceResolver
 import me.him188.ani.app.data.media.resolver.HttpStreamingVideoSourceResolver
@@ -133,6 +134,15 @@ object AniDesktop {
 
         val coroutineScope = createAppRootCoroutineScope()
 
+        coroutineScope.launch(Dispatchers.IO) {
+            // since 3.4.0, anitorrent 增加后不兼容 QB 数据
+            File(projectDirectories.cacheDir).resolve("torrent").let {
+                if (it.exists()) {
+                    it.deleteRecursively()
+                }
+            }
+        }
+
         val koin = startKoin {
             modules(getCommonKoinModule({ context }, coroutineScope))
             modules(
@@ -143,7 +153,9 @@ object AniDesktop {
                     single<TorrentManager> {
                         DefaultTorrentManager(
                             coroutineScope.coroutineContext,
-                            saveDir = { File(projectDirectories.cacheDir).resolve("torrent") },
+                            saveDir = {
+                                File(projectDirectories.cacheDir).resolve("torrent-data").resolve(it.id)
+                            },
                         )
                     }
                     single<PlayerStateFactory> {
