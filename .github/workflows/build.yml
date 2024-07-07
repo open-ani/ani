@@ -18,7 +18,7 @@ jobs:
       matrix:
         os:
           - windows-2022
-          #          - ubuntu-20.04
+          - ubuntu-20.04
           - macos-12 # x86_64
           - macos-14 # aarch64
         include:
@@ -26,18 +26,22 @@ jobs:
             name: Windows x86_64
             uploadApk: false
             arch: x64
-          #          - os: ubuntu-20.04
-          #            name: Ubuntu x86_64
-          #            uploadApk: false
-          #            arch: x64
+            anitorrent: true
+          - os: ubuntu-20.04
+            name: Ubuntu x86_64
+            uploadApk: false
+            arch: x64
+            anitorrent: false
           - os: macos-12
             name: macOS x86_64
             uploadApk: false
             arch: x64
+            anitorrent: true
           - os: macos-14
             name: macOS aarch64
             uploadApk: true
             arch: aarch64
+            anitorrent: true
     env:
       enableLocalPublishingTest: 'false'
       gradleArgs: >-
@@ -49,7 +53,7 @@ jobs:
         "-Pbangumi.oauth.client.android.secret=${{ secrets.BANGUMI_OAUTH_CLIENT_ANDROID_SECRET }}"
         "-Pbangumi.oauth.client.desktop.appId=${{ secrets.BANGUMI_OAUTH_CLIENT_DESKTOP_ID }}" 
         "-Pbangumi.oauth.client.desktop.secret=${{ secrets.BANGUMI_OAUTH_CLIENT_DESKTOP_SECRET }}"
-        "-Dani.enable.anitorrent=true"
+        ${{ matrix.anitorrent == 'true' && '-Dani.enable.anitorrent=true"' || '' }}
         ${{ startsWith(matrix.os, 'windows') && '-DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake' || '' }}
         ${{ startsWith(matrix.os, 'windows') && '-DBoost_INCLUDE_DIR=C:/vcpkg/installed/x64-windows/include' || '' }}
 
