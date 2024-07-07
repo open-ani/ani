@@ -105,7 +105,7 @@ void session_t::start(const session_settings_t &settings) {
 
     s.set_str(settings_pack::user_agent, settings.user_agent);
     s.set_str(settings_pack::peer_fingerprint, settings.peer_fingerprint);
-    s.set_int(settings_pack::alert_queue_size, 10000);
+    s.set_int(settings_pack::alert_queue_size, 100000);
     s.set_bool(settings_pack::close_redundant_connections, true);
 
     {
@@ -256,8 +256,10 @@ bool session_t::start_download(torrent_handle_t &handle, const torrent_add_info_
     }
 
     params.save_path = std::move(save_path);
-    params.flags |= libtorrent::torrent_flags::need_save_resume | libtorrent::torrent_flags::default_dont_download;
-    // params.flags = libtorrent::torrent_flags::need_save_resume;
+        params.flags |= libtorrent::torrent_flags::need_save_resume // 初始化好后立即 save 一个信息, 因为我们不会保存
+                        // .torrent 文件, 这样下次启动时无需从磁力链请求信息
+                        |
+                        libtorrent::torrent_flags::default_dont_download; // 所有文件默认不下载, 初始化完毕后会立即暂停
 
     // Check if the torrent is already in the session
     libtorrent::torrent_handle torrent_handle{};

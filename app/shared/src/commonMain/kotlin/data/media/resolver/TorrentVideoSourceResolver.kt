@@ -177,17 +177,16 @@ class TorrentVideoSource(
     @Throws(VideoSourceOpenException::class)
     override suspend fun open(): TorrentVideoData {
         logger.info {
-            "TorrentVideoSource opening a VideoData, metadata: $episodeMetadata"
+            "TorrentVideoSource '${episodeMetadata.title}' opening a VideoData"
         }
         val downloader = engine.getDownloader() ?: throw VideoSourceOpenException(OpenFailures.ENGINE_DISABLED)
         return TorrentVideoData(
             withContext(Dispatchers.IO) {
+                logger.info {
+                    "TorrentVideoSource '${episodeMetadata.title}' waiting for files"
+                }
                 val files = downloader.startDownload(encodedTorrentInfo)
                     .getFiles()
-
-                logger.info {
-                    "TorrentVideoSource started download, selecting file"
-                }
 
                 TorrentVideoSourceResolver.selectVideoFileEntry(
                     files,

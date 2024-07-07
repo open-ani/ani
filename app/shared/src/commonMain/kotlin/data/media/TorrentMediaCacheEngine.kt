@@ -250,13 +250,13 @@ class TorrentMediaCacheEngine(
         val state = flow {
             val downloader = torrentEngine.getDownloader()
             if (downloader == null) {
-                logger.warn { "TorrentDownloader is not available" }
+                logger.warn { "$mediaSourceId: failed to create a TorrentDownloader" }
                 emit(null)
                 return@flow
             }
             val res = kotlinx.coroutines.withTimeoutOrNull(30_000) {
                 val session = downloader.startDownload(encoded, parentContext)
-                logger.info { "Download started, waiting for getFiles" }
+                logger.info { "$mediaSourceId: waiting for files" }
 
                 val selectedFile = TorrentVideoSourceResolver.selectVideoFileEntry(
                     session.getFiles(),
@@ -267,9 +267,9 @@ class TorrentMediaCacheEngine(
                 )
 
                 if (selectedFile == null) {
-                    logger.warn { "No file selected for ${metadata.episodeName}" }
+                    logger.warn { "$mediaSourceId: No file selected for ${metadata.episodeName}" }
                 }
-                logger.info { "Selected file to download: $selectedFile" }
+                logger.info { "$mediaSourceId: Selected file to download: $selectedFile" }
 
                 val handle = selectedFile?.createHandle()
                 if (handle == null) {
@@ -278,7 +278,7 @@ class TorrentMediaCacheEngine(
                 LazyFileHandle.State(session, selectedFile, handle)
             }
             if (res == null) {
-                logger.error { "Timed out while starting torrent download: ${metadata.episodeName}" }
+                logger.error { "$mediaSourceId: Timed out while starting download or selecting file. Returning null handle. episode name: ${metadata.episodeName}" }
                 emit(null)
             } else {
                 emit(res)

@@ -149,27 +149,15 @@ class AnitorrentDownloadSession(
                 logicalStartOffset = offset,
                 onWait = { piece ->
                     logger.info { "[TorrentDownloadControl] $torrentId: Set piece ${piece.pieceIndex} deadline to 0 because it was requested " }
-                    updatePieceDeadlinesForSeek(piece, this.pieces)
+                    updatePieceDeadlinesForSeek(piece)
                 },
                 size = length,
             )
         }
-    }
 
-    private fun updatePieceDeadlinesForSeek(
-        requested: Piece,
-        pieces: List<Piece>
-    ) {
-        handle.clear_piece_deadlines()
-        handle.set_piece_deadline(requested.pieceIndex, 0) // 最高优先级
-        for (i in (requested.pieceIndex + 1..requested.pieceIndex + 16)) {
-            if (i < pieces.size - 1) {
-                handle.set_piece_deadline(
-                    // 按请求时间的优先
-                    i,
-                    calculatePieceDeadlineByTime(i),
-                )
-            }
+        private fun updatePieceDeadlinesForSeek(requested: Piece) {
+            handle.clear_piece_deadlines()
+            controller.onSeek(requested.pieceIndex) // will request further pieces
         }
     }
 
@@ -418,7 +406,11 @@ class AnitorrentDownloadSession(
                 }
                 logger.info { "[$handleId][TorrentDownloadControl] Prioritizing pieces: $pieceIndexes" }
                 pieceIndexes.forEachIndexed { index, it ->
-                    handle.set_piece_deadline(it, calculatePieceDeadlineByTime(index))
+                    handle.set_piece_deadline(
+                        it,
+                        // 最高优先级下载第一个. 第一个有可能会是 seek 之后的.
+                        if (index == 0) 0 else calculatePieceDeadlineByTime(index),
+                    )
                 }
                 lastPrioritizedIndexes = pieceIndexes.toList()
             }

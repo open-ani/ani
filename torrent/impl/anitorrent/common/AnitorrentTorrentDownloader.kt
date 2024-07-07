@@ -30,10 +30,9 @@ import me.him188.ani.app.torrent.api.files.EncodedTorrentInfo
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
+import me.him188.ani.utils.logging.warn
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 
 fun AnitorrentTorrentDownloader(
@@ -112,40 +111,85 @@ class AnitorrentTorrentDownloader(
         supportsStreaming = true,
     )
 
+    // key is uri hash
+    // must be thread-safe
     val openSessions = ConcurrentHashMap<String, AnitorrentDownloadSession>()
 
+    /**
+     * 在 [startDownload] 时初始化, 用于缓存在调用 native startDownload 后, 到 [openSessions] 更新之前的事件.
+     * 否则将会丢失事件.
+     */
+    private var handleTaskBuffer: DisposableTaskQueue<AnitorrentTorrentDownloader>? = null
 
     private val eventListener = object : event_listener_t() {
-        // Note: all the callbacks can be called concurrently
+
+        /**
+         * Note: can be called concurrently,
+         * from [withHandleTaskQueue] or [newEventListener]
+         */
+        private inline fun AnitorrentTorrentDownloader.dispatchToSession(
+            id: HandleId,
+            crossinline block: (AnitorrentDownloadSession) -> Unit // will be inlined twice, for good amortized performance
+        ): Unit = synchronized(this) {
+            // contention is very low in most cases, except for when we are creating a new session.
+
+            try {
+                openSessions.values.find { it.handleId == id }?.let {
+                    block(it)
+                    return
+                }
+                // 这个 handle 仍然在创建中, 需要缓存 block, 延迟执行
+
+                val handleTaskBuffer = handleTaskBuffer
+                if (handleTaskBuffer == null) {
+                    logger.warn {
+                        "Session not found for handleId $id while handleTaskBuffer is not set. We are missing event"
+                    }
+                    return
+                }
+                handleTaskBuffer.add {
+                    // this block does not capture anything
+
+                    // Now we should have the session since the startDownload is locked
+                    openSessions.values.find { it.handleId == id }?.let {
+                        block(it)
+                        return@add
+                    }
+                    logger.warn { "A delayed task failed to find session on execute. handleId=$id" }
+                }
+            } catch (e: Throwable) {
+                logger.error(e) { "Error while handling event" }
+            }
+        }
 
         override fun on_save_resume_data(handleId: Long, data: torrent_resume_data_t?) {
             data ?: return
-            forEachSession(handleId) {
+            dispatchToSession(handleId) {
                 it.onSaveResumeData(data)
             }
         }
 
         override fun on_checked(handleId: Long) {
-            forEachSession(handleId) {
+            dispatchToSession(handleId) {
                 it.onTorrentChecked()
             }
         }
 
         override fun on_block_downloading(handleId: Long, pieceIndex: Int, blockIndex: Int) {
-            forEachSession(handleId) {
+            dispatchToSession(handleId) {
                 it.onPieceDownloading(pieceIndex)
             }
         }
 
         override fun on_piece_finished(handleId: Long, pieceIndex: Int) {
-            forEachSession(handleId) {
+            dispatchToSession(handleId) {
                 it.onPieceFinished(pieceIndex)
             }
         }
 
         override fun on_torrent_state_changed(handleId: Long, state: torrent_state_t?) {
             state ?: return
-            forEachSession(handleId) {
+            dispatchToSession(handleId) {
                 if (state == torrent_state_t.finished) {
                     it.onTorrentFinished()
                 }
@@ -154,13 +198,13 @@ class AnitorrentTorrentDownloader(
 
         override fun on_status_update(handleId: Long, stats: torrent_stats_t?) {
             stats ?: return
-            forEachSession(handleId) {
+            dispatchToSession(handleId) {
                 it.onStatsUpdate(stats)
             }
         }
 
         override fun on_file_completed(handleId: Long, fileIndex: Int) {
-            forEachSession(handleId) {
+            dispatchToSession(handleId) {
                 it.onFileCompleted(fileIndex)
             }
         }
@@ -181,7 +225,7 @@ class AnitorrentTorrentDownloader(
         scope.launch(Dispatchers.IO) {
             while (isActive) {
                 eventSignal.receive() // await new events
-                nativeSession.process_events(eventListener)
+                nativeSession.process_events(eventListener) // can block thread
             }
         }
         scope.launch {
@@ -244,11 +288,33 @@ class AnitorrentTorrentDownloader(
 
     private val sessionsLock = Mutex()
 
+    private suspend inline fun <R> withHandleTaskQueue(block: () -> R): R =
+        sessionsLock.withLock { // 必须只能同时有一个任务在添加. see eventListener
+
+            val queue = DisposableTaskQueue(this)
+            handleTaskBuffer = queue
+            return kotlin.runCatching { block() }
+                .also {
+                    check(handleTaskBuffer == queue) {
+                        "handleTaskBuffer changed while executing block"
+                    }
+                }
+                .onSuccess {
+                    queue.runAndDispose()
+                    handleTaskBuffer = null
+                }
+                .onFailure {
+                    // drop all queued tasks
+                    this.handleTaskBuffer = null
+                }
+                .getOrThrow() // rethrow exception
+        }
+
     override suspend fun startDownload(
         data: EncodedTorrentInfo,
         parentCoroutineContext: CoroutineContext,
         overrideSaveDir: File?
-    ): TorrentDownloadSession = sessionsLock.withLock {
+    ): TorrentDownloadSession = withHandleTaskQueue {
         // 这个函数的 native 部分跑得也都很快, 整个函数十几毫秒就可以跑完, 所以 lock 也不会影响性能 (刚启动时需要尽快恢复 resume)
 
         val info = AnitorrentTorrentInfo.decodeFrom(data)
@@ -266,7 +332,7 @@ class AnitorrentTorrentDownloader(
             is AnitorrentTorrentData.MagnetUri -> {
                 addInfo.kind = torrent_add_info_t.kKindMagnetUri
                 addInfo.magnet_uri = info.data.uri
-                logger.info { "Using magnetUri. length=${info.data.uri.length}" }
+                logger.info { "Creating a session using magnetUri. length=${info.data.uri.length}" }
             }
 
             is AnitorrentTorrentData.TorrentFile -> {
@@ -276,7 +342,7 @@ class AnitorrentTorrentDownloader(
                     tempFile.writeBytes(info.data.data)
                     addInfo.torrent_file_path = tempFile.absolutePath
                 }
-                logger.info { "Using torrent file. data length=${info.data.data.size}" }
+                logger.info { "Creating a session using torrent file. data length=${info.data.data.size}" }
             }
         }
         check(addInfo.kind != torrent_add_info_t.kKindUnset)
@@ -289,7 +355,6 @@ class AnitorrentTorrentDownloader(
         if (!nativeSession.start_download(handle, addInfo, saveDir.absolutePath)) {
             throw IllegalStateException("Failed to start download, native failed")
         }
-        nativeSession.resume()
         return AnitorrentDownloadSession(
             this.nativeSession, handle,
             saveDir,
@@ -313,7 +378,9 @@ class AnitorrentTorrentDownloader(
             },
             parentCoroutineContext = parentCoroutineContext,
         ).also {
-            openSessions[data.data.contentHashCode().toString()] = it
+            openSessions[data.data.contentHashCode().toString()] = it // 放进去之后才能处理 alert
+            logger.info { "[${it.handleId}] AnitorrentDownloadSession created" }
+            nativeSession.resume() // 加进去之后再 resume, 防止 alerts 丢失
         }
     }
 
@@ -329,22 +396,6 @@ class AnitorrentTorrentDownloader(
         logger.info { "AnitorrentDownloadSession closing" }
         scope.cancel()
         httpFileDownloader.close()
-    }
-}
-
-private inline fun AnitorrentTorrentDownloader.forEachSession(
-    id: HandleId,
-    block: (AnitorrentDownloadSession) -> Unit
-) {
-    contract { callsInPlace(block, InvocationKind.UNKNOWN) }
-    try {
-        openSessions.values.forEach {
-            if (it.handleId == id) {
-                block(it)
-            }
-        }
-    } catch (e: Throwable) {
-        AnitorrentTorrentDownloader.logger.error(e) { "Error while handling event" }
     }
 }
 

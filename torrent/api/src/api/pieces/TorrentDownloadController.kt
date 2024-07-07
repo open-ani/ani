@@ -63,9 +63,22 @@ class TorrentDownloadController(
     }
 
     @Synchronized
-    fun onAllRequestedPiecesDownloaded() {
-        for (downloadingPiece in state.downloadingPieces.toList()) { // avoid ConcurrentModificationException
-            onPieceDownloaded(downloadingPiece)
+    fun onSeek(pieceIndex: Int) {
+        when (val state = state) {
+            is State.Metadata -> {
+                state.downloadingPieces += pieceIndex
+                priorities.downloadOnly(state.downloadingPieces)
+            }
+
+            is State.Sequential -> {
+                state.seekTo(pieceIndex)
+                priorities.downloadOnly(state.downloadingPieces)
+                if (state.downloadingPieces.isEmpty()) {
+                    this.state = State.Finished
+                }
+            }
+
+            State.Finished -> {}
         }
     }
 
@@ -182,6 +195,12 @@ internal sealed class State {
                 // window 首部的 piece 下载完成, 移动 window
                 requestMore()
             }
+        }
+
+        fun seekTo(pieceIndex: Int) {
+            downloadingPieces.clear()
+            currentWindowEnd = pieceIndex - 1
+            requestMore()
         }
 
         private fun requestMore() {
