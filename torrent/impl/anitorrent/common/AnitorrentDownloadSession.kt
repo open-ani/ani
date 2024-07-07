@@ -95,7 +95,8 @@ class AnitorrentDownloadSession(
         val controller: TorrentDownloadController = TorrentDownloadController(
             pieces,
             createPiecePriorities(),
-            windowSize = (4048 * 1024 / (pieces.firstOrNull()?.size ?: 1024L)).toInt().coerceIn(1, 64),
+            // libtorrent 可能会平均地请求整个 window, 所以不能太大
+            windowSize = (4 * 1024 * 1024 / (pieces.firstOrNull()?.size ?: 1024L)).toInt().coerceIn(1, 64),
             headerSize = 1024 * 1024,
         )
 
@@ -150,7 +151,7 @@ class AnitorrentDownloadSession(
                 this.pieces,
                 logicalStartOffset = offset,
                 onWait = { piece ->
-                    logger.info { "[TorrentDownloadControl] $torrentId: Set piece ${piece.pieceIndex} deadline to 0 because it was requested " }
+                    logger.info { "[TorrentDownloadControl] $torrentId: Request deadline to ${piece.pieceIndex}" }
                     updatePieceDeadlinesForSeek(piece)
                 },
                 size = length,
@@ -158,7 +159,9 @@ class AnitorrentDownloadSession(
         }
 
         private fun updatePieceDeadlinesForSeek(requested: Piece) {
-            handle.clear_piece_deadlines()
+            if (!controller.isDownloading(requested.pieceIndex)) {
+                handle.clear_piece_deadlines()
+            }
             controller.onSeek(requested.pieceIndex) // will request further pieces
         }
     }
@@ -397,23 +400,15 @@ class AnitorrentDownloadSession(
                     return
                 }
                 logger.info { "[$handleId][TorrentDownloadControl] Prioritizing pieces: $pieceIndexes" }
-                pieceIndexes.forEachIndexed { index, it ->
+                val firstIndex = pieceIndexes.first()
+                pieceIndexes.forEach { pieceIndex ->
                     handle.set_piece_deadline(
-                        it,
+                        pieceIndex,
                         // 最高优先级下载第一个. 第一个有可能会是 seek 之后的.
-                        if (index == 0) 0 else calculatePieceDeadlineByTime(index),
+                        (pieceIndex - firstIndex) * 400, // ms TODO 实际上我们应当根据 piece 的大小, 或者更精确地说, 根据每一帧的大致大小来计算
                     )
                 }
             }
-        }
-    }
-
-    private fun calculatePieceDeadlineByTime(
-        shift: Int
-    ): Int {
-        return (((System.currentTimeMillis() / 1000).and(0x0FFF_FFFFL).toInt() % 1000_000) * 100 + shift).also {
-            if (it < 0)
-                logger.error { "[TorrentDownloadControl] $handleId: Calculated deadline for piece $shift: $it" }
         }
     }
 }
