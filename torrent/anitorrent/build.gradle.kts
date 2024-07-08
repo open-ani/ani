@@ -19,6 +19,7 @@
 plugins {
     kotlin("jvm")
     java
+    idea
 }
 
 sourceSets.main {
@@ -169,4 +170,12 @@ val buildAnitorrent = tasks.register("buildAnitorrent", Exec::class.java) {
 
 tasks.getByName("compileJava") {
     dependsOn(generateSwig)
+}
+
+idea {
+    module {
+        excludeDirs.add(file("build-ci"))
+        excludeDirs.add(file("cmake-build-debug"))
+        excludeDirs.add(file("cmake-build-release"))
+    }
 }
