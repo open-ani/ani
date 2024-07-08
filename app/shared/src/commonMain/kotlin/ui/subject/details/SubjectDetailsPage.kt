@@ -26,7 +26,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SecondaryScrollableTabRow
+import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
@@ -334,7 +334,7 @@ fun SubjectDetailsPage(
                             if (connectedScrollState.isScrolledTop) TabRowDefaults.secondaryContainerColor else MaterialTheme.colorScheme.background,
                             tween(),
                         )
-                        SecondaryScrollableTabRow(
+                        ScrollableTabRow(
                             selectedTabIndex = pagerState.currentPage,
                             indicator = @Composable { tabPositions ->
                                 TabRowDefaults.PrimaryIndicator(
@@ -342,13 +342,17 @@ fun SubjectDetailsPage(
                                 )
                             },
                             containerColor = tabContainerColor,
+                            contentColor = TabRowDefaults.secondaryContentColor,
                             divider = {},
                             modifier = Modifier,
                         ) {
                             SubjectDetailsTab.entries.forEachIndexed { index, tabId ->
                                 Tab(
                                     selected = pagerState.currentPage == index,
-                                    onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
+                                    onClick = {
+                                        println("click")
+                                        scope.launch { pagerState.animateScrollToPage(index) }
+                                    },
                                     text = {
                                         Text(text = renderSubjectDetailsTab(tabId))
                                     },

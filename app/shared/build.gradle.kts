@@ -179,23 +179,23 @@ kotlin {
 //        implementation(libs.javafx.graphics)
 
         // https://repo1.maven.org/maven2/org/openjfx/javafx-graphics/17.0.11/
-        val os = getOs()
-        val classifier = when (os) {
-            Os.MacOS -> {
-                // check aarch
-                if (System.getProperty("os.arch").contains("aarch")) {
-                    "mac-aarch64"
-                } else {
-                    "mac"
-                }
-            }
-
-            Os.Windows -> "win"
-            Os.Linux -> "linux"
-            else -> {
-                null
-            }
-        }
+//        val os = getOs()
+//        val classifier = when (os) {
+//            Os.MacOS -> {
+//                // check aarch
+//                if (System.getProperty("os.arch").contains("aarch")) {
+//                    "mac-aarch64"
+//                } else {
+//                    "mac"
+//                }
+//            }
+//
+//            Os.Windows -> "win"
+//            Os.Linux -> "linux"
+//            else -> {
+//                null
+//            }
+//        }
 
         runtimeOnly(libs.kotlinx.coroutines.debug)
 
@@ -332,6 +332,15 @@ tasks.withType(KotlinCompilationTask::class) {
     dependsOn("generateResourceAccessorsForAndroidUnitTestRelease")
     dependsOn("generateResourceAccessorsForAndroidUnitTestDebug")
     dependsOn("generateResourceAccessorsForAndroidDebug")
+}
+// compose bug since 1.7.0-beta03
+afterEvaluate {
+    tasks.named("generateReleaseLintVitalModel") {
+        dependsOn("releaseAssetsCopyForAGP")
+    }
+    tasks.named("lintVitalAnalyzeRelease") {
+        dependsOn("releaseAssetsCopyForAGP")
+    }
 }
 
 room {
