@@ -148,7 +148,7 @@ val buildAnitorrent = tasks.register("buildAnitorrent", Exec::class.java) {
     dependsOn(configureAnitorrent)
     dependsOn(generateSwig)
 
-    val cmake = System.getenv("CMAKE") ?: "cmake"
+    val cmake = getPropertyOrNull("CMAKE") ?: "cmake"
 
     inputs.file(anitorrentRootDir.resolve("CMakeLists.txt"))
     inputs.dir(anitorrentRootDir.resolve("include"))
