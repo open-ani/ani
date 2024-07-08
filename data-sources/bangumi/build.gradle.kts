@@ -1,3 +1,5 @@
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+
 /*
  * Ani
  * Copyright (C) 2022-2024 Him188
@@ -49,8 +51,8 @@ idea {
     }
 }
 
-openApiGenerate {
-    // https://github.com/OpenAPITools/openapi-generator/blob/master/modules/openapi-generator-gradle-plugin/README.adoc
+// https://github.com/OpenAPITools/openapi-generator/blob/master/modules/openapi-generator-gradle-plugin/README.adoc
+val generateApiV0 = tasks.register("generateApiV0", GenerateTask::class) {
     generatorName.set("kotlin")
     inputSpec.set("$projectDir/v0.yaml")
     outputDir.set(layout.buildDirectory.file(generatedRoot).get().asFile.absolutePath)
@@ -85,11 +87,54 @@ openApiGenerate {
 //    typeMappings.put("BangumiEpisodeCollectionType", "/*- `0`: 未收藏 - `1`: 想看 - `2`: 看过 - `3`: 抛弃*/ Int")
 }
 
+val generateApiP1 = tasks.register("generateApiP1", GenerateTask::class) {
+    generatorName.set("kotlin")
+    inputSpec.set("$projectDir/p1.yaml")
+    outputDir.set(layout.buildDirectory.file(generatedRoot).get().asFile.absolutePath)
+    packageName.set("me.him188.ani.datasources.bangumi.next")
+    modelNamePrefix.set("BangumiNext")
+    apiNameSuffix.set("BangumiNextApi")
+    // https://github.com/OpenAPITools/openapi-generator/blob/master/docs/generators/kotlin.md
+    additionalProperties.set(
+        mapOf(
+            "apiSuffix" to "BangumiNextApi",
+            "library" to "multiplatform",
+            "dateLibrary" to "kotlinx-datetime",
+            "enumPropertyNaming" to "UPPERCASE",
+            "omitGradleWrapper" to "true",
+        ),
+    )
+    generateModelTests.set(false)
+    generateApiTests.set(false)
+    generateApiDocumentation.set(false)
+    generateModelDocumentation.set(false)
+    validateSpec.set(false)
+
+//    typeMappings.put("BangumiValue", "kotlinx.serialization.json.JsonElement")
+//    schemaMappings.put("WikiV0", "kotlinx.serialization.json.JsonElement") // works
+//    schemaMappings.put("Item", "kotlinx.serialization.json.JsonElement")
+//    schemaMappings.put("Value", "kotlinx.serialization.json.JsonElement")
+    typeMappings.put(
+        "kotlin.Double",
+        "@Serializable(me.him188.ani.utils.serialization.BigNumAsDoubleStringSerializer::class) me.him188.ani.utils.serialization.BigNum",
+    )
+//    typeMappings.put("BangumiEpisodeCollectionType", "/*- `0`: 未收藏 - `1`: 想看 - `2`: 看过 - `3`: 抛弃*/ Int")
+}
+
 val fixGeneratedOpenApi = tasks.register("fixGeneratedOpenApi") {
-    dependsOn(tasks.withType(org.openapitools.generator.gradle.plugin.tasks.GenerateTask::class))
-    val models =
-        layout.buildDirectory.file("$generatedRoot/src/commonMain/kotlin/me/him188/ani/datasources/bangumi/models/")
-            .get().asFile
+    dependsOn(generateApiV0, generateApiP1)
+
+    val modelsV0 = layout
+        .buildDirectory
+        .file("$generatedRoot/src/commonMain/kotlin/me/him188/ani/datasources/bangumi/models/")
+        .get()
+        .asFile
+    val modelsP1 = layout
+        .buildDirectory
+        .file("$generatedRoot/src/commonMain/kotlin/me/him188/ani/datasources/bangumi/next/models/")
+        .get()
+        .asFile
+    
 
 //    inputs.file(file)
 //    outputs.file(file)
@@ -97,15 +142,19 @@ val fixGeneratedOpenApi = tasks.register("fixGeneratedOpenApi") {
 //        models.resolve("BangumiValue.kt").readText() == expected
 //    }
     doLast {
-        models.resolve("BangumiValue.kt").writeText(
+        modelsV0.resolve("BangumiValue.kt").writeText(
             """
                 package me.him188.ani.datasources.bangumi.models
                 
                 typealias BangumiValue = kotlinx.serialization.json.JsonElement
             """.trimIndent(),
         )
-        models.resolve("BangumiEpisodeCollectionType.kt").delete()
-        models.resolve("BangumiSubjectCollectionType.kt").delete()
+        modelsV0.resolve("BangumiEpisodeCollectionType.kt").delete()
+        modelsV0.resolve("BangumiSubjectCollectionType.kt").delete()
+
+        modelsP1.resolve("BangumiNextListGroupMembersByNameTypeParameter.kt").delete()
+        modelsP1.resolve("BangumiNextPatchEpisodeWikiInfoRequestEpisodeType.kt").delete()
+        modelsP1.resolve("BangumiNextSubjectType.kt").delete()
     }
 }
 
