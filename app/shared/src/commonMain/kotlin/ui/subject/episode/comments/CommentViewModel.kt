@@ -3,8 +3,8 @@ package me.him188.ani.app.ui.subject.episode.comments
 import androidx.compose.runtime.Immutable
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flow
-import me.him188.ani.app.data.repositories.EpisodeRevisionRepository
-import me.him188.ani.app.data.repositories.UserRepository
+import me.him188.ani.app.data.repository.EpisodeRevisionRepository
+import me.him188.ani.app.data.repository.UserRepository
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.utils.coroutines.runUntilSuccess
 import me.him188.ani.utils.coroutines.runningList

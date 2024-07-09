@@ -1,4 +1,4 @@
-package me.him188.ani.app.ui.icons
+package me.him188.ani.app.ui.settings.rendering
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import me.him188.ani.app.Res
 import me.him188.ani.app.acg_rip
 import me.him188.ani.app.bangumi
-import me.him188.ani.app.data.media.MediaCacheManager.Companion.LOCAL_FS_MEDIA_SOURCE_ID
+import me.him188.ani.app.data.source.media.MediaCacheManager.Companion.LOCAL_FS_MEDIA_SOURCE_ID
 import me.him188.ani.app.dmhy
 import me.him188.ani.app.mikan
 import me.him188.ani.app.mxdongman

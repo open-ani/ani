@@ -32,8 +32,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.onCompletion
-import me.him188.ani.app.data.media.cache.MediaCache
-import me.him188.ani.app.ui.icons.renderMediaSource
+import me.him188.ani.app.data.source.media.cache.MediaCache
+import me.him188.ani.app.ui.settings.rendering.renderMediaSource
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.utils.coroutines.sampleWithInitial
 import me.him188.ani.utils.coroutines.sampleWithInitialUnless

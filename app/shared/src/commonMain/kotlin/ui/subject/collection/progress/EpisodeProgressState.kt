@@ -8,9 +8,9 @@ import androidx.compose.runtime.remember
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import me.him188.ani.app.data.repositories.SettingsRepository
-import me.him188.ani.app.data.subject.SubjectManager
-import me.him188.ani.app.data.subject.setEpisodeWatched
+import me.him188.ani.app.data.model.subject.SubjectManager
+import me.him188.ani.app.data.model.subject.setEpisodeWatched
+import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.tools.caching.ContentPolicy
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground

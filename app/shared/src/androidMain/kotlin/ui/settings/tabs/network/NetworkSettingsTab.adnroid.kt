@@ -7,9 +7,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
-import me.him188.ani.app.data.media.MediaSourceManager
-import me.him188.ani.app.data.media.fetch.MediaFetcher
-import me.him188.ani.app.data.media.instance.MediaSourceInstance
+import me.him188.ani.app.data.source.media.MediaSourceManager
+import me.him188.ani.app.data.source.media.fetch.MediaFetcher
+import me.him188.ani.app.data.source.media.instance.MediaSourceInstance
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.settings.framework.ConnectionTestResult

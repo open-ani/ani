@@ -3,7 +3,7 @@
     "FloatingPointLiteralPrecision",
 )
 
-package me.him188.ani.app.ui.icons
+package me.him188.ani.app.ui.settings.rendering
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.Image

@@ -3,11 +3,11 @@ package me.him188.ani.app.ui.subject.details.components
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
-import me.him188.ani.app.data.subject.SubjectAiringInfo
-import me.him188.ani.app.data.subject.SubjectAiringKind
-import me.him188.ani.app.data.subject.SubjectCollectionStats
-import me.him188.ani.app.data.subject.SubjectInfo
-import me.him188.ani.app.data.subject.Tag
+import me.him188.ani.app.data.model.subject.SubjectAiringInfo
+import me.him188.ani.app.data.model.subject.SubjectAiringKind
+import me.him188.ani.app.data.model.subject.SubjectCollectionStats
+import me.him188.ani.app.data.model.subject.SubjectInfo
+import me.him188.ani.app.data.model.subject.Tag
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.subject.rating.TestRatingInfo
 import me.him188.ani.datasources.api.EpisodeSort

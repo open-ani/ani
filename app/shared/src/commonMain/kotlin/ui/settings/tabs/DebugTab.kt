@@ -4,8 +4,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import me.him188.ani.app.data.models.DebugSettings
-import me.him188.ani.app.data.repositories.SettingsRepository
+import me.him188.ani.app.data.persistent.preference.DebugSettings
+import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.settings.SettingsTab

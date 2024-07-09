@@ -46,10 +46,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.ui.foundation.ifThen
-import me.him188.ani.app.ui.icons.MediaSourceIcons
-import me.him188.ani.app.ui.icons.SmallMediaSourceIcon
-import me.him188.ani.app.ui.icons.renderMediaSource
 import me.him188.ani.app.ui.settings.SettingsTab
+import me.him188.ani.app.ui.settings.rendering.MediaSourceIcons
+import me.him188.ani.app.ui.settings.rendering.SmallMediaSourceIcon
+import me.him188.ani.app.ui.settings.rendering.renderMediaSource
 
 @Composable
 fun MediaSourceResultsView(

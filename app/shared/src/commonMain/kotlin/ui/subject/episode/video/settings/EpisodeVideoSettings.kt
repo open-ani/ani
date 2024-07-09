@@ -20,7 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import me.him188.ani.app.data.repositories.SettingsRepository
+import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.isDesktop

@@ -7,8 +7,8 @@ import androidx.compose.runtime.setValue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
-import me.him188.ani.app.data.danmaku.DanmakuManager
-import me.him188.ani.app.data.repositories.SettingsRepository
+import me.him188.ani.app.data.repository.SettingsRepository
+import me.him188.ani.app.data.source.DanmakuManager
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.danmaku.api.DanmakuPresentation

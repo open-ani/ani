@@ -36,11 +36,11 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import me.him188.ani.app.data.subject.PackedDate
-import me.him188.ani.app.data.subject.RatingInfo
-import me.him188.ani.app.data.subject.SubjectAiringInfo
-import me.him188.ani.app.data.subject.SubjectInfo
-import me.him188.ani.app.data.subject.seasonMonth
+import me.him188.ani.app.data.model.PackedDate
+import me.him188.ani.app.data.model.seasonMonth
+import me.him188.ani.app.data.model.subject.RatingInfo
+import me.him188.ani.app.data.model.subject.SubjectAiringInfo
+import me.him188.ani.app.data.model.subject.SubjectInfo
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.ui.foundation.AsyncImage
 import me.him188.ani.app.ui.foundation.layout.LocalLayoutMode

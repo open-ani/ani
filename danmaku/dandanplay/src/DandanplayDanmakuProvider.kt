@@ -3,8 +3,8 @@ package me.him188.ani.danmaku.dandanplay
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpTimeout
-import me.him188.ani.app.data.subject.SubjectInfo
-import me.him188.ani.app.data.subject.seasonMonth
+import me.him188.ani.app.data.model.seasonMonth
+import me.him188.ani.app.data.model.subject.SubjectInfo
 import me.him188.ani.danmaku.api.AbstractDanmakuProvider
 import me.him188.ani.danmaku.api.DanmakuEpisode
 import me.him188.ani.danmaku.api.DanmakuFetchResult

@@ -5,11 +5,11 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.onCompletion
-import me.him188.ani.app.data.subject.RelatedCharacterInfo
-import me.him188.ani.app.data.subject.RelatedPersonInfo
-import me.him188.ani.app.data.subject.SelfRatingInfo
-import me.him188.ani.app.data.subject.SubjectAiringInfo
-import me.him188.ani.app.data.subject.SubjectInfo
+import me.him188.ani.app.data.model.subject.RelatedCharacterInfo
+import me.him188.ani.app.data.model.subject.RelatedPersonInfo
+import me.him188.ani.app.data.model.subject.SelfRatingInfo
+import me.him188.ani.app.data.model.subject.SubjectAiringInfo
+import me.him188.ani.app.data.model.subject.SubjectInfo
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
