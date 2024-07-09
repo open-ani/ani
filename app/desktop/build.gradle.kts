@@ -20,6 +20,7 @@ import com.android.utils.CpuArchitecture
 import com.android.utils.osArchitecture
 import com.google.gson.Gson
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.kotlin.cli.common.isWindows
 import java.util.UUID
 
 plugins {
@@ -221,6 +222,28 @@ val createDependencyManifest = tasks.register("createDependencyManifest") {
             }
             map["OPENSSL_SSL_LIBRARY:FILEPATH"]?.let {
                 put("OPENSSL_SSL_LIBRARY", File(it))
+            }
+
+            if (isWindows) {
+                // LIB_EAY_RELEASE:FILEPATH=C:/vcpkg/installed/x64-windows/lib/libcrypto.lib
+                // SSL_EAY_RELEASE:FILEPATH=C:/vcpkg/installed/x64-windows/lib/libssl.lib
+                fun findDll(libFile: File): List<File> {
+                    val matched = libFile.parentFile.parentFile.resolve("bin")
+                        .listFiles().orEmpty()
+                        .filter { it.extension == "dll" && it.nameWithoutExtension.startsWith(libFile.nameWithoutExtension) }
+                    return matched
+                }
+
+                map["SSL_EAY_RELEASE:FILEPATH"]?.let {
+                    findDll(File(it)).forEachIndexed { index, file ->
+                        put("SSL_EAY_RELEASE_${index}", file)
+                    }
+                }
+                map["LIB_EAY_RELEASE:FILEPATH"]?.let {
+                    findDll(File(it)).forEachIndexed { index, file ->
+                        put("LIB_EAY_RELEASE_${index}", file)
+                    }
+                }
             }
         }.toMutableMap()
 
