@@ -233,12 +233,6 @@ internal fun EpisodeVideoImpl(
                         videoControllerState.danmakuEnabled,
                         onClick = { videoControllerState.toggleDanmakuEnabled() },
                     )
-
-                    if (expanded) {
-                        PlayerControllerDefaults.SelectEpisodeIcon(
-                            onShowSelectEpisode,
-                        )
-                    }
                 },
                 progressIndicator = {
                     ProgressIndicator(progressSliderState)
@@ -255,6 +249,11 @@ internal fun EpisodeVideoImpl(
                         speed,
                         { playerState.setPlaybackSpeed(it) },
                     )
+                    if (expanded) {
+                        PlayerControllerDefaults.SelectEpisodeIcon(
+                            onShowSelectEpisode,
+                        )
+                    }
                     PlayerControllerDefaults.FullscreenIcon(
                         expanded,
                         onClickFullscreen = onClickFullScreen,
