@@ -157,7 +157,7 @@ private fun stripP1Api(path: String): File {
 }
 
 val fixGeneratedOpenApi = tasks.register("fixGeneratedOpenApi") {
-    dependsOn(tasks.withType(GenerateTask::class))
+    dependsOn(generateApiV0, generateApiP1)
     val models =
         layout.buildDirectory.file("$generatedRoot/src/commonMain/kotlin/me/him188/ani/datasources/bangumi/models/")
             .get().asFile
