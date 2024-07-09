@@ -1,9 +1,9 @@
-package me.him188.ani.app.data.media
+package me.him188.ani.app.data.source.media
 
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
-import me.him188.ani.app.data.media.resolver.TorrentVideoSourceResolver
+import me.him188.ani.app.data.source.media.resolver.TorrentVideoSourceResolver
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.test.permuted
 import org.junit.jupiter.api.DynamicTest

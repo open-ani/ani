@@ -1,13 +1,13 @@
-package me.him188.ani.app.data.media.selector
+package me.him188.ani.app.data.source.media.selector
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.test.runTest
-import me.him188.ani.app.data.media.fetch.MediaFetcherConfig
-import me.him188.ani.app.data.media.fetch.MediaSourceMediaFetcher
-import me.him188.ani.app.data.media.framework.TestMediaList
-import me.him188.ani.app.data.media.instance.createTestMediaSourceInstance
 import me.him188.ani.app.data.models.preference.MediaSelectorSettings
+import me.him188.ani.app.data.source.media.fetch.MediaFetcherConfig
+import me.him188.ani.app.data.source.media.fetch.MediaSourceMediaFetcher
+import me.him188.ani.app.data.source.media.framework.TestMediaList
+import me.him188.ani.app.data.source.media.instance.createTestMediaSourceInstance
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.datasources.api.DefaultMedia
 import me.him188.ani.datasources.api.EpisodeSort
@@ -146,8 +146,8 @@ class MediaSelectorAutoSelectTest {
     @Test
     fun `selectCached selects one when there is one cache`() = runTest {
         val target = DefaultMedia(
-            mediaId = "${me.him188.ani.app.data.media.framework.SOURCE_DMHY}.1",
-            mediaSourceId = me.him188.ani.app.data.media.framework.SOURCE_DMHY,
+            mediaId = "${me.him188.ani.app.data.source.media.framework.SOURCE_DMHY}.1",
+            mediaSourceId = me.him188.ani.app.data.source.media.framework.SOURCE_DMHY,
             originalTitle = "[桜都字幕组] 孤独摇滚 ABC ABC ABC ABC ABC ABC ABC ABC ABC ABC",
             download = ResourceLocation.MagnetLink("magnet:?xt=urn:btih:1"),
             originalUrl = "https://example.com/1",
@@ -171,8 +171,8 @@ class MediaSelectorAutoSelectTest {
     @Test
     fun `selectCached selects first one when there are multiple caches`() = runTest {
         val target = DefaultMedia(
-            mediaId = "${me.him188.ani.app.data.media.framework.SOURCE_DMHY}.1",
-            mediaSourceId = me.him188.ani.app.data.media.framework.SOURCE_DMHY,
+            mediaId = "${me.him188.ani.app.data.source.media.framework.SOURCE_DMHY}.1",
+            mediaSourceId = me.him188.ani.app.data.source.media.framework.SOURCE_DMHY,
             originalTitle = "[桜都字幕组] 孤独摇滚 ABC ABC ABC ABC ABC ABC ABC ABC ABC ABC",
             download = ResourceLocation.MagnetLink("magnet:?xt=urn:btih:1"),
             originalUrl = "https://example.com/1",

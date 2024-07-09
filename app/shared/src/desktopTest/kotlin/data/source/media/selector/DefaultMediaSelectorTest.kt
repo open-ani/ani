@@ -1,4 +1,4 @@
-package me.him188.ani.app.data.media.selector
+package me.him188.ani.app.data.source.media.selector
 
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.flow.MutableStateFlow

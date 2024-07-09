@@ -1,4 +1,4 @@
-package me.him188.ani.app.data.media
+package me.him188.ani.app.data.source.media
 
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest

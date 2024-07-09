@@ -1,6 +1,5 @@
-package me.him188.ani.app.data.subject
+package me.him188.ani.app.data.models
 
-import me.him188.ani.app.data.models.PackedDate
 import me.him188.ani.app.data.models.episode.EpisodeCollections
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test

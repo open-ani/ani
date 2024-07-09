@@ -1,8 +1,8 @@
-package me.him188.ani.app.data.media.framework
+package me.him188.ani.app.data.source.media.framework
 
 import kotlinx.coroutines.flow.MutableStateFlow
-import me.him188.ani.app.data.media.MediaCacheManager
-import me.him188.ani.app.data.media.cache.TestMediaCache
+import me.him188.ani.app.data.source.media.MediaCacheManager
+import me.him188.ani.app.data.source.media.cache.TestMediaCache
 import me.him188.ani.datasources.acgrip.AcgRipMediaSource
 import me.him188.ani.datasources.api.CachedMedia
 import me.him188.ani.datasources.api.DefaultMedia

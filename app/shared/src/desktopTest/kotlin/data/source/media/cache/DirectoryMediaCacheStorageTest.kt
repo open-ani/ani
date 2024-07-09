@@ -1,8 +1,8 @@
-package me.him188.ani.app.data.media.cache
+package me.him188.ani.app.data.source.media.cache
 
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
-import me.him188.ani.app.data.media.framework.TestMediaCacheEngine
+import me.him188.ani.app.data.source.media.framework.TestMediaCacheEngine
 import me.him188.ani.datasources.api.DefaultMedia
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.MediaCacheMetadata

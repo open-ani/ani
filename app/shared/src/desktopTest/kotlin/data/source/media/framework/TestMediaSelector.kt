@@ -1,17 +1,17 @@
 @file:Suppress("CanBeParameter", "MemberVisibilityCanBePrivate")
 
-package me.him188.ani.app.data.media.framework
+package me.him188.ani.app.data.source.media.framework
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
-import me.him188.ani.app.data.media.selector.DefaultMediaSelector
-import me.him188.ani.app.data.media.selector.MediaPreferenceItem
-import me.him188.ani.app.data.media.selector.MediaSelector
-import me.him188.ani.app.data.media.selector.MediaSelectorEvents
-import me.him188.ani.app.data.media.selector.MutableMediaSelectorEvents
-import me.him188.ani.app.data.media.selector.OptionalPreference
-import me.him188.ani.app.data.media.selector.orElse
+import me.him188.ani.app.data.source.media.selector.DefaultMediaSelector
+import me.him188.ani.app.data.source.media.selector.MediaPreferenceItem
+import me.him188.ani.app.data.source.media.selector.MediaSelector
+import me.him188.ani.app.data.source.media.selector.MediaSelectorEvents
+import me.him188.ani.app.data.source.media.selector.MutableMediaSelectorEvents
+import me.him188.ani.app.data.source.media.selector.OptionalPreference
+import me.him188.ani.app.data.source.media.selector.orElse
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.topic.Resolution

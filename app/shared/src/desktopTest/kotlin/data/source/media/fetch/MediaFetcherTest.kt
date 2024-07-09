@@ -1,13 +1,13 @@
-package me.him188.ani.app.data.media.fetch
+package me.him188.ani.app.data.source.media.fetch
 
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
-import me.him188.ani.app.data.media.framework.TestMediaList
-import me.him188.ani.app.data.media.instance.MediaSourceInstance
-import me.him188.ani.app.data.media.instance.createTestMediaSourceInstance
+import me.him188.ani.app.data.source.media.framework.TestMediaList
+import me.him188.ani.app.data.source.media.instance.MediaSourceInstance
+import me.him188.ani.app.data.source.media.instance.createTestMediaSourceInstance
 import me.him188.ani.app.torrent.assertCoroutineSuspends
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.paging.SinglePagePagedSource

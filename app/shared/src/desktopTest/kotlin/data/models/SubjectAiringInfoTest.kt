@@ -1,6 +1,5 @@
-package me.him188.ani.app.data.subject
+package me.him188.ani.app.data.models
 
-import me.him188.ani.app.data.models.PackedDate
 import me.him188.ani.app.data.models.episode.EpisodeInfo
 import me.him188.ani.app.data.models.subject.SubjectAiringInfo
 import me.him188.ani.app.data.models.subject.SubjectAiringKind
