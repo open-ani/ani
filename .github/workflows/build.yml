@@ -22,6 +22,7 @@ jobs:
           - macos-12 # x86_64
           - macos-14 # aarch64
         include:
+          # matrix properties can be booleans. Check for plain true and false.
           - os: windows-2022
             name: Windows x86_64
             uploadApk: false
@@ -71,7 +72,6 @@ jobs:
       isUbuntu: ${{ startsWith(matrix.os, 'ubuntu') }}
       isUnix: ${{ startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu') }}
       doSigning: ${{ github.event_name != 'pull_request' && github.repository == 'open-api/ani' }} # fork 和 PR 不使用签名
-      uploadApk: ${{ matrix.uploadApk == 'true' || matrix.uploadApk == true }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -118,13 +118,13 @@ jobs:
         continue-on-error: true
 
       - name: Build Anitorrent
-        if: ${{ matrix.anitorrent == 'true' && matrix.anitorrent_separate_build == 'true' }}
+        if: ${{ matrix.anitorrent && matrix.anitorrent_separate_build }}
         run: ./gradlew :torrent:anitorrent:build :torrent:anitorrent:buildAnitorrent ${{ env.gradleArgs }}
 
       - name: Assemble
         run: ./gradlew assemble ${{ env.gradleArgs }}
 
-      - if: ${{ env.uploadApk == 'true' && env.doSigning == 'true' }}
+      - if: ${{ matrix.uploadApk && env.doSigning == 'true' }}
         name: Build Android APK
         run: ./gradlew assembleRelease ${{ env.gradleArgs }}
         env:
@@ -133,7 +133,7 @@ jobs:
           "signing_release_keyAlias": ${{ secrets.SIGNING_RELEASE_KEYALIAS }}
           "signing_release_keyPassword": ${{ secrets.SIGNING_RELEASE_KEYPASSWORD }}
 
-      - if: ${{ env.uploadApk == 'true' }}
+      - if: ${{ matrix.uploadApk }}
         name: Upload Android APK packages
         uses: actions/upload-artifact@v4
         with:
@@ -146,14 +146,14 @@ jobs:
       - name: Package
         run: ./gradlew createDistributable ${{ env.gradleArgs }}
 
-      - if: ${{ matrix.anitorrent == 'true' }}
+      - if: ${{ matrix.anitorrent }}
         name: Upload Anitorrent CMakeCache.txt
         uses: actions/upload-artifact@v4
         with:
           name: anitorrent-cmake-cache-${{ matrix.os }}-${{ matrix.arch }}
           path: torrent/anitorrent/build-ci/CMakeCache.txt
 
-      - if: ${{ matrix.anitorrent == 'true' }}
+      - if: ${{ matrix.anitorrent }}
         name: Anitorrent ${{ matrix.os }}-${{ matrix.arch }}
         uses: actions/upload-artifact@v4
         with:
