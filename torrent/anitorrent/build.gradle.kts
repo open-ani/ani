@@ -168,12 +168,14 @@ val buildAnitorrent = tasks.register("buildAnitorrent", Exec::class.java) {
 
 
 tasks.getByName("compileJava") {
-    dependsOn(generateSwig)
+    if (enableAnitorrent) {
+        dependsOn(generateSwig)
+    }
 }
 
 idea {
     module {
-        excludeDirs.add(file("build-ci"))
+        excludeDirs.add(anitorrentBuildDir)
         excludeDirs.add(file("cmake-build-debug"))
         excludeDirs.add(file("cmake-build-release"))
     }
