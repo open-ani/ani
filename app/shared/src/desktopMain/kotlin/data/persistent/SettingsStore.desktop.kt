@@ -16,24 +16,33 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.ani.app.platform.persistent
+package me.him188.ani.app.data.persistent
 
 import androidx.datastore.core.DataStore
-import androidx.datastore.dataStoreFile
 import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.preferencesDataStore
 import me.him188.ani.app.platform.Context
+import me.him188.ani.app.platform.DesktopContext
 import java.io.File
 
-actual val Context.preferencesStore: DataStore<Preferences> by preferencesDataStore("preferences")
-actual val Context.tokenStore: DataStore<Preferences> by preferencesDataStore("tokens")
-actual val Context.dataStoresImpl: PlatformDataStoreManager
-    get() = PlatformDataStoreManagerAndroid(this)
-
-internal class PlatformDataStoreManagerAndroid(
-    private val context: Context,
-) : PlatformDataStoreManager() {
-    override fun resolveDataStoreFile(name: String): File {
-        return context.applicationContext.dataStoreFile(name)
+actual val Context.preferencesStore: DataStore<Preferences>
+    get() {
+        this as DesktopContext
+        return settingStore
     }
+
+
+actual val Context.tokenStore: DataStore<Preferences>
+    get() {
+        this as DesktopContext
+        return tokenStore
+    }
+
+
+actual val Context.dataStoresImpl: PlatformDataStoreManager
+    get() = PlatformDataStoreManagerDesktop(this as DesktopContext)
+
+internal class PlatformDataStoreManagerDesktop(
+    private val context: DesktopContext,
+) : PlatformDataStoreManager() {
+    override fun resolveDataStoreFile(name: String): File = context.dataStoreDir.resolve(name)
 }

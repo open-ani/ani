@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.ani.app.platform.persistent
+package me.him188.ani.app.data.persistent
 
 import androidx.datastore.core.CorruptionException
 import androidx.datastore.core.DataStore

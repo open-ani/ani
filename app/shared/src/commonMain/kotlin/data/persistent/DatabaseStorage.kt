@@ -1,4 +1,4 @@
-package me.him188.ani.app.platform.persistent
+package me.him188.ani.app.data.persistent
 
 import androidx.room.RoomDatabase
 import me.him188.ani.app.data.persistent.database.AniDatabase

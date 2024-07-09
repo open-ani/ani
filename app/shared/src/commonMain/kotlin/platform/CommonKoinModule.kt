@@ -31,7 +31,12 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.models.subject.SubjectManagerImpl
+import me.him188.ani.app.data.persistent.createDatabaseBuilder
+import me.him188.ani.app.data.persistent.dataStores
 import me.him188.ani.app.data.persistent.database.AniDatabase
+import me.him188.ani.app.data.persistent.preferencesStore
+import me.him188.ani.app.data.persistent.preferredAllianceStore
+import me.him188.ani.app.data.persistent.tokenStore
 import me.him188.ani.app.data.repository.BangumiEpisodeRepository
 import me.him188.ani.app.data.repository.BangumiRelatedCharactersRepository
 import me.him188.ani.app.data.repository.BangumiSubjectRepository
@@ -70,11 +75,6 @@ import me.him188.ani.app.data.source.media.cache.DirectoryMediaCacheStorage
 import me.him188.ani.app.data.source.media.createWithKoin
 import me.him188.ani.app.data.source.media.instance.MediaSourceSave
 import me.him188.ani.app.platform.Platform.Companion.currentPlatform
-import me.him188.ani.app.platform.persistent.createDatabaseBuilder
-import me.him188.ani.app.platform.persistent.dataStores
-import me.him188.ani.app.platform.persistent.preferencesStore
-import me.him188.ani.app.platform.persistent.preferredAllianceStore
-import me.him188.ani.app.platform.persistent.tokenStore
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.session.SessionManagerImpl
 import me.him188.ani.app.tools.torrent.TorrentEngineType

@@ -1,4 +1,4 @@
-package me.him188.ani.app.platform.persistent
+package me.him188.ani.app.data.persistent
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
