@@ -1682,6 +1682,12 @@ paths:
     post:
       description: 登出
       operationId: logout
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties: { }
+              type: object
       responses:
         '200':
           content:

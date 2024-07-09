@@ -15,27 +15,27 @@
 
 package me.him188.ani.datasources.bangumi.next.models
 
-import me.him188.ani.datasources.bangumi.next.models.BangumiNextAvatar2
+import me.him188.ani.datasources.bangumi.next.models.BangumiNextAvatar
 
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
 
 /**
- *
+ * 
  *
  * @param avatar
  * @param id
  * @param nickname
  * @param sign
  * @param userGroup
- * @param username
+ * @param username 
  */
 @Serializable
 
 data class BangumiNextUser(
 
-    @SerialName(value = "avatar") @Required val avatar: BangumiNextAvatar2,
+    @SerialName(value = "avatar") @Required val avatar: BangumiNextAvatar,
 
     @SerialName(value = "id") @Required val id: kotlin.Int,
 

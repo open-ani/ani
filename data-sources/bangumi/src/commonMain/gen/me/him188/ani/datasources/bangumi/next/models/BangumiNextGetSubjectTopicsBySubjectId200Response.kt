@@ -15,22 +15,25 @@
 
 package me.him188.ani.datasources.bangumi.next.models
 
+import me.him188.ani.datasources.bangumi.next.models.BangumiNextTopic
 
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
 
 /**
+ * 
  *
- *
- * @param id new topic id
+ * @param `data`
+ * @param total 
  */
 @Serializable
 
-data class BangumiNextCreateNewGroupTopic200Response(
+data class BangumiNextGetSubjectTopicsBySubjectId200Response(
 
-    /* new topic id */
-    @SerialName(value = "id") @Required val id: kotlin.Int
+    @SerialName(value = "data") @Required val `data`: kotlin.collections.List<BangumiNextTopic>,
+
+    @SerialName(value = "total") @Required val total: kotlin.Int
 
 )
 

@@ -23,7 +23,7 @@ import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
 
 /**
- *
+ * 
  *
  * @param content
  * @param createdAt
@@ -33,7 +33,7 @@ import kotlinx.serialization.encoding.*
  * @param relatedID
  * @param state
  * @param user
- * @param replies
+ * @param replies 
  */
 @Serializable
 

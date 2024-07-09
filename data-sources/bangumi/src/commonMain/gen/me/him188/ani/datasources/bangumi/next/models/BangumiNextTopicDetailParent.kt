@@ -23,7 +23,7 @@ import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
 
 /**
- *
+ * 
  *
  * @param createdAt
  * @param description
@@ -40,7 +40,7 @@ import kotlinx.serialization.encoding.*
  * @param platform
  * @param redirect
  * @param summary
- * @param typeID
+ * @param typeID 
  */
 @Serializable
 

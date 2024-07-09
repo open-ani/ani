@@ -49,12 +49,7 @@ open class ApiClient(
         this.client = httpClient
     }
 
-    private val authentications: kotlin.collections.Map<String, Authentication> by lazy {
-        mapOf(
-            "CookiesSession" to ApiKeyAuth("query", "chiiNextSessionID"),
-            "HTTPBearer" to HttpBearerAuth("Bearer"),
-        )
-    }
+    private val authentications: kotlin.collections.Map<String, Authentication>? = null
 
     companion object {
         const val BASE_URL = "http://localhost"

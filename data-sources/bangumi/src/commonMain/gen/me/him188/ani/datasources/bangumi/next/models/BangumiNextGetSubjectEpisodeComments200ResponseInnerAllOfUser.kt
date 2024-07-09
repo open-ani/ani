@@ -22,11 +22,11 @@ import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
 
 /**
- *
+ * 
  *
  * @param avatar
  * @param id
- * @param nickname
+ * @param nickname 
  */
 @Serializable
 

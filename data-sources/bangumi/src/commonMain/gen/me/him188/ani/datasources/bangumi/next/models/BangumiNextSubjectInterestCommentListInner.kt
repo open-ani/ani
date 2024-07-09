@@ -22,12 +22,12 @@ import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
 
 /**
- *
+ * 
  *
  * @param comment
  * @param rate
  * @param updatedAt
- * @param user
+ * @param user 
  */
 @Serializable
 

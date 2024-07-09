@@ -15,21 +15,21 @@
 
 package me.him188.ani.datasources.bangumi.next.models
 
-import me.him188.ani.datasources.bangumi.next.models.BangumiNextUser2
+import me.him188.ani.datasources.bangumi.next.models.BangumiNextUser
 
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
 
 /**
- *
+ * 
  *
  * @param createdAt 发帖时间，unix time stamp in seconds
- * @param creator
+ * @param creator 
  * @param id topic id
  * @param parentID 小组/条目ID
  * @param repliesCount
- * @param title
+ * @param title 
  * @param updatedAt 最后回复时间，unix time stamp in seconds
  */
 @Serializable
@@ -39,7 +39,7 @@ data class BangumiNextTopic(
     /* 发帖时间，unix time stamp in seconds */
     @SerialName(value = "createdAt") @Required val createdAt: kotlin.Int,
 
-    @SerialName(value = "creator") @Required val creator: BangumiNextUser2,
+    @SerialName(value = "creator") @Required val creator: BangumiNextUser,
 
     /* topic id */
     @SerialName(value = "id") @Required val id: kotlin.Int,

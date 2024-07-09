@@ -21,7 +21,7 @@ import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
 
 /**
- *
+ * 
  *
  * @param date
  * @param id
@@ -33,7 +33,7 @@ import kotlinx.serialization.encoding.*
  * @param platform
  * @param redirect
  * @param summary
- * @param typeID
+ * @param typeID 
  */
 @Serializable
 

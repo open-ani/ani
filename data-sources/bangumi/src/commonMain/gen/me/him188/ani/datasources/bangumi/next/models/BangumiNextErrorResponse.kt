@@ -26,7 +26,7 @@ import kotlinx.serialization.encoding.*
  * @param code
  * @param error
  * @param message
- * @param statusCode
+ * @param statusCode 
  */
 @Serializable
 

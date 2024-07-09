@@ -24,7 +24,7 @@ import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
 
 /**
- *
+ * 
  *
  * @param createdAt
  * @param creator
@@ -33,7 +33,7 @@ import kotlinx.serialization.encoding.*
  * @param reactions
  * @param replies
  * @param state
- * @param text
+ * @param text 
  */
 @Serializable
 
