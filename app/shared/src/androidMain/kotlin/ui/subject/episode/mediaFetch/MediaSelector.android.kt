@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
-import me.him188.ani.app.data.persistent.preference.MediaSelectorSettings
+import me.him188.ani.app.data.models.preference.MediaSelectorSettings
 import me.him188.ani.app.data.source.media.MediaCacheManager
 import me.him188.ani.app.data.source.media.fetch.FilteredMediaSourceResults
 import me.him188.ani.app.data.source.media.fetch.MediaSourceFetchResult

@@ -20,11 +20,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import me.him188.ani.app.data.persistent.preference.FullscreenSwitchMode
-import me.him188.ani.app.data.persistent.preference.ThemeKind
-import me.him188.ani.app.data.persistent.preference.UISettings
-import me.him188.ani.app.data.persistent.preference.UpdateSettings
-import me.him188.ani.app.data.persistent.preference.VideoScaffoldConfig
+import me.him188.ani.app.data.models.preference.FullscreenSwitchMode
+import me.him188.ani.app.data.models.preference.ThemeKind
+import me.him188.ani.app.data.models.preference.UISettings
+import me.him188.ani.app.data.models.preference.UpdateSettings
+import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.LocalContext

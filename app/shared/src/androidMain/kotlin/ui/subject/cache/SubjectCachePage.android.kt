@@ -10,8 +10,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.flowOf
 import me.him188.ani.app.data.models.episode.EpisodeInfo
+import me.him188.ani.app.data.models.preference.MediaSelectorSettings
 import me.him188.ani.app.data.models.subject.SubjectInfo
-import me.him188.ani.app.data.persistent.preference.MediaSelectorSettings
 import me.him188.ani.app.data.source.media.EpisodeCacheStatus
 import me.him188.ani.app.data.source.media.cache.requester.EpisodeCacheRequest
 import me.him188.ani.app.data.source.media.cache.requester.EpisodeCacheRequester

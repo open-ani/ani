@@ -7,7 +7,7 @@ import me.him188.ani.app.data.media.fetch.MediaFetcherConfig
 import me.him188.ani.app.data.media.fetch.MediaSourceMediaFetcher
 import me.him188.ani.app.data.media.framework.TestMediaList
 import me.him188.ani.app.data.media.instance.createTestMediaSourceInstance
-import me.him188.ani.app.data.persistent.preference.MediaSelectorSettings
+import me.him188.ani.app.data.models.preference.MediaSelectorSettings
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.datasources.api.DefaultMedia
 import me.him188.ani.datasources.api.EpisodeSort

@@ -10,7 +10,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import me.him188.ani.app.data.persistent.preference.MediaSelectorSettings
+import me.him188.ani.app.data.models.preference.MediaSelectorSettings
 import me.him188.ani.app.data.source.media.fetch.FilteredMediaSourceResults
 import me.him188.ani.app.data.source.media.fetch.MediaSourceFetchResult
 import me.him188.ani.app.data.source.media.fetch.MediaSourceFetchState

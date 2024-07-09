@@ -18,8 +18,8 @@ import me.him188.ani.app.data.media.selector.MediaSelector
 import me.him188.ani.app.data.media.selector.MediaSelectorContext
 import me.him188.ani.app.data.media.selector.MediaSelectorFactory
 import me.him188.ani.app.data.models.episode.EpisodeInfo
+import me.him188.ani.app.data.models.preference.MediaSelectorSettings
 import me.him188.ani.app.data.models.subject.SubjectInfo
-import me.him188.ani.app.data.persistent.preference.MediaSelectorSettings
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.datasources.api.CachedMedia
 import me.him188.ani.datasources.api.DefaultMedia

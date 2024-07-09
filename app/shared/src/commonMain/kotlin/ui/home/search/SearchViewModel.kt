@@ -33,13 +33,13 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import me.him188.ani.app.data.models.preference.OneshotActionConfig
+import me.him188.ani.app.data.models.preference.SearchSettings
 import me.him188.ani.app.data.models.subject.RatingInfo
 import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.data.models.subject.Tag
 import me.him188.ani.app.data.persistent.database.eneity.SearchHistoryEntity
 import me.him188.ani.app.data.persistent.database.eneity.SearchTagEntity
-import me.him188.ani.app.data.persistent.preference.OneshotActionConfig
-import me.him188.ani.app.data.persistent.preference.SearchSettings
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.repository.SubjectSearchRepository
 import me.him188.ani.app.ui.foundation.AbstractViewModel

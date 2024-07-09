@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
-import me.him188.ani.app.data.persistent.preference.MediaSelectorSettings
+import me.him188.ani.app.data.models.preference.MediaSelectorSettings
 import kotlin.coroutines.CoroutineContext
 
 /**

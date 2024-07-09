@@ -16,9 +16,9 @@ import kotlinx.coroutines.launch
 import me.him188.ani.app.data.models.episode.EpisodeCollection
 import me.him188.ani.app.data.models.episode.episode
 import me.him188.ani.app.data.models.episode.isKnownCompleted
+import me.him188.ani.app.data.models.preference.MediaCacheSettings
 import me.him188.ani.app.data.models.subject.SubjectCollection
 import me.him188.ani.app.data.models.subject.SubjectManager
-import me.him188.ani.app.data.persistent.preference.MediaCacheSettings
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.media.cache.MediaCacheStorage
 import me.him188.ani.app.data.source.media.fetch.MediaFetcher

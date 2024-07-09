@@ -9,7 +9,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
-import me.him188.ani.app.data.persistent.preference.MediaSelectorSettings
+import me.him188.ani.app.data.models.preference.MediaSelectorSettings
 import me.him188.ani.app.data.source.media.selector.DefaultMediaSelector
 import me.him188.ani.app.data.source.media.selector.MediaSelectorContext
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview

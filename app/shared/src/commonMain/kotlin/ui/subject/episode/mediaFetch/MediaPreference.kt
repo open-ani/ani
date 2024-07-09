@@ -2,7 +2,7 @@ package me.him188.ani.app.ui.subject.episode.mediaFetch
 
 import androidx.compose.runtime.Immutable
 import kotlinx.serialization.Serializable
-import me.him188.ani.app.data.persistent.preference.MediaSelectorSettings
+import me.him188.ani.app.data.models.preference.MediaSelectorSettings
 import me.him188.ani.datasources.api.topic.Resolution
 import me.him188.ani.datasources.api.topic.SubtitleLanguage
 

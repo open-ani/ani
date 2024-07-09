@@ -1,4 +1,4 @@
-package me.him188.ani.app.data.persistent.preference
+package me.him188.ani.app.data.models.preference
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable

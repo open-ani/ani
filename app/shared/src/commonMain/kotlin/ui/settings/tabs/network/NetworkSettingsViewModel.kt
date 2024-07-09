@@ -13,8 +13,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
-import me.him188.ani.app.data.persistent.preference.DanmakuSettings
-import me.him188.ani.app.data.persistent.preference.ProxySettings
+import me.him188.ani.app.data.models.preference.DanmakuSettings
+import me.him188.ani.app.data.models.preference.ProxySettings
 import me.him188.ani.app.data.repository.MediaSourceInstanceRepository
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.media.MediaSourceManager

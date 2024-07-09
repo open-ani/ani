@@ -25,10 +25,10 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.flow.take
 import me.him188.ani.app.data.models.episode.isKnownCompleted
+import me.him188.ani.app.data.models.preference.MediaSelectorSettings
 import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.models.subject.nameCnOrName
 import me.him188.ani.app.data.models.subject.subjectInfoFlow
-import me.him188.ani.app.data.persistent.preference.MediaSelectorSettings
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.media.MediaCacheManager
 import me.him188.ani.app.data.source.media.MediaSourceManager

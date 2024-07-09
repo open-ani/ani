@@ -7,9 +7,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import kotlinx.coroutines.flow.map
-import me.him188.ani.app.data.persistent.preference.MediaCacheSettings
-import me.him188.ani.app.data.persistent.preference.MediaSelectorSettings
-import me.him188.ani.app.data.persistent.preference.VideoResolverSettings
+import me.him188.ani.app.data.models.preference.MediaCacheSettings
+import me.him188.ani.app.data.models.preference.MediaSelectorSettings
+import me.him188.ani.app.data.models.preference.VideoResolverSettings
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.tools.MonoTasker

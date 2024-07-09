@@ -7,9 +7,9 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import me.him188.ani.app.data.persistent.preference.ProxyConfig
-import me.him188.ani.app.data.persistent.preference.VideoResolverSettings
-import me.him188.ani.app.data.persistent.preference.WebViewDriver
+import me.him188.ani.app.data.models.preference.ProxyConfig
+import me.him188.ani.app.data.models.preference.VideoResolverSettings
+import me.him188.ani.app.data.models.preference.WebViewDriver
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.videoplayer.data.VideoSource

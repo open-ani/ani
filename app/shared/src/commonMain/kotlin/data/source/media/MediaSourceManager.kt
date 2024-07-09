@@ -10,8 +10,8 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
-import me.him188.ani.app.data.persistent.preference.MediaSourceProxySettings
-import me.him188.ani.app.data.persistent.preference.ProxyAuthorization
+import me.him188.ani.app.data.models.preference.MediaSourceProxySettings
+import me.him188.ani.app.data.models.preference.ProxyAuthorization
 import me.him188.ani.app.data.repository.MediaSourceInstanceRepository
 import me.him188.ani.app.data.repository.MikanIndexCacheRepository
 import me.him188.ani.app.data.repository.SettingsRepository
