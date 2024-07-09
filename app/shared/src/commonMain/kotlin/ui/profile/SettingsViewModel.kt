@@ -2,8 +2,8 @@ package me.him188.ani.app.ui.profile
 
 import androidx.compose.runtime.getValue
 import kotlinx.coroutines.delay
-import me.him188.ani.app.data.models.DebugSettings
-import me.him188.ani.app.data.repositories.SettingsRepository
+import me.him188.ani.app.data.models.preference.DebugSettings
+import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
 import moe.tlaster.precompose.viewmodel.viewModelScope

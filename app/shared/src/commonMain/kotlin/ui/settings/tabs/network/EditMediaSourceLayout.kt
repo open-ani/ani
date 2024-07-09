@@ -37,7 +37,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
-import me.him188.ani.app.ui.icons.MediaSourceIcon
+import me.him188.ani.app.ui.settings.rendering.MediaSourceIcon
 import me.him188.ani.datasources.api.source.BooleanParameter
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.source.MediaSourceParameter

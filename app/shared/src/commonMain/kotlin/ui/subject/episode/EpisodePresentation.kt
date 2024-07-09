@@ -2,13 +2,13 @@ package me.him188.ani.app.ui.subject.episode
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
-import me.him188.ani.app.data.subject.EpisodeCollection
-import me.him188.ani.app.data.subject.EpisodeInfo
-import me.him188.ani.app.data.subject.displayName
-import me.him188.ani.app.data.subject.episode
-import me.him188.ani.app.data.subject.isKnownCompleted
-import me.him188.ani.app.data.subject.nameCnOrName
-import me.him188.ani.app.data.subject.renderEpisodeEp
+import me.him188.ani.app.data.models.episode.EpisodeCollection
+import me.him188.ani.app.data.models.episode.EpisodeInfo
+import me.him188.ani.app.data.models.episode.displayName
+import me.him188.ani.app.data.models.episode.episode
+import me.him188.ani.app.data.models.episode.isKnownCompleted
+import me.him188.ani.app.data.models.episode.renderEpisodeEp
+import me.him188.ani.app.data.models.subject.nameCnOrName
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 
 /**

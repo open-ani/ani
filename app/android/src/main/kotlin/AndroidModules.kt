@@ -5,11 +5,11 @@ import androidx.core.app.NotificationManagerCompat
 import kotlinx.coroutines.CoroutineScope
 import me.him188.ani.android.activity.MainActivity
 import me.him188.ani.android.navigation.AndroidBrowserNavigator
-import me.him188.ani.app.data.media.resolver.AndroidWebVideoSourceResolver
-import me.him188.ani.app.data.media.resolver.HttpStreamingVideoSourceResolver
-import me.him188.ani.app.data.media.resolver.LocalFileVideoSourceResolver
-import me.him188.ani.app.data.media.resolver.TorrentVideoSourceResolver
-import me.him188.ani.app.data.media.resolver.VideoSourceResolver
+import me.him188.ani.app.data.source.media.resolver.AndroidWebVideoSourceResolver
+import me.him188.ani.app.data.source.media.resolver.HttpStreamingVideoSourceResolver
+import me.him188.ani.app.data.source.media.resolver.LocalFileVideoSourceResolver
+import me.him188.ani.app.data.source.media.resolver.TorrentVideoSourceResolver
+import me.him188.ani.app.data.source.media.resolver.VideoSourceResolver
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.notification.AndroidNotifManager
 import me.him188.ani.app.platform.notification.NotifManager

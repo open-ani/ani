@@ -3,8 +3,8 @@ package me.him188.ani.app.ui.foundation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import me.him188.ani.app.data.models.DebugSettings
-import me.him188.ani.app.data.repositories.SettingsRepository
+import me.him188.ani.app.data.models.preference.DebugSettings
+import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject

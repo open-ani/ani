@@ -19,8 +19,8 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
-import me.him188.ani.app.data.models.UISettings
-import me.him188.ani.app.data.models.UpdateSettings
+import me.him188.ani.app.data.models.preference.UISettings
+import me.him188.ani.app.data.models.preference.UpdateSettings
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.effects.OnLifecycleEvent

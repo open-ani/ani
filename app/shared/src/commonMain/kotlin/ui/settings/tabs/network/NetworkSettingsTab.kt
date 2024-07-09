@@ -12,7 +12,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
-import me.him188.ani.app.data.models.ProxySettings
+import me.him188.ani.app.data.models.preference.ProxySettings
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.settings.SettingsTab

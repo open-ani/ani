@@ -60,13 +60,13 @@ import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.feedback.ErrorDialogHost
 import me.him188.ani.app.ui.foundation.ifThen
-import me.him188.ani.app.ui.icons.MediaSourceIcon
-import me.him188.ani.app.ui.icons.renderMediaSource
-import me.him188.ani.app.ui.icons.renderMediaSourceDescription
 import me.him188.ani.app.ui.settings.framework.ConnectionTesterResultIndicator
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.TextButtonItem
 import me.him188.ani.app.ui.settings.framework.components.TextItem
+import me.him188.ani.app.ui.settings.rendering.MediaSourceIcon
+import me.him188.ani.app.ui.settings.rendering.renderMediaSource
+import me.him188.ani.app.ui.settings.rendering.renderMediaSourceDescription
 import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorder
 import org.burnoutcrew.reorderable.detectReorderAfterLongPress

@@ -2,8 +2,8 @@ package me.him188.ani.app.ui.subject.rating
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import me.him188.ani.app.data.subject.RatingCounts
-import me.him188.ani.app.data.subject.RatingInfo
+import me.him188.ani.app.data.models.subject.RatingCounts
+import me.him188.ani.app.data.models.subject.RatingInfo
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 
 internal val TestRatingInfo = RatingInfo(

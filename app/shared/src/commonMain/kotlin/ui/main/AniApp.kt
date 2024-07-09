@@ -37,8 +37,8 @@ import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
 import coil3.compose.LocalPlatformContext
 import kotlinx.coroutines.flow.map
-import me.him188.ani.app.data.models.ThemeKind
-import me.him188.ani.app.data.repositories.SettingsRepository
+import me.him188.ani.app.data.models.preference.ThemeKind
+import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.i18n.LocalI18n
 import me.him188.ani.app.i18n.loadResourceBundle
 import me.him188.ani.app.platform.LocalContext

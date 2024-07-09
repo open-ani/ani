@@ -17,7 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.foundation.widgets.RichDialogLayout
-import me.him188.ani.app.ui.icons.MediaSourceIcons
+import me.him188.ani.app.ui.settings.rendering.MediaSourceIcons
 
 
 @Composable

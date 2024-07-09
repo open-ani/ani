@@ -4,7 +4,7 @@ import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import me.him188.ani.app.data.repositories.SettingsRepository
+import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.tools.torrent.engines.AnitorrentEngine
 import me.him188.ani.app.tools.torrent.engines.Libtorrent4jEngine
