@@ -24,7 +24,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import me.him188.ani.app.data.model.subject.RatingInfo
+import me.him188.ani.app.data.models.subject.RatingInfo
 
 @Composable
 fun Rating(

@@ -9,11 +9,11 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.runBlocking
-import me.him188.ani.app.data.model.episode.EpisodeCollection
-import me.him188.ani.app.data.model.episode.EpisodeInfo
-import me.him188.ani.app.data.model.subject.SelfRatingInfo
-import me.him188.ani.app.data.model.subject.SubjectCollection
-import me.him188.ani.app.data.model.subject.SubjectInfo
+import me.him188.ani.app.data.models.episode.EpisodeCollection
+import me.him188.ani.app.data.models.episode.EpisodeInfo
+import me.him188.ani.app.data.models.subject.SelfRatingInfo
+import me.him188.ani.app.data.models.subject.SubjectCollection
+import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.data.source.media.EpisodeCacheStatus
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.tools.caching.mutate

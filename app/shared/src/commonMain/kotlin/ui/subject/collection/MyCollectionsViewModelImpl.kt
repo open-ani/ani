@@ -7,8 +7,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import me.him188.ani.app.data.model.subject.SubjectCollection
-import me.him188.ani.app.data.model.subject.SubjectManager
+import me.him188.ani.app.data.models.subject.SubjectCollection
+import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.persistent.preference.MyCollectionsSettings
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.media.EpisodeCacheStatus

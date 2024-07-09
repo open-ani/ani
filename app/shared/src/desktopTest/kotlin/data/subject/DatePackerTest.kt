@@ -1,6 +1,6 @@
 package me.him188.ani.app.data.subject
 
-import me.him188.ani.app.data.model.DatePacker
+import me.him188.ani.app.data.models.DatePacker
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

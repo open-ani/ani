@@ -3,10 +3,10 @@ package me.him188.ani.app.data.repository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
-import me.him188.ani.app.data.model.PackedDate
-import me.him188.ani.app.data.model.episode.EpisodeInfo
-import me.him188.ani.app.data.model.episode.EpisodeType
-import me.him188.ani.app.data.model.subject.SubjectManager
+import me.him188.ani.app.data.models.PackedDate
+import me.him188.ani.app.data.models.episode.EpisodeInfo
+import me.him188.ani.app.data.models.episode.EpisodeType
+import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.paging.PageBasedPagedSource
 import me.him188.ani.datasources.api.paging.Paged

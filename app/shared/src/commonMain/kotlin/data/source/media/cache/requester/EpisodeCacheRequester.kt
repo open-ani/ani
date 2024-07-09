@@ -7,9 +7,9 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import me.him188.ani.app.data.model.episode.EpisodeInfo
-import me.him188.ani.app.data.model.subject.SubjectInfo
-import me.him188.ani.app.data.model.subject.SubjectManager
+import me.him188.ani.app.data.models.episode.EpisodeInfo
+import me.him188.ani.app.data.models.subject.SubjectInfo
+import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.source.media.cache.MediaCache
 import me.him188.ani.app.data.source.media.cache.MediaCacheStorage
 import me.him188.ani.app.data.source.media.cache.contains

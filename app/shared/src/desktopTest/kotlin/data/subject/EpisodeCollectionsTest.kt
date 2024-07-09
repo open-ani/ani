@@ -1,7 +1,7 @@
 package me.him188.ani.app.data.subject
 
-import me.him188.ani.app.data.model.PackedDate
-import me.him188.ani.app.data.model.episode.EpisodeCollections
+import me.him188.ani.app.data.models.PackedDate
+import me.him188.ani.app.data.models.episode.EpisodeCollections
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import kotlin.test.assertFalse

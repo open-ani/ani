@@ -6,8 +6,8 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.transformLatest
-import me.him188.ani.app.data.model.episode.EpisodeInfo
-import me.him188.ani.app.data.model.episode.displayName
+import me.him188.ani.app.data.models.episode.EpisodeInfo
+import me.him188.ani.app.data.models.episode.displayName
 import me.him188.ani.app.data.source.media.resolver.EpisodeMetadata
 import me.him188.ani.app.data.source.media.resolver.ResolutionFailures
 import me.him188.ani.app.data.source.media.resolver.TorrentVideoSource

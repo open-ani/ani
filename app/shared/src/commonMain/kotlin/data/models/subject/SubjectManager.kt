@@ -1,4 +1,4 @@
-package me.him188.ani.app.data.model.subject
+package me.him188.ani.app.data.models.subject
 
 import androidx.compose.runtime.Stable
 import androidx.datastore.core.DataStoreFactory
@@ -22,12 +22,12 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.flow.transform
-import me.him188.ani.app.data.model.episode.EpisodeCollection
-import me.him188.ani.app.data.model.episode.EpisodeCollections
-import me.him188.ani.app.data.model.episode.EpisodeInfo
-import me.him188.ani.app.data.model.episode.episode
-import me.him188.ani.app.data.model.episode.isKnownOnAir
-import me.him188.ani.app.data.model.episode.type
+import me.him188.ani.app.data.models.episode.EpisodeCollection
+import me.him188.ani.app.data.models.episode.EpisodeCollections
+import me.him188.ani.app.data.models.episode.EpisodeInfo
+import me.him188.ani.app.data.models.episode.episode
+import me.him188.ani.app.data.models.episode.isKnownOnAir
+import me.him188.ani.app.data.models.episode.type
 import me.him188.ani.app.data.repository.BangumiEpisodeRepository
 import me.him188.ani.app.data.repository.BangumiSubjectRepository
 import me.him188.ani.app.data.repository.setSubjectCollectionTypeOrDelete

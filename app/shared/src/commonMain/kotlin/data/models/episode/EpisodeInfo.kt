@@ -1,9 +1,9 @@
-package me.him188.ani.app.data.model.episode
+package me.him188.ani.app.data.models.episode
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
-import me.him188.ani.app.data.model.PackedDate
+import me.him188.ani.app.data.models.PackedDate
 import me.him188.ani.datasources.api.EpisodeSort
 
 /**

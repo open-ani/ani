@@ -26,8 +26,8 @@ import me.him188.ani.app.data.media.framework.TestMediaSelector
 import me.him188.ani.app.data.media.instance.createTestMediaSourceInstance
 import me.him188.ani.app.data.media.selector.MediaSelector
 import me.him188.ani.app.data.media.selector.MediaSelectorFactory
-import me.him188.ani.app.data.model.episode.EpisodeInfo
-import me.him188.ani.app.data.model.subject.SubjectInfo
+import me.him188.ani.app.data.models.episode.EpisodeInfo
+import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.ui.framework.runComposeStateTest
 import me.him188.ani.app.ui.framework.takeSnapshot
 import me.him188.ani.datasources.api.EpisodeSort

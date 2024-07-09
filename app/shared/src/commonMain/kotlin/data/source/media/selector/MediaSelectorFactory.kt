@@ -2,8 +2,8 @@ package me.him188.ani.app.data.source.media.selector
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import me.him188.ani.app.data.model.subject.SubjectManager
-import me.him188.ani.app.data.model.subject.subjectCompletedFlow
+import me.him188.ani.app.data.models.subject.SubjectManager
+import me.him188.ani.app.data.models.subject.subjectCompletedFlow
 import me.him188.ani.app.data.repository.EpisodePreferencesRepository
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.media.MediaSourceManager

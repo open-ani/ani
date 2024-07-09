@@ -1,11 +1,11 @@
 @file:Suppress("NOTHING_TO_INLINE")
 
-package me.him188.ani.app.data.model
+package me.him188.ani.app.data.models
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
-import me.him188.ani.app.data.model.PackedDate.Companion.Invalid
+import me.him188.ani.app.data.models.PackedDate.Companion.Invalid
 import java.util.Calendar
 import java.util.TimeZone
 import kotlin.contracts.InvocationKind

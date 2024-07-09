@@ -26,10 +26,10 @@ import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
-import me.him188.ani.app.data.model.episode.EpisodeInfo
-import me.him188.ani.app.data.model.episode.displayName
-import me.him188.ani.app.data.model.subject.SubjectInfo
-import me.him188.ani.app.data.model.subject.nameCnOrName
+import me.him188.ani.app.data.models.episode.EpisodeInfo
+import me.him188.ani.app.data.models.episode.displayName
+import me.him188.ani.app.data.models.subject.SubjectInfo
+import me.him188.ani.app.data.models.subject.nameCnOrName
 import me.him188.ani.app.data.source.media.instance.MediaSourceInstance
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.datasources.api.Media

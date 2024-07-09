@@ -1,9 +1,9 @@
 package me.him188.ani.app.data.subject
 
-import me.him188.ani.app.data.model.PackedDate
-import me.him188.ani.app.data.model.episode.EpisodeInfo
-import me.him188.ani.app.data.model.subject.SubjectAiringInfo
-import me.him188.ani.app.data.model.subject.SubjectAiringKind
+import me.him188.ani.app.data.models.PackedDate
+import me.him188.ani.app.data.models.episode.EpisodeInfo
+import me.him188.ani.app.data.models.subject.SubjectAiringInfo
+import me.him188.ani.app.data.models.subject.SubjectAiringKind
 import me.him188.ani.datasources.api.EpisodeSort
 import kotlin.test.Test
 import kotlin.test.assertEquals

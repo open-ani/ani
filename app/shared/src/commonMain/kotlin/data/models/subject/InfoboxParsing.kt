@@ -1,4 +1,4 @@
-package me.him188.ani.app.data.model.subject
+package me.him188.ani.app.data.models.subject
 
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement

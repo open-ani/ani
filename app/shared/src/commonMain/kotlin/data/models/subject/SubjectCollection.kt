@@ -1,12 +1,12 @@
-package me.him188.ani.app.data.model.subject
+package me.him188.ani.app.data.models.subject
 
 import androidx.compose.runtime.Immutable
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import me.him188.ani.app.data.model.episode.EpisodeCollection
-import me.him188.ani.app.data.model.episode.episode
-import me.him188.ani.app.data.model.episode.isKnownCompleted
-import me.him188.ani.app.data.model.episode.type
+import me.him188.ani.app.data.models.episode.EpisodeCollection
+import me.him188.ani.app.data.models.episode.episode
+import me.him188.ani.app.data.models.episode.isKnownCompleted
+import me.him188.ani.app.data.models.episode.type
 import me.him188.ani.app.ui.subject.collection.ContinueWatchingStatus
 import me.him188.ani.app.ui.subject.details.components.renderSubjectSeason
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType

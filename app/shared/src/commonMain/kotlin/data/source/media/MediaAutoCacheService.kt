@@ -13,11 +13,11 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
-import me.him188.ani.app.data.model.episode.EpisodeCollection
-import me.him188.ani.app.data.model.episode.episode
-import me.him188.ani.app.data.model.episode.isKnownCompleted
-import me.him188.ani.app.data.model.subject.SubjectCollection
-import me.him188.ani.app.data.model.subject.SubjectManager
+import me.him188.ani.app.data.models.episode.EpisodeCollection
+import me.him188.ani.app.data.models.episode.episode
+import me.him188.ani.app.data.models.episode.isKnownCompleted
+import me.him188.ani.app.data.models.subject.SubjectCollection
+import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.persistent.preference.MediaCacheSettings
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.media.cache.MediaCacheStorage

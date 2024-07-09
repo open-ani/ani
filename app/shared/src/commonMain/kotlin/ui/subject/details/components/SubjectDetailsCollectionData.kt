@@ -10,7 +10,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import me.him188.ani.app.data.model.subject.SubjectCollectionStats
+import me.him188.ani.app.data.models.subject.SubjectCollectionStats
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
 import me.him188.ani.app.ui.subject.collection.CollectionActionButton
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType

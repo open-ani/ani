@@ -1,4 +1,4 @@
-package me.him188.ani.app.data.model.episode
+package me.him188.ani.app.data.models.episode
 
 import androidx.compose.runtime.Immutable
 import kotlinx.serialization.Serializable

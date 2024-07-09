@@ -28,10 +28,10 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
-import me.him188.ani.app.data.model.episode.displayName
-import me.him188.ani.app.data.model.subject.SubjectManager
-import me.him188.ani.app.data.model.subject.episodeInfoFlow
-import me.him188.ani.app.data.model.subject.subjectInfoFlow
+import me.him188.ani.app.data.models.episode.displayName
+import me.him188.ani.app.data.models.subject.SubjectManager
+import me.him188.ani.app.data.models.subject.episodeInfoFlow
+import me.him188.ani.app.data.models.subject.subjectInfoFlow
 import me.him188.ani.app.data.persistent.preference.VideoScaffoldConfig
 import me.him188.ani.app.data.repository.EpisodePreferencesRepository
 import me.him188.ani.app.data.repository.SettingsRepository

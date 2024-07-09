@@ -2,7 +2,7 @@ package me.him188.ani.app.ui.subject.episode
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
-import me.him188.ani.app.data.model.subject.SubjectInfo
+import me.him188.ani.app.data.models.subject.SubjectInfo
 
 @Immutable
 class SubjectPresentation(
