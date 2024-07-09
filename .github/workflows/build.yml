@@ -28,24 +28,28 @@ jobs:
             arch: x64
             anitorrent: true
             anitorrent_separate_build: false # windows 单线程构建 anitorrent, 要一起跑节约时间
+            compose_resource_triple: windows-x64
           - os: ubuntu-20.04
             name: Ubuntu x86_64
             uploadApk: false
             arch: x64
             anitorrent: false
             anitorrent_separate_build: false
+            compose_resource_triple: linux-x64
           - os: macos-12
             name: macOS x86_64
             uploadApk: false
             arch: x64
             anitorrent: true
             anitorrent_separate_build: true # macOS 构建快, 先构建 anitorrent, 再 assemble
+            compose_resource_triple: macos-x64
           - os: macos-14
             name: macOS aarch64
             uploadApk: true
             arch: aarch64
             anitorrent: true
             anitorrent_separate_build: true
+            compose_resource_triple: macos-arm64
     env:
       enableLocalPublishingTest: 'false'
       gradleArgs: >-
@@ -86,7 +90,7 @@ jobs:
       - if: ${{ env.isWindows == 'true' }}
         name: Install Native Dependencies
         run: ./ci-helper/install-deps-windows.cmd
-      
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
@@ -141,55 +145,31 @@ jobs:
 
       - name: Package
         run: ./gradlew createDistributable ${{ env.gradleArgs }}
-      
-      #        continue-on-error: true
 
-      #      - if: ${{ env.isMac == 'true' }}
-      #        name: Upload error logs
-      #        uses: actions/upload-artifact@v3
-      #        with:
-      #          name: errors-${{ matrix.os }}
-      #          path: desktop/build/compose/logs/
-      #        continue-on-error: true
+      - if: ${{ matrix.anitorrent == 'true' }}
+        name: Upload Anitorrent CMakeCache.txt
+        uses: actions/upload-artifact@v4
+        with:
+          name: anitorrent-cmake-cache-${{ matrix.os }}-${{ matrix.arch }}
+          path: torrent/anitorrent/build-ci/CMakeCache.txt
+
+      - if: ${{ matrix.anitorrent == 'true' }}
+        name: Anitorrent ${{ matrix.os }}-${{ matrix.arch }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: anitorrent-${{ matrix.os }}-${{ matrix.arch }}
+          path: app/desktop/appResources/${{ matrix.compose_resource_triple }}/anitorrent
 
       - if: ${{ env.isMac == 'true' }}
         name: Upload macOS packages
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: ani-macos
-          path: desktop/build/compose/binaries/main/app
-
-      - if: ${{ env.isMac == 'true' }}
-        name: Upload macOS packages
-        uses: actions/upload-artifact@v3
-        with:
-          name: ani-macos-installer
-          path: desktop/build/compose/binaries/main/dmg
-
-      - if: ${{ env.isUbuntu == 'true' }}
-        name: Upload Linux packages
-        uses: actions/upload-artifact@v3
-        with:
-          name: ani-linux
-          path: desktop/build/compose/binaries/main/app
-
-      - if: ${{ env.isUbuntu == 'true' }}
-        name: Upload Linux packages
-        uses: actions/upload-artifact@v3
-        with:
-          name: ani-ubuntu-installer
-          path: desktop/build/compose/binaries/main/deb
-
-      - if: ${{ env.isUbuntu == 'true' }}
-        name: Upload Linux packages
-        uses: actions/upload-artifact@v3
-        with:
-          name: ani-redhat-installer
-          path: desktop/build/compose/binaries/main/rpm
+          name: ani-macos-dmg
+          path: app/desktop/build/compose/binaries/main-release/app/dmg
 
       - if: ${{ env.isWindows == 'true' }}
         name: Upload Windows packages
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: ani-windows
-          path: desktop/build/compose/binaries/main/app
+          name: ani-windows-portable
+          path: app/desktop/build/compose/binaries/main-release/app
