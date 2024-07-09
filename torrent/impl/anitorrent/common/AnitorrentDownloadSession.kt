@@ -407,7 +407,7 @@ class AnitorrentDownloadSession(
                     handle.set_piece_deadline(
                         pieceIndex,
                         // 最高优先级下载第一个. 第一个有可能会是 seek 之后的.
-                        (pieceIndex - firstIndex) * 400, // ms TODO 实际上我们应当根据 piece 的大小, 或者更精确地说, 根据每一帧的大致大小来计算
+                        (pieceIndex - firstIndex) * 300, // ms TODO 实际上我们应当根据 piece 的大小, 或者更精确地说, 根据每一帧的大致大小来计算
                     )
                 }
             }
