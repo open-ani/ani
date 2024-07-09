@@ -64,7 +64,7 @@
 1. 设置 Git 使用 LF 并忽略文件权限
    ```shell
    git config core.autocrlf false
-   git config core.eol crlf
+   git config core.eol lf
    git config core.filemode false
    git add --update --renormalize
    ```
