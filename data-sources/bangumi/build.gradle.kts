@@ -138,6 +138,7 @@ private fun stripP1Api(path: String): File {
         "Subject",
         "Reaction",
         "Reply",
+        "SubReply",
     )
     val schemas = components["schemas"].cast<Map<String, *>>().toMutableMap()
     val keepSchemas = schemas.filter { (component, _) -> component in keepSchemaKeys }
@@ -156,18 +157,10 @@ private fun stripP1Api(path: String): File {
 }
 
 val fixGeneratedOpenApi = tasks.register("fixGeneratedOpenApi") {
-    dependsOn(generateApiV0, generateApiP1)
-
-    val modelsV0 = layout
-        .buildDirectory
-        .file("$generatedRoot/src/commonMain/kotlin/me/him188/ani/datasources/bangumi/models/")
-        .get()
-        .asFile
-    val modelsP1 = layout
-        .buildDirectory
-        .file("$generatedRoot/src/commonMain/kotlin/me/him188/ani/datasources/bangumi/next/models/")
-        .get()
-        .asFile
+    dependsOn(tasks.withType(GenerateTask::class))
+    val models =
+        layout.buildDirectory.file("$generatedRoot/src/commonMain/kotlin/me/him188/ani/datasources/bangumi/models/")
+            .get().asFile
     
 
 //    inputs.file(file)
@@ -176,18 +169,15 @@ val fixGeneratedOpenApi = tasks.register("fixGeneratedOpenApi") {
 //        models.resolve("BangumiValue.kt").readText() == expected
 //    }
     doLast {
-        modelsV0.resolve("BangumiValue.kt").writeText(
+        models.resolve("BangumiValue.kt").writeText(
             """
                 package me.him188.ani.datasources.bangumi.models
                 
                 typealias BangumiValue = kotlinx.serialization.json.JsonElement
             """.trimIndent(),
         )
-        modelsV0.resolve("BangumiEpisodeCollectionType.kt").delete()
-        modelsV0.resolve("BangumiSubjectCollectionType.kt").delete()
-
-        modelsP1.resolve("BangumiNextListGroupMembersByNameTypeParameter.kt").delete()
-        modelsP1.resolve("BangumiNextPatchEpisodeWikiInfoRequestEpisodeType.kt").delete()
+        models.resolve("BangumiEpisodeCollectionType.kt").delete()
+        models.resolve("BangumiSubjectCollectionType.kt").delete()
     }
 }
 
