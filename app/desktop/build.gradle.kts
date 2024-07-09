@@ -18,6 +18,7 @@
 
 import com.android.utils.CpuArchitecture
 import com.android.utils.osArchitecture
+import com.google.gson.Gson
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import java.util.UUID
 
@@ -147,12 +148,14 @@ val copyAnitorrentDylibToResources = tasks.register("copyAnitorrentDylibToResour
     dependsOn(":torrent:anitorrent:buildAnitorrent")
 
     val buildType = getPropertyOrNull("CMAKE_BUILD_TYPE") ?: "Debug"
-    
+
+    val libRelative = "anitorrent/lib"
+
     when (getOs()) {
         Os.Windows -> {
             from(anitorrentBuildDir.resolve("$buildType/anitorrent.dll"))
             from(anitorrentBuildDir.resolve("_deps/libtorrent-build/$buildType/torrent-rasterbar.dll"))
-            into(projectDir.resolve("appResources/windows-x64"))
+            into(projectDir.resolve("appResources/windows-x64").resolve(libRelative))
         }
 
         Os.MacOS -> {
@@ -169,27 +172,106 @@ val copyAnitorrentDylibToResources = tasks.register("copyAnitorrentDylibToResour
                 projectDir.resolve(
                     if (isArm) "appResources/macos-arm64"
                     else "appResources/macos-x64",
-                ),
+                ).resolve(libRelative),
             )
         }
 
         Os.Unknown, Os.Linux -> {
             from(anitorrentBuildDir.resolve("libanitorrent.so"))
             from(anitorrentBuildDir.resolve("_deps/libtorrent-build/libtorrent-rasterbar.2.0.10.so"))
-            into(projectDir.resolve("appResources/linux-x64"))
+            into(projectDir.resolve("appResources/linux-x64").resolve(libRelative))
         }
     }
 }
 
+// 复制 anitorrent cmake 构建出来的东西, 以及依赖的库到 appResources, 然后创建一个 anitorrent.deps.json 文件
+val createDependencyManifest = tasks.register("createDependencyManifest") {
+    dependsOn(":torrent:anitorrent:buildAnitorrent")
+    val cmakeCache = anitorrentBuildDir.resolve("CMakeCache.txt")
+    if (cmakeCache.exists()) {
+        inputs.file(cmakeCache)
+    }
+
+    val projectDir = projectDir
+    val depsFile = file("appResources/${getOsTriple()}/anitorrent/anitorrent.deps.json")
+    outputs.file(depsFile)
+    val targetDir = file("appResources/${getOsTriple()}/anitorrent/lib")
+    outputs.dir(targetDir)
+
+    val buildType = getPropertyOrNull("CMAKE_BUILD_TYPE") ?: "Debug"
+    inputs.property("buildType", buildType)
+
+    val anitorrentBuildDir = anitorrentBuildDir
+
+    doLast {
+        fun parseCMakeCache(cmakeCache: File): Map<String, String> {
+            return cmakeCache.readText().lines().filterNot { it.startsWith("#") }.mapNotNull {
+                val parts = it.split("=", limit = 2)
+                if (parts.size != 2) return@mapNotNull null
+                parts[0].trim() to parts[1].trim()
+            }.toMap()
+        }
+
+        val map = parseCMakeCache(cmakeCache)
+
+        fun Map<String, String>.getOrFail(key: String): String {
+            return this[key] ?: error("Key $key not found in CMakeCache")
+        }
+
+        val libraries = mutableMapOf(
+            "OPENSSL_CRYPTO_LIBRARY" to File(map.getOrFail("OPENSSL_CRYPTO_LIBRARY:FILEPATH")),
+            "OPENSSL_SSL_LIBRARY" to File(map.getOrFail("OPENSSL_SSL_LIBRARY:FILEPATH")),
+        )
+
+        when (getOs()) {
+            Os.Windows -> {
+                if (anitorrentBuildDir.resolve("_deps/libtorrent-build/$buildType/torrent-rasterbar.dll").exists()) {
+                    libraries["LIBTORRENT_RASTERBAR"] =
+                        anitorrentBuildDir.resolve("_deps/libtorrent-build/$buildType/torrent-rasterbar.dll")
+                    libraries["ANITORRENT"] = anitorrentBuildDir.resolve("$buildType/anitorrent.dll")
+                } else {
+                    libraries["LIBTORRENT_RASTERBAR"] =
+                        anitorrentBuildDir.resolve("_deps/libtorrent-build/torrent-rasterbar.dll")
+                    libraries["ANITORRENT"] = anitorrentBuildDir.resolve("anitorrent.dll")
+                }
+            }
+
+            Os.MacOS -> {
+                libraries["LIBTORRENT_RASTERBAR"] =
+                    anitorrentBuildDir.resolve("_deps/libtorrent-build/libtorrent-rasterbar.2.0.10.dylib")
+                libraries["ANITORRENT"] = anitorrentBuildDir.resolve("libanitorrent.dylib")
+            }
+
+            Os.Unknown, Os.Linux -> {
+                libraries["LIBTORRENT_RASTERBAR"] =
+                    anitorrentBuildDir.resolve("_deps/libtorrent-build/libtorrent-rasterbar.2.0.10.so")
+                libraries["ANITORRENT"] = anitorrentBuildDir.resolve("libanitorrent.so")
+            }
+        }
+
+
+        depsFile.writeText(Gson().toJson(libraries.mapValues { it.value.name }))
+
+        for (library in libraries.values) {
+            logger.info("Copying '$library' to '$targetDir'")
+            library.toPath().toRealPath().toFile().copyTo(
+                targetDir.resolve(projectDir.resolve(library).name),
+                overwrite = true,
+            )
+        }
+    }
+}
+
+
 if (enableAnitorrent) {
     tasks.named("processResources") {
-        dependsOn(copyAnitorrentDylibToResources)
+        dependsOn(copyAnitorrentDylibToResources, createDependencyManifest)
     }
 
 //  Reason: Task ':app:desktop:prepareAppResources' uses this output of task ':app:desktop:copyAnitorrentCppWrapperToResources' without declaring an explicit or implicit dependency. This can lead to incorrect results being produced, depending on what order the tasks are executed.
     afterEvaluate {
         tasks.named("prepareAppResources") {
-            dependsOn(copyAnitorrentDylibToResources)
+            dependsOn(copyAnitorrentDylibToResources, createDependencyManifest)
         }
     }
 } else {

@@ -1,11 +1,3 @@
 /test-sandbox
 
-
-/appResources/macos-arm64/libanitorrent.dylib
-/appResources/macos-arm64/libtorrent-rasterbar.2.0.10.dylib
-
-/appResources/macos-x64/libanitorrent.dylib
-/appResources/macos-x64/libtorrent-rasterbar.2.0.10.dylib
-
-/appResources/windows-x64/anitorrent.dll
-/appResources/windows-x64/torrent-rasterbar.dll
+/appResources/**/anitorrent
