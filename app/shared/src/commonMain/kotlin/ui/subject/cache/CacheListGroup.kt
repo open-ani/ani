@@ -258,12 +258,6 @@ fun SettingsScope.EpisodeCacheItem(
             }
         },
         action = {
-            if (!episode.info.hasPublished) {
-                CompositionLocalProvider(LocalContentColor provides colorByWatchStatus) {
-                    Text("未开播")
-                }
-                return@TextItem
-            }
             dropdown()
 
             CompositionLocalProvider(LocalContentColor provides colorByWatchStatus) {
