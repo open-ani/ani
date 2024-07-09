@@ -215,10 +215,14 @@ val createDependencyManifest = tasks.register("createDependencyManifest") {
             return this[key] ?: error("Key $key not found in CMakeCache")
         }
 
-        val libraries = mutableMapOf(
-            "OPENSSL_CRYPTO_LIBRARY" to File(map.getOrFail("OPENSSL_CRYPTO_LIBRARY:FILEPATH")),
-            "OPENSSL_SSL_LIBRARY" to File(map.getOrFail("OPENSSL_SSL_LIBRARY:FILEPATH")),
-        )
+        val libraries = buildMap {
+            map["OPENSSL_CRYPTO_LIBRARY:FILEPATH"]?.let {
+                put("OPENSSL_CRYPTO_LIBRARY", File(it))
+            }
+            map["OPENSSL_SSL_LIBRARY:FILEPATH"]?.let {
+                put("OPENSSL_SSL_LIBRARY", File(it))
+            }
+        }.toMutableMap()
 
         when (getOs()) {
             Os.Windows -> {
