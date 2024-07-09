@@ -154,10 +154,10 @@ jobs:
           path: torrent/anitorrent/build-ci/CMakeCache.txt
 
       - if: ${{ matrix.anitorrent }}
-        name: Anitorrent ${{ matrix.os }}-${{ matrix.arch }}
+        name: Upload Anitorrent ${{ matrix.compose_resource_triple }}
         uses: actions/upload-artifact@v4
         with:
-          name: anitorrent-${{ matrix.os }}-${{ matrix.arch }}
+          name: anitorrent-${{ matrix.compose_resource_triple }}
           path: app/desktop/appResources/${{ matrix.compose_resource_triple }}/anitorrent
 
       - if: ${{ env.isMac == 'true' }}
