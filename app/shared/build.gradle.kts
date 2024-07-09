@@ -63,6 +63,9 @@ compose.resources {
     generateResClass = always
 }
 
+val enableAnitorrent =
+    (getPropertyOrNull("ani.enable.anitorrent") ?: "false").toBooleanStrict()
+
 kotlin {
     sourceSets.commonMain.dependencies {
         api(libs.kotlinx.coroutines.core)
@@ -268,8 +271,9 @@ kotlin {
 
         submodule("torrent/api")
         submodule("torrent/impl/libtorrent4j")
-        submodule("torrent/impl/qbittorrent")
-        submodule("torrent/impl/anitorrent")
+        if (enableAnitorrent) {
+            submodule("torrent/impl/anitorrent")
+        }
 
         submodule("app/shared/placeholder")
         submodule("app/shared/video-player")
@@ -436,9 +440,6 @@ val generateAniBuildConfigDesktop = tasks.register("generateAniBuildConfigDeskto
         file.writeText(text)
     }
 }
-
-val enableAnitorrent =
-    (getPropertyOrNull("ani.enable.anitorrent") ?: "false").toBooleanStrict()
 
 tasks.named("compileKotlinDesktop") {
     dependsOn(generateAniBuildConfigDesktop)

@@ -3,6 +3,7 @@ package me.him188.ani.app.tools.torrent.engines
 import io.ktor.client.plugins.UserAgent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
@@ -14,12 +15,14 @@ import me.him188.ani.app.platform.versionCode
 import me.him188.ani.app.tools.torrent.AbstractTorrentEngine
 import me.him188.ani.app.tools.torrent.TorrentEngineConfig
 import me.him188.ani.app.tools.torrent.TorrentEngineType
-import me.him188.ani.app.torrent.anitorrent.AnitorrentLibraryLoader
-import me.him188.ani.app.torrent.anitorrent.AnitorrentTorrentDownloader
+import me.him188.ani.app.torrent.api.TorrentDownloader
 import me.him188.ani.app.torrent.api.TorrentDownloaderConfig
+import me.him188.ani.app.torrent.api.TorrentDownloaderFactory
 import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.utils.ktor.createDefaultHttpClient
 import me.him188.ani.utils.logging.error
+import me.him188.ani.utils.logging.info
+import me.him188.ani.utils.logging.warn
 import java.io.File
 
 @Serializable
@@ -31,24 +34,34 @@ class AnitorrentConfig(
     }
 }
 
+// 只有启用构建 (gradle property `ani.enable.anitorrent=true`) 后才会启用 anitorrent 所在目录
+private val anitorrentFactory = java.util.ServiceLoader.load(TorrentDownloaderFactory::class.java)
+    .firstOrNull { it.name == "Anitorrent" }
+
 class AnitorrentEngine(
     scope: CoroutineScope,
     config: Flow<AnitorrentConfig>,
     private val saveDir: File,
-) : AbstractTorrentEngine<AnitorrentTorrentDownloader, AnitorrentConfig>(
+) : AbstractTorrentEngine<TorrentDownloader, AnitorrentConfig>(
     scope = scope,
     type = TorrentEngineType.Anitorrent,
     config = config,
 ) {
+    init {
+        if (anitorrentFactory == null) {
+            logger.warn { "anitorrentFactory not found" }
+        }
+    }
 
     override val location: MediaSourceLocation get() = MediaSourceLocation.Local
     override val isSupported: Flow<Boolean>
-        get() = flowOf(currentPlatform.isDesktop() && tryLoadLibraries())
+        get() = flowOf(anitorrentFactory != null && currentPlatform.isDesktop() && tryLoadLibraries())
     override val isEnabled: Flow<Boolean> get() = config.map { it.enabled }
 
     private fun tryLoadLibraries(): Boolean {
         try {
-            AnitorrentLibraryLoader.loadLibraries()
+            anitorrentFactory!!.libraryLoader.loadLibraries()
+            logger.info { "Loaded libraries for AnitorrentEngine" }
             return true
         } catch (e: Throwable) {
             logger.error(e) { "Failed to load libraries for AnitorrentEngine" }
@@ -58,14 +71,18 @@ class AnitorrentEngine(
 
     override suspend fun testConnection(): Boolean = true
 
-    override suspend fun newInstance(config: AnitorrentConfig): AnitorrentTorrentDownloader {
+    override suspend fun newInstance(config: AnitorrentConfig): TorrentDownloader {
+        if (!isSupported.first()) {
+            logger.warn { "Anitorrent is disabled because it is not built. Read `/torrent/anitorrent/README.md` for more information." }
+            throw UnsupportedOperationException("AnitorrentEngine is not supported")
+        }
         val client = createDefaultHttpClient {
             install(UserAgent) {
                 agent = getAniUserAgent()
             }
             expectSuccess = true
         }
-        return AnitorrentTorrentDownloader(
+        return anitorrentFactory!!.createDownloader(
             rootDataDirectory = saveDir,
             client.asHttpFileDownloader(),
             TorrentDownloaderConfig(

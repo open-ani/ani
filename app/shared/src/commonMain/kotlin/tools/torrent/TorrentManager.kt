@@ -1,5 +1,6 @@
 package me.him188.ani.app.tools.torrent
 
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -7,6 +8,7 @@ import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.tools.torrent.engines.AnitorrentEngine
 import me.him188.ani.app.tools.torrent.engines.Libtorrent4jEngine
+import me.him188.ani.utils.coroutines.childScope
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.io.File
@@ -53,11 +55,19 @@ class DefaultTorrentManager(
     private val scope = CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
 
     override val libtorrent4j: Libtorrent4jEngine by lazy {
-        Libtorrent4jEngine(scope, libtorrent4jConfig, saveDir(TorrentEngineType.Libtorrent4j))
+        Libtorrent4jEngine(
+            scope.childScope(CoroutineName("Libtorrent4jEngine")),
+            libtorrent4jConfig,
+            saveDir(TorrentEngineType.Libtorrent4j),
+        )
     }
 
     override val anitorrent: AnitorrentEngine by lazy {
-        AnitorrentEngine(scope, settingsRepository.anitorrentConfig.flow, saveDir(TorrentEngineType.Anitorrent))
+        AnitorrentEngine(
+            scope.childScope(CoroutineName("AnitorrentEngine")),
+            settingsRepository.anitorrentConfig.flow,
+            saveDir(TorrentEngineType.Anitorrent),
+        )
     }
 
     override val engines: List<TorrentEngine> by lazy(LazyThreadSafetyMode.NONE) {

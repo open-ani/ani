@@ -11,12 +11,17 @@ SWIG 生成 JNI 接口供 Kotlin 对接.
 此文档仅适用于需要修改 torrent 功能的开发者. 如果你不需要修改 BT 功能代码, 在构建 Ani 测试时也无需使用
 BT 数据源, 则可以直接忽略本文档. Ani 的构建系统默认不会构建 Anitorrent.
 
-如果不希望构建 torrent, 但又想在本地构建 Ani
-PC 版时使用 BT 功能, 你可以从一个 Ani 安装包中的 `Contents/app/resources`
-中将以下文件复制到项目的 `/app/desktop/appResources/{os}-{arch}/` 里:
+[//]: # (如果不希望构建 torrent, 但又想在本地构建 Ani)
 
-- `libtorrent-rasterbar.2.0.10.dylib` (macOS) / `torrent-rasterbar.dll` (Windows)
-- `libanitorrent.dylib` (macOS) / `anitorrent.dll` (Windows)
+[//]: # (PC 版时使用 BT 功能, 你可以从一个 Ani 安装包中的 `Contents/app/resources`)
+
+[//]: # (中将以下文件复制到项目的 `/app/desktop/appResources/{os}-{arch}/` 里:)
+
+[//]: # ()
+
+[//]: # (- `libtorrent-rasterbar.2.0.10.dylib` &#40;macOS&#41; / `torrent-rasterbar.dll` &#40;Windows&#41;)
+
+[//]: # (- `libanitorrent.dylib` &#40;macOS&#41; / `anitorrent.dll` &#40;Windows&#41;)
 
 ## 安装依赖和配置
 
@@ -58,6 +63,7 @@ Windows 上构建 native 代码是*比较有挑战性*的. 使用 Visual Studio 
     - 使用 C++ 的桌面开发
     - 通用 Windows 平台开发
     - 用于 Windows 的 C++ CMake 工具
+   - Windows 11 SDK
     - MSVC v___ - VS 2022 C++ x64/x86 生成工具
 2. 安装 [Vcpkg](https://github.com/microsoft/vcpkg):
     ```shell
@@ -69,9 +75,10 @@ Windows 上构建 native 代码是*比较有挑战性*的. 使用 Visual Studio 
    @powershell -NoProfile -ExecutionPolicy Bypass -Command "[System.Net.WebRequest]::DefaultWebProxy.Credentials = [System.Net.CredentialCache]::DefaultCredentials; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))" && SET PATH="%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
    ```
 4. 确保 `vcpkg` 和 `choco` 可以直接在命令行使用, 否则尝试重启系统
-5. 安装 SWIG:
+5. 安装 SWIG 和 CMake:
    ```shell
    choco install swig -y
+   choco install cmake -y
    ```
 6. 执行安装脚本 [/ci-helper/install-deps-windows.cmd](../../ci-helper/install-deps-windows.cmd).
    不要跳过任何一步.
@@ -95,6 +102,9 @@ Windows 上构建 native 代码是*比较有挑战性*的. 使用 Visual Studio 
    ```properties
    ani.enable.anitorrent=true
    CMAKE_TOOLCHAIN_FILE=D:/vcpkg/scripts/buildsystems/vcpkg.cmake
+   
+   # 如果提示找不到 CMake, 就添加以下一行手动指定位置
+   CMAKE=C\:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe
    ```
 10. 完成. 现在可以运行 `./gradlew desktop:run` 测试, 或者在 IDE 右上角选择 "Run Desktop" 配置.
 

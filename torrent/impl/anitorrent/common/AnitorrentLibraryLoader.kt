@@ -3,6 +3,7 @@ package me.him188.ani.app.torrent.anitorrent
 import me.him188.ani.app.platform.Arch
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.currentPlatform
+import me.him188.ani.app.torrent.api.TorrentLibraryLoader
 import java.io.File
 
 private fun loadAnitorrentLibrary(libraryName: String) {
@@ -42,7 +43,7 @@ private fun loadAnitorrentLibrary(libraryName: String) {
     throw UnsatisfiedLinkError("Could not find anitorrent library: $filename")
 }
 
-object AnitorrentLibraryLoader {
+object AnitorrentLibraryLoader : TorrentLibraryLoader {
 
     @Volatile
     private var libraryLoaded = false
@@ -60,7 +61,7 @@ object AnitorrentLibraryLoader {
 
     @Synchronized
     @Throws(UnsatisfiedLinkError::class)
-    fun loadLibraries() {
+    override fun loadLibraries() {
         if (libraryLoaded) return
 
         try {
