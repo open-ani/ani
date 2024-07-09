@@ -25,7 +25,9 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.danmaku.DanmakuManager
 import me.him188.ani.app.data.danmaku.DanmakuManagerImpl
@@ -42,6 +44,7 @@ import me.him188.ani.app.data.media.cache.DirectoryMediaCacheStorage
 import me.him188.ani.app.data.media.createWithKoin
 import me.him188.ani.app.data.media.instance.MediaSourceSave
 import me.him188.ani.app.data.repositories.BangumiEpisodeRepository
+import me.him188.ani.app.data.repositories.BangumiRelatedCharactersRepository
 import me.him188.ani.app.data.repositories.BangumiSubjectRepository
 import me.him188.ani.app.data.repositories.EpisodePreferencesRepository
 import me.him188.ani.app.data.repositories.EpisodePreferencesRepositoryImpl
@@ -88,6 +91,7 @@ import me.him188.ani.utils.logging.warn
 import org.koin.core.KoinApplication
 import org.koin.dsl.module
 import java.util.UUID
+import kotlin.coroutines.CoroutineContext
 
 @Suppress("UnusedReceiverParameter") // bug
 fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScope: CoroutineScope) = module {
@@ -95,9 +99,15 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
     single<TokenRepository> { TokenRepositoryImpl(getContext().tokenStore) }
     single<EpisodePreferencesRepository> { EpisodePreferencesRepositoryImpl(getContext().preferredAllianceStore) }
     single<SessionManager> { SessionManagerImpl() }
-    single<BangumiClient> { createBangumiClient() }
+    single<BangumiClient> {
+        createBangumiClient(
+            get<SessionManager>().session.map { it?.accessToken },
+            coroutineScope.coroutineContext,
+        )
+    }
     single<SubjectProvider> { BangumiSubjectProvider(get<BangumiClient>()) }
     single<BangumiSubjectRepository> { RemoteBangumiSubjectRepository() }
+    single<BangumiRelatedCharactersRepository> { BangumiRelatedCharactersRepository(get()) }
     single<SubjectManager> { SubjectManagerImpl(getContext()) }
     single<UserRepository> { UserRepositoryImpl() }
     single<EpisodeRevisionRepository> { EpisodeRevisionRepositoryImpl() }
@@ -318,10 +328,15 @@ fun getAniUserAgent(
     platform: String = currentPlatform.nameAndArch,
 ): String = "open-ani/ani/$version ($platform) (https://github.com/open-ani/ani)"
 
-fun createBangumiClient(): BangumiClient {
+fun createBangumiClient(
+    bearerToken: Flow<String?>,
+    parentCoroutineContext: CoroutineContext,
+): BangumiClient {
     return BangumiClient.create(
         currentAniBuildConfig.bangumiOauthClientAppId,
         currentAniBuildConfig.bangumiOauthClientSecret,
+        bearerToken,
+        parentCoroutineContext,
     ) {
         install(UserAgent) {
             agent = getAniUserAgent(currentAniBuildConfig.versionName)

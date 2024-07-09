@@ -9,17 +9,16 @@ import androidx.compose.ui.Modifier
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.data.models.MediaCacheSettings
 import me.him188.ani.app.data.models.MediaSelectorSettings
+import me.him188.ani.app.data.models.VideoResolverSettings
 import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.app.tools.torrent.engines.Libtorrent4jConfig
-import me.him188.ani.app.tools.torrent.engines.QBittorrentConfig
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
 import me.him188.ani.app.ui.settings.framework.components.SelectableItem
-import me.him188.ani.app.ui.settings.framework.toConnectionTestResult
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.datasources.api.topic.Resolution
 import me.him188.ani.datasources.api.topic.SubtitleLanguage
@@ -96,6 +95,11 @@ class MediaSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
             settingsRepository.mediaCacheSettings.set(copy)
         }
     }
+    
+    val videoResolverSettings by settings(
+        settingsRepository.videoResolverSettings,
+        VideoResolverSettings.Default.copy(_placeholder = -1),
+    )
 
     ///////////////////////////////////////////////////////////////////////////
     // BT Engine
@@ -105,14 +109,6 @@ class MediaSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
         settingsRepository.libtorrent4jConfig,
         placeholder = Libtorrent4jConfig(placeholder = -1),
     )
-    val qBittorrentConfig by settings(
-        settingsRepository.qBittorrentConfig,
-        placeholder = QBittorrentConfig(placeholder = -1),
-    )
-
-    val qBitTester by connectionTester {
-        torrentManager.qBittorrent.testConnection().toConnectionTestResult()
-    }
 }
 
 @Composable
@@ -122,6 +118,7 @@ fun MediaPreferenceTab(
 ) {
     val navigator by rememberUpdatedState(LocalNavigator.current)
     SettingsTab(modifier) {
+        VideoResolverGroup(vm)
         AutoCacheGroup(vm, navigator)
         TorrentEngineGroup(vm)
         MediaSelectionGroup(vm)

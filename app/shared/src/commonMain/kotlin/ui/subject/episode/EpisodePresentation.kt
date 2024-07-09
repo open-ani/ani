@@ -4,8 +4,9 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import me.him188.ani.app.data.subject.EpisodeCollection
 import me.him188.ani.app.data.subject.EpisodeInfo
+import me.him188.ani.app.data.subject.displayName
 import me.him188.ani.app.data.subject.episode
-import me.him188.ani.app.data.subject.isKnownBroadcast
+import me.him188.ani.app.data.subject.isKnownCompleted
 import me.him188.ani.app.data.subject.nameCnOrName
 import me.him188.ani.app.data.subject.renderEpisodeEp
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
@@ -56,9 +57,9 @@ class EpisodePresentation(
 
 fun EpisodeCollection.toPresentation() = EpisodePresentation(
     episodeId = this.episode.id,
-    title = episode.nameCnOrName,
+    title = episode.displayName,
     ep = episode.renderEpisodeEp(),
     sort = episode.sort.toString(),
     collectionType = collectionType,
-    isKnownBroadcast = episode.isKnownBroadcast,
+    isKnownBroadcast = episode.isKnownCompleted,
 )

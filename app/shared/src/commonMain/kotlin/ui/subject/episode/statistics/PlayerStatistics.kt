@@ -194,7 +194,7 @@ fun PlayerStatistics(
 
                         VideoLoadingState.Initial -> Text("等待数据源")
                         VideoLoadingState.ResolvingSource -> Text("解析中")
-                        VideoLoadingState.Succeed -> {}
+                        is VideoLoadingState.Succeed -> {}
 
                         is VideoLoadingState.UnknownError -> Failed()
                     }

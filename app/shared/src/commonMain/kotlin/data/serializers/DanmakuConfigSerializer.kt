@@ -1,6 +1,7 @@
 package me.him188.ani.app.data.serializers
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.serialization.KSerializer
@@ -32,6 +33,7 @@ object DanmakuConfigSerializer : KSerializer<DanmakuConfig> {
     @Serializable
     private class DanmakuStyleData(
         val fontSize: Float = DanmakuStyle.Default.fontSize.value,
+        val fontWeight: Int = DanmakuStyle.Default.fontWeight.weight,
         val alpha: Float = DanmakuStyle.Default.alpha,
         val strokeColor: ULong = DanmakuStyle.Default.strokeColor.value,
         val strokeWidth: Float = DanmakuStyle.Default.strokeWidth,
@@ -45,6 +47,7 @@ object DanmakuConfigSerializer : KSerializer<DanmakuConfig> {
         return DanmakuConfig(
             style = DanmakuStyle(
                 fontSize = value.style.fontSize.sp,
+                fontWeight = FontWeight(value.style.fontWeight),
                 alpha = value.style.alpha,
                 strokeColor = Color(value.style.strokeColor),
                 strokeWidth = value.style.strokeWidth,
@@ -64,6 +67,7 @@ object DanmakuConfigSerializer : KSerializer<DanmakuConfig> {
         val data = DanmakuConfigData(
             style = DanmakuStyleData(
                 fontSize = value.style.fontSize.value,
+                fontWeight = value.style.fontWeight.weight,
                 alpha = value.style.alpha,
                 strokeColor = value.style.strokeColor.value,
                 strokeWidth = value.style.strokeWidth,

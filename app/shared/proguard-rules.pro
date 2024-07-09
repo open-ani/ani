@@ -51,6 +51,7 @@
 # Torrent4j
 -keep class org.libtorrent4j.swig.libtorrent_jni {*;}
 -keep class me.him188.ani.app.ui.settings.tabs.** {*;} # 否则设置页切换 tab 会 crash, #367
+-keep class me.him188.ani.app.ui.subject.cache.** {*;} # 否则点击缓存管理会 crash
 
 
 # logback-android
@@ -65,3 +66,7 @@
 -keep class ch.qos.logback.core.rolling.TimeBasedRollingPolicy
 #-keepattributes *Annotation* # logback-android 推荐添加, 但测试可以不用添加这个
 -dontwarn javax.mail.**
+
+
+# anitorrent
+-keep class me.him188.ani.app.torrent.anitorrent.binding.** { *; }

@@ -384,7 +384,7 @@ private class EpisodeViewModelImpl(
                                 subjectId = subjectId,
                                 subjectPrimaryName = subject.displayName,
                                 subjectNames = subject.allNames,
-                                subjectPublishDate = subject.publishDate,
+                                subjectPublishDate = subject.airDate,
                                 episodeId = episodeId.value,
                                 episodeSort = episode.sort,
                                 episodeEp = episode.ep,
@@ -546,7 +546,9 @@ sealed interface VideoLoadingState {
     /**
      * 文件成功找到
      */
-    data object Succeed : VideoLoadingState, Progressing
+    data class Succeed(
+        val isBt: Boolean,
+    ) : VideoLoadingState, Progressing
 
     sealed class Failed : VideoLoadingState
     data object ResolutionTimedOut : Failed()

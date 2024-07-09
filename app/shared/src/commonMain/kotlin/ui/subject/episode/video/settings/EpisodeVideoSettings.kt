@@ -18,6 +18,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.platform.currentAniBuildConfig
@@ -35,6 +36,7 @@ import me.him188.ani.danmaku.ui.DanmakuStyle
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.milliseconds
 
 @Stable
 interface EpisodeVideoSettingsViewModel {
@@ -73,7 +75,7 @@ private class EpisodeVideoSettingsViewModelImpl : EpisodeVideoSettingsViewModel,
     override val isLoading: Boolean get() = danmakuConfigSettings.loading
 
     override fun setDanmakuConfig(config: DanmakuConfig) {
-        danmakuConfigSettings.update(config)
+        danmakuConfigSettings.updateDebounced(config, 100.milliseconds)
     }
 
     override fun addDanmakuRegexFilter(filter: DanmakuRegexFilter) {
@@ -285,6 +287,27 @@ fun EpisodeVideoSettings(
                 steps = ((2f - 0f) / 0.1f).toInt() - 1,
                 title = { Text("描边宽度") },
                 valueLabel = { Text(remember(strokeWidth) { "${(strokeWidth * 100).roundToInt()}%" }) },
+                modifier = Modifier.placeholder(isLoadingState),
+            )
+
+            val fontWeight by remember(danmakuConfig) {
+                derivedStateOf {
+                    danmakuConfig.style.fontWeight.weight.toFloat()
+                }
+            }
+            SliderItem(
+                value = fontWeight,
+                onValueChange = {
+                    if (it != fontWeight) {
+                        setDanmakuConfig(
+                            danmakuConfig.copy(style = danmakuConfig.style.copy(fontWeight = FontWeight(it.toInt()))),
+                        )
+                    }
+                },
+                valueRange = 100f..900f,
+                steps = ((900 - 100) / 100) - 1,
+                title = { Text("弹幕字重") },
+                valueLabel = { Text(remember(fontWeight) { "${fontWeight.toInt()}" }) },
                 modifier = Modifier.placeholder(isLoadingState),
             )
 

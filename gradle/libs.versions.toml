@@ -1,15 +1,18 @@
 [versions]
 bencode = "1.4.1"
-jna = "5.12.1"
+jna = "5.13.0"
 kotlin = "2.0.0"
+# kotlinx
 coroutines = "1.8.1"
+serialization = "1.6.3"
+datetime = "0.6.0"
+atomicfu = "0.23.2"
+#
 kotlinpoet = "1.16.0"
 log4j-core = "2.20.0"
 okhttp = "4.12.0"
 playwright = "1.44.0"
 reorderable = "0.9.6"
-serialization = "1.6.3"
-atomicfu = "0.23.2"
 ktor = "2.3.10"
 koin = "3.5.3"
 slf4j = "2.0.12"
@@ -25,6 +28,7 @@ logback = "1.4.14"
 aws = "2.25.49"
 ksp = "2.0.0-1.0.21"
 room = "2.7.0-alpha03"
+snakeyaml = "2.2"
 sqlite = "2.5.0-alpha03"
 constraintlayout-compose = "0.4.0"
 
@@ -51,7 +55,7 @@ compose-multiplatfrom-gradle-plugin = { module = "org.jetbrains.compose:org.jetb
 #compose-multiplatfrom-compiler-plugin = { module = "org.jetbrains.compose:org.jetbrains.compose.compiler", version.ref = "compose-multiplatform-compiler" }
 
 # Kotlinx
-#kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "0.5.0" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "datetime" }
 kotlinpoet = { module = "com.squareup:kotlinpoet", version.ref = "kotlinpoet" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
@@ -94,6 +98,7 @@ koin-ktor = { module = "io.insert-koin:koin-ktor", version.ref = "koin" }
 
 # Yamlkt
 directories = { module = "dev.dirs:directories", version = "26" }
+snakeyaml = { module = "org.yaml:snakeyaml", version.ref = "snakeyaml" }
 
 # Logging
 log4j-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j-core" }

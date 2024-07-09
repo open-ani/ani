@@ -281,6 +281,22 @@ private fun TabContent(
     modifier: Modifier = Modifier,
     enableAnimation: () -> Boolean = { true },
 ) {
+    // 同时设置所有剧集为看过
+    var currentSetAllEpisodesDialogSubjectId by rememberSaveable { mutableStateOf<Int?>(null) }
+    if (currentSetAllEpisodesDialogSubjectId != null) {
+        SetAllEpisodeDoneDialog(
+            onDismissRequest = { currentSetAllEpisodesDialogSubjectId = null },
+            onConfirm = {
+                currentSetAllEpisodesDialogSubjectId?.let {
+                    vm.launchInBackground {
+                        setAllEpisodesWatched(it)
+                    }
+                }
+                currentSetAllEpisodesDialogSubjectId = null
+            },
+        )
+    }
+
     SubjectCollectionsColumn(
         cache,
         onRequestMore = onRequestMore,
@@ -319,11 +335,11 @@ private fun TabContent(
                 onClickSelectEpisode = {
                     showEpisodeProgressDialog = true
                 },
-                onSetAllEpisodesDone = {
-                    vm.launchInBackground { setAllEpisodesWatched(subjectCollection.subjectId) }
-                },
                 onSetCollectionType = {
                     vm.launchInBackground { setCollectionType(subjectCollection.subjectId, it) }
+                    if (it == UnifiedCollectionType.DONE) {
+                        currentSetAllEpisodesDialogSubjectId = subjectCollection.subjectId
+                    }
                 },
                 doneButton = if (type == UnifiedCollectionType.DONE) {
                     null
@@ -343,12 +359,12 @@ private fun TabContent(
             )
         },
         onEmpty = {
-            Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(Modifier.padding(contentPadding).fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
                 Spacer(Modifier.height(32.dp))
                 if (isLoggedIn == false) {
                     UnauthorizedTips(Modifier.fillMaxSize())
                 } else {
-                    Text("~ 空空如也 ~", style = MaterialTheme.typography.titleMedium)
+                    Text("~ 空空如也 ~\n请点击 \"找番\" 收藏条目", style = MaterialTheme.typography.titleMedium)
                 }
             }
         },

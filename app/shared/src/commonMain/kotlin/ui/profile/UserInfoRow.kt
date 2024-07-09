@@ -33,14 +33,14 @@ import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
-import org.openapitools.client.models.Avatar
-import org.openapitools.client.models.User
-import org.openapitools.client.models.UserGroup
+import me.him188.ani.datasources.bangumi.models.BangumiAvatar
+import me.him188.ani.datasources.bangumi.models.BangumiUser
+import me.him188.ani.datasources.bangumi.models.BangumiUserGroup
 
 
 @Composable
 fun UserInfoRow(
-    self: User?,
+    self: BangumiUser?,
     onClickEditNickname: () -> Unit,
     onClickSettings: () -> Unit,
     modifier: Modifier = Modifier,
@@ -128,9 +128,9 @@ fun UserInfoRow(
 }
 
 
-private val sampleUser = User(
+private val sampleUser = BangumiUser(
     username = "username",
-    avatar = Avatar(
+    avatar = BangumiAvatar(
         "https://example.com/avatar.jpg",
         "https://example.com/avatar.jpg",
         "https://example.com/avatar.jpg",
@@ -138,7 +138,7 @@ private val sampleUser = User(
     id = 1,
     nickname = "Nickname",
     sign = "Sign ".repeat(3),
-    userGroup = UserGroup.User,
+    userGroup = BangumiUserGroup.User,
 )
 
 @Preview

@@ -32,7 +32,7 @@ import me.him188.ani.app.data.media.selector.MediaSelectorFactory
 import me.him188.ani.app.data.models.MediaSelectorSettings
 import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.data.subject.SubjectManager
-import me.him188.ani.app.data.subject.isKnownBroadcast
+import me.him188.ani.app.data.subject.isKnownCompleted
 import me.him188.ani.app.data.subject.nameCnOrName
 import me.him188.ani.app.data.subject.subjectInfoFlow
 import me.him188.ani.app.navigation.LocalNavigator
@@ -105,7 +105,7 @@ class SubjectCacheViewModelImpl(
                             ep = episode.ep,
                             title = episode.nameCn,
                             watchStatus = episodeCollection.collectionType,
-                            hasPublished = episode.isKnownBroadcast,
+                            hasPublished = episode.isKnownCompleted,
                         ),
                     ),
                     cacheStatusFlow = cacheStatusFlow,

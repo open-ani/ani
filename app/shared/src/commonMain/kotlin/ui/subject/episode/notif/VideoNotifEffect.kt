@@ -35,7 +35,7 @@ fun VideoNotifEffect(vm: EpisodeViewModel) {
             scope.launch {
                 kotlin.runCatching {
                     val request = ImageRequest.Builder(coilContext)
-                        .data(vm.subjectPresentation.info.imageCommon)
+                        .data(vm.subjectPresentation.info.imageLarge)
                         .build()
 
                     (imageLoader.execute(request) as? SuccessResult)

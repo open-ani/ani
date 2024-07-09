@@ -47,7 +47,9 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import me.him188.ani.app.ui.foundation.rememberViewModel
-import me.him188.ani.app.ui.subject.search.SubjectPreviewColumn
+import me.him188.ani.app.ui.home.search.SearchViewModel
+import me.him188.ani.app.ui.home.search.SubjectPreviewColumn
+import me.him188.ani.app.ui.home.search.SubjectSearchBar
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.navigation.BackHandler
 
@@ -63,6 +65,9 @@ fun HomePage(
     val searchTag by searchViewModel.searchTags.collectAsStateWithLifecycle()
     val showDeleteTagTip = searchViewModel.oneshotActionConfig.deleteSearchTagTip
     val searchHistory by searchViewModel.searchHistories.collectAsStateWithLifecycle()
+    val nsfw by searchViewModel.nsfw
+    val airDate by searchViewModel.airDate.collectAsStateWithLifecycle()
+    val rating by searchViewModel.rating.collectAsStateWithLifecycle()
 
     val searchResult by searchViewModel.result.collectAsStateWithLifecycle()
 
@@ -88,11 +93,8 @@ fun HomePage(
                     contentPadding = contentPadding,
                     modifier = Modifier.fillMaxWidth(),
                     onActiveChange = { active -> searchViewModel.searchActive = active },
-                    onToggleTag = { tagId, selected -> searchViewModel.markSearchTag(tagId, selected) },
-                    onAddTag = { tag -> searchViewModel.pushSearchTag(tag) },
-                    onDeleteTag = { tagId -> searchViewModel.deleteSearchTag(tagId) },
+                    onSearchFilterEvent = { event -> searchViewModel.handleSearchFilterEvent(event) },
                     onDeleteHistory = { historyId -> searchViewModel.deleteSearchHistory(historyId) },
-                    onDisableDeleteTagTip = { searchViewModel.disableTagTip() },
                     onStartEditingTagMode = { isEditingSearchTags = true },
                     onSearch = { query, fromHistory ->
                         searchViewModel.editingQuery = query

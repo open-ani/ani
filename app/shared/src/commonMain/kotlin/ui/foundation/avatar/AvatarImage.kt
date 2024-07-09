@@ -2,6 +2,7 @@ package me.him188.ani.app.ui.foundation.avatar
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -17,16 +18,21 @@ fun AvatarImage(
     modifier: Modifier = Modifier,
     filePath: String? = null,
     colorFilter: ColorFilter? = null,
-    contentScale: ContentScale = ContentScale.Fit,
+    contentScale: ContentScale = ContentScale.Crop,
     alignment: Alignment = Alignment.Center,
 ) {
-    AsyncImage(
-        model = if (filePath != null) File(filePath) else url,
-        contentDescription = "Avatar",
-        modifier = modifier,
-        error = rememberVectorPainter(Icons.Rounded.Person),
-        alignment = alignment,
-        contentScale = contentScale,
-        colorFilter = colorFilter,
-    )
+    if (url == null) {
+        Icon(Icons.Rounded.Person, null, modifier)
+    } else {
+        AsyncImage(
+            model = if (filePath != null) File(filePath) else url,
+            contentDescription = "Avatar",
+            modifier = modifier,
+            error = rememberVectorPainter(Icons.Rounded.Person),
+            fallback = rememberVectorPainter(Icons.Rounded.Person),
+            alignment = alignment,
+            contentScale = contentScale,
+            colorFilter = colorFilter,
+        )
+    }
 }

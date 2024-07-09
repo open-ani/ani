@@ -40,6 +40,10 @@ data class VideoScaffoldConfig(
      * 在观看到 90% 进度后, 自动标记看过
      */
     val autoMarkDone: Boolean = true,
+    /**
+     * 在点击选择剧集后, 立即隐藏 media selector
+     */
+    val hideSelectorOnSelect: Boolean = false,
     @Suppress("PropertyName") @Transient val _placeholder: Int = 0,
 ) {
     companion object {

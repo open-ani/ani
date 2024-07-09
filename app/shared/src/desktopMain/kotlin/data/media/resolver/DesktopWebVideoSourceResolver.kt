@@ -7,7 +7,9 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import me.him188.ani.app.data.models.WebViewDriver
 import me.him188.ani.app.data.models.ProxyConfig
+import me.him188.ani.app.data.models.VideoResolverSettings
 import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.videoplayer.data.VideoSource
@@ -56,8 +58,9 @@ class DesktopWebVideoSourceResolver : VideoSourceResolver, KoinComponent {
             if (!supports(media)) throw UnsupportedMediaException(media)
 
             val config = settings.proxySettings.flow.first().default
+            val resolverSettings = settings.videoResolverSettings.flow.first()
 
-            val webVideo = SeleniumWebViewVideoExtractor(config.config.takeIf { config.enabled })
+            val webVideo = SeleniumWebViewVideoExtractor(config.config.takeIf { config.enabled }, resolverSettings)
                 .getVideoResourceUrl(
                     media.download.uri,
                     resourceMatcher = {
@@ -85,7 +88,8 @@ interface WebViewVideoExtractor {
 
 
 class SeleniumWebViewVideoExtractor(
-    private val proxyConfig: ProxyConfig?
+    private val proxyConfig: ProxyConfig?,
+    private val videoResolverSettings: VideoResolverSettings,
 ) : WebViewVideoExtractor {
     private companion object {
         private val logger = logger<WebViewVideoExtractor>()
@@ -94,6 +98,7 @@ class SeleniumWebViewVideoExtractor(
             // disable logs
             System.setProperty("webdriver.chrome.silentOutput", "true")
             java.util.logging.Logger.getLogger("org.openqa.selenium").setLevel(Level.OFF)
+            java.util.logging.Logger.getLogger("org.apache.hc.client5.http.wire").setLevel(Level.OFF)
         }
     }
 
@@ -103,6 +108,7 @@ class SeleniumWebViewVideoExtractor(
             ChromeOptions().apply {
                 addArguments("--headless")
                 addArguments("--disable-gpu")
+//                addArguments("--log-level=3")
                 proxyConfig?.let {
                     addArguments("--proxy-server=${it.url}")
                 }
@@ -116,6 +122,7 @@ class SeleniumWebViewVideoExtractor(
             EdgeOptions().apply {
                 addArguments("--headless")
                 addArguments("--disable-gpu")
+//                addArguments("--log-level=3")
                 proxyConfig?.let<ProxyConfig, Unit> {
                     addArguments("--proxy-server=${it.url}")
                 }
@@ -123,11 +130,16 @@ class SeleniumWebViewVideoExtractor(
         )
     }
 
+    /**
+     * SafariDriver does not support the use of proxies.
+     * https://github.com/SeleniumHQ/selenium/issues/10401#issuecomment-1054814944
+     */
     private fun createSafariDriver(): SafariDriver {
         WebDriverManager.safaridriver().setup()
         return SafariDriver(
             SafariOptions().apply {
                 proxyConfig?.let {
+                    // Causes an exception
                     setCapability("proxy", it.url)
                 }
             },
@@ -143,23 +155,32 @@ class SeleniumWebViewVideoExtractor(
         withContext(Dispatchers.IO) {
             logger.info { "Starting Selenium with Edge to resolve video source from $pageUrl" }
 
+
             val driver: RemoteWebDriver = when (Platform.currentPlatform) {
                 is Platform.Linux -> throw UnsupportedOperationException("Linux is not supported")
-                is Platform.MacOS -> {
-                    createChromeDriver()
-//                    kotlin.runCatching {
-//                        createChromeDriver()
-//                    }.recoverCatching {
-//                        createSafariDriver()
-//                    }.getOrThrow()
-                }
+                is Platform.MacOS, is Platform.Windows -> {
+                    val primaryDriverFunction = mapWebViewDriverToFunction(videoResolverSettings.driver)
+                    val fallbackDriverFunctions = getFallbackDriverFunctions(primaryDriverFunction)
 
-                is Platform.Windows -> {
-                    kotlin.runCatching {
-                        createChromeDriver()
-                    }.recoverCatching {
-                        createEdgeDriver()
-                    }.getOrThrow()
+                    // Try user-set ones first, then fallback on the others
+                    val driverCreationFunctions = listOfNotNull(primaryDriverFunction) + fallbackDriverFunctions
+                    var successfulDriver: (() -> RemoteWebDriver)? = null
+                    
+                    val driver = driverCreationFunctions
+                        .asSequence()
+                        .mapNotNull { func ->
+                            runCatching {
+                                func().also { successfulDriver = func }
+                            }.getOrNull()
+                        }
+                        .firstOrNull()
+                        ?: throw Exception("Failed to create a driver")
+                    
+                    // If the rollback is successful, update the user settings
+                    // Except Safari for now, because it does not support proxy settings and is not listed in the optional list
+                    // updateDriverSettingsIfNeeded(successfulDriver)
+
+                    driver
                 }
 
                 Platform.Android -> error("Unexpected Android platform in desktop builds")
@@ -235,4 +256,34 @@ class SeleniumWebViewVideoExtractor(
             throw e
         }
     }
+
+
+    private fun mapWebViewDriverToFunction(driver: WebViewDriver): (() -> RemoteWebDriver)? {
+        return when (driver) {
+            WebViewDriver.CHROME -> ::createChromeDriver
+            WebViewDriver.EDGE -> ::createEdgeDriver
+            else -> null
+        }
+    }
+    
+    private fun getFallbackDriverFunctions(primaryDriverFunction: (() -> RemoteWebDriver)?): List<() -> RemoteWebDriver> {
+        return listOf(
+            ::createChromeDriver,
+            ::createEdgeDriver,
+//            ::createSafariDriver,
+        ).filter { it != primaryDriverFunction }
+    }
+    
+//    private fun updateDriverSettingsIfNeeded(successfulDriver: (() -> RemoteWebDriver)?, primaryDriverFunction: (() -> RemoteWebDriver)?) {
+//        if (successfulDriver != primaryDriverFunction) {
+//            val fallbackDriverType = when (successfulDriver) {
+//                ::createEdgeDriver -> WebViewDriver.EDGE
+//                ::createChromeDriver -> WebViewDriver.CHROME
+//                else -> null
+//            }
+//            if (fallbackDriverType != null) {
+//                // TODO: update driver settings
+//            }
+//        }
+//    }
 }

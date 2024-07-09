@@ -12,52 +12,60 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.produceIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.selects.selectUnbiased
+import me.him188.ani.utils.coroutines.sampleWithInitial
 
 abstract class DownloadStats {
     /**
      * 总请求大小. 注意这不是在硬盘上的大小. 在硬盘上可能会略有差别.
      */
-    abstract val totalBytes: Flow<Long>
+    abstract val totalSize: Flow<Long>
 
     open val downloadedBytes: Flow<Long>
-        get() = combine(totalBytes, progress) { total, pro -> (total * pro).toLong() }
+        get() = combine(totalSize, progress) { total, pro -> (total * pro).toLong() }
 
     /**
      * Bytes per second. `null` if not available, i.e. just started
      */
-    open val downloadRate: Flow<Long?>
+    open val downloadRate: Flow<Long>
         get() = flow {
             coroutineScope {
                 val window = arrayOf(0L, 0L, 0L, 0L, 0L)
                 var index = 0
+                var counted = 0
                 // 每秒记录一个值
-                val bytes = downloadedBytes.produceIn(this)
+                val bytes = downloadedBytes
+                    .sampleWithInitial(1000)
+                    .produceIn(this)
                 val ticker = flow {
                     while (true) {
-                        emit(Unit)
                         delay(1000)
+                        emit(Unit)
                     }
                 }.produceIn(this)
 
                 while (isActive) {
                     selectUnbiased {
                         bytes.onReceive {
-                            window[index] = it
                             index = (index + 1) % window.size
-                            delay(1000)
+                            window[index] = it
+                            counted++
                         }
                         // 每秒计算平均变化速度
                         ticker.onReceive {
-                            val first = window[index]
-                            val last = window[(index - 1 + window.size) % window.size]
-                            emit((last - first) / window.size)
+                            val current = window[index]
+                            val last = window[(index + 1) % window.size] // 下一个 index 也就是距今最远的一个
+                            if (counted == 0) {
+                                emit(0)
+                            } else {
+                                emit((current - last).coerceAtLeast(0) / counted.coerceAtMost(window.size))
+                            }
                         }
                     }
                 }
             }
         }
 
-    abstract val uploadRate: Flow<Long?>
+    abstract val uploadRate: Flow<Long>
 
     /**
      * Range: `0..1`

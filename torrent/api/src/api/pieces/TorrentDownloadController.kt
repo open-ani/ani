@@ -1,5 +1,7 @@
 package me.him188.ani.app.torrent.api.pieces
 
+import me.him188.ani.app.torrent.api.files.PieceState
+
 /**
  * Torrent 下载优先级控制器.
  *
@@ -43,7 +45,7 @@ package me.him188.ani.app.torrent.api.pieces
  * @param footerSize 将文件尾部多少字节作为 metadata, 在 metadata 阶段请求
  */
 class TorrentDownloadController(
-    private val pieces: List<Piece>,
+    private val pieces: List<Piece>, // sorted
     private val priorities: PiecePriorities,
     private val windowSize: Int = 8,
     private val headerSize: Long = 128 * 1024,
@@ -51,68 +53,89 @@ class TorrentDownloadController(
 ) {
     private val totalSize: Long = pieces.sumOf { it.size }
 
-    internal var state: State = State.Metadata(
-        requestedPieces = (pieces.takeWhile { it.offset < headerSize } + pieces.dropWhile { it.lastIndex < totalSize - footerSize }).map { it.pieceIndex },
-    )
+    private val footerPieces = pieces.dropWhile { it.lastIndex < totalSize - footerSize }
 
-    val downloadingPieces: List<Int> get() = state.downloadingPieces.toList()
+
+    private val lastIndex = pieces.indexOfFirst { it.lastIndex >= totalSize - footerSize } - 1
+
+    private var currentWindowStart = 0
+
+    // inclusive
+    private var currentWindowEnd = (currentWindowStart + windowSize - 1).coerceAtMost(lastIndex)
+
+    private var downloadingPieces: MutableList<Int> =
+        (currentWindowStart until (currentWindowStart + windowSize).coerceAtMost(lastIndex)).toMutableList()
+
 
     @Synchronized
-    fun onTorrentResumed() {
-        priorities.downloadOnly(state.downloadingPieces)
+    fun isDownloading(pieceIndex: Int): Boolean {
+        return downloadingPieces.contains(pieceIndex)
     }
 
     @Synchronized
-    fun onAllRequestedPiecesDownloaded() {
-        for (downloadingPiece in state.downloadingPieces.toList()) { // avoid ConcurrentModificationException
-            onPieceDownloaded(downloadingPiece)
+    fun onTorrentResumed() {
+        priorities.downloadOnly(downloadingPieces)
+    }
+
+    @Synchronized
+    fun onSeek(pieceIndex: Int) {
+        downloadingPieces.clear()
+        currentWindowEnd = pieceIndex - 1
+        fillWindow(pieceIndex)
+        priorities.downloadOnly(downloadingPieces)
+    }
+
+    /**
+     * 找接下来最近的还未完成的 piece, 如果没有, 返回 [startIndex]
+     */
+    private fun findNextDownloadingPiece(startIndex: Int): Int {
+        for (index in (startIndex + 1)..lastIndex) {
+            if (pieces[index].state.value != PieceState.FINISHED) {
+                return index
+            }
         }
+        return startIndex
     }
 
     @Synchronized
     fun onPieceDownloaded(pieceIndex: Int) {
-        when (val state = state) {
-            is State.Metadata -> {
-                state.onPieceDownloaded(pieceIndex)
-                if (state.allPiecesDownloaded()) {
-                    this.state = State.Sequential(
-                        pieces.indexOfFirst { it.offset >= headerSize },
-                        pieces.indexOfFirst { it.lastIndex >= totalSize - footerSize } - 1,
-                        windowSize = windowSize,
-                    ).also {
-                        priorities.downloadOnly(it.downloadingPieces)
-                    }
-                }
-            }
+        if (!downloadingPieces.remove(pieceIndex)) {
+            return
+        }
 
-            is State.Sequential -> {
-                state.onPieceDownloaded(pieceIndex)
-                priorities.downloadOnly(state.downloadingPieces)
-                if (state.downloadingPieces.isEmpty()) {
-                    this.state = State.Finished
-                }
-            }
+        val newWindowEnd = findNextDownloadingPiece(currentWindowEnd)
+        if (newWindowEnd != currentWindowEnd) {
+            downloadingPieces.add(newWindowEnd)
+            currentWindowEnd = newWindowEnd
+        }
+        priorities.downloadOnly(downloadingPieces)
+    }
 
-            State.Finished -> {
-            }
+    private fun fillWindow(pieceIndex: Int) {
+        val nextStartIndex = downloadingPieces.firstOrNull() ?: (currentWindowEnd + 1)
+        val nextEndIndex = (nextStartIndex + windowSize - 1).coerceAtMost(lastIndex)
+        downloadingPieces = (nextStartIndex..nextEndIndex).toMutableList()
+        currentWindowStart = downloadingPieces.firstOrNull() ?: -1
+        currentWindowEnd = downloadingPieces.lastOrNull() ?: -1
+        if (pieceIndex <= 1) {
+            // 正在下载第 0-1 个 piece, 说明我们刚刚开始下载视频, 需要额外请求尾部元数据
+            addFooterPieces()
         }
     }
 
-//    private val _debugInfo: MutableStateFlow<DebugInfo> = MutableStateFlow(DebugInfo())
-//    public val debugInfo: StateFlow<DebugInfo> get() = _debugInfo
-
-    @Synchronized
-    fun getDebugInfo(): DebugInfo {
-        return DebugInfo(
-            state = state::class.toString(),
-            downloadingPieces = state.downloadingPieces.toList(),
-        )
+    private fun addFooterPieces() {
+        for (footerPiece in footerPieces) {
+            if (footerPiece.state.value != PieceState.FINISHED) {
+                downloadingPieces.addIfNotExist(footerPiece.pieceIndex)
+            }
+        }
     }
+}
 
-    data class DebugInfo(
-        val state: String,
-        val downloadingPieces: List<Int>
-    )
+private fun <E> MutableList<E>.addIfNotExist(pieceIndex: E) {
+    if (!contains(pieceIndex)) {
+        add(pieceIndex)
+    }
 }
 
 
@@ -121,86 +144,4 @@ interface PiecePriorities {
      * 设置仅下载指定的 pieces.
      */
     fun downloadOnly(pieceIndexes: Collection<Int>)
-}
-
-internal sealed class State {
-    abstract val downloadingPieces: List<Int>
-
-    class Metadata(
-        val requestedPieces: Collection<Int>,
-    ) : State() {
-        override val downloadingPieces: MutableList<Int> = requestedPieces.toMutableList()
-
-
-        fun allPiecesDownloaded(): Boolean {
-            return downloadingPieces.isEmpty()
-        }
-
-        fun onPieceDownloaded(pieceIndex: Int) {
-            downloadingPieces.remove(pieceIndex)
-        }
-
-        override fun toString(): String {
-            return "Metadata(requestedPieces=$requestedPieces, downloadingPieces=$downloadingPieces)"
-        }
-    }
-
-    /**
-     * 顺序下载状态
-     *
-     * @param startIndex 下载的起始 piece index, inclusive
-     * @param lastIndex 下载的结束 piece index, inclusive
-     */
-    class Sequential(
-        val startIndex: Int,
-        val lastIndex: Int,
-        val windowSize: Int,
-    ) : State() {
-        init {
-            require(windowSize > 0) { "windowSize must be greater than 0" }
-            require(startIndex >= 0) { "startIndex must be greater than or equal to 0" }
-            require(lastIndex >= 0) { "lastIndex must be greater than or equal to 0" }
-            require(startIndex <= lastIndex) { "startIndex must be less than or equal to lastIndex" }
-        }
-
-        internal var currentWindowStart = startIndex
-
-        // inclusive
-        internal var currentWindowEnd = (startIndex + windowSize - 1).coerceAtMost(lastIndex)
-
-        override var downloadingPieces: MutableList<Int> =
-            ((startIndex) until (startIndex + windowSize).coerceAtMost(lastIndex)).toMutableList()
-
-        fun onPieceDownloaded(pieceIndex: Int) {
-            downloadingPieces.remove(pieceIndex)
-            if (downloadingPieces.isEmpty()) {
-                requestMore()
-                return
-            }
-
-            if (downloadingPieces.first() > currentWindowStart) {
-                // window 首部的 piece 下载完成, 移动 window
-                requestMore()
-            }
-        }
-
-        private fun requestMore() {
-            val nextStartIndex = downloadingPieces.firstOrNull() ?: (currentWindowEnd + 1)
-            val nextEndIndex = (nextStartIndex + windowSize - 1).coerceAtMost(lastIndex)
-            downloadingPieces = (nextStartIndex..nextEndIndex).toMutableList()
-
-            currentWindowStart = downloadingPieces.firstOrNull() ?: -1
-            currentWindowEnd = downloadingPieces.lastOrNull() ?: -1
-        }
-
-        override fun toString(): String {
-            return "Sequential(startIndex=$startIndex, lastIndex=$lastIndex, windowSize=$windowSize, currentWindowStart=$currentWindowStart, currentWindowEnd=$currentWindowEnd, downloadingPieces=$downloadingPieces)"
-        }
-
-
-    }
-
-    data object Finished : State() {
-        override val downloadingPieces: List<Int> get() = emptyList()
-    }
 }

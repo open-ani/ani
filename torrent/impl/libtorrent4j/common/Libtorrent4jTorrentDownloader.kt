@@ -20,7 +20,6 @@ import me.him188.ani.app.torrent.api.TorrentDownloader
 import me.him188.ani.app.torrent.api.TorrentDownloaderConfig
 import me.him188.ani.app.torrent.api.TorrentLibInfo
 import me.him188.ani.app.torrent.api.files.EncodedTorrentInfo
-import me.him188.ani.app.torrent.api.files.TorrentInfo
 import me.him188.ani.app.torrent.api.handle.TorrentThread
 import me.him188.ani.app.torrent.libtorrent4j.DefaultTorrentDownloadSession.Companion.FAST_RESUME_FILENAME
 import me.him188.ani.app.torrent.libtorrent4j.files.Torrent4jTorrentInfo
@@ -44,7 +43,7 @@ import java.nio.charset.Charset
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.CoroutineContext
 
-abstract class AbstractLockedTorrentDownloader<Info : TorrentInfo>(
+abstract class AbstractLockedTorrentDownloader<@Suppress("FINAL_UPPER_BOUND") Info : Torrent4jTorrentInfo>(
     cacheDirectory: File,
     val sessionManager: LockedSessionManager,
     private val httpFileDownloader: HttpFileDownloader,
@@ -160,7 +159,7 @@ abstract class AbstractLockedTorrentDownloader<Info : TorrentInfo>(
             }
 
             val session =
-                dataToSession[hash] ?: DefaultTorrentDownloadSession(
+                dataToSession[hash] ?: Libtorrent4jTorrentDownloadSession(
                     torrentName = torrentName,
                     saveDirectory = saveDirectory,
                     onClose = { session ->
@@ -178,7 +177,7 @@ abstract class AbstractLockedTorrentDownloader<Info : TorrentInfo>(
                         if (uri == null) {
                             logger.error { "[$torrentName] Delete: originalUri is null" }
                         } else {
-                            getHttpTorrentFileCacheFile(uri)
+                            getHttpTorrentFileCacheFile(uri).delete()
                             logger.debug { "[$torrentName] Delete: removed" }
                         }
                     },
@@ -361,7 +360,7 @@ fun Libtorrent4jTorrentDownloader(
 
             peerFingerprintString = config.peerFingerprint
             userAgentString = config.userAgent
-            config.clientHandshakeVersion?.let {
+            config.handshakeClientVersion?.let {
                 handshakeClientVersionString = it
             }
             logger.info { "peerFingerprint set: $peerFingerprintString" }

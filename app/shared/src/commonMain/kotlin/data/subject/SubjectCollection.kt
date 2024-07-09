@@ -4,6 +4,7 @@ import androidx.compose.runtime.Immutable
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import me.him188.ani.app.ui.subject.collection.ContinueWatchingStatus
+import me.him188.ani.app.ui.subject.details.components.renderSubjectSeason
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 
 /**
@@ -12,24 +13,28 @@ import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 @Immutable
 @Serializable
 data class SubjectCollection(
-    val subjectId: Int,
-    val displayName: String,
-    val image: String,
-    val rate: RatingInfo? = null,
-
-    val date: String?,
-    val totalEps: Int,
-
+    // TODO: this is shit, do not store them all together
+    val info: SubjectInfo,
     val episodes: List<EpisodeCollection>, // must be sorted by sort
     val collectionType: UnifiedCollectionType,
-    val info: SubjectInfo,
+    /**
+     * 如果未收藏, 此属性为 `null`
+     */
+    val selfRatingInfo: SelfRatingInfo,
 ) {
+    val displayName: String get() = info.displayName
+    val subjectId: Int get() = info.id
+    val date get() = renderSubjectSeason(info.airDate)
+
+    private val totalEps get() = episodes.size
+
     override fun toString(): String = "SubjectCollectionItem($displayName)"
 
     @Transient
-    val isOnAir = kotlin.run {
-        episodes.firstOrNull { !it.episode.isKnownBroadcast } != null
-    }
+    val airingInfo: SubjectAiringInfo = SubjectAiringInfo.computeFromEpisodeList(
+        episodes.map { it.episode },
+        airDate = info.airDate,
+    )
 
     @Transient
     val lastWatchedEpIndex = kotlin.run {
@@ -38,40 +43,17 @@ data class SubjectCollection(
         }.takeIf { it != -1 }
     }
 
-    @Transient
-    val latestEp = kotlin.run {
-        episodes.lastOrNull { it.episode.isKnownBroadcast }
-    }
-
-    /**
-     * 是否已经开播了第一集
-     */
-    @Transient
-    val hasStarted = this.episodes.any { it.episode.isKnownBroadcast }
-
-    @Transient
-    val latestEpIndex: Int? = this.episodes.indexOfFirst { it.episode.id == latestEp?.episode?.id }
-        .takeIf { it != -1 }
-        ?: this.episodes.lastIndex.takeIf { it != -1 }
-
-    @Transient
-    val onAirDescription = if (isOnAir) {
-        if (latestEp == null) {
-            "未开播"
-        } else {
-            "连载至第 ${latestEp.episode.sort} 话"
-        }
-    } else {
-        "已完结"
-    }
-
-    // TODO: remove this ui element 
-    @Transient
-    val serialProgress = "全 ${this.totalEps} 话"
-
     // TODO: remove from this 
     @Transient
     val continueWatchingStatus = kotlin.run {
+        val latestEp = kotlin.run {
+            episodes.lastOrNull { it.episode.isKnownCompleted }
+        }
+
+        val latestEpIndex: Int? = this.episodes.indexOfFirst { it.episode.id == latestEp?.episode?.id }
+            .takeIf { it != -1 }
+            ?: this.episodes.lastIndex.takeIf { it != -1 }
+
         when (this.lastWatchedEpIndex) {
             // 还没看过
             null -> {
@@ -84,7 +66,7 @@ data class SubjectCollection(
 
             // 看了第 n 集并且还有第 n+1 集
             in 0..<this.totalEps - 1 -> {
-                if (this.latestEpIndex != null && this.lastWatchedEpIndex < this.latestEpIndex) {
+                if (latestEpIndex != null && this.lastWatchedEpIndex < latestEpIndex) {
                     // 更新了 n+1 集
                     ContinueWatchingStatus.Continue(
                         this.lastWatchedEpIndex + 1,
@@ -105,4 +87,33 @@ data class SubjectCollection(
         }
     }
 
+}
+
+/**
+ * 是否已经开播了第一集
+ */
+val SubjectCollection.hasStarted get() = airingInfo.isOnAir || airingInfo.isCompleted
+
+fun SubjectCollection.getEpisodeToPlay(): EpisodeCollection? {
+    if (continueWatchingStatus is ContinueWatchingStatus.Watched) {
+        return episodes[continueWatchingStatus.episodeIndex]
+    } else {
+        lastWatchedEpIndex?.let {
+            episodes.getOrNull(it + 1)
+        }?.let {
+            return it
+        }
+
+        lastWatchedEpIndex?.let {
+            episodes.getOrNull(it)
+        }?.let {
+            return it
+        }
+
+        episodes.firstOrNull()?.let {
+            return it
+        }
+    }
+
+    return null
 }

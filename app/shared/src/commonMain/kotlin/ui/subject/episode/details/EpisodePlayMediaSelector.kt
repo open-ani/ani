@@ -12,6 +12,7 @@ import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorView
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSourceResultsPresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSourceResultsView
+import me.him188.ani.datasources.api.Media
 
 /**
  * 播放视频时的选择数据源
@@ -22,6 +23,7 @@ fun EpisodePlayMediaSelector(
     sourceResults: MediaSourceResultsPresentation,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
+    onSelected: (Media) -> Unit = {},
 ) {
     MediaSelectorView(
         mediaSelector,
@@ -35,6 +37,10 @@ fun EpisodePlayMediaSelector(
             TextButton(onDismissRequest) {
                 Text("取消")
             }
+        },
+        onClickItem = {
+            mediaSelector.select(it)
+            onSelected(it)
         },
         itemProgressBar = {},
     )

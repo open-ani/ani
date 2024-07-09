@@ -17,11 +17,16 @@
  */
 
 plugins {
-    kotlin("jvm")
+    kotlin("multiplatform")
+    `ani-lib-targets`
     kotlin("plugin.serialization")
     `flatten-source-sets`
 }
 
 dependencies {
-    api(libs.kotlinx.serialization.json)
+    commonMainApi(libs.kotlinx.serialization.json)
+}
+
+kotlin {
+    compilerOptions.freeCompilerArgs.add("-Xexpect-actual-classes")
 }

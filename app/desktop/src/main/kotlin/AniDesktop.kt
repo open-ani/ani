@@ -28,17 +28,21 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
+import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
 import dev.dirs.ProjectDirectories
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.media.resolver.DesktopWebVideoSourceResolver
 import me.him188.ani.app.data.media.resolver.HttpStreamingVideoSourceResolver
@@ -65,6 +69,7 @@ import me.him188.ani.app.tools.update.DesktopUpdateInstaller
 import me.him188.ani.app.tools.update.UpdateInstaller
 import me.him188.ani.app.ui.foundation.LocalWindowState
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.interaction.PlatformImplementations
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.foundation.theme.AppTheme
@@ -116,7 +121,7 @@ object AniDesktop {
         Log4j2Config.configureLogging(logsDir)
 
         val windowState = WindowState(
-            size = DpSize(800.dp * 1.3f, 800.dp),
+            size = DpSize(900.dp * 1.4f, 900.dp),
             position = WindowPosition.Aligned(Alignment.Center),
         )
         val context = DesktopContext(
@@ -129,6 +134,15 @@ object AniDesktop {
 
         val coroutineScope = createAppRootCoroutineScope()
 
+        coroutineScope.launch(Dispatchers.IO) {
+            // since 3.4.0, anitorrent 增加后不兼容 QB 数据
+            File(projectDirectories.cacheDir).resolve("torrent").let {
+                if (it.exists()) {
+                    it.deleteRecursively()
+                }
+            }
+        }
+
         val koin = startKoin {
             modules(getCommonKoinModule({ context }, coroutineScope))
             modules(
@@ -139,7 +153,9 @@ object AniDesktop {
                     single<TorrentManager> {
                         DefaultTorrentManager(
                             coroutineScope.coroutineContext,
-                            saveDir = { File(projectDirectories.cacheDir).resolve("torrent") },
+                            saveDir = {
+                                File(projectDirectories.cacheDir).resolve("torrent-data").resolve(it.id)
+                            },
                         )
                     }
                     single<PlayerStateFactory> {
@@ -232,22 +248,22 @@ private fun MainWindowContent(
     aniNavigator: AniNavigator,
 ) {
     AniApp {
+        val window by rememberUpdatedState(LocalWindowState.current)
+        val isFullscreen by remember {
+            derivedStateOf {
+                window.placement != WindowPlacement.Fullscreen
+            }
+        }
         Box(
             Modifier.background(color = AppTheme.colorScheme.background)
-                .statusBarsPadding()
-                .padding(top = if (hostIsMacOs && windowImmersed) 28.dp else 0.dp) // safe area for macOS if windowImmersed
+                .ifThen(!isFullscreen) {
+                    statusBarsPadding()
+                }
+                .padding(top = if (hostIsMacOs && windowImmersed && isFullscreen) 28.dp else 0.dp) // safe area for macOS if windowImmersed
                 .fillMaxSize(),
         ) {
             Box(Modifier.fillMaxSize()) {
-                val paddingByWindowSize by animateDpAsState(
-                    0.dp,
-//                    if (maxWidth > 400.dp) {
-//                        16.dp
-//                    } else {
-//                        8.dp
-//                    },
-                )
-
+                val paddingByWindowSize by animateDpAsState(0.dp)
 
                 val vm = rememberViewModel { ToastViewModel() }
 

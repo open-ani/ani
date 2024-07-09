@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.transformLatest
 import me.him188.ani.app.data.media.resolver.EpisodeMetadata
 import me.him188.ani.app.data.media.resolver.ResolutionFailures
+import me.him188.ani.app.data.media.resolver.TorrentVideoSource
 import me.him188.ani.app.data.media.resolver.UnsupportedMediaException
 import me.him188.ani.app.data.media.resolver.VideoSourceResolutionException
 import me.him188.ani.app.data.media.resolver.VideoSourceResolver
@@ -100,13 +101,13 @@ class PlayerLauncher(
 
     init {
         launchInBackground {
-            videoSource.collect {
-                logger.info { "Got new video source: $it, updating playerState" }
+            videoSource.collect { source ->
+                logger.info { "Got new video source: $source, updating playerState" }
                 try {
-                    playerState.setVideoSource(it)
-                    if (it != null) {
+                    playerState.setVideoSource(source)
+                    if (source != null) {
                         logger.info { "playerState.setVideoSource success" }
-                        videoLoadingState.value = VideoLoadingState.Succeed
+                        videoLoadingState.value = VideoLoadingState.Succeed(isBt = source is TorrentVideoSource)
                     }
                 } catch (e: VideoSourceOpenException) {
                     videoLoadingState.value = when (e.reason) {

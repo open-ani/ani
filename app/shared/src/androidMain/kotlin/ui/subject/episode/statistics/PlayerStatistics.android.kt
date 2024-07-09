@@ -20,7 +20,7 @@ private fun PreviewPlayerStatisticsAllSuccess() {
         PlayerStatistics(
             state = remember {
                 PlayerStatisticsState().apply {
-                    videoLoadingState.value = VideoLoadingState.Succeed
+                    videoLoadingState.value = VideoLoadingState.Succeed(isBt = true)
                     danmakuLoadingState.value = DanmakuLoadingState.Success(
                         listOf(
                             exactMatch(),

@@ -11,62 +11,62 @@ import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.paging.PageBasedPagedSource
 import me.him188.ani.datasources.api.paging.Paged
 import me.him188.ani.datasources.bangumi.BangumiClient
+import me.him188.ani.datasources.bangumi.models.BangumiEpType
+import me.him188.ani.datasources.bangumi.models.BangumiEpisode
+import me.him188.ani.datasources.bangumi.models.BangumiEpisodeCollectionType
+import me.him188.ani.datasources.bangumi.models.BangumiEpisodeDetail
+import me.him188.ani.datasources.bangumi.models.BangumiPatchUserSubjectEpisodeCollectionRequest
+import me.him188.ani.datasources.bangumi.models.BangumiUserEpisodeCollection
 import me.him188.ani.utils.logging.logger
+import me.him188.ani.utils.serialization.BigNum
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.openapitools.client.models.EpType
-import org.openapitools.client.models.Episode
-import org.openapitools.client.models.EpisodeCollectionType
-import org.openapitools.client.models.EpisodeDetail
-import org.openapitools.client.models.PatchUserSubjectEpisodeCollectionRequest
-import org.openapitools.client.models.UserEpisodeCollection
-import java.math.BigDecimal
 
 /**
  * 执行网络请求查询.
  * 建议优先使用 [SubjectManager], 可以使用缓存.
  */
 interface BangumiEpisodeRepository : Repository {
-    suspend fun getEpisodeById(episodeId: Int): EpisodeDetail?
+    suspend fun getEpisodeById(episodeId: Int): BangumiEpisodeDetail?
 
     /**
      * 获取条目下的所有剧集.
      */
-    suspend fun getEpisodesBySubjectId(subjectId: Int, type: EpType): Flow<Episode>
+    suspend fun getEpisodesBySubjectId(subjectId: Int, type: BangumiEpType): Flow<BangumiEpisode>
 
     /**
      * 获取用户在这个条目下的所有剧集的收藏状态.
      */
-    suspend fun getSubjectEpisodeCollection(subjectId: Int, type: EpType): Flow<UserEpisodeCollection>
+    suspend fun getSubjectEpisodeCollection(subjectId: Int, type: BangumiEpType): Flow<BangumiUserEpisodeCollection>
 
     /**
      * 获取用户在这个条目下的所有剧集的收藏状态.
      */
-    suspend fun getEpisodeCollection(episodeId: Int): UserEpisodeCollection?
+    suspend fun getEpisodeCollection(episodeId: Int): BangumiUserEpisodeCollection?
 
     /**
      * 设置多个剧集的收藏状态.
      */
-    suspend fun setEpisodeCollection(subjectId: Int, episodeId: List<Int>, type: EpisodeCollectionType)
+    suspend fun setEpisodeCollection(subjectId: Int, episodeId: List<Int>, type: BangumiEpisodeCollectionType)
 }
 
 internal class EpisodeRepositoryImpl : BangumiEpisodeRepository, KoinComponent {
     private val client by inject<BangumiClient>()
     private val logger = logger(EpisodeRepositoryImpl::class)
-    override suspend fun getEpisodeById(episodeId: Int): EpisodeDetail? {
+    override suspend fun getEpisodeById(episodeId: Int): BangumiEpisodeDetail? {
         return try {
-            client.api.getEpisodeById(episodeId)
+            client.api.getEpisodeById(episodeId).body()
         } catch (e: Exception) {
             logger.warn("Exception in getEpisodeById", e)
             null
         }
     }
 
-    override suspend fun getEpisodesBySubjectId(subjectId: Int, type: EpType): Flow<Episode> {
+    override suspend fun getEpisodesBySubjectId(subjectId: Int, type: BangumiEpType): Flow<BangumiEpisode> {
         val episodes = PageBasedPagedSource { page ->
             runCatching {
                 withContext(Dispatchers.IO) {
-                    client.api.getEpisodes(subjectId, type, offset = page * 100, limit = 100).run {
+                    client.api.getEpisodes(subjectId, type, offset = page * 100, limit = 100).body().run {
                         Paged(this.total ?: 0, !this.data.isNullOrEmpty(), this.data.orEmpty())
                     }
                 }
@@ -75,7 +75,10 @@ internal class EpisodeRepositoryImpl : BangumiEpisodeRepository, KoinComponent {
         return episodes.results
     }
 
-    override suspend fun getSubjectEpisodeCollection(subjectId: Int, type: EpType): Flow<UserEpisodeCollection> {
+    override suspend fun getSubjectEpisodeCollection(
+        subjectId: Int,
+        type: BangumiEpType
+    ): Flow<BangumiUserEpisodeCollection> {
         val episodes = PageBasedPagedSource { page ->
             try {
                 client.api.getUserSubjectEpisodeCollection(
@@ -83,7 +86,7 @@ internal class EpisodeRepositoryImpl : BangumiEpisodeRepository, KoinComponent {
                     episodeType = type,
                     offset = page * 100,
                     limit = 100,
-                ).run {
+                ).body().run {
                     val data = this.data ?: return@run null
                     Paged(this.total, data.size == 100, data)
                 }
@@ -97,21 +100,25 @@ internal class EpisodeRepositoryImpl : BangumiEpisodeRepository, KoinComponent {
         return episodes.results
     }
 
-    override suspend fun getEpisodeCollection(episodeId: Int): UserEpisodeCollection? {
+    override suspend fun getEpisodeCollection(episodeId: Int): BangumiUserEpisodeCollection? {
         try {
             val collection = client.api.getUserEpisodeCollection(episodeId)
-            return collection
+            return collection.body()
         } catch (e: Exception) {
             logger.warn("Exception in getEpisodeCollection", e)
             return null
         }
     }
 
-    override suspend fun setEpisodeCollection(subjectId: Int, episodeId: List<Int>, type: EpisodeCollectionType) {
+    override suspend fun setEpisodeCollection(
+        subjectId: Int,
+        episodeId: List<Int>,
+        type: BangumiEpisodeCollectionType
+    ) {
         try {
-            client.postEpisodeCollection(
+            client.api.patchUserSubjectEpisodeCollection(
                 subjectId,
-                PatchUserSubjectEpisodeCollectionRequest(
+                BangumiPatchUserSubjectEpisodeCollectionRequest(
                     episodeId,
                     type,
                 ),
@@ -122,7 +129,7 @@ internal class EpisodeRepositoryImpl : BangumiEpisodeRepository, KoinComponent {
     }
 }
 
-fun Episode.toEpisodeInfo(): EpisodeInfo {
+fun BangumiEpisode.toEpisodeInfo(): EpisodeInfo {
     return EpisodeInfo(
         id = this.id,
         type = EpisodeType(this.type),
@@ -134,12 +141,12 @@ fun Episode.toEpisodeInfo(): EpisodeInfo {
         desc = this.desc,
         disc = this.disc,
         sort = EpisodeSort(this.sort),
-        ep = EpisodeSort(this.ep ?: BigDecimal.ONE),
+        ep = EpisodeSort(this.ep ?: BigNum.ONE),
 //        durationSeconds = this.durationSeconds
     )
 }
 
-fun EpisodeDetail.toEpisodeInfo(): EpisodeInfo {
+fun BangumiEpisodeDetail.toEpisodeInfo(): EpisodeInfo {
     return EpisodeInfo(
         id = id,
         type = EpisodeType(this.type),
@@ -151,6 +158,6 @@ fun EpisodeDetail.toEpisodeInfo(): EpisodeInfo {
         duration = duration,
         desc = desc,
         disc = disc,
-        ep = EpisodeSort(this.ep ?: BigDecimal.ONE),
+        ep = EpisodeSort(this.ep ?: BigNum.ONE),
     )
 }

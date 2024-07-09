@@ -1,95 +1,105 @@
 package me.him188.ani.app.data.repositories
 
+import io.ktor.client.plugins.ResponseException
+import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runInterruptible
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.subject.EpisodeCollection
+import me.him188.ani.app.data.subject.RatingCounts
 import me.him188.ani.app.data.subject.RatingInfo
+import me.him188.ani.app.data.subject.SelfRatingInfo
 import me.him188.ani.app.data.subject.SubjectCollection
+import me.him188.ani.app.data.subject.SubjectCollectionStats
+import me.him188.ani.app.data.subject.SubjectInfo
 import me.him188.ani.app.data.subject.SubjectManager
-import me.him188.ani.app.data.subject.createSubjectInfo
+import me.him188.ani.app.data.subject.Tag
+import me.him188.ani.app.data.subject.toInfoboxItem
+import me.him188.ani.app.session.SessionManager
 import me.him188.ani.datasources.api.paging.PageBasedPagedSource
 import me.him188.ani.datasources.api.paging.Paged
 import me.him188.ani.datasources.api.paging.PagedSource
 import me.him188.ani.datasources.api.paging.processPagedResponse
+import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.datasources.bangumi.BangumiClient
-import me.him188.ani.datasources.bangumi.processing.airSeason
-import me.him188.ani.datasources.bangumi.processing.nameCNOrName
+import me.him188.ani.datasources.bangumi.models.BangumiCount
+import me.him188.ani.datasources.bangumi.models.BangumiRating
+import me.him188.ani.datasources.bangumi.models.BangumiSubject
+import me.him188.ani.datasources.bangumi.models.BangumiSubjectCollectionType
+import me.him188.ani.datasources.bangumi.models.BangumiSubjectType
+import me.him188.ani.datasources.bangumi.models.BangumiUserEpisodeCollection
+import me.him188.ani.datasources.bangumi.models.BangumiUserSubjectCollection
+import me.him188.ani.datasources.bangumi.models.BangumiUserSubjectCollectionModifyPayload
 import me.him188.ani.datasources.bangumi.processing.toCollectionType
 import me.him188.ani.utils.logging.logger
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.openapitools.client.infrastructure.ClientException
-import org.openapitools.client.models.Count
-import org.openapitools.client.models.Rating
-import org.openapitools.client.models.Subject
-import org.openapitools.client.models.SubjectCollectionType
-import org.openapitools.client.models.SubjectType
-import org.openapitools.client.models.UserEpisodeCollection
-import org.openapitools.client.models.UserSubjectCollection
-import org.openapitools.client.models.UserSubjectCollectionModifyPayload
 
 /**
  * Performs network requests.
  * Use [SubjectManager] instead.
  */
 interface BangumiSubjectRepository : Repository {
-    suspend fun getSubject(id: Int): Subject?
+    suspend fun getSubject(id: Int): BangumiSubject?
 
     fun getSubjectCollections(
         username: String,
-        subjectType: SubjectType? = null,
-        subjectCollectionType: SubjectCollectionType? = null,
-    ): PagedSource<UserSubjectCollection>
+        subjectType: BangumiSubjectType? = null,
+        subjectCollectionType: BangumiSubjectCollectionType? = null,
+    ): PagedSource<BangumiUserSubjectCollection>
 
-    suspend fun patchSubjectCollection(subjectId: Int, payload: UserSubjectCollectionModifyPayload)
+    /**
+     * 获取用户对这个条目的收藏状态. flow 一定会 emit 至少一个值或抛出异常. 当用户没有收藏这个条目时 emit `null`.
+     */
+    fun subjectCollectionById(subjectId: Int): Flow<BangumiUserSubjectCollection?>
+
+    fun subjectCollectionTypeById(subjectId: Int): Flow<UnifiedCollectionType>
+
+    suspend fun patchSubjectCollection(subjectId: Int, payload: BangumiUserSubjectCollectionModifyPayload)
     suspend fun deleteSubjectCollection(subjectId: Int)
 }
 
 suspend inline fun BangumiSubjectRepository.setSubjectCollectionTypeOrDelete(
     subjectId: Int,
-    type: SubjectCollectionType?
+    type: BangumiSubjectCollectionType?
 ) {
     return if (type == null) {
         deleteSubjectCollection(subjectId)
     } else {
-        patchSubjectCollection(subjectId, UserSubjectCollectionModifyPayload(type))
+        patchSubjectCollection(subjectId, BangumiUserSubjectCollectionModifyPayload(type))
     }
 }
 
 class RemoteBangumiSubjectRepository : BangumiSubjectRepository, KoinComponent {
     private val client: BangumiClient by inject()
+    private val sessionManager: SessionManager by inject()
     private val logger = logger(this::class)
 
-    override suspend fun getSubject(id: Int): Subject? {
-        return runInterruptible(Dispatchers.IO) {
-            runCatching {
-                client.api.getSubjectById(id)
-            }.getOrNull()
-        }
+    override suspend fun getSubject(id: Int): BangumiSubject? {
+        return runCatching {
+            client.api.getSubjectById(id).body()
+        }.getOrNull()
     }
 
-    override suspend fun patchSubjectCollection(subjectId: Int, payload: UserSubjectCollectionModifyPayload) {
-        withContext(Dispatchers.IO) {
-            kotlin.runCatching {
-                client.postSubjectCollection(subjectId, payload)
-            }
+    override suspend fun patchSubjectCollection(subjectId: Int, payload: BangumiUserSubjectCollectionModifyPayload) {
+        kotlin.runCatching {
+            client.api.postUserCollection(subjectId, payload)
         }
     }
 
     override suspend fun deleteSubjectCollection(subjectId: Int) {
-        runInterruptible(Dispatchers.IO) {
-            kotlin.runCatching {
-                client.api.uncollectIndexByIndexIdAndUserId(subjectId)
-            }
+        kotlin.runCatching {
+            // TODO:  deleteSubjectCollection
         }
     }
 
     override fun getSubjectCollections(
         username: String,
-        subjectType: SubjectType?,
-        subjectCollectionType: SubjectCollectionType?,
-    ): PagedSource<UserSubjectCollection> {
+        subjectType: BangumiSubjectType?,
+        subjectCollectionType: BangumiSubjectCollectionType?,
+    ): PagedSource<BangumiUserSubjectCollection> {
         return PageBasedPagedSource { page ->
             try {
                 val pageSize = 10
@@ -99,72 +109,125 @@ class RemoteBangumiSubjectRepository : BangumiSubjectRepository, KoinComponent {
                         offset = page * pageSize, limit = pageSize,
                         subjectType = subjectType,
                         type = subjectCollectionType,
-                    ).run {
+                    ).body().run {
                         total?.let { setTotalSize(it) }
                         Paged.processPagedResponse(total, pageSize, data)
                     }
                 }
-            } catch (e: ClientException) {
+            } catch (e: ResponseException) {
                 logger.warn("Exception in getCollections, page=$page", e)
                 null
             }
         }
     }
-}
 
-
-fun UserSubjectCollection.toSubjectCollectionItem(
-    subject: Subject,
-    episodes: List<UserEpisodeCollection>,
-): SubjectCollection {
-    if (subject.type != SubjectType.Anime) {
-        return SubjectCollection(
-            subjectId = subjectId,
-            displayName = this.subject?.nameCNOrName() ?: "",
-            image = "",
-            rate = subject.rating.toRatingInfo(),
-            date = this.subject?.airSeason,
-            totalEps = episodes.size,
-            episodes = episodes.map { it.toEpisodeCollection() },
-            collectionType = type.toCollectionType(),
-            info = subject.createSubjectInfo(),
-        )
+    override fun subjectCollectionById(subjectId: Int): Flow<BangumiUserSubjectCollection?> {
+        return flow {
+            emit(
+                try {
+                    client.api.getUserCollection(sessionManager.username.first() ?: "-", subjectId).body()
+                } catch (e: ResponseException) {
+                    if (e.response.status == HttpStatusCode.NotFound) {
+                        null
+                    } else {
+                        throw e
+                    }
+                },
+            )
+        }
     }
 
-    return SubjectCollection(
-        subjectId = subjectId,
-        displayName = subject.nameCNOrName(),
-        image = subject.images.common,
-        rate = subject.rating.toRatingInfo(),
-        date = subject.airSeason ?: "",
-        totalEps = episodes.size,
-        episodes = episodes.map { it.toEpisodeCollection() },
-        collectionType = type.toCollectionType(),
-        info = subject.createSubjectInfo(),
+    override fun subjectCollectionTypeById(subjectId: Int): Flow<UnifiedCollectionType> {
+        return flow {
+            emit(
+                try {
+                    val username = sessionManager.username.first() ?: "-"
+                    client.api.getUserCollection(username, subjectId).body().type.toCollectionType()
+                } catch (e: ResponseException) {
+                    if (e.response.status == HttpStatusCode.NotFound) {
+                        UnifiedCollectionType.NOT_COLLECTED
+                    } else {
+                        throw e
+                    }
+                },
+            )
+        }
+    }
+}
+
+fun BangumiUserSubjectCollection.toSubjectCollectionItem(
+    subject: BangumiSubject,
+    episodes: List<BangumiUserEpisodeCollection>,
+): SubjectCollection = SubjectCollection(
+    info = subject.toSubjectInfo(),
+    episodes = episodes.map { it.toEpisodeCollection() },
+    collectionType = type.toCollectionType(),
+    selfRatingInfo = toSelfRatingInfo(),
+)
+
+fun BangumiUserSubjectCollection.toSelfRatingInfo(): SelfRatingInfo {
+    return SelfRatingInfo(
+        score = rate,
+        comment = comment.takeUnless { it.isNullOrBlank() },
+        tags = tags,
+        isPrivate = private,
     )
 }
 
-private fun Rating.toRatingInfo(): RatingInfo = RatingInfo(
-    rank = rank,
-    total = total,
-    count = count.toMap(),
-    score = score.toFloat(),
-)
-
-private fun Count.toMap(): Map<Int, Int> = buildMap(10) {
-    put(1, _1 ?: 0)
-    put(2, _2 ?: 0)
-    put(3, _3 ?: 0)
-    put(4, _4 ?: 0)
-    put(5, _5 ?: 0)
-    put(6, _6 ?: 0)
-    put(7, _7 ?: 0)
-    put(8, _8 ?: 0)
-    put(9, _9 ?: 0)
-    put(10, _10 ?: 0)
+fun BangumiSubject.toSubjectInfo(): SubjectInfo {
+    return SubjectInfo(
+        id = id,
+        name = name,
+        nameCn = nameCn,
+        summary = this.summary,
+        nsfw = this.nsfw,
+        locked = this.locked,
+        platform = this.platform,
+        volumes = this.volumes,
+        eps = this.eps,
+        totalEpisodes = this.totalEpisodes,
+        airDateString = this.date,
+        tags = this.tags.map { Tag(it.name, it.count) }.sortedByDescending { it.count },
+        infobox = this.infobox?.map { it.toInfoboxItem() }.orEmpty(),
+        imageCommon = this.images.common,
+        imageLarge = this.images.large,
+        collection = this.collection.run {
+            SubjectCollectionStats(
+                wish = wish,
+                doing = doing,
+                done = collect,
+                onHold = onHold,
+                dropped = dropped,
+            )
+        },
+        ratingInfo = this.rating.toRatingInfo(),
+    )
 }
 
-fun UserEpisodeCollection.toEpisodeCollection(): EpisodeCollection {
+
+private fun BangumiRating.toRatingInfo(): RatingInfo = RatingInfo(
+    rank = rank,
+    total = total,
+    count = count.toRatingCounts(),
+    score = score.toString(),
+)
+
+private fun BangumiCount.toRatingCounts() = RatingCounts(
+    intArrayOf(
+        _1 ?: 0,
+        _2 ?: 0,
+        _3 ?: 0,
+        _4 ?: 0,
+        _5 ?: 0,
+        _6 ?: 0,
+        _7 ?: 0,
+        _8 ?: 0,
+        _9 ?: 0,
+        _10 ?: 0,
+    ),
+)
+
+fun BangumiUserEpisodeCollection.toEpisodeCollection(): EpisodeCollection {
     return EpisodeCollection(
         episodeInfo = episode.toEpisodeInfo(),
         collectionType = type.toCollectionType(),

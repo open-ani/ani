@@ -12,6 +12,7 @@ import kotlinx.coroutines.runBlocking
 import me.him188.ani.app.data.media.EpisodeCacheStatus
 import me.him188.ani.app.data.subject.EpisodeCollection
 import me.him188.ani.app.data.subject.EpisodeInfo
+import me.him188.ani.app.data.subject.SelfRatingInfo
 import me.him188.ani.app.data.subject.SubjectCollection
 import me.him188.ani.app.data.subject.SubjectInfo
 import me.him188.ani.app.tools.caching.LazyDataCache
@@ -23,13 +24,13 @@ import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.paging.SinglePagePagedSource
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
-import org.openapitools.client.models.Collection
-import org.openapitools.client.models.Count
-import org.openapitools.client.models.Images
-import org.openapitools.client.models.Rating
-import org.openapitools.client.models.Subject
-import org.openapitools.client.models.SubjectType
-import java.math.BigDecimal
+
+internal val TestSelfRatingInfo = SelfRatingInfo(
+    score = 7,
+    comment = "test",
+    tags = listOf("My tag"),
+    isPrivate = false,
+)
 
 @Composable
 @Preview
@@ -91,66 +92,20 @@ private fun testCollections(): List<SubjectCollection> {
             )
         val latestEp = eps[1]
         add(
-            SubjectCollection(
-                subjectId = ++id,
-                displayName = "葬送的芙莉莲",
-                image = "",
-                rate = null,
-                date = "2023 年 10 月",
-                totalEps = 2,
-                episodes = eps,
-                collectionType = UnifiedCollectionType.DOING,
-                info = SubjectInfo.Empty,
-            ),
+            testSubjectCollection(eps, UnifiedCollectionType.DOING),
         )
         add(
-            SubjectCollection(
-                subjectId = ++id,
-                displayName = "葬送的芙莉莲 2",
-                image = "",
-                rate = null,
-                date = "2023 年 10 月",
-                totalEps = 2,
-                episodes = eps,
-                collectionType = UnifiedCollectionType.DOING,
-                info = SubjectInfo.Empty,
-            ),
+            testSubjectCollection(eps, UnifiedCollectionType.DOING),
         )
         add(
-            SubjectCollection(
-                subjectId = ++id,
-                displayName = "葬送的芙莉莲 3",
-                image = "",
-                rate = null,
-                date = "2023 年 10 月",
-                totalEps = 2,
-                episodes = eps,
-                collectionType = UnifiedCollectionType.DOING,
-                info = SubjectInfo.Empty,
-            ),
+            testSubjectCollection(eps, UnifiedCollectionType.DOING),
         )
         add(
-            SubjectCollection(
-                subjectId = ++id,
-                displayName = "葬送的芙莉莲 4",
-                image = "",
-                rate = null,
-                date = "2023 年 10 月",
-                totalEps = 2,
-                episodes = eps,
-                collectionType = UnifiedCollectionType.WISH,
-                info = SubjectInfo.Empty,
-            ),
+            testSubjectCollection(eps, collectionType = UnifiedCollectionType.WISH),
         )
         repeat(20) {
             add(
-                SubjectCollection(
-                    subjectId = ++id,
-                    displayName = "葬送的芙莉莲 4",
-                    image = "",
-                    rate = null,
-                    date = "2025 年 10 月",
-                    totalEps = 2,
+                testSubjectCollection(
                     episodes = eps + EpisodeCollection(
                         episodeInfo = EpisodeInfo(
                             id = 6386,
@@ -166,12 +121,21 @@ private fun testCollections(): List<SubjectCollection> {
                         collectionType = UnifiedCollectionType.DONE,
                     ),
                     collectionType = UnifiedCollectionType.WISH,
-                    info = SubjectInfo.Empty,
                 ),
             )
         }
     }
 }
+
+private fun testSubjectCollection(
+    episodes: List<EpisodeCollection>,
+    collectionType: UnifiedCollectionType,
+) = SubjectCollection(
+    info = SubjectInfo.Empty,
+    episodes = episodes,
+    collectionType = collectionType,
+    selfRatingInfo = TestSelfRatingInfo,
+)
 
 @PreviewLightDark
 @Composable
@@ -189,7 +153,6 @@ private fun PreviewSubjectCollectionsColumnPhone() {
                     onClick = { },
                     onClickEpisode = {},
                     onClickSelectEpisode = { },
-                    onSetAllEpisodesDone = { },
                     onSetCollectionType = {},
                 )
             },
@@ -220,7 +183,6 @@ private fun PreviewSubjectCollectionsColumnDesktopLarge() {
                     onClick = { },
                     onClickEpisode = {},
                     onClickSelectEpisode = { },
-                    onSetAllEpisodesDone = { },
                     onSetCollectionType = {},
                 )
             },
@@ -240,55 +202,4 @@ private fun testLazyDataCache(): LazyDataCache<SubjectCollection> {
     ).apply {
         runBlocking { requestMore() }
     }
-}
-
-fun testSubject(
-    id: Int = 0,
-): Subject {
-    return Subject(
-        id = id,
-        type = SubjectType.Music,
-        name = "Doreen Vaughn",
-        nameCn = "Lena Cortez",
-        summary = "feugiat",
-        nsfw = false,
-        locked = false,
-        platform = "himenaeos",
-        images = Images(
-            large = "donec",
-            common = "mandamus",
-            medium = "pellentesque",
-            small = "ferri",
-            grid = "natoque",
-        ),
-        volumes = 8709,
-        eps = 8315,
-        totalEpisodes = 2238,
-        rating = Rating(
-            rank = 5821, total = 4784,
-            count = Count(
-                _1 = null,
-                _2 = null,
-                _3 = null,
-                _4 = null,
-                _5 = null,
-                _6 = null,
-                _7 = null,
-                _8 = null,
-                _9 = null,
-                _10 = null,
-            ),
-            score = BigDecimal.ZERO,
-        ),
-        collection = Collection(
-            wish = 6848,
-            collect = 6029,
-            doing = 4929,
-            onHold = 2523,
-            dropped = 3158,
-        ),
-        tags = listOf(),
-        date = null,
-        infobox = listOf(),
-    )
 }

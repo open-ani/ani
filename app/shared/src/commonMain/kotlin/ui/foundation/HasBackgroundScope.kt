@@ -250,9 +250,9 @@ interface HasBackgroundScope {
         val state = mutableStateOf(valueOrNull ?: initialValue)
         launchInBackground(coroutineContext) {
             flowOn(Dispatchers.Default) // compute in background
-                .collect {
+                .collect { value ->
                     withContext(Dispatchers.Main) { // ensure a dispatch happens
-                        state.value = it
+                        state.value = value
                     }
                 } // update state in main
         }

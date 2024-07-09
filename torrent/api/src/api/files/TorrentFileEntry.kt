@@ -82,7 +82,7 @@ interface TorrentFileEntry { // 实现提示, 无 test mock
     /**
      * Opens the downloaded file as a [SeekableInput].
      */
-    fun createInput(): SeekableInput
+    suspend fun createInput(): SeekableInput
 }
 
 /**
@@ -162,12 +162,12 @@ abstract class AbstractTorrentFileEntry(
     final override val length: Long,
     private val saveDirectory: File,
     val relativePath: String,
-    val torrentName: String,
+    val torrentId: String, // TODO: make this Int 
     val isDebug: Boolean,
     parentCoroutineContext: CoroutineContext,
 ) : TorrentFileEntry {
     protected val scope = CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
-    protected val logger = logger<AbstractTorrentFileEntry>()
+    protected val logger = logger(this::class)
 
     abstract inner class AbstractTorrentFileHandle : TorrentFileHandle {
         @Volatile
@@ -178,7 +178,7 @@ abstract class AbstractTorrentFileEntry(
             if (closed) return
             closed = true
 
-            logger.info { "[$torrentName] Close file $pathInTorrent, set file priority to ignore" }
+            logger.info { "[$torrentId] Close handle $pathInTorrent, remove priority request" }
             removePriority()
 
             if (isDebug) {
@@ -206,8 +206,8 @@ abstract class AbstractTorrentFileEntry(
 
         final override fun resume(priority: FilePriority) {
             checkClosed()
-            resumeImpl(priority)
             requestPriority(priority)
+            resumeImpl(priority)
         }
 
         protected abstract fun resumeImpl(priority: FilePriority)
@@ -239,6 +239,10 @@ abstract class AbstractTorrentFileEntry(
         updatePriority()
     }
 
+    val requestingPriority
+        get() = priorityRequests.values.maxWithOrNull(nullsFirst(naturalOrder()))
+            ?: FilePriority.IGNORE
+
     protected abstract fun updatePriority()
 
     override suspend fun resolveFile(): File = resolveDownloadingFile()
@@ -262,10 +266,10 @@ abstract class AbstractTorrentFileEntry(
         while (true) {
             val file = withContext(Dispatchers.IO) { resolveFileOrNull() }
             if (file != null) {
-                logger.info { "$torrentName: Get file: ${file.absolutePath}" }
+                logger.info { "$torrentId: Get file: ${file.absolutePath}" }
                 return file
             }
-            logger.info { "$torrentName: Still waiting to get file... saveDirectory: $saveDirectory" }
+            logger.info { "$torrentId: Still waiting to get file... saveDirectory: $saveDirectory" }
             delay(1.seconds)
         }
         @Suppress("UNREACHABLE_CODE") // compiler bug

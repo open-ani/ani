@@ -8,6 +8,8 @@ import kotlinx.serialization.Serializable
 import me.him188.ani.app.data.subject.PackedDate.Companion.Invalid
 import java.util.Calendar
 import java.util.TimeZone
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -79,7 +81,31 @@ value class PackedDate @PublishedApi internal constructor(
     }
 
     override fun compareTo(other: PackedDate): Int = packed.compareTo(other.packed) // trivial!
+
+    override fun toString(): String {
+        return if (isInvalid) "Invalid" else "$year-$month-$day"
+    }
 }
+
+fun PackedDate.toStringExcludingSameYear(): String = when {
+    isInvalid -> toString()
+    year == PackedDate.now().year -> "$month-$day"
+    else -> toString()
+}
+
+fun PackedDate?.isNullOrInvalid(): Boolean = this == null || this.isInvalid
+
+inline fun PackedDate.ifInvalid(block: () -> PackedDate): PackedDate {
+    contract { callsInPlace(block, InvocationKind.AT_MOST_ONCE) }
+    return if (isInvalid) block() else this
+}
+
+//private val UTC8 = kotlinx.datetime.TimeZone.of("UTC+8")
+
+//@Stable
+//fun PackedDate.toEpochMillis(): Long {
+//    return LocalDate(year, month, day).atStartOfDayIn(UTC8).toEpochMilliseconds()
+//}
 
 /**
  * 获取月份所在季度的第一个月, `1, 4, 7, 10`.

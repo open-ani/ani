@@ -3,10 +3,8 @@ package me.him188.ani.app.data.subject
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonElement
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
-import org.openapitools.client.models.Subject
 
 /**
  * 详细信息.
@@ -31,13 +29,36 @@ data class SubjectInfo(
     /* 数据库中的章节数量 */
     val totalEpisodes: Int = 0,
 //    val rating: Rating,
-    val tags: List<Tag> = emptyList(),
+    val tags: List<Tag> = emptyList(), // must be sorted by count
     /* air date in `YYYY-MM-DD` format */
-    val date: String? = null,
+    val airDateString: String? = null,
     val infobox: List<InfoboxItem> = emptyList(),
     val imageCommon: String = "",
+    val imageLarge: String,
+    /**
+     * 该条目的全站收藏统计
+     */
+    val collection: SubjectCollectionStats = SubjectCollectionStats.Zero,
+    val ratingInfo: RatingInfo,
 ) {
-    val publishDate: PackedDate = if (date == null) PackedDate.Invalid else PackedDate.parseFromDate(date)
+    /**
+     * 放送开始
+     */
+    val airDate: PackedDate = if (airDateString == null) PackedDate.Invalid else PackedDate.parseFromDate(airDateString)
+
+    /**
+     * 放送结束. 当没有结束时间时为 [PackedDate.Invalid]
+     */
+    val completeDate: PackedDate =
+        (findInfoboxValue("播放结束") ?: findInfoboxValue("放送结束"))
+            ?.let {
+                PackedDate.parseFromDate(
+                    it.replace('年', '-')
+                        .replace('月', '-')
+                        .removeSuffix("日"),
+                )
+            }
+            ?: PackedDate.Invalid
 
     /**
      * 主要显示名称
@@ -63,14 +84,28 @@ data class SubjectInfo(
     companion object {
         @Stable
         @JvmStatic
-        val Empty = SubjectInfo()
+        val Empty = SubjectInfo(
+            ratingInfo = RatingInfo.Empty,
+            imageLarge = "",
+        )
 
         private val logger = logger<SubjectInfo>()
     }
 }
 
 @Stable
+fun SubjectInfo.findInfoboxValue(key: String): String? = infobox.firstOrNull { it.name == key }?.valueOrNull
+
+@Stable
 val SubjectInfo.nameCnOrName get() = nameCn.takeIf { it.isNotBlank() } ?: name
+
+@Stable
+val SubjectInfo.totalEpisodesOrEps: Int
+    get() {
+        val totalEpisodes = totalEpisodes
+        if (totalEpisodes != 0) return totalEpisodes
+        return eps
+    }
 
 
 @Serializable
@@ -84,24 +119,8 @@ class Tag(
 @Immutable
 class InfoboxItem(
     val name: String,
-    val value: JsonElement,
-)
-
-fun Subject.createSubjectInfo(): SubjectInfo {
-    return SubjectInfo(
-        id = id,
-        name = name,
-        nameCn = nameCn,
-        summary = this.summary,
-        nsfw = this.nsfw,
-        locked = this.locked,
-        platform = this.platform,
-        volumes = this.volumes,
-        eps = this.eps,
-        totalEpisodes = this.totalEpisodes,
-        date = this.date,
-        tags = this.tags.map { Tag(it.name, it.count) },
-        infobox = this.infobox?.map { it.toInfoboxItem() }.orEmpty(),
-        imageCommon = this.images.common,
-    )
+    val values: List<String>,
+) {
+    val valueOrNull get() = values.firstOrNull()
 }
+
