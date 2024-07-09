@@ -28,6 +28,7 @@ logback = "1.4.14"
 aws = "2.25.49"
 ksp = "2.0.0-1.0.21"
 room = "2.7.0-alpha03"
+snakeyaml = "2.2"
 sqlite = "2.5.0-alpha03"
 constraintlayout-compose = "0.4.0"
 
@@ -97,6 +98,7 @@ koin-ktor = { module = "io.insert-koin:koin-ktor", version.ref = "koin" }
 
 # Yamlkt
 directories = { module = "dev.dirs:directories", version = "26" }
+snakeyaml = { module = "org.yaml:snakeyaml", version.ref = "snakeyaml" }
 
 # Logging
 log4j-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j-core" }

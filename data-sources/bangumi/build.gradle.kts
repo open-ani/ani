@@ -1,3 +1,5 @@
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+
 /*
  * Ani
  * Copyright (C) 2022-2024 Him188
@@ -49,8 +51,8 @@ idea {
     }
 }
 
-openApiGenerate {
-    // https://github.com/OpenAPITools/openapi-generator/blob/master/modules/openapi-generator-gradle-plugin/README.adoc
+// https://github.com/OpenAPITools/openapi-generator/blob/master/modules/openapi-generator-gradle-plugin/README.adoc
+val generateApiV0 = tasks.register("generateApiV0", GenerateTask::class) {
     generatorName.set("kotlin")
     inputSpec.set("$projectDir/v0.yaml")
     outputDir.set(layout.buildDirectory.file(generatedRoot).get().asFile.absolutePath)
@@ -85,11 +87,81 @@ openApiGenerate {
 //    typeMappings.put("BangumiEpisodeCollectionType", "/*- `0`: 未收藏 - `1`: 想看 - `2`: 看过 - `3`: 抛弃*/ Int")
 }
 
+val generateApiP1 = tasks.register("generateApiP1", GenerateTask::class) {
+    generatorName.set("kotlin")
+    inputSpec.set(stripP1Api("$projectDir/p1.yaml").absolutePath)
+    outputDir.set(layout.buildDirectory.file(generatedRoot).get().asFile.absolutePath)
+    packageName.set("me.him188.ani.datasources.bangumi.next")
+    modelNamePrefix.set("BangumiNext")
+    apiNameSuffix.set("BangumiNextApi")
+    additionalProperties.set(
+        mapOf(
+            "apiSuffix" to "BangumiNextApi",
+            "library" to "multiplatform",
+            "dateLibrary" to "kotlinx-datetime",
+            "enumPropertyNaming" to "UPPERCASE",
+            "omitGradleWrapper" to "true",
+        ),
+    )
+    generateModelTests.set(false)
+    generateApiTests.set(false)
+    generateApiDocumentation.set(false)
+    generateModelDocumentation.set(false)
+    validateSpec.set(false)
+
+    typeMappings.put(
+        "kotlin.Double",
+        "@Serializable(me.him188.ani.utils.serialization.BigNumAsDoubleStringSerializer::class) me.him188.ani.utils.serialization.BigNum",
+    )
+}
+
+private fun stripP1Api(path: String): File {
+    val yaml = org.yaml.snakeyaml.Yaml()
+    val p1ApiObject: Map<String, Any> = File(path).inputStream().use { yaml.load(it) }
+
+    // keep subjects only
+    val paths = p1ApiObject["paths"].cast<Map<String, *>>().toMutableMap()
+    val subjectPaths = paths.filter { (path, _) -> path.startsWith("/p1/subjects") }
+
+    // keep components referred by subjects only
+    val components = p1ApiObject["components"].cast<Map<String, *>>().toMutableMap()
+    components.remove("securitySchemes")
+    val keepSchemaKeys = listOf(
+        "ErrorResponse",
+        "Topic",
+        "SubjectInterestComment",
+        "TopicCreation",
+        "TopicDetail",
+        "GroupReply",
+        "BaseEpisodeComment",
+        "Group",
+        "Subject",
+        "Reaction",
+        "Reply",
+        "SubReply",
+    )
+    val schemas = components["schemas"].cast<Map<String, *>>().toMutableMap()
+    val keepSchemas = schemas.filter { (component, _) -> component in keepSchemaKeys }
+
+    val strippedApiObject = mutableMapOf<String, Any>().apply {
+        put("openapi", p1ApiObject["openapi"].cast())
+        put("info", p1ApiObject["info"].cast())
+        put("paths", subjectPaths)
+        put("components", mapOf("schemas" to keepSchemas))
+    }
+
+    return File.createTempFile("ani-build-fixGeneratedOpenApi-next-p1-stripped", ".yaml").apply {
+        deleteOnExit()
+        writeText(yaml.dump(strippedApiObject))
+    }
+}
+
 val fixGeneratedOpenApi = tasks.register("fixGeneratedOpenApi") {
-    dependsOn(tasks.withType(org.openapitools.generator.gradle.plugin.tasks.GenerateTask::class))
+    dependsOn(generateApiV0, generateApiP1)
     val models =
         layout.buildDirectory.file("$generatedRoot/src/commonMain/kotlin/me/him188/ani/datasources/bangumi/models/")
             .get().asFile
+    
 
 //    inputs.file(file)
 //    outputs.file(file)
