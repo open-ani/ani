@@ -242,6 +242,11 @@ internal fun EpisodeVideoImpl(
                 },
                 danmakuEditor = danmakuEditor,
                 endActions = {
+                    if (expanded) {
+                        PlayerControllerDefaults.SelectEpisodeIcon(
+                            onShowSelectEpisode,
+                        )
+                    }
                     if (currentPlatform.isDesktop()) PlayerControllerDefaults.AudioSwitcher(playerState.audioTracks)
                     PlayerControllerDefaults.SubtitleSwitcher(playerState.subtitleTracks)
                     val speed by playerState.playbackSpeed.collectAsStateWithLifecycle()
@@ -249,11 +254,6 @@ internal fun EpisodeVideoImpl(
                         speed,
                         { playerState.setPlaybackSpeed(it) },
                     )
-                    if (expanded) {
-                        PlayerControllerDefaults.SelectEpisodeIcon(
-                            onShowSelectEpisode,
-                        )
-                    }
                     PlayerControllerDefaults.FullscreenIcon(
                         expanded,
                         onClickFullscreen = onClickFullScreen,
