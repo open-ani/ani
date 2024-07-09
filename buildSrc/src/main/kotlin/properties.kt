@@ -30,3 +30,6 @@ fun Project.getLocalProperty(key: String): String? {
 
 
 fun Project.getIntProperty(name: String) = getProperty(name).toInt()
+
+val Project.enableAnitorrent
+    get() = (getPropertyOrNull("ani.enable.anitorrent") ?: "false").toBooleanStrict()

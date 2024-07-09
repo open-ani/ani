@@ -168,7 +168,9 @@ val buildAnitorrent = tasks.register("buildAnitorrent", Exec::class.java) {
 
 
 tasks.getByName("compileJava") {
-    dependsOn(generateSwig)
+    if (enableAnitorrent) {
+        dependsOn(generateSwig)
+    }
 }
 
 idea {

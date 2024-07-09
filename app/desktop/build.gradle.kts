@@ -140,9 +140,6 @@ compose.desktop {
 val anitorrentRootDir = rootProject.projectDir.resolve("torrent/anitorrent")
 val anitorrentBuildDir = anitorrentRootDir.resolve("build-ci")
 
-val enableAnitorrent =
-    (getPropertyOrNull("ani.enable.anitorrent") ?: "false").toBooleanStrict()
-
 val copyAnitorrentDylibToResources = tasks.register("copyAnitorrentDylibToResources", Copy::class.java) {
     group = "anitorrent"
     dependsOn(":torrent:anitorrent:buildAnitorrent")

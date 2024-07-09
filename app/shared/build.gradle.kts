@@ -63,9 +63,6 @@ compose.resources {
     generateResClass = always
 }
 
-val enableAnitorrent =
-    (getPropertyOrNull("ani.enable.anitorrent") ?: "false").toBooleanStrict()
-
 kotlin {
     sourceSets.commonMain.dependencies {
         api(libs.kotlinx.coroutines.core)
