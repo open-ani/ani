@@ -206,7 +206,7 @@ class EpisodeCacheStateTest {
     fun `showProgressIndicator is true when SelectMedia`() = runComposeStateTest {
         val state = createEpisodeCacheState()
         state.cacheRequester
-            .request(EpisodeCacheRequest(SubjectInfo(), EpisodeInfo(1)))
+            .request(EpisodeCacheRequest(SubjectInfo.Empty, EpisodeInfo(1)))
 
         takeSnapshot()
         assertEquals(true, state.showProgressIndicator)
@@ -217,7 +217,7 @@ class EpisodeCacheStateTest {
     fun `showProgressIndicator is true when SelectStorage`() = runComposeStateTest {
         val state = createEpisodeCacheState()
         state.cacheRequester
-            .request(EpisodeCacheRequest(SubjectInfo(), EpisodeInfo(1)))
+            .request(EpisodeCacheRequest(SubjectInfo.Empty, EpisodeInfo(1)))
             .select(TestMediaList[0])
 
         takeSnapshot()
@@ -229,7 +229,7 @@ class EpisodeCacheStateTest {
     fun `showProgressIndicator is false when Done`() = runComposeStateTest {
         val state = createEpisodeCacheState()
         state.cacheRequester
-            .request(EpisodeCacheRequest(SubjectInfo(), EpisodeInfo(1)))
+            .request(EpisodeCacheRequest(SubjectInfo.Empty, EpisodeInfo(1)))
             .select(TestMediaList[0])
             .trySelectSingle()
 
@@ -254,7 +254,7 @@ class EpisodeCacheStateTest {
     fun `currentSelectMediaTask is not null when SelectMedia`() = runComposeStateTest {
         val state = createEpisodeCacheState()
         state.cacheRequester
-            .request(EpisodeCacheRequest(SubjectInfo(), EpisodeInfo(1)))
+            .request(EpisodeCacheRequest(SubjectInfo.Empty, EpisodeInfo(1)))
 
         takeSnapshot()
 
@@ -266,7 +266,7 @@ class EpisodeCacheStateTest {
     fun `currentSelectMediaTask is not null when SelectStorage`() = runComposeStateTest {
         val state = createEpisodeCacheState()
         state.cacheRequester
-            .request(EpisodeCacheRequest(SubjectInfo(), EpisodeInfo(1)))
+            .request(EpisodeCacheRequest(SubjectInfo.Empty, EpisodeInfo(1)))
             .select(TestMediaList[0])
 
         takeSnapshot()
@@ -279,7 +279,7 @@ class EpisodeCacheStateTest {
     fun `currentSelectMediaTask is null when Done`() = runComposeStateTest {
         val state = createEpisodeCacheState()
         state.cacheRequester
-            .request(EpisodeCacheRequest(SubjectInfo(), EpisodeInfo(1)))
+            .request(EpisodeCacheRequest(SubjectInfo.Empty, EpisodeInfo(1)))
             .select(TestMediaList[0])
             .trySelectSingle()
 

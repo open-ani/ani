@@ -56,6 +56,7 @@ includeProject(":utils:testing", "utils/testing")
 //includeProject(":torrent:api") // Torrent 系统 API
 //includeProject(":torrent:impl:libtorrent4j") // libtorrent4j 实现
 //includeProject(":torrent:impl:qbittorrent") // qBittorrent 实现
+includeProject(":torrent:anitorrent")
 
 // client
 includeProject(":app:shared", "app/shared") // shared by clients (targets JVM)

@@ -113,7 +113,11 @@ fun EpisodeSelectorSideSheet(
                 .filter { it != -1 }
                 .first()
             if (currentIndex != -1) {
-                lazyListState.scrollToItem(currentIndex)
+                lazyListState.scrollToItem(
+                    currentIndex,
+                    // 显示半个上个元素
+                    scrollOffset = -(lazyListState.layoutInfo.visibleItemsInfo.getOrNull(0)?.size?.div(2) ?: 0),
+                )
             }
         }
         LazyColumn(state = lazyListState) {

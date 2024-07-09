@@ -21,6 +21,8 @@ import org.gradle.api.Task
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.kotlin.dsl.ExistingDomainObjectDelegate
 import org.gradle.kotlin.dsl.RegisteringDomainObjectDelegateProviderWithTypeAndAction
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 import kotlin.reflect.KProperty
 
 
@@ -46,3 +48,9 @@ internal val Project.sourceSets: org.gradle.api.tasks.SourceSetContainer
 @PublishedApi
 internal operator fun <T> ExistingDomainObjectDelegate<out T>.getValue(receiver: Any?, property: KProperty<*>): T =
     delegate
+
+@OptIn(ExperimentalContracts::class)
+inline fun <reified T> Any?.cast(): T {
+    contract { returns() implies (this@cast is T) }
+    return this as T
+}

@@ -3,18 +3,18 @@ package me.him188.ani.app.ui.profile
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
-import org.openapitools.client.models.Avatar
-import org.openapitools.client.models.User
-import org.openapitools.client.models.UserGroup
+import me.him188.ani.datasources.bangumi.models.BangumiAvatar
+import me.him188.ani.datasources.bangumi.models.BangumiUser
+import me.him188.ani.datasources.bangumi.models.BangumiUserGroup
 
 @Preview
 @Composable
 internal fun PreviewSelfInfo() {
     ProvideCompositionLocalsForPreview {
         SelfInfo(
-            User(
+            BangumiUser(
                 username = "username",
-                avatar = Avatar(
+                avatar = BangumiAvatar(
                     "https://example.com/avatar.jpg",
                     "https://example.com/avatar.jpg",
                     "https://example.com/avatar.jpg",
@@ -22,7 +22,7 @@ internal fun PreviewSelfInfo() {
                 id = 1,
                 nickname = "",
                 sign = "Sign ".repeat(3),
-                userGroup = UserGroup.User,
+                userGroup = BangumiUserGroup.User,
             ),
             true,
             onClickSettings = {},

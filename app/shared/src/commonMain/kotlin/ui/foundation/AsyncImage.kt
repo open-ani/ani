@@ -2,10 +2,6 @@ package me.him188.ani.app.ui.foundation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
@@ -58,27 +54,17 @@ fun AsyncImage(
     clipToBounds: Boolean = true,
     modelEqualityDelegate: EqualityDelegate = DefaultModelEqualityDelegate,
 ) {
-    var isLoading by remember { mutableStateOf(true) }
     return coil3.compose.AsyncImage(
         model = model,
         contentDescription = contentDescription,
         imageLoader = imageLoader,
-        modifier = Modifier.placeholder(isLoading).then(modifier),
+        modifier = Modifier.then(modifier),
         placeholder = null,
         error = error,
         fallback = fallback,
-        onLoading = {
-            isLoading = true
-            onLoading?.invoke(it)
-        },
-        onSuccess = {
-            isLoading = false
-            onSuccess?.invoke(it)
-        },
-        onError = {
-            isLoading = false
-            onError?.invoke(it)
-        },
+        onLoading = onLoading,
+        onSuccess = onSuccess,
+        onError = onError,
         alignment = alignment,
         contentScale = contentScale,
         alpha = alpha,

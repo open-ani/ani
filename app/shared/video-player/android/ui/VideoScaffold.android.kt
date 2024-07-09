@@ -69,7 +69,7 @@ private fun PreviewVideoScaffoldImpl(
         danmakuHostState = remember {
             DanmakuHostState()
         },
-        videoLoadingState = { VideoLoadingState.Succeed },
+        videoLoadingState = { VideoLoadingState.Succeed(isBt = true) },
         danmakuConfig = { DanmakuConfig.Default },
         onClickFullScreen = { },
         onExitFullscreen = { },

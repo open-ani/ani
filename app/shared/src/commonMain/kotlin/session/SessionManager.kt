@@ -30,7 +30,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -49,7 +48,6 @@ import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.trace
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.openapitools.client.infrastructure.ApiClient
 import kotlin.time.Duration.Companion.days
 
 /**
@@ -160,9 +158,7 @@ internal class SessionManagerImpl(
     private val logger = logger(SessionManager::class)
 
     override val session: SharedFlow<Session?> =
-        tokenRepository.session.distinctUntilChanged().onEach {
-            ApiClient.accessToken = it?.accessToken
-        }.shareInBackground(SharingStarted.Eagerly)
+        tokenRepository.session.distinctUntilChanged().shareInBackground(SharingStarted.Eagerly)
 
     override val username: SharedFlow<String?> =
         session

@@ -5,8 +5,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import me.him188.ani.app.data.repositories.SettingsRepository
 import me.him188.ani.app.platform.Platform
+import me.him188.ani.app.tools.torrent.engines.AnitorrentEngine
 import me.him188.ani.app.tools.torrent.engines.Libtorrent4jEngine
-import me.him188.ani.app.tools.torrent.engines.QBittorrentEngine
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.io.File
@@ -21,7 +21,7 @@ import kotlin.coroutines.CoroutineContext
  */
 interface TorrentManager {
     val libtorrent4j: Libtorrent4jEngine
-    val qBittorrent: QBittorrentEngine
+    val anitorrent: AnitorrentEngine
 
     val engines: List<TorrentEngine>
 }
@@ -30,7 +30,7 @@ enum class TorrentEngineType(
     val id: String,
 ) {
     Libtorrent4j("libtorrent4j"),
-    QBittorrent("qbittorrent"),
+    Anitorrent("anitorrent"),
 }
 
 class TorrentDownloaderInitializationException(
@@ -49,7 +49,6 @@ class DefaultTorrentManager(
     private val settingsRepository: SettingsRepository by inject()
 
     private val libtorrent4jConfig get() = settingsRepository.libtorrent4jConfig.flow
-    private val qbittorrentConfig get() = settingsRepository.qBittorrentConfig.flow
 
     private val scope = CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
 
@@ -57,8 +56,8 @@ class DefaultTorrentManager(
         Libtorrent4jEngine(scope, libtorrent4jConfig, saveDir(TorrentEngineType.Libtorrent4j))
     }
 
-    override val qBittorrent: QBittorrentEngine by lazy {
-        QBittorrentEngine(scope, qbittorrentConfig, saveDir(TorrentEngineType.QBittorrent))
+    override val anitorrent: AnitorrentEngine by lazy {
+        AnitorrentEngine(scope, settingsRepository.anitorrentConfig.flow, saveDir(TorrentEngineType.Anitorrent))
     }
 
     override val engines: List<TorrentEngine> by lazy(LazyThreadSafetyMode.NONE) {
@@ -69,7 +68,7 @@ class DefaultTorrentManager(
         // 如果要支持多个, 需要考虑将所有 storage 合并成一个 MediaSource.
 
         when (Platform.currentPlatform) {
-            is Platform.Desktop -> listOf(qBittorrent)
+            is Platform.Desktop -> listOf(anitorrent)
             Platform.Android -> listOf(libtorrent4j)
         }
     }

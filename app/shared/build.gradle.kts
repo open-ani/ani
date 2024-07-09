@@ -91,6 +91,8 @@ kotlin {
         api(projects.dataSources.jellyfin)
         api(projects.dataSources.ikaros)
 
+        api(projects.torrent.anitorrent)
+
         api(projects.utils.slf4jKt)
         api(projects.utils.coroutines)
         api(projects.utils.io)
@@ -128,6 +130,8 @@ kotlin {
 //        api(libs.okhttp.logging)
         implementation(libs.reorderable)
         implementation(libs.constraintlayout.compose)
+
+        implementation(libs.jna)
 
         implementation(libs.slf4j.api)
     }
@@ -344,12 +348,12 @@ val bangumiClientDesktopAppId = getPropertyOrNull("bangumi.oauth.client.desktop.
 val bangumiClientDesktopSecret = getPropertyOrNull("bangumi.oauth.client.desktop.secret")
 
 if (bangumiClientAndroidAppId == null || bangumiClientAndroidSecret == null) {
-    logger.warn("bangumi.oauth.client.android.appId or bangumi.oauth.client.android.secret is not set. Bangumi authorization will not work. Get a token from https://bgm.tv/dev/app and set them in local.properties.")
+    logger.warn("i:: bangumi.oauth.client.android.appId or bangumi.oauth.client.android.secret is not set. Bangumi authorization will not work. Get a token from https://bgm.tv/dev/app and set them in local.properties.")
 }
 
-if (bangumiClientDesktopAppId == null || bangumiClientDesktopSecret == null) {
-    logger.warn("bangumi.oauth.client.desktop.appId or bangumi.oauth.client.desktop.secret is not set. Bangumi authorization will not work. Get a token from https://bgm.tv/dev/app and set them in local.properties.")
-}
+//if (bangumiClientDesktopAppId == null || bangumiClientDesktopSecret == null) {
+//    logger.warn("bangumi.oauth.client.desktop.appId or bangumi.oauth.client.desktop.secret is not set. Bangumi authorization will not work. Get a token from https://bgm.tv/dev/app and set them in local.properties.")
+//}
 
 android {
     namespace = "me.him188.ani"
@@ -433,11 +437,18 @@ val generateAniBuildConfigDesktop = tasks.register("generateAniBuildConfigDeskto
     }
 }
 
+val enableAnitorrent =
+    (getPropertyOrNull("ani.enable.anitorrent") ?: "false").toBooleanStrict()
+
 tasks.named("compileKotlinDesktop") {
     dependsOn(generateAniBuildConfigDesktop)
+    if (enableAnitorrent) {
+        dependsOn(":torrent:anitorrent:generateSwig") // TODO: move this to impl:anitorrent module when we have separate modules
+    }
 }
 
 // :app:shared:kspKotlinDesktop
 tasks.withType(KspTaskJvm::class.java) {
     dependsOn(generateAniBuildConfigDesktop)
 }
+

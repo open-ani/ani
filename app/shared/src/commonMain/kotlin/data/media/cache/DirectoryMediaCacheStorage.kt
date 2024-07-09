@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
@@ -83,7 +82,7 @@ class DirectoryMediaCacheStorage(
 
     init {
         scope.launch {
-            engine.isEnabled.debounce(1000).collectLatest {
+            engine.isEnabled.collectLatest {
                 if (!it) {
                     listFlow.value = emptyList()
                     return@collectLatest

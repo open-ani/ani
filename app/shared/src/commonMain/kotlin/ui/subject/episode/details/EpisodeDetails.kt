@@ -25,12 +25,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.tools.rememberBackgroundMonoTasker
@@ -100,14 +102,29 @@ fun EpisodeDetails(
             }
 
             if (viewModel.mediaSelectorVisible) {
+                val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = currentPlatform.isDesktop())
+                val uiScope = rememberCoroutineScope()
                 ModalBottomSheet(
                     onDismissRequest = { viewModel.mediaSelectorVisible = false },
-                    sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = currentPlatform.isDesktop()),
+                    sheetState = sheetState,
                 ) {
                     EpisodePlayMediaSelector(
                         mediaSelector = viewModel.mediaSelectorPresentation,
                         sourceResults = viewModel.mediaSourceResultsPresentation,
-                        onDismissRequest = { viewModel.mediaSelectorVisible = false },
+                        onDismissRequest = {
+                            uiScope.launch {
+                                sheetState.hide()
+                                viewModel.mediaSelectorVisible = false
+                            }
+                        },
+                        onSelected = {
+                            if (viewModel.videoScaffoldConfig.hideSelectorOnSelect) {
+                                uiScope.launch {
+                                    sheetState.hide()
+                                    viewModel.mediaSelectorVisible = false
+                                }
+                            }
+                        },
                         modifier = Modifier.fillMaxHeight(), // 防止添加筛选后数量变少导致 bottom sheet 高度变化
                     )
                 }

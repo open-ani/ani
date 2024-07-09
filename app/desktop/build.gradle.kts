@@ -16,6 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import com.android.utils.CpuArchitecture
+import com.android.utils.osArchitecture
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import java.util.UUID
 
@@ -25,6 +27,7 @@ plugins {
     id("org.jetbrains.compose")
     kotlin("plugin.serialization")
     id("kotlinx-atomicfu")
+    idea
 }
 
 dependencies {
@@ -132,3 +135,66 @@ compose.desktop {
 
 // workaround for resource not found
 //kotlin.sourceSets.main.get().resources.srcDir(project(":common").projectDir.resolve("src/androidMain/res/raw"))
+
+val anitorrentRootDir = rootProject.projectDir.resolve("torrent/anitorrent")
+val anitorrentBuildDir = anitorrentRootDir.resolve("build-ci")
+
+val enableAnitorrent =
+    (getPropertyOrNull("ani.enable.anitorrent") ?: "false").toBooleanStrict()
+
+val copyAnitorrentDylibToResources = tasks.register("copyAnitorrentDylibToResources", Copy::class.java) {
+    group = "anitorrent"
+    dependsOn(":torrent:anitorrent:buildAnitorrent")
+
+    val buildType = getPropertyOrNull("CMAKE_BUILD_TYPE") ?: "Debug"
+    
+    when (getOs()) {
+        Os.Windows -> {
+            from(anitorrentBuildDir.resolve("$buildType/anitorrent.dll"))
+            from(anitorrentBuildDir.resolve("_deps/libtorrent-build/$buildType/torrent-rasterbar.dll"))
+            into(projectDir.resolve("appResources/windows-x64"))
+        }
+
+        Os.MacOS -> {
+            from(anitorrentBuildDir.resolve("libanitorrent.dylib"))
+            from(anitorrentBuildDir.resolve("_deps/libtorrent-build/libtorrent-rasterbar.2.0.10.dylib"))
+            val isArm = when (osArchitecture) {
+                CpuArchitecture.X86 -> false
+                CpuArchitecture.X86_64 -> false
+                CpuArchitecture.ARM -> true
+                CpuArchitecture.X86_ON_ARM -> false
+                CpuArchitecture.UNKNOWN -> false
+            }
+            into(
+                projectDir.resolve(
+                    if (isArm) "appResources/macos-arm64"
+                    else "appResources/macos-x64",
+                ),
+            )
+        }
+
+        Os.Unknown, Os.Linux -> {
+            from(anitorrentBuildDir.resolve("libanitorrent.so"))
+            from(anitorrentBuildDir.resolve("_deps/libtorrent-build/libtorrent-rasterbar.2.0.10.so"))
+            into(projectDir.resolve("appResources/linux-x64"))
+        }
+    }
+}
+
+if (enableAnitorrent) {
+    tasks.named("processResources") {
+        dependsOn(copyAnitorrentDylibToResources)
+    }
+
+//  Reason: Task ':app:desktop:prepareAppResources' uses this output of task ':app:desktop:copyAnitorrentCppWrapperToResources' without declaring an explicit or implicit dependency. This can lead to incorrect results being produced, depending on what order the tasks are executed.
+    afterEvaluate {
+        tasks.named("prepareAppResources") {
+            dependsOn(copyAnitorrentDylibToResources)
+        }
+    }
+} else {
+    // file:///D:/Projects/animation-garden/app/desktop/build.gradle.kts:202:5:
+    val readmeFile = anitorrentRootDir.resolve("README.md")
+    // IDE 会识别这个格式并给出明显提示
+    logger.warn("w:: Anitorrent 没有启用. PC 构建将不支持 BT 功能. Android 不受影响. 可阅读 $readmeFile 了解如何启用")
+}

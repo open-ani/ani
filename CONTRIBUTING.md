@@ -31,11 +31,9 @@
 
 ## 1. 开发工具
 
-因为项目使用的技术全都非常新 (不过都是比较稳定的), 建议使用 Android Studio 的最新版本以获得最佳体验.
+建议使用 Android Studio 的最新版本以获得最佳体验, 尤其是 Compose 即时预览.
 
 ### 使用 Android Studio (推荐)
-
-使用 IntelliJ IDEA 则需要最低版本至少为 `2024.1`.
 
 - 需要 JDK 版本至少为 17（如果系统没有, 会自动下载）
 - 需要 Android SDK 版本至少为 API 34
@@ -60,6 +58,16 @@
 - Compose colors preview (可选安装, 用于预览颜色)
 
 > 如果不按照上述要求, 你可能会遇到奇怪的难以解决的问题.
+
+### Windows 特别提示
+
+1. 设置 Git 使用 LF 并忽略文件权限
+   ```shell
+   git config core.autocrlf false
+   git config core.eol crlf
+   git config core.filemode false
+   git add --update --renormalize
+   ```
 
 ## 2. 代码风格
 
@@ -118,7 +126,8 @@ ani
 
 ## 4. 依赖管理
 
-Ani 使用 Gradle Version Catalogs. 依赖位于 `gradle/libs.versions.toml`.
+Ani 使用 Gradle Version Catalogs.
+依赖位于 [`gradle/libs.versions.toml`](/gradle/libs.versions.toml).
 
 提示: 更新依赖后, 请先让 IDE sync 一下新的配置, 然后才能在 `build.gradle.kts` 中有 `libs.xxx` 的自动补全.
 
@@ -140,32 +149,53 @@ Ani 使用 Gradle Version Catalogs. 依赖位于 `gradle/libs.versions.toml`.
     - `bangumi.oauth.client.android.appId=bgmXXXXXXXX`
     - `bangumi.oauth.client.android.secret=XXXXXXXX`
 
-5. 再次前往 <https://bangumi.tv/dev/app>
-6. 再次创建一个新应用
-    - 应用名任意, 例如 Ani Desktop
-    - 主页地址请**不要**填写本项目地址, 请填写你的私人 fork 地址或个人主页地址.
-7. 编辑你刚刚创建的新应用
-    - 回调地址**留空** (必须留空, 否则在桌面端登录时会报错地址不符, 因为桌面端使用 HTTP
-      服务器完成回调)
-    - 记录 App ID 和 App Secret
-8. 在项目根目录的 `local.properties` 或 Gradle Home 的 `gradle.properties` 中添加如下内容 (
-   替换相应内容为你应用的):
-    - `bangumi.oauth.client.desktop.appId=bgmXXXXXXXX`
-    - `bangumi.oauth.client.desktop.secret=XXXXXXXX`
+[//]: # (5. 再次前往 <https://bangumi.tv/dev/app>)
 
-9. 在 IDE 同步项目, 执行一次构建 (`./gradlew build`). 待构建完成后 (双击 shift)
-   查看生成的 `me.him188.ani.android.BuildConfig`, 你应当能看到你的应用 ID 和
+[//]: # (6. 再次创建一个新应用)
+
+[//]: # (    - 应用名任意, 例如 Ani Desktop)
+
+[//]: # (    - 主页地址请**不要**填写本项目地址, 请填写你的私人 fork 地址或个人主页地址.)
+
+[//]: # (7. 编辑你刚刚创建的新应用)
+
+[//]: # (    - 回调地址**留空** &#40;必须留空, 否则在桌面端登录时会报错地址不符, 因为桌面端使用 HTTP)
+
+[//]: # (      服务器完成回调&#41;)
+
+[//]: # (    - 记录 App ID 和 App Secret)
+
+[//]: # (8. 在项目根目录的 `local.properties` 或 Gradle Home 的 `gradle.properties` 中添加如下内容 &#40;)
+
+[//]: # (   替换相应内容为你应用的&#41;:)
+
+[//]: # (    - `bangumi.oauth.client.desktop.appId=bgmXXXXXXXX`)
+
+[//]: # (    - `bangumi.oauth.client.desktop.secret=XXXXXXXX`)
+
+5. 在 IDE 同步项目, 执行一次构建 (`./gradlew build`). 待构建完成后 (双击 shift)
+   查看生成的 `me.him188.ani.app.platform.AniBuildConfigAndroid`, 你应当能看到你的应用 ID 和
    Secret 已经更新到该文件中.
-   > 桌面端也会自动有类似的 BuildConfig 文件生成 (`
-   me.him188.ani.app.platform.AniBuildConfigDesktop). 它与 Android 端的是同步的.
+
+[//]: # (   > 桌面端也会自动有类似的 BuildConfig 文件生成 &#40;`)
+
+[//]: # (   me.him188.ani.app.platform.AniBuildConfigDesktop&#41;. 它与 Android 端的是同步的.)
 
 ### 5.2. 配置 Android 签名
 
 在构建安卓目标时会自动弹出配置. 跟随 IDE 的指引即可.
 
-### 5.3. 生成 Compose Multiplatform 资源
+[//]: # ()
 
-执行 `./gradlew generateComposeResClass` 即可生成一个 `Res` 类, 用于在 `:app:shared` 访问资源文件.
+[//]: # (### 5.3. 生成 Compose Multiplatform 资源)
+
+[//]: # ()
+
+[//]: # (执行 `./gradlew generateComposeResClass` 即可生成一个 `Res` 类, 用于在 `:app:shared` 访问资源文件.)
+
+### 5.3 安装 Native 依赖
+
+阅读 [torrent/anitorrent/README.md](torrent/anitorrent/README.md)
 
 ### 5.4. 执行构建
 
@@ -211,14 +241,6 @@ data
 还提供了一个 [`MediaFetcher`](https://github.com/Him188/ani/tree/master/app/shared/data/common/data/media/MediaFetcher.kt#L42),
 封装了对番剧的下载链接获取逻辑.
 
-### `bangumi-authentication`: Bangumi 授权
-
-负责 Bangumi 授权的逻辑和 UI.
-
-提供 [`SessionManager`](https://github.com/Him188/ani/tree/master/app/shared/bangumi-authentication/common/session/SessionManager.kt#L58)
-接口, 允许其他模块使用 Bangumi 的用户 token.
-其他模块通过依赖注入 `SessionManager` 来获取 token 的 Flow.
-
 ### `foundation`: 基础组件
 
 提供 i18n 支持, 通用的 UI 组件, 对平台交互的封装等.
@@ -236,10 +258,9 @@ data
 
 ### `pages`: 按 UI 页面分类的功能模块
 
-UI 设计采用 MVVM 模式. MVVM 设计模式中的 Model 部分在 Ani 中可以是各数据源 (`:data-sources`) 提供的数据类,
-例如 `:data-sources:bangumi` 将提供 `EpisodeDetails`.
+UI 设计采用 MVVM 模式.
 
-`pages` 目录中, 按照在 APP 实际运行时会展示的页面区分子目录. 相关联的 View (`@Composable`) 和
+`ui/pages` 目录中, 按照在 APP 实际运行时会展示的页面区分子目录. 相关联的 View (`@Composable`) 和
 ViewModel 放置在同一目录下.
 
 - `main`: 整个 APP UI 的入口点, 实现各个页面之间的跳转等

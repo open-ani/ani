@@ -12,7 +12,7 @@ import org.junit.jupiter.api.TestFactory
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-class SelectVideoFileEntryTest {
+class SelectVideoFileAnitorrentEntryTest {
     private val json = Json { ignoreUnknownKeys = true }
 
     @Test

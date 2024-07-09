@@ -286,10 +286,13 @@ class LazyDataCacheImpl<T>(
             when (orderPolicy) {
                 RefreshOrderPolicy.REPLACE -> {
                     val source = sourceInfo?.source
+                    val newList = block(save.list).fastDistinctBy { getKey(it) }
                     return@updateData LazyDataCacheSave(
-                        block(save.list).fastDistinctBy { getKey(it) },
-                        source?.currentPage?.value,
-                        source?.totalSize?.value,
+                        newList,
+                        page = source?.currentPage?.value ?: save.page,
+                        totalSize = (source?.totalSize?.value ?: save.totalSize)?.let {
+                            it + (newList.size - save.list.size)
+                        },
                     )
                 }
 
@@ -308,10 +311,13 @@ class LazyDataCacheImpl<T>(
                             Int.MAX_VALUE // not found, put it at the end
                         } else originalIndex
                     }
+                    val newList = newIndices.map { new[it] }
                     return@updateData LazyDataCacheSave(
-                        newIndices.map { new[it] },
-                        source?.currentPage?.value,
-                        source?.totalSize?.value,
+                        newList,
+                        page = source?.currentPage?.value ?: save.page,
+                        totalSize = (source?.totalSize?.value ?: save.totalSize)?.let {
+                            it + (newList.size - save.list.size)
+                        },
                     )
 //                    
 //                    // associateByTo also distinct

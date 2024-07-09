@@ -3,6 +3,7 @@ package me.him188.ani.app.videoplayer.torrent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.runInterruptible
 import me.him188.ani.app.videoplayer.data.VideoData
 import me.him188.ani.app.videoplayer.data.VideoSource
 import me.him188.ani.datasources.api.MediaExtraFiles
@@ -34,8 +35,7 @@ class FileVideoData(
     override val downloadSpeed: StateFlow<FileSize> = MutableStateFlow(FileSize.Unspecified)
     override val uploadRate: Flow<FileSize> = MutableStateFlow(FileSize.Unspecified)
 
-    @Throws(IOException::class)
-    override fun createInput(): SeekableInput = file.toSeekableInput()
+    override suspend fun createInput(): SeekableInput = runInterruptible { file.toSeekableInput() }
     override fun close() {
         // no-op
     }

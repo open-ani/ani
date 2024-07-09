@@ -9,7 +9,7 @@ import me.him188.ani.app.tools.caching.ContentPolicy.CACHE_ONLY
  * 内容获取策略. 使用 [CACHE_FIRST] 可以保证获取到所有的数据, 但可能会破坏惰性请求的特性. (在手机上我们希望尽可能减少请求次数)
  * 一般优先使用 [CACHE_ONLY], 只在期望获取全部数据时才使用 [CACHE_FIRST].
  */
-enum class ContentPolicy {
+enum class ContentPolicy { // TODO: remove this, we always need CACHE_FIRST
     /**
      * 只读取缓存而不会请求网络, 若缓存中不包含所需数据, 则对应函数或 flow 可能会返回空.
      */

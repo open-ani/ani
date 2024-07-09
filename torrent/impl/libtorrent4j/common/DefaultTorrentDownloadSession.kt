@@ -5,6 +5,7 @@ import androidx.compose.ui.util.fastFirstOrNull
 import androidx.compose.ui.util.fastForEach
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
@@ -17,7 +18,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.runInterruptible
 import me.him188.ani.app.torrent.api.TorrentDownloadSession
 import me.him188.ani.app.torrent.api.TorrentDownloadState
 import me.him188.ani.app.torrent.api.files.AbstractTorrentFileEntry
@@ -29,16 +30,9 @@ import me.him188.ani.app.torrent.api.files.TorrentFileHandle
 import me.him188.ani.app.torrent.api.files.TorrentFilePieceMatcher.matchPiecesForFile
 import me.him188.ani.app.torrent.api.files.findPieceByPieceIndex
 import me.him188.ani.app.torrent.api.handle.AniTorrentHandle
-import me.him188.ani.app.torrent.api.handle.EventListener
-import me.him188.ani.app.torrent.api.handle.StatsUpdateEvent
 import me.him188.ani.app.torrent.api.handle.TaskQueue
-import me.him188.ani.app.torrent.api.handle.TorrentAddEvent
 import me.him188.ani.app.torrent.api.handle.TorrentContents
-import me.him188.ani.app.torrent.api.handle.TorrentEvent
 import me.him188.ani.app.torrent.api.handle.TorrentFile
-import me.him188.ani.app.torrent.api.handle.TorrentFinishedEvent
-import me.him188.ani.app.torrent.api.handle.TorrentResumeEvent
-import me.him188.ani.app.torrent.api.handle.TorrentSaveResumeDataEvent
 import me.him188.ani.app.torrent.api.handle.TorrentThread
 import me.him188.ani.app.torrent.api.pieces.Piece
 import me.him188.ani.app.torrent.api.pieces.PiecePriorities
@@ -46,12 +40,16 @@ import me.him188.ani.app.torrent.api.pieces.TorrentDownloadController
 import me.him188.ani.app.torrent.api.pieces.lastIndex
 import me.him188.ani.app.torrent.api.pieces.startIndex
 import me.him188.ani.app.torrent.io.TorrentInput
+import me.him188.ani.app.torrent.libtorrent4j.handle.EventListener
+import me.him188.ani.app.torrent.libtorrent4j.handle.StatsUpdateEvent
+import me.him188.ani.app.torrent.libtorrent4j.handle.TorrentEvent
+import me.him188.ani.app.torrent.libtorrent4j.handle.TorrentFinishedEvent
+import me.him188.ani.app.torrent.libtorrent4j.handle.TorrentResumeEvent
 import me.him188.ani.utils.coroutines.flows.resetStale
 import me.him188.ani.utils.io.SeekableInput
 import me.him188.ani.utils.logging.debug
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
-import org.libtorrent4j.AddTorrentParams
 import java.io.File
 import java.io.RandomAccessFile
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -59,7 +57,7 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
 open class DefaultTorrentDownloadSession(
-    private val torrentName: String,
+    protected val torrentName: String,
     /**
      * The directory where the torrent is saved.
      *
@@ -82,7 +80,7 @@ open class DefaultTorrentDownloadSession(
             close()
         }
 
-    private val logger = logger(this::class.simpleName + "@${this.hashCode()}")
+    protected val logger = logger(this::class.simpleName + "@${this.hashCode()}")
 
     /**
      * 在 BT 线程执行
@@ -94,18 +92,18 @@ open class DefaultTorrentDownloadSession(
     final override val state: MutableStateFlow<TorrentDownloadState> = MutableStateFlow(TorrentDownloadState.Starting)
 
     inner class OverallStatsImpl : DownloadStats() {
-        override val totalBytes: MutableStateFlow<Long> = MutableStateFlow(0L)
+        override val totalSize: MutableStateFlow<Long> = MutableStateFlow(0L)
         override val downloadedBytes = MutableStateFlow(0L)
 
-        val downloadRate0 = MutableStateFlow<Long?>(null)
-        override val downloadRate: Flow<Long?>
+        val downloadRate0 = MutableStateFlow(0L)
+        override val downloadRate
             get() = downloadRate0
                 .resetStale(1000) {
                     emit(0L)
                 }
                 .distinctUntilChanged()
 
-        val uploadRate0 = MutableStateFlow<Long?>(null)
+        val uploadRate0 = MutableStateFlow(0L)
         override val uploadRate
             get() = uploadRate0
                 .resetStale(1000) {
@@ -113,7 +111,7 @@ open class DefaultTorrentDownloadSession(
                 }
                 .distinctUntilChanged()
 
-        override val progress = combine(downloadedBytes, totalBytes) { downloaded, total ->
+        override val progress = combine(downloadedBytes, totalSize) { downloaded, total ->
             if (total == 0L) {
                 0f
             } else {
@@ -136,7 +134,7 @@ open class DefaultTorrentDownloadSession(
     override val overallStats = OverallStatsImpl()
     override suspend fun getFiles(): List<TorrentFileEntry> = actualInfo.await().entries
 
-    private inner class ActualTorrentInfo(
+    protected inner class ActualTorrentInfo(
         val allPiecesInTorrent: List<Piece>,
         files: List<TorrentFile>,
     ) {
@@ -245,7 +243,7 @@ open class DefaultTorrentDownloadSession(
     }
 
     // 构造时, actualInfo must be available
-    internal inner class TorrentFileEntryImpl(
+    inner class TorrentFileEntryImpl(
         index: Int,
         val offset: Long,
         length: Long,
@@ -309,10 +307,10 @@ open class DefaultTorrentDownloadSession(
 
         val downloadedBytes = MutableStateFlow(initialDownloadedBytes)
         override val stats: DownloadStats = object : DownloadStats() {
-            override val totalBytes: Flow<Long> = flowOf(length)
+            override val totalSize: Flow<Long> = flowOf(length)
             override val downloadedBytes get() = this@TorrentFileEntryImpl.downloadedBytes
-            override val downloadRate: Flow<Long?> get() = overallStats.downloadRate // TODO: separate download/upload rate for torrent file 
-            override val uploadRate: Flow<Long?> get() = overallStats.uploadRate
+            override val downloadRate: Flow<Long> get() = overallStats.downloadRate // TODO: separate download/upload rate for torrent file 
+            override val uploadRate: Flow<Long> get() = overallStats.uploadRate
             override val progress: Flow<Float> =
                 combine(finishedOverride, downloadedBytes) { finished, downloadBytes ->
                     when {
@@ -321,7 +319,7 @@ open class DefaultTorrentDownloadSession(
                         else -> (downloadBytes.toFloat() / length.toFloat()).coerceAtMost(1f)
                     }
                 }
-            override val isFinished: Flow<Boolean> = combine(downloadedBytes, totalBytes) { downloaded, total ->
+            override val isFinished: Flow<Boolean> = combine(downloadedBytes, totalSize) { downloaded, total ->
                 downloaded >= total
             }
 
@@ -336,7 +334,7 @@ open class DefaultTorrentDownloadSession(
                 val highestPriority = priorityRequests.values.maxWithOrNull(nullsFirst(naturalOrder()))
                     ?: FilePriority.IGNORE
                 handle.contents.files[index].priority = highestPriority
-                logger.info { "[$torrentName] Set file $pathInTorrent priority to $highestPriority" }
+                logger.info { "[$torrentId] Set file $pathInTorrent priority to $highestPriority" }
                 handle.resume()
             }
         }
@@ -346,15 +344,15 @@ open class DefaultTorrentDownloadSession(
             openHandles.add(it)
         }
 
-        override fun createInput(): SeekableInput {
-            val input = (resolveFileOrNull() ?: runBlocking { resolveDownloadingFile() })
+        override suspend fun createInput(): SeekableInput {
+            val input = (resolveFileOrNull() ?: resolveDownloadingFile())
             val pieces = pieces
             return TorrentInput(
-                RandomAccessFile(input, "r"),
+                runInterruptible(Dispatchers.IO) { RandomAccessFile(input, "r") },
                 pieces,
                 logicalStartOffset = offset,
                 onWait = { piece ->
-                    logger.info { "[TorrentDownloadControl] $torrentName: Set piece ${piece.pieceIndex} deadline to 0 because it was requested " }
+                    logger.info { "[TorrentDownloadControl] $torrentId: Set piece ${piece.pieceIndex} deadline to 0 because it was requested " }
                     torrentThreadTasks.submit { handle ->
                         handle.setPieceDeadline(piece.pieceIndex, 0) // 最高优先级
                         for (i in (piece.pieceIndex + 1..piece.pieceIndex + 3)) {
@@ -380,7 +378,7 @@ open class DefaultTorrentDownloadSession(
     /**
      * 通过磁力链解析的初始的信息可能是不准确的
      */
-    private val actualInfo: CompletableDeferred<ActualTorrentInfo> = CompletableDeferred()
+    protected val actualInfo: CompletableDeferred<ActualTorrentInfo> = CompletableDeferred()
 
     private fun actualInfo(): ActualTorrentInfo = actualInfo.getCompleted()
 
@@ -396,69 +394,7 @@ open class DefaultTorrentDownloadSession(
         @TorrentThread
         @Synchronized
         override fun onEvent(event: TorrentEvent) {
-            when (event) {
-                is TorrentAddEvent -> {
-                    logger.info { "[$torrentName] Received alert: Torrent added" }
-                    val torrentHandle = event.handle
-
-                    // Add trackers
-                    trackers.lines().map { it.trim() }.filter { it.isNotEmpty() }.forEach {
-                        torrentHandle.addTracker(it)
-                    }
-
-                    // Initialize [pieces]
-                    // 注意, 必须在这里初始化获取 pieces, 通过磁力链解析的可能是不准确的
-                    val contents = torrentHandle.contents
-                    logger.info { "[$torrentName] Torrent contents: ${contents.files.size} files" }
-                    actualInfo.complete(ActualTorrentInfo(contents.createPieces(), contents.files))
-                    logger.info { "[$torrentName] ActualTorrentInfo computed" }
-                }
-
-                is TorrentResumeEvent -> {
-                    if (actualInfo.isCompleted) return
-                    state.value = TorrentDownloadState.FetchingMetadata
-                }
-
-                is TorrentSaveResumeDataEvent -> {
-                    val data = event.platformData
-                    check(data is AddTorrentParams)
-                    logger.info { "[$torrentName] Save resume data, encoding..." }
-                    val buf = AddTorrentParams.writeResumeDataBuf(data)
-                    logger.info { "[$torrentName] Save resume data, buf length = ${buf.size}" }
-                    val file = saveDirectory.resolve(FAST_RESUME_FILENAME)
-                    file.writeBytes(buf)
-                    logger.info { "[$torrentName] Resume data saved" }
-                }
-
-                // TODO: torrent peer stats 
-//                is PeerConnectAlert -> {
-//                    overallStats.peerCount.getAndUpdate { it + 1 }
-//                }
-//
-//                is PeerDisconnectedAlert -> {
-//                    overallStats.peerCount.getAndUpdate { it - 1 }
-//                }
-                is TorrentFinishedEvent -> {
-                    // https://libtorrent.org/reference-Alerts.html#:~:text=report%20issue%5D-,torrent_finished_alert,-Declared%20in%20%22
-                    logger.info { "[$torrentName] Torrent finished" }
-                    event.handle.saveResumeData()
-                    actualInfo().onFinished(event.handle.contents)
-                }
-
-//                is FileErrorAlert -> {
-//                    logger.warn { "[libtorrent] $torrentName: File error: ${alert.operation()} ${alert.error()}" }
-//                }
-//
-//                is MetadataFailedAlert -> {
-//                    logger.warn { "[libtorrent] $torrentName: Metadata failed: ${alert.error.message}" }
-//                }
-                is StatsUpdateEvent -> {
-                    overallStats.totalBytes.value = event.totalBytes
-                    overallStats.downloadedBytes.value = event.downloadedBytes
-                    overallStats.downloadRate0.value = event.downloadRate
-                    overallStats.uploadRate0.value = event.uploadRate
-                }
-            }
+            handleEvent(event)
         }
 
         @TorrentThread
@@ -470,6 +406,43 @@ open class DefaultTorrentDownloadSession(
         override fun onBlockDownloading(pieceIndex: Int) {
             actualInfo().onBlockDownloading(pieceIndex)
         }
+    }
+
+    @TorrentThread
+    protected open fun handleEvent(event: TorrentEvent) {
+        when (event) {
+            is TorrentResumeEvent -> {
+                if (actualInfo.isCompleted) return
+                state.value = TorrentDownloadState.FetchingMetadata
+            }
+//
+//                is PeerDisconnectedAlert -> {
+//                    overallStats.peerCount.getAndUpdate { it - 1 }
+//                }
+            is TorrentFinishedEvent -> {
+                // https://libtorrent.org/reference-Alerts.html#:~:text=report%20issue%5D-,torrent_finished_alert,-Declared%20in%20%22
+                logger.info { "[$torrentName] Torrent finished" }
+                event.handle.saveResumeData()
+                actualInfo().onFinished(event.handle.contents)
+            }
+
+//                is FileErrorAlert -> {
+//                    logger.warn { "[libtorrent] $torrentName: File error: ${alert.operation()} ${alert.error()}" }
+//                }
+//
+//                is MetadataFailedAlert -> {
+//                    logger.warn { "[libtorrent] $torrentName: Metadata failed: ${alert.error.message}" }
+//                }
+            is StatsUpdateEvent -> {
+                overallStats.totalSize.value = event.totalBytes
+                overallStats.downloadedBytes.value = event.downloadedBytes
+                overallStats.downloadRate0.value = event.downloadRate
+                overallStats.uploadRate0.value = event.uploadRate
+            }
+
+            else -> {}
+        }
+
     }
 
 
@@ -547,7 +520,7 @@ private fun calculatePieceDeadlineByTime(
     return (System.currentTimeMillis().and(0x0FFF_FFFFL).toInt() % 1000_000_000) * 100 + shift
 }
 
-private val trackers = """
+internal val trackers = """
 udp://tracker1.itzmx.com:8080/announce
 udp://moonburrow.club:6969/announce
 udp://new-line.net:6969/announce

@@ -32,6 +32,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
@@ -48,6 +49,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
@@ -57,16 +60,21 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.debounce
 import me.him188.ani.app.data.media.EpisodeCacheStatus
 import me.him188.ani.app.data.subject.EpisodeCollection
+import me.him188.ani.app.data.subject.SubjectAiringInfo
+import me.him188.ani.app.data.subject.SubjectAiringKind
 import me.him188.ani.app.data.subject.SubjectCollection
 import me.him188.ani.app.data.subject.episode
+import me.him188.ani.app.data.subject.getEpisodeToPlay
+import me.him188.ani.app.data.subject.isOnAir
+import me.him188.ani.app.data.subject.toStringExcludingSameYear
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.ui.foundation.AsyncImage
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.indication.HorizontalIndicator
 import me.him188.ani.app.ui.foundation.indication.IndicatedBox
 import me.him188.ani.app.ui.subject.collection.progress.cacheStatusIndicationColor
-import me.him188.ani.app.ui.subject.details.COVER_WIDTH_TO_HEIGHT_RATIO
-import me.him188.ani.app.ui.subject.details.Tag
+import me.him188.ani.app.ui.subject.details.components.COVER_WIDTH_TO_HEIGHT_RATIO
+import me.him188.ani.app.ui.subject.details.components.OutlinedTag
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import kotlin.time.Duration.Companion.seconds
@@ -164,7 +172,6 @@ fun SubjectCollectionItem(
     onClick: () -> Unit,
     onClickEpisode: (episode: EpisodeCollection) -> Unit,
     onClickSelectEpisode: () -> Unit,
-    onSetAllEpisodesDone: () -> Unit,
     onSetCollectionType: (new: UnifiedCollectionType) -> Unit,
     modifier: Modifier = Modifier,
     height: Dp = 148.dp,
@@ -178,10 +185,11 @@ fun SubjectCollectionItem(
     ) {
         Row(Modifier.weight(1f, fill = false)) {
             AsyncImage(
-                item.image,
+                item.info.imageCommon,
                 contentDescription = null,
                 modifier = Modifier
                     .height(height).width(height * COVER_WIDTH_TO_HEIGHT_RATIO),
+                contentScale = ContentScale.Crop,
             )
 
             Box(Modifier.weight(1f)) {
@@ -190,7 +198,6 @@ fun SubjectCollectionItem(
                     episodeCacheStatus,
                     onClickEpisode,
                     onClickSelectEpisode,
-                    onSetAllEpisodesDone,
                     onSetCollectionType,
                     Modifier.padding(start = 12.dp).fillMaxSize(),
                     doneButton = doneButton,
@@ -209,7 +216,6 @@ private fun SubjectCollectionItemContent(
     cacheStatus: @Composable (subjectId: Int, episodeId: Int) -> EpisodeCacheStatus?,
     onClickEpisode: (episode: EpisodeCollection) -> Unit,
     onClickSelectEpisode: () -> Unit,
-    onSetAllEpisodesDone: (() -> Unit)?,
     onSetCollectionType: (new: UnifiedCollectionType) -> Unit,
     modifier: Modifier = Modifier,
     doneButton: @Composable (() -> Unit)? = null,
@@ -238,7 +244,6 @@ private fun SubjectCollectionItemContent(
                 EditCollectionTypeDropDown(
                     currentType = item.collectionType,
                     showDropdown, { showDropdown = false },
-                    onSetAllEpisodesDone = onSetAllEpisodesDone,
                     onClick = { action ->
                         onSetCollectionType(action.type)
                     },
@@ -252,12 +257,15 @@ private fun SubjectCollectionItemContent(
         ) {
             ProvideTextStyle(MaterialTheme.typography.labelMedium) {
                 // 2023 年 10 月
-                item.date?.let {
-                    Tag { Text(it) }
+                item.date.let {
+                    OutlinedTag { Text(it) }
                 }
 
                 // 连载至第 28 话 · 全 34 话
-                OnAirLabel(item, Modifier.padding(start = 8.dp))
+                OnAirLabel(
+                    item.airingInfo, Modifier.padding(start = 8.dp),
+                    style = MaterialTheme.typography.labelMedium,
+                )
             }
         }
 
@@ -276,10 +284,10 @@ private fun SubjectCollectionItemContent(
             }
 
             val onClickEpisodeState by rememberUpdatedState(onClickEpisode)
-            val onPlay: () -> Unit = { getEpisodeToPlay(item)?.let(onClickEpisodeState) }
+            val onPlay: () -> Unit = { item.getEpisodeToPlay()?.let(onClickEpisodeState) }
             IndicatedBox(
                 indicator = {
-                    getEpisodeToPlay(item)?.episode?.id?.let { episodeId ->
+                    item.getEpisodeToPlay()?.episode?.id?.let { episodeId ->
                         HorizontalIndicator(
                             6.dp,
                             CircleShape,
@@ -329,55 +337,69 @@ private fun SubjectCollectionItemContent(
     }
 }
 
-private fun getEpisodeToPlay(
-    item: SubjectCollection,
-): EpisodeCollection? {
-    if (item.continueWatchingStatus is ContinueWatchingStatus.Watched) {
-        return item.episodes[item.continueWatchingStatus.episodeIndex]
-    } else {
-        item.lastWatchedEpIndex?.let {
-            item.episodes.getOrNull(it + 1)
-        }?.let {
-            return it
-        }
 
-        item.lastWatchedEpIndex?.let {
-            item.episodes.getOrNull(it)
-        }?.let {
-            return it
-        }
-
-        item.episodes.firstOrNull()?.let {
-            return it
-        }
-    }
-
-    return null
-}
-
-
-// The label "已完结 · 全 28 话"
+/**
+ * ```
+ * 已完结 · 全 28 话
+ * ```
+ *
+ * ```
+ * 连载至第 28 话 · 全 34 话
+ * ```
+ *
+ * @sample
+ */
 @Composable
-private fun OnAirLabel(
-    item: SubjectCollection,
+fun OnAirLabel(
+    info: SubjectAiringInfo,
     modifier: Modifier = Modifier,
-    style: TextStyle = MaterialTheme.typography.labelMedium,
+    style: TextStyle = LocalTextStyle.current,
+    statusColor: Color = if (info.isOnAir) MaterialTheme.colorScheme.primary else LocalContentColor.current,
 ) {
     ProvideTextStyle(style) {
         Row(modifier.width(IntrinsicSize.Max).height(IntrinsicSize.Min)) {
             Text(
-                item.onAirDescription,
-                color = if (item.isOnAir) MaterialTheme.colorScheme.primary else LocalContentColor.current,
+                remember(info) {
+                    when (info.kind) {
+                        SubjectAiringKind.UPCOMING -> {
+                            if (info.airDate.isInvalid) {
+                                "未开播"
+                            } else {
+                                info.airDate.toStringExcludingSameYear() + " 开播"
+                            }
+                        }
+
+                        SubjectAiringKind.ON_AIR -> {
+                            if (info.latestSort == null) {
+                                "连载中"
+                            } else {
+                                "连载至第 ${info.latestSort} 话"
+                            }
+                        }
+
+                        SubjectAiringKind.COMPLETED -> "已完结"
+                    }
+                },
+                color = statusColor,
                 maxLines = 1,
             )
-            Text(
-                " · ",
-                maxLines = 1,
-            )
-            Text(
-                item.serialProgress,
-                maxLines = 1,
-            )
+            if (info.kind == SubjectAiringKind.UPCOMING && info.episodeCount == 0) {
+                // 剧集还未知
+            } else {
+                Text(
+                    " · ",
+                    maxLines = 1,
+                )
+                Text(
+                    when (info.kind) {
+                        SubjectAiringKind.ON_AIR,
+                        SubjectAiringKind.COMPLETED -> "全 ${info.episodeCount} 话"
+
+                        SubjectAiringKind.UPCOMING -> "预定全 ${info.episodeCount} 话"
+                    },
+                    maxLines = 1,
+                )
+            }
         }
     }
 }

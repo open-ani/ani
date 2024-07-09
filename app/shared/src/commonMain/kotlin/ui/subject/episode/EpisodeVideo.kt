@@ -36,6 +36,7 @@ import me.him188.ani.app.data.models.FullscreenSwitchMode
 import me.him188.ani.app.data.models.VideoScaffoldConfig
 import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.isDesktop
+import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.rememberViewModel
@@ -129,7 +130,7 @@ internal fun EpisodeVideoImpl(
             } else {
                 // Save the status bar height to offset the video player
                 var statusBarHeight by rememberSaveable { mutableStateOf(0) }
-                if (!expanded) {
+                if (currentPlatform.isMobile() && !expanded) {
                     val insets = WindowInsets.systemBars
                     val density = LocalDensity.current
                     SideEffect {

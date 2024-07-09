@@ -1,6 +1,7 @@
 package me.him188.ani.app.platform
 
 import android.view.WindowManager
+import kotlin.math.roundToInt
 import android.media.AudioManager as SystemAudioManager
 
 actual fun getComponentAccessorsImpl(context: Context): PlatformComponentAccessors =
@@ -76,7 +77,7 @@ private class AndroidAudioManager(
         val max = delegate.getStreamMaxVolume(streamType.android)
         return delegate.setStreamVolume(
             streamType.android,
-            (levelPercentage * max).toInt()
+            (levelPercentage * max).roundToInt()
                 .coerceIn(minimumValue = 0, maximumValue = max),
             0,
         )

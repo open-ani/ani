@@ -4,12 +4,9 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 import me.him188.ani.datasources.api.EpisodeSort
-import org.openapitools.client.models.Episode
 
 /**
  * 与数据源无关的条目信息.
- *
- * @see Episode
  */
 @Immutable
 @Serializable
@@ -19,7 +16,10 @@ data class EpisodeInfo(
     val type: EpisodeType = EpisodeType.MainStory,
     val name: String = "",
     val nameCn: String = "",
-    val airDate: PackedDate = PackedDate.Invalid,
+    /**
+     * 上映日期
+     */
+    val airDate: PackedDate = PackedDate.Invalid, // TODO: 考虑剧集上映时间 
     val comment: Int = 0,
     /** 维基人填写的原始时长 */
     val duration: String = "",
@@ -36,17 +36,13 @@ data class EpisodeInfo(
 )
 
 @Stable
-val EpisodeInfo.displayName get() = nameCnOrName
-
-@Stable
-val EpisodeInfo.nameCnOrName: String
-    get() = nameCn.ifBlank { name }
+val EpisodeInfo.displayName get() = nameCn.ifBlank { name }
 
 /**
  * 是否一定已经播出了
  */
 @Stable
-val EpisodeInfo.isKnownBroadcast: Boolean
+val EpisodeInfo.isKnownCompleted: Boolean
     get() = airDate.isValid && airDate <= PackedDate.now() // TODO: consider time 
 
 /**

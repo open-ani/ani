@@ -4,6 +4,7 @@ import androidx.annotation.UiThread
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.channels.BufferOverflow
@@ -27,7 +28,7 @@ class FixedDanmakuTrackState(
     internal val isPaused by isPaused
 
     var visibleDanmaku: DanmakuState? by mutableStateOf(null)
-    var sendTime: Long by mutableStateOf(0)
+    private var sendTime: Long by mutableLongStateOf(0)
 
     /**
      * 尝试发送一条弹幕到这个轨道. 当轨道已满时返回 `false`.
@@ -79,8 +80,8 @@ class FixedDanmakuTrackState(
         frameTime: Long,
     ): DanmakuState {
         return DanmakuState(presentation).also {
-            visibleDanmaku = it
             sendTime = frameTime
+            visibleDanmaku = it
         }
     }
 }

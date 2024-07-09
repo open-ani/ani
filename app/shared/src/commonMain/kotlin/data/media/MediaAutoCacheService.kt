@@ -24,7 +24,7 @@ import me.him188.ani.app.data.subject.EpisodeCollection
 import me.him188.ani.app.data.subject.SubjectCollection
 import me.him188.ani.app.data.subject.SubjectManager
 import me.him188.ani.app.data.subject.episode
-import me.him188.ani.app.data.subject.isKnownBroadcast
+import me.him188.ani.app.data.subject.isKnownCompleted
 import me.him188.ani.app.tools.caching.ContentPolicy
 import me.him188.ani.app.tools.caching.data
 import me.him188.ani.datasources.api.MediaCacheMetadata
@@ -181,7 +181,7 @@ class DefaultMediaAutoCacheService(
             var cachedCount = 0
             return eps
                 .asSequence()
-                .takeWhile { it.episode.isKnownBroadcast }
+                .takeWhile { it.episode.isKnownCompleted }
                 .dropWhile {
                     it.collectionType.isDoneOrDropped() // 已经看过的不考虑
                 }

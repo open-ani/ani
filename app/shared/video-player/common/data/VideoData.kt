@@ -54,8 +54,7 @@ interface VideoData : AutoCloseable {
      * The returned [SeekableInput] must be closed before a new [createInput] can be made.
      * Otherwise, it is undefined behavior.
      */
-    @Throws(IOException::class)
-    fun createInput(): SeekableInput
+    suspend fun createInput(): SeekableInput
 
     override fun close()
 }
@@ -68,6 +67,6 @@ private object EmptyVideoData : VideoData {
     override val downloadSpeed: Flow<FileSize> get() = emptyFlow()
     override val uploadRate: Flow<FileSize> get() = emptyFlow()
     override fun computeHash(): String? = null
-    override fun createInput(): SeekableInput = emptySeekableInput()
+    override suspend fun createInput(): SeekableInput = emptySeekableInput()
     override fun close() {}
 }

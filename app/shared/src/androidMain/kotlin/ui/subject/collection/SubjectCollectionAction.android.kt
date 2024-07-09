@@ -17,11 +17,9 @@ fun PreviewCollectionActionButton() = ProvideCompositionLocalsForPreview {
         Column {
             for (entry in UnifiedCollectionType.entries) {
                 CollectionActionButton(
-                    collected = entry != UnifiedCollectionType.NOT_COLLECTED,
                     type = entry,
-                    onCollect = {},
                     onEdit = {},
-                    onSetAllEpisodesDone = {},
+                    collected = entry != UnifiedCollectionType.NOT_COLLECTED,
                 )
             }
         }

@@ -1,15 +1,15 @@
 package me.him188.ani.app.data.repositories
 
+import io.ktor.client.plugins.ResponseException
 import kotlinx.coroutines.flow.Flow
 import me.him188.ani.datasources.api.paging.PageBasedPagedSource
 import me.him188.ani.datasources.api.paging.Paged
 import me.him188.ani.datasources.api.paging.processPagedResponse
 import me.him188.ani.datasources.bangumi.BangumiClient
+import me.him188.ani.datasources.bangumi.models.BangumiRevision
 import me.him188.ani.utils.logging.logger
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.openapitools.client.infrastructure.ClientException
-import org.openapitools.client.models.Revision
 
 sealed interface RevisionRepository {
     fun getCommentsByEpisodeId(episodeId: Int): Flow<Comment>
@@ -37,7 +37,7 @@ class EpisodeRevisionRepositoryImpl : EpisodeRevisionRepository, KoinComponent {
                 client.api.getEpisodeRevisions(
                     offset = page * pageSize, limit = pageSize,
                     episodeId = episodeId,
-                ).run {
+                ).body().run {
                     Paged.processPagedResponse(
                         total, pageSize,
                         data?.map {
@@ -45,25 +45,20 @@ class EpisodeRevisionRepositoryImpl : EpisodeRevisionRepository, KoinComponent {
                         },
                     )
                 }
-            } catch (e: ClientException) {
+            } catch (e: ResponseException) {
                 logger.warn("Exception in getCollections", e)
                 null
             }
         }.results
     }
-//    override fun getCommentById(commentId: Int): Comment? {
-//        return client.api.getEpisodeRevisionByRevisionId(
-//            revisionId = commentId,
-//        )
-//    }
 }
 
-private fun Revision.toComment(): Comment {
+private fun BangumiRevision.toComment(): Comment {
     return Comment(
         id = id.toString(),
         type = type,
         summary = summary,
-        createdAt = createdAt.toEpochSecond() * 1000,
+        createdAt = createdAt.toEpochMilliseconds() * 1000,
         authorUsername = creator?.username,
     )
 }

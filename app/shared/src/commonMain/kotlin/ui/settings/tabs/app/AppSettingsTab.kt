@@ -411,6 +411,15 @@ private fun SettingsScope.PlayerGroup(
             title = { Text("观看 90% 后自动标记为看过") },
             Modifier.placeholder(vm.uiSettings.loading),
         )
+        HorizontalDividerItem()
+        SwitchItem(
+            checked = config.hideSelectorOnSelect,
+            onCheckedChange = {
+                vm.videoScaffoldConfig.update(config.copy(hideSelectorOnSelect = it))
+            },
+            title = { Text("选择数据源后自动关闭弹窗") },
+            Modifier.placeholder(vm.uiSettings.loading),
+        )
     }
 }
 

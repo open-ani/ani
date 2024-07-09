@@ -50,6 +50,9 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.platform.currentPlatform
+import me.him188.ani.app.platform.isAndroid
+import me.him188.ani.app.platform.setRequestFullScreen
 import me.him188.ani.app.session.isLoggedIn
 import me.him188.ani.app.session.requireOnline
 import me.him188.ani.app.tools.update.InstallationFailureReason
@@ -59,7 +62,7 @@ import me.him188.ani.app.ui.foundation.avatar.AvatarImage
 import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.home.HomePage
-import me.him188.ani.app.ui.home.SearchViewModel
+import me.him188.ani.app.ui.home.search.SearchViewModel
 import me.him188.ani.app.ui.profile.AccountViewModel
 import me.him188.ani.app.ui.profile.ProfilePage
 import me.him188.ani.app.ui.settings.SettingsPage
@@ -75,6 +78,13 @@ import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
 @Composable
 fun HomeScene(modifier: Modifier = Modifier) {
+    if (currentPlatform.isAndroid()) {
+        val context = LocalContext.current
+        SideEffect {
+            context.setRequestFullScreen(false)
+        }
+    }
+
     if (isShowLandscapeUI()) {
         HomeSceneLandscape(modifier)
     } else {
