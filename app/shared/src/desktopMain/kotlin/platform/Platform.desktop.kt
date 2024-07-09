@@ -3,6 +3,10 @@ package me.him188.ani.app.platform
 import androidx.compose.runtime.Stable
 
 @Stable
+val currentDesktopPlatform: Platform.Desktop
+    get() = currentPlatform as Platform.Desktop
+
+@Stable
 actual fun Platform.Companion.currentPlatformImpl(): Platform {
     val os = System.getProperty("os.name")?.lowercase() ?: error("Cannot determine platform, 'os.name' is null.")
     val arch = getArch()
