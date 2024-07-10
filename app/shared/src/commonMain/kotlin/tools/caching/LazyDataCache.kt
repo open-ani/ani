@@ -3,6 +3,7 @@ package me.him188.ani.app.tools.caching
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.util.fastDistinctBy
 import androidx.datastore.core.DataStore
+import androidx.datastore.core.DataStoreFactory
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
@@ -35,16 +36,24 @@ import me.him188.ani.utils.logging.logger
 annotation class UnsafeLazyDataCacheApi
 
 /**
- * A data collection, where the data is loaded from a remote source.
+ * 一个能在本地缓存的远程数据集合.
  *
- * The data is loaded lazily, i.e. only if [requestMore] is called.
+ * 数据将在需要时惰性请求, 缓存到本地并自动持久化.
  *
- * See the constructor-like factory function for more details.
+ * ### 获取数据流
+ *
+ * - 通过 [cachedDataFlow], 获取缓存的数据流. 该数据流只访问本地的缓存数据, 不会自动发送网络请求. 需要调用 [requestMore] 以请求下一页.
+ * - 通过 [allDataFlow], 获取完整的数据流. 该数据流会自动连续地请求下一页数据, 直到远程数据全部加载完成.
  */
 @Stable
 interface LazyDataCache<T> {
     /**
-     * 当前缓存的数据, 它可能是不完整的.
+     * 获取当前已经从网络上加载下来的缓存的数据的 flow.
+     *
+     * 这是一个不会完结的 flow. [collect][Flow.collect] 这个 flow 只会看到本地缓存数据, 不会触发网络请求.
+     * 即使目前页码没有到最后 (即远程服务器还有更多数据), 也不会执行网络请求下一页. 必须调用 [requestMore] 显式请求下一页, [cachedDataFlow] 才会更新.
+     *
+     * 可使用 [mutate] 修改 [cachedDataFlow].
      *
      * @see data
      * @see ContentPolicy
@@ -52,10 +61,12 @@ interface LazyDataCache<T> {
     val cachedDataFlow: Flow<List<T>>
 
     /**
-     * 完整的数据 flow. 在 collect 这个 flow 时将会自动调用 [requestMore] 加载更多数据.
-     * 这个 flow 会在每加载完成一页时返回累计的数据. 不会完结.
+     * 完整的数据 flow. 在 collect 这个 flow 时, 将会首先 emit [cachedDataFlow],
+     * 随后不断地自动调用 [requestMore] 加载更多数据并 emit 新的数据 list, 直到远程数据全部加载完成.
      *
-     * 若在 [allDataFlow] collect 的过程中有 [invalidate], 那么 [allDataFlow] 将会重新开始.
+     * 这个 flow 会在每加载完成一页时返回累计的 list.
+     *
+     * 若在 [allDataFlow] collect 的过程中有 [invalidate], 那么 [allDataFlow] 将会立即 emit [emptyList], 然后重新开始加载所有远程数据.
      *
      * @see data
      * @see ContentPolicy
@@ -87,6 +98,12 @@ interface LazyDataCache<T> {
     @UnsafeLazyDataCacheApi
     val lock: Mutex
 
+    /**
+     * 用于修改缓存内容. 该属性属于内部低级 API, 请使用高级的 [mutate] 和 [dataTransaction].
+     *
+     * @see mutate
+     * @see dataTransaction
+     */
     @UnsafeLazyDataCacheApi
     val mutator: LazyDataCacheMutator<T>
 
@@ -134,9 +151,12 @@ enum class RefreshOrderPolicy {
 }
 
 /**
- * Changes the [LazyDataCache.cachedDataFlow] under a lock.
+ * 线程安全地修改 [LazyDataCache.cachedDataFlow].
  *
- * Note, you must not call [mutate] again within [action], as it will cause a deadlock.
+ * @param action 在锁里执行的操作, 其中不可以重复调用 [mutate] 或 [dataTransaction].
+ *
+ * @sample me.him188.ani.app.tools.caching.LazyDataCacheSamples.mutate
+ *
  * @see LazyDataCacheMutator
  */
 @OptIn(UnsafeLazyDataCacheApi::class)
@@ -147,7 +167,18 @@ suspend inline fun <T> LazyDataCache<T>.mutate(action: LazyDataCacheMutator<T>.(
 }
 
 /**
- * Mutates two or more [LazyDataCache]s atomically.
+ * 线程安全地同时修改多个 [LazyDataCache]. 可用于移动数据等操作.
+ *
+ * ### 示例
+ * 将 `from` 中的特定 ID 的 subject 移动到 `target`:
+ * ```
+ * dataTransaction(from, target) { (f, t) ->
+ *     val old = f.removeFirstOrNull { it.subjectId == subjectId } ?: return@dataTransaction
+ *     t.addFirst(
+ *         old.copy(collectionType = type),
+ *     )
+ * }
+ * ```
  */
 @OptIn(UnsafeLazyDataCacheApi::class)
 suspend inline fun <T> dataTransaction(
@@ -183,6 +214,9 @@ suspend inline fun <T> LazyDataCache<T>.getCachedData() = cachedDataFlow.first()
  * `nextPageOrNull` must not throw any exceptions, if it does, it is considered to be end of the data.
  *
  * Completion of [LazyDataCache] relies on the completion of the [createSource] flow.
+ *
+ * @param persistentStore 用于将内存缓存数据持久化(到文件系统). 默认为 [MemoryDataStore], 即仅在内存中保存.
+ * 可通过 [DataStoreFactory] 创建一个使用 File 进行持久化的实例.
  */
 @OverloadResolutionByLambdaReturnType
 fun <T> LazyDataCache(
@@ -241,7 +275,7 @@ class MemoryDataStore<T>(initial: T) : DataStore<T> {
 }
 
 
-class LazyDataCacheImpl<T>(
+private class LazyDataCacheImpl<T>(
     private val createSource: suspend LazyDataCacheContext.() -> PagedSource<T>,
     private val getKey: (T) -> Any?,
     private val debugName: String? = null,
@@ -276,11 +310,16 @@ class LazyDataCacheImpl<T>(
         remote ?: save.totalSize
     }
 
-    // Writes must be under lock
+    /**
+     * 更新背后的实际数据. 所有的更新都要调用这里.
+     *
+     * 必须使用 [lock].
+     */
     private suspend inline fun updateDataSanitized(
         orderPolicy: RefreshOrderPolicy,
         crossinline block: (List<T>) -> List<T>
     ) {
+        // 更新持久的数据, 保证缓存一致性
         persistentStore.updateData { save ->
             val sourceInfo = currentSourceInfo.value
             when (orderPolicy) {
