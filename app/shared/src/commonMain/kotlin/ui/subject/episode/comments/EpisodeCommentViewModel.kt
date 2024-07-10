@@ -28,9 +28,9 @@ class EpisodeCommentViewModel(
         debugName = "episodeComment-$episodeId",
     )
 
-    private val initialLoadComplete = MutableStateFlow(false)
+    private val freshLoaded = MutableStateFlow(false)
     val hasMore: StateFlow<Boolean> = dataCache.isCompleted
-        .combine(initialLoadComplete) { exhausted, initialCompleted ->
+        .combine(freshLoaded) { exhausted, initialCompleted ->
             if (initialCompleted) false else exhausted
         }
         .stateInBackground(false)
@@ -40,8 +40,12 @@ class EpisodeCommentViewModel(
 
     fun reloadComments() {
         backgroundScope.launch {
+            freshLoaded.value = false
             pullToRefreshState.startRefresh()
+
             dataCache.refresh(RefreshOrderPolicy.REPLACE)
+
+            freshLoaded.value = true
             pullToRefreshState.endRefresh()
         }
     }
