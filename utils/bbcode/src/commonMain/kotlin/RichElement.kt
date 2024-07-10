@@ -9,17 +9,30 @@ sealed interface RichElement {
 
     data class Text(
         val value: String,
-        val size: Int,
+        val size: Int = DEFAULT_SIZE,
 
-        val italic: Boolean,
-        val underline: Boolean,
-        val removeline: Boolean,
-        val bold: Boolean,
+        val italic: Boolean = false,
+        val underline: Boolean = false,
+        val strikethrough: Boolean = false,
+        val bold: Boolean = false,
 
-        val mask: Boolean,
+        val mask: Boolean = false,
+        val code: Boolean = false,
 
         override val jumpUrl: String? = null
-    ) : RichElement
+    ) : RichElement {
+        companion object {
+            const val DEFAULT_SIZE = 16
+            val Empty = Text(
+                "", DEFAULT_SIZE,
+                italic = false,
+                underline = false,
+                strikethrough = false,
+                bold = false,
+                mask = false,
+            )
+        }
+    }
 
     data class Image(
         val imageUrl: String,
@@ -27,12 +40,17 @@ sealed interface RichElement {
     ) : RichElement
 
     data class Quote(
-        val text: Text,
+        val contents: List<RichElement>,
         override val jumpUrl: String? = null
     ) : RichElement
 
-    data class Face(
+    data class BangumiSticker(
         val id: Int,
+        override val jumpUrl: String? = null
+    ) : RichElement
+
+    data class Kanmoji(
+        val id: String, // "(=A=)", 详情见文法
         override val jumpUrl: String? = null
     ) : RichElement
 }
