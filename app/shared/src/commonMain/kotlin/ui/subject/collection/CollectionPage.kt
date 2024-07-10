@@ -222,7 +222,9 @@ fun CollectionPage(
                     } catch (_: Throwable) {
                     } finally {
                         pullToRefreshState.endRefresh()
-                        gridState.scrollToItem(0)
+                        if (!collection.isAutoRefreshing) {
+                            gridState.animateScrollToItem(0)
+                        }
                     }
                 }
             }
