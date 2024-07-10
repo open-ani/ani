@@ -101,17 +101,6 @@ object AnitorrentLibraryLoader : TorrentLibraryLoader {
 
         try {
             loadDependencies()
-            when (currentPlatform as Platform.Desktop) {
-                is Platform.Windows -> {
-                    loadLibrary("torrent-rasterbar")
-                }
-
-                is Platform.Linux -> throw UnsupportedOperationException("Linux is not supported yet")
-                is Platform.MacOS -> {
-                    loadLibrary(getPlatformLibraryName("torrent-rasterbar.2.0.10"))
-                }
-            }
-            loadLibrary(getPlatformLibraryName("anitorrent"))
             _initAnitorrent
             libraryLoaded = true
         } catch (e: Throwable) {
