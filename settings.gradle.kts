@@ -50,6 +50,7 @@ includeProject(":utils:coroutines", "utils/coroutines")
 includeProject(":utils:ktor-client", "utils/ktor-client")
 includeProject(":utils:io", "utils/io")
 includeProject(":utils:testing", "utils/testing")
+includeProject(":utils:bbcode", "utils/bbcode")
 
 
 // TODO: add torrent modules back when kotlin has fixed
