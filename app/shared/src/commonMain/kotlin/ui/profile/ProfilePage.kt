@@ -49,10 +49,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import me.him188.ani.app.data.models.UserInfo
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.session.isLoggedIn
-import me.him188.ani.datasources.bangumi.models.BangumiUser
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.koin.core.context.GlobalContext
 
@@ -163,7 +163,7 @@ fun AniHelpSection(modifier: Modifier = Modifier) {
 
 @Composable
 internal fun SelfInfo(
-    selfInfo: BangumiUser?, // todo replace with our User
+    selfInfo: UserInfo?,
     isLoggedIn: Boolean?,
     modifier: Modifier = Modifier,
     onClickSettings: () -> Unit,

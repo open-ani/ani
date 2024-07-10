@@ -108,7 +108,7 @@ private fun UserAvatar(
         }
     } else {
         AvatarImage(
-            url = user?.avatar?.medium,
+            url = user?.avatarUrl,
             modifier.clip(CircleShape).placeholder(user == null),
         )
     }

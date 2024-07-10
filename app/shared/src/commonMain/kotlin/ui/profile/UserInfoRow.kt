@@ -30,17 +30,15 @@ import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import me.him188.ani.app.data.models.UserInfo
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
-import me.him188.ani.datasources.bangumi.models.BangumiAvatar
-import me.him188.ani.datasources.bangumi.models.BangumiUser
-import me.him188.ani.datasources.bangumi.models.BangumiUserGroup
 
 
 @Composable
 fun UserInfoRow(
-    self: BangumiUser?,
+    self: UserInfo?,
     onClickEditNickname: () -> Unit,
     onClickSettings: () -> Unit,
     modifier: Modifier = Modifier,
@@ -59,7 +57,7 @@ fun UserInfoRow(
             contentAlignment = Alignment.Center,
         ) {
             AvatarImage(
-                url = self?.avatar?.medium,
+                url = self?.avatarUrl,
                 Modifier
                     .placeholder(self == null)
                     .size(64.dp),
@@ -128,17 +126,12 @@ fun UserInfoRow(
 }
 
 
-private val sampleUser = BangumiUser(
+private val sampleUser = UserInfo(
     username = "username",
-    avatar = BangumiAvatar(
-        "https://example.com/avatar.jpg",
-        "https://example.com/avatar.jpg",
-        "https://example.com/avatar.jpg",
-    ),
+    avatarUrl = "https://example.com/avatar.jpg",
     id = 1,
     nickname = "Nickname",
     sign = "Sign ".repeat(3),
-    userGroup = BangumiUserGroup.User,
 )
 
 @Preview
