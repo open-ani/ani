@@ -26,6 +26,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
@@ -202,6 +204,7 @@ fun CollectionPage(
             SideEffect {
                 collection.pullToRefreshState = pullToRefreshState
             }
+            val gridState = rememberLazyGridState()
             LaunchedEffect(true) {
                 snapshotFlow { pullToRefreshState.isRefreshing }.collectLatest {
                     if (!it) return@collectLatest
@@ -219,6 +222,7 @@ fun CollectionPage(
                     } catch (_: Throwable) {
                     } finally {
                         pullToRefreshState.endRefresh()
+                        gridState.scrollToItem(0)
                     }
                 }
             }
@@ -255,6 +259,7 @@ fun CollectionPage(
                         .nestedScroll(pullToRefreshState.nestedScrollConnection)
                         .fillMaxSize(),
                     enableAnimation = { vm.myCollectionsSettings.enableListAnimation },
+                    gridState = gridState,
                 )
                 PullToRefreshContainer(
                     pullToRefreshState,
@@ -280,6 +285,7 @@ private fun TabContent(
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
     enableAnimation: () -> Boolean = { true },
+    gridState: LazyGridState = rememberLazyGridState(),
 ) {
     // 同时设置所有剧集为看过
     var currentSetAllEpisodesDialogSubjectId by rememberSaveable { mutableStateOf<Int?>(null) }
@@ -371,6 +377,7 @@ private fun TabContent(
         modifier,
         contentPadding = contentPadding,
         enableAnimation = enableAnimation,
+        gridState = gridState,
     )
 }
 

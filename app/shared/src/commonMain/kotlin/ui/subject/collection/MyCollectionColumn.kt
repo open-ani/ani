@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
@@ -99,6 +100,7 @@ fun SubjectCollectionsColumn(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     enableAnimation: () -> Boolean = { true },
+    gridState: LazyGridState = rememberLazyGridState(),
 ) {
     // 当从其他页面回到这个页面时, cache.cachedDataFlow 会重新开始 collect
     val data by cache.cachedDataFlow.collectAsStateWithLifecycle(null) // 反正下面会立即用到, recompose 总是重组整个函数
@@ -117,7 +119,7 @@ fun SubjectCollectionsColumn(
         }
     }
 
-    val gridState = rememberLazyGridState() // 要放在前面, 防止 return 后丢失
+//    val gridState = rememberLazyGridState() // 要放在前面, 防止 return 后丢失
 
     if (!dataLoaded) return // 还没加载完, 不要去更新 grid 状态, 否则会恢复到顶部
 
