@@ -41,16 +41,13 @@ text_stiker:
     | '(:P)'
     | '(LOL)';
 
-url: '[url]' href=section? '[/url]';
+url: '[url]' href=plain? '[/url]';
 url_named: '[url=' href=attribute_value ']' content=section? '[/url]';
-img: '[img' alt? ']' content=section? '[/img]';
+img: '[img]' content=section? '[/img]';
 
 attribute_value: quoted=QUOTED | unquoted=TEXT;
 
-alt: 'alt' '=' value=attribute_value;
-
 // Lexer
-WS: [ \t\r\n]+ -> skip ;
 
 NUMBER: [0-9]+ ;
 
