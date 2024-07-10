@@ -20,6 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import me.him188.ani.app.data.repository.DanmakuFilterConfigSettingsRepository
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.platform.currentPlatform
@@ -30,8 +31,8 @@ import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
 import me.him188.ani.app.ui.settings.framework.components.SliderItem
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
 import me.him188.ani.danmaku.ui.DanmakuConfig
+import me.him188.ani.danmaku.ui.DanmakuFilterConfig
 import me.him188.ani.danmaku.ui.DanmakuRegexFilter
-import me.him188.ani.danmaku.ui.DanmakuRegexFilterConfig
 import me.him188.ani.danmaku.ui.DanmakuStyle
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -42,7 +43,8 @@ import kotlin.time.Duration.Companion.milliseconds
 interface EpisodeVideoSettingsViewModel {
     val danmakuConfig: DanmakuConfig
     val isLoading: Boolean
-    val danmakuRegexFilterConfig: DanmakuRegexFilterConfig
+    val danmakuRegexFilterEnabled: Boolean
+    val danmakuFilterConfig: DanmakuFilterConfig
 
     fun setDanmakuConfig(config: DanmakuConfig)
     fun addDanmakuRegexFilter(filter: DanmakuRegexFilter)
@@ -59,19 +61,26 @@ fun EpisodeVideoSettingsViewModel(): EpisodeVideoSettingsViewModel = EpisodeVide
 private class EpisodeVideoSettingsViewModelImpl : EpisodeVideoSettingsViewModel, AbstractSettingsViewModel(),
     KoinComponent {
     private val settingsRepository by inject<SettingsRepository>()
+    private val danmakuFilterConfigSettingsRepository by inject<DanmakuFilterConfigSettingsRepository>()
 
     val danmakuConfigSettings by settings(
         settingsRepository.danmakuConfig,
         DanmakuConfig(_placeholder = -1),
     )
-    
-    val danmakuRegexFilterConfigSettings by settings(
-        settingsRepository.danmakuRegexFilterConfig,
-        DanmakuRegexFilterConfig(_placeholder = -1)
+
+    val danmakuFilterConfigSettings by settings(
+        danmakuFilterConfigSettingsRepository.danmakuFilterConfig,
+        DanmakuFilterConfig(_placeholder = -1),
+    )
+
+    val danmakuRegexFilterEnabledSetting by settings(
+        settingsRepository.danmakuRegexFilterEnabled,
+        false,
     )
 
     override val danmakuConfig: DanmakuConfig by danmakuConfigSettings
-    override val danmakuRegexFilterConfig: DanmakuRegexFilterConfig by danmakuRegexFilterConfigSettings
+    override val danmakuFilterConfig: DanmakuFilterConfig by danmakuFilterConfigSettings
+    override val danmakuRegexFilterEnabled: Boolean by danmakuRegexFilterEnabledSetting
     override val isLoading: Boolean get() = danmakuConfigSettings.loading
 
     override fun setDanmakuConfig(config: DanmakuConfig) {
@@ -79,57 +88,53 @@ private class EpisodeVideoSettingsViewModelImpl : EpisodeVideoSettingsViewModel,
     }
 
     override fun addDanmakuRegexFilter(filter: DanmakuRegexFilter) {
-        danmakuRegexFilterConfigSettings.update(
-            danmakuRegexFilterConfig.copy(
-                danmakuRegexFilterList = danmakuRegexFilterConfig.danmakuRegexFilterList.toMutableList().apply {
+        danmakuFilterConfigSettings.update(
+            danmakuFilterConfig.copy(
+                danmakuRegexFilterList = danmakuFilterConfig.danmakuRegexFilterList.toMutableList().apply {
                     add(filter)
-                }
-            )
+                },
+            ),
         )
     }
     
     override fun editDanmakuRegexFilter(filter: DanmakuRegexFilter) {
-        danmakuRegexFilterConfigSettings.update(
-            danmakuRegexFilterConfig.copy(
-                danmakuRegexFilterList = danmakuRegexFilterConfig.danmakuRegexFilterList.toMutableList().apply {
+        danmakuFilterConfigSettings.update(
+            danmakuFilterConfig.copy(
+                danmakuRegexFilterList = danmakuFilterConfig.danmakuRegexFilterList.toMutableList().apply {
                     val index = indexOfFirst { it.instanceID == filter.instanceID }
                     if (index != -1) {
                         set(index, filter)
                     }
-                }
-            )
+                },
+            ),
         )
     }
     
     override fun removeDanmakuRegexFilter(filter: DanmakuRegexFilter) {
-        danmakuRegexFilterConfigSettings.update(
-            danmakuRegexFilterConfig.copy(
-                danmakuRegexFilterList = danmakuRegexFilterConfig.danmakuRegexFilterList.toMutableList().apply {
+        danmakuFilterConfigSettings.update(
+            danmakuFilterConfig.copy(
+                danmakuRegexFilterList = danmakuFilterConfig.danmakuRegexFilterList.toMutableList().apply {
                     removeIf { it.instanceID == filter.instanceID }
-                }
-            )
+                },
+            ),
         )
     }
     
     override fun switchDanmakuRegexFilterCompletely() {
-        danmakuRegexFilterConfigSettings.update(
-            danmakuRegexFilterConfig.copy(
-                enabled = !danmakuRegexFilterConfig.enabled,
-            ),
-        )
+        danmakuRegexFilterEnabledSetting.update(!danmakuRegexFilterEnabled)
     }
 
     // turn off a particular filter
     override fun switchDanmakuRegexFilter(filter: DanmakuRegexFilter) {
-        danmakuRegexFilterConfigSettings.update(
-            danmakuRegexFilterConfig.copy(
-                danmakuRegexFilterList = danmakuRegexFilterConfig.danmakuRegexFilterList.toMutableList().apply {
+        danmakuFilterConfigSettings.update(
+            danmakuFilterConfig.copy(
+                danmakuRegexFilterList = danmakuFilterConfig.danmakuRegexFilterList.toMutableList().apply {
                     val index = indexOfFirst { it.instanceID == filter.instanceID }
                     if (index != -1) {
                         set(index, filter.copy(isEnabled = !filter.isEnabled))
                     }
-                }
-            )
+                },
+            ),
         )
     }
 }
@@ -141,7 +146,8 @@ fun EpisodeVideoSettings(
 ) {
     return EpisodeVideoSettings(
         danmakuConfig = vm.danmakuConfig,
-        danmakuRegexFilterConfig = vm.danmakuRegexFilterConfig,
+        danmakuFilterConfig = vm.danmakuFilterConfig,
+        danmakuRegexFilterEnabled = vm.danmakuRegexFilterEnabled,
         setDanmakuConfig = remember(vm) {
             vm::setDanmakuConfig
         },
@@ -173,7 +179,8 @@ private val LOADING_FALSE = { false }
 @Composable
 fun EpisodeVideoSettings(
     danmakuConfig: DanmakuConfig,
-    danmakuRegexFilterConfig: DanmakuRegexFilterConfig,
+    danmakuFilterConfig: DanmakuFilterConfig,
+    danmakuRegexFilterEnabled: Boolean,
     setDanmakuConfig: (config: DanmakuConfig) -> Unit,
     addDanmakuRegexFilter: (filter: DanmakuRegexFilter) -> Unit,
     editDanmakuRegexFilter: (filter: DanmakuRegexFilter) -> Unit,
@@ -421,7 +428,7 @@ fun EpisodeVideoSettings(
             )
 
             SwitchItem(
-                danmakuRegexFilterConfig.enabled,
+                danmakuRegexFilterEnabled,
                 onCheckedChange = {
                         switchDanmakuRegexFilterCompletely()
                 },
@@ -430,12 +437,12 @@ fun EpisodeVideoSettings(
             )
             
             DanmakuRegexFilterGroup(
-                danmakuRegexFilterConfig,
+                danmakuFilterConfig,
                 addDanmakuRegexFilter,
                 editDanmakuRegexFilter,
                 removeDanmakuRegexFilter,
                 switchDanmakuRegexFilter,
-                isLoadingState
+                isLoadingState,
             )
 
             if (currentAniBuildConfig.isDebug) {

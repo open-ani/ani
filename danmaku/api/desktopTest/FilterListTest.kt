@@ -1,8 +1,8 @@
 package me.him188.ani.danmaku.api
 
 import kotlinx.coroutines.test.runTest
+import me.him188.ani.danmaku.ui.DanmakuFilterConfig
 import me.him188.ani.danmaku.ui.DanmakuRegexFilter
-import me.him188.ani.danmaku.ui.DanmakuRegexFilterConfig
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -11,13 +11,17 @@ import kotlin.time.Duration.Companion.seconds
 
 class FilterListTest {
 
-    private fun filterList(list: List<Danmaku>, danmakuRegexFilterConfig: DanmakuRegexFilterConfig): List<Danmaku> {
-        if (!danmakuRegexFilterConfig.enabled) {
+    private fun filterList(
+        list: List<Danmaku>,
+        danmakuFilterConfig: DanmakuFilterConfig,
+        danmakuRegexFilterEnabled: Boolean
+    ): List<Danmaku> {
+        if (!danmakuRegexFilterEnabled) {
             return list
         }
 
         // 预编译所有启用的正则表达式 
-        val regexFilters = danmakuRegexFilterConfig.danmakuRegexFilterList
+        val regexFilters = danmakuFilterConfig.danmakuRegexFilterList
             .filter { it.isEnabled }
             .map { Regex(it.re) }
 
@@ -49,12 +53,13 @@ class FilterListTest {
             DanmakuRegexFilter(UUID.randomUUID().toString(), name = "2", re = "2", isEnabled = true),
             DanmakuRegexFilter(UUID.randomUUID().toString(), name = "3", re = "3", isEnabled = true),
         )
-        val danmakuRegexFilterConfig =
-            DanmakuRegexFilterConfig(enabled = true, danmakuRegexFilterList = danmakuFilterList)
+        val danmakuFilterConfig =
+            DanmakuFilterConfig(danmakuRegexFilterList = danmakuFilterList)
         val danmakuList = listOf(
             dummyDanmaku(1.0, "簽到"),
         )
-        val list = filterList(danmakuList, danmakuRegexFilterConfig)
+        val danmakuRegexFilterEnabled = true
+        val list = filterList(danmakuList, danmakuFilterConfig, danmakuRegexFilterEnabled)
         assertEquals(0, list.size)
     }
 }

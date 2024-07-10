@@ -26,7 +26,6 @@ import me.him188.ani.app.tools.torrent.engines.AnitorrentConfig
 import me.him188.ani.app.tools.torrent.engines.Libtorrent4jConfig
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.danmaku.ui.DanmakuConfig
-import me.him188.ani.danmaku.ui.DanmakuRegexFilterConfig
 import me.him188.ani.utils.logging.debug
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.logger
@@ -37,7 +36,7 @@ import me.him188.ani.utils.logging.logger
 interface SettingsRepository {
     val danmakuEnabled: Settings<Boolean>
     val danmakuConfig: Settings<DanmakuConfig>
-    val danmakuRegexFilterConfig: Settings<DanmakuRegexFilterConfig>
+    val danmakuRegexFilterEnabled: Settings<Boolean>
 
     val mediaSelectorSettings: Settings<MediaSelectorSettings>
 
@@ -118,11 +117,7 @@ class PreferencesRepositoryImpl(
     override val danmakuEnabled: Settings<Boolean> = BooleanPreference("danmaku_enabled")
     override val danmakuConfig: Settings<DanmakuConfig> =
         SerializablePreference("danmaku_config", DanmakuConfigSerializer, default = { DanmakuConfig.Default })
-    override val danmakuRegexFilterConfig: Settings<DanmakuRegexFilterConfig> = SerializablePreference(
-            "danmakuFilterConfig",
-            DanmakuRegexFilterConfig.serializer(),
-            default = { DanmakuRegexFilterConfig.Default }
-        )
+    override val danmakuRegexFilterEnabled: Settings<Boolean> = BooleanPreference("danmaku_regex_filter_enabled")
     override val mediaSelectorSettings: Settings<MediaSelectorSettings> = SerializablePreference(
         "mediaSelectorSettings",
         MediaSelectorSettings.serializer(),

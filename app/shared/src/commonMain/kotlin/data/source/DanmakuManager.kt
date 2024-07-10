@@ -34,7 +34,7 @@ import me.him188.ani.danmaku.api.DanmakuSession
 import me.him188.ani.danmaku.api.merge
 import me.him188.ani.danmaku.dandanplay.DandanplayDanmakuProvider
 import me.him188.ani.danmaku.protocol.DanmakuInfo
-import me.him188.ani.danmaku.ui.DanmakuRegexFilterConfig
+import me.him188.ani.danmaku.ui.DanmakuFilterConfig
 import me.him188.ani.utils.coroutines.mapAutoClose
 import me.him188.ani.utils.coroutines.mapAutoCloseCollection
 import me.him188.ani.utils.logging.error
@@ -171,9 +171,13 @@ class CombinedDanmakuSession(
             array.sumOf { it ?: 0 }
         }
 
-    override fun at(progress: Flow<Duration>, danmakuRegexFilterConfig: Flow<DanmakuRegexFilterConfig>): DanmakuSession {
+    override fun at(
+        progress: Flow<Duration>,
+        danmakuFilterConfig: Flow<DanmakuFilterConfig>,
+        danmakuRegexFilterEnabled: Flow<Boolean>
+    ): DanmakuSession {
         return sessions.map { session ->
-            session.at(progress, danmakuRegexFilterConfig)
+            session.at(progress, danmakuFilterConfig, danmakuRegexFilterEnabled)
         }.merge()
     }
 }

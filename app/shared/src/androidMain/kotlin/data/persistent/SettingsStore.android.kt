@@ -27,6 +27,7 @@ import java.io.File
 
 actual val Context.preferencesStore: DataStore<Preferences> by preferencesDataStore("preferences")
 actual val Context.tokenStore: DataStore<Preferences> by preferencesDataStore("tokens")
+actual val Context.danmakuFilterStore: DataStore<Preferences> by preferencesDataStore("danmaku_filter")
 actual val Context.dataStoresImpl: PlatformDataStoreManager
     get() = PlatformDataStoreManagerAndroid(this)
 

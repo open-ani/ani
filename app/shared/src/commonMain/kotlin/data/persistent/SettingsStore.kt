@@ -40,6 +40,8 @@ expect val Context.preferencesStore: DataStore<Preferences>
 
 expect val Context.tokenStore: DataStore<Preferences>
 
+expect val Context.danmakuFilterStore: DataStore<Preferences>
+
 /**
  * Must not be stored
  */

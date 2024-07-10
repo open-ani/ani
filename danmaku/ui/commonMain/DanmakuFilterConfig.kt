@@ -12,13 +12,7 @@ import java.util.UUID
  */
 @Immutable
 @Serializable
-data class DanmakuRegexFilterConfig (
-
-    /**
-     * Defines wheather Danmaku filter is on.
-     */
-    
-    val enabled: Boolean = true,
+data class DanmakuFilterConfig(
 
     /**
      * Defines which [Danmaku] can be displayed according to a list of regular expression.
@@ -31,7 +25,7 @@ data class DanmakuRegexFilterConfig (
     ) {
     companion object {
         @Stable
-        val Default = DanmakuRegexFilterConfig()
+        val Default = DanmakuFilterConfig()
     }
 }
 

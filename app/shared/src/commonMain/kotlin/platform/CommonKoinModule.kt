@@ -32,6 +32,7 @@ import kotlinx.coroutines.launch
 import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.models.subject.SubjectManagerImpl
 import me.him188.ani.app.data.persistent.createDatabaseBuilder
+import me.him188.ani.app.data.persistent.danmakuFilterStore
 import me.him188.ani.app.data.persistent.dataStores
 import me.him188.ani.app.data.persistent.database.AniDatabase
 import me.him188.ani.app.data.persistent.preferencesStore
@@ -40,6 +41,8 @@ import me.him188.ani.app.data.persistent.tokenStore
 import me.him188.ani.app.data.repository.BangumiEpisodeRepository
 import me.him188.ani.app.data.repository.BangumiRelatedCharactersRepository
 import me.him188.ani.app.data.repository.BangumiSubjectRepository
+import me.him188.ani.app.data.repository.DanmakuFilterConfigSettingsRepository
+import me.him188.ani.app.data.repository.DanmakuFilterConfigSettingsRepositoryImpl
 import me.him188.ani.app.data.repository.EpisodePreferencesRepository
 import me.him188.ani.app.data.repository.EpisodePreferencesRepositoryImpl
 import me.him188.ani.app.data.repository.EpisodeRepositoryImpl
@@ -131,6 +134,7 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
         )
     }
     single<SettingsRepository> { PreferencesRepositoryImpl(getContext().preferencesStore) }
+    single<DanmakuFilterConfigSettingsRepository> { DanmakuFilterConfigSettingsRepositoryImpl(getContext().danmakuFilterStore) }
     single<MikanIndexCacheRepository> { MikanIndexCacheRepositoryImpl(getContext().dataStores.mikanIndexStore) }
 
     single<AniDatabase> {

@@ -50,7 +50,7 @@ internal actual fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
         mutableStateOf(DanmakuConfig())
     }
     var filterConfig by remember {
-        mutableStateOf(DanmakuRegexFilterConfig())
+        mutableStateOf(DanmakuFilterConfig())
     }
     val data = remember {
         flow {
@@ -124,7 +124,8 @@ internal actual fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
                 remember {
                     object : EpisodeVideoSettingsViewModel {
                         override val danmakuConfig: DanmakuConfig = DanmakuConfig.Default
-                        override val danmakuRegexFilterConfig: DanmakuRegexFilterConfig = DanmakuRegexFilterConfig.Default
+                        override val danmakuFilterConfig: DanmakuFilterConfig = DanmakuFilterConfig.Default
+                        override val danmakuRegexFilterEnabled: Boolean = false
                         override val isLoading: Boolean = false
 
                         override fun setDanmakuConfig(config: DanmakuConfig) {
@@ -152,7 +153,7 @@ internal actual fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
                             // Do nothing in preview
                         }
                     }
-                }
+                },
             )
         }
     } else {
@@ -182,7 +183,8 @@ internal actual fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
                 remember {
                     object : EpisodeVideoSettingsViewModel {
                         override val danmakuConfig: DanmakuConfig = DanmakuConfig.Default
-                        override val danmakuRegexFilterConfig: DanmakuRegexFilterConfig = DanmakuRegexFilterConfig.Default
+                        override val danmakuFilterConfig: DanmakuFilterConfig = DanmakuFilterConfig.Default
+                        override val danmakuRegexFilterEnabled: Boolean = false
                         override val isLoading: Boolean = false
 
                         override fun setDanmakuConfig(config: DanmakuConfig) {
@@ -210,7 +212,7 @@ internal actual fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
                             TODO("Not yet implemented")
                         }
                     }
-                }
+                },
             )
         }
 

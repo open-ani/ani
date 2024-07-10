@@ -37,6 +37,12 @@ actual val Context.tokenStore: DataStore<Preferences>
         return tokenStore
     }
 
+actual val Context.danmakuFilterStore: DataStore<Preferences>
+    get() {
+        this as DesktopContext
+        return danmakuFilterStore
+    }
+
 
 actual val Context.dataStoresImpl: PlatformDataStoreManager
     get() = PlatformDataStoreManagerDesktop(this as DesktopContext)
