@@ -233,15 +233,14 @@ val createDependencyManifest = tasks.register("createDependencyManifest") {
                         .filter { it.extension == "dll" && it.nameWithoutExtension.startsWith(libFile.nameWithoutExtension) }
                     return matched
                 }
-
-                map["SSL_EAY_RELEASE:FILEPATH"]?.let {
-                    findDll(File(it)).forEachIndexed { index, file ->
-                        put("SSL_EAY_RELEASE_${index}", file)
-                    }
-                }
                 map["LIB_EAY_RELEASE:FILEPATH"]?.let {
                     findDll(File(it)).forEachIndexed { index, file ->
                         put("LIB_EAY_RELEASE_${index}", file)
+                    }
+                }
+                map["SSL_EAY_RELEASE:FILEPATH"]?.let {
+                    findDll(File(it)).forEachIndexed { index, file ->
+                        put("SSL_EAY_RELEASE_${index}", file)
                     }
                 }
             }
