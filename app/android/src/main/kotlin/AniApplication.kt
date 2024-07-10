@@ -26,7 +26,7 @@ import androidx.compose.runtime.Stable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import me.him188.ani.app.data.media.TorrentMediaCacheEngine
+import me.him188.ani.app.data.source.media.TorrentMediaCacheEngine
 import me.him188.ani.app.i18n.ResourceBundle
 import me.him188.ani.app.i18n.loadResourceBundle
 import me.him188.ani.app.platform.AndroidLoggingConfigurator

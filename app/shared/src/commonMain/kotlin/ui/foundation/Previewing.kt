@@ -31,10 +31,10 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.DpSize
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
-import me.him188.ani.app.data.media.resolver.HttpStreamingVideoSourceResolver
-import me.him188.ani.app.data.media.resolver.LocalFileVideoSourceResolver
-import me.him188.ani.app.data.media.resolver.TorrentVideoSourceResolver
-import me.him188.ani.app.data.media.resolver.VideoSourceResolver
+import me.him188.ani.app.data.source.media.resolver.HttpStreamingVideoSourceResolver
+import me.him188.ani.app.data.source.media.resolver.LocalFileVideoSourceResolver
+import me.him188.ani.app.data.source.media.resolver.TorrentVideoSourceResolver
+import me.him188.ani.app.data.source.media.resolver.VideoSourceResolver
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext

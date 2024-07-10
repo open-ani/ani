@@ -51,6 +51,7 @@ import me.him188.ani.app.ui.foundation.effects.ScreenOnEffect
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.layout.LocalLayoutMode
 import me.him188.ani.app.ui.foundation.rememberViewModel
+import me.him188.ani.app.ui.subject.episode.comments.EpisodeCommentColumn
 import me.him188.ani.app.ui.subject.episode.danmaku.DanmakuEditor
 import me.him188.ani.app.ui.subject.episode.details.EpisodeActionRow
 import me.him188.ani.app.ui.subject.episode.details.EpisodeDetails
@@ -269,9 +270,9 @@ private fun EpisodeSceneContentPhone(
 
                 when (index) {
                     0 -> EpisodeDetails(vm, LocalSnackbar.current, Modifier.fillMaxSize())
-//                    1 -> {
-//                        CommentColumn(commentViewModel, Modifier.fillMaxSize())
-//                    }
+                    1 -> {
+                        EpisodeCommentColumn(vm.episodeId.value, Modifier.fillMaxSize())
+                    }
                 }
             }
         }

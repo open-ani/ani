@@ -10,8 +10,8 @@ import androidx.compose.runtime.setValue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
-import me.him188.ani.app.data.repositories.SettingsRepository
-import me.him188.ani.app.data.update.UpdateManager
+import me.him188.ani.app.data.repository.SettingsRepository
+import me.him188.ani.app.data.source.UpdateManager
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.ContextMP
 import me.him188.ani.app.platform.currentAniBuildConfig

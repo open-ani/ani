@@ -31,6 +31,7 @@ room = "2.7.0-alpha03"
 snakeyaml = "2.2"
 sqlite = "2.5.0-alpha03"
 constraintlayout-compose = "0.4.0"
+antlr-kotlin = "1.0.0-RC4"
 
 
 compose-material3 = "1.2.1"
@@ -42,7 +43,7 @@ jetpack-compose = "1.6.7"
 compose-multiplatform = "1.6.10"
 # https://maven.pkg.jetbrains.space/public/p/compose/dev/org/jetbrains/compose/compiler/compiler/
 #compose-multiplatform-compiler = "1.5.11-kt-2.0.0-RC1" # used by buildscript, don't remove
-vlcj = "4.8.2" # don't change version, otherwise it might crash the vm
+vlcj = "4.8.2"
 
 [libraries]
 # Build
@@ -134,6 +135,7 @@ libtorrent4j-windows = { module = "org.libtorrent4j:libtorrent4j-windows", versi
 libtorrent4j-linux = { module = "org.libtorrent4j:libtorrent4j-linux", version.ref = "libtorrent4j" }
 
 bencode = { module = "com.dampcake:bencode", version.ref = "bencode" }
+antlr-kotlin-runtime = { module = "com.strumenta:antlr-kotlin-runtime", version.ref = "antlr-kotlin" }
 
 # Android Datastore
 datastore = { module = "androidx.datastore:datastore", version.ref = "datastore" }

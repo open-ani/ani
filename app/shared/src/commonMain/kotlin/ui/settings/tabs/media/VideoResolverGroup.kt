@@ -6,7 +6,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import me.him188.ani.app.data.models.WebViewDriver
+import me.him188.ani.app.data.models.preference.WebViewDriver
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.ui.external.placeholder.placeholder

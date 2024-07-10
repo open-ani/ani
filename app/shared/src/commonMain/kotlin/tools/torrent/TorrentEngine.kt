@@ -8,12 +8,12 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.job
 import me.him188.ani.app.torrent.api.TorrentDownloader
 import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.utils.coroutines.onReplacement
-import me.him188.ani.utils.coroutines.runUntilSuccess
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
 import kotlin.coroutines.cancellation.CancellationException
@@ -79,19 +79,20 @@ abstract class AbstractTorrentEngine<Downloader : TorrentDownloader, Config : To
             }
         }
         .map { config ->
-            runUntilSuccess(
-                3,
-                onFailure = { e ->
-                    lastError.value = TorrentDownloaderManagerError(e)
-                    logger.warn(e) { "Failed to create TorrentDownloader $type, retrying later" }
-                },
-            ) {
-                newInstance(config)
-            }.also { downloader ->
+            newInstance(config).also { downloader ->
                 scope.coroutineContext.job.invokeOnCompletion {
                     downloader.close()
                 }
             }
+        }
+        .retry(3) { e ->
+            if (e is UnsupportedOperationException) {
+                logger.warn(e) { "Failed to create TorrentDownloader $type because it is not supported" }
+                return@retry false
+            }
+            lastError.value = TorrentDownloaderManagerError(e)
+            logger.warn(e) { "Failed to create TorrentDownloader $type, retrying later" }
+            true
         }
         .onReplacement {
             closeInstance(it)

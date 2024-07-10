@@ -32,8 +32,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
-import me.him188.ani.app.data.models.FullscreenSwitchMode
-import me.him188.ani.app.data.models.VideoScaffoldConfig
+import me.him188.ani.app.data.models.preference.FullscreenSwitchMode
+import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
 import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.platform.isMobile
@@ -233,12 +233,6 @@ internal fun EpisodeVideoImpl(
                         videoControllerState.danmakuEnabled,
                         onClick = { videoControllerState.toggleDanmakuEnabled() },
                     )
-
-                    if (expanded) {
-                        PlayerControllerDefaults.SelectEpisodeIcon(
-                            onShowSelectEpisode,
-                        )
-                    }
                 },
                 progressIndicator = {
                     ProgressIndicator(progressSliderState)
@@ -248,6 +242,11 @@ internal fun EpisodeVideoImpl(
                 },
                 danmakuEditor = danmakuEditor,
                 endActions = {
+                    if (expanded) {
+                        PlayerControllerDefaults.SelectEpisodeIcon(
+                            onShowSelectEpisode,
+                        )
+                    }
                     if (currentPlatform.isDesktop()) PlayerControllerDefaults.AudioSwitcher(playerState.audioTracks)
                     PlayerControllerDefaults.SubtitleSwitcher(playerState.subtitleTracks)
                     val speed by playerState.playbackSpeed.collectAsStateWithLifecycle()

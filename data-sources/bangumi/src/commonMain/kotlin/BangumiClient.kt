@@ -60,6 +60,7 @@ import me.him188.ani.datasources.bangumi.models.BangumiSubjectType
 import me.him188.ani.datasources.bangumi.models.search.BangumiSort
 import me.him188.ani.datasources.bangumi.models.subjects.BangumiLegacySubject
 import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectImageSize
+import me.him188.ani.datasources.bangumi.next.apis.SubjectBangumiNextApi
 import me.him188.ani.utils.ktor.registerLogging
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.serialization.toJsonArray
@@ -115,6 +116,7 @@ interface BangumiClient : Closeable {
     suspend fun testConnection(): ConnectionStatus
 
     val api: DefaultApi
+    val nextApi: SubjectBangumiNextApi
 
     val subjects: BangumiClientSubjects
 
@@ -131,6 +133,7 @@ interface BangumiClient : Closeable {
 }
 
 private const val BANGUMI_API_HOST = "https://api.bgm.tv"
+private const val BANGUMI_NEXT_API_HOST = "https://next.bgm.tv"
 private const val BANGUMI_HOST = "https://bgm.tv"
 
 internal class BangumiClientImpl(
@@ -261,6 +264,7 @@ internal class BangumiClientImpl(
     }
 
     override val api = DefaultApi(BANGUMI_API_HOST, httpClient)
+    override val nextApi: SubjectBangumiNextApi = SubjectBangumiNextApi(BANGUMI_NEXT_API_HOST, httpClient)
 
     @Serializable
     private data class SearchSubjectByKeywordsResponse(

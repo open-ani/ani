@@ -36,6 +36,7 @@ plugins {
     id("com.android.application") apply false
     id("com.google.devtools.ksp") version libs.versions.ksp apply false
     id("androidx.room") version libs.versions.room apply false
+    id("com.strumenta.antlr-kotlin") version libs.versions.antlr.kotlin apply false
 }
 
 allprojects {

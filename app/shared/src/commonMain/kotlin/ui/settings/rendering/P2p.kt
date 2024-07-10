@@ -1,6 +1,6 @@
 @file:Suppress("ObjectPropertyName")
 
-package me.him188.ani.app.ui.icons
+package me.him188.ani.app.ui.settings.rendering
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.ui.graphics.Color

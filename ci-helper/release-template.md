@@ -36,11 +36,9 @@ uploaded.
 
 [qb-enhanced]: https://github.com/c0re100/qBittorrent-Enhanced-Edition/releases/latest
 
-PC 目前默认只使用在线数据源。
-若本机装有 qBittorrent 或 [qBittorrent Enhanced][qb-enhanced], 则可额外支持 BT 数据源。注意，本功能仍在测试中。
-可在设置中配置 qBittorrent 连接方式, 随后可在数据源设置中启用 BT 数据源。
-
-PC 首次播放在线数据源时, 可能需要加载 10-30 秒。
+- PC 首次播放在线数据源时, 可能需要加载 10-30 秒。
+- macOS
+  安装后如果无法打开: [解决方案](https://github.com/open-ani/ani/wiki/macOS-%E6%97%A0%E6%B3%95%E6%89%93%E5%BC%80%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88)
 
 | 操作系统                    | 全球                           | 中国大陆                                             | 
 |-------------------------|------------------------------|--------------------------------------------------|

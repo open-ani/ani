@@ -1,6 +1,6 @@
 package me.him188.ani.app.videoplayer.data
 
-import me.him188.ani.app.data.media.resolver.VideoSourceResolver
+import me.him188.ani.app.data.source.media.resolver.VideoSourceResolver
 
 
 /**

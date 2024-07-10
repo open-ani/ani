@@ -1,5 +1,11 @@
 package me.him188.ani.app.tools.caching
 
+/**
+ * @see addFirst
+ * @see addLast
+ * @see removeAll
+ * @see removeFirstOrNull
+ */
 abstract class LazyDataCacheMutator<T> {
     abstract suspend fun update(
         map: (List<T>) -> List<T>,

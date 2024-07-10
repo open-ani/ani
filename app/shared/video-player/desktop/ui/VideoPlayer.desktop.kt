@@ -215,6 +215,7 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
     override fun getExactCurrentPositionMillis(): Long = player.status().time()
 
     override val bufferedPercentage = MutableStateFlow(0)
+    override val isBuffering: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
     override fun pause() {
         player.controls().pause()
@@ -249,10 +250,10 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
 
                 override fun elementaryStreamAdded(mediaPlayer: MediaPlayer?, type: TrackType?, id: Int) {
                     if (type == TrackType.TEXT) {
-                        reloadSubtitleTracks(); // 字幕轨道更新后，则进行重载UI上的字幕轨道
+                        reloadSubtitleTracks() // 字幕轨道更新后，则进行重载UI上的字幕轨道
                     }
                     if (type == TrackType.AUDIO) {
-                        reloadAudioTracks();
+                        reloadAudioTracks()
                     }
                 }
 
@@ -268,9 +269,9 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
                     state.value = PlaybackState.PLAYING
                     player.submit { player.media().parsing().parse() }
 
-                    reloadSubtitleTracks();
+                    reloadSubtitleTracks()
 
-                    reloadAudioTracks();
+                    reloadAudioTracks()
                 }
 
                 override fun paused(mediaPlayer: MediaPlayer) {
@@ -292,6 +293,17 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
             while (true) {
                 currentPositionMillis.value = player.status().time()
                 delay(0.1.seconds)
+            }
+        }
+
+        backgroundScope.launch {
+            var lastPosition = currentPositionMillis.value
+            while (true) {
+                delay(1000)
+                if (state.value == PlaybackState.PLAYING) {
+                    isBuffering.value = lastPosition == currentPositionMillis.value
+                    lastPosition = currentPositionMillis.value
+                }
             }
         }
 

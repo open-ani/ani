@@ -19,9 +19,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
-import me.him188.ani.app.data.media.EpisodeCacheStatus
-import me.him188.ani.app.data.media.cache.requester.EpisodeCacheRequester
-import me.him188.ani.app.data.media.selector.MediaSelectorFactory
+import me.him188.ani.app.data.source.media.EpisodeCacheStatus
+import me.him188.ani.app.data.source.media.cache.requester.EpisodeCacheRequester
+import me.him188.ani.app.data.source.media.selector.MediaSelectorFactory
 import me.him188.ani.app.ui.cache.testMediaCache1
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.settings.SettingsTab

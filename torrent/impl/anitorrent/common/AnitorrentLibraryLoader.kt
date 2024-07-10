@@ -1,48 +1,18 @@
 package me.him188.ani.app.torrent.anitorrent
 
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import me.him188.ani.app.platform.Arch
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.currentPlatform
+import me.him188.ani.app.torrent.api.TorrentLibraryLoader
+import me.him188.ani.utils.logging.info
+import me.him188.ani.utils.logging.logger
 import java.io.File
 
-private fun loadAnitorrentLibrary(libraryName: String) {
-    val platform = currentPlatform as Platform.Desktop
-    val filename = when (platform) {
-        is Platform.Linux -> "lib$libraryName.so"
-        is Platform.MacOS -> "lib$libraryName.dylib"
-        is Platform.Windows -> "$libraryName.dll"
-    }
-    System.getProperty("compose.application.resources.dir")?.let {
-        val file = File(it).resolve(filename)
-        if (file.exists()) {
-            System.load(file.absolutePath)
-            return
-        }
-    }
-
-    val arch = when (platform.arch) {
-        Arch.X86_64 -> "x64"
-        Arch.AARCH64 -> "arm64"
-    }
-
-    val triple = when (platform) {
-        is Platform.Linux -> "linux-$arch"
-        is Platform.MacOS -> "macos-$arch"
-        is Platform.Windows -> "windows-$arch"
-    }
-
-    System.getProperty("user.dir")?.let { File(it) }?.resolve("../appResources/$triple/$filename")
-        ?.let {
-            if (it.exists()) {
-                System.load(it.absolutePath)
-                return
-            }
-        }
-
-    throw UnsatisfiedLinkError("Could not find anitorrent library: $filename")
-}
-
-object AnitorrentLibraryLoader {
+object AnitorrentLibraryLoader : TorrentLibraryLoader {
+    private val logger = logger(AnitorrentLibraryLoader::class)
 
     @Volatile
     private var libraryLoaded = false
@@ -58,25 +28,79 @@ object AnitorrentLibraryLoader {
 //    anitorrent.install_signal_handlers()
     }
 
+    // appResources/macos-arm64/anitorrent
+    private fun getAnitorrentResourceDir(): File {
+        val platform = currentPlatform as Platform.Desktop
+        val libRelative = "anitorrent"
+        System.getProperty("compose.application.resources.dir")?.let {
+            val file = File(it).resolve(libRelative)
+            if (file.exists()) {
+                return file
+            }
+        }
+
+        val arch = when (platform.arch) {
+            Arch.X86_64 -> "x64"
+            Arch.AARCH64 -> "arm64"
+        }
+
+        val triple = when (platform) {
+            is Platform.Linux -> "linux-$arch"
+            is Platform.MacOS -> "macos-$arch"
+            is Platform.Windows -> "windows-$arch"
+        }
+
+        System.getProperty("user.dir")?.let { File(it) }?.resolve("../appResources/$triple")
+            ?.resolve(libRelative)
+            ?.let {
+                if (it.exists()) {
+                    return it
+                }
+            }
+
+        throw UnsatisfiedLinkError("Anitorrent resource directory not found")
+    }
+
+    private fun getPlatformLibraryName(libraryName: String): String {
+        val platform = currentPlatform as Platform.Desktop
+        return when (platform) {
+            is Platform.Linux -> "lib$libraryName.so"
+            is Platform.MacOS -> "lib$libraryName.dylib"
+            is Platform.Windows -> "$libraryName.dll"
+        }
+    }
+
+    private fun loadLibrary(libraryFilename: String) {
+        val dir = getAnitorrentResourceDir().resolve("lib")
+        dir.resolve(libraryFilename).let {
+            if (!it.exists()) {
+                throw UnsatisfiedLinkError("Anitorrent library not found: $it")
+            }
+            System.load(it.absolutePath)
+        }
+    }
+
+    private fun loadDependencies() {
+        val dir = getAnitorrentResourceDir()
+        val map = Json.decodeFromString(
+            JsonObject.serializer(),
+            dir.resolve("anitorrent.deps.json").readText(),
+        ).map {
+            it.key to it.value.jsonPrimitive.content
+        }
+        for ((name, library) in map) {
+            logger.info { "Loading library $name from: $library" }
+            loadLibrary(library)
+        }
+    }
+
     @Synchronized
     @Throws(UnsatisfiedLinkError::class)
-    fun loadLibraries() {
+    override fun loadLibraries() {
         if (libraryLoaded) return
 
         try {
-            when (currentPlatform as Platform.Desktop) {
-                is Platform.Windows -> {
-                    loadAnitorrentLibrary("libcrypto-3-x64")
-                    loadAnitorrentLibrary("libssl-3-x64")
-                    loadAnitorrentLibrary("torrent-rasterbar")
-                }
-
-                is Platform.Linux -> throw UnsupportedOperationException("Linux is not supported yet")
-                is Platform.MacOS -> {
-                    loadAnitorrentLibrary("torrent-rasterbar.2.0.10")
-                }
-            }
-            loadAnitorrentLibrary("anitorrent")
+            loadDependencies()
             _initAnitorrent
             libraryLoaded = true
         } catch (e: Throwable) {

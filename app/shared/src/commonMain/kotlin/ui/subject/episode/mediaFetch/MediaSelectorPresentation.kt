@@ -8,8 +8,8 @@ import androidx.compose.runtime.remember
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.cancel
-import me.him188.ani.app.data.media.selector.MediaPreferenceItem
-import me.him188.ani.app.data.media.selector.MediaSelector
+import me.him188.ani.app.data.source.media.selector.MediaPreferenceItem
+import me.him188.ani.app.data.source.media.selector.MediaSelector
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope

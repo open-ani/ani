@@ -46,7 +46,7 @@ abstract class AbstractSettingsViewModel : AbstractViewModel(), KoinComponent {
     }
 
     fun <T> settings(
-        pref: me.him188.ani.app.data.repositories.Settings<T>,
+        pref: me.him188.ani.app.data.repository.Settings<T>,
         placeholder: T,
     ) =
         propertyDelegateProvider {
@@ -56,7 +56,7 @@ abstract class AbstractSettingsViewModel : AbstractViewModel(), KoinComponent {
     @Stable
     inner class Settings<T>(
         private val debugName: String,
-        private val pref: me.him188.ani.app.data.repositories.Settings<T>,
+        private val pref: me.him188.ani.app.data.repository.Settings<T>,
         private val placeholder: T,
     ) : State<T> {
         val loading by derivedStateOf { value === placeholder }

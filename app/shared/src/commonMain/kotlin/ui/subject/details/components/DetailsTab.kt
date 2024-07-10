@@ -40,10 +40,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import me.him188.ani.app.data.subject.PersonInfo
-import me.him188.ani.app.data.subject.RelatedCharacterInfo
-import me.him188.ani.app.data.subject.RelatedPersonInfo
-import me.him188.ani.app.data.subject.SubjectInfo
+import me.him188.ani.app.data.models.subject.PersonInfo
+import me.him188.ani.app.data.models.subject.RelatedCharacterInfo
+import me.him188.ani.app.data.models.subject.RelatedPersonInfo
+import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
 import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
 

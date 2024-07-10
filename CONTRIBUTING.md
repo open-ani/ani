@@ -64,7 +64,7 @@
 1. 设置 Git 使用 LF 并忽略文件权限
    ```shell
    git config core.autocrlf false
-   git config core.eol crlf
+   git config core.eol lf
    git config core.filemode false
    git add --update --renormalize
    ```
@@ -231,14 +231,20 @@ Ani 按照功能进行了一定程度的模块化.
 
 ### `data`: 数据层
 
-包含所有对网络请求和本地持久化存储的高级封装. 后面介绍的 UI 层不会进行 HTTP 请求或是文件访问,
+包含所有外部数据和本地持久化存储的高级封装. 后面介绍的 UI 层不会进行 HTTP 请求或是文件访问,
 而是调用这里的接口.
 
-数据仓库 `Repository` 的职责是将数据源提供的数据进行整合, 为 UI
-层提供统一的数据接口, 并且让 UI 层无需关心数据源的具体实现.
+数据层包含许多模块：
+
+* `models`: App UI 或其他组件使用的数据结构，外部数据源的数据结构将会转换到此包中数据结构.
+* `persistent`: 数据持久化包，例如轻量数据 preference 和大量数据 database.
+* `repository`: 数据仓库，通常是外部数据源与 App 交互的中间仓库.
+* `source`: 数据源.
+
+App 主要通过 `repository` 和 `source` 与外部数据交互.
 
 data
-还提供了一个 [`MediaFetcher`](https://github.com/Him188/ani/tree/master/app/shared/data/common/data/media/MediaFetcher.kt#L42),
+还提供了一个 [`MediaFetcher`](https://github.com/Him188/ani/tree/master/app/shared/data/common/data/source/media/MediaFetcher.kt#L42),
 封装了对番剧的下载链接获取逻辑.
 
 ### `foundation`: 基础组件

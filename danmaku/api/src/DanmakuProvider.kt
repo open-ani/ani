@@ -2,7 +2,7 @@ package me.him188.ani.danmaku.api
 
 import io.ktor.client.HttpClientConfig
 import kotlinx.serialization.Serializable
-import me.him188.ani.app.data.subject.PackedDate
+import me.him188.ani.app.data.models.PackedDate
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.utils.ktor.createDefaultHttpClient
 import me.him188.ani.utils.ktor.registerLogging
