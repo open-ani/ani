@@ -135,7 +135,7 @@ fun Comment(
                 color = LocalContentColor.current.slightlyWeaken(),
             )
             SelectionContainer(
-                modifier = Modifier.padding(top = 12.dp, end = 24.dp).fillMaxWidth(),
+                modifier = Modifier.padding(top = 6.dp, end = 24.dp).fillMaxWidth(),
             ) {
                 BBCodeView(comment.summary, modifier = Modifier.fillMaxWidth())
             }

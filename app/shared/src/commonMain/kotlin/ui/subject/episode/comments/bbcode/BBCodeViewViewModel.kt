@@ -28,19 +28,23 @@ class BBCodeViewViewModel : AbstractViewModel(), KoinComponent {
 
         this@toUIRichElements.forEach { e ->
             when (e) {
-                is RichElement.Text -> annotated.add(
-                    UIRichElement.Annotated.Text(
-                        content = e.value,
-                        size = e.size,
-                        italic = e.italic,
-                        underline = e.underline,
-                        strikethrough = e.strikethrough,
-                        bold = e.bold,
-                        mask = e.mask,
-                        code = e.code,
-                        url = e.jumpUrl,
-                    ),
-                )
+                is RichElement.Text -> {
+                    if (e.value.trim().isNotEmpty()) {
+                        annotated.add(
+                            UIRichElement.Annotated.Text(
+                                content = e.value,
+                                size = e.size,
+                                italic = e.italic,
+                                underline = e.underline,
+                                strikethrough = e.strikethrough,
+                                bold = e.bold,
+                                mask = e.mask,
+                                code = e.code,
+                                url = e.jumpUrl,
+                            ),
+                        )
+                    }
+                }
 
                 is RichElement.BangumiSticker -> annotated.add(
                     UIRichElement.Annotated.Sticker(
