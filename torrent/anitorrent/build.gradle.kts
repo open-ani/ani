@@ -141,6 +141,10 @@ val configureAnitorrent = tasks.register("configureAnitorrent", Exec::class.java
         add(anitorrentRootDir.absolutePath)
         add("-B")
         add(anitorrentBuildDir.absolutePath)
+
+        if (isWindows) {
+            add("-- /m")
+        }
     }
     logger.warn(commandLine.joinToString(" "))
 }

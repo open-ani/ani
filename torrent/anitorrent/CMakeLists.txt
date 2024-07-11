@@ -29,7 +29,6 @@ endif ()
 if (MSVC)
     message(STATUS "MSVC detected")
     add_compile_options(/Zc:__cplusplus)
-    add_compile_options(/m)
 endif ()
 
 # Libtorrent
