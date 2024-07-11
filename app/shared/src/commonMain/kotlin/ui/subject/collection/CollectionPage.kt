@@ -205,6 +205,7 @@ fun CollectionPage(
                 collection.pullToRefreshState = pullToRefreshState
             }
             val gridState = rememberLazyGridState()
+            val uiScope = rememberCoroutineScope()
             LaunchedEffect(true) {
                 snapshotFlow { pullToRefreshState.isRefreshing }.collectLatest {
                     if (!it) return@collectLatest
@@ -223,7 +224,9 @@ fun CollectionPage(
                     } finally {
                         pullToRefreshState.endRefresh()
                         if (!collection.isAutoRefreshing) {
-                            gridState.animateScrollToItem(0)
+                            uiScope.launch {
+                                gridState.animateScrollToItem(0)
+                            }
                         }
                     }
                 }
