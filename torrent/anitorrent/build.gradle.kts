@@ -124,6 +124,9 @@ val configureAnitorrent = tasks.register("configureAnitorrent", Exec::class.java
         add(cmake)
         add("-DCMAKE_BUILD_TYPE=$buildType")
         add("-DCMAKE_C_FLAGS_RELEASE=-O3")
+        if (isWindows) {
+            add("-Dencryption=OFF")
+        }
         getPropertyOrNull("Boost_INCLUDE_DIR")?.let { add("-DBoost_INCLUDE_DIR=${it.sanitize()}") }
         if (!isWindows) {
             compilerC?.let { add("-DCMAKE_C_COMPILER=${compilerC.sanitize()}") }
