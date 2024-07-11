@@ -31,7 +31,7 @@ data class DanmakuFilterConfig(
 
 @Serializable
 data class DanmakuRegexFilter (
-    val instanceID: String,
+    val id: String,
     val name: String = "",
     val re: String = "",
     val isEnabled: Boolean = true
