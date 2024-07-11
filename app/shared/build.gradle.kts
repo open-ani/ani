@@ -134,6 +134,8 @@ kotlin {
         implementation(libs.jna)
 
         implementation(libs.slf4j.api)
+
+        implementation(projects.utils.bbcode)
     }
 
     sourceSets.commonTest.dependencies {
