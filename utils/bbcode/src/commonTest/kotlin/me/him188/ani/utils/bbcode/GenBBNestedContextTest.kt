@@ -77,6 +77,16 @@ public class GenBBNestedContextTest : BBCodeParserTestHelper() {
             assertText(elements.at(2), value="!", size=1, bold=true)
         }
     }
+
+    @Test
+    public fun parse815976454() {
+        BBCode.parse("[color=red][size=1]Hello[b][size=2]World[/size]![/b][/size][/color]")
+        .run {
+            assertText(elements.at(0), value="Hello", size=1, color="red")
+            assertText(elements.at(1), value="World", size=2, color="red", bold=true)
+            assertText(elements.at(2), value="!", size=1, color="red", bold=true)
+        }
+    }
 }
 
 
