@@ -88,7 +88,7 @@ void session_t::start(const session_settings_t &settings) {
     guard_global_lock;
     using libtorrent::settings_pack;
 
-    settings_pack s;
+    settings_pack s{};
 
     s.set_bool(settings_pack::enable_dht,
                true); // this will start dht immediately when the setting is started
@@ -145,7 +145,7 @@ void session_t::start(const session_settings_t &settings) {
               libtorrent::alert_category::status | libtorrent::alert_category::piece_progress |
                   libtorrent::alert_category::file_progress | libtorrent::alert_category::upload);
 
-    session_ = std::make_shared<libtorrent::session>(std::move(s));
+    session_ = std::make_shared<libtorrent::session>(s);
 }
 
 void session_t::resume() const {
