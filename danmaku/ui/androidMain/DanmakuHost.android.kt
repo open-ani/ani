@@ -136,7 +136,7 @@ internal actual fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
                             //Do nothing in preview
                         }
 
-                        override fun editDanmakuRegexFilter(filter: DanmakuRegexFilter) {
+                        override fun editDanmakuRegexFilter(id: String, filter: DanmakuRegexFilter) {
                             //Do nothing in preview
                         }
 
@@ -195,7 +195,7 @@ internal actual fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
                             //Do nothing in preview
                         }
 
-                        override fun editDanmakuRegexFilter(filter: DanmakuRegexFilter) {
+                        override fun editDanmakuRegexFilter(id: String, filter: DanmakuRegexFilter) {
                             //Do nothing in preview
                         }
 
@@ -232,3 +232,4 @@ private fun PreviewDanmakuText() {
         }
     }
 }
+
