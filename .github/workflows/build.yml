@@ -104,6 +104,8 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
+        with:
+          cache-disabled: ${{ env.isWindows == 'false' }} # Windows 上这个缓存会花费 8 分钟, 还不如直接下载
 
       - if: ${{ env.isUnix == 'true' }}
         run: chmod -R 777 *
