@@ -89,8 +89,18 @@ jobs:
         run: chmod +x ./ci-helper/install-deps-macos.sh && ./ci-helper/install-deps-macos.sh
 
       - if: ${{ env.isWindows == 'true' }}
+        name: Setup vcpkg cache
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
+      - if: ${{ env.isWindows == 'true' }}
         name: Install Native Dependencies
         run: ./ci-helper/install-deps-windows.cmd
+        env:
+          VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
