@@ -149,6 +149,8 @@ val buildAnitorrent = tasks.register("buildAnitorrent", Exec::class.java) {
     dependsOn(generateSwig)
 
     val cmake = getPropertyOrNull("CMAKE") ?: "cmake"
+    val isWindows = getOs() == Os.Windows
+    val buildType = getPropertyOrNull("CMAKE_BUILD_TYPE") ?: "Debug"
 
     inputs.file(anitorrentRootDir.resolve("CMakeLists.txt"))
     inputs.dir(anitorrentRootDir.resolve("include"))
@@ -162,6 +164,7 @@ val buildAnitorrent = tasks.register("buildAnitorrent", Exec::class.java) {
         cmake,
         "--build", anitorrentBuildDir.absolutePath,
         "--target", "anitorrent",
+        *if (isWindows && buildType == "Release") arrayOf("--config", "Release") else emptyArray(),
         "-j", Runtime.getRuntime().availableProcessors().toString(),
     )
 }

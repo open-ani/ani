@@ -2,6 +2,7 @@ package me.him188.ani.app.ui.subject.episode.comments
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -27,18 +28,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.constraintlayout.compose.ConstraintSet
-import androidx.constraintlayout.compose.Dimension
 import kotlinx.coroutines.flow.collectLatest
 import me.him188.ani.app.tools.formatDateTime
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
 import me.him188.ani.app.ui.foundation.theme.stronglyWeaken
+import me.him188.ani.app.ui.subject.episode.comments.bbcode.BBCodeView
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
 
@@ -75,7 +72,7 @@ fun EpisodeCommentColumn(
                 .nestedScroll(pullToRefreshState.nestedScrollConnection),
         ) {
             item { }
-            itemsIndexed(comments) { index, item ->
+            itemsIndexed(comments, key = { _, item -> item.id }) { index, item ->
                 Comment(
                     comment = item,
                     modifier = Modifier
@@ -112,70 +109,36 @@ fun Comment(
     comment: UiComment,
     modifier: Modifier = Modifier
 ) {
-    val constraintSet = ConstraintSet {
-        val (avatar, nickname, time, indicator, content) =
-            createRefsFor("avatar", "nickname", "time", "indicator", "content")
-
-        constrain(avatar) {
-            top.linkTo(parent.top)
-            start.linkTo(parent.start)
-        }
-        constrain(nickname) {
-            top.linkTo(parent.top)
-            start.linkTo(avatar.end, 12.dp)
-        }
-        constrain(time) {
-            top.linkTo(nickname.bottom, 4.dp)
-            start.linkTo(avatar.end, 12.dp)
-        }
-        constrain(indicator) {
-            end.linkTo(parent.end)
-            top.linkTo(parent.top)
-        }
-        constrain(content) {
-            start.linkTo(avatar.end, 12.dp)
-            top.linkTo(time.bottom, 12.dp)
-            end.linkTo(parent.end)
-            width = Dimension.fillToConstraints
-        }
-    }
-    ConstraintLayout(
-        constraintSet = constraintSet,
+    Row(
         modifier = modifier,
+        verticalAlignment = Alignment.Top,
     ) {
         Box(
-            Modifier.layoutId("avatar").clip(CircleShape),
+            modifier = Modifier.clip(CircleShape),
         ) {
             AvatarImage(
-                comment.creator.avatarUrl,
-                Modifier.size(36.dp),
+                url = comment.creator.avatarUrl,
+                modifier = Modifier.size(36.dp),
             )
         }
-        Text(
-            comment.id,
-            modifier = Modifier.layoutId("indicator"),
-            style = MaterialTheme.typography.labelMedium,
-
-            )
-        SelectionContainer(modifier = Modifier.layoutId("nickname")) {
+        Column(
+            modifier = Modifier.padding(start = 12.dp),
+        ) {
             Text(
-                comment.creator.nickname ?: "nickname",
+                text = comment.creator.nickname ?: "nickname",
                 style = MaterialTheme.typography.labelLarge,
             )
-        }
-        SelectionContainer(modifier = Modifier.layoutId("time")) {
             Text(
-                formatDateTime(comment.createdAt),
+                text = formatDateTime(comment.createdAt),
+                modifier = Modifier.padding(top = 4.dp),
                 style = MaterialTheme.typography.labelMedium,
                 color = LocalContentColor.current.slightlyWeaken(),
             )
-        }
-        SelectionContainer(modifier = Modifier.layoutId("content")) {
-            Text(
-                comment.summary,
-                style = MaterialTheme.typography.bodyLarge,
-                fontSize = 15.5.sp,
-            )
+            SelectionContainer(
+                modifier = Modifier.padding(top = 6.dp, end = 24.dp).fillMaxWidth(),
+            ) {
+                BBCodeView(comment.summary, modifier = Modifier.fillMaxWidth())
+            }
         }
     }
 }

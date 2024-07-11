@@ -10,6 +10,15 @@ sealed interface RichElement {
     data class Text(
         val value: String,
         val size: Int = DEFAULT_SIZE,
+        /**
+         * Can be:
+         * - RGBA: "#FFFFFFFF"
+         * - RGB: "#FFFFFF"
+         * - name: "red"
+         *
+         * 如果无法解析则显示为默认颜色
+         */
+        val color: String? = null,
 
         val italic: Boolean = false,
         val underline: Boolean = false,
@@ -23,14 +32,6 @@ sealed interface RichElement {
     ) : RichElement {
         companion object {
             const val DEFAULT_SIZE = 16
-            val Empty = Text(
-                "", DEFAULT_SIZE,
-                italic = false,
-                underline = false,
-                strikethrough = false,
-                bold = false,
-                mask = false,
-            )
         }
     }
 

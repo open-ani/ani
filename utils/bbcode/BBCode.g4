@@ -8,7 +8,7 @@ section : element+ ;
 
 element: 
     b | i | u | s | code | 
-    url | url_named | img | quote | size | mask | bgm_sticker | text_stiker | 
+    url | url_named | img | quote | size | color | mask | bgm_sticker | text_stiker |  
     plain;
 
 plain: (TEXT | NUMBER | '(' | ')' | '[' | '/' | ']' | '=' | ',')+;
@@ -21,6 +21,7 @@ code: '[code]' content=section? '[/code]';
 mask: '[mask]' content=section? '[/mask]';
 quote: '[quote]' content=section? '[/quote]';
 size: '[size=' value=NUMBER ']' content=section? '[/size]';
+color: '[color=' value=TEXT ']' content=section? '[/color]';
 
 bgm_sticker: '(bgm' id=NUMBER ')';
 text_stiker: 

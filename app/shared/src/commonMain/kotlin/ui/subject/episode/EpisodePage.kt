@@ -20,6 +20,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
@@ -27,6 +31,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -38,6 +43,7 @@ import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
@@ -50,6 +56,7 @@ import me.him188.ani.app.ui.foundation.effects.OnLifecycleEvent
 import me.him188.ani.app.ui.foundation.effects.ScreenOnEffect
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.layout.LocalLayoutMode
+import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.subject.episode.comments.EpisodeCommentColumn
 import me.him188.ani.app.ui.subject.episode.danmaku.DanmakuEditor
@@ -166,6 +173,8 @@ private fun EpisodeSceneTabletVeryWide(
             }
 
             Column(Modifier.width(width = (maxWidth * 0.18f).coerceAtLeast(300.dp))) {
+                val episodeId by vm.episodeId.collectAsStateWithLifecycle()
+                
                 EpisodeDetails(
                     vm,
                     LocalSnackbar.current,
@@ -178,6 +187,8 @@ private fun EpisodeSceneTabletVeryWide(
                         )
                     },
                 )
+
+                EpisodeCommentColumn(episodeId, Modifier.fillMaxSize())
             }
         }
     }
@@ -239,39 +250,37 @@ private fun EpisodeSceneContentPhone(
         }
 
         val pagerState = rememberPagerState(initialPage = 0) { 2 }
+        val scope = rememberCoroutineScope()
+
+        val episodeId by vm.episodeId.collectAsStateWithLifecycle()
 
         Column(Modifier.fillMaxSize()) {
-//            TabRow(
-//                selectedTabIndex = pagerState.currentPage,
-//                indicator = @Composable { tabPositions ->
-//                    TabRowDefaults.PrimaryIndicator(
-//                        Modifier.pagerTabIndicatorOffset(pagerState, tabPositions),
-//                    )
-//                },
-//            ) {
-//                Tab(
-//                    selected = pagerState.currentPage == 0,
-//                    onClick = { scope.launch { pagerState.animateScrollToPage(0) } },
-//                    text = { Text("详情") },
-//                )
-//                Tab(
-//                    selected = pagerState.currentPage == 1,
-//                    onClick = { scope.launch { pagerState.animateScrollToPage(1) } },
-//                    text = { Text("评论") },
-//                )
-//            }
-//
-//            val episodeId by viewModel.episodeId.collectAsStateWithLifecycle()
-//            val commentViewModel = remember(episodeId) {
-//                CommentViewModel(episodeId)
-//            }
+            TabRow(
+                selectedTabIndex = pagerState.currentPage,
+                indicator = @Composable { tabPositions ->
+                    TabRowDefaults.PrimaryIndicator(
+                        Modifier.pagerTabIndicatorOffset(pagerState, tabPositions),
+                    )
+                },
+            ) {
+                Tab(
+                    selected = pagerState.currentPage == 0,
+                    onClick = { scope.launch { pagerState.animateScrollToPage(0) } },
+                    text = { Text("详情") },
+                )
+                Tab(
+                    selected = pagerState.currentPage == 1,
+                    onClick = { scope.launch { pagerState.animateScrollToPage(1) } },
+                    text = { Text("评论") },
+                )
+            }
 
             HorizontalPager(state = pagerState, Modifier.fillMaxSize()) { index ->
 
                 when (index) {
                     0 -> EpisodeDetails(vm, LocalSnackbar.current, Modifier.fillMaxSize())
                     1 -> {
-                        EpisodeCommentColumn(vm.episodeId.value, Modifier.fillMaxSize())
+                        EpisodeCommentColumn(episodeId, Modifier.fillMaxSize())
                     }
                 }
             }

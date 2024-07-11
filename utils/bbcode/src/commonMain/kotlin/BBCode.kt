@@ -24,6 +24,7 @@ object BBCode {
 
 private data class Context(
     val size: Int = RichElement.Text.DEFAULT_SIZE,
+    val color: String? = null,
     val isBold: Boolean = false,
     val isItalic: Boolean = false,
     val isUnderline: Boolean = false,
@@ -68,6 +69,7 @@ private class ElementBuilder(
             RichElement.Text(
                 text,
                 size = context.size,
+                color = context.color,
                 bold = context.isBold,
                 italic = context.isItalic,
                 underline = context.isUnderline,
@@ -165,6 +167,12 @@ private class AstToRichElementVisitor(
 
     override fun visitSize(ctx: BBCodeParser.SizeContext) {
         builder.withContext({ copy(size = ctx.value?.text?.toIntOrNull() ?: RichElement.Text.DEFAULT_SIZE) }) {
+            visitChildren(ctx)
+        }
+    }
+
+    override fun visitColor(ctx: BBCodeParser.ColorContext) {
+        builder.withContext({ copy(color = ctx.value?.text) }) {
             visitChildren(ctx)
         }
     }

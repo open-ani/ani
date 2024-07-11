@@ -56,6 +56,30 @@ public class GenBBBasicsTest : BBCodeParserTestHelper() {
     }
 
     @Test
+    public fun parse1924176660() {
+        BBCode.parse("[color=red]Hello World![/color]")
+        .run {
+            assertText(elements.at(0), value="Hello World!", color="red")
+        }
+    }
+
+    @Test
+    public fun parse1550990581() {
+        BBCode.parse("[color=#AFAFAF]Hello World![/color]")
+        .run {
+            assertText(elements.at(0), value="Hello World!", color="#AFAFAF")
+        }
+    }
+
+    @Test
+    public fun parse1360880245() {
+        BBCode.parse("[color=#AFAFAFFF]Hello World![/color]")
+        .run {
+            assertText(elements.at(0), value="Hello World!", color="#AFAFAFFF")
+        }
+    }
+
+    @Test
     public fun parse323759858() {
         BBCode.parse("(=v=) Hello World! (-w=)")
         .run {

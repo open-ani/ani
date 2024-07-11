@@ -24,6 +24,9 @@ fun main() {
         case("[url=http://example.com]Hello World![/url]")
         case("[url=invalidurl]Hello World![/url]")
         case("[size=1]Hello World![/size]")
+        case("[color=red]Hello World![/color]")
+        case("[color=#AFAFAF]Hello World![/color]")
+        case("[color=#AFAFAFFF]Hello World![/color]")
         case("(=v=) Hello World! (-w=)")
         case("(bgm123) Hello World! (bgm2)")
         case("(bgm 2)")
@@ -49,6 +52,7 @@ fun main() {
         case("[size=1][size=2]Hello World![/size][/size]")
         case("[size=1]Hello[size=2]World[/size]![/size]")
         case("[size=1]Hello[b][size=2]World[/size]![/b][/size]")
+        case("[color=red][size=1]Hello[b][size=2]World[/size]![/b][/size][/color]")
     }.writeTo(dir)
 
     BBCodeTestGenerator("Specials").apply {
@@ -142,6 +146,7 @@ class BBCodeTestGenerator(
                         )
                         element.jumpUrl?.let { addCode(", jumpUrl=%S", it) }
                         if (element.size != RichElement.Text.DEFAULT_SIZE) addCode(", size=%L", element.size)
+                        if (element.color != null) addCode(", color=%S", element.color)
                         if (element.italic) addCode(", italic=%L", true)
                         if (element.underline) addCode(", underline=%L", true)
                         if (element.strikethrough) addCode(", strikethrough=%L", true)

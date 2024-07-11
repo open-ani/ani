@@ -112,14 +112,23 @@ jobs:
             name: Windows x86_64
             uploadApk: false
             arch: x64
+            anitorrent: true
+            anitorrent_separate_build: false # windows 单线程构建 anitorrent, 要一起跑节约时间
+            compose_resource_triple: windows-x64
           - os: macos-12
             name: macOS x86_64
             uploadApk: false
             arch: x64
+            anitorrent: true
+            anitorrent_separate_build: true # macOS 构建快, 先构建 anitorrent, 再 assemble
+            compose_resource_triple: macos-x64
           - os: macos-14
             name: macOS aarch64
             uploadApk: true
             arch: aarch64
+            anitorrent: true
+            anitorrent_separate_build: true
+            compose_resource_triple: macos-arm64
     env:
       enableLocalPublishingTest: 'false'
       gradleArgs: >-
@@ -132,9 +141,10 @@ jobs:
         "-Pbangumi.oauth.client.android.secret=${{ secrets.BANGUMI_OAUTH_CLIENT_ANDROID_SECRET }}"
         "-Pbangumi.oauth.client.desktop.appId=${{ secrets.BANGUMI_OAUTH_CLIENT_DESKTOP_ID }}" 
         "-Pbangumi.oauth.client.desktop.secret=${{ secrets.BANGUMI_OAUTH_CLIENT_DESKTOP_SECRET }}"
-        "-Dani.enable.anitorrent=true"
-        ${{ startsWith(matrix.os, 'windows') && '-DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake' || '' }}
-        ${{ startsWith(matrix.os, 'windows') && '-DBoost_INCLUDE_DIR=C:/vcpkg/installed/x64-windows/include' || '' }}
+        ${{ matrix.anitorrent == true && '"-Dani.enable.anitorrent=true"' || '' }}
+        ${{ matrix.anitorrent == true && '"-DCMAKE_BUILD_TYPE=Release"' || '' }}
+        ${{ startsWith(matrix.os, 'windows') && '"-DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake"' || '' }}
+        ${{ startsWith(matrix.os, 'windows') && '"-DBoost_INCLUDE_DIR=C:/vcpkg/installed/x64-windows/include"' || '' }}
 
       isMac: ${{ startsWith(matrix.os, 'macos') }}
       isWindows: ${{ startsWith(matrix.os, 'windows') }}
@@ -208,6 +218,7 @@ jobs:
           encodedString: ${{ secrets.SIGNING_RELEASE_STOREFILE }}
 
       - name: Build Anitorrent
+        if: ${{ matrix.anitorrent && matrix.anitorrent_separate_build }}
         run: ./gradlew :torrent:anitorrent:build :torrent:anitorrent:buildAnitorrent ${{ env.gradleArgs }}
 
       - name: Check
@@ -284,55 +295,3 @@ jobs:
           AWS_BASEURL: ${{ secrets.AWS_BASEURL }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
           AWS_BUCKET: ${{ secrets.AWS_BUCKET }}
-
-#  apk-qrcode:
-#    needs: [ release ]
-#    runs-on: ubuntu-22.04
-#    steps:
-#      - id: update_release
-#        uses: tubone24/update_release@v1.0
-#        env:
-#          GITHUB_TOKEN: ${{ github.token }}
-#        with:
-#          body: \n\n![](${{ needs.release.outputs.apk_qr_url }})
-
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v2
-#
-#      - name: Set up JDK 11
-#        uses: actions/setup-java@v1
-#        with:
-#          java-version: 11
-#
-#      - name: Grant Execute Permission for gradlew
-#        run: chmod +x gradlew
-#
-#      - run: ./gradlew mirai-api-http:checkMavenCentralPublication --info  --scan
-#        env:
-#          PUBLICATION_CREDENTIALS: ${{ secrets.PUBLICATION_CREDENTIALS }}
-#
-#      - name: Build with Gradle
-#        run: ./gradlew buildCiJar
-#
-#      - name: Get Tag
-#        id: tag
-#        uses: dawidd6/action-get-tag@v1
-#
-#      - name: Generate Line Temp File
-#        run: "cat CHANGELOG.md | grep -n '## \\\\' | cut -d: -f1 | head -n 2 >> line.tmp"
-#
-#      - name: Generate Release Log
-#        run: "cat CHANGELOG.md | head -n $((`tail -n 1 line.tmp`-1)) | tail -n +`head -n 1 line.tmp` >> release.log"
-#
-#      - name: Create Release
-#        id: create_release
-#        uses: actions/create-release@v1
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
-#        with:
-#          tag_name: ${{ github.ref }}
-#          release_name: mirai-api-http-${{ steps.tag.outputs.tag }}
-#          body_path: release.log
-#          draft: false
-#          prerelease: false

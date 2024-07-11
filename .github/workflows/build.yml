@@ -63,6 +63,7 @@ jobs:
         "-Pbangumi.oauth.client.desktop.appId=${{ secrets.BANGUMI_OAUTH_CLIENT_DESKTOP_ID }}" 
         "-Pbangumi.oauth.client.desktop.secret=${{ secrets.BANGUMI_OAUTH_CLIENT_DESKTOP_SECRET }}"
         ${{ matrix.anitorrent == true && '"-Dani.enable.anitorrent=true"' || '' }}
+        ${{ matrix.anitorrent == true && '"-DCMAKE_BUILD_TYPE=Release"' || '' }}
         ${{ startsWith(matrix.os, 'windows') && '"-DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake"' || '' }}
         ${{ startsWith(matrix.os, 'windows') && '"-DBoost_INCLUDE_DIR=C:/vcpkg/installed/x64-windows/include"' || '' }}
 
@@ -144,7 +145,7 @@ jobs:
         run: ./gradlew check ${{ env.gradleArgs }}
 
       - name: Package
-        run: ./gradlew createDistributable ${{ env.gradleArgs }}
+        run: ./gradlew createReleaseDistributable ${{ env.gradleArgs }}
 
       - if: ${{ matrix.anitorrent }}
         name: Upload Anitorrent CMakeCache.txt

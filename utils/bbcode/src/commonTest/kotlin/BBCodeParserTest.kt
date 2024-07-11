@@ -15,6 +15,7 @@ abstract class BBCodeParserTestHelper {
         jumpUrl: String? = null,
         value: String,
         size: Int = RichElement.Text.DEFAULT_SIZE,
+        color: String? = null,
         italic: Boolean = false,
         underline: Boolean = false,
         strikethrough: Boolean = false,
@@ -25,6 +26,7 @@ abstract class BBCodeParserTestHelper {
         assertElement(jumpUrl, element)
         assertEquals(value, element.value)
         assertEquals(size, element.size)
+        assertEquals(color, element.color)
         assertEquals(italic, element.italic)
         assertEquals(underline, element.underline)
         assertEquals(strikethrough, element.strikethrough)
