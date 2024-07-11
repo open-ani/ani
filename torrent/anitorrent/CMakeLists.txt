@@ -12,6 +12,13 @@ add_compile_definitions(TORRENT_HAVE_MMAP=0)
 
 add_compile_definitions(TORRENT_ABI_VERSION=3)
 
+# https://github.com/arvidn/libtorrent/blob/RC_2_0/docs/building.rst#building-with-vcpkg
+add_compile_definitions(TORRENT_LINKING_SHARED=true)
+add_compile_definitions(TORRENT_BUILDING_SHARED=true)
+if (WIN32)
+    add_compile_definitions(TORRENT_DISABLE_ENCRYPTION=true)
+endif ()
+
 #"D:\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.37.32822\bin\Hostx86\x64\cl.exe"  /nologo /TP -DBOOST_ALL_NO_LIB -DBOOST_ASIO_ENABLE_CANCELIO -DBOOST_ASIO_NO_DEPRECATED -DTORRENT_HAVE_MMAP=0 -DTORRENT_LINKING_SHARED -DTORRENT_USE_ASSERTS -DWIN32_LEAN_AND_MEAN -D_CRT_SECURE_NO_DEPRECATE -D_SCL_SECURE_NO_DEPRECATE -Danitorrent_EXPORTS -ID:\Java\jdk-18.0.1.102-openj9\include -ID:\Java\jdk-18.0.1.102-openj9\include\win32 -ID:\Projects\animation-garden\torrent\anitorrent\include -ID:\Projects\animation-garden\torrent\anitorrent\cmake-build-debug\_deps\libtorrent-src\include -external:ID:\vcpkg\installed\x64-windows\include -external:W0 /DWIN32 /D_WINDOWS /EHsc /Ob0 /Od /RTC1 -std:c++latest -MDd -Zi /EHsc /showIncludes /FoCMakeFiles\anitorrent.dir\gen\cpp\anitorrent_wrap.cpp.obj /FdCMakeFiles\anitorrent.dir\ /FS -c D:\Projects\animation-garden\torrent\anitorrent\gen\cpp\anitorrent_wrap.cpp
 #Please define _WIN32_WINNT or _WIN32_WINDOWS appropriately. For example:
 #- add -D_WIN32_WINNT=0x0601 to the compiler command line; or
