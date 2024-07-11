@@ -33,7 +33,7 @@ import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
 import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.models.subject.episodeInfoFlow
 import me.him188.ani.app.data.models.subject.subjectInfoFlow
-import me.him188.ani.app.data.repository.DanmakuFilterConfigSettingsRepository
+import me.him188.ani.app.data.repository.DanmakuRegexFilterRepository
 import me.him188.ani.app.data.repository.EpisodePreferencesRepository
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.DanmakuManager
@@ -114,8 +114,6 @@ interface EpisodeViewModel : HasBackgroundScope {
      * "数据源" bottom sheet 中的每个数据源的结果
      */
     val mediaSourceResultsPresentation: MediaSourceResultsPresentation
-    val DanmakuFilterConfig: Flow<DanmakuFilterConfig>
-    val DamakuRegexFilterEnabled: Flow<Boolean>
 
     /**
      * "视频统计" bottom sheet 显示内容
@@ -176,7 +174,7 @@ private class EpisodeViewModelImpl(
     private val danmakuManager: DanmakuManager by inject()
     override val videoSourceResolver: VideoSourceResolver by inject()
     private val settingsRepository: SettingsRepository by inject()
-    private val danmakuFilterConfigSettingsRepository: DanmakuFilterConfigSettingsRepository by inject()
+    private val danmakuRegexFilterRepository: DanmakuRegexFilterRepository by inject()
     private val mediaSourceManager: MediaSourceManager by inject()
     private val episodePreferencesRepository: EpisodePreferencesRepository by inject()
 
@@ -277,10 +275,10 @@ private class EpisodeViewModelImpl(
             }
         }
 
-    override val DanmakuFilterConfig: Flow<DanmakuFilterConfig> =
-        danmakuFilterConfigSettingsRepository.danmakuFilterConfig.flow
+    val danmakuFilterConfig: Flow<DanmakuFilterConfig> =
+        danmakuRegexFilterRepository.flow
 
-    override val DamakuRegexFilterEnabled: Flow<Boolean> =
+    val danmakuRegexFilterEnabled: Flow<Boolean> =
         settingsRepository.danmakuRegexFilterEnabled.flow
 
     override val mediaSelectorPresentation: MediaSelectorPresentation =
@@ -413,8 +411,8 @@ private class EpisodeViewModelImpl(
     private val danmakuSessionFlow: Flow<DanmakuSession> = danmakuCollectionFlow.mapLatest { session ->
         session.at(
             progress = playerState.currentPositionMillis.map { it.milliseconds },
-            danmakuFilterConfig = DanmakuFilterConfig,
-            danmakuRegexFilterEnabled = DamakuRegexFilterEnabled,
+            danmakuFilterConfig = danmakuFilterConfig,
+            danmakuRegexFilterEnabled = danmakuRegexFilterEnabled,
         )
     }.shareInBackground(started = SharingStarted.Lazily)
 

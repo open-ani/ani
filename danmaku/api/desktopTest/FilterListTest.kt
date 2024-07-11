@@ -22,8 +22,8 @@ class FilterListTest {
 
         // 预编译所有启用的正则表达式 
         val regexFilters = danmakuFilterConfig.danmakuRegexFilterList
-            .filter { it.isEnabled }
-            .map { Regex(it.re) }
+            .filter { it.enabled }
+            .map { Regex(it.regex) }
 
         return list.filter { danmaku ->
             !regexFilters.any { regex ->
@@ -49,9 +49,9 @@ class FilterListTest {
     @Test
     fun `filter no danmaku`() = runTest {
         val danmakuFilterList = listOf<DanmakuRegexFilter>(
-            DanmakuRegexFilter(UUID.randomUUID().toString(), name = "1", re = ".*簽.*", isEnabled = true),
-            DanmakuRegexFilter(UUID.randomUUID().toString(), name = "2", re = "2", isEnabled = true),
-            DanmakuRegexFilter(UUID.randomUUID().toString(), name = "3", re = "3", isEnabled = true),
+            DanmakuRegexFilter(UUID.randomUUID().toString(), name = "1", regex = ".*簽.*", enabled = true),
+            DanmakuRegexFilter(UUID.randomUUID().toString(), name = "2", regex = "2", enabled = true),
+            DanmakuRegexFilter(UUID.randomUUID().toString(), name = "3", regex = "3", enabled = true),
         )
         val danmakuFilterConfig =
             DanmakuFilterConfig(danmakuRegexFilterList = danmakuFilterList)

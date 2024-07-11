@@ -22,7 +22,7 @@ data class DanmakuFilterConfig(
     @Suppress("PropertyName") @Transient val _placeholder: Int = 0,
 
 
-    ) {
+    ) { 
     companion object {
         @Stable
         val Default = DanmakuFilterConfig()
@@ -33,8 +33,8 @@ data class DanmakuFilterConfig(
 data class DanmakuRegexFilter (
     val id: String,
     val name: String = "",
-    val re: String = "",
-    val isEnabled: Boolean = true
+    val regex: String = "",
+    val enabled: Boolean = true
 ) {
     companion object {
         @Stable

@@ -99,8 +99,8 @@ class TimeBasedDanmakuSession private constructor(
 
         // 预编译所有启用的正则表达式 
         val regexFilters = danmakuFilterConfig.danmakuRegexFilterList
-            .filter { it.isEnabled }
-            .map { Regex(it.re) }
+            .filter { it.enabled }
+            .map { Regex(it.regex) }
 
         return list.filter { danmaku ->
             !regexFilters.any { regex ->
@@ -132,11 +132,11 @@ class TimeBasedDanmakuSession private constructor(
             override val events: Flow<DanmakuEvent> = channelFlow {
                 launch {
                     val combinedFlow = danmakuFilterConfig.distinctUntilChanged()
-                        .combine(danmakuRegexFilterEnabled) { danmakuConfig, anotherConfig ->
-                            danmakuConfig to anotherConfig
+                        .combine(danmakuRegexFilterEnabled) { filterConfig, enabled ->
+                            filterConfig to enabled
                         }
-                    combinedFlow.distinctUntilChanged().collect { (config, enabled) ->
-                        val filteredList = filterList(list, config, enabled)
+                    combinedFlow.distinctUntilChanged().collect { (filterConfig, enabled) ->
+                        val filteredList = filterList(list, filterConfig, enabled)
                         state.updateList(filteredList)
                         state.requestRepopulate()
                     }
