@@ -31,6 +31,7 @@ import kotlinx.serialization.json.encodeToStream
 import me.him188.ani.app.data.repository.MediaSourceSaves
 import me.him188.ani.app.data.repository.MikanIndexes
 import me.him188.ani.app.platform.Context
+import me.him188.ani.danmaku.ui.DanmakuFilterConfig
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
@@ -39,8 +40,6 @@ import java.io.OutputStream
 expect val Context.preferencesStore: DataStore<Preferences>
 
 expect val Context.tokenStore: DataStore<Preferences>
-
-expect val Context.danmakuFilterStore: DataStore<Preferences>
 
 /**
  * Must not be stored
@@ -68,6 +67,17 @@ abstract class PlatformDataStoreManager {
             produceFile = { resolveDataStoreFile("mediaSourceSaves") },
             corruptionHandler = ReplaceFileCorruptionHandler {
                 MediaSourceSaves.Default
+            },
+        )
+    }
+
+    val danmakuFilterStore by lazy {
+        DataStoreFactory.create(
+            serializer = DanmakuFilterConfig.serializer()
+                .asDataStoreSerializer(DanmakuFilterConfig.Default),
+            produceFile = { resolveDataStoreFile("danmakuFilterConfig") },
+            corruptionHandler = ReplaceFileCorruptionHandler {
+                DanmakuFilterConfig.Default
             },
         )
     }
