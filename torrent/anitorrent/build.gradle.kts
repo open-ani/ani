@@ -136,15 +136,16 @@ val configureAnitorrent = tasks.register("configureAnitorrent", Exec::class.java
             add("Ninja")
         } else {
             getPropertyOrNull("CMAKE_TOOLCHAIN_FILE")?.let { add("-DCMAKE_TOOLCHAIN_FILE=${it.sanitize()}") }
+            if (getPropertyOrNull("USE_NINJA")?.toBooleanStrict() == true) {
+                add("-DCMAKE_MAKE_PROGRAM=${ninja.sanitize()}")
+                add("-G")
+                add("Ninja")
+            }
         }
         add("-S")
         add(anitorrentRootDir.absolutePath)
         add("-B")
         add(anitorrentBuildDir.absolutePath)
-
-        if (isWindows) {
-            add("-- /m")
-        }
     }
     logger.warn(commandLine.joinToString(" "))
 }

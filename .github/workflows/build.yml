@@ -66,6 +66,7 @@ jobs:
         ${{ matrix.anitorrent == true && '"-DCMAKE_BUILD_TYPE=Release"' || '' }}
         ${{ startsWith(matrix.os, 'windows') && '"-DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake"' || '' }}
         ${{ startsWith(matrix.os, 'windows') && '"-DBoost_INCLUDE_DIR=C:/vcpkg/installed/x64-windows/include"' || '' }}
+        ${{ startsWith(matrix.os, 'windows') && '"-DUSE_NINJA=true"' || '' }}
 
       # envs are strings, so check for 'true' or 'false'
       isMac: ${{ startsWith(matrix.os, 'macos') }}
