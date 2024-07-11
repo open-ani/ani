@@ -38,7 +38,7 @@ internal class TimeBasedDanmakuCollectionTest {
         )
         val list = instance.at(
             flowOf(0.seconds),
-            danmakuFilterConfig = flowOf(DanmakuFilterConfig()),
+            danmakuFilterConfig = flowOf(DanmakuFilterConfig.Default),
             flowOf(true),
         ).events.toList()
         assertEquals(0, list.size)
