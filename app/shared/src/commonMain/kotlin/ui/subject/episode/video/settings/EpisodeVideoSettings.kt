@@ -407,13 +407,17 @@ fun EpisodeVideoSettings(
                 title = { Text("弹幕正则过滤") },
                 modifier = Modifier.placeholder(isLoadingState),
             )
+
+            val danmakuRegexFilterActions: DanmakuFilterActions = DanmakuFilterActions(
+                onAdd = addDanmakuRegexFilter,
+                onEdit = editDanmakuRegexFilter,
+                onRemove = removeDanmakuRegexFilter,
+                onSwitch = switchDanmakuRegexFilter,
+            )
             
             DanmakuRegexFilterGroup(
                 danmakuFilterConfig,
-                addDanmakuRegexFilter,
-                editDanmakuRegexFilter,
-                removeDanmakuRegexFilter,
-                switchDanmakuRegexFilter,
+                danmakuRegexFilterActions,
                 isLoadingState,
             )
 

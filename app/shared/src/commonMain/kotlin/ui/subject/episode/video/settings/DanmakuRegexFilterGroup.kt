@@ -57,10 +57,7 @@ internal fun isValidRegex(pattern: String): Boolean {
 @Composable
 internal fun SettingsScope.DanmakuRegexFilterGroup(
     danmakuFilterConfig: DanmakuFilterConfig,
-    onAdd: (filter: DanmakuRegexFilter) -> Unit,
-    onEdit: (id: String, new: DanmakuRegexFilter) -> Unit,
-    onRemove: (filter: DanmakuRegexFilter) -> Unit,
-    onSwitch: (fiter: DanmakuRegexFilter) -> Unit,
+    actions: DanmakuFilterActions,
     isLoadingState: Boolean
 ) {
     var showAdd by rememberSaveable { mutableStateOf(false) }
@@ -76,7 +73,7 @@ internal fun SettingsScope.DanmakuRegexFilterGroup(
                     if (!isValidRegex(regex)){
                         errorMessage = "正则输入法不正确"
                     } else {
-                        onAdd(
+                        actions.onAdd(
                             DanmakuRegexFilter(
                                 id = UUID.randomUUID().toString(),
                                 name = name,
@@ -103,8 +100,8 @@ internal fun SettingsScope.DanmakuRegexFilterGroup(
                     Text("确认")
                 }
             },
-            title = { Text("名字和正则不能为空") },
-            text = { Text(errorMessage) }
+            title = { Text("错误") },
+            text = { Text(errorMessage) },
         )
     }
     
@@ -121,14 +118,14 @@ internal fun SettingsScope.DanmakuRegexFilterGroup(
         }
     ) {
         FlowRow (
-            Modifier.placeholder(isLoadingState).fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            Modifier.placeholder(isLoadingState).fillMaxWidth().padding(12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             danmakuFilterConfig.danmakuRegexFilterList.forEachIndexed { index, item ->
                 RegexFilterItem(
                     item,
-                    onDelete = { onRemove(item) },
-                    onDisable = { onSwitch(item) },
+                    onDelete = { actions.onRemove(item) },
+                    onDisable = { actions.onSwitch(item) },
                 )
             }
         }
@@ -269,5 +266,12 @@ fun AddRegexFilterDialog(
         }
     }
 }
+
+data class DanmakuFilterActions(
+    val onAdd: (filter: DanmakuRegexFilter) -> Unit,
+    val onEdit: (id: String, new: DanmakuRegexFilter) -> Unit,
+    val onRemove: (filter: DanmakuRegexFilter) -> Unit,
+    val onSwitch: (filter: DanmakuRegexFilter) -> Unit
+)
 
 
