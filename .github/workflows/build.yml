@@ -145,7 +145,7 @@ jobs:
         run: ./gradlew check ${{ env.gradleArgs }}
 
       - name: Package
-        run: ./gradlew createDistributable ${{ env.gradleArgs }}
+        run: ./gradlew createReleaseDistributable ${{ env.gradleArgs }}
 
       - if: ${{ matrix.anitorrent }}
         name: Upload Anitorrent CMakeCache.txt
