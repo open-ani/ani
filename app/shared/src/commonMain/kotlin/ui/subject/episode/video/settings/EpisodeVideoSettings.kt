@@ -61,8 +61,6 @@ interface EpisodeVideoSettingsViewModel {
 
 fun EpisodeVideoSettingsViewModel(): EpisodeVideoSettingsViewModel = EpisodeVideoSettingsViewModelImpl()
 
-fun TestEpisodeVideoSettingsViewModel(): EpisodeVideoSettingsViewModel = EpisodeVideoSettingsViewModelImpl()
-
 private class EpisodeVideoSettingsViewModelImpl : EpisodeVideoSettingsViewModel, AbstractSettingsViewModel(),
     KoinComponent {
     private val settingsRepository by inject<SettingsRepository>()
