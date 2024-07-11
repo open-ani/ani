@@ -1,5 +1,7 @@
 package me.him188.ani.app.ui.foundation.richtext
 
+import org.jetbrains.compose.resources.DrawableResource
+
 interface UIRichElement {
     sealed interface Annotated {
         val url: String?
@@ -21,7 +23,7 @@ interface UIRichElement {
 
         data class Sticker(
             val id: String,
-            val uri: String?,
+            val resource: DrawableResource?,
             override val url: String? = null
         ) : Annotated
     }

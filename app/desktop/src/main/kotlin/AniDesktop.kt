@@ -44,7 +44,6 @@ import androidx.compose.ui.window.application
 import dev.dirs.ProjectDirectories
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import me.him188.ani.app.data.source.AssetLoader
 import me.him188.ani.app.data.source.UpdateManager
 import me.him188.ani.app.data.source.media.resolver.DesktopWebVideoSourceResolver
 import me.him188.ani.app.data.source.media.resolver.HttpStreamingVideoSourceResolver
@@ -55,7 +54,6 @@ import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.navigation.DesktopBrowserNavigator
 import me.him188.ani.app.navigation.LocalNavigator
-import me.him188.ani.app.platform.Context
 import me.him188.ani.app.platform.DesktopContext
 import me.him188.ani.app.platform.ExtraWindowProperties
 import me.him188.ani.app.platform.LocalContext
@@ -93,7 +91,6 @@ import org.jetbrains.compose.resources.painterResource
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
 import java.io.File
-import java.net.URI
 
 private val logger = logger("Ani")
 
@@ -178,15 +175,6 @@ object AniDesktop {
                     }
                     single<UpdateInstaller> { DesktopUpdateInstaller.currentOS() }
                     single<NotifManager> { NoopNotifManager }
-
-                    single<AssetLoader> {
-                        object : AssetLoader {
-                            override fun loadAsUri(path: String): URI? {
-                                val resourceUrl = Context::class.java.classLoader.getResource(path)?.path
-                                return URI("file://${resourceUrl}")
-                            }
-                        }
-                    }
                 },
             )
         }.startCommonKoinModule(coroutineScope)

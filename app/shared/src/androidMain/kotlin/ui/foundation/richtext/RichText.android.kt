@@ -36,7 +36,7 @@ private fun PreviewCommentColumn() {
                         ),
                         UIRichElement.Annotated.Sticker(
                             "sticker_1",
-                            "https://s2.loli.net/2023/08/31/VXMOz7U1qd94oY5.jpg",
+                            null,
                             "",
                         ),
                     ),

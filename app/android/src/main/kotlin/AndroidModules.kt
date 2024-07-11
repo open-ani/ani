@@ -1,12 +1,10 @@
 package me.him188.ani.android
 
 import android.content.Intent
-import android.net.Uri
 import androidx.core.app.NotificationManagerCompat
 import kotlinx.coroutines.CoroutineScope
 import me.him188.ani.android.activity.MainActivity
 import me.him188.ani.android.navigation.AndroidBrowserNavigator
-import me.him188.ani.app.data.source.AssetLoader
 import me.him188.ani.app.data.source.media.resolver.AndroidWebVideoSourceResolver
 import me.him188.ani.app.data.source.media.resolver.HttpStreamingVideoSourceResolver
 import me.him188.ani.app.data.source.media.resolver.LocalFileVideoSourceResolver
@@ -24,7 +22,6 @@ import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 import java.io.File
-import java.net.URI
 
 fun getAndroidModules(
     torrentCacheDir: File,
@@ -66,17 +63,4 @@ fun getAndroidModules(
         )
     }
     single<UpdateInstaller> { AndroidUpdateInstaller() }
-
-    single<AssetLoader> {
-        object : AssetLoader {
-            override fun loadAsUri(path: String): URI? {
-                return try {
-                    val androidUri = Uri.parse("file:///android_asset/$path")
-                    URI(androidUri.toString())
-                } catch (e: Exception) {
-                    null
-                }
-            }
-        }
-    }
 }

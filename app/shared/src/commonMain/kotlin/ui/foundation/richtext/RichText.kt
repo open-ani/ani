@@ -40,7 +40,7 @@ import coil3.request.crossfade
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.AsyncImage
 import me.him188.ani.app.ui.foundation.ClickableText
-import me.him188.ani.utils.logging.logger
+import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun RichText(
@@ -79,8 +79,6 @@ fun List<UIRichElement>.toLayout(
         }
     }
 }
-
-private val logger = logger<RichTextDefaults>()
 
 @Stable
 object RichTextDefaults {
@@ -150,17 +148,11 @@ object RichTextDefaults {
                                     .filterIsInstance<UIRichElement.Annotated.Sticker>()
                                     .find { it.id == id }
 
-                                if (sticker != null) {
-                                    AsyncImage(
-                                        model = ImageRequest.Builder(context)
-                                            .data(sticker.uri)
-                                            .crossfade(true)
-                                            .build(),
+                                if (sticker?.resource != null) {
+                                    androidx.compose.foundation.Image(
+                                        painter = painterResource(sticker.resource),
                                         contentDescription = null,
                                         modifier = Modifier.size(StickerSize.dp),
-                                        onError = {
-                                            logger.error(it.result.toString())
-                                        },
                                     )
                                 }
                             },
