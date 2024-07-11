@@ -83,12 +83,20 @@ static std::vector<char> load_file_to_vector(const std::string &filePath) {
     return std::move(buffer);
 }
 
+#if ENABLE_TRACE_LOGGING
+#define START_LOG(log) std::cout << log
+#else
+#define START_LOG(log) (void *) 0
+#endif
+
 void session_t::start(const session_settings_t &settings) {
     function_printer_t _fp("session_t::start");
     guard_global_lock;
     using libtorrent::settings_pack;
 
+    START_LOG("Starting session..." << std::flush);
     settings_pack s{};
+    START_LOG("Pack initialied" << std::flush);
 
     s.set_bool(settings_pack::enable_dht,
                true); // this will start dht immediately when the setting is started
@@ -116,6 +124,7 @@ void session_t::start(const session_settings_t &settings) {
     s.set_int(settings_pack::aio_threads, 8);
     s.set_int(settings_pack::checking_mem_usage, 2048);
 
+    START_LOG("Set int values ok" << std::flush);
 
     s.set_str(settings_pack::user_agent, settings.user_agent);
     s.set_str(settings_pack::peer_fingerprint, settings.peer_fingerprint);
@@ -126,6 +135,7 @@ void session_t::start(const session_settings_t &settings) {
     s.set_int(settings_pack::max_allowed_in_request_queue, 100);
     s.set_int(settings_pack::suggest_mode, settings_pack::suggest_read_cache);
     // s.set_bool(settings_pack::close_redundant_connections, true);
+    START_LOG("Start set dht_bootstrap_nodes_extra" << std::flush);
 
     if (!settings.dht_bootstrap_nodes_extra.empty()) {
         // 在原有的基础上添加额外的 DHT bootstrap 节点
@@ -140,12 +150,16 @@ void session_t::start(const session_settings_t &settings) {
         const auto res = join_to_string(nodes, ",");
         s.set_str(settings_pack::dht_bootstrap_nodes, res);
     }
+    START_LOG("set dht_bootstrap_nodes_extra ok" << std::flush);
 
     s.set_int(settings_pack::alert_mask,
               libtorrent::alert_category::status | libtorrent::alert_category::piece_progress |
                   libtorrent::alert_category::file_progress | libtorrent::alert_category::upload);
 
+    START_LOG("create session" << std::flush);
+
     session_ = std::make_shared<libtorrent::session>(s);
+    START_LOG("session created" << std::flush);
 }
 
 void session_t::resume() const {
