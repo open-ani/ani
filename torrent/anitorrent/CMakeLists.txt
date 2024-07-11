@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.25)
 project(anitorrent)
 
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 17)
 
 
 include(FetchContent)
@@ -13,8 +13,6 @@ add_compile_definitions(TORRENT_HAVE_MMAP=0)
 add_compile_definitions(TORRENT_ABI_VERSION=3)
 
 # https://github.com/arvidn/libtorrent/blob/RC_2_0/docs/building.rst#building-with-vcpkg
-add_compile_definitions(TORRENT_LINKING_SHARED=true)
-add_compile_definitions(TORRENT_BUILDING_SHARED=true)
 if (WIN32)
     add_compile_definitions(TORRENT_DISABLE_ENCRYPTION=true)
 endif ()
