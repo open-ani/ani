@@ -20,20 +20,20 @@ static std::string compute_torrent_hash(const std::shared_ptr<const lt::torrent_
     return {torrent_data.begin(), torrent_data.end()};
 }
 
-static std::vector<std::string> splitString(const std::string &str, const char *delimiter) {
-    if (str.empty())
-        return {};
-    std::vector<std::string> tokens;
-    const auto cstr = new char[str.length() + 1];
-    std::strcpy(cstr, str.c_str());
 
-    char *token = std::strtok(cstr, delimiter);
-    while (token != nullptr) {
-        tokens.emplace_back(token);
-        token = std::strtok(nullptr, delimiter);
+static std::vector<std::string> splitString(const std::string &str, const std::string& delimiter) {
+    std::vector<std::string> tokens;
+    std::string::size_type start = 0;
+    std::string::size_type end = str.find(delimiter);
+
+    while (end != std::string::npos) {
+        tokens.push_back(str.substr(start, end - start));
+        start = end + delimiter.length();
+        end = str.find(delimiter, start);
     }
 
-    delete[] cstr;
+    tokens.push_back(str.substr(start));
+
     return tokens;
 }
 
