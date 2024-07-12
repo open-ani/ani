@@ -78,8 +78,16 @@ jobs:
           submodules: 'recursive'
 
       - uses: actions/setup-java@v4
+        if: ${{ env.isWindows != 'true' }}
         with:
           distribution: zulu
+          java-version: 17
+          architecture: ${{ matrix.arch }}
+
+      - uses: actions/setup-java@v4
+        if: ${{ env.isWindows == 'true' }}
+        with:
+          distribution: microsoft
           java-version: 17
           architecture: ${{ matrix.arch }}
 
