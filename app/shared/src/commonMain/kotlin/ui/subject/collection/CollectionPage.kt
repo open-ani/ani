@@ -210,6 +210,7 @@ fun CollectionPage(
                 snapshotFlow { pullToRefreshState.isRefreshing }.collectLatest {
                     if (!it) return@collectLatest
 
+                    val isAutoRefreshing = collection.isAutoRefreshing
                     try {
                         val policy = if (collection.isAutoRefreshing) {
                             RefreshOrderPolicy.KEEP_ORDER_APPEND_LAST
@@ -223,7 +224,7 @@ fun CollectionPage(
                     } catch (_: Throwable) {
                     } finally {
                         pullToRefreshState.endRefresh()
-                        if (!collection.isAutoRefreshing) {
+                        if (!isAutoRefreshing) {
                             uiScope.launch {
                                 gridState.animateScrollToItem(0)
                             }
