@@ -337,7 +337,8 @@ bool session_t::set_new_event_listener(new_event_listener_t *listener) const {
 }
 
 #if ENABLE_TRACE_LOGGING
-#define ALERTS_LOG(log) std::cout << log
+static std::ofstream alerts_log("alerts.log", std::ios::app);
+#define ALERTS_LOG(log) alerts_log << log
 #else
 #define ALERTS_LOG(log) (void *) 0
 #endif
