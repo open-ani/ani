@@ -30,7 +30,9 @@ endif ()
 if (MSVC)
     message(STATUS "MSVC detected")
     add_compile_options(/Zc:__cplusplus)
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 endif ()
+
 
 # Libtorrent
 FetchContent_Declare(
