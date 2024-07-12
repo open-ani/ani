@@ -50,7 +50,8 @@ import kotlin.math.roundToInt
 @Composable
 fun RichText(
     elements: List<UIRichElement>,
-    modifier: Modifier
+    modifier: Modifier = Modifier,
+    onClickUrl: (String) -> Unit = { }
 ) {
     if (elements.isEmpty()) return
 
@@ -58,7 +59,7 @@ fun RichText(
         modifier = modifier,
         horizontalAlignment = Alignment.Start,
     ) {
-        elements.toLayout { }
+        elements.toLayout(onClickUrl)
     }
 }
 
@@ -185,14 +186,14 @@ object RichTextDefaults {
                         }
 
                         val background by animateColorAsState(
-                            if (maskState[index] == true) {
-                                colorScheme.secondaryContainer
-                            } else {
+                            if (maskState[index] == true) colorScheme.secondaryContainer else {
                                 if (e.code) colorScheme.surfaceContainer else Color.Unspecified
                             },
                         )
                         val textColor by animateColorAsState(
-                            if (maskState[index] == true) colorScheme.secondaryContainer else contentColor,
+                            if (maskState[index] == true) colorScheme.secondaryContainer else {
+                                if (e.color == Color.Unspecified) contentColor else e.color
+                            },
                         )
 
                         addStyle(

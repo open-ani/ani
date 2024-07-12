@@ -44,9 +44,7 @@ fun EpisodeCommentColumn(
     episodeId: Int,
     modifier: Modifier = Modifier
 ) {
-
     val pullToRefreshState = rememberPullToRefreshState()
-
     val viewModel = rememberViewModel { EpisodeCommentViewModel(episodeId, pullToRefreshState) }
 
     val hasMore by viewModel.hasMore.collectAsStateWithLifecycle()
@@ -107,7 +105,8 @@ private const val LOREM_IPSUM =
 @Composable
 fun Comment(
     comment: UiComment,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClickUrl: (String) -> Unit = {}
 ) {
     Row(
         modifier = modifier,
@@ -137,7 +136,11 @@ fun Comment(
             SelectionContainer(
                 modifier = Modifier.padding(top = 6.dp, end = 24.dp).fillMaxWidth(),
             ) {
-                BBCodeView(comment.summary, modifier = Modifier.fillMaxWidth())
+                BBCodeView(
+                    code = comment.summary,
+                    modifier = Modifier.fillMaxWidth(),
+                    onClickUrl = onClickUrl,
+                )
             }
         }
     }

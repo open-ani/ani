@@ -1,5 +1,6 @@
 package me.him188.ani.app.ui.foundation.richtext
 
+import androidx.compose.ui.graphics.Color
 import org.jetbrains.compose.resources.DrawableResource
 
 interface UIRichElement {
@@ -9,6 +10,7 @@ interface UIRichElement {
         data class Text(
             val content: String,
             val size: Int,
+            val color: Color = Color.Unspecified,
 
             val italic: Boolean = false,
             val underline: Boolean = false,

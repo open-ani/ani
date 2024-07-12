@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.source.BangumiCommentSticker
+import me.him188.ani.app.tools.HtmlColor
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.richtext.UIRichElement
 import me.him188.ani.utils.bbcode.BBCode
@@ -34,6 +35,7 @@ class BBCodeViewViewModel : AbstractViewModel(), KoinComponent {
                             UIRichElement.Annotated.Text(
                                 content = e.value,
                                 size = e.size,
+                                color = HtmlColor.parse(e.color),
                                 italic = e.italic,
                                 underline = e.underline,
                                 strikethrough = e.strikethrough,

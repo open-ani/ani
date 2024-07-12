@@ -12,6 +12,7 @@ import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 fun BBCodeView(
     code: String,
     modifier: Modifier = Modifier,
+    onClickUrl: (String) -> Unit, 
 ) {
     val vm = rememberViewModel(keys = listOf(code)) { BBCodeViewViewModel() }
     val elements by vm.elements.collectAsStateWithLifecycle()
@@ -23,5 +24,6 @@ fun BBCodeView(
     RichText(
         elements = elements,
         modifier = modifier,
+        onClickUrl = onClickUrl,
     )
 }
