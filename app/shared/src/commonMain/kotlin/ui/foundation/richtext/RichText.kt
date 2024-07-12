@@ -4,6 +4,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -11,7 +12,9 @@ import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
@@ -34,6 +37,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.annotation.ExperimentalCoilApi
@@ -43,7 +47,6 @@ import coil3.request.crossfade
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.AsyncImage
 import me.him188.ani.app.ui.foundation.ClickableText
-import me.him188.ani.utils.logging.logger
 import org.jetbrains.compose.resources.painterResource
 import kotlin.math.roundToInt
 
@@ -74,6 +77,7 @@ fun List<UIRichElement>.toLayout(
                 slice = e.slice,
                 maskState = maskState,
                 modifier = Modifier,
+                maxLine = e.maxLine,
                 onClick = { it.url?.let(onClickUrl) },
             )
         }
@@ -84,9 +88,11 @@ fun List<UIRichElement>.toLayout(
             onClick = { e.jumpUrl?.let(onClickUrl) },
         )
 
-        is UIRichElement.Quote -> {
-
-        }
+        is UIRichElement.Quote -> RichTextDefaults.Quote(
+            elements = e.content,
+            modifier = Modifier,
+            onClickUrl = onClickUrl,
+        )
     }
 }
 
@@ -154,6 +160,7 @@ object RichTextDefaults {
         slice: List<UIRichElement.Annotated>,
         maskState: AnnotatedMaskState,
         modifier: Modifier = Modifier,
+        maxLine: Int? = null,
         onClick: (UIRichElement.Annotated) -> Unit
     ) {
         val inlineStickerMap: MutableMap<String, InlineTextContent> = remember { mutableStateMapOf() }
@@ -186,12 +193,12 @@ object RichTextDefaults {
                         }
 
                         val background by animateColorAsState(
-                            if (maskState[index] == true) colorScheme.secondaryContainer else {
+                            if (maskState[index] == true) colorScheme.tertiaryContainer else {
                                 if (e.code) colorScheme.surfaceContainer else Color.Unspecified
                             },
                         )
                         val textColor by animateColorAsState(
-                            if (maskState[index] == true) colorScheme.secondaryContainer else {
+                            if (maskState[index] == true) colorScheme.tertiaryContainer else {
                                 if (e.color == Color.Unspecified) contentColor else e.color
                             },
                         )
@@ -273,6 +280,8 @@ object RichTextDefaults {
             text = content,
             modifier = modifier,
             inlineContent = inlineStickerMap,
+            maxLines = maxLine ?: Int.MAX_VALUE,
+            overflow = TextOverflow.Ellipsis,
             onClick = { textPos ->
                 val annotations = content.getStringAnnotations(textPos, textPos)
 
@@ -298,8 +307,6 @@ object RichTextDefaults {
             },
         )
     }
-
-    private val logger = logger<RichTextDefaults>()
 
     @OptIn(ExperimentalCoilApi::class)
     @Composable
@@ -347,5 +354,27 @@ object RichTextDefaults {
                 if (imageRealHeight == 0f) imageRealHeight = it.result.image.height.toFloat()
             },
         )
+    }
+
+    @Composable
+    fun Quote(
+        elements: List<UIRichElement>,
+        modifier: Modifier = Modifier,
+        onClickUrl: (String) -> Unit
+    ) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .then(modifier),
+            color = MaterialTheme.colorScheme.surface,
+        ) {
+            Column(modifier = Modifier.padding(8.dp)) {
+                CompositionLocalProvider(
+                    LocalContentColor provides MaterialTheme.colorScheme.onSurfaceVariant,
+                ) {
+                    elements.toLayout(onClickUrl)
+                }
+            }
+        }
     }
 }

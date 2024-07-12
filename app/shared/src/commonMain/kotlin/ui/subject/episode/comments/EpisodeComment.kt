@@ -11,12 +11,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -27,8 +29,10 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.flow.collectLatest
 import me.him188.ani.app.tools.formatDateTime
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
@@ -59,7 +63,7 @@ fun EpisodeCommentColumn(
         }
     }
 
-    Box(modifier = modifier) {
+    Box(modifier = modifier.clipToBounds()) {
         PullToRefreshContainer(
             state = pullToRefreshState,
             modifier = Modifier.align(Alignment.TopCenter),
@@ -141,6 +145,44 @@ fun Comment(
                     modifier = Modifier.fillMaxWidth(),
                     onClickUrl = onClickUrl,
                 )
+            }
+
+            if (comment.replies.isNotEmpty()) {
+                Surface(
+                    modifier = Modifier
+                        .padding(top = 12.dp),
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    shape = RoundedCornerShape(8.dp),
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                    ) {
+                        comment.replies.take(3).forEach { reply ->
+                            BBCodeView(
+                                code = reply.summary,
+                                modifier = Modifier
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                                    .fillMaxWidth(),
+                                brief = true,
+                                briefSenderName = reply.creator.nickname ?: "nickname",
+                                briefSenderColor = MaterialTheme.colorScheme.primary,
+                                onClickUrl = { },
+                            )
+                        }
+                        if (comment.replies.size > 3) {
+                            Text(
+                                text = "查看更多 ${comment.replies.size - 3} 条回复>",
+                                modifier = Modifier
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                                    .fillMaxWidth(),
+                                color = MaterialTheme.colorScheme.primary,
+                                fontSize = 15.5.sp, // todo
+                            )
+                        }
+                    }
+                }
             }
         }
     }

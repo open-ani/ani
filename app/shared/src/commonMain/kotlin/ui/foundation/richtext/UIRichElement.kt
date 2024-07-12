@@ -30,7 +30,7 @@ interface UIRichElement {
         ) : Annotated
     }
 
-    data class AnnotatedText(val slice: List<Annotated>) : UIRichElement
+    data class AnnotatedText(val slice: List<Annotated>, val maxLine: Int? = null) : UIRichElement
 
     data class Quote(val content: List<UIRichElement>) : UIRichElement
 
