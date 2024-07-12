@@ -3,8 +3,7 @@ package me.him188.ani.app.ui.foundation.richtext
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -13,14 +12,15 @@ import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -36,19 +36,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.annotation.ExperimentalCoilApi
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import me.him188.ani.app.ui.external.placeholder.placeholder
-import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.AsyncImage
 import me.him188.ani.app.ui.foundation.ClickableText
-import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.utils.logging.logger
-import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.painterResource
+import kotlin.math.roundToInt
 
 @Composable
 fun RichText(
@@ -57,9 +54,9 @@ fun RichText(
 ) {
     if (elements.isEmpty()) return
 
-    FlowRow(
+    Column(
         modifier = modifier,
-        horizontalArrangement = Arrangement.Start,
+        horizontalAlignment = Alignment.Start,
     ) {
         elements.toLayout { }
     }
@@ -70,11 +67,15 @@ fun List<UIRichElement>.toLayout(
     onClickUrl: (String) -> Unit
 ) = forEach { e ->
     when (e) {
-        is UIRichElement.AnnotatedText -> RichTextDefaults.AnnotatedText(
-            slice = e.slice,
-            modifier = Modifier,
-            onClick = { it.url?.let(onClickUrl) },
-        )
+        is UIRichElement.AnnotatedText -> {
+            val maskState = rememberAnnotatedMaskState(e.slice)
+            RichTextDefaults.AnnotatedText(
+                slice = e.slice,
+                maskState = maskState,
+                modifier = Modifier,
+                onClick = { it.url?.let(onClickUrl) },
+            )
+        }
 
         is UIRichElement.Image -> RichTextDefaults.Image(
             element = e,
@@ -88,19 +89,24 @@ fun List<UIRichElement>.toLayout(
     }
 }
 
+@Composable
+private fun rememberAnnotatedMaskState(
+    slice: List<UIRichElement.Annotated>
+): RichTextDefaults.AnnotatedMaskState {
+    return remember(slice) {
+        RichTextDefaults.AnnotatedMaskState(slice)
+    }
+}
+
 @Stable
 object RichTextDefaults {
     val StickerSize: Int = 24
-    private val logger = logger<RichTextDefaults>()
 
-    private class AnnotatedTextViewModel : AbstractViewModel() {
-        private val _maskConnection: MutableStateFlow<Map<Int, Int>> = MutableStateFlow(mapOf())
-        val maskConnection: StateFlow<Map<Int, Int>> get() = _maskConnection
+    class AnnotatedMaskState(slice: List<UIRichElement.Annotated>) {
+        private var maskConnection: Map<Int, Int> by mutableStateOf(mapOf())
+        private var maskState: Map<Int, Boolean> by mutableStateOf(mapOf())
 
-        private val _maskState: MutableStateFlow<Map<Int, Boolean>> = MutableStateFlow(mapOf())
-        val maskState: StateFlow<Map<Int, Boolean>> get() = _maskState
-
-        fun parseMask(slice: List<UIRichElement.Annotated>) {
+        init {
             var currentMaskIndex = 0
 
             val state = mutableMapOf<Int, Boolean>()
@@ -121,26 +127,31 @@ object RichTextDefaults {
                 }
             }
 
-            _maskConnection.value = connection
-            _maskState.value = state
+            maskConnection = connection
+            maskState = state
         }
 
-        fun updateMaskConnection(block: MutableMap<Int, Int>.() -> Unit) {
-            _maskConnection.value = mutableMapOf<Int, Int>()
-                .apply { putAll(_maskConnection.value) }
-                .also(block)
+        /**
+         * set the underlying mask state
+         */
+        fun setMask(sliceIndex: Int, masked: Boolean) {
+            val maskIndex = maskConnection[sliceIndex] ?: return
+            maskState = buildMap {
+                putAll(maskState)
+                set(maskIndex, masked)
+            }
         }
 
-        fun updateMaskState(block: MutableMap<Int, Boolean>.() -> Unit) {
-            _maskState.value = mutableMapOf<Int, Boolean>()
-                .apply { putAll(_maskState.value) }
-                .also(block)
+        infix operator fun get(sliceIndex: Int): Boolean? {
+            val maskIndex = maskConnection[sliceIndex] ?: return null
+            return maskState[maskIndex]
         }
     }
     
     @Composable
     fun AnnotatedText(
         slice: List<UIRichElement.Annotated>,
+        maskState: AnnotatedMaskState,
         modifier: Modifier = Modifier,
         onClick: (UIRichElement.Annotated) -> Unit
     ) {
@@ -151,15 +162,6 @@ object RichTextDefaults {
 
         val currentOnClick by rememberUpdatedState(onClick)
         val contentColor = LocalContentColor.current
-
-        val vm = rememberViewModel(keys = listOf(slice)) { AnnotatedTextViewModel() }
-
-        val maskConnection by vm.maskConnection.collectAsStateWithLifecycle()
-        val maskState by vm.maskState.collectAsStateWithLifecycle()
-
-        LaunchedEffect(slice) {
-            vm.parseMask(slice)
-        }
         
         val content = buildAnnotatedString {
             var currentLength = 0
@@ -172,7 +174,6 @@ object RichTextDefaults {
                         elementLength = e.content.length
                         append(e.content)
 
-                        val maskIndex = maskConnection[index]
                         if (e.mask) {
                             // 为这个 text 片段添加遮罩 annotation，用于处理点击遮罩的事件
                             addStringAnnotation(
@@ -184,14 +185,14 @@ object RichTextDefaults {
                         }
 
                         val background by animateColorAsState(
-                            if (maskState[maskIndex] == true) {
+                            if (maskState[index] == true) {
                                 colorScheme.secondaryContainer
                             } else {
                                 if (e.code) colorScheme.surfaceContainer else Color.Unspecified
                             },
                         )
                         val textColor by animateColorAsState(
-                            if (maskState[maskIndex] == true) colorScheme.secondaryContainer else contentColor,
+                            if (maskState[index] == true) colorScheme.secondaryContainer else contentColor,
                         )
 
                         addStyle(
@@ -277,17 +278,12 @@ object RichTextDefaults {
                 // 先检查是不是 mask
                 val maskAnno = annotations.firstOrNull { it.tag == "mask" }
                 if (maskAnno != null) {
-                    logger.info("mask anno: $maskAnno")
-                    logger.info("mask connection: ${maskConnection.toMap().entries.joinToString(", ")}")
-                    logger.info("mask state: ${maskState.toMap().entries.joinToString(", ")}")
                     // 若 annotation item 不是 slice index，视作无效的 annotation，没必要继续梳理
                     val sliceIndex = maskAnno.item.toIntOrNull() ?: return@ClickableText
-                    val maskIndex = maskConnection[sliceIndex]
-
                     // 去掉 mask，不继续处理
                     // 例如 mask 了一个 url，第一次点击去掉 mask，第二次跳转
-                    if (maskIndex != null && maskState[maskIndex] == true) {
-                        vm.updateMaskState { set(maskIndex, false) }
+                    if (maskState[sliceIndex] == true) {
+                        maskState.setMask(sliceIndex, false)
                         return@ClickableText
                     }
                 }
@@ -302,6 +298,9 @@ object RichTextDefaults {
         )
     }
 
+    private val logger = logger<RichTextDefaults>()
+
+    @OptIn(ExperimentalCoilApi::class)
     @Composable
     fun Image(
         element: UIRichElement.Image,
@@ -309,26 +308,43 @@ object RichTextDefaults {
         onClick: () -> Unit
     ) {
         val context = LocalPlatformContext.current
+        val density = LocalDensity.current
+        
         val currentOnClick by rememberUpdatedState(onClick)
-        var state by remember { mutableStateOf(0) } // 0: loading, 1: success, 2: failed
+        var state by rememberSaveable { mutableStateOf(0) } // 0: loading, 1: success, 2: failed
+        var imageRealWidth by rememberSaveable { mutableStateOf(0f) }
+        var imageRealHeight by rememberSaveable { mutableStateOf(0f) }
+
 
         AsyncImage(
             model = ImageRequest.Builder(context)
                 .data(element.imageUrl)
                 .crossfade(true)
+                .run {
+                    with(density) {
+                        if (state == 1) {
+                            if (imageRealWidth == 0f || imageRealHeight == 0f) this@run
+                            else size(
+                                imageRealWidth.dp.toPx().roundToInt(),
+                                imageRealHeight.dp.toPx().roundToInt(),
+                            )
+                        } else size(80.dp.toPx().roundToInt())
+                    }
+                }
                 .build(),
             contentDescription = null,
             modifier = modifier
-                .padding(8.dp)
+                .padding(4.dp)
                 .animateContentSize()
-                .run { if (state == 0) size(64.dp) else this }
                 .placeholder(state == 0)
                 .clip(RoundedCornerShape(8.dp))
                 .then(Modifier.clickable { currentOnClick() }),
             contentScale = ContentScale.Fit,
-            onLoading = { state = 1 },
-            onSuccess = { state = 2 },
-            onError = { state = 3 },
+            onSuccess = {
+                if (state != 1) state = 1
+                if (imageRealWidth == 0f) imageRealWidth = it.result.image.width.toFloat()
+                if (imageRealHeight == 0f) imageRealHeight = it.result.image.height.toFloat()
+            },
         )
     }
 }
