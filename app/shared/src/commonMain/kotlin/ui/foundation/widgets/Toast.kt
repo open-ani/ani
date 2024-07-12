@@ -14,6 +14,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -58,8 +60,8 @@ class ToastViewModel : AbstractViewModel() {
 
 @Composable
 fun Toast(
-    showing: Boolean,
-    content: String
+    showing: () -> Boolean,
+    content: () -> String
 ) = BoxWithConstraints(Modifier.fillMaxSize()) box@{
     val px640dp = with(LocalDensity.current) { 640.dp.roundToPx() }
     val px100dp = with(LocalDensity.current) { 100.dp.roundToPx() }
@@ -67,8 +69,11 @@ fun Toast(
     val minToastWidth = with(LocalDensity.current) { px100dp + 60.dp.roundToPx() * 2 }
     val maxToastWidth = max(minToastWidth, min(constraints.maxWidth, px640dp))
 
+    val currentShowing by rememberUpdatedState(showing)
+    val currentContent by rememberUpdatedState(content)
+
     AnimatedVisibility(
-        visible = showing,
+        visible = currentShowing(),
         enter = fadeIn(tween(350, easing = LinearEasing)),
         exit = fadeOut(tween(350, easing = LinearEasing)),
         modifier = Modifier.layout { measurable, constraints ->
@@ -92,7 +97,7 @@ fun Toast(
             color = Color.Black.copy(alpha = 0.7f),
         ) {
             Text(
-                text = content,
+                text = currentContent(),
                 color = Color.White,
                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp),
             )

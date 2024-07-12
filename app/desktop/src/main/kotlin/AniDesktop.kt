@@ -280,7 +280,7 @@ private fun MainWindowContent(
                 ) {
                     Box(Modifier.padding(all = paddingByWindowSize)) {
                         AniAppContent(aniNavigator)
-                        Toast(showing, content)
+                        Toast({ showing }, { content })
                     }
                 }
             }
