@@ -49,7 +49,7 @@ class TorrentDownloadController(
     private val priorities: PiecePriorities,
     private val windowSize: Int = 8,
     private val headerSize: Long = 128 * 1024,
-    private val footerSize: Long = 128 * 1024,
+    private val footerSize: Long = headerSize,
 ) {
     private val totalSize: Long = pieces.sumOf { it.size }
 
@@ -74,7 +74,7 @@ class TorrentDownloadController(
 
     @Synchronized
     fun onTorrentResumed() {
-        priorities.downloadOnly(downloadingPieces, footerPieceIndexes)
+        onSeek(0)
     }
 
     @Synchronized

@@ -152,7 +152,6 @@ class AnitorrentDownloadSession(
                 this.pieces,
                 logicalStartOffset = offset,
                 onWait = { piece ->
-                    logger.info { "[TorrentDownloadControl] $torrentId: Request deadline from ${piece.pieceIndex}" }
                     updatePieceDeadlinesForSeek(piece)
                 },
                 size = length,
@@ -161,9 +160,13 @@ class AnitorrentDownloadSession(
 
         private fun updatePieceDeadlinesForSeek(requested: Piece) {
             if (!controller.isDownloading(requested.pieceIndex)) {
+                logger.info { "[TorrentDownloadControl] $torrentId: Resetting deadlines to download ${requested.pieceIndex}" }
                 handle.clear_piece_deadlines()
+                controller.onSeek(requested.pieceIndex) // will request further pieces
+            } else {
+                logger.info { "[TorrentDownloadControl] $torrentId: Requested piece ${requested.pieceIndex} is already downloading" }
+                return
             }
-            controller.onSeek(requested.pieceIndex) // will request further pieces
         }
     }
 
@@ -407,12 +410,14 @@ class AnitorrentDownloadSession(
                 // 优先下载第一个 piece
                 handle.set_piece_deadline(firstIndex, -5000)
 
-                for (pieceIndex in 1 until pieceIndexes.size) {
+                for (i in 1 until pieceIndexes.size) {
+                    val pieceIndex = pieceIndexes[i]
                     handle.set_piece_deadline(
                         pieceIndex,
-                        if (pieceIndex in footerPieces) {
+                        // -1000 可以让 libtorrent 更急
+                        -1000 + if (pieceIndex in footerPieces) {
                             // 对于视频尾部元数据, 同样需要给予较高的优先级
-                            val lastFooter = footerPieces.first()
+                            val lastFooter = footerPieces.last()
                             (lastFooter - pieceIndex) * 100
                         } else {
                             // 最高优先级下载第一个. 第一个有可能会是 seek 之后的.
