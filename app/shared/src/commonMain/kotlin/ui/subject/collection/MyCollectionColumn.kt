@@ -119,7 +119,6 @@ fun SubjectCollectionsColumn(
         }
     }
 
-//    val gridState = rememberLazyGridState() // 要放在前面, 防止 return 后丢失
 
     if (!dataLoaded) return // 还没加载完, 不要去更新 grid 状态, 否则会恢复到顶部
 
