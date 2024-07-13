@@ -2,6 +2,8 @@ package me.him188.ani.utils.bbcode
 
 
 sealed interface RichElement {
+    // 如果修改任意 RichElement 的 properties, 需要同时修改 BBCodeParserTestHelper 中的各个 assert 方法, 以及 BBCodeTestGenerator 为该类型元素生成 assert
+    
     /**
      * 该元素的可点击跳转链接，若为 null 则表示不可跳转
      */
