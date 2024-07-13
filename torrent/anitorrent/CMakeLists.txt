@@ -30,7 +30,7 @@ endif ()
 if (MSVC)
     message(STATUS "MSVC detected")
     add_compile_options(/Zc:__cplusplus)
-    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>Dll")
 endif ()
 
 
