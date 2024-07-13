@@ -42,8 +42,8 @@ class EpisodeCommentViewModel(
         }
         .stateInBackground(false)
     val list: StateFlow<List<UiComment>> = dataCache.cachedDataFlow
-        .map {
-            it.map { comment ->
+        .map { list ->
+            list.map { comment ->
                 UiComment(
                     id = comment.toString(),
                     creator = comment.creator,
@@ -61,6 +61,8 @@ class EpisodeCommentViewModel(
                     },
                     replyCount = comment.replies.size,
                 )
+            }.sortedByDescending {
+                it.createdAt
             }
         }
         .stateInBackground(listOf())
