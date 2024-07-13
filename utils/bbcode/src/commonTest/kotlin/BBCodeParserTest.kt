@@ -54,7 +54,7 @@ abstract class BBCodeParserTestHelper {
         block: QuoteContext.() -> Unit,
     ) {
         assertElement(jumpUrl, element)
-        block(QuoteContext(element.contents))
+        block(QuoteContext(element.contents.elements))
     }
 
     fun assertBangumiSticker(
