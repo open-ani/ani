@@ -4,7 +4,6 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
-import me.him188.ani.danmaku.ui.DanmakuFilterConfig
 import org.junit.jupiter.api.Test
 import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.EmptyCoroutineContext
@@ -38,7 +37,7 @@ internal class TimeBasedDanmakuCollectionTest {
         )
         val list = instance.at(
             flowOf(0.seconds),
-            danmakuFilterConfig = flowOf(DanmakuFilterConfig.Default),
+            danmakuRegexFilterList = flowOf(emptyList()),
             flowOf(true),
         ).events.toList()
         assertEquals(0, list.size)

@@ -2,12 +2,11 @@ package me.him188.ani.app.data.repository
 
 import androidx.datastore.core.DataStore
 import kotlinx.coroutines.flow.Flow
-import me.him188.ani.danmaku.ui.DanmakuFilterConfig
 import me.him188.ani.danmaku.ui.DanmakuRegexFilter
 
 interface DanmakuRegexFilterRepository : Repository {
 
-    val flow: Flow<DanmakuFilterConfig>
+    val flow: Flow<List<DanmakuRegexFilter>>
 
     suspend fun update(id: String, new: DanmakuRegexFilter)
     suspend fun remove(filter: DanmakuRegexFilter)
@@ -16,35 +15,33 @@ interface DanmakuRegexFilterRepository : Repository {
 }
 
 class DanmakuRegexFilterRepositoryImpl(
-    val store: DataStore<DanmakuFilterConfig>,
+    val store: DataStore<List<DanmakuRegexFilter>>,
 ) : DanmakuRegexFilterRepository {
 
-    override val flow: Flow<DanmakuFilterConfig> = store.data
+    override val flow: Flow<List<DanmakuRegexFilter>> = store.data
 
     override suspend fun update(id: String, new: DanmakuRegexFilter) {
-        store.updateData { danmakuFilterConfig ->
-            danmakuFilterConfig.copy(
-                danmakuRegexFilterList = danmakuFilterConfig.danmakuRegexFilterList.map {
-                    if (it.id == id) new else it
-                },
-            )
+        store.updateData { data ->
+            data.map {
+                if (it.id == id) new else it
+            }
         }
     }
 
     override suspend fun remove(filter: DanmakuRegexFilter) {
-        store.updateData {
-            it.copy(danmakuRegexFilterList = it.danmakuRegexFilterList.filter { it.id != filter.id })
+        store.updateData { data ->
+            data - filter
         }
     }
 
     override suspend fun add(new: DanmakuRegexFilter) {
-        store.updateData {
-            it.copy(danmakuRegexFilterList = it.danmakuRegexFilterList + new)
+        store.updateData { data ->
+            data + new
         }
     }
 
     companion object {
-        fun create(store: DataStore<DanmakuFilterConfig>): DanmakuRegexFilterRepository {
+        fun create(store: DataStore<List<DanmakuRegexFilter>>): DanmakuRegexFilterRepository {
             return DanmakuRegexFilterRepositoryImpl(store)
         }
     }

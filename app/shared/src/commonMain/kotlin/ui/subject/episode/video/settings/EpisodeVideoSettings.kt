@@ -33,7 +33,6 @@ import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SliderItem
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
 import me.him188.ani.danmaku.ui.DanmakuConfig
-import me.him188.ani.danmaku.ui.DanmakuFilterConfig
 import me.him188.ani.danmaku.ui.DanmakuRegexFilter
 import me.him188.ani.danmaku.ui.DanmakuStyle
 import org.koin.core.component.KoinComponent
@@ -46,7 +45,7 @@ interface EpisodeVideoSettingsViewModel {
     val danmakuConfig: DanmakuConfig
     val isLoading: Boolean
     val danmakuRegexFilterEnabled: Boolean
-    val danmakuFilterConfig: DanmakuFilterConfig
+    val danmakuRegexFilterList: List<DanmakuRegexFilter>
 
     fun setDanmakuConfig(config: DanmakuConfig)
     fun addDanmakuRegexFilter(filter: DanmakuRegexFilter)
@@ -78,7 +77,9 @@ private class EpisodeVideoSettingsViewModelImpl : EpisodeVideoSettingsViewModel,
     )
 
     override val danmakuConfig: DanmakuConfig by danmakuConfigSettings
-    override val danmakuFilterConfig: DanmakuFilterConfig by danmakuRegexFilterRepository.flow.produceState(initialValue = DanmakuFilterConfig.Default)
+    override val danmakuRegexFilterList: List<DanmakuRegexFilter> by danmakuRegexFilterRepository.flow.produceState(
+        initialValue = emptyList(),
+    )
     override val danmakuRegexFilterEnabled: Boolean by danmakuRegexFilterEnabledSetting
     override val isLoading: Boolean get() = danmakuConfigSettings.loading
 
@@ -136,7 +137,7 @@ fun EpisodeVideoSettings(
                 modifier = Modifier.placeholder(vm.isLoading),
             )
             DanmakuRegexFilterGroup(
-                vm.danmakuFilterConfig,
+                vm.danmakuRegexFilterList,
                 onAdd = vm::addDanmakuRegexFilter,
                 onEdit = vm::editDanmakuRegexFilter,
                 onRemove = vm::removeDanmakuRegexFilter,

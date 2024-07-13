@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import me.him188.ani.danmaku.protocol.DanmakuInfo
-import me.him188.ani.danmaku.ui.DanmakuFilterConfig
+import me.him188.ani.danmaku.ui.DanmakuRegexFilter
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration
@@ -34,7 +34,7 @@ interface DanmakuCollection {
      */
     fun at(
         progress: Flow<Duration>,
-        danmakuFilterConfig: Flow<DanmakuFilterConfig>,
+        danmakuRegexFilterList: Flow<List<DanmakuRegexFilter>>,
         danmakuRegexFilterEnabled: Flow<Boolean>
     ): DanmakuSession
 }
@@ -55,7 +55,7 @@ fun emptyDanmakuCollection(): DanmakuCollection {
     return object : DanmakuCollection {
         override fun at(
             progress: Flow<Duration>,
-            danmakuFilterConfig: Flow<DanmakuFilterConfig>,
+            danmakuRegexFilterList: Flow<List<DanmakuRegexFilter>>,
             danmakuRegexFilterEnabled: Flow<Boolean>
         ): DanmakuSession = emptyDanmakuSession()
     }
@@ -86,11 +86,11 @@ class TimeBasedDanmakuSession private constructor(
 
 
     /**
-     * 输入一个[Danmaku] list. 和一个[DanmakuFilterConfig]，返回一个过滤后的[Danmaku] list
+     * 输入一个[Danmaku] list. 和一个[List<DanmakuRegexFilter>]，返回一个过滤后的[Danmaku] list
      */
     fun filterList(
         list: List<Danmaku>,
-        danmakuFilterConfig: DanmakuFilterConfig,
+        danmakuRegexFilterList: List<DanmakuRegexFilter>,
         danmakuRegexFilterEnabled: Boolean
     ): List<Danmaku> {
         if (!danmakuRegexFilterEnabled) {
@@ -98,7 +98,7 @@ class TimeBasedDanmakuSession private constructor(
         }
 
         // 预编译所有启用的正则表达式 
-        val regexFilters = danmakuFilterConfig.danmakuRegexFilterList
+        val regexFilters = danmakuRegexFilterList
             .filter { it.enabled }
             .map { Regex(it.regex) }
 
@@ -111,11 +111,11 @@ class TimeBasedDanmakuSession private constructor(
 
 
     /**
-     * 接收一个视频的播放进度[Duration]. 和一个[DanmakuFilterConfig]，根据视频进度和过滤后的弹幕列表，通过call [DanmakuSessionAlgorithm] 的 [tick] 函数发送弹幕
+     * 接收一个视频的播放进度[Duration]. 和一个[List<DanmakuRegexFilter>]，根据视频进度和过滤后的弹幕列表，通过call [DanmakuSessionAlgorithm] 的 [tick] 函数发送弹幕
      */
     override fun at(
         progress: Flow<Duration>,
-        danmakuFilterConfig: Flow<DanmakuFilterConfig>,
+        danmakuRegexFilterList: Flow<List<DanmakuRegexFilter>>,
         danmakuRegexFilterEnabled: Flow<Boolean>
     ): DanmakuSession {
         if (list.isEmpty()) {
@@ -131,12 +131,12 @@ class TimeBasedDanmakuSession private constructor(
         return object : DanmakuSession {
             override val events: Flow<DanmakuEvent> = channelFlow {
                 launch {
-                    val combinedFlow = danmakuFilterConfig.distinctUntilChanged()
+                    val combinedFlow = danmakuRegexFilterList.distinctUntilChanged()
                         .combine(danmakuRegexFilterEnabled) { filterConfig, enabled ->
                             filterConfig to enabled
                         }
-                    combinedFlow.distinctUntilChanged().collect { (filterConfig, enabled) ->
-                        val filteredList = filterList(list, filterConfig, enabled)
+                    combinedFlow.distinctUntilChanged().collect { (filterList, enabled) ->
+                        val filteredList = filterList(list, filterList, enabled)
                         state.updateList(filteredList)
                         state.requestRepopulate()
                     }

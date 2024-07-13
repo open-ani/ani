@@ -40,7 +40,6 @@ import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
-import me.him188.ani.danmaku.ui.DanmakuFilterConfig
 import me.him188.ani.danmaku.ui.DanmakuRegexFilter
 import java.util.UUID
 import java.util.regex.PatternSyntaxException
@@ -56,7 +55,7 @@ internal fun isValidRegex(pattern: String): Boolean {
 
 @Composable
 internal fun SettingsScope.DanmakuRegexFilterGroup(
-    danmakuFilterConfig: DanmakuFilterConfig,
+    danmakuRegexFilterList: List<DanmakuRegexFilter>,
     onAdd: (filter: DanmakuRegexFilter) -> Unit,
     onEdit: (id: String, new: DanmakuRegexFilter) -> Unit,
     onRemove: (filter: DanmakuRegexFilter) -> Unit,
@@ -124,7 +123,7 @@ internal fun SettingsScope.DanmakuRegexFilterGroup(
             Modifier.placeholder(isLoadingState).fillMaxWidth().padding(12.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            danmakuFilterConfig.danmakuRegexFilterList.forEachIndexed { index, item ->
+            danmakuRegexFilterList.forEachIndexed { index, item ->
                 RegexFilterItem(
                     item,
                     onDelete = { onRemove(item) },

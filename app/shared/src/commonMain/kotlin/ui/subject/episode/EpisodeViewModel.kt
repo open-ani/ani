@@ -71,7 +71,7 @@ import me.him188.ani.danmaku.api.DanmakuPresentation
 import me.him188.ani.danmaku.api.DanmakuSearchRequest
 import me.him188.ani.danmaku.api.DanmakuSession
 import me.him188.ani.danmaku.api.emptyDanmakuCollection
-import me.him188.ani.danmaku.ui.DanmakuFilterConfig
+import me.him188.ani.danmaku.ui.DanmakuRegexFilter
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
@@ -275,7 +275,7 @@ private class EpisodeViewModelImpl(
             }
         }
 
-    val danmakuFilterConfig: Flow<DanmakuFilterConfig> =
+    val danmakuRegexFilterList: Flow<List<DanmakuRegexFilter>> =
         danmakuRegexFilterRepository.flow
 
     val danmakuRegexFilterEnabled: Flow<Boolean> =
@@ -411,7 +411,7 @@ private class EpisodeViewModelImpl(
     private val danmakuSessionFlow: Flow<DanmakuSession> = danmakuCollectionFlow.mapLatest { session ->
         session.at(
             progress = playerState.currentPositionMillis.map { it.milliseconds },
-            danmakuFilterConfig = danmakuFilterConfig,
+            danmakuRegexFilterList = danmakuRegexFilterList,
             danmakuRegexFilterEnabled = danmakuRegexFilterEnabled,
         )
     }.shareInBackground(started = SharingStarted.Lazily)

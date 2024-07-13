@@ -49,9 +49,6 @@ internal actual fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
     var config by remember {
         mutableStateOf(DanmakuConfig())
     }
-    var filterConfig by remember {
-        mutableStateOf(DanmakuFilterConfig())
-    }
     val data = remember {
         flow {
             var counter = 0
@@ -175,7 +172,7 @@ private fun PreviewDanmakuText() {
 
 class TestEpisodeVideoSettingsViewModel() : EpisodeVideoSettingsViewModel {
     override val danmakuConfig: DanmakuConfig = DanmakuConfig.Default
-    override val danmakuFilterConfig: DanmakuFilterConfig = DanmakuFilterConfig.Default
+    override val danmakuRegexFilterList: List<DanmakuRegexFilter> = emptyList()
     override val danmakuRegexFilterEnabled: Boolean = false
     override val isLoading: Boolean = false
 
