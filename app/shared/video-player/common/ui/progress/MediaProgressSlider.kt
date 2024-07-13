@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -31,7 +32,7 @@ import kotlinx.coroutines.flow.map
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.foundation.theme.disabledWeaken
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
-import me.him188.ani.app.ui.foundation.theme.stronglyWeaken
+import me.him188.ani.app.ui.foundation.theme.weaken
 import me.him188.ani.app.videoplayer.ui.state.Chunk
 import me.him188.ani.app.videoplayer.ui.state.ChunkState
 import me.him188.ani.app.videoplayer.ui.state.MediaCacheProgressState
@@ -142,10 +143,11 @@ fun MediaProgressSlider(
     state: MediaProgressSliderState,
     cacheState: MediaCacheProgressState,
     trackBackgroundColor: Color = aniDarkColorTheme().surface,
-    trackProgressColor: Color = aniDarkColorTheme().onSurface,
-    cachedProgressColor: Color = aniDarkColorTheme().onSurface.stronglyWeaken(),
+    trackProgressColor: Color = aniDarkColorTheme().primary,
+    cachedProgressColor: Color = aniDarkColorTheme().onSurface.weaken(),
     downloadingColor: Color = aniDarkColorTheme().onSurface.disabledWeaken(),
     notAvailableColor: Color = aniDarkColorTheme().error.slightlyWeaken(),
+    stopColor: Color = aniDarkColorTheme().primary,
 //    drawThumb: @Composable DrawScope.() -> Unit = {
 //        drawCircle(
 //            MaterialTheme.colorScheme.primary,
@@ -159,7 +161,7 @@ fun MediaProgressSlider(
             .height(24.dp),
         contentAlignment = Alignment.CenterStart,
     ) {
-        Box(Modifier.fillMaxWidth().height(4.dp).padding(horizontal = 4.dp).clip(RoundedCornerShape(12.dp))) {
+        Box(Modifier.fillMaxWidth().height(6.dp).padding(horizontal = 4.dp).clip(RoundedCornerShape(12.dp))) {
             Canvas(Modifier.matchParentSize()) {
                 // draw track
                 drawRect(
@@ -207,6 +209,15 @@ fun MediaProgressSlider(
                     size = Size(size.width * state.displayPositionRatio, size.height),
                 )
             }
+
+            Canvas(Modifier.align(Alignment.CenterEnd).padding(end = 4.dp)) {
+                // draw stop
+                drawCircle(
+                    stopColor,
+                    radius = 2.dp.toPx(),
+                    blendMode = BlendMode.Src, // override background
+                )
+            }
         }
         // draw thumb
         val interactionSource = remember { MutableInteractionSource() }
@@ -222,7 +233,6 @@ fun MediaProgressSlider(
                         thumbColor = MaterialTheme.colorScheme.primary,
                     ),
                     enabled = true,
-//                            thumbSize = DpSize(16.dp, 16.dp)
                 )
             },
             track = {
