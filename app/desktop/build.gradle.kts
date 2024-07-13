@@ -233,6 +233,23 @@ val createDependencyManifest = tasks.register("createDependencyManifest") {
                         .filter { it.extension == "dll" && it.nameWithoutExtension.startsWith(libFile.nameWithoutExtension) }
                     return matched
                 }
+                fun findSystemDll(filename: String): File? {
+                    val systemDir = File("C:/Windows/System32")
+                    val systemDll = systemDir.resolve(filename)
+                    if (systemDll.exists()) {
+                        return systemDll
+                    }
+                    return null
+                }
+                findSystemDll("vcruntime140.dll")?.let {
+                    put("vcruntime140", it)
+                }
+                findSystemDll("vcruntime140_1.dll")?.let {
+                    put("vcruntime140_1", it)
+                }
+                findSystemDll("msvcp140.dll")?.let {
+                    put("MSVCP140", it)
+                }
                 map["LIB_EAY_RELEASE:FILEPATH"]?.let {
                     findDll(File(it)).forEachIndexed { index, file ->
                         put("LIB_EAY_RELEASE_${index}", file)

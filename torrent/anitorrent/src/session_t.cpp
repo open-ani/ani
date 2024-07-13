@@ -20,20 +20,20 @@ static std::string compute_torrent_hash(const std::shared_ptr<const lt::torrent_
     return {torrent_data.begin(), torrent_data.end()};
 }
 
-static std::vector<std::string> splitString(const std::string &str, const char *delimiter) {
-    if (str.empty())
-        return {};
-    std::vector<std::string> tokens;
-    const auto cstr = new char[str.length() + 1];
-    std::strcpy(cstr, str.c_str());
 
-    char *token = std::strtok(cstr, delimiter);
-    while (token != nullptr) {
-        tokens.emplace_back(token);
-        token = std::strtok(nullptr, delimiter);
+static std::vector<std::string> splitString(const std::string &str, const std::string &delimiter) {
+    std::vector<std::string> tokens;
+    std::string::size_type start = 0;
+    std::string::size_type end = str.find(delimiter);
+
+    while (end != std::string::npos) {
+        tokens.push_back(str.substr(start, end - start));
+        start = end + delimiter.length();
+        end = str.find(delimiter, start);
     }
 
-    delete[] cstr;
+    tokens.push_back(str.substr(start));
+
     return tokens;
 }
 
@@ -83,12 +83,24 @@ static std::vector<char> load_file_to_vector(const std::string &filePath) {
     return std::move(buffer);
 }
 
+#if ENABLE_TRACE_LOGGING
+#define START_LOG(log_fn) log << log_fn << std::endl << std::flush;
+#else
+#define START_LOG(log) (void *) 0
+#endif
+
 void session_t::start(const session_settings_t &settings) {
     function_printer_t _fp("session_t::start");
     guard_global_lock;
     using libtorrent::settings_pack;
 
-    settings_pack s;
+#if ENABLE_TRACE_LOGGING
+    std::ofstream log("session_t.log", std::ios::app);
+#endif
+
+    START_LOG("Starting session...");
+    settings_pack s{};
+    START_LOG("Pack initialied");
 
     s.set_bool(settings_pack::enable_dht,
                true); // this will start dht immediately when the setting is started
@@ -116,6 +128,7 @@ void session_t::start(const session_settings_t &settings) {
     s.set_int(settings_pack::aio_threads, 8);
     s.set_int(settings_pack::checking_mem_usage, 2048);
 
+    START_LOG("Set int values ok");
 
     s.set_str(settings_pack::user_agent, settings.user_agent);
     s.set_str(settings_pack::peer_fingerprint, settings.peer_fingerprint);
@@ -126,6 +139,7 @@ void session_t::start(const session_settings_t &settings) {
     s.set_int(settings_pack::max_allowed_in_request_queue, 100);
     s.set_int(settings_pack::suggest_mode, settings_pack::suggest_read_cache);
     // s.set_bool(settings_pack::close_redundant_connections, true);
+    START_LOG("Start set dht_bootstrap_nodes_extra");
 
     if (!settings.dht_bootstrap_nodes_extra.empty()) {
         // 在原有的基础上添加额外的 DHT bootstrap 节点
@@ -140,12 +154,16 @@ void session_t::start(const session_settings_t &settings) {
         const auto res = join_to_string(nodes, ",");
         s.set_str(settings_pack::dht_bootstrap_nodes, res);
     }
+    START_LOG("set dht_bootstrap_nodes_extra ok");
 
     s.set_int(settings_pack::alert_mask,
               libtorrent::alert_category::status | libtorrent::alert_category::piece_progress |
                   libtorrent::alert_category::file_progress | libtorrent::alert_category::upload);
 
-    session_ = std::make_shared<libtorrent::session>(std::move(s));
+    START_LOG("create session");
+
+    session_ = std::make_shared<libtorrent::session>(s);
+    START_LOG("session created");
 }
 
 void session_t::resume() const {
@@ -321,7 +339,8 @@ bool session_t::set_new_event_listener(new_event_listener_t *listener) const {
 }
 
 #if ENABLE_TRACE_LOGGING
-#define ALERTS_LOG(log) std::cout << log
+static std::ofstream alerts_log("alerts.log", std::ios::app);
+#define ALERTS_LOG(log) alerts_log << log
 #else
 #define ALERTS_LOG(log) (void *) 0
 #endif
@@ -331,9 +350,13 @@ void session_t::process_events(event_listener_t *listener) const {
     guard_global_lock;
     if (const auto session = session_; session && session->is_valid() && listener) {
         ALERTS_LOG("Alerts processing... " << std::flush);
+        ALERTS_LOG("listener: " << listener << std::flush);
         std::lock_guard _(listener->lock_);
+        ALERTS_LOG("After lock " << std::flush);
         std::vector<lt::alert *> alerts;
+        ALERTS_LOG("Request is_valid" << std::flush);
         if (session->is_valid()) {
+            ALERTS_LOG("Pop alerts" << std::flush);
             session->pop_alerts(&alerts);
         } else {
             ALERTS_LOG("session invalid" << std::flush);

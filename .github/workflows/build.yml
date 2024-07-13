@@ -17,13 +17,13 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - windows-2022
+          - windows-2019
           - ubuntu-20.04
           - macos-12 # x86_64
           - macos-14 # aarch64
         include:
           # matrix properties can be booleans. Check for plain true and false.
-          - os: windows-2022
+          - os: windows-2019
             name: Windows x86_64
             uploadApk: false
             arch: x64
@@ -79,8 +79,16 @@ jobs:
           submodules: 'recursive'
 
       - uses: actions/setup-java@v4
+        if: ${{ env.isWindows != 'true' }}
         with:
           distribution: zulu
+          java-version: 17
+          architecture: ${{ matrix.arch }}
+
+      - uses: actions/setup-java@v4
+        if: ${{ env.isWindows == 'true' }}
+        with:
+          distribution: microsoft
           java-version: 17
           architecture: ${{ matrix.arch }}
 
@@ -89,11 +97,23 @@ jobs:
         run: chmod +x ./ci-helper/install-deps-macos.sh && ./ci-helper/install-deps-macos.sh
 
       - if: ${{ env.isWindows == 'true' }}
+        name: Setup vcpkg cache
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
+      - if: ${{ env.isWindows == 'true' }}
         name: Install Native Dependencies
         run: ./ci-helper/install-deps-windows.cmd
+        env:
+          VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
+        with:
+          cache-disabled: ${{ env.isWindows == 'true' }} # Windows 上这个缓存会花费 8 分钟, 还不如直接下载
 
       - if: ${{ env.isUnix == 'true' }}
         run: chmod -R 777 *
