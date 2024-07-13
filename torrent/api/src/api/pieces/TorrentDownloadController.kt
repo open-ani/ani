@@ -43,6 +43,7 @@ import me.him188.ani.app.torrent.api.files.PieceState
  * @param windowSize 窗口大小, 即请求的最后一个 piece 的索引与第一个 piece 的索引之差的最大值.
  * @param headerSize 将文件首部多少字节作为 metadata, 在 metadata 阶段请求
  * @param footerSize 将文件尾部多少字节作为 metadata, 在 metadata 阶段请求
+ * @param possibleFooterSize 如果 seek 到这个范围内, 考虑它是 footer, 不会重置 piece priority
  */
 class TorrentDownloadController(
     private val pieces: List<Piece>, // sorted
@@ -50,11 +51,16 @@ class TorrentDownloadController(
     private val windowSize: Int = 8,
     private val headerSize: Long = 128 * 1024,
     private val footerSize: Long = headerSize,
+    private val possibleFooterSize: Long = headerSize,
 ) {
     private val totalSize: Long = pieces.sumOf { it.size }
 
     private val footerPieces = pieces.dropWhile { it.lastIndex < totalSize - footerSize }
-    private val footerPieceIndexes = footerPieces.map { it.pieceIndex }
+    private val possibleFooterRange = pieces.dropWhile { it.lastIndex < totalSize - possibleFooterSize }
+        .let {
+            if (it.isEmpty()) IntRange.EMPTY
+            else it.first().pieceIndex..it.last().pieceIndex
+        }
 
     private val lastIndex = pieces.indexOfFirst { it.lastIndex >= totalSize - footerSize } - 1
 
@@ -79,10 +85,17 @@ class TorrentDownloadController(
 
     @Synchronized
     fun onSeek(pieceIndex: Int) {
+        if (pieceIndex in possibleFooterRange) {
+            // seek 到 footer 附近, 不重置 piece priority
+            if (pieceIndex !in downloadingPieces) {
+                downloadingPieces.add(0, pieceIndex)
+            }
+            return
+        }
         downloadingPieces.clear()
         currentWindowEnd = pieceIndex - 1
         fillWindow(pieceIndex)
-        priorities.downloadOnly(downloadingPieces, footerPieceIndexes)
+        priorities.downloadOnly(downloadingPieces, possibleFooterRange)
     }
 
     /**
@@ -108,7 +121,7 @@ class TorrentDownloadController(
             downloadingPieces.add(newWindowEnd)
             currentWindowEnd = newWindowEnd
         }
-        priorities.downloadOnly(downloadingPieces, footerPieceIndexes)
+        priorities.downloadOnly(downloadingPieces, possibleFooterRange)
     }
 
     private fun fillWindow(pieceIndex: Int) {
@@ -142,7 +155,7 @@ private fun <E> MutableList<E>.addIfNotExist(pieceIndex: E) {
 interface PiecePriorities {
     /**
      * 设置仅下载指定的 pieces.
-     * @param footerPieces 作为参考的视频尾部元数据 piece index
+     * @param possibleFooterRange 作为参考的视频尾部元数据 piece index range
      */
-    fun downloadOnly(pieceIndexes: List<Int>, footerPieces: List<Int>)
+    fun downloadOnly(pieceIndexes: List<Int>, possibleFooterRange: IntRange)
 }

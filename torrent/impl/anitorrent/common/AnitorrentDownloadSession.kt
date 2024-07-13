@@ -99,6 +99,8 @@ class AnitorrentDownloadSession(
             // libtorrent 可能会平均地请求整个 window, 所以不能太大
             windowSize = (4 * 1024 * 1024 / (pieces.firstOrNull()?.size ?: 1024L)).toInt().coerceIn(2, 64),
             headerSize = 2 * 1024 * 1024,
+            footerSize = 1 * 1024 * 1024,
+            possibleFooterSize = 8 * 1024 * 1024,
         )
 
         inner class EntryHandle : AbstractTorrentFileHandle() {
@@ -400,29 +402,29 @@ class AnitorrentDownloadSession(
     private fun createPiecePriorities(): PiecePriorities {
         return object : PiecePriorities {
             //            private val priorities = Array(torrentFile().numPieces()) { Priority.IGNORE }
-            override fun downloadOnly(pieceIndexes: List<Int>, footerPieces: List<Int>) {
+            override fun downloadOnly(pieceIndexes: List<Int>, possibleFooterRange: IntRange) {
                 if (pieceIndexes.isEmpty()) {
                     return
                 }
                 logger.debug { "[$handleId][TorrentDownloadControl] Prioritizing pieces: $pieceIndexes" }
-                val firstIndex = pieceIndexes.first()
+                val smallestIndex = pieceIndexes.minBy { it }
 
-                // 优先下载第一个 piece
-                handle.set_piece_deadline(firstIndex, -5000)
+                // 超高优先下载第一个 piece, 防止它一直请求后面的 (因为一旦有 piece 完成, window 就会往后变大)
+                handle.set_piece_deadline(pieceIndexes.first(), -5000)
 
                 for (i in 1 until pieceIndexes.size) {
                     val pieceIndex = pieceIndexes[i]
                     handle.set_piece_deadline(
                         pieceIndex,
                         // -1000 可以让 libtorrent 更急
-                        -1000 + if (pieceIndex in footerPieces) {
+                        -1000 + if (pieceIndex in possibleFooterRange) {
                             // 对于视频尾部元数据, 同样需要给予较高的优先级
-                            val lastFooter = footerPieces.last()
+                            val lastFooter = possibleFooterRange.last()
                             (lastFooter - pieceIndex) * 100
                         } else {
                             // 最高优先级下载第一个. 第一个有可能会是 seek 之后的.
-                            (pieceIndex - firstIndex) * 100
-                        }, // ms TODO 实际上我们应当根据 piece 的大小, 或者更精确地说, 根据每一帧的大致大小来计算
+                            (pieceIndex - smallestIndex) * 100
+                        },
                     )
                 }
             }
