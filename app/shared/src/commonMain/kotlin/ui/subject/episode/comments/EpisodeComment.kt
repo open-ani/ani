@@ -154,7 +154,7 @@ fun Comment(
                 Surface(
                     modifier = Modifier
                         .padding(top = 12.dp),
-                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    color = MaterialTheme.colorScheme.surface,
                     shape = RoundedCornerShape(8.dp),
                 ) {
                     Column(

@@ -51,10 +51,10 @@ class EpisodeCommentViewModel(
                     createdAt = comment.createdAt * 1000L,
                     briefReplies = comment.replies.take(3).map { reply ->
                         UiComment(
-                            id = comment.toString(),
-                            creator = comment.creator,
+                            id = reply.toString(),
+                            creator = reply.creator,
                             content = parseBBCodeAsReply(reply.content),
-                            createdAt = comment.createdAt * 1000L,
+                            createdAt = reply.createdAt * 1000L,
                             briefReplies = emptyList(),
                             replyCount = 0,
                         )

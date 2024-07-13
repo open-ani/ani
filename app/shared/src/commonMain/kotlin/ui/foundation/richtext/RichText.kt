@@ -194,12 +194,12 @@ object RichTextDefaults {
                         }
 
                         val background by animateColorAsState(
-                            if (maskState[index] == true) colorScheme.tertiaryContainer else {
+                            if (maskState[index] == true) MaterialTheme.colorScheme.surfaceDim else {
                                 if (e.code) colorScheme.surfaceContainer else Color.Unspecified
                             },
                         )
                         val textColor by animateColorAsState(
-                            if (maskState[index] == true) colorScheme.tertiaryContainer else {
+                            if (maskState[index] == true) MaterialTheme.colorScheme.surfaceDim else {
                                 if (e.color == Color.Unspecified) contentColor else e.color
                             },
                         )

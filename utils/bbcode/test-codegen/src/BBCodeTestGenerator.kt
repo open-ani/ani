@@ -135,7 +135,7 @@ class BBCodeTestGenerator(
                         addCode("assertQuote(elements.at($index)")
                         element.jumpUrl?.let { addCode(", jumpUrl=%S", it) }
                         addStatement(") {")
-                        generateAssertions(element.contents)
+                        generateAssertions(element.contents.elements)
                         addStatement("}")
                     }
 
