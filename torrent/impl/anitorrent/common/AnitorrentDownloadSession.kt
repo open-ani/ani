@@ -409,10 +409,10 @@ class AnitorrentDownloadSession(
                         if (pieceIndex in footerPieces) {
                             // 对于视频尾部元数据, 同样需要给予较高的优先级
                             val lastFooter = footerPieces.first()
-                            (lastFooter - pieceIndex) * 300
+                            (lastFooter - pieceIndex) * 100
                         } else {
                             // 最高优先级下载第一个. 第一个有可能会是 seek 之后的.
-                            (pieceIndex - firstIndex) * 300
+                            (pieceIndex - firstIndex) * 100
                         }, // ms TODO 实际上我们应当根据 piece 的大小, 或者更精确地说, 根据每一帧的大致大小来计算
                     )
                 }
