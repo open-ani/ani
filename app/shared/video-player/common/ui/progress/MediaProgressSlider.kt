@@ -29,10 +29,10 @@ import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import kotlin.math.roundToLong
 
 /**
- * @see ProgressSlider
+ * @see MediaProgressSlider
  */
 @Stable
-class ProgressSliderState(
+class MediaProgressSliderState(
     currentPositionMillis: State<Long>,
     totalDurationMillis: State<Long>,
     private val onPreview: (positionMillis: Long) -> Unit,
@@ -85,12 +85,15 @@ class ProgressSliderState(
     }
 }
 
+/**
+ * 便捷方法, 从 [PlayerState.currentPositionMillis] 创建  [MediaProgressSliderState]
+ */
 @Composable
-fun rememberProgressSliderState(
+fun rememberMediaProgressSliderState(
     playerState: PlayerState,
     onPreview: (positionMillis: Long) -> Unit,
     onPreviewFinished: (positionMillis: Long) -> Unit,
-): ProgressSliderState {
+): MediaProgressSliderState {
     val currentPosition = playerState.currentPositionMillis.collectAsStateWithLifecycle()
     val totalDuration = remember(playerState) {
         playerState.videoProperties.filterNotNull().map { it.durationMillis }.distinctUntilChanged()
@@ -99,7 +102,7 @@ fun rememberProgressSliderState(
     val onPreviewUpdated by rememberUpdatedState(onPreview)
     val onPreviewFinishedUpdated by rememberUpdatedState(onPreviewFinished)
     return remember(currentPosition, totalDuration) {
-        ProgressSliderState(
+        MediaProgressSliderState(
             currentPosition,
             totalDuration,
             onPreviewUpdated,
@@ -114,8 +117,8 @@ fun rememberProgressSliderState(
  */
 // Preview: PreviewVideoScaffoldFullscreen
 @Composable
-fun ProgressSlider(
-    state: ProgressSliderState,
+fun MediaProgressSlider(
+    state: MediaProgressSliderState,
     modifier: Modifier = Modifier
 ) {
     Row(modifier, verticalAlignment = Alignment.CenterVertically) {

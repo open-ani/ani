@@ -21,7 +21,7 @@ import me.him188.ani.datasources.bangumi.processing.fixToString
  */
 @Composable
 fun MediaProgressIndicatorText(
-    state: ProgressSliderState,
+    state: MediaProgressSliderState,
     modifier: Modifier = Modifier
 ) {
     val text by remember(state) {

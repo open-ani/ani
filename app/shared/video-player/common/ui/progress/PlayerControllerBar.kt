@@ -395,7 +395,7 @@ object PlayerControllerDefaults {
  *
  * @param startActions [PlayerControllerDefaults.PlaybackIcon], [PlayerControllerDefaults.DanmakuIcon]
  * @param progressIndicator [MediaProgressIndicatorText]
- * @param progressSlider [ProgressSlider]
+ * @param progressSlider [MediaProgressSlider]
  * @param danmakuEditor [PlayerControllerDefaults.DanmakuTextField]
  * @param endActions [PlayerControllerDefaults.FullscreenIcon]
  * @param expanded Whether the controller bar is expanded.
