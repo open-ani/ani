@@ -11,7 +11,7 @@ include(FetchContent)
 # 如果 JVM signal handler 被覆盖, JVM 就会因为 SIGBUS/SIGSEGV crash.
 add_compile_definitions(TORRENT_HAVE_MMAP=0)
 
-#add_compile_definitions(TORRENT_ABI_VERSION=3)
+add_compile_definitions(TORRENT_ABI_VERSION=3) # Hide all deprecated APIs
 
 # https://github.com/arvidn/libtorrent/blob/RC_2_0/docs/building.rst#building-with-vcpkg
 if (WIN32)

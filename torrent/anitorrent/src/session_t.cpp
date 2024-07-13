@@ -94,7 +94,9 @@ void session_t::start(const session_settings_t &settings) {
     guard_global_lock;
     using libtorrent::settings_pack;
 
+#if ENABLE_TRACE_LOGGING
     std::ofstream log("session_t.log", std::ios::app);
+#endif
 
     START_LOG("Starting session...");
     settings_pack s{};
