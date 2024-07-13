@@ -28,7 +28,7 @@ class TorrentMediaCacheProgressState(
     private val state = kotlin.run {
         val totalSize = pieces.sumOf { it.size }
 
-        val lastStates = pieces.mapTo(mutableListOf()) { piece ->
+        val lastStates = pieces.mapTo(ArrayList(pieces.size)) { piece ->
             piece.state.value.toChunkState()
         }
 
