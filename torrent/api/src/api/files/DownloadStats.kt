@@ -95,7 +95,6 @@ enum class PieceState {
     READY,
     DOWNLOADING,
     FINISHED,
-    FAILED,
     NOT_AVAILABLE,
     ;
 }

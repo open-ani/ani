@@ -50,7 +50,7 @@ interface TorrentFileEntry { // 实现提示, 无 test mock
      * @throws IllegalStateException 当未匹配到正确大小的 pieces 时抛出
      * @return 一定是 [RandomAccess] List
      */
-    val pieces: List<Piece>?
+    val pieces: List<Piece>? // TODO: remove nullable
 
     /**
      * 是否支持边下边播

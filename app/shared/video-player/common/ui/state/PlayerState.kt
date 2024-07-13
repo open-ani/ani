@@ -2,23 +2,33 @@ package me.him188.ani.app.videoplayer.ui.state
 
 import androidx.annotation.UiThread
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.job
+import kotlinx.coroutines.launch
 import me.him188.ani.app.platform.Context
+import me.him188.ani.app.tools.torrent.TorrentMediaCacheProgressState
+import me.him188.ani.app.ui.foundation.produceState
 import me.him188.ani.app.videoplayer.data.VideoData
 import me.him188.ani.app.videoplayer.data.VideoProperties
 import me.him188.ani.app.videoplayer.data.VideoSource
 import me.him188.ani.app.videoplayer.data.VideoSourceOpenException
+import me.him188.ani.app.videoplayer.torrent.TorrentVideoData
 import me.him188.ani.app.videoplayer.ui.VideoPlayer
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
@@ -47,6 +57,11 @@ interface PlayerState {
      * The video data of the currently playing video.
      */
     val videoData: Flow<VideoData?>
+
+    /**
+     * 视频数据缓存进度
+     */
+    val cacheProgress: MediaCacheProgressState
 
     /**
      * Sets the video source to play, by [opening][VideoSource.open] the [source],
@@ -179,6 +194,39 @@ abstract class AbstractPlayerState<D : AbstractPlayerState.Data>(
     final override val videoData: Flow<VideoData?> = openResource.map {
         it?.videoData
     }
+
+    private val isCacheFinished by videoData.flatMapLatest {
+        when (it) {
+            null -> flowOf(false)
+            is TorrentVideoData -> it.isCacheFinished
+            else -> flowOf(false)
+        }
+    }.produceState(false, backgroundScope)
+
+    private val cacheProgressFlow = videoData.map {
+        when (it) {
+            null -> emptyMediaCacheProgressState()
+            is TorrentVideoData -> TorrentMediaCacheProgressState(
+                it.pieces,
+                isFinished = { isCacheFinished },
+            )
+
+            else -> emptyMediaCacheProgressState()
+        }
+    }.stateIn(backgroundScope, SharingStarted.WhileSubscribed(), emptyMediaCacheProgressState())
+
+    init {
+        backgroundScope.launch {
+            while (true) {
+                cacheProgressFlow.value.update()
+                delay(1000)
+            }
+        }
+    }
+
+    override val cacheProgress: UpdatableMediaCacheProgressState by
+    cacheProgressFlow.produceState(emptyMediaCacheProgressState(), backgroundScope)
+
     final override val playProgress: Flow<Float> by lazy {
         combine(videoProperties.filterNotNull(), currentPositionMillis) { properties, duration ->
             if (properties.durationMillis == 0L) {

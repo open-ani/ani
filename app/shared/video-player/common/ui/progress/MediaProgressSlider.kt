@@ -1,8 +1,12 @@
 package me.him188.ani.app.videoplayer.ui.progress
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
@@ -16,13 +20,21 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
-import me.him188.ani.app.ui.foundation.theme.looming
-import me.him188.ani.app.ui.foundation.theme.weaken
+import me.him188.ani.app.ui.foundation.theme.disabledWeaken
+import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
+import me.him188.ani.app.ui.foundation.theme.stronglyWeaken
+import me.him188.ani.app.videoplayer.ui.state.Chunk
+import me.him188.ani.app.videoplayer.ui.state.ChunkState
+import me.him188.ani.app.videoplayer.ui.state.MediaCacheProgressState
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import kotlin.math.roundToLong
@@ -32,7 +44,7 @@ import kotlin.math.roundToLong
  *
  * - 支持从 [currentPositionMillis] 同步当前播放位置, 从 [totalDurationMillis] 同步总时长.
  * - 使用 [onPreview] 和 [onPreviewFinished] 来处理用户拖动进度条的事件.
- * 
+ *
  * @see MediaProgressSlider
  */
 @Stable
@@ -123,46 +135,143 @@ fun rememberMediaProgressSliderState(
 
 
 /**
- * The slider to control the progress of a video, with a preview feature.
+ * 视频播放器的进度条, 支持拖动调整播放位置, 支持显示缓冲进度.
  */
-// Preview: PreviewVideoScaffoldFullscreen
 @Composable
 fun MediaProgressSlider(
     state: MediaProgressSliderState,
-    modifier: Modifier = Modifier
+    cacheState: MediaCacheProgressState,
+    trackBackgroundColor: Color = aniDarkColorTheme().surface,
+    trackProgressColor: Color = aniDarkColorTheme().onSurface,
+    cachedProgressColor: Color = aniDarkColorTheme().onSurface.stronglyWeaken(),
+    downloadingColor: Color = aniDarkColorTheme().onSurface.disabledWeaken(),
+    notAvailableColor: Color = aniDarkColorTheme().error.slightlyWeaken(),
+//    drawThumb: @Composable DrawScope.() -> Unit = {
+//        drawCircle(
+//            MaterialTheme.colorScheme.primary,
+//            radius = 12f,
+//        )
+//    },
+    modifier: Modifier = Modifier,
 ) {
-    Row(modifier, verticalAlignment = Alignment.CenterVertically) {
-        val interactionSource = remember { MutableInteractionSource() }
-        MaterialTheme(aniDarkColorTheme()) {
-            Slider(
-                value = state.displayPositionRatio,
-                valueRange = 0f..1f,
-                onValueChange = { state.previewPositionRatio(it) },
-                interactionSource = interactionSource,
-                thumb = {
-                    SliderDefaults.Thumb(
-                        interactionSource = interactionSource,
-                        colors = SliderDefaults.colors(
-                            thumbColor = MaterialTheme.colorScheme.primary,
-                        ),
-                        enabled = true,
-//                            thumbSize = DpSize(16.dp, 16.dp)
-                    )
-                },
-                track = {
-                    SliderDefaults.Track(
-                        it,
-                        colors = SliderDefaults.colors(
-                            inactiveTrackColor = MaterialTheme.colorScheme.background.weaken(),
-                            activeTrackColor = MaterialTheme.colorScheme.onBackground.looming(),
-                        ),
-                    )
-                },
-                onValueChangeFinished = {
-                    state.finishPreview()
-                },
-                modifier = Modifier.height(24.dp),
-            )
+    Box(
+        modifier.fillMaxWidth()
+            .height(24.dp),
+        contentAlignment = Alignment.CenterStart,
+    ) {
+        Box(Modifier.fillMaxWidth().height(4.dp).padding(horizontal = 4.dp).clip(RoundedCornerShape(12.dp))) {
+            Canvas(Modifier.matchParentSize()) {
+                // draw track
+                drawRect(
+                    trackBackgroundColor,
+                    topLeft = Offset(0f, 0f),
+                    size = Size(size.width, size.height),
+                )
+            }
+
+            Canvas(Modifier.matchParentSize()) {
+                // draw cached progress
+
+                cacheState.version // subscribe to state change
+
+                var currentX = 0f
+
+                // 连续的缓存区块连着画, 否则会因精度缺失导致不连续
+                forEachConsecutiveChunk(cacheState.chunks) { state, weight ->
+                    val color = when (state) {
+                        ChunkState.NONE -> Color.Unspecified
+                        ChunkState.DOWNLOADING -> downloadingColor
+                        ChunkState.DONE -> cachedProgressColor
+                        ChunkState.NOT_AVAILABLE -> notAvailableColor
+                    }
+                    if (color != Color.Unspecified) {
+                        val size = Size(
+                            weight * size.width,
+                            size.height,
+                        )// TODO: draw more cache states (colors)
+                        drawRect(
+                            color,
+                            topLeft = Offset(currentX, 0f),
+                            size = size,
+                        )
+                    }
+                    currentX += weight * size.width
+                }
+            }
+
+            Canvas(Modifier.matchParentSize()) {
+                // draw play progress
+                drawRect(
+                    trackProgressColor,
+                    topLeft = Offset(0f, 0f),
+                    size = Size(size.width * state.displayPositionRatio, size.height),
+                )
+            }
         }
+        // draw thumb
+        val interactionSource = remember { MutableInteractionSource() }
+        Slider(
+            value = state.displayPositionRatio,
+            valueRange = 0f..1f,
+            onValueChange = { state.previewPositionRatio(it) },
+            interactionSource = interactionSource,
+            thumb = {
+                SliderDefaults.Thumb(
+                    interactionSource = interactionSource,
+                    colors = SliderDefaults.colors(
+                        thumbColor = MaterialTheme.colorScheme.primary,
+                    ),
+                    enabled = true,
+//                            thumbSize = DpSize(16.dp, 16.dp)
+                )
+            },
+            track = {
+                SliderDefaults.Track(
+                    it,
+                    colors = SliderDefaults.colors(
+                        activeTrackColor = Color.Transparent,
+                        inactiveTrackColor = Color.Transparent,
+                        disabledActiveTrackColor = Color.Transparent,
+                        disabledInactiveTrackColor = Color.Transparent,
+                    ),
+                )
+            },
+            onValueChangeFinished = {
+                state.finishPreview()
+            },
+            modifier = Modifier.fillMaxWidth().height(24.dp),
+        )
     }
+}
+
+private inline fun forEachConsecutiveChunk(
+    chunks: List<Chunk>,
+    action: (state: ChunkState, weight: Float) -> Unit
+) {
+    if (chunks.isEmpty()) return
+
+    var currentState: ChunkState = chunks[0].state
+    var start = 0
+    var end = 0
+
+    for (index in 1..chunks.lastIndex) {
+        val chunk = chunks[index]
+        if (chunk.state != currentState) {
+            action(currentState, chunks.subList(start, end + 1).sumOf { it.weight })
+            currentState = chunk.state
+            start = index
+        }
+        end = index
+    }
+    // Handle the final chunk
+    action(currentState, chunks.subList(start, end + 1).sumOf { it.weight })
+}
+
+@OverloadResolutionByLambdaReturnType
+inline fun <T> Iterable<T>.sumOf(selector: (T) -> Float): Float {
+    var sum: Float = 0.toFloat()
+    for (element in this) {
+        sum += selector(element)
+    }
+    return sum
 }

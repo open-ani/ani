@@ -238,7 +238,7 @@ internal fun EpisodeVideoImpl(
                     MediaProgressIndicatorText(progressSliderState)
                 },
                 progressSlider = {
-                    MediaProgressSlider(progressSliderState)
+                    MediaProgressSlider(progressSliderState, playerState.cacheProgress)
                 },
                 danmakuEditor = danmakuEditor,
                 endActions = {
