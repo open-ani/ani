@@ -144,5 +144,5 @@ interface PiecePriorities {
      * 设置仅下载指定的 pieces.
      * @param footerPieces 作为参考的视频尾部元数据 piece index
      */
-    fun downloadOnly(pieceIndexes: Collection<Int>, footerPieces: List<Int>)
+    fun downloadOnly(pieceIndexes: List<Int>, footerPieces: List<Int>)
 }
