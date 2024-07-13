@@ -28,13 +28,24 @@ import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import kotlin.math.roundToLong
 
 /**
+ * 播放器进度滑块的状态.
+ *
+ * - 支持从 [currentPositionMillis] 同步当前播放位置, 从 [totalDurationMillis] 同步总时长.
+ * - 使用 [onPreview] 和 [onPreviewFinished] 来处理用户拖动进度条的事件.
+ * 
  * @see MediaProgressSlider
  */
 @Stable
 class MediaProgressSliderState(
     currentPositionMillis: () -> Long,
     totalDurationMillis: () -> Long,
+    /**
+     * 当用户正在拖动进度条时触发. 每有一个 change 都会调用.
+     */
     private val onPreview: (positionMillis: Long) -> Unit,
+    /**
+     * 当用户松开进度条时触发. 此时播放器应当要跳转到该位置.
+     */
     private val onPreviewFinished: (positionMillis: Long) -> Unit,
 ) {
     val currentPositionMillis: Long by derivedStateOf(currentPositionMillis)
