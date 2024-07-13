@@ -394,7 +394,7 @@ object PlayerControllerDefaults {
  * See [PlayerControllerDefaults] for components.
  *
  * @param startActions [PlayerControllerDefaults.PlaybackIcon], [PlayerControllerDefaults.DanmakuIcon]
- * @param progressIndicator [ProgressIndicator]
+ * @param progressIndicator [MediaProgressIndicatorText]
  * @param progressSlider [ProgressSlider]
  * @param danmakuEditor [PlayerControllerDefaults.DanmakuTextField]
  * @param endActions [PlayerControllerDefaults.FullscreenIcon]

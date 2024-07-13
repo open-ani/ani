@@ -54,10 +54,10 @@ import me.him188.ani.app.videoplayer.ui.guesture.rememberGestureIndicatorState
 import me.him188.ani.app.videoplayer.ui.guesture.rememberPlayerFastSkipState
 import me.him188.ani.app.videoplayer.ui.guesture.rememberSwipeSeekerState
 import me.him188.ani.app.videoplayer.ui.progress.AudioSwitcher
+import me.him188.ani.app.videoplayer.ui.progress.MediaProgressIndicatorText
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerBar
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults.SpeedSwitcher
-import me.him188.ani.app.videoplayer.ui.progress.ProgressIndicator
 import me.him188.ani.app.videoplayer.ui.progress.ProgressSlider
 import me.him188.ani.app.videoplayer.ui.progress.SubtitleSwitcher
 import me.him188.ani.app.videoplayer.ui.progress.rememberProgressSliderState
@@ -235,7 +235,7 @@ internal fun EpisodeVideoImpl(
                     )
                 },
                 progressIndicator = {
-                    ProgressIndicator(progressSliderState)
+                    MediaProgressIndicatorText(progressSliderState)
                 },
                 progressSlider = {
                     ProgressSlider(progressSliderState)
