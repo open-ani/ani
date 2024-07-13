@@ -78,6 +78,7 @@ class AnitorrentDownloadSession(
     override val overallStats: MutableDownloadStats = MutableDownloadStats()
 
     private val openFiles = mutableListOf<EntryHandle>()
+    private val prioritizer = createPiecePriorities()
 
     inner class AnitorrentEntry(
         override val pieces: List<Piece>,
@@ -95,10 +96,12 @@ class AnitorrentDownloadSession(
 
         val controller: TorrentDownloadController = TorrentDownloadController(
             pieces,
-            createPiecePriorities(),
+            prioritizer,
             // libtorrent 可能会平均地请求整个 window, 所以不能太大
-            windowSize = (4 * 1024 * 1024 / (pieces.firstOrNull()?.size ?: 1024L)).toInt().coerceIn(1, 64),
-            headerSize = 1024 * 1024,
+            windowSize = (8 * 1024 * 1024 / (pieces.firstOrNull()?.size ?: 1024L)).toInt().coerceIn(2, 64),
+            headerSize = 2 * 1024 * 1024,
+            footerSize = (0.5 * 1024 * 1024).toLong(),
+            possibleFooterSize = 8 * 1024 * 1024,
         )
 
         inner class EntryHandle : AbstractTorrentFileHandle() {
@@ -110,8 +113,8 @@ class AnitorrentDownloadSession(
             }
 
             override fun resumeImpl(priority: FilePriority) {
-                handle.resume()
                 controller.onTorrentResumed()
+                handle.resume()
             }
 
             override fun closeAndDelete() {
@@ -152,7 +155,6 @@ class AnitorrentDownloadSession(
                 this.pieces,
                 logicalStartOffset = offset,
                 onWait = { piece ->
-                    logger.info { "[TorrentDownloadControl] $torrentId: Request deadline from ${piece.pieceIndex}" }
                     updatePieceDeadlinesForSeek(piece)
                 },
                 size = length,
@@ -161,9 +163,13 @@ class AnitorrentDownloadSession(
 
         private fun updatePieceDeadlinesForSeek(requested: Piece) {
             if (!controller.isDownloading(requested.pieceIndex)) {
+                logger.info { "[TorrentDownloadControl] $torrentId: Resetting deadlines to download ${requested.pieceIndex}" }
                 handle.clear_piece_deadlines()
+                controller.onSeek(requested.pieceIndex) // will request further pieces
+            } else {
+                logger.info { "[TorrentDownloadControl] $torrentId: Requested piece ${requested.pieceIndex} is already downloading" }
+                return
             }
-            controller.onSeek(requested.pieceIndex) // will request further pieces
         }
     }
 
@@ -397,17 +403,29 @@ class AnitorrentDownloadSession(
     private fun createPiecePriorities(): PiecePriorities {
         return object : PiecePriorities {
             //            private val priorities = Array(torrentFile().numPieces()) { Priority.IGNORE }
-            override fun downloadOnly(pieceIndexes: Collection<Int>) {
+            override fun downloadOnly(pieceIndexes: List<Int>, possibleFooterRange: IntRange) {
                 if (pieceIndexes.isEmpty()) {
                     return
                 }
                 logger.debug { "[$handleId][TorrentDownloadControl] Prioritizing pieces: $pieceIndexes" }
-                val firstIndex = pieceIndexes.first()
-                pieceIndexes.forEach { pieceIndex ->
+                val smallestIndex = pieceIndexes.minBy { it }
+
+                // 超高优先下载第一个 piece, 防止它一直请求后面的 (因为一旦有 piece 完成, window 就会往后变大)
+                handle.set_piece_deadline(pieceIndexes.first(), -10000)
+
+                for (i in 1 until pieceIndexes.size) {
+                    val pieceIndex = pieceIndexes[i]
                     handle.set_piece_deadline(
                         pieceIndex,
-                        // 最高优先级下载第一个. 第一个有可能会是 seek 之后的.
-                        (pieceIndex - firstIndex) * 300, // ms TODO 实际上我们应当根据 piece 的大小, 或者更精确地说, 根据每一帧的大致大小来计算
+                        // 低于现在可以让 libtorrent 更急
+                        -5000 + if (pieceIndex in possibleFooterRange) {
+                            // 对于视频尾部元数据, 同样需要给予较高的优先级
+                            val lastFooter = possibleFooterRange.last()
+                            (lastFooter - pieceIndex) * 700
+                        } else {
+                            // 最高优先级下载第一个. 第一个有可能会是 seek 之后的.
+                            (pieceIndex - smallestIndex) * 700
+                        },
                     )
                 }
             }

@@ -44,6 +44,26 @@ annotation class UnsafeLazyDataCacheApi
  *
  * - 通过 [cachedDataFlow], 获取缓存的数据流. 该数据流只访问本地的缓存数据, 不会自动发送网络请求. 需要调用 [requestMore] 以请求下一页.
  * - 通过 [allDataFlow], 获取完整的数据流. 该数据流会自动连续地请求下一页数据, 直到远程数据全部加载完成.
+ *
+ * ### 修改缓存数据
+ *
+ * 缓存数据可被安全地修改并自动持久化.
+ *
+ * 可通过 [mutate] 修改缓存数据, 或者使用 [dataTransaction] 同时修改多个 [LazyDataCache].
+ *
+ * ### 持久化与缓存一致性
+ *
+ * 所有数据都会持久化到本地, 且只会在成功持久化之后, 才可通过任意方式获取. 这意味着:
+ * - 当 [cachedDataFlow] emit 新的值时, 该数据一定已经持久化成功了
+ * - 当 [requestMore] 返回 `true` 时, 缓存一定已经更新成功并且持久化成功
+ *
+ * 支持持久化的, 不只是列表数据本身, 还包括页码和总大小 [totalSize].
+ * - 页码持久化后, 下次启动时将会从上次停止的地方继续加载数据.
+ *
+ * [cachedDataFlow] 与 [totalSize] 拥有相同的可见性. 这意味着:
+ * - 当 [cachedDataFlow] emit 新的值时, [totalSize] 一定也会能 emit 新的值
+ * - 它们一定是在同一瞬时时间之后获得 emit 新的值的能力. 换句话说,
+ *   如果此时 [cachedDataFlow] emit 了新的值, 那么一个并行线程调用 `totalSize.first()` 也能立即看到新值.
  */
 @Stable
 interface LazyDataCache<T> {
@@ -108,15 +128,27 @@ interface LazyDataCache<T> {
     val mutator: LazyDataCacheMutator<T>
 
     /**
-     * Attempts to load more data.
-     * Returns `false` if the remote flow has already been exhausted, i.e. all data has successfully loaded.
-     * Returns `true` when the next page is loaded.
+     * 尝试请求下一页数据. 当请求成功时, 会将新的数据追加到当前缓存中.
+     * 如果已知已经没有更多页码了, 本函数立即返回 `false`, 不会修改缓存.
      *
-     * The will only be one data loading operation at a time.
+     * 当成功请求一页数据并追加和持久化缓存后返回 `true`.
+     * 当没有修改缓存时返回 `false`, 意味着最后一页早就已经加载完了, 已经没有更多的页码了.
      *
-     * This function performs calculations on the [Dispatchers.Default] dispatcher.
+     * ## 线程安全
+     *
+     * 同一时间只会有一个 [requestMore] 进行中. 多次调用 [requestMore] 时, 会等待上一个请求完成后再执行下一个请求.
+     * 如果上一个请求已经导致加载完了所有页码, 则后续请求会直接返回.
      *
      * 此函数可以在 UI 或者其他线程调用.
+     *
+     * ## 透明异常
+     *
+     * 如果在请求网络时遇到异常, 本函数会原封不动地抛出异常. 在这种情况下, 页码不会变更.
+     *
+     * ## 支持 Coroutine Cancellation
+     *
+     * 此函数的内部任意阶段都可被取消. 当协程被取消时, 页码和当前缓存都不会变更.
+     * 即使已经成功查询了一页, 页码也会被恢复到调用该函数之前的值.
      */
     suspend fun requestMore(): Boolean
 
@@ -126,9 +158,13 @@ interface LazyDataCache<T> {
      * 注意, [refresh] 与先 [invalidate] 再 [requestMore] 不同:
      * [refresh] 只会在加载成功后替换当前缓存, 而 [invalidate] 总是会清空当前缓存.
      *
-     * This function supports coroutine cancellation.
-     *
      * 此函数可以在 UI 或者其他线程调用.
+     *
+     * ## 支持 Coroutine Cancellation
+     *
+     * 此函数的内部任意阶段都可被取消. 当协程被取消时, 缓存不会变更.
+     *
+     * @param orderPolicy 刷新时的顺序. 查看 [RefreshOrderPolicy].
      */
     suspend fun refresh(orderPolicy: RefreshOrderPolicy)
 
@@ -141,19 +177,36 @@ interface LazyDataCache<T> {
 enum class RefreshOrderPolicy {
     /**
      * 尽量保持原有的顺序, 新的物品出现在底部.
+     *
+     * 该模式适合被动刷新.
+     * 例如在刚刚启动 app 时自动在后台请求追番列表,
+     * 但由于请求列表需要耗费数秒, 用户在这期间可能已经操作 (滑动) 了列表.
+     * 当请求完成后, 如果整体替换列表, 可能导致元素位置变换, 影响体验, 所以应当保持已有元素的顺序.
+     *
+     * [LazyDataCache.requestMore] 总是使用这个策略.
+     *
+     * 如果在 [LazyDataCache.refresh] 时使用这个策略,
+     * 将会使用 [Any.equals] 比较新旧数据, 从当前缓存中去除新列表中不存在元素, 然后将新列表中的新元素追加到末尾.
      */
     KEEP_ORDER_APPEND_LAST,
 
     /**
      * 不保持原有顺序, 按照新的数据顺序排列.
+     *
+     * 如果在 [LazyDataCache.refresh] 时使用这个策略, 则会使用新的 list 整个替换掉旧的 list.
      */
     REPLACE,
 }
 
 /**
- * 线程安全地修改 [LazyDataCache.cachedDataFlow].
+ * 线程安全地修改一个 [LazyDataCache.cachedDataFlow].
+ * 修改完成后将会持久化, 随后通过 [LazyDataCache.cachedDataFlow] 传播给其他订阅者.
  *
- * @param action 在锁里执行的操作, 其中不可以重复调用 [mutate] 或 [dataTransaction].
+ * 如果 [action] 抛出异常, 该异常将会被原封不动地抛出, 并且不会修改缓存.
+ *
+ * 如需同时修改多个 [LazyDataCache], 使用 [dataTransaction]
+ *
+ * @param action 在锁里执行的操作, 其中不可以重复调用相同 [this] 的 [mutate] 或 [dataTransaction].
  *
  * @sample me.him188.ani.app.tools.caching.LazyDataCacheSamples.mutate
  *

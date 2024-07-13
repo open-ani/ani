@@ -85,7 +85,7 @@ private class ElementBuilder(
         val context = context
         elements.add(
             RichElement.Quote(
-                content,
+                RichText(content),
                 jumpUrl = context.jumpUrl,
             ),
         )

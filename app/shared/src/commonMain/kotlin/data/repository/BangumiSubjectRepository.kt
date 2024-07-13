@@ -84,15 +84,11 @@ class RemoteBangumiSubjectRepository : BangumiSubjectRepository, KoinComponent {
     }
 
     override suspend fun patchSubjectCollection(subjectId: Int, payload: BangumiUserSubjectCollectionModifyPayload) {
-        kotlin.runCatching {
-            client.api.postUserCollection(subjectId, payload)
-        }
+        client.api.postUserCollection(subjectId, payload)
     }
 
     override suspend fun deleteSubjectCollection(subjectId: Int) {
-        kotlin.runCatching {
-            // TODO:  deleteSubjectCollection
-        }
+        // TODO:  deleteSubjectCollection
     }
 
     override fun getSubjectCollections(

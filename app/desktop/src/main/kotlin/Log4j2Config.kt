@@ -58,6 +58,14 @@ object Log4j2Config {
             builder.newLogger("io.ktor.client.plugins", Level.DEBUG)
                 .addAttribute("additivity", false),
         )
+        builder.add(
+            builder.newLogger("org.apache.hc.client5.http.wire", Level.OFF)
+                .addAttribute("additivity", false),
+        )
+        builder.add(
+            builder.newLogger("org.openqa.selenium", Level.OFF)
+                .addAttribute("additivity", false),
+        )
         val ctx: LoggerContext = LogManager.getContext(false) as LoggerContext
         val config: Configuration = builder.build()
         ctx.start(config)

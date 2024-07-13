@@ -45,21 +45,26 @@ abstract class AbstractSettingsViewModel : AbstractViewModel(), KoinComponent {
         }
     }
 
-    fun <T> settings(
+    /**
+     * @param placeholder 可以是 [T] 的 supertype, 包括 `null`.
+     */
+    fun <T : P, P> settings(
         pref: me.him188.ani.app.data.repository.Settings<T>,
-        placeholder: T,
+        placeholder: P,
     ) =
         propertyDelegateProvider {
             Settings(it.name, pref, placeholder)
         }
 
     @Stable
-    inner class Settings<T>(
+    inner class Settings<T : P, P>(
         private val debugName: String,
         private val pref: me.him188.ani.app.data.repository.Settings<T>,
-        private val placeholder: T,
-    ) : State<T> {
-        val loading by derivedStateOf { value === placeholder }
+        private val placeholder: P,
+    ) : State<P> {
+        val loading by derivedStateOf {
+            value === placeholder
+        }
 
         private val tasker = MonoTasker(backgroundScope)
         fun update(value: T) {
@@ -83,7 +88,7 @@ abstract class AbstractSettingsViewModel : AbstractViewModel(), KoinComponent {
         @TestOnly
         var _valueOverride: T? = null
         private val valueDelegate = pref.flow.produceState(placeholder)
-        override val value: T
+        override val value: P
             get() = _valueOverride ?: valueDelegate.value
     }
 
