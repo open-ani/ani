@@ -158,7 +158,9 @@ void session_t::start(const session_settings_t &settings) {
 
     s.set_int(settings_pack::alert_mask,
               libtorrent::alert_category::status | libtorrent::alert_category::piece_progress |
-                  libtorrent::alert_category::file_progress | libtorrent::alert_category::upload);
+                      libtorrent::alert_category::block_progress |
+                      libtorrent::alert_category::file_progress |
+                      libtorrent::alert_category::upload);
 
     START_LOG("create session");
 
