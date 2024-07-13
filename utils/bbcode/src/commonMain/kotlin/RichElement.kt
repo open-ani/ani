@@ -41,7 +41,7 @@ sealed interface RichElement {
     ) : RichElement
 
     data class Quote(
-        val contents: List<RichElement>,
+        val contents: RichText,
         override val jumpUrl: String? = null
     ) : RichElement
 

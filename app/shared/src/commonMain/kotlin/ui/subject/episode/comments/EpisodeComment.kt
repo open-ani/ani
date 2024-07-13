@@ -24,7 +24,9 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,14 +34,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.flow.collectLatest
 import me.him188.ani.app.tools.formatDateTime
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
 import me.him188.ani.app.ui.foundation.rememberViewModel
+import me.him188.ani.app.ui.foundation.richtext.RichText
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
 import me.him188.ani.app.ui.foundation.theme.stronglyWeaken
-import me.him188.ani.app.ui.subject.episode.comments.bbcode.BBCodeView
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
 
@@ -112,6 +113,8 @@ fun Comment(
     modifier: Modifier = Modifier,
     onClickUrl: (String) -> Unit = {}
 ) {
+    val primaryColor = MaterialTheme.colorScheme.primary
+    
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.Top,
@@ -140,14 +143,14 @@ fun Comment(
             SelectionContainer(
                 modifier = Modifier.padding(top = 6.dp, end = 24.dp).fillMaxWidth(),
             ) {
-                BBCodeView(
-                    code = comment.summary,
+                RichText(
+                    elements = comment.content.elements,
                     modifier = Modifier.fillMaxWidth(),
                     onClickUrl = onClickUrl,
                 )
             }
 
-            if (comment.replies.isNotEmpty()) {
+            if (comment.briefReplies.isNotEmpty()) {
                 Surface(
                     modifier = Modifier
                         .padding(top = 12.dp),
@@ -159,26 +162,39 @@ fun Comment(
                             .fillMaxWidth()
                             .padding(vertical = 4.dp),
                     ) {
-                        comment.replies.take(3).forEach { reply ->
-                            BBCodeView(
-                                code = reply.summary,
+                        comment.briefReplies.forEach { reply ->
+                            val prepended by remember {
+                                derivedStateOf {
+                                    reply.content.prependText(
+                                        prependix = "${reply.creator.nickname ?: reply.creator.id.toString()}：",
+                                        color = primaryColor,
+                                    )
+                                }
+                            }
+                            RichText(
+                                elements = prepended.elements,
                                 modifier = Modifier
-                                    .padding(horizontal = 8.dp, vertical = 4.dp)
-                                    .fillMaxWidth(),
-                                brief = true,
-                                briefSenderName = reply.creator.nickname ?: "nickname",
-                                briefSenderColor = MaterialTheme.colorScheme.primary,
-                                onClickUrl = { },
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                                onClickUrl = onClickUrl,
                             )
                         }
-                        if (comment.replies.size > 3) {
-                            Text(
-                                text = "查看更多 ${comment.replies.size - 3} 条回复>",
+                        if (comment.replyCount > 3) {
+                            val prepended by remember {
+                                derivedStateOf {
+                                    UIRichText(emptyList()).prependText(
+                                        prependix = "查看更多 ${comment.replyCount - 3} 条回复>",
+                                        color = primaryColor,
+                                    )
+                                }
+                            }
+
+                            RichText(
+                                elements = prepended.elements,
                                 modifier = Modifier
-                                    .padding(horizontal = 8.dp, vertical = 4.dp)
-                                    .fillMaxWidth(),
-                                color = MaterialTheme.colorScheme.primary,
-                                fontSize = 15.5.sp, // todo
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                                onClickUrl = { },
                             )
                         }
                     }

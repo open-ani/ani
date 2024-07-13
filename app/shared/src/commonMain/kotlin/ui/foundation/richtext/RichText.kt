@@ -108,6 +108,7 @@ private fun rememberAnnotatedMaskState(
 @Stable
 object RichTextDefaults {
     val StickerSize: Int = 24
+    val FontSize: Int = 16
 
     class AnnotatedMaskState(slice: List<UIRichElement.Annotated>) {
         private var maskConnection: Map<Int, Int> by mutableStateOf(mapOf())
