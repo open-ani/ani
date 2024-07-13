@@ -98,7 +98,7 @@ class AnitorrentDownloadSession(
             createPiecePriorities(),
             // libtorrent 可能会平均地请求整个 window, 所以不能太大
             windowSize = (4 * 1024 * 1024 / (pieces.firstOrNull()?.size ?: 1024L)).toInt().coerceIn(1, 64),
-            headerSize = 1024 * 1024,
+            headerSize = 2 * 1024 * 1024,
         )
 
         inner class EntryHandle : AbstractTorrentFileHandle() {
