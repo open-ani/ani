@@ -54,7 +54,7 @@ class TorrentDownloadController(
     private val totalSize: Long = pieces.sumOf { it.size }
 
     private val footerPieces = pieces.dropWhile { it.lastIndex < totalSize - footerSize }
-
+    private val footerPieceIndexes = footerPieces.map { it.pieceIndex }
 
     private val lastIndex = pieces.indexOfFirst { it.lastIndex >= totalSize - footerSize } - 1
 
@@ -74,7 +74,7 @@ class TorrentDownloadController(
 
     @Synchronized
     fun onTorrentResumed() {
-        priorities.downloadOnly(downloadingPieces)
+        priorities.downloadOnly(downloadingPieces, footerPieceIndexes)
     }
 
     @Synchronized
@@ -82,7 +82,7 @@ class TorrentDownloadController(
         downloadingPieces.clear()
         currentWindowEnd = pieceIndex - 1
         fillWindow(pieceIndex)
-        priorities.downloadOnly(downloadingPieces)
+        priorities.downloadOnly(downloadingPieces, footerPieceIndexes)
     }
 
     /**
@@ -108,7 +108,7 @@ class TorrentDownloadController(
             downloadingPieces.add(newWindowEnd)
             currentWindowEnd = newWindowEnd
         }
-        priorities.downloadOnly(downloadingPieces)
+        priorities.downloadOnly(downloadingPieces, footerPieceIndexes)
     }
 
     private fun fillWindow(pieceIndex: Int) {
@@ -142,6 +142,7 @@ private fun <E> MutableList<E>.addIfNotExist(pieceIndex: E) {
 interface PiecePriorities {
     /**
      * 设置仅下载指定的 pieces.
+     * @param footerPieces 作为参考的视频尾部元数据 piece index
      */
-    fun downloadOnly(pieceIndexes: Collection<Int>)
+    fun downloadOnly(pieceIndexes: Collection<Int>, footerPieces: List<Int>)
 }

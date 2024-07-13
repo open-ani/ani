@@ -495,7 +495,7 @@ open class DefaultTorrentDownloadSession(
             //            private val priorities = Array(torrentFile().numPieces()) { Priority.IGNORE }
             private var lastPrioritizedIndexes: Collection<Int>? = null
 
-            override fun downloadOnly(pieceIndexes: Collection<Int>) {
+            override fun downloadOnly(pieceIndexes: Collection<Int>, footerPieces: List<Int>) {
                 if (pieceIndexes.isEmpty()) {
                     return
                 }
