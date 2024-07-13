@@ -29,6 +29,7 @@ import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
+import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SliderItem
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
 import me.him188.ani.danmaku.ui.DanmakuConfig
@@ -114,34 +115,35 @@ private class EpisodeVideoSettingsViewModelImpl : EpisodeVideoSettingsViewModel,
 @Composable
 fun EpisodeVideoSettings(
     vm: EpisodeVideoSettingsViewModel,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     return EpisodeVideoSettings(
         danmakuConfig = vm.danmakuConfig,
-        danmakuFilterConfig = vm.danmakuFilterConfig,
-        danmakuRegexFilterEnabled = vm.danmakuRegexFilterEnabled,
         setDanmakuConfig = remember(vm) {
             vm::setDanmakuConfig
-        },
-        addDanmakuRegexFilter = remember(vm) {
-            vm::addDanmakuRegexFilter
-        },
-        editDanmakuRegexFilter = remember(vm) {
-            vm::editDanmakuRegexFilter
-        },
-        removeDanmakuRegexFilter = remember(vm) {
-            vm::removeDanmakuRegexFilter
-        },
-        switchDanmakuRegexFilterCompletely = remember(vm) {
-            vm::switchDanmakuRegexFilterCompletely
-        },
-        switchDanmakuRegexFilter = remember(vm) {
-            vm::switchDanmakuRegexFilter
         },
         isLoading = remember(vm) {
             { vm.isLoading }
         },
         modifier = modifier,
+        danmakuRegexFilterGroup = {
+            SwitchItem(
+                vm.danmakuRegexFilterEnabled,
+                onCheckedChange = {
+                    vm.switchDanmakuRegexFilterCompletely()
+                },
+                title = { Text("弹幕正则过滤") },
+                modifier = Modifier.placeholder(vm.isLoading),
+            )
+            DanmakuRegexFilterGroup(
+                vm.danmakuFilterConfig,
+                onAdd = vm::addDanmakuRegexFilter,
+                onEdit = vm::editDanmakuRegexFilter,
+                onRemove = vm::removeDanmakuRegexFilter,
+                onSwitch = vm::switchDanmakuRegexFilter,
+                vm.isLoading,
+            )
+        },
     )
 }
 
@@ -151,20 +153,15 @@ private val LOADING_FALSE = { false }
 @Composable
 fun EpisodeVideoSettings(
     danmakuConfig: DanmakuConfig,
-    danmakuFilterConfig: DanmakuFilterConfig,
-    danmakuRegexFilterEnabled: Boolean,
     setDanmakuConfig: (config: DanmakuConfig) -> Unit,
-    addDanmakuRegexFilter: (filter: DanmakuRegexFilter) -> Unit,
-    editDanmakuRegexFilter: (id: String, new: DanmakuRegexFilter) -> Unit,
-    removeDanmakuRegexFilter: (filter: DanmakuRegexFilter) -> Unit,
-    switchDanmakuRegexFilterCompletely: () -> Unit,
-    switchDanmakuRegexFilter: (filter: DanmakuRegexFilter) -> Unit,
     isLoading: () -> Boolean = LOADING_FALSE,
     modifier: Modifier = Modifier,
+    danmakuRegexFilterGroup: @Composable SettingsScope.() -> Unit,
 ) {
     val isLoadingState by remember(isLoading) {
         derivedStateOf(isLoading)
     }
+
     SettingsTab(modifier) {
         Column {
             FlowRow(
@@ -399,27 +396,7 @@ fun EpisodeVideoSettings(
                 modifier = Modifier.placeholder(isLoadingState),
             )
 
-            SwitchItem(
-                danmakuRegexFilterEnabled,
-                onCheckedChange = {
-                        switchDanmakuRegexFilterCompletely()
-                },
-                title = { Text("弹幕正则过滤") },
-                modifier = Modifier.placeholder(isLoadingState),
-            )
-
-            val danmakuRegexFilterActions: DanmakuFilterActions = DanmakuFilterActions(
-                onAdd = addDanmakuRegexFilter,
-                onEdit = editDanmakuRegexFilter,
-                onRemove = removeDanmakuRegexFilter,
-                onSwitch = switchDanmakuRegexFilter,
-            )
-            
-            DanmakuRegexFilterGroup(
-                danmakuFilterConfig,
-                danmakuRegexFilterActions,
-                isLoadingState,
-            )
+            danmakuRegexFilterGroup()
 
             if (currentAniBuildConfig.isDebug) {
                 SwitchItem(

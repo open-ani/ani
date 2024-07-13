@@ -57,7 +57,10 @@ internal fun isValidRegex(pattern: String): Boolean {
 @Composable
 internal fun SettingsScope.DanmakuRegexFilterGroup(
     danmakuFilterConfig: DanmakuFilterConfig,
-    actions: DanmakuFilterActions,
+    onAdd: (filter: DanmakuRegexFilter) -> Unit,
+    onEdit: (id: String, new: DanmakuRegexFilter) -> Unit,
+    onRemove: (filter: DanmakuRegexFilter) -> Unit,
+    onSwitch: (fiter: DanmakuRegexFilter) -> Unit,
     isLoadingState: Boolean
 ) {
     var showAdd by rememberSaveable { mutableStateOf(false) }
@@ -73,7 +76,7 @@ internal fun SettingsScope.DanmakuRegexFilterGroup(
                     if (!isValidRegex(regex)){
                         errorMessage = "正则输入法不正确"
                     } else {
-                        actions.onAdd(
+                        onAdd(
                             DanmakuRegexFilter(
                                 id = UUID.randomUUID().toString(),
                                 name = name,
@@ -124,8 +127,8 @@ internal fun SettingsScope.DanmakuRegexFilterGroup(
             danmakuFilterConfig.danmakuRegexFilterList.forEachIndexed { index, item ->
                 RegexFilterItem(
                     item,
-                    onDelete = { actions.onRemove(item) },
-                    onDisable = { actions.onSwitch(item) },
+                    onDelete = { onRemove(item) },
+                    onDisable = { onSwitch(item) },
                 )
             }
         }
@@ -266,12 +269,4 @@ fun AddRegexFilterDialog(
         }
     }
 }
-
-data class DanmakuFilterActions(
-    val onAdd: (filter: DanmakuRegexFilter) -> Unit,
-    val onEdit: (id: String, new: DanmakuRegexFilter) -> Unit,
-    val onRemove: (filter: DanmakuRegexFilter) -> Unit,
-    val onSwitch: (filter: DanmakuRegexFilter) -> Unit
-)
-
 
