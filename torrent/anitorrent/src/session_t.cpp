@@ -348,9 +348,13 @@ void session_t::process_events(event_listener_t *listener) const {
     guard_global_lock;
     if (const auto session = session_; session && session->is_valid() && listener) {
         ALERTS_LOG("Alerts processing... " << std::flush);
+        ALERTS_LOG("listener: " << listener << std::flush);
         std::lock_guard _(listener->lock_);
+        ALERTS_LOG("After lock " << std::flush);
         std::vector<lt::alert *> alerts;
+        ALERTS_LOG("Request is_valid" << std::flush);
         if (session->is_valid()) {
+            ALERTS_LOG("Pop alerts" << std::flush);
             session->pop_alerts(&alerts);
         } else {
             ALERTS_LOG("session invalid" << std::flush);
