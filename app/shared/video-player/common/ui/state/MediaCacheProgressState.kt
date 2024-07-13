@@ -60,14 +60,29 @@ enum class ChunkState {
     NOT_AVAILABLE
 }
 
-private object EmptyMediaCacheProgressState : UpdatableMediaCacheProgressState {
+private val StaticMediaCacheProgressStateNone = StaticMediaCacheProgressState(ChunkState.NONE)
+private val StaticMediaCacheProgressStateDone = StaticMediaCacheProgressState(ChunkState.DONE)
+
+@Stable
+fun staticMediaCacheProgressState(
+    chunkState: ChunkState
+): UpdatableMediaCacheProgressState {
+    if (chunkState == ChunkState.NONE) return StaticMediaCacheProgressStateNone
+    if (chunkState == ChunkState.DONE) return StaticMediaCacheProgressStateDone
+    return StaticMediaCacheProgressState(chunkState)
+}
+
+private class StaticMediaCacheProgressState(chunkState: ChunkState) : UpdatableMediaCacheProgressState {
     override suspend fun update() {
     }
 
-    override val chunks: List<Chunk> get() = emptyList()
-    override val version: Int get() = 0
-    override val isFinished: Boolean get() = false
-}
+    override val chunks: List<Chunk> = listOf(
+        object : Chunk {
+            override val weight: Float get() = 1f
+            override val state: ChunkState = chunkState
+        },
+    )
 
-@Stable
-fun emptyMediaCacheProgressState(): UpdatableMediaCacheProgressState = EmptyMediaCacheProgressState
+    override val version: Int get() = 0
+    override val isFinished: Boolean = chunkState == ChunkState.DONE
+}

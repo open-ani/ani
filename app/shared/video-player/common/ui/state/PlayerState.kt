@@ -28,6 +28,7 @@ import me.him188.ani.app.videoplayer.data.VideoData
 import me.him188.ani.app.videoplayer.data.VideoProperties
 import me.him188.ani.app.videoplayer.data.VideoSource
 import me.him188.ani.app.videoplayer.data.VideoSourceOpenException
+import me.him188.ani.app.videoplayer.torrent.FileVideoData
 import me.him188.ani.app.videoplayer.torrent.TorrentVideoData
 import me.him188.ani.app.videoplayer.ui.VideoPlayer
 import me.him188.ani.utils.logging.error
@@ -205,15 +206,17 @@ abstract class AbstractPlayerState<D : AbstractPlayerState.Data>(
 
     private val cacheProgressFlow = videoData.map {
         when (it) {
-            null -> emptyMediaCacheProgressState()
+            null -> staticMediaCacheProgressState(ChunkState.NONE)
             is TorrentVideoData -> TorrentMediaCacheProgressState(
                 it.pieces,
                 isFinished = { isCacheFinished },
             )
 
-            else -> emptyMediaCacheProgressState()
+            is FileVideoData -> staticMediaCacheProgressState(ChunkState.DONE)
+
+            else -> staticMediaCacheProgressState(ChunkState.NONE)
         }
-    }.stateIn(backgroundScope, SharingStarted.WhileSubscribed(), emptyMediaCacheProgressState())
+    }.stateIn(backgroundScope, SharingStarted.WhileSubscribed(), staticMediaCacheProgressState(ChunkState.NONE))
 
     init {
         backgroundScope.launch {
@@ -225,7 +228,7 @@ abstract class AbstractPlayerState<D : AbstractPlayerState.Data>(
     }
 
     override val cacheProgress: UpdatableMediaCacheProgressState by
-    cacheProgressFlow.produceState(emptyMediaCacheProgressState(), backgroundScope)
+    cacheProgressFlow.produceState(staticMediaCacheProgressState(ChunkState.NONE), backgroundScope)
 
     final override val playProgress: Flow<Float> by lazy {
         combine(videoProperties.filterNotNull(), currentPositionMillis) { properties, duration ->
