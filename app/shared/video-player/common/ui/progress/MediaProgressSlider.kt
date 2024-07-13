@@ -8,7 +8,6 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,13 +32,13 @@ import kotlin.math.roundToLong
  */
 @Stable
 class MediaProgressSliderState(
-    currentPositionMillis: State<Long>,
-    totalDurationMillis: State<Long>,
+    currentPositionMillis: () -> Long,
+    totalDurationMillis: () -> Long,
     private val onPreview: (positionMillis: Long) -> Unit,
     private val onPreviewFinished: (positionMillis: Long) -> Unit,
 ) {
-    val currentPositionMillis: Long by currentPositionMillis
-    val totalDurationMillis: Long by totalDurationMillis
+    val currentPositionMillis: Long by derivedStateOf(currentPositionMillis)
+    val totalDurationMillis: Long by derivedStateOf(totalDurationMillis)
 
     private var previewPositionMillis: Long by mutableStateOf(-1L)
 
@@ -64,7 +63,7 @@ class MediaProgressSliderState(
         if (previewPositionMillis != -1L) {
             previewPositionMillis
         } else {
-            currentPositionMillis.value
+            this.currentPositionMillis
         }
     }
 
@@ -94,8 +93,8 @@ fun rememberMediaProgressSliderState(
     onPreview: (positionMillis: Long) -> Unit,
     onPreviewFinished: (positionMillis: Long) -> Unit,
 ): MediaProgressSliderState {
-    val currentPosition = playerState.currentPositionMillis.collectAsStateWithLifecycle()
-    val totalDuration = remember(playerState) {
+    val currentPosition by playerState.currentPositionMillis.collectAsStateWithLifecycle()
+    val totalDuration by remember(playerState) {
         playerState.videoProperties.filterNotNull().map { it.durationMillis }.distinctUntilChanged()
     }.collectAsStateWithLifecycle(0L)
 
@@ -103,8 +102,8 @@ fun rememberMediaProgressSliderState(
     val onPreviewFinishedUpdated by rememberUpdatedState(onPreviewFinished)
     return remember(currentPosition, totalDuration) {
         MediaProgressSliderState(
-            currentPosition,
-            totalDuration,
+            { currentPosition },
+            { totalDuration },
             onPreviewUpdated,
             onPreviewFinishedUpdated,
         )
