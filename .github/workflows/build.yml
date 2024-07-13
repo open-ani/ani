@@ -17,13 +17,13 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - windows-2022
+          - windows-2019
           - ubuntu-20.04
           - macos-12 # x86_64
           - macos-14 # aarch64
         include:
           # matrix properties can be booleans. Check for plain true and false.
-          - os: windows-2022
+          - os: windows-2019
             name: Windows x86_64
             uploadApk: false
             arch: x64
