@@ -85,6 +85,30 @@ class ProgressSliderState(
     }
 }
 
+@Composable
+fun rememberProgressSliderState(
+    playerState: PlayerState,
+    onPreview: (positionMillis: Long) -> Unit,
+    onPreviewFinished: (positionMillis: Long) -> Unit,
+): ProgressSliderState {
+    val currentPosition = playerState.currentPositionMillis.collectAsStateWithLifecycle()
+    val totalDuration = remember(playerState) {
+        playerState.videoProperties.filterNotNull().map { it.durationMillis }.distinctUntilChanged()
+    }.collectAsStateWithLifecycle(0L)
+
+    val onPreviewUpdated by rememberUpdatedState(onPreview)
+    val onPreviewFinishedUpdated by rememberUpdatedState(onPreviewFinished)
+    return remember(currentPosition, totalDuration) {
+        ProgressSliderState(
+            currentPosition,
+            totalDuration,
+            onPreviewUpdated,
+            onPreviewFinishedUpdated,
+        )
+    }
+}
+
+
 /**
  * The slider to control the progress of a video, with a preview feature.
  */
@@ -127,28 +151,5 @@ fun ProgressSlider(
                 modifier = Modifier.height(24.dp),
             )
         }
-    }
-}
-
-@Composable
-fun rememberProgressSliderState(
-    playerState: PlayerState,
-    onPreview: (positionMillis: Long) -> Unit,
-    onPreviewFinished: (positionMillis: Long) -> Unit,
-): ProgressSliderState {
-    val currentPosition = playerState.currentPositionMillis.collectAsStateWithLifecycle()
-    val totalDuration = remember(playerState) {
-        playerState.videoProperties.filterNotNull().map { it.durationMillis }.distinctUntilChanged()
-    }.collectAsStateWithLifecycle(0L)
-
-    val onPreviewUpdated by rememberUpdatedState(onPreview)
-    val onPreviewFinishedUpdated by rememberUpdatedState(onPreviewFinished)
-    return remember(currentPosition, totalDuration) {
-        ProgressSliderState(
-            currentPosition,
-            totalDuration,
-            onPreviewUpdated,
-            onPreviewFinishedUpdated,
-        )
     }
 }
