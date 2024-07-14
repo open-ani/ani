@@ -55,6 +55,7 @@ import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.navigation.DesktopBrowserNavigator
 import me.him188.ani.app.navigation.LocalNavigator
+import me.him188.ani.app.platform.AniBuildConfigDesktop
 import me.him188.ani.app.platform.DesktopContext
 import me.him188.ani.app.platform.ExtraWindowProperties
 import me.him188.ani.app.platform.LocalContext
@@ -93,14 +94,14 @@ import org.koin.core.context.startKoin
 import org.koin.dsl.module
 import java.io.File
 
-private val logger = logger("Ani")
+private val logger by lazy { logger("Ani") }
 
 
 val projectDirectories: ProjectDirectories by lazy {
     ProjectDirectories.from(
         "me",
         "Him188",
-        "Ani",
+        if (AniBuildConfigDesktop.isDebug) "Ani-debug" else "Ani",
     )
 }
 
@@ -120,6 +121,10 @@ object AniDesktop {
         println("logsDir: file://${logsDir.absolutePath.replace(" ", "%20")}")
 
         Log4j2Config.configureLogging(logsDir)
+
+        if (AniBuildConfigDesktop.isDebug) {
+            logger.info { "Debug mode enabled" }
+        }
 
         val windowState = WindowState(
             size = DpSize(900.dp * 1.4f, 900.dp),
