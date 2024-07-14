@@ -50,14 +50,18 @@ fun EpisodeCommentColumn(
     modifier: Modifier = Modifier
 ) {
     val pullToRefreshState = rememberPullToRefreshState()
-    val viewModel = rememberViewModel { EpisodeCommentViewModel(episodeId, pullToRefreshState) }
+    val viewModel = rememberViewModel(keys = listOf(episodeId)) {
+        EpisodeCommentViewModel(episodeId, pullToRefreshState)
+    }
 
     val hasMore by viewModel.hasMore.collectAsStateWithLifecycle()
     val comments by viewModel.list.collectAsStateWithLifecycle()
 
-    LaunchedEffect(true) {
+    LaunchedEffect(episodeId) {
+        pullToRefreshState.endRefresh()
         viewModel.reloadComments()
-
+    }
+    LaunchedEffect(true) {
         snapshotFlow { pullToRefreshState.isRefreshing }.collectLatest { refreshing ->
             if (!refreshing) return@collectLatest
             viewModel.reloadComments()
