@@ -214,22 +214,10 @@ fun AddRegexFilterDialog(
                     horizontalArrangement = Arrangement.Start
                 ) {
                     OutlinedTextField(
-                        value = nameTextFieldValue,
-                        onValueChange = { nameTextFieldValue = it },
-                        label = { Text("输入正则表达式标题") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-
-                Row(
-                    Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Start
-                ) {
-                    OutlinedTextField(
                         value = regexTextFieldValue,
                         onValueChange = { regexTextFieldValue = it },
-                        label = { Text("输入正则表达式") },
-                        modifier = Modifier.fillMaxWidth()
+                        label = { Text("正则表达式") },
+                        modifier = Modifier.fillMaxWidth(),
                     )
                 }
 
