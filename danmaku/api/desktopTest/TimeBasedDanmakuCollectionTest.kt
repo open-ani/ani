@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import me.him188.ani.danmaku.ui.DanmakuFilterConfig
+import me.him188.ani.danmaku.ui.DanmakuRegexFilter
 import org.junit.jupiter.api.Test
 import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.EmptyCoroutineContext
@@ -42,6 +43,18 @@ internal class TimeBasedDanmakuCollectionTest {
             flowOf(DanmakuFilterConfig.Default),
         ).events.toList()
         assertEquals(0, list.size)
+    }
+
+    @Test
+    fun `test filter`() = runTest {
+        val danmakuList = listOf(
+            dummyDanmaku(1.0, "1"),
+            dummyDanmaku(2.0, "2"),
+            dummyDanmaku(3.0, "3"),
+        )
+        val filterlist = listOf(DanmakuRegexFilter(id = "", regex = ".*"))
+        val filteredList = TimeBasedDanmakuSession.filterList(danmakuList, filterlist, true)
+        assertEquals(emptyList(), filteredList)
     }
 
     private fun dummyDanmaku(timeSecs: Double, text: String = "$timeSecs") =

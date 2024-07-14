@@ -10,35 +10,15 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 internal class DanmakuCollectionAlgorithmTest {
-    data class DanmakuRegexFilter(
-        val name: String = "",
-        val regex: String = "",
-        val enabled: Boolean = true
-    )
-
-    private fun filterList(
-        list: List<Danmaku>,
-        config: List<DanmakuRegexFilter>,
-        regexEnabled: Boolean
-    ): List<Danmaku> {
-        if (!regexEnabled) return list
-        return list.filter { danmaku ->
-            config.filter { it.enabled }
-                .none { Regex(it.regex).containsMatchIn(danmaku.text) }
-        }
-    }
 
     private fun create(
         sequence: Sequence<Danmaku>,
         repopulateThreshold: Duration = 3.seconds,
-        repopulateDistance: Duration = 2.seconds,
-        filterList: List<DanmakuRegexFilter> = emptyList(),
-        filterEnabled: Boolean = true,
+        repopulateDistance: Duration = 2.seconds
     ): DanmakuSessionAlgorithm {
-        val filteredList = filterList(sequence.toList(), filterList, filterEnabled)
         return DanmakuSessionAlgorithm(
             DanmakuSessionFlowState(
-                filteredList,
+                sequence.toList(),
                 repopulateThreshold = repopulateThreshold,
                 repopulateDistance = { repopulateDistance },
             ),
@@ -127,23 +107,6 @@ internal class DanmakuCollectionAlgorithmTest {
         )
         val list = instance.at(1.2.seconds).tickRepopulateTime()
         assertEquals(listOf(1.0), list)
-        assertEquals(emptyList(), instance.tickCollect()) // duplicated tick
-    }
-
-    @Test
-    fun `match one with filter`() = runTest {
-        val instance = create(
-            sequenceOf(
-                dummyDanmaku(1.0),
-                dummyDanmaku(2.0),
-            ),
-            repopulateThreshold = 3.seconds,
-            repopulateDistance = 2.seconds,
-            filterList = listOf(DanmakuRegexFilter(regex = ".*")),
-            filterEnabled = true,
-        )
-        val list = instance.at(1.2.seconds).tickRepopulateTime()
-        assertEquals(emptyList(), list)
         assertEquals(emptyList(), instance.tickCollect()) // duplicated tick
     }
 
