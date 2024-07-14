@@ -21,6 +21,7 @@ import com.android.utils.osArchitecture
 import com.google.gson.Gson
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.cli.common.isWindows
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 import java.util.UUID
 
 plugins {
@@ -135,7 +136,11 @@ compose.desktop {
     }
 }
 
-// workaround for resource not found
+// workaround for CMP resources bug
+tasks.withType(KotlinCompilationTask::class) {
+    dependsOn("generateComposeResClass")
+}
+
 //kotlin.sourceSets.main.get().resources.srcDir(project(":common").projectDir.resolve("src/androidMain/res/raw"))
 
 val anitorrentRootDir = rootProject.projectDir.resolve("torrent/anitorrent")
