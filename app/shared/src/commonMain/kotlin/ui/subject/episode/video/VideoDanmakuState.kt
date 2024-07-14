@@ -23,6 +23,8 @@ import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.models.episode.EpisodeInfo
 import me.him188.ani.app.data.models.episode.displayName
 import me.him188.ani.app.data.models.subject.SubjectInfo
+import me.him188.ani.app.data.repository.DanmakuRegexFilterRepository
+import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.CombinedDanmakuFetchResult
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.foundation.BackgroundScope
@@ -37,9 +39,13 @@ import me.him188.ani.danmaku.api.DanmakuSession
 import me.him188.ani.danmaku.api.emptyDanmakuCollection
 import me.him188.ani.danmaku.protocol.DanmakuInfo
 import me.him188.ani.danmaku.ui.DanmakuConfig
+import me.him188.ani.danmaku.ui.DanmakuFilterConfig
 import me.him188.ani.danmaku.ui.DanmakuHostState
+import me.him188.ani.danmaku.ui.DanmakuRegexFilter
 import me.him188.ani.danmaku.ui.DanmakuTrackProperties
 import me.him188.ani.danmaku.ui.send
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -87,8 +93,18 @@ class DanmakuLoaderImpl(
     currentPosition: Flow<Duration>,
     private val onFetch: suspend (request: DanmakuSearchRequest) -> CombinedDanmakuFetchResult,
     parentCoroutineContext: CoroutineContext,
-) : HasBackgroundScope by BackgroundScope(parentCoroutineContext), DanmakuLoader {
+) : HasBackgroundScope by BackgroundScope(parentCoroutineContext), DanmakuLoader, KoinComponent {
     override val state: MutableStateFlow<DanmakuLoadingState> = MutableStateFlow(DanmakuLoadingState.Idle)
+
+    private val danmakuRegexFilterRepository: DanmakuRegexFilterRepository by inject()
+
+    private val settingsRepository: SettingsRepository by inject()
+
+    val danmakuRegexFilterList: Flow<List<DanmakuRegexFilter>> =
+        danmakuRegexFilterRepository.flow
+
+    val danmkaFilterConfig: Flow<DanmakuFilterConfig> =
+        settingsRepository.danmakuFilterConfig.flow
 
     private val collectionFlow: Flow<DanmakuCollection> =
         requestFlow.distinctUntilChanged().transformLatest { request ->
@@ -131,7 +147,7 @@ class DanmakuLoaderImpl(
         }.shareInBackground(started = SharingStarted.Lazily)
 
     private val sessionFlow: Flow<DanmakuSession> = collectionFlow.mapLatest { session ->
-        session.at(progress = currentPosition)
+        session.at(progress = currentPosition, danmakuFilterConfig = danmkaFilterConfig, danmakuRegexFilterList = danmakuRegexFilterList)
     }.shareInBackground(started = SharingStarted.Lazily)
 
     override val eventFlow: Flow<DanmakuEvent> = sessionFlow.flatMapLatest { it.events }
