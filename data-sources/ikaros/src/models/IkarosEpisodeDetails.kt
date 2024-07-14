@@ -9,7 +9,7 @@ data class IkarosEpisodeDetails(
     @SerialName("subject_id") val subjectId: Long,
     val name: String,
     @SerialName("name_cn") val nameCn: String?,
-    val description: String,
+    val description: String?,
     @SerialName("air_time") val airTime: String?,
     val sequence: Int,
     val resources: List<IkarosEpisodeResource?>? = null,
