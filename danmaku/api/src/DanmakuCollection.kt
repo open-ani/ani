@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import me.him188.ani.danmaku.protocol.DanmakuInfo
+import me.him188.ani.danmaku.ui.DanmakuFilterConfig
 import me.him188.ani.danmaku.ui.DanmakuRegexFilter
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -35,7 +36,7 @@ interface DanmakuCollection {
     fun at(
         progress: Flow<Duration>,
         danmakuRegexFilterList: Flow<List<DanmakuRegexFilter>>,
-        danmakuRegexFilterEnabled: Flow<Boolean>
+        danmakuFilterConfig: Flow<DanmakuFilterConfig>
     ): DanmakuSession
 }
 
@@ -56,7 +57,7 @@ fun emptyDanmakuCollection(): DanmakuCollection {
         override fun at(
             progress: Flow<Duration>,
             danmakuRegexFilterList: Flow<List<DanmakuRegexFilter>>,
-            danmakuRegexFilterEnabled: Flow<Boolean>
+            danmakuFilterConfig: Flow<DanmakuFilterConfig>
         ): DanmakuSession = emptyDanmakuSession()
     }
 }
@@ -82,29 +83,29 @@ class TimeBasedDanmakuSession private constructor(
             list.sortBy { it.playTimeMillis }
             return TimeBasedDanmakuSession(list, shiftMillis, coroutineContext)
         }
-    }
 
 
-    /**
-     * 输入一个[Danmaku] list. 和一个[List<DanmakuRegexFilter>]，返回一个过滤后的[Danmaku] list
-     */
-    fun filterList(
-        list: List<Danmaku>,
-        danmakuRegexFilterList: List<DanmakuRegexFilter>,
-        danmakuRegexFilterEnabled: Boolean
-    ): List<Danmaku> {
-        if (!danmakuRegexFilterEnabled) {
-            return list
-        }
+        /**
+         * 输入一个[Danmaku] list. 和一个[List<DanmakuRegexFilter>]，返回一个过滤后的[Danmaku] list
+         */
+        fun filterList(
+            list: List<Danmaku>,
+            danmakuRegexFilterList: List<DanmakuRegexFilter>,
+            danmakuRegexFilterEnabled: Boolean
+        ): List<Danmaku> {
+            if (!danmakuRegexFilterEnabled) {
+                return list
+            }
 
-        // 预编译所有启用的正则表达式 
-        val regexFilters = danmakuRegexFilterList
-            .filter { it.enabled }
-            .map { Regex(it.regex) }
+            // 预编译所有启用的正则表达式 
+            val regexFilters = danmakuRegexFilterList
+                .filter { it.enabled }
+                .map { Regex(it.regex) }
 
-        return list.filter { danmaku ->
-            !regexFilters.any { regex ->
-                danmaku.text.matches(regex)
+            return list.filter { danmaku ->
+                !regexFilters.any { regex ->
+                    danmaku.text.matches(regex)
+                }
             }
         }
     }
@@ -116,7 +117,7 @@ class TimeBasedDanmakuSession private constructor(
     override fun at(
         progress: Flow<Duration>,
         danmakuRegexFilterList: Flow<List<DanmakuRegexFilter>>,
-        danmakuRegexFilterEnabled: Flow<Boolean>
+        danmakuFilterConfig: Flow<DanmakuFilterConfig>
     ): DanmakuSession {
         if (list.isEmpty()) {
             return emptyDanmakuSession() // fast path
@@ -132,11 +133,11 @@ class TimeBasedDanmakuSession private constructor(
             override val events: Flow<DanmakuEvent> = channelFlow {
                 launch {
                     val combinedFlow = danmakuRegexFilterList.distinctUntilChanged()
-                        .combine(danmakuRegexFilterEnabled) { filterConfig, enabled ->
-                            filterConfig to enabled
+                        .combine(danmakuFilterConfig) { filterConfig, config ->
+                            filterConfig to config
                         }
-                    combinedFlow.distinctUntilChanged().collect { (filterList, enabled) ->
-                        val filteredList = filterList(list, filterList, enabled)
+                    combinedFlow.distinctUntilChanged().collect { (filterList, config) ->
+                        val filteredList = filterList(list, filterList, config.danmakuRegexFilterEnabled)
                         state.updateList(filteredList)
                         state.requestRepopulate()
                     }

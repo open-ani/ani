@@ -33,6 +33,7 @@ import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SliderItem
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
 import me.him188.ani.danmaku.ui.DanmakuConfig
+import me.him188.ani.danmaku.ui.DanmakuFilterConfig
 import me.him188.ani.danmaku.ui.DanmakuRegexFilter
 import me.him188.ani.danmaku.ui.DanmakuStyle
 import org.koin.core.component.KoinComponent
@@ -44,7 +45,7 @@ import kotlin.time.Duration.Companion.milliseconds
 interface EpisodeVideoSettingsViewModel {
     val danmakuConfig: DanmakuConfig
     val isLoading: Boolean
-    val danmakuRegexFilterEnabled: Boolean
+    val danmakuFilterConfig: DanmakuFilterConfig
     val danmakuRegexFilterList: List<DanmakuRegexFilter>
 
     fun setDanmakuConfig(config: DanmakuConfig)
@@ -71,16 +72,16 @@ private class EpisodeVideoSettingsViewModelImpl : EpisodeVideoSettingsViewModel,
         DanmakuConfig(_placeholder = -1),
     )
 
-    val danmakuRegexFilterEnabledSetting by settings(
-        settingsRepository.danmakuRegexFilterEnabled,
-        false,
+    val danmakuFilterConfigSetting by settings(
+        settingsRepository.danmakuFilterConfig,
+        DanmakuFilterConfig(_placeholder = -1),
     )
 
     override val danmakuConfig: DanmakuConfig by danmakuConfigSettings
     override val danmakuRegexFilterList: List<DanmakuRegexFilter> by danmakuRegexFilterRepository.flow.produceState(
         initialValue = emptyList(),
     )
-    override val danmakuRegexFilterEnabled: Boolean by danmakuRegexFilterEnabledSetting
+    override val danmakuFilterConfig: DanmakuFilterConfig by danmakuFilterConfigSetting 
     override val isLoading: Boolean get() = danmakuConfigSettings.loading
 
     override fun setDanmakuConfig(config: DanmakuConfig) {
@@ -102,7 +103,9 @@ private class EpisodeVideoSettingsViewModelImpl : EpisodeVideoSettingsViewModel,
     }
     
     override fun switchDanmakuRegexFilterCompletely() {
-        danmakuRegexFilterEnabledSetting.update(!danmakuRegexFilterEnabled)
+        danmakuFilterConfigSetting.update(
+            danmakuFilterConfig.copy(danmakuRegexFilterEnabled = !danmakuFilterConfig.danmakuRegexFilterEnabled),
+        )
     }
 
     // turn off a particular filter
@@ -129,7 +132,7 @@ fun EpisodeVideoSettings(
         modifier = modifier,
         danmakuRegexFilterGroup = {
             SwitchItem(
-                vm.danmakuRegexFilterEnabled,
+                vm.danmakuFilterConfig.danmakuRegexFilterEnabled,
                 onCheckedChange = {
                     vm.switchDanmakuRegexFilterCompletely()
                 },

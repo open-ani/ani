@@ -173,7 +173,7 @@ private fun PreviewDanmakuText() {
 class TestEpisodeVideoSettingsViewModel() : EpisodeVideoSettingsViewModel {
     override val danmakuConfig: DanmakuConfig = DanmakuConfig.Default
     override val danmakuRegexFilterList: List<DanmakuRegexFilter> = emptyList()
-    override val danmakuRegexFilterEnabled: Boolean = false
+    override val danmakuFilterConfig: DanmakuFilterConfig = DanmakuFilterConfig.Default
     override val isLoading: Boolean = false
 
     override fun setDanmakuConfig(config: DanmakuConfig) {
