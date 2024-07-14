@@ -2,7 +2,6 @@ package me.him188.ani.app.ui.subject.episode
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,12 +10,11 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -65,7 +63,6 @@ import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.subject.episode.comments.EpisodeCommentColumn
 import me.him188.ani.app.ui.subject.episode.comments.EpisodeCommentViewModel
 import me.him188.ani.app.ui.subject.episode.danmaku.DanmakuEditor
-import me.him188.ani.app.ui.subject.episode.details.EpisodeActionRow
 import me.him188.ani.app.ui.subject.episode.details.EpisodeDetails
 import me.him188.ani.app.ui.subject.episode.details.EpisodePlayerTitle
 import me.him188.ani.app.ui.subject.episode.notif.VideoNotifEffect
@@ -147,8 +144,7 @@ private fun EpisodeSceneContent(
         }
         CompositionLocalProvider(LocalImageViewerHandler provides imageViewer) {
             when {
-                isVeryWide -> EpisodeSceneTabletVeryWide(vm, Modifier.fillMaxSize())
-                layoutMode.showLandscapeUI -> EpisodeSceneContentTablet(vm, Modifier.fillMaxSize())
+                isVeryWide || layoutMode.showLandscapeUI -> EpisodeSceneTabletVeryWide(vm, Modifier.fillMaxSize())
                 else -> EpisodeSceneContentPhone(vm, Modifier.fillMaxSize())
             }
         }
@@ -190,65 +186,17 @@ private fun EpisodeSceneTabletVeryWide(
             }
 
             Column(Modifier.width(width = (maxWidth * 0.18f).coerceAtLeast(300.dp))) {
-                
+
                 EpisodeDetails(
-                    vm,
-                    LocalSnackbar.current,
-                    Modifier.fillMaxWidth()
-                        .verticalScroll(rememberScrollState()),
-                    actionRow = {
-                        EpisodeActionRow(
-                            vm,
-                            snackbar = LocalSnackbar.current,
-                        )
-                    },
+                    vm.episodeDetailsState,
+                    vm.episodeCarouselState,
+                    vm.editableRatingState,
+                    vm.editableSubjectCollectionTypeState,
+                    Modifier.padding(vertical = 16.dp),
                 )
 
                 EpisodeCommentColumn(commentViewModel, Modifier.fillMaxSize())
             }
-        }
-    }
-}
-
-@Composable
-private fun EpisodeSceneContentTablet(
-    vm: EpisodeViewModel,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        modifier
-            .then(
-                if (vm.isFullscreen) Modifier.fillMaxSize()
-                else Modifier.navigationBarsPadding()
-                    .verticalScroll(rememberScrollState()),
-            ),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        Column(Modifier.weight(1f)) {
-            EpisodeVideo(
-                vm,
-                expanded = true,
-                maintainAspectRatio = true,
-                initialControllerVisible = true,
-                modifier = Modifier.fillMaxWidth(),
-            )
-
-            if (vm.isFullscreen) {
-                return@Row
-            }
-
-            EpisodeDetails(
-                vm,
-                LocalSnackbar.current,
-                Modifier.fillMaxWidth(),
-                actionRow = {
-                    EpisodeActionRow(
-                        vm,
-                        snackbar = LocalSnackbar.current,
-                        Modifier.width(400.dp),
-                    )
-                },
-            )
         }
     }
 }
@@ -272,7 +220,7 @@ private fun EpisodeSceneContentPhone(
         val commentViewModel = rememberViewModel(keys = listOf(episodeId)) {
             EpisodeCommentViewModel(episodeId)
         }
-        
+
         Column(Modifier.fillMaxSize()) {
             TabRow(
                 selectedTabIndex = pagerState.currentPage,
@@ -300,7 +248,14 @@ private fun EpisodeSceneContentPhone(
             HorizontalPager(state = pagerState, Modifier.fillMaxSize()) { index ->
 
                 when (index) {
-                    0 -> EpisodeDetails(vm, LocalSnackbar.current, Modifier.fillMaxSize())
+                    0 -> EpisodeDetails(
+                        vm.episodeDetailsState,
+                        vm.episodeCarouselState,
+                        vm.editableRatingState,
+                        vm.editableSubjectCollectionTypeState,
+                        Modifier.fillMaxSize().padding(vertical = 16.dp),
+                    )
+
                     1 -> EpisodeCommentColumn(commentViewModel, Modifier.fillMaxSize())
                 }
             }

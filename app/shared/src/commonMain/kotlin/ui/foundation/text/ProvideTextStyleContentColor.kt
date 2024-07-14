@@ -19,3 +19,13 @@ fun ProvideTextStyleContentColor(
         LocalContentColor provides color, content = content,
     )
 }
+
+@Composable
+fun ProvideContentColor(
+    color: Color,
+    content: @Composable () -> Unit
+) {
+    CompositionLocalProvider(
+        LocalContentColor provides color, content = content,
+    )
+}

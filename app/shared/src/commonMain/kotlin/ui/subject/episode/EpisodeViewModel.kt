@@ -1,7 +1,6 @@
 package me.him188.ani.app.ui.subject.episode
 
 import androidx.annotation.UiThread
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -24,18 +23,25 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
 import me.him188.ani.app.data.models.episode.displayName
+import me.him188.ani.app.data.models.episode.episode
 import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
+import me.him188.ani.app.data.models.subject.RatingInfo
+import me.him188.ani.app.data.models.subject.SelfRatingInfo
+import me.him188.ani.app.data.models.subject.SubjectAiringInfo
 import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.models.subject.episodeInfoFlow
 import me.him188.ani.app.data.models.subject.subjectInfoFlow
 import me.him188.ani.app.data.repository.EpisodePreferencesRepository
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.DanmakuManager
+import me.him188.ani.app.data.source.media.EpisodeCacheStatus
+import me.him188.ani.app.data.source.media.MediaCacheManager
 import me.him188.ani.app.data.source.media.MediaSourceManager
 import me.him188.ani.app.data.source.media.createFetchFetchSessionFlow
 import me.him188.ani.app.data.source.media.fetch.FilteredMediaSourceResults
@@ -54,13 +60,18 @@ import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.launchInMain
+import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeState
+import me.him188.ani.app.ui.subject.details.updateRating
 import me.him188.ani.app.ui.subject.episode.danmaku.PlayerDanmakuViewModel
+import me.him188.ani.app.ui.subject.episode.details.EpisodeCarouselState
+import me.him188.ani.app.ui.subject.episode.details.EpisodeDetailsState
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSourceResultsPresentation
 import me.him188.ani.app.ui.subject.episode.statistics.DanmakuLoadingState
 import me.him188.ani.app.ui.subject.episode.statistics.PlayerStatisticsState
 import me.him188.ani.app.ui.subject.episode.video.PlayerLauncher
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeSelectorState
+import me.him188.ani.app.ui.subject.rating.EditableRatingState
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import me.him188.ani.danmaku.api.Danmaku
@@ -92,9 +103,21 @@ interface EpisodeViewModel : HasBackgroundScope {
     val subjectPresentation: SubjectPresentation // by state
     val episodePresentation: EpisodePresentation // by state
 
-    var isFullscreen: Boolean
+    val episodeDetailsState: EpisodeDetailsState
 
-    suspend fun setEpisodeCollectionType(type: UnifiedCollectionType)
+    /**
+     * 剧集列表
+     */
+    val episodeCarouselState: EpisodeCarouselState
+
+    /**
+     * 编辑自己的评分
+     */
+    val editableRatingState: EditableRatingState
+
+    val editableSubjectCollectionTypeState: EditableSubjectCollectionTypeState
+
+    var isFullscreen: Boolean
 
     /**
      * 播放器内切换剧集
@@ -137,13 +160,13 @@ interface EpisodeViewModel : HasBackgroundScope {
     val playerState: PlayerState
 
     @UiThread
-    suspend fun copyDownloadLink(clipboardManager: ClipboardManager, snackbar: SnackbarHostState)
+    suspend fun copyDownloadLink(clipboardManager: ClipboardManager)
 
     @UiThread
-    suspend fun browseMedia(context: Context, snackbar: SnackbarHostState)
+    suspend fun browseMedia(context: Context)
 
     @UiThread
-    suspend fun browseDownload(context: Context, snackbar: SnackbarHostState)
+    suspend fun browseDownload(context: Context)
 
     // Danmaku
 
@@ -169,6 +192,7 @@ private class EpisodeViewModelImpl(
     private val browserNavigator: BrowserNavigator by inject()
     private val playerStateFactory: PlayerStateFactory by inject()
     private val subjectManager: SubjectManager by inject()
+    private val mediaCacheManager: MediaCacheManager by inject()
     private val danmakuManager: DanmakuManager by inject()
     override val videoSourceResolver: VideoSourceResolver by inject()
     private val settingsRepository: SettingsRepository by inject()
@@ -313,19 +337,113 @@ private class EpisodeViewModelImpl(
             }.map {
                 it.toPresentation()
             }
-            .stateInBackground(SharingStarted.Eagerly)
+            .shareInBackground(SharingStarted.Eagerly)
 
-    override val episodePresentation: EpisodePresentation by episodePresentationFlow.filterNotNull()
+    override val episodePresentation: EpisodePresentation by episodePresentationFlow
         .produceState(EpisodePresentation.Placeholder)
+
+    private val episodeCollectionsFlow = subjectManager.episodeCollectionsFlow(subjectId)
+        .shareInBackground()
+
+    private val subjectCollection = subjectManager.subjectCollectionFlow(subjectId)
+        .shareInBackground()
+
+    override val episodeDetailsState: EpisodeDetailsState = kotlin.run {
+        EpisodeDetailsState(
+            episodePresentation = episodePresentationFlow.filterNotNull(),
+            subjectInfo = subjectInfo,
+            airingInfo = subjectInfo.map {
+                SubjectAiringInfo.computeFromSubjectInfo(it)
+            },
+            parentCoroutineContext = backgroundScope.coroutineContext,
+        )
+    }
+
+    override val episodeCarouselState: EpisodeCarouselState = kotlin.run {
+        val episodeCacheStatusListState by episodeCollectionsFlow.flatMapLatest { list ->
+            combine(
+                list.map { collection ->
+                    mediaCacheManager.cacheStatusForEpisode(subjectId, collection.episode.id).map {
+                        collection.episode.id to it
+                    }
+                },
+            ) {
+                it.toList()
+            }
+        }.produceState(emptyList())
+
+        val collectionButtonEnabled = MutableStateFlow(false)
+        EpisodeCarouselState(
+            episodes = episodeCollectionsFlow.produceState(emptyList()),
+            playingEpisode = episodeId.combine(episodeCollectionsFlow) { id, collections ->
+                collections.firstOrNull { it.episode.id == id }
+            }.produceState(null),
+            cacheStatus = {
+                episodeCacheStatusListState.firstOrNull { status ->
+                    status.first == it.episode.id
+                }?.second ?: EpisodeCacheStatus.NotCached
+            },
+            onSelect = {
+                episodeId.value = it.episode.id
+            },
+            onChangeCollectionType = { episode, it ->
+                collectionButtonEnabled.value = false
+                launchInBackground {
+                    try {
+                        subjectManager.setEpisodeCollectionType(
+                            subjectId,
+                            episodeId = episode.episode.id,
+                            collectionType = it,
+                        )
+                    } finally {
+                        collectionButtonEnabled.value = true
+                    }
+                }
+            },
+            backgroundScope = backgroundScope,
+        )
+    }
+
+    override val editableRatingState: EditableRatingState = EditableRatingState(
+        ratingInfo = subjectInfo.map { it.ratingInfo }
+            .produceState(RatingInfo.Empty),
+        selfRatingInfo = subjectCollection.map { it?.selfRatingInfo ?: SelfRatingInfo.Empty }
+            .produceState(SelfRatingInfo.Empty),
+        enableEdit = flow {
+            emit(false) // 在加载的时候不允许编辑
+            emitAll(subjectCollection.map { true }) // 加载完成后允许编辑, 如果编辑时没有收藏, EditableRatingState 会弹框
+        }.produceState(false),
+        isCollected = {
+            val collection = subjectCollection.replayCache.firstOrNull() ?: return@EditableRatingState false
+            collection.collectionType != UnifiedCollectionType.NOT_COLLECTED
+        },
+        onRate = { request ->
+            subjectManager.updateRating(subjectId, request)
+        },
+        parentCoroutineContext = backgroundScope.coroutineContext,
+    )
+
+    override val editableSubjectCollectionTypeState: EditableSubjectCollectionTypeState =
+        EditableSubjectCollectionTypeState(
+            selfCollectionType = subjectCollection
+                .map { it?.collectionType ?: UnifiedCollectionType.NOT_COLLECTED }
+                .produceState(UnifiedCollectionType.NOT_COLLECTED),
+            hasAnyUnwatched = {
+                val collections =
+                    episodeCollectionsFlow.replayCache.firstOrNull() ?: return@EditableSubjectCollectionTypeState false
+                collections.any { it.collectionType == UnifiedCollectionType.NOT_COLLECTED }
+            },
+            onSetSelfCollectionType = { subjectManager.setSubjectCollectionType(subjectId, it) },
+            onSetAllEpisodesWatched = {
+                subjectManager.setAllEpisodesWatched(subjectId)
+            },
+            backgroundScope.coroutineContext,
+        )
 
     override var isFullscreen: Boolean by mutableStateOf(initialIsFullscreen)
 
-    override suspend fun setEpisodeCollectionType(type: UnifiedCollectionType) {
-        subjectManager.setEpisodeCollectionType(subjectId, episodeId.value, type)
-    }
-
     override val episodeSelectorState: EpisodeSelectorState = EpisodeSelectorState(
-        itemsFlow = subjectManager.episodeCollectionsFlow(subjectId).map { list -> list.map { it.toPresentation() } },
+        itemsFlow = episodeCollectionsFlow.map { list -> list.map { it.toPresentation() } },
         onSelect = {
             mediaSelector.unselect() // 否则不会自动选择
             playerState.stop()
@@ -337,20 +455,19 @@ private class EpisodeViewModelImpl(
         parentCoroutineContext = backgroundScope.coroutineContext,
     )
 
-    override suspend fun copyDownloadLink(clipboardManager: ClipboardManager, snackbar: SnackbarHostState) {
+    override suspend fun copyDownloadLink(clipboardManager: ClipboardManager) {
         requestMediaOrNull()?.let {
             clipboardManager.setText(AnnotatedString(it.download.uri))
-            snackbar.showSnackbar("已复制下载链接")
         }
     }
 
-    override suspend fun browseMedia(context: Context, snackbar: SnackbarHostState) {
+    override suspend fun browseMedia(context: Context) {
         requestMediaOrNull()?.let {
             browserNavigator.openBrowser(context, it.originalUrl)
         }
     }
 
-    override suspend fun browseDownload(context: Context, snackbar: SnackbarHostState) {
+    override suspend fun browseDownload(context: Context) {
         requestMediaOrNull()?.let {
             browserNavigator.openMagnetLink(context, it.download.uri)
         }
@@ -475,13 +592,17 @@ private class EpisodeViewModelImpl(
                                 playerState.videoProperties.map { it?.durationMillis }.debounce(5000),
                             ) { pos, max ->
                                 if (max == null) return@combine
-                                if (episodePresentationFlow.value?.collectionType == UnifiedCollectionType.DONE) {
+                                if (episodePresentationFlow.first().collectionType == UnifiedCollectionType.DONE) {
                                     cancelScope() // 已经看过了
                                 }
                                 if (pos > max.toFloat() * 0.9) {
                                     logger.info { "观看到 90%, 标记看过" }
                                     runUntilSuccess(maxAttempts = 5) {
-                                        setEpisodeCollectionType(UnifiedCollectionType.DONE)
+                                        subjectManager.setEpisodeCollectionType(
+                                            subjectId,
+                                            episodeId.value,
+                                            UnifiedCollectionType.DONE,
+                                        )
                                     }
                                     cancelScope() // 标记成功一次后就不要再检查了
                                 }

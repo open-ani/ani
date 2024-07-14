@@ -1,135 +1,272 @@
 package me.him188.ani.app.ui.subject.episode.details
 
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.FlowRowScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredWidth
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.ArrowOutward
+import androidx.compose.material.icons.rounded.ContentCopy
+import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.Outbox
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ProvideTextStyle
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
-import me.him188.ani.app.platform.currentPlatform
-import me.him188.ani.app.platform.isDesktop
-import me.him188.ani.app.tools.rememberBackgroundMonoTasker
-import me.him188.ani.app.ui.external.placeholder.placeholder
+import kotlinx.coroutines.flow.Flow
+import me.him188.ani.app.data.models.subject.SubjectAiringInfo
+import me.him188.ani.app.data.models.subject.SubjectInfo
+import me.him188.ani.app.navigation.LocalNavigator
+import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.ui.foundation.BackgroundScope
+import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
-import me.him188.ani.app.ui.subject.episode.EpisodeCollectionActionButton
+import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeButton
+import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeState
+import me.him188.ani.app.ui.subject.collection.OnAirLabel
+import me.him188.ani.app.ui.subject.details.components.OutlinedTag
+import me.him188.ani.app.ui.subject.details.components.renderSubjectSeason
 import me.him188.ani.app.ui.subject.episode.EpisodePresentation
-import me.him188.ani.app.ui.subject.episode.EpisodeViewModel
-import me.him188.ani.app.ui.subject.episode.SubjectPresentation
+import me.him188.ani.app.ui.subject.rating.EditableRating
+import me.him188.ani.app.ui.subject.rating.EditableRatingState
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.topic.FileSize.Companion.Unspecified
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.datasources.api.topic.Resolution
 import me.him188.ani.datasources.api.topic.SubtitleLanguage
-import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
+import kotlin.coroutines.CoroutineContext
 
-private val PAGE_HORIZONTAL_PADDING = 16.dp
+@Stable
+class EpisodeDetailsState(
+    episodePresentation: Flow<EpisodePresentation>,
+    subjectInfo: Flow<SubjectInfo>,
+    airingInfo: Flow<SubjectAiringInfo>,
+    parentCoroutineContext: CoroutineContext,
+) : HasBackgroundScope by BackgroundScope(parentCoroutineContext) {
+    private val episode by episodePresentation.produceState(EpisodePresentation.Placeholder)
+    private val subject by subjectInfo.produceState(SubjectInfo.Empty)
+    val airingInfo by airingInfo.produceState(SubjectAiringInfo.EmptyCompleted)
 
+    val subjectId by derivedStateOf { subject.id }
+    val coverImageUrl by derivedStateOf { subject.imageLarge }
+    val episodeTitle by derivedStateOf { episode.title }
+    val episodeSort by derivedStateOf { episode.sort }
+    val subjectTitle by derivedStateOf { subject.displayName }
+}
 
 /**
- * 番剧详情内容,
+ * 番剧详情内容, 包含条目的基本信息, 选集, 评分.
  */
 @Composable
 fun EpisodeDetails(
-    viewModel: EpisodeViewModel,
-    snackbar: SnackbarHostState,
+    state: EpisodeDetailsState,
+    episodeCarouselState: EpisodeCarouselState,
+    editableRatingState: EditableRatingState,
+    editableSubjectCollectionTypeState: EditableSubjectCollectionTypeState,
+
     modifier: Modifier = Modifier,
-    actionRow: @Composable () -> Unit = {
-        EpisodeActionRow(
-            viewModel,
-            snackbar = snackbar,
-        )
-    },
+    horizontalPadding: Dp = 16.dp,
+) {
+    var showMore by rememberSaveable { mutableStateOf(false) }
+    val context = LocalContext.current
+//    ShareEpisodeDropdown(
+//        showMore,
+//        { showMore = false },
+//        onClickCopyLink = {
+//            GlobalContext.get().get<BrowserNavigator>()
+//                .copyToClipboard(context, "magnet:?xt=urn:btih:1234567890")
+//        },
+//        onClickDownload = {
+//            GlobalContext.get().get<BrowserNavigator>()
+//                .openBrowser(context, state.ori)
+//        },
+//    )
+    val navigator = LocalNavigator.current
+    EpisodeDetailsScaffold(
+        coverImageUrl = state.coverImageUrl,
+        subjectTitle = { Text(state.subjectTitle) },
+        subjectSeasonTags = {
+            OutlinedTag { Text(renderSubjectSeason(state.airingInfo.airDate)) }
+            OnAirLabel(
+                state.airingInfo,
+                Modifier.align(Alignment.CenterVertically),
+                style = LocalTextStyle.current,
+                statusColor = LocalContentColor.current,
+            )
+        },
+        episodeCarousel = { contentPadding ->
+            EpisodeCarousel(
+                episodeCarouselState,
+                contentPadding = contentPadding,
+            )
+        },
+        subjectRating = {
+            EditableRating(editableRatingState)
+        },
+        subjectCollectionActionButton = {
+            EditableSubjectCollectionTypeButton(editableSubjectCollectionTypeState)
+        },
+        onClickCache = {
+            navigator.navigateSubjectCaches(state.subjectId)
+        },
+        onClickShare = {
+        },
+        modifier = modifier,
+        horizontalPadding = horizontalPadding,
+    )
+}
+
+@Composable
+fun EpisodeDetailsScaffold(
+    coverImageUrl: String?,
+    subjectTitle: @Composable () -> Unit,
+    subjectSeasonTags: @Composable FlowRowScope.() -> Unit,
+    subjectRating: @Composable () -> Unit,
+    subjectCollectionActionButton: @Composable () -> Unit,
+    episodeCarousel: @Composable (PaddingValues) -> Unit,
+    onClickCache: () -> Unit,
+    onClickShare: () -> Unit,
+    modifier: Modifier = Modifier,
+    horizontalPadding: Dp = 16.dp,
 ) {
     Column(modifier) {
-        // 标题
-        Surface(Modifier.fillMaxWidth()) {
-            EpisodeTitle(
-                viewModel.subjectPresentation,
-                viewModel.episodePresentation,
-                Modifier.padding(horizontal = PAGE_HORIZONTAL_PADDING, vertical = 16.dp),
+        @Composable
+        fun SectionTitle(
+            modifier: Modifier = Modifier,
+            actions: @Composable RowScope.() -> Unit = {},
+            content: @Composable () -> Unit,
+        ) {
+            Row(
+                modifier.heightIn(min = 40.dp).padding(horizontal = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                val tasker = viewModel.rememberBackgroundMonoTasker()
-                EpisodeCollectionActionButton(
-                    viewModel.episodePresentation.collectionType,
-                    onClick = { target ->
-                        tasker.launch { viewModel.setEpisodeCollectionType(target) }
-                    },
-                    enabled = !tasker.isRunning,
-                )
-            }
-        }
-
-        HorizontalDivider(Modifier.fillMaxWidth())
-
-        Column(Modifier.padding(vertical = 16.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-
-            val data by viewModel.playerState.videoData.collectAsStateWithLifecycle(null)
-            NowPlayingLabel(
-                viewModel.mediaSelectorPresentation.selected,
-                data?.filename,
-                Modifier.padding(horizontal = PAGE_HORIZONTAL_PADDING).fillMaxWidth(),
-            )
-
-            Row(Modifier.padding(horizontal = PAGE_HORIZONTAL_PADDING)) {
-                actionRow()
-            }
-
-            if (viewModel.mediaSelectorVisible) {
-                val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = currentPlatform.isDesktop())
-                val uiScope = rememberCoroutineScope()
-                ModalBottomSheet(
-                    onDismissRequest = { viewModel.mediaSelectorVisible = false },
-                    sheetState = sheetState,
-                ) {
-                    EpisodePlayMediaSelector(
-                        mediaSelector = viewModel.mediaSelectorPresentation,
-                        sourceResults = viewModel.mediaSourceResultsPresentation,
-                        onDismissRequest = {
-                            uiScope.launch {
-                                sheetState.hide()
-                                viewModel.mediaSelectorVisible = false
-                            }
-                        },
-                        onSelected = {
-                            if (viewModel.videoScaffoldConfig.hideSelectorOnSelect) {
-                                uiScope.launch {
-                                    sheetState.hide()
-                                    viewModel.mediaSelectorVisible = false
-                                }
-                            }
-                        },
-                        modifier = Modifier.fillMaxHeight(), // 防止添加筛选后数量变少导致 bottom sheet 高度变化
-                    )
+                ProvideTextStyle(MaterialTheme.typography.titleMedium) {
+                    Row(Modifier.weight(1f)) {
+                        content()
+                    }
+                    Row(Modifier.padding(start = 16.dp)) {
+                        actions()
+                    }
                 }
             }
         }
+
+        // header
+        Box {
+            Column(
+                Modifier.padding(horizontal = horizontalPadding),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                Row {
+                    Column(
+                        Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                    ) {
+                        Row {
+                            ProvideTextStyle(MaterialTheme.typography.titleLarge) {
+                                SelectionContainer { subjectTitle() }
+                            }
+                        }
+
+                        Row {
+                            ProvideTextStyle(MaterialTheme.typography.labelLarge) {
+                                FlowRow(
+                                    Modifier.weight(1f),
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                    verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
+                                ) {
+                                    subjectSeasonTags()
+                                }
+                            }
+
+                            Box(Modifier.padding(start = 16.dp).align(Alignment.Bottom)) {
+                                subjectRating()
+                            }
+                        }
+                    }
+                }
+
+                Row(Modifier) {
+                    Row(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        IconButton(onClickCache) {
+                            Icon(Icons.Rounded.Download, null)
+                        }
+                        IconButton(onClickShare) {
+                            Icon(Icons.Rounded.Outbox, null)
+                        }
+                    }
+                    Box(Modifier.padding(start = 16.dp)) {
+                        subjectCollectionActionButton()
+                    }
+                }
+            }
+        }
+
+        SectionTitle(
+            Modifier.padding(top = 8.dp),
+//            actions = {
+//                IconButton({}) {
+//                    Icon(Icons.AutoMirrored.Rounded.List, null)
+//                }
+//            },
+        ) {
+            Text("选集")
+        }
+
+        Row {
+            episodeCarousel(PaddingValues(horizontal = horizontalPadding))
+        }
+    }
+}
+
+@Composable
+private fun ShareEpisodeDropdown(
+    showMore: Boolean,
+    onDismissRequest: () -> Unit,
+    onClickCopyLink: () -> Unit,
+    onClickDownload: () -> Unit,
+    onClickOriginalPage: () -> Unit,
+) {
+    DropdownMenu(showMore, onDismissRequest) {
+        DropdownMenuItem(
+            text = { Text("复制磁力链接") },
+            onClick = onClickCopyLink,
+            leadingIcon = { Icon(Icons.Rounded.ContentCopy, null) },
+        )
+        DropdownMenuItem(
+            text = { Text("使用其他应用打开") },
+            onClick = onClickDownload,
+            leadingIcon = { Icon(Icons.Rounded.Outbox, null) },
+        )
+        DropdownMenuItem(
+            text = { Text("访问原始页面") },
+            onClick = onClickOriginalPage,
+            leadingIcon = { Icon(Icons.Rounded.ArrowOutward, null) },
+        )
     }
 }
 
@@ -198,64 +335,6 @@ private fun NowPlayingLabel(
             } else {
                 Text("请选择数据源")
             }
-        }
-    }
-}
-
-/**
- * 剧集标题, 序号
- *
- * @param collectionButton 收藏状态按钮. [EpisodeCollectionActionButton]
- */
-@Composable
-fun EpisodeTitle(
-    subjectPresentation: SubjectPresentation,
-    episodePresentation: EpisodePresentation,
-    modifier: Modifier = Modifier,
-    collectionButton: @Composable () -> Unit,
-) {
-    Row(modifier) {
-        Column(Modifier.weight(1f)) {
-            Row(Modifier.placeholder(subjectPresentation.isPlaceholder)) {
-                Text(
-                    subjectPresentation.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-
-            Row(Modifier.padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                val ep = episodePresentation
-                val shape = RoundedCornerShape(8.dp)
-                Box(
-                    Modifier.border(1.dp, MaterialTheme.colorScheme.outlineVariant, shape = shape)
-                        .placeholder(ep.isPlaceholder)
-                        .clip(shape)
-                        .padding(horizontal = 4.dp, vertical = 2.dp),
-                ) {
-                    Text(
-                        ep.ep,
-                        style = MaterialTheme.typography.labelMedium,
-                        color = LocalContentColor.current.slightlyWeaken(),
-                        softWrap = false, maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
-
-                Text(
-                    ep.title,
-                    Modifier.padding(start = 8.dp).placeholder(ep.isPlaceholder),
-                    style = MaterialTheme.typography.titleSmall,
-                    softWrap = false, maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-        }
-
-        Box(Modifier.requiredWidth(IntrinsicSize.Max).align(Alignment.CenterVertically)) {
-            collectionButton()
         }
     }
 }

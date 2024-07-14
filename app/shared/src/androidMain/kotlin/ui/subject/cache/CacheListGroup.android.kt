@@ -22,7 +22,6 @@ import kotlinx.coroutines.flow.flowOf
 import me.him188.ani.app.data.source.media.EpisodeCacheStatus
 import me.him188.ani.app.data.source.media.cache.requester.EpisodeCacheRequester
 import me.him188.ani.app.data.source.media.selector.MediaSelectorFactory
-import me.him188.ani.app.ui.cache.testMediaCache1
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.datasources.api.EpisodeSort
@@ -68,7 +67,6 @@ private fun PreviewEpisodeCacheActionIcon() {
                     cacheStatus = EpisodeCacheStatus.Caching(
                         null,
                         me.him188.ani.datasources.api.topic.FileSize.Unspecified,
-                        testMediaCache1,
                     ),
                     canCache = true,
                     onClick = {},
@@ -85,7 +83,6 @@ private fun PreviewEpisodeCacheActionIcon() {
                     cacheStatus = EpisodeCacheStatus.Caching(
                         0.3f,
                         me.him188.ani.datasources.api.topic.FileSize.Unspecified,
-                        testMediaCache1,
                     ),
                     canCache = true,
                     onClick = {},
