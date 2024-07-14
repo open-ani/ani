@@ -77,8 +77,6 @@ import me.him188.ani.app.ui.subject.details.components.SelectEpisodeButton
 import me.him188.ani.app.ui.subject.details.components.SubjectBlurredBackground
 import me.him188.ani.app.ui.subject.details.components.SubjectDetailsDefaults
 import me.him188.ani.app.ui.subject.details.components.SubjectDetailsHeader
-import me.him188.ani.app.ui.subject.rating.EditRatingDialog
-import me.him188.ani.app.ui.subject.rating.EditRatingState
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 
 @Composable
@@ -108,25 +106,6 @@ fun SubjectDetailsScene(
         )
     }
 
-    if (vm.showRatingDialog) {
-        EditRatingDialog(
-            remember(vm) {
-                val ratingInfo = vm.subjectDetailsState.selfRatingInfo
-                EditRatingState(
-                    initialScore = ratingInfo.score,
-                    initialComment = ratingInfo.comment ?: "",
-                    initialIsPrivate = ratingInfo.isPrivate,
-                )
-            },
-            onDismissRequest = {
-                vm.cancelUpdateRating()
-                vm.showRatingDialog = false
-            },
-            onRate = { vm.updateRating(it) },
-            isLoading = vm.isRatingUpdating,
-        )
-    }
-
     var showRatingRequiresCollectionDialog by rememberSaveable { mutableStateOf(false) }
     if (showRatingRequiresCollectionDialog) {
         AlertDialog(
@@ -143,7 +122,7 @@ fun SubjectDetailsScene(
             if (!vm.subjectDetailsState.selfCollected) {
                 showRatingRequiresCollectionDialog = true
             } else {
-                vm.showRatingDialog = true
+                vm.editableRatingState.startEdit()
             }
         },
         collectionData = {

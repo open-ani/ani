@@ -1,14 +1,10 @@
 package me.him188.ani.app.ui.subject.details
 
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.models.subject.RelatedCharacterInfo
 import me.him188.ani.app.data.models.subject.RelatedPersonInfo
 import me.him188.ani.app.data.models.subject.SelfRatingInfo
@@ -23,6 +19,7 @@ import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.subject.collection.progress.EpisodeProgressState
+import me.him188.ani.app.ui.subject.rating.EditableRatingState
 import me.him188.ani.app.ui.subject.rating.RateRequest
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.datasources.bangumi.BangumiClient
@@ -80,26 +77,19 @@ class SubjectDetailsViewModel(
     }
 
 
-    var showRatingDialog by mutableStateOf(false)
-    private val updateRatingTasker = MonoTasker(backgroundScope)
-    val isRatingUpdating: Boolean
-        get() = updateRatingTasker.isRunning
-
-    fun updateRating(request: RateRequest) {
-        updateRatingTasker.launch {
+    val editableRatingState = EditableRatingState(
+        ratingInfo = subjectInfo.map { it.ratingInfo },
+        selfRatingInfo = flowOf(subjectDetailsState.selfRatingInfo),
+        setSelfRating = { request ->
             subjectManager.updateRating(
                 subjectId,
-                score = request.score,
-                comment = request.comment,
-                isPrivate = request.isPrivate,
+                request,
             )
-            withContext(Dispatchers.Main) {
-                showRatingDialog = false
-            }
-        }
-    }
+        },
+        backgroundScope.coroutineContext,
+    )
+}
 
-    fun cancelUpdateRating() {
-        updateRatingTasker.cancel()
-    }
+private suspend inline fun SubjectManager.updateRating(subjectId: Int, request: RateRequest) {
+    return this.updateRating(subjectId, request.score, request.comment, isPrivate = request.isPrivate)
 }

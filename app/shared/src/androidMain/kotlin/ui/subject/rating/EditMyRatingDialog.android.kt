@@ -9,9 +9,9 @@ import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 @Preview
 fun PreviewEditMyRatingDialog() {
     ProvideCompositionLocalsForPreview {
-        EditRatingDialog(
+        RatingEditorDialog(
             remember {
-                EditRatingState(
+                RatingEditorState(
                     initialScore = 0,
                     initialComment = "",
                     initialIsPrivate = false,
@@ -27,9 +27,9 @@ fun PreviewEditMyRatingDialog() {
 @Preview
 fun PreviewEditMyRatingDialogLoading() {
     ProvideCompositionLocalsForPreview {
-        EditRatingDialog(
+        RatingEditorDialog(
             remember {
-                EditRatingState(
+                RatingEditorState(
                     initialScore = 0,
                     initialComment = "",
                     initialIsPrivate = false,
@@ -47,13 +47,13 @@ fun PreviewEditMyRatingDialogLoading() {
 fun PreviewEditMyRating() {
     ProvideCompositionLocalsForPreview {
         val state = remember {
-            EditRatingState(
+            RatingEditorState(
                 initialScore = 4,
                 initialComment = "",
                 initialIsPrivate = false,
             )
         }
-        EditRating(
+        RatingEditor(
             score = state.score,
             onScoreChange = { state.score = it },
             comment = state.comment,
@@ -69,13 +69,13 @@ fun PreviewEditMyRating() {
 fun PreviewEditMyRatingDisabled() {
     ProvideCompositionLocalsForPreview {
         val state = remember {
-            EditRatingState(
+            RatingEditorState(
                 initialScore = 0,
                 initialComment = "",
                 initialIsPrivate = false,
             )
         }
-        EditRating(
+        RatingEditor(
             score = state.score,
             onScoreChange = { state.score = it },
             comment = state.comment,

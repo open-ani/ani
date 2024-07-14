@@ -48,7 +48,7 @@ import me.him188.ani.app.ui.foundation.icons.EditSquare
 import kotlin.math.max
 
 @Stable
-class EditRatingState(
+class RatingEditorState(
     initialScore: Int, // 0 if not rated
     initialComment: String,
     initialIsPrivate: Boolean,
@@ -72,8 +72,8 @@ class RateRequest(
 )
 
 @Composable
-fun EditRatingDialog(
-    state: EditRatingState,
+fun RatingEditorDialog(
+    state: RatingEditorState,
     onDismissRequest: () -> Unit,
     onRate: (RateRequest) -> Unit,
     modifier: Modifier = Modifier,
@@ -114,7 +114,7 @@ fun EditRatingDialog(
         icon = { Icon(Icons.Rounded.EditSquare, null) },
         title = { Text("修改评分") },
         text = {
-            EditRating(
+            RatingEditor(
                 state.score, { state.score = it },
                 state.comment, { state.comment = it },
                 state.isPrivate, { state.isPrivate = it },
@@ -162,7 +162,7 @@ fun EditRatingDialog(
 }
 
 @Composable
-fun EditRating(
+fun RatingEditor(
     score: Int,
     onScoreChange: (Int) -> Unit,
     comment: String,

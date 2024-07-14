@@ -16,7 +16,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,7 +28,74 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.flow.Flow
 import me.him188.ani.app.data.models.subject.RatingInfo
+import me.him188.ani.app.data.models.subject.SelfRatingInfo
+import me.him188.ani.app.tools.MonoTasker
+import me.him188.ani.app.ui.foundation.BackgroundScope
+import me.him188.ani.app.ui.foundation.HasBackgroundScope
+import kotlin.coroutines.CoroutineContext
+
+@Stable
+class EditableRatingState(
+    ratingInfo: Flow<RatingInfo>,
+    selfRatingInfo: Flow<SelfRatingInfo>,
+    private val setSelfRating: suspend (RateRequest) -> Unit,
+    parentCoroutineContext: CoroutineContext,
+) : HasBackgroundScope by BackgroundScope(parentCoroutineContext) {
+    val ratingInfo by ratingInfo.produceState(RatingInfo.Empty)
+    val selfRatingInfo by selfRatingInfo.produceState(SelfRatingInfo.Empty)
+
+    var showRatingDialog by mutableStateOf(false)
+        private set
+
+    fun startEdit() {
+        showRatingDialog = true
+    }
+
+    fun cancelEdit() {
+        showRatingDialog = false
+    }
+
+    private val tasker = MonoTasker(backgroundScope)
+    val isUpdatingRating get() = tasker.isRunning
+    fun updateRating(rateRequest: RateRequest) {
+        tasker.launch {
+            setSelfRating(rateRequest)
+            showRatingDialog = false
+        }
+    }
+}
+
+@Composable
+fun EditableRating(
+    state: EditableRatingState,
+    modifier: Modifier = Modifier,
+) {
+    if (state.showRatingDialog) {
+        val selfRatingInfo = state.selfRatingInfo
+        RatingEditorDialog(
+            remember(selfRatingInfo) {
+                RatingEditorState(
+                    initialScore = selfRatingInfo.score,
+                    initialComment = selfRatingInfo.comment ?: "",
+                    initialIsPrivate = selfRatingInfo.isPrivate,
+                )
+            },
+            onDismissRequest = {
+                state.cancelEdit()
+            },
+            onRate = { state.updateRating(it) },
+            isLoading = state.isUpdatingRating,
+        )
+    }
+    Rating(
+        rating = state.ratingInfo,
+        selfRatingScore = state.selfRatingInfo.score,
+        onClick = { state.startEdit() },
+        modifier = modifier,
+    )
+}
 
 @Composable
 fun Rating(
