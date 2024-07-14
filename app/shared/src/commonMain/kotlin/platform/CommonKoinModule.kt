@@ -40,6 +40,8 @@ import me.him188.ani.app.data.persistent.database.AniDatabase
 import me.him188.ani.app.data.repository.BangumiEpisodeRepository
 import me.him188.ani.app.data.repository.BangumiRelatedCharactersRepository
 import me.him188.ani.app.data.repository.BangumiSubjectRepository
+import me.him188.ani.app.data.repository.DanmakuRegexFilterRepository
+import me.him188.ani.app.data.repository.DanmakuRegexFilterRepositoryImpl
 import me.him188.ani.app.data.repository.EpisodePreferencesRepository
 import me.him188.ani.app.data.repository.EpisodePreferencesRepositoryImpl
 import me.him188.ani.app.data.repository.EpisodeRepositoryImpl
@@ -144,6 +146,7 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
         )
     }
     single<SettingsRepository> { PreferencesRepositoryImpl(getContext().dataStores.preferencesStore) }
+    single<DanmakuRegexFilterRepository> { DanmakuRegexFilterRepositoryImpl(getContext().dataStores.danmakuFilterStore) }
     single<MikanIndexCacheRepository> { MikanIndexCacheRepositoryImpl(getContext().dataStores.mikanIndexStore) }
 
     single<AniDatabase> {

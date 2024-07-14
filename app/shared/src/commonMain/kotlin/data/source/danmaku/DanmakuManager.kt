@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withTimeout
+import me.him188.ani.app.data.models.danmaku.DanmakuFilterConfig
+import me.him188.ani.app.data.models.danmaku.DanmakuRegexFilter
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.danmaku.protocol.DanmakuInfo
 import me.him188.ani.app.data.source.session.SessionManager
@@ -167,9 +169,13 @@ class CombinedDanmakuSession(
             array.sumOf { it ?: 0 }
         }
 
-    override fun at(progress: Flow<Duration>): DanmakuSession {
+    override fun at(
+        progress: Flow<Duration>,
+        danmakuRegexFilterList: Flow<List<DanmakuRegexFilter>>,
+        danmakuFilterConfig: Flow<DanmakuFilterConfig>
+    ): DanmakuSession {
         return sessions.map { session ->
-            session.at(progress)
+            session.at(progress, danmakuRegexFilterList, danmakuFilterConfig)
         }.merge()
     }
 }
