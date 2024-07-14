@@ -14,6 +14,5 @@ actual fun PlatformDialogPropertiesImpl(
         dismissOnBackPress = dismissOnBackPress,
         dismissOnClickOutside = dismissOnClickOutside,
         usePlatformDefaultWidth = usePlatformDefaultWidth,
-        decorFitsSystemWindows = usePlatformInsets,
     )
 }
