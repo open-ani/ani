@@ -145,8 +145,21 @@ jobs:
       - name: Assemble
         run: ./gradlew assemble ${{ env.gradleArgs }}
 
+
+      - if: ${{ matrix.uploadApk }}
+        name: Build Android Debug APK
+        run: ./gradlew assembleDebug ${{ env.gradleArgs }}
+
+      - if: ${{ matrix.uploadApk }}
+        name: Upload Android Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ani-android
+          path: app/android/build/outputs/apk/debug/android-debug.apk
+
+
       - if: ${{ matrix.uploadApk && env.doSigning == 'true' }}
-        name: Build Android APK
+        name: Build Android Release APK
         run: ./gradlew assembleRelease ${{ env.gradleArgs }}
         env:
           "signing_release_storeFileFromRoot": ${{ steps.android_signing_key.outputs.filePath }}
@@ -155,16 +168,17 @@ jobs:
           "signing_release_keyPassword": ${{ secrets.SIGNING_RELEASE_KEYPASSWORD }}
 
       - if: ${{ matrix.uploadApk }}
-        name: Upload Android APK packages
+        name: Upload Android Release APK
         uses: actions/upload-artifact@v4
         with:
           name: ani-android
           path: app/android/build/outputs/apk/release/android-release.apk
 
+
       - name: Check
         run: ./gradlew check ${{ env.gradleArgs }}
 
-      - name: Package
+      - name: Package Desktop
         run: ./gradlew createReleaseDistributable ${{ env.gradleArgs }}
 
       - if: ${{ matrix.anitorrent }}
