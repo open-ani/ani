@@ -122,12 +122,11 @@ abstract class MediaCacheManager(
                             hasAnyCaching.totalSize,
                         ) { progress, totalSize ->
                             if (progress == 1f) {
-                                EpisodeCacheStatus.Cached(totalSize, hasAnyCaching)
+                                EpisodeCacheStatus.Cached(totalSize)
                             } else {
                                 EpisodeCacheStatus.Caching(
                                     progress = progress,
                                     totalSize = totalSize,
-                                    cache = hasAnyCaching,
                                 )
                             }
                         },
@@ -139,7 +138,6 @@ abstract class MediaCacheManager(
                         hasAnyCached.totalSize.map {
                             EpisodeCacheStatus.Cached(
                                 totalSize = it,
-                                cache = hasAnyCached,
                             )
                         },
                     )
@@ -295,7 +293,6 @@ abstract class MediaCacheManager(
 
 @Stable
 sealed class EpisodeCacheStatus {
-    abstract val cache: MediaCache?
 
     /**
      * At least one cache is fully downloaded.
@@ -303,7 +300,6 @@ sealed class EpisodeCacheStatus {
     @Stable
     data class Cached(
         val totalSize: FileSize,
-        override val cache: MediaCache,
     ) : EpisodeCacheStatus()
 
     /**
@@ -317,13 +313,15 @@ sealed class EpisodeCacheStatus {
         // TODO: Do not box progress Float 
         val progress: Float?, // null means still connecting
         val totalSize: FileSize,
-        override val cache: MediaCache,
     ) : EpisodeCacheStatus()
 
     @Stable
-    data object NotCached : EpisodeCacheStatus() {
-        override val cache: Nothing? get() = null
-    }
+    data object NotCached : EpisodeCacheStatus()
+}
+
+@Stable
+fun EpisodeCacheStatus.isCachedOrCaching(): Boolean {
+    return this is EpisodeCacheStatus.Cached || this is EpisodeCacheStatus.Caching
 }
 
 class MediaCacheManagerImpl(

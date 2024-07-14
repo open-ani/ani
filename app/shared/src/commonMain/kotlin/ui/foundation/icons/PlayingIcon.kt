@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.max
  */
 @Composable
 fun PlayingIcon(
-    contentDescription: String,
+    contentDescription: String = "正在播放",
     modifier: Modifier = Modifier,
     width: Dp = 24.dp,
     height: Dp = 16.dp,

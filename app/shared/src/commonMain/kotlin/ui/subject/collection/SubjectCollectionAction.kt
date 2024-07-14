@@ -165,7 +165,7 @@ private fun SubjectCollectionAction.colorForCurrent(
  * @param onEdit 当修改类型时调用.
  */
 @Composable
-fun CollectionActionButton(
+fun SubjectCollectionTypeButton(
     type: UnifiedCollectionType,
     onEdit: (newType: UnifiedCollectionType) -> Unit,
     modifier: Modifier = Modifier,

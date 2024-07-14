@@ -27,7 +27,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ProvideTextStyle
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -52,7 +51,6 @@ import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 @Composable
 fun EpisodeActionRow(
     viewModel: EpisodeViewModel, // TODO: remove viewModel dependency from EpisodeActionRow
-    snackbar: SnackbarHostState,
     modifier: Modifier = Modifier,
 ) {
     val clipboard by rememberUpdatedState(LocalClipboardManager.current)
@@ -75,7 +73,7 @@ fun EpisodeActionRow(
         onClickMediaSelection = { viewModel.mediaSelectorVisible = true },
         onClickCopyLink = {
             viewModel.launchInMain {
-                copyDownloadLink(clipboard, snackbar)
+                copyDownloadLink(clipboard)
             }
         },
         onClickCache = {
@@ -86,12 +84,12 @@ fun EpisodeActionRow(
         },
         onClickDownload = {
             viewModel.launchInMain {
-                browseDownload(context, snackbar)
+                browseDownload(context)
             }
         },
         onClickOriginalPage = {
             viewModel.launchInMain {
-                browseMedia(context, snackbar)
+                browseMedia(context)
             }
         },
         modifier = modifier,

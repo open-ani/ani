@@ -38,7 +38,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.data.models.PackedDate
 import me.him188.ani.app.data.models.seasonMonth
-import me.him188.ani.app.data.models.subject.RatingInfo
 import me.him188.ani.app.data.models.subject.SubjectAiringInfo
 import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.platform.currentAniBuildConfig
@@ -46,7 +45,6 @@ import me.him188.ani.app.ui.foundation.AsyncImage
 import me.him188.ani.app.ui.foundation.layout.LocalLayoutMode
 import me.him188.ani.app.ui.foundation.theme.weaken
 import me.him188.ani.app.ui.subject.collection.OnAirLabel
-import me.him188.ani.app.ui.subject.rating.Rating
 
 const val COVER_WIDTH_TO_HEIGHT_RATIO = 849 / 1200f
 
@@ -55,20 +53,16 @@ const val COVER_WIDTH_TO_HEIGHT_RATIO = 849 / 1200f
 internal fun SubjectDetailsHeader(
     info: SubjectInfo,
     coverImageUrl: String?,
-    selfRatingScore: Int,
     airingInfo: SubjectAiringInfo,
-    onClickRating: () -> Unit,
     collectionData: @Composable () -> Unit,
     collectionAction: @Composable () -> Unit,
     selectEpisodeButton: @Composable () -> Unit,
+    rating: @Composable () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     if (LocalLayoutMode.current.showLandscapeUI) {
         SubjectDetailsHeaderWide(
             coverImageUrl = coverImageUrl,
-            ratingInfo = info.ratingInfo,
-            selfRatingScore = selfRatingScore,
-            onClickRating = onClickRating,
             title = {
                 Text(info.displayName)
             },
@@ -89,14 +83,12 @@ internal fun SubjectDetailsHeader(
             collectionData = collectionData,
             collectionAction = collectionAction,
             selectEpisodeButton = selectEpisodeButton,
+            rating = rating,
             modifier = modifier,
         )
     } else {
         SubjectDetailsHeaderCompact(
             coverImageUrl = coverImageUrl,
-            ratingInfo = info.ratingInfo,
-            selfRatingScore = selfRatingScore,
-            onClickRating = onClickRating,
             title = {
                 Text(info.displayName)
             },
@@ -117,6 +109,7 @@ internal fun SubjectDetailsHeader(
             collectionData = collectionData,
             collectionAction = collectionAction,
             selectEpisodeButton = selectEpisodeButton,
+            rating = rating,
             modifier = modifier,
         )
     }
@@ -127,15 +120,13 @@ internal fun SubjectDetailsHeader(
 @Composable
 fun SubjectDetailsHeaderCompact(
     coverImageUrl: String?,
-    ratingInfo: RatingInfo,
-    selfRatingScore: Int,
-    onClickRating: () -> Unit,
     title: @Composable () -> Unit,
     subtitle: @Composable () -> Unit,
     seasonTags: @Composable RowScope.() -> Unit,
     collectionData: @Composable () -> Unit,
     collectionAction: @Composable () -> Unit,
     selectEpisodeButton: @Composable () -> Unit,
+    rating: @Composable () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier) {
@@ -188,7 +179,7 @@ fun SubjectDetailsHeaderCompact(
                         Modifier.requiredHeight(IntrinsicSize.Max).align(Alignment.End),
                         verticalAlignment = Alignment.Bottom,
                     ) {
-                        Rating(ratingInfo, selfRatingScore, onClickRating)
+                        rating()
                     }
                 }
             }
@@ -214,15 +205,13 @@ fun SubjectDetailsHeaderCompact(
 @Composable
 fun SubjectDetailsHeaderWide(
     coverImageUrl: String?,
-    ratingInfo: RatingInfo,
-    selfRatingScore: Int,
-    onClickRating: () -> Unit,
     title: @Composable () -> Unit,
     subtitle: @Composable () -> Unit,
     seasonTags: @Composable RowScope.() -> Unit,
     collectionData: @Composable () -> Unit,
     collectionAction: @Composable () -> Unit,
     selectEpisodeButton: @Composable () -> Unit,
+    rating: @Composable () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier) {
@@ -274,7 +263,7 @@ fun SubjectDetailsHeaderWide(
                     }
                     Spacer(Modifier.weight(1f)) // spacedBy applies
                     Row(Modifier) {
-                        Rating(ratingInfo, selfRatingScore, onClickRating)
+                        rating()
                     }
                 }
                 Row(Modifier.padding(vertical = 4.dp).align(Alignment.Start)) {
