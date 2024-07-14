@@ -63,6 +63,11 @@ compose.resources {
     generateResClass = always
 }
 
+composeCompiler {
+    enableStrongSkippingMode = true
+}
+
+
 kotlin {
     sourceSets.commonMain.dependencies {
         api(libs.kotlinx.coroutines.core)

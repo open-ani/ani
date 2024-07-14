@@ -102,3 +102,7 @@ android {
         buildConfig = true
     }
 }
+
+composeCompiler {
+    enableStrongSkippingMode = true
+}
