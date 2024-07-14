@@ -447,7 +447,14 @@ private fun AnitorrentDownloadSession.logPieces(pieces: List<Piece>, pathInTorre
     logger.info {
         val start = pieces.minByOrNull { it.startIndex }
         val end = pieces.maxByOrNull { it.lastIndex }
-        "[$handleId] File '$pathInTorrent' piece initialized, ${pieces.size} pieces, offset range: $start..$end"
+        if (start == null || end == null) {
+            "[$handleId] File '$pathInTorrent' piece initialized, ${pieces.size} pieces, " +
+                    "index range: start=$start, end=$end"
+        } else {
+            "[$handleId] File '$pathInTorrent' piece initialized, ${pieces.size} pieces, " +
+                    "index range: ${start.pieceIndex..end.pieceIndex}, " +
+                    "offset range: $start..$end"
+        }
     }
 }
 
