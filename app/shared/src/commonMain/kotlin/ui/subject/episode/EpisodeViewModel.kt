@@ -30,6 +30,7 @@ import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.models.subject.episodeInfoFlow
 import me.him188.ani.app.data.models.subject.subjectInfoFlow
+import me.him188.ani.app.data.repository.DanmakuRegexFilterRepository
 import me.him188.ani.app.data.repository.EpisodePreferencesRepository
 import me.him188.ani.app.data.repository.EpisodeRevisionRepository
 import me.him188.ani.app.data.repository.SettingsRepository
@@ -185,6 +186,7 @@ private class EpisodeViewModelImpl(
     private val danmakuManager: DanmakuManager by inject()
     override val videoSourceResolver: VideoSourceResolver by inject()
     private val settingsRepository: SettingsRepository by inject()
+    private val danmakuRegexFilterRepository: DanmakuRegexFilterRepository by inject()
     private val mediaSourceManager: MediaSourceManager by inject()
     private val episodePreferencesRepository: EpisodePreferencesRepository by inject()
     private val episodeRevisionRepository: EpisodeRevisionRepository by inject()
@@ -450,6 +452,8 @@ private class EpisodeViewModelImpl(
             )
         },
         currentPosition = playerState.currentPositionMillis.map { it.milliseconds },
+        danmakuFilterConfig = settingsRepository.danmakuFilterConfig.flow,
+        danmakuRegexFilterList = danmakuRegexFilterRepository.flow,
         onFetch = {
             danmakuManager.fetch(it)
         },
