@@ -23,7 +23,7 @@ import kotlin.time.Duration.Companion.milliseconds
 // Try interactive preview to see cache progress change
 @Preview
 @Composable
-fun PreviewMediaProgressSlider() = ProvideCompositionLocalsForPreview() {
+fun PreviewMediaProgressSliderInteractive() = ProvideCompositionLocalsForPreview() {
     var currentPositionMillis by remember { mutableLongStateOf(2000) }
     val totalDurationMillis by remember { mutableLongStateOf(30_000) }
     val pieces = remember {
@@ -68,19 +68,19 @@ fun PreviewMediaProgressSlider() = ProvideCompositionLocalsForPreview() {
     }
 }
 
+private fun buildPiecesWithStep(
+    state: PieceState
+): List<Piece> = Piece.buildPieces(16, 0) { 1_000 }.apply {
+    // simulate non-consecutive cache
+    for (i in indices step 2) {
+        this[i].state.value = state
+    }
+}
+
 @Composable
 fun PreviewMediaProgressSliderNonConsecutiveCacheImpl(
-    state: PieceState
+    pieces: List<Piece>,
 ) = ProvideCompositionLocalsForPreview {
-    val pieces = remember {
-        Piece.buildPieces(16, 0) { 1_000 }.apply {
-            // simulate non-consecutive cache
-            for (i in indices step 2) {
-                this[i].state.value = state
-            }
-        }
-    }
-
     val cacheProgress = remember {
         TorrentMediaCacheProgressState(
             pieces,
@@ -108,14 +108,38 @@ fun PreviewMediaProgressSliderNonConsecutiveCacheImpl(
 @Preview
 @Composable
 fun PreviewMediaProgressSliderDownloading() =
-    PreviewMediaProgressSliderNonConsecutiveCacheImpl(PieceState.DOWNLOADING)
+    PreviewMediaProgressSliderNonConsecutiveCacheImpl(buildPiecesWithStep(PieceState.DOWNLOADING))
 
 @Preview
 @Composable
 fun PreviewMediaProgressSliderDone() =
-    PreviewMediaProgressSliderNonConsecutiveCacheImpl(PieceState.FINISHED)
+    PreviewMediaProgressSliderNonConsecutiveCacheImpl(buildPiecesWithStep(PieceState.FINISHED))
 
 @Preview
 @Composable
 fun PreviewMediaProgressSliderNotAvailable() =
-    PreviewMediaProgressSliderNonConsecutiveCacheImpl(PieceState.NOT_AVAILABLE)
+    PreviewMediaProgressSliderNonConsecutiveCacheImpl(buildPiecesWithStep(PieceState.NOT_AVAILABLE))
+
+@Preview
+@Composable
+fun PreviewMediaProgressSlider() =
+    PreviewMediaProgressSliderNonConsecutiveCacheImpl(
+        Piece.buildPieces(16, 0) { 1_000 }.apply {
+            // simulate non-consecutive cache
+            for (i in 0..3) {
+                this[i].state.value = PieceState.FINISHED
+            }
+            for (i in 4..5) {
+                this[i].state.value = PieceState.DOWNLOADING
+            }
+            for (i in 7..7) {
+                this[i].state.value = PieceState.DOWNLOADING
+            }
+            for (i in 8..9) {
+                this[i].state.value = PieceState.FINISHED
+            }
+            for (i in 10..13) {
+                this[i].state.value = PieceState.DOWNLOADING
+            }
+        },
+    )

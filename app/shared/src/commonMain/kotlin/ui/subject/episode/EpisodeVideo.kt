@@ -28,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
@@ -39,7 +40,9 @@ import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
+import me.him188.ani.app.ui.foundation.isInDebugMode
 import me.him188.ani.app.ui.foundation.rememberViewModel
+import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.subject.episode.video.loading.EpisodeVideoLoadingIndicator
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettings
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsSideSheet
@@ -238,7 +241,10 @@ internal fun EpisodeVideoImpl(
                     MediaProgressIndicatorText(progressSliderState)
                 },
                 progressSlider = {
-                    MediaProgressSlider(progressSliderState, playerState.cacheProgress)
+                    MediaProgressSlider(
+                        progressSliderState, playerState.cacheProgress,
+                        downloadingColor = if (isInDebugMode()) Color.Yellow else aniDarkColorTheme().surface,
+                    )
                 },
                 danmakuEditor = danmakuEditor,
                 endActions = {

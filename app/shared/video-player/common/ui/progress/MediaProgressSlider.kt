@@ -30,7 +30,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
-import me.him188.ani.app.ui.foundation.theme.disabledWeaken
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
 import me.him188.ani.app.ui.foundation.theme.weaken
 import me.him188.ani.app.videoplayer.ui.state.Chunk
@@ -145,7 +144,7 @@ fun MediaProgressSlider(
     trackBackgroundColor: Color = aniDarkColorTheme().surface,
     trackProgressColor: Color = aniDarkColorTheme().primary,
     cachedProgressColor: Color = aniDarkColorTheme().onSurface.weaken(),
-    downloadingColor: Color = aniDarkColorTheme().onSurface.disabledWeaken(),
+    downloadingColor: Color = Color.Yellow,
     notAvailableColor: Color = aniDarkColorTheme().error.slightlyWeaken(),
     stopColor: Color = aniDarkColorTheme().primary,
 //    drawThumb: @Composable DrawScope.() -> Unit = {
