@@ -1,6 +1,5 @@
 package me.him188.ani.app.ui.subject.episode.comments
 
-import androidx.compose.material3.pulltorefresh.PullToRefreshState
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,7 +24,6 @@ import kotlin.coroutines.resume
 
 class EpisodeCommentViewModel(
     episodeId: Int,
-    private val pullToRefreshState: PullToRefreshState
 ) : AbstractViewModel(), KoinComponent {
     private val revisionRepository by inject<EpisodeRevisionRepository>()
 
@@ -35,9 +33,11 @@ class EpisodeCommentViewModel(
         debugName = "episodeComment-$episodeId",
     )
 
-    private val freshLoaded = MutableStateFlow(false)
+    private val _freshLoaded = MutableStateFlow(false)
+    val freshLoaded: StateFlow<Boolean> get() = _freshLoaded
+    
     val hasMore: StateFlow<Boolean> = dataCache.isCompleted
-        .combine(freshLoaded) { exhausted, initialCompleted ->
+        .combine(_freshLoaded) { exhausted, initialCompleted ->
             if (initialCompleted) false else exhausted
         }
         .stateInBackground(false)
@@ -67,15 +67,13 @@ class EpisodeCommentViewModel(
         }
         .stateInBackground(listOf())
 
+    val commentCount = list.map { it.size }
+
     fun reloadComments() {
         backgroundScope.launch {
-            freshLoaded.value = false
-            pullToRefreshState.startRefresh()
-
+            _freshLoaded.value = false
             dataCache.refresh(RefreshOrderPolicy.REPLACE)
-
-            freshLoaded.value = true
-            pullToRefreshState.endRefresh()
+            _freshLoaded.value = true
         }
     }
 

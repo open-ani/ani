@@ -37,36 +37,43 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.collectLatest
 import me.him188.ani.app.tools.formatDateTime
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
-import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.foundation.richtext.RichText
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
 import me.him188.ani.app.ui.foundation.theme.stronglyWeaken
+import me.him188.ani.utils.logging.logger
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
+val logger = logger<EpisodeCommentViewModel>()
 
 @Composable
 fun EpisodeCommentColumn(
-    episodeId: Int,
-    modifier: Modifier = Modifier
+    viewModel: EpisodeCommentViewModel,
+    modifier: Modifier = Modifier,
 ) {
     val pullToRefreshState = rememberPullToRefreshState()
-    val viewModel = rememberViewModel(keys = listOf(episodeId)) {
-        EpisodeCommentViewModel(episodeId, pullToRefreshState)
-    }
 
+    val freshLoaded by viewModel.freshLoaded.collectAsStateWithLifecycle()
     val hasMore by viewModel.hasMore.collectAsStateWithLifecycle()
     val comments by viewModel.list.collectAsStateWithLifecycle()
 
-    LaunchedEffect(episodeId) {
-        pullToRefreshState.endRefresh()
+    fun reloadComments() {
+        pullToRefreshState.startRefresh()
         viewModel.reloadComments()
+        pullToRefreshState.endRefresh()
+    }
+
+    LaunchedEffect(freshLoaded) {
+        if (!freshLoaded) {
+            reloadComments()
+        }
     }
     LaunchedEffect(true) {
         snapshotFlow { pullToRefreshState.isRefreshing }.collectLatest { refreshing ->
             if (!refreshing) return@collectLatest
-            viewModel.reloadComments()
+            reloadComments()
         }
     }
+
 
     Box(modifier = modifier.clipToBounds()) {
         PullToRefreshContainer(

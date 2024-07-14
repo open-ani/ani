@@ -26,6 +26,7 @@ import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -59,6 +60,7 @@ import me.him188.ani.app.ui.foundation.layout.LocalLayoutMode
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.subject.episode.comments.EpisodeCommentColumn
+import me.him188.ani.app.ui.subject.episode.comments.EpisodeCommentViewModel
 import me.him188.ani.app.ui.subject.episode.danmaku.DanmakuEditor
 import me.him188.ani.app.ui.subject.episode.details.EpisodeActionRow
 import me.him188.ani.app.ui.subject.episode.details.EpisodeDetails
@@ -172,8 +174,12 @@ private fun EpisodeSceneTabletVeryWide(
                 return@Row
             }
 
+            val episodeId by vm.episodeId.collectAsStateWithLifecycle()
+            val commentViewModel = rememberViewModel(keys = listOf(episodeId)) {
+                EpisodeCommentViewModel(episodeId)
+            }
+
             Column(Modifier.width(width = (maxWidth * 0.18f).coerceAtLeast(300.dp))) {
-                val episodeId by vm.episodeId.collectAsStateWithLifecycle()
                 
                 EpisodeDetails(
                     vm,
@@ -188,7 +194,7 @@ private fun EpisodeSceneTabletVeryWide(
                     },
                 )
 
-                EpisodeCommentColumn(episodeId, Modifier.fillMaxSize())
+                EpisodeCommentColumn(commentViewModel, Modifier.fillMaxSize())
             }
         }
     }
@@ -253,7 +259,10 @@ private fun EpisodeSceneContentPhone(
         val scope = rememberCoroutineScope()
 
         val episodeId by vm.episodeId.collectAsStateWithLifecycle()
-
+        val commentViewModel = rememberViewModel(keys = listOf(episodeId)) {
+            EpisodeCommentViewModel(episodeId)
+        }
+        
         Column(Modifier.fillMaxSize()) {
             TabRow(
                 selectedTabIndex = pagerState.currentPage,
@@ -271,7 +280,10 @@ private fun EpisodeSceneContentPhone(
                 Tab(
                     selected = pagerState.currentPage == 1,
                     onClick = { scope.launch { pagerState.animateScrollToPage(1) } },
-                    text = { Text("评论") },
+                    text = {
+                        val commentCount by commentViewModel.commentCount.collectAsState(0)
+                        Text(if (commentCount == 0) "评论" else "评论 $commentCount")
+                    },
                 )
             }
 
@@ -279,9 +291,7 @@ private fun EpisodeSceneContentPhone(
 
                 when (index) {
                     0 -> EpisodeDetails(vm, LocalSnackbar.current, Modifier.fillMaxSize())
-                    1 -> {
-                        EpisodeCommentColumn(episodeId, Modifier.fillMaxSize())
-                    }
+                    1 -> EpisodeCommentColumn(commentViewModel, Modifier.fillMaxSize())
                 }
             }
         }

@@ -16,7 +16,9 @@ import kotlin.time.Duration.Companion.minutes
 @Composable
 private fun PreviewCommentColumn() {
     ProvideCompositionLocalsForPreview {
-        EpisodeCommentColumn(1227087)
+        EpisodeCommentColumn(
+            remember { EpisodeCommentViewModel(1227087) },
+        )
     }
 }
 
