@@ -64,6 +64,7 @@ includeProject(":torrent:anitorrent")
 includeProject(":app:shared", "app/shared") // shared by clients (targets JVM)
 includeProject(":app:desktop", "app/desktop") // desktop JVM client for macOS, Windows, and Linux
 includeProject(":app:android", "app/android") // Android client
+includeProject(":app:shared:image-viewer")
 
 // server
 //includeProject(":server:core", "server/core") // server core

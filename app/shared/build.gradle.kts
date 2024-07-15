@@ -103,6 +103,7 @@ kotlin {
         api(projects.utils.io)
         api(projects.danmaku.ani.protocol)
         api(projects.utils.ktorClient)
+        api(projects.app.shared.imageViewer)
 
         // Ktor
         api(libs.ktor.client.okhttp)
