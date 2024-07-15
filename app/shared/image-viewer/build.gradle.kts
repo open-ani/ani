@@ -36,7 +36,7 @@ kotlin {
 }
 
 compose.resources {
-    packageOfResClass = "me.him188.ani.app"
+    packageOfResClass = "me.him188.ani.app.image.viewer"
     generateResClass = always
 }
 
