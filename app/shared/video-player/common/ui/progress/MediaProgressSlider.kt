@@ -303,8 +303,8 @@ fun MediaProgressSlider(
                     if (!previewTimeVisible) return@onPointerEvent
                     mousePosX = it.changes.first().position.x
                     val percent = mousePosX.minus(thumbWidth / 2).div(progressWidth - thumbWidth)
-                    val previewTimeMills = state.totalDurationMillis.times(percent).toLong()
-                    previewTimeText = renderSeconds(previewTimeMills / 1000, state.totalDurationMillis / 1000)
+                    val previewTimeMillis = state.totalDurationMillis.times(percent).toLong()
+                    previewTimeText = renderSeconds(previewTimeMillis / 1000, state.totalDurationMillis / 1000)
                 },
         )
     }
