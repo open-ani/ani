@@ -1,16 +1,22 @@
 package me.him188.ani.app.videoplayer.ui.progress
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.interaction.HoverInteraction
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -25,6 +31,11 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.onPointerEvent
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
@@ -37,6 +48,7 @@ import me.him188.ani.app.videoplayer.ui.state.Chunk
 import me.him188.ani.app.videoplayer.ui.state.ChunkState
 import me.him188.ani.app.videoplayer.ui.state.MediaCacheProgressState
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
+import me.him188.ani.datasources.bangumi.processing.fixToString
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import kotlin.math.roundToLong
 
@@ -148,6 +160,7 @@ fun MediaProgressSlider(
     downloadingColor: Color = aniDarkColorTheme().onSurface.disabledWeaken(),
     notAvailableColor: Color = aniDarkColorTheme().error.slightlyWeaken(),
     stopColor: Color = aniDarkColorTheme().primary,
+    previewTimeBackgroundColor: Color = aniDarkColorTheme().surface.copy(alpha = 0.3f),
 //    drawThumb: @Composable DrawScope.() -> Unit = {
 //        drawCircle(
 //            MaterialTheme.colorScheme.primary,
@@ -219,6 +232,37 @@ fun MediaProgressSlider(
                 )
             }
         }
+
+        var previewTimeText by remember { mutableStateOf("") }
+        var mousePosX by remember { mutableStateOf(0f) }
+        var previewTimeVisible by remember { mutableStateOf(false) }
+        var previewTextWidth by remember { mutableStateOf(0) }
+        if (previewTimeVisible) {
+            Box(
+                modifier = Modifier.offset(
+                    x = ((mousePosX - previewTextWidth / 2) / LocalDensity.current.density).dp,
+                    y = (-24).dp,
+                )
+                    .background(previewTimeBackgroundColor, shape = RoundedCornerShape(6.dp)),
+            ) {
+                Text(
+                    text = previewTimeText,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.onGloballyPositioned { previewTextWidth = it.size.width },
+                )
+            }
+        }
+        val hoverInteraction = remember { MutableInteractionSource() }
+        var progressWidth by remember { mutableStateOf(0) }
+        var thumbWidth by remember { mutableStateOf(0) }
+        LaunchedEffect(true) {
+            hoverInteraction.interactions.collect {
+                when (it) {
+                    is HoverInteraction.Enter -> previewTimeVisible = true
+                    is HoverInteraction.Exit -> previewTimeVisible = false
+                }
+            }
+        }
         // draw thumb
         val interactionSource = remember { MutableInteractionSource() }
         Slider(
@@ -233,6 +277,7 @@ fun MediaProgressSlider(
                         thumbColor = MaterialTheme.colorScheme.primary,
                     ),
                     enabled = true,
+                    modifier = Modifier.onGloballyPositioned { thumbWidth = it.size.width },
                 )
             },
             track = {
@@ -249,11 +294,39 @@ fun MediaProgressSlider(
             onValueChangeFinished = {
                 state.finishPreview()
             },
-            modifier = Modifier.fillMaxWidth().height(24.dp),
+            modifier = Modifier.fillMaxWidth().height(24.dp)
+                .hoverable(interactionSource = hoverInteraction)
+                .onGloballyPositioned {
+                    progressWidth = it.size.width
+                }
+                .onPointerEvent(PointerEventType.Move) {
+                    if (!previewTimeVisible) return@onPointerEvent
+                    mousePosX = it.changes.first().position.x
+                    val percent = mousePosX.minus(thumbWidth / 2).div(progressWidth - thumbWidth)
+                    val previewTimeMills = state.totalDurationMillis.times(percent).toLong()
+                    previewTimeText = renderSeconds(previewTimeMills / 1000, state.totalDurationMillis / 1000)
+                },
         )
     }
 }
 
+private fun renderSeconds(current: Long, total: Long?): String {
+    if (total == null) {
+        return "00:${current.fixToString(2)}"
+    }
+    return if (current < 60 && total < 60) {
+        "00:${current.fixToString(2)}"
+    } else if (current < 3600 && total < 3600) {
+        val startM = (current / 60).fixToString(2)
+        val startS = (current % 60).fixToString(2)
+        """$startM:$startS"""
+    } else {
+        val startH = (current / 3600).fixToString(2)
+        val startM = (current % 3600 / 60).fixToString(2)
+        val startS = (current % 60).fixToString(2)
+        """$startH:$startM:$startS"""
+    }
+}
 private inline fun forEachConsecutiveChunk(
     chunks: List<Chunk>,
     action: (state: ChunkState, weight: Float) -> Unit
