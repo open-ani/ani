@@ -20,6 +20,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -33,7 +34,7 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
-import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -233,14 +234,22 @@ fun MediaProgressSlider(
             }
         }
 
-        var previewTimeText by remember { mutableStateOf("") }
         var mousePosX by remember { mutableStateOf(0f) }
         var previewTimeVisible by remember { mutableStateOf(false) }
-        var previewTextWidth by remember { mutableStateOf(0) }
+        var previewTextWidth by remember { mutableIntStateOf(0) }
+        val density = LocalDensity.current.density
+        val offsetX by derivedStateOf { ((mousePosX - previewTextWidth / 2) / density).dp }
+        var progressWidth by remember { mutableIntStateOf(0) }
+        var thumbWidth by remember { mutableIntStateOf(0) }
+        val previewTimeText by derivedStateOf {
+            val percent = mousePosX.minus(thumbWidth / 2).div(progressWidth - thumbWidth)
+            val previewTimeMillis = state.totalDurationMillis.times(percent).toLong()
+            renderSeconds(previewTimeMillis / 1000, state.totalDurationMillis / 1000)
+        }
         if (previewTimeVisible) {
             Box(
                 modifier = Modifier.offset(
-                    x = ((mousePosX - previewTextWidth / 2) / LocalDensity.current.density).dp,
+                    x = offsetX,
                     y = (-24).dp,
                 )
                     .background(previewTimeBackgroundColor, shape = RoundedCornerShape(6.dp)),
@@ -248,13 +257,11 @@ fun MediaProgressSlider(
                 Text(
                     text = previewTimeText,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.onGloballyPositioned { previewTextWidth = it.size.width },
+                    modifier = Modifier.onPlaced { previewTextWidth = it.size.width },
                 )
             }
         }
         val hoverInteraction = remember { MutableInteractionSource() }
-        var progressWidth by remember { mutableStateOf(0) }
-        var thumbWidth by remember { mutableStateOf(0) }
         LaunchedEffect(true) {
             hoverInteraction.interactions.collect {
                 when (it) {
@@ -277,7 +284,7 @@ fun MediaProgressSlider(
                         thumbColor = MaterialTheme.colorScheme.primary,
                     ),
                     enabled = true,
-                    modifier = Modifier.onGloballyPositioned { thumbWidth = it.size.width },
+                    modifier = Modifier.onPlaced { thumbWidth = it.size.width },
                 )
             },
             track = {
@@ -296,15 +303,12 @@ fun MediaProgressSlider(
             },
             modifier = Modifier.fillMaxWidth().height(24.dp)
                 .hoverable(interactionSource = hoverInteraction)
-                .onGloballyPositioned {
+                .onPlaced {
                     progressWidth = it.size.width
                 }
                 .onPointerEvent(PointerEventType.Move) {
-                    if (!previewTimeVisible) return@onPointerEvent
+//                    if (!previewTimeVisible) return@onPointerEvent
                     mousePosX = it.changes.first().position.x
-                    val percent = mousePosX.minus(thumbWidth / 2).div(progressWidth - thumbWidth)
-                    val previewTimeMillis = state.totalDurationMillis.times(percent).toLong()
-                    previewTimeText = renderSeconds(previewTimeMillis / 1000, state.totalDurationMillis / 1000)
                 },
         )
     }
