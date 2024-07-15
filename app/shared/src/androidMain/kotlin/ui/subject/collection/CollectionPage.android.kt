@@ -17,6 +17,7 @@ import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.data.source.media.EpisodeCacheStatus
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.tools.caching.mutate
+import me.him188.ani.app.ui.cache.testMediaCache1
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.datasources.api.EpisodeSort
@@ -147,7 +148,7 @@ private fun PreviewSubjectCollectionsColumnPhone() {
                 SubjectCollectionItem(
                     item = it,
                     episodeCacheStatus = { _, _ ->
-                        EpisodeCacheStatus.Cached(300.megaBytes)
+                        EpisodeCacheStatus.Cached(300.megaBytes, testMediaCache1)
                     },
                     onClick = { },
                     onClickEpisode = {},
@@ -177,7 +178,7 @@ private fun PreviewSubjectCollectionsColumnDesktopLarge() {
                 SubjectCollectionItem(
                     item = it,
                     episodeCacheStatus = { _, _ ->
-                        EpisodeCacheStatus.Cached(300.megaBytes)
+                        EpisodeCacheStatus.Cached(300.megaBytes, testMediaCache1)
                     },
                     onClick = { },
                     onClickEpisode = {},

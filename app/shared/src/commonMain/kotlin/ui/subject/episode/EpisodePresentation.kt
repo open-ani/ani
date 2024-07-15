@@ -8,17 +8,18 @@ import me.him188.ani.app.data.models.episode.displayName
 import me.him188.ani.app.data.models.episode.episode
 import me.him188.ani.app.data.models.episode.isKnownCompleted
 import me.him188.ani.app.data.models.episode.renderEpisodeEp
+import me.him188.ani.app.data.models.subject.nameCnOrName
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 
 /**
  * 展示在 UI 的状态
  */
 @Immutable
-data class EpisodePresentation(
+class EpisodePresentation(
     val episodeId: Int,
     /**
      * 剧集标题
-     * @see EpisodeInfo.displayName
+     * @see EpisodeInfo.nameCnOrName
      */
     val title: String,
     /**

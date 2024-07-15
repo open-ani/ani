@@ -15,9 +15,9 @@ import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
 @Composable
 fun SubjectBlurredBackground(
     coverImageUrl: String?,
+    backgroundColor: Color,
+    surfaceColor: Color,
     modifier: Modifier = Modifier,
-    backgroundColor: Color = MaterialTheme.colorScheme.background,
-    surfaceColor: Color = MaterialTheme.colorScheme.surface,
 ) {
     Box(
         modifier

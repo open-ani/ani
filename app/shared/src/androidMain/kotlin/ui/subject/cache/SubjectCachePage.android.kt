@@ -21,6 +21,7 @@ import me.him188.ani.app.data.source.media.instance.createTestMediaSourceInstanc
 import me.him188.ani.app.data.source.media.selector.MediaSelector
 import me.him188.ani.app.data.source.media.selector.MediaSelectorFactory
 import me.him188.ani.app.navigation.LocalNavigator
+import me.him188.ani.app.ui.cache.testMediaCache1
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.datasources.acgrip.AcgRipMediaSource
@@ -187,6 +188,7 @@ private val episodeCacheStateList = listOf(
         cacheStatusFlow = MutableStateFlow(
             EpisodeCacheStatus.Cached(
                 300.megaBytes,
+                testMediaCache1,
             ),
         ),
         parentCoroutineContext = EmptyCoroutineContext,
@@ -207,6 +209,7 @@ private val episodeCacheStateList = listOf(
             EpisodeCacheStatus.Caching(
                 progress = 0.3f,
                 totalSize = 300.megaBytes,
+                testMediaCache1,
             ),
         ),
         parentCoroutineContext = EmptyCoroutineContext,
@@ -272,7 +275,7 @@ private fun PreviewSubjectCachePage() {
                 onRequestCacheComplete = { target ->
                     delay(2000)
                     target.episode as TestEpisodeCacheState
-                    target.episode.cacheStatusFlow.value = EpisodeCacheStatus.Cached(300.megaBytes)
+                    target.episode.cacheStatusFlow.value = EpisodeCacheStatus.Cached(300.megaBytes, testMediaCache1)
                 },
                 onDeleteCache = { episode ->
                     delay(2000)

@@ -16,7 +16,7 @@ fun PreviewCollectionActionButton() = ProvideCompositionLocalsForPreview {
     Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
         Column {
             for (entry in UnifiedCollectionType.entries) {
-                SubjectCollectionTypeButton(
+                CollectionActionButton(
                     type = entry,
                     onEdit = {},
                     collected = entry != UnifiedCollectionType.NOT_COLLECTED,
