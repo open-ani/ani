@@ -6,12 +6,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.flow.flowOf
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.subject.episode.VideoLoadingState
 import me.him188.ani.danmaku.ani.client.AniDanmakuProvider
 import me.him188.ani.danmaku.api.DanmakuMatchInfo
 import me.him188.ani.danmaku.api.DanmakuMatchMethod
 import me.him188.ani.danmaku.dandanplay.DandanplayDanmakuProvider
+import me.him188.ani.datasources.api.Media
 
 @Preview
 @Composable
@@ -19,7 +21,7 @@ private fun PreviewPlayerStatisticsAllSuccess() {
     ProvideCompositionLocalsForPreview {
         PlayerStatistics(
             state = remember {
-                PlayerStatisticsState().apply {
+                testPlayerStatisticsState().apply {
                     videoLoadingState.value = VideoLoadingState.Succeed(isBt = true)
                     danmakuLoadingState.value = DanmakuLoadingState.Success(
                         listOf(
@@ -40,7 +42,7 @@ private fun PreviewPlayerStatisticsVideoFailed() {
     ProvideCompositionLocalsForPreview {
         PlayerStatistics(
             state = remember {
-                PlayerStatisticsState().apply {
+                testPlayerStatisticsState().apply {
                     videoLoadingState.value = VideoLoadingState.UnknownError(IllegalStateException())
                     danmakuLoadingState.value = DanmakuLoadingState.Success(
                         listOf(
@@ -61,7 +63,7 @@ private fun PreviewPlayerStatisticsVideoLoading() {
     ProvideCompositionLocalsForPreview {
         PlayerStatistics(
             state = remember {
-                PlayerStatisticsState().apply {
+                testPlayerStatisticsState().apply {
                     videoLoadingState.value = VideoLoadingState.ResolvingSource
                     danmakuLoadingState.value = DanmakuLoadingState.Success(
                         listOf(
@@ -112,7 +114,7 @@ private fun PreviewPlayerStatisticsDanmakuFailed() {
     ProvideCompositionLocalsForPreview {
         PlayerStatistics(
             state = remember {
-                PlayerStatisticsState().apply {
+                testPlayerStatisticsState().apply {
                     videoLoadingState.value = VideoLoadingState.UnknownError(IllegalStateException())
                     danmakuLoadingState.value = DanmakuLoadingState.Failed(
                         cause = IllegalStateException(),
@@ -130,7 +132,7 @@ private fun PreviewPlayerStatisticsDanmakuState() {
     ProvideCompositionLocalsForPreview {
         PlayerStatistics(
             state = remember {
-                PlayerStatisticsState().apply {
+                testPlayerStatisticsState().apply {
                     videoLoadingState.value = VideoLoadingState.UnknownError(IllegalStateException())
                     danmakuLoadingState.value = DanmakuLoadingState.Success(
                         listOf(
@@ -147,3 +149,17 @@ private fun PreviewPlayerStatisticsDanmakuState() {
         )
     }
 }
+
+fun testPlayerStatisticsState(
+    playingMedia: Media? = null,
+    playingFilename: String = "filename",
+    videoLoadingState: VideoLoadingState = VideoLoadingState.Initial,
+    danmakuLoadingState: DanmakuLoadingState = DanmakuLoadingState.Idle,
+) =
+    PlayerStatisticsState(
+        playingMedia = flowOf(playingMedia),
+        playingFilename = flowOf(playingFilename),
+    ).apply {
+        this.videoLoadingState.value = videoLoadingState
+        this.danmakuLoadingState.value = danmakuLoadingState
+    }

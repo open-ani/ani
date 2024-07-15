@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.QuestionMark
@@ -34,6 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,19 +45,27 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
 import me.him188.ani.app.ui.subject.episode.VideoLoadingState
+import me.him188.ani.app.ui.subject.episode.details.renderSubtitleLanguage
 import me.him188.ani.danmaku.api.DanmakuMatchInfo
 import me.him188.ani.danmaku.api.DanmakuMatchMethod
+import me.him188.ani.datasources.api.Media
+import me.him188.ani.datasources.api.topic.FileSize.Companion.Unspecified
+import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
 /**
  * 播放器统计信息, 用于展示在 UI 的 "视频统计" bottom sheet
  */
 @Stable
-class PlayerStatisticsState {
+class PlayerStatisticsState(
+    val playingMedia: Flow<Media?>,
+    val playingFilename: Flow<String?>,
+) {
     val videoLoadingState: MutableStateFlow<VideoLoadingState> = MutableStateFlow(VideoLoadingState.Initial)
 
     val danmakuLoadingState: MutableStateFlow<DanmakuLoadingState> = MutableStateFlow(DanmakuLoadingState.Idle)
@@ -92,75 +102,90 @@ fun PlayerStatistics(
             modifier,
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            val danmakuLoadingState by state.danmakuLoadingState.collectAsStateWithLifecycle()
+            DanmakuStatistics(state)
 
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                Text(
-                    "弹幕统计",
-                    style = MaterialTheme.typography.titleLarge,
-                )
+            HorizontalDivider(Modifier.padding(vertical = 8.dp))
 
-                ProvideTextStyleContentColor(MaterialTheme.typography.labelLarge, MaterialTheme.colorScheme.primary) {
-                    when (danmakuLoadingState) {
-                        is DanmakuLoadingState.Failed -> Failed { }
-                        DanmakuLoadingState.Idle -> Text("等待视频")
-                        DanmakuLoadingState.Loading -> Text("加载中")
-                        is DanmakuLoadingState.Success -> {}// Succeed { Text("加载成功") }
-                    }
-                }
+            VideoStatistics(state)
+        }
+    }
+}
+
+@Composable
+fun DanmakuStatistics(
+    state: PlayerStatisticsState,
+    modifier: Modifier = Modifier
+) {
+    val danmakuLoadingState by state.danmakuLoadingState.collectAsStateWithLifecycle()
+
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+        Text(
+            "弹幕统计",
+            style = MaterialTheme.typography.titleLarge,
+        )
+
+        ProvideTextStyleContentColor(MaterialTheme.typography.labelLarge, MaterialTheme.colorScheme.primary) {
+            when (danmakuLoadingState) {
+                is DanmakuLoadingState.Failed -> Failed { }
+                DanmakuLoadingState.Idle -> Text("等待视频")
+                DanmakuLoadingState.Loading -> Text("加载中")
+                is DanmakuLoadingState.Success -> {}// Succeed { Text("加载成功") }
             }
-            val clipboard = LocalClipboardManager.current
+        }
+    }
+
+    val clipboard = LocalClipboardManager.current
 
 
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
-                    when (val loadingState = danmakuLoadingState) {
-                        is DanmakuLoadingState.Failed -> {
-                            ErrorTextBox(
-                                remember(loadingState) {
-                                    loadingState.cause.toString()
-                                },
-                                { clipboard.setText(AnnotatedString(loadingState.cause.stackTraceToString())) },
-                                Modifier.padding(top = 8.dp).fillMaxWidth(),
-                            )
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
+            when (val loadingState = danmakuLoadingState) {
+                is DanmakuLoadingState.Failed -> {
+                    ErrorTextBox(
+                        remember(loadingState) {
+                            loadingState.cause.toString()
+                        },
+                        { clipboard.setText(AnnotatedString(loadingState.cause.stackTraceToString())) },
+                        Modifier.padding(top = 8.dp).fillMaxWidth(),
+                    )
+                }
+
+                is DanmakuLoadingState.Success -> {
+                    var isShowDetails by remember { mutableStateOf(false) }
+
+                    Row(
+                        Modifier.clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                        ) { isShowDetails = !isShowDetails },
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            remember(loadingState) {
+                                "${loadingState.matchInfos.size} 个弹幕源, 共计 ${loadingState.matchInfos.sumOf { it.count }} 条弹幕"
+                            },
+                            Modifier.weight(1f),
+                            style = MaterialTheme.typography.labelLarge,
+                        )
+
+                        IconButton({ isShowDetails = !isShowDetails }) {
+                            if (isShowDetails) {
+                                Icon(Icons.Rounded.UnfoldLess, "展示更少")
+                            } else {
+                                Icon(Icons.Rounded.UnfoldMore, "展示更多")
+                            }
                         }
+                    }
 
-                        is DanmakuLoadingState.Success -> {
-                            var isShowDetails by remember { mutableStateOf(false) }
-
-                            Row(
-                                Modifier.clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null,
-                                ) { isShowDetails = !isShowDetails },
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Text(
-                                    remember(loadingState) {
-                                        "${loadingState.matchInfos.size} 个弹幕源, 共计 ${loadingState.matchInfos.sumOf { it.count }} 条弹幕"
-                                    },
-                                    Modifier.weight(1f),
-                                    style = MaterialTheme.typography.labelLarge,
-                                )
-
-                                IconButton({ isShowDetails = !isShowDetails }) {
-                                    if (isShowDetails) {
-                                        Icon(Icons.Rounded.UnfoldLess, "展示更少")
-                                    } else {
-                                        Icon(Icons.Rounded.UnfoldMore, "展示更多")
-                                    }
-                                }
-                            }
-
-                            LazyVerticalGrid(
-                                GridCells.Fixed(2),
-                                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                                verticalArrangement = Arrangement.spacedBy(16.dp),
-                            ) {
-                                items(loadingState.matchInfos, { it.providerId }) {
-                                    DanmakuMatchInfoView(it, { isShowDetails })
-                                }
-                            }
+                    LazyVerticalGrid(
+                        GridCells.Fixed(2),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                    ) {
+                        items(loadingState.matchInfos, { it.providerId }) {
+                            DanmakuMatchInfoView(it, { isShowDetails })
+                        }
+                    }
 //                            FlowRow(
 //                                horizontalArrangement = Arrangement.spacedBy(16.dp),
 //                                verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -169,56 +194,122 @@ fun PlayerStatistics(
 //                                    DanmakuMatchInfoView(info, { isShowDetails })
 //                                }
 //                            }
-                        }
-
-                        else -> {}
-                    }
                 }
+
+                else -> {}
             }
+        }
+    }
+}
 
-            HorizontalDivider(Modifier.padding(vertical = 8.dp))
+@Composable
+fun VideoStatistics(
+    state: PlayerStatisticsState,
+    modifier: Modifier = Modifier
+) {
+    val clipboard = LocalClipboardManager.current
+    val videoLoadingState = state.videoLoadingState.collectAsStateWithLifecycle()
+    Row(
+        modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Text(
+            "视频统计",
+            style = MaterialTheme.typography.titleMedium,
+        )
 
-            val videoLoadingState = state.videoLoadingState.collectAsStateWithLifecycle()
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                Text(
-                    "视频统计",
-                    style = MaterialTheme.typography.titleLarge,
-                )
+        ProvideTextStyleContentColor(MaterialTheme.typography.bodyMedium, MaterialTheme.colorScheme.primary) {
+            when (videoLoadingState.value) {
+                VideoLoadingState.DecodingData -> Text("解码中")
+                VideoLoadingState.NoMatchingFile -> Failed { Text("未匹配到文件") }
+                VideoLoadingState.ResolutionTimedOut -> Failed { Text("解析超时") }
+                VideoLoadingState.UnsupportedMedia -> Failed { Text("不支持的视频类型") }
 
-                ProvideTextStyleContentColor(MaterialTheme.typography.bodyMedium, MaterialTheme.colorScheme.primary) {
-                    when (videoLoadingState.value) {
-                        VideoLoadingState.DecodingData -> Text("解码中")
-                        VideoLoadingState.NoMatchingFile -> Failed { Text("未匹配到文件") }
-                        VideoLoadingState.ResolutionTimedOut -> Failed { Text("解析超时") }
-                        VideoLoadingState.UnsupportedMedia -> Failed { Text("不支持的视频类型") }
+                VideoLoadingState.Initial -> Text("等待数据源")
+                VideoLoadingState.ResolvingSource -> Text("解析中")
+                is VideoLoadingState.Succeed -> {}
 
-                        VideoLoadingState.Initial -> Text("等待数据源")
-                        VideoLoadingState.ResolvingSource -> Text("解析中")
-                        is VideoLoadingState.Succeed -> {}
-
-                        is VideoLoadingState.UnknownError -> Failed()
-                    }
-                }
+                is VideoLoadingState.UnknownError -> Failed()
             }
+        }
+    }
 
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
-                    when (val loadingState = videoLoadingState.value) {
-                        is VideoLoadingState.Succeed -> {
-                            Text("正常播放", style = MaterialTheme.typography.labelLarge)
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
+            when (val loadingState = videoLoadingState.value) {
+                is VideoLoadingState.Succeed -> {
+                    val media by state.playingMedia.collectAsStateWithLifecycle(null)
+                    val mediaPropertiesText by remember {
+                        derivedStateOf {
+                            media?.renderProperties()
                         }
+                    }
+                    val playingFilename by state.playingFilename.collectAsStateWithLifecycle(null)
+                    NowPlayingLabel(mediaPropertiesText, playingFilename)
+                }
 
-                        is VideoLoadingState.UnknownError -> {
-                            ErrorTextBox(
-                                remember(loadingState) { loadingState.cause.toString() },
-                                { clipboard.setText(AnnotatedString(loadingState.cause.stackTraceToString())) },
-                                Modifier.padding(top = 8.dp).fillMaxWidth(),
+                is VideoLoadingState.UnknownError -> {
+                    ErrorTextBox(
+                        remember(loadingState) { loadingState.cause.toString() },
+                        { clipboard.setText(AnnotatedString(loadingState.cause.stackTraceToString())) },
+                        Modifier.padding(top = 8.dp).fillMaxWidth(),
+                    )
+                }
+
+                else -> {}
+            }
+        }
+    }
+}
+
+@Stable
+private fun Media.renderProperties(): String {
+    val properties = this.properties
+    return listOfNotNull(
+        properties.resolution,
+        properties.subtitleLanguageIds.joinToString("/") { renderSubtitleLanguage(it) }
+            .takeIf { it.isNotBlank() },
+        properties.size.takeIf { it != 0.bytes && it != Unspecified },
+        properties.alliance,
+    ).joinToString(" · ")
+}
+
+/**
+ * 显示正在播放的那行字
+ */
+@Composable
+private fun NowPlayingLabel(
+    playingMedia: String?,
+    filename: String?,
+    modifier: Modifier = Modifier,
+) {
+    Row(modifier) {
+        ProvideTextStyle(MaterialTheme.typography.titleMedium) {
+            if (playingMedia != null) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row {
+                        Text(
+                            "正在播放: ",
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                        Text(
+                            playingMedia,
+                            color = MaterialTheme.colorScheme.secondary,
+                        )
+                    }
+
+                    if (filename != null) {
+                        SelectionContainer {
+                            Text(
+                                filename,
+                                color = MaterialTheme.colorScheme.secondary,
                             )
                         }
-
-                        else -> {}
                     }
                 }
+            } else {
+                Text("请选择数据源")
             }
         }
     }

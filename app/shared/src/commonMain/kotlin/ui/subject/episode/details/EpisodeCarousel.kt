@@ -179,6 +179,7 @@ fun EpisodeCarousel(
 //    }
 }
 
+// Content padding is 16.dp
 @Composable
 fun EpisodeCarouselItem(
     episode: EpisodeInfo,

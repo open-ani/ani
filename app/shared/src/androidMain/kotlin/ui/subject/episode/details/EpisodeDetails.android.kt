@@ -16,6 +16,8 @@ import me.him188.ani.app.ui.subject.details.components.TestSubjectAiringInfo
 import me.him188.ani.app.ui.subject.details.components.rememberTestEditableSubjectCollectionTypeState
 import me.him188.ani.app.ui.subject.details.rememberTestEditableRatingState
 import me.him188.ani.app.ui.subject.episode.EpisodePresentation
+import me.him188.ani.app.ui.subject.episode.VideoLoadingState
+import me.him188.ani.app.ui.subject.episode.statistics.testPlayerStatisticsState
 
 
 @Composable
@@ -54,7 +56,11 @@ fun PreviewEpisodeDetails() = ProvideCompositionLocalsForPreview {
         },
         editableRatingState = rememberTestEditableRatingState(),
         editableSubjectCollectionTypeState = rememberTestEditableSubjectCollectionTypeState(),
-
+        playerStatisticsState = remember {
+            testPlayerStatisticsState(
+                videoLoadingState = VideoLoadingState.Succeed(isBt = true),
+            )
+        },
         Modifier.padding(vertical = 16.dp),
     )
 }

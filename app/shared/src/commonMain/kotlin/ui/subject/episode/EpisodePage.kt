@@ -192,6 +192,7 @@ private fun EpisodeSceneTabletVeryWide(
                     vm.episodeCarouselState,
                     vm.editableRatingState,
                     vm.editableSubjectCollectionTypeState,
+                    vm.playerStatistics,
                     Modifier.padding(vertical = 16.dp),
                 )
 
@@ -253,6 +254,7 @@ private fun EpisodeSceneContentPhone(
                         vm.episodeCarouselState,
                         vm.editableRatingState,
                         vm.editableSubjectCollectionTypeState,
+                        vm.playerStatistics,
                         Modifier.fillMaxSize().padding(vertical = 16.dp),
                     )
 

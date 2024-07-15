@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.FlowRowScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -16,6 +17,7 @@ import androidx.compose.material.icons.rounded.ArrowOutward
 import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.Outbox
+import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -30,7 +32,6 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -44,18 +45,14 @@ import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
-import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeButton
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeState
 import me.him188.ani.app.ui.subject.collection.OnAirLabel
-import me.him188.ani.app.ui.subject.details.components.OutlinedTag
-import me.him188.ani.app.ui.subject.details.components.renderSubjectSeason
 import me.him188.ani.app.ui.subject.episode.EpisodePresentation
-import me.him188.ani.app.ui.subject.rating.EditableRating
+import me.him188.ani.app.ui.subject.episode.statistics.DanmakuStatistics
+import me.him188.ani.app.ui.subject.episode.statistics.PlayerStatisticsState
+import me.him188.ani.app.ui.subject.episode.statistics.VideoStatistics
 import me.him188.ani.app.ui.subject.rating.EditableRatingState
-import me.him188.ani.datasources.api.Media
-import me.him188.ani.datasources.api.topic.FileSize.Companion.Unspecified
-import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.datasources.api.topic.Resolution
 import me.him188.ani.datasources.api.topic.SubtitleLanguage
 import kotlin.coroutines.CoroutineContext
@@ -87,7 +84,7 @@ fun EpisodeDetails(
     episodeCarouselState: EpisodeCarouselState,
     editableRatingState: EditableRatingState,
     editableSubjectCollectionTypeState: EditableSubjectCollectionTypeState,
-
+    playerStatisticsState: PlayerStatisticsState,
     modifier: Modifier = Modifier,
     horizontalPadding: Dp = 16.dp,
 ) {
@@ -109,8 +106,8 @@ fun EpisodeDetails(
     EpisodeDetailsScaffold(
         coverImageUrl = state.coverImageUrl,
         subjectTitle = { Text(state.subjectTitle) },
-        subjectSeasonTags = {
-            OutlinedTag { Text(renderSubjectSeason(state.airingInfo.airDate)) }
+        onAirLabel = {
+//            OutlinedTag { Text(renderSubjectSeason(state.airingInfo.airDate)) }
             OnAirLabel(
                 state.airingInfo,
                 Modifier.align(Alignment.CenterVertically),
@@ -118,17 +115,20 @@ fun EpisodeDetails(
                 statusColor = LocalContentColor.current,
             )
         },
+        subjectCollectionActionButton = {
+            EditableSubjectCollectionTypeButton(editableSubjectCollectionTypeState)
+        },
         episodeCarousel = { contentPadding ->
             EpisodeCarousel(
                 episodeCarouselState,
                 contentPadding = contentPadding,
             )
         },
-        subjectRating = {
-            EditableRating(editableRatingState)
+        videoStatistics = {
+            VideoStatistics(playerStatisticsState)
         },
-        subjectCollectionActionButton = {
-            EditableSubjectCollectionTypeButton(editableSubjectCollectionTypeState)
+        danmakuStatistics = {
+            DanmakuStatistics(playerStatisticsState)
         },
         onClickCache = {
             navigator.navigateSubjectCaches(state.subjectId)
@@ -144,10 +144,11 @@ fun EpisodeDetails(
 fun EpisodeDetailsScaffold(
     coverImageUrl: String?,
     subjectTitle: @Composable () -> Unit,
-    subjectSeasonTags: @Composable FlowRowScope.() -> Unit,
-    subjectRating: @Composable () -> Unit,
+    onAirLabel: @Composable() (FlowRowScope.() -> Unit),
     subjectCollectionActionButton: @Composable () -> Unit,
     episodeCarousel: @Composable (PaddingValues) -> Unit,
+    videoStatistics: @Composable () -> Unit,
+    danmakuStatistics: @Composable () -> Unit,
     onClickCache: () -> Unit,
     onClickShare: () -> Unit,
     modifier: Modifier = Modifier,
@@ -161,7 +162,9 @@ fun EpisodeDetailsScaffold(
             content: @Composable () -> Unit,
         ) {
             Row(
-                modifier.heightIn(min = 40.dp).padding(horizontal = 12.dp),
+                modifier.heightIn(min = 40.dp)
+                    .padding(top = 24.dp, bottom = 16.dp)
+                    .padding(horizontal = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 ProvideTextStyle(MaterialTheme.typography.titleMedium) {
@@ -192,21 +195,21 @@ fun EpisodeDetailsScaffold(
                             }
                         }
 
-                        Row {
-                            ProvideTextStyle(MaterialTheme.typography.labelLarge) {
-                                FlowRow(
-                                    Modifier.weight(1f),
-                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                    verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
-                                ) {
-                                    subjectSeasonTags()
-                                }
-                            }
-
-                            Box(Modifier.padding(start = 16.dp).align(Alignment.Bottom)) {
-                                subjectRating()
-                            }
-                        }
+//                        Row {
+//                            ProvideTextStyle(MaterialTheme.typography.labelLarge) {
+//                                FlowRow(
+//                                    Modifier.weight(1f),
+//                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+//                                    verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
+//                                ) {
+//                                    subjectSeasonTags()
+//                                }
+//                            }
+//
+//                            Box(Modifier.padding(start = 16.dp).align(Alignment.Bottom)) {
+//                                subjectRating()
+//                            }
+//                        }
                     }
                 }
 
@@ -234,11 +237,37 @@ fun EpisodeDetailsScaffold(
 //                }
 //            },
         ) {
-            Text("选集")
+            FlowRow(
+                Modifier.weight(1f),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
+            ) {
+                onAirLabel()
+            }
         }
 
         Row {
             episodeCarousel(PaddingValues(horizontal = horizontalPadding))
+        }
+
+        SectionTitle {
+            Text("视频统计")
+        }
+
+        Card(Modifier.padding(horizontal = horizontalPadding).fillMaxWidth()) {
+            Column(Modifier.padding(16.dp)) {
+                videoStatistics()
+            }
+        }
+
+        SectionTitle {
+            Text("弹幕统计")
+        }
+
+        Card(Modifier.padding(horizontal = horizontalPadding).fillMaxWidth()) {
+            Column(Modifier.padding(16.dp)) {
+                danmakuStatistics()
+            }
         }
     }
 }
@@ -270,18 +299,6 @@ private fun ShareEpisodeDropdown(
     }
 }
 
-@Stable
-private fun Media.render(): String {
-    val properties = this.properties
-    return listOfNotNull(
-        properties.resolution,
-        properties.subtitleLanguageIds.joinToString("/") { renderSubtitleLanguage(it) }
-            .takeIf { it.isNotBlank() },
-        properties.size.takeIf { it != 0.bytes && it != Unspecified },
-        properties.alliance,
-    ).joinToString(" · ")
-}
-
 fun renderSubtitleLanguage(id: String): String {
     return when (id) {
         SubtitleLanguage.ChineseCantonese.id -> "粤语"
@@ -297,44 +314,3 @@ fun renderResolution(id: String): String {
     return Resolution.tryParse(id)?.displayName ?: id
 }
 
-/**
- * 显示正在播放的那行字
- */
-@Composable
-private fun NowPlayingLabel(
-    isPlaying: Media?,
-    filename: String?,
-    modifier: Modifier = Modifier,
-) {
-    Row(modifier) {
-        ProvideTextStyle(MaterialTheme.typography.labelMedium) {
-            if (isPlaying != null) {
-                Column {
-                    Row {
-                        Text(
-                            "正在播放: ",
-                            color = MaterialTheme.colorScheme.primary,
-                        )
-                        Text(
-                            remember(isPlaying) { isPlaying.render() },
-                            color = MaterialTheme.colorScheme.secondary,
-                        )
-                    }
-
-
-                    if (filename != null) {
-                        SelectionContainer {
-                            Text(
-                                filename,
-                                Modifier.padding(top = 8.dp),
-                                color = LocalContentColor.current.slightlyWeaken(),
-                            )
-                        }
-                    }
-                }
-            } else {
-                Text("请选择数据源")
-            }
-        }
-    }
-}

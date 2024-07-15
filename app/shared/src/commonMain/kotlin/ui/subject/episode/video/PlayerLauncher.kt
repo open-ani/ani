@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.transformLatest
 import me.him188.ani.app.data.models.episode.EpisodeInfo
 import me.him188.ani.app.data.models.episode.displayName
@@ -49,7 +50,10 @@ class PlayerLauncher(
         val logger = logger<PlayerLauncher>()
     }
 
-    val playerStatistics: PlayerStatisticsState = PlayerStatisticsState()
+    val playerStatistics: PlayerStatisticsState = PlayerStatisticsState(
+        playingMedia = mediaSelector.selected,
+        playingFilename = playerState.videoData.map { it?.filename },
+    )
 
     private val videoLoadingState get() = playerStatistics.videoLoadingState
 
