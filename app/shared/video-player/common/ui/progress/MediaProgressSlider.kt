@@ -34,7 +34,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.layout.SubcomposeLayout
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
@@ -160,7 +159,7 @@ fun MediaProgressSlider(
     downloadingColor: Color = aniDarkColorTheme().onSurface.disabledWeaken(),
     notAvailableColor: Color = aniDarkColorTheme().error.slightlyWeaken(),
     stopColor: Color = aniDarkColorTheme().primary,
-    previewTimeBackgroundColor: Color = aniDarkColorTheme().surface.copy(alpha = 0.3f),
+    previewTimeBackgroundColor: Color = Color.Black.copy(alpha = 0.3f),
 //    drawThumb: @Composable DrawScope.() -> Unit = {
 //        drawCircle(
 //            MaterialTheme.colorScheme.primary,
@@ -238,15 +237,11 @@ fun MediaProgressSlider(
         var offsetX by remember { mutableIntStateOf(0) }
         var previewTimeText by remember { mutableStateOf("") }
         val previewTimeTextBox = @Composable {
-            Box(
-                modifier = Modifier
-                    .background(previewTimeBackgroundColor, shape = RoundedCornerShape(6.dp)),
-            ) {
                 Text(
+                    modifier = Modifier
+                        .background(previewTimeBackgroundColor, shape = RoundedCornerShape(4.dp)),
                     text = previewTimeText,
-                    textAlign = TextAlign.Center,
                 )
-            }
         }
         val hoverInteraction = remember { MutableInteractionSource() }
         LaunchedEffect(true) {
